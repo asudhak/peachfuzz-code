@@ -229,6 +229,10 @@ namespace PeachCore
 			_internalValue = GetInternalValue();
 			_value = GetValue();
 
+            // Bubble this up the chain
+            if(_parent)
+                _parent.Invalidate();
+
 			if (Invalidated != null)
 				Invalidated(this, e);
 		}
@@ -288,21 +292,27 @@ namespace PeachCore
 			}
 		}
 
+        /// <summary>
+        /// Get the Internal Value of this data element
+        /// </summary>
 		public virtual Variant InternalValue
 		{
 			get { return _internalValue; }
 		}
 
+        /// <summary>
+        /// Get the final Value of this data element
+        /// </summary>
 		public virtual byte[] Value
 		{
 			get { return _value; }
 		}
 
 		/// <summary>
-		/// Get the internal value of this data element.
+		/// Generate the internal value of this data element
 		/// </summary>
 		/// <returns>Internal value in .NET form</returns>
-		public virtual Variant GetInternalValue()
+		public virtual Variant GenerateInternalValue()
 		{
 			Variant value;
 
@@ -340,10 +350,10 @@ namespace PeachCore
 		}
 
 		/// <summary>
-		/// Get actual value as byte's
+		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
-		public byte[] GetValue()
+		public byte[] GenerateValue()
 		{
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
 				return (byte[]) MutatedValue;
