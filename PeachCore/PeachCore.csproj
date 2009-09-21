@@ -45,9 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Agent\Agent.cs" />
+    <Compile Include="Agent\Monitor.cs" />
     <Compile Include="DataElements.cs" />
     <Compile Include="Dom.cs" />
+    <Compile Include="Mutator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Agent\Monitors\" />
+    <Folder Include="Mutators\" />
+    <Folder Include="Publishers\" />
+    <Folder Include="Transformers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
