@@ -31,9 +31,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PeachCore.Agent
+namespace PeachCore
 {
-	class Agent
+	public abstract class Analyzer
 	{
+		public static bool supportParser = false;
+		public static bool supportDataElement = false;
+		public static bool supportCommandLine = false;
+		public static bool supportTopLevel = false;
+
+		/// <summary>
+		/// Replaces the parser for fuzzer definition.
+		/// </summary>
+		/// <param name="args">Command line arguments</param>
+		public virtual void asParser(Dictionary<string, string> args, string fileName)
+		{
+		}
+
+		public virtual void asDataElement(DataElement parent, Dictionary<string, string> args, object dataBuffer)
+		{
+		}
+
+		public virtual void asCommandLine(Dictionary<string, string> args)
+		{
+		}
+
+		public virtual void asTopLevel(object peach, Dictionary<string, string> args)
+		{
+		}
 	}
 }
+
+// end

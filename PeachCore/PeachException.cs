@@ -31,9 +31,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PeachCore.Agent
+namespace PeachCore
 {
-	class Agent
+	/// <summary>
+	/// Unrecoverable error.  Causes Peach to exit with an error
+	/// message, but no stack trace.
+	/// </summary>
+	public class PeachException : ApplicationException
 	{
+		public PeachException(string message)
+			: base(message)
+		{
+		}
 	}
 }
+
+// end
