@@ -28,18 +28,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
 using System.Text;
 
-namespace PeachCore
+namespace PeachCore.Publishers
 {
-    public class Dom
-    {
-		public Dictionary<string, DataModel> dataModels;
-		public Dictionary<string, StateModel> stateModels;
-    }
-}
+	[PublisherAttribute("Console")]
+	public class Console : Publisher
+	{
+		public override void open(Action action)
+		{
+		}
 
+		public override void close(Action action)
+		{
+		}
+
+		public override void output(Action action, Variant data)
+		{
+			System.Console.Write((string)data);
+		}
+	}
+}
 
 // END

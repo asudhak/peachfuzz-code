@@ -400,7 +400,7 @@ namespace PeachCore
 	/// data elements.  Such as Block, Choice, or Flags.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>
+	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>, IList<DataElement>
 	{
 		protected List<DataElement> _childrenList;
 		protected Dictionary<string, DataElement> _childrenDict;
@@ -439,6 +439,64 @@ namespace PeachCore
 		}
 
 		#endregion
+
+		#region IList<DataElement> Members
+
+		public int IndexOf(DataElement item)
+		{
+			return _childrenList.IndexOf(item);
+		}
+
+		public void Insert(int index, DataElement item)
+		{
+			_childrenList.Insert(index, item);
+		}
+
+		public void RemoveAt(int index)
+		{
+			_childrenList.RemoveAt(index);
+		}
+
+		#endregion
+
+		#region ICollection<DataElement> Members
+
+		public void Add(DataElement item)
+		{
+			_childrenList.Add(item);
+		}
+
+		public void Clear()
+		{
+			_childrenList.Clear();
+		}
+
+		public bool Contains(DataElement item)
+		{
+			_childrenList.Contains(item);
+		}
+
+		public void CopyTo(DataElement[] array, int arrayIndex)
+		{
+			_childrenList.CopyTo(array, arrayIndex);
+		}
+
+		public int Count
+		{
+			get { return _childrenList.Count; }
+		}
+
+		public bool IsReadOnly
+		{
+			get { return _childrenList.IsReadOnly; }
+		}
+
+		public bool Remove(DataElement item)
+		{
+			return _childrenList.Remove(item);
+		}
+
+		#endregion
 	}
 
 	/// <summary>
@@ -470,6 +528,10 @@ namespace PeachCore
 
 			return new Variant(value.ToArray());
 		}
+	}
+
+	public class DataModel : Block
+	{
 	}
 
 	/// <summary>

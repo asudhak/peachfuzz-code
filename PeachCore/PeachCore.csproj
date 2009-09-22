@@ -54,12 +54,14 @@
     <Compile Include="Mutator.cs" />
     <Compile Include="PeachException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Publisher.cs" />
+    <Compile Include="Publishers\Console.cs" />
+    <Compile Include="Publishers\File.cs" />
     <Compile Include="StateModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Agent\Monitors\" />
     <Folder Include="Mutators\" />
-    <Folder Include="Publishers\" />
     <Folder Include="Transformers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

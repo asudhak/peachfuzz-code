@@ -44,7 +44,7 @@ namespace PeachCore
 		/// Replaces the parser for fuzzer definition.
 		/// </summary>
 		/// <param name="args">Command line arguments</param>
-		public virtual void asParser(Dictionary<string, string> args, string fileName)
+		public virtual Dom asParser(Dictionary<string, string> args, string fileName)
 		{
 		}
 
@@ -56,7 +56,7 @@ namespace PeachCore
 		{
 		}
 
-		public virtual void asTopLevel(object peach, Dictionary<string, string> args)
+		public virtual void asTopLevel(Dom dom, Dictionary<string, string> args)
 		{
 		}
 	}

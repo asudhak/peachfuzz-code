@@ -46,14 +46,22 @@ namespace PeachCore.Analyzers
 			PitParser.supportParser = true;
 		}
 
-		public override void asParser(Dictionary<string, string> args, string fileName)
+		public override Dom asParser(Dictionary<string, string> args, string fileName)
 		{
+			Dom dom = null;
+
 			if (!File.Exists(fileName))
 				throw PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
 
 			validatePit(fileName, @"c:\peach\peach.xsd");
 
-			throw ApplicationException("TODO: Implement parser");
+			XmlDocument xmldoc = new XmlDocument();
+			xmldoc.Load(fileName);
+
+			if (xmldoc.FirstChild.Name == "Peach")
+				dom = handlePeach(xmldoc.FirstChild);
+
+			return dom;
 		}
 
 		/// <summary>
@@ -93,6 +101,122 @@ namespace PeachCore.Analyzers
 		{
 			ErrorMessage = ErrorMessage + e.Message + "\r\n";
 			ErrorsCount++;
+		}
+
+		protected void handlePeach(XmlNode node)
+		{
+			Dom dom = new Dom();
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "DataModel")
+					dom.dataModels.Add(handleDataModel(child, node));
+			}
+		}
+
+		protected DataModel handleDataModel(XmlNode node, XmlNode parent)
+		{
+			DataModel dataModel = new DataModel();
+
+			try
+			{
+				dataModel.name = node.Attributes["name"];
+			}
+			catch
+			{
+				throw new PeachException("Error, DataModel missing required 'name' attribute.");
+			}
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				switch (child.Name)
+				{
+					case "Block":
+						dataModel.Add(handleBlock(child, node));
+						break;
+
+					case "Choice":
+						dataModel.Add(handleChoice(child, node));
+						break;
+
+					case "String":
+						dataModel.Add(handleString(child, node));
+						break;
+
+					case "Number":
+						dataModel.Add(handleNumber(child, node));
+						break;
+
+					case "Blob":
+						dataModel.Add(handleBlob(child, node));
+						break;
+
+					case "Flags":
+						dataModel.Add(handleFlags(child, node));
+						break;
+
+					case "Relation":
+						dataModel.Add(handleRelation(child, node));
+						break;
+
+					case "Fixup":
+						dataModel.Add(handleFixup(child, node));
+						break;
+
+					case "Transformer":
+						dataModel.Add(handleTransformer(child, node));
+						break;
+
+					default:
+						throw new PeachException("Error, DataModel [" + dataModel.name +
+							"] has unknown child node [" + child.Name + "].");
+				}
+			}
+		}
+
+		protected Block handleBlock(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Choice handleChoice(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected String handleString(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Number handleNumber(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Blob handleBlob(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Flags handleFlags(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Relation handleRelation(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Fixup handleFixup(XmlNode node, XmlNode parent)
+		{
+			return null;
+		}
+
+		protected Transformer handleTransformer(XmlNode node, XmlNode parent)
+		{
+			return null;
 		}
 	}
 }
