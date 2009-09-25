@@ -114,18 +114,38 @@ namespace PeachCore.Analyzers
 			}
 		}
 
+		protected string getXmlAttribute(XmlNode node, string name)
+		{
+			try
+			{
+				return node.Attributes[name];
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		protected bool hasXmlAttribute(XmlNode node, string name)
+		{
+			try
+			{
+				node.Attributes[name];
+				return false;
+			}
+			catch
+			{
+				return true;
+			}
+		}
+
 		protected DataModel handleDataModel(XmlNode node, XmlNode parent)
 		{
 			DataModel dataModel = new DataModel();
 
-			try
-			{
-				dataModel.name = node.Attributes["name"];
-			}
-			catch
-			{
+			dataModel.name = getXmlAttribute(node, "name");
+			if(dataModel.name == null)
 				throw new PeachException("Error, DataModel missing required 'name' attribute.");
-			}
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -176,7 +196,35 @@ namespace PeachCore.Analyzers
 
 		protected Block handleBlock(XmlNode node, XmlNode parent)
 		{
-			return null;
+			// name
+			string name = getXmlAttribute(node, "name");
+			// ref
+			string reference = getXmlAttribute(node, "ref");
+
+			Block block = new Block();
+			block.name = name;
+
+			// lengthType
+			if (hasXmlAttribute(node, "lengthType"))
+			{
+				block.lengthType = getXmlAttribute(node, "lengthType");
+				block.lengthCalc = getXmlAttribute(node, "length");
+				block.length = -1;
+
+				if (block.lengthType == null)
+					throw new PeachException("Error, Block attribute 'lengthType' has invalid value.");
+				if (block.lengthCalc == null)
+					throw new PeachException("Error, When specifying lenghType=\"calc\" you must also provide a valid 'length' attribute.");
+			}
+			// length
+			else if (hasXmlAttribute(node, "length"))
+			{
+				block.length = Convert.ToUInt32(getXmlAttribute(node, "length"));
+			}
+
+			// alignment
+			// common data element attributes
+			// data container children
 		}
 
 		protected Choice handleChoice(XmlNode node, XmlNode parent)
