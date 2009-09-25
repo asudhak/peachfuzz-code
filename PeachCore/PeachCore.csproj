@@ -51,6 +51,9 @@
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="DataElements.cs" />
     <Compile Include="Dom.cs" />
+    <Compile Include="Engine.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="Loggers\File.cs" />
     <Compile Include="Mutator.cs" />
     <Compile Include="PeachException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -58,6 +61,7 @@
     <Compile Include="Publishers\Console.cs" />
     <Compile Include="Publishers\File.cs" />
     <Compile Include="StateModel.cs" />
+    <Compile Include="Watcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Agent\Monitors\" />
