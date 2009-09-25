@@ -49,8 +49,8 @@
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
-    <Compile Include="DataElements.cs" />
-    <Compile Include="Dom.cs" />
+    <Compile Include="Dom\DataElements.cs" />
+    <Compile Include="Dom\Dom.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
@@ -60,7 +60,7 @@
     <Compile Include="Publisher.cs" />
     <Compile Include="Publishers\Console.cs" />
     <Compile Include="Publishers\File.cs" />
-    <Compile Include="StateModel.cs" />
+    <Compile Include="Dom\StateModel.cs" />
     <Compile Include="Watcher.cs" />
   </ItemGroup>
   <ItemGroup>

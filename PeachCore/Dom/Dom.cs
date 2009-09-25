@@ -39,6 +39,14 @@ namespace PeachCore
 		public Dictionary<string, DataModel> dataModels;
 		public Dictionary<string, StateModel> stateModels;
     }
+
+	public class Run
+	{
+	}
+
+	public class Test
+	{
+	}
 }
 
 
