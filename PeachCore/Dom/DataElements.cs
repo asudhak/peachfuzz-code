@@ -34,7 +34,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime;
 
-namespace PeachCore
+namespace PeachCore.Dom
 {
 	public enum LengthType
 	{

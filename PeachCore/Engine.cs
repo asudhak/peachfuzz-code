@@ -173,22 +173,126 @@ namespace PeachCore
 				context.test = null;
 				OnTestStarting(this, dom, test);
 
-				// - Get state engine
-				// - Start agents
-				// - Get mutation strategy
+				// TODO: Get state engine
+				// TODO: Start agents
+				// TODO: Get mutation strategy
+				MutationStrategy mutationStrategy = null;
 
-				while (true)
+				uint iterationCount = 0;
+				uint? totalIterationCount;
+
+				uint? iterationRangeStart;
+				uint? iterationRangeStop;
+
+				uint redoCount = 0;
+
+				if (context.config.range)
 				{
-					// - Did we finish our test range?
+					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+						"context.config.range == true, start: " +
+						context.config.rangeStart +
+						", stop: " +
+						context.config.rangeStop);
 
-					// - Should we skip ahead?
+					iterationRangeStart = context.config.rangeStart;
+					iterationRangeStop = context.config.rangeStop;
+				}
+				if (context.config.singleIteration)
+				{
+					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+						"context.config.singleIteration == true");
+					
+					iterationRangeStop = 1;
+				}
+				if (context.config.skipToIteration.HasValue)
+				{
+					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+						"context.config.skipToIteration == " + 
+						context.config.skipToIteration);
+					
+					iterationRangeStart = context.config.skipToIteration;
+				}
 
-					// - Iteration Starting
+				while (context.continueFuzzing)
+				{
+					try
+					{
+						iterationCount++;
+
+						// - Did we finish our test range?
+						if (iterationRangeStop.HasValue && iterationRangeStop > iterationCount)
+							break;
+
+						// - Get total count?
+						if (iterationCount == 2 && !totalIterationCount.HasValue)
+						{
+							totalIterationCount = mutationStrategy.count;
+
+							if (iterationRangeStop.HasValue && iterationRangeStop < totalIterationCount)
+								totalIterationCount = iterationRangeStop;
+						}
+
+						// - Should we skip ahead?
+						if (iterationCount == 2 && iterationRangeStart.HasValue &&
+							iterationCount < iterationRangeStart)
+						{
+							for (; iterationCount < iterationRangeStart; iterationCount++)
+								mutationStrategy.next();
+						}
+
+						try
+						{
+							// TODO: Iteration Starting
+						}
+						catch (RedoTestException e)
+						{
+							throw e;
+						}
+						catch (SoftException se)
+						{
+							// We should just eat SoftExceptions.
+							// They indicate we should move to the next
+							// iteration.
+						}
+						catch (PathException pe)
+						{
+							// We should just eat PathException.
+							// They indicate we should move to the next
+							// iteration.
+						}
+
+						// TODO: Pause for run.waitTime
+
+						// TODO: Check for agent faults
+
+						// TODO: Check for agent stop signal
+
+						// Increment to next test
+						mutationStrategy.next();
+
+						redoCount = 0;
+					}
+					catch (RedoIterationException rte)
+					{
+						// Repeat the same iteration unless
+						// we have already retried 3 times.
+
+						if (redoCount >= 3)
+							throw new PeachException(rte.Message);
+
+						redoCount++;
+						iterationCount--;
+					}
 				}
 
 				//   - 
 			}
-			catch(Exception e)
+			catch (MutatorCompleted mc)
+			{
+				// Ignore, signals end of fuzzing run
+			}
+			// TODO: Catch keyboard interrupt
+			catch (Exception e)
 			{
 				OnTestError(this, dom, test, e);
 				throw e;
@@ -240,6 +344,13 @@ namespace PeachCore
 		public Test test = null;
 
 		public List<Agent> agents = new List<Agent>();
+
+		/// <summary>
+		/// Controls if we continue fuzzing or exit
+		/// after current iteration.  This can be used
+		/// by UI code to stop Peach.
+		/// </summary>
+		public bool continueFuzzing = true;
 	}
 
 	/// <summary>
@@ -267,8 +378,7 @@ namespace PeachCore
 		/// <summary>
 		/// Skip to a specific iteration
 		/// </summary>
-		public bool skipToIteration = false;
-		public uint skipToIterationNumber = 0;
+		public uint? skipToIteration;
 
 		/// <summary>
 		/// Enable or disable debugging output
@@ -279,6 +389,11 @@ namespace PeachCore
 		/// Fuzzing strategy to use
 		/// </summary>
 		public MutationStrategy strategy = null;
+
+		/// <summary>
+		/// Name of run to perform
+		/// </summary>
+		public string runName = "DefaultRun";
 	}
 }
 

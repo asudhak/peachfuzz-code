@@ -31,42 +31,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PeachCore
+namespace PeachCore.Dom
 {
-	/// <summary>
-	/// Unrecoverable error.  Causes Peach to exit with an error
-	/// message, but no stack trace.
-	/// </summary>
-	public class PeachException : ApplicationException
-	{
-		public PeachException(string message)
-			: base(message)
-		{
-		}
-	}
-
-	/// <summary>
-	/// Thrown to cause the Peach Engine to re-run
-	/// the same test iteration.
-	/// </summary>
-	public class RedoIterationException : ApplicationException
+	public class XmlElement : DataElement
 	{
 	}
 
-	/// <summary>
-	/// Thrown to stop current iteration and move to next.
-	/// </summary>
-	public class SoftException : ApplicationException
-	{
-	}
-
-	/// <summary>
-	/// Similar to SoftException but used by state model
-	/// path code.
-	/// </summary>
-	public class PathException : ApplicationException
+	public class XmlAttribute : DataElement
 	{
 	}
 }
-
-// end

@@ -30,43 +30,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PeachCore;
 
-namespace PeachCore
+namespace PeachCore.Dom
 {
-	/// <summary>
-	/// Unrecoverable error.  Causes Peach to exit with an error
-	/// message, but no stack trace.
-	/// </summary>
-	public class PeachException : ApplicationException
+	[AttributeUsage(AttributeTargets.Class)]
+	public class DataElementAttribute : Attribute
 	{
-		public PeachException(string message)
-			: base(message)
+		public DataElementAttribute(string elementName)
 		{
 		}
 	}
 
-	/// <summary>
-	/// Thrown to cause the Peach Engine to re-run
-	/// the same test iteration.
-	/// </summary>
-	public class RedoIterationException : ApplicationException
+	public enum DataElementTypes
 	{
+		Any,
+		Containers,
+		NonContainers,
+		NonDataElements,
+		Parameter,
+		Relation,
+		Transformer,
+		Fixup,
+		Hint
 	}
 
-	/// <summary>
-	/// Thrown to stop current iteration and move to next.
-	/// </summary>
-	public class SoftException : ApplicationException
+	[AttributeUsage(AttributeTargets.Class)]
+	public class DataElementChildSupportedAttribute : Attribute
 	{
+		public DataElementChildSupportedAttribute(string elementName)
+		{
+		}
+
+		public DataElementChildSupportedAttribute(DataElementTypes type)
+		{
+		}
 	}
 
-	/// <summary>
-	/// Similar to SoftException but used by state model
-	/// path code.
-	/// </summary>
-	public class PathException : ApplicationException
+	[DataElement("String")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
+	[ParameterAttribute("type", typeof(string), "Type of string (char, wchar, utf8)", false)]
+	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated (default: false)", false)]
+	public class DomString
 	{
 	}
 }
-
-// end

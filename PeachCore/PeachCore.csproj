@@ -51,8 +51,12 @@
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="DataConverter.cs" />
+    <Compile Include="Dom\Asn1Element.cs" />
+    <Compile Include="Dom\DomAttributes.cs" />
     <Compile Include="Dom\DataElements.cs" />
+    <Compile Include="Dom\OrderedDictionary.cs" />
     <Compile Include="Dom\Dom.cs" />
+    <Compile Include="Dom\XmlElements.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />

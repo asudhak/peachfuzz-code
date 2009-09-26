@@ -11,12 +11,14 @@ namespace PeachCore
 		public string name;
 		public Type type;
 		public string description;
+		public bool required;
 
-		public ParameterAttribute(string name, Type type, string description)
+		public ParameterAttribute(string name, Type type, string description, bool required)
 		{
 			this.name = name;
 			this.type = type;
 			this.description = description;
+			this.required = required;
 		}
 	}
 
