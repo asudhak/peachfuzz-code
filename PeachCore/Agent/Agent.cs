@@ -33,7 +33,7 @@ using System.Text;
 
 namespace PeachCore.Agent
 {
-	class Agent
+	public class Agent
 	{
 	}
 }

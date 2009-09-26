@@ -33,16 +33,109 @@ using System.Text;
 
 namespace PeachCore
 {
+	public delegate void StartEventHandler(Publisher publisher, Action action);
+	public delegate void StopEventHandler(Publisher publisher, Action action);
+	public delegate void AcceptEventHandler(Publisher publisher, Action action);
+	public delegate void OpenEventHandler(Publisher publisher, Action action);
+	public delegate void CloseEventHandler(Publisher publisher, Action action);
+	public delegate void InputEventHandler(Publisher publisher, Action action, int size);
+	public delegate void OutputEventHandler(Publisher publisher, Action action, Variant data);
+	public delegate void CallEventHandler(Publisher publisher, Action action, string method, Dictionary<string,Variant> aregs);
+	public delegate void SetPropertyEventHandler(Publisher publisher, Action action, string property, Variant value);
+	public delegate void GetPropertyEventHandler(Publisher publisher, Action action, string property);
+
+	/// <summary>
+	/// Publishers are I/O interfaces for Peach.  They glue the actions
+	/// in a state model to the target interface.  Publishers can be 
+	/// stream based such as files or sockets, and also call based like
+	/// COM and shared libraries.  They can also be hybrids using both
+	/// stream and call based methods to make more complex publishers.
+	/// 
+	/// Multiple publishers can be used in a single state model to allow
+	/// for more complex opertions such as writeing to the registry and
+	/// then calling an RPC method.
+	/// </summary>
 	public abstract class Publisher
 	{
+		#region Events
+
+		public static event StartEventHandler Start;
+		public static event StopEventHandler Stop;
+		public static event AcceptEventHandler Accept;
+		public static event OpenEventHandler Open;
+		public static event CloseEventHandler Close;
+		public static event InputEventHandler Input;
+		public static event OutputEventHandler Output;
+		public static event CallEventHandler Call;
+		public static event SetPropertyEventHandler SetProperty;
+		public static event GetPropertyEventHandler GetProperty;
+
+		public void OnStart(Action action)
+		{
+			if (Start != null)
+				Start(this, action);
+		}
+		public void OnStop(Action action)
+		{
+			if (Stop != null)
+				Stop(this, action);
+		}
+		public void OnAccept(Action action)
+		{
+			if (Accept != null)
+				Accept(this, action);
+		}
+		public void OnOpen(Action action)
+		{
+			if (Open != null)
+				Open(this, action);
+		}
+		public void OnClose(Action action)
+		{
+			if (Close != null)
+				Close(this, action);
+		}
+		public void OnInput(Action action)
+		{
+			if (Input != null)
+				Input(this, action, -1);
+		}
+		public void OnInput(Action action, int size)
+		{
+			if (Input != null)
+				Input(this, action, size);
+		}
+		public void OnOutput(Action action, Variant data)
+		{
+			if (Output != null)
+				Output(this, action, data);
+		}
+		public void OnCall(Action action, string method, Dictionary<string,Variant> args)
+		{
+			if (Call != null)
+				Call(this, action, method, args);
+		}
+		public void OnSetProperty(Action action, string property, Variant value)
+		{
+			if (SetProperty != null)
+				SetProperty(this, action, property, value);
+		}
+		public void OnGetProperty(Action action, string property)
+		{
+			if (GetProperty != null)
+				GetProperty(this, action, property);
+		}
+
+		#endregion
+
 		/// <summary>
 		/// Static method that provides expected and optional
 		/// arguments, along with a description.
 		/// </summary>
 		/// <returns></returns>
-		public virtual static Dictionary<string,string> getArguments()
+		public virtual static Dictionary<string,Type> getArguments()
 		{
-			return new Dictionary<string, string>();
+			return new Dictionary<string, Type>();
 		}
 
 		public Publisher(Dictionary<string, Variant> args)
@@ -56,6 +149,7 @@ namespace PeachCore
 		/// <param name="action">Action calling publisher</param>
 		public virtual void start(Action action)
 		{
+			OnStart(action);
 		}
 		/// <summary>
 		/// Called to Stop publisher.  This action is always performed
@@ -64,6 +158,7 @@ namespace PeachCore
 		/// <param name="action">Action calling publisher</param>
 		public virtual void stop(Action action)
 		{
+			OnStop(action);
 		}
 
 		/// <summary>
@@ -72,6 +167,7 @@ namespace PeachCore
 		/// <param name="action">Action calling publisher</param>
 		public virtual void accept(Action action)
 		{
+			OnAccept(action);
 			throw new PeachException("Error, action 'accept' not supported by publisher");
 		}
 		/// <summary>
@@ -81,6 +177,7 @@ namespace PeachCore
 		/// <param name="action">Action calling publisher</param>
 		public virtual void open(Action action)
 		{
+			OnOpen(action);
 			throw new PeachException("Error, action 'open' not supported by publisher");
 		}
 		/// <summary>
@@ -91,32 +188,39 @@ namespace PeachCore
 		/// <param name="action">Action calling publisher</param>
 		public virtual void close(Action action)
 		{
+			OnClose(action);
 			throw new PeachException("Error, action 'close' not supported by publisher");
 		}
 
 		public virtual Variant input(Action action)
 		{
+			OnInput(action);
 			throw new PeachException("Error, action 'input' not supported by publisher");
 		}
 		public virtual Variant input(Action action, int size)
 		{
+			OnInput(action, size);
 			throw new PeachException("Error, action 'input' not supported by publisher");
 		}
 		public virtual void output(Action action, Variant data)
 		{
+			OnOutput(action, data);
 			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
 
 		public virtual Variant call(Action action, string method, Dictionary<string, Variant> args )
 		{
+			OnOutput(action, method, args);
 			throw new PeachException("Error, action 'call' not supported by publisher");
 		}
 		public virtual void setProperty(Action action, string property, Variant value)
 		{
+			OnSetProperty(action, property, value);
 			throw new PeachException("Error, action 'setProperty' not supported by publisher");
 		}
 		public virtual Variant getProperty(Action action, string property)
 		{
+			OnGetProperty(action, property);
 			throw new PeachException("Error, action 'getProperty' not supported by publisher");
 		}
 	}

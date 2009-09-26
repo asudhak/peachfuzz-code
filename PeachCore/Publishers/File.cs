@@ -35,26 +35,15 @@ using System.Text;
 namespace PeachCore.Publishers
 {
 	[PublisherAttribute("FileStream")]
+	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing")]
+	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default false]")]
+	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]")]
 	public class File : Publisher
 	{
 		public string fileName;
 		public bool overwrite = false;
 		public bool append = false;
 		protected FileStream stream = null;
-
-		/// <summary>
-		/// Static method that provides expected and optional
-		/// arguments, along with a description.
-		/// </summary>
-		/// <returns></returns>
-		public virtual static Dictionary<string, string> getArguments()
-		{
-			Dictionary<string,string> args = new Dictionary<string, string>();
-
-			args.Add("FileName", "Name of file to open for reading/writing");
-			args.Add("Overwrite", "Replace existing file? [true/false, default false]");
-			args.Add("Append", "Append to end of file [true/false, default flase]");
-		}
 
 		public File(Dictionary<string, Variant> args)
 		{
@@ -97,6 +86,8 @@ namespace PeachCore.Publishers
 		{
 			close(action);
 
+			OnOpen(action);
+
 			if (overwrite)
 				stream = System.IO.File.Open(fileName, FileMode.CreateNew);
 			else if (append)
@@ -107,6 +98,8 @@ namespace PeachCore.Publishers
 
 		public override void close(Action action)
 		{
+			OnClose(action);
+
 			if (stream != null)
 			{
 				stream.Close();
@@ -117,6 +110,7 @@ namespace PeachCore.Publishers
 		public override Variant input(Action action)
 		{
 			// TODO: Improve speed for large reads
+			OnInput(action);
 
 			List<byte> listBuffer = new List<byte>();
 			byte [] buffer = new byte[1024];
@@ -140,6 +134,8 @@ namespace PeachCore.Publishers
 
 		public override Variant input(Action action, int size)
 		{
+			OnInput(action, size);
+
 			byte[] buffer = new byte[size];
 			int readBytes = stream.Read(buffer, 0, size);
 
@@ -153,6 +149,14 @@ namespace PeachCore.Publishers
 			}
 
 			return new Variant(buffer);
+		}
+
+		public override void output(Action action, Variant data)
+		{
+			OnOutput(action, data);
+
+			byte [] buff = data;
+			stream.Write(buff, 0, buff.Length);
 		}
 	}
 }

@@ -40,6 +40,8 @@ namespace PeachCore
 		public static bool supportCommandLine = false;
 		public static bool supportTopLevel = false;
 
+		public static Analyzer defaultParser = null;
+
 		/// <summary>
 		/// Replaces the parser for fuzzer definition.
 		/// </summary>

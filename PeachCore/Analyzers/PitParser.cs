@@ -44,6 +44,7 @@ namespace PeachCore.Analyzers
 		public static PitParser()
 		{
 			PitParser.supportParser = true;
+			Analyzer.defaultParser = new PitParser();
 		}
 
 		public override Dom asParser(Dictionary<string, string> args, string fileName)

@@ -37,8 +37,114 @@ namespace PeachCore
 	/// Watches the Peach Engine events.  This is how to 
 	/// add a UI or logging.
 	/// </summary>
-	public class Watcher
+	public abstract class Watcher
 	{
+		public Watcher()
+		{
+			Engine.RunStarting += new Engine.RunStartingEventHandler(Engine_RunStarting);
+			Engine.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
+			Engine.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
+			Engine.TestStarting += new Engine.TestStartingEventHandler(Engine_TestStarting);
+			Engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
+			Engine.TestError += new Engine.TestErrorEventHandler(Engine_TestError);
+			Engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
+			Engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
+			Engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
+			RunContext.Debug += new RunContext.DebugEventHandler(RunContext_Debug);
+			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
+			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
+			State.Starting += new StateStartingEventHandler(State_Starting);
+			State.Finished += new StateFinishedEventHandler(State_Finished);
+			State.ChangingState += new StateChangingStateEventHandler(State_ChangingState);
+			Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Action.Finished += new ActionFinishedEventHandler(Action_Finished);
+		}
+
+		virtual void Action_Finished(Action action)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Action_Starting(Action action)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void State_ChangingState(State state, State toState)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void State_Finished(State state)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void State_Starting(State state)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void StateModel_Finished(StateModel model)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void StateModel_Starting(StateModel model)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_Fault(Engine engine, Dom dom, uint currentIteration, object[] stateModelData, object[] faultData)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_IterationFinished(Engine engine, Dom dom, uint currentIteration)
+		{
+			
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_IterationStarting(Engine engine, Dom dom, uint currentIteration, uint totalIterations)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_TestError(Engine engine, Dom dom, string run)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_TestFinished(Engine engine, Dom dom, string run)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_TestStarting(Engine engine, Dom dom, string run)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_RunError(Engine engine, Dom dom, string run)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_RunFinished(Engine engine, Dom dom, string run)
+		{
+			throw new NotImplementedException();
+		}
+
+		virtual void Engine_RunStarting(Engine engine, Dom dom, string run)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
 

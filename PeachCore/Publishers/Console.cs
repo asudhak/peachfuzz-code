@@ -34,18 +34,22 @@ using System.Text;
 namespace PeachCore.Publishers
 {
 	[PublisherAttribute("Console")]
+	[NoParametersAttribute()]
 	public class Console : Publisher
 	{
 		public override void open(Action action)
 		{
+			OnOpen(action);
 		}
 
 		public override void close(Action action)
 		{
+			OnClose(action);
 		}
 
 		public override void output(Action action, Variant data)
 		{
+			OnOutput(action, data);
 			System.Console.Write((string)data);
 		}
 	}

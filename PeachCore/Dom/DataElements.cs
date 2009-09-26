@@ -530,8 +530,39 @@ namespace PeachCore
 		}
 	}
 
+	/// <summary>
+	/// DataModel is just a top level Block.
+	/// </summary>
 	public class DataModel : Block
 	{
+	}
+
+	/// <summary>
+	/// Choice allows the selection of a single
+	/// data element based on the current data set.
+	/// 
+	/// The other options in the choice are available
+	/// for mutation by the mutators.
+	/// </summary>
+	public class Choice : DataElementContainer
+	{
+	}
+
+	/// <summary>
+	/// Array of data elements.  Can be
+	/// zero or more elements.
+	/// </summary>
+	public class Array : DataElementContainer
+	{
+		public uint minOccurs = 1;
+		public uint maxOccurs = 1;
+
+		/// <summary>
+		/// Origional data element to use as 
+		/// template for other data elements in 
+		/// array.
+		/// </summary>
+		public DataElement origionalElemement = null;
 	}
 
 	/// <summary>
@@ -649,6 +680,14 @@ namespace PeachCore
 	{
 		protected uint _length;
 
+	}
+
+	public class Flags : DataElement
+	{
+	}
+
+	public class Flag : DataElement
+	{
 	}
 
 	/// <summary>
