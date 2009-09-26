@@ -37,8 +37,33 @@ namespace PeachCore.Dom
 	[AttributeUsage(AttributeTargets.Class)]
 	public class DataElementAttribute : Attribute
 	{
+		public string elementName;
+
 		public DataElementAttribute(string elementName)
 		{
+			this.elementName = elementName;
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Class)]
+	public class FixupAttribute : Attribute
+	{
+		public string elementName;
+
+		public FixupAttribute(string elementName)
+		{
+			this.elementName = elementName;
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Class)]
+	public class TransformerAttribute : Attribute
+	{
+		public string elementName;
+
+		public TransformerAttribute(string elementName)
+		{
+			this.elementName = elementName;
 		}
 	}
 

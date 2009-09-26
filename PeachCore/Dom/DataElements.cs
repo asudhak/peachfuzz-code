@@ -33,6 +33,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime;
+using System.Reflection;
 
 namespace PeachCore.Dom
 {
@@ -281,6 +282,27 @@ namespace PeachCore.Dom
 
 		#endregion
 
+		public static OrderedDictionary<string, Type> dataElements = new OrderedDictionary<string, Type>();
+		public static void loadDataElements(Assembly assembly)
+		{
+			foreach (Type type in assembly.GetTypes())
+			{
+				if (type.IsClass && !type.IsAbstract)
+				{
+					object [] attr = type.GetCustomAttributes(typeof(DataElementAttribute), false);
+					DataElementAttribute dea = attr[0] as DataElementAttribute;
+					if (!dataElements.ContainsKey(dea.elementName))
+					{
+						dataElements.Add(type);
+					}
+				}
+			}
+		}
+
+		public static DataElement()
+		{
+		}
+
 		/// <summary>
 		/// Call to invalidate current element and cause rebuilding
 		/// of data elements dependent on this element.
@@ -502,6 +524,9 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// Block element
 	/// </summary>
+	[DataElement("Block")]
+	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
+	//[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
 	public class Block : DataElementContainer
 	{
 		/// <summary>
@@ -544,6 +569,9 @@ namespace PeachCore.Dom
 	/// The other options in the choice are available
 	/// for mutation by the mutators.
 	/// </summary>
+	[DataElement("Choice")]
+	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
+	//[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
 	public class Choice : DataElementContainer
 	{
 	}
@@ -568,6 +596,11 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// A numerical data element.
 	/// </summary>
+	[DataElement("Number")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
+	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	public class Number : DataElement
 	{
 		protected int _size = 8;
@@ -636,6 +669,9 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// String data element
 	/// </summary>
+	[DataElement("String")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
 	public class String : DataElement
 	{
 		protected StringType _type = StringType.Ascii;
@@ -676,16 +712,26 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// Binary large object data element
 	/// </summary>
+	[DataElement("Blob")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
 	public class Blob : DataElement
 	{
 		protected uint _length;
 
 	}
 
+	[DataElement("Flags")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	[DataElementChildSupportedAttribute("Flag")]
+	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
 	public class Flags : DataElement
 	{
 	}
 
+	[DataElement("Flag")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
 	public class Flag : DataElement
 	{
 	}

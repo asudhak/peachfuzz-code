@@ -33,9 +33,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using PeachCore.Dom;
 
 namespace PeachCore.Analyzers
 {
+	public interface IPitParsable
+	{
+		/// <summary>
+		/// Ask object if it can parse XmlNode.
+		/// </summary>
+		/// <param name="node">node to check</param>
+		/// <param name="parent">parent of this object</param>
+		/// <returns>Returns true if class can parse xml node.</returns>
+		public static bool pit_canParse(XmlNode node, object parent);
+
+		/// <summary>
+		/// Called by PitParser analyzer to parse 
+		/// current XML Node.
+		/// </summary>
+		/// <param name="node"></param>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		public static object pit_handleNode(XmlNode node, object parent);
+	}
+
 	public class PitParser : Analyzer
 	{
 		static int ErrorsCount = 0;
