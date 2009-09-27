@@ -70,12 +70,13 @@
     <Compile Include="Publishers\Console.cs" />
     <Compile Include="Publishers\File.cs" />
     <Compile Include="Dom\StateModel.cs" />
+    <Compile Include="Transformer.cs" />
+    <Compile Include="Transformers\Gzip.cs" />
     <Compile Include="Watcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Agent\Monitors\" />
     <Folder Include="Mutators\" />
-    <Folder Include="Transformers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
