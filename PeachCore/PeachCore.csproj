@@ -58,6 +58,8 @@
     <Compile Include="Dom\Dom.cs" />
     <Compile Include="Dom\XmlElements.cs" />
     <Compile Include="Engine.cs" />
+    <Compile Include="Fixup.cs" />
+    <Compile Include="Fixups\Checksums.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
     <Compile Include="MutationStrategies\Random.cs" />
@@ -76,7 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Agent\Monitors\" />
-    <Folder Include="Fixups\" />
     <Folder Include="Mutators\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
