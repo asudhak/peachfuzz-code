@@ -40,9 +40,33 @@ namespace PeachCore.Fixups
 	{
 		public override Variant fixup(DataElement obj)
 		{
-			// Todo: Locate ref'd object
+			string objRef = args["ref"] as string;
+			DataElement from = obj.find(objRef);
+			Variant data = from.Value;
+
 			// Todo: Calc crc32
+
+			throw new NotImplementedException();
+		}
+	}
+
+	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
+	[ParameterAttribute("ref1", DataElement, "Reference to data element", true)]
+	[ParameterAttribute("ref2", DataElement, "Reference to data element", true)]
+	public class Crc32Fixup : Fixup
+	{
+		public override Variant fixup(DataElement obj)
+		{
+			string objRef1 = args["ref1"] as string;
+			string objRef2 = args["ref2"] as string;
+			Variant data1 = obj.find(objRef1).Value;
+			Variant data2 = obj.find(objRef2).Value;
+
+			// Todo: Calc crc32
+
 			throw new NotImplementedException();
 		}
 	}
 }
+
+// end
