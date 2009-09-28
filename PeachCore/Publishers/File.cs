@@ -36,9 +36,9 @@ using PeachCore.Dom;
 namespace PeachCore.Publishers
 {
 	[PublisherAttribute("FileStream")]
-	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing")]
-	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default false]")]
-	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]")]
+	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing", true)]
+	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default false]", false)]
+	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
 	public class File : Publisher
 	{
 		public string fileName;
@@ -51,7 +51,7 @@ namespace PeachCore.Publishers
 			if (!args.Contains("FileName"))
 				throw new PeachException("Error, File publisher missing parameter 'FileName' which is required.");
 
-			fileName = args["FileName"];
+			fileName = (string) args["FileName"];
 
 			if (args.Contains("Overwrite"))
 			{
@@ -130,7 +130,7 @@ namespace PeachCore.Publishers
 			}
 			while (readBytes > 0);
 
-			Variant ret = new Variant(listBuffer.ToArray());
+			return new Variant(listBuffer.ToArray());
 		}
 
 		public override Variant input(Action action, int size)
@@ -156,7 +156,7 @@ namespace PeachCore.Publishers
 		{
 			OnOutput(action, data);
 
-			byte [] buff = data;
+			byte [] buff = (byte[])data;
 			stream.Write(buff, 0, buff.Length);
 		}
 	}

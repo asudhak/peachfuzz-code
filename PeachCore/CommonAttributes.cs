@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PeachCore
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class ParameterAttribute : Attribute
 	{
 		public string name;
