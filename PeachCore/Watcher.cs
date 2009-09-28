@@ -100,48 +100,48 @@ namespace PeachCore
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_Fault(Engine engine, Dom.Dom dom, uint currentIteration, object[] stateModelData, object[] faultData)
+		protected virtual void Engine_Fault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_IterationFinished(Engine engine, Dom.Dom dom, uint currentIteration)
+		protected virtual void Engine_IterationFinished(RunContext context, uint currentIteration)
 		{
 			
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_IterationStarting(Engine engine, Dom.Dom dom, uint currentIteration, uint totalIterations)
+		protected virtual void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_TestError(Engine engine, Dom.Dom dom, string run)
+		protected virtual void Engine_TestError(RunContext context, Exception e)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_TestFinished(Engine engine, Dom.Dom dom, string run)
+		protected virtual void Engine_TestFinished(RunContext context)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_TestStarting(Engine engine, Dom.Dom dom, string run)
+		protected virtual void Engine_TestStarting(RunContext context)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_RunError(Engine engine, Dom.Dom dom, string run)
+		protected virtual void Engine_RunError(RunContext context, Exception e)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_RunFinished(Engine engine, Dom.Dom dom, string run)
+		protected virtual void Engine_RunFinished(RunContext context)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected virtual void Engine_RunStarting(Engine engine, Dom.Dom dom, string run)
+		protected virtual void Engine_RunStarting(RunContext context)
 		{
 			throw new NotImplementedException();
 		}

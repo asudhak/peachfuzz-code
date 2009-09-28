@@ -42,15 +42,15 @@ namespace PeachCore
 	{
 		#region Events
 
-		public delegate void RunStartingEventHandler(Engine engine, Dom.Dom dom, Run run);
-		public delegate void RunFinishedEventHandler(Engine engine, Dom.Dom dom, Run run);
-		public delegate void RunErrorEventHandler(Engine engine, Dom.Dom dom, Run run);
-		public delegate void TestStartingEventHandler(Engine engine, Dom.Dom dom, Test test);
-		public delegate void IterationStartingEventHandler(Engine engine, Dom.Dom dom, Test test, uint currentIteration, uint? totalIterations);
-		public delegate void IterationFinishedEventHandler(Engine engine, Dom.Dom dom, Test test, uint currentIteration);
-		public delegate void FaultEventHandler(Engine engine, Dom.Dom dom, Test test, uint currentIteration, object[] stateModelData, object[] faultData);
-		public delegate void TestFinishedEventHandler(Engine engine, Dom.Dom dom, Test test);
-		public delegate void TestErrorEventHandler(Engine engine, Dom.Dom dom, Test test);
+		public delegate void RunStartingEventHandler(RunContext context);
+		public delegate void RunFinishedEventHandler(RunContext context);
+		public delegate void RunErrorEventHandler(RunContext context, Exception e);
+		public delegate void TestStartingEventHandler(RunContext context);
+		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
+		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
+		public delegate void FaultEventHandler(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData);
+		public delegate void TestFinishedEventHandler(RunContext context);
+		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 
 		public static event RunStartingEventHandler RunStarting;
 		public static event RunFinishedEventHandler RunFinished;
@@ -62,50 +62,50 @@ namespace PeachCore
 		public static event TestFinishedEventHandler TestFinished;
 		public static event TestErrorEventHandler TestError;
 
-		public static void OnRunStarting(Engine engine, Dom.Dom dom, Run run)
+		public static void OnRunStarting(RunContext context)
 		{
 			if (RunStarting != null)
-				RunStarting(engine, dom, run);
+				RunStarting(context);
 		}
-		public static void OnRunFinished(Engine engine, Dom.Dom dom, Run run)
+		public static void OnRunFinished(RunContext context)
 		{
 			if (RunFinished != null)
-				RunFinished(engine, dom, run);
+				RunFinished(context);
 		}
-		public static void OnRunError(Engine engine, Dom.Dom dom, Run run)
+		public static void OnRunError(RunContext context, Exception e)
 		{
 			if (RunError != null)
-				RunError(engine, dom, run);
+				RunError(context, e);
 		}
-		public static void OnTestStarting(Engine engine, Dom.Dom dom, Test test)
+		public static void OnTestStarting(RunContext context)
 		{
 			if (TestStarting != null)
-				TestStarting(engine, dom, test);
+				TestStarting(context);
 		}
-		public static void OnIterationStarting(Engine engine, Dom.Dom dom, Test test, uint currentIteration, uint? totalIterations)
+		public static void OnIterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
 			if (IterationStarting != null)
-				IterationStarting(engine, dom, test, currentIteration, totalIterations);
+				IterationStarting(context, currentIteration, totalIterations);
 		}
-		public static void OnIterationFinished(Engine engine, Dom.Dom dom, Test test, uint currentIteration)
+		public static void OnIterationFinished(RunContext context, uint currentIteration)
 		{
 			if (IterationFinished != null)
-				IterationFinished(engine, dom, test, currentIteration);
+				IterationFinished(context, currentIteration);
 		}
-		public static void OnFault(Engine engine, Dom.Dom dom, Test test, uint currentIteration, object[] stateModelData, object[] faultData)
+		public static void OnFault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
 		{
 			if (Fault != null)
-				Fault(engine, dom, test, currentIteration, stateModelData, faultData);
+				Fault(context, currentIteration, stateModelData, faultData);
 		}
-		public static void OnTestFinished(Engine engine, Dom.Dom dom, Test test)
+		public static void OnTestFinished(RunContext context)
 		{
 			if (TestFinished != null)
-				TestFinished(engine, dom, test);
+				TestFinished(context);
 		}
-		public static void OnTestError(Engine engine, Dom.Dom dom, Test test)
+		public static void OnTestError(RunContext context, Exception e)
 		{
 			if (TestError != null)
-				TestError(engine, dom, test);
+				TestError(context, e);
 		}
 
 		#endregion
@@ -121,6 +121,7 @@ namespace PeachCore
 
 		public uint count(Dom.Dom dom, Run run)
 		{
+			return 0;
 		}
 
 		/// <summary>
@@ -142,9 +143,9 @@ namespace PeachCore
 				context.run = run;
 				context.test = null;
 
-				OnRunStarting(this, dom, run, context);
+				OnRunStarting(context);
 
-				foreach (Test test in dom.tests)
+				foreach (Test test in dom.tests.Values)
 				{
 					context.test = test;
 					runTest(dom, test, context);
@@ -152,11 +153,11 @@ namespace PeachCore
 			}
 			catch (Exception e)
 			{
-				OnRunError(this, dom, run, e);
+				OnRunError(context, e);
 			}
 			finally
 			{
-				OnRunFinished(this, dom, run);
+				OnRunFinished(context);
 
 				context.run = null;
 			}
@@ -167,7 +168,7 @@ namespace PeachCore
 			try
 			{
 				context.test = null;
-				OnTestStarting(this, dom, test);
+				OnTestStarting(context);
 
 				// TODO: Get state engine
 				// TODO: Start agents
@@ -175,10 +176,10 @@ namespace PeachCore
 				MutationStrategy mutationStrategy = null;
 
 				uint iterationCount = 0;
-				uint? totalIterationCount;
+				uint? totalIterationCount = null;
 
-				uint? iterationRangeStart;
-				uint? iterationRangeStop;
+				uint? iterationRangeStart = null;
+				uint? iterationRangeStop = null;
 
 				uint redoCount = 0;
 
@@ -290,16 +291,20 @@ namespace PeachCore
 			// TODO: Catch keyboard interrupt
 			catch (Exception e)
 			{
-				OnTestError(this, dom, test, e);
+				OnTestError(context, e);
 				throw e;
 			}
 			finally
 			{
-				OnTestFinished(this, dom, test);
+				OnTestFinished(context);
 
 				context.test = null;
 			}
 		}
+	}
+
+	public class RedoTestException : Exception
+	{
 	}
 
 	public enum DebugLevel

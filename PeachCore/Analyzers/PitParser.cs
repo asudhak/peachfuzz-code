@@ -240,7 +240,7 @@ namespace PeachCore.Analyzers
 			{
 				block.lengthType = getXmlAttribute(node, "lengthType");
 				block.lengthCalc = getXmlAttribute(node, "length");
-				block.length = -1;
+				block.length = null;
 
 				if (block.lengthType == null)
 					throw new PeachException("Error, Block attribute 'lengthType' has invalid value.");
@@ -250,7 +250,7 @@ namespace PeachCore.Analyzers
 			// length
 			else if (hasXmlAttribute(node, "length"))
 			{
-				block.length = Convert.ToUInt32(getXmlAttribute(node, "length"));
+				block.length = new Variant(Convert.ToInt32(getXmlAttribute(node, "length")));
 			}
 
 			// alignment

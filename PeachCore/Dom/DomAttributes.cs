@@ -80,7 +80,7 @@ namespace PeachCore.Dom
 		Hint
 	}
 
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class DataElementChildSupportedAttribute : Attribute
 	{
 		public DataElementChildSupportedAttribute(string elementName)

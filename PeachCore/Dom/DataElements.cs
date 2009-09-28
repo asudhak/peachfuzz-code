@@ -517,6 +517,10 @@ namespace PeachCore.Dom
 	//[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
 	public class Block : DataElementContainer
 	{
+		public string lengthType;
+		public string lengthCalc;
+		public Variant length;
+
 		/// <summary>
 		/// Get the internal value of this data element.
 		/// </summary>
