@@ -205,15 +205,15 @@ namespace PeachCore.Analyzers
 						break;
 
 					case "Relation":
-						dataModel.Add(handleRelation(child, node));
+						dataModel.relations.Add(handleRelation(child, node));
 						break;
 
 					case "Fixup":
-						dataModel.Add(handleFixup(child, node));
+						dataModel.fixup = handleFixup(child, node);
 						break;
 
 					case "Transformer":
-						dataModel.Add(handleTransformer(child, node));
+						dataModel.transformer = handleTransformer(child, node);
 						break;
 
 					default:
@@ -221,6 +221,8 @@ namespace PeachCore.Analyzers
 							"] has unknown child node [" + child.Name + "].");
 				}
 			}
+
+			return dataModel;
 		}
 
 		protected Block handleBlock(XmlNode node, XmlNode parent)
@@ -254,6 +256,8 @@ namespace PeachCore.Analyzers
 			// alignment
 			// common data element attributes
 			// data container children
+
+			return block;
 		}
 
 		protected Choice handleChoice(XmlNode node, XmlNode parent)

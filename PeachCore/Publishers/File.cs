@@ -46,7 +46,7 @@ namespace PeachCore.Publishers
 		public bool append = false;
 		protected FileStream stream = null;
 
-		public File(Dictionary<string, Variant> args)
+		public File(Dictionary<string, Variant> args) : base(args)
 		{
 			if (!args.Contains("FileName"))
 				throw new PeachException("Error, File publisher missing parameter 'FileName' which is required.");

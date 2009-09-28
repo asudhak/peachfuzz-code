@@ -42,15 +42,15 @@ namespace PeachCore
 	{
 		#region Events
 
-		public delegate void RunStartingEventHandler(Engine engine, Dom.Dom dom, string run);
-		public delegate void RunFinishedEventHandler(Engine engine, Dom.Dom dom, string run);
-		public delegate void RunErrorEventHandler(Engine engine, Dom.Dom dom, string run);
-		public delegate void TestStartingEventHandler(Engine engine, Dom.Dom dom, string run);
-		public delegate void IterationStartingEventHandler(Engine engine, Dom.Dom dom, uint currentIteration, uint totalIterations);
-		public delegate void IterationFinishedEventHandler(Engine engine, Dom.Dom dom, uint currentIteration);
-		public delegate void FaultEventHandler(Engine engine, Dom.Dom dom, uint currentIteration, object[] stateModelData, object[] faultData);
-		public delegate void TestFinishedEventHandler(Engine engine, Dom.Dom dom, string run);
-		public delegate void TestErrorEventHandler(Engine engine, Dom.Dom dom, string run);
+		public delegate void RunStartingEventHandler(Engine engine, Dom.Dom dom, Run run);
+		public delegate void RunFinishedEventHandler(Engine engine, Dom.Dom dom, Run run);
+		public delegate void RunErrorEventHandler(Engine engine, Dom.Dom dom, Run run);
+		public delegate void TestStartingEventHandler(Engine engine, Dom.Dom dom, Test test);
+		public delegate void IterationStartingEventHandler(Engine engine, Dom.Dom dom, Test test, uint currentIteration, uint? totalIterations);
+		public delegate void IterationFinishedEventHandler(Engine engine, Dom.Dom dom, Test test, uint currentIteration);
+		public delegate void FaultEventHandler(Engine engine, Dom.Dom dom, Test test, uint currentIteration, object[] stateModelData, object[] faultData);
+		public delegate void TestFinishedEventHandler(Engine engine, Dom.Dom dom, Test test);
+		public delegate void TestErrorEventHandler(Engine engine, Dom.Dom dom, Test test);
 
 		public static event RunStartingEventHandler RunStarting;
 		public static event RunFinishedEventHandler RunFinished;
@@ -77,35 +77,35 @@ namespace PeachCore
 			if (RunError != null)
 				RunError(engine, dom, run);
 		}
-		public static void OnTestStarting(Engine engine, Dom.Dom dom, Run run)
+		public static void OnTestStarting(Engine engine, Dom.Dom dom, Test test)
 		{
 			if (TestStarting != null)
-				TestStarting(engine, dom, run);
+				TestStarting(engine, dom, test);
 		}
-		public static void OnIterationStarting(Engine engine, Dom.Dom dom, Run run)
+		public static void OnIterationStarting(Engine engine, Dom.Dom dom, Test test, uint currentIteration, uint? totalIterations)
 		{
 			if (IterationStarting != null)
-				IterationStarting(engine, dom, run);
+				IterationStarting(engine, dom, test, currentIteration, totalIterations);
 		}
-		public static void OnIterationFinished(Engine engine, Dom.Dom dom, Run run)
+		public static void OnIterationFinished(Engine engine, Dom.Dom dom, Test test, uint currentIteration)
 		{
 			if (IterationFinished != null)
-				IterationFinished(engine, dom, run);
+				IterationFinished(engine, dom, test, currentIteration);
 		}
-		public static void OnFault(Engine engine, Dom.Dom dom, Run run)
+		public static void OnFault(Engine engine, Dom.Dom dom, Test test, uint currentIteration, object[] stateModelData, object[] faultData)
 		{
-			if (RunStarting != null)
-				RunStarting(engine, dom, run);
+			if (Fault != null)
+				Fault(engine, dom, test, currentIteration, stateModelData, faultData);
 		}
-		public static void OnTestFinished(Engine engine, Dom.Dom dom, Run run)
+		public static void OnTestFinished(Engine engine, Dom.Dom dom, Test test)
 		{
 			if (TestFinished != null)
-				TestFinished(engine, dom, run);
+				TestFinished(engine, dom, test);
 		}
-		public static void OnTestError(Engine engine, Dom.Dom dom, Run run)
+		public static void OnTestError(Engine engine, Dom.Dom dom, Test test)
 		{
 			if (TestError != null)
-				TestError(engine, dom, run);
+				TestError(engine, dom, test);
 		}
 
 		#endregion

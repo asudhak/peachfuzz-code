@@ -35,14 +35,19 @@ using PeachCore.Dom;
 namespace PeachCore.Fixups
 {
 	[FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
-	[ParameterAttribute("ref", DataElement, "Reference to data element", true)]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
 	public class Crc32Fixup : Fixup
 	{
+		public Crc32Fixup(Dictionary<string, object> args)
+			: base(args)
+		{
+		}
+
 		public override Variant fixup(DataElement obj)
 		{
 			string objRef = args["ref"] as string;
 			DataElement from = obj.find(objRef);
-			Variant data = from.Value;
+			byte[] data = from.Value;
 
 			// Todo: Calc crc32
 
@@ -51,16 +56,21 @@ namespace PeachCore.Fixups
 	}
 
 	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
-	[ParameterAttribute("ref1", DataElement, "Reference to data element", true)]
-	[ParameterAttribute("ref2", DataElement, "Reference to data element", true)]
+	[ParameterAttribute("ref1", typeof(DataElement), "Reference to data element", true)]
+	[ParameterAttribute("ref2", typeof(DataElement), "Reference to data element", true)]
 	public class Crc32DualFixup : Fixup
 	{
+		public Crc32DualFixup(Dictionary<string, object> args)
+			: base(args)
+		{
+		}
+
 		public override Variant fixup(DataElement obj)
 		{
 			string objRef1 = args["ref1"] as string;
 			string objRef2 = args["ref2"] as string;
-			Variant data1 = obj.find(objRef1).Value;
-			Variant data2 = obj.find(objRef2).Value;
+			byte[] data1 = obj.find(objRef1).Value;
+			byte[] data2 = obj.find(objRef2).Value;
 
 			// Todo: Calc crc32
 

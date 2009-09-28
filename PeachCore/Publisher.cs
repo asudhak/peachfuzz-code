@@ -201,7 +201,7 @@ namespace PeachCore
 
 		public virtual Variant call(Action action, string method, Dictionary<string, Variant> args )
 		{
-			OnOutput(action, method, args);
+			OnCall(action, method, args);
 			throw new PeachException("Error, action 'call' not supported by publisher");
 		}
 		public virtual void setProperty(Action action, string property, Variant value)
