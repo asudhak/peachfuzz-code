@@ -53,7 +53,7 @@ namespace PeachCore.Fixups
 	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref1", DataElement, "Reference to data element", true)]
 	[ParameterAttribute("ref2", DataElement, "Reference to data element", true)]
-	public class Crc32Fixup : Fixup
+	public class Crc32DualFixup : Fixup
 	{
 		public override Variant fixup(DataElement obj)
 		{

@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PeachCore.Dom;
 
 namespace PeachCore
 {
@@ -54,32 +55,38 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="obj">DataElement to check</param>
 		/// <returns>True if object is supported, else False</returns>
-		public static bool supportedDataElement(DataElement obj);
+		public static bool supportedDataElement(DataElement obj)
+		{
+			return false;
+		}
 
 		/// <summary>
 		/// Move to next mutation.  Throws MutatorCompleted
 		/// when no more mutations are available.
 		/// </summary>
-		public void next();
+		public abstract void next();
 
 		/// <summary>
 		/// Returns the total number of mutations this
 		/// mutator is able to perform.
 		/// </summary>
 		/// <returns>Returns number of mutations mutater can generate.</returns>
-		public int getCount();
+		public abstract int count
+		{
+			get;
+		}
 
 		/// <summary>
 		/// Perform a sequencial mutation.
 		/// </summary>
 		/// <param name="obj"></param>
-		public void sequencialMutation(DataElement obj);
+		public abstract void sequencialMutation(DataElement obj);
 
 		/// <summary>
 		/// Perform a random mutation.
 		/// </summary>
 		/// <param name="obj"></param>
-		public void randomMutation(DataElement obj);
+		public abstract void randomMutation(DataElement obj);
 	}
 
 	public class MutatorCompleted : Exception

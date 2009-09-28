@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using PeachCore.Agent;
+using PeachCore.Dom;
 
 namespace PeachCore
 {
@@ -41,15 +42,15 @@ namespace PeachCore
 	{
 		#region Events
 
-		public static delegate void RunStartingEventHandler(Engine engine, Dom dom, string run);
-		public static delegate void RunFinishedEventHandler(Engine engine, Dom dom, string run);
-		public static delegate void RunErrorEventHandler(Engine engine, Dom dom, string run);
-		public static delegate void TestStartingEventHandler(Engine engine, Dom dom, string run);
-		public static delegate void IterationStartingEventHandler(Engine engine, Dom dom, uint currentIteration, uint totalIterations);
-		public static delegate void IterationFinishedEventHandler(Engine engine, Dom dom, uint currentIteration);
-		public static delegate void FaultEventHandler(Engine engine, Dom dom, uint currentIteration, object[] stateModelData, object[] faultData);
-		public static delegate void TestFinishedEventHandler(Engine engine, Dom dom, string run);
-		public static delegate void TestErrorEventHandler(Engine engine, Dom dom, string run);
+		public delegate void RunStartingEventHandler(Engine engine, Dom.Dom dom, string run);
+		public delegate void RunFinishedEventHandler(Engine engine, Dom.Dom dom, string run);
+		public delegate void RunErrorEventHandler(Engine engine, Dom.Dom dom, string run);
+		public delegate void TestStartingEventHandler(Engine engine, Dom.Dom dom, string run);
+		public delegate void IterationStartingEventHandler(Engine engine, Dom.Dom dom, uint currentIteration, uint totalIterations);
+		public delegate void IterationFinishedEventHandler(Engine engine, Dom.Dom dom, uint currentIteration);
+		public delegate void FaultEventHandler(Engine engine, Dom.Dom dom, uint currentIteration, object[] stateModelData, object[] faultData);
+		public delegate void TestFinishedEventHandler(Engine engine, Dom.Dom dom, string run);
+		public delegate void TestErrorEventHandler(Engine engine, Dom.Dom dom, string run);
 
 		public static event RunStartingEventHandler RunStarting;
 		public static event RunFinishedEventHandler RunFinished;
@@ -61,52 +62,47 @@ namespace PeachCore
 		public static event TestFinishedEventHandler TestFinished;
 		public static event TestErrorEventHandler TestError;
 
-		public static void OnRunStarting(Engine engine, Dom dom, Run run)
+		public static void OnRunStarting(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (RunStarting != null)
 				RunStarting(engine, dom, run);
 		}
-		public static void OnRunFinished(Engine engine, Dom dom, Run run)
+		public static void OnRunFinished(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (RunFinished != null)
 				RunFinished(engine, dom, run);
 		}
-		public static void OnRunError(Engine engine, Dom dom, Run run)
+		public static void OnRunError(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (RunError != null)
 				RunError(engine, dom, run);
 		}
-		public static void OnTestStarting(Engine engine, Dom dom, Run run)
+		public static void OnTestStarting(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (TestStarting != null)
 				TestStarting(engine, dom, run);
 		}
-		public static void OnIterationStarting(Engine engine, Dom dom, Run run)
+		public static void OnIterationStarting(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (IterationStarting != null)
 				IterationStarting(engine, dom, run);
 		}
-		public static void OnIterationFinished(Engine engine, Dom dom, Run run)
+		public static void OnIterationFinished(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (IterationFinished != null)
 				IterationFinished(engine, dom, run);
 		}
-		public static void OnRunStarting(Engine engine, Dom dom, Run run)
-		{
-			if (Fault != null)
-				Fault(engine, dom, run);
-		}
-		public static void OnFault(Engine engine, Dom dom, Run run)
+		public static void OnFault(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (RunStarting != null)
 				RunStarting(engine, dom, run);
 		}
-		public static void OnTestFinished(Engine engine, Dom dom, Run run)
+		public static void OnTestFinished(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (TestFinished != null)
 				TestFinished(engine, dom, run);
 		}
-		public static void OnTestError(Engine engine, Dom dom, Run run)
+		public static void OnTestError(Engine engine, Dom.Dom dom, Run run)
 		{
 			if (TestError != null)
 				TestError(engine, dom, run);
@@ -118,12 +114,12 @@ namespace PeachCore
 		{
 		}
 
-		public Dom parseXml(string fileName)
+		public Dom.Dom parseXml(string fileName)
 		{
 			return Analyzer.defaultParser.asParser(null, fileName);
 		}
 
-		public uint count(Dom dom, Run run)
+		public uint count(Dom.Dom dom, Run run)
 		{
 		}
 
@@ -131,15 +127,15 @@ namespace PeachCore
 		/// Run the default fuzzing run in the specified dom.
 		/// </summary>
 		/// <param name="dom"></param>
-		public void run(Dom dom, RunConfiguration config)
+		public void run(Dom.Dom dom, RunConfiguration config)
 		{
 		}
 
-		public void run(Dom dom, Run run, RunConfiguration config)
+		public void run(Dom.Dom dom, Run run, RunConfiguration config)
 		{
 		}
 
-		protected void runRun(Dom dom, Run run, RunContext context)
+		protected void runRun(Dom.Dom dom, Run run, RunContext context)
 		{
 			try
 			{
@@ -166,7 +162,7 @@ namespace PeachCore
 			}
 		}
 
-		protected void runTest(Dom dom, Test test, RunContext context)
+		protected void runTest(Dom.Dom dom, Test test, RunContext context)
 		{
 			try
 			{
@@ -317,7 +313,7 @@ namespace PeachCore
 
 	public class RunContext
 	{
-		public static delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
+		public delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
 		public static event DebugEventHandler Debug;
 
 		public void CriticalMessage(string from, string msg)
@@ -339,11 +335,11 @@ namespace PeachCore
 		}
 
 		public RunConfiguration config = null;
-		public Dom dom = null;
+		public Dom.Dom dom = null;
 		public Run run = null;
 		public Test test = null;
 
-		public List<Agent> agents = new List<Agent>();
+		public List<Agent.Agent> agents = new List<Agent>();
 
 		/// <summary>
 		/// Controls if we continue fuzzing or exit

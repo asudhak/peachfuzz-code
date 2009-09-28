@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PeachCore.Dom;
 
 namespace PeachCore
 {
@@ -127,16 +128,6 @@ namespace PeachCore
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Static method that provides expected and optional
-		/// arguments, along with a description.
-		/// </summary>
-		/// <returns></returns>
-		public virtual static Dictionary<string,Type> getArguments()
-		{
-			return new Dictionary<string, Type>();
-		}
 
 		public Publisher(Dictionary<string, Variant> args)
 		{

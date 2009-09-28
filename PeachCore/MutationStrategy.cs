@@ -26,20 +26,14 @@ namespace PeachCore
 			get { return false; }
 		}
 
-		public uint count
+		public abstract uint count
 		{
 			get;
 		}
 
-		public virtual Mutator currentMutator()
-		{
-			return null;
-		}
+		public abstract Mutator currentMutator();
 
-		public virtual void next()
-		{
-			throw new MutatorCompleted();
-		}
+		public abstract void next();
 	}
 }
 

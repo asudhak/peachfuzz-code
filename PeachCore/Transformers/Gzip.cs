@@ -80,7 +80,7 @@ namespace PeachCore.Transformers
 	}
 
 	[TransformerAttribute("GzipDecompress", "Decompress on output using gzip.")]
-	public class GzipCompress : Transformer
+	public class GzipDecompress : Transformer
 	{
 		protected override PeachCore.Dom.Variant internalEncode(PeachCore.Dom.Variant data)
 		{

@@ -60,88 +60,88 @@ namespace PeachCore
 			Action.Finished += new ActionFinishedEventHandler(Action_Finished);
 		}
 
-		virtual void Action_Finished(Action action)
+		protected virtual void Action_Finished(Action action)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Action_Starting(Action action)
+		protected virtual void Action_Starting(Action action)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void State_ChangingState(State state, State toState)
+		protected virtual void State_ChangingState(State state, State toState)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void State_Finished(State state)
+		protected virtual void State_Finished(State state)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void State_Starting(State state)
+		protected virtual void State_Starting(State state)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void StateModel_Finished(StateModel model)
+		protected virtual void StateModel_Finished(StateModel model)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void StateModel_Starting(StateModel model)
+		protected virtual void StateModel_Starting(StateModel model)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
+		protected virtual void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_Fault(Engine engine, Dom dom, uint currentIteration, object[] stateModelData, object[] faultData)
+		protected virtual void Engine_Fault(Engine engine, Dom.Dom dom, uint currentIteration, object[] stateModelData, object[] faultData)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_IterationFinished(Engine engine, Dom dom, uint currentIteration)
+		protected virtual void Engine_IterationFinished(Engine engine, Dom.Dom dom, uint currentIteration)
 		{
 			
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_IterationStarting(Engine engine, Dom dom, uint currentIteration, uint totalIterations)
+		protected virtual void Engine_IterationStarting(Engine engine, Dom.Dom dom, uint currentIteration, uint totalIterations)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_TestError(Engine engine, Dom dom, string run)
+		protected virtual void Engine_TestError(Engine engine, Dom.Dom dom, string run)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_TestFinished(Engine engine, Dom dom, string run)
+		protected virtual void Engine_TestFinished(Engine engine, Dom.Dom dom, string run)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_TestStarting(Engine engine, Dom dom, string run)
+		protected virtual void Engine_TestStarting(Engine engine, Dom.Dom dom, string run)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_RunError(Engine engine, Dom dom, string run)
+		protected virtual void Engine_RunError(Engine engine, Dom.Dom dom, string run)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_RunFinished(Engine engine, Dom dom, string run)
+		protected virtual void Engine_RunFinished(Engine engine, Dom.Dom dom, string run)
 		{
 			throw new NotImplementedException();
 		}
 
-		virtual void Engine_RunStarting(Engine engine, Dom dom, string run)
+		protected virtual void Engine_RunStarting(Engine engine, Dom.Dom dom, string run)
 		{
 			throw new NotImplementedException();
 		}

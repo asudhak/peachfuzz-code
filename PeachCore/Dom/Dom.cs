@@ -120,7 +120,7 @@ namespace PeachCore.Dom
 		public StateModel stateModel = null;
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
-		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
+		public OrderedDictionary<string, Agent.Agent> agents = new OrderedDictionary<string, Agent.Agent>();
 
 		public Test()
 		{
@@ -131,7 +131,7 @@ namespace PeachCore.Dom
 
 		#region OrderedDictionary AddEvent Handlers
 
-		void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
+		void agents_AddEvent(OrderedDictionary<string, Agent.Agent> sender, string key, Agent.Agent value)
 		{
 			value.parent = this;
 		}

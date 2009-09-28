@@ -556,17 +556,6 @@ namespace PeachCore.Dom
 		}
 
 		/// <summary>
-		/// Copies the elements of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> elements to a one-dimensional Array object at the specified index.
-		/// </summary>
-		/// <param name="array">The one-dimensional <see cref="Array"/> object that is the destination of the <see cref="T:KeyValuePair`2>"/> objects copied from the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>. The <see cref="Array"/> must have zero-based indexing.</param>
-		/// <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
-		/// <remarks>The <see cref="M:CopyTo"/> method preserves the order of the elements in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see></remarks>
-		void ICollection.CopyTo(Array array, int index)
-		{
-			((ICollection)List).CopyTo(array, index);
-		}
-
-		/// <summary>
 		/// Gets the number of key/values pairs contained in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
 		/// </summary>
 		/// <value>The number of key/value pairs contained in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</value>
@@ -681,6 +670,22 @@ namespace PeachCore.Dom
 		{
 			return Remove(item.Key);
 		}
+
+
+		#region ICollection Members
+
+		/// <summary>
+		/// Copies the elements of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> elements to a one-dimensional Array object at the specified index.
+		/// </summary>
+		/// <param name="array">The one-dimensional <see cref="Array"/> object that is the destination of the <see cref="T:KeyValuePair`2>"/> objects copied from the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>. The <see cref="Array"/> must have zero-based indexing.</param>
+		/// <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
+		/// <remarks>The <see cref="M:CopyTo"/> method preserves the order of the elements in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see></remarks>
+		public void CopyTo(System.Array array, int index)
+		{
+			((ICollection)List).CopyTo(array, index);
+		}
+
+		#endregion
 	}
 
 	/// <summary>

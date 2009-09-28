@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PeachCore.Dom;
 
 namespace PeachCore
 {
@@ -64,29 +65,29 @@ namespace PeachCore
 		/// </summary>
 		public static event StateModelFinishedEventHandler Finished;
 
-		protected static virtual void OnStarting(StateModel obj)
+		protected virtual void OnStarting()
 		{
 			if (Starting != null)
-				Starting(obj);
+				Starting(this);
 		}
 
-		protected static virtual void OnFinished(StateModel obj)
+		protected virtual void OnFinished()
 		{
 			if (Finished != null)
-				Finished(obj);
+				Finished(this);
 		}
 
 		public void Run()
 		{
 			try
 			{
-				OnStarting(this);
+				OnStarting();
 
 				_initialState.Run();
 			}
 			finally
 			{
-				OnFinished(this);
+				OnFinished();
 			}
 		}
 	}
@@ -115,29 +116,29 @@ namespace PeachCore
 		/// </summary>
 		public static event StateChangingStateEventHandler ChangingState;
 
-		protected static virtual void OnStarting(State obj)
+		protected virtual void OnStarting()
 		{
 			if (Starting != null)
-				Starting(obj);
+				Starting(this);
 		}
 
-		protected static virtual void OnFinished(State obj)
+		protected virtual void OnFinished()
 		{
 			if (Finished != null)
-				Finished(obj);
+				Finished(this);
 		}
 
-		protected static virtual void OnChanging(State obj, State toState)
+		protected virtual void OnChanging(State toState)
 		{
 			if (Changing != null)
-				Changing(obj, toState);
+				Changing(toState);
 		}
 
 		public void Run()
 		{
 			try
 			{
-				OnStarting(this);
+				OnStarting();
 				foreach (Action action in actions)
 				{
 					action.Run();
@@ -145,11 +146,11 @@ namespace PeachCore
 			}
 			catch(ActionChangeStateException e)
 			{
-				OnChanging(this, e.changeToState);
+				OnChanging(e.changeToState);
 			}
 			finally
 			{
-				OnFinished(this);
+				OnFinished();
 			}
 		}
 	}
@@ -210,86 +211,86 @@ namespace PeachCore
 		/// </summary>
 		public static event ActionFinishedEventHandler Finished;
 
-		protected static virtual void OnStarting(Action obj)
+		protected virtual void OnStarting()
 		{
 			if (Starting != null)
-				Starting(obj);
+				Starting(this);
 		}
 
-		protected static virtual void OnFinished(Action obj)
+		protected virtual void OnFinished()
 		{
 			if (Finished != null)
-				Finished(obj);
+				Finished(this);
 		}
 
 		public void Run()
 		{
 			try
 			{
-				OnStarting(this);
+				OnStarting();
 
 				switch (type)
 				{
 					case ActionType.Start:
 						_publisherStarted = true;
-						_publisher.start();
+						_publisher.start(this);
 						break;
 					case ActionType.Stop:
 						_publisherStarted = false;
-						_publisher.stop();
+						_publisher.stop(this);
 						break;
 					case ActionType.Open:
 					case ActionType.Connect:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 
-						_publisher.open();
+						_publisher.open(this);
 						break;
 					case ActionType.Close:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 
-						_publisher.close();
+						_publisher.close(this);
 						break;
 
 					case ActionType.Input:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 						if (!_publisherOpen)
-							_publisher.open();
+							_publisher.open(this);
 
 						handleInput();
 						break;
 					case ActionType.Output:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 						if (!_publisherOpen)
-							_publisher.open();
+							_publisher.open(this);
 
 						handleOutput();
 						break;
 
 					case ActionType.Call:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 						if (!_publisherOpen)
-							_publisher.open();
+							_publisher.open(this);
 
 						handleCall();
 						break;
 					case ActionType.GetProperty:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 						if (!_publisherOpen)
-							_publisher.open();
+							_publisher.open(this);
 
 						handleGetProperty();
 						break;
 					case ActionType.SetProperty:
 						if (!_publisherStarted)
-							_publisher.start();
+							_publisher.start(this);
 						if (!_publisherOpen)
-							_publisher.open();
+							_publisher.open(this);
 
 						handleSetProperty();
 						break;
@@ -302,12 +303,12 @@ namespace PeachCore
 						break;
 
 					default:
-						throw ApplicationException("Error, Action.Run fell into unknown Action type handler!");
+						throw new ApplicationException("Error, Action.Run fell into unknown Action type handler!");
 				}
 			}
 			finally
 			{
-				OnFinished(this);
+				OnFinished();
 			}
 		}
 

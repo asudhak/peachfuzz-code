@@ -294,7 +294,7 @@ namespace PeachCore.Dom
 			}
 		}
 
-		public static DataElement()
+		static DataElement()
 		{
 		}
 
@@ -409,6 +409,16 @@ namespace PeachCore.Dom
 				return _transformer.encode(value);
 
 			return value;
+		}
+
+		/// <summary>
+		/// Find data element with specific name.
+		/// </summary>
+		/// <param name="name">Name to search for</param>
+		/// <returns>Returns found data element or null.</returns>
+		public DataElement find(string name)
+		{
+			throw new ApplicationException("TODO");
 		}
 	}
 
@@ -528,25 +538,28 @@ namespace PeachCore.Dom
 		/// Get the internal value of this data element.
 		/// </summary>
 		/// <returns>Internal value in .NET form</returns>
-		public override Variant GetInternalValue()
+		public override Variant InternalValue
 		{
-			List<byte> value = new List<byte>();
-
-			// 1. Mutated value if any
-
-			if (_mutatedValue != null
-				&& ((mutationFlags & MUTATE_OVERRIDE_FIXUP) == 0
-				|| (mutationFlags & MUTATE_OVERRIDE_RELATIONS) == 0))
+			get
 			{
-				return _mutatedValue;
+				List<byte> value = new List<byte>();
+
+				// 1. Mutated value if any
+
+				if (_mutatedValue != null
+					&& ((mutationFlags & MUTATE_OVERRIDE_FIXUP) == 0
+					|| (mutationFlags & MUTATE_OVERRIDE_RELATIONS) == 0))
+				{
+					return _mutatedValue;
+				}
+
+				// 2. Default value
+
+				foreach (DataElement child in this)
+					value.AddRange(child.GetValue());
+
+				return new Variant(value.ToArray());
 			}
-
-			// 2. Default value
-
-			foreach (DataElement child in this)
-				value.AddRange(child.GetValue());
-
-			return new Variant(value.ToArray());
 		}
 	}
 

@@ -39,13 +39,15 @@ namespace PeachCore.Analyzers
 {
 	public interface IPitParsable
 	{
+		// TODO: These should be static?  Need to look into it.
+
 		/// <summary>
 		/// Ask object if it can parse XmlNode.
 		/// </summary>
 		/// <param name="node">node to check</param>
 		/// <param name="parent">parent of this object</param>
 		/// <returns>Returns true if class can parse xml node.</returns>
-		public static bool pit_canParse(XmlNode node, object parent);
+		bool pit_canParse(XmlNode node, object parent);
 
 		/// <summary>
 		/// Called by PitParser analyzer to parse 
@@ -54,7 +56,7 @@ namespace PeachCore.Analyzers
 		/// <param name="node"></param>
 		/// <param name="parent"></param>
 		/// <returns></returns>
-		public static object pit_handleNode(XmlNode node, object parent);
+		object pit_handleNode(XmlNode node, object parent);
 	}
 
 	public class PitParser : Analyzer
@@ -62,18 +64,18 @@ namespace PeachCore.Analyzers
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";
 
-		public static PitParser()
+		static PitParser()
 		{
 			PitParser.supportParser = true;
 			Analyzer.defaultParser = new PitParser();
 		}
 
-		public override Dom asParser(Dictionary<string, string> args, string fileName)
+		public override Dom.Dom asParser(Dictionary<string, string> args, string fileName)
 		{
-			Dom dom = null;
+			Dom.Dom dom = null;
 
 			if (!File.Exists(fileName))
-				throw PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
+				throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
 
 			validatePit(fileName, @"c:\peach\peach.xsd");
 
@@ -100,7 +102,7 @@ namespace PeachCore.Analyzers
 			xsc.Add(null, tr);
 
 			XmlTextReader xmlFile = new XmlTextReader(fileName);
-			vr = new XmlValidatingReader(xmlFile, XmlNodeType.Document, null);
+			vr = new XmlValidatingReader(xmlFile);
 			vr.Schemas.Add(xsc);
 			vr.ValidationType = ValidationType.Schema;
 			vr.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
@@ -125,22 +127,27 @@ namespace PeachCore.Analyzers
 			ErrorsCount++;
 		}
 
-		protected void handlePeach(XmlNode node)
+		protected Dom.Dom handlePeach(XmlNode node)
 		{
-			Dom dom = new Dom();
+			Dom.Dom dom = new Dom.Dom();
 
 			foreach (XmlNode child in node)
 			{
 				if (child.Name == "DataModel")
-					dom.dataModels.Add(handleDataModel(child, node));
+				{
+					DataModel dm = handleDataModel(child, node);
+					dom.dataModels.Add(dm.name, dm);
+				}
 			}
+
+			return dom;
 		}
 
 		protected string getXmlAttribute(XmlNode node, string name)
 		{
 			try
 			{
-				return node.Attributes[name];
+				return node.Attributes[name].InnerText;
 			}
 			catch
 			{
@@ -152,7 +159,7 @@ namespace PeachCore.Analyzers
 		{
 			try
 			{
-				node.Attributes[name];
+				object o = node.Attributes[name];
 				return false;
 			}
 			catch
@@ -254,7 +261,7 @@ namespace PeachCore.Analyzers
 			return null;
 		}
 
-		protected String handleString(XmlNode node, XmlNode parent)
+		protected Dom.String handleString(XmlNode node, XmlNode parent)
 		{
 			return null;
 		}

@@ -38,9 +38,9 @@ namespace PeachCore.Agent
 	/// able to report detected faults and gather information
 	/// that is usefull when a fualt is detected.
 	/// </summary>
-	internal class Monitor
+	public abstract class Monitor
 	{
-		internal Monitor(Dictionary<string, string> args)
+		public Monitor(Dictionary<string, string> args)
 		{
 		}
 
