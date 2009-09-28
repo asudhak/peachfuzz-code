@@ -40,7 +40,7 @@ namespace PeachCore.Dom
 	/// </summary>
 	/// <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
 	/// <typeparam name="TValue">The type of the values in the dictionary</typeparam>
-	public class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
+	public class OrderedDictionary<TKey, TValue> : IOrderedDictionary2<TKey, TValue>
 	{
 		private const int DefaultInitialCapacity = 0;
 
@@ -686,6 +686,22 @@ namespace PeachCore.Dom
 		}
 
 		#endregion
+
+		#region IOrderedDictionary2<TKey,TValue> Members
+
+		TValue IOrderedDictionary2<TKey, TValue>.this[int index]
+		{
+			get
+			{
+				return this[index];
+			}
+			set
+			{
+				this[index] = value;
+			}
+		}
+
+		#endregion
 	}
 
 	/// <summary>
@@ -693,7 +709,7 @@ namespace PeachCore.Dom
 	/// </summary>
 	/// <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
 	/// <typeparam name="TValue">The type of the values in the dictionary</typeparam>
-	public interface IOrderedDictionary<TKey, TValue> : IOrderedDictionary, IDictionary<TKey, TValue>
+	public interface IOrderedDictionary2<TKey, TValue> : IOrderedDictionary, IDictionary<TKey, TValue>
 	{
 		/// <summary>
 		/// Adds an entry with the specified key and value into the <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.

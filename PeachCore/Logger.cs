@@ -38,5 +38,6 @@ namespace PeachCore
 	/// </summary>
 	public abstract class Logger : Watcher
 	{
+		public object parent;
 	}
 }

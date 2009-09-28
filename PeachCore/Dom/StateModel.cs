@@ -39,6 +39,7 @@ namespace PeachCore
 
 	public class StateModel
 	{
+		public object parent;
 		protected State _initialState = null;
 
 		public List<State> states = new List<State>();

@@ -35,6 +35,6 @@ namespace PeachCore.Agent
 {
 	public class Agent
 	{
-		public Dom.Dom parent;
+		public object parent;
 	}
 }

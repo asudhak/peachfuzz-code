@@ -67,11 +67,11 @@ namespace Peach
 					{ "d|debug", v => debug = true },
 					{ "1", v => justOne = true},
 					{ "range=", v => range = v},
-					{ "t|test", v => test = v},
+					{ "t|test", v => test = true},
 					{ "c|count", v => count = true},
 					{ "skipto=", v => skipTo = Convert.ToUInt32(v)},
 					{ "p|parallel=", v => parallel = v},
-					{ "a|agent", v = agent = true},
+					{ "a|agent", v => agent = true},
 				};
 				List<string> extra = p.Parse(args);
 			}

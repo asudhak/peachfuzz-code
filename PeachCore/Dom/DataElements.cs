@@ -106,7 +106,7 @@ namespace PeachCore.Dom
 	{
 		public override Variant GetValue()
 		{
-			int size = _of.GetValue().Length;
+			int size = _of.Value.Length;
 
 			// TODO: Call expressionGet
 
@@ -245,7 +245,7 @@ namespace PeachCore.Dom
 					DataElementAttribute dea = attr[0] as DataElementAttribute;
 					if (!dataElements.ContainsKey(dea.elementName))
 					{
-						dataElements.Add(type);
+						dataElements.Add(dea.elementName, type);
 					}
 				}
 			}
@@ -483,7 +483,7 @@ namespace PeachCore.Dom
 
 		public bool Contains(DataElement item)
 		{
-			_childrenList.Contains(item);
+			return _childrenList.Contains(item);
 		}
 
 		public void CopyTo(DataElement[] array, int arrayIndex)
@@ -498,7 +498,7 @@ namespace PeachCore.Dom
 
 		public bool IsReadOnly
 		{
-			get { return _childrenList.IsReadOnly; }
+			get { return false; }
 		}
 
 		public bool Remove(DataElement item)
@@ -543,7 +543,7 @@ namespace PeachCore.Dom
 				// 2. Default value
 
 				foreach (DataElement child in this)
-					value.AddRange(child.GetValue());
+					value.AddRange(child.Value);
 
 				return new Variant(value.ToArray());
 			}
@@ -555,6 +555,7 @@ namespace PeachCore.Dom
 	/// </summary>
 	public class DataModel : Block
 	{
+		public object parent;
 	}
 
 	/// <summary>
@@ -645,7 +646,7 @@ namespace PeachCore.Dom
 
 			// Handle endian in ghetto manner
 			if (BitConverter.IsLittleEndian != _isLittleEndian)
-				Array.Reverse(value);
+				System.Array.Reverse(value);
 
 			return value;
 		}

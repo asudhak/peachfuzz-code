@@ -58,6 +58,8 @@ namespace PeachCore
 	/// </summary>
 	public abstract class Publisher
 	{
+		public object parent;
+
 		#region Events
 
 		public static event StartEventHandler Start;

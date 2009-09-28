@@ -98,7 +98,7 @@ namespace PeachCore.Dom
 	public class Run
 	{
 		public string name = null;
-		public Dom parent = null;
+		public object parent = null;
 		public Logger logger = null;
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
 
@@ -116,7 +116,8 @@ namespace PeachCore.Dom
 	public class Test
 	{
 		public string name = null;
-		public Run parent = null;
+		public object parent = null;
+		public Run run = null;
 		public StateModel stateModel = null;
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
