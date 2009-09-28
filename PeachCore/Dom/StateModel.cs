@@ -130,8 +130,8 @@ namespace PeachCore
 
 		protected virtual void OnChanging(State toState)
 		{
-			if (Changing != null)
-				Changing(toState);
+			if (ChangingState != null)
+				ChangingState(this, toState);
 		}
 
 		public void Run()

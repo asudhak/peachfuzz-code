@@ -339,7 +339,7 @@ namespace PeachCore
 		public Run run = null;
 		public Test test = null;
 
-		public List<Agent.Agent> agents = new List<Agent>();
+		public List<Agent.Agent> agents = new List<Agent.Agent>();
 
 		/// <summary>
 		/// Controls if we continue fuzzing or exit

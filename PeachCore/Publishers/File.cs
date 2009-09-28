@@ -48,12 +48,12 @@ namespace PeachCore.Publishers
 
 		public File(Dictionary<string, Variant> args) : base(args)
 		{
-			if (!args.Contains("FileName"))
+			if (!args.ContainsKey("FileName"))
 				throw new PeachException("Error, File publisher missing parameter 'FileName' which is required.");
 
 			fileName = (string) args["FileName"];
 
-			if (args.Contains("Overwrite"))
+			if (args.ContainsKey("Overwrite"))
 			{
 				string value = ((string)args["Overwrite"]).ToLower();
 
@@ -65,7 +65,7 @@ namespace PeachCore.Publishers
 					throw new PeachException("Error, Unexpected value for parameter 'Overwrite' to File publisher.  Expected 'True' or 'False'.");
 			}
 
-			if (args.Contains("Append"))
+			if (args.ContainsKey("Append"))
 			{
 				string value = ((string)args["Append"]).ToLower();
 

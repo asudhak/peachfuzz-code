@@ -32,6 +32,7 @@ using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
+using PeachCore.Dom;
 
 namespace PeachCore.Transformers
 {
@@ -41,12 +42,12 @@ namespace PeachCore.Transformers
 		protected override PeachCore.Dom.Variant internalEncode(PeachCore.Dom.Variant data)
 		{
 			byte[] buff = new byte[1024];
-			uint ret;
+			int ret;
 
 			MemoryStream sin = new MemoryStream((byte[])data);
 			MemoryStream sout = new MemoryStream();
 
-			GZipStream gzip = new GZipStream(data, CompressionMode.Compress);
+			GZipStream gzip = new GZipStream(sin, CompressionMode.Compress);
 
 			do
 			{
@@ -55,18 +56,18 @@ namespace PeachCore.Transformers
 			}
 			while (ret != 0);
 
-			return sout.ToArray();
+			return new Variant(sout.ToArray());
 		}
 
 		protected override PeachCore.Dom.Variant internalDecode(PeachCore.Dom.Variant data)
 		{
 			byte[] buff = new byte[1024];
-			uint ret;
+			int ret;
 
 			MemoryStream sin = new MemoryStream((byte[])data);
 			MemoryStream sout = new MemoryStream();
 
-			GZipStream gzip = new GZipStream(data, CompressionMode.Decompress);
+			GZipStream gzip = new GZipStream(sin, CompressionMode.Decompress);
 
 			do
 			{
@@ -75,7 +76,7 @@ namespace PeachCore.Transformers
 			}
 			while (ret != 0);
 
-			return sout.ToArray();
+			return new Variant(sout.ToArray());
 		}
 	}
 
@@ -85,12 +86,12 @@ namespace PeachCore.Transformers
 		protected override PeachCore.Dom.Variant internalEncode(PeachCore.Dom.Variant data)
 		{
 			byte[] buff = new byte[1024];
-			uint ret;
+			int ret;
 
 			MemoryStream sin = new MemoryStream((byte[])data);
 			MemoryStream sout = new MemoryStream();
 
-			GZipStream gzip = new GZipStream(data, CompressionMode.Decompress);
+			GZipStream gzip = new GZipStream(sin, CompressionMode.Decompress);
 
 			do
 			{
@@ -99,18 +100,18 @@ namespace PeachCore.Transformers
 			}
 			while (ret != 0);
 
-			return sout.ToArray();
+			return new Variant(sout.ToArray());
 		}
 
 		protected override PeachCore.Dom.Variant internalDecode(PeachCore.Dom.Variant data)
 		{
 			byte[] buff = new byte[1024];
-			uint ret;
+			int ret;
 
 			MemoryStream sin = new MemoryStream((byte[])data);
 			MemoryStream sout = new MemoryStream();
 
-			GZipStream gzip = new GZipStream(data, CompressionMode.Compress);
+			GZipStream gzip = new GZipStream(sin, CompressionMode.Compress);
 
 			do
 			{
@@ -119,7 +120,7 @@ namespace PeachCore.Transformers
 			}
 			while (ret != 0);
 
-			return sout.ToArray();
+			return new Variant(sout.ToArray());
 		}
 	}
 }

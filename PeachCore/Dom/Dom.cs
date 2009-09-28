@@ -126,7 +126,7 @@ namespace PeachCore.Dom
 		{
 			loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
 			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
-			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
+			agents.AddEvent += new AddEventHandler<string, Agent.Agent>(agents_AddEvent);
 		}
 
 		#region OrderedDictionary AddEvent Handlers

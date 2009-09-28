@@ -7,6 +7,11 @@ namespace PeachCore.MutationStrategies
 {
 	public class Random : MutationStrategy
 	{
+		public Random(Dictionary<string, string> args)
+			: base(args)
+		{
+		}
+
 		public override uint count
 		{
 			get { throw new NotImplementedException(); }

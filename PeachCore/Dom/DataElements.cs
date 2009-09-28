@@ -363,7 +363,7 @@ namespace PeachCore.Dom
 			byte[] value = InternalValueToByteArray(_internalValue);
 
 			if(_transformer != null)
-				return _transformer.encode(value);
+				return (byte[]) _transformer.encode(new Variant(value));
 
 			return value;
 		}

@@ -38,6 +38,11 @@ namespace PeachCore.Publishers
 	[NoParametersAttribute()]
 	public class Console : Publisher
 	{
+		public Console(Dictionary<string, Variant> args)
+			: base(args)
+		{
+		}
+
 		public override void open(Action action)
 		{
 			OnOpen(action);
