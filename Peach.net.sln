@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachCore", "PeachCore\Peac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestThings", "TestThings\TestThings.csproj", "{4F69CE0E-E20A-47CE-A101-8939A966CF3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPeachCore", "TestPeachCore\TestPeachCore.csproj", "{18804529-091A-407D-90E7-0DFB56E1102E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{517FD253-BB2D-447C-BEAF-8EF4291D6615}"
 	ProjectSection(SolutionItems) = preProject
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
@@ -21,9 +19,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachNetworkFuzzer", "PeachNetworkFuzzer\PeachNetworkFuzzer.csproj", "{6886D03D-9BEC-4F11-8C7B-2802EC714237}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Peach.net1.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -37,10 +32,6 @@ Global
 		{4F69CE0E-E20A-47CE-A101-8939A966CF3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F69CE0E-E20A-47CE-A101-8939A966CF3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F69CE0E-E20A-47CE-A101-8939A966CF3F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{18804529-091A-407D-90E7-0DFB56E1102E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{18804529-091A-407D-90E7-0DFB56E1102E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{18804529-091A-407D-90E7-0DFB56E1102E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{18804529-091A-407D-90E7-0DFB56E1102E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{52B8AB06-9191-4C0E-B308-9B3990B48E05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{52B8AB06-9191-4C0E-B308-9B3990B48E05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52B8AB06-9191-4C0E-B308-9B3990B48E05}.Release|Any CPU.ActiveCfg = Release|Any CPU

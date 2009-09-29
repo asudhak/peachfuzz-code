@@ -32,6 +32,7 @@ using System.Linq;
 using System.Text;
 using Peach.Options;
 using PeachCore;
+using PeachCore.Dom;
 
 namespace Peach
 {
@@ -51,12 +52,16 @@ namespace Peach
 				string strategy = null;
 				string range = null;
 				string parallel = null;
-				uint skipTo = 0;
-				bool debug = false;
-				bool justOne = false;
 				bool test = false;
-				bool count = false;
 				bool agent = false;
+
+				Console.WriteLine("\n[ Peach v3.0 DEV");
+				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
+
+				if (args.Length == 0)
+					syntax();
+
+				RunConfiguration config = new RunConfiguration();
 
 				var p = new OptionSet()
 				{
@@ -64,16 +69,36 @@ namespace Peach
 					{ "analyzer=", v => analyzer = v },
 					{ "parser=", v => parser = v },
 					{ "strategy=", v => strategy = v},
-					{ "d|debug", v => debug = true },
-					{ "1", v => justOne = true},
+					{ "d|debug", v => config.debug = true },
+					{ "1", v => config.singleIteration = true},
 					{ "range=", v => range = v},
 					{ "t|test", v => test = true},
-					{ "c|count", v => count = true},
-					{ "skipto=", v => skipTo = Convert.ToUInt32(v)},
+					{ "c|count", v => config.countOnly = true},
+					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
 					{ "p|parallel=", v => parallel = v},
 					{ "a|agent", v => agent = true},
 				};
-				List<string> extra = p.Parse(args);
+
+				if (!agent)
+				{
+					List<string> extra = p.Parse(args);
+
+					if (extra.Count == 0)
+						syntax();
+
+					Engine e = new Engine(new ConsoleWatcher());
+					Dom dom = e.parseXml(extra[0]);
+
+					if (extra.Count > 1)
+						e.run(dom, dom.runs[extra[1]], config);
+
+					else
+						e.run(dom, config);
+				}
+				else
+				{
+					// TODO: Start agent!
+				}
 			}
 			catch (SyntaxException e)
 			{
