@@ -127,12 +127,74 @@ namespace PeachCore.Analyzers
 		{
 			Dom.Dom dom = new Dom.Dom();
 
+			// Pass 1 - Handle imports, includes, python path
+
+			foreach (XmlNode child in node)
+			{
+				switch (child.Name)
+				{
+					case "Import":
+						break;
+					case "Include":
+						break;
+					case "PythonPath":
+						break;
+				}
+			}
+
+			// Pass 2 - Handle namespace 
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "Namespace")
+				{
+				}
+			}
+
+			// Pass 3 - Handle data model
+
 			foreach (XmlNode child in node)
 			{
 				if (child.Name == "DataModel")
 				{
 					DataModel dm = handleDataModel(child, node);
 					dom.dataModels.Add(dm.name, dm);
+				}
+			}
+
+			// Pass 4 - Handle Data
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "Data")
+				{
+				}
+			}
+
+			// Pass 5 - Handle State model
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "StateModel")
+				{
+				}
+			}
+
+			// Pass 6 - Handle Test
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "Test")
+				{
+				}
+			}
+
+			// Pass 7 - Handle Run
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "Run")
+				{
 				}
 			}
 
