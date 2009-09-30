@@ -52,6 +52,7 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="CommonAttributes.cs" />
+    <Compile Include="Cracker\IncomingStream.cs" />
     <Compile Include="DataConverter.cs" />
     <Compile Include="Dom\Asn1Element.cs" />
     <Compile Include="Dom\DomAttributes.cs" />

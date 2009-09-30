@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using PeachCore.Dom;
 
 namespace PeachCore
@@ -42,6 +43,20 @@ namespace PeachCore
 		public static bool supportTopLevel = false;
 
 		public static Analyzer defaultParser = null;
+
+		static Analyzer()
+		{
+			foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
+			{
+				if (!type.IsAbstract && type.IsClass &&
+					type.IsPublic && type.IsSubclassOf(typeof(Analyzer)))
+				{
+					// Found an Analyzer!
+
+					type.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Replaces the parser for fuzzer definition.

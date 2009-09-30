@@ -194,7 +194,7 @@ namespace PeachCore.Dom
 		protected Fixup _fixup = null;
 		protected Transformer _transformer = null;
 
-		protected DataElement _parent;
+		protected DataElementContainer _parent;
 
 		protected Variant _internalValue;
 		protected byte[] _value;
@@ -253,6 +253,89 @@ namespace PeachCore.Dom
 
 		static DataElement()
 		{
+		}
+
+		protected static uint _uniqueName = 0;
+		public DataElement()
+		{
+			name = "Unknown" + _uniqueName;
+			_uniqueName++;
+		}
+
+		public DataElement(string name)
+		{
+			this.name = name;
+		}
+
+		public string fullName
+		{
+			get
+			{
+				string fullname = name;
+				DataElement obj = _parent;
+				while (obj != null)
+				{
+					fullname = obj.name + ".";
+					obj = obj.parent;
+				}
+			
+
+				return fullname;
+			}
+		}
+
+		public DataElementContainer parent
+		{
+			get
+			{
+				return _parent;
+			}
+			set
+			{
+				_parent = value;
+			}
+		}
+
+		public DataElement getRoot()
+		{
+			DataElement obj = this;
+
+			while (obj != null && obj._parent != null)
+				obj = obj.parent;
+
+			return obj;
+		}
+
+		/// <summary>
+		/// Find our next sibling.
+		/// </summary>
+		/// <returns>Returns sibling or null.</returns>
+		public DataElement nextSibling()
+		{
+			if (_parent == null)
+				return null;
+
+			int nextIndex = _parent.IndexOf(this) + 1;
+			if (nextIndex > _parent.Count)
+				return null;
+
+			return _parent[nextIndex];
+		}
+
+		/// <summary>
+		/// Find our previous sibling.
+		/// </summary>
+		/// <returns>Returns sibling or null.</returns>
+		public DataElement previousSibling()
+		{
+			if (_parent == null)
+				return null;
+
+			int priorIndex = _parent.IndexOf(this) - 1;
+			if (priorIndex < 0)
+				return null;
+
+			return _parent[priorIndex];
 		}
 
 		/// <summary>
@@ -375,6 +458,13 @@ namespace PeachCore.Dom
 		/// <returns>Returns found data element or null.</returns>
 		public DataElement find(string name)
 		{
+			string [] names = name.Split(new char[] {'.'});
+
+			foreach (string n in names)
+			{
+
+			}
+
 			throw new ApplicationException("TODO");
 		}
 

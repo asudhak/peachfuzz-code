@@ -96,24 +96,20 @@ namespace PeachCore.Analyzers
 		public void validatePit(string fileName, string schema)
 		{
 			XmlTextReader tr = new XmlTextReader(schema);
-			XmlSchemaCollection xsc = new XmlSchemaCollection();
-			XmlValidatingReader vr;
-
-			xsc.Add(null, tr);
+			XmlSchemaSet set = new XmlSchemaSet();
+			set.Add(null, tr);
 
 			XmlTextReader xmlFile = new XmlTextReader(fileName);
-			vr = new XmlValidatingReader(xmlFile);
-			vr.Schemas.Add(xsc);
-			vr.ValidationType = ValidationType.Schema;
-			vr.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
+			xmlFile.Settings.IgnoreComments = true;
+			xmlFile.Settings.Schemas = set;
+			xmlFile.Settings.ValidationType = ValidationType.Schema;
+			xmlFile.Settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
 
-			while (vr.Read()) ;
-			vr.Close();
+			while (xmlFile.Read()) ;
+			xmlFile.Close();
 
 			if (ErrorsCount > 0)
-			{
-				throw new PeachException("Error: Pit file failed to validate: "+ErrorMessage);
-			}
+				throw new PeachException("Error: Pit file failed to validate: " + ErrorMessage);
 		}
 
 		/// <summary>
