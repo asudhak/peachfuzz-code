@@ -554,7 +554,6 @@ namespace PeachCore
 			ulong shift;
 			byte b;
 			ulong n = value;
-			n &= (1UL << (int)bitlen) - 1;
 
 			if (_readLeftToRight)
 			{
