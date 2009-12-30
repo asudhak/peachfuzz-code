@@ -204,7 +204,7 @@ namespace PeachCore
 		public void BigEndian()
 		{
 			_isLittleEndian = false;
-			ReadRightToLeft();
+			ReadLeftToRight();
 		}
 
 		/// <summary>
@@ -550,7 +550,7 @@ namespace PeachCore
 			ulong curpos = startBPos;
 			ulong bitlen = bits;
 			ulong bitsLeft = 0;
-			ulong mask;
+			byte mask;
 			ulong shift;
 			byte b;
 			ulong n = value;
@@ -565,10 +565,10 @@ namespace PeachCore
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					mask = (1UL << (int)bitsLeft) - 1;
+					mask = (byte)((1 << (int)bitsLeft) - 1);
 
-					buff[(int)(startBlock + (pos / 8))] ^= (byte)(buff[(int)(startBlock + (pos / 8))] & (mask << (int) (curpos % 8)));
-					buff[(int)(startBlock + (pos / 8))] |= (byte)((n & mask) << (int) (pos % 8));
+					buff[(int)(startBlock + (curpos / 8))] ^= (byte)(buff[(int)(startBlock + (curpos / 8))] & (mask << (int) (curpos % 8)));
+					buff[(int)(startBlock + (curpos / 8))] |= (byte)((n & mask) << (int) (curpos % 8));
 
 					n >>= (int)bitsLeft;
 					bitlen -= bitsLeft;
@@ -584,11 +584,11 @@ namespace PeachCore
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					mask = (1UL << (int)bitsLeft) - 1;
-					shift = (8 - this.BitLength(mask, 8)) - (pos - (pos / 8 * 8));
+					mask = (byte)((1 << (int)bitsLeft) - 1);
+					shift = (8 - this.BitLength(mask, 8)) - (curpos - (curpos / 8 * 8));
 					b = (byte)(n >> (int)(bitlen - this.BitLength(mask, 8)));
 
-					buff[(int)(startBlock + (pos / 8))] |= (byte)(((b & mask) << (int)shift));
+					buff[(int)(startBlock + (curpos / 8))] |= (byte)(((b & mask) << (int)shift));
 
 					bitlen -= bitsLeft;
 					curpos += bitsLeft;
@@ -623,7 +623,7 @@ namespace PeachCore
 				if (((value >> 1) & 1) == 1)
 					blen = i;
 
-			return blen;
+			return blen+1;
 		}
 
 		public void WriteBytes(byte[] value)
@@ -728,7 +728,7 @@ namespace PeachCore
 			ulong curpos = startBPos;
 			ulong bitsLeft = 0;
 			ulong bitsToLeft = 0;
-			ulong mask = 0;
+			byte mask = 0;
 			byte b = 0;
 			ulong shift = 0;
 
@@ -737,19 +737,17 @@ namespace PeachCore
 				while (bitlen > 0)
 				{
 					bitsLeft = 8 - (curpos % 8);
-					bitsToLeft = pos - (curpos / 8UL * 8UL);
 
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					mask = (1UL << (int)bitsLeft) - 1;
+					bitsToLeft = curpos - (curpos / 8 * 8);
+					mask = (byte)((1 << (int)bitsLeft) - 1);
 
 					b = buff[(int)(startBlock + (curpos / 8))];
-					b = (byte) ((uint)b >> (int) ((8UL - bitsLeft) - bitsToLeft));
+					b = (byte)((uint)b >> (int)((8 - bitsLeft) - bitsToLeft));
 
-					shift = (ulong)BitLength(mask, 8);
-					ret = ret << (int)shift;
-					ret |= b & mask;
+					ret |= ((ulong)(b & mask) << (int)shift);
 
 					shift += bitsLeft;
 					bitlen -= bitsLeft;
@@ -760,18 +758,20 @@ namespace PeachCore
 			{
 				while (bitlen > 0)
 				{
-					bitsLeft = 8 - (curpos - 8);
+					bitsLeft = 8 - (curpos % 8);
+					bitsToLeft = curpos - (curpos / 8UL * 8UL);
 
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					bitsToLeft = curpos - (curpos / 8 * 8);
-					mask = (1UL << (int)bitsLeft) - 1UL;
+					mask = (byte)((1 << (int)bitsLeft) - 1);
 
 					b = buff[(int)(startBlock + (curpos / 8))];
-					b = (byte)((uint)b >> (int)((8 - bitsLeft) - bitsToLeft));
+					b = (byte)((uint)b >> (int)((8UL - bitsLeft) - bitsToLeft));
 
-					ret |= (b & mask) << (int)shift;
+					shift = (ulong)BitLength(mask, 8);
+					ret = ret << (int)shift;
+					ret |= (ulong)(b & mask);
 
 					shift += bitsLeft;
 					bitlen -= bitsLeft;

@@ -81,5 +81,69 @@ namespace PeachCore.Test
 
 			Assert.IsTrue(bits.TellBits() == 64, "Post read position is inccorect");
 		}
+
+		[TestMethod]
+		public void SignedWriteReadTest()
+		{
+			BitStream bits = new BitStream();
+
+			bits.LittleEndian();
+			bits.WriteSByte(-15);
+			bits.WriteShort(-12);
+			bits.WriteInt(-1);
+			bits.WriteLong(-12312312232);
+
+			bits.BigEndian();
+			bits.WriteSByte(-15);
+			bits.WriteShort(-12);
+			bits.WriteInt(-1);
+			bits.WriteLong(-12312312232);
+
+			bits.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			bits.LittleEndian();
+			Assert.IsTrue(bits.ReadSByte() == -15, "Little ReadSByte != -15");
+			Assert.IsTrue(bits.ReadShort() == -12, "Little ReadShort != -12");
+			Assert.IsTrue(bits.ReadInt() == -1, "Little ReadInt != -1");
+			Assert.IsTrue(bits.ReadLong() == -12312312232, "Little ReadLong != -12312312232");
+
+			bits.BigEndian();
+			Assert.IsTrue(bits.ReadSByte() == -15, "Big ReadSByte != -15");
+			Assert.IsTrue(bits.ReadShort() == -12, "Big ReadShort != -12");
+			Assert.IsTrue(bits.ReadInt() == -1, "Big ReadInt != -1");
+			Assert.IsTrue(bits.ReadLong() == -12312312232, "Big ReadLong != -12312312232");
+		}
+
+		[TestMethod]
+		public void UnsignedWriteReadTest()
+		{
+			BitStream bits = new BitStream();
+
+			bits.LittleEndian();
+			bits.WriteByte(15);
+			bits.WriteUShort(12);
+			bits.WriteUInt(1);
+			bits.WriteULong(12312312232);
+
+			bits.BigEndian();
+			bits.WriteByte(15);
+			bits.WriteUShort(12);
+			bits.WriteUInt(1);
+			bits.WriteULong(12312312232);
+
+			bits.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			bits.LittleEndian();
+			Assert.IsTrue(bits.ReadByte() == 15, "Little ReadByte != 15");
+			Assert.IsTrue(bits.ReadUShort() == 12, "Little ReadUShort != 12");
+			Assert.IsTrue(bits.ReadUInt() == 1, "Little ReadUInt != 1");
+			Assert.IsTrue(bits.ReadULong() == 12312312232, "Little ReadULong != 12312312232");
+
+			bits.BigEndian();
+			Assert.IsTrue(bits.ReadSByte() == 15, "Big ReadSByte != 15");
+			Assert.IsTrue(bits.ReadShort() == 12, "Big ReadUShort != 12");
+			Assert.IsTrue(bits.ReadInt() == 1, "Big ReadUInt != 1");
+			Assert.IsTrue(bits.ReadLong() == 12312312232, "Big ReadULong != 12312312232");
+		}
 	}
 }

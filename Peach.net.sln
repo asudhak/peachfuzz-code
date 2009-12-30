@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
 		Peach.net.vsmdi = Peach.net.vsmdi
 		Peach.net1.vsmdi = Peach.net1.vsmdi
+		Peach.net2.vsmdi = Peach.net2.vsmdi
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach", "Peach\Peach.csproj", "{52B8AB06-9191-4C0E-B308-9B3990B48E05}"
@@ -21,6 +22,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachCore.Test", "PeachCore.Test\PeachCore.Test.csproj", "{E9D153E8-1CCD-4AF3-8A58-AEEE6C3EF0E8}"
 EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Peach.net2.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
