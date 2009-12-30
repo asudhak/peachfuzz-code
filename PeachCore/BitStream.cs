@@ -48,7 +48,7 @@ namespace PeachCore
 		/// is element name (full to data model) and
 		/// value = [0] start bit position, [1] length in bits.
 		/// </summary>
-		protected Dictionary<string, byte[]> _elementPositions = new Dictionary<string, byte[]>();
+		protected Dictionary<string, ulong[]> _elementPositions = new Dictionary<string, ulong[]>();
 		
 		protected List<byte> buff;
 		protected ulong pos = 0;
@@ -73,8 +73,8 @@ namespace PeachCore
 		/// <param name="buff">Use buff as initial stream data.</param>
 		public BitStream(byte[] buff)
 		{
-			buff = new List<byte>(buff);
-			len = buff.Length * 8;
+			this.buff = new List<byte>(buff);
+			len = (ulong)buff.Length * 8;
 			LittleEndian();
 		}
 
@@ -84,7 +84,7 @@ namespace PeachCore
 		/// </summary>
 		public void Clear()
 		{
-			_elementPositions = new Dictionary<string, byte[]>();
+			_elementPositions = new Dictionary<string, ulong[]>();
 			buff = new List<byte>();
 			pos = 0;
 			len = 0;
@@ -94,9 +94,9 @@ namespace PeachCore
 		protected BitStream(byte [] buff, ulong pos, ulong len,
 			bool isLittleEndian, bool isNormalRead,
 			bool padding, bool readLeftToRight,
-			Dictionary<string, byte[]> _elementPositions)
+			Dictionary<string, ulong[]> _elementPositions)
 		{
-			this.buff = new List<bute>(buff);
+			this.buff = new List<byte>(buff);
 			this.pos = pos;
 			this.len = len;
 			this._isLittleEndian = isLittleEndian;
@@ -112,8 +112,8 @@ namespace PeachCore
 		/// <returns>Returns exact copy of this BitStream</returns>
 		public BitStream Clone()
 		{
-			return BitStream(buff.ToArray(), pos, len, _isLittleEndian, 
-				isNormalRead, _padding, _readLeftToRight);
+			return new BitStream(buff.ToArray(), pos, len, _isLittleEndian, 
+				isNormalRead, _padding, _readLeftToRight, _elementPositions);
 		}
 
 		/// <summary>
@@ -132,7 +132,7 @@ namespace PeachCore
 		{
 			get
 			{
-				return (len/8) + (len % 0 == 0 ? 0 : 1);
+				return (len/8) + (ulong)(len % 8 == 0 ? 0 : 1);
 			}
 		}
 
@@ -165,13 +165,13 @@ namespace PeachCore
 			switch (origin)
 			{
 				case SeekOrigin.Begin:
-					pos = offset;
+					pos = (ulong)offset;
 					break;
 				case SeekOrigin.Current:
-					pos = pos + offset;
+					pos = (ulong) (((long)pos) + offset);
 					break;
 				case SeekOrigin.End:
-					pos = len - offset;
+					pos = (ulong) (((long)len) - offset);
 					break;
 			}
 		}
@@ -182,7 +182,7 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="offset">Offset from origion to seek to</param>
 		/// <param name="origin">Origin to seek from</param>
-		public void SeekBytes(ulong offset, SeekOrigin origin)
+		public void SeekBytes(long offset, SeekOrigin origin)
 		{
 			SeekBits(offset * 8, origin);
 		}
@@ -246,37 +246,37 @@ namespace PeachCore
 
 		#region DataElements
 
-		public uint DataElementLength(DataElement e)
+		public ulong DataElementLength(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (!_elementPositions.Contains[e])
+			if (!_elementPositions.Keys.Contains(e.fullName))
 				throw new ApplicationException("Unknown DataElement");
 
 			return _elementPositions[e.fullName][1];
 		}
 
-		public uint DataElementPosition(DataElement e)
+		public ulong DataElementPosition(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (!_elementPositions.Contains[e])
+			if (!_elementPositions.Keys.Contains(e.fullName))
 				throw new ApplicationException("Unknown DataElement");
 
 			return _elementPositions[e.fullName][0];
 		}
 
-		public void MarkStartOfElement(DataElement e, uint lengthInBits)
+		public void MarkStartOfElement(DataElement e, ulong lengthInBits)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (_elementPositions.Contains(e.fullName))
+			if (_elementPositions.Keys.Contains(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
-				_elementPositions.Add(e.fullName, new byte[] { pos, lengthInBits });
+				_elementPositions.Add(e.fullName, new ulong[] { pos, lengthInBits });
 		}
 
 		public void MarkStartOfElement(DataElement e)
@@ -284,10 +284,10 @@ namespace PeachCore
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (_elementPositions.Contains(e.fullName))
+			if (_elementPositions.Keys.Contains(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
-				_elementPositions.Add(e.fullName, new byte[] { pos, 0 });
+				_elementPositions.Add(e.fullName, new ulong[] { pos, 0 });
 		}
 
 		public void MarkEndOfElement(DataElement e)
@@ -295,9 +295,9 @@ namespace PeachCore
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if(!_elementPositions.Contains(e.fullName))
+			if(!_elementPositions.Keys.Contains(e.fullName))
 				throw new ApplicationException(
-					String.Format("Element position list does not contain DataElement {0}.", e.fullName));
+					string.Format("Element position list does not contain DataElement {0}.", e.fullName));
 
 			_elementPositions[e.fullName][1] = pos;
 		}
@@ -308,11 +308,11 @@ namespace PeachCore
 
 		public void WriteSByte(sbyte value)
 		{
-			WriteBits(value, 8);
+			WriteBits((byte)value, 8);
 		}
 		public void WriteInt8(sbyte value)
 		{
-			WriteBits(value, 8);
+			WriteBits((byte)value, 8);
 		}
 		public void WriteByte(byte value)
 		{
@@ -324,11 +324,11 @@ namespace PeachCore
 		}
 		public void WriteShort(short value)
 		{
-			WriteBits(value, 16);
+			WriteBits((ushort)value, 16);
 		}
 		public void WriteInt16(short value)
 		{
-			WriteBits(value, 16);
+			WriteBits((ushort)value, 16);
 		}
 		public void WriteUShort(ushort value)
 		{
@@ -344,11 +344,11 @@ namespace PeachCore
 		}
 		public void WriteInt(int value)
 		{
-			WriteBits(value, 32);
+			WriteBits((uint)value, 32);
 		}
 		public void WriteInt32(int value)
 		{
-			WriteBits(value, 32);
+			WriteBits((uint)value, 32);
 		}
 		public void WriteUInt(uint value)
 		{
@@ -364,11 +364,11 @@ namespace PeachCore
 		}
 		public void WriteLong(long value)
 		{
-			WriteBits(value, 64);
+			WriteBits((ulong)value, 64);
 		}
 		public void WriteInt64(long value)
 		{
-			WriteBits(value, 64);
+			WriteBits((ulong)value, 64);
 		}
 		public void WriteULong(ulong value)
 		{
@@ -386,12 +386,12 @@ namespace PeachCore
 		public void WriteSByte(sbyte value, DataElement element)
 		{
 			MarkStartOfElement(element, 8);
-			WriteBits(value, 8);
+			WriteBits((byte)value, 8);
 		}
 		public void WriteInt8(sbyte value, DataElement element)
 		{
 			MarkStartOfElement(element, 8);
-			WriteBits(value, 8);
+			WriteBits((byte)value, 8);
 		}
 		public void WriteByte(byte value, DataElement element)
 		{
@@ -406,12 +406,12 @@ namespace PeachCore
 		public void WriteShort(short value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits(value, 16);
+			WriteBits((ushort)value, 16);
 		}
 		public void WriteInt16(short value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits(value, 16);
+			WriteBits((ushort)value, 16);
 		}
 		public void WriteUShort(ushort value, DataElement element)
 		{
@@ -431,12 +431,12 @@ namespace PeachCore
 		public void WriteInt(int value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits(value, 32);
+			WriteBits((uint)value, 32);
 		}
 		public void WriteInt32(int value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits(value, 32);
+			WriteBits((uint)value, 32);
 		}
 		public void WriteUInt(uint value, DataElement element)
 		{
@@ -456,12 +456,12 @@ namespace PeachCore
 		public void WriteLong(long value, DataElement element)
 		{
 			MarkStartOfElement(element, 64);
-			WriteBits(value, 64);
+			WriteBits((ulong)value, 64);
 		}
 		public void WriteInt64(long value, DataElement element)
 		{
 			MarkStartOfElement(element, 64);
-			WriteBits(value, 64);
+			WriteBits((ulong)value, 64);
 		}
 		public void WriteULong(ulong value, DataElement element)
 		{
@@ -501,13 +501,13 @@ namespace PeachCore
 
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bytesToWrite));
-			WriteBits(bits.ReadBits(extraBits));
+			WriteBits(bits.ReadBits(extraBits), extraBits);
 
 			// Copy over DataElement positions, replace
 			// existing entries if they exist.
-			foreach (String key in bits._elementPositions.Keys)
+			foreach (string key in bits._elementPositions.Keys)
 			{
-				if (!_elementPositions.Contains(key))
+				if (!_elementPositions.Keys.Contains(key))
 					_elementPositions.Add(key, bits._elementPositions[key]);
 				else
 					_elementPositions[key] = bits._elementPositions[key];
@@ -516,7 +516,7 @@ namespace PeachCore
 			}
 		}
 
-		public void WriteBits(ulong value, uint bits, DataElement element)
+		public void WriteBits(ulong value, ulong bits, DataElement element)
 		{
 			MarkStartOfElement(element, bits);
 			WriteBits(value, bits);
@@ -527,34 +527,34 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="value">Value to write</param>
 		/// <param name="bits">Number of bits to write</param>
-		public void WriteBits(ulong value, uint bits)
+		public void WriteBits(ulong value, ulong bits)
 		{
 			if(bits == 0 || bits > 64)
 				throw new ApplicationException("bits is invalid value, but be > 0 and < 64");
 
-			uint newpos = pos + bitlen;
+			ulong newpos = pos + bits;
 
-			uint startBPos = pos % 8;
-			uint startBlock = pos / 8;
+			ulong startBPos = pos % 8;
+			ulong startBlock = pos / 8;
 
-			uint endBPos = newpos % 8;
-			uint endBlock = newpos / 8 + (endBPos != 0);
+			ulong endBPos = newpos % 8;
+			ulong endBlock = newpos / 8 + (endBPos == 0? 0UL:1UL);
 
 			// Grow buffer if needed
-			while (buff.Count < endBlock)
+			while (buff.Count < (int)endBlock)
 			{
 				len += 8;
 				buff.Add(0);
 			}
 
-			curpos = startBPos;
-			uint bitlen = bits;
-			uint bitsLeft = 0;
+			ulong curpos = startBPos;
+			ulong bitlen = bits;
+			ulong bitsLeft = 0;
 			ulong mask;
 			ulong shift;
 			byte b;
 			ulong n = value;
-			n &= (1L << bitlen) - 1;
+			n &= (1UL << (int)bitlen) - 1;
 
 			if (_readLeftToRight)
 			{
@@ -565,12 +565,12 @@ namespace PeachCore
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					mask = (1 << bitsLeft) - 1;
+					mask = (1UL << (int)bitsLeft) - 1;
 
-					buff[startBlock + (pos / 8)] ^= buff[startBlock + (pos / 8)] & (mask << (curpos % 8));
-					buff[startBlock + (pos / 8)] |= (n & mask) << (pos % 8);
+					buff[(int)(startBlock + (pos / 8))] ^= (byte)(buff[(int)(startBlock + (pos / 8))] & (mask << (int) (curpos % 8)));
+					buff[(int)(startBlock + (pos / 8))] |= (byte)((n & mask) << (int) (pos % 8));
 
-					n >>= bitsLeft;
+					n >>= (int)bitsLeft;
 					bitlen -= bitsLeft;
 					curpos += bitsLeft;
 				}
@@ -584,11 +584,11 @@ namespace PeachCore
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					mask = (1 << bitsLeft) - 1;
-					shift = (8 - BitLength(mask, 8)) - (pos - (pos / 8 * 8));
-					b = n >> BitLength - BitLength(mask, 8);
+					mask = (1UL << (int)bitsLeft) - 1;
+					shift = (8 - this.BitLength(mask, 8)) - (pos - (pos / 8 * 8));
+					b = (byte)(n >> (int)(bitlen - this.BitLength(mask, 8)));
 
-					buff[startBlock + (pos / 8)] |= ((buff & mask) << shift);
+					buff[(int)(startBlock + (pos / 8))] |= (byte)(((b & mask) << (int)shift));
 
 					bitlen -= bitsLeft;
 					curpos += bitsLeft;
@@ -605,7 +605,7 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="value">Value to calc bit length of</param>
 		/// <returns>Number of bits required to store number.</returns>
-		protected int BitLength(ulong value)
+		protected ulong BitLength(ulong value)
 		{
 			return BitLength(value, 64);
 		}
@@ -616,10 +616,10 @@ namespace PeachCore
 		/// <param name="value">Value to calc bit length of</param>
 		/// <param name="maxBits">Max length in bits</param>
 		/// <returns>Returns number of bits required to store number.</returns>
-		protected int BitLength(ulong value, int maxBits)
+		protected ulong BitLength(ulong value, ulong maxBits)
 		{
-			int blen = 0;
-			for (int i = 0; i < maxBits; i++)
+			ulong blen = 0;
+			for (ulong i = 0; i < maxBits; i++)
 				if (((value >> 1) & 1) == 1)
 					blen = i;
 
@@ -634,7 +634,7 @@ namespace PeachCore
 
 		public void WriteBytes(byte[] value, int offset, int length)
 		{
-			for (int i = offset; i < length && i < value.Count; i++)
+			for (int i = offset; i < length && i < value.Length; i++)
 				WriteBits(value[i], 8);
 		}
 
@@ -715,18 +715,19 @@ namespace PeachCore
 
 		#endregion
 
-		public ulong ReadBits(uint bits)
+		public ulong ReadBits(ulong bits)
 		{
-			uint newpos = pos + bits;
-			uint orig_bitlen = bits;
-			uint bitlen = bits;
-			uint startBPos = pos % 8;
-			uint startBlock = pos / 8;
-			uint endBPos = newpos % 8;
-			uint endBlock = newpos / 8 + (endBPos != 0 ? 1 : 0);
+			ulong newpos = pos + bits;
+			ulong orig_bitlen = bits;
+			ulong bitlen = bits;
+			ulong startBPos = pos % 8;
+			ulong startBlock = pos / 8;
+			ulong endBPos = newpos % 8;
+			ulong endBlock = newpos / 8 + (endBPos != 0 ? 1UL : 0UL);
 			ulong ret = 0;
-			uint curpos = startBPos;
-			uint bitsLeft = 0;
+			ulong curpos = startBPos;
+			ulong bitsLeft = 0;
+			ulong bitsToLeft = 0;
 			ulong mask = 0;
 			byte b = 0;
 			ulong shift = 0;
@@ -736,18 +737,18 @@ namespace PeachCore
 				while (bitlen > 0)
 				{
 					bitsLeft = 8 - (curpos % 8);
-					bitsToLeft = pos - (curpos / 8 * 8);
+					bitsToLeft = pos - (curpos / 8UL * 8UL);
 
 					if (bitsLeft > bitlen)
 						bitsLeft = bitlen;
 
-					mask = (1 << bitsLeft) - 1;
+					mask = (1UL << (int)bitsLeft) - 1;
 
-					b = buff[startBlock + (curpos / 8)];
-					b = b >> (8 - bitsLeft) - bitsToLeft;
+					b = buff[(int)(startBlock + (curpos / 8))];
+					b = (byte) ((uint)b >> (int) ((8UL - bitsLeft) - bitsToLeft));
 
-					shift = BitLength(mask, 8);
-					ret = ret << shift;
+					shift = (ulong)BitLength(mask, 8);
+					ret = ret << (int)shift;
 					ret |= b & mask;
 
 					shift += bitsLeft;
@@ -765,12 +766,12 @@ namespace PeachCore
 						bitsLeft = bitlen;
 
 					bitsToLeft = curpos - (curpos / 8 * 8);
-					mask = (1 << bitsLeft) - 1;
+					mask = (1UL << (int)bitsLeft) - 1UL;
 
-					b = buff[startBlock + (curpos / 8)];
-					b = b >> (8 - bitsLeft) - bitsToLeft;
+					b = buff[(int)(startBlock + (curpos / 8))];
+					b = (byte)((uint)b >> (int)((8 - bitsLeft) - bitsToLeft));
 
-					ret |= (b & mask) << shift;
+					ret |= (b & mask) << (int)shift;
 
 					shift += bitsLeft;
 					bitlen -= bitsLeft;
@@ -782,16 +783,16 @@ namespace PeachCore
 			return ret;
 		}
 
-		public byte[] ReadBytes(uint count)
+		public byte[] ReadBytes(ulong count)
 		{
 			if (count == 0)
 				throw new ApplicationException("Asking for zero bytes");
-			if ((pos + count) > buff.Count)
+			if ((pos + count) > (ulong)buff.Count)
 				throw new ApplicationException("Count overruns buffer");
 
 			byte[] ret = new byte[count];
 
-			for (int i = 0; i<count; i++)
+			for (ulong i = 0; i<count; i++)
 				ret[i] = ReadByte();
 
 			return ret;
@@ -809,7 +810,7 @@ namespace PeachCore
 		/// Truncate stream to specific length in bits.
 		/// </summary>
 		/// <param name="sizeInBits">Length in bits of stream</param>
-		public void Truncate(uint sizeInBits)
+		public void Truncate(ulong sizeInBits)
 		{
 			if (sizeInBits > len)
 				throw new ApplicationException("sizeInbits larger then length of data");
@@ -818,12 +819,12 @@ namespace PeachCore
 				pos = sizeInBits;
 
 			len = sizeInBits;
-			uint startBlock = sizeInBits / 8 + (sizeInBits % 8 == 0 ? 0 : 1);
-			buff.RemoveRange(startBlock, buff.Count - startBlock);
+			ulong startBlock = sizeInBits / 8 + (ulong)(sizeInBits % 8 == 0 ? 0 : 1);
+			buff.RemoveRange((int)startBlock, buff.Count - (int)startBlock);
 
 			// Remove element entries that were truncated off.
 
-			List<String> keysToRemove = new List<string>();
+			List<string> keysToRemove = new List<string>();
 			foreach (string key in _elementPositions.Keys)
 			{
 				if (_elementPositions[key][0] > len)
@@ -845,35 +846,35 @@ namespace PeachCore
 		/// <param name="bits">BitStream to insert.</param>
 		public void Insert(BitStream bits)
 		{
-			uint currentBlock = pos / 8;
+			ulong currentBlock = pos / 8;
 
 			// If both streams are on an 8 bit boundry
 			// this is the quick 'n easy method.
 			if (pos % 8 == 0 && bits.LengthBits % 8 == 0)
 			{
-				buff.InsertRange(currentBlock, bits.Value);
+				buff.InsertRange((int)currentBlock, bits.Value);
 				len += bits.LengthBits;
 				pos += bits.LengthBits;
 				return;
 			}
 
-			uint curpos = pos;
-			uint curlen = len;
-			uint retpos = pos;
+			ulong curpos = pos;
+			ulong curlen = len;
+			ulong retpos = pos;
 			BitStream tmp = Clone();
 			Truncate();
 
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bits.LengthBits / 8));
 			if(bits.LengthBits % 8 != 0)
-				WriteBits(bits.ReadBits(bits.LengthBits % 8), bits.LengthBits % 8);
+				WriteBits(bits.ReadBits(bits.LengthBits % 8), (uint) bits.LengthBits % 8);
 
 			retpos = pos;
 
-			tmp.SeekBits(curpos, SeekOrigin.Begin);
+			tmp.SeekBits((long)curpos, SeekOrigin.Begin);
 			WriteBytes(tmp.ReadBytes((curlen - curpos) / 8));
 			if ((curlen - curpos) % 8 != 0)
-				WriteBits(tmp.ReadBits((curlen - curpos) % 8), (curlen - curpos) % 8);
+				WriteBits(tmp.ReadBits((curlen - curpos) % 8),(uint) (curlen - curpos) % 8);
 
 			pos = retpos;
 		}
@@ -883,7 +884,7 @@ namespace PeachCore
 		/// </summary>
 		public byte[] Value
 		{
-			get { return buff; }
+			get { return buff.ToArray(); }
 		}
 	}
 }
