@@ -199,6 +199,8 @@ namespace PeachCore.Dom
 		protected Variant _internalValue;
 		protected byte[] _value;
 
+		protected bool _invalidated = false;
+
 		#region Events
 
 		public event InvalidatedEventHandler Invalidated;
@@ -344,6 +346,12 @@ namespace PeachCore.Dom
 		/// </summary>
 		public void Invalidate()
 		{
+			_invalidated = true;
+
+			OnInvalidated(null);
+
+			if(parent != null)
+				parent.Invalidate();
 		}
 
 		public virtual bool isLeafNode
@@ -361,6 +369,7 @@ namespace PeachCore.Dom
 			{
 				_defaultValue = value;
 				OnDefaultValueChanged(null);
+				Invalidate();
 			}
 		}
 
@@ -374,6 +383,7 @@ namespace PeachCore.Dom
 			{
 				_mutatedValue = value;
 				OnMutatedValueChanged(null);
+				Invalidate();
 			}
 		}
 
@@ -382,7 +392,13 @@ namespace PeachCore.Dom
         /// </summary>
 		public virtual Variant InternalValue
 		{
-			get { return _internalValue; }
+			get
+			{
+				if (_internalValue == null || _invalidated)
+					GenerateInternalValue();
+
+				return _internalValue;
+			}
 		}
 
         /// <summary>
@@ -390,7 +406,16 @@ namespace PeachCore.Dom
         /// </summary>
 		public virtual byte[] Value
 		{
-			get { return _value; }
+			get
+			{
+				if (_value == null || _invalidated)
+				{
+					GenerateValue();
+					_invalidated = false;
+				}
+
+				return _value;
+			}
 		}
 
 		/// <summary>
@@ -407,7 +432,7 @@ namespace PeachCore.Dom
 
 			// 2. Relations
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
 				return MutatedValue;
 
 			foreach(Relation r in _relations)
@@ -420,12 +445,15 @@ namespace PeachCore.Dom
 
 			// 3. Fixup
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
 				return MutatedValue;
 
 			if (_fixup != null)
 				value = _fixup.fixup(this);
 
+			// 4. Set _internalValue
+
+			_internalValue = value;
 			return value;
 		}
 
@@ -448,6 +476,7 @@ namespace PeachCore.Dom
 			if(_transformer != null)
 				return (byte[]) _transformer.encode(new Variant(value));
 
+			_value = value;
 			return value;
 		}
 
@@ -611,32 +640,47 @@ namespace PeachCore.Dom
 		public string lengthCalc;
 		public Variant length;
 
-		/// <summary>
-		/// Get the internal value of this data element.
-		/// </summary>
-		/// <returns>Internal value in .NET form</returns>
-		public override Variant InternalValue
+		public virtual Variant GenerateInternalValue()
 		{
-			get
+			Variant value;
+
+			// 1. Default value
+
+			if (_mutatedValue == null)
 			{
-				List<byte> value = new List<byte>();
-
-				// 1. Mutated value if any
-
-				if (_mutatedValue != null
-					&& ((mutationFlags & MUTATE_OVERRIDE_FIXUP) == 0
-					|| (mutationFlags & MUTATE_OVERRIDE_RELATIONS) == 0))
-				{
-					return _mutatedValue;
-				}
-
-				// 2. Default value
-
+				List<byte> buff = new List<byte>();
 				foreach (DataElement child in this)
-					value.AddRange(child.Value);
+					buff.AddRange(child.Value);
 
-				return new Variant(value.ToArray());
+				value = new Variant(buff.ToArray());
 			}
+			else
+			{
+				value = MutatedValue;
+			}
+
+			// 2. Relations
+
+			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+				return MutatedValue;
+
+			foreach (Relation r in _relations)
+			{
+				if (r.Of == this)
+				{
+					value = r.GetValue();
+				}
+			}
+
+			// 3. Fixup
+
+			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+				return MutatedValue;
+
+			if (_fixup != null)
+				value = _fixup.fixup(this);
+
+			return value;
 		}
 	}
 

@@ -51,6 +51,7 @@
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
+    <Compile Include="BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\IncomingStream.cs" />
     <Compile Include="DataConverter.cs" />
