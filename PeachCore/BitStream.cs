@@ -187,6 +187,23 @@ namespace PeachCore
 			SeekBits(offset * 8, origin);
 		}
 
+		public void SeekToDataElement(DataElement elem)
+		{
+			SeekToDataElement(elem.fullName);
+		}
+
+		public void SeekToDataElement(string name)
+		{
+			if (name == null)
+				throw new ApplicationException("name is null");
+
+			if (!_elementPositions.Keys.Contains(name))
+				throw new ApplicationException(
+					string.Format("DataElement {0} does not exist in collection", name));
+
+			pos = _elementPositions[name][0];
+		}
+
 		#region BitControl
 
 		/// <summary>
@@ -246,28 +263,69 @@ namespace PeachCore
 
 		#region DataElements
 
+		/// <summary>
+		/// Length of DataElement by bits
+		/// </summary>
+		/// <param name="e">DataElement that has already been written to stream</param>
+		/// <returns>Returns size in bits of DataElement</returns>
 		public ulong DataElementLength(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (!_elementPositions.Keys.Contains(e.fullName))
-				throw new ApplicationException("Unknown DataElement");
-
-			return _elementPositions[e.fullName][1];
+			return DataElementLength(e.fullName);
 		}
 
+		/// <summary>
+		/// Length of DataElement by bits
+		/// </summary>
+		/// <param name="fullName">Fullname of DataElement that has already been written to stream</param>
+		/// <returns>Returns size in bits of DataElement</returns>
+		public ulong DataElementLength(string fullName)
+		{
+			if (fullName == null)
+				throw new ApplicationException("fullName is null");
+
+			if (!_elementPositions.Keys.Contains(fullName))
+				throw new ApplicationException(string.Format("Unknown DataElement {0}", fullName));
+
+			return _elementPositions[fullName][1];
+		}
+
+		/// <summary>
+		/// Position in stream of DataElement
+		/// </summary>
+		/// <param name="e">DataElement that has already been written to the stream</param>
+		/// <returns>Returns bit position of DataElement</returns>
 		public ulong DataElementPosition(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (!_elementPositions.Keys.Contains(e.fullName))
-				throw new ApplicationException("Unknown DataElement");
-
-			return _elementPositions[e.fullName][0];
+			return DataElementPosition(e.fullName);
 		}
 
+		/// <summary>
+		/// Position in stream of DataElement
+		/// </summary>
+		/// <param name="fullName">DataElement that has already been written to the stream</param>
+		/// <returns>Returns bit position of DataElement</returns>
+		public ulong DataElementPosition(string fullName)
+		{
+			if (fullName == null)
+				throw new ApplicationException("fullName is null");
+
+			if (!_elementPositions.Keys.Contains(fullName))
+				throw new ApplicationException(string.Format("Unknown DataElement {0}", fullName));
+
+			return _elementPositions[fullName][0];
+		}
+
+		/// <summary>
+		/// Mark the starting position of a DataElement in the stream.
+		/// </summary>
+		/// <param name="e">DataElement to mark the position of</param>
+		/// <param name="lengthInBits">Length of DataElement in stream</param>
 		public void MarkStartOfElement(DataElement e, ulong lengthInBits)
 		{
 			if (e == null)
@@ -279,6 +337,10 @@ namespace PeachCore
 				_elementPositions.Add(e.fullName, new ulong[] { pos, lengthInBits });
 		}
 
+		/// <summary>
+		/// Mark the starting position of a DataElement in the stream.
+		/// </summary>
+		/// <param name="e">DataElement to mark the position of</param>
 		public void MarkStartOfElement(DataElement e)
 		{
 			if (e == null)
@@ -290,6 +352,12 @@ namespace PeachCore
 				_elementPositions.Add(e.fullName, new ulong[] { pos, 0 });
 		}
 
+		/// <summary>
+		/// Mark the ending position of DataElement.  If you have
+		/// already specified a length with MarkStartOfElement you
+		/// do not need to call this method.
+		/// </summary>
+		/// <param name="e">DataElement to mark the position of</param>
 		public void MarkEndOfElement(DataElement e)
 		{
 			if (e == null)
@@ -846,6 +914,10 @@ namespace PeachCore
 		public void Insert(BitStream bits)
 		{
 			ulong currentBlock = pos / 8;
+			ulong curpos = pos;
+			ulong curlen = len;
+			ulong retpos = pos;
+			ulong[] vals = null;
 
 			// If both streams are on an 8 bit boundry
 			// this is the quick 'n easy method.
@@ -854,12 +926,33 @@ namespace PeachCore
 				buff.InsertRange((int)currentBlock, bits.Value);
 				len += bits.LengthBits;
 				pos += bits.LengthBits;
+
+				// Move existing DataElement positions
+
+				foreach (string key in _elementPositions.Keys)
+				{
+					vals = _elementPositions[key];
+
+					if (vals[0] >= curpos)
+						vals[0] += bits.LengthBits;
+				}
+
+				// Copy over the new DataElement positions
+
+				foreach (string key in bits._elementPositions.Keys)
+				{
+					if(_elementPositions.Keys.Contains(key))
+						throw new ApplicationException(
+							string.Format("Dictionary already contains a key called {0}", key));
+
+					vals = bits._elementPositions[key];
+					vals[0] += curpos;
+					_elementPositions.Add(key, vals);
+				}
+
 				return;
 			}
 
-			ulong curpos = pos;
-			ulong curlen = len;
-			ulong retpos = pos;
 			BitStream tmp = Clone();
 			Truncate();
 
@@ -874,6 +967,21 @@ namespace PeachCore
 			WriteBytes(tmp.ReadBytes((curlen - curpos) / 8));
 			if ((curlen - curpos) % 8 != 0)
 				WriteBits(tmp.ReadBits((curlen - curpos) % 8),(uint) (curlen - curpos) % 8);
+
+			// Copy over the DataElement positions
+			foreach (string key in tmp._elementPositions.Keys)
+			{
+				vals = tmp._elementPositions[key];
+				if (vals[0] >= curpos)
+				{
+					vals[0] += retpos - curpos;
+					if (!tmp._elementPositions.Keys.Contains(key))
+						tmp._elementPositions.Add(key, vals);
+					else
+						throw new ApplicationException(
+							string.Format("DataElement {0} already exists!", key));
+				}
+			}
 
 			pos = retpos;
 		}
