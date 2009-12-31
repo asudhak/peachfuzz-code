@@ -27,14 +27,13 @@
 // $Id$
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 
 namespace PeachCore.Dom
 {
 	public delegate void AddEventHandler<TKey, TValue>(OrderedDictionary<TKey, TValue> sender, TKey key, TValue value);
 
+	/*
 	/// <summary>
 	/// Represents a generic collection of key/value pairs that are ordered independently of the key and value.
 	/// </summary>
@@ -182,21 +181,6 @@ namespace PeachCore.Dom
 			}
 		}
 
-		IDictionaryEnumerator IOrderedDictionary.GetEnumerator()
-		{
-			return Dictionary.GetEnumerator();
-		}
-
-		IDictionaryEnumerator IDictionary.GetEnumerator()
-		{
-			return Dictionary.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return List.GetEnumerator();
-		}
-
 		IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
 		{
 			return List.GetEnumerator();
@@ -222,28 +206,6 @@ namespace PeachCore.Dom
 			List.Insert(index, new KeyValuePair<TKey, TValue>(key, value));
 
 			OnAdd(key, value);
-		}
-
-		/// <summary>
-		/// Inserts a new entry into the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.
-		/// </summary>
-		/// <param name="index">The zero-based index at which the element should be inserted.</param>
-		/// <param name="key">The key of the entry to add.</param>
-		/// <param name="value">The value of the entry to add. The value can be <null/> if the type of the values in the dictionary is a reference type.</param>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
-		/// -or-<br/>
-		/// <paramref name="index"/> is greater than <see cref="Count"/>.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="key"/> is <null/>.<br/>
-		/// -or-<br/>
-		/// <paramref name="value"/> is <null/>, and the value type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
-		/// <exception cref="ArgumentException">The key type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.<br/>
-		/// -or-<br/>
-		/// The value type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="value"/>.<br/>
-		/// -or-<br/>
-		/// An element with the same key already exists in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>.</exception>
-		void IOrderedDictionary.Insert(int index, object key, object value)
-		{
-			Insert(index, ConvertToKeyType(key), ConvertToValueType(value));
 		}
 
 		/// <summary>
@@ -294,43 +256,6 @@ namespace PeachCore.Dom
 		}
 
 		/// <summary>
-		/// Gets or sets the value at the specified index.
-		/// </summary>
-		/// <param name="index">The zero-based index of the value to get or set.</param>
-		/// <value>The value of the item at the specified index.</value>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
-		/// -or-<br/>
-		/// index is equal to or greater than <see cref="Count"/>.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="valueObject"/> is a null reference, and the value type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
-		/// <exception cref="ArgumentException">The value type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="valueObject"/>.</exception>
-		object IOrderedDictionary.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-
-			set
-			{
-				this[index] = ConvertToValueType(value);
-			}
-		}
-
-		/// <summary>
-		/// Adds an entry with the specified key and value into the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
-		/// </summary>
-		/// <param name="key">The key of the entry to add.</param>
-		/// <param name="value">The value of the entry to add. This value can be <null/>.</param>
-		/// <remarks>A key cannot be <null/>, but a value can be.
-		/// <para>You can also use the <see cref="P:OrderedDictionary{TKey,TValue}.Item(TKey)"/> property to add new elements by setting the value of a key that does not exist in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection; however, if the specified key already exists in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>, setting the <see cref="P:OrderedDictionary{TKey,TValue}.Item(TKey)"/> property overwrites the old value. In contrast, the <see cref="M:Add"/> method does not modify existing elements.</para></remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="key"/> is <null/></exception>
-		/// <exception cref="ArgumentException">An element with the same key already exists in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see></exception>
-		void IDictionary<TKey, TValue>.Add(TKey key, TValue value)
-		{
-			Add(key, value);
-		}
-
-		/// <summary>
 		/// Adds an entry with the specified key and value into the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
 		/// </summary>
 		/// <param name="key">The key of the entry to add.</param>
@@ -346,22 +271,6 @@ namespace PeachCore.Dom
 			List.Add(new KeyValuePair<TKey, TValue>(key, value));
 			OnAdd(key, value);
 			return Count - 1;
-		}
-
-		/// <summary>
-		/// Adds an entry with the specified key and value into the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
-		/// </summary>
-		/// <param name="key">The key of the entry to add.</param>
-		/// <param name="value">The value of the entry to add. This value can be <null/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="key"/> is <null/>.<br/>
-		/// -or-<br/>
-		/// <paramref name="value"/> is <null/>, and the value type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
-		/// <exception cref="ArgumentException">The key type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.<br/>
-		/// -or-<br/>
-		/// The value type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="value"/>.</exception>
-		void IDictionary.Add(object key, object value)
-		{
-			Add(ConvertToKeyType(key), ConvertToValueType(value));
 		}
 
 		/// <summary>
@@ -384,23 +293,12 @@ namespace PeachCore.Dom
 		{
 			return Dictionary.ContainsKey(key);
 		}
-		/// <summary>
-		/// Determines whether the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection contains a specific key.
-		/// </summary>
-		/// <param name="key">The key to locate in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</param>
-		/// <returns><see langword="true"/> if the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection contains an element with the specified key; otherwise, <see langword="false"/>.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="key"/> is <null/></exception>
-		/// <exception cref="ArgumentException">The key type of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.</exception>
-		bool IDictionary.Contains(object key)
-		{
-			return ContainsKey(ConvertToKeyType(key));
-		}
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> has a fixed size.
 		/// </summary>
 		/// <value><see langword="true"/> if the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> has a fixed size; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
-		bool IDictionary.IsFixedSize
+		bool IsFixedSize
 		{
 			get
 			{
@@ -421,19 +319,6 @@ namespace PeachCore.Dom
 			get
 			{
 				return false;
-			}
-		}
-
-		/// <summary>
-		/// Gets an <see cref="ICollection"/> object containing the keys in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>.
-		/// </summary>
-		/// <value>An <see cref="ICollection"/> object containing the keys in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
-		/// <remarks>The returned <see cref="ICollection"/> object is not a static copy; instead, the collection refers back to the keys in the original <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the key collection.</remarks>
-		ICollection IDictionary.Keys
-		{
-			get
-			{
-				return (ICollection)Keys;
 			}
 		}
 
@@ -491,28 +376,6 @@ namespace PeachCore.Dom
 		}
 
 		/// <summary>
-		/// Removes the entry with the specified key from the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
-		/// </summary>
-		/// <param name="key">The key of the entry to remove</param>
-		void IDictionary.Remove(object key)
-		{
-			Remove(ConvertToKeyType(key));
-		}
-
-		/// <summary>
-		/// Gets an <see cref="ICollection"/> object containing the values in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
-		/// </summary>
-		/// <value>An <see cref="ICollection"/> object containing the values in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</value>
-		/// <remarks>The returned <see cref="ICollection"/> object is not a static copy; instead, the <see cref="ICollection"/> refers back to the values in the original <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection. Therefore, changes to the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the <see cref="ICollection"/>.</remarks>
-		ICollection IDictionary.Values
-		{
-			get
-			{
-				return (ICollection)Values;
-			}
-		}
-
-		/// <summary>
 		/// Gets or sets the value with the specified key.
 		/// </summary>
 		/// <param name="key">The key of the value to get or set.</param>
@@ -539,23 +402,6 @@ namespace PeachCore.Dom
 		}
 
 		/// <summary>
-		/// Gets or sets the value with the specified key.
-		/// </summary>
-		/// <param name="key">The key of the value to get or set.</param>
-		/// <value>The value associated with the specified key. If the specified key is not found, attempting to get it returns <null/>, and attempting to set it creates a new element using the specified key.</value>
-		object IDictionary.this[object key]
-		{
-			get
-			{
-				return this[ConvertToKeyType(key)];
-			}
-			set
-			{
-				this[ConvertToKeyType(key)] = ConvertToValueType(value);
-			}
-		}
-
-		/// <summary>
 		/// Gets the number of key/values pairs contained in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
 		/// </summary>
 		/// <value>The number of key/value pairs contained in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.</value>
@@ -564,34 +410,6 @@ namespace PeachCore.Dom
 			get
 			{
 				return List.Count;
-			}
-		}
-
-		/// <summary>
-		/// Gets a value indicating whether access to the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> object is synchronized (thread-safe).
-		/// </summary>
-		/// <value>This method always returns false.</value>
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		/// <summary>
-		/// Gets an object that can be used to synchronize access to the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> object.
-		/// </summary>
-		/// <value>An object that can be used to synchronize access to the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> object.</value>
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				if (this._syncRoot == null)
-				{
-					System.Threading.Interlocked.CompareExchange(ref this._syncRoot, new object(), null);
-				}
-				return this._syncRoot;
 			}
 		}
 
@@ -672,44 +490,33 @@ namespace PeachCore.Dom
 		}
 
 
-		#region ICollection Members
+		#region IDictionary<TKey,TValue> Members
 
-		/// <summary>
-		/// Copies the elements of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> elements to a one-dimensional Array object at the specified index.
-		/// </summary>
-		/// <param name="array">The one-dimensional <see cref="Array"/> object that is the destination of the <see cref="T:KeyValuePair`2>"/> objects copied from the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>. The <see cref="Array"/> must have zero-based indexing.</param>
-		/// <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
-		/// <remarks>The <see cref="M:CopyTo"/> method preserves the order of the elements in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see></remarks>
-		public void CopyTo(System.Array array, int index)
+		void IDictionary<TKey, TValue>.Add(TKey key, TValue value)
 		{
-			((ICollection)List).CopyTo(array, index);
+			Add(key, value);
 		}
 
 		#endregion
 
+		#region IEnumerable Members
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return _dictionary.GetEnumerator();
+		}
+
+		#endregion
 	}
+	*/
 
 	/// <summary>
 	/// Represents a generic collection of key/value pairs that are ordered independently of the key and value.
 	/// </summary>
 	/// <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
 	/// <typeparam name="TValue">The type of the values in the dictionary</typeparam>
-	public interface IOrderedDictionary<TKey, TValue> : IOrderedDictionary, IDictionary<TKey, TValue>
+	public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
 	{
-		/// <summary>
-		/// Adds an entry with the specified key and value into the <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
-		/// </summary>
-		/// <param name="key">The key of the entry to add.</param>
-		/// <param name="value">The value of the entry to add.</param>
-		/// <returns>The index of the newly added entry</returns>
-		/// <remarks>
-		/// <para>You can also use the <see cref="P:System.Collections.Generic.IDictionary{TKey,TValue}.Item(TKey)"/> property to add new elements by setting the value of a key that does not exist in the <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection; however, if the specified key already exists in the <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see>, setting the <see cref="P:Item(TKey)"/> property overwrites the old value. In contrast, the <see cref="M:Add"/> method does not modify existing elements.</para></remarks>
-		/// <exception cref="ArgumentException">An element with the same key already exists in the <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see></exception>
-		/// <exception cref="NotSupportedException">The <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see> is read-only.<br/>
-		/// -or-<br/>
-		/// The <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see> has a fized size.</exception>
-		new int Add(TKey key, TValue value);
-
 		/// <summary>
 		/// Inserts a new entry into the <see cref="IOrderedDictionary{TKey,TValue}">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.
 		/// </summary>
@@ -733,12 +540,247 @@ namespace PeachCore.Dom
 		/// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
 		/// -or-<br/>
 		/// <paramref name="index"/> is equal to or greater than <see cref="System.Collections.ICollection.Count"/>.</exception>
-		new TValue this[int index]
+		TValue this[int index]
 		{
 			get;
 			set;
 		}
+		
+		/// <summary>
+		/// Returns the zero-based index of the specified key in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>
+		/// </summary>
+		/// <param name="key">The key to locate in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
+		/// <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
+		/// <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
+		int IndexOfKey(TKey key);
 	}
+
+	/// <summary>
+	/// Represents a generic collection of key/value pairs that are ordered independently of the key and value.
+	/// </summary>
+	/// <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
+	/// <typeparam name="TValue">The type of the values in the dictionary</typeparam>
+	public class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
+	{
+		private const int DefaultInitialCapacity = 0;
+
+		private static readonly string _keyTypeName = typeof(TKey).FullName;
+		private static readonly string _valueTypeName = typeof(TValue).FullName;
+		private static readonly bool _valueTypeIsReferenceType = !typeof(ValueType).IsAssignableFrom(typeof(TValue));
+
+		private Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey,TValue>();
+		private List<KeyValuePair<TKey, TValue>> _list = new List<KeyValuePair<TKey,TValue>>();
+		private IEqualityComparer<TKey> _comparer = null;
+		private object _syncRoot = null;
+
+		public event AddEventHandler<TKey, TValue> AddEvent;
+		protected void OnAdd(TKey key, TValue value)
+		{
+			if (AddEvent != null)
+				AddEvent(this, key, value);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see> class.
+		/// </summary>
+		public OrderedDictionary()
+		{
+		}
+
+		#region IOrderedDictionary<TKey,TValue> Members
+		/// <summary>
+		/// Returns the zero-based index of the specified key in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>
+		/// </summary>
+		/// <param name="key">The key to locate in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
+		/// <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="OrderedDictionary{TKey,TValue}">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
+		/// <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
+		public int IndexOfKey(TKey key)
+		{
+			if (null == key)
+				throw new ArgumentNullException("key");
+
+			for (int index = 0; index < _list.Count; index++)
+			{
+				KeyValuePair<TKey, TValue> entry = _list[index];
+				TKey next = entry.Key;
+				if (null != _comparer)
+				{
+					if (_comparer.Equals(next, key))
+					{
+						return index;
+					}
+				}
+				else if (next.Equals(key))
+				{
+					return index;
+				}
+			}
+
+			return -1;
+		}
+
+		public void Insert(int index, TKey key, TValue value)
+		{
+			if (index > Count || index < 0)
+				throw new ArgumentOutOfRangeException("index");
+
+			_dictionary.Add(key, value);
+			_list.Insert(index, new KeyValuePair<TKey, TValue>(key, value));
+
+			OnAdd(key, value);
+		}
+
+		public TValue this[int index]
+		{
+			get
+			{
+				return _list[index].Value;
+			}
+
+			set
+			{
+				if (index >= Count || index < 0)
+					throw new ArgumentOutOfRangeException("index", "'index' must be non-negative and less than the size of the collection");
+
+				TKey key = _list[index].Key;
+
+				_list[index] = new KeyValuePair<TKey, TValue>(key, value);
+				_dictionary[key] = value;
+
+				OnAdd(key, value);
+			}
+		}
+
+		#endregion
+
+		#region IDictionary<TKey,TValue> Members
+
+		public void Add(TKey key, TValue value)
+		{
+			_dictionary.Add(key, value);
+			_list.Add(new KeyValuePair<TKey, TValue>(key, value));
+			OnAdd(key, value);
+			//return Count - 1;
+		}
+
+		public bool ContainsKey(TKey key)
+		{
+			return _dictionary.ContainsKey(key);
+		}
+
+		public ICollection<TKey> Keys
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public bool Remove(TKey key)
+		{
+			if (null == key)
+				throw new ArgumentNullException("key");
+
+			int index = IndexOfKey(key);
+			if (index >= 0)
+			{
+				if (_dictionary.Remove(key))
+				{
+					_list.RemoveAt(index);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public bool TryGetValue(TKey key, out TValue value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public ICollection<TValue> Values
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public TValue this[TKey key]
+		{
+			get
+			{
+				return _dictionary[key];
+			}
+			set
+			{
+				if (_dictionary.ContainsKey(key))
+				{
+					_dictionary[key] = value;
+					_list[IndexOfKey(key)] = new KeyValuePair<TKey, TValue>(key, value);
+					OnAdd(key, value);
+				}
+				else
+				{
+					Add(key, value);
+				}
+			}
+		}
+
+		#endregion
+
+		#region ICollection<KeyValuePair<TKey,TValue>> Members
+
+		public void Add(KeyValuePair<TKey, TValue> item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Clear()
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Contains(KeyValuePair<TKey, TValue> item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		public int Count
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public bool IsReadOnly
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public bool Remove(KeyValuePair<TKey, TValue> item)
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
+		#region IEnumerable<KeyValuePair<TKey,TValue>> Members
+
+		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
+		#region IEnumerable Members
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+	}
+
 }
 
 // end
