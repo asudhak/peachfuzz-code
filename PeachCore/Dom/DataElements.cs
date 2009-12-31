@@ -457,9 +457,9 @@ namespace PeachCore.Dom
 			return value;
 		}
 
-		protected virtual byte[] InternalValueToByteArray(Variant b)
+		protected virtual BitStream InternalValueToBitStream(Variant b)
 		{
-			return (byte[])b;
+			return (BitStream)b;
 		}
 
 		/// <summary>
@@ -471,7 +471,7 @@ namespace PeachCore.Dom
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
 				return new BitStream((byte[]) MutatedValue);
 
-			BitStream value = new BitStream(InternalValueToByteArray(_internalValue));
+			BitStream value = InternalValueToBitStream(InternalValue);
 
 			if(_transformer != null)
 				value = _transformer.encode(value);
@@ -531,12 +531,15 @@ namespace PeachCore.Dom
 	/// <typeparam name="T"></typeparam>
 	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>, IList<DataElement>
 	{
-		protected List<DataElement> _childrenList;
-		protected Dictionary<string, DataElement> _childrenDict;
+		protected List<DataElement> _childrenList = new List<DataElement>();
+		protected Dictionary<string, DataElement> _childrenDict = new Dictionary<string,DataElement>();
 
 		public override bool isLeafNode
 		{
-			get { return false; }
+			get
+			{
+				return _childrenList.Count == 0;
+			}
 		}
 
 		public DataElement this[int index]
@@ -640,7 +643,7 @@ namespace PeachCore.Dom
 		public string lengthCalc;
 		public Variant length;
 
-		public virtual Variant GenerateInternalValue()
+		public override Variant GenerateInternalValue()
 		{
 			Variant value;
 
@@ -680,6 +683,7 @@ namespace PeachCore.Dom
 			if (_fixup != null)
 				value = _fixup.fixup(this);
 
+			_internalValue = value;
 			return value;
 		}
 	}
@@ -733,56 +737,81 @@ namespace PeachCore.Dom
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	public class Number : DataElement
 	{
-		protected int _size = 8;
+		protected uint _size = 8;
+		protected ulong _max = (ulong)sbyte.MaxValue;
+		protected long _min = sbyte.MinValue;
 		protected bool _signed = true;
 		protected bool _isLittleEndian = true;
 
-		protected override byte[] InternalValueToByteArray(Variant b)
+		public uint Size
 		{
-			byte[] value = null;
-
-			if (_signed)
+			get { return _size; }
+			set
 			{
-				switch (_size)
+				if (value == 0)
+					throw new ApplicationException("Size must be > 0");
+
+				_size = value;
+
+				if (_signed)
 				{
-					case 8:
-						value = BitConverter.GetBytes((sbyte)(int)b);
-						break;
-					case 16:
-						value = BitConverter.GetBytes((short)(int)b);
-						break;
-					case 32:
-						value = BitConverter.GetBytes((Int32)(int)b);
-						break;
-					case 64:
-						value = BitConverter.GetBytes((Int64)(int)b);
-						break;
+					_max = (ulong)Math.Pow(2, _size) / 2;
+					_min = 0 - ((long)Math.Pow(2, _size) / 2);
 				}
+				else
+				{
+					_max = (ulong)Math.Pow(2, _size) - 1;
+					_min = 0;
+				}
+				
+				Invalidate();
 			}
+		}
+
+		public bool Signed
+		{
+			get { return _signed; }
+			set
+			{
+				_signed = value;
+				Size = Size;
+
+				Invalidate();
+			}
+		}
+
+		public bool LittleEndian
+		{
+			get { return _isLittleEndian; }
+			set
+			{
+				_isLittleEndian = value;
+				Invalidate();
+			}
+		}
+
+		public ulong MaxValue
+		{
+			get { return _max; }
+		}
+
+		public long MinValue
+		{
+			get { return _min; }
+		}
+
+		protected override BitStream InternalValueToBitStream(Variant b)
+		{
+			BitStream bits = new BitStream();
+
+			if (_isLittleEndian)
+				bits.LittleEndian();
 			else
-			{
-				switch (_size)
-				{
-					case 8:
-						value = BitConverter.GetBytes((byte)(int)b);
-						break;
-					case 16:
-						value = BitConverter.GetBytes((ushort)(int)b);
-						break;
-					case 32:
-						value = BitConverter.GetBytes((UInt32)(int)b);
-						break;
-					case 64:
-						value = BitConverter.GetBytes((UInt64)(int)b);
-						break;
-				}
-			}
+				bits.BigEndian();
 
-			// Handle endian in ghetto manner
-			if (BitConverter.IsLittleEndian != _isLittleEndian)
-				System.Array.Reverse(value);
+			bits.WriteBits((ulong)InternalValue, Size);
 
-			return value;
+			return bits;
 		}
 	}
 
@@ -810,7 +839,7 @@ namespace PeachCore.Dom
 		protected string _lengthOther;
 		protected LengthType _lengthType;
 
-		protected override byte[] InternalValueToByteArray(Variant v)
+		protected override BitStream InternalValueToBitStream(Variant v)
 		{
 			byte[] value = null;
 
@@ -835,7 +864,7 @@ namespace PeachCore.Dom
 			else
 				throw new ApplicationException("String._type not set properly!");
 			
-			return value;
+			return new BitStream(value);
 		}
 	}
 
@@ -984,6 +1013,9 @@ namespace PeachCore.Dom
 		/// <returns>int representation of value</returns>
 		public static explicit operator int(Variant v)
 		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
 			switch (v._type)
 			{
 				case VariantType.Int:
@@ -1011,6 +1043,9 @@ namespace PeachCore.Dom
 
 		public static explicit operator long(Variant v)
 		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
 			switch (v._type)
 			{
 				case VariantType.Int:
@@ -1035,6 +1070,9 @@ namespace PeachCore.Dom
 
 		public static explicit operator ulong(Variant v)
 		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
 			switch (v._type)
 			{
 				case VariantType.Int:
@@ -1064,6 +1102,9 @@ namespace PeachCore.Dom
 		/// <returns>string representation of value</returns>
 		public static explicit operator string(Variant v)
 		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
 			switch (v._type)
 			{
 				case VariantType.Int:
@@ -1094,6 +1135,9 @@ namespace PeachCore.Dom
 		/// <returns>byte[] representation of value</returns>
 		public static explicit operator byte[](Variant v)
 		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
 			switch (v._type)
 			{
 				case VariantType.Int:
@@ -1115,6 +1159,9 @@ namespace PeachCore.Dom
 
 		public static explicit operator BitStream(Variant v)
 		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
 			switch (v._type)
 			{
 				case VariantType.Int:

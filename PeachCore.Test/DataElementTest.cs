@@ -141,10 +141,25 @@ namespace PeachCore.Test
 		[TestMethod()]
 		public void isLeafNodeTest()
 		{
-			DataElement target = CreateDataElement(); // TODO: Initialize to an appropriate value
-			bool actual;
-			actual = target.isLeafNode;
-			Assert.Inconclusive("Verify the correctness of this test method.");
+			Block target = new Block();
+			Block t1 = new Block();
+			Block t2 = new Block();
+
+			Assert.IsTrue(target.isLeafNode, "Target initially");
+
+			target.Add(t1);
+			Assert.IsFalse(target.isLeafNode, "target with single child");
+			Assert.IsTrue(t1.isLeafNode, "targets child t1");
+
+			t2.Add(target);
+			Assert.IsFalse(t2.isLeafNode, "t2 with target as child");
+			Assert.IsFalse(target.isLeafNode, "target as child of t2 with child t1");
+			Assert.IsTrue(t1.isLeafNode, "t1 as child to target child to t2");
+
+			target.Remove(t1);
+			Assert.IsFalse(t2.isLeafNode, "t2 after removing t1 from target");
+			Assert.IsTrue(target.isLeafNode, "target after removing t1, parent t2");
+			Assert.IsTrue(t1.isLeafNode, "t1 removed from target");
 		}
 
 		/// <summary>

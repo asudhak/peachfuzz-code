@@ -569,7 +569,8 @@ namespace PeachCore
 
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bytesToWrite));
-			WriteBits(bits.ReadBits(extraBits), extraBits);
+			if(extraBits > 0)
+				WriteBits(bits.ReadBits(extraBits), extraBits);
 
 			// Copy over DataElement positions, replace
 			// existing entries if they exist.
