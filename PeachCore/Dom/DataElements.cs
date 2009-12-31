@@ -106,7 +106,7 @@ namespace PeachCore.Dom
 	{
 		public override Variant GetValue()
 		{
-			int size = _of.Value.Length;
+			ulong size = _of.Value.LengthBytes;
 
 			// TODO: Call expressionGet
 
@@ -197,7 +197,7 @@ namespace PeachCore.Dom
 		protected DataElementContainer _parent;
 
 		protected Variant _internalValue;
-		protected byte[] _value;
+		protected BitStream _value;
 
 		protected bool _invalidated = false;
 
@@ -404,7 +404,7 @@ namespace PeachCore.Dom
         /// <summary>
         /// Get the final Value of this data element
         /// </summary>
-		public virtual byte[] Value
+		public virtual BitStream Value
 		{
 			get
 			{
@@ -466,15 +466,15 @@ namespace PeachCore.Dom
 		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
-		public byte[] GenerateValue()
+		public BitStream GenerateValue()
 		{
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
-				return (byte[]) MutatedValue;
+				return new BitStream((byte[]) MutatedValue);
 
-			byte[] value = InternalValueToByteArray(_internalValue);
+			BitStream value = new BitStream(InternalValueToByteArray(_internalValue));
 
 			if(_transformer != null)
-				return (byte[]) _transformer.encode(new Variant(value));
+				value = _transformer.encode(value);
 
 			_value = value;
 			return value;
@@ -648,11 +648,11 @@ namespace PeachCore.Dom
 
 			if (_mutatedValue == null)
 			{
-				List<byte> buff = new List<byte>();
+				BitStream stream = new BitStream();
 				foreach (DataElement child in this)
-					buff.AddRange(child.Value);
+					stream.Write(child.Value, child);
 
-				value = new Variant(buff.ToArray());
+				value = new Variant(stream);
 			}
 			else
 			{
@@ -881,16 +881,32 @@ namespace PeachCore.Dom
 		{
 			Unknown,
 			Int,
+			Long,
+			ULong,
 			String,
-			ByteString
+			ByteString,
+			BitStream
 		}
 
 		VariantType _type = VariantType.Unknown;
 		int _valueInt;
+		long _valueLong;
+		ulong _valueULong;
 		string _valueString;
 		byte[] _valueByteArray;
+		BitStream _valueBitStream = null;
 
 		public Variant(int v)
+		{
+			SetValue(v);
+		}
+
+		public Variant(long v)
+		{
+			SetValue(v);
+		}
+
+		public Variant(ulong v)
 		{
 			SetValue(v);
 		}
@@ -905,22 +921,60 @@ namespace PeachCore.Dom
 			SetValue(v);
 		}
 
+		public Variant(BitStream v)
+		{
+			SetValue(v);
+		}
+
 		public void SetValue(int v)
 		{
 			_type = VariantType.Int;
 			_valueInt = v;
+			_valueString = null;
+			_valueBitStream = null;
+			_valueByteArray = null;
+		}
+
+		public void SetValue(long v)
+		{
+			_type = VariantType.Long;
+			_valueLong = v;
+			_valueString = null;
+			_valueBitStream = null;
+			_valueByteArray = null;
+		}
+
+		public void SetValue(ulong v)
+		{
+			_type = VariantType.ULong;
+			_valueULong = v;
+			_valueString = null;
+			_valueBitStream = null;
+			_valueByteArray = null;
 		}
 
 		public void SetValue(string v)
 		{
 			_type = VariantType.String;
 			_valueString = v;
+			_valueBitStream = null;
+			_valueByteArray = null;
 		}
 
 		public void SetValue(byte[] v)
 		{
 			_type = VariantType.ByteString;
 			_valueByteArray = v;
+			_valueString = null;
+			_valueBitStream = null;
+		}
+
+		public void SetValue(BitStream v)
+		{
+			_type = VariantType.BitStream;
+			_valueBitStream = v;
+			_valueString = null;
+			_valueByteArray = null;
 		}
 
 		/// <summary>
@@ -934,10 +988,70 @@ namespace PeachCore.Dom
 			{
 				case VariantType.Int:
 					return v._valueInt;
+				case VariantType.Long:
+					if (v._valueLong > int.MaxValue || v._valueLong < int.MinValue)
+						throw new ApplicationException("Converting this long to an int would cause loss of data");
+
+					return (int)v._valueLong;
+				case VariantType.ULong:
+					if (v._valueULong > int.MaxValue)
+						throw new ApplicationException("Converting this ulong to an int would cause loss of data");
+
+					return (int)v._valueULong;
 				case VariantType.String:
 					return Convert.ToInt32(v._valueString);
 				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to int type.");
+				case VariantType.BitStream:
+					throw new NotSupportedException("Unable to convert BitStream to int type.");
+				default:
+					throw new NotSupportedException("Unable to convert to unknown type.");
+			}
+		}
+
+		public static explicit operator long(Variant v)
+		{
+			switch (v._type)
+			{
+				case VariantType.Int:
+					return (long)v._valueInt;
+				case VariantType.Long:
+					return v._valueLong;
+				case VariantType.ULong:
+					if (v._valueULong > long.MaxValue)
+						throw new ApplicationException("Converting this ulong to a long would cause loss of data");
+
+					return (long)v._valueULong;
+				case VariantType.String:
+					return Convert.ToInt64(v._valueString);
+				case VariantType.ByteString:
+					throw new NotSupportedException("Unable to convert byte[] to int type.");
+				case VariantType.BitStream:
+					throw new NotSupportedException("Unable to convert BitStream to int type.");
+				default:
+					throw new NotSupportedException("Unable to convert to unknown type.");
+			}
+		}
+
+		public static explicit operator ulong(Variant v)
+		{
+			switch (v._type)
+			{
+				case VariantType.Int:
+					return (ulong)v._valueInt;
+				case VariantType.Long:
+					if ((ulong)v._valueLong > ulong.MaxValue || v._valueLong < 0)
+						throw new ApplicationException("Converting this long to a ulong would cause loss of data");
+
+					return (ulong)v._valueLong;
+				case VariantType.ULong:
+					return v._valueULong;
+				case VariantType.String:
+					return Convert.ToUInt64(v._valueString);
+				case VariantType.ByteString:
+					throw new NotSupportedException("Unable to convert byte[] to int type.");
+				case VariantType.BitStream:
+					throw new NotSupportedException("Unable to convert BitStream to int type.");
 				default:
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}
@@ -954,10 +1068,16 @@ namespace PeachCore.Dom
 			{
 				case VariantType.Int:
 					return Convert.ToString(v._valueInt);
+				case VariantType.Long:
+					return Convert.ToString(v._valueLong);
+				case VariantType.ULong:
+					return Convert.ToString(v._valueULong);
 				case VariantType.String:
 					return v._valueString;
 				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to string type.");
+				case VariantType.BitStream:
+					throw new NotSupportedException("Unable to convert BitStream to int type.");
 				default:
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}
@@ -978,16 +1098,42 @@ namespace PeachCore.Dom
 			{
 				case VariantType.Int:
 					throw new NotSupportedException("Unable to convert int to byte[] type.");
+				case VariantType.Long:
+					throw new NotSupportedException("Unable to convert long to byte[] type.");
+				case VariantType.ULong:
+					throw new NotSupportedException("Unable to convert ulong to byte[] type.");
 				case VariantType.String:
 					throw new NotSupportedException("Unable to convert string to byte[] type.");
 				case VariantType.ByteString:
 					return v._valueByteArray;
+				case VariantType.BitStream:
+					return v._valueBitStream.Value;
+				default:
+					throw new NotSupportedException("Unable to convert to unknown type.");
+			}
+		}
+
+		public static explicit operator BitStream(Variant v)
+		{
+			switch (v._type)
+			{
+				case VariantType.Int:
+					throw new NotSupportedException("Unable to convert int to BitStream type.");
+				case VariantType.Long:
+					throw new NotSupportedException("Unable to convert long to BitStream type.");
+				case VariantType.ULong:
+					throw new NotSupportedException("Unable to convert ulong to BitStream type.");
+				case VariantType.String:
+					throw new NotSupportedException("Unable to convert string to BitStream type.");
+				case VariantType.ByteString:
+					return new BitStream(v._valueByteArray);
+				case VariantType.BitStream:
+					return v._valueBitStream;
 				default:
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}
 		}
 	}
-
 }
 
 // end

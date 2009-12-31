@@ -47,7 +47,7 @@ namespace PeachCore.Fixups
 		{
 			string objRef = args["ref"] as string;
 			DataElement from = obj.find(objRef);
-			byte[] data = from.Value;
+			byte[] data = from.Value.Value;
 
 			// Todo: Calc crc32
 
@@ -69,8 +69,8 @@ namespace PeachCore.Fixups
 		{
 			string objRef1 = args["ref1"] as string;
 			string objRef2 = args["ref2"] as string;
-			byte[] data1 = obj.find(objRef1).Value;
-			byte[] data2 = obj.find(objRef2).Value;
+			byte[] data1 = obj.find(objRef1).Value.Value;
+			byte[] data2 = obj.find(objRef2).Value.Value;
 
 			// Todo: Calc crc32
 

@@ -46,7 +46,7 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="data">Data to encode</param>
 		/// <returns>Returns encoded value or null if encoding is not supported.</returns>
-		public virtual Variant encode(Variant data)
+		public virtual BitStream encode(BitStream data)
 		{
 			data = internalEncode(data);
 
@@ -61,7 +61,7 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="data">Data to decode</param>
 		/// <returns>Returns decoded value or null if decoding is not supported.</returns>
-		public virtual Variant decode(Variant data)
+		public virtual BitStream decode(BitStream data)
 		{
 			if (anotherTransformer != null)
 				data = anotherTransformer.decode(data);
@@ -75,7 +75,7 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="data">Data to encode</param>
 		/// <returns>Returns encoded data</returns>
-		protected abstract Variant internalEncode(Variant data);
+		protected abstract BitStream internalEncode(BitStream data);
 
 		/// <summary>
 		/// Implement to perform actual decoding of
@@ -83,7 +83,7 @@ namespace PeachCore
 		/// </summary>
 		/// <param name="data">Data to decode</param>
 		/// <returns>Returns decoded data</returns>
-		protected abstract Variant internalDecode(Variant data);
+		protected abstract BitStream internalDecode(BitStream data);
 	}
 
 	/// <summary>
