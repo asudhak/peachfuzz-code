@@ -74,6 +74,15 @@ namespace PeachCore.Test
 				0x74,	0x72,	0x69,	0x6e,
 				0x67,	0x20,	0x33
 			   };
+			byte[] correctValue2 = {
+				0x53,	0x74,	0x72,	0x69,
+				0x6e,	0x67,	0x20,	0x31,
+				0x53,	0x74,	0x72,	0x69,
+				0x6e,	0x67,	0x20,	0x32,
+				0x09,	0x01,	0x03,	0x53,
+				0x74,	0x72,	0x69,	0x6e,
+				0x67,	0x20,	0x33
+			   };
 
 			Block block = new Block();
 			Block subBlock1 = new Block();
@@ -111,6 +120,11 @@ namespace PeachCore.Test
 			Assert.IsTrue(bits.ReadSByte() == 3, "num3 readback failed");
 
 			Assert.IsTrue(ByteArrayCompare(correctValue, bits.Value), "correctValue != bits.value");
+
+			// Now lets verify that Invalidation is working
+
+			num2.DefaultValue = new Variant(9);
+			Assert.IsTrue(ByteArrayCompare(correctValue2, bits.Value), "correctValue2 != bits.value");
 		}
 
 		bool ByteArrayCompare(byte[] a1, byte[] a2)

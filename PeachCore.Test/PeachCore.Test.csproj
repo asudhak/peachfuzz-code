@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="BitStreamTest.cs" />
     <Compile Include="BlockTest.cs" />
+    <Compile Include="DataElementContainerTest.cs" />
     <Compile Include="DataElementTest.cs" />
     <Compile Include="NumberTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

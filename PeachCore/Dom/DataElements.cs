@@ -209,8 +209,11 @@ namespace PeachCore.Dom
 
 		protected virtual void OnInvalidated(EventArgs e)
 		{
-			_internalValue = InternalValue;
-			_value = Value;
+			// Cause values to be regenerated next time they are
+			// requested.  We don't want todo this now as there could
+			// be a series of invalidations that occur.
+			_internalValue = null;
+			_value = null;
 
             // Bubble this up the chain
             if(_parent != null)
@@ -545,13 +548,43 @@ namespace PeachCore.Dom
 		public DataElement this[int index]
 		{
 			get { return _childrenList[index]; }
-			set { throw new NotImplementedException(); }
+			set
+			{
+				if (value == null)
+					throw new ApplicationException("Cannot set null value");
+
+				_childrenDict.Remove(_childrenList[index].name);
+				_childrenDict.Add(value.name, value);
+
+				_childrenList[index].parent = null;
+
+				_childrenList.RemoveAt(index);
+				_childrenList.Insert(index, value);
+
+				value.parent = this;
+
+				Invalidate();
+			}
 		}
 
 		public DataElement this[string key]
 		{
 			get { return _childrenDict[key]; }
-			set { throw new NotImplementedException(); }
+			set
+			{
+				if (value == null)
+					throw new ApplicationException("Cannot set null value");
+
+				int index = _childrenList.IndexOf(_childrenDict[key]);
+				_childrenList.RemoveAt(index);
+				_childrenDict[key].parent = null;
+				_childrenDict[key] = value;
+				_childrenList.Insert(index, value);
+
+				value.parent = this;
+
+				Invalidate();
+			}
 		}
 
 		#region IEnumerable<Element> Members
@@ -581,12 +614,25 @@ namespace PeachCore.Dom
 
 		public void Insert(int index, DataElement item)
 		{
+			if (_childrenDict.Keys.Contains(item.name))
+				throw new ApplicationException(
+					string.Format("Child DataElement named {0} already exists.", item.name));
+
 			_childrenList.Insert(index, item);
+			_childrenDict[item.name] = item;
+
+			item.parent = this;
+
+			Invalidate();
 		}
 
 		public void RemoveAt(int index)
 		{
+			_childrenDict.Remove(_childrenList[index].name);
+			_childrenList[index].parent = null;
 			_childrenList.RemoveAt(index);
+
+			Invalidate();
 		}
 
 		#endregion
@@ -595,12 +641,26 @@ namespace PeachCore.Dom
 
 		public void Add(DataElement item)
 		{
+			if (_childrenDict.Keys.Contains(item.name))
+				throw new ApplicationException(
+					string.Format("Child DataElement named {0} already exists.", item.name));
+
 			_childrenList.Add(item);
+			_childrenDict[item.name] = item;
+			item.parent = this;
+
+			Invalidate();
 		}
 
 		public void Clear()
 		{
+			foreach (DataElement e in _childrenList)
+				e.parent = null;
+
 			_childrenList.Clear();
+			_childrenDict.Clear();
+
+			Invalidate();
 		}
 
 		public bool Contains(DataElement item)
@@ -611,6 +671,13 @@ namespace PeachCore.Dom
 		public void CopyTo(DataElement[] array, int arrayIndex)
 		{
 			_childrenList.CopyTo(array, arrayIndex);
+			foreach (DataElement e in array)
+			{
+				_childrenDict[e.name] = e;
+				e.parent = this;
+			}
+
+			Invalidate();
 		}
 
 		public int Count
@@ -625,7 +692,13 @@ namespace PeachCore.Dom
 
 		public bool Remove(DataElement item)
 		{
-			return _childrenList.Remove(item);
+			_childrenDict.Remove(item.name);
+			bool ret = _childrenList.Remove(item);
+			item.parent = null;
+
+			Invalidate();
+
+			return ret;
 		}
 
 		#endregion
@@ -742,6 +815,18 @@ namespace PeachCore.Dom
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = true;
 		protected bool _isLittleEndian = true;
+
+		public override Variant DefaultValue
+		{
+			get { return base.DefaultValue; }
+			set
+			{
+				if ((long)value >= _min && (ulong)value <= _max)
+					base.DefaultValue = value;
+				else
+					throw new ApplicationException("DefaultValue not with in min/max values.");
+			}
+		}
 
 		public uint Size
 		{
