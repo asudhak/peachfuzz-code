@@ -77,7 +77,7 @@ namespace PeachCore.Dom
 
 		void dataModels_AddEvent(OrderedDictionary<string, DataModel> sender, string key, DataModel value)
 		{
-			value.parent = this;
+			value.dom = this;
 		}
 
 		void ns_AddEvent(OrderedDictionary<string, DomNamespace> sender, string key, DomNamespace value)

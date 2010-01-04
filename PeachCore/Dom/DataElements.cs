@@ -41,6 +41,7 @@ namespace PeachCore.Dom
 	{
 		String,
 		Python,
+		Ruby,
 		Calc
 	}
 
@@ -272,18 +273,23 @@ namespace PeachCore.Dom
 			this.name = name;
 		}
 
+		/// <summary>
+		/// Full qualified name of DataElement to
+		/// root DataElement.
+		/// </summary>
 		public string fullName
 		{
+			// TODO: Cache fullName if possible
+
 			get
 			{
 				string fullname = name;
 				DataElement obj = _parent;
 				while (obj != null)
 				{
-					fullname = obj.name + ".";
+					fullname = obj.name + "." + fullname;
 					obj = obj.parent;
 				}
-			
 
 				return fullname;
 			}
@@ -357,6 +363,11 @@ namespace PeachCore.Dom
 				parent.Invalidate();
 		}
 
+		/// <summary>
+		/// Is this a leaf of the DataModel tree?
+		/// 
+		/// True if DataElement has no children.
+		/// </summary>
 		public virtual bool isLeafNode
 		{
 			get { return true; }
@@ -364,6 +375,9 @@ namespace PeachCore.Dom
 
 		/// <summary>
 		/// Default value for this data element.
+		/// 
+		/// Changing the default value will invalidate
+		/// the model.
 		/// </summary>
 		public virtual Variant DefaultValue
 		{
@@ -378,6 +392,8 @@ namespace PeachCore.Dom
 
 		/// <summary>
 		/// Current mutated value (if any) for this data element.
+		/// 
+		/// Changing the MutatedValue will invalidate the model.
 		/// </summary>
 		public virtual Variant MutatedValue
 		{
@@ -481,6 +497,110 @@ namespace PeachCore.Dom
 
 			_value = value;
 			return value;
+		}
+
+		/// <summary>
+		/// Enumerates all DataElements starting from 'start.'
+		/// 
+		/// This method will first return children, then siblings, then children
+		/// of siblings as it walks up the parent chain.  It will not return
+		/// any duplicate elements.
+		/// 
+		/// Note: This is not the fastest way to enumerate all elements in the
+		/// tree, it's specifically intended for findings Elements in a search
+		/// pattern that matches a persons assumptions about name resolution.
+		/// </summary>
+		/// <param name="start">Starting DataElement</param>
+		/// <returns>All DataElements in model.</returns>
+		public static IEnumerable EnumerateAllElementsFromHere(DataElement start)
+		{
+			foreach(DataElement elem in EnumerateAllElementsFromHere(start, new List<DataElement>()))
+				yield return elem;
+		}
+
+		/// <summary>
+		/// Enumerates all DataElements starting from 'start.'
+		/// 
+		/// This method will first return children, then siblings, then children
+		/// of siblings as it walks up the parent chain.  It will not return
+		/// any duplicate elements.
+		/// 
+		/// Note: This is not the fastest way to enumerate all elements in the
+		/// tree, it's specifically intended for findings Elements in a search
+		/// pattern that matches a persons assumptions about name resolution.
+		/// </summary>
+		/// <param name="start">Starting DataElement</param>
+		/// <param name="cache">Cache of DataElements already returned</param>
+		/// <returns>All DataElements in model.</returns>
+		public static IEnumerable EnumerateAllElementsFromHere(DataElement start, 
+			List<DataElement> cache)
+		{
+			// Add ourselvs to the cache is not already done
+			if (!cache.Contains(start))
+				cache.Add(start);
+
+			// 1. Enumerate all siblings
+
+			if (start.parent != null)
+			{
+				foreach (DataElement elem in start.parent)
+					if (!cache.Contains(elem))
+						yield return elem;
+			}
+
+			// 2. Children
+
+			foreach (DataElement elem in EnumerateChildrenElements(start, cache))
+				yield return elem;
+
+			// 3. Children of siblings
+
+			if (start.parent != null)
+			{
+				foreach (DataElement elem in start.parent)
+				{
+					if (!cache.Contains(elem))
+					{
+						cache.Add(elem);
+						foreach(DataElement ret in EnumerateChildrenElements(elem, cache))
+							yield return ret;
+					}
+				}
+			}
+
+			// 4. Parent, walk up tree
+
+			if (start.parent != null)
+				foreach (DataElement elem in EnumerateAllElementsFromHere(start.parent))
+					yield return elem;
+		}
+
+		/// <summary>
+		/// Enumerates all children starting from, but not including
+		/// 'start.'  Will also enumerate the children of children until
+		/// leaf nodes are hit.
+		/// </summary>
+		/// <param name="start">Starting DataElement</param>
+		/// <param name="cache">Cache of already seen elements</param>
+		/// <returns>Returns DataElement children of start.</returns>
+		protected static IEnumerable EnumerateChildrenElements(DataElement start, List<DataElement> cache)
+		{
+			if (!(start is DataElementContainer))
+				yield break;
+
+			foreach (DataElement elem in start as DataElementContainer)
+				if (!cache.Contains(elem))
+					yield return elem;
+
+			foreach (DataElement elem in start as DataElementContainer)
+			{
+				if (!cache.Contains(elem))
+				{
+					cache.Add(elem);
+					foreach (DataElement ret in EnumerateAllElementsFromHere(elem, cache))
+						yield return ret;
+				}
+			}
 		}
 
 		/// <summary>
@@ -766,7 +886,7 @@ namespace PeachCore.Dom
 	/// </summary>
 	public class DataModel : Block
 	{
-		public object parent;
+		public Dom dom = null;
 	}
 
 	/// <summary>
@@ -778,9 +898,54 @@ namespace PeachCore.Dom
 	/// </summary>
 	[DataElement("Choice")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	//[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
 	public class Choice : DataElementContainer
 	{
+		public DataElement _selectedElement;
+
+		public DataElement SelectedElement
+		{
+			get { return _selectedElement; }
+			set
+			{
+				_selectedElement = value;
+				Invalidate();
+			}
+		}
+
+		public override Variant GenerateInternalValue()
+		{
+			Variant value;
+
+			// 1. Default value
+
+			if (_mutatedValue == null)
+				value = new Variant(SelectedElement.Value);
+
+			else
+				value = MutatedValue;
+
+			// 2. Relations
+
+			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+				return MutatedValue;
+
+			foreach (Relation r in _relations)
+			{
+				if (r.Of == this)
+					value = r.GetValue();
+			}
+
+			// 3. Fixup
+
+			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+				return MutatedValue;
+
+			if (_fixup != null)
+				value = _fixup.fixup(this);
+
+			_internalValue = value;
+			return value;
+		}
 	}
 
 	/// <summary>
@@ -815,6 +980,34 @@ namespace PeachCore.Dom
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = true;
 		protected bool _isLittleEndian = true;
+
+		public Number()
+			: base()
+		{
+			DefaultValue = new Variant(0);
+		}
+
+		public Number(string name)
+			: base(name)
+		{
+			DefaultValue = new Variant(0);
+		}
+
+		public Number(string name, long value, uint size)
+			:base(name)
+		{
+			_size = size;
+			DefaultValue = new Variant(value);
+		}
+
+		public Number(string name, long value, uint size, bool signed, bool isLittleEndian)
+			:base(name)
+		{
+			_size = size;
+			_signed = signed;
+			_isLittleEndian = isLittleEndian;
+			DefaultValue = new Variant(value);
+		}
 
 		public override Variant DefaultValue
 		{
@@ -911,11 +1104,18 @@ namespace PeachCore.Dom
 	}
 
 	/// <summary>
-	/// String data element
+	/// String data element.  String elements support numerouse encodings
+	/// such as straight ASCII through UTF-32.  Both little and big endian
+	/// strings are supported.
+	/// 
+	/// Strings also support standard attributes such as length, null termination,
+	/// etc.
 	/// </summary>
 	[DataElement("String")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
+	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
+	[ParameterAttribute("type", typeof(StringType), "Type of string (encoding)", true)]
 	public class String : DataElement
 	{
 		protected StringType _type = StringType.Ascii;
@@ -923,6 +1123,47 @@ namespace PeachCore.Dom
 		protected uint _length;
 		protected string _lengthOther;
 		protected LengthType _lengthType;
+
+		public String() 
+			: base()
+		{
+			DefaultValue = new Variant("Peach");
+		}
+
+		public String(string name)
+			: base(name)
+		{
+			DefaultValue = new Variant("Peach");
+		}
+
+		public String(string name, string defaultValue)
+			: base(name)
+		{
+			DefaultValue = new Variant(defaultValue);
+		}
+
+		public String(string name, Variant defaultValue)
+		{
+			DefaultValue = defaultValue;
+		}
+
+		public String(string name, string defaultValue, StringType type, bool nullTerminated)
+			: base(name)
+		{
+			DefaultValue = new Variant(defaultValue);
+			_type = type;
+			_nullTerminated = nullTerminated;
+		}
+
+		public String(string name, string defaultValue, StringType type, bool nullTerminated, uint length)
+			: base(name)
+		{
+			DefaultValue = new Variant(defaultValue);
+			_type = type;
+			_nullTerminated = nullTerminated;
+			_length = length;
+			_lengthType = LengthType.String;
+		}
 
 		protected override BitStream InternalValueToBitStream(Variant v)
 		{
@@ -958,7 +1199,7 @@ namespace PeachCore.Dom
 	/// </summary>
 	[DataElement("Blob")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
 	public class Blob : DataElement
 	{
 		protected uint _length;
@@ -968,16 +1209,78 @@ namespace PeachCore.Dom
 	[DataElement("Flags")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[DataElementChildSupportedAttribute("Flag")]
-	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
-	public class Flags : DataElement
+	[ParameterAttribute("size", typeof(uint), "Size in bits.  Typically [8, 16, 24, 32, 64]", true)]
+	public class Flags : DataElementContainer
 	{
+		protected uint _size = 0;
+
+		public uint Size
+		{
+			get { return _size; }
+			set
+			{
+				_size = value;
+				Invalidate();
+			}
+		}
+
+		public override Variant GenerateInternalValue()
+		{
+			BitStream bits = new BitStream();
+
+			foreach (DataElement child in this)
+			{
+				if (child is Flag)
+				{
+					bits.SeekBits(((Flag)child).Position, System.IO.SeekOrigin.Begin);
+					bits.Write(child.Value, child);
+				}
+				else
+					throw new ApplicationException("Flag has child thats not a flag!");
+			}
+
+			_internalValue = new Variant(bits);
+			return _internalValue;
+		}
+
 	}
 
 	[DataElement("Flag")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	//[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("position", typeof(uint), "Bit position of flag", true)]
+	[ParameterAttribute("size", typeof(uint), "Size in bits", true)]
 	public class Flag : DataElement
 	{
+		protected uint _size = 0;
+		protected uint _position = 0;
+
+		public uint Size
+		{
+			get { return _size; }
+			set
+			{
+				_size = value;
+				Invalidate();
+			}
+		}
+
+		public uint Position
+		{
+			get { return _position; }
+			set
+			{
+				_position = value;
+				Invalidate();
+			}
+		}
+
+		protected override BitStream InternalValueToBitStream(Variant v)
+		{
+			BitStream bits = new BitStream();
+			bits.WriteBits((ulong)v, Size);
+
+			return bits;
+		}
 	}
 
 	/// <summary>
