@@ -50,6 +50,8 @@ namespace PeachCore.Dom
 	/// </summary>
 	public abstract class Relation
 	{
+		public DataElement parent;
+
 		protected string _ofName = null;
 		protected string _fromName = null;
 		protected DataElement _of = null;
@@ -70,12 +72,23 @@ namespace PeachCore.Dom
 
 				_of = value;
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
+				_of.Invalidate();
 			}
 		}
 
 		public DataElement From
 		{
-			get { return _from; }
+			get
+			{
+				if (_from == null)
+				{
+					if (_of != null & parent != _of)
+						_from = parent;
+				}
+
+				return _from;
+			}
+
 			set { _from = value; }
 		}
 
@@ -88,7 +101,7 @@ namespace PeachCore.Dom
 		public void OfInvalidated(object sender, EventArgs e)
 		{
 			// Invalidate 'from' side
-			_from.Invalidate();
+			From.Invalidate();
 		}
 
 		/// <summary>
@@ -102,6 +115,166 @@ namespace PeachCore.Dom
 		/// <param name="value"></param>
 		public abstract void SetValue(Variant value);
 	}
+
+	/// <summary>
+	/// Abstract base class for DataElements that contain other
+	/// data elements.  Such as Block, Choice, or Flags.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class RelationContainer : IEnumerable<Relation>, IList<Relation>
+	{
+		protected DataElement parent;
+		protected List<Relation> _childrenList = new List<Relation>();
+		protected Dictionary<Type, Relation> _childrenDict = new Dictionary<Type, Relation>();
+
+		public RelationContainer(DataElement parent)
+		{
+			this.parent = parent;
+		}
+
+		public Relation this[int index]
+		{
+			get { return _childrenList[index]; }
+			set
+			{
+				if (value == null)
+					throw new ApplicationException("Cannot set null value");
+
+				_childrenDict.Remove(_childrenList[index].GetType());
+				_childrenDict.Add(value.GetType(), value);
+
+				_childrenList[index].parent = null;
+
+				_childrenList.RemoveAt(index);
+				_childrenList.Insert(index, value);
+
+				value.parent = parent;
+			}
+		}
+
+		public Relation this[Type key]
+		{
+			get { return _childrenDict[key]; }
+			set
+			{
+				if (value == null)
+					throw new ApplicationException("Cannot set null value");
+
+				int index = _childrenList.IndexOf(_childrenDict[key]);
+				_childrenList.RemoveAt(index);
+				_childrenDict[key].parent = null;
+				_childrenDict[key] = value;
+				_childrenList.Insert(index, value);
+
+				value.parent = parent;
+			}
+		}
+
+		#region IEnumerable<Relation> Members
+
+		public IEnumerator<Relation> GetEnumerator()
+		{
+			return _childrenList.GetEnumerator();
+		}
+
+		#endregion
+
+		#region IEnumerable Members
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _childrenList.GetEnumerator();
+		}
+
+		#endregion
+
+		#region IList<Relation> Members
+
+		public int IndexOf(Relation item)
+		{
+			return _childrenList.IndexOf(item);
+		}
+
+		public void Insert(int index, Relation item)
+		{
+			if (_childrenDict.Keys.Contains(item.GetType()))
+				throw new ApplicationException(
+					string.Format("Child Relation typed {0} already exists.", item.GetType()));
+
+			_childrenList.Insert(index, item);
+			_childrenDict[item.GetType()] = item;
+
+			item.parent = parent;
+		}
+
+		public void RemoveAt(int index)
+		{
+			_childrenDict.Remove(_childrenList[index].GetType());
+			_childrenList[index].parent = null;
+			_childrenList.RemoveAt(index);
+		}
+
+		#endregion
+
+		#region ICollection<Relation> Members
+
+		public void Add(Relation item)
+		{
+			if (_childrenDict.Keys.Contains(item.GetType()))
+				throw new ApplicationException(
+					string.Format("Child Relation typed {0} already exists.", item.GetType()));
+
+			_childrenList.Add(item);
+			_childrenDict[item.GetType()] = item;
+			item.parent = parent;
+		}
+
+		public void Clear()
+		{
+			foreach (Relation e in _childrenList)
+				e.parent = null;
+
+			_childrenList.Clear();
+			_childrenDict.Clear();
+		}
+
+		public bool Contains(Relation item)
+		{
+			return _childrenList.Contains(item);
+		}
+
+		public void CopyTo(Relation[] array, int arrayIndex)
+		{
+			_childrenList.CopyTo(array, arrayIndex);
+			foreach (Relation e in array)
+			{
+				_childrenDict[e.GetType()] = e;
+				e.parent = parent;
+			}
+		}
+
+		public int Count
+		{
+			get { return _childrenList.Count; }
+		}
+
+		public bool IsReadOnly
+		{
+			get { return false; }
+		}
+
+		public bool Remove(Relation item)
+		{
+			_childrenDict.Remove(item.GetType());
+			bool ret = _childrenList.Remove(item);
+			item.parent = null;
+
+			return ret;
+		}
+
+		#endregion
+	}
+
 
 	public class SizeRelation : Relation
 	{
@@ -191,7 +364,7 @@ namespace PeachCore.Dom
 		protected Variant _defaultValue;
 		protected Variant _mutatedValue;
 
-		protected List<Relation> _relations = new List<Relation>();
+		protected RelationContainer _relations = null;
 		protected Fixup _fixup = null;
 		protected Transformer _transformer = null;
 
@@ -266,11 +439,13 @@ namespace PeachCore.Dom
 		{
 			name = "Unknown" + _uniqueName;
 			_uniqueName++;
+			_relations = new RelationContainer(this);
 		}
 
 		public DataElement(string name)
 		{
 			this.name = name;
+			_relations = new RelationContainer(this);
 		}
 
 		/// <summary>
@@ -456,10 +631,8 @@ namespace PeachCore.Dom
 
 			foreach(Relation r in _relations)
 			{
-				if (r.Of == this)
-				{
+				if (r.Of != this)
 					value = r.GetValue();
-				}
 			}
 
 			// 3. Fixup
@@ -641,7 +814,7 @@ namespace PeachCore.Dom
 		/// <summary>
 		/// Relations for this data element.
 		/// </summary>
-		public List<Relation> relations
+		public RelationContainer relations
 		{
 			get { return _relations; }
 		}
@@ -952,17 +1125,19 @@ namespace PeachCore.Dom
 	/// Array of data elements.  Can be
 	/// zero or more elements.
 	/// </summary>
-	public class Array : DataElementContainer
+	[DataElement("Array")]
+	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
+	[DataElementRelationSupportedAttribute(DataElementRelations.Any)]
+	[ParameterAttribute("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
+	[ParameterAttribute("maxOccurs", typeof(int), "Maximum number of occurances (-1 for unlimited)", false)]
+	public class Array : Block
 	{
-		public uint minOccurs = 1;
-		public uint maxOccurs = 1;
+		public int minOccurs = 1;
+		public int maxOccurs = 1;
 
-		/// <summary>
-		/// Origional data element to use as 
-		/// template for other data elements in 
-		/// array.
-		/// </summary>
-		public DataElement origionalElemement = null;
+		public bool hasExpanded = false;
+
+		public DataElement origionalElement = null;
 	}
 
 	/// <summary>

@@ -100,8 +100,6 @@ namespace PeachCore.Test
 		public void relationsTest()
 		{
 			DataElement target = CreateDataElement(); // TODO: Initialize to an appropriate value
-			List<Relation> actual;
-			actual = target.relations;
 			Assert.Inconclusive("Verify the correctness of this test method.");
 		}
 

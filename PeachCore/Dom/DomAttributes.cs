@@ -80,14 +80,29 @@ namespace PeachCore.Dom
 		Hint
 	}
 
+	public enum DataElementRelations
+	{
+		Any,
+		Size,
+		Count,
+		Offset
+	}
+
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class DataElementChildSupportedAttribute : Attribute
 	{
 		public DataElementChildSupportedAttribute(string elementName)
 		{
 		}
-
 		public DataElementChildSupportedAttribute(DataElementTypes type)
+		{
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class DataElementRelationSupportedAttribute : Attribute
+	{
+		public DataElementRelationSupportedAttribute(DataElementRelations type)
 		{
 		}
 	}

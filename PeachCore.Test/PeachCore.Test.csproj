@@ -52,6 +52,7 @@
     <Compile Include="DataElementTest.cs" />
     <Compile Include="NumberTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SizeRelationTest.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
