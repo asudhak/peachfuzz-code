@@ -63,6 +63,36 @@ namespace PeachCore.Test
 		#endregion
 
 		[TestMethod]
+		public void ExpressionGetTest()
+		{
+			Block left = new Block();
+			Block right = new Block();
+
+			left.Add(new String("TheSize"));
+			right.Add(new String("Sizer"));
+
+			left["TheSize"].DefaultValue = new Variant("666");
+			right["Sizer"].DefaultValue = new Variant("Hello World");
+
+			string valueLeft = ASCIIEncoding.ASCII.GetString((byte[])left.InternalValue);
+			string valueRight = ASCIIEncoding.ASCII.GetString((byte[])right.InternalValue);
+
+			left["TheSize"].relations.Add(new SizeRelation());
+			left["TheSize"].relations[0].Of = right["Sizer"];
+			left["TheSize"].relations[0].ExpressionGet = "size + 1";
+
+			valueLeft = ASCIIEncoding.ASCII.GetString((byte[])left.InternalValue);
+			Assert.IsTrue(int.Parse(valueLeft) == "Hello World".Length+1, "left.Value == Length+1");
+
+			// Change of size
+			right["Sizer"].DefaultValue = new Variant("1234567890");
+
+			valueLeft = ASCIIEncoding.ASCII.GetString((byte[])left.InternalValue);
+
+			Assert.IsTrue(int.Parse(valueLeft) == "1234567890".Length+1, "left.Value == Length+1");
+		}
+
+		[TestMethod]
 		public void InvalidationTest()
 		{
 			Block left = new Block();

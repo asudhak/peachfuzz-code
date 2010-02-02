@@ -50,8 +50,7 @@ namespace PeachCore.Dom
 	/// </summary>
 	public abstract class Relation
 	{
-		public DataElement parent;
-
+		protected DataElement _parent = null;
 		protected string _ofName = null;
 		protected string _fromName = null;
 		protected DataElement _of = null;
@@ -59,6 +58,52 @@ namespace PeachCore.Dom
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
 
+		public string ExpressionGet
+		{
+			get { return _expressionGet; }
+			set
+			{
+				_expressionGet = value;
+				From.Invalidate();
+			}
+		}
+
+		public string ExpressionSet
+		{
+			get { return _expressionSet; }
+			set
+			{
+				_expressionSet = value;
+				From.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Parent of relation.  This is
+		/// typically our From as well.
+		/// </summary>
+		public DataElement parent
+		{
+			get { return _parent; }
+			set
+			{
+				if (_parent != null)
+				{
+					_parent.Invalidate();
+					_parent = null;
+				}
+
+				_parent = value;
+				_from = _parent;
+
+				if(_parent != null)
+					_parent.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// DataElement used to generate our value.
+		/// </summary>
 		public DataElement Of
 		{
 			get { return _of; }
@@ -72,10 +117,16 @@ namespace PeachCore.Dom
 
 				_of = value;
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
-				_of.Invalidate();
+
+				// We need to invalidate now that we have a new of.
+				From.Invalidate();
 			}
 		}
 
+		/// <summary>
+		/// DataElement that receives our value
+		/// when generated.
+		/// </summary>
 		public DataElement From
 		{
 			get
@@ -275,14 +326,25 @@ namespace PeachCore.Dom
 		#endregion
 	}
 
-
+	/// <summary>
+	/// Byte size relation.
+	/// </summary>
 	public class SizeRelation : Relation
 	{
 		public override Variant GetValue()
 		{
 			ulong size = _of.Value.LengthBytes;
 
-			// TODO: Call expressionGet
+			if (_expressionGet != null)
+			{
+				Dictionary<string, object> state = new Dictionary<string,object>();
+				state["size"] = size;
+				state["value"] = size;
+				state["self"] = this._parent;
+
+				object value = Scripting.EvalExpression(_expressionGet, state);
+				size = Convert.ToUInt64(value);
+			}
 
 			return new Variant(size);
 		}
@@ -293,6 +355,9 @@ namespace PeachCore.Dom
 		}
 	}
 
+	/// <summary>
+	/// Array count relation
+	/// </summary>
 	public class CountRelation : Relation
 	{
 		public override Variant GetValue()
@@ -306,6 +371,9 @@ namespace PeachCore.Dom
 		}
 	}
 
+	/// <summary>
+	/// Byte offset relation
+	/// </summary>
 	public class OffsetRelation : Relation
 	{
 		public override Variant GetValue()
