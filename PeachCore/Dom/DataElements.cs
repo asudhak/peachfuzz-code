@@ -268,6 +268,42 @@ namespace PeachCore.Dom
 			}
 		}
 
+		public bool hasWhenRelation
+		{
+			get
+			{
+				foreach (Relation rel in _childrenList)
+					if (rel is WhenRelation)
+						return true;
+
+				return false;
+			}
+		}
+
+		public bool hasSizeRelation
+		{
+			get
+			{
+				foreach (Relation rel in _childrenList)
+					if (rel is SizeRelation)
+						return true;
+
+				return false;
+			}
+		}
+
+		public bool hasOffsetRelation
+		{
+			get
+			{
+				foreach (Relation rel in _childrenList)
+					if (rel is OffsetRelation)
+						return true;
+
+				return false;
+			}
+		}
+
 		#region IEnumerable<Relation> Members
 
 		public IEnumerator<Relation> GetEnumerator()
@@ -445,6 +481,19 @@ namespace PeachCore.Dom
 	/// Byte offset relation
 	/// </summary>
 	public class OffsetRelation : Relation
+	{
+		public override Variant GetValue()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void SetValue(Variant value)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class WhenRelation : Relation
 	{
 		public override Variant GetValue()
 		{
