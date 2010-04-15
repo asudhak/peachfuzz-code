@@ -35,6 +35,10 @@ using PeachCore.Dom;
 
 namespace Peach
 {
+	/// <summary>
+	/// Command line interface for Peach 3.  Mostly backwards compatable with
+	/// Peach 2.3.
+	/// </summary>
 	class Program
 	{
 		static void Main(string[] args)
@@ -76,35 +80,42 @@ namespace Peach
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
 					{ "p|parallel=", v => parallel = v},
 					{ "a|agent", v => agent = true},
+					{ "bob", var => bob() },
 				};
 
-				if (!agent)
+				List<string> extra = p.Parse(args);
+
+				if (extra.Count == 0)
+					syntax();
+
+				if(agent)
 				{
-					List<string> extra = p.Parse(args);
-
-					if (extra.Count == 0)
-						syntax();
-
-					Engine e = new Engine(new ConsoleWatcher());
-					Dom dom = e.parseXml(extra[0]);
-
-					if (extra.Count > 1)
-						e.run(dom, dom.runs[extra[1]], config);
-
-					else
-						e.run(dom, config);
+					throw new NotImplementedException("Implement agent starting");
 				}
+
+				if (test)
+				{
+					Console.Write(" * Validating file [" + extra[0] + "]...");
+					Analyzer.defaultParser.asParserValidation(null, extra[0]);
+					Console.WriteLine("No Errors Found.");
+					return;
+				}
+
+				Engine e = new Engine(new ConsoleWatcher());
+				Dom dom = Analyzer.defaultParser.asParser(null, extra[0]);
+
+				if (extra.Count > 1)
+					e.run(dom, dom.runs[extra[1]], config);
 				else
-				{
-					// TODO: Start agent!
-				}
+					e.run(dom, config);
 			}
-			catch (SyntaxException e)
+			catch (SyntaxException)
 			{
+				// Ignore, thrown by syntax()
 			}
 			catch (PeachException ee)
 			{
-				Console.WriteLine(ee.Message);
+				Console.WriteLine(ee.Message + "\n");
 			}
 		}
 
@@ -120,13 +131,13 @@ Please submit any bugs to Michael Eddington <mike@phed.org>.
 
 Syntax:
 
-  peach.py -a [port] [password]
-  peach.py -c peach_xml_file [run_name]
-  peach.py -g
-  peach.py [--skipto #] peach_xml_flie [run_name]
-  peach.py -p 10,2 [--skipto #] peach_xml_file [run_name]
-  peach.py --range 100,200 peach_xml_file [run_name]
-  peach.py -t peach_xml_file
+  peach -a [port] [password]
+  peach -c peach_xml_file [run_name]
+  peach -g
+  peach [--skipto #] peach_xml_flie [run_name]
+  peach -p 10,2 [--skipto #] peach_xml_file [run_name]
+  peach --range 100,200 peach_xml_file [run_name]
+  peach -t peach_xml_file
 
   -1                         Perform a single iteration
   -a,--agent                 Launch Peach Agent
@@ -154,9 +165,9 @@ Peach Agent
 
 Performing Fuzzing Run
 
-  Syntax: peach.py peach_xml_flie [run_name]
-  Syntax: peach.py --skipto 1234 peach_xml_flie [run_name]
-  Syntax: peach.py --range 100,200 peach_xml_flie [run_name]
+  Syntax: peach peach_xml_flie [run_name]
+  Syntax: peach --skipto 1234 peach_xml_flie [run_name]
+  Syntax: peach --range 100,200 peach_xml_flie [run_name]
   
   A fuzzing run is started by by specifying the Peach XML file and the
   name of a run to perform.
@@ -168,7 +179,7 @@ Performing Fuzzing Run
 
 Performing A Parellel Fuzzing Run
 
-  Syntax: peach.py -p 10,2 peach_xml_flie [run_name]
+  Syntax: peach -p 10,2 peach_xml_flie [run_name]
 
   A parallel fuzzing run uses multiple machines to perform the same fuzzing
   which shortens the time required.  To run in parallel mode we will need
@@ -185,7 +196,7 @@ Validate Peach XML File
 
 Debug Peach XML File
 
-  Syntax: peach.py -1 --debug peach_xml_file
+  Syntax: peach -1 --debug peach_xml_file
   
   This will perform a single iteration (-1) of your pit file while displaying
   alot of debugging information (--debug).  The debugging information was
@@ -193,6 +204,37 @@ Debug Peach XML File
   debugging as well.
 ";
 			Console.WriteLine(syntax);
+			throw new SyntaxException();
+		}
+
+		public void bob()
+		{
+			string bob = @"
+@@@@@@@^^~~~~~~~~~~~~~~~~~~~~^@@@@@@@@@
+@@@@@@^     ~^  @  @@ @ @ @ I  ~^@@@@@@
+@@@@@            ~ ~~ ~I          @@@@@
+@@@@'                  '  _,w@<    @@@@
+@@@@     @@@@@@@@w___,w@@@@@@@@  @  @@@
+@@@@     @@@@@@@@@@@@@@@@@@@@@@  I  @@@
+@@@@     @@@@@@@@@@@@@@@@@@@@*@[ i  @@@
+@@@@     @@@@@@@@@@@@@@@@@@@@[][ | ]@@@
+@@@@     ~_,,_ ~@@@@@@@~ ____~ @    @@@
+@@@@    _~ ,  ,  `@@@~  _  _`@ ]L  J@@@
+@@@@  , @@w@ww+   @@@ww``,,@w@ ][  @@@@
+@@@@,  @@@@www@@@ @@@@@@@ww@@@@@[  @@@@
+@@@@@_|| @@@@@@P' @@P@@@@@@@@@@@[|c@@@@
+@@@@@@w| '@@P~  P]@@@-~, ~Y@@^'],@@@@@@
+@@@@@@@[   _        _J@@Tk     ]]@@@@@@
+@@@@@@@@,@ @@, c,,,,,,,y ,w@@[ ,@@@@@@@
+@@@@@@@@@ i @w   ====--_@@@@@  @@@@@@@@
+@@@@@@@@@@`,P~ _ ~^^^^Y@@@@@  @@@@@@@@@
+@@@@^^=^@@^   ^' ,ww,w@@@@@ _@@@@@@@@@@
+@@@_xJ~ ~   ,    @@@@@@@P~_@@@@@@@@@@@@
+@@   @,   ,@@@,_____   _,J@@@@@@@@@@@@@
+@@L  `' ,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+";
+			Console.WriteLine(bob);
 			throw new SyntaxException();
 		}
 	}
