@@ -29,7 +29,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime;
@@ -58,6 +57,9 @@ namespace PeachCore.Dom
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
 
+		/// <summary>
+		/// Expression that is run when getting the value.
+		/// </summary>
 		public string ExpressionGet
 		{
 			get { return _expressionGet; }
@@ -68,6 +70,9 @@ namespace PeachCore.Dom
 			}
 		}
 
+		/// <summary>
+		/// Expression that is run when setting the value.
+		/// </summary>
 		public string ExpressionSet
 		{
 			get { return _expressionSet; }
@@ -102,6 +107,42 @@ namespace PeachCore.Dom
 		}
 
 		/// <summary>
+		/// Name of DataElement used to generate our value.
+		/// </summary>
+		public string OfName
+		{
+			get { return _ofName; }
+			set
+			{
+				if(_of != null)
+					_of.Invalidated -= new InvalidatedEventHandler(OfInvalidated);
+
+				_ofName = value;
+				_of = null;
+
+				if(_from != null)
+					_from.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Name of DataElement that receives our value
+		/// when generated.
+		/// </summary>
+		public string FromName
+		{
+			get { return _fromName; }
+			set
+			{
+				if (_from != null)
+					_from.Invalidate();
+
+				_fromName = value;
+				_from = null;
+			}
+		}
+
+		/// <summary>
 		/// DataElement used to generate our value.
 		/// </summary>
 		public DataElement Of
@@ -117,6 +158,8 @@ namespace PeachCore.Dom
 
 				_of = value;
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
+
+				_ofName = _of.fullName;
 
 				// We need to invalidate now that we have a new of.
 				From.Invalidate();
@@ -140,7 +183,11 @@ namespace PeachCore.Dom
 				return _from;
 			}
 
-			set { _from = value; }
+			set
+			{
+				_from = value;
+				_fromName = _from.fullName;
+			}
 		}
 
 		/// <summary>
@@ -246,9 +293,18 @@ namespace PeachCore.Dom
 			return _childrenList.IndexOf(item);
 		}
 
+		protected bool HaveKey(Type key)
+		{
+			foreach (Type k in _childrenDict.Keys)
+				if (k == key)
+					return true;
+
+			return false;
+		}
+
 		public void Insert(int index, Relation item)
 		{
-			if (_childrenDict.Keys.Contains(item.GetType()))
+			if (HaveKey(item.GetType()))
 				throw new ApplicationException(
 					string.Format("Child Relation typed {0} already exists.", item.GetType()));
 
@@ -271,9 +327,10 @@ namespace PeachCore.Dom
 
 		public void Add(Relation item)
 		{
-			if (_childrenDict.Keys.Contains(item.GetType()))
-				throw new ApplicationException(
-					string.Format("Child Relation typed {0} already exists.", item.GetType()));
+			foreach(Type k in _childrenDict.Keys)
+				if(k == item.GetType())
+					throw new ApplicationException(
+						string.Format("Child Relation typed {0} already exists.", item.GetType()));
 
 			_childrenList.Add(item);
 			_childrenDict[item.GetType()] = item;
@@ -351,7 +408,20 @@ namespace PeachCore.Dom
 
 		public override void SetValue(Variant value)
 		{
-			throw new NotImplementedException();
+			ulong size = (ulong)value;
+
+			if (_expressionSet != null)
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["size"] = size;
+				state["value"] = size;
+				state["self"] = this._parent;
+
+				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				size = Convert.ToUInt64(newValue);
+			}
+
+			_from.DefaultValue = new Variant(size);
 		}
 	}
 
@@ -975,9 +1045,10 @@ namespace PeachCore.Dom
 
 		public void Insert(int index, DataElement item)
 		{
-			if (_childrenDict.Keys.Contains(item.name))
-				throw new ApplicationException(
-					string.Format("Child DataElement named {0} already exists.", item.name));
+			foreach(string k in _childrenDict.Keys)
+				if(k == item.name)
+					throw new ApplicationException(
+						string.Format("Child DataElement named {0} already exists.", item.name));
 
 			_childrenList.Insert(index, item);
 			_childrenDict[item.name] = item;
@@ -1002,9 +1073,10 @@ namespace PeachCore.Dom
 
 		public void Add(DataElement item)
 		{
-			if (_childrenDict.Keys.Contains(item.name))
-				throw new ApplicationException(
-					string.Format("Child DataElement named {0} already exists.", item.name));
+			foreach(string k in _childrenDict.Keys)
+				if(k == item.name)
+					throw new ApplicationException(
+						string.Format("Child DataElement named {0} already exists.", item.name));
 
 			_childrenList.Add(item);
 			_childrenDict[item.name] = item;

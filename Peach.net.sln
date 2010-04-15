@@ -1,10 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachCore", "PeachCore\PeachCore.csproj", "{63C7C70D-0CBF-40EC-A11E-079B2E943D47}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestThings", "TestThings\TestThings.csproj", "{4F69CE0E-E20A-47CE-A101-8939A966CF3F}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{517FD253-BB2D-447C-BEAF-8EF4291D6615}"
 	ProjectSection(SolutionItems) = preProject
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
@@ -14,6 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Peach.net3.vsmdi = Peach.net3.vsmdi
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachCore", "PeachCore\PeachCore.csproj", "{63C7C70D-0CBF-40EC-A11E-079B2E943D47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestThings", "TestThings\TestThings.csproj", "{4F69CE0E-E20A-47CE-A101-8939A966CF3F}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach", "Peach\Peach.csproj", "{52B8AB06-9191-4C0E-B308-9B3990B48E05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachFileFuzzer", "PeachFileFuzzer\PeachFileFuzzer.csproj", "{F2FC3605-A247-4FFF-95E3-06F7CA333DC2}"
@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachNetworkFuzzer", "Peach
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachCore.Test", "PeachCore.Test\PeachCore.Test.csproj", "{E9D153E8-1CCD-4AF3-8A58-AEEE6C3EF0E8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mdbglib", "3rdParty\mdbglib\mdbglib\mdbglib.vcproj", "{E5234B9A-96EB-4FBF-90DF-DB33BAF6860C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mdbglib", "3rdParty\mdbglib\mdbglib\mdbglib.vcxproj", "{E5234B9A-96EB-4FBF-90DF-DB33BAF6860C}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution

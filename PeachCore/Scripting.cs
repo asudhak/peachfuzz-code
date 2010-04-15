@@ -28,29 +28,74 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using IronPython;
 using IronPython.Hosting;
+using IronRuby;
+using IronRuby.Hosting;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using Microsoft.Scripting.Math;
 
 namespace PeachCore
 {
+	public enum ScriptingEngines
+	{
+		Python,
+		Ruby
+	}
+
 	/// <summary>
 	/// Scripting class provides easy to use
 	/// methods for using Python/Ruby with Peach.
 	/// </summary>
 	public class Scripting
 	{
+		static public ScriptingEngines DefaultScriptingEngine = ScriptingEngines.Python;
+		static public List<string> Imports = new List<string>();
+		static public List<string> Paths = new List<string>();
+		static public Dictionary<string, object> GlobalScope = new Dictionary<string, object>();
+
 		/// <summary>
 		/// Returns the correct scripting engine.
 		/// </summary>
 		/// <returns>Scipting engine</returns>
 		public static ScriptEngine GetEngine()
 		{
-			return Python.CreateEngine();
+			if (DefaultScriptingEngine == ScriptingEngines.Python)
+				return IronPython.Hosting.Python.CreateEngine();
+			else
+				return IronRuby.Ruby.CreateEngine();
+		}
+
+		public static void Exec(string code, Dictionary<string, object> localScope)
+		{
+			ScriptEngine engine = GetEngine();
+			ScriptScope scope = engine.CreateScope();
+
+			foreach (string key in GlobalScope.Keys)
+				scope.SetVariable(key, GlobalScope[key]);
+
+			foreach (string key in localScope.Keys)
+				scope.SetVariable(key, localScope[key]);
+
+			// Add any specified paths to our engine.
+			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
+			foreach(string path in Paths)
+				enginePaths.Add(path);
+
+			// Import any modules
+			foreach(string import in Imports)
+				scope.Engine.ImportModule(import);
+
+			try
+			{
+				engine.Execute(code, scope);
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Error executing expression ["+code+"]: " + ex.ToString());
+			}
 		}
 
 		public static object EvalExpression(string code, Dictionary<string, object> localScope)
@@ -58,8 +103,20 @@ namespace PeachCore
 			ScriptEngine engine = GetEngine();
 			ScriptScope scope = engine.CreateScope();
 
+			foreach (string key in GlobalScope.Keys)
+				scope.SetVariable(key, GlobalScope[key]);
+
 			foreach (string key in localScope.Keys)
 				scope.SetVariable(key, localScope[key]);
+
+			// Add any specified paths to our engine.
+			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
+			foreach(string path in Paths)
+				enginePaths.Add(path);
+
+			// Import any modules
+			foreach(string import in Imports)
+				scope.Engine.ImportModule(import);
 
 			try
 			{

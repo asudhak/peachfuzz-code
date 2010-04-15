@@ -29,7 +29,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using PeachCore.Dom;
 
@@ -192,12 +191,21 @@ namespace PeachCore
 			SeekToDataElement(elem.fullName);
 		}
 
+		protected bool HasDataElement(string name)
+		{
+			foreach (string key in _elementPositions.Keys)
+				if (key == name)
+					return true;
+
+			return false;
+		}
+
 		public void SeekToDataElement(string name)
 		{
 			if (name == null)
 				throw new ApplicationException("name is null");
 
-			if (!_elementPositions.Keys.Contains(name))
+			if (!HasDataElement(name))
 				throw new ApplicationException(
 					string.Format("DataElement {0} does not exist in collection", name));
 
@@ -286,7 +294,7 @@ namespace PeachCore
 			if (fullName == null)
 				throw new ApplicationException("fullName is null");
 
-			if (!_elementPositions.Keys.Contains(fullName))
+			if (!HasDataElement(fullName))
 				throw new ApplicationException(string.Format("Unknown DataElement {0}", fullName));
 
 			return _elementPositions[fullName][1];
@@ -315,7 +323,7 @@ namespace PeachCore
 			if (fullName == null)
 				throw new ApplicationException("fullName is null");
 
-			if (!_elementPositions.Keys.Contains(fullName))
+			if (!HasDataElement(fullName))
 				throw new ApplicationException(string.Format("Unknown DataElement {0}", fullName));
 
 			return _elementPositions[fullName][0];
@@ -331,7 +339,7 @@ namespace PeachCore
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (_elementPositions.Keys.Contains(e.fullName))
+			if (HasDataElement(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
 				_elementPositions.Add(e.fullName, new ulong[] { pos, lengthInBits });
@@ -346,7 +354,7 @@ namespace PeachCore
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if (_elementPositions.Keys.Contains(e.fullName))
+			if (HasDataElement(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
 				_elementPositions.Add(e.fullName, new ulong[] { pos, 0 });
@@ -363,7 +371,7 @@ namespace PeachCore
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
 
-			if(!_elementPositions.Keys.Contains(e.fullName))
+			if(!HasDataElement(e.fullName))
 				throw new ApplicationException(
 					string.Format("Element position list does not contain DataElement {0}.", e.fullName));
 
@@ -576,7 +584,7 @@ namespace PeachCore
 			// existing entries if they exist.
 			foreach (string key in bits._elementPositions.Keys)
 			{
-				if (!_elementPositions.Keys.Contains(key))
+				if (!HasDataElement(key))
 					_elementPositions.Add(key, bits._elementPositions[key]);
 				else
 					_elementPositions[key] = bits._elementPositions[key];
@@ -942,7 +950,7 @@ namespace PeachCore
 
 				foreach (string key in bits._elementPositions.Keys)
 				{
-					if(_elementPositions.Keys.Contains(key))
+					if(HasDataElement(key))
 						throw new ApplicationException(
 							string.Format("Dictionary already contains a key called {0}", key));
 
@@ -976,7 +984,7 @@ namespace PeachCore
 				if (vals[0] >= curpos)
 				{
 					vals[0] += retpos - curpos;
-					if (!tmp._elementPositions.Keys.Contains(key))
+					if (!tmp.HasDataElement(key))
 						tmp._elementPositions.Add(key, vals);
 					else
 						throw new ApplicationException(
