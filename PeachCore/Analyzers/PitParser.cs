@@ -97,6 +97,11 @@ namespace PeachCore.Analyzers
 			return _dom;
 		}
 
+		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
+		{
+			validatePit(fileName, PeachSchemaFile);
+		}
+
 		/// <summary>
 		/// Validate PIT XML using Schema file.
 		/// </summary>
@@ -206,7 +211,7 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "DataModel")
 				{
-					DataModel dm = handleDataModel(child, null);
+					DataModel dm = handleDataModel(child);
 					dom.dataModels.Add(dm.name, dm);
 				}
 			}
@@ -578,6 +583,8 @@ namespace PeachCore.Analyzers
 				case "when":
 					break;
 			}
+
+			return null;
 		}
 
 		protected Fixup handleFixup(XmlNode node, DataElement parent)

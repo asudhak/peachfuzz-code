@@ -66,6 +66,16 @@ namespace PeachCore
 			return null;
 		}
 
+		/// <summary>
+		/// Called to perform validation pass.
+		/// </summary>
+		/// <param name="args">Arguments</param>
+		/// <param name="fileName">Filename to test</param>
+		/// <returns>Throws PeachException on error.</returns>
+		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
+		{
+		}
+
 		public virtual void asDataElement(DataElement parent, Dictionary<string, string> args, object dataBuffer)
 		{
 		}

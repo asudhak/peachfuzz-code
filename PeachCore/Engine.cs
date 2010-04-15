@@ -113,11 +113,6 @@ namespace PeachCore
 		{
 		}
 
-		public Dom.Dom parseXml(string fileName)
-		{
-			return Analyzer.defaultParser.asParser(null, fileName);
-		}
-
 		public uint count(Dom.Dom dom, Run run)
 		{
 			return 0;

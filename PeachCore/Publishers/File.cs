@@ -36,12 +36,12 @@ namespace PeachCore.Publishers
 {
 	[PublisherAttribute("FileStream")]
 	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing", true)]
-	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default false]", false)]
+	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default true]", false)]
 	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
 	public class File : Publisher
 	{
 		public string fileName;
-		public bool overwrite = false;
+		public bool overwrite = true;
 		public bool append = false;
 		protected FileStream stream = null;
 
