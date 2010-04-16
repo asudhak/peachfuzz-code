@@ -1529,6 +1529,31 @@ namespace PeachCore.Dom
 			_lengthType = LengthType.String;
 		}
 
+		/// <summary>
+		/// String type/encoding to be used.  Default is 
+		/// ASCII.
+		/// </summary>
+		public StringType stringType
+		{
+			get { return _type; }
+			set { _type = value; }
+		}
+
+		/// <summary>
+		/// Is string null terminated?  For ASCII strings this
+		/// is a single NULL characters, for WCHAR's, two NULL 
+		/// characters are used.
+		/// </summary>
+		public bool nullTerminated
+		{
+			get { return _nullTerminated; }
+			set
+			{
+				_nullTerminated = value;
+				Invalidate();
+			}
+		}
+
 		protected override BitStream InternalValueToBitStream(Variant v)
 		{
 			byte[] value = null;

@@ -111,10 +111,76 @@ namespace PeachCore.Cracker
 
 		protected void handleString(Dom.String element, BitStream data)
 		{
+			if (element.nullTerminated)
+			{
+				// Locate NULL character in stream
+				bool foundNull = false;
+				bool twoNulls = element.stringType == StringType.Utf16 || element.stringType == StringType.Utf16be;
+				ulong currentPos = data.TellBits();
+
+				for (ulong i = data.TellBytes(); i < data.LengthBytes; i++)
+				{
+					if (data.ReadByte() == 0)
+					{
+						if (twoNulls)
+						{
+							if (data.ReadByte() == 0)
+							{
+								foundNull = true;
+								break;
+							}
+							else
+							{
+								data.SeekBits(-8, System.IO.SeekOrigin.Current);
+								continue;
+							}
+						}
+						else
+						{
+							foundNull = true;
+							break;
+						}
+					}
+				}
+
+				if (!foundNull)
+					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.");
+
+				ulong endPos = data.TellBits();
+
+				// Do not include NULLs in our read.
+				ulong byteCount = ((endPos - currentPos) / 8) - 1;
+				if (twoNulls)
+					byteCount--;
+
+				data.SeekBits((long)currentPos, System.IO.SeekOrigin.Begin);
+				byte [] value = data.ReadBytes(byteCount);
+				string strValue = ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(value);
+				element.DefaultValue = new Variant(strValue);
+
+				// Now skip past nulls
+				if (twoNulls)
+					data.SeekBits(16, System.IO.SeekOrigin.Current);
+				else
+					data.SeekBits(8, System.IO.SeekOrigin.Current);
+
+				return;
+			}
 		}
 
 		protected void handleNumber(Number element, BitStream data)
 		{
+			if (data.LengthBits <= data.TellBits() + element.Size)
+				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.");
+
+			if (element.LittleEndian)
+				data.LittleEndian();
+			else
+				data.BigEndian();
+
+			ulong value = data.ReadBits(element.Size);
+
+			element.DefaultValue = new Variant(value);
 		}
 
 		protected void handleFlags(Flags element, BitStream data)
