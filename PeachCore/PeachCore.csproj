@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent\Agent.cs" />
+    <Compile Include="Agent\AgentClient.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />

@@ -304,6 +304,50 @@ namespace PeachCore.Dom
 			}
 		}
 
+		public SizeRelation getSizeRelation()
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				if (rel is SizeRelation)
+					return rel as SizeRelation;
+			}
+
+			return null;
+		}
+
+		public CountRelation getCountRelation()
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				if (rel is CountRelation)
+					return rel as CountRelation;
+			}
+
+			return null;
+		}
+
+		public OffsetRelation getOffsetRelation()
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				if (rel is OffsetRelation)
+					return rel as OffsetRelation;
+			}
+
+			return null;
+		}
+
+		public WhenRelation getWhenRelation()
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				if (rel is WhenRelation)
+					return rel as WhenRelation;
+			}
+
+			return null;
+		}
+
 		#region IEnumerable<Relation> Members
 
 		public IEnumerator<Relation> GetEnumerator()
@@ -547,6 +591,7 @@ namespace PeachCore.Dom
 		public string name;
 		public bool isMutable = true;
 		public uint mutationFlags = MUTATE_DEFAULT;
+		public bool isToken = false;
 
 		protected Variant _defaultValue;
 		protected Variant _mutatedValue;
@@ -561,6 +606,11 @@ namespace PeachCore.Dom
 		protected BitStream _value;
 
 		protected bool _invalidated = false;
+
+		protected bool _hasLength = false;
+		protected ulong _length = 0;
+		protected LengthType _lengthType = LengthType.String;
+		protected string _lengthOther = null;
 
 		#region Events
 
@@ -733,6 +783,60 @@ namespace PeachCore.Dom
 		public virtual bool isLeafNode
 		{
 			get { return true; }
+		}
+
+		/// <summary>
+		/// Does element have a length?  This is
+		/// separate from Relations.
+		/// </summary>
+		public virtual bool hasLength
+		{
+			get { return _hasLength; }
+			set { _hasLength = value; }
+		}
+
+		/// <summary>
+		/// Length of element.  In the case that 
+		/// LengthType == "Calc" we will evaluate the
+		/// expression.
+		/// </summary>
+		public virtual ulong length
+		{
+			get
+			{
+				switch (_lengthType)
+				{
+					case LengthType.String:
+						return _length;
+					case LengthType.Calc:
+						Dictionary<string, object> scope = new Dictionary<string,object>();
+						scope["self"] = this;
+						return (ulong)Scripting.EvalExpression(_lengthOther, scope);
+					default:
+						throw new NotSupportedException("Error calculating length.");
+				}
+			}
+			set
+			{
+				_lengthType = LengthType.String;
+				_length = value;
+			}
+		}
+
+		/// <summary>
+		/// Length expression.  This expression is used
+		/// to calculate the length of this element.
+		/// </summary>
+		public virtual string lengthOther
+		{
+			get { return _lengthOther; }
+			set { _lengthOther = value; }
+		}
+
+		public virtual LengthType lengthType
+		{
+			get { return _lengthType; }
+			set { _lengthType = value; }
 		}
 
 		/// <summary>
@@ -1373,6 +1477,36 @@ namespace PeachCore.Dom
 			DefaultValue = new Variant(value);
 		}
 
+		public override ulong length
+		{
+			get
+			{
+				return _size / 8;
+			}
+			set
+			{
+				throw new NotSupportedException("A numbers size must be set by Size.");
+			}
+		}
+
+		public override bool hasLength
+		{
+			get
+			{
+				return true;
+			}
+			set
+			{
+				throw new NotSupportedException("A number always has a size.");
+			}
+		}
+
+		public override LengthType lengthType
+		{
+			get { return LengthType.String; }
+			set { throw new NotSupportedException("Cannot set LengthType on a Number."); }
+		}
+
 		public override Variant DefaultValue
 		{
 			get { return base.DefaultValue; }
@@ -1483,10 +1617,8 @@ namespace PeachCore.Dom
 	public class String : DataElement
 	{
 		protected StringType _type = StringType.Ascii;
-		protected bool _nullTerminated;
-		protected uint _length;
-		protected string _lengthOther;
-		protected LengthType _lengthType;
+		protected bool _nullTerminated = false;
+		protected char _padCharacter = '\0';
 
 		public String() 
 			: base()
@@ -1550,6 +1682,19 @@ namespace PeachCore.Dom
 			set
 			{
 				_nullTerminated = value;
+				Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Pad character for string.  Defaults to NULL.
+		/// </summary>
+		public char padCharacter
+		{
+			get { return _padCharacter; }
+			set
+			{
+				_padCharacter = value;
 				Invalidate();
 			}
 		}

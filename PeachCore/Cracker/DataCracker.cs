@@ -10,9 +10,108 @@ namespace PeachCore.Cracker
 	/// </summary>
 	public class DataCracker
 	{
+		/// <summary>
+		/// A stack of sized DataElement containers.
+		/// </summary>
+		List<DataElement> _sizedBlockStack = new List<DataElement>();
+		/// <summary>
+		/// Mapping of elements from _sizedBlockStack to there lengths.
+		/// </summary>
+		Dictionary<DataElement, ulong> _sizedBlockMap = new Dictionary<DataElement, ulong>();
+
 		public DataModel CrackData(DataModel model, BitStream data)
 		{
-			return null;
+			_sizedBlockStack = new List<DataElement>();
+			_sizedBlockMap = new Dictionary<DataElement, ulong>();
+
+			handleNode(model, data);
+
+			return model;
+		}
+
+		/// <summary>
+		/// Is element last unsized element in currently sized area.  If not
+		/// then 'size' is set to the number of bytes from element to ened of
+		/// the sized data.
+		/// </summary>
+		/// <param name="element">Element to check</param>
+		/// <param name="size">Set to the number of bytes from element to end of the data.</param>
+		/// <returns>Returns true if last unsigned element, else false.</returns>
+		protected bool isLastUnsizedElement(DataElement element, ref ulong size)
+		{
+			DataElement currentElement = element;
+			size = 0;
+
+			while (true)
+			{
+				currentElement = currentElement.nextSibling();
+				if (currentElement == null && currentElement.parent == null)
+					break;
+				else if (currentElement == null)
+					currentElement = currentElement.parent;
+				else
+				{
+					if (currentElement.hasLength)
+						size += currentElement.length;
+					else
+					{
+						size = 0;
+						return false;
+					}
+				}
+			}
+
+			size = 0;
+			return true;
+		}
+
+		/// <summary>
+		/// Is there a token next in the list of elements to parse, or
+		/// can we calculate our distance to the next token?
+		/// </summary>
+		/// <param name="element">Element to check</param>
+		/// <param name="size">Set to the number of bytes from element to token.</param>
+		/// <param name="token">Set to token element if found</param>
+		/// <returns>Returns true if found token, else false.</returns>
+		protected bool isTokenNext(DataElement element, ref ulong size, ref DataElement token)
+		{
+			DataElement currentElement = element;
+			token = null;
+			size = 0;
+
+			while (currentElement != null)
+			{
+				currentElement = currentElement.nextSibling();
+				if (currentElement == null && currentElement.parent == null)
+					break;
+				else if (currentElement == null)
+				{
+					// Make sure we scape Choice's!
+					do
+					{
+						currentElement = currentElement.parent;
+					}
+					while (currentElement is Choice);
+				}
+				else
+				{
+					if (currentElement.isToken)
+					{
+						token = currentElement;
+						return true;
+					}
+					if (currentElement.hasLength)
+						size += currentElement.length;
+					else
+					{
+						size = 0;
+						return false;
+					}
+				}
+			}
+
+			size = 0;
+			return false;
 		}
 
 		protected void handleNode(DataElement element, BitStream data)
@@ -58,9 +157,6 @@ namespace PeachCore.Cracker
 			{
 				handleBlob(element as Blob, data);
 			}
-			// else if(elemtn is Custom)
-			//{
-			//}
 			else
 			{
 				throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
@@ -76,13 +172,49 @@ namespace PeachCore.Cracker
 			throw new NotImplementedException("Implement handArray");
 		}
 
+		/// <summary>
+		/// Handle crack a Block element.
+		/// </summary>
+		/// <param name="element">Block to crack</param>
+		/// <param name="data">Data stream to use when cracking</param>
 		protected void handleBlock(Block element, BitStream data)
 		{
+			BitStream sizedData = data;
+
 			// Do we have relations or a length?
+			if (element.relations.hasSizeRelation)
+			{
+				// TODO: Check we are parent of From side of relation
+				ulong size = (ulong)element.relations.getSizeRelation().GetValue();
+				_sizedBlockStack.Add(element);
+				_sizedBlockMap[element] = size;
+
+				sizedData = new BitStream(data.ReadBytes(size));
+			}
+			else if (element.hasLength)
+			{
+				ulong size = (ulong)element.length;
+				_sizedBlockStack.Add(element);
+				_sizedBlockMap[element] = size;
+
+				sizedData = new BitStream(data.ReadBytes(size));
+			}
 
 			// Handle children
 			foreach (DataElement child in element)
-				handleNode(child, data);
+			{
+				handleNode(child, sizedData);
+
+				// TODO: If child is parent of From side of relation
+				//       then re-size or data block now.
+			}
+
+			// Remove our element from the stack & map
+			if (sizedData != data)
+			{
+				_sizedBlockStack.Remove(element);
+				_sizedBlockMap.Remove(element);
+			}
 		}
 
 		protected void handleChoice(Choice element, BitStream data)
@@ -166,6 +298,47 @@ namespace PeachCore.Cracker
 
 				return;
 			}
+
+			ulong? stringLength = null;
+
+			// Check for relation and/or size
+			if (element.relations.hasSizeRelation)
+			{
+				SizeRelation rel = element.relations.getSizeRelation();
+				stringLength = (ulong)rel.GetValue();
+			}
+			else if (element.hasLength)
+			{
+				stringLength = element.length;
+			}
+			else
+			{
+				ulong size = 0;
+				DataElement token = null;
+
+				if (isLastUnsizedElement(element, ref size))
+					stringLength = data.LengthBytes - (data.TellBytes()+size);
+				else if (isTokenNext(element, ref size, ref token))
+				{
+					throw new NotImplementedException("Need to implement this!");
+				}
+			}
+
+			if (stringLength != null)
+			{
+				if ((data.TellBytes() + stringLength) >= data.LengthBytes)
+					throw new CrackingFailure("String '" + element.fullName +
+						"' has length of '" + stringLength + "' but buffer only has '" +
+						(data.LengthBytes - data.TellBytes()) + "' bytes left.");
+
+				element.DefaultValue = new Variant(
+					ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
+					data.ReadBytes((uint)stringLength)));
+
+				return;
+			}
+
+			throw new CrackingFailure("Unable to crack '" + element.fullName + "'.");
 		}
 
 		protected void handleNumber(Number element, BitStream data)
