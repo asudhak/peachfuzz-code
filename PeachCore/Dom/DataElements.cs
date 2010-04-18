@@ -526,6 +526,9 @@ namespace PeachCore.Dom
 	/// </summary>
 	public class OffsetRelation : Relation
 	{
+		public bool isRelativeOffset;
+		public string relativeTo = null;
+
 		public override Variant GetValue()
 		{
 			throw new NotImplementedException();
@@ -539,6 +542,8 @@ namespace PeachCore.Dom
 
 	public class WhenRelation : Relation
 	{
+		public string WhenExpression = "";
+
 		public override Variant GetValue()
 		{
 			throw new NotImplementedException();
@@ -1127,6 +1132,25 @@ namespace PeachCore.Dom
 			{
 				return _childrenList.Count == 0;
 			}
+		}
+
+		/// <summary>
+		/// Check if we are a parent of an element.  This is
+		/// true even if we are not the direct parent, but several
+		/// layers up.
+		/// </summary>
+		/// <param name="element">Element to check</param>
+		/// <returns>Returns true if we are a parent of element.</returns>
+		public bool isParentOf(DataElement element)
+		{
+			while (element.parent != null && element.parent is DataElement)
+			{
+				element = element.parent;
+				if (element == this)
+					return true;
+			}
+
+			return false;
 		}
 
 		public DataElement this[int index]

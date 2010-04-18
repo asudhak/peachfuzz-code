@@ -19,10 +19,16 @@ namespace PeachCore.Cracker
 		/// </summary>
 		Dictionary<DataElement, ulong> _sizedBlockMap = new Dictionary<DataElement, ulong>();
 
+		/// <summary>
+		/// The full data stream.
+		/// </summary>
+		BitStream _data = null;
+
 		public DataModel CrackData(DataModel model, BitStream data)
 		{
 			_sizedBlockStack = new List<DataElement>();
 			_sizedBlockMap = new Dictionary<DataElement, ulong>();
+			_data = data;
 
 			handleNode(model, data);
 
@@ -114,18 +120,58 @@ namespace PeachCore.Cracker
 			return false;
 		}
 
+		/// <summary>
+		/// Called to crack a DataElement based on an input stream.  This method
+		/// will hand cracking off to a more specific method after performing
+		/// some common tasks.
+		/// </summary>
+		/// <param name="element">DataElement to crack</param>
+		/// <param name="data">Input stream to use for data</param>
 		protected void handleNode(DataElement element, BitStream data)
 		{
+			ulong startingPosition = data.TellBits();
+			bool hasOffsetRelation = false;
+
 			// Has when relation
 			if (element.relations.hasWhenRelation)
 			{
-				throw new NotImplementedException("Handle WHen Relation!");
+				Dictionary<string, object> scope = new Dictionary<string,object>();
+				scope["self"] = element;
+
+				bool? ret = Scripting.EvalExpression(element.relations.getWhenRelation().WhenExpression, scope) as bool?;
+				if (ret == null)
+					throw new PeachException("When expression failed for element '" + 
+						element.fullName + "' [" + 
+						element.relations.getWhenRelation().WhenExpression + "].");
+
+				if (ret == false)
+				{
+					// Okay, time to make this element VANISH!
+					element.parent.Remove(element);
+					return;
+				}
 			}
 
 			// Offset relation
 			if (element.relations.hasOffsetRelation)
 			{
-				throw new NotImplementedException("Handle offset relation!");
+				hasOffsetRelation = true;
+				OffsetRelation rel = element.relations.getOffsetRelation();
+				long offset = (long)rel.GetValue();
+
+				if (!rel.isRelativeOffset)
+				{
+					// Relative from start of data
+					
+				}
+				else if (rel.relativeTo == null)
+				{
+					throw new NotImplementedException("Yah, we need some looove....");
+				}
+				else
+				{
+					throw new NotImplementedException("Yah, we need some looove....");
+				}
 			}
 			
 			// Do array handling
@@ -133,7 +179,7 @@ namespace PeachCore.Cracker
 			{
 				handleArray(element as Dom.Array, data);
 			}
-			else if (element is Block)
+			else if (element is Block) // Should also catch DataModel's
 			{
 				handleBlock(element as Block, data);
 			}
@@ -161,6 +207,9 @@ namespace PeachCore.Cracker
 			{
 				throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
 			}
+
+			if (hasOffsetRelation)
+				data.SeekBits((long)startingPosition, System.IO.SeekOrigin.Begin);
 		}
 
 		protected void handleArray(Dom.Array element, BitStream data)
@@ -180,16 +229,23 @@ namespace PeachCore.Cracker
 		protected void handleBlock(Block element, BitStream data)
 		{
 			BitStream sizedData = data;
+			SizeRelation sizeRelation = null;
+			ulong startPosition = data.TellBytes();
 
 			// Do we have relations or a length?
 			if (element.relations.hasSizeRelation)
 			{
-				// TODO: Check we are parent of From side of relation
-				ulong size = (ulong)element.relations.getSizeRelation().GetValue();
-				_sizedBlockStack.Add(element);
-				_sizedBlockMap[element] = size;
+				sizeRelation = element.relations.getSizeRelation();
 
-				sizedData = new BitStream(data.ReadBytes(size));
+				if (!element.isParentOf(sizeRelation.From))
+				{
+					ulong size = (ulong)sizeRelation.GetValue();
+					_sizedBlockStack.Add(element);
+					_sizedBlockMap[element] = size;
+
+					sizedData = new BitStream(data.ReadBytes(size));
+					sizeRelation = null;
+				}
 			}
 			else if (element.hasLength)
 			{
@@ -205,8 +261,36 @@ namespace PeachCore.Cracker
 			{
 				handleNode(child, sizedData);
 
-				// TODO: If child is parent of From side of relation
-				//       then re-size or data block now.
+				// If we have an unused size relation, wait until we
+				// can use it then re-size our data.
+				if (sizeRelation != null)
+				{
+					if (child is DataElementContainer && 
+						((DataElementContainer)child).isParentOf(sizeRelation.From))
+					{
+						ulong size = (ulong)sizeRelation.GetValue();
+						_sizedBlockStack.Add(element);
+						_sizedBlockMap[element] = size;
+
+						// update size based on what we have currently read
+						size -= data.TellBytes() - startPosition;
+
+						sizedData = new BitStream(data.ReadBytes(size));
+						sizeRelation = null;
+					}
+					else if(child == sizeRelation.From)
+					{
+						ulong size = (ulong)sizeRelation.GetValue();
+						_sizedBlockStack.Add(element);
+						_sizedBlockMap[element] = size;
+
+						// update size based on what we have currently read
+						size -= data.TellBytes() - startPosition;
+
+						sizedData = new BitStream(data.ReadBytes(size));
+						sizeRelation = null;
+					}
+				}
 			}
 
 			// Remove our element from the stack & map
@@ -219,15 +303,42 @@ namespace PeachCore.Cracker
 
 		protected void handleChoice(Choice element, BitStream data)
 		{
-			long pos = (long) data.TellBits();
+			BitStream sizedData = data;
+			SizeRelation sizeRelation = null;
 			element.SelectedElement = null;
+
+			// Do we have relations or a length?
+			if (element.relations.hasSizeRelation)
+			{
+				sizeRelation = element.relations.getSizeRelation();
+
+				if (!element.isParentOf(sizeRelation.From))
+				{
+					ulong size = (ulong)sizeRelation.GetValue();
+					_sizedBlockStack.Add(element);
+					_sizedBlockMap[element] = size;
+
+					sizedData = new BitStream(data.ReadBytes(size));
+					sizeRelation = null;
+				}
+			}
+			else if (element.hasLength)
+			{
+				ulong size = (ulong)element.length;
+				_sizedBlockStack.Add(element);
+				_sizedBlockMap[element] = size;
+
+				sizedData = new BitStream(data.ReadBytes(size));
+			}
+
+			ulong startPosition = sizedData.TellBits();
 
 			foreach (DataElement child in element)
 			{
 				try
 				{
-					data.SeekBits(pos, System.IO.SeekOrigin.Begin);
-					handleNode(child, data);
+					sizedData.SeekBits((long)startPosition, System.IO.SeekOrigin.Begin);
+					handleNode(child, sizedData);
 					element.SelectedElement = child;
 					break;
 				}

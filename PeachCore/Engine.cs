@@ -39,6 +39,13 @@ namespace PeachCore
 	/// </summary>
 	public class Engine
 	{
+		public Watcher watcher = null;
+		public RunContext context = null;
+		public RunConfiguration config = null;
+		public Dom.Dom dom = null;
+		public Run run = null;
+		public Test test = null;
+
 		#region Events
 
 		public delegate void RunStartingEventHandler(RunContext context);
@@ -111,30 +118,80 @@ namespace PeachCore
 
 		public Engine(Watcher watcher)
 		{
-		}
-
-		public uint count(Dom.Dom dom, Run run)
-		{
-			return 0;
+			this.watcher = watcher;
 		}
 
 		/// <summary>
 		/// Run the default fuzzing run in the specified dom.
 		/// </summary>
 		/// <param name="dom"></param>
-		public void run(Dom.Dom dom, RunConfiguration config)
+		public void startFuzzing(Dom.Dom dom, RunConfiguration config)
 		{
-		}
+			if (dom == null)
+				throw new ArgumentNullException("dom parameter is null");
+			if (config == null)
+				throw new ArgumentNullException("config paremeter is null");
 
-		public void run(Dom.Dom dom, Run run, RunConfiguration config)
-		{
-		}
+			Run run = null;
 
-		protected void runRun(Dom.Dom dom, Run run, RunContext context)
-		{
 			try
 			{
-				context.run = run;
+				run = dom.runs[config.runName];
+			}
+			catch
+			{
+				throw new PeachException("Unable to locate run named '" + config.runName + "'.");
+			}
+
+			startFuzzing(dom, run, config);
+		}
+
+		public void startFuzzing(Dom.Dom dom, Run run, RunConfiguration config)
+		{
+			if (dom == null)
+				throw new ArgumentNullException("dom parameter is null");
+			if (run == null)
+				throw new ArgumentNullException("run parameter is null");
+			if (config == null)
+				throw new ArgumentNullException("config paremeter is null");
+
+			RunContext context = new RunContext();
+			context.config = config;
+			context.dom = dom;
+			context.run = run;
+
+			// TODO: Start up agents!
+
+			runRun(context);
+		}
+
+		/// <summary>
+		/// Start fuzzing using a RunContext object to provide
+		/// needed configuration.  This allows the caller to pre-configure
+		/// any Agents prior to calling the fuzzing engine.
+		/// </summary>
+		/// <param name="context">Fuzzing configuration</param>
+		public void startFuzzing(RunContext context)
+		{
+			if (context == null)
+				throw new ArgumentNullException("context parameter is null");
+
+			runRun(context);
+		}
+
+		protected void runRun(RunContext context)
+		{
+			if (context.run == null)
+				throw new ArgumentNullException("context.run is null");
+			if (context.dom == null)
+				throw new ArgumentNullException("context.dom is null");
+			if (context.config == null)
+				throw new ArgumentNullException("context.config is null");
+
+			try
+			{
+				Dom.Dom dom = context.dom;
+				Run run = context.run;
 				context.test = null;
 
 				OnRunStarting(context);
