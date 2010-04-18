@@ -105,9 +105,9 @@ namespace Peach
 				Dom dom = Analyzer.defaultParser.asParser(null, extra[0]);
 
 				if (extra.Count > 1)
-					e.run(dom, dom.runs[extra[1]], config);
+					e.startFuzzing(dom, dom.runs[extra[1]], config);
 				else
-					e.run(dom, config);
+					e.startFuzzing(dom, config);
 			}
 			catch (SyntaxException)
 			{
