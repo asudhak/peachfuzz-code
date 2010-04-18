@@ -442,7 +442,7 @@ namespace PeachCore.Analyzers
 				switch (child.Name)
 				{
 					case "Relation":
-						element.relations.Add(handleRelation(child, element));
+						handleRelation(child, element);
 						break;
 
 					case "Fixup":
@@ -569,22 +569,67 @@ namespace PeachCore.Analyzers
 			return flags;
 		}
 
-		protected Relation handleRelation(XmlNode node, DataElement parent)
+		protected void handleRelation(XmlNode node, DataElement parent)
 		{
 			switch (getXmlAttribute(node, "type"))
 			{
 				case "size":
-					SizeRelation rel = new SizeRelation();
+					if (hasXmlAttribute(node, "of"))
+					{
+						SizeRelation rel = new SizeRelation();
+						rel.OfName = getXmlAttribute(node, "of");
+						parent.relations.Add(rel);
+					}
+					else if (hasXmlAttribute(node, "from"))
+					{
+						SizeRelation rel = new SizeRelation();
+						rel.FromName = getXmlAttribute(node, "from");
+						parent.relations.Add(rel);
+					}
 					break;
+				
 				case "count":
+					if (hasXmlAttribute(node, "of"))
+					{
+						CountRelation rel = new CountRelation();
+						rel.OfName = getXmlAttribute(node, "of");
+						parent.relations.Add(rel);
+					}
+					else if (hasXmlAttribute(node, "from"))
+					{
+						CountRelation rel = new CountRelation();
+						rel.FromName = getXmlAttribute(node, "from");
+						parent.relations.Add(rel);
+					}
 					break;
+				
 				case "offset":
+					if (hasXmlAttribute(node, "of"))
+					{
+						OffsetRelation rel = new OffsetRelation();
+						rel.OfName = getXmlAttribute(node, "of");
+						parent.relations.Add(rel);
+					}
+					else if (hasXmlAttribute(node, "from"))
+					{
+						OffsetRelation rel = new OffsetRelation();
+						rel.FromName = getXmlAttribute(node, "from");
+						parent.relations.Add(rel);
+					}
 					break;
+				
 				case "when":
+					{
+						WhenRelation rel = new WhenRelation();
+						rel.WhenExpression = getXmlAttribute(node, "when");
+						parent.relations.Add(rel);
+					}
 					break;
+				
+				default:
+					throw new ApplicationException("Unknown relation type found '"+
+						getXmlAttribute(node, "type")+"'.");
 			}
-
-			return null;
 		}
 
 		protected Fixup handleFixup(XmlNode node, DataElement parent)
