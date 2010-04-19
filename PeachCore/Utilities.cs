@@ -28,6 +28,8 @@
 
 using System;
 using System.IO;
+using System.Reflection;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -66,6 +68,115 @@ namespace PeachCore
 				stream.Seek(0, SeekOrigin.Begin);
 				return (T)formatter.Deserialize(stream);
 			}
+		}
+	}
+
+	/// <summary>
+	/// Methods for finding and creating instances of 
+	/// classes.
+	/// </summary>
+	public static class ClassLoader
+	{
+		public static List<string> AssemblyFilenames = new List<string>();
+		public static List<string> SearchPaths = new List<string>();
+
+		static ClassLoader()
+		{
+			SearchPaths.Add(Assembly.GetExecutingAssembly().Location);
+			SearchPaths.Add(Directory.GetCurrentDirectory());
+		}
+
+		/// <summary>
+		/// Look through our search paths for assemblies to load.
+		/// </summary>
+		public static void UpdateAssemblyCache()
+		{
+			foreach (string path in SearchPaths)
+			{
+				foreach (string file in Directory.GetFiles(path, "*.exe"))
+				{
+					if (!AssemblyFilenames.Contains(file))
+					{
+						AssemblyFilenames.Add(file);
+						try
+						{
+							Assembly asm = Assembly.LoadFile(file);
+						}
+						catch
+						{
+						}
+					}
+				}
+				foreach (string file in Directory.GetFiles(path, "*.dll"))
+				{
+					if (!AssemblyFilenames.Contains(file))
+					{
+						AssemblyFilenames.Add(file);
+						try
+						{
+							Assembly asm = Assembly.LoadFile(file);
+						}
+						catch
+						{
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Try to create instance of a class based on an attribute type
+		/// and name.
+		/// </summary>
+		/// <param name="type">Attribute type</param>
+		/// <param name="name">Class name</param>
+		/// <returns>Returns new instance of found class, or null.</returns>
+		public static object FindAndCreateByAttributeAndName(Type type, string name)
+		{
+			UpdateAssemblyCache();
+
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				Type found = a.GetType(name, false, false);
+				if (!found.IsClass)
+					continue;
+
+				object [] attrs = found.GetCustomAttributes(type, true);
+				if (attrs.Length == 0)
+					continue;
+
+				ConstructorInfo cinfo = found.GetConstructor(new Type[0]);
+				return cinfo.Invoke(new object[0]);
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Find and create and instance of class by parent type and 
+		/// name.
+		/// </summary>
+		/// <param name="type">Parent type</param>
+		/// <param name="name">Name of class</param>
+		/// <returns>Returns new instance of found class, or null.</returns>
+		public static object FindAndCreateByTypeAndName(Type type, string name)
+		{
+			UpdateAssemblyCache();
+
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				Type found = a.GetType(name, false, false);
+				if (!found.IsClass)
+					continue;
+
+				if (!found.IsSubclassOf(type))
+					continue;
+
+				ConstructorInfo cinfo = found.GetConstructor(new Type[0]);
+				return cinfo.Invoke(new object[0]);
+			}
+
+			return null;
 		}
 	}
 }
