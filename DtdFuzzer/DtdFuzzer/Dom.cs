@@ -20,6 +20,9 @@ namespace DtdFuzzer
 		public List<ElementRelation> relations = new List<ElementRelation>();
 	}
 
+	/// <summary>
+	/// Element relation type
+	/// </summary>
 	public enum ElementRelationType
 	{
 		// Use relations to hold each option
@@ -35,6 +38,9 @@ namespace DtdFuzzer
 		PCDATA
 	}
 
+	/// <summary>
+	/// Capture an element relation from the DTD.
+	/// </summary>
 	public class ElementRelation
 	{
 		public ElementRelationType type;
