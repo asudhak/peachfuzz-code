@@ -16,6 +16,35 @@ namespace DtdFuzzer
 		/// Key == Attribute.name, value == Attribute
 		/// </summary>
 		public Dictionary<string, Attribute> attributes = new Dictionary<string, Attribute>();
+
+		public List<ElementRelation> relations = new List<ElementRelation>();
+	}
+
+	public enum ElementRelationType
+	{
+		// Use relations to hold each option
+		Or,
+		And,
+
+		// Check both!
+		One,
+		OneOrMore,
+		ZeroOrOne,
+
+		// Expect no elements in list
+		PCDATA
+	}
+
+	public class ElementRelation
+	{
+		public ElementRelationType type;
+		public List<ElementRelation> relations = new List<ElementRelation>();
+		public Element element = null;
+
+		public ElementRelation(ElementRelationType type)
+		{
+			this.type = type;
+		}
 	}
 
 	public enum AttributeType

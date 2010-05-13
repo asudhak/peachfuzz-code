@@ -15,7 +15,7 @@ namespace DtdFuzzer
 			RegexOptions.Singleline);
 		Regex reElementAny = new Regex(@"\s*ANY\s*",
 			RegexOptions.Singleline);
-		Regex reElementElementContext = new Regex(@"\s*(\(.*\))\s*",
+		Regex reElementElementContext = new Regex(@"\s*(\(.*\)[?*+]?)\s*",
 			RegexOptions.Singleline);
 		Regex reElementCategory = new Regex(@"\s*(\w+)\s*",
 			RegexOptions.Singleline);
