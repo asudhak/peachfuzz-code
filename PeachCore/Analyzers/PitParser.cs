@@ -32,6 +32,7 @@ using System.Xml.Schema;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Reflection;
 using PeachCore.Dom;
 
 namespace PeachCore.Analyzers
@@ -64,10 +65,10 @@ namespace PeachCore.Analyzers
 	/// </summary>
 	public class PitParser : Analyzer
 	{
-		static string PeachSchemaFile = @"c:\peach\peach.xsd";
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";
 		Dom.Dom _dom = null;
+		bool isScriptingLanguageSet = false;
 
 		static PitParser()
 		{
@@ -84,7 +85,7 @@ namespace PeachCore.Analyzers
 			if (!File.Exists(fileName))
 				throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
 
-			validatePit(fileName, PeachSchemaFile);
+			validatePit(fileName);
 
 			XmlDocument xmldoc = new XmlDocument();
 			xmldoc.Load(fileName);
@@ -97,9 +98,9 @@ namespace PeachCore.Analyzers
 			return _dom;
 		}
 
-		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
+		public override void asParserValidation(Dictionary<string, string> args, string fileName)
 		{
-			validatePit(fileName, PeachSchemaFile);
+			validatePit(fileName);
 		}
 
 		/// <summary>
@@ -107,9 +108,10 @@ namespace PeachCore.Analyzers
 		/// </summary>
 		/// <param name="fileName">Pit file to validate</param>
 		/// <param name="schema">Peach XML Schema file</param>
-		public void validatePit(string fileName, string schema)
+		public void validatePit(string fileName)
 		{
-			XmlTextReader tr = new XmlTextReader(schema);
+			XmlTextReader tr = new XmlTextReader(
+				Assembly.GetExecutingAssembly().GetFile("peach.xsd"));
 			XmlSchemaSet set = new XmlSchemaSet();
 			set.Add(null, tr);
 
@@ -159,7 +161,7 @@ namespace PeachCore.Analyzers
 						if (!File.Exists(fileName))
 							throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
 
-						validatePit(fileName, PeachSchemaFile);
+						validatePit(fileName);
 
 						XmlDocument xmldoc = new XmlDocument();
 						xmldoc.Load(fileName);
@@ -184,20 +186,44 @@ namespace PeachCore.Analyzers
 						Scripting.Imports.Add(getXmlAttribute(child, "import"));
 						break;
 					case "PythonPath":
+						if (isScriptingLanguageSet && 
+							Scripting.DefaultScriptingEngine != ScriptingEngines.Python)
+						{
+							throw new PeachException("Error, cannot mix Python and Ruby!");
+						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
 						Scripting.Paths.Add(getXmlAttribute(child, "import"));
+						isScriptingLanguageSet = true;
 						break;
 					case "RubyPath":
+						if (isScriptingLanguageSet && 
+							Scripting.DefaultScriptingEngine != ScriptingEngines.Ruby)
+						{
+							throw new PeachException("Error, cannot mix Python and Ruby!");
+						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Ruby;
 						Scripting.Paths.Add(getXmlAttribute(child, "require"));
+						isScriptingLanguageSet = true;
 						break;
 					case "Python":
+						if (isScriptingLanguageSet && 
+							Scripting.DefaultScriptingEngine != ScriptingEngines.Python)
+						{
+							throw new PeachException("Error, cannot mix Python and Ruby!");
+						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
 						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string,object>());
+						isScriptingLanguageSet = true;
 						break;
 					case "Ruby":
+						if (isScriptingLanguageSet && 
+							Scripting.DefaultScriptingEngine != ScriptingEngines.Ruby)
+						{
+							throw new PeachException("Error, cannot mix Python and Ruby!");
+						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Ruby;
 						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string, object>());
+						isScriptingLanguageSet = true;
 						break;
 
 					case "Defaults":
@@ -254,6 +280,8 @@ namespace PeachCore.Analyzers
 
 			return dom;
 		}
+
+		#region Utility Methods
 
 		/// <summary>
 		/// Get attribute from XmlNode object.
@@ -322,6 +350,10 @@ namespace PeachCore.Analyzers
 
 			return null;
 		}
+
+#endregion
+
+		#region Data Model
 
 		protected DataModel handleDataModel(XmlNode node)
 		{
@@ -662,6 +694,60 @@ namespace PeachCore.Analyzers
 		{
 			return null;
 		}
+
+#endregion
+
+		#region State Model
+
+		protected StateModel handleStateModel(XmlNode node)
+		{
+			string name = getXmlAttribute(node, "name");
+			string initialState = getXmlAttribute(node, "initial");
+			StateModel stateModel = new StateModel();
+			stateModel.name = name;
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "State")
+				{
+					State state = handleState(child, stateModel);
+					stateModel.states.Add(state);
+					if (state.name == initialState)
+						stateModel.initialState = state;
+				}
+			}
+
+			if (stateModel.initialState == null)
+				throw new PeachException("Error, did not locate inital ('" + initialState + "') for state model '" + name + "'.");
+
+			return stateModel;
+		}
+
+		protected State handleState(XmlNode node, StateModel parent)
+		{
+			State state = new State();
+			state.parent = parent;
+			state.name = getXmlAttribute(node, "name");
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Action")
+				{
+					Action action = handleAction(child, state);
+					state.actions.Add(action);
+				}
+			}
+
+			return state;
+		}
+
+		protected Action handleAction(XmlNode node, State parent)
+		{
+			throw new NotImplementedException("Todo");
+		}
+
+		#endregion
+
 	}
 }
 

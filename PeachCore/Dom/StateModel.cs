@@ -38,6 +38,7 @@ namespace PeachCore
 
 	public class StateModel
 	{
+		public string name = null;
 		public object parent;
 		protected State _initialState = null;
 
