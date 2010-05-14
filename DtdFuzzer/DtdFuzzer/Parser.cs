@@ -227,9 +227,11 @@ namespace DtdFuzzer
 			}
 			else if (reElementElementContext.IsMatch(data))
 			{
+				int pos = 1;
 				Element element = new Element();
 				element.name = name;
 				elements[name] = element;
+				element.relation = handleElementDataBlock(data, ref pos);
 			}
 			else if (reElementEmpty.IsMatch(data))
 			{

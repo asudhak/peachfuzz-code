@@ -17,7 +17,7 @@ namespace DtdFuzzer
 		/// </summary>
 		public Dictionary<string, Attribute> attributes = new Dictionary<string, Attribute>();
 
-		public List<ElementRelation> relations = new List<ElementRelation>();
+		public ElementRelation relation = null;
 	}
 
 	/// <summary>
