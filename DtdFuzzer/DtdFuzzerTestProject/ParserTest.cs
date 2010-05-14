@@ -71,7 +71,7 @@ namespace DtdFuzzerTestProject
 		[DeploymentItem("DtdFuzzer.exe")]
 		public void handleElementDataBlockTest()
 		{
-			Parser_Accessor target = new Parser_Accessor(); // TODO: Initialize to an appropriate value
+			Parser_Accessor target = new Parser_Accessor();
 			ElementRelation actual;
 			target.elements["foo"] = new Element();
 			target.elements["bar"] = new Element();
@@ -80,15 +80,16 @@ namespace DtdFuzzerTestProject
 
 			string[] tests = new string[]
 				{
-					//"(foo,bar,this)",
-					//"( foo , bar , this )",
-					//"(foo)",
-					//"(foo)?",
-					//"(foo)*",
-					//"(foo)+",
+					"(foo,bar,this)",
+					"( foo , bar , this )",
+					"(foo)",
+					"(foo)?",
+					"(foo)*",
+					"(foo)+",
 					"(foo|bar|this)",
 					"(foo,(bar|this))",
 					"(foo,(bar),(this))",
+					"((foo|bar)?)",
 					"((foo+|bar*)?)*",
 					"(foo,(bar,(this)))",
 					"(foo,(bar,(this,(some))))"

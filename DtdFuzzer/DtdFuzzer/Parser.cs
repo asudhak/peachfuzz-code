@@ -245,9 +245,10 @@ namespace DtdFuzzer
 			ElementRelation relation;
 			char token;
 
-			int indexOfComma = data.IndexOf(',');
-			int indexOfPipe = data.IndexOf('|');
-			int indexOfParen = data.IndexOf(')');
+			int indexOfComma = data.IndexOf(',', pos);
+			int indexOfPipe = data.IndexOf('|', pos);
+			int indexOfParenClose = data.IndexOf(')', pos);
+			int indexOfParenOpen = data.IndexOf(')', pos);
 
 			if ((indexOfComma < indexOfPipe && indexOfComma != -1) || indexOfPipe == -1)
 			{
@@ -260,10 +261,11 @@ namespace DtdFuzzer
 				relation = new ElementRelation(ElementRelationType.Or);
 			}
 
-			if (indexOfParen == -1)
+			if (indexOfParenClose == -1)
 				throw new ApplicationException("Error, didn't find closing paren!");
 
-			if (indexOfParen < data.IndexOf(token) && data.IndexOf(token) != -1)
+			int indexOfToken = data.IndexOf(token, pos);
+			if (indexOfParenClose < indexOfToken && data.IndexOf(token, pos) != -1)
 				relation = null;
 
 			string name = null;
@@ -282,13 +284,22 @@ namespace DtdFuzzer
 					if(name != null)
 						r.element = elements[name];
 
-					relation.relations.Add(r);
+					if (relation == null)
+						relation = r;
+					else
+						relation.relations.Add(r);
 
 					if (c == ')')
 					{
-						// If just one
-						if (relation == null)
-							relation = r;
+						// We shouldn't have Or/And with a single
+						// relation as child.  If we do, remove usless
+						// abstraction.
+						if ((relation.type == ElementRelationType.Or ||
+							relation.type == ElementRelationType.And) &&
+							relation.relations.Count == 1)
+						{
+							relation = relation.relations[0];
+						}
 
 						// Look ahead for ?, +, *
 						if ((pos + 1) < data.Length)
