@@ -44,6 +44,11 @@ namespace DtdFuzzer
 		public Random random = new Random();
 		public XmlDocument doc;
 
+		/// <summary>
+		/// Track depth to prevent infinit recurtion
+		/// </summary>
+		protected int _GenerateXmlNode_Depth = 0;
+
 		public Generator(Element rootElement, Dictionary<string, Element> elements)
 		{
 			this.rootElement = rootElement;
@@ -83,13 +88,116 @@ namespace DtdFuzzer
 		/// <returns>Returns XmlNode object</returns>
 		public XmlNode GenerateXmlNode(Element element)
 		{
-			XmlNode node = doc.CreateElement(element.name);
+			try
+			{
+				_GenerateXmlNode_Depth++;
 
-			// Create attributes
+				XmlNode node = doc.CreateElement(element.name);
 
-			// Create children
+				// Create attributes
+				GenerateXmlAttributes(element, node);
 
-			return node;
+				// Create children
+				HandleElementRelation(element, node, element.relation);
+
+				return node;
+			}
+			finally
+			{
+				_GenerateXmlNode_Depth--;
+			}
+		}
+
+		protected void HandleElementRelation(Element element, XmlNode node, ElementRelation relation)
+		{
+			switch (relation.type)
+			{
+			case ElementRelationType.And:
+				HandleAnd(element, node, relation);
+				break;
+			case ElementRelationType.Or:
+				HandleOr(element, node, relation);
+				break;
+
+			case ElementRelationType.One:
+				node.AppendChild(GenerateXmlNode(relation.element));
+				break;
+			case ElementRelationType.OneOrMore:
+				HandleOneOrMore(element, node, relation);
+				break;
+			case ElementRelationType.ZeroOrMore:
+				HandleZeroOrMore(element, node, relation);
+				break;
+			case ElementRelationType.ZeroOrOne:
+				HandleZeroOrOne(element, node, relation);
+				break;
+
+			case ElementRelationType.PCDATA:
+				node.Value = "Peach";
+				break;
+
+			default:
+				throw new NotImplementedException("Relation type '" + relation.type.ToString() + "' not supported yet.");
+			}
+		}
+
+		protected void HandleZeroOrMore(Element element, XmlNode node, ElementRelation relation)
+		{
+			if (random.Next(1) == 0)
+				return;
+
+			// TODO - Improve how we select number of nodes to generate!
+			int cnt = random.Next(10);
+			if (cnt == 0)
+				cnt = 1;
+
+			if (relation.relations.Count > 1)
+				throw new ApplicationException("Relations larger than expected!");
+
+			for (int i = 0; i < cnt; i++)
+				HandleElementRelation(element, node, relation.relations[0]);
+		}
+
+		protected void HandleZeroOrOne(Element element, XmlNode node, ElementRelation relation)
+		{
+			if (random.Next(1) == 0)
+				return;
+
+			if (relation.element != null)
+				node.AppendChild(GenerateXmlNode(relation.element));
+			else
+			{
+				if (relation.relations.Count > 1)
+					throw new ApplicationException("Relations larger than expected!");
+
+				HandleElementRelation(element, node, relation.relations[0]);
+			}
+		}
+
+		protected void HandleOneOrMore(Element element, XmlNode node, ElementRelation relation)
+		{
+			// TODO - Improve how we select number of nodes to generate!
+			int cnt = random.Next(10);
+			if (cnt == 0)
+				cnt = 1;
+
+			if (relation.relations.Count > 1)
+				throw new ApplicationException("Relations larger than expected!");
+
+			for (int i = 0; i < cnt; i++)
+				HandleElementRelation(element, node, relation.relations[0]);
+		}
+
+		protected void HandleOr(Element element, XmlNode node, ElementRelation relation)
+		{
+			int pick = random.Next(relation.relations.Count-1);
+			HandleElementRelation(element, node, relation.relations[pick]);
+		}
+
+		protected void HandleAnd(Element element, XmlNode node, ElementRelation relation)
+		{
+			foreach (ElementRelation r in relation.relations)
+				HandleElementRelation(element, node, r);
 		}
 
 		/// <summary>

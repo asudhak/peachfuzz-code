@@ -61,7 +61,7 @@ namespace DtdFuzzer
 		Regex reAttributeEnum = new Regex(@"\s*\(([^)]*)\)\s*");
 		Regex reAttributeEnumValues = new Regex(@"\b([^\s|]+)\b");
 
-		Dictionary<string, Element> elements = new Dictionary<string, Element>();
+		public Dictionary<string, Element> elements = new Dictionary<string, Element>();
 
 		public void parse(TextReader reader)
 		{
