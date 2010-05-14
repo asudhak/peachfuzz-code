@@ -33,6 +33,7 @@ namespace DtdFuzzer
 		One,
 		OneOrMore,
 		ZeroOrOne,
+		ZeroOrMore,
 
 		// Expect no elements in list
 		PCDATA

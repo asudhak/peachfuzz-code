@@ -239,5 +239,137 @@ namespace DtdFuzzer
 				elements[name] = element;
 			}
 		}
+
+		protected ElementRelation handleElementDataBlock(string data, ref int pos)
+		{
+			ElementRelation relation;
+			char token;
+
+			int indexOfComma = data.IndexOf(',');
+			int indexOfPipe = data.IndexOf('|');
+			int indexOfParen = data.IndexOf(')');
+
+			if ((indexOfComma < indexOfPipe && indexOfComma != -1) || indexOfPipe == -1)
+			{
+				token = ',';
+				relation = new ElementRelation(ElementRelationType.And);
+			}
+			else
+			{
+				token = '|';
+				relation = new ElementRelation(ElementRelationType.Or);
+			}
+
+			if (indexOfParen == -1)
+				throw new ApplicationException("Error, didn't find closing paren!");
+
+			if (indexOfParen < data.IndexOf(token) && data.IndexOf(token) != -1)
+				relation = null;
+
+			string name = null;
+			char c;
+			ElementRelation r = null;
+
+			for (; pos < data.Length; pos++ )
+			{
+				c = data[pos];
+
+				if (c == token || c == ')')
+				{
+					if (r == null)
+						r = new ElementRelation(ElementRelationType.One);
+
+					if(name != null)
+						r.element = elements[name];
+
+					relation.relations.Add(r);
+
+					if (c == ')')
+					{
+						// If just one
+						if (relation == null)
+							relation = r;
+
+						// Look ahead for ?, +, *
+						if ((pos + 1) < data.Length)
+						{
+							pos++;
+							char nextC = data[pos];
+							switch (nextC)
+							{
+								case '?':
+									r = new ElementRelation(ElementRelationType.ZeroOrOne);
+									r.relations.Add(relation);
+									relation = r;
+									break;
+								case '+':
+									r = new ElementRelation(ElementRelationType.OneOrMore);
+									r.relations.Add(relation);
+									relation = r;
+									break;
+								case '*':
+									r = new ElementRelation(ElementRelationType.ZeroOrMore);
+									r.relations.Add(relation);
+									relation = r;
+									break;
+								
+								default:
+									// Backup if we don't locate
+									// a parsable character.
+									pos--;
+									break;
+							}
+						}
+
+						return relation;
+					}
+
+					r = null;
+					name = null;
+				}
+				else if (c == '+')
+				{
+					ElementRelation oldR = r;
+					r = new ElementRelation(ElementRelationType.OneOrMore);
+
+					if (oldR != null)
+						r.relations.Add(r);
+				}
+				else if (c == '*')
+				{
+					ElementRelation oldR = r;
+					r = new ElementRelation(ElementRelationType.ZeroOrMore);
+
+					if (oldR != null)
+						r.relations.Add(r);
+				}
+				else if (c == '?')
+				{
+					ElementRelation oldR = r;
+					r = new ElementRelation(ElementRelationType.ZeroOrOne);
+
+					if (oldR != null)
+						r.relations.Add(r);
+				}
+				else if (c == '(')
+				{
+					pos++;
+					r = handleElementDataBlock(data, ref pos);
+				}
+
+				else if (char.IsWhiteSpace(c))
+					continue;
+
+				else
+				{
+					if (name == null)
+						name = c.ToString();
+					else
+						name += c;
+				}
+			}
+
+			throw new ApplicationException("Whoops, we shouldn't be here!");
+		}
 	}
 }
