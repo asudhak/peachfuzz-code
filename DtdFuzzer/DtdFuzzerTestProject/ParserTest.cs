@@ -120,7 +120,8 @@ namespace DtdFuzzerTestProject
 					"((foo|bar)?)",
 					"((foo+|bar*)?)*",
 					"(foo,(bar,(this)))",
-					"(foo,(bar,(this,(some))))"
+					"(foo,(bar,(this,(some))))",
+					//"(( desc | title | metadata      )*, ( animate | set | animateMotion |     animateColor | animateTransform              )*) "
 				};
 
 			foreach (string test in tests)

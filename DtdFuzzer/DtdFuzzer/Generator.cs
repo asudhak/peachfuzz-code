@@ -27,10 +27,14 @@
 // $Id$
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+
+// TODO - Consume sample XML files to determin attribute and node data types
+// TODO - Once we know data types, use Peach engine to produce values as well
 
 namespace DtdFuzzer
 {
@@ -74,7 +78,7 @@ namespace DtdFuzzer
 		public XmlDocument GenerateXmlDocument()
 		{
 			doc = new XmlDocument();
-			XmlNode root = doc.CreateElement(rootElement.name);
+			XmlNode root = GenerateXmlNode(rootElement);
 			doc.AppendChild(root);
 
 			return doc;
@@ -98,7 +102,8 @@ namespace DtdFuzzer
 				GenerateXmlAttributes(element, node);
 
 				// Create children
-				HandleElementRelation(element, node, element.relation);
+				if (element.relation != null && _GenerateXmlNode_Depth < 1024)
+					HandleElementRelation(element, node, element.relation);
 
 				return node;
 			}
@@ -133,7 +138,7 @@ namespace DtdFuzzer
 				break;
 
 			case ElementRelationType.PCDATA:
-				node.Value = "Peach";
+				node.InnerText = "Peach";
 				break;
 
 			default:
@@ -143,13 +148,17 @@ namespace DtdFuzzer
 
 		protected void HandleZeroOrMore(Element element, XmlNode node, ElementRelation relation)
 		{
-			if (random.Next(1) == 0)
-				return;
-
 			// TODO - Improve how we select number of nodes to generate!
-			int cnt = random.Next(10);
-			if (cnt == 0)
-				cnt = 1;
+			int cnt = 0;
+			switch (random.Next(1))
+			{
+				case 0:
+					cnt = random.Next(10);
+					break;
+				case 1:
+					cnt = random.Next(100);
+					break;
+			}
 
 			if (relation.relations.Count > 1)
 				throw new ApplicationException("Relations larger than expected!");
@@ -177,7 +186,17 @@ namespace DtdFuzzer
 		protected void HandleOneOrMore(Element element, XmlNode node, ElementRelation relation)
 		{
 			// TODO - Improve how we select number of nodes to generate!
-			int cnt = random.Next(10);
+			int cnt = 0;
+			switch (random.Next(1))
+			{
+				case 0:
+					cnt = random.Next(10);
+					break;
+				case 1:
+					cnt = random.Next(100);
+					break;
+			}
+
 			if (cnt == 0)
 				cnt = 1;
 
@@ -185,7 +204,10 @@ namespace DtdFuzzer
 				throw new ApplicationException("Relations larger than expected!");
 
 			for (int i = 0; i < cnt; i++)
-				HandleElementRelation(element, node, relation.relations[0]);
+				if (relation.element == null)
+					HandleElementRelation(element, node, relation.relations[0]);
+				else
+					node.AppendChild(GenerateXmlNode(relation.element));
 		}
 
 		protected void HandleOr(Element element, XmlNode node, ElementRelation relation)
@@ -208,6 +230,25 @@ namespace DtdFuzzer
 		/// <param name="node">XmlNode to add attributes to</param>
 		public void GenerateXmlAttributes(Element element, XmlNode node)
 		{
+			foreach (Attribute attrib in element.attributes.Values)
+			{
+				if (!attrib.required)
+					if (random.Next(1) == 0)
+						continue;
+
+				if(attrib.implied)
+					if (random.Next(1) == 0)
+						continue;
+
+				XmlAttribute xmlAttrib = doc.CreateAttribute(attrib.name);
+
+				if (attrib.type == AttributeType.Enum)
+					xmlAttrib.InnerText = attrib.enumValues[random.Next(attrib.enumValues.Count - 1)];
+				else
+					xmlAttrib.InnerText = "Peach";
+
+				node.Attributes.Append(xmlAttrib);
+			}
 		}
 	}
 }

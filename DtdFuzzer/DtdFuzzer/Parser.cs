@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace DtdFuzzer
 			RegexOptions.Singleline);
 		Regex reElementElementContext = new Regex(@"\s*(\(.*\)[?*+]?)\s*",
 			RegexOptions.Singleline);
-		Regex reElementCategory = new Regex(@"\s*(\w+)\s*",
+		Regex reElementCategory = new Regex(@"\s*([^#\s()]+)\s*",
 			RegexOptions.Singleline);
 
 		Regex reEntity = new Regex(@"<!ENTITY\s*%?\s*([^\s]+)\s+(?:PUBLIC\s+)?(" + "\"[^>]*\")\\s*>",
@@ -62,6 +63,7 @@ namespace DtdFuzzer
 		Regex reAttributeEnumValues = new Regex(@"\b([^\s|]+)\b");
 
 		public Dictionary<string, Element> elements = new Dictionary<string, Element>();
+		public Dictionary<Element, string> elementData = new Dictionary<Element, string>();
 
 		public void parse(TextReader reader)
 		{
@@ -78,6 +80,10 @@ namespace DtdFuzzer
 
 			foreach (Match attributeList in reAttributeList.Matches(data))
 				handleAttributeList(attributeList);
+
+			// Second pass to resolve data portion of elements
+			foreach (Element el in elements.Values)
+				handleElementPass2(el);
 
 			Console.WriteLine("DTD Parser finished...");
 		}
@@ -238,35 +244,37 @@ namespace DtdFuzzer
 			name = Entity.ResolveEntities(match.Groups[1].Value);
 			data = Entity.ResolveEntities(match.Groups[2].Value);
 
+			Element element = new Element();
+			element.name = name;
+			elements[name] = element;
+
+			elementData[element] = data;
+
 			Console.WriteLine("Found element '" + name + "'.");
+		}
+
+		protected void handleElementPass2(Element element)
+		{
+			string data = elementData[element];
 
 			if (reElementAny.IsMatch(data))
 			{
-				Element element = new Element();
-				element.name = name;
 				element.isAny = true;
-				elements[name] = element;
-			}
-			else if (reElementCategory.IsMatch(data))
-			{
-				Element element = new Element();
-				element.name = name;
-				elements[name] = element;
 			}
 			else if (reElementElementContext.IsMatch(data))
 			{
 				int pos = 1;
-				Element element = new Element();
-				element.name = name;
-				elements[name] = element;
+
+				data = data.Replace("\n", "").Replace("\r", "");
+				
 				element.relation = handleElementDataBlock(data, ref pos);
+			}
+			else if (reElementCategory.IsMatch(data))
+			{
 			}
 			else if (reElementEmpty.IsMatch(data))
 			{
-				Element element = new Element();
-				element.name = name;
 				element.isEmpty = true;
-				elements[name] = element;
 			}
 		}
 
@@ -306,13 +314,18 @@ namespace DtdFuzzer
 			{
 				c = data[pos];
 
-				if (c == token || c == ')')
+				if (c == ',' || c == '|' || c == ')')
 				{
 					if (r == null)
 						r = new ElementRelation(ElementRelationType.One);
 
-					if(name != null)
-						r.element = elements[name];
+					if (name != null)
+					{
+						if (name == "#PCDATA")
+							r.type = ElementRelationType.PCDATA;
+						else
+							r.element = elements[name];
+					}
 
 					if (relation == null)
 						relation = r;
@@ -403,6 +416,9 @@ namespace DtdFuzzer
 
 				else
 				{
+					if (c == ',')
+						Debugger.Break();
+
 					if (name == null)
 						name = c.ToString();
 					else

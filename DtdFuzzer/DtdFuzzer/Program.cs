@@ -44,19 +44,26 @@ namespace DtdFuzzer
 				Console.WriteLine("\n[ Peach DTD XML Fuzzer v1.0 DEV");
 				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 
-				if (args.Length == 0 || args.Length > 1)
+				if (args.Length == 0 || args.Length > 2)
 					syntax();
 
 				Console.WriteLine(" * Using DTD '" + args[0] + "'.");
+				Console.WriteLine(" * Root element '" + args[1] + "'.");
 
 				TextReader reader = new StreamReader(args[0]);
 				Parser parser = new Parser();
 				parser.parse(reader);
 
-				Generator generator = new Generator(null, parser.elements);
-				XmlDocument doc = generator.GenerateXmlDocument();
-				
-				Console.WriteLine(doc.OuterXml);
+				Generator generator = new Generator(parser.elements[args[1]], parser.elements);
+
+				for (int i = 0; i < 100; i++)
+				{
+					Console.WriteLine("\n---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv---");
+					XmlDocument doc = generator.GenerateXmlDocument();
+					Console.WriteLine(doc.OuterXml);
+					Console.WriteLine("\n---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---");
+				}
+
 				Console.WriteLine("\n [ Press Any Key To Continue ]");
 				Console.ReadKey();
 			}
@@ -75,7 +82,11 @@ Please submit any bugs to Michael Eddington <mike@phed.org>.
 
 Syntax:
 
-  DtdFuzzer.exe schema.dtd
+  DtdFuzzer.exe schema.dtd root_element
+
+Example:
+
+  DtdFuzzer.exe svg.dtd svg
 
 ";
 			Console.WriteLine(syntax);
