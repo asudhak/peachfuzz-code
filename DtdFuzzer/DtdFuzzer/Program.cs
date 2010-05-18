@@ -44,7 +44,7 @@ namespace DtdFuzzer
 				Console.WriteLine("\n[ Peach DTD XML Fuzzer v1.0 DEV");
 				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 
-				if (args.Length == 0 || args.Length > 2)
+				if (args.Length == 0 || args.Length > 3)
 					syntax();
 
 				Console.WriteLine(" * Using DTD '" + args[0] + "'.");
@@ -54,13 +54,38 @@ namespace DtdFuzzer
 				Parser parser = new Parser();
 				parser.parse(reader);
 
+				if (args.Length > 2)
+				{
+					Console.Write(" * Loading Samples from '" + args[2] + "'");
+					Defaults defaults = new Defaults(parser.elements, true);
+					defaults.ProcessFolder(args[2]);
+					Console.WriteLine("done.");
+				}
+
 				Generator generator = new Generator(parser.elements[args[1]], parser.elements);
 
 				for (int i = 0; i < 100; i++)
 				{
 					Console.WriteLine("\n---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv---");
+					
 					XmlDocument doc = generator.GenerateXmlDocument();
 					Console.WriteLine(doc.OuterXml);
+					if(File.Exists("fuzzed-" + i.ToString() + ".svg"))
+						File.Delete("fuzzed-" + i.ToString() + ".svg");
+
+					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "xml:id", "svg-root"));
+					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "xmlns", "http://www.w3.org/2000/svg"));
+					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "viewbox", "0 0 480 360"));
+					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "width", "100%"));
+					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "height", "100%"));
+
+					FileStream sout = File.OpenWrite("fuzzed-" + i.ToString() + ".svg");
+					StreamWriter tout = new StreamWriter(sout);
+					tout.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+					tout.WriteLine(doc.OuterXml);
+					tout.Close();
+					sout.Close();
+
 					Console.WriteLine("\n---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---");
 				}
 
@@ -70,6 +95,13 @@ namespace DtdFuzzer
 			catch (SyntaxException)
 			{
 			}
+		}
+
+		protected static XmlAttribute CreateXmlAttribute(XmlDocument doc, string name, string value)
+		{
+			XmlAttribute a = doc.CreateAttribute(name);
+			a.InnerText = value;
+			return a;
 		}
 
 		static void syntax()
@@ -82,11 +114,12 @@ Please submit any bugs to Michael Eddington <mike@phed.org>.
 
 Syntax:
 
-  DtdFuzzer.exe schema.dtd root_element
+  DtdFuzzer.exe schema.dtd root_element [samples folder]
 
 Example:
 
   DtdFuzzer.exe svg.dtd svg
+  DtdFuzzer.exe svg.dtd svg c:\samples\svg
 
 ";
 			Console.WriteLine(syntax);

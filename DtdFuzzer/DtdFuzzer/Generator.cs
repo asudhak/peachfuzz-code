@@ -138,7 +138,11 @@ namespace DtdFuzzer
 				break;
 
 			case ElementRelationType.PCDATA:
-				node.InnerText = "Peach";
+				if (element.defaultValues.Count > 0)
+					node.InnerText = element.defaultValues[0];
+				else
+					node.InnerText = "Peach";
+				
 				break;
 
 			default:
@@ -244,6 +248,8 @@ namespace DtdFuzzer
 
 				if (attrib.type == AttributeType.Enum)
 					xmlAttrib.InnerText = attrib.enumValues[random.Next(attrib.enumValues.Count - 1)];
+				else if (attrib.defaultValues.Count > 0)
+					xmlAttrib.InnerText = attrib.defaultValues[random.Next(attrib.defaultValues.Count - 1)];
 				else
 					xmlAttrib.InnerText = "Peach";
 

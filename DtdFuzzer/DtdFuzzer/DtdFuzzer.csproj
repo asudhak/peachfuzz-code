@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defaults.cs" />
     <Compile Include="Dom.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="Options.cs" />

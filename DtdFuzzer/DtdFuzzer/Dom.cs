@@ -34,18 +34,42 @@ using System.Text.RegularExpressions;
 
 namespace DtdFuzzer
 {
+	/// <summary>
+	/// Element Model
+	/// </summary>
 	public class Element
 	{
 		public string name;
 		public bool isAny = false;
 		public bool isEmpty = false;
+		public DataType dataType = DataType.Unknown;
 
 		/// <summary>
 		/// Key == Attribute.name, value == Attribute
 		/// </summary>
 		public Dictionary<string, Attribute> attributes = new Dictionary<string, Attribute>();
 
+		/// <summary>
+		/// Rules for child elements if any.
+		/// </summary>
 		public ElementRelation relation = null;
+
+		/// <summary>
+		/// Any known default values.
+		/// </summary>
+		public List<string> defaultValues = new List<string>();
+	}
+
+	/// <summary>
+	/// Possible data types for elements and attributes.
+	/// </summary>
+	public enum DataType
+	{
+		Unknown,
+		String,
+		Integer,
+		Double,
+		Enum
 	}
 
 	/// <summary>
@@ -97,14 +121,50 @@ namespace DtdFuzzer
 		XmlValue
 	}
 
+	/// <summary>
+	/// Attribute Model
+	/// </summary>
 	public class Attribute
 	{
+		/// <summary>
+		/// Attribute name
+		/// </summary>
 		public string name;
+
+		/// <summary>
+		/// Attribute type
+		/// </summary>
 		public AttributeType type;
+
+		/// <summary>
+		/// Data type for attribute.
+		/// </summary>
+		public DataType dataType = DataType.Unknown;
+
+		/// <summary>
+		/// Attribute value if provided by DTD.
+		/// </summary>
 		public string value;
+
+		/// <summary>
+		/// Is attribute required.
+		/// </summary>
 		public bool required = false;
+
+		/// <summary>
+		/// Is attribute implied (optional)
+		/// </summary>
 		public bool implied = false;
+
+		/// <summary>
+		/// If AttributeType is enum, here are valid values.
+		/// </summary>
 		public List<string> enumValues = new List<string>();
+
+		/// <summary>
+		/// Possible default values for attribute
+		/// </summary>
+		public List<string> defaultValues = new List<string>();
 	}
 
 	public class Entity
