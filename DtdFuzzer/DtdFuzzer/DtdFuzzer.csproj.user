@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartArguments>svg.dtd svg C:\Peach3.0\DtdFuzzer\samples-svg</StartArguments>
+    <StartArguments>-d svg.dtd -r svg -x http://www.w3.org/2000/svg -s C:\Peach3.0\DtdFuzzer\samples-svg -c 100</StartArguments>
   </PropertyGroup>
 </Project>

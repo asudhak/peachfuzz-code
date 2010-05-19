@@ -41,56 +41,77 @@ namespace DtdFuzzer
 		{
 			try
 			{
+				XmlDocument doc = null;
+				string dtdFile = null;
+				string rootElementName = null;
+				string samplesFolder = null;
+				int? iterations = null;
+				string xmlns = null;
+
 				Console.WriteLine("\n[ Peach DTD XML Fuzzer v1.0 DEV");
 				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 
-				if (args.Length == 0 || args.Length > 3)
+				var p = new OptionSet()
+				{
+					{ "h|?|help", v => syntax() },
+					{ "x|xmlns=", v => xmlns = v },
+					{ "d|dtd=", v => dtdFile = v },
+					{ "c|count=", v => iterations = int.Parse(v)},
+					{ "r|root=", v => rootElementName = v },
+					{ "s|samples=", v => samplesFolder = v },
+				};
+
+				List<string> extra = p.Parse(args);
+
+				if (dtdFile == null || rootElementName == null)
 					syntax();
 
-				Console.WriteLine(" * Using DTD '" + args[0] + "'.");
-				Console.WriteLine(" * Root element '" + args[1] + "'.");
+				Console.WriteLine(" * Using DTD '" + dtdFile + "'.");
+				Console.WriteLine(" * Root element '" + rootElementName + "'.");
 
-				TextReader reader = new StreamReader(args[0]);
+				TextReader reader = new StreamReader(dtdFile);
 				Parser parser = new Parser();
 				parser.parse(reader);
 
-				if (args.Length > 2)
+				if (samplesFolder != null)
 				{
-					Console.Write(" * Loading Samples from '" + args[2] + "'");
+					Console.Write(" * Loading Samples from '" + samplesFolder + "'...");
 					Defaults defaults = new Defaults(parser.elements, true);
-					defaults.ProcessFolder(args[2]);
+					defaults.ProcessFolder(samplesFolder);
 					Console.WriteLine("done.");
 				}
 
-				Generator generator = new Generator(parser.elements[args[1]], parser.elements);
+				Generator generator = new Generator(parser.elements[rootElementName], parser.elements);
 
-				for (int i = 0; i < 100; i++)
+				Console.Write(" * Generating XML files...");
+
+				for (int i = 0; true; i++)
 				{
-					Console.WriteLine("\n---vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv---");
-					
-					XmlDocument doc = generator.GenerateXmlDocument();
-					Console.WriteLine(doc.OuterXml);
-					if(File.Exists("fuzzed-" + i.ToString() + ".svg"))
+					if (iterations != null && i >= iterations)
+						break;
+
+					if (i % 100 == 0)
+						Console.Write(".");
+
+					doc = generator.GenerateXmlDocument();
+
+					if(xmlns != null)
+						doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "xmlns", xmlns));
+
+					if (File.Exists("fuzzed-" + i.ToString() + ".svg"))
 						File.Delete("fuzzed-" + i.ToString() + ".svg");
 
-					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "xml:id", "svg-root"));
-					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "xmlns", "http://www.w3.org/2000/svg"));
-					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "viewbox", "0 0 480 360"));
-					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "width", "100%"));
-					doc.DocumentElement.Attributes.Append(CreateXmlAttribute(doc, "height", "100%"));
-
-					FileStream sout = File.OpenWrite("fuzzed-" + i.ToString() + ".svg");
-					StreamWriter tout = new StreamWriter(sout);
-					tout.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-					tout.WriteLine(doc.OuterXml);
-					tout.Close();
-					sout.Close();
-
-					Console.WriteLine("\n---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---");
+					using (FileStream sout = File.OpenWrite("fuzzed-" + i.ToString() + ".svg"))
+					{
+						using (StreamWriter tout = new StreamWriter(sout))
+						{
+							tout.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+							tout.WriteLine(doc.OuterXml);
+						}
+					}
 				}
 
-				Console.WriteLine("\n [ Press Any Key To Continue ]");
-				Console.ReadKey();
+				Console.WriteLine("done.\n");
 			}
 			catch (SyntaxException)
 			{
@@ -114,12 +135,20 @@ Please submit any bugs to Michael Eddington <mike@phed.org>.
 
 Syntax:
 
-  DtdFuzzer.exe schema.dtd root_element [samples folder]
+  DtdFuzzer.exe -d schema.dtd -r root_element [-s samples folder] [-x namespace] [-c 100]
+
+  -d/--dtd=     DTD Schema file [required]
+  -r/--root=    Root XML element [required]
+  -c/--count=   Number of XML files to produce [optional]
+  -s/--samples= Sample XML folder [optional]
+  -x/--xmlns=   Root XML namespace [optional]
 
 Example:
 
-  DtdFuzzer.exe svg.dtd svg
-  DtdFuzzer.exe svg.dtd svg c:\samples\svg
+  DtdFuzzer.exe -d svg.dtd -r svg
+  DtdFuzzer.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg
+  DtdFuzzer.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg -s c:\samples\svg
+  DtdFuzzer.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg -s c:\samples\svg -c 100
 
 ";
 			Console.WriteLine(syntax);
