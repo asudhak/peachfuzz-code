@@ -1,1 +1,6 @@
 C:\Peach3.0\DtdFuzzer\PeachCore.Xml\obj\Debug\ResolveAssemblyReference.cache
+C:\Peach3.0\PeachCore.Xml\bin\Debug\PeachCore.Xml.dll
+C:\Peach3.0\PeachCore.Xml\bin\Debug\PeachCore.Xml.pdb
+C:\Peach3.0\PeachCore.Xml\obj\Debug\ResolveAssemblyReference.cache
+C:\Peach3.0\PeachCore.Xml\obj\Debug\PeachCore.Xml.dll
+C:\Peach3.0\PeachCore.Xml\obj\Debug\PeachCore.Xml.pdb
