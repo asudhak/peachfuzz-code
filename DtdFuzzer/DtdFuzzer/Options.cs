@@ -143,7 +143,7 @@ using System.Linq;
 using NDesk.Options;
 #endif
 
-namespace DtdFuzzer
+namespace PeachXmlGenerator
 {
 
 	public class OptionValueCollection : IList, IList<string> {

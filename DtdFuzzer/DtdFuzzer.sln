@@ -1,9 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtdFuzzer", "DtdFuzzer\DtdFuzzer.csproj", "{14703DAB-4458-418D-B95E-5E2F2228F8C0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtdFuzzerTestProject", "DtdFuzzerTestProject\DtdFuzzerTestProject.csproj", "{5FDD8007-1929-4421-9A36-5E3538193820}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachXmlGenerator", "DtdFuzzer\PeachXmlGenerator.csproj", "{14703DAB-4458-418D-B95E-5E2F2228F8C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3CEFB0B3-1C83-449B-866C-5E2F7DD6AEC5}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Local.testsettings = Local.testsettings
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachCore.Xml", "PeachCore.Xml\PeachCore.Xml.csproj", "{E910D9AB-C56A-4452-8370-57E0F946CB34}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -35,16 +35,16 @@ Global
 		{14703DAB-4458-418D-B95E-5E2F2228F8C0}.Release|Mixed Platforms.Build.0 = Release|x86
 		{14703DAB-4458-418D-B95E-5E2F2228F8C0}.Release|x86.ActiveCfg = Release|x86
 		{14703DAB-4458-418D-B95E-5E2F2228F8C0}.Release|x86.Build.0 = Release|x86
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{5FDD8007-1929-4421-9A36-5E3538193820}.Release|x86.ActiveCfg = Release|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E910D9AB-C56A-4452-8370-57E0F946CB34}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

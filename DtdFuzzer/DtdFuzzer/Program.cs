@@ -31,8 +31,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using PeachCore.Xml;
 
-namespace DtdFuzzer
+namespace PeachXmlGenerator
 {
 	class Program
 	{
@@ -69,7 +70,7 @@ namespace DtdFuzzer
 				Console.WriteLine(" * Root element '" + rootElementName + "'.");
 
 				TextReader reader = new StreamReader(dtdFile);
-				Parser parser = new Parser();
+				Parser parser = new ParserDtd();
 				parser.parse(reader);
 
 				if (samplesFolder != null)
