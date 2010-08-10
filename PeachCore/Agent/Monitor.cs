@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -39,57 +40,45 @@ namespace PeachCore.Agent
 	/// </summary>
 	public abstract class Monitor
 	{
-		public Monitor(Dictionary<string, string> args)
+		public Monitor(string name, Dictionary<string, string> args)
 		{
 		}
 
-		/// <summary>
-		/// Called before start of test.
-		/// </summary>
-		public abstract void OnTestStarting();
+        public abstract void StopMonitor();
 
-		/// <summary>
-		/// Called when test is completed.
-		/// </summary>
-		public abstract void OnTestFinished();
+        /// <summary>
+        /// Starting a fuzzing session.  A session includes a number of test iterations.
+        /// </summary>
+        public abstract void SessionStarting();
+        /// <summary>
+        /// Finished a fuzzing session.
+        /// </summary>
+        public abstract void SessionFinished();
 
-		/// <summary>
-		/// Allows monitor to indicate a fault was detected.
-		/// </summary>
-		/// <returns>True if fault was detected, else False</returns>
-		public abstract bool DetectedFault();
+        /// <summary>
+        /// Starting a new iteration
+        /// </summary>
+        /// <param name="iterationCount">Iteration count</param>
+        /// <param name="isReproduction">Are we re-running an iteration</param>
+        public abstract void IterationStarting(int iterationCount, bool isReproduction);
+        /// <summary>
+        /// Iteration has completed.
+        /// </summary>
+        /// <returns>Returns true to indicate iteration should be re-run, else false.</returns>
+        public abstract bool IterationFinished();
 
-		/// <summary>
-		/// Called when a fault was detected.
-		/// </summary>
-		public abstract void OnFault();
 
-		/// <summary>
-		/// Called to get any data that was collected.
-		/// </summary>
-		public abstract void GetData();
+        /// <summary>
+        /// Was a fault detected during current iteration?
+        /// </summary>
+        /// <returns>True if a fault was detected, else false.</returns>
+        public abstract bool DetectedFault();
 
-		/// <summary>
-		/// Called to shutdown current monitor.
-		/// </summary>
-		public abstract void OnShutdown();
-
-		/// <summary>
-		/// Allows monitor to stop test run by returning false.
-		/// </summary>
-		/// <returns>False to stop run, else True</returns>
-		public abstract bool StopRun();
-
-		/// <summary>
-		/// Called when a call action is being performed.  Call
-		/// actions are used to launch programs, this gives the
-		/// monitor a chance to determin if it should be running
-		/// the program under a debugger instead.
-		/// 
-		/// Note: This is a bit of a hack to get this working
-		/// </summary>
-		/// <param name="method"></param>
-		/// <param name="args"></param>
-		public abstract void PublisherCall(string method, object args);
+        public abstract Hashtable GetMonitorData();
+        /// <summary>
+        /// Can the fuzzing session continue, or must we stop?
+        /// </summary>
+        /// <returns>True if session must stop, else false.</returns>
+        public abstract bool MustStop();
 	}
 }
