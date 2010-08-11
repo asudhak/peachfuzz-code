@@ -82,3 +82,5 @@ namespace PeachCore.Agent
         public abstract bool MustStop();
 	}
 }
+
+// end
