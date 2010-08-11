@@ -133,6 +133,19 @@ namespace PeachCore.Agent.Monitors
     protected class DebuggerInstance
     {
         Thread _thread = null;
+        Debuggee _dbg = null;
+
+        string _commandLine = null;
+        string _processName = null;
+        string _kernelConnectionString = null;
+        string _service = null;
+
+        string _symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
+        string _startOnCall = null;
+
+        bool _ignoreFirstChanceGuardPage = false;
+        bool _ignoreSecondChanceGuardPage = false;
+        bool _noCpuKill = false;
 
         public static EventWaitHandle Ready = new AutoResetEvent(false);
 
@@ -140,5 +153,40 @@ namespace PeachCore.Agent.Monitors
         {
             get { return _thread != null && _thread.IsAlive; }
         }
+
+        public void Run()
+        {
+            _dbg = new Debuggee();
+            _dbg.SymbolPath = _symbolsPath;
+            _dbg.DebugOutput += new EventHandler<DebugOutputEventArgs>(dbg_DebugOutput);
+
+            if (_commandLine != null)
+            {
+                _dbg.CreateAndAttachProcess(_commandLine, null);
+                _dbg.WaitForEvent(0);
+            }
+            else if (_processName != null)
+            {
+                throw new NotImplementedException();
+            }
+            else if (_kernelConnectionString != null)
+            {
+                throw new NotImplementedException();
+            }
+            else if (_service != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            Ready.Set();
+
+        }
+
+        static void dbg_DebugOutput(object sender, DebugOutputEventArgs e)
+        {
+            Console.WriteLine(e.Output);
+        }
     }
 }
+
+// end
