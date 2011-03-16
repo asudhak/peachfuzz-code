@@ -32,6 +32,7 @@ using System.Text;
 using Peach.Options;
 using PeachCore;
 using PeachCore.Dom;
+using PeachCore.Analyzers;
 
 namespace Peach
 {
