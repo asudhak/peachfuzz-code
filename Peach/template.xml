@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
+
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml"/>
+
+	<!-- TODO: Create data model -->
+	<DataModel name="TheDataModel">
+		<String value="Hello World!" />
+	</DataModel>
+
+	<!-- TODO: Create state model -->
+	<StateModel name="TheState" initialState="Initial">
+
+		<State name="Initial">
+			<Action type="output">
+				<DataModel ref="TheDataModel"/>
+				<!-- <Data fileName="sample.png" /> -->
+			</Action>
+		</State>
+
+	</StateModel>
+
+	<!-- TODO: Configure Agent -->
+	<Agent name="TheAgent">
+
+	</Agent>
+
+	<Test name="TheTest">
+		<!-- TODO: Enable Agent -->
+		<!-- <Agent ref="TheAgent"/> -->
+		<StateModel ref="TheState"/>
+
+		<!-- TODO: Configure a publisher -->
+		<Publisher class="" />
+        
+        <!-- OPTIONAL: Configure a strategy -->
+        <!-- <Strategy class=""/> -->
+	</Test>
+
+	<!-- Configure a single run -->
+	<Run name="DefaultRun">
+
+		<!-- TODO: Change log path if needed -->
+		<Logger class="logger.Filesystem">
+			<Param name="path" value="logs"/>
+		</Logger>
+
+		<Test ref="TheTest"/>
+
+	</Run>
+
+</Peach>
+<!-- end -->
