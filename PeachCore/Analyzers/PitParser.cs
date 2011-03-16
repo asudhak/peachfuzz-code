@@ -115,11 +115,17 @@ namespace PeachCore.Analyzers
 			XmlSchemaSet set = new XmlSchemaSet();
 			set.Add(null, tr);
 
-			XmlTextReader xmlFile = new XmlTextReader(fileName);
-			xmlFile.Settings.IgnoreComments = true;
-			xmlFile.Settings.Schemas = set;
-			xmlFile.Settings.ValidationType = ValidationType.Schema;
-			xmlFile.Settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
+			XmlReaderSettings settings = new XmlReaderSettings();
+			settings.IgnoreComments = true;
+			settings.Schemas = set;
+			settings.ValidationType = ValidationType.Schema;
+			settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
+
+			XmlReader xmlFile = XmlTextReader.Create(fileName);
+			//xmlFile.Settings.IgnoreComments = true;
+			//xmlFile.Settings.Schemas = set;
+			//xmlFile.Settings.ValidationType = ValidationType.Schema;
+			//xmlFile.Settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
 
 			while (xmlFile.Read()) ;
 			xmlFile.Close();
