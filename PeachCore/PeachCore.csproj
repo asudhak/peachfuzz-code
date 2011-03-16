@@ -55,58 +55,56 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IronPython, Version=2.6.10920.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=8dacf75b5db7cb23, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\IronPython.dll</HintPath>
+      <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
-    <Reference Include="IronPython.Modules, Version=2.6.10920.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\IronPython.Modules.dll</HintPath>
+    <Reference Include="IronPython">
+      <HintPath>..\3rdParty\IronPython-2.6.2\IronPython.dll</HintPath>
     </Reference>
-    <Reference Include="IronRuby, Version=0.9.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\ironruby-1.0-rc1\bin\IronRuby.dll</HintPath>
+    <Reference Include="IronPython.Modules">
+      <HintPath>..\3rdParty\IronPython-2.6.2\IronPython.Modules.dll</HintPath>
     </Reference>
-    <Reference Include="IronRuby.Libraries, Version=0.9.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\ironruby-1.0-rc1\bin\IronRuby.Libraries.dll</HintPath>
+    <Reference Include="IronPythonTest">
+      <HintPath>..\3rdParty\IronPython-2.6.2\IronPythonTest.dll</HintPath>
     </Reference>
-    <Reference Include="IronRuby.Libraries.Yaml, Version=0.9.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\ironruby-1.0-rc1\bin\IronRuby.Libraries.Yaml.dll</HintPath>
+    <Reference Include="IronRuby">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\IronRuby.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Dynamic, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\Microsoft.Dynamic.dll</HintPath>
+    <Reference Include="IronRuby.Libraries">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\IronRuby.Libraries.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\Microsoft.Scripting.dll</HintPath>
+    <Reference Include="IronRuby.Libraries.YAML">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\IronRuby.Libraries.YAML.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\Microsoft.Scripting.Core.dll</HintPath>
+    <Reference Include="mdbglib">
+      <HintPath>..\3rdParty\mdbglib-58541\x86\Debug\mdbglib.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting.Debugging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\Microsoft.Scripting.Debugging.dll</HintPath>
+    <Reference Include="Microsoft.Dynamic">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting.ExtensionAttribute, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\IronPython-2.6\Microsoft.Scripting.ExtensionAttribute.dll</HintPath>
+    <Reference Include="Microsoft.Scripting">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting.Helpers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\ironruby-1.0-rc1\bin\Microsoft.Scripting.Helpers.dll</HintPath>
+    <Reference Include="Microsoft.Scripting.Core">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.Debugging">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.Debugging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.ExtensionAttribute">
+      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.ExtensionAttribute.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent\Agent.cs" />
     <Compile Include="Agent\AgentClient.cs" />
     <Compile Include="Agent\Monitor.cs" />
+    <Compile Include="Agent\Monitors\WindowsDebugEngine.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="BitStream.cs" />
@@ -169,9 +167,7 @@
     <Compile Include="Utilities.cs" />
     <Compile Include="Watcher.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Agent\Monitors\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>

@@ -111,7 +111,7 @@ namespace PeachCore.Analyzers
 		public void validatePit(string fileName)
 		{
 			XmlTextReader tr = new XmlTextReader(
-				Assembly.GetExecutingAssembly().GetFile("peach.xsd"));
+				Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachCore.peach.xsd"));
 			XmlSchemaSet set = new XmlSchemaSet();
 			set.Add(null, tr);
 

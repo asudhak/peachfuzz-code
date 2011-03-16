@@ -130,7 +130,7 @@ namespace PeachCore.Agent.Monitors
         }
     }
 
-    protected class DebuggerInstance
+    class DebuggerInstance
     {
         Thread _thread = null;
         Debuggee _dbg = null;

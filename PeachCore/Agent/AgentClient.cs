@@ -38,6 +38,7 @@ namespace PeachCore.Agent
 	/// </summary>
 	public class Agent : IAgent
 	{
+		public object parent;
         Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
         string name;
         string url;
