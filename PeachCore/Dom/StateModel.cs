@@ -196,12 +196,86 @@ namespace PeachCore
 
 		public State parent = null;
 
-		public Publisher _publisher = null;
-		public bool _publisherStarted = false;
-		public bool _publisherOpen = false;
+		protected DataElement _dataModel;
+		protected object _dataSet;
 
-		public DataElement _dataModel;
-		public object _dataSet;
+		protected string _publisher = null;
+		protected string _when = null;
+		protected string _onStart = null;
+		protected string _onComplete = null;
+		protected string _ref = null;
+		protected string _method = null;
+		protected string _property = null;
+		protected string _value = null;
+		protected string _setXpath = null;
+		protected string _valueXpath = null;
+
+		public DataElement dataModel
+		{
+			get { return _dataModel; }
+			set { _dataModel = value; }
+		}
+
+		public string value
+		{
+			get { return _value; }
+			set { _value = value; }
+		}
+
+		public string setXpath
+		{
+			get { return _setXpath; }
+			set { _setXpath = value; }
+		}
+
+		public string valueXpath
+		{
+			get { return _valueXpath; }
+			set { _valueXpath = value; }
+		}
+
+		public string publisher
+		{
+			get { return _publisher; }
+			set { _publisher = value; }
+		}
+
+		public string when
+		{
+			get { return _when; }
+			set { _when = value; }
+		}
+
+		public string onStart
+		{
+			get { return _onStart; }
+			set { _onStart = value; }
+		}
+
+		public string onComplete
+		{
+			get { return _onComplete; }
+			set { _onComplete = value; }
+		}
+
+		public string refDataModel
+		{
+			get { return _ref; }
+			set { _ref = value; }
+		}
+
+		public string method
+		{
+			get { return _method; }
+			set { _method = value; }
+		}
+
+		public string property
+		{
+			get { return _property; }
+			set { _property = value; }
+		}
+
 
 		/// <summary>
 		/// Action is starting to execute
@@ -228,71 +302,42 @@ namespace PeachCore
 		{
 			try
 			{
+				// TODO: Locate publisher by name
+				//       or get default.
+				Publisher publisher = null;
+
 				OnStarting();
 
 				switch (type)
 				{
 					case ActionType.Start:
-						_publisherStarted = true;
-						_publisher.start(this);
+						publisher.start(this);
 						break;
 					case ActionType.Stop:
-						_publisherStarted = false;
-						_publisher.stop(this);
+						publisher.stop(this);
 						break;
 					case ActionType.Open:
 					case ActionType.Connect:
-						if (!_publisherStarted)
-							_publisher.start(this);
-
-						_publisher.open(this);
+						publisher.open(this);
 						break;
 					case ActionType.Close:
-						if (!_publisherStarted)
-							_publisher.start(this);
-
-						_publisher.close(this);
+						publisher.close(this);
 						break;
 
 					case ActionType.Input:
-						if (!_publisherStarted)
-							_publisher.start(this);
-						if (!_publisherOpen)
-							_publisher.open(this);
-
 						handleInput();
 						break;
 					case ActionType.Output:
-						if (!_publisherStarted)
-							_publisher.start(this);
-						if (!_publisherOpen)
-							_publisher.open(this);
-
 						handleOutput();
 						break;
 
 					case ActionType.Call:
-						if (!_publisherStarted)
-							_publisher.start(this);
-						if (!_publisherOpen)
-							_publisher.open(this);
-
 						handleCall();
 						break;
 					case ActionType.GetProperty:
-						if (!_publisherStarted)
-							_publisher.start(this);
-						if (!_publisherOpen)
-							_publisher.open(this);
-
 						handleGetProperty();
 						break;
 					case ActionType.SetProperty:
-						if (!_publisherStarted)
-							_publisher.start(this);
-						if (!_publisherOpen)
-							_publisher.open(this);
-
 						handleSetProperty();
 						break;
 

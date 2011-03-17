@@ -883,6 +883,7 @@ namespace PeachCore.Analyzers
 
 		protected Transformer handleTransformer(XmlNode node, DataElement parent)
 		{
+			throw new NotImplementedException("handleTransformer");
 			return null;
 		}
 
@@ -893,7 +894,7 @@ namespace PeachCore.Analyzers
 		protected StateModel handleStateModel(XmlNode node)
 		{
 			string name = getXmlAttribute(node, "name");
-			string initialState = getXmlAttribute(node, "initial");
+			string initialState = getXmlAttribute(node, "initialState");
 			StateModel stateModel = new StateModel();
 			stateModel.name = name;
 
@@ -934,11 +935,132 @@ namespace PeachCore.Analyzers
 
 		protected Action handleAction(XmlNode node, State parent)
 		{
-			throw new NotImplementedException("handleAction");
+			Action action = new Action();
+
+			if (hasXmlAttribute(node, "name"))
+				action.name = getXmlAttribute(node, "name");
+
+			if (hasXmlAttribute(node, "when"))
+				action.when = getXmlAttribute(node, "when");
+
+			if (hasXmlAttribute(node, "publisher"))
+				action.publisher = getXmlAttribute(node, "publisher");
+
+			if (hasXmlAttribute(node, "type"))
+			{
+				switch (getXmlAttribute(node, "type").ToLower())
+				{
+					case "accept":
+						action.type = ActionType.Accept;
+						break;
+					case "call":
+						action.type = ActionType.Call;
+						break;
+					case "changeState":
+						action.type = ActionType.ChangeState;
+						break;
+					case "close":
+						action.type = ActionType.Close;
+						break;
+					case "connect":
+						action.type = ActionType.Connect;
+						break;
+					case "getproperty":
+						action.type = ActionType.GetProperty;
+						break;
+					case "input":
+						action.type = ActionType.Input;
+						break;
+					case "open":
+						action.type = ActionType.Open;
+						break;
+					case "output":
+						action.type = ActionType.Output;
+						break;
+					case "setproperty":
+						action.type = ActionType.SetProperty;
+						break;
+					case "slurp":
+						action.type = ActionType.Slurp;
+						break;
+					case "start":
+						action.type = ActionType.Start;
+						break;
+					case "stop":
+						action.type = ActionType.Stop;
+						break;
+					default:
+						throw new PeachException("Error, action of type '" + getXmlAttribute(node, "type") + "' is not valid.");
+				}
+			}
+
+			if (hasXmlAttribute(node, "onStart"))
+				action.onStart = getXmlAttribute(node, "onStart");
+
+			if (hasXmlAttribute(node, "onComplete"))
+				action.onComplete = getXmlAttribute(node, "onComplete");
+
+			if (hasXmlAttribute(node, "ref"))
+			{
+				if (action.type == ActionType.ChangeState)
+					action.name = getXmlAttribute(node, "ref");
+				else
+					throw new PeachException("Error, only Actions of type ChangeState are allowed to use the 'ref' attribute");
+			}
+
+			if (hasXmlAttribute(node, "method"))
+			{
+				if (action.type != ActionType.Call)
+					throw new PeachException("Error, only Actions of type Call are allowed to use the 'method' attribute");
+
+				action.method = getXmlAttribute(node, "method");
+			}
+
+			if (hasXmlAttribute(node, "property"))
+			{
+				if (action.type != ActionType.GetProperty && action.type != ActionType.SetProperty)
+					throw new PeachException("Error, only Actions of type GetProperty and SetProperty are allowed to use the 'property' attribute");
+
+				action.property = getXmlAttribute(node, "property");
+			}
+
+			if (hasXmlAttribute(node, "setXpath"))
+			{
+				if (action.type != ActionType.Slurp)
+					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'setXpath' attribute");
+
+				action.setXpath = getXmlAttribute(node, "setXpath");
+			}
+
+			if (hasXmlAttribute(node, "valueXpath"))
+			{
+				if (action.type != ActionType.Slurp)
+					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'valueXpath' attribute");
+
+				action.valueXpath = getXmlAttribute(node, "valueXpath");
+			}
+
+			if (hasXmlAttribute(node, "value"))
+			{
+				if (action.type != ActionType.Slurp)
+					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'value' attribute");
+
+				action.value = getXmlAttribute(node, "value");
+			}
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Param")
+					throw new NotImplementedException("Action.Param TODO");
+				
+				if (child.Name == "Result")
+					throw new NotImplementedException("Action.Result TODO");
+			}
+
+			return action;
 		}
 
 		#endregion
-
 	}
 }
 
