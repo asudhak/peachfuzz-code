@@ -286,7 +286,8 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "Test")
 				{
-					throw new NotImplementedException("Test");
+					Test test = handleTest(child, dom);
+					dom.tests.Add(test.name, test);
 				}
 			}
 
