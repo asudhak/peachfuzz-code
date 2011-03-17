@@ -304,6 +304,36 @@ namespace PeachCore.Analyzers
 		}
 
 		/// <summary>
+		/// Get attribute from XmlNode object.
+		/// </summary>
+		/// <param name="node">XmlNode to get attribute from</param>
+		/// <param name="name">Name of attribute</param>
+		/// <param name="defaultValue">Default value if attribute is missing</param>
+		/// <returns>Returns true/false or default value</returns>
+		protected bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
+		{
+			try
+			{
+				string value = node.Attributes[name].InnerText.ToLower();
+				switch (value)
+				{
+					case "1":
+					case "true":
+						return true;
+					case "0":
+					case "false":
+						return false;
+					default:
+						throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
+				}
+			}
+			catch
+			{
+				return defaultValue;
+			}
+		}
+
+		/// <summary>
 		/// Check to see if XmlNode has specific attribute.
 		/// </summary>
 		/// <param name="node">XmlNode to check</param>
@@ -564,6 +594,24 @@ namespace PeachCore.Analyzers
 			if (hasXmlAttribute(node, "length"))
 				throw new NotSupportedException("Implement length attribute on String");
 
+			if (hasXmlAttribute(node, "nullTerminated"))
+				throw new NotSupportedException("Implement nullTerminated attribute on String");
+
+			if (hasXmlAttribute(node, "type"))
+				throw new NotSupportedException("Implement type attribute on String");
+
+			if (hasXmlAttribute(node, "padCharacter"))
+				throw new NotSupportedException("Implement padCharacter attribute on String");
+
+			if (hasXmlAttribute(node, "lengthType"))
+				throw new NotSupportedException("Implement lengthType attribute on String");
+
+			if (hasXmlAttribute(node, "tokens"))
+				throw new NotSupportedException("Implement tokens attribute on String");
+
+			if (hasXmlAttribute(node, "analyzer"))
+				throw new NotSupportedException("Implement analyzer attribute on String");
+
 			handleCommonDataElementAttributes(node, str);
 			handleCommonDataElementChildren(node, str);
 
@@ -577,6 +625,47 @@ namespace PeachCore.Analyzers
 			if (hasXmlAttribute(node, "name"))
 				num.name = getXmlAttribute(node, "name");
 
+			if (hasXmlAttribute(node, "signed"))
+				num.Signed = getXmlAttributeAsBool(node, "signed", false);
+
+			if (hasXmlAttribute(node, "size"))
+			{
+				uint size;
+				try
+				{
+					size = uint.Parse(getXmlAttribute(node, "size"));
+				}
+				catch
+				{
+					throw new PeachException("Error, " + num.name + " size attribute is not valid number.");
+				}
+
+				if (size < 1 || size > 64)
+					throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, num.name));
+
+				num.Size = size;
+			}
+
+			if (hasXmlAttribute(node, "endian"))
+			{
+				string endian = getXmlAttribute(node, "endian").ToLower();
+				switch (endian)
+				{
+					case "little":
+						num.LittleEndian = true;
+						break;
+					case "big":
+						num.LittleEndian = false;
+						break;
+					case "network":
+						num.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(
+							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
+				}
+			}
+
 			handleCommonDataElementAttributes(node, num);
 			handleCommonDataElementChildren(node, num);
 
@@ -586,6 +675,12 @@ namespace PeachCore.Analyzers
 		protected Blob handleBlob(XmlNode node, DataElementContainer parent)
 		{
 			Blob blob = new Blob();
+
+			if (hasXmlAttribute(node, "length"))
+				throw new NotSupportedException("Implement length attribute on Blob");
+
+			if (hasXmlAttribute(node, "lengthType"))
+				throw new NotSupportedException("Implement lengthType attribute on Blob");
 
 			handleCommonDataElementAttributes(node, blob);
 			handleCommonDataElementChildren(node, blob);
