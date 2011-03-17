@@ -1768,9 +1768,21 @@ namespace PeachCore.Dom
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[DataElementChildSupportedAttribute("Flag")]
 	[ParameterAttribute("size", typeof(uint), "Size in bits.  Typically [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	public class Flags : DataElementContainer
 	{
 		protected uint _size = 0;
+		protected bool _littleEndian = true;
+
+		public bool LittleEndian
+		{
+			get { return _littleEndian; }
+			set
+			{
+				_littleEndian = value;
+				Invalidate();
+			}
+		}
 
 		public uint Size
 		{

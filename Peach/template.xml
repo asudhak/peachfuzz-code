@@ -16,7 +16,7 @@
 		<State name="Initial">
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
-				<!-- <Data fileName="sample.png" /> -->
+				<Data fileName="sample.png" />
 			</Action>
 		</State>
 
@@ -24,12 +24,13 @@
 
 	<!-- TODO: Configure Agent -->
 	<Agent name="TheAgent">
-
+		<Monitor class="process.PageHeap">
+			<Param name="Process" value="notepad.exe"/>
+		</Monitor>
 	</Agent>
 
 	<Test name="TheTest">
-		<!-- TODO: Enable Agent -->
-		<!-- <Agent ref="TheAgent"/> -->
+		<Agent ref="TheAgent"/>
 		<StateModel ref="TheState"/>
 
 		<!-- TODO: Configure a publisher -->

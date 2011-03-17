@@ -92,8 +92,14 @@ namespace PeachCore.Analyzers
 
 			_dom = new Dom.Dom();
 
-			if (xmldoc.FirstChild.Name == "Peach")
-				handlePeach(xmldoc.FirstChild, _dom);
+			foreach(XmlNode child in xmldoc.ChildNodes)
+			{
+				if (child.Name == "Peach")
+				{
+					handlePeach(child, _dom);
+					break;
+				}
+			}
 
 			return _dom;
 		}
@@ -158,10 +164,19 @@ namespace PeachCore.Analyzers
 					case "Include":
 						string ns = getXmlAttribute(child, "ns");
 						string fileName = getXmlAttribute(child, "src");
+						fileName = fileName.Replace("file:", "");
 
 						PitParser parser = new PitParser();
 						if (!File.Exists(fileName))
-							throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
+						{
+							string newFileName = Path.Combine(Assembly.GetExecutingAssembly().Location,
+								fileName);
+
+							if(!File.Exists(newFileName))
+								throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
+
+							fileName = newFileName;
+						}
 
 						validatePit(fileName);
 
@@ -250,6 +265,7 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "Data")
 				{
+					throw new NotImplementedException("Data");
 				}
 			}
 
@@ -259,6 +275,8 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "StateModel")
 				{
+					StateModel sm = handleStateModel(child);
+					dom.stateModels.Add(sm.name, sm);
 				}
 			}
 
@@ -268,6 +286,7 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "Test")
 				{
+					throw new NotImplementedException("Test");
 				}
 			}
 
@@ -277,6 +296,7 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "Run")
 				{
+					throw new NotImplementedException("Run");
 				}
 			}
 
@@ -692,10 +712,84 @@ namespace PeachCore.Analyzers
 		{
 			Flags flags = new Flags();
 
+			if (hasXmlAttribute(node, "name"))
+				flags.name = getXmlAttribute(node, "name");
+
+			if (hasXmlAttribute(node, "size"))
+			{
+				uint size;
+				try
+				{
+					size = uint.Parse(getXmlAttribute(node, "size"));
+				}
+				catch
+				{
+					throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
+				}
+
+				if (size < 1 || size > 64)
+					throw new PeachException(string.Format(
+						"Error, unsupported size {0} for element {1}.", size, flags.name));
+
+				flags.Size = size;
+			}
+
+			if (hasXmlAttribute(node, "endian"))
+			{
+				string endian = getXmlAttribute(node, "endian").ToLower();
+				switch (endian)
+				{
+					case "little":
+						flags.LittleEndian = true;
+						break;
+					case "big":
+						flags.LittleEndian = false;
+						break;
+					case "network":
+						flags.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(string.Format(
+							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
+				}
+			}
+
 			handleCommonDataElementAttributes(node, flags);
 			handleCommonDataElementChildren(node, flags);
 
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				// Looking for "Flag" element
+				if (child.Name == "Flag")
+				{
+					flags.Add(handleFlag(child, flags));
+				}
+			}
+
 			return flags;
+		}
+
+		protected DataElement handleFlag(XmlNode node, DataElement parent)
+		{
+			Flag flag = new Flag();
+
+			if (hasXmlAttribute(node, "name"))
+				flag.name = getXmlAttribute(node, "name");
+
+			if (hasXmlAttribute(node, "position"))
+				flag.Position = uint.Parse(getXmlAttribute(node, "position"));
+			else
+				throw new PeachException("Error, Flag elements must have 'position' attribute!");
+
+			if (hasXmlAttribute(node, "size"))
+				flag.name = getXmlAttribute(node, "size");
+			else
+				throw new PeachException("Error, Flag elements must have 'position' attribute!");
+			
+			handleCommonDataElementAttributes(node, flag);
+			handleCommonDataElementChildren(node, flag);
+
+			return flag;
 		}
 
 		protected void handleRelation(XmlNode node, DataElement parent)
@@ -840,7 +934,7 @@ namespace PeachCore.Analyzers
 
 		protected Action handleAction(XmlNode node, State parent)
 		{
-			throw new NotImplementedException("Todo");
+			throw new NotImplementedException("handleAction");
 		}
 
 		#endregion
