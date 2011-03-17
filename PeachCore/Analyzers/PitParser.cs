@@ -121,11 +121,7 @@ namespace PeachCore.Analyzers
 			settings.ValidationType = ValidationType.Schema;
 			settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
 
-			XmlReader xmlFile = XmlTextReader.Create(fileName);
-			//xmlFile.Settings.IgnoreComments = true;
-			//xmlFile.Settings.Schemas = set;
-			//xmlFile.Settings.ValidationType = ValidationType.Schema;
-			//xmlFile.Settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
+			XmlReader xmlFile = XmlTextReader.Create(fileName, settings);
 
 			while (xmlFile.Read()) ;
 			xmlFile.Close();
