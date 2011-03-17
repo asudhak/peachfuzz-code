@@ -1060,6 +1060,61 @@ namespace PeachCore.Analyzers
 			return action;
 		}
 
+		protected Test handleTest(XmlNode node, Dom.Dom parent)
+		{
+			Test test = new Test();
+			test.parent = parent;
+
+			test.name = getXmlAttribute(node, "name");
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				// Include
+				if (child.Name == "Include")
+				{
+					throw new NotImplementedException("Test.Include TODO");
+				}
+
+				// Exclude
+				if (child.Name == "Exclude")
+				{
+					throw new NotImplementedException("Test.Exclude TODO");
+				}
+
+				// Strategy
+				if (child.Name == "Strategy")
+				{
+					throw new NotImplementedException("Test.Strategy TODO");
+				}
+
+				// Agent
+				if (child.Name == "Agent")
+				{
+					throw new NotImplementedException("Test.Agent TODO");
+				}
+
+				// StateModel
+				if (child.Name == "StateModel")
+				{
+					throw new NotImplementedException("Test.StateModel TODO");
+				}
+
+				// Publisher
+				if (child.Name == "Publisher")
+				{
+					throw new NotImplementedException("Test.Publisher TODO");
+				}
+
+				// Mutator
+				if (child.Name == "Mutator")
+				{
+					throw new NotImplementedException("Test.Mutator TODO");
+				}
+			}
+
+			return test;
+		}
+
 		#endregion
 	}
 }
