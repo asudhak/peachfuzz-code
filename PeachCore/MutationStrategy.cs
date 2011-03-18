@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using PeachCore.MutationStrategies;
 
 namespace PeachCore
 {
@@ -33,6 +34,10 @@ namespace PeachCore
 		public abstract Mutator currentMutator();
 
 		public abstract void next();
+	}
+
+	public class DefaultMutationStrategyAttribute : Attribute
+	{
 	}
 }
 
