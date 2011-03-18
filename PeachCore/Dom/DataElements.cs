@@ -679,7 +679,7 @@ namespace PeachCore.Dom
 		protected static uint _uniqueName = 0;
 		public DataElement()
 		{
-			name = "Unknown" + _uniqueName;
+			name = "DataElement_" + _uniqueName;
 			_uniqueName++;
 			_relations = new RelationContainer(this);
 		}

@@ -16,40 +16,19 @@
 		<State name="Initial">
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
-				<Data fileName="sample.png" />
 			</Action>
 		</State>
 
 	</StateModel>
 
-	<!-- TODO: Configure Agent -->
-	<Agent name="TheAgent">
-		<Monitor class="process.PageHeap">
-			<Param name="Process" value="notepad.exe"/>
-		</Monitor>
-	</Agent>
-
 	<Test name="TheTest">
-		<Agent ref="TheAgent"/>
 		<StateModel ref="TheState"/>
-
-		<!-- TODO: Configure a publisher -->
-		<Publisher class="" />
-        
-        <!-- OPTIONAL: Configure a strategy -->
-        <!-- <Strategy class=""/> -->
+		<Publisher class="Console" />
 	</Test>
 
 	<!-- Configure a single run -->
 	<Run name="DefaultRun">
-
-		<!-- TODO: Change log path if needed -->
-		<Logger class="logger.Filesystem">
-			<Param name="path" value="logs"/>
-		</Logger>
-
 		<Test ref="TheTest"/>
-
 	</Run>
 
 </Peach>

@@ -747,7 +747,7 @@ namespace PeachCore.Dom
 
 		public int Count
 		{
-			get { throw new NotImplementedException(); }
+			get { return this._list.Count; }
 		}
 
 		public bool IsReadOnly

@@ -34,6 +34,7 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using PeachCore.Dom;
+using System.Reflection;
 
 namespace PeachCore.Analyzers
 {
@@ -364,12 +365,12 @@ namespace PeachCore.Analyzers
 		{
 			try
 			{
-				object o = node.Attributes[name];
-				return false;
+				object o = node.Attributes.GetNamedItem(name);
+				return o != null;
 			}
 			catch
 			{
-				return true;
+				return false;
 			}
 		}
 
@@ -878,14 +879,11 @@ namespace PeachCore.Analyzers
 
 			// Create fixup object here!
 			throw new NotSupportedException("Finish implementing Fixups!");
-
-			return null;
 		}
 
 		protected Transformer handleTransformer(XmlNode node, DataElement parent)
 		{
 			throw new NotImplementedException("handleTransformer");
-			return null;
 		}
 
 #endregion
@@ -1097,13 +1095,33 @@ namespace PeachCore.Analyzers
 				// StateModel
 				if (child.Name == "StateModel")
 				{
-					throw new NotImplementedException("Test.StateModel TODO");
+					if (!hasXmlAttribute(child, "ref"))
+						throw new PeachException("Error, StateModel element must have a 'ref' attribute when used as a child of Test");
+
+					try
+					{
+						test.stateModel = parent.stateModels[getXmlAttribute(child, "ref")];
+					}
+					catch
+					{
+						throw new PeachException("Error, could not locate StateModel named '" + 
+							getXmlAttribute(child, "ref") + "' for Test '" + test.name + "'.");
+					}
 				}
 
 				// Publisher
 				if (child.Name == "Publisher")
 				{
-					throw new NotImplementedException("Test.Publisher TODO");
+					string name;
+					if (!hasXmlAttribute(child, "name"))
+					{
+						name = "Pub_" + _uniquePublisherName;
+						_uniquePublisherName++;
+					}
+					else
+						name = getXmlAttribute(child, "name");
+
+					test.publishers.Add(name, handlePublisher(child, test));
 				}
 
 				// Mutator
@@ -1113,7 +1131,73 @@ namespace PeachCore.Analyzers
 				}
 			}
 
+			if (test.stateModel == null)
+				throw new PeachException("Test '" + test.name + "' missing StateModel element.");
+			if(test.publishers.Count == 0)
+				throw new PeachException("Test '" + test.name + "' missing Publisher element.");
+
 			return test;
+		}
+
+		public static uint _uniquePublisherName = 0;
+
+		protected Publisher handlePublisher(XmlNode node, Test parent)
+		{
+			string reference = getXmlAttribute(node, "class");
+			Type pubType = null;
+
+			// Locate PublisherAttribute classes and check name
+			foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach(Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is PublisherAttribute)
+						{
+							if ((attrib as PublisherAttribute).invokeName == reference)
+								pubType = t;
+						}
+					}
+				}
+			}
+
+			if (pubType == null)
+				throw new PeachException("Error, unable to locate publisher '" + reference + "'.");
+
+			Type[] argTypes = new Type[1];
+			argTypes[0] = typeof(Dictionary<string, Variant>);
+			ConstructorInfo pubCo = pubType.GetConstructor(argTypes);
+
+			object [] args = new object[1];
+			args[0] = handleParams(node);
+
+			Publisher pub = pubCo.Invoke(args) as Publisher;
+
+			return pub;
+		}
+
+		protected Dictionary<string, Variant> handleParams(XmlNode node)
+		{
+			Dictionary<string, Variant> ret = new Dictionary<string, Variant>();
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name != "Param")
+					continue;
+
+				string name = getXmlAttribute(child, "name");
+				string value = getXmlAttribute(child, "value");
+
+				if (hasXmlAttribute(child, "valueType"))
+					throw new NotImplementedException("TODO Handle ValueType");
+
+				ret.Add(name, new Variant(value));
+			}
+
+			return ret;
 		}
 
 		#endregion
