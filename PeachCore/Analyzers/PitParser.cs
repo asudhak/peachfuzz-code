@@ -298,7 +298,8 @@ namespace PeachCore.Analyzers
 			{
 				if (child.Name == "Run")
 				{
-					throw new NotImplementedException("Run");
+					Run run = handleRun(child, dom);
+					dom.runs.Add(run.name, run);
 				}
 			}
 
@@ -1198,6 +1199,27 @@ namespace PeachCore.Analyzers
 			}
 
 			return ret;
+		}
+
+		protected Run handleRun(XmlNode node, Dom.Dom parent)
+		{
+			Run run = new Run();
+			run.name = getXmlAttribute(node, "name");
+			run.parent = parent;
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Logger")
+					throw new NotImplementedException("todo Logger");
+
+				if (child.Name == "Test")
+				{
+					Test test = parent.tests[getXmlAttribute(child, "ref")];
+					run.tests.Add(test.name, test);
+				}
+			}
+
+			return run;
 		}
 
 		#endregion
