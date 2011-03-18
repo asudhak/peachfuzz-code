@@ -39,6 +39,15 @@ namespace PeachCore
 	public class DefaultMutationStrategyAttribute : Attribute
 	{
 	}
+
+	public class MutationStrategyAttribute : Attribute
+	{
+		public string name = null;
+		public MutationStrategyAttribute(string name)
+		{
+			this.name = name;
+		}
+	}
 }
 
 // end

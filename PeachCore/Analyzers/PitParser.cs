@@ -1137,6 +1137,35 @@ namespace PeachCore.Analyzers
 			if(test.publishers.Count == 0)
 				throw new PeachException("Test '" + test.name + "' missing Publisher element.");
 
+			if (test.strategy == null)
+			{
+				// Locate and load default strategy.
+				foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+				{
+					foreach (Type t in a.GetExportedTypes())
+					{
+						if (!t.IsClass)
+							continue;
+
+						foreach (object attrib in t.GetCustomAttributes(true))
+						{
+							if (attrib is DefaultMutationStrategyAttribute)
+							{
+								Type[] argTypes = new Type[1];
+								argTypes[0] = typeof(Dictionary<string, string>);
+								ConstructorInfo strategyCo = t.GetConstructor(argTypes);
+
+								object[] args = new object[1];
+								args[0] = new Dictionary<string, string>();
+
+								test.strategy = strategyCo.Invoke(args) as MutationStrategy;
+							}
+						}
+					}
+				}
+
+			}
+
 			return test;
 		}
 

@@ -224,7 +224,8 @@ namespace PeachCore
 				// TODO: Get state engine
 				// TODO: Start agents
 				// TODO: Get mutation strategy
-				MutationStrategy mutationStrategy = null;
+				MutationStrategy mutationStrategy = test.strategy;
+				mutationStrategy.Initialize(context, this);
 
 				uint iterationCount = 0;
 				uint? totalIterationCount = null;

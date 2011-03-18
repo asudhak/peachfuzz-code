@@ -118,6 +118,7 @@ namespace PeachCore.Dom
 		public object parent = null;
 		public Run run = null;
 		public StateModel stateModel = null;
+		public MutationStrategy strategy = null;
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
 		public OrderedDictionary<string, Agent.Agent> agents = new OrderedDictionary<string, Agent.Agent>();

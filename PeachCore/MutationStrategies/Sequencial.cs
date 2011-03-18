@@ -4,7 +4,8 @@ using System.Text;
 
 namespace PeachCore.MutationStrategies
 {
-	[DefaultMutationStrategyAttribute]
+	[DefaultMutationStrategy]
+	[MutationStrategy("Sequencial")]
 	public class Sequencial : MutationStrategy
 	{
 		public Sequencial(Dictionary<string,string> args)
