@@ -202,10 +202,10 @@ namespace PeachCore
 					runTest(dom, test, context);
 				}
 			}
-			catch (Exception e)
-			{
-				OnRunError(context, e);
-			}
+			//catch (Exception e)
+			//{
+			//	OnRunError(context, e);
+			//}
 			finally
 			{
 				OnRunFinished(context);
@@ -218,7 +218,7 @@ namespace PeachCore
 		{
 			try
 			{
-				context.test = null;
+				context.test = test;
 				OnTestStarting(context);
 
 				// TODO: Get state engine
@@ -340,11 +340,11 @@ namespace PeachCore
 				// Ignore, signals end of fuzzing run
 			}
 			// TODO: Catch keyboard interrupt
-			catch (Exception e)
-			{
-				OnTestError(context, e);
-				throw e;
-			}
+			//catch (Exception e)
+			//{
+			//    OnTestError(context, e);
+			//    throw e;
+			//}
 			finally
 			{
 				OnTestFinished(context);

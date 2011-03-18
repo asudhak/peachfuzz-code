@@ -697,7 +697,10 @@ namespace PeachCore.Dom
 
 		public ICollection<TValue> Values
 		{
-			get { throw new NotImplementedException(); }
+			get
+			{
+				return this._dictionary.Values;
+			}
 		}
 
 		public TValue this[TKey key]
