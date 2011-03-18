@@ -395,12 +395,10 @@ namespace PeachCore.Analyzers
 				dom = dom.ns["name"];
 			}
 
-			DataElement obj = null;
 			foreach (DataModel model in dom.dataModels.Values)
 			{
-				obj = model.find(name) as DataElement;
-				if (obj != null)
-					return obj;
+				if (model.name == name)
+					return model;
 			}
 
 			return null;
@@ -425,11 +423,17 @@ namespace PeachCore.Analyzers
 				{
 					throw new PeachException("Unable to locate 'ref' [" + getXmlAttribute(node, "ref") + "] or found node did not match type. [" + node.OuterXml + "].");
 				}
-			}
 
-			dataModel.name = getXmlAttribute(node, "name");
-			if(dataModel.name == null)
-				throw new PeachException("Error, DataModel missing required 'name' attribute.");
+				if (!hasXmlAttribute(node, "name"))
+					dataModel.name = getXmlAttribute(node, "ref");
+			}
+			else
+			{
+				dataModel.name = getXmlAttribute(node, "name");
+				if (dataModel.name == null)
+					throw new PeachException("Error, DataModel missing required 'name' attribute.");
+
+			}
 
 			handleCommonDataElementAttributes(node, dataModel);
 			handleCommonDataElementChildren(node, dataModel);
@@ -1055,6 +1059,12 @@ namespace PeachCore.Analyzers
 				
 				if (child.Name == "Result")
 					throw new NotImplementedException("Action.Result TODO");
+
+				if (child.Name == "DataModel")
+					action.dataModel = handleDataModel(child);
+
+				if(child.Name == "Data")
+					throw new NotImplementedException("Action.Data TODO");
 			}
 
 			return action;

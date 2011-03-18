@@ -78,13 +78,13 @@ namespace PeachCore
 				Finished(this);
 		}
 
-		public void Run()
+		public void Run(RunContext context)
 		{
 			try
 			{
 				OnStarting();
 
-				_initialState.Run();
+				_initialState.Run(context);
 			}
 			finally
 			{
@@ -135,14 +135,14 @@ namespace PeachCore
 				ChangingState(this, toState);
 		}
 
-		public void Run()
+		public void Run(RunContext context)
 		{
 			try
 			{
 				OnStarting();
 				foreach (Action action in actions)
 				{
-					action.Run();
+					action.Run(context);
 				}
 			}
 			catch(ActionChangeStateException e)
@@ -298,13 +298,23 @@ namespace PeachCore
 				Finished(this);
 		}
 
-		public void Run()
+		public void Run(RunContext context)
 		{
 			try
 			{
 				// TODO: Locate publisher by name
 				//       or get default.
+
 				Publisher publisher = null;
+				if (this.publisher != null)
+				{
+					publisher = context.test.publishers[this.publisher];
+				}
+				else
+				{
+					publisher = context.test.publishers[0];
+				}
+
 
 				OnStarting();
 
@@ -328,7 +338,7 @@ namespace PeachCore
 						handleInput();
 						break;
 					case ActionType.Output:
-						handleOutput();
+						publisher.output(this, new Variant(this.dataModel.Value));
 						break;
 
 					case ActionType.Call:

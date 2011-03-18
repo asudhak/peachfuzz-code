@@ -31,10 +31,12 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Text;
 using PeachCore.Agent;
+using System.Runtime.Serialization;
 
 namespace PeachCore.Dom
 {
-    public class Dom
+	[Serializable]
+	public class Dom
     {
 		public string fileName;
 		public string version;
@@ -88,12 +90,14 @@ namespace PeachCore.Dom
 
 	}
 
+	[Serializable]
 	public class DomNamespace : Dom
 	{
 		public Dom parent;
 		public string name;
 	}
 
+	[Serializable]
 	public class Run
 	{
 		public string name = null;
@@ -112,6 +116,7 @@ namespace PeachCore.Dom
 		}
 	}
 
+	[Serializable]
 	public class Test
 	{
 		public string name = null;

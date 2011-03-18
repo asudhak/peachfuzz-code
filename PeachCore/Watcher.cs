@@ -61,88 +61,70 @@ namespace PeachCore
 
 		protected virtual void Action_Finished(Action action)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Action_Starting(Action action)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void State_ChangingState(State state, State toState)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void State_Finished(State state)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void State_Starting(State state)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void StateModel_Finished(StateModel model)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void StateModel_Starting(StateModel model)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_Fault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_IterationFinished(RunContext context, uint currentIteration)
 		{
-			
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_TestError(RunContext context, Exception e)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_TestFinished(RunContext context)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_TestStarting(RunContext context)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_RunError(RunContext context, Exception e)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_RunFinished(RunContext context)
 		{
-			throw new NotImplementedException();
 		}
 
 		protected virtual void Engine_RunStarting(RunContext context)
 		{
-			throw new NotImplementedException();
 		}
 	}
 }

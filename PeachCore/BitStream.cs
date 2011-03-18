@@ -40,6 +40,7 @@ namespace PeachCore
 	/// reading/writing and accessing data stream as bits and
 	/// bytes.
 	/// </summary>
+	[Serializable]
 	public class BitStream
 	{
 		/// <summary>

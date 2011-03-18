@@ -11,6 +11,7 @@ namespace PeachCore
 	/// strategy allows one to fully control which elements
 	/// are mutated, by which mutators, and when.
 	/// </summary>
+	[Serializable]
 	public abstract class MutationStrategy
 	{
 		public MutationStrategy(Dictionary<string, string> args)

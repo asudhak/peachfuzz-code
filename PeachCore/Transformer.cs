@@ -36,6 +36,7 @@ namespace PeachCore
 	/// <summary>
 	/// Transformers perform static transforms of data.
 	/// </summary>
+	[Serializable]
 	public abstract class Transformer
 	{
 		public Transformer anotherTransformer;

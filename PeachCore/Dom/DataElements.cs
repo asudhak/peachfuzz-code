@@ -33,6 +33,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace PeachCore.Dom
 {
@@ -47,6 +48,7 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// Base class for all data element relations
 	/// </summary>
+	[Serializable]
 	public abstract class Relation
 	{
 		protected DataElement _parent = null;
@@ -219,6 +221,7 @@ namespace PeachCore.Dom
 	/// data elements.  Such as Block, Choice, or Flags.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Serializable]
 	public class RelationContainer : IEnumerable<Relation>, IList<Relation>
 	{
 		protected DataElement parent;
@@ -466,6 +469,7 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// Byte size relation.
 	/// </summary>
+	[Serializable]
 	public class SizeRelation : Relation
 	{
 		public override Variant GetValue()
@@ -524,6 +528,7 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// Byte offset relation
 	/// </summary>
+	[Serializable]
 	public class OffsetRelation : Relation
 	{
 		public bool isRelativeOffset;
@@ -540,6 +545,7 @@ namespace PeachCore.Dom
 		}
 	}
 
+	[Serializable]
 	public class WhenRelation : Relation
 	{
 		public string WhenExpression = "";
@@ -563,6 +569,7 @@ namespace PeachCore.Dom
 	/// Base class for all data elements.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Serializable]
 	public abstract class DataElement
 	{
 		/// <summary>
@@ -1121,6 +1128,7 @@ namespace PeachCore.Dom
 	/// data elements.  Such as Block, Choice, or Flags.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Serializable]
 	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>, IList<DataElement>
 	{
 		protected List<DataElement> _childrenList = new List<DataElement>();
@@ -1320,6 +1328,7 @@ namespace PeachCore.Dom
 	[DataElement("Block")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
 	//[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
+	[Serializable]
 	public class Block : DataElementContainer
 	{
 		public string lengthType;
@@ -1374,6 +1383,7 @@ namespace PeachCore.Dom
 	/// <summary>
 	/// DataModel is just a top level Block.
 	/// </summary>
+	[Serializable]
 	public class DataModel : Block
 	{
 		public Dom dom = null;
@@ -1465,6 +1475,7 @@ namespace PeachCore.Dom
 	[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
 	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
+	[Serializable]
 	public class Number : DataElement
 	{
 		protected uint _size = 8;
@@ -1638,6 +1649,7 @@ namespace PeachCore.Dom
 	[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
 	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
 	[ParameterAttribute("type", typeof(StringType), "Type of string (encoding)", true)]
+	[Serializable]
 	public class String : DataElement
 	{
 		protected StringType _type = StringType.Ascii;
@@ -1769,6 +1781,7 @@ namespace PeachCore.Dom
 	[DataElementChildSupportedAttribute("Flag")]
 	[ParameterAttribute("size", typeof(uint), "Size in bits.  Typically [8, 16, 24, 32, 64]", true)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
+	[Serializable]
 	public class Flags : DataElementContainer
 	{
 		protected uint _size = 0;
@@ -1819,6 +1832,7 @@ namespace PeachCore.Dom
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("position", typeof(uint), "Bit position of flag", true)]
 	[ParameterAttribute("size", typeof(uint), "Size in bits", true)]
+	[Serializable]
 	public class Flag : DataElement
 	{
 		protected uint _size = 0;
@@ -1862,6 +1876,7 @@ namespace PeachCore.Dom
 	/// TODO: Investigate implicit casting as well.
 	/// TODO: Investigate deligates for type -> byte[] conversion.
 	/// </summary>
+	[Serializable]
 	public class Variant
 	{
 		protected enum VariantType
@@ -2076,7 +2091,7 @@ namespace PeachCore.Dom
 				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to string type.");
 				case VariantType.BitStream:
-					throw new NotSupportedException("Unable to convert BitStream to int type.");
+					throw new NotSupportedException("Unable to convert BitStream to string type.");
 				default:
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}

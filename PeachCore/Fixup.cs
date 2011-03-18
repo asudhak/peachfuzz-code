@@ -33,6 +33,7 @@ using PeachCore.Dom;
 
 namespace PeachCore
 {
+	[Serializable]
 	public abstract class Fixup
 	{
 		protected Dictionary<string, object> args;

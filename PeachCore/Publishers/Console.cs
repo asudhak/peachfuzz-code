@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using PeachCore.Dom;
@@ -37,6 +38,8 @@ namespace PeachCore.Publishers
 	[NoParametersAttribute()]
 	public class Console : Publisher
 	{
+		Stream _sout = null;
+
 		public Console(Dictionary<string, Variant> args)
 			: base(args)
 		{
@@ -44,18 +47,31 @@ namespace PeachCore.Publishers
 
 		public override void open(Action action)
 		{
-			OnOpen(action);
+			if (_sout == null)
+			{
+				OnOpen(action);
+				_sout = System.Console.OpenStandardOutput();
+			}
 		}
 
 		public override void close(Action action)
 		{
 			OnClose(action);
+
+			if (_sout != null)
+			{
+				_sout.Close();
+				_sout = null;
+			}
 		}
 
 		public override void output(Action action, Variant data)
 		{
+			open(action);
+
 			OnOutput(action, data);
-			System.Console.Write((string)data);
+			byte[] buff = (byte[])data;
+			_sout.Write(buff, 0, buff.Length);
 		}
 	}
 }

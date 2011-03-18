@@ -282,7 +282,7 @@ namespace PeachCore
 						}
 
 						// - Should we skip ahead?
-						if (iterationCount == 2 && iterationRangeStart.HasValue &&
+						if (iterationCount == 2 && iterationRangeStart != null &&
 							iterationCount < iterationRangeStart)
 						{
 							for (; iterationCount < iterationRangeStart; iterationCount++)
@@ -292,6 +292,7 @@ namespace PeachCore
 						try
 						{
 							// TODO: Iteration Starting
+							test.stateModel.Run(context);
 						}
 						catch (RedoTestException e)
 						{
@@ -368,6 +369,7 @@ namespace PeachCore
 		DebugSuperVerbose
 	}
 
+	[Serializable]
 	public class RunContext
 	{
 		public delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
