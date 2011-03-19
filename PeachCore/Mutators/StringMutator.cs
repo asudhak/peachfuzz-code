@@ -29,10 +29,60 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PeachCore.Dom;
 
 namespace PeachCore.Mutators
 {
-	class StringMutator
+	[Mutator("Perform common string mutations")]
+	public class StringMutator : Mutator
 	{
+		string[] values = new string[] {
+			"Peachy",
+			"A",
+			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+		};
+
+		uint pos = 0;
+		uint lastPos = 0;
+
+		public StringMutator()
+		{
+			pos = 0;
+		}
+
+		public new static bool supportedDataElement(DataElement obj)
+		{
+			if (obj is Dom.String)
+				return true;
+
+			return false;
+		}
+
+		public override void next()
+		{
+			pos++;
+			if (pos >= values.Length)
+			{
+				pos = (uint) values.Length - 1;
+				throw new MutatorCompleted();
+			}
+		}
+
+		public override int count
+		{
+			get { return values.Length; }
+		}
+
+		public override void sequencialMutation(Dom.DataElement obj)
+		{
+			obj.MutatedValue = new Variant(values[pos]);
+		}
+
+		public override void randomMutation(Dom.DataElement obj)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

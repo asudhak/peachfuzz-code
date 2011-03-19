@@ -88,6 +88,22 @@ namespace PeachCore
 		public abstract void randomMutation(DataElement obj);
 	}
 
+	// Mark a class as a Peach Mutator
+	public class MutatorAttribute : Attribute
+	{
+		public string description = null;
+
+		public MutatorAttribute()
+		{
+			description = "Unknown";
+		}
+
+		public MutatorAttribute(string description)
+		{
+			this.description = description;
+		}
+	}
+
 	public class MutatorCompleted : Exception
 	{
 	}
