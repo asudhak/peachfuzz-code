@@ -25,11 +25,11 @@ namespace Peach
 		{
 			if (totalIterations == null)
 			{
-				Console.WriteLine(string.Format("[{0},-,-]'", currentIteration));
+				Console.WriteLine(string.Format("[{0},-,-] Performing iteration", currentIteration));
 			}
 			else
 			{
-				Console.WriteLine(string.Format("[{0},{1},?]'", currentIteration, totalIterations));
+				Console.WriteLine(string.Format("[{0},{1},?] Performing iteration", currentIteration, totalIterations));
 			}
 		}
 

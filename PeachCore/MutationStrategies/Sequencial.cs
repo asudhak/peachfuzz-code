@@ -25,7 +25,7 @@ namespace PeachCore.MutationStrategies
 
 		public override void next()
 		{
-			throw new NotImplementedException();
+			throw new MutatorCompleted();
 		}
 	}
 }

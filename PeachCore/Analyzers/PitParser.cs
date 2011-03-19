@@ -641,8 +641,27 @@ namespace PeachCore.Analyzers
 
 			handleCommonDataElementAttributes(node, str);
 			handleCommonDataElementChildren(node, str);
+			handleCommonDataElementValue(node, str);
 
 			return str;
+		}
+
+		protected void handleCommonDataElementValue(XmlNode node, DataElement elem)
+		{
+			if (hasXmlAttribute(node, "valueType"))
+				throw new NotImplementedException("todo valueType");
+
+			if (hasXmlAttribute(node, "value"))
+			{
+				string value = getXmlAttribute(node, "value");
+
+				value = value.Replace("\\\\", "\\");
+				value = value.Replace("\\n", "\n");
+				value = value.Replace("\\r", "\r");
+				value = value.Replace("\\t", "\t");
+
+				elem.DefaultValue = new Variant(value);
+			}
 		}
 
 		protected Number handleNumber(XmlNode node, DataElementContainer parent)
@@ -695,6 +714,7 @@ namespace PeachCore.Analyzers
 
 			handleCommonDataElementAttributes(node, num);
 			handleCommonDataElementChildren(node, num);
+			handleCommonDataElementValue(node, num);
 
 			return num;
 		}
@@ -711,6 +731,7 @@ namespace PeachCore.Analyzers
 
 			handleCommonDataElementAttributes(node, blob);
 			handleCommonDataElementChildren(node, blob);
+			handleCommonDataElementValue(node, blob);
 
 			return blob;
 		}
@@ -795,6 +816,7 @@ namespace PeachCore.Analyzers
 			
 			handleCommonDataElementAttributes(node, flag);
 			handleCommonDataElementChildren(node, flag);
+			handleCommonDataElementValue(node, flag);
 
 			return flag;
 		}

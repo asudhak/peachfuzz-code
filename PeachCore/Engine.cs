@@ -291,6 +291,7 @@ namespace PeachCore
 
 						try
 						{
+							Engine.IterationStarting(context, iterationCount, totalIterationCount);
 							// TODO: Iteration Starting
 							test.stateModel.Run(context);
 						}
