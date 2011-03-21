@@ -197,6 +197,7 @@ namespace PeachCore
 		public State parent = null;
 
 		protected DataElement _dataModel;
+		protected DataElement _origionalDataModel;
 		protected object _dataSet;
 
 		protected string _publisher = null;
@@ -213,7 +214,19 @@ namespace PeachCore
 		public DataElement dataModel
 		{
 			get { return _dataModel; }
-			set { _dataModel = value; }
+			set
+			{
+				if (_origionalDataModel == null)
+					_origionalDataModel = value;
+
+				_dataModel = value;
+			}
+		}
+
+		public DataElement origionalDataModel
+		{
+			get { return _origionalDataModel; }
+			set { _origionalDataModel = value; }
 		}
 
 		public string value

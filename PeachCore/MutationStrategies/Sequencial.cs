@@ -13,6 +13,9 @@ namespace PeachCore.MutationStrategies
 		Dictionary<DataElement, List<Mutator>> _stuffs = new Dictionary<DataElement, List<Mutator>>();
 		List<Type> _mutators = new List<Type>();
 		bool recording = true;
+		int elementPosition = 0;
+		int mutatorPosition = 0;
+		int? _count = null;
 
 		public Sequencial(Dictionary<string,string> args)
 			: base(args)
@@ -57,7 +60,7 @@ namespace PeachCore.MutationStrategies
 			MethodInfo supportedDataElement = mutator.GetMethod("supportedDataElement");
 
 			object [] args = new object[1];
-			args[1] = elem;
+			args[0] = elem;
 
 			return (bool)supportedDataElement.Invoke(null, args);
 		}
@@ -82,8 +85,22 @@ namespace PeachCore.MutationStrategies
 
 		void Action_Starting(Action action)
 		{
-			if (!recording)
+			if (!recording && enumeratorsInitialized)
+			{
+				string fullName = _dataElementEnumerator.Current.fullName;
+				if (action.dataModel != null)
+				{
+					DataElement elem = action.origionalDataModel.find(fullName);
+					if (elem != null)
+					{
+						action.dataModel = ObjectCopier.Clone<DataElement>(elem);
+						elem = action.dataModel.find(fullName);
+						_mutatorEnumerator.Current.sequencialMutation(elem);
+					}
+				}
+
 				return;
+			}
 
 			if (action.dataModel != null)
 			{
@@ -121,7 +138,22 @@ namespace PeachCore.MutationStrategies
 
 		public override uint count
 		{
-			get { throw new NotImplementedException(); }
+			get
+			{
+				if (_count != null)
+					return (uint)_count;
+
+				_count = 1; // Always one iteration before us!
+				foreach (List<Mutator> l in _stuffs.Values)
+				{
+					foreach (Mutator m in l)
+					{
+						_count += m.count;
+					}
+				}
+
+				return (uint)_count;
+			}
 		}
 
 		public override Mutator currentMutator()
@@ -129,9 +161,40 @@ namespace PeachCore.MutationStrategies
 			throw new NotImplementedException();
 		}
 
+		bool enumeratorsInitialized = false;
+		Dictionary<DataElement, List<Mutator>>.KeyCollection.Enumerator _dataElementEnumerator;
+		List<Mutator>.Enumerator _mutatorEnumerator;
+
 		public override void next()
 		{
-			throw new MutatorCompleted();
+			if (enumeratorsInitialized)
+			{
+				try
+				{
+					_mutatorEnumerator.Current.next();
+				}
+				catch
+				{
+					if (!_mutatorEnumerator.MoveNext())
+					{
+						if (!_dataElementEnumerator.MoveNext())
+						{
+							throw new MutatorCompleted();
+						}
+
+						_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
+						_mutatorEnumerator.MoveNext();
+					}
+				}
+			}
+			else
+			{
+				enumeratorsInitialized = true;
+				_dataElementEnumerator = _stuffs.Keys.GetEnumerator();
+				_dataElementEnumerator.MoveNext();
+				_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
+				_mutatorEnumerator.MoveNext();
+			}
 		}
 	}
 }

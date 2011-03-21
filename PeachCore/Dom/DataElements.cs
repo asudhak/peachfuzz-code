@@ -930,7 +930,10 @@ namespace PeachCore.Dom
 			// 2. Relations
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			{
+				_internalValue = MutatedValue;
 				return MutatedValue;
+			}
 
 			foreach(Relation r in _relations)
 			{
@@ -941,7 +944,10 @@ namespace PeachCore.Dom
 			// 3. Fixup
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			{
+				_internalValue = MutatedValue;
 				return MutatedValue;
+			}
 
 			if (_fixup != null)
 				value = _fixup.fixup(this);
@@ -1088,12 +1094,34 @@ namespace PeachCore.Dom
 		{
 			string [] names = name.Split(new char[] {'.'});
 
-			foreach (string n in names)
+			if (names.Length == 1)
 			{
-
+				foreach (DataElement elem in EnumerateElementsByName(names[0]))
+				{
+					return elem;
+				}
 			}
 
-			throw new ApplicationException("TODO");
+			foreach (DataElement elem in EnumerateElementsByName(names[0]))
+			{
+				if (!(elem is DataElementContainer))
+					continue;
+
+				DataElement ret = ((DataElementContainer)elem).QuickNameMatch(names);
+				if (ret != null)
+					return ret;
+			}
+
+			DataElement root = getRoot();
+			if (root == this)
+				return null;
+
+			return root.find(name);
+		}
+
+		public virtual IEnumerable<DataElement> EnumerateElementsByName(string name)
+		{
+			yield return this;
 		}
 
 		/// <summary>
@@ -1139,6 +1167,42 @@ namespace PeachCore.Dom
 			get
 			{
 				return _childrenList.Count == 0;
+			}
+		}
+
+		public DataElement QuickNameMatch(string[] names)
+		{
+			try
+			{
+				if (this.name != names[0])
+					return null;
+
+				DataElement ret = this;
+				for (int cnt = 1; cnt < names.Length; cnt++)
+				{
+					ret = ((DataElementContainer)ret)[names[cnt]];
+				}
+
+				return ret;
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		public override IEnumerable<DataElement> EnumerateElementsByName(string name)
+		{
+			if (name == this.name)
+				yield return this;
+
+			foreach (DataElement elem in this)
+			{
+				if(elem.name == name)
+					yield return elem;
+
+				foreach (DataElement d in elem.EnumerateElementsByName(name))
+					yield return d;
 			}
 		}
 

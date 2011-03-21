@@ -7,7 +7,8 @@
 
 	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
-		<String value="Hello World!\n" />
+		<String value="Hello World!" />
+		<String value="BAR" />
 	</DataModel>
 
 	<!-- TODO: Create state model -->

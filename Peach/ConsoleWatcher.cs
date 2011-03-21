@@ -25,22 +25,22 @@ namespace Peach
 		{
 			if (totalIterations == null)
 			{
-				Console.WriteLine(string.Format("[{0},-,-] Performing iteration", currentIteration));
+				Console.WriteLine(string.Format("\n[{0},-,-] Performing iteration", currentIteration));
 			}
 			else
 			{
-				Console.WriteLine(string.Format("[{0},{1},?] Performing iteration", currentIteration, totalIterations));
+				Console.WriteLine(string.Format("\n[{0},{1},?] Performing iteration", currentIteration, totalIterations));
 			}
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
 		{
-			Console.WriteLine("[!] Test '" + context.test.name + "' error: " + e.Message);
+			Console.WriteLine("\n[!] Test '" + context.test.name + "' error: " + e.Message);
 		}
 
 		protected override void Engine_TestFinished(RunContext context)
 		{
-			Console.WriteLine("[*] Test '" + context.test.name + "' finished.");
+			Console.WriteLine("\n[*] Test '" + context.test.name + "' finished.");
 		}
 
 		protected override void Engine_TestStarting(RunContext context)
@@ -50,7 +50,7 @@ namespace Peach
 
 		protected override void Engine_RunError(RunContext context, Exception e)
 		{
-			Console.WriteLine("[!] Run '" + context.run.name + "' error: " + e.Message);
+			Console.WriteLine("\n[!] Run '" + context.run.name + "' error: " + e.Message);
 		}
 
 		protected override void Engine_RunFinished(RunContext context)
