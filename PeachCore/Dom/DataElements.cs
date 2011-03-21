@@ -1421,7 +1421,10 @@ namespace PeachCore.Dom
 			// 2. Relations
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			{
+				_internalValue = _mutatedValue;
 				return MutatedValue;
+			}
 
 			foreach (Relation r in _relations)
 			{
@@ -1434,7 +1437,10 @@ namespace PeachCore.Dom
 			// 3. Fixup
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			{
+				_internalValue = _mutatedValue;
 				return MutatedValue;
+			}
 
 			if (_fixup != null)
 				value = _fixup.fixup(this);

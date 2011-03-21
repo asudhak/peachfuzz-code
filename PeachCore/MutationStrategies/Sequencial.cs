@@ -93,7 +93,8 @@ namespace PeachCore.MutationStrategies
 					DataElement elem = action.origionalDataModel.find(fullName);
 					if (elem != null)
 					{
-						action.dataModel = ObjectCopier.Clone<DataElement>(elem);
+						// Clone the data model, not the internal data element
+						action.dataModel = (DataModel)ObjectCopier.Clone<DataElement>(elem.getRoot());
 						elem = action.dataModel.find(fullName);
 						_mutatorEnumerator.Current.sequencialMutation(elem);
 					}
