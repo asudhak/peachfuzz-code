@@ -41,6 +41,10 @@ namespace PeachCore
 	{
 		public Transformer anotherTransformer;
 
+		public Transformer(Dictionary<string, string> args)
+		{
+		}
+
 		/// <summary>
 		/// Encode data, will properly call any chained transformers.
 		/// </summary>

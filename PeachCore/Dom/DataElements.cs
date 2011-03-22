@@ -1523,10 +1523,10 @@ namespace PeachCore.Dom
 	/// zero or more elements.
 	/// </summary>
 	[DataElement("Array")]
-	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	[DataElementRelationSupportedAttribute(DataElementRelations.Any)]
-	[ParameterAttribute("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
-	[ParameterAttribute("maxOccurs", typeof(int), "Maximum number of occurances (-1 for unlimited)", false)]
+	[DataElementChildSupported(DataElementTypes.Any)]
+	[DataElementRelationSupported(DataElementRelations.Any)]
+	[Parameter("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
+	[Parameter("maxOccurs", typeof(int), "Maximum number of occurances (-1 for unlimited)", false)]
 	public class Array : Block
 	{
 		public int minOccurs = 1;
