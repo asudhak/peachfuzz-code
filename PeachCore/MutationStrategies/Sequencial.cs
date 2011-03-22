@@ -176,7 +176,7 @@ namespace PeachCore.MutationStrategies
 				}
 				catch
 				{
-					if (!_mutatorEnumerator.MoveNext())
+					while (!_mutatorEnumerator.MoveNext())
 					{
 						if (!_dataElementEnumerator.MoveNext())
 						{
@@ -184,7 +184,6 @@ namespace PeachCore.MutationStrategies
 						}
 
 						_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
-						_mutatorEnumerator.MoveNext();
 					}
 				}
 			}

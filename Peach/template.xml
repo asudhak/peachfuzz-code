@@ -10,6 +10,7 @@
 		<String value="Hello World!" />
 		<String value="BAR" />
 		<Number size="8" valueType="hex" value="0x41" />
+		<Blob value="Another Silly BLOB!"/>
 	</DataModel>
 
 	<!-- TODO: Create state model -->

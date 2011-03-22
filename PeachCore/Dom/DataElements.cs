@@ -1840,6 +1840,7 @@ namespace PeachCore.Dom
 	[DataElement("Blob")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
+	[Serializable]
 	public class Blob : DataElement
 	{
 		protected uint _length;
@@ -1949,7 +1950,7 @@ namespace PeachCore.Dom
 	[Serializable]
 	public class Variant
 	{
-		protected enum VariantType
+		public enum VariantType
 		{
 			Unknown,
 			Int,
@@ -1996,6 +1997,11 @@ namespace PeachCore.Dom
 		public Variant(BitStream v)
 		{
 			SetValue(v);
+		}
+
+		public VariantType GetVariantType()
+		{
+			return _type;
 		}
 
 		public void SetValue(int v)

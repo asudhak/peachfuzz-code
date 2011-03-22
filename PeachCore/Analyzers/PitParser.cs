@@ -819,6 +819,14 @@ namespace PeachCore.Analyzers
 			handleCommonDataElementChildren(node, blob);
 			handleCommonDataElementValue(node, blob);
 
+			if (blob.DefaultValue != null && blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
+			{
+				BitStream sout = new BitStream();
+				sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
+				sout.SeekBytes(0, SeekOrigin.Begin);
+				blob.DefaultValue = new Variant(sout);
+			}
+
 			return blob;
 		}
 
