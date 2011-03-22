@@ -196,11 +196,6 @@
 			<xs:attributeGroup ref="peachNumberAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
 			<xs:attributeGroup ref="ValueAttributes" />
-			<xs:attribute name="isStatic" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>[Depricated, use token instead] Indicates a token in the data stream.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="token" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Indicates a token in the data stream.</xs:documentation>
@@ -406,11 +401,6 @@
 				<xs:annotation>
 					<xs:documentation>Indicate if string is null terminated. Default is
 					false.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="isStatic" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>[Depricated, use token instead] Indicates a token in the data stream.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="token" type="xs:boolean">
@@ -658,11 +648,8 @@
 			</xs:annotation>
 			<xs:simpleType>
 				<xs:restriction base="xs:unsignedShort">
-					<xs:enumeration value="8" />
-					<xs:enumeration value="16" />
-					<xs:enumeration value="32" />
-					<xs:enumeration value="24" />
-					<xs:enumeration value="64" />
+					<xs:maxInclusive value="64"/>
+					<xs:minInclusive value="1" />
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
@@ -703,11 +690,6 @@
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attributeGroup ref="ValueAttributes" />
-			<xs:attribute name="isStatic" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>[Depricated, use token instead] Indicates a token in the data stream.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="token" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Indicates a token in the data stream.</xs:documentation>
@@ -837,11 +819,6 @@
 			<xs:attribute name="analyzer" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>[Optional] The class of an analyzer to further decompose data.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="isStatic" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>[Depricated, use token instead] Indicates a token in the data stream.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="token" type="xs:boolean">

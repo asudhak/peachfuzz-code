@@ -31,10 +31,12 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using PeachCore.Dom;
 using System.Reflection;
+using PeachCore;
 
 namespace PeachCore.Analyzers
 {
@@ -646,22 +648,106 @@ namespace PeachCore.Analyzers
 			return str;
 		}
 
+		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
+
 		protected void handleCommonDataElementValue(XmlNode node, DataElement elem)
 		{
-			if (hasXmlAttribute(node, "valueType"))
-				throw new NotImplementedException("todo valueType");
+			string value = null;
 
 			if (hasXmlAttribute(node, "value"))
 			{
-				string value = getXmlAttribute(node, "value");
+				value = getXmlAttribute(node, "value");
 
 				value = value.Replace("\\\\", "\\");
 				value = value.Replace("\\n", "\n");
 				value = value.Replace("\\r", "\r");
 				value = value.Replace("\\t", "\t");
-
-				elem.DefaultValue = new Variant(value);
 			}
+
+			if (hasXmlAttribute(node, "valueType"))
+			{
+				switch (getXmlAttribute(node, "valueType").ToLower())
+				{
+					case "hex":
+						// Handle hex data.
+
+						// 1. Remove white space
+						value = _hexWhiteSpace.Replace(value, "");
+
+						// 3. Remove 0x
+						value = value.Replace("0x", "");
+
+						// 4. remove \x
+						value = value.Replace("\\x", "");
+
+						if (value.Length % 2 != 0)
+							value = "0" + value;
+
+						BitStream sout = new BitStream();
+						
+						if (elem is Number)
+						{
+							if (((Number)elem).LittleEndian)
+								sout.LittleEndian();
+							else
+								sout.BigEndian();
+						}
+
+						for (int cnt = 0; cnt < value.Length; cnt += 2)
+							sout.WriteByte(byte.Parse(value.Substring(cnt, 2)));
+
+						sout.SeekBits(0, SeekOrigin.Begin);
+
+						if(elem is Number)
+						{
+							Number num = elem as Number;
+							switch(num.Size)
+							{
+								case 8:
+									if(num.Signed)
+										elem.DefaultValue = new Variant(sout.ReadInt8());
+									else
+										elem.DefaultValue = new Variant(sout.ReadUInt8());
+									break;
+								case 16:
+									if(num.Signed)
+										elem.DefaultValue = new Variant(sout.ReadInt16());
+									else
+										elem.DefaultValue = new Variant(sout.ReadUInt16());
+									break;
+								case 32:
+									if(num.Signed)
+										elem.DefaultValue = new Variant(sout.ReadInt32());
+									else
+										elem.DefaultValue = new Variant(sout.ReadUInt32());
+									break;
+								case 64:
+									if(num.Signed)
+										elem.DefaultValue = new Variant(sout.ReadInt64());
+									else
+										elem.DefaultValue = new Variant(sout.ReadUInt64());
+									break;
+								default:
+									throw new NotImplementedException("todo, variable bit Numbers");
+							}
+						}
+						else
+							elem.DefaultValue = new Variant(sout);
+
+						break;
+					case "literal":
+						throw new NotImplementedException("todo valueType");
+					case "string":
+						// No action requried, default behaviour
+						elem.DefaultValue = new Variant(value);
+						break;
+					default:
+						throw new PeachException("Error, invalid value for 'valueType' attribute: " + getXmlAttribute(node, "valueType"));
+				}
+			}
+			else
+				elem.DefaultValue = new Variant(value);
+
 		}
 
 		protected Number handleNumber(XmlNode node, DataElementContainer parent)

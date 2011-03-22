@@ -9,6 +9,7 @@
 	<DataModel name="TheDataModel">
 		<String value="Hello World!" />
 		<String value="BAR" />
+		<Number size="8" valueType="hex" value="0x41" />
 	</DataModel>
 
 	<!-- TODO: Create state model -->
