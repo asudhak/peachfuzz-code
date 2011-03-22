@@ -246,14 +246,14 @@ namespace PeachCore
 					iterationRangeStart = context.config.rangeStart;
 					iterationRangeStop = context.config.rangeStop;
 				}
-				if (context.config.singleIteration)
+				else if (context.config.singleIteration)
 				{
 					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 						"context.config.singleIteration == true");
 					
 					iterationRangeStop = 1;
 				}
-				if (context.config.skipToIteration.HasValue)
+				else if (context.config.skipToIteration != null)
 				{
 					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 						"context.config.skipToIteration == " + 
@@ -269,15 +269,15 @@ namespace PeachCore
 						iterationCount++;
 
 						// - Did we finish our test range?
-						if (iterationRangeStop.HasValue && iterationRangeStop > iterationCount)
+						if (iterationRangeStop != null && iterationCount >= (iterationRangeStop+1))
 							break;
 
 						// - Get total count?
-						if (iterationCount == 2 && !totalIterationCount.HasValue)
+						if (iterationCount == 2 && totalIterationCount == null)
 						{
 							totalIterationCount = mutationStrategy.count;
 
-							if (iterationRangeStop.HasValue && iterationRangeStop < totalIterationCount)
+							if (iterationRangeStop != null && iterationRangeStop < totalIterationCount)
 								totalIterationCount = iterationRangeStop;
 						}
 
@@ -285,6 +285,7 @@ namespace PeachCore
 						if (iterationCount == 2 && iterationRangeStart != null &&
 							iterationCount < iterationRangeStart)
 						{
+							// TODO - We need an event for this!
 							for (; iterationCount < iterationRangeStart; iterationCount++)
 								mutationStrategy.next();
 						}
