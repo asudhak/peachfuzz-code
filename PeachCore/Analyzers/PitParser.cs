@@ -984,22 +984,43 @@ namespace PeachCore.Analyzers
 				throw new PeachException("Fixup element has no 'class' attribute [" + node.OuterXml + "].");
 
 			string cls = getXmlAttribute(node, "class");
-			Dictionary<string, object> args = new Dictionary<string, object>();
+			Type tFixup = null;
+			var arg = handleParams(node);
 
-			foreach (XmlNode child in node.ChildNodes)
+			// Locate PublisherAttribute classes and check name
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
-				if (child.Name == "Param")
+				foreach (Type t in a.GetExportedTypes())
 				{
-					throw new NotSupportedException("Implement Fixup Paramters");
-				}
-				else
-				{
-					throw new PeachException("Fixup element has invalid child element '"+child.Name+"' at [" + node.OuterXml + "].");
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is FixupAttribute)
+						{
+							if ((attrib as FixupAttribute).className == cls)
+							{
+								tFixup = t;
+
+								Type[] targs = new Type[1];
+								targs[0] = typeof(Dictionary<string, Variant>);
+
+								ConstructorInfo co = tFixup.GetConstructor(targs);
+
+								object[] args = new object[1];
+								args[0] = arg;
+
+								parent.fixup = co.Invoke(args) as Fixup;
+
+								return parent.fixup;
+							}
+						}
+					}
 				}
 			}
 
-			// Create fixup object here!
-			throw new NotSupportedException("Finish implementing Fixups!");
+			throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.");
 		}
 
 		protected Transformer handleTransformer(XmlNode node, DataElement parent)
@@ -1039,6 +1060,12 @@ namespace PeachCore.Analyzers
 						}
 					}
 				}
+			}
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Transformer")
+					throw new NotImplementedException("todo, sub-transformer");
 			}
 
 			throw new PeachException("Error, unable to locate Transformer named '" + cls + "'.");
