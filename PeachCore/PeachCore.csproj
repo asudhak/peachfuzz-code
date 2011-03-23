@@ -100,6 +100,7 @@
   <ItemGroup>
     <Compile Include="Agent\Agent.cs" />
     <Compile Include="Agent\AgentClient.cs" />
+    <Compile Include="Agent\AgentManager.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\WindowsDebugEngine.cs" />
     <Compile Include="Analyzer.cs" />

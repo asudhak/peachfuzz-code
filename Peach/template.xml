@@ -13,6 +13,12 @@
 		<Blob value="Another Silly BLOB!"/>
 	</DataModel>
 
+	<Agent name="LocalAgent" >
+		<Monitor class="debugger.WindowsDebugEngine">
+			<Param name="CommandLine" value="notepad.exe"/>
+		</Monitor>
+	</Agent>
+
 	<!-- TODO: Create state model -->
 	<StateModel name="TheState" initialState="Initial">
 
@@ -25,6 +31,7 @@
 	</StateModel>
 
 	<Test name="TheTest">
+		<Agent ref="LocalAgent"/>
 		<StateModel ref="TheState"/>
 		<Publisher class="Console" />
 	</Test>

@@ -30,6 +30,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using PeachCore.Dom;
 using CookComputing.XmlRpc;
 
 namespace PeachCore.Agent
@@ -67,7 +68,7 @@ namespace PeachCore.Agent
 		/// <param name="name">Name for monitor instance</param>
 		/// <param name="cls">Class of monitor to start</param>
 		/// <param name="args">Arguments</param>
-		public abstract void StartMonitor(string name, string cls, Dictionary<string, string> args);
+		public abstract void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
 		/// <summary>
 		/// Stop a specific monitor by name
 		/// </summary>
@@ -121,7 +122,7 @@ namespace PeachCore.Agent
         void AgentDisconnect();
 
         [XmlRpcMethod("StartMonitor")]
-        void StartMonitor(string name, string cls, Dictionary<string, string> args);
+        void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
         [XmlRpcMethod("StopMonitor")]
         void StopMonitor(string name);
         [XmlRpcMethod("StopAllMonitors")]
@@ -143,7 +144,103 @@ namespace PeachCore.Agent
         bool MustStop();
     }
 
-    public class AgentServerXmlRpc : AgentServer
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class AgentAttribute : Attribute
+	{
+		public string protocol;
+		public AgentAttribute(string protocol)
+		{
+			this.protocol = protocol;
+		}
+	}
+
+	/// <summary>
+	/// This is an agent that runs in the local
+	/// process, instead of a remote process.  This
+	/// is much faster for things like file fuzzing.
+	/// </summary>
+	[Agent("local")]
+	public class AgentServerLocal : AgentServer
+	{
+		Agent agent = null;
+
+		public AgentServerLocal(string name, string uri, string password)
+		{
+			agent = new Agent(name, uri, password);
+		}
+
+		public override bool SupportedProtocol(string protocol)
+		{
+			if (protocol == "local")
+				return true;
+
+			return false;
+		}
+
+		public override void AgentConnect(string name, string url, string password)
+		{
+			agent.AgentConnect(password);
+		}
+
+		public override void AgentDisconnect()
+		{
+			agent.AgentDisconnect();
+		}
+
+		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		{
+			agent.StartMonitor(name, cls, args);
+		}
+
+		public override void StopMonitor(string name)
+		{
+			agent.StopMonitor(name);
+		}
+
+		public override void StopAllMonitors()
+		{
+			agent.StopAllMonitors();
+		}
+
+		public override void SessionStarting()
+		{
+			agent.SessionStarting();
+		}
+
+		public override void SessionFinished()
+		{
+			agent.SessionFinished();
+		}
+
+		public override void IterationStarting(int iterationCount, bool isReproduction)
+		{
+			agent.IterationStarting(iterationCount, isReproduction);
+		}
+
+		public override bool IterationFinished()
+		{
+			return agent.IterationFinished();
+		}
+
+		public override bool DetectedFault()
+		{
+			return agent.DetectedFault();
+		}
+
+		public override Hashtable GetMonitorData()
+		{
+			return GetMonitorData();
+		}
+
+		public override bool MustStop()
+		{
+			return MustStop();
+		}
+	}
+
+	[Agent("http")]
+	[Agent("https")]
+	public class AgentServerXmlRpc : AgentServer
     {
         IAgentClientXmlRpc proxy = null;
 
@@ -176,7 +273,7 @@ namespace PeachCore.Agent
             proxy = null;
         }
 
-        public override void StartMonitor(string name, string cls, Dictionary<string, string> args)
+        public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
         {
             proxy.StartMonitor(name, cls, args);
         }

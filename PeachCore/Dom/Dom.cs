@@ -47,6 +47,7 @@ namespace PeachCore.Dom
 		public OrderedDictionary<string, DomNamespace> ns = new OrderedDictionary<string, DomNamespace>();
 		public OrderedDictionary<string, DataModel> dataModels = new OrderedDictionary<string, DataModel>();
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
+		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
 		public OrderedDictionary<string, Run> runs = new OrderedDictionary<string, Run>();
 
@@ -55,8 +56,13 @@ namespace PeachCore.Dom
 			ns.AddEvent += new AddEventHandler<string, DomNamespace>(ns_AddEvent);
 			dataModels.AddEvent += new AddEventHandler<string, DataModel>(dataModels_AddEvent);
 			stateModels.AddEvent += new AddEventHandler<string, StateModel>(stateModels_AddEvent);
+			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
 			tests.AddEvent += new AddEventHandler<string, Test>(tests_AddEvent);
 			runs.AddEvent += new AddEventHandler<string, Run>(runs_AddEvent);
+		}
+
+		void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
+		{
 		}
 
 		#region OrderedDictionary AddEvent Handlers
@@ -88,6 +94,29 @@ namespace PeachCore.Dom
 
 		#endregion
 
+	}
+
+	/// <summary>
+	/// A dom element to hold Agent configuration information
+	/// </summary>
+	[Serializable]
+	public class Agent
+	{
+		public string name;
+		public string url;
+		public string password;
+
+		public List<Monitor> monitors = new List<Monitor>();
+	}
+
+	/// <summary>
+	/// A dom element to hold Monitor config information
+	/// </summary>
+	[Serializable]
+	public class Monitor
+	{
+		public string cls;
+		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
 	}
 
 	[Serializable]
@@ -126,21 +155,21 @@ namespace PeachCore.Dom
 		public MutationStrategy strategy = null;
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
-		public OrderedDictionary<string, Agent.Agent> agents = new OrderedDictionary<string, Agent.Agent>();
+		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
 
 		public Test()
 		{
 			loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
 			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
-			agents.AddEvent += new AddEventHandler<string, Agent.Agent>(agents_AddEvent);
+			//agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
 		}
 
 		#region OrderedDictionary AddEvent Handlers
 
-		void agents_AddEvent(OrderedDictionary<string, Agent.Agent> sender, string key, Agent.Agent value)
-		{
-			value.parent = this;
-		}
+		//void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
+		//{
+		//    value.parent = this;
+		//}
 
 		void publishers_AddEvent(OrderedDictionary<string, Publisher> sender, string key, Publisher value)
 		{

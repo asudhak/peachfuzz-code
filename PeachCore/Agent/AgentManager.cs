@@ -1,142 +1,179 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Michael Eddington (mike@phed.org)
+
+// $Id$
+
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
+using PeachCore.Dom;
 
 namespace PeachCore.Agent
 {
 	/// <summary>
-	/// Managed a set of Agents and handles
-	/// multiplexing messages, reconnecting, etc.
+	/// Manages all agents.  This includes
+	/// full lifetime.
 	/// </summary>
-    public class AgentManager : AgentServer
-    {
-		Dictionary<string, AgentServer> _agents = new Dictionary<string, AgentServer>();
-		List<AgentServer> _agentsOrdered = new List<AgentServer>();
-
-		uint _reconnectCount = 10;
-		uint _connectTimeout = 10;
+	public class AgentManager
+	{
+		static int UniqueNames = 0;
+		OrderedDictionary<string, AgentServer> _agents = new OrderedDictionary<string, AgentServer>();
+		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();
 
 		public AgentManager()
 		{
 		}
 
-		public uint ReconnectCount
+		public virtual void AddAgent(Dom.Agent agentDef)
 		{
-			get { return _reconnectCount; }
-			set { _reconnectCount = value; }
+			Uri uri = new Uri(agentDef.url);
+			Type tAgent = GetAgentByProtocol(uri);
+			if (tAgent == null)
+				throw new PeachException("Error, unable to locate agent that supports the '" + uri.Scheme + "' protocol.");
+
+			ConstructorInfo co = tAgent.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
+			AgentServer agent = (AgentServer)co.Invoke(new object[] { agentDef.name, agentDef.url, agentDef.password });
+
+			_agents[agentDef.name] = agent;
+			_agentDefinitions[agentDef.name] = agentDef;
 		}
 
-		public uint ConnectTimeout
+		public virtual void AgentConnect(string name)
 		{
-			get { return _connectTimeout; }
-			set { _connectTimeout = value; }
-		}
-
-		public override bool SupportedProtocol(string protocol)
-		{
-			// Should not be asking the manager :)
-			throw new NotImplementedException();
-		}
-
-		public override void AgentConnect(string name, string url, string password)
-		{
-			// Add a new agent to our list.
-
-			// TODO - Locate all agentservers and ask them if they support
-			//        our URL.
-
-			// TODO - Add reconnect and timeout logic
-
-			AgentServer agent = new AgentServerXmlRpc();
-			agent.AgentConnect(name, url, password);
-
-			_agents[name] = agent;
-			_agentsOrdered.Add(agent);
-		}
-
-		public virtual void AgentDisconnect(string name)
-		{
+			Dom.Agent def = _agentDefinitions[name];
 			AgentServer agent = _agents[name];
 
-			try
-			{
-				agent.AgentDisconnect();
-			}
-			catch
-			{
-			}
+			agent.AgentConnect(def.name, def.url, def.password);
 
-			_agents.Remove(name);
-			_agentsOrdered.Remove(agent);
+			foreach (Dom.Monitor mon in def.monitors)
+			{
+				agent.StartMonitor("Monitor_" + UniqueNames, mon.cls, mon.parameters);
+				UniqueNames++;
+			}
 		}
 
-		public override void AgentDisconnect()
+		public virtual void AgentConnect(Dom.Agent agent)
 		{
-			foreach (AgentServer agent in _agentsOrdered)
+			if (!_agents.Keys.Contains(agent.name))
+				AddAgent(agent);
+
+			AgentConnect(agent.name);
+		}
+
+		public Type GetAgentByProtocol(Uri uri)
+		{
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
-				try
+				foreach (Type t in a.GetExportedTypes())
 				{
-					agent.AgentDisconnect();
-				}
-				catch
-				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is AgentAttribute && ((AgentAttribute)attrib).protocol == uri.Scheme)
+						{
+							return t;
+						}
+					}
 				}
 			}
 
-			_agents.Clear();
-			_agentsOrdered.Clear();
+			return null;
 		}
 
-		public override void StartMonitor(string name, string cls, Dictionary<string, string> args)
+		#region AgentServer
+
+		public virtual void StopAllMonitors()
 		{
-			throw new NotImplementedException();
+			foreach (AgentServer agent in _agents.Values)
+				agent.StopAllMonitors();
 		}
 
-		public override void StopMonitor(string name)
+		public virtual void SessionStarting()
 		{
-			throw new NotImplementedException();
+			foreach (AgentServer agent in _agents.Values)
+				agent.SessionStarting();
 		}
 
-		public override void StopAllMonitors()
+		public virtual void SessionFinished()
 		{
-			throw new NotImplementedException();
+			foreach (AgentServer agent in _agents.Values)
+				agent.SessionFinished();
 		}
 
-		public override void SessionStarting()
+		public virtual void IterationStarting(int iterationCount, bool isReproduction)
 		{
-			throw new NotImplementedException();
+			foreach (AgentServer agent in _agents.Values)
+				agent.IterationStarting(iterationCount, isReproduction);
 		}
 
-		public override void SessionFinished()
+		public virtual bool IterationFinished()
 		{
-			throw new NotImplementedException();
+			bool ret = false;
+
+			foreach (AgentServer agent in _agents.Values)
+				if (agent.IterationFinished())
+					ret = true;
+
+			return ret;
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public virtual bool DetectedFault()
 		{
-			throw new NotImplementedException();
+			bool ret = false;
+
+			foreach (AgentServer agent in _agents.Values)
+				if (agent.DetectedFault())
+					ret = true;
+
+			return ret;
 		}
 
-		public override bool IterationFinished()
+		public virtual Dictionary<AgentServer, System.Collections.Hashtable> GetMonitorData()
 		{
-			throw new NotImplementedException();
+			Dictionary<AgentServer, System.Collections.Hashtable> data = new Dictionary<AgentServer, System.Collections.Hashtable>();
+
+			foreach (AgentServer agent in _agents.Values)
+				data[agent] = agent.GetMonitorData();
+
+			return data;
 		}
 
-		public override bool DetectedFault()
+		public virtual bool MustStop()
 		{
-			throw new NotImplementedException();
+			bool ret = false;
+			foreach (AgentServer agent in _agents.Values)
+				if (agent.MustStop())
+					ret = true;
+
+			return ret;
 		}
 
-		public override System.Collections.Hashtable GetMonitorData()
-		{
-			throw new NotImplementedException();
-		}
-
-		public override bool MustStop()
-		{
-			throw new NotImplementedException();
-		}
+		#endregion
 	}
 }
-
-// end

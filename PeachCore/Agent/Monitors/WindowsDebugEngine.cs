@@ -30,11 +30,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using PeachCore.Dom;
 using MS.Debuggers.DbgEng;
 
 namespace PeachCore.Agent.Monitors
 {
-    public class WindowsDebugEngine : Monitor
+	[Monitor("WindowsDebugEngine")]
+	[Monitor("debugger.WindowsDebugEngine")]
+	public class WindowsDebugEngine : Monitor
     {
         string _commandLine = null;
         string _processName = null;
@@ -50,26 +53,26 @@ namespace PeachCore.Agent.Monitors
 
         DebuggerInstance _debugger = null;
 
-        public WindowsDebugEngine(string name, Dictionary<string, string> args) : base(name, args)
+        public WindowsDebugEngine(string name, Dictionary<string, Variant> args) : base(name, args)
         {
             if (args.ContainsKey("CommandLine"))
-                _commandLine = args["CommandLine"];
+                _commandLine = (string)args["CommandLine"];
             if(args.ContainsKey("ProcessName"))
-                _processName = args["ProcessName"];
+				_processName = (string)args["ProcessName"];
             if(args.ContainsKey("KernelConnectionString"))
-                _kernelConnectionString = args["KernelConnectionString"];
+				_kernelConnectionString = (string)args["KernelConnectionString"];
             if(args.ContainsKey("Service"))
-                _service = args["Service"];
+				_service = (string)args["Service"];
             if(args.ContainsKey("SymbolsPath"))
-                _symbolsPath = args["SymbolsPath"];
+				_symbolsPath = (string)args["SymbolsPath"];
             if(args.ContainsKey("StartOnCall"))
-                _startOnCall = args["StartOnCall"];
+				_startOnCall = (string)args["StartOnCall"];
 
-            if(args.ContainsKey("IgnoreFirstChanceGuardPage") && args["IgnoreFirstChanceGuardPage"].ToLower() == "true")
+            if(args.ContainsKey("IgnoreFirstChanceGuardPage") && ((string)args["IgnoreFirstChanceGuardPage"]).ToLower() == "true")
                 _ignoreFirstChanceGuardPage = true;
-            if(args.ContainsKey("IgnoreSecondChanceGuardPage") && args["IgnoreSecondChanceGuardPage"].ToLower() == "true")
+            if(args.ContainsKey("IgnoreSecondChanceGuardPage") && ((string)args["IgnoreSecondChanceGuardPage"]).ToLower() == "true")
                 _ignoreSecondChanceGuardPage = true;
-            if(args.ContainsKey("NoCpuKill") && args["NoCpuKill"].ToLower() == "true")
+            if(args.ContainsKey("NoCpuKill") && ((string)args["NoCpuKill"]).ToLower() == "true")
                 _noCpuKill = true;
         }
 

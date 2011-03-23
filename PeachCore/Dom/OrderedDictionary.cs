@@ -671,7 +671,15 @@ namespace PeachCore.Dom
 
 		public ICollection<TKey> Keys
 		{
-			get { throw new NotImplementedException(); }
+			get
+			{
+				List<TKey> keys = new List<TKey>();
+
+				foreach (var item in _list)
+					keys.Add(item.Key);
+
+				return keys;
+			}
 		}
 
 		public bool Remove(TKey key)

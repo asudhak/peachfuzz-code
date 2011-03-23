@@ -30,6 +30,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using PeachCore.Dom;
 
 namespace PeachCore.Agent
 {
@@ -40,7 +41,7 @@ namespace PeachCore.Agent
 	/// </summary>
 	public abstract class Monitor
 	{
-		public Monitor(string name, Dictionary<string, string> args)
+		public Monitor(string name, Dictionary<string, Variant> args)
 		{
 		}
 
@@ -80,6 +81,16 @@ namespace PeachCore.Agent
         /// </summary>
         /// <returns>True if session must stop, else false.</returns>
         public abstract bool MustStop();
+	}
+
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class MonitorAttribute : Attribute
+	{
+		public string name;
+		public MonitorAttribute(string name)
+		{
+			this.name = name;
+		}
 	}
 }
 

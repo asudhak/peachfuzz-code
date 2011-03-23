@@ -30,7 +30,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
 using CookComputing.XmlRpc;
+using PeachCore.Dom;
 
 namespace PeachCore.Agent
 {
@@ -76,10 +78,40 @@ namespace PeachCore.Agent
             monitors.Clear();
         }
 
-        public void StartMonitor(string name, string cls, Dictionary<string, string> args)
+		protected Type GetMonitorByClass(string cls)
+		{
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is MonitorAttribute)
+						{
+							if ((attrib as MonitorAttribute).name == cls)
+								return t;
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+
+        public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
         {
-            throw new NotImplementedException();
-        }
+			Type tMonitor = GetMonitorByClass(cls);
+			if (tMonitor == null)
+				throw new PeachException("Error, unable to locate Monitor '" + cls + "'");
+
+			ConstructorInfo co = tMonitor.GetConstructor(new Type[] { typeof(string), typeof(Dictionary<string,Variant>) });
+			Monitor monitor = (Monitor)co.Invoke(new object[] {name, args});
+
+			this.monitors.Add(name, monitor);
+		}
 
         public void StopMonitor(string name)
         {
@@ -152,7 +184,7 @@ namespace PeachCore.Agent
     {
         void AgentConnect(string password);
         void AgentDisconnect();
-        void StartMonitor(string name, string cls, Dictionary<string, string> args);
+        void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
         void StopMonitor(string name);
         void StopAllMonitors();
         void SessionStarting();
@@ -184,7 +216,7 @@ namespace PeachCore.Agent
         }
 
         [XmlRpcMethod("StartMonitor")]
-        public void StartMonitor(string name, string cls, Dictionary<string, string> args)
+        public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
         {
             agent.StartMonitor(name, cls, args);
         }

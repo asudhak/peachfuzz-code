@@ -281,6 +281,12 @@ namespace PeachCore.Analyzers
 					StateModel sm = handleStateModel(child);
 					dom.stateModels.Add(sm.name, sm);
 				}
+
+				if (child.Name == "Agent")
+				{
+					Dom.Agent agent = handleAgent(child);
+					dom.agents[agent.name] = agent;
+				}
 			}
 
 			// Pass 6 - Handle Test
@@ -407,6 +413,33 @@ namespace PeachCore.Analyzers
 		}
 
 #endregion
+
+		protected Dom.Agent handleAgent(XmlNode node)
+		{
+			Dom.Agent agent = new Dom.Agent();
+
+			agent.name = getXmlAttribute(node, "name");
+			agent.url = getXmlAttribute(node, "url");
+			agent.password = getXmlAttribute(node, "password");
+
+			if (agent.url == null)
+				agent.url = "local://";
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Monitor")
+				{
+					Dom.Monitor monitor = new Monitor();
+
+					monitor.cls = getXmlAttribute(child, "class");
+					monitor.parameters = handleParams(child);
+
+					agent.monitors.Add(monitor);
+				}
+			}
+
+			return agent;
+		}
 
 		#region Data Model
 
@@ -1280,7 +1313,8 @@ namespace PeachCore.Analyzers
 				// Agent
 				if (child.Name == "Agent")
 				{
-					throw new NotImplementedException("Test.Agent TODO");
+					string refName = getXmlAttribute(child, "ref");
+					test.agents.Add(refName, parent.agents[refName]);
 				}
 
 				// StateModel

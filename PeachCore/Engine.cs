@@ -219,11 +219,14 @@ namespace PeachCore
 			try
 			{
 				context.test = test;
+				context.agentManager = new AgentManager();
 				OnTestStarting(context);
 
-				// TODO: Get state engine
-				// TODO: Start agents
-				// TODO: Get mutation strategy
+				// Start agents
+				foreach(Dom.Agent agent in test.agents.Values)
+					context.agentManager.AgentConnect(agent);
+
+				// Get mutation strategy
 				MutationStrategy mutationStrategy = test.strategy;
 				mutationStrategy.Initialize(context, this);
 
@@ -293,8 +296,13 @@ namespace PeachCore
 						try
 						{
 							Engine.IterationStarting(context, iterationCount, totalIterationCount);
-							// TODO: Iteration Starting
+
+							// TODO - Handle bool for is reproduction
+							context.agentManager.IterationStarting((int)iterationCount, false);
+
 							test.stateModel.Run(context);
+
+							context.agentManager.IterationFinished();
 						}
 						catch (RedoTestException e)
 						{
@@ -315,9 +323,15 @@ namespace PeachCore
 
 						// TODO: Pause for run.waitTime
 
-						// TODO: Check for agent faults
+						if (context.agentManager.DetectedFault())
+						{
+							// Now what?
+							throw new NotImplementedException("handle fault");
+						}
 
 						// TODO: Check for agent stop signal
+						if (context.agentManager.MustStop())
+							throw new PeachException("Error, agent monitor stopped run!");
 
 						// Increment to next test
 						mutationStrategy.next();
@@ -399,8 +413,7 @@ namespace PeachCore
 		public Dom.Dom dom = null;
 		public Run run = null;
 		public Test test = null;
-
-		public List<Agent.Agent> agents = new List<Agent.Agent>();
+		public AgentManager agentManager = null;
 
 		/// <summary>
 		/// Controls if we continue fuzzing or exit
