@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore.MutationStrategies
+namespace Peach.Core.MutationStrategies
 {
 	public class Random : MutationStrategy
 	{

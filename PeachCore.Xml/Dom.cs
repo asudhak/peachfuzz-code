@@ -31,7 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PeachCore.Xml
+namespace Peach.Core.Xml
 {
 	/// <summary>
 	/// Element Model

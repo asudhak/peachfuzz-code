@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 using System.Reflection;
 
-namespace PeachCore.MutationStrategies
+namespace Peach.Core.MutationStrategies
 {
 	[DefaultMutationStrategy]
 	[MutationStrategy("Sequencial")]

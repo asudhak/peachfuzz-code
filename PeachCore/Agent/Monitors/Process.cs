@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore.Agent.Monitors
+namespace Peach.Core.Agent.Monitors
 {
 	class Process
 	{

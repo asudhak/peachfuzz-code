@@ -29,8 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
-namespace PeachCore.Transformers.Encode
+using Peach.Core.Dom;
+namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("Utf8", "Encode on output a string as UTF-8.")]
     class Utf8 : Transformer

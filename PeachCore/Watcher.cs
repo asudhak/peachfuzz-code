@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// Watches the Peach Engine events.  This is how to 

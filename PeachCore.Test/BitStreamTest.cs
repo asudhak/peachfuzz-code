@@ -3,10 +3,10 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using PeachCore.Dom;
-using PeachCore;
+using Peach.Core.Dom;
+using Peach.Core;
 
-namespace PeachCore.Test
+namespace Peach.Core.Test
 {
 	/// <summary>
 	/// Summary description for BitStreamTest

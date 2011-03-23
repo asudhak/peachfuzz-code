@@ -30,10 +30,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using PeachCore.Agent;
+using Peach.Core.Agent;
 using System.Runtime.Serialization;
 
-namespace PeachCore.Dom
+namespace Peach.Core.Dom
 {
 	[Serializable]
 	public class Dom

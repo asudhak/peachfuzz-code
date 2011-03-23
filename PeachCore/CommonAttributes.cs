@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class ParameterAttribute : Attribute

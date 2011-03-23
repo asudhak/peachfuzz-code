@@ -29,8 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
-namespace PeachCore.Transformers.Encode
+using Peach.Core.Dom;
+namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("Base64Encode", "Encode on output as Base64.")]
     class Base64Encode : Transformer

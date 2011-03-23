@@ -42,7 +42,7 @@ using System.Text;
 
 #pragma warning disable 3021
 
-namespace PeachCore
+namespace Peach.Core
 {
 
 #if MONO_DATACONVERTER_PUBLIC

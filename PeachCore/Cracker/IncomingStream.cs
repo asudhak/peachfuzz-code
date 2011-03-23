@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Cracker
+namespace Peach.Core.Cracker
 {
 	public class IncomingStream : Stream
 	{

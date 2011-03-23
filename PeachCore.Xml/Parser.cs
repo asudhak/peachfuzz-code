@@ -33,7 +33,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PeachCore.Xml
+namespace Peach.Core.Xml
 {
 	/// <summary>
 	/// Abstract base class for all XML schema parsers (DTD, Schema, relaxedng, etc)

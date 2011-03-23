@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore.Loggers
+namespace Peach.Core.Loggers
 {
 	public class FileLogger : Logger
 	{

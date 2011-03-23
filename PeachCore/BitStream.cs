@@ -30,9 +30,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// This stream is how all data is stored and read by

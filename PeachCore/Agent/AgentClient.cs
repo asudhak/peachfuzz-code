@@ -32,9 +32,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using CookComputing.XmlRpc;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Agent
+namespace Peach.Core.Agent
 {
 	/// <summary>
 	/// </summary>

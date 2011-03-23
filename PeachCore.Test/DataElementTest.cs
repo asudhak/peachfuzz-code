@@ -1,10 +1,10 @@
-﻿using PeachCore.Dom;
+﻿using Peach.Core.Dom;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PeachCore;
+using Peach.Core;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace PeachCore.Test
+namespace Peach.Core.Test
 {
     
     

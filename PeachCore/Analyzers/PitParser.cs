@@ -34,11 +34,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 using System.Reflection;
-using PeachCore;
+using Peach.Core;
 
-namespace PeachCore.Analyzers
+namespace Peach.Core.Analyzers
 {
 	public interface IPitParsable
 	{
@@ -120,7 +120,7 @@ namespace PeachCore.Analyzers
 		public void validatePit(string fileName)
 		{
 			XmlTextReader tr = new XmlTextReader(
-				Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachCore.peach.xsd"));
+				Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd"));
 			XmlSchemaSet set = new XmlSchemaSet();
 			set.Add(null, tr);
 

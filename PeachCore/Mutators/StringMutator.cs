@@ -29,9 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Mutators
+namespace Peach.Core.Mutators
 {
 	[Mutator("Perform common string mutations")]
 	public class StringMutator : Mutator

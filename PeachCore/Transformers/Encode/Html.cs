@@ -30,8 +30,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
-namespace PeachCore.Transformers.Encode
+using Peach.Core.Dom;
+namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
     class HtmlEncodeAgressive :Transformer

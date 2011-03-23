@@ -33,7 +33,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PeachCore.Xml
+namespace Peach.Core.Xml
 {
 	/// <summary>
 	/// DTD Xml Schema parser.  Converts a DTD specification into

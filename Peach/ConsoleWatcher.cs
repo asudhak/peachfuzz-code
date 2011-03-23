@@ -29,7 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore;
+using Peach.Core;
 
 namespace Peach
 {

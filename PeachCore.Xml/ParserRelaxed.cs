@@ -34,7 +34,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace PeachCore.Xml
+namespace Peach.Core.Xml
 {
 	public class ParserRelaxed : Parser
 	{

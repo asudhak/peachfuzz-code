@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore.Test
+namespace Peach.Core.Test
 {
 	public class Utils
 	{

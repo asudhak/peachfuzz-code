@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.MutationStrategies;
+using Peach.Core.MutationStrategies;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// Mutation strategies drive the fuzzing

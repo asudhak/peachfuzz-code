@@ -29,7 +29,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PeachCore.Dom
+namespace Peach.Core.Dom
 {
 	public delegate void AddEventHandler<TKey, TValue>(OrderedDictionary<TKey, TValue> sender, TKey key, TValue value);
 

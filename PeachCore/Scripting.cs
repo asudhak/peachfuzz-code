@@ -37,7 +37,7 @@ using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using Microsoft.Scripting.Math;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	public enum ScriptingEngines
 	{

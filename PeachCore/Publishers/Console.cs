@@ -30,9 +30,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Publishers
+namespace Peach.Core.Publishers
 {
 	[PublisherAttribute("Console")]
 	[NoParametersAttribute()]

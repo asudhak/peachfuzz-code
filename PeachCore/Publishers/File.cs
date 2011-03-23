@@ -30,9 +30,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Publishers
+namespace Peach.Core.Publishers
 {
 	[PublisherAttribute("FileStream")]
 	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing", true)]

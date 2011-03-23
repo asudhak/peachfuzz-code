@@ -29,8 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
-namespace PeachCore.Transformers.Encode
+using Peach.Core.Dom;
+namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("SidStringToBytes", "Encode on output from a string reprisentation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
     class SidStringToBytes : Transformer

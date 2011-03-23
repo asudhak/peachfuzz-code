@@ -29,9 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	public delegate void StartEventHandler(Publisher publisher, Action action);
 	public delegate void StopEventHandler(Publisher publisher, Action action);

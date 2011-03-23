@@ -35,7 +35,7 @@ using System.Xml;
 // TODO - Consume sample XML files to determin attribute and node data types
 // TODO - Once we know data types, use Peach engine to produce values as well
 
-namespace PeachCore.Xml
+namespace Peach.Core.Xml
 {
 	/// <summary>
 	/// Generate XML documents based on Element definitions.

@@ -30,10 +30,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 using CookComputing.XmlRpc;
 
-namespace PeachCore.Agent
+namespace Peach.Core.Agent
 {
 	/// <summary>
 	/// Abstract base class for all Agent servers.

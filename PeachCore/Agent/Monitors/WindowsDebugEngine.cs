@@ -30,10 +30,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 using MS.Debuggers.DbgEng;
 
-namespace PeachCore.Agent.Monitors
+namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("WindowsDebugEngine")]
 	[Monitor("debugger.WindowsDebugEngine")]

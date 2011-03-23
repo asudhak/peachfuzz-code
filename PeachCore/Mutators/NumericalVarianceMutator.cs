@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore.Mutators
+namespace Peach.Core.Mutators
 {
 	class NumericalVarianceMutator
 	{

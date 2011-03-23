@@ -29,8 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
-namespace PeachCore.Transformers.Encode
+using Peach.Core.Dom;
+namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet reprisentaiton.")]
     class Ipv4StringToOctet : Transformer

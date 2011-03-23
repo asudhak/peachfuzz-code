@@ -31,7 +31,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using PeachCore.Xml;
+using Peach.Core.Xml;
 
 namespace PeachXmlGenerator
 {

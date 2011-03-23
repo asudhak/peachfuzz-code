@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace PeachCore.Xml
+namespace Peach.Core.Xml
 {
 	/// <summary>
 	/// Process sample files to determin data types

@@ -29,9 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// Transformers perform static transforms of data.

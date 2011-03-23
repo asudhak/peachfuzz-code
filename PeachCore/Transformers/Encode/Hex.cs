@@ -29,9 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Transformers.Encode
+namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("Hex", "Encode on output as a hex string.")]
     class Hex : Transformer

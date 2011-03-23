@@ -30,9 +30,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Agent
+namespace Peach.Core.Agent
 {
 	/// <summary>
 	/// Monitors are hosted by agent processes and are

@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace PeachCore.Test
+namespace Peach.Core.Test
 {
     
     

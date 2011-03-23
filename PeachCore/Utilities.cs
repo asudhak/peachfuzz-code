@@ -33,7 +33,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// Provides a method for performing a deep copy of an object.

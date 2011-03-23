@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore.Dom
+namespace Peach.Core.Dom
 {
 	public class Asn1Element : DataElement
 	{

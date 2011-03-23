@@ -30,9 +30,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Agent
+namespace Peach.Core.Agent
 {
 	/// <summary>
 	/// Manages all agents.  This includes

@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// Unrecoverable error.  Causes Peach to exit with an error

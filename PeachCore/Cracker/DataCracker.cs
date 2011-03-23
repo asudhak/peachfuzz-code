@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Dom;
+using Peach.Core.Dom;
 
-namespace PeachCore.Cracker
+namespace Peach.Core.Cracker
 {
 	/// <summary>
 	/// Crack data into a DataModel.

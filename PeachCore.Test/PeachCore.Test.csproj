@@ -8,7 +8,7 @@
     <ProjectGuid>{E9D153E8-1CCD-4AF3-8A58-AEEE6C3EF0E8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PeachCore.Test</RootNamespace>
+    <RootNamespace>Peach.Core.Test</RootNamespace>
     <AssemblyName>PeachCore.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

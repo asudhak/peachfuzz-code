@@ -29,10 +29,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore.Agent;
-using PeachCore.Dom;
+using Peach.Core.Agent;
+using Peach.Core.Dom;
 
-namespace PeachCore
+namespace Peach.Core
 {
 	/// <summary>
 	/// The main Peach fuzzing engine!

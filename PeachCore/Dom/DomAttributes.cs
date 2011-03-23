@@ -29,9 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using PeachCore;
+using Peach.Core;
 
-namespace PeachCore.Dom
+namespace Peach.Core.Dom
 {
 	[AttributeUsage(AttributeTargets.Class)]
 	public class DataElementAttribute : Attribute

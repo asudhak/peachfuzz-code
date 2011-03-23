@@ -35,7 +35,7 @@ using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace PeachCore.Dom
+namespace Peach.Core.Dom
 {
 	public enum LengthType
 	{
