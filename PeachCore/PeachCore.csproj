@@ -57,43 +57,40 @@
   <ItemGroup>
     <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=8dacf75b5db7cb23, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
+      <HintPath>..\3rdParty\xmlrpc\bin\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
     <Reference Include="IronPython">
-      <HintPath>..\3rdParty\IronPython-2.6.2\IronPython.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\IronPython.dll</HintPath>
     </Reference>
     <Reference Include="IronPython.Modules">
-      <HintPath>..\3rdParty\IronPython-2.6.2\IronPython.Modules.dll</HintPath>
-    </Reference>
-    <Reference Include="IronPythonTest">
-      <HintPath>..\3rdParty\IronPython-2.6.2\IronPythonTest.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\IronPython.Modules.dll</HintPath>
     </Reference>
     <Reference Include="IronRuby">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\IronRuby.dll</HintPath>
+      <HintPath>..\..\Program Files\IronRuby 1.0\bin\IronRuby.dll</HintPath>
     </Reference>
     <Reference Include="IronRuby.Libraries">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\IronRuby.Libraries.dll</HintPath>
+      <HintPath>..\..\Program Files\IronRuby 1.0\bin\IronRuby.Libraries.dll</HintPath>
     </Reference>
     <Reference Include="IronRuby.Libraries.YAML">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\IronRuby.Libraries.YAML.dll</HintPath>
+      <HintPath>..\..\Program Files\IronRuby 1.0\bin\IronRuby.Libraries.YAML.dll</HintPath>
     </Reference>
     <Reference Include="mdbglib">
-      <HintPath>..\3rdParty\mdbglib-58541\x86\Debug\mdbglib.dll</HintPath>
+      <HintPath>..\3rdParty\mdbglib\trunk\Win32\Debug\mdbglib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Dynamic">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Dynamic.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\Microsoft.Dynamic.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\Microsoft.Scripting.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting.Core">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.Core.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\Microsoft.Scripting.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting.Debugging">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.Debugging.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\Microsoft.Scripting.Debugging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting.ExtensionAttribute">
-      <HintPath>..\..\Program Files (x86)\IronRuby 1.0\bin\Microsoft.Scripting.ExtensionAttribute.dll</HintPath>
+      <HintPath>..\..\Program Files\IronPython 2.6\Microsoft.Scripting.ExtensionAttribute.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -163,6 +160,15 @@
     <Compile Include="Dom\StateModel.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="Transformer.cs" />
+    <Compile Include="Transformers\Encode\Base64.cs" />
+    <Compile Include="Transformers\Encode\Hex.cs" />
+    <Compile Include="Transformers\Encode\Html.cs" />
+    <Compile Include="Transformers\Encode\IP.cs" />
+    <Compile Include="Transformers\Encode\NetBios.cs" />
+    <Compile Include="Transformers\Encode\SidStringToBytes.cs" />
+    <Compile Include="Transformers\Encode\Url.cs" />
+    <Compile Include="Transformers\Encode\Utf.cs" />
+    <Compile Include="Transformers\Encode\WideChar.cs" />
     <Compile Include="Transformers\Gzip.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Watcher.cs" />
@@ -194,6 +200,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
