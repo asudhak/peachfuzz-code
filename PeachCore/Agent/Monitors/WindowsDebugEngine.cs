@@ -37,6 +37,15 @@ namespace PeachCore.Agent.Monitors
 {
 	[Monitor("WindowsDebugEngine")]
 	[Monitor("debugger.WindowsDebugEngine")]
+	[Parameter("CommandLine", typeof(string), "TODO", false)]
+	[Parameter("ProcessName", typeof(string), "TODO", false)]
+	[Parameter("KernelConnectionString", typeof(string), "TODO", false)]
+	[Parameter("Service", typeof(string), "TODO", false)]
+	[Parameter("SymbolsPath", typeof(string), "TODO", false)]
+	[Parameter("StartOnCall", typeof(string), "TODO", false)]
+	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "TODO", false)]
+	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "TODO", false)]
+	[Parameter("NoCpuKill", typeof(string), "TODO", false)]
 	public class WindowsDebugEngine : Monitor
     {
         string _commandLine = null;

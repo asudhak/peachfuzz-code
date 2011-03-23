@@ -102,6 +102,15 @@
     <Compile Include="Agent\AgentClient.cs" />
     <Compile Include="Agent\AgentManager.cs" />
     <Compile Include="Agent\Monitor.cs" />
+    <Compile Include="Agent\Monitors\CrashReporter.cs" />
+    <Compile Include="Agent\Monitors\CrashWrangler.cs" />
+    <Compile Include="Agent\Monitors\Memory.cs" />
+    <Compile Include="Agent\Monitors\PcapMonitor.cs" />
+    <Compile Include="Agent\Monitors\PingMonitor.cs" />
+    <Compile Include="Agent\Monitors\PopupWatcher.cs" />
+    <Compile Include="Agent\Monitors\Process.cs" />
+    <Compile Include="Agent\Monitors\UdpMonitor.cs" />
+    <Compile Include="Agent\Monitors\UnixDebugger.cs" />
     <Compile Include="Agent\Monitors\WindowsDebugEngine.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
