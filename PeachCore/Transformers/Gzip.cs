@@ -38,7 +38,7 @@ namespace PeachCore.Transformers
 	[TransformerAttribute("GzipCompress", "Compress on output using gzip.")]
 	public class GzipCompress : Transformer
 	{
-		public GzipCompress(Dictionary<string,string> args) : base(args)
+		public GzipCompress(Dictionary<string,Variant> args) : base(args)
 		{
 		}
 
@@ -86,7 +86,7 @@ namespace PeachCore.Transformers
 	[TransformerAttribute("GzipDecompress", "Decompress on output using gzip.")]
 	public class GzipDecompress : Transformer
 	{
-		public GzipDecompress(Dictionary<string, string> args)
+		public GzipDecompress(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}

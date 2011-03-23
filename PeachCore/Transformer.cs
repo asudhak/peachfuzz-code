@@ -41,7 +41,7 @@ namespace PeachCore
 	{
 		public Transformer anotherTransformer;
 
-		public Transformer(Dictionary<string, string> args)
+		public Transformer(Dictionary<string, Variant> args)
 		{
 		}
 

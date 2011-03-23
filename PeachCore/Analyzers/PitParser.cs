@@ -1004,7 +1004,44 @@ namespace PeachCore.Analyzers
 
 		protected Transformer handleTransformer(XmlNode node, DataElement parent)
 		{
-			throw new NotImplementedException("handleTransformer");
+			string cls = getXmlAttribute(node, "class");
+			Type tTransformer = null;
+			var arg = handleParams(node);
+
+			// Locate PublisherAttribute classes and check name
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is TransformerAttribute)
+						{
+							if ((attrib as TransformerAttribute).elementName == cls)
+							{
+								tTransformer = t;
+
+								Type[] targs = new Type[1];
+								targs[0] = typeof(Dictionary<string, Variant>);
+
+								ConstructorInfo co = tTransformer.GetConstructor(targs);
+
+								object[] args = new object[1];
+								args[0] = arg;
+
+								parent.transformer = co.Invoke(args) as Transformer;
+
+								return parent.transformer;
+							}
+						}
+					}
+				}
+			}
+
+			throw new PeachException("Error, unable to locate Transformer named '" + cls + "'.");
 		}
 
 #endregion
