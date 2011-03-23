@@ -1,13 +1,42 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Mikhail Davidov (sirus@haxsys.net)
+
+// $Id$
+
+
+using System;
 using System.Collections.Generic;
 using System.Text;
-
+using PeachCore.Dom;
 namespace PeachCore.Transformers.Encode
 {
     [TransformerAttribute("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
     class HtmlEncodeAgressive :Transformer
     {
-        public HtmlEncodeAgressive(Dictionary<string,string> args) : base(args)
+        public HtmlEncodeAgressive(Dictionary<string,Variant>  args) : base(args)
 		{
 		}
 
@@ -30,7 +59,7 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
     class HtmlEncode : Transformer
     {
-        public HtmlEncode(Dictionary<string,string> args) : base(args)
+        public HtmlEncode(Dictionary<string,Variant>  args) : base(args)
 		{
 		}
 
@@ -53,7 +82,7 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("JsEncode", "Encode on output as Javascript string.")]
     class JsEncode : Transformer
     {
-        public JsEncode(Dictionary<string,string> args) : base(args)
+        public JsEncode(Dictionary<string,Variant>  args) : base(args)
 		{
 		}
 
@@ -88,7 +117,7 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("HtmlDecode", "Decode on output from HTML encoding.")]
     class HtmlDecode : Transformer
     {
-        public HtmlDecode(Dictionary<string, string> args)
+        public HtmlDecode(Dictionary<string,Variant> args)
             : base(args)
 		{
 		}

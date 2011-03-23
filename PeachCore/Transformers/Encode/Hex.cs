@@ -1,13 +1,42 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Mikhail Davidov (sirus@haxsys.net)
+
+// $Id$
+
+using System;
 using System.Collections.Generic;
 using System.Text;
+using PeachCore.Dom;
 
 namespace PeachCore.Transformers.Encode
 {
     [TransformerAttribute("Hex", "Encode on output as a hex string.")]
     class Hex : Transformer
     {
-        public Hex(Dictionary<string,string> args) : base(args)
+        public Hex(Dictionary<string,Variant>  args) : base(args)
 		{
 		}
 
@@ -49,8 +78,8 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("HexString", "Transforms a string of bytes into the specified hex format.")]
     class HexString : Transformer
     {
-        Dictionary<string, string> m_args;
-        public HexString(Dictionary<string, string> args)
+        Dictionary<string,Variant> m_args;
+        public HexString(Dictionary<string,Variant> args)
             : base(args)
 		{
             m_args = args;
@@ -61,7 +90,7 @@ namespace PeachCore.Transformers.Encode
             int resolution = 1;
             string prefix = " ";
             if (m_args.ContainsKey("resolution"))
-                resolution = Int32.Parse(m_args["resolution"]);
+                resolution = Int32.Parse((string)m_args["resolution"]);
 
             if (resolution % 2 != 0 && resolution != 1)
                 throw new Exception("HexString transformer internalEncode failed: Resolution must be 1 or a multiple of two.");
@@ -70,7 +99,7 @@ namespace PeachCore.Transformers.Encode
                 throw new Exception("HexString transformer internalEncode failed: Data length must be divisible by resolution.");
 
             if (m_args.ContainsKey("prefix"))
-                prefix = m_args["prefix"];
+                prefix = (string)m_args["prefix"];
 
             var ret = new System.Text.StringBuilder();
             var tmp = new System.Text.StringBuilder();

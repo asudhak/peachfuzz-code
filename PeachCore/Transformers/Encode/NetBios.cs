@@ -1,7 +1,36 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Mikhail Davidov (sirus@haxsys.net)
+
+// $Id$
+
+
+using System;
 using System.Collections.Generic;
 using System.Text;
-
+using PeachCore.Dom;
 namespace PeachCore.Transformers.Encode
 {
 
@@ -9,8 +38,8 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("NetBiosDecode", "Deocode on output from binary reprisentation of a NetBios name to a string.")]
     class NetBiosDecode : Transformer
     {
-        Dictionary<string, string> m_args;
-        public NetBiosDecode(Dictionary<string,string> args) : base(args)
+        Dictionary<string,Variant> m_args;
+        public NetBiosDecode(Dictionary<string,Variant>  args) : base(args)
 		{
             m_args = args;
 		}
@@ -46,7 +75,7 @@ namespace PeachCore.Transformers.Encode
             string name = System.Text.ASCIIEncoding.ASCII.GetString(data.Value).ToUpper();
             var sb = new System.Text.StringBuilder(32);
 
-            if (m_args.ContainsKey("pad") && Boolean.Parse(m_args["pad"]))
+            if (m_args.ContainsKey("pad") && Boolean.Parse((string)m_args["pad"]))
                 while (name.Length < 16)
                     name += " ";
 
@@ -63,7 +92,7 @@ namespace PeachCore.Transformers.Encode
 
             var sret = sb.ToString();
 
-            if (m_args.ContainsKey("pad") && Boolean.Parse(m_args["pad"]))
+            if (m_args.ContainsKey("pad") && Boolean.Parse((string)m_args["pad"]))
             {
                 if (sret.Length > 30)
                     sret = sret.Substring(0, 30);
@@ -79,8 +108,8 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("NetBiosEncode", "Encode on output from a string to a binary NetBios reprisentation.")]
     class NetBiosEncode : Transformer
     {
-        Dictionary<string, string> m_args;
-        public NetBiosEncode(Dictionary<string, string> args)
+        Dictionary<string,Variant> m_args;
+        public NetBiosEncode(Dictionary<string,Variant> args)
             : base(args)
 		{
             m_args = args;
@@ -91,7 +120,7 @@ namespace PeachCore.Transformers.Encode
             string name = System.Text.ASCIIEncoding.ASCII.GetString(data.Value).ToUpper();
             var sb = new System.Text.StringBuilder(32);
 
-            if (m_args.ContainsKey("pad") && Boolean.Parse(m_args["pad"]))
+            if (m_args.ContainsKey("pad") && Boolean.Parse((string)m_args["pad"]))
                 while (name.Length < 16)
                     name += " ";
 
@@ -108,7 +137,7 @@ namespace PeachCore.Transformers.Encode
 
             var sret = sb.ToString();
 
-            if (m_args.ContainsKey("pad") && Boolean.Parse(m_args["pad"]))
+            if (m_args.ContainsKey("pad") && Boolean.Parse((string)m_args["pad"]))
             {
                 if (sret.Length > 30)
                     sret = sret.Substring(0, 30);

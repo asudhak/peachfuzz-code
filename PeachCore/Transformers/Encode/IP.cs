@@ -1,13 +1,41 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Mikhail Davidov (sirus@haxsys.net)
+
+// $Id$
+
+using System;
 using System.Collections.Generic;
 using System.Text;
-
+using PeachCore.Dom;
 namespace PeachCore.Transformers.Encode
 {
     [TransformerAttribute("Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet reprisentaiton.")]
     class Ipv4StringToOctet : Transformer
     {
-        public Ipv4StringToOctet(Dictionary<string,string> args) : base(args)
+        public Ipv4StringToOctet(Dictionary<string,Variant>  args) : base(args)
 		{
 		}
 
@@ -29,7 +57,7 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet reprisentaiton.")]
     class Ipv4StringToNetworkOctet : Transformer
     {
-        public Ipv4StringToNetworkOctet(Dictionary<string,string> args) : base(args)
+        public Ipv4StringToNetworkOctet(Dictionary<string,Variant>  args) : base(args)
 		{
 		}
 
@@ -60,7 +88,7 @@ namespace PeachCore.Transformers.Encode
     [TransformerAttribute("Ipv6StringToOctet", "Encode on output from a collen notiation ipv6 address into a 16 byte octect representation.")]
     class Ipv6StringToOctet : Transformer
     {
-        public Ipv6StringToOctet(Dictionary<string, string> args)
+        public Ipv6StringToOctet(Dictionary<string,Variant> args)
             : base(args)
 		{
 		}
