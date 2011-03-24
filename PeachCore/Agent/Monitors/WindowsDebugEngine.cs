@@ -83,36 +83,55 @@ namespace Peach.Core.Agent.Monitors
                 _ignoreSecondChanceGuardPage = true;
             if(args.ContainsKey("NoCpuKill") && ((string)args["NoCpuKill"]).ToLower() == "true")
                 _noCpuKill = true;
+
+			_debugger = new DebuggerInstance();
+			_debugger.commandLine = _commandLine;
+			_debugger.processName = _processName;
+			_debugger.kernelConnectionString = _kernelConnectionString;
+			_debugger.service = _service;
+			_debugger.symbolsPath = _symbolsPath;
+			_debugger.startOnCall = _startOnCall;
+			_debugger.ignoreFirstChanceGuardPage = _ignoreFirstChanceGuardPage;
+			_debugger.ignoreSecondChanceGuardPage = _ignoreSecondChanceGuardPage;
+			_debugger.noCpuKill = _noCpuKill;
         }
 
         public override void StopMonitor()
         {
-            throw new NotImplementedException();
+			_StopDebugger();
+			_debugger = null;
         }
 
         public override void SessionStarting()
         {
-            throw new NotImplementedException();
+			if (_startOnCall != null)
+				return;
+
+			_StartDebugger();
         }
 
         public override void SessionFinished()
         {
-            throw new NotImplementedException();
+			_StopDebugger();
         }
 
         public override void IterationStarting(int iterationCount, bool isReproduction)
         {
-            throw new NotImplementedException();
+			if (!_IsDebuggerRunning())
+				_StartDebugger();
         }
 
         public override bool IterationFinished()
         {
-            throw new NotImplementedException();
+			if (_startOnCall != null)
+				_StopDebugger();
+
+			return false;
         }
 
         public override bool DetectedFault()
         {
-            throw new NotImplementedException();
+			return false;
         }
 
         public override System.Collections.Hashtable GetMonitorData()
@@ -122,7 +141,7 @@ namespace Peach.Core.Agent.Monitors
 
         public override bool MustStop()
         {
-            throw new NotImplementedException();
+			return false;
         }
 
         protected bool _IsDebuggerRunning()
@@ -135,63 +154,114 @@ namespace Peach.Core.Agent.Monitors
 
         protected void _StartDebugger()
         {
+			if(!_debugger.IsRunning)
+				_debugger.StartDebugger();
         }
 
         protected void _StopDebugger()
         {
+			if (_debugger.IsRunning)
+				_debugger.StopDebugger();
         }
     }
 
     class DebuggerInstance
     {
+		public static DebuggerInstance Instance = null;
         Thread _thread = null;
         Debuggee _dbg = null;
 
-        string _commandLine = null;
-        string _processName = null;
-        string _kernelConnectionString = null;
-        string _service = null;
+        public string commandLine = null;
+		public string processName = null;
+		public string kernelConnectionString = null;
+		public string service = null;
 
-        string _symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
-        string _startOnCall = null;
+		public string symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
+		public string startOnCall = null;
 
-        bool _ignoreFirstChanceGuardPage = false;
-        bool _ignoreSecondChanceGuardPage = false;
-        bool _noCpuKill = false;
+		public bool ignoreFirstChanceGuardPage = false;
+		public bool ignoreSecondChanceGuardPage = false;
+		public bool noCpuKill = false;
 
         public static EventWaitHandle Ready = new AutoResetEvent(false);
+
+		protected bool _stopDebugger = false;
+
+		public DebuggerInstance()
+		{
+			Instance = this;
+		}
 
         public bool IsRunning
         {
             get { return _thread != null && _thread.IsAlive; }
         }
 
+		public void StartDebugger()
+		{
+			Ready.Reset();
+
+			_stopDebugger = false;
+			_thread = new Thread(new ThreadStart(Run));
+			_thread.Start();
+			
+			Ready.WaitOne();
+		}
+
+		public void StopDebugger()
+		{
+			_stopDebugger = true;
+
+			for (int cnt = 0; _stopDebugger == true && cnt < 10; cnt++)
+				Thread.Sleep(100);
+
+			_thread.Abort();
+			_thread.Join();
+		}
+
         public void Run()
-        {
-            _dbg = new Debuggee();
-            _dbg.SymbolPath = _symbolsPath;
-            _dbg.DebugOutput += new EventHandler<DebugOutputEventArgs>(dbg_DebugOutput);
+		{
+			using (_dbg = new Debuggee())
+			{
+				_dbg.SymbolPath = symbolsPath;
+				_dbg.DebugOutput += new EventHandler<DebugOutputEventArgs>(dbg_DebugOutput);
 
-            if (_commandLine != null)
-            {
-                _dbg.CreateAndAttachProcess(_commandLine, null);
-                _dbg.WaitForEvent(0);
-            }
-            else if (_processName != null)
-            {
-                throw new NotImplementedException();
-            }
-            else if (_kernelConnectionString != null)
-            {
-                throw new NotImplementedException();
-            }
-            else if (_service != null)
-            {
-                throw new NotImplementedException();
-            }
+				if (commandLine != null)
+				{
+					_dbg.CreateAndAttachProcess(commandLine, null);
+					//_dbg.DebugClient.
+					DebugStatus lastStatus = DebugStatus.StepOver;
+					while (true)
+					{
+						_dbg.WaitForEvent(0);
+						if (lastStatus != _dbg.GetExecutionStatus())
+						{
+							lastStatus = _dbg.GetExecutionStatus();
+							Console.WriteLine("!!!!!!: " + lastStatus.ToString());
+						}
+					}
+				}
+				else if (processName != null)
+				{
+					throw new NotImplementedException();
+				}
+				else if (kernelConnectionString != null)
+				{
+					throw new NotImplementedException();
+				}
+				else if (service != null)
+				{
+					throw new NotImplementedException();
+				}
 
-            Ready.Set();
+				Ready.Set();
 
+				while (_stopDebugger == false)
+				{
+					_dbg.WaitForEvent(100);
+
+				}
+			}
         }
 
         static void dbg_DebugOutput(object sender, DebugOutputEventArgs e)

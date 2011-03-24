@@ -229,12 +229,12 @@ namespace Peach.Core.Agent
 
 		public override Hashtable GetMonitorData()
 		{
-			return GetMonitorData();
+			return agent.GetMonitorData();
 		}
 
 		public override bool MustStop()
 		{
-			return MustStop();
+			return agent.MustStop();
 		}
 	}
 

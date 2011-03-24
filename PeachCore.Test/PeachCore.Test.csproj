@@ -81,9 +81,9 @@
     <Content Include="AuthoringTests.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PeachCore\PeachCore.csproj">
+    <ProjectReference Include="..\PeachCore\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
-      <Name>PeachCore</Name>
+      <Name>Peach.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

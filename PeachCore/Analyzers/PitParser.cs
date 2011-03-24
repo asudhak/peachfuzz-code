@@ -35,7 +35,6 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using Peach.Core.Dom;
-using System.Reflection;
 using Peach.Core;
 
 namespace Peach.Core.Analyzers
