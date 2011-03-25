@@ -265,6 +265,8 @@ namespace Peach.Core
 					iterationRangeStart = context.config.skipToIteration;
 				}
 
+				context.agentManager.SessionStarting();
+
 				while (context.continueFuzzing)
 				{
 					try
@@ -365,6 +367,7 @@ namespace Peach.Core
 			//}
 			finally
 			{
+				context.agentManager.SessionFinished();
 				OnTestFinished(context);
 
 				context.test = null;

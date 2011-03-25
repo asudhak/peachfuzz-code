@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using Peach.Debuggers.DbgEng;
+using Peach.Core.Debuggers.DebugEngine;
 
 namespace TestThings
 {

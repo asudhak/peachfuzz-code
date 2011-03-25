@@ -31,7 +31,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Peach.Core.Dom;
-using MS.Debuggers.DbgEng;
 
 namespace Peach.Core.Agent.Monitors
 {
@@ -169,7 +168,7 @@ namespace Peach.Core.Agent.Monitors
     {
 		public static DebuggerInstance Instance = null;
         Thread _thread = null;
-        Debuggee _dbg = null;
+		Debuggers.DebugEngine.WindowsDebugEngine _dbg = null;
 
         public string commandLine = null;
 		public string processName = null;
@@ -183,10 +182,6 @@ namespace Peach.Core.Agent.Monitors
 		public bool ignoreSecondChanceGuardPage = false;
 		public bool noCpuKill = false;
 
-        public static EventWaitHandle Ready = new AutoResetEvent(false);
-
-		protected bool _stopDebugger = false;
-
 		public DebuggerInstance()
 		{
 			Instance = this;
@@ -199,20 +194,20 @@ namespace Peach.Core.Agent.Monitors
 
 		public void StartDebugger()
 		{
-			Ready.Reset();
-
-			_stopDebugger = false;
 			_thread = new Thread(new ThreadStart(Run));
 			_thread.Start();
-			
-			Ready.WaitOne();
+
+			while (_dbg == null)
+				Thread.Sleep(100);
+
+			_dbg.loadModules.WaitOne();
 		}
 
 		public void StopDebugger()
 		{
-			_stopDebugger = true;
+			_dbg.exitDebugger.Set();
 
-			for (int cnt = 0; _stopDebugger == true && cnt < 10; cnt++)
+			for (int cnt = 0; _thread.IsAlive && cnt < 100; cnt++)
 				Thread.Sleep(100);
 
 			_thread.Abort();
@@ -221,52 +216,28 @@ namespace Peach.Core.Agent.Monitors
 
         public void Run()
 		{
-			using (_dbg = new Debuggee())
+			_dbg = new Debuggers.DebugEngine.WindowsDebugEngine();
+
+			_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
+			_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
+			_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;
+
+			if (commandLine != null)
 			{
-				_dbg.SymbolPath = symbolsPath;
-				_dbg.DebugOutput += new EventHandler<DebugOutputEventArgs>(dbg_DebugOutput);
-
-				if (commandLine != null)
-				{
-					_dbg.CreateAndAttachProcess(commandLine, null);
-					//_dbg.DebugClient.
-					DebugStatus lastStatus = DebugStatus.StepOver;
-					while (true)
-					{
-						_dbg.WaitForEvent(0);
-						if (lastStatus != _dbg.GetExecutionStatus())
-						{
-							lastStatus = _dbg.GetExecutionStatus();
-							Console.WriteLine("!!!!!!: " + lastStatus.ToString());
-						}
-					}
-				}
-				else if (processName != null)
-				{
-					throw new NotImplementedException();
-				}
-				else if (kernelConnectionString != null)
-				{
-					throw new NotImplementedException();
-				}
-				else if (service != null)
-				{
-					throw new NotImplementedException();
-				}
-
-				Ready.Set();
-
-				while (_stopDebugger == false)
-				{
-					_dbg.WaitForEvent(100);
-
-				}
+				_dbg.CreateProcessAndAttach(commandLine);
 			}
-        }
-
-        static void dbg_DebugOutput(object sender, DebugOutputEventArgs e)
-        {
-            Console.WriteLine(e.Output);
+			else if (processName != null)
+			{
+				throw new NotImplementedException();
+			}
+			else if (kernelConnectionString != null)
+			{
+				throw new NotImplementedException();
+			}
+			else if (service != null)
+			{
+				throw new NotImplementedException();
+			}
         }
     }
 }

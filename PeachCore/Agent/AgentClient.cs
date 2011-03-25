@@ -129,13 +129,15 @@ namespace Peach.Core.Agent
 
         public void SessionStarting()
         {
-            throw new NotImplementedException();
+			foreach (Monitor monitor in monitors.Values)
+				monitor.SessionStarting();
         }
 
         public void SessionFinished()
         {
-            throw new NotImplementedException();
-        }
+			foreach (Monitor monitor in monitors.Values)
+				monitor.SessionFinished();
+		}
 
         public void IterationStarting(int iterationCount, bool isReproduction)
         {

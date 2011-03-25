@@ -119,9 +119,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peach.Debuggers.DbgEng\Peach.Debuggers.DbgEng.csproj">
-      <Project>{7B1E5961-21A3-4445-B5B5-1942F0737D21}</Project>
-      <Name>Peach.Debuggers.DbgEng</Name>
+    <ProjectReference Include="..\PeachCore\Peach.Core.csproj">
+      <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
+      <Name>Peach.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
