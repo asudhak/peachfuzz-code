@@ -1468,15 +1468,32 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Choice")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
+	[Serializable]
 	public class Choice : DataElementContainer
 	{
-		public DataElement _selectedElement;
+		public OrderedDictionary<string, DataElement> choiceElements = new OrderedDictionary<string, DataElement>();
+		DataElement _selectedElement = null;
 
 		public DataElement SelectedElement
 		{
-			get { return _selectedElement; }
+			get
+			{
+				if (_selectedElement == null && choiceElements.Count > 0)
+				{
+					this.Clear();
+					this.Add(choiceElements[0]);
+					_selectedElement = this[0];
+				}
+
+				return _selectedElement;
+			}
 			set
 			{
+				if(!choiceElements.Values.Contains(value))
+					throw new KeyNotFoundException("value was not found");
+
+				this.Clear();
+				this.Add(value);
 				_selectedElement = value;
 				Invalidate();
 			}
@@ -1497,7 +1514,10 @@ namespace Peach.Core.Dom
 			// 2. Relations
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			{
+				_internalValue = MutatedValue;
 				return MutatedValue;
+			}
 
 			foreach (Relation r in _relations)
 			{
@@ -1508,7 +1528,10 @@ namespace Peach.Core.Dom
 			// 3. Fixup
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			{
+				_internalValue = MutatedValue;
 				return MutatedValue;
+			}
 
 			if (_fixup != null)
 				value = _fixup.fixup(this);
@@ -1527,6 +1550,7 @@ namespace Peach.Core.Dom
 	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
 	[Parameter("maxOccurs", typeof(int), "Maximum number of occurances (-1 for unlimited)", false)]
+	[Serializable]
 	public class Array : Block
 	{
 		public int minOccurs = 1;

@@ -1,0 +1,1 @@
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\ntest\obj\Debug\ResolveAssemblyReference.cache

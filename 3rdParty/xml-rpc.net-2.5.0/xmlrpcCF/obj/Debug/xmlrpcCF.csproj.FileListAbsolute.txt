@@ -1,0 +1,5 @@
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpc.CF.dll
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpc.CF.pdb
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\xmlrpcCF\obj\Debug\ResolveAssemblyReference.cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\xmlrpcCF\obj\Debug\CookComputing.XmlRpc.CF.dll
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\xmlrpcCF\obj\Debug\CookComputing.XmlRpc.CF.pdb

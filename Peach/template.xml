@@ -7,10 +7,14 @@
 
 	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
-		<String value="Hello World!" />
-		<String value="BAR" />
-		<Number size="8" valueType="hex" value="0x41" />
-		<Blob value="Another Silly BLOB!"/>
+		<Block>
+			<String value="Hello "/>
+			<String value="World!" />
+		</Block>
+		<Choice>
+			<String value="FOO" />
+			<String value="BAR" />
+		</Choice>
 	</DataModel>
 
 	<Agent name="LocalAgent" >
@@ -27,23 +31,25 @@
 			<Action type="output" publisher="Stdout">
 				<DataModel ref="TheDataModel"/>
 			</Action>
+			<!--
 			<Action type="output" publisher="FileWriter">
 				<DataModel ref="TheDataModel"/>
 			</Action>
 			<Action type="close" publisher="FileWriter"/>
 
 			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />
+			-->
 		</State>
 
 	</StateModel>
 
 	<Test name="TheTest">
-		<Agent ref="LocalAgent"/>
+		<!-- <Agent ref="LocalAgent"/> -->
 		<StateModel ref="TheState"/>
 		<Publisher class="Console" name="Stdout" />
-		<Publisher class="FileStream" name="FileWriter">
+		<!--<Publisher class="FileStream" name="FileWriter">
 			<Param name="FileName" value="fuzzed.txt"/>
-		</Publisher>
+		</Publisher>-->
 	</Test>
 
 	<!-- Configure a single run -->

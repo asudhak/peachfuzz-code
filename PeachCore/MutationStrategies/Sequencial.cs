@@ -179,9 +179,7 @@ namespace Peach.Core.MutationStrategies
 					while (!_mutatorEnumerator.MoveNext())
 					{
 						if (!_dataElementEnumerator.MoveNext())
-						{
 							throw new MutatorCompleted();
-						}
 
 						_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
 					}
@@ -191,9 +189,17 @@ namespace Peach.Core.MutationStrategies
 			{
 				enumeratorsInitialized = true;
 				_dataElementEnumerator = _stuffs.Keys.GetEnumerator();
-				_dataElementEnumerator.MoveNext();
+				if (!_dataElementEnumerator.MoveNext())
+					throw new MutatorCompleted();
+
 				_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
-				_mutatorEnumerator.MoveNext();
+				while (!_mutatorEnumerator.MoveNext())
+				{
+					if (!_dataElementEnumerator.MoveNext())
+						throw new MutatorCompleted();
+
+					_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
+				}
 			}
 		}
 	}

@@ -1,0 +1,5 @@
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\BettyAsyncApp.exe
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\AsyncBettyApplication\obj\Release\ResolveAssemblyReference.cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\AsyncBettyApplication\obj\Release\AsyncBettyApplication.Form1.resources
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\AsyncBettyApplication\obj\Release\AsyncBettyApplication.csproj.GenerateResource.Cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\AsyncBettyApplication\obj\Release\BettyAsyncApp.exe

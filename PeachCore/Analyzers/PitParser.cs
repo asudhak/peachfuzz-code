@@ -496,8 +496,8 @@ namespace Peach.Core.Analyzers
 			}
 
 			// name
-			string name = getXmlAttribute(node, "name");
-			block.name = name;
+			if(hasXmlAttribute(node, "name"))
+				block.name = getXmlAttribute(node, "name");
 
 			// lengthType
 			if (hasXmlAttribute(node, "lengthType"))
@@ -624,7 +624,7 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
-		protected Choice handleChoice(XmlNode node, DataElementContainer parent)
+		protected DataElement handleChoice(XmlNode node, DataElementContainer parent)
 		{
 			Choice choice = new Choice();
 
@@ -636,12 +636,20 @@ namespace Peach.Core.Analyzers
 			handleCommonDataElementChildren(node, choice);
 			handleDataElementContainer(node, choice);
 
+			// Move children to choiceElements collection
+			foreach (DataElement elem in choice)
+				choice.choiceElements.Add(elem.name, elem);
+
+			choice.Clear();
+
 			// Array
 			if (hasXmlAttribute(node, "minOccurs") || hasXmlAttribute(node, "maxOccurs"))
 			{
 				Dom.Array array = new Dom.Array();
 				array.Add(choice);
 				array.name = choice.name;
+
+				return array;
 			}
 
 			return choice;
@@ -676,8 +684,8 @@ namespace Peach.Core.Analyzers
 				throw new NotSupportedException("Implement analyzer attribute on String");
 
 			handleCommonDataElementAttributes(node, str);
-			handleCommonDataElementChildren(node, str);
 			handleCommonDataElementValue(node, str);
+			handleCommonDataElementChildren(node, str);
 
 			return str;
 		}

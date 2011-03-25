@@ -1,0 +1,7 @@
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\MathApp.exe
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\MathApp.pdb
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathApp\obj\Debug\ResolveAssemblyReference.cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathApp\obj\Debug\MathApp.Form1.resources
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathApp\obj\Debug\MathApp.csproj.GenerateResource.Cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathApp\obj\Debug\MathApp.exe
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathApp\obj\Debug\MathApp.pdb

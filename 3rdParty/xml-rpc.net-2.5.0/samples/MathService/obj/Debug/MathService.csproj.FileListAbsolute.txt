@@ -1,0 +1,5 @@
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\website\bin\MathService.dll
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\website\bin\MathService.pdb
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathService\obj\Debug\ResolveAssemblyReference.cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathService\obj\Debug\MathService.dll
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathService\obj\Debug\MathService.pdb

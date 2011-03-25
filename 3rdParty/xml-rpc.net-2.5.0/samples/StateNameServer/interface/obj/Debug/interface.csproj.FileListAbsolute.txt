@@ -1,0 +1,5 @@
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\IStateName.dll
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\IStateName.pdb
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\StateNameServer\interface\obj\Debug\ResolveAssemblyReference.cache
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\StateNameServer\interface\obj\Debug\IStateName.dll
+C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\StateNameServer\interface\obj\Debug\IStateName.pdb

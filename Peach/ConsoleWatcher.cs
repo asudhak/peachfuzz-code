@@ -57,7 +57,7 @@ namespace Peach
 			}
 			else
 			{
-				Console.WriteLine(string.Format("\n[{0},{1},?] Performing iteration", currentIteration, totalIterations));
+				Console.WriteLine(string.Format("\n[{0},{1},-] Performing iteration", currentIteration, totalIterations));
 			}
 		}
 
