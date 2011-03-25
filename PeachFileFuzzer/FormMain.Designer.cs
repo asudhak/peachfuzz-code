@@ -219,7 +219,7 @@
 			this.textBoxExecutable.Name = "textBoxExecutable";
 			this.textBoxExecutable.Size = new System.Drawing.Size(293, 20);
 			this.textBoxExecutable.TabIndex = 5;
-			this.textBoxExecutable.Text = "nodepad.exe";
+			this.textBoxExecutable.Text = "notepad.exe";
 			// 
 			// textBoxFuzzedFile
 			// 

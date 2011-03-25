@@ -36,6 +36,7 @@ namespace Peach.Core.Dom
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);
 
+	//[Serializable]
 	public class StateModel
 	{
 		public string name = null;

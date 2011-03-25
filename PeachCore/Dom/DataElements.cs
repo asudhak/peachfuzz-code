@@ -1456,7 +1456,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class DataModel : Block
 	{
-		public Dom dom = null;
+		//public Dom dom = null;
 	}
 
 	/// <summary>

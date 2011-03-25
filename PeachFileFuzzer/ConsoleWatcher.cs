@@ -28,53 +28,67 @@ namespace PeachFileFuzzer
 			{
 			}
 
+			public delegate void DeligateIncrement(ProgressBar cltr);
+			public void Increment(ProgressBar ctrl)
+			{
+				ctrl.Increment(1);
+			}
+
+			public delegate void DeligateSetMax(ProgressBar cltr, int max);
+			public void SetMax(ProgressBar ctrl, int max)
+			{
+				ctrl.Maximum = max;
+			}
+
 			protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 			{
-				//_form.progressBarOuputFuzzing.Increment(1);
+				_form.progressBarOuputFuzzing.Invoke(new DeligateIncrement(Increment),
+					new object[] { _form.progressBarOuputFuzzing });
 				
 				if (totalIterations == null)
 				{
 					_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-						new object[] { _form.textBoxOutput, string.Format("\n[{0},-,-] Performing iteration\n", currentIteration) });
+						new object[] { _form.textBoxOutput, string.Format("\r\n[{0},-,-] Performing iteration\r\n", currentIteration) });
 				}
 				else
 				{
-					//if(_form.progressBarOuputFuzzing.Maximum != (int)totalIterations)
-					//	_form.progressBarOuputFuzzing.Maximum = (int)totalIterations;
+					if(_form.progressBarOuputFuzzing.Maximum != (int)totalIterations)
+						_form.progressBarOuputFuzzing.Invoke(new DeligateSetMax(SetMax),
+							new object[] { _form.progressBarOuputFuzzing, (int)totalIterations });
 
 					_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-						new object[] { _form.textBoxOutput, string.Format("\n[{0},{1},?] Performing iteration\n", currentIteration, totalIterations) });
+						new object[] { _form.textBoxOutput, string.Format("\r\n[{0},{1},?] Performing iteration\r\n", currentIteration, totalIterations) });
 				}
 			}
 
 			protected override void Engine_TestError(RunContext context, Exception e)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "\n[!] Test '" + context.test.name + "' error: " + e.Message + "\n" });
+					new object[] { _form.textBoxOutput, "\r\n[!] Test '" + context.test.name + "' error: " + e.Message + "\r\n" });
 			}
 
 			protected override void Engine_TestFinished(RunContext context)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "\n[*] Test '" + context.test.name + "' finished.\n" });
+					new object[] { _form.textBoxOutput, "\r\n[*] Test '" + context.test.name + "' finished.\r\n" });
 			}
 
 			protected override void Engine_TestStarting(RunContext context)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "[*] Test '" + context.test.name + "' starting.\n" });
+					new object[] { _form.textBoxOutput, "[*] Test '" + context.test.name + "' starting.\r\n" });
 			}
 
 			protected override void Engine_RunError(RunContext context, Exception e)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "\n[!] Run '" + context.run.name + "' error: " + e.Message + "\n" });
+					new object[] { _form.textBoxOutput, "\r\n[!] Run '" + context.run.name + "' error: " + e.Message + "\r\n" });
 			}
 
 			protected override void Engine_RunFinished(RunContext context)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' finished.\n" });
+					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' finished.\r\n" });
 			}
 
 			public delegate void DeligateAppendToText(TextBox cltr, String text);
@@ -86,7 +100,7 @@ namespace PeachFileFuzzer
 			protected override void Engine_RunStarting(RunContext context)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText), 
-					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' starting.\n"});
+					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' starting.\r\n"});
 			}
 		}
 }
