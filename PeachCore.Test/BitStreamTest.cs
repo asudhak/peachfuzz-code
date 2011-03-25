@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using Peach.Core.Dom;
-using Peach.Core;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Test
 {

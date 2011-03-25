@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core
 {
@@ -55,15 +56,15 @@ namespace Peach.Core
 			State.Starting += new StateStartingEventHandler(State_Starting);
 			State.Finished += new StateFinishedEventHandler(State_Finished);
 			State.ChangingState += new StateChangingStateEventHandler(State_ChangingState);
-			Action.Starting += new ActionStartingEventHandler(Action_Starting);
-			Action.Finished += new ActionFinishedEventHandler(Action_Finished);
+			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
 		}
 
-		protected virtual void Action_Finished(Action action)
+		protected virtual void Action_Finished(Core.Dom.Action action)
 		{
 		}
 
-		protected virtual void Action_Starting(Action action)
+		protected virtual void Action_Starting(Core.Dom.Action action)
 		{
 		}
 

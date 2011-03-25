@@ -1,6 +1,6 @@
 ﻿using Peach.Core.Dom;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Peach.Core;
+using Peach.Core.Dom;
 using System.Reflection;
 using System.Collections.Generic;
 

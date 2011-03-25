@@ -30,8 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Options;
-using Peach.Core;
 using Peach.Core.Dom;
+using Peach.Core;
 using Peach.Core.Analyzers;
 
 namespace Peach

@@ -8,7 +8,7 @@
     <ProjectGuid>{E910D9AB-C56A-4452-8370-57E0F946CB34}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Peach.Core.Xml</RootNamespace>
+    <RootNamespace>Peach.Core.Dom.Xml</RootNamespace>
     <AssemblyName>PeachCore.Xml</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

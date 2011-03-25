@@ -29,9 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Peach.Core.Dom;
+using Peach.Core;
 
-namespace Peach.Core
+namespace Peach.Core.Dom
 {
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);

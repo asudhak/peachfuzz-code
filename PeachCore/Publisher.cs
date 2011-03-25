@@ -30,19 +30,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach;
 
 namespace Peach.Core
 {
-	public delegate void StartEventHandler(Publisher publisher, Action action);
-	public delegate void StopEventHandler(Publisher publisher, Action action);
-	public delegate void AcceptEventHandler(Publisher publisher, Action action);
-	public delegate void OpenEventHandler(Publisher publisher, Action action);
-	public delegate void CloseEventHandler(Publisher publisher, Action action);
-	public delegate void InputEventHandler(Publisher publisher, Action action, int size);
-	public delegate void OutputEventHandler(Publisher publisher, Action action, Variant data);
-	public delegate void CallEventHandler(Publisher publisher, Action action, string method, Dictionary<string,Variant> aregs);
-	public delegate void SetPropertyEventHandler(Publisher publisher, Action action, string property, Variant value);
-	public delegate void GetPropertyEventHandler(Publisher publisher, Action action, string property);
+	public delegate void StartEventHandler(Publisher publisher, Core.Dom.Action action);
+	public delegate void StopEventHandler(Publisher publisher, Core.Dom.Action action);
+	public delegate void AcceptEventHandler(Publisher publisher, Core.Dom.Action action);
+	public delegate void OpenEventHandler(Publisher publisher, Core.Dom.Action action);
+	public delegate void CloseEventHandler(Publisher publisher, Core.Dom.Action action);
+	public delegate void InputEventHandler(Publisher publisher, Core.Dom.Action action, int size);
+	public delegate void OutputEventHandler(Publisher publisher, Core.Dom.Action action, Variant data);
+	public delegate void CallEventHandler(Publisher publisher, Core.Dom.Action action, string method, Dictionary<string, Variant> aregs);
+	public delegate void SetPropertyEventHandler(Publisher publisher, Core.Dom.Action action, string property, Variant value);
+	public delegate void GetPropertyEventHandler(Publisher publisher, Core.Dom.Action action, string property);
 
 	/// <summary>
 	/// Publishers are I/O interfaces for Peach.  They glue the actions
@@ -72,57 +73,57 @@ namespace Peach.Core
 		public static event SetPropertyEventHandler SetProperty;
 		public static event GetPropertyEventHandler GetProperty;
 
-		public void OnStart(Action action)
+		public void OnStart(Core.Dom.Action action)
 		{
 			if (Start != null)
 				Start(this, action);
 		}
-		public void OnStop(Action action)
+		public void OnStop(Core.Dom.Action action)
 		{
 			if (Stop != null)
 				Stop(this, action);
 		}
-		public void OnAccept(Action action)
+		public void OnAccept(Core.Dom.Action action)
 		{
 			if (Accept != null)
 				Accept(this, action);
 		}
-		public void OnOpen(Action action)
+		public void OnOpen(Core.Dom.Action action)
 		{
 			if (Open != null)
 				Open(this, action);
 		}
-		public void OnClose(Action action)
+		public void OnClose(Core.Dom.Action action)
 		{
 			if (Close != null)
 				Close(this, action);
 		}
-		public void OnInput(Action action)
+		public void OnInput(Core.Dom.Action action)
 		{
 			if (Input != null)
 				Input(this, action, -1);
 		}
-		public void OnInput(Action action, int size)
+		public void OnInput(Core.Dom.Action action, int size)
 		{
 			if (Input != null)
 				Input(this, action, size);
 		}
-		public void OnOutput(Action action, Variant data)
+		public void OnOutput(Core.Dom.Action action, Variant data)
 		{
 			if (Output != null)
 				Output(this, action, data);
 		}
-		public void OnCall(Action action, string method, Dictionary<string,Variant> args)
+		public void OnCall(Core.Dom.Action action, string method, Dictionary<string, Variant> args)
 		{
 			if (Call != null)
 				Call(this, action, method, args);
 		}
-		public void OnSetProperty(Action action, string property, Variant value)
+		public void OnSetProperty(Core.Dom.Action action, string property, Variant value)
 		{
 			if (SetProperty != null)
 				SetProperty(this, action, property, value);
 		}
-		public void OnGetProperty(Action action, string property)
+		public void OnGetProperty(Core.Dom.Action action, string property)
 		{
 			if (GetProperty != null)
 				GetProperty(this, action, property);
@@ -139,7 +140,7 @@ namespace Peach.Core
 		/// even if not specifically called.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void start(Action action)
+		public virtual void start(Core.Dom.Action action)
 		{
 			OnStart(action);
 		}
@@ -148,7 +149,7 @@ namespace Peach.Core
 		/// even if not specifically called.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void stop(Action action)
+		public virtual void stop(Core.Dom.Action action)
 		{
 			OnStop(action);
 		}
@@ -157,7 +158,7 @@ namespace Peach.Core
 		/// Accept an incoming connection.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void accept(Action action)
+		public virtual void accept(Core.Dom.Action action)
 		{
 			OnAccept(action);
 			throw new PeachException("Error, action 'accept' not supported by publisher");
@@ -167,7 +168,7 @@ namespace Peach.Core
 		/// automatically if not called specifically.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void open(Action action)
+		public virtual void open(Core.Dom.Action action)
 		{
 			OnOpen(action);
 			throw new PeachException("Error, action 'open' not supported by publisher");
@@ -178,39 +179,39 @@ namespace Peach.Core
 		/// needed.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void close(Action action)
+		public virtual void close(Core.Dom.Action action)
 		{
 			OnClose(action);
 			throw new PeachException("Error, action 'close' not supported by publisher");
 		}
 
-		public virtual Variant input(Action action)
+		public virtual Variant input(Core.Dom.Action action)
 		{
 			OnInput(action);
 			throw new PeachException("Error, action 'input' not supported by publisher");
 		}
-		public virtual Variant input(Action action, int size)
+		public virtual Variant input(Core.Dom.Action action, int size)
 		{
 			OnInput(action, size);
 			throw new PeachException("Error, action 'input' not supported by publisher");
 		}
-		public virtual void output(Action action, Variant data)
+		public virtual void output(Core.Dom.Action action, Variant data)
 		{
 			OnOutput(action, data);
 			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
 
-		public virtual Variant call(Action action, string method, Dictionary<string, Variant> args )
+		public virtual Variant call(Core.Dom.Action action, string method, Dictionary<string, Variant> args)
 		{
 			OnCall(action, method, args);
 			throw new PeachException("Error, action 'call' not supported by publisher");
 		}
-		public virtual void setProperty(Action action, string property, Variant value)
+		public virtual void setProperty(Core.Dom.Action action, string property, Variant value)
 		{
 			OnSetProperty(action, property, value);
 			throw new PeachException("Error, action 'setProperty' not supported by publisher");
 		}
-		public virtual Variant getProperty(Action action, string property)
+		public virtual Variant getProperty(Core.Dom.Action action, string property)
 		{
 			OnGetProperty(action, property);
 			throw new PeachException("Error, action 'getProperty' not supported by publisher");

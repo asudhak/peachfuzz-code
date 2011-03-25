@@ -28,7 +28,7 @@ namespace Peach.Core.MutationStrategies
 			recording = true;
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
-			Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 
 			// Locate all mutators
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -83,7 +83,7 @@ namespace Peach.Core.MutationStrategies
 			}
 		}
 
-		void Action_Starting(Action action)
+		void Action_Starting(Core.Dom.Action action)
 		{
 			if (!recording && enumeratorsInitialized)
 			{

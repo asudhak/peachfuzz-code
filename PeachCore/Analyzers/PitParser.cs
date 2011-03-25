@@ -35,7 +35,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using Peach.Core.Dom;
-using Peach.Core;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Analyzers
 {
@@ -1143,7 +1143,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Action")
 				{
-					Action action = handleAction(child, state);
+					Core.Dom.Action action = handleAction(child, state);
 					state.actions.Add(action);
 				}
 			}
@@ -1151,9 +1151,9 @@ namespace Peach.Core.Analyzers
 			return state;
 		}
 
-		protected Action handleAction(XmlNode node, State parent)
+		protected Core.Dom.Action handleAction(XmlNode node, State parent)
 		{
-			Action action = new Action();
+			Core.Dom.Action action = new Core.Dom.Action();
 
 			if (hasXmlAttribute(node, "name"))
 				action.name = getXmlAttribute(node, "name");

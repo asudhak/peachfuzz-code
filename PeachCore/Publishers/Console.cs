@@ -45,7 +45,7 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		public override void open(Action action)
+		public override void open(Core.Dom.Action action)
 		{
 			if (_sout == null)
 			{
@@ -54,7 +54,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override void close(Action action)
+		public override void close(Core.Dom.Action action)
 		{
 			OnClose(action);
 
@@ -65,7 +65,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override void output(Action action, Variant data)
+		public override void output(Core.Dom.Action action, Variant data)
 		{
 			open(action);
 

@@ -197,7 +197,7 @@ namespace Peach.Core
 
 				OnRunStarting(context);
 
-				foreach (Test test in dom.tests.Values)
+				foreach (Test test in run.tests.Values)
 				{
 					context.test = test;
 					runTest(dom, test, context);

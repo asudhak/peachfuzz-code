@@ -84,7 +84,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override void open(Action action)
+		public override void open(Core.Dom.Action action)
 		{
 			close(action);
 
@@ -98,7 +98,7 @@ namespace Peach.Core.Publishers
 				stream = System.IO.File.Open(fileName, FileMode.OpenOrCreate);
 		}
 
-		public override void close(Action action)
+		public override void close(Core.Dom.Action action)
 		{
 			if (stream != null)
 			{
@@ -108,7 +108,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override Variant input(Action action)
+		public override Variant input(Core.Dom.Action action)
 		{
 			// TODO: Improve speed for large reads
 			OnInput(action);
@@ -133,7 +133,7 @@ namespace Peach.Core.Publishers
 			return new Variant(listBuffer.ToArray());
 		}
 
-		public override Variant input(Action action, int size)
+		public override Variant input(Core.Dom.Action action, int size)
 		{
 			OnInput(action, size);
 
@@ -152,7 +152,7 @@ namespace Peach.Core.Publishers
 			return new Variant(buffer);
 		}
 
-		public override void output(Action action, Variant data)
+		public override void output(Core.Dom.Action action, Variant data)
 		{
 			if (stream == null)
 				open(action);

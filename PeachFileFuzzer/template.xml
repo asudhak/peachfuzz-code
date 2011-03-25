@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
+
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml"/>
+
+	<!-- TODO: Create data model -->
+	<DataModel name="TheDataModel">
+		<String value="Hello World!" />
+	</DataModel>
+
+	<Agent name="LocalAgent" >
+		<Monitor class="debugger.WindowsDebugEngine">
+			<Param name="CommandLine" value="%%PROGRAM%% %%COMMANDLINE%%"/>
+			<Param name="StartOnCall" value="ScoobySnacks"/>
+		</Monitor>
+	</Agent>
+
+	<!-- TODO: Create state model -->
+	<StateModel name="TheState" initialState="Initial">
+
+		<State name="Initial">
+			<Action type="output">
+				<DataModel ref="TheDataModel"/>
+			</Action>
+			<Action type="close"/>
+
+			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />
+		</State>
+
+	</StateModel>
+
+	<Test name="TheTest">
+		<Agent ref="LocalAgent"/>
+		<StateModel ref="TheState"/>
+		<Publisher class="FileStream">
+			<Param name="FileName" value="%%FUZZEDFILE%%"/>
+		</Publisher>
+	</Test>
+
+	<!-- Configure a single run -->
+	<Run name="DefaultRun">
+		<Test ref="TheTest"/>
+	</Run>
+
+</Peach>
+<!-- end -->
