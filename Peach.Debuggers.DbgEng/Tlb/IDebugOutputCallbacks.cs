@@ -8,7 +8,7 @@ namespace Peach.Debuggers.DbgEng.Tlb
     public interface IDebugOutputCallbacks
     {
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void Output([In] uint Mask, [In] string Text);
+		void Output([In] uint Mask, [In] [MarshalAs(UnmanagedType.LPStr)] string Text);
     }
 }
 

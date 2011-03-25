@@ -133,9 +133,11 @@ namespace Peach.Debuggers.DbgEng.Tlb
         void CoerceValue([In] ref _DEBUG_VALUE In, [In] uint OutType, out _DEBUG_VALUE Out);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void CoerceValues([In] uint Count, [In] ref _DEBUG_VALUE In, [In] ref uint OutTypes, out _DEBUG_VALUE Out);
+
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void Execute([In] uint OutputControl, [In] ref sbyte Command, [In] uint Flags);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        void Execute([In] uint OutputControl, [In] [MarshalAs(UnmanagedType.LPStr)] string Command, [In] uint Flags);
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void ExecuteCommandFile([In] uint OutputControl, [In] ref sbyte CommandFile, [In] uint Flags);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetNumberBreakpoints(out uint Number);

@@ -30,7 +30,7 @@ namespace Peach.Debuggers.DbgEng.Tlb
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void CreateProcess([In] ulong Server, [In] ref sbyte CommandLine, [In] uint CreateFlags);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void CreateProcessAndAttach([In] ulong Server, [In, Optional] ref sbyte CommandLine, [In, Optional] uint CreateFlags, [In, Optional] uint ProcessId, [In, Optional] uint AttachFlags);
+        void CreateProcessAndAttach([In] ulong Server, [In, Optional] ref byte[] CommandLine, [In, Optional] uint CreateFlags, [In, Optional] uint ProcessId, [In, Optional] uint AttachFlags);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetProcessOptions(out uint Options);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]

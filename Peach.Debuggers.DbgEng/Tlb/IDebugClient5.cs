@@ -29,9 +29,15 @@ namespace Peach.Debuggers.DbgEng.Tlb
         void AttachProcess([In] ulong Server, [In] uint ProcessId, [In] uint AttachFlags);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void CreateProcess([In] ulong Server, [In] string CommandLine, [In] uint CreateFlags);
+
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void CreateProcessAndAttach([In] ulong Server, [In, Optional] string CommandLine, [In, Optional] uint CreateFlags, [In, Optional] uint ProcessId, [In, Optional] uint AttachFlags);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        void CreateProcessAndAttach([In] [MarshalAs(UnmanagedType.U8)] ulong Server,
+			[In, Optional] [MarshalAs(UnmanagedType.LPStr)] string CommandLine,
+			[In] [MarshalAs(UnmanagedType.U4)] uint CreateFlags,
+			[In] [MarshalAs(UnmanagedType.U4)] uint ProcessId,
+			[In] [MarshalAs(UnmanagedType.U4)] uint AttachFlags);
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetProcessOptions(out uint Options);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void AddProcessOptions([In] uint Options);
@@ -57,23 +63,32 @@ namespace Peach.Debuggers.DbgEng.Tlb
         void EndSession([In] uint Flags);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetExitCode(out uint Code);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void DispatchCallbacks([In] uint Timeout);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void ExitDispatch([In, MarshalAs(UnmanagedType.Interface)] IDebugClient Client);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void CreateClient([MarshalAs(UnmanagedType.Interface)] out IDebugClient Client);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetInputCallbacks([MarshalAs(UnmanagedType.Interface)] out IDebugInputCallbacks Callbacks);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void SetInputCallbacks([In, Optional, MarshalAs(UnmanagedType.Interface)] IDebugInputCallbacks Callbacks);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetOutputCallbacks([MarshalAs(UnmanagedType.Interface)] out IDebugOutputCallbacks Callbacks);
+
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void SetOutputCallbacks([In, Optional, MarshalAs(UnmanagedType.Interface)] IDebugOutputCallbacks Callbacks);
+
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetOutputMask(out uint Mask);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void SetOutputMask([In] uint Mask);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetOtherOutputMask([In, MarshalAs(UnmanagedType.Interface)] IDebugClient Client, out uint Mask);

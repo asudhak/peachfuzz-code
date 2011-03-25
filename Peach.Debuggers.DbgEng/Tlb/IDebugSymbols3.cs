@@ -83,9 +83,11 @@ namespace Peach.Debuggers.DbgEng.Tlb
         void Reload([In] ref sbyte Module);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetSymbolPath([Optional] out sbyte Buffer, [In, Optional] uint BufferSize, [Optional] out uint PathSize);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void SetSymbolPath([In] ref sbyte Path);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        void SetSymbolPath([In] [MarshalAs(UnmanagedType.LPStr)] string Path);
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void AppendSymbolPath([In] ref sbyte Addition);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetImagePath([Optional] out sbyte Buffer, [In, Optional] uint BufferSize, [Optional] out uint PathSize);

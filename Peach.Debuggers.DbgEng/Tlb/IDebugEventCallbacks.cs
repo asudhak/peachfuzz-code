@@ -23,25 +23,39 @@ namespace Peach.Debuggers.DbgEng.Tlb
         void ExitThread([In] uint ExitCode);
         
 		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void CreateProcess([In] ulong ImageFileHandle, [In] ulong Handle, [In] ulong BaseOffset, [In] uint ModuleSize, [In, Optional] string ModuleName, [In, Optional] string ImageName, [In, Optional] uint CheckSum, [In, Optional] uint TimeDateStamp, [In, Optional] ulong InitialThreadHandle, [In, Optional] ulong ThreadDataOffset, [In, Optional] ulong StartOffset);
+        void CreateProcess([In] ulong ImageFileHandle, [In] ulong Handle, [In] ulong BaseOffset, 
+			[In] uint ModuleSize,
+			[In, Optional] [MarshalAs(UnmanagedType.LPStr)] string ModuleName,
+			[In, Optional] [MarshalAs(UnmanagedType.LPStr)] string ImageName, 
+			[In, Optional] uint CheckSum, [In, Optional] uint TimeDateStamp, 
+			[In, Optional] ulong InitialThreadHandle, [In, Optional] ulong ThreadDataOffset, 
+			[In, Optional] ulong StartOffset);
         
 		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void ExitProcess([In] uint ExitCode);
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void LoadModule([In] ulong ImageFileHandle, [In] ulong BaseOffset, [In] uint ModuleSize, [In, Optional] string ModuleName, [In, Optional] string ImageName, [In, Optional] uint CheckSum, [In, Optional] uint TimeDateStamp);
+        void LoadModule([In] ulong ImageFileHandle, [In] ulong BaseOffset, [In] uint ModuleSize,
+			[In, Optional] [MarshalAs(UnmanagedType.LPStr)] string ModuleName,
+			[In, Optional] [MarshalAs(UnmanagedType.LPStr)] string ImageName, 
+			[In, Optional] uint CheckSum, [In, Optional] uint TimeDateStamp);
         
 		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void UnloadModule([In, Optional] string ImageBaseName, [In, Optional] ulong BaseOffset);
+		void UnloadModule([In, Optional] [MarshalAs(UnmanagedType.LPStr)] string ImageBaseName, [In, Optional] ulong BaseOffset);
+
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void SystemError([In] uint Error, [In] uint Level);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void SessionStatus([In] uint Status);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void ChangeDebuggeeState([In] uint Flags, [In] ulong Argument);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void ChangeEngineState([In] uint Flags, [In] ulong Argument);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void ChangeSymbolState([In] uint Flags, [In] ulong Argument);
     }
 }

@@ -72,7 +72,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="WindowsDebugEngine.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tlb\IDebugAdvanced.cs" />
@@ -767,6 +767,12 @@
     <Compile Include="Tlb\__MIDL___MIDL_itf_DbgEng_0001_0098_0014.cs" />
     <Compile Include="Tlb\__MIDL___MIDL_itf_DbgEng_0001_0098_0015.cs" />
     <Compile Include="Tlb\__MIDL___MIDL_itf_DbgEng_0001_0098_0016.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PeachCore\Peach.Core.csproj">
+      <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
+      <Name>Peach.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
