@@ -15,7 +15,7 @@
 
 	<Agent name="LocalAgent" >
 		<Monitor class="debugger.WindowsDebugEngine">
-			<Param name="CommandLine" value="notepad.exe"/>
+			<Param name="CommandLine" value="notepad.exe fuzzed.txt"/>
 			<Param name="StartOnCall" value="ScoobySnacks"/>
 		</Monitor>
 	</Agent>
@@ -24,10 +24,14 @@
 	<StateModel name="TheState" initialState="Initial">
 
 		<State name="Initial">
-			<Action type="output">
+			<Action type="output" publisher="Stdout">
 				<DataModel ref="TheDataModel"/>
 			</Action>
-			
+			<Action type="output" publisher="FileWriter">
+				<DataModel ref="TheDataModel"/>
+			</Action>
+			<Action type="close" publisher="FileWriter"/>
+
 			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />
 		</State>
 
@@ -36,7 +40,10 @@
 	<Test name="TheTest">
 		<Agent ref="LocalAgent"/>
 		<StateModel ref="TheState"/>
-		<Publisher class="Console" />
+		<Publisher class="Console" name="Stdout" />
+		<Publisher class="FileStream" name="FileWriter">
+			<Param name="FileName" value="fuzzed.txt"/>
+		</Publisher>
 	</Test>
 
 	<!-- Configure a single run -->

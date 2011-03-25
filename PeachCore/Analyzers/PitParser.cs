@@ -460,6 +460,8 @@ namespace Peach.Core.Analyzers
 
 				if (!hasXmlAttribute(node, "name"))
 					dataModel.name = getXmlAttribute(node, "ref");
+				else
+					dataModel.name = getXmlAttribute(node, "name");
 			}
 			else
 			{

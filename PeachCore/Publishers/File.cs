@@ -34,7 +34,9 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Publishers
 {
-	[PublisherAttribute("FileStream")]
+	[Publisher("FileStream")]
+	[Publisher("file.FileWriter")]
+	[Publisher("file.FileReader")]
 	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing", true)]
 	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default true]", false)]
 	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
@@ -89,7 +91,7 @@ namespace Peach.Core.Publishers
 			OnOpen(action);
 
 			if (overwrite)
-				stream = System.IO.File.Open(fileName, FileMode.CreateNew);
+				stream = System.IO.File.Open(fileName, FileMode.Create);
 			else if (append)
 				stream = System.IO.File.Open(fileName, FileMode.Append | FileMode.OpenOrCreate);
 			else
@@ -98,10 +100,9 @@ namespace Peach.Core.Publishers
 
 		public override void close(Action action)
 		{
-			OnClose(action);
-
 			if (stream != null)
 			{
+				OnClose(action);
 				stream.Close();
 				stream = null;
 			}
@@ -153,6 +154,9 @@ namespace Peach.Core.Publishers
 
 		public override void output(Action action, Variant data)
 		{
+			if (stream == null)
+				open(action);
+
 			OnOutput(action, data);
 
 			byte [] buff = (byte[])data;
