@@ -42,8 +42,10 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Debuggers.DebugEngine
 {
-	public class WindowsDebugEngine
+	public class WindowsDebugEngine : IDisposable
 	{
+		private bool _disposed = false;
+
 		public IDebugClient5 dbgClient = null;
 		public IDebugControl4 dbgControl = null;
 		public IDebugSymbols3 dbgSymbols = null;
@@ -73,10 +75,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 			Guid clsid = CLSID(typeof(IDebugClient5));
 
 			if (DebugCreate(ref clsid, out obj) != 0)
-			{
 				Debugger.Break();
-			}
-
+			
 			dbgClient = (IDebugClient5)obj;
 			dbgControl = (IDebugControl4)obj;
 			dbgSymbols = (IDebugSymbols3)obj;
@@ -99,6 +99,9 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 		public void CreateProcessAndAttach(string CommandLine)
 		{
+			if (_disposed)
+				throw new ApplicationException("Object already disposed");
+
 			dbgClient.CreateProcessAndAttach(0,
 				CommandLine, 1, 0, 0);
 
@@ -130,6 +133,17 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 			return Guid.Empty;
 		}
+
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			_disposed = true;
+
+			Marshal.FinalReleaseComObject(dbgClient);
+		}
+
+		#endregion
 	}
 
 	[Guid("F193F926-63C4-4837-8456-40C1CD1720D5")]

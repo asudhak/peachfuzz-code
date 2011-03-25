@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Agent;
 using Peach.Core.Dom;
+using System.Threading;
 
 namespace Peach.Core
 {
@@ -305,6 +306,8 @@ namespace Peach.Core
 							test.stateModel.Run(context);
 
 							context.agentManager.IterationFinished();
+
+							//Thread.Sleep(1000 * 5);
 						}
 						catch (RedoTestException e)
 						{

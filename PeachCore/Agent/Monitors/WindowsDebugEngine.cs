@@ -208,7 +208,8 @@ namespace Peach.Core.Agent.Monitors
 			while (_dbg == null)
 				Thread.Sleep(100);
 
-			_dbg.loadModules.WaitOne();
+			if (!_dbg.loadModules.WaitOne())
+				Console.Error.WriteLine("WaitOne == false");
 		}
 
 		public void StopDebugger()
@@ -224,28 +225,32 @@ namespace Peach.Core.Agent.Monitors
 
         public void Run()
 		{
-			_dbg = new Debuggers.DebugEngine.WindowsDebugEngine();
+			using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine())
+			{
 
-			_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
-			_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
-			_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;
+				_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
+				_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
+				_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;
 
-			if (commandLine != null)
-			{
-				_dbg.CreateProcessAndAttach(commandLine);
+				if (commandLine != null)
+				{
+					_dbg.CreateProcessAndAttach(commandLine);
+				}
+				else if (processName != null)
+				{
+					throw new NotImplementedException();
+				}
+				else if (kernelConnectionString != null)
+				{
+					throw new NotImplementedException();
+				}
+				else if (service != null)
+				{
+					throw new NotImplementedException();
+				}
 			}
-			else if (processName != null)
-			{
-				throw new NotImplementedException();
-			}
-			else if (kernelConnectionString != null)
-			{
-				throw new NotImplementedException();
-			}
-			else if (service != null)
-			{
-				throw new NotImplementedException();
-			}
+
+			_dbg = null;
         }
     }
 }
