@@ -324,7 +324,7 @@ namespace Peach.Core
 				//       or get default.
 
 				Publisher publisher = null;
-				if (this.publisher != null)
+				if (this.publisher != null && this.publisher != "Peach.Agent")
 				{
 					publisher = context.test.publishers[this.publisher];
 				}
@@ -332,7 +332,6 @@ namespace Peach.Core
 				{
 					publisher = context.test.publishers[0];
 				}
-
 
 				OnStarting();
 
@@ -360,7 +359,7 @@ namespace Peach.Core
 						break;
 
 					case ActionType.Call:
-						handleCall();
+						handleCall(context);
 						break;
 					case ActionType.GetProperty:
 						handleGetProperty();
@@ -394,8 +393,16 @@ namespace Peach.Core
 		{
 		}
 
-		protected void handleCall()
+		protected void handleCall(RunContext context)
 		{
+			// Are we sending to Agents?
+			if (this.publisher == "Peach.Agent")
+			{
+				context.agentManager.Message("Action.Call", new Variant(this.method));
+				return;
+			}
+
+			throw new NotImplementedException("TODO");
 		}
 
 		protected void handleGetProperty()

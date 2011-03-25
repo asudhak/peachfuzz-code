@@ -16,6 +16,7 @@
 	<Agent name="LocalAgent" >
 		<Monitor class="debugger.WindowsDebugEngine">
 			<Param name="CommandLine" value="notepad.exe"/>
+			<Param name="StartOnCall" value="ScoobySnacks"/>
 		</Monitor>
 	</Agent>
 
@@ -26,6 +27,8 @@
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
 			</Action>
+			
+			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />
 		</State>
 
 	</StateModel>

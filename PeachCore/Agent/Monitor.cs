@@ -81,6 +81,14 @@ namespace Peach.Core.Agent
         /// </summary>
         /// <returns>True if session must stop, else false.</returns>
         public abstract bool MustStop();
+
+		/// <summary>
+		/// Send a message to the monitor and possibly get data back.
+		/// </summary>
+		/// <param name="name">Message name</param>
+		/// <param name="data">Message data</param>
+		/// <returns>Returns data or null.</returns>
+		public abstract Variant Message(string name, Variant data);
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]

@@ -174,6 +174,21 @@ namespace Peach.Core.Agent
 			return ret;
 		}
 
+		public virtual Variant Message(string name, Variant data)
+		{
+			Variant ret = null;
+			Variant tmp = null;
+
+			foreach (AgentServer agent in _agents.Values)
+			{
+				tmp = agent.Message(name, data);
+				if (tmp != null)
+					ret = tmp;
+			}
+
+			return ret;
+		}
+
 		#endregion
 	}
 }

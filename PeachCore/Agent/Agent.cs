@@ -111,6 +111,14 @@ namespace Peach.Core.Agent
         /// </summary>
         /// <returns>True if session must stop, else false.</returns>
 		public abstract bool MustStop();
+
+		/// <summary>
+		/// Send a message to all monitors.
+		/// </summary>
+		/// <param name="name">Message Name</param>
+		/// <param name="data">Message data</param>
+		/// <returns>Returns data as Variant or null.</returns>
+		public abstract Variant Message(string name, Variant data);
 	}
 
     [XmlRpcUrl("http://localhost/PeachAgent")]
@@ -142,6 +150,8 @@ namespace Peach.Core.Agent
         Hashtable GetMonitorData();
         [XmlRpcMethod("MustStop")]
         bool MustStop();
+		[XmlRpcMethod("Message")]
+		Variant Message(string name, Variant data);
     }
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
@@ -236,6 +246,11 @@ namespace Peach.Core.Agent
 		{
 			return agent.MustStop();
 		}
+
+		public override Variant Message(string name, Variant data)
+		{
+			return agent.Message(name, data);
+		}
 	}
 
 	[Agent("http")]
@@ -322,5 +337,10 @@ namespace Peach.Core.Agent
         {
             return proxy.MustStop();
         }
+
+		public override Variant Message(string name, Variant data)
+		{
+			return proxy.Message(name, data);
+		}
     }
 }

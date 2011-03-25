@@ -95,6 +95,14 @@ namespace Peach.Core.Agent.Monitors
 			_debugger.noCpuKill = _noCpuKill;
         }
 
+		public override Variant Message(string name, Variant data)
+		{
+			if(name == "Action.Call" && ((string)data) == _startOnCall)
+				_StartDebugger();
+
+			return null;
+		}
+
         public override void StopMonitor()
         {
 			_StopDebugger();

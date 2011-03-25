@@ -179,6 +179,21 @@ namespace Peach.Core.Agent
             return false;
         }
 
+		public Variant Message(string name, Variant data)
+		{
+			Variant ret = null;
+			Variant tmp = null;
+
+			foreach (Monitor monitor in monitors.Values)
+			{
+				tmp = monitor.Message(name, data);
+				if (tmp != null)
+					ret = tmp;
+			}
+
+			return ret;
+		}
+
         #endregion
     }
 
@@ -196,6 +211,7 @@ namespace Peach.Core.Agent
         bool DetectedFault();
         Hashtable GetMonitorData();
         bool MustStop();
+		Variant Message(string name, Variant data);
     }
 
     /// <summary>
@@ -275,5 +291,11 @@ namespace Peach.Core.Agent
         {
             return agent.MustStop();
         }
+
+		[XmlRpcMethod("Message")]
+		public Variant Message(string name, Variant data)
+		{
+			return agent.Message(name, data);
+		}
     }
 }
