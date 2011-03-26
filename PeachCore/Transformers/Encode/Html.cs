@@ -33,7 +33,7 @@ using System.Text;
 using Peach.Core.Dom;
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
+    [Transformer("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
     class HtmlEncodeAgressive :Transformer
     {
         public HtmlEncodeAgressive(Dictionary<string,Variant>  args) : base(args)
@@ -56,7 +56,7 @@ namespace Peach.Core.Transformers.Encode
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(ds));
         }
     }
-    [TransformerAttribute("HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
+    [Transformer("HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
     class HtmlEncode : Transformer
     {
         public HtmlEncode(Dictionary<string,Variant>  args) : base(args)
@@ -79,7 +79,7 @@ namespace Peach.Core.Transformers.Encode
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(ds));
         }
     }
-    [TransformerAttribute("JsEncode", "Encode on output as Javascript string.")]
+    [Transformer("JsEncode", "Encode on output as Javascript string.")]
     class JsEncode : Transformer
     {
         public JsEncode(Dictionary<string,Variant>  args) : base(args)
@@ -114,7 +114,7 @@ namespace Peach.Core.Transformers.Encode
             throw new NotImplementedException();
         }
     }
-    [TransformerAttribute("HtmlDecode", "Decode on output from HTML encoding.")]
+    [Transformer("HtmlDecode", "Decode on output from HTML encoding.")]
     class HtmlDecode : Transformer
     {
         public HtmlDecode(Dictionary<string,Variant> args)
