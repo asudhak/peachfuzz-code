@@ -34,15 +34,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
 	[Mutator("Perform common string mutations")]
-	public class StringMutator : Mutator
+	public partial class StringMutator : Mutator
 	{
-		string[] values = new string[] {
-			"Peachy",
-			"A",
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-		};
 
 		uint pos = 0;
 		uint lastPos = 0;
@@ -65,7 +58,7 @@ namespace Peach.Core.Mutators
 			pos++;
 			if (pos >= values.Length)
 			{
-				pos = (uint) values.Length - 1;
+				pos = (uint)values.Length - 1;
 				throw new MutatorCompleted();
 			}
 		}

@@ -915,6 +915,7 @@
     <Compile Include="Mutators\SizedVaranceMutator.cs" />
     <Compile Include="Mutators\StringCaseMutator.cs" />
     <Compile Include="Mutators\StringMutator.cs" />
+    <Compile Include="Mutators\StringMutator.Data.cs" />
     <Compile Include="Mutators\UnicodeBadUtf8Mutator.cs" />
     <Compile Include="Mutators\UnicodeBomMutator.cs" />
     <Compile Include="Mutators\UnicodeStringsMutator.cs" />
