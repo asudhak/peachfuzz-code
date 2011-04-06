@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Peach.Core;
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -40,6 +41,8 @@ namespace Peach.Core.Dom
 	//[Serializable]
 	public class StateModel
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.StateModel");
+
 		public string name = null;
 		public object parent;
 		protected State _initialState = null;
@@ -101,6 +104,7 @@ namespace Peach.Core.Dom
 
 	public class State
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.State");
 		public string name = "Unknown State";
 		public List<Action> actions = new List<Action>();
 
@@ -193,6 +197,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class Action
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.Action");
 		public string name = "Unknown Action";
 		public ActionType type = ActionType.Unknown;
 
@@ -320,6 +325,8 @@ namespace Peach.Core.Dom
 
 		public void Run(RunContext context)
 		{
+			logger.Trace("Run({0}): {1}", name, type);
+
 			try
 			{
 				// TODO: Locate publisher by name

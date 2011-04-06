@@ -48,6 +48,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("NoCpuKill", typeof(string), "TODO", false)]
 	public class WindowsDebugEngine : Monitor
     {
+		static bool _firstIteration = true;
         string _commandLine = null;
         string _processName = null;
         string _kernelConnectionString = null;
@@ -104,7 +105,15 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
 				_performanceCounter.NextValue();
-				//System.Threading.Thread.Sleep(100);
+				if (_firstIteration)
+				{
+					_firstIteration = false;
+					System.Threading.Thread.Sleep(1000);
+				}
+				else
+				{
+					System.Threading.Thread.Sleep(100);
+				}
 			}
 
 			return _performanceCounter.NextValue();
@@ -120,8 +129,6 @@ namespace Peach.Core.Agent.Monitors
 
 			if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && !_noCpuKill)
 			{
-				Console.WriteLine("Action.Call.IsRunning");
-
 				if (!_IsDebuggerRunning())
 					return new Variant(0);
 
@@ -131,6 +138,7 @@ namespace Peach.Core.Agent.Monitors
 					return new Variant(0);
 
 				float cpu = GetProcessCpuUsage(proc);
+				//Console.WriteLine("cpu: " + cpu);
 				if (cpu < 1.0)
 				{
 					_StopDebugger();

@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using Peach.Core.Dom;
+using NLog;
 
 namespace Peach.Core.Agent
 {
@@ -40,6 +41,7 @@ namespace Peach.Core.Agent
 	/// </summary>
 	public class AgentManager
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentManager");
 		static int UniqueNames = 0;
 		OrderedDictionary<string, AgentServer> _agents = new OrderedDictionary<string, AgentServer>();
 		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();
@@ -64,6 +66,8 @@ namespace Peach.Core.Agent
 
 		public virtual void AgentConnect(string name)
 		{
+			logger.Trace("AgentConnect: {0}", name);
+
 			Dom.Agent def = _agentDefinitions[name];
 			AgentServer agent = _agents[name];
 
@@ -110,30 +114,35 @@ namespace Peach.Core.Agent
 
 		public virtual void StopAllMonitors()
 		{
+			logger.Trace("StopAllMonitors");
 			foreach (AgentServer agent in _agents.Values)
 				agent.StopAllMonitors();
 		}
 
 		public virtual void SessionStarting()
 		{
+			logger.Trace("SessionStarting");
 			foreach (AgentServer agent in _agents.Values)
 				agent.SessionStarting();
 		}
 
 		public virtual void SessionFinished()
 		{
+			logger.Trace("SessionFinished");
 			foreach (AgentServer agent in _agents.Values)
 				agent.SessionFinished();
 		}
 
 		public virtual void IterationStarting(int iterationCount, bool isReproduction)
 		{
+			logger.Trace("IterationStarting");
 			foreach (AgentServer agent in _agents.Values)
 				agent.IterationStarting(iterationCount, isReproduction);
 		}
 
 		public virtual bool IterationFinished()
 		{
+			logger.Trace("IterationFinished");
 			bool ret = false;
 
 			foreach (AgentServer agent in _agents.Values)
@@ -151,11 +160,13 @@ namespace Peach.Core.Agent
 				if (agent.DetectedFault())
 					ret = true;
 
+			logger.Trace("DetectedFault: {0}", ret);
 			return ret;
 		}
 
 		public virtual Dictionary<AgentServer, System.Collections.Hashtable> GetMonitorData()
 		{
+			logger.Trace("GetMonitorData");
 			Dictionary<AgentServer, System.Collections.Hashtable> data = new Dictionary<AgentServer, System.Collections.Hashtable>();
 
 			foreach (AgentServer agent in _agents.Values)
@@ -171,11 +182,13 @@ namespace Peach.Core.Agent
 				if (agent.MustStop())
 					ret = true;
 
+			logger.Trace("MustStop: {0}", ret.ToString());
 			return ret;
 		}
 
 		public virtual Variant Message(string name, Variant data)
 		{
+			logger.Trace("Message: {0}", name);
 			Variant ret = null;
 			Variant tmp = null;
 

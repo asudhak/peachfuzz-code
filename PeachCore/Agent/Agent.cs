@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using CookComputing.XmlRpc;
+using NLog;
 
 namespace Peach.Core.Agent
 {
