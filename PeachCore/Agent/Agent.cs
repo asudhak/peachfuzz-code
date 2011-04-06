@@ -31,7 +31,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
-using CookComputing.XmlRpc;
 using NLog;
 
 namespace Peach.Core.Agent
@@ -254,94 +253,4 @@ namespace Peach.Core.Agent
 		}
 	}
 
-	[Agent("http")]
-	[Agent("https")]
-	public class AgentServerXmlRpc : AgentServer
-    {
-        IAgentClientXmlRpc proxy = null;
-
-        public AgentServerXmlRpc()
-        {
-        }
-
-        public override bool SupportedProtocol(string protocol)
-        {
-            protocol = protocol.ToLower();
-            if (protocol == "http" || protocol == "https")
-                return true;
-
-            return false;
-        }
-
-        public override void AgentConnect(string name, string url, string password)
-        {
-            if (proxy != null)
-                AgentDisconnect();
-
-            proxy = (IAgentClientXmlRpc) XmlRpcProxyGen.Create(typeof(IAgentClientXmlRpc));
-            proxy.Url = url;
-            proxy.AgentConnect(password);
-        }
-
-        public override void AgentDisconnect()
-        {
-            proxy.AgentDisconnect();
-            proxy = null;
-        }
-
-        public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
-        {
-            proxy.StartMonitor(name, cls, args);
-        }
-
-        public override void StopMonitor(string name)
-        {
-            proxy.StopMonitor(name);
-        }
-
-        public override void StopAllMonitors()
-        {
-            proxy.StopAllMonitors();
-        }
-
-        public override void SessionStarting()
-        {
-            proxy.SessionStarting();
-        }
-
-        public override void SessionFinished()
-        {
-            proxy.SessionFinished();
-        }
-
-        public override void IterationStarting(int iterationCount, bool isReproduction)
-        {
-            proxy.IterationStarting(iterationCount, isReproduction);
-        }
-
-        public override bool IterationFinished()
-        {
-            return proxy.IterationFinished();
-        }
-
-        public override bool DetectedFault()
-        {
-            return proxy.DetectedFault();
-        }
-
-        public override Hashtable GetMonitorData()
-        {
-            return proxy.GetMonitorData();
-        }
-
-        public override bool MustStop()
-        {
-            return proxy.MustStop();
-        }
-
-		public override Variant Message(string name, Variant data)
-		{
-			return proxy.Message(name, data);
-		}
-    }
-}
+	}

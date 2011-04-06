@@ -31,7 +31,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using CookComputing.XmlRpc;
 using Peach.Core.Dom;
 
 namespace Peach.Core.Agent
@@ -214,88 +213,4 @@ namespace Peach.Core.Agent
 		Variant Message(string name, Variant data);
     }
 
-    /// <summary>
-    /// Implement agent service running over XML-RPC.
-    /// </summary>
-    public class AgentService : XmlRpcService, IAgent
-    {
-        public IAgent agent = null;
-
-        [XmlRpcMethod("AgentConnect")]
-        public void AgentConnect(string password)
-        {
-            agent.AgentConnect(password);
-        }
-
-        [XmlRpcMethod("AgentDisconnect")]
-        public void AgentDisconnect()
-        {
-            agent.AgentDisconnect();
-        }
-
-        [XmlRpcMethod("StartMonitor")]
-        public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
-        {
-            agent.StartMonitor(name, cls, args);
-        }
-
-        [XmlRpcMethod("StopMonitor")]
-        public void StopMonitor(string name)
-        {
-            agent.StopMonitor(name);
-        }
-
-        [XmlRpcMethod("StopAllMonitors")]
-        public void StopAllMonitors()
-        {
-            agent.StopAllMonitors();
-        }
-
-        [XmlRpcMethod("SessionStarting")]
-        public void SessionStarting()
-        {
-            agent.SessionStarting();
-        }
-
-        [XmlRpcMethod("SessionFinished")]
-        public void SessionFinished()
-        {
-            agent.SessionFinished();
-        }
-
-        [XmlRpcMethod("IterationStarting")]
-        public void IterationStarting(int iterationCount, bool isReproduction)
-        {
-            agent.IterationStarting(iterationCount, isReproduction);
-        }
-        [XmlRpcMethod("IterationFinished")]
-        public bool IterationFinished()
-        {
-            return agent.IterationFinished();
-        }
-
-        [XmlRpcMethod("DetectedFault")]
-        public bool DetectedFault()
-        {
-            return agent.DetectedFault();
-        }
-
-        [XmlRpcMethod("GetMonitorData")]
-        public Hashtable GetMonitorData()
-        {
-            return agent.GetMonitorData();
-        }
-
-        [XmlRpcMethod("MustStop")]
-        public bool MustStop()
-        {
-            return agent.MustStop();
-        }
-
-		[XmlRpcMethod("Message")]
-		public Variant Message(string name, Variant data)
-		{
-			return agent.Message(name, data);
-		}
-    }
 }

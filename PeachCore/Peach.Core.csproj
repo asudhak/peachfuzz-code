@@ -160,6 +160,7 @@
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -167,6 +168,8 @@
     <Compile Include="Agent\Agent.cs" />
     <Compile Include="Agent\AgentClient.cs" />
     <Compile Include="Agent\AgentManager.cs" />
+    <Compile Include="Agent\AgentTcpRemoting.cs" />
+    <Compile Include="Agent\AgentXmlRpc.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CrashReporter.cs" />
     <Compile Include="Agent\Monitors\CrashWrangler.cs" />
