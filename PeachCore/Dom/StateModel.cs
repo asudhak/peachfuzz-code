@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Peach.Core;
 
 namespace Peach.Core.Dom
@@ -400,6 +401,23 @@ namespace Peach.Core.Dom
 			if (this.publisher == "Peach.Agent")
 			{
 				context.agentManager.Message("Action.Call", new Variant(this.method));
+
+				Variant ret = new Variant(0);
+				DateTime start = DateTime.Now;
+
+				while (true)
+				{
+					ret = context.agentManager.Message("Action.Call.IsRunning", new Variant(this.method));
+					if (((int)ret) == 0)
+						break;
+
+					// TODO - Expose 10 as the timeout
+					if (DateTime.Now.Subtract(start).Seconds > 10)
+						break;
+
+					Thread.Sleep(200);
+				}
+
 				return;
 			}
 

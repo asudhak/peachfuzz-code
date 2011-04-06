@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachXmlGenerator", "PeachX
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Test", "Peach.Core.Test\Peach.Core.Test.csproj", "{D8A98103-E91F-4C24-AEA8-BF8C771A09D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachBuilder", "PeachBuilder\PeachBuilder.csproj", "{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Peach.net3.vsmdi
@@ -168,6 +170,20 @@ Global
 		{D8A98103-E91F-4C24-AEA8-BF8C771A09D3}.Release|Win32.ActiveCfg = Release|Any CPU
 		{D8A98103-E91F-4C24-AEA8-BF8C771A09D3}.Release|x64.ActiveCfg = Release|Any CPU
 		{D8A98103-E91F-4C24-AEA8-BF8C771A09D3}.Release|x86.ActiveCfg = Release|Any CPU
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|Win32.ActiveCfg = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|x64.ActiveCfg = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|x86.ActiveCfg = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Debug|x86.Build.0 = Debug|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|Any CPU.ActiveCfg = Release|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|Mixed Platforms.Build.0 = Release|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|Win32.ActiveCfg = Release|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|x64.ActiveCfg = Release|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|x86.ActiveCfg = Release|x86
+		{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -49,9 +49,12 @@ namespace Peach.Core.Debuggers.DebugEngine
 		public IDebugClient5 dbgClient = null;
 		public IDebugControl4 dbgControl = null;
 		public IDebugSymbols3 dbgSymbols = null;
+		public IDebugSystemObjects dbgSystemObjects = null;
 
 		public bool skipFirstChanceGuardPageException = false;
 		public bool skipSecondChangeGuardPageException = false;
+
+		public int processId = -1;
 
 		// IPC For EventCallbacks
 		public EventWaitHandle loadModules = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -80,6 +83,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 			dbgClient = (IDebugClient5)obj;
 			dbgControl = (IDebugControl4)obj;
 			dbgSymbols = (IDebugSymbols3)obj;
+			dbgSystemObjects = (IDebugSystemObjects)obj;
+
 
 			// Reset events
 			loadModules.Reset();
@@ -112,6 +117,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 			}
 			catch
 			{
+				Debugger.Break();
 			}
 
 			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
@@ -184,7 +190,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 		public void GetInterestMask(out uint Mask)
 		{
 			Mask = (uint)( Const.DEBUG_EVENT_EXCEPTION |
-				Const.DEBUG_EVENT_EXIT_PROCESS | Const.DEBUG_EVENT_LOAD_MODULE);
+				Const.DEBUG_EVENT_EXIT_PROCESS | Const.DEBUG_EVENT_LOAD_MODULE | Const.DEBUG_EVENT_CREATE_PROCESS);
 		}
 
 		public void Breakpoint(IDebugBreakpoint Bp)
@@ -298,11 +304,15 @@ namespace Peach.Core.Debuggers.DebugEngine
 		{
 		}
 
+		[DllImport("kernel32.dll", SetLastError = true)]
+		static extern int GetProcessId(ulong hWnd);
+
 		public void CreateProcess(ulong ImageFileHandle, ulong Handle, ulong BaseOffset, 
 			uint ModuleSize, string ModuleName = null, string ImageName = null, 
 			uint CheckSum = 0, uint TimeDateStamp = 0, ulong InitialThreadHandle = 0, 
 			ulong ThreadDataOffset = 0, ulong StartOffset = 0)
 		{
+			_engine.processId = GetProcessId(Handle);
 		}
 
 		public void ExitProcess(uint ExitCode)

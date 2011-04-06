@@ -19,8 +19,11 @@ namespace Peach.Core.Debuggers.DebugEngine.Tlb
         void ConnectProcessServer([In] ref sbyte RemoteOptions, out ulong Server);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void DisconnectProcessServer([In] ulong Server);
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void GetRunningProcessSystemIds([In] ulong Server, [Optional] out uint Ids, [In, Optional] uint Count, [Optional] out uint ActualCount);
+        
+		[MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
+        void GetRunningProcessSystemIds([In] ulong Server, 
+			[Optional][MarshalAs(UnmanagedType.LPArray)] uint[] Ids, [In, Optional] uint Count, [Optional] out uint ActualCount);
+
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetRunningProcessSystemIdByExecutableName([In] ulong Server, [In] ref sbyte ExeName, [In] uint Flags, out uint Id);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]

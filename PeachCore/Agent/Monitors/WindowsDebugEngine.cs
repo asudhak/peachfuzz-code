@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -93,12 +94,51 @@ namespace Peach.Core.Agent.Monitors
 			_debugger.ignoreFirstChanceGuardPage = _ignoreFirstChanceGuardPage;
 			_debugger.ignoreSecondChanceGuardPage = _ignoreSecondChanceGuardPage;
 			_debugger.noCpuKill = _noCpuKill;
+
         }
+
+		PerformanceCounter _performanceCounter = null;
+		public float GetProcessCpuUsage(System.Diagnostics.Process proc)
+		{
+			if(_performanceCounter == null)
+			{
+				_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
+				_performanceCounter.NextValue();
+				//System.Threading.Thread.Sleep(100);
+			}
+
+			return _performanceCounter.NextValue();
+		}
 
 		public override Variant Message(string name, Variant data)
 		{
 			if(name == "Action.Call" && ((string)data) == _startOnCall)
+			{
 				_StartDebugger();
+				return null;
+			}
+
+			if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && !_noCpuKill)
+			{
+				Console.WriteLine("Action.Call.IsRunning");
+
+				if (!_IsDebuggerRunning())
+					return new Variant(0);
+
+				int pid = _debugger.ProcessId;
+				var proc = System.Diagnostics.Process.GetProcessById(pid);
+				if (proc.HasExited)
+					return new Variant(0);
+
+				float cpu = GetProcessCpuUsage(proc);
+				if (cpu < 1.0)
+				{
+					_StopDebugger();
+					return new Variant(0);
+				}
+
+				return new Variant(1);
+			}
 
 			return null;
 		}
@@ -124,7 +164,7 @@ namespace Peach.Core.Agent.Monitors
 
         public override void IterationStarting(int iterationCount, bool isReproduction)
         {
-			if (!_IsDebuggerRunning())
+			if (!_IsDebuggerRunning() && _startOnCall == null)
 				_StartDebugger();
         }
 
@@ -161,14 +201,30 @@ namespace Peach.Core.Agent.Monitors
 
         protected void _StartDebugger()
         {
-			if(!_debugger.IsRunning)
+			if (!_debugger.IsRunning)
+			{
+				if (_performanceCounter != null)
+				{
+					_performanceCounter.Close();
+					_performanceCounter = null;
+				}
+
 				_debugger.StartDebugger();
+			}
         }
 
         protected void _StopDebugger()
         {
 			if (_debugger.IsRunning)
+			{
 				_debugger.StopDebugger();
+
+				if (_performanceCounter != null)
+				{
+					_performanceCounter.Close();
+					_performanceCounter = null;
+				}
+			}
         }
     }
 
@@ -193,6 +249,11 @@ namespace Peach.Core.Agent.Monitors
 		public DebuggerInstance()
 		{
 			Instance = this;
+		}
+
+		public int ProcessId
+		{
+			get { return _dbg.processId; }
 		}
 
         public bool IsRunning
