@@ -950,6 +950,7 @@
     <Compile Include="Transformers\Encode\WideChar.cs" />
     <Compile Include="Transformers\Gzip.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="Variant.cs" />
     <Compile Include="Watcher.cs" />
   </ItemGroup>
   <ItemGroup>
