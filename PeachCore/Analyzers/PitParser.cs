@@ -418,7 +418,7 @@ namespace Peach.Core.Analyzers
 			Dom.Agent agent = new Dom.Agent();
 
 			agent.name = getXmlAttribute(node, "name");
-			agent.url = getXmlAttribute(node, "url");
+			agent.url = getXmlAttribute(node, "location");
 			agent.password = getXmlAttribute(node, "password");
 
 			if (agent.url == null)

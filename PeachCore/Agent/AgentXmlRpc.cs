@@ -31,8 +31,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+//using System.ServiceProcess;
+using System.IO;
+using System.Reflection;
 using Peach.Core;
 using Peach.Core.Dom;
+using Peach.Core.Agent.XmlRpc;
 using CookComputing.XmlRpc;
 using NLog;
 
@@ -40,11 +47,11 @@ namespace Peach.Core.Agent
 {
 	[Agent("http")]
 	[Agent("https")]
-	public class AgentServerXmlRpc : AgentServer
+	public class AgentClientXmlRpc : AgentClient
 	{
 		IAgentClientXmlRpc proxy = null;
 
-		public AgentServerXmlRpc()
+		public AgentClientXmlRpc()
 		{
 		}
 
@@ -132,7 +139,7 @@ namespace Peach.Core.Agent
 	/// <summary>
 	/// Implement agent service running over XML-RPC.
 	/// </summary>
-	public class AgentService : XmlRpcService, IAgent
+	public class AgentServiceXmlRpc : XmlRpcService, IAgent
 	{
 		public IAgent agent = null;
 
@@ -214,4 +221,66 @@ namespace Peach.Core.Agent
 		}
 	}
 
+	[XmlRpcUrl("http://localhost/PeachAgent")]
+	public interface IAgentClientXmlRpc : IXmlRpcProxy
+	{
+		[XmlRpcMethod("AgentConnect")]
+		void AgentConnect(string password);
+		[XmlRpcMethod("AgentDisconnect")]
+		void AgentDisconnect();
+
+		[XmlRpcMethod("StartMonitor")]
+		void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
+		[XmlRpcMethod("StopMonitor")]
+		void StopMonitor(string name);
+		[XmlRpcMethod("StopAllMonitors")]
+		void StopAllMonitors();
+
+		[XmlRpcMethod("SessionStarting")]
+		void SessionStarting();
+		[XmlRpcMethod("SessionFinished")]
+		void SessionFinished();
+		[XmlRpcMethod("IterationStarting")]
+		void IterationStarting(int iterationCount, bool isReproduction);
+		[XmlRpcMethod("IterationFinished")]
+		bool IterationFinished();
+		[XmlRpcMethod("DetectedFault")]
+		bool DetectedFault();
+		[XmlRpcMethod("GetMonitorData")]
+		Hashtable GetMonitorData();
+		[XmlRpcMethod("MustStop")]
+		bool MustStop();
+		[XmlRpcMethod("Message")]
+		Variant Message(string name, Variant data);
+	}
+
+	[AgentServer("http")]
+	[AgentServer("https")]
+	public class AgentServerXmlRpc : IAgentServer
+	{
+		HttpListenerController _controller = null;
+
+		public string[] prefixes = new string[] {
+					"http://*:9001/"
+					};
+
+		#region IAgentServer Members
+
+		public void Run(Dictionary<string, string> args)
+		{
+			string curDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			string vdir = "/";
+			string pdir = curDir;
+
+			Environment.CurrentDirectory = curDir;
+
+			_controller = new HttpListenerController(prefixes, vdir, pdir);
+			_controller.Start();
+
+			Console.WriteLine(" -- Press ENTER to quit agent -- ");
+			Console.ReadLine();
+		}
+
+		#endregion
+	}
 }

@@ -43,7 +43,7 @@ namespace Peach.Core.Agent
 	{
 		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentManager");
 		static int UniqueNames = 0;
-		OrderedDictionary<string, AgentServer> _agents = new OrderedDictionary<string, AgentServer>();
+		OrderedDictionary<string, AgentClient> _agents = new OrderedDictionary<string, AgentClient>();
 		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();
 
 		public AgentManager()
@@ -58,7 +58,7 @@ namespace Peach.Core.Agent
 				throw new PeachException("Error, unable to locate agent that supports the '" + uri.Scheme + "' protocol.");
 
 			ConstructorInfo co = tAgent.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
-			AgentServer agent = (AgentServer)co.Invoke(new object[] { agentDef.name, agentDef.url, agentDef.password });
+			AgentClient agent = (AgentClient)co.Invoke(new object[] { agentDef.name, agentDef.url, agentDef.password });
 
 			_agents[agentDef.name] = agent;
 			_agentDefinitions[agentDef.name] = agentDef;
@@ -69,7 +69,7 @@ namespace Peach.Core.Agent
 			logger.Trace("AgentConnect: {0}", name);
 
 			Dom.Agent def = _agentDefinitions[name];
-			AgentServer agent = _agents[name];
+			AgentClient agent = _agents[name];
 
 			agent.AgentConnect(def.name, def.url, def.password);
 
@@ -115,28 +115,28 @@ namespace Peach.Core.Agent
 		public virtual void StopAllMonitors()
 		{
 			logger.Trace("StopAllMonitors");
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				agent.StopAllMonitors();
 		}
 
 		public virtual void SessionStarting()
 		{
 			logger.Trace("SessionStarting");
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				agent.SessionStarting();
 		}
 
 		public virtual void SessionFinished()
 		{
 			logger.Trace("SessionFinished");
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				agent.SessionFinished();
 		}
 
 		public virtual void IterationStarting(int iterationCount, bool isReproduction)
 		{
 			logger.Trace("IterationStarting");
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				agent.IterationStarting(iterationCount, isReproduction);
 		}
 
@@ -145,7 +145,7 @@ namespace Peach.Core.Agent
 			logger.Trace("IterationFinished");
 			bool ret = false;
 
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				if (agent.IterationFinished())
 					ret = true;
 
@@ -156,7 +156,7 @@ namespace Peach.Core.Agent
 		{
 			bool ret = false;
 
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				if (agent.DetectedFault())
 					ret = true;
 
@@ -164,12 +164,12 @@ namespace Peach.Core.Agent
 			return ret;
 		}
 
-		public virtual Dictionary<AgentServer, System.Collections.Hashtable> GetMonitorData()
+		public virtual Dictionary<AgentClient, System.Collections.Hashtable> GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
-			Dictionary<AgentServer, System.Collections.Hashtable> data = new Dictionary<AgentServer, System.Collections.Hashtable>();
+			Dictionary<AgentClient, System.Collections.Hashtable> data = new Dictionary<AgentClient, System.Collections.Hashtable>();
 
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				data[agent] = agent.GetMonitorData();
 
 			return data;
@@ -178,7 +178,7 @@ namespace Peach.Core.Agent
 		public virtual bool MustStop()
 		{
 			bool ret = false;
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 				if (agent.MustStop())
 					ret = true;
 
@@ -192,7 +192,7 @@ namespace Peach.Core.Agent
 			Variant ret = null;
 			Variant tmp = null;
 
-			foreach (AgentServer agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values)
 			{
 				tmp = agent.Message(name, data);
 				if (tmp != null)

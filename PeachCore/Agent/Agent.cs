@@ -38,7 +38,7 @@ namespace Peach.Core.Agent
 	/// <summary>
 	/// Abstract base class for all Agent servers.
 	/// </summary>
-	public abstract class AgentServer
+	public abstract class AgentClient
 	{
 		public object parent;
 
@@ -121,39 +121,6 @@ namespace Peach.Core.Agent
 		public abstract Variant Message(string name, Variant data);
 	}
 
-    [XmlRpcUrl("http://localhost/PeachAgent")]
-    public interface IAgentClientXmlRpc : IXmlRpcProxy 
-    {
-        [XmlRpcMethod("AgentConnect")]
-        void AgentConnect(string password);
-        [XmlRpcMethod("AgentDisconnect")]
-        void AgentDisconnect();
-
-        [XmlRpcMethod("StartMonitor")]
-        void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
-        [XmlRpcMethod("StopMonitor")]
-        void StopMonitor(string name);
-        [XmlRpcMethod("StopAllMonitors")]
-        void StopAllMonitors();
-
-        [XmlRpcMethod("SessionStarting")]
-        void SessionStarting();
-        [XmlRpcMethod("SessionFinished")]
-        void SessionFinished();
-        [XmlRpcMethod("IterationStarting")]
-        void IterationStarting(int iterationCount, bool isReproduction);
-        [XmlRpcMethod("IterationFinished")]
-        bool IterationFinished();
-        [XmlRpcMethod("DetectedFault")]
-        bool DetectedFault();
-        [XmlRpcMethod("GetMonitorData")]
-        Hashtable GetMonitorData();
-        [XmlRpcMethod("MustStop")]
-        bool MustStop();
-		[XmlRpcMethod("Message")]
-		Variant Message(string name, Variant data);
-    }
-
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class AgentAttribute : Attribute
 	{
@@ -164,93 +131,5 @@ namespace Peach.Core.Agent
 		}
 	}
 
-	/// <summary>
-	/// This is an agent that runs in the local
-	/// process, instead of a remote process.  This
-	/// is much faster for things like file fuzzing.
-	/// </summary>
-	[Agent("local")]
-	public class AgentServerLocal : AgentServer
-	{
-		Agent agent = null;
 
-		public AgentServerLocal(string name, string uri, string password)
-		{
-			agent = new Agent(name, uri, password);
-		}
-
-		public override bool SupportedProtocol(string protocol)
-		{
-			if (protocol == "local")
-				return true;
-
-			return false;
-		}
-
-		public override void AgentConnect(string name, string url, string password)
-		{
-			agent.AgentConnect(password);
-		}
-
-		public override void AgentDisconnect()
-		{
-			agent.AgentDisconnect();
-		}
-
-		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
-		{
-			agent.StartMonitor(name, cls, args);
-		}
-
-		public override void StopMonitor(string name)
-		{
-			agent.StopMonitor(name);
-		}
-
-		public override void StopAllMonitors()
-		{
-			agent.StopAllMonitors();
-		}
-
-		public override void SessionStarting()
-		{
-			agent.SessionStarting();
-		}
-
-		public override void SessionFinished()
-		{
-			agent.SessionFinished();
-		}
-
-		public override void IterationStarting(int iterationCount, bool isReproduction)
-		{
-			agent.IterationStarting(iterationCount, isReproduction);
-		}
-
-		public override bool IterationFinished()
-		{
-			return agent.IterationFinished();
-		}
-
-		public override bool DetectedFault()
-		{
-			return agent.DetectedFault();
-		}
-
-		public override Hashtable GetMonitorData()
-		{
-			return agent.GetMonitorData();
-		}
-
-		public override bool MustStop()
-		{
-			return agent.MustStop();
-		}
-
-		public override Variant Message(string name, Variant data)
-		{
-			return agent.Message(name, data);
-		}
-	}
-
-	}
+}

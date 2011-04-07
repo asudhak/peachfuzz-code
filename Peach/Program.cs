@@ -29,9 +29,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
 using Peach.Options;
 using Peach.Core.Dom;
 using Peach.Core;
+using Peach.Core.Agent;
 using Peach.Core.Analyzers;
 
 namespace Peach
@@ -57,7 +59,7 @@ namespace Peach
 				string range = null;
 				string parallel = null;
 				bool test = false;
-				bool agent = false;
+				string agent = null;
 
 				Console.WriteLine("\n[ Peach v3.0 DEV");
 				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
@@ -80,19 +82,59 @@ namespace Peach
 					{ "c|count", v => config.countOnly = true},
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
 					{ "p|parallel=", v => parallel = v},
-					{ "a|agent", v => agent = true},
+					{ "a|agent=", v => agent = v},
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
 				};
 
 				List<string> extra = p.Parse(args);
 
-				if (extra.Count == 0)
+				if (extra.Count == 0 && agent == null)
 					syntax();
 
-				if(agent)
+				if(agent != null)
 				{
-					throw new NotImplementedException("Implement agent starting");
+					Type agentType = null;
+					foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+					{
+						foreach (Type t in a.GetExportedTypes())
+						{
+							if (!t.IsClass)
+								continue;
+
+							foreach (object attrib in t.GetCustomAttributes(true))
+							{
+								if (attrib is AgentServerAttribute)
+								{
+									if ((attrib as AgentServerAttribute).name == agent)
+									{
+										agentType = t;
+										break;
+									}
+								}
+							}
+
+							if (agentType != null)
+								break;
+						}
+
+						if (agentType != null)
+							break;
+					}
+
+					if (agentType == null)
+					{
+						Console.WriteLine("Error, unable to locate agent server for protocol '" + agent + "'.\n");
+						return;
+					}
+
+					ConstructorInfo co = agentType.GetConstructor(new Type[0]);
+					IAgentServer agentServer = (IAgentServer) co.Invoke(new object[0]);
+
+					Console.WriteLine(" * Starting agent server");
+
+					agentServer.Run(new Dictionary<string, string>());
+					return;
 				}
 
 				if (test)

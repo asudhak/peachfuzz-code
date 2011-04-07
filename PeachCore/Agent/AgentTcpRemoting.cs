@@ -34,17 +34,19 @@ using System.Text;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Threading;
 using Peach.Core;
 using Peach.Core.Dom;
+using NLog;
 
 namespace Peach.Core.Agent
 {
 	[Agent("tcp")]
-	public class AgentServerTcpRemoting : AgentServer
+	public class AgentClientTcpRemoting : AgentClient
 	{
 		AgentServiceTcpRemote proxy = null;
 
-		public AgentServerTcpRemoting()
+		public AgentClientTcpRemoting(string name, string uri, string password)
 		{
 		}
 
@@ -62,10 +64,15 @@ namespace Peach.Core.Agent
 			if (proxy != null)
 				AgentDisconnect();
 
+			if (url.EndsWith("/"))
+				url += "PeachAgent";
+			else
+				url += "/PeachAgent";
+
 			TcpChannel chan = new TcpChannel();
 			ChannelServices.RegisterChannel(chan, false); // Disable security for speed
-			AgentServiceTcpRemote remObject = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), url);
-			if (remObject == null)
+			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), url);
+			if (proxy == null)
 				throw new ApplicationException("Error, unable to connect to remote agent " + url);
 		}
 
@@ -137,71 +144,119 @@ namespace Peach.Core.Agent
 	public class AgentServiceTcpRemote : MarshalByRefObject, IAgent
 	{
 		public IAgent agent = null;
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentServiceTcpRemote");
+
+		public AgentServiceTcpRemote()
+		{
+			agent = new Agent("TcpRemote", "", null);
+		}
 
 		public void AgentConnect(string password)
 		{
+			logger.Trace("AgentConnect");
 			agent.AgentConnect(password);
 		}
 
 		public void AgentDisconnect()
 		{
+			logger.Trace("AgentDisconnect");
 			agent.AgentDisconnect();
 		}
 
 		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
+			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 			agent.StartMonitor(name, cls, args);
 		}
 
 		public void StopMonitor(string name)
 		{
+			logger.Trace("AgentConnect: {0}", name);
 			agent.StopMonitor(name);
 		}
 
 		public void StopAllMonitors()
 		{
+			logger.Trace("StopAllMonitors");
 			agent.StopAllMonitors();
 		}
 
 		public void SessionStarting()
 		{
+			logger.Trace("SessionStarting");
 			agent.SessionStarting();
 		}
 
 		public void SessionFinished()
 		{
+			logger.Trace("SessionFinished");
 			agent.SessionFinished();
 		}
 
 		public void IterationStarting(int iterationCount, bool isReproduction)
 		{
+			logger.Trace("IterationStarting: {0}, {1}", iterationCount, isReproduction);
 			agent.IterationStarting(iterationCount, isReproduction);
 		}
 
 		public bool IterationFinished()
 		{
+			logger.Trace("IterationFinished");
 			return agent.IterationFinished();
 		}
 
 		public bool DetectedFault()
 		{
+			logger.Trace("DetectedFault");
 			return agent.DetectedFault();
 		}
 
 		public Hashtable GetMonitorData()
 		{
+			logger.Trace("GetMonitorData");
 			return agent.GetMonitorData();
 		}
 
 		public bool MustStop()
 		{
+			logger.Trace("MustStop");
 			return agent.MustStop();
 		}
 
 		public Variant Message(string name, Variant data)
 		{
+			logger.Trace("Message: {0}", name);
 			return agent.Message(name, data);
 		}
+	}
+
+	[AgentServer("tcp")]
+	public class AgentServerTcpRemoting : IAgentServer
+	{
+		#region IAgentServer Members
+
+		public void Run(Dictionary<string, string> args)
+		{
+			int port = 9001;
+
+			if (args.Keys.Contains("port"))
+				port = int.Parse(args["port"]);
+
+			//select channel to communicate
+			TcpChannel chan = new TcpChannel(port);
+			ChannelServices.RegisterChannel(chan, false);    //register channel
+
+			//register remote object
+			RemotingConfiguration.RegisterWellKnownServiceType(
+				typeof(AgentServiceTcpRemote),
+				"PeachAgent", WellKnownObjectMode.Singleton);
+
+			//inform console
+			Console.WriteLine(" -- Press ENTER to quit agent -- ");
+			Console.ReadLine();
+		}
+
+		#endregion
 	}
 }
 
