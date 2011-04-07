@@ -600,6 +600,27 @@ namespace Peach.Core
 			WriteBits(value, bits);
 		}
 
+		public void WriteBit(byte bit)
+		{
+			if (bit > 1)
+				throw new ApplicationException("WriteBit only takes values of 0 or 1.");
+
+			int bytePos = (int)(pos / 8);
+			ulong bitsLeft = 8 - (pos % 8);
+			if (bitsLeft == 0)
+				bytePos = (int)(pos / 8) + 1;
+			if(bytePos >= buff.Count)
+				buff.Add(0);
+
+			byte b = buff[(int)(pos / 8)];
+			ulong newPos = pos++;
+			ulong newBitesLeft = 8 - (newPos % 8);
+			int newBitPos = 8 - (int)newBitesLeft;
+
+			b |= (byte)(bit << newBitPos);
+			buff[bytePos] = b;
+		}
+
 		/// <summary>
 		/// Write bits using bitfield encoding.
 		/// </summary>
@@ -610,71 +631,13 @@ namespace Peach.Core
 			if(bits == 0 || bits > 64)
 				throw new ApplicationException("bits is invalid value, but be > 0 and < 64");
 
-			ulong newpos = pos + bits;
-
-			ulong startBPos = pos % 8;
-			ulong startBlock = pos / 8;
-
-			ulong endBPos = newpos % 8;
-			ulong endBlock = newpos / 8 + (endBPos == 0? 0UL:1UL);
-
-			// Grow buffer if needed
-			while (buff.Count < (int)endBlock)
+			byte val;
+			for (int cnt = 0; cnt < (int)bits; cnt++ )
 			{
-				len += 8;
-				buff.Add(0);
+				val = (byte)(value & 1);
+				WriteBit(val);
+				value = value >> 1;
 			}
-
-			ulong curpos = startBPos;
-			ulong bitlen = bits;
-			ulong bitsLeft = 0;
-			byte mask;
-			ulong shift;
-			byte b;
-			ulong n = value;
-
-			if (_readLeftToRight)
-			{
-				while (bitlen > 0)
-				{
-					bitsLeft = 8 - (curpos % 8);
-
-					if (bitsLeft > bitlen)
-						bitsLeft = bitlen;
-
-					mask = (byte)((1 << (int)bitsLeft) - 1);
-
-					buff[(int)(startBlock + (curpos / 8))] ^= (byte)(buff[(int)(startBlock + (curpos / 8))] & (mask << (int) (curpos % 8)));
-					buff[(int)(startBlock + (curpos / 8))] |= (byte)((n & mask) << (int) (curpos % 8));
-
-					n >>= (int)bitsLeft;
-					bitlen -= bitsLeft;
-					curpos += bitsLeft;
-				}
-			}
-			else
-			{
-				while (bitlen > 0)
-				{
-					bitsLeft = 8 - (curpos % 8);
-
-					if (bitsLeft > bitlen)
-						bitsLeft = bitlen;
-
-					mask = (byte)((1 << (int)bitsLeft) - 1);
-					shift = (8 - this.BitLength(mask, 8)) - (curpos - (curpos / 8 * 8));
-					b = (byte)(n >> (int)(bitlen - this.BitLength(mask, 8)));
-
-					buff[(int)(startBlock + (curpos / 8))] |= (byte)(((b & mask) << (int)shift));
-
-					bitlen -= bitsLeft;
-					curpos += bitsLeft;
-				}
-			}
-
-			pos = newpos;
-			if (pos > len)
-				len = pos;
 		}
 
 		/// <summary>
@@ -792,71 +755,91 @@ namespace Peach.Core
 
 		#endregion
 
+		/// <summary>
+		/// Read a single bit from our bitstream
+		/// </summary>
+		/// <returns>Return a byte containing 0/1</returns>
+		public byte ReadBit()
+		{
+			uint curpos = (uint)pos;
+			uint bitsLeft = 8 - (curpos % 8);
+			byte mask = 0x1;
+			uint startBlock = curpos / 8;
+
+			// Get current byte
+			byte b = buff[(int)startBlock];
+
+			// Move our bit into first position
+			if (_isLittleEndian)
+				b = (byte)(b >> (byte)(8 - bitsLeft));
+			else
+				b = (byte)(b >> (byte)(bitsLeft-1));
+
+			// Read single bit
+			byte ret = (byte) (b & mask);
+
+			// Increment our position
+			pos++;
+			return ret;
+		}
+
+		protected byte ReadBit(byte b, uint pos)
+		{
+			uint curpos = pos;
+			uint bitsLeft = 8 - curpos;
+			byte mask = 0x1;
+
+			if (!_isLittleEndian)
+				// Move to next bit
+				b = (byte)(b >> (byte)(8 - bitsLeft));
+			else
+				b = (byte)(b >> (byte)(bitsLeft - 1));
+
+			// Read single bit
+			byte ret = (byte)(b & mask);
+
+			// Increment our position
+			return ret;
+		}
+
 		public ulong ReadBits(ulong bits)
 		{
-			ulong newpos = pos + bits;
-			ulong orig_bitlen = bits;
-			ulong bitlen = bits;
-			ulong startBPos = pos % 8;
-			ulong startBlock = pos / 8;
-			ulong endBPos = newpos % 8;
-			ulong endBlock = newpos / 8 + (endBPos != 0 ? 1UL : 0UL);
 			ulong ret = 0;
-			ulong curpos = startBPos;
-			ulong bitsLeft = 0;
-			ulong bitsToLeft = 0;
-			byte mask = 0;
-			byte b = 0;
-			ulong shift = 0;
+			int numBytes = (int)bits / 8;
 
-			if (_readLeftToRight)
+			for (ulong cnt = 0; cnt < bits; cnt++)
 			{
-				while (bitlen > 0)
+				if (!_isLittleEndian)
 				{
-					bitsLeft = 8 - (curpos % 8);
-
-					if (bitsLeft > bitlen)
-						bitsLeft = bitlen;
-
-					bitsToLeft = curpos - (curpos / 8 * 8);
-					mask = (byte)((1 << (int)bitsLeft) - 1);
-
-					b = buff[(int)(startBlock + (curpos / 8))];
-					b = (byte)((uint)b >> (int)((8 - bitsLeft) - bitsToLeft));
-
-					ret |= ((ulong)(b & mask) << (int)shift);
-
-					shift += bitsLeft;
-					bitlen -= bitsLeft;
-					curpos += bitsLeft;
+					ret = ret << 1;
+					byte bit = ReadBit();
+					ret |= bit;
 				}
-			}
-			else
-			{
-				while (bitlen > 0)
+				else
 				{
-					bitsLeft = 8 - (curpos % 8);
-					bitsToLeft = curpos - (curpos / 8UL * 8UL);
-
-					if (bitsLeft > bitlen)
-						bitsLeft = bitlen;
-
-					mask = (byte)((1 << (int)bitsLeft) - 1);
-
-					b = buff[(int)(startBlock + (curpos / 8))];
-					b = (byte)((uint)b >> (int)((8UL - bitsLeft) - bitsToLeft));
-
-					shift = (ulong)BitLength(mask, 8);
-					ret = ret << (int)shift;
-					ret |= (ulong)(b & mask);
-
-					shift += bitsLeft;
-					bitlen -= bitsLeft;
-					curpos += bitsLeft;
+					byte bit = ReadBit();
+					byte newbit = (byte)(bit << (int)cnt);
+					ret |= newbit;
 				}
 			}
 
-			pos = newpos;
+			if (_isLittleEndian)
+			{
+				// Reverse bytes
+				ulong b = 0;
+				ulong ret2 = 0;
+				ulong mask = 0xff;
+
+				for (int byteCnt = 0; byteCnt < numBytes; byteCnt++)
+				{
+					b = (ret >> byteCnt) & mask;
+					ret2 |= b << (numBytes - byteCnt);
+				}
+
+				ret = ret2;
+			}
+
+			pos += bits;
 			return ret;
 		}
 
