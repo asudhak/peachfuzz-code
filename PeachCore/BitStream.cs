@@ -698,59 +698,59 @@ namespace Peach.Core
 		}
 		public short ReadShort()
 		{
-			return (short)ReadBits(16);
+			return (short)ByteArrayToLong(ReadBytes(2));
 		}
 		public short ReadInt16()
 		{
-			return (short)ReadBits(16);
+			return (short)ByteArrayToLong(ReadBytes(2));
 		}
 		public ushort ReadUShort()
 		{
-			return (ushort)ReadBits(16);
+			return (ushort)ByteArrayToLong(ReadBytes(2));
 		}
 		public ushort ReadUInt16()
 		{
-			return (ushort)ReadBits(16);
+			return (ushort)ByteArrayToLong(ReadBytes(2));
 		}
 		public ushort ReadWORD()
 		{
-			return (ushort)ReadBits(16);
+			return (ushort)ByteArrayToLong(ReadBytes(2));
 		}
 		public int ReadInt()
 		{
-			return (int)ReadBits(32);
+			return (int)ByteArrayToLong(ReadBytes(4));
 		}
 		public int ReadInt32()
 		{
-			return (int)ReadBits(32);
+			return (int)ByteArrayToLong(ReadBytes(4));
 		}
 		public uint ReadUInt()
 		{
-			return (uint)ReadBits(32);
+			return (uint)ByteArrayToLong(ReadBytes(4));
 		}
 		public uint ReadUInt32()
 		{
-			return (uint)ReadBits(32);
+			return (uint)ByteArrayToLong(ReadBytes(4));
 		}
 		public uint ReadDWORD()
 		{
-			return (uint)ReadBits(32);
+			return (uint)ByteArrayToLong(ReadBytes(4));
 		}
 		public long ReadLong()
 		{
-			return (long)ReadBits(64);
+			return (long)ByteArrayToLong(ReadBytes(8));
 		}
 		public long ReadInt64()
 		{
-			return (long)ReadBits(64);
+			return (long)ByteArrayToLong(ReadBytes(8));
 		}
 		public ulong ReadULong()
 		{
-			return (ulong)ReadBits(64);
+			return (ulong)ByteArrayToLong(ReadBytes(8));
 		}
 		public ulong ReadUInt64()
 		{
-			return (ulong)ReadBits(64);
+			return (ulong)ByteArrayToLong(ReadBytes(8));
 		}
 
 		#endregion
@@ -805,7 +805,6 @@ namespace Peach.Core
 		public ulong ReadBits(ulong bits)
 		{
 			ulong ret = 0;
-			int numBytes = (int)bits / 8;
 
 			for (ulong cnt = 0; cnt < bits; cnt++)
 			{
@@ -823,23 +822,6 @@ namespace Peach.Core
 				}
 			}
 
-			if (_isLittleEndian)
-			{
-				// Reverse bytes
-				ulong b = 0;
-				ulong ret2 = 0;
-				ulong mask = 0xff;
-
-				for (int byteCnt = 0; byteCnt < numBytes; byteCnt++)
-				{
-					b = (ret >> byteCnt) & mask;
-					ret2 |= b << (numBytes - byteCnt);
-				}
-
-				ret = ret2;
-			}
-
-			pos += bits;
 			return ret;
 		}
 
@@ -847,13 +829,44 @@ namespace Peach.Core
 		{
 			if (count == 0)
 				throw new ApplicationException("Asking for zero bytes");
-			if ((pos + count) > (ulong)buff.Count)
+			if (((pos/8) + count) > (ulong)buff.Count)
 				throw new ApplicationException("Count overruns buffer");
 
 			byte[] ret = new byte[count];
 
 			for (ulong i = 0; i<count; i++)
 				ret[i] = ReadByte();
+
+			return ret;
+		}
+
+		public byte[] FixEndian(byte[] b)
+		{
+			byte tmp;
+			if (_isLittleEndian)
+			{
+				// Reverse array
+				for (int cnt = 0; cnt < (b.Length/2); cnt++)
+				{
+					tmp = b[cnt];
+					b[cnt] = b[(b.Length-1) - cnt];
+					b[(b.Length-1) - cnt] = tmp;
+				}
+			}
+
+			return b;
+		}
+
+		public ulong ByteArrayToLong(byte[] b)
+		{
+			FixEndian(b);
+
+			ulong ret = 0;
+			for (int cnt = 0; cnt < b.Length; cnt++)
+			{
+				ret = ret << 8;
+				ret |= b[cnt];
+			}
 
 			return ret;
 		}
