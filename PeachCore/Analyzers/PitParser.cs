@@ -35,7 +35,6 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using Peach.Core.Dom;
-using Peach.Core.Dom;
 
 namespace Peach.Core.Analyzers
 {
@@ -1050,10 +1049,20 @@ namespace Peach.Core.Analyzers
 
 								ConstructorInfo co = tFixup.GetConstructor(targs);
 
+								if (co == null)
+									throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
+
 								object[] args = new object[1];
 								args[0] = arg;
 
-								parent.fixup = co.Invoke(args) as Fixup;
+								try
+								{
+									parent.fixup = co.Invoke(args) as Fixup;
+								}
+								catch (Exception e)
+								{
+									throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
+								}
 
 								return parent.fixup;
 							}

@@ -37,14 +37,14 @@ namespace Peach.Core.Fixups
 	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
 	public class Crc32Fixup : Fixup
 	{
-		public Crc32Fixup(Dictionary<string, object> args)
+		public Crc32Fixup(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}
 
 		public override Variant fixup(DataElement obj)
 		{
-			string objRef = args["ref"] as string;
+			string objRef = (string)args["ref"];
 			DataElement from = obj.find(objRef);
 			byte[] data = from.Value.Value;
 
@@ -59,15 +59,15 @@ namespace Peach.Core.Fixups
 	[ParameterAttribute("ref2", typeof(DataElement), "Reference to data element", true)]
 	public class Crc32DualFixup : Fixup
 	{
-		public Crc32DualFixup(Dictionary<string, object> args)
+		public Crc32DualFixup(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}
 
 		public override Variant fixup(DataElement obj)
 		{
-			string objRef1 = args["ref1"] as string;
-			string objRef2 = args["ref2"] as string;
+			string objRef1 = (string) args["ref1"];
+			string objRef2 = (string) args["ref2"];
 			byte[] data1 = obj.find(objRef1).Value.Value;
 			byte[] data2 = obj.find(objRef2).Value.Value;
 

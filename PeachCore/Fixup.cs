@@ -36,9 +36,9 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class Fixup
 	{
-		protected Dictionary<string, object> args;
+		protected Dictionary<string, Variant> args;
 
-		public Fixup(Dictionary<string, object> args)
+		public Fixup(Dictionary<string, Variant> args)
 		{
 			this.args = args;
 		}

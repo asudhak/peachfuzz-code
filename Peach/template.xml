@@ -7,47 +7,59 @@
 
 	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
+		<Number size="32">
+			<Fixup class="Crc32Fixup">
+				<Param name="ref" value="TheDataModel"/>
+			</Fixup>
+		</Number>
+		<Blob length="20" />
 		<Block>
 			<String value="Hello "/>
 			<String value="World!" />
 		</Block>
-		<Choice>
-			<String value="FOO" />
-			<String value="BAR" />
+		<Choice name="MyChoice">
+			<String name="foo" value="FOO" />
+			<String name="bar" value="BAR" />
 		</Choice>
+		<Flags size="16">
+			<Flag size="1" position="0"/>
+		</Flags>
 	</DataModel>
-
-	<Agent name="LocalAgent" location="tcp://127.0.0.1:9001" >
+	
+	<Agent name="LocalAgent">
 		<Monitor class="debugger.WindowsDebugEngine">
 			<Param name="CommandLine" value="C:\Program Files (x86)\Mozilla Firefox\firefox.exe fuzzed.txt"/>
 			<Param name="StartOnCall" value="ScoobySnacks"/>
 		</Monitor>
 	</Agent>
-
+	
 	<!-- TODO: Create state model -->
 	<StateModel name="TheState" initialState="Initial">
 		<State name="Initial">
-			<!--<Action type="output" publisher="Stdout">
+			<Action type="output" publisher="Stdout">
 				<DataModel ref="TheDataModel"/>
-			</Action>-->
+				<Data>
+					<Field name="MyChoice.foo" value=""/>
+				</Data>
+			</Action>
 			
-			<Action type="output" publisher="FileWriter">
+			<!--<Action type="output" publisher="FileWriter">
 				<DataModel ref="TheDataModel"/>
 			</Action>
 			<Action type="close" publisher="FileWriter"/>
 
-			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />
+			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />-->
 		</State>
 
 	</StateModel>
-
+	
 	<Test name="TheTest">
-		<Agent ref="LocalAgent"/>
+		<!--<Agent ref="LocalAgent"/>-->
 		<StateModel ref="TheState"/>
 		<Publisher class="Console" name="Stdout" />
-		<Publisher class="FileStream" name="FileWriter">
+		<!--<Publisher class="FileStream" name="FileWriter">
 			<Param name="FileName" value="fuzzed.txt"/>
-		</Publisher>
+		</Publisher>-->
 	</Test>
 
 	<!-- Configure a single run -->

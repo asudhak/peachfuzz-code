@@ -123,9 +123,8 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=8dacf75b5db7cb23, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdParty\xmlrpc\bin\CookComputing.XmlRpcV2.dll</HintPath>
+    <Reference Include="CookComputing.XmlRpcV2">
+      <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
     <Reference Include="IronPython">
       <HintPath>..\3rdParty\IronPython-2.6.2\IronPython.dll</HintPath>
@@ -937,6 +936,7 @@
     <Compile Include="Publishers\Console.cs" />
     <Compile Include="Publishers\File.cs" />
     <Compile Include="Dom\StateModel.cs" />
+    <Compile Include="Publishers\Tcp.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="Transformer.cs" />
     <Compile Include="Transformers\Encode\Base64.cs" />
