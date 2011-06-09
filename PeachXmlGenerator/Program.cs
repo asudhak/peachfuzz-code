@@ -48,7 +48,9 @@ namespace PeachXmlGenerator
 				int? iterations = null;
 				string xmlns = null;
 
-				Console.WriteLine("\n[ Peach DTD XML Fuzzer v1.0 DEV");
+				Console.WriteLine("");
+				Console.WriteLine("[ Peach v3.0 DEV");
+				Console.WriteLine("[ Peach DTD XML Fuzzer v1.0 DEV");
 				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 
 				var p = new OptionSet()
@@ -135,7 +137,7 @@ Please submit any bugs to Michael Eddington <mike@phed.org>.
 
 Syntax:
 
-  DtdFuzzer.exe -d schema.dtd -r root_element [-s samples folder] [-x namespace] [-c 100]
+  PeachXmlGenerator.exe -d schema.dtd -r root_element [-s samples folder] [-x namespace] [-c 100]
 
   -d/--dtd=     DTD Schema file [required]
   -r/--root=    Root XML element [required]
@@ -145,10 +147,10 @@ Syntax:
 
 Example:
 
-  DtdFuzzer.exe -d svg.dtd -r svg
-  DtdFuzzer.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg
-  DtdFuzzer.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg -s c:\samples\svg
-  DtdFuzzer.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg -s c:\samples\svg -c 100
+  PeachXmlGenerator.exe -d svg.dtd -r svg
+  PeachXmlGenerator.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg
+  PeachXmlGenerator.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg -s c:\samples\svg
+  PeachXmlGenerator.exe -d svg.dtd -r svg -x http://www.w3.org/2000/svg -s c:\samples\svg -c 100
 
 ";
 			Console.WriteLine(syntax);
