@@ -895,6 +895,7 @@
     <Compile Include="Engine.cs" />
     <Compile Include="Fixup.cs" />
     <Compile Include="Fixups\Checksums.cs" />
+    <Compile Include="Fixups\Libraries\CRCTool.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
     <Compile Include="MutationStrategies\Random.cs" />

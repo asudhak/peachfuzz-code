@@ -544,9 +544,9 @@ namespace Peach.Core.Analyzers
 			
 			if (hasXmlAttribute(node, "mutable"))
 				element.isMutable = false;
-			
+
 			if (hasXmlAttribute(node, "constraint"))
-				throw new NotSupportedException("Implement me!");
+				element.constraint = getXmlAttribute(node, "constraint");
 
 			if (hasXmlAttribute(node, "pointer"))
 				throw new NotSupportedException("Implement pointer attribute");
@@ -556,7 +556,7 @@ namespace Peach.Core.Analyzers
 		}
 
 		/// <summary>
-		/// Handle parsing common dataelement children liek relation, fixup and
+		/// Handle parsing common dataelement children liek relation, fixupImpl and
 		/// transformer.
 		/// </summary>
 		/// <param name="node">Node to read values from</param>
@@ -786,7 +786,7 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, invalid value for 'valueType' attribute: " + getXmlAttribute(node, "valueType"));
 				}
 			}
-			else
+			else if(value != null)
 				elem.DefaultValue = new Variant(value);
 
 		}
@@ -850,11 +850,38 @@ namespace Peach.Core.Analyzers
 		{
 			Blob blob = new Blob();
 
-			if (hasXmlAttribute(node, "length"))
-				throw new NotSupportedException("Implement length attribute on Blob");
-
 			if (hasXmlAttribute(node, "lengthType"))
-				throw new NotSupportedException("Implement lengthType attribute on Blob");
+			{
+				switch (getXmlAttribute(node, "lengthType"))
+				{
+					case "calc":
+						blob.lengthType = LengthType.Calc;
+						blob.lengthOther = getXmlAttribute(node, "length");
+						break;
+					case "python":
+						blob.lengthType = LengthType.Python;
+						blob.lengthOther = getXmlAttribute(node, "length");
+						break;
+					case "ruby":
+						blob.lengthType = LengthType.Ruby;
+						blob.lengthOther = getXmlAttribute(node, "length");
+						break;
+					default:
+						throw new PeachException("Error parsing Blob lengthType attribute, unknown value '" + getXmlAttribute(node, "lengthType") + "'.");
+				}
+			}
+			else if (hasXmlAttribute(node, "length"))
+			{
+				try
+				{
+					blob.lengthType = LengthType.String;
+					blob.length = ulong.Parse(getXmlAttribute(node, "length"));
+				}
+				catch (Exception e)
+				{
+					throw new PeachException("Error parsing Blob length attribute: " + e.Message);
+				}
+			}
 
 			handleCommonDataElementAttributes(node, blob);
 			handleCommonDataElementChildren(node, blob);
@@ -863,7 +890,8 @@ namespace Peach.Core.Analyzers
 			if (blob.DefaultValue != null && blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
 			{
 				BitStream sout = new BitStream();
-				sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
+				if( ((string)blob.DefaultValue) != null)
+					sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
 				sout.SeekBytes(0, SeekOrigin.Begin);
 				blob.DefaultValue = new Variant(sout);
 			}
@@ -945,7 +973,16 @@ namespace Peach.Core.Analyzers
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
 
 			if (hasXmlAttribute(node, "size"))
-				flag.name = getXmlAttribute(node, "size");
+			{
+				try
+				{
+					flag.Size = uint.Parse(getXmlAttribute(node, "size"));
+				}
+				catch (Exception e)
+				{
+					throw new PeachException("Error parsing Flag size attribute: " + e.Message);
+				}
+			}
 			else
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
 			
@@ -1294,11 +1331,31 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "DataModel")
 					action.dataModel = handleDataModel(child);
 
-				if(child.Name == "Data")
-					throw new NotImplementedException("Action.Data TODO");
+				if (child.Name == "Data")
+					action.data = handleData(child);
 			}
 
 			return action;
+		}
+
+		protected Data handleData(XmlNode node)
+		{
+			Data data = new Data();
+			data.name = getXmlAttribute(node, "name");
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Field")
+				{
+					// Hack to call common value parsing code.
+					Blob tmp = new Blob();
+					handleCommonDataElementValue(child, tmp);
+
+					data.fields.Add(getXmlAttribute(child,"name"), tmp.DefaultValue);
+				}
+			}
+
+			return data;
 		}
 
 		protected Test handleTest(XmlNode node, Dom.Dom parent)

@@ -205,7 +205,7 @@ namespace Peach.Core.Dom
 
 		protected DataModel _dataModel;
 		protected DataModel _origionalDataModel;
-		protected object _dataSet;
+		protected Data _data;
 
 		protected string _publisher = null;
 		protected string _when = null;
@@ -217,6 +217,12 @@ namespace Peach.Core.Dom
 		protected string _value = null;
 		protected string _setXpath = null;
 		protected string _valueXpath = null;
+
+		public Data data
+		{
+			get { return _data; }
+			set { _data = value; }
+		}
 
 		public DataModel dataModel
 		{

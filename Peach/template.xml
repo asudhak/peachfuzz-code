@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach3.0/peachcore/peach.xsd">
 
 	<!-- Import defaults for Peach instance -->
 	<Include ns="default" src="file:defaults.xml"/>
 
+	<Defaults>
+		<Number endian="little" size="32" />
+	</Defaults>
+
 	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
-		<Number size="32">
-			<Fixup class="Crc32Fixup">
+		<Number size="32" constraint="value &lt; 200" endian="little" signed="true">
+			<Fixup class="checksums.Crc32Fixup">
 				<Param name="ref" value="TheDataModel"/>
 			</Fixup>
 		</Number>
-		<Blob length="20" />
+		<Blob length="20"  />
 		<Block>
 			<String value="Hello "/>
 			<String value="World!" />

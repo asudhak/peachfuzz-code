@@ -30,50 +30,66 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
 	[FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
 	public class Crc32Fixup : Fixup
 	{
 		public Crc32Fixup(Dictionary<string, Variant> args)
 			: base(args)
 		{
+			if (!args.ContainsKey("ref"))
+				throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
 		}
 
-		public override Variant fixup(DataElement obj)
+		protected override Variant fixupImpl(DataElement obj)
 		{
 			string objRef = (string)args["ref"];
 			DataElement from = obj.find(objRef);
 			byte[] data = from.Value.Value;
 
-			// Todo: Calc crc32
+			CRCTool crcTool = new CRCTool();
+			crcTool.Init(CRCTool.CRCCode.CRC32);
 
-			throw new NotImplementedException();
+			return new Variant((uint)crcTool.crctablefast(data));
 		}
 	}
 
 	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref1", typeof(DataElement), "Reference to data element", true)]
 	[ParameterAttribute("ref2", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
 	public class Crc32DualFixup : Fixup
 	{
 		public Crc32DualFixup(Dictionary<string, Variant> args)
 			: base(args)
 		{
+			if (!args.ContainsKey("ref"))
+				throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
 		}
 
-		public override Variant fixup(DataElement obj)
+		protected override Variant fixupImpl(DataElement obj)
 		{
 			string objRef1 = (string) args["ref1"];
 			string objRef2 = (string) args["ref2"];
 			byte[] data1 = obj.find(objRef1).Value.Value;
 			byte[] data2 = obj.find(objRef2).Value.Value;
+			byte[] data3 = new byte[data1.Length + data2.Length];
 
-			// Todo: Calc crc32
+			int cnt = 0;
+			for (int cnt1 = 0; cnt1 < data1.Length; cnt1++, cnt++)
+				data3[cnt] = data1[cnt1];
+			for (int cnt2 = 0; cnt2 < data2.Length; cnt2++, cnt++)
+				data3[cnt] = data2[cnt2];
 
-			throw new NotImplementedException();
+			CRCTool crcTool = new CRCTool();
+			crcTool.Init(CRCTool.CRCCode.CRC32);
+
+			return new Variant((uint)crcTool.crctablefast(data3));
 		}
 	}
 }

@@ -184,6 +184,20 @@ namespace Peach.Core.Dom
 		#endregion
 
 	}
+
+	/// <summary>
+	/// Data specification for a DataModel
+	/// </summary>
+	[Serializable]
+	public class Data
+	{
+		public string name = null;
+		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
+
+		public Data()
+		{
+		}
+	}
 }
 
 

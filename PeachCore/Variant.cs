@@ -179,6 +179,9 @@ namespace Peach.Core
 
 					return (int)v._valueULong;
 				case VariantType.String:
+					if (v._valueString == string.Empty)
+						return 0;
+
 					return Convert.ToInt32(v._valueString);
 				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to int type.");
@@ -206,6 +209,9 @@ namespace Peach.Core
 
 					return (long)v._valueULong;
 				case VariantType.String:
+					if (v._valueString == string.Empty)
+						return 0;
+
 					return Convert.ToInt64(v._valueString);
 				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to int type.");
@@ -233,6 +239,9 @@ namespace Peach.Core
 				case VariantType.ULong:
 					return v._valueULong;
 				case VariantType.String:
+					if (v._valueString == string.Empty)
+						return 0;
+
 					return Convert.ToUInt64(v._valueString);
 				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to int type.");

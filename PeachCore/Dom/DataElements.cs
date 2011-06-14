@@ -573,7 +573,7 @@ namespace Peach.Core.Dom
 	public abstract class DataElement
 	{
 		/// <summary>
-		/// Mutated vale override's fixup
+		/// Mutated vale override's fixupImpl
 		///
 		///  - Default Value
 		///  - Relation
@@ -623,6 +623,8 @@ namespace Peach.Core.Dom
 		protected ulong _length = 0;
 		protected LengthType _lengthType = LengthType.String;
 		protected string _lengthOther = null;
+
+		protected string _constraint = null;
 
 		#region Events
 
@@ -717,6 +719,21 @@ namespace Peach.Core.Dom
 
 				return fullname;
 			}
+		}
+
+		/// <summary>
+		/// Constraint on value of data element.
+		/// </summery>
+		/// <remarks>
+		/// This
+		/// constraint is only enforced when loading data into
+		/// the object.  It will not affect values that are
+		/// produced during fuzzing.
+		/// </remarks>
+		public string constraint
+		{
+			get { return _constraint; }
+			set { _constraint = value; }
 		}
 
 		public DataElementContainer parent
@@ -960,6 +977,8 @@ namespace Peach.Core.Dom
 
 		protected virtual BitStream InternalValueToBitStream(Variant b)
 		{
+			if (b == null)
+				return new BitStream();
 			return (BitStream)b;
 		}
 
@@ -1121,7 +1140,8 @@ namespace Peach.Core.Dom
 
 		public virtual IEnumerable<DataElement> EnumerateElementsByName(string name)
 		{
-			yield return this;
+			if(this.name == name)
+				yield return this;
 		}
 
 		/// <summary>
@@ -1869,6 +1889,10 @@ namespace Peach.Core.Dom
 	{
 		protected uint _length;
 
+		public Blob()
+		{
+			_defaultValue = new Variant(new byte[] { });
+		}
 	}
 
 	[DataElement("Flags")]
@@ -1956,7 +1980,11 @@ namespace Peach.Core.Dom
 		protected override BitStream InternalValueToBitStream(Variant v)
 		{
 			BitStream bits = new BitStream();
-			bits.WriteBits((ulong)v, Size);
+
+			if(v == null)
+				bits.WriteBits((ulong)0, Size);
+			else
+				bits.WriteBits((ulong)v, Size);
 
 			return bits;
 		}

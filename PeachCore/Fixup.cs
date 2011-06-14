@@ -37,13 +37,35 @@ namespace Peach.Core
 	public abstract class Fixup
 	{
 		protected Dictionary<string, Variant> args;
+		protected bool isRecursing = false;
 
 		public Fixup(Dictionary<string, Variant> args)
 		{
 			this.args = args;
 		}
 
-		public abstract Variant fixup(DataElement obj);
+		/// <summary>
+		/// Perform fixup operation
+		/// </summary>
+		/// <param name="obj">Parent data element</param>
+		/// <returns></returns>
+		public Variant fixup(DataElement obj)
+		{
+			if (isRecursing)
+				return obj.DefaultValue;
+
+			try
+			{
+				isRecursing = true;
+				return fixupImpl(obj);
+			}
+			finally
+			{
+				isRecursing = false;
+			}
+		}
+
+		protected abstract Variant fixupImpl(DataElement obj);
 	}
 
 	public class FixupAttribute : Attribute
