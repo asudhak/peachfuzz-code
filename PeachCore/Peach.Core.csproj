@@ -186,7 +186,12 @@
     <Compile Include="Agent\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\XmlRpc\HttpListenerWrapper.cs" />
     <Compile Include="Analyzer.cs" />
+    <Compile Include="Analyzers\Asn1.cs" />
+    <Compile Include="Analyzers\Binary.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
+    <Compile Include="Analyzers\Shark.cs" />
+    <Compile Include="Analyzers\StringToken.cs" />
+    <Compile Include="Analyzers\Xml.cs" />
     <Compile Include="BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\DataCracker.cs" />
