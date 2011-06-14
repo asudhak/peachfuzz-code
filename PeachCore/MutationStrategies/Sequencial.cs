@@ -1,4 +1,32 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Michael Eddington (mike@phed.org)
+
+// $Id$
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
@@ -45,40 +73,6 @@ namespace Peach.Core.MutationStrategies
 							_mutators.Add(t);
 						}
 					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Call supportedDataElement method on Mutator type.
-		/// </summary>
-		/// <param name="mutator"></param>
-		/// <param name="elem"></param>
-		/// <returns>Returns true or false</returns>
-		bool SupportedDataElement(Type mutator, DataElement elem)
-		{
-			MethodInfo supportedDataElement = mutator.GetMethod("supportedDataElement");
-
-			object [] args = new object[1];
-			args[0] = elem;
-
-			return (bool)supportedDataElement.Invoke(null, args);
-		}
-
-		Mutator GetMutatorInstance(Type t)
-		{
-			return (Mutator)t.GetConstructor(new Type[] { }).Invoke(new object[] { });
-		}
-
-		void RecursevlyGetElements(DataElementContainer d, List<DataElement> all)
-		{
-			foreach(DataElement elem in d)
-			{
-				all.Add(elem);
-
-				if(elem is DataElementContainer)
-				{
-					RecursevlyGetElements(elem as DataElementContainer, all);
 				}
 			}
 		}

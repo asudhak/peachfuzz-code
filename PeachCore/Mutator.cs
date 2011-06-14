@@ -39,6 +39,11 @@ namespace Peach.Core
 	public abstract class Mutator
 	{
 		/// <summary>
+		/// Instance of current mutation strategy
+		/// </summary>
+		public MutationStrategy context = null;
+
+		/// <summary>
 		/// Weight this mutator will get chosen in random mutation mode.
 		/// </summary>
 		public int weight = 1;

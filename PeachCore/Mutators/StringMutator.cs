@@ -36,9 +36,7 @@ namespace Peach.Core.Mutators
 	[Mutator("Perform common string mutations")]
 	public partial class StringMutator : Mutator
 	{
-
 		uint pos = 0;
-		uint lastPos = 0;
 
 		public StringMutator()
 		{
@@ -75,7 +73,7 @@ namespace Peach.Core.Mutators
 
 		public override void randomMutation(Dom.DataElement obj)
 		{
-			throw new NotImplementedException();
+			obj.MutatedValue = new Variant(context.random.Choice<string>(values));
 		}
 	}
 }
