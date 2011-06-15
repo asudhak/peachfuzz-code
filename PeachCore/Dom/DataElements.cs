@@ -632,6 +632,8 @@ namespace Peach.Core.Dom
 		public uint mutationFlags = MUTATE_DEFAULT;
 		public bool isToken = false;
 
+		protected bool _isReference = false;
+
 		protected Variant _defaultValue;
 		protected Variant _mutatedValue;
 
@@ -761,6 +763,16 @@ namespace Peach.Core.Dom
 		{
 			get { return _constraint; }
 			set { _constraint = value; }
+		}
+
+		/// <summary>
+		/// Is this DataElement created by a 
+		/// reference to another DataElement?
+		/// </summary>
+		public bool isReference
+		{
+			get { return _isReference; }
+			set { _isReference = value; }
 		}
 
 		public DataElementContainer parent

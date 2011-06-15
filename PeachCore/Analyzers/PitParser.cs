@@ -519,6 +519,7 @@ namespace Peach.Core.Analyzers
 					string name = dataModel.name;
 					dataModel = ObjectCopier.Clone<DataModel>(refObj);
 					dataModel.name = name;
+					dataModel.isReference = true;
 				}
 				else
 				{
@@ -557,6 +558,7 @@ namespace Peach.Core.Analyzers
 					string name = block.name;
 					block = ObjectCopier.Clone<Block>(refObj);
 					block.name = name;
+					block.isReference = true;
 				}
 				else
 				{
@@ -661,34 +663,59 @@ namespace Peach.Core.Analyzers
 		{
 			foreach (XmlNode child in node.ChildNodes)
 			{
+				DataElement elem = null;
 				switch (child.Name)
 				{
 					case "Block":
-						element.Add(handleBlock(child, element));
+						elem = handleBlock(child, element);
 						break;
 
 					case "Choice":
-						element.Add(handleChoice(child, element));
+						elem = handleChoice(child, element);
 						break;
 
 					case "String":
-						element.Add(handleString(child, element));
+						elem = handleString(child, element);
 						break;
 
 					case "Number":
-						element.Add(handleNumber(child, element));
+						elem = handleNumber(child, element);
 						break;
 
 					case "Blob":
-						element.Add(handleBlob(child, element));
+						elem = handleBlob(child, element);
 						break;
 
 					case "Flags":
-						element.Add(handleFlags(child, element));
+						elem = handleFlags(child, element);
 						break;
 
 					case "Custom":
 						throw new NotSupportedException("Implement custom types");
+				}
+
+				// If parent was created by a reference (ref attribute)
+				// then allow replacing existing elements with new
+				// elements.  This includes "deep" replacement using "."
+				// notation.
+				if (element.isReference)
+				{
+					if (elem.name.IndexOf(".") > -1)
+					{
+						DataElement parent = element.find(elem.name);
+						if (parent == null)
+							throw new PeachException("Error, child name has dot notation but replacement element not found: '" + elem.name + ".");
+
+						elem.name = parent.name;
+						parent.parent[parent.name] = elem;
+					}
+					else
+						element[elem.name] = elem;
+				}
+				// Otherwise enforce unique element names.
+				else
+				{
+					element.Add(handleBlock(child, element));
 				}
 			}
 		}

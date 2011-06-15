@@ -145,6 +145,66 @@ namespace Peach.Core.Test
 			Assert.AreEqual("Str4", ((Block)dom.dataModels[0][1])[3].name);
 			Assert.AreEqual("Str5", ((Block)dom.dataModels[0][1])[4].name);
 		}
+
+		[Test]
+		public void BasicTestReplace1()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block name=\"Block1\">" +
+				"			<String name=\"Str1\" />" +
+				"			<String name=\"Str2\" />" +
+				"			<String name=\"Str3\" />" +
+				"		</Block>" +
+				"		<Block name=\"Block2\" ref=\"Block1\">" +
+				"			<String name=\"Str1\" />" +
+				"			<String name=\"Str2\" />" +
+				"			<String name=\"Str3\" />" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(3, ((Block)dom.dataModels[0][0]).Count);
+			Assert.AreEqual(3, ((Block)dom.dataModels[0][1]).Count);
+			Assert.AreEqual("Str1", ((Block)dom.dataModels[0][1])[0].name);
+			Assert.AreEqual("Str2", ((Block)dom.dataModels[0][1])[1].name);
+			Assert.AreEqual("Str3", ((Block)dom.dataModels[0][1])[2].name);
+		}
+
+		[Test]
+		public void BasicTestReplace2()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"+
+				"<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block name=\"Block1\">" +
+				"			<Block name=\"Block1a\">" +
+				"				<String name=\"Str1\" />" +
+				"				<String name=\"Str2\" />" +
+				"			</Block>"+
+				"			<String name=\"Str3\" />" +
+				"		</Block>" +
+				"		<Block name=\"Block2\" ref=\"Block1\">" +
+				"			<String name=\"Block1a.Str1\" />" +
+				"			<String name=\"Block1a.Str2\" />" +
+				"			<String name=\"Str3\" />" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, ((Block)dom.dataModels[0][0]).Count);
+			Assert.AreEqual(2, ((Block)dom.dataModels[0][1]).Count);
+			Assert.AreEqual(2, ((Block)((Block)dom.dataModels[0][1])[0]).Count);
+			Assert.AreEqual("Str1", ((Block)((Block)dom.dataModels[0][1])[0])[0].name);
+			Assert.AreEqual("Str2", ((Block)((Block)dom.dataModels[0][1])[0])[1].name);
+			Assert.AreEqual("Str3", ((Block)dom.dataModels[0][1])[1].name);
+		}
 	}
 }
 
