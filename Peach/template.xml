@@ -5,7 +5,6 @@
 	<!-- Import defaults for Peach instance -->
 	<Include ns="default" src="file:defaults.xml"/>
 
-	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
 		<Blob name="Data" value="12345" />
 		<Number size="8">

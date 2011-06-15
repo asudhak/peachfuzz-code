@@ -392,7 +392,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="dom">DOM to use for resolving ref.</param>
 		/// <param name="name">Ref name to resolve.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
-		protected DataElement getReference(Dom.Dom dom, string name)
+		protected DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
 		{
 			if (name.IndexOf(':') > -1)
 			{
@@ -405,10 +405,24 @@ namespace Peach.Core.Analyzers
 				dom = dom.ns["name"];
 			}
 
+			if (container != null)
+			{
+				DataElement elem = container.find(name);
+				if (elem != null)
+					return elem;
+			}
+
 			foreach (DataModel model in dom.dataModels.Values)
 			{
 				if (model.name == name)
 					return model;
+			}
+
+			foreach (DataModel model in dom.dataModels.Values)
+			{
+				DataElement elem = model.find(name);
+				if (elem != null)
+					return elem;
 			}
 
 			return null;
@@ -499,10 +513,12 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "ref"))
 			{
-				DataModel refObj = getReference(_dom, getXmlAttribute(node, "ref")) as DataModel;
+				DataModel refObj = getReference(_dom, getXmlAttribute(node, "ref"), null) as DataModel;
 				if (refObj != null)
 				{
+					string name = dataModel.name;
 					dataModel = ObjectCopier.Clone<DataModel>(refObj);
+					dataModel.name = name;
 				}
 				else
 				{
@@ -535,10 +551,12 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "ref"))
 			{
-				Block refObj = getReference(_dom, getXmlAttribute(node, "ref")) as Block;
+				Block refObj = getReference(_dom, getXmlAttribute(node, "ref"), parent) as Block;
 				if (refObj != null)
 				{
+					string name = block.name;
 					block = ObjectCopier.Clone<Block>(refObj);
+					block.name = name;
 				}
 				else
 				{
