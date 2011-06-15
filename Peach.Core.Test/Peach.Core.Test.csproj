@@ -43,7 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitStreamTest.cs" />
+    <Compile Include="PitParserTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelationSizeTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PeachCore\Peach.Core.csproj">

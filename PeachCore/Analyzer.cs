@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.IO;
 using Peach.Core.Dom;
 
 namespace Peach.Core
@@ -63,7 +64,12 @@ namespace Peach.Core
 		/// <param name="args">Command line arguments</param>
 		public virtual Dom.Dom asParser(Dictionary<string, string> args, string fileName)
 		{
-			return null;
+			return asParser(args, File.OpenRead(fileName));
+		}
+
+		public virtual Dom.Dom asParser(Dictionary<string, string> args, Stream data)
+		{
+			throw new NotImplementedException("");
 		}
 
 		/// <summary>
@@ -74,18 +80,26 @@ namespace Peach.Core
 		/// <returns>Throws PeachException on error.</returns>
 		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
 		{
+			asParserValidation(args, File.OpenRead(fileName));
+		}
+		public virtual void asParserValidation(Dictionary<string, string> args, Stream data)
+		{
+			throw new NotImplementedException("");
 		}
 
 		public virtual void asDataElement(DataElement parent, Dictionary<string, string> args, object dataBuffer)
 		{
+			throw new NotImplementedException("");
 		}
 
 		public virtual void asCommandLine(Dictionary<string, string> args)
 		{
+			throw new NotImplementedException("");
 		}
 
 		public virtual void asTopLevel(Dom.Dom dom, Dictionary<string, string> args)
 		{
+			throw new NotImplementedException("");
 		}
 	}
 }

@@ -619,6 +619,11 @@ namespace Peach.Core
 
 			b |= (byte)(bit << newBitPos);
 			buff[bytePos] = b;
+
+			if (pos == len || len<pos)
+				len++;
+
+			pos++;
 		}
 
 		/// <summary>

@@ -149,7 +149,21 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public DataElement Of
 		{
-			get { return _of; }
+			get
+			{
+				// When request we should evaluate
+
+				if (_of == null)
+				{
+					_of = From.find(_ofName);
+					
+					// TODO - What if null?
+					if (_of == null)
+						System.Diagnostics.Debugger.Break();
+				}
+
+				return _of;
+			}
 			set
 			{
 				if (_of != null)
@@ -472,22 +486,35 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class SizeRelation : Relation
 	{
+		protected bool _isRecursing = false;
+
 		public override Variant GetValue()
 		{
-			ulong size = _of.Value.LengthBytes;
+			if (_isRecursing)
+				return new Variant(0);
 
-			if (_expressionGet != null)
+			try
 			{
-				Dictionary<string, object> state = new Dictionary<string,object>();
-				state["size"] = size;
-				state["value"] = size;
-				state["self"] = this._parent;
+				_isRecursing = true;
+				ulong size = _of.Value.LengthBytes;
 
-				object value = Scripting.EvalExpression(_expressionGet, state);
-				size = Convert.ToUInt64(value);
+				if (_expressionGet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["size"] = size;
+					state["value"] = size;
+					state["self"] = this._parent;
+
+					object value = Scripting.EvalExpression(_expressionGet, state);
+					size = Convert.ToUInt64(value);
+				}
+
+				return new Variant(size);
 			}
-
-			return new Variant(size);
+			finally
+			{
+				_isRecursing = false;
+			}
 		}
 
 		public override void SetValue(Variant value)
@@ -1107,6 +1134,11 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Find data element with specific name.
 		/// </summary>
+		/// <remarks>
+		/// We will search starting at our level in the tree, then moving
+		/// to children from our level, then walk up node by node to the
+		/// root of the tree.
+		/// </remarks>
 		/// <param name="name">Name to search for</param>
 		/// <returns>Returns found data element or null.</returns>
 		public DataElement find(string name)
@@ -1115,13 +1147,22 @@ namespace Peach.Core.Dom
 
 			if (names.Length == 1)
 			{
-				foreach (DataElement elem in EnumerateElementsByName(names[0]))
+				// Make sure it's not us :)
+				if (this.name == names[0])
+					return this;
+
+				// Check our children
+				foreach (DataElement elem in EnumerateElementsUpTree())
 				{
-					return elem;
+					if(elem.name == names[0])
+						return elem;
 				}
+
+				// Can't locate!
+				return null;
 			}
 
-			foreach (DataElement elem in EnumerateElementsByName(names[0]))
+			foreach (DataElement elem in EnumerateElementsUpTree())
 			{
 				if (!(elem is DataElementContainer))
 					continue;
@@ -1138,10 +1179,100 @@ namespace Peach.Core.Dom
 			return root.find(name);
 		}
 
-		public virtual IEnumerable<DataElement> EnumerateElementsByName(string name)
+		/// <summary>
+		/// Enumerate all items in tree starting with our current position
+		/// then moving up towards the root.
+		/// </summary>
+		/// <remarks>
+		/// This method uses yields to allow for efficient use even if the
+		/// quired node is found quickely.
+		/// 
+		/// The method in which we return elements should match a human
+		/// search pattern of a tree.  We start with our current position and
+		/// return all children then start walking up the tree towards the root.
+		/// At each parent node we return all children (excluding already returned
+		/// nodes).
+		/// 
+		/// This method is ideal for locating objects in the tree in a way indented
+		/// a human user.
+		/// </remarks>
+		/// <returns></returns>
+		public IEnumerable<DataElement> EnumerateElementsUpTree()
 		{
-			if(this.name == name)
-				yield return this;
+			foreach (DataElement e in EnumerateElementsUpTree(new List<DataElement>()))
+				yield return e;
+		}
+
+		/// <summary>
+		/// Enumerate all items in tree starting with our current position
+		/// then moving up towards the root.
+		/// </summary>
+		/// <remarks>
+		/// This method uses yields to allow for efficient use even if the
+		/// quired node is found quickely.
+		/// 
+		/// The method in which we return elements should match a human
+		/// search pattern of a tree.  We start with our current position and
+		/// return all children then start walking up the tree towards the root.
+		/// At each parent node we return all children (excluding already returned
+		/// nodes).
+		/// 
+		/// This method is ideal for locating objects in the tree in a way indented
+		/// a human user.
+		/// </remarks>
+		/// <param name="knownParents">List of known parents to stop duplicates</param>
+		/// <returns></returns>
+		public IEnumerable<DataElement> EnumerateElementsUpTree(List<DataElement> knownParents)
+		{
+			List<DataElement> toRoot = new List<DataElement>();
+			DataElement cur = this;
+			while (cur != null)
+			{
+				toRoot.Add(cur);
+				cur = cur.parent;
+			}
+
+			foreach (DataElement item in toRoot)
+			{
+				if (!knownParents.Contains(item))
+				{
+					foreach (DataElement e in item.EnumerateAllElements())
+						yield return e;
+
+					knownParents.Add(item);
+				}
+			}
+
+			// Root will not be returned otherwise
+			yield return getRoot();
+		}
+
+		/// <summary>
+		/// Enumerate all child elements recursevely.
+		/// </summary>
+		/// <remarks>
+		/// This method will return this objects direct children
+		/// and finally recursevely return children's children.
+		/// </remarks>
+		/// <returns></returns>
+		public IEnumerable<DataElement> EnumerateAllElements()
+		{
+			foreach (DataElement e in EnumerateAllElements(new List<DataElement>()))
+				yield return e;
+		}
+
+		/// <summary>
+		/// Enumerate all child elements recursevely.
+		/// </summary>
+		/// <remarks>
+		/// This method will return this objects direct children
+		/// and finally recursevely return children's children.
+		/// </remarks>
+		/// <param name="knownParents">List of known parents to skip</param>
+		/// <returns></returns>
+		public virtual IEnumerable<DataElement> EnumerateAllElements(List<DataElement> knownParents)
+		{
+			yield break;
 		}
 
 		/// <summary>
@@ -1211,18 +1342,29 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public override IEnumerable<DataElement> EnumerateElementsByName(string name)
+		/// <summary>
+		/// Enumerate all child elements recursevely.
+		/// </summary>
+		/// <remarks>
+		/// This method will return this objects direct children
+		/// and finally recursevely return children's children.
+		/// </remarks>
+		/// <param name="knownParents">List of known parents to skip</param>
+		/// <returns></returns>
+		public override IEnumerable<DataElement> EnumerateAllElements(List<DataElement> knownParents)
 		{
-			if (name == this.name)
-				yield return this;
+			// First our children
+			foreach (DataElement child in this)
+				yield return child;
 
-			foreach (DataElement elem in this)
+			// Next our children's children
+			foreach (DataElement child in this)
 			{
-				if(elem.name == name)
-					yield return elem;
-
-				foreach (DataElement d in elem.EnumerateElementsByName(name))
-					yield return d;
+				if (!knownParents.Contains(child))
+				{
+					foreach (DataElement subChild in child.EnumerateAllElements(knownParents))
+						yield return subChild;
+				}
 			}
 		}
 
@@ -1989,8 +2131,6 @@ namespace Peach.Core.Dom
 			return bits;
 		}
 	}
-
-
 }
 
 // end

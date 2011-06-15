@@ -12,6 +12,33 @@ namespace Peach.Core.Test
 	public class BitStreamTest
 	{
 		[Test]
+		public void Length()
+		{
+			BitStream bs = new BitStream();
+
+			Assert.AreEqual(0, bs.LengthBits);
+
+			bs.WriteBit(0);
+			Assert.AreEqual(1, bs.LengthBits);
+
+			bs = new BitStream();
+			for (int i = 1; i < 10000; i++)
+			{
+				bs.WriteBit(0);
+				Assert.AreEqual(i, bs.LengthBits);
+			}
+
+			bs = new BitStream();
+			bs.WriteByte(1);
+			Assert.AreEqual(8, bs.LengthBits);
+			Assert.AreEqual(1, bs.LengthBytes);
+
+			bs = new BitStream(new byte[] { 1, 2, 3, 4, 5 });
+			Assert.AreEqual(5, bs.LengthBytes);
+			Assert.AreEqual(5 * 8, bs.LengthBits);
+		}
+
+		[Test]
 		public void ReadingBites()
 		{
 			BitStream bs = new BitStream(new byte[] { 0x41, 0x41 });

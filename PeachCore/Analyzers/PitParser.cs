@@ -71,6 +71,11 @@ namespace Peach.Core.Analyzers
 		Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
 
+		/// <summary>
+		/// Contains default attributes for DataElements
+		/// </summary>
+		Dictionary<Type, Dictionary<string, string>> dataElementDefaults = new Dictionary<Type, Dictionary<string, string>>();
+
 		static PitParser()
 		{
 			PitParser.supportParser = true;
@@ -81,15 +86,13 @@ namespace Peach.Core.Analyzers
 		{
 		}
 
-		public override Dom.Dom asParser(Dictionary<string, string> args, string fileName)
+		public override Dom.Dom asParser(Dictionary<string, string> args, Stream data)
 		{
-			if (!File.Exists(fileName))
-				throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
+			validatePit(data);
 
-			validatePit(fileName);
-
+			data.Seek(0, SeekOrigin.Begin);
 			XmlDocument xmldoc = new XmlDocument();
-			xmldoc.Load(fileName);
+			xmldoc.Load(data);
 
 			_dom = new Dom.Dom();
 
@@ -105,9 +108,9 @@ namespace Peach.Core.Analyzers
 			return _dom;
 		}
 
-		public override void asParserValidation(Dictionary<string, string> args, string fileName)
+		public override void asParserValidation(Dictionary<string, string> args, Stream data)
 		{
-			validatePit(fileName);
+			validatePit(data);
 		}
 
 		/// <summary>
@@ -115,7 +118,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="fileName">Pit file to validate</param>
 		/// <param name="schema">Peach XML Schema file</param>
-		public void validatePit(string fileName)
+		public void validatePit(Stream data)
 		{
 			XmlTextReader tr = new XmlTextReader(
 				Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd"));
@@ -128,7 +131,7 @@ namespace Peach.Core.Analyzers
 			settings.ValidationType = ValidationType.Schema;
 			settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
 
-			XmlReader xmlFile = XmlTextReader.Create(fileName, settings);
+			XmlReader xmlFile = XmlTextReader.Create(data, settings);
 
 			while (xmlFile.Read()) ;
 			xmlFile.Close();
@@ -179,7 +182,7 @@ namespace Peach.Core.Analyzers
 							fileName = newFileName;
 						}
 
-						validatePit(fileName);
+						validatePit(File.OpenRead(fileName));
 
 						XmlDocument xmldoc = new XmlDocument();
 						xmldoc.Load(fileName);
@@ -245,7 +248,8 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Defaults":
-						throw new NotSupportedException("Implement Defaults element parsing support.");
+						handleDefaults(child);
+						break;
 				}
 			}
 
@@ -411,6 +415,54 @@ namespace Peach.Core.Analyzers
 		}
 
 #endregion
+
+		protected void handleDefaults(XmlNode node)
+		{
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				Dictionary<string, string> args = new Dictionary<string, string>();
+
+				switch (child.Name)
+				{
+					case "Number":
+						if (hasXmlAttribute(child, "endian"))
+							args["endian"] = getXmlAttribute(child, "endian");
+						if (hasXmlAttribute(child, "signed"))
+							args["signed"] = getXmlAttribute(child, "signed");
+
+						dataElementDefaults[typeof(Number)] = args;
+						break;
+					case "String":
+						if (hasXmlAttribute(child, "lengthType"))
+							args["lengthType"] = getXmlAttribute(child, "lengthType");
+						if (hasXmlAttribute(child, "padCharacter"))
+							args["padCharacter"] = getXmlAttribute(child, "padCharacter");
+						if (hasXmlAttribute(child, "type"))
+							args["type"] = getXmlAttribute(child, "type");
+						if (hasXmlAttribute(child, "nullTerminated"))
+							args["nullTerminated"] = getXmlAttribute(child, "nullTerminated");
+
+						dataElementDefaults[typeof(Dom.String)] = args;
+						break;
+					case "Flags":
+						if (hasXmlAttribute(child, "endian"))
+							args["endian"] = getXmlAttribute(child, "endian");
+						if(hasXmlAttribute(child, "size"))
+							args["size"] = getXmlAttribute(child, "size");
+
+						dataElementDefaults[typeof(Flags)] = args;
+						break;
+					case "Blob":
+						if (hasXmlAttribute(child, "lengthType"))
+							args["lengthType"] = getXmlAttribute(child, "lengthType");
+
+						dataElementDefaults[typeof(Blob)] = args;
+						break;
+					default:
+						throw new PeachException("Error, defaults not supported for '" + child.Name + "'.");
+				}
+			}
+		}
 
 		protected Dom.Agent handleAgent(XmlNode node)
 		{
@@ -665,7 +717,9 @@ namespace Peach.Core.Analyzers
 				throw new NotSupportedException("Implement length attribute on String");
 
 			if (hasXmlAttribute(node, "nullTerminated"))
-				throw new NotSupportedException("Implement nullTerminated attribute on String");
+				str.nullTerminated = getXmlAttributeAsBool(node, "nullTerminated", false);
+			else if (hasDefaultAttribute(typeof(Dom.String), "nullTerminated"))
+				str.nullTerminated = getDefaultAttributeAsBool(typeof(Dom.String), "nullTerminated", false);
 
 			if (hasXmlAttribute(node, "type"))
 				throw new NotSupportedException("Implement type attribute on String");
@@ -674,12 +728,44 @@ namespace Peach.Core.Analyzers
 				throw new NotSupportedException("Implement padCharacter attribute on String");
 
 			if (hasXmlAttribute(node, "lengthType"))
-				throw new NotSupportedException("Implement lengthType attribute on String");
+			{
+				switch (getXmlAttribute(node, "lengthType"))
+				{
+					case "calc":
+						str.lengthType = LengthType.Calc;
+						break;
+					case "python":
+						str.lengthType = LengthType.Python;
+						break;
+					case "ruby":
+						str.lengthType = LengthType.Ruby;
+						break;
+					default:
+						throw new PeachException("Error, parsing lengthType on String '" + str.name + "', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
+				}
+			}
+			else if (hasDefaultAttribute(typeof(Dom.String), "lengthType"))
+			{
+				switch ((string)getDefaultAttribute(typeof(Dom.String), "lengthType"))
+				{
+					case "calc":
+						str.lengthType = LengthType.Calc;
+						break;
+					case "python":
+						str.lengthType = LengthType.Python;
+						break;
+					case "ruby":
+						str.lengthType = LengthType.Ruby;
+						break;
+					default:
+						throw new PeachException("Error, parsing lengthType on String '" + str.name + "', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
+				}
+			}
 
-			if (hasXmlAttribute(node, "tokens"))
+			if (hasXmlAttribute(node, "tokens")) // This item has a default!
 				throw new NotSupportedException("Implement tokens attribute on String");
 
-			if (hasXmlAttribute(node, "analyzer"))
+			if (hasXmlAttribute(node, "analyzer")) // this should be passed via a child element me things!
 				throw new NotSupportedException("Implement analyzer attribute on String");
 
 			handleCommonDataElementAttributes(node, str);
@@ -800,6 +886,8 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "signed"))
 				num.Signed = getXmlAttributeAsBool(node, "signed", false);
+			else if(hasDefaultAttribute(typeof(Number), "signed"))
+				num.Signed = getDefaultAttributeAsBool(typeof(Number), "signed", false);
 
 			if (hasXmlAttribute(node, "size"))
 			{
@@ -838,6 +926,25 @@ namespace Peach.Core.Analyzers
 							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
 				}
 			}
+			else if (hasDefaultAttribute(typeof(Number), "endian"))
+			{
+				string endian = ((string)getDefaultAttribute(typeof(Number), "endian")).ToLower();
+				switch (endian)
+				{
+					case "little":
+						num.LittleEndian = true;
+						break;
+					case "big":
+						num.LittleEndian = false;
+						break;
+					case "network":
+						num.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(
+							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
+				}
+			}
 
 			handleCommonDataElementAttributes(node, num);
 			handleCommonDataElementChildren(node, num);
@@ -846,13 +953,59 @@ namespace Peach.Core.Analyzers
 			return num;
 		}
 
+		protected bool hasDefaultAttribute(Type type, string key)
+		{
+			if(dataElementDefaults.ContainsKey(type))
+				return dataElementDefaults[type].ContainsKey(key);
+			return false;
+		}
+
+		protected string getDefaultAttribute(Type type, string key)
+		{
+			return dataElementDefaults[type][key];
+		}
+
+		protected bool getDefaultAttributeAsBool(Type type, string key, bool defaultValue)
+		{
+			try
+			{
+				string value = dataElementDefaults[type][key].ToLower();
+				switch (value)
+				{
+					case "1":
+					case "true":
+						return true;
+					case "0":
+					case "false":
+						return false;
+					default:
+						throw new PeachException("Error, " + key + " has unknown value, should be boolean.");
+				}
+			}
+			catch
+			{
+				return defaultValue;
+			}
+		}
+
 		protected Blob handleBlob(XmlNode node, DataElementContainer parent)
 		{
 			Blob blob = new Blob();
 
+			if (hasXmlAttribute(node, "name"))
+				blob.name = getXmlAttribute(node, "name");
+
+			string type = null;
+
 			if (hasXmlAttribute(node, "lengthType"))
+				type = getXmlAttribute(node, "lengthType");
+
+			else if(hasDefaultAttribute(typeof(Blob), "lengthType"))
+				type = (string) getDefaultAttribute(typeof(Blob), "lengthType");
+
+			if (type != null)
 			{
-				switch (getXmlAttribute(node, "lengthType"))
+				switch (type)
 				{
 					case "calc":
 						blob.lengthType = LengthType.Calc;
@@ -924,10 +1077,47 @@ namespace Peach.Core.Analyzers
 
 				flags.Size = size;
 			}
+			else if (hasDefaultAttribute(typeof(Flags), "size"))
+			{
+				uint size;
+				try
+				{
+					size = uint.Parse((string)getDefaultAttribute(typeof(Flags), "size"));
+				}
+				catch
+				{
+					throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
+				}
+
+				if (size < 1 || size > 64)
+					throw new PeachException(string.Format(
+						"Error, unsupported size {0} for element {1}.", size, flags.name));
+
+				flags.Size = size;
+			}
 
 			if (hasXmlAttribute(node, "endian"))
 			{
 				string endian = getXmlAttribute(node, "endian").ToLower();
+				switch (endian)
+				{
+					case "little":
+						flags.LittleEndian = true;
+						break;
+					case "big":
+						flags.LittleEndian = false;
+						break;
+					case "network":
+						flags.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(string.Format(
+							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
+				}
+			}
+			else if (hasDefaultAttribute(typeof(Flags), "endian"))
+			{
+				string endian = ((string)getDefaultAttribute(typeof(Flags), "endian")).ToLower();
 				switch (endian)
 				{
 					case "little":

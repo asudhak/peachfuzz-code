@@ -5,29 +5,12 @@
 	<!-- Import defaults for Peach instance -->
 	<Include ns="default" src="file:defaults.xml"/>
 
-	<Defaults>
-		<Number endian="little" size="32" />
-	</Defaults>
-
 	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
-		<Number size="32" constraint="value &lt; 200" endian="little" signed="true">
-			<Fixup class="checksums.Crc32Fixup">
-				<Param name="ref" value="TheDataModel"/>
-			</Fixup>
+		<Blob name="Data" value="12345" />
+		<Number size="8">
+			<Relation type="size" of="TheDataModel"/>
 		</Number>
-		<Blob length="20"  />
-		<Block>
-			<String value="Hello "/>
-			<String value="World!" />
-		</Block>
-		<Choice name="MyChoice">
-			<String name="foo" value="FOO" />
-			<String name="bar" value="BAR" />
-		</Choice>
-		<Flags size="16">
-			<Flag size="1" position="0"/>
-		</Flags>
 	</DataModel>
 	
 	<Agent name="LocalAgent">
