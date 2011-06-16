@@ -159,9 +159,9 @@ namespace Peach.Core.Cracker
 			{
 				handleArray(element as Dom.Array, data);
 			}
-			else if (element is Block) // Should also catch DataModel's
+			else if (element is DataElementContainer) // Should also catch DataModel's
 			{
-				handleBlock(element as Block, data);
+				handleDataElementContainer(element as DataElementContainer, data);
 			}
 			else if (element is Choice)
 			{
@@ -206,7 +206,7 @@ namespace Peach.Core.Cracker
 		/// </summary>
 		/// <param name="element">Block to crack</param>
 		/// <param name="data">Data stream to use when cracking</param>
-		protected void handleBlock(Block element, BitStream data)
+		protected void handleDataElementContainer(DataElementContainer element, BitStream data)
 		{
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
@@ -434,7 +434,7 @@ namespace Peach.Core.Cracker
 
 		protected void handleNumber(Number element, BitStream data)
 		{
-			if (data.LengthBits <= data.TellBits() + element.Size)
+			if (data.LengthBits < data.TellBits() + element.Size)
 				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.");
 
 			if (element.LittleEndian)

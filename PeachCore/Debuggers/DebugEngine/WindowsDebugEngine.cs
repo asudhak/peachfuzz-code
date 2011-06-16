@@ -393,9 +393,9 @@ namespace Peach.Core.Debuggers.DebugEngine
 		static extern int GetProcessId(ulong hWnd);
 
 		public void CreateProcess(ulong ImageFileHandle, ulong Handle, ulong BaseOffset, 
-			uint ModuleSize, string ModuleName = null, string ImageName = null, 
-			uint CheckSum = 0, uint TimeDateStamp = 0, ulong InitialThreadHandle = 0, 
-			ulong ThreadDataOffset = 0, ulong StartOffset = 0)
+			uint ModuleSize, string ModuleName, string ImageName, 
+			uint CheckSum, uint TimeDateStamp, ulong InitialThreadHandle, 
+			ulong ThreadDataOffset, ulong StartOffset)
 		{
 			_engine.processId = GetProcessId(Handle);
 		}
@@ -406,12 +406,12 @@ namespace Peach.Core.Debuggers.DebugEngine
 		}
 
 		public void LoadModule(ulong ImageFileHandle, ulong BaseOffset, uint ModuleSize, 
-			string ModuleName = null, string ImageName = null, uint CheckSum = 0, uint TimeDateStamp = 0)
+			string ModuleName, string ImageName, uint CheckSum, uint TimeDateStamp)
 		{
 			_engine.loadModules.Set();
 		}
 
-		public void UnloadModule(string ImageBaseName = null, ulong BaseOffset = 0)
+		public void UnloadModule(string ImageBaseName, ulong BaseOffset)
 		{
 		}
 

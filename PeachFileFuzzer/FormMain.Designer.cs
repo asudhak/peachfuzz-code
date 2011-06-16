@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this.label13 = new System.Windows.Forms.Label();
@@ -646,6 +647,7 @@
 			this.ClientSize = new System.Drawing.Size(553, 420);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.tabControl1);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "FormMain";
 			this.Text = "Peach Dumb File Fuzzer";
 			this.tabControl1.ResumeLayout(false);

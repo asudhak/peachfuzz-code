@@ -715,7 +715,7 @@ namespace Peach.Core.Analyzers
 				// Otherwise enforce unique element names.
 				else
 				{
-					element.Add(handleBlock(child, element));
+					element.Add(elem);
 				}
 			}
 		}
