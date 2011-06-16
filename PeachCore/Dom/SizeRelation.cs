@@ -28,30 +28,72 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Text;
+using System.Runtime.InteropServices;
+using System.Runtime;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("XmlElement")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Parameter("elementName", typeof(string), "XML Element Name", true)]
+
+	/// <summary>
+	/// Byte size relation.
+	/// </summary>
 	[Serializable]
-	public class XmlElement : DataElementContainer
+	public class SizeRelation : Relation
 	{
+		protected bool _isRecursing = false;
+
+		public override Variant GetValue()
+		{
+			if (_isRecursing)
+				return new Variant(0);
+
+			try
+			{
+				_isRecursing = true;
+				ulong size = _of.Value.LengthBytes;
+
+				if (_expressionGet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["size"] = size;
+					state["value"] = size;
+					state["self"] = this._parent;
+
+					object value = Scripting.EvalExpression(_expressionGet, state);
+					size = Convert.ToUInt64(value);
+				}
+
+				return new Variant(size);
+			}
+			finally
+			{
+				_isRecursing = false;
+			}
+		}
+
+		public override void SetValue(Variant value)
+		{
+			ulong size = (ulong)value;
+
+			if (_expressionSet != null)
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["size"] = size;
+				state["value"] = size;
+				state["self"] = this._parent;
+
+				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				size = Convert.ToUInt64(newValue);
+			}
+
+			_from.DefaultValue = new Variant(size);
+		}
 	}
 
-	[DataElement("XmlAttribute")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", false)]
-	[Parameter("attributeName", typeof(string), "", true)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Serializable]
-	public class XmlAttribute : DataElement
-	{
-	}
 }
 
 // end

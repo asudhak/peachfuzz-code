@@ -28,29 +28,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Text;
+using System.Runtime.InteropServices;
+using System.Runtime;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("XmlElement")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Parameter("elementName", typeof(string), "XML Element Name", true)]
+	/// <summary>
+	/// DataModel is just a top level Block.
+	/// </summary>
 	[Serializable]
-	public class XmlElement : DataElementContainer
+	public class DataModel : Block
 	{
-	}
-
-	[DataElement("XmlAttribute")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", false)]
-	[Parameter("attributeName", typeof(string), "", true)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Serializable]
-	public class XmlAttribute : DataElement
-	{
+		//public Dom dom = null;
 	}
 }
 

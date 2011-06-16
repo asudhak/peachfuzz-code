@@ -132,26 +132,6 @@ namespace Peach.Core.Cracker
 			ulong startingPosition = data.TellBits();
 			bool hasOffsetRelation = false;
 
-			// Has when relation
-			if (element.relations.hasWhenRelation)
-			{
-				Dictionary<string, object> scope = new Dictionary<string,object>();
-				scope["self"] = element;
-
-				bool? ret = Scripting.EvalExpression(element.relations.getWhenRelation().WhenExpression, scope) as bool?;
-				if (ret == null)
-					throw new PeachException("When expression failed for element '" + 
-						element.fullName + "' [" + 
-						element.relations.getWhenRelation().WhenExpression + "].");
-
-				if (ret == false)
-				{
-					// Okay, time to make this element VANISH!
-					element.parent.Remove(element);
-					return;
-				}
-			}
-
 			// Offset relation
 			if (element.relations.hasOffsetRelation)
 			{

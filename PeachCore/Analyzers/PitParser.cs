@@ -1277,14 +1277,6 @@ namespace Peach.Core.Analyzers
 					}
 					break;
 				
-				case "when":
-					{
-						WhenRelation rel = new WhenRelation();
-						rel.WhenExpression = getXmlAttribute(node, "when");
-						parent.relations.Add(rel);
-					}
-					break;
-				
 				default:
 					throw new ApplicationException("Unknown relation type found '"+
 						getXmlAttribute(node, "type")+"'.");

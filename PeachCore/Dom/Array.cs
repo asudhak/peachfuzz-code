@@ -28,29 +28,34 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Text;
+using System.Runtime.InteropServices;
+using System.Runtime;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("XmlElement")]
+
+	/// <summary>
+	/// Array of data elements.  Can be
+	/// zero or more elements.
+	/// </summary>
+	[DataElement("Array")]
 	[DataElementChildSupported(DataElementTypes.Any)]
 	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Parameter("elementName", typeof(string), "XML Element Name", true)]
+	[Parameter("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
+	[Parameter("maxOccurs", typeof(int), "Maximum number of occurances (-1 for unlimited)", false)]
 	[Serializable]
-	public class XmlElement : DataElementContainer
+	public class Array : Block
 	{
-	}
+		public int minOccurs = 1;
+		public int maxOccurs = 1;
 
-	[DataElement("XmlAttribute")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", false)]
-	[Parameter("attributeName", typeof(string), "", true)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Serializable]
-	public class XmlAttribute : DataElement
-	{
+		public bool hasExpanded = false;
+
+		public DataElement origionalElement = null;
 	}
 }
 

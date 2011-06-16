@@ -28,29 +28,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Text;
+using System.Runtime.InteropServices;
+using System.Runtime;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("XmlElement")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Parameter("elementName", typeof(string), "XML Element Name", true)]
+	/// <summary>
+	/// Binary large object data element
+	/// </summary>
+	[DataElement("Blob")]
+	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
 	[Serializable]
-	public class XmlElement : DataElementContainer
+	public class Blob : DataElement
 	{
-	}
+		protected uint _length;
 
-	[DataElement("XmlAttribute")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", false)]
-	[Parameter("attributeName", typeof(string), "", true)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Serializable]
-	public class XmlAttribute : DataElement
-	{
+		public Blob()
+		{
+			_defaultValue = new Variant(new byte[] { });
+		}
 	}
 }
 
