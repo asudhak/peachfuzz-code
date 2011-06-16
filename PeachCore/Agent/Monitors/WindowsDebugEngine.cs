@@ -37,15 +37,16 @@ namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("WindowsDebugEngine")]
 	[Monitor("debugger.WindowsDebugEngine")]
-	[Parameter("CommandLine", typeof(string), "TODO", false)]
-	[Parameter("ProcessName", typeof(string), "TODO", false)]
-	[Parameter("KernelConnectionString", typeof(string), "TODO", false)]
-	[Parameter("Service", typeof(string), "TODO", false)]
-	[Parameter("SymbolsPath", typeof(string), "TODO", false)]
-	[Parameter("StartOnCall", typeof(string), "TODO", false)]
-	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "TODO", false)]
-	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "TODO", false)]
-	[Parameter("NoCpuKill", typeof(string), "TODO", false)]
+	[Parameter("CommandLine", typeof(string), "Command line of program to start.", false)]
+	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", false)]
+	[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", false)]
+	[Parameter("Service", typeof(string), "Name of Windows Service to attach to.  Service will be started if stopped or crashes.", false)]
+	[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", false)]
+	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", false)]
+	[Parameter("StartOnCall", typeof(string), "Indicate the debugger should wait to start or attach to process until notified by state machine.", false)]
+	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
+	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
+	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", false)]
 	public class WindowsDebugEngine : Monitor
     {
 		static bool _firstIteration = true;
@@ -53,8 +54,9 @@ namespace Peach.Core.Agent.Monitors
         string _processName = null;
         string _kernelConnectionString = null;
         string _service = null;
-        
-        string _symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
+
+		string _winDbgPath = null;
+		string _symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
         string _startOnCall = null;
         
         bool _ignoreFirstChanceGuardPage = false;
@@ -65,20 +67,27 @@ namespace Peach.Core.Agent.Monitors
 
         public WindowsDebugEngine(string name, Dictionary<string, Variant> args) : base(name, args)
         {
-            if (args.ContainsKey("CommandLine"))
-                _commandLine = (string)args["CommandLine"];
-            if(args.ContainsKey("ProcessName"))
+			if (args.ContainsKey("CommandLine"))
+				_commandLine = (string)args["CommandLine"];
+			else if (args.ContainsKey("ProcessName"))
 				_processName = (string)args["ProcessName"];
-            if(args.ContainsKey("KernelConnectionString"))
+			else if (args.ContainsKey("KernelConnectionString"))
 				_kernelConnectionString = (string)args["KernelConnectionString"];
-            if(args.ContainsKey("Service"))
+			else if (args.ContainsKey("Service"))
 				_service = (string)args["Service"];
-            if(args.ContainsKey("SymbolsPath"))
+			else
+				throw new PeachException("Error, WindowsDebugEngine started with out a CommandLine, ProcessName, KernelConnectionString or Service parameter.");
+            
+			if(args.ContainsKey("SymbolsPath"))
 				_symbolsPath = (string)args["SymbolsPath"];
             if(args.ContainsKey("StartOnCall"))
 				_startOnCall = (string)args["StartOnCall"];
+			if (args.ContainsKey("WinDbgPath"))
+				_winDbgPath = (string)args["WinDbgPath"];
 
-            if(args.ContainsKey("IgnoreFirstChanceGuardPage") && ((string)args["IgnoreFirstChanceGuardPage"]).ToLower() == "true")
+			// TODO - Hook up _winDbgPath
+
+			if (args.ContainsKey("IgnoreFirstChanceGuardPage") && ((string)args["IgnoreFirstChanceGuardPage"]).ToLower() == "true")
                 _ignoreFirstChanceGuardPage = true;
             if(args.ContainsKey("IgnoreSecondChanceGuardPage") && ((string)args["IgnoreSecondChanceGuardPage"]).ToLower() == "true")
                 _ignoreSecondChanceGuardPage = true;
@@ -307,14 +316,17 @@ namespace Peach.Core.Agent.Monitors
 				}
 				else if (processName != null)
 				{
+					// TODO
 					throw new NotImplementedException();
 				}
 				else if (kernelConnectionString != null)
 				{
+					// TODO
 					throw new NotImplementedException();
 				}
 				else if (service != null)
 				{
+					// TODO
 					throw new NotImplementedException();
 				}
 			}

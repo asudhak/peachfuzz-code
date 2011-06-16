@@ -46,6 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Program Files (x86)\Actipro Software\WindowsForms\SyntaxEditor\v4.0.0288\ActiproSoftware.SyntaxEditor.Net20.dll</HintPath>
     </Reference>
+    <Reference Include="Be.Windows.Forms.HexBox">
+      <HintPath>..\3rdParty\Be.HexEditor.146\bin\Be.Windows.Forms.HexBox.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

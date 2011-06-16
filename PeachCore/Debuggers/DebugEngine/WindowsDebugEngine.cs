@@ -46,6 +46,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 	{
 		private bool _disposed = false;
 
+		public string winDbgPath = null;
+
 		public IDebugClient5 dbgClient = null;
 		public IDebugControl4 dbgControl = null;
 		public IDebugSymbols3 dbgSymbols = null;
@@ -265,7 +267,17 @@ namespace Peach.Core.Debuggers.DebugEngine
 				// 4. !exploitable
 
 				// TODO - Load correct version of !exploitable
-				_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load %s\\msec.dll", (uint)Const.DEBUG_EXECUTE_ECHO);
+				if (IntPtr.Size == 4)
+				{
+					// 32bit
+					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load %s\\msec.dll", (uint)Const.DEBUG_EXECUTE_ECHO);
+				}
+				else
+				{
+					// 64bit
+					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load %s\\msec.dll", (uint)Const.DEBUG_EXECUTE_ECHO);
+				}
+
 				_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, "!exploitable -m", (uint)Const.DEBUG_EXECUTE_ECHO);
 
 				Dictionary<string, Variant> crashInfo = new Dictionary<string, Variant>();

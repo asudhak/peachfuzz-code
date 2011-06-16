@@ -52,6 +52,51 @@ namespace Peach.Core.Agent.Monitors
 			if (args.ContainsKey("Filter"))
 				_filter = (string)args["Filter"];
 		}
+
+		public override void StopMonitor()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void SessionStarting()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void SessionFinished()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void IterationStarting(int iterationCount, bool isReproduction)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool IterationFinished()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool DetectedFault()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override System.Collections.Hashtable GetMonitorData()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool MustStop()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override Variant Message(string name, Variant data)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
 
