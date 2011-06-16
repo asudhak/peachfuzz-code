@@ -32,6 +32,17 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 
+using System;
+using System.IO;
+using System.Text;
+using System.Collections.Specialized;
+using System.Resources;
+using System.Globalization;
+using System.ComponentModel;
+using System.Reflection;
+using System.Net.Sockets;
+using System.Security.Cryptography;
+
 namespace Peach.Core
 {
 	/// <summary>
@@ -1005,6 +1016,9 @@ namespace Peach.Core
 			get { return buff.ToArray(); }
 		}
 	}
+
+
+
 }
 
 // end
