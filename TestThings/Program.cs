@@ -10,7 +10,7 @@ namespace TestThings
 	{
 		static void Main(string[] args)
 		{
-			WindowsDebugEngine cls = new WindowsDebugEngine();
+			WindowsDebugEngine cls = new WindowsDebugEngine("");
 		}
 	}
 }

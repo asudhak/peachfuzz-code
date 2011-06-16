@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
@@ -84,8 +85,12 @@ namespace Peach.Core.Agent.Monitors
 				_startOnCall = (string)args["StartOnCall"];
 			if (args.ContainsKey("WinDbgPath"))
 				_winDbgPath = (string)args["WinDbgPath"];
-
-			// TODO - Hook up _winDbgPath
+			else
+			{
+				_winDbgPath = FindWinDbg();
+				if (_winDbgPath == null)
+					throw new PeachException("Error, unable to locate WinDbg, please specify using 'WinDbgPath' parameter.");
+			}
 
 			if (args.ContainsKey("IgnoreFirstChanceGuardPage") && ((string)args["IgnoreFirstChanceGuardPage"]).ToLower() == "true")
                 _ignoreFirstChanceGuardPage = true;
@@ -104,8 +109,43 @@ namespace Peach.Core.Agent.Monitors
 			_debugger.ignoreFirstChanceGuardPage = _ignoreFirstChanceGuardPage;
 			_debugger.ignoreSecondChanceGuardPage = _ignoreSecondChanceGuardPage;
 			_debugger.noCpuKill = _noCpuKill;
+			_debugger.winDbgPath = _winDbgPath;
+		}
 
-        }
+		protected string FindWinDbg()
+		{
+			// Lets try a few common places before failing.
+			List<string> pgPaths = new List<string>();
+			pgPaths.Add(@"c:\");
+			pgPaths.Add(Environment.GetEnvironmentVariable("SystemDrive"));
+			pgPaths.Add(Environment.GetEnvironmentVariable("ProgramFiles"));
+
+			if(Environment.GetEnvironmentVariable("ProgramW6432") != null)
+				pgPaths.Add(Environment.GetEnvironmentVariable("ProgramW6432"));
+			
+			if(Environment.GetEnvironmentVariable("ProgramFiles(x86)") != null)
+				pgPaths.Add(Environment.GetEnvironmentVariable("ProgramFiles(x86)"));
+			
+			List<string> dbgPaths = new List<string>();
+			dbgPaths.Add("Debuggers");
+			dbgPaths.Add("Debugger");
+			dbgPaths.Add("Debugging Tools for Windows");
+			dbgPaths.Add("Debugging Tools for Windows (x64)");
+			dbgPaths.Add("Debugging Tools for Windows (x86)");
+
+			foreach(string path in pgPaths)
+			{
+				foreach(string dpath in dbgPaths)
+				{
+					if (File.Exists(Path.Combine(path, dpath)))
+					{
+						return Path.Combine(path, dpath);
+					}
+				}
+			}
+
+			return null;
+		}
 
 		PerformanceCounter _performanceCounter = null;
 		public float GetProcessCpuUsage(System.Diagnostics.Process proc)
@@ -258,6 +298,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public string symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
 		public string startOnCall = null;
+		public string winDbgPath = null;
 
 		public bool ignoreFirstChanceGuardPage = false;
 		public bool ignoreSecondChanceGuardPage = false;
@@ -303,9 +344,8 @@ namespace Peach.Core.Agent.Monitors
 
         public void Run()
 		{
-			using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine())
+			using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine(winDbgPath))
 			{
-
 				_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
 				_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
 				_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;

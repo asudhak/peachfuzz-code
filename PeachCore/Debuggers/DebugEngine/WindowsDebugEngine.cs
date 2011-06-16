@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,7 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
 using Peach.Core.Dom;
@@ -69,24 +71,94 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 		public Dictionary<string, Variant> crashInfo = null;
 
-		[DllImport(@"C:\Program Files (x86)\Debugging Tools for Windows (x86)\dbgeng.dll")]
-		static public extern uint DebugCreate(
+		public delegate uint DebugCreate(
 			ref Guid InterfaceId,
 			[MarshalAs(UnmanagedType.IUnknown)] out object Interface);
 
-		public WindowsDebugEngine()
+		protected IntPtr hDll = IntPtr.Zero;
+		protected IntPtr hProc = IntPtr.Zero;
+
+		#region Kernel32 Imports
+
+		/// <summary>
+		/// To load the dll - dllFilePath dosen't have to be const - so I can read path from registry
+		/// </summary>
+		/// <param name="dllFilePath">file path with file name</param>
+		/// <param name="hFile">use IntPtr.Zero</param>
+		/// <param name="dwFlags">What will happend during loading dll
+		/// <para>LOAD_LIBRARY_AS_DATAFILE</para>
+		/// <para>DONT_RESOLVE_DLL_REFERENCES</para>
+		/// <para>LOAD_WITH_ALTERED_SEARCH_PATH</para>
+		/// <para>LOAD_IGNORE_CODE_AUTHZ_LEVEL</para>
+		/// </param>
+		/// <returns>Pointer to loaded Dll</returns>
+		[
+
+		DllImport("kernel32.dll")]
+		private static extern IntPtr LoadLibraryEx(string dllFilePath, IntPtr hFile, uint dwFlags);
+
+		/// <summary>
+		/// To unload library 
+		/// </summary>
+		/// <param name="dllPointer">Pointer to Dll witch was returned from LoadLibraryEx</param>
+		/// <returns>If unloaded library was correct then true, else false</returns>
+		[DllImport("kernel32.dll")]
+		public extern static bool FreeLibrary(IntPtr dllPointer);
+ 
+		/// <summary>
+		/// To get function pointer from loaded dll 
+		/// </summary>
+		/// <param name="dllPointer">Pointer to Dll witch was returned from LoadLibraryEx</param>
+		/// <param name="functionName">Function name with you want to call</param>
+		/// <returns>Pointer to function</returns>
+
+
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+		public extern static IntPtr GetProcAddress(IntPtr dllPointer, string functionName);
+
+		/// <summary>
+		/// This will to load concret dll file
+		/// </summary>
+		/// <param name="dllFilePath">Dll file path</param>
+		/// <returns>Pointer to loaded dll</returns>
+		/// <exception cref="ApplicationException">
+		/// when loading dll will failure
+		/// </exception>
+		public static IntPtr LoadWin32Library(string dllFilePath)
+		{
+			System.IntPtr moduleHandle = LoadLibraryEx(dllFilePath, IntPtr.Zero, 0);
+			if (moduleHandle == IntPtr.Zero)
+			{
+				// I'm gettin last dll error
+				int errorCode = Marshal.GetLastWin32Error();
+				throw new ApplicationException(
+					string.Format("There was an error during dll loading : {0}, error - {1}", dllFilePath, errorCode)
+					);
+			}
+			return moduleHandle;
+		}
+
+		#endregion
+
+		public WindowsDebugEngine(string winDbgPath)
 		{
 			object obj = null;
 			Guid clsid = CLSID(typeof(IDebugClient5));
 
-			if (DebugCreate(ref clsid, out obj) != 0)
+			this.winDbgPath = winDbgPath;
+
+			hDll = LoadWin32Library(Path.Combine(winDbgPath,"dbgeng.dll"));
+			hProc = GetProcAddress(hDll, "DebugCreate");
+			DebugCreate debugCreate = (DebugCreate) Marshal.GetDelegateForFunctionPointer(hProc, typeof(DebugCreate));
+
+			if (debugCreate(ref clsid, out obj) != 0)
 				Debugger.Break();
 			
 			dbgClient = (IDebugClient5)obj;
 			dbgControl = (IDebugControl4)obj;
 			dbgSymbols = (IDebugSymbols3)obj;
 			dbgSystemObjects = (IDebugSystemObjects)obj;
-
 
 			// Reset events
 			loadModules.Reset();
@@ -149,6 +221,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 			_disposed = true;
 
 			Marshal.FinalReleaseComObject(dbgClient);
+			FreeLibrary(hDll);
 		}
 
 		#endregion
