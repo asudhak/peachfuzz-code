@@ -611,13 +611,10 @@ namespace Peach.Core
 			WriteBits(value, bits);
 		}
 
+		protected byte[] ClearingMasks = new byte[] { 0x7f, 0xBF, 0xDF, 0xef, 0xf7, 0xfb, 0xfd, 0xfe };
+
 		public void WriteBit(byte bit)
 		{
-			if (bit == 0)
-			{
-				pos++;
-				return;
-			}
 			if (bit > 1)
 				throw new ApplicationException("WriteBit only takes values of 0 or 1.");
 
@@ -636,11 +633,29 @@ namespace Peach.Core
 			if (byteIndex >= buff.Count)
 				buff.Add(0);
 
-			// Set bit
-			buff[byteIndex] |= (byte)(bit << (7-bitIndex));
+			if (_isLittleEndian)
+			{
+				if (bit == 0)
+					// clear bit
+					buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[7 - bitIndex]);
+				else
+					// Set bit
+					buff[byteIndex] = (byte)(buff[byteIndex] | (bit << bitIndex));
+			}
+			else
+			{
+				if (bit == 0)
+					// clear bit
+					buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[bitIndex]);
+				else
+					// Set bit
+					buff[byteIndex] = (byte)(buff[byteIndex] | (bit << (7 - bitIndex)));
+			}
 
 			// Increment our current position
 			pos++;
+			if (pos >= len)
+				len++;
 		}
 
 		/// <summary>
@@ -653,12 +668,9 @@ namespace Peach.Core
 			if(bits == 0 || bits > 64)
 				throw new ApplicationException("bits is invalid value, but be > 0 and < 64");
 
-			byte val;
 			for (int cnt = 0; cnt < (int)bits; cnt++ )
 			{
-				val = (byte)(value & 1);
-				WriteBit(val);
-				value = value >> 1;
+				WriteBit( (byte) ((value >> ((bits-1) - cnt)) & 1) );
 			}
 		}
 
@@ -783,45 +795,37 @@ namespace Peach.Core
 		/// <returns>Return a byte containing 0/1</returns>
 		public byte ReadBit()
 		{
-			int curpos = pos;
-			int bitsLeft = 8 - (curpos % 8);
-			byte mask = 0x1;
-			int startBlock = curpos / 8;
+			try
+			{
+				// Index into buff[] array
+				int byteIndex = pos / 8;
+				// Index into byte from buff[] array
+				int bitIndex = pos - (byteIndex * 8);
 
-			// Get current byte
-			byte b = buff[(int)startBlock];
-
-			// Move our bit into first position
-			if (_isLittleEndian)
-				b = (byte)(b >> (byte)(8 - bitsLeft));
-			else
-				b = (byte)(b >> (byte)(bitsLeft-1));
-
-			// Read single bit
-			byte ret = (byte) (b & mask);
-
-			// Increment our position
-			pos++;
-			return ret;
+				if (_isLittleEndian)
+					// Shift and mask off 1 byte
+					return (byte)((buff[byteIndex] >> (byte)bitIndex) & 1);
+				else
+					// Shift and mask off 1 byte
+					return (byte)((buff[byteIndex] >> (byte)(7 - bitIndex)) & 1);
+			}
+			finally
+			{
+				pos++;
+			}
 		}
 
 		protected byte ReadBit(byte b, int pos)
 		{
-			int curpos = pos;
-			int bitsLeft = 8 - curpos;
-			byte mask = 0x1;
+			// Index into byte from buff[] array
+			int bitIndex = pos;
 
-			if (!_isLittleEndian)
-				// Move to next bit
-				b = (byte)(b >> (byte)(8 - bitsLeft));
+			if (_isLittleEndian)
+				// Shift and mask off 1 byte
+				return (byte)((b >> (byte)bitIndex) & 1);
 			else
-				b = (byte)(b >> (byte)(bitsLeft - 1));
-
-			// Read single bit
-			byte ret = (byte)(b & mask);
-
-			// Increment our position
-			return ret;
+				// Shift and mask off 1 byte
+				return (byte)((b >> (byte)(7 - bitIndex)) & 1);
 		}
 
 		public ulong ReadBits(int bits)
@@ -833,23 +837,25 @@ namespace Peach.Core
 
 			for (int cnt = 0; cnt < bits; cnt++)
 			{
-				if (!_isLittleEndian)
-				{
-					ret = ret << 1;
-					byte bit = ReadBit();
-					ret |= bit;
-				}
-				else
-				{
-					byte bit = ReadBit();
-					byte newbit = (byte)(bit << (int)cnt);
-					ret |= newbit;
-				}
+				ret |= (byte)(ReadBit() << (int)((bits - 1) - cnt));
 			}
 
 			return ret;
 		}
 
+
+		protected static string Byte2String(byte b)
+		{
+			string ret = "";
+
+			for (int i = 0; i < 8; i++)
+			{
+				int bit = (b >> 7 - i) & 1;
+				ret += bit == 0 ? "0" : "1";
+			}
+
+			return ret;
+		}
 		public byte[] ReadBytes(int count)
 		{
 			if (count == 0)
@@ -859,8 +865,13 @@ namespace Peach.Core
 
 			byte[] ret = new byte[count];
 
-			for (int i = 0; i<count; i++)
+			//Console.WriteLine("ReadBytes()");
+			for (int i = 0; i < count; i++)
+			{
 				ret[i] = ReadByte();
+				//Console.Write(Byte2String(ret[i]));
+			}
+			//Console.WriteLine("");
 
 			return ret;
 		}
@@ -889,8 +900,8 @@ namespace Peach.Core
 			ulong ret = 0;
 			for (int cnt = 0; cnt < b.Length; cnt++)
 			{
-				ret = ret << 8;
-				ret |= b[cnt];
+				//ret = ret << 7;
+				ret |= ((ulong)b[cnt]) << (8*cnt);
 			}
 
 			return ret;

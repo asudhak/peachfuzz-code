@@ -82,6 +82,9 @@ namespace Peach.Core.Test
 			Assert.AreEqual(0, bs.ReadBit()); // 5
 			Assert.AreEqual(0, bs.ReadBit()); // 6
 			Assert.AreEqual(1, bs.ReadBit()); // 7
+
+
+
 		}
 
 		[Test]
@@ -96,6 +99,9 @@ namespace Peach.Core.Test
 			bs.WriteBit(1);
 			bs.WriteBit(0);
 			bs.WriteBit(1);
+			bs.WriteBit(1);
+			bs.WriteBit(1);
+			bs.WriteBit(1);
 
 			bs.WriteBit(0);
 			bs.WriteBit(0);
@@ -105,11 +111,15 @@ namespace Peach.Core.Test
 			bs.WriteBit(1);
 
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+
 			Assert.AreEqual(0, bs.ReadBit());
 			Assert.AreEqual(0, bs.ReadBit());
 			Assert.AreEqual(0, bs.ReadBit());
 			Assert.AreEqual(1, bs.ReadBit());
 			Assert.AreEqual(0, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
 			Assert.AreEqual(1, bs.ReadBit());
 
 			Assert.AreEqual(0, bs.ReadBit());
@@ -118,6 +128,44 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, bs.ReadBit());
 			Assert.AreEqual(0, bs.ReadBit());
 			Assert.AreEqual(1, bs.ReadBit());
+		}
+		protected static string Int2String(int b)
+		{
+			string ret = "";
+
+			for (int i = 0; i < 32; i++)
+			{
+				int bit = (b >> 31 - i) & 1;
+				ret += bit == 0 ? "0" : "1";
+			}
+
+			return ret;
+		}
+
+		protected static string Byte2String(byte b)
+		{
+			string ret = "";
+
+			for (int i = 0; i < 8; i++)
+			{
+				int bit = (b >> 7 - i) & 1;
+				ret += bit == 0 ? "0" : "1";
+			}
+
+			return ret;
+		}
+
+		protected static string Short2String(short b)
+		{
+			string ret = "";
+
+			for (int i = 0; i < 16; i++)
+			{
+				int bit = (b >> 15 - i) & 1;
+				ret += bit == 0 ? "0" : "1";
+			}
+
+			return ret;
 		}
 
 		[Test]
@@ -129,15 +177,36 @@ namespace Peach.Core.Test
 			//Max
 			bs.WriteInt8(sbyte.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			Console.WriteLine(Byte2String((byte)sbyte.MaxValue));
+			foreach (byte b in bs.buff)
+				Console.WriteLine(Byte2String(b));
+			Console.WriteLine(Byte2String((byte)bs.ReadInt8()));
+
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MaxValue, bs.ReadInt8());
 
 			bs.Clear();
 			bs.WriteInt16(short.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			Console.WriteLine(Short2String(short.MaxValue));
+			foreach (byte b in bs.buff)
+				Console.Write(Byte2String(b));
+			Console.WriteLine("\n" + Short2String(bs.ReadInt16()));
+
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MaxValue, bs.ReadInt16());
 
 			bs.Clear();
 			bs.WriteInt32(67305985);
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			Console.WriteLine(Int2String(67305985));
+			foreach (byte b in bs.buff)
+				Console.Write(Byte2String(b));
+			Console.WriteLine("\n" + Int2String(bs.ReadInt32()));
+
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(67305985, bs.ReadInt32());
 
@@ -181,6 +250,13 @@ namespace Peach.Core.Test
 			bs.Clear();
 			bs.WriteInt16(short.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			Console.WriteLine(Short2String(short.MinValue));
+			foreach (byte b in bs.buff)
+				Console.Write(Byte2String(b));
+			Console.WriteLine("\n" + Short2String(bs.ReadInt16()));
+
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MinValue, bs.ReadInt16());
 
 			bs.Clear();
@@ -196,7 +272,7 @@ namespace Peach.Core.Test
 			// BIG ENDIAN //////////////////////////////////////////
 
 			bs = new BitStream();
-			bs.LittleEndian();
+			bs.BigEndian();
 
 			//Max
 			bs.WriteInt8(sbyte.MaxValue);
@@ -273,10 +349,34 @@ namespace Peach.Core.Test
 			bs.WriteBit(1);
 			bs.WriteBit(1);
 
-			bs.LittleEndian();
+			//bs.LittleEndian();
+
+			Console.WriteLine("After 3");
+			foreach (byte b in bs.buff)
+				Console.Write(Byte2String(b));
+			Console.WriteLine("");
 
 			//Max
 			bs.WriteInt8(sbyte.MaxValue);
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+
+			Console.WriteLine(Byte2String((byte)sbyte.MaxValue));
+			foreach (byte b in bs.buff)
+				Console.Write(Byte2String(b));
+
+			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
+			Console.WriteLine("\n" + Byte2String((byte)bs.ReadInt8()));
+
+			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
+
+			Assert.AreEqual(0, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+			Assert.AreEqual(1, bs.ReadBit());
+
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MaxValue, bs.ReadInt8());
 
