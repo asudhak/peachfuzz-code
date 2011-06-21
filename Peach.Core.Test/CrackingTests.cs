@@ -48,7 +48,9 @@ namespace Peach.Core.Test
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Number name=\"TheNumber\" size=\"8\" signed=\"true\"/>"+
+				"		<Number size=\"8\" signed=\"true\"/>" +
+				"		<Number size=\"16\" signed=\"true\"/>" +
+				"		<Number size=\"8\" signed=\"true\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -57,12 +59,16 @@ namespace Peach.Core.Test
 
 			BitStream data = new BitStream();
 			data.WriteInt8(16);
+			data.WriteInt16(3000);
+			data.WriteInt8(25);
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(16, (int) dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(16, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(3000, (int)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(25, (int)dom.dataModels[0][2].DefaultValue);
 		}
 	}
 }
