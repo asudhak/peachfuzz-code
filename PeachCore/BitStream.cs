@@ -59,11 +59,11 @@ namespace Peach.Core
 		/// is element name (full to data model) and
 		/// value = [0] start bit position, [1] length in bits.
 		/// </summary>
-		protected Dictionary<string, ulong[]> _elementPositions = new Dictionary<string, ulong[]>();
+		protected Dictionary<string, int[]> _elementPositions = new Dictionary<string, int[]>();
 		
-		protected List<byte> buff;
-		protected ulong pos = 0;
-		protected ulong len = 0;
+		public List<byte> buff;
+		protected int pos = 0;
+		protected int len = 0;
 		protected bool _isLittleEndian = true;
 		protected bool isNormalRead = true;
 		protected bool _padding = true;
@@ -85,7 +85,7 @@ namespace Peach.Core
 		public BitStream(byte[] buff)
 		{
 			this.buff = new List<byte>(buff);
-			len = (ulong)buff.Length * 8;
+			len = buff.Length * 8;
 			LittleEndian();
 		}
 
@@ -95,17 +95,17 @@ namespace Peach.Core
 		/// </summary>
 		public void Clear()
 		{
-			_elementPositions = new Dictionary<string, ulong[]>();
+			_elementPositions = new Dictionary<string, int[]>();
 			buff = new List<byte>();
 			pos = 0;
 			len = 0;
 			LittleEndian();
 		}
 
-		protected BitStream(byte [] buff, ulong pos, ulong len,
+		protected BitStream(byte [] buff, int pos, int len,
 			bool isLittleEndian, bool isNormalRead,
 			bool padding, bool readLeftToRight,
-			Dictionary<string, ulong[]> _elementPositions)
+			Dictionary<string, int[]> _elementPositions)
 		{
 			this.buff = new List<byte>(buff);
 			this.pos = pos;
@@ -130,7 +130,7 @@ namespace Peach.Core
 		/// <summary>
 		/// Length in bits of buffer
 		/// </summary>
-		public ulong LengthBits
+		public int LengthBits
 		{
 			get { return len; }
 		}
@@ -139,11 +139,11 @@ namespace Peach.Core
 		/// Length in bytes of buffer.  Size is
 		/// badded out to 8 bit boundry.
 		/// </summary>
-		public ulong LengthBytes
+		public int LengthBytes
 		{
 			get
 			{
-				return (len/8) + (ulong)(len % 8 == 0 ? 0 : 1);
+				return (len/8) + (len % 8 == 0 ? 0 : 1);
 			}
 		}
 
@@ -151,7 +151,7 @@ namespace Peach.Core
 		/// Current position in bits
 		/// </summary>
 		/// <returns>Returns current bit position</returns>
-		public ulong TellBits()
+		public int TellBits()
 		{
 			return pos;
 		}
@@ -160,7 +160,7 @@ namespace Peach.Core
 		/// Current position in bytes
 		/// </summary>
 		/// <returns>Returns current byte position</returns>
-		public ulong TellBytes()
+		public int TellBytes()
 		{
 			return pos / 8;
 		}
@@ -171,18 +171,18 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="offset">Offset from origion to seek to</param>
 		/// <param name="origin">Origin to seek from</param>
-		public void SeekBits(long offset, SeekOrigin origin)
+		public void SeekBits(int offset, SeekOrigin origin)
 		{
 			switch (origin)
 			{
 				case SeekOrigin.Begin:
-					pos = (ulong)offset;
+					pos = (int)offset;
 					break;
 				case SeekOrigin.Current:
-					pos = (ulong) (((long)pos) + offset);
+					pos = (int)(((long)pos) + offset);
 					break;
 				case SeekOrigin.End:
-					pos = (ulong) (((long)len) - offset);
+					pos = (int)(((long)len) - offset);
 					break;
 			}
 		}
@@ -193,7 +193,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="offset">Offset from origion to seek to</param>
 		/// <param name="origin">Origin to seek from</param>
-		public void SeekBytes(long offset, SeekOrigin origin)
+		public void SeekBytes(int offset, SeekOrigin origin)
 		{
 			SeekBits(offset * 8, origin);
 		}
@@ -288,7 +288,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="e">DataElement that has already been written to stream</param>
 		/// <returns>Returns size in bits of DataElement</returns>
-		public ulong DataElementLength(DataElement e)
+		public int DataElementLength(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
@@ -301,7 +301,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="fullName">Fullname of DataElement that has already been written to stream</param>
 		/// <returns>Returns size in bits of DataElement</returns>
-		public ulong DataElementLength(string fullName)
+		public int DataElementLength(string fullName)
 		{
 			if (fullName == null)
 				throw new ApplicationException("fullName is null");
@@ -317,7 +317,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="e">DataElement that has already been written to the stream</param>
 		/// <returns>Returns bit position of DataElement</returns>
-		public ulong DataElementPosition(DataElement e)
+		public int DataElementPosition(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
@@ -330,7 +330,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="fullName">DataElement that has already been written to the stream</param>
 		/// <returns>Returns bit position of DataElement</returns>
-		public ulong DataElementPosition(string fullName)
+		public int DataElementPosition(string fullName)
 		{
 			if (fullName == null)
 				throw new ApplicationException("fullName is null");
@@ -346,7 +346,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="e">DataElement to mark the position of</param>
 		/// <param name="lengthInBits">Length of DataElement in stream</param>
-		public void MarkStartOfElement(DataElement e, ulong lengthInBits)
+		public void MarkStartOfElement(DataElement e, int lengthInBits)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
@@ -354,7 +354,7 @@ namespace Peach.Core
 			if (HasDataElement(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
-				_elementPositions.Add(e.fullName, new ulong[] { pos, lengthInBits });
+				_elementPositions.Add(e.fullName, new int[] { pos, lengthInBits });
 		}
 
 		/// <summary>
@@ -369,7 +369,7 @@ namespace Peach.Core
 			if (HasDataElement(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
-				_elementPositions.Add(e.fullName, new ulong[] { pos, 0 });
+				_elementPositions.Add(e.fullName, new int[] { pos, 0 });
 		}
 
 		/// <summary>
@@ -583,9 +583,9 @@ namespace Peach.Core
 			if(bits.LengthBits == 0)
 				return;
 
-			ulong bytesToWrite = bits.LengthBits/8;
-			ulong extraBits = bits.LengthBits - (bytesToWrite*8);
-			ulong origionalPos = pos;
+			int bytesToWrite = bits.LengthBits / 8;
+			int extraBits = bits.LengthBits - (bytesToWrite * 8);
+			int origionalPos = pos;
 
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bytesToWrite));
@@ -605,7 +605,7 @@ namespace Peach.Core
 			}
 		}
 
-		public void WriteBits(ulong value, ulong bits, DataElement element)
+		public void WriteBits(ulong value, int bits, DataElement element)
 		{
 			MarkStartOfElement(element, bits);
 			WriteBits(value, bits);
@@ -613,27 +613,33 @@ namespace Peach.Core
 
 		public void WriteBit(byte bit)
 		{
+			if (bit == 0)
+			{
+				pos++;
+				return;
+			}
 			if (bit > 1)
 				throw new ApplicationException("WriteBit only takes values of 0 or 1.");
 
-			int bytePos = (int)(pos / 8);
-			ulong bitsLeft = 8 - (pos % 8);
-			if (bitsLeft == 0)
-				bytePos = (int)(pos / 8) + 1;
-			if(bytePos >= buff.Count)
+			// Index into buff[] array
+			int byteIndex = 0;
+			// Index into byte from buff[] array
+			int bitIndex = 0;
+
+			// Get byte position in buff
+			byteIndex = pos / 8;
+
+			// Calc position in byte to set
+			bitIndex = pos - (byteIndex * 8);
+
+			// Do we need to grow buff?
+			if (byteIndex >= buff.Count)
 				buff.Add(0);
 
-			byte b = buff[(int)(pos / 8)];
-			ulong newPos = pos++;
-			ulong newBitesLeft = 8 - (newPos % 8);
-			int newBitPos = 8 - (int)newBitesLeft;
+			// Set bit
+			buff[byteIndex] |= (byte)(bit << (7-bitIndex));
 
-			b |= (byte)(bit << newBitPos);
-			buff[bytePos] = b;
-
-			if (pos == len || len<pos)
-				len++;
-
+			// Increment our current position
 			pos++;
 		}
 
@@ -642,7 +648,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="value">Value to write</param>
 		/// <param name="bits">Number of bits to write</param>
-		public void WriteBits(ulong value, ulong bits)
+		public void WriteBits(ulong value, int bits)
 		{
 			if(bits == 0 || bits > 64)
 				throw new ApplicationException("bits is invalid value, but be > 0 and < 64");
@@ -777,10 +783,10 @@ namespace Peach.Core
 		/// <returns>Return a byte containing 0/1</returns>
 		public byte ReadBit()
 		{
-			uint curpos = (uint)pos;
-			uint bitsLeft = 8 - (curpos % 8);
+			int curpos = pos;
+			int bitsLeft = 8 - (curpos % 8);
 			byte mask = 0x1;
-			uint startBlock = curpos / 8;
+			int startBlock = curpos / 8;
 
 			// Get current byte
 			byte b = buff[(int)startBlock];
@@ -799,10 +805,10 @@ namespace Peach.Core
 			return ret;
 		}
 
-		protected byte ReadBit(byte b, uint pos)
+		protected byte ReadBit(byte b, int pos)
 		{
-			uint curpos = pos;
-			uint bitsLeft = 8 - curpos;
+			int curpos = pos;
+			int bitsLeft = 8 - curpos;
 			byte mask = 0x1;
 
 			if (!_isLittleEndian)
@@ -818,11 +824,14 @@ namespace Peach.Core
 			return ret;
 		}
 
-		public ulong ReadBits(ulong bits)
+		public ulong ReadBits(int bits)
 		{
+			if (bits < 0 || bits > 64)
+				throw new ArgumentOutOfRangeException("Must be between 0 and 64");
+
 			ulong ret = 0;
 
-			for (ulong cnt = 0; cnt < bits; cnt++)
+			for (int cnt = 0; cnt < bits; cnt++)
 			{
 				if (!_isLittleEndian)
 				{
@@ -841,16 +850,16 @@ namespace Peach.Core
 			return ret;
 		}
 
-		public byte[] ReadBytes(ulong count)
+		public byte[] ReadBytes(int count)
 		{
 			if (count == 0)
 				throw new ApplicationException("Asking for zero bytes");
-			if (((pos/8) + count) > (ulong)buff.Count)
+			if (((pos/8) + count) > buff.Count)
 				throw new ApplicationException("Count overruns buffer");
 
 			byte[] ret = new byte[count];
 
-			for (ulong i = 0; i<count; i++)
+			for (int i = 0; i<count; i++)
 				ret[i] = ReadByte();
 
 			return ret;
@@ -899,7 +908,7 @@ namespace Peach.Core
 		/// Truncate stream to specific length in bits.
 		/// </summary>
 		/// <param name="sizeInBits">Length in bits of stream</param>
-		public void Truncate(ulong sizeInBits)
+		public void Truncate(int sizeInBits)
 		{
 			if (sizeInBits > len)
 				throw new ApplicationException("sizeInbits larger then length of data");
@@ -908,7 +917,7 @@ namespace Peach.Core
 				pos = sizeInBits;
 
 			len = sizeInBits;
-			ulong startBlock = sizeInBits / 8 + (ulong)(sizeInBits % 8 == 0 ? 0 : 1);
+			int startBlock = sizeInBits / 8 + (sizeInBits % 8 == 0 ? 0 : 1);
 			buff.RemoveRange((int)startBlock, buff.Count - (int)startBlock);
 
 			// Remove element entries that were truncated off.
@@ -935,11 +944,11 @@ namespace Peach.Core
 		/// <param name="bits">BitStream to insert.</param>
 		public void Insert(BitStream bits)
 		{
-			ulong currentBlock = pos / 8;
-			ulong curpos = pos;
-			ulong curlen = len;
-			ulong retpos = pos;
-			ulong[] vals = null;
+			int currentBlock = pos / 8;
+			int curpos = pos;
+			int curlen = len;
+			int retpos = pos;
+			int[] vals = null;
 
 			// If both streams are on an 8 bit boundry
 			// this is the quick 'n easy method.
@@ -981,14 +990,14 @@ namespace Peach.Core
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bits.LengthBits / 8));
 			if(bits.LengthBits % 8 != 0)
-				WriteBits(bits.ReadBits(bits.LengthBits % 8), (uint) bits.LengthBits % 8);
+				WriteBits(bits.ReadBits(bits.LengthBits % 8), bits.LengthBits % 8);
 
 			retpos = pos;
 
-			tmp.SeekBits((long)curpos, SeekOrigin.Begin);
+			tmp.SeekBits(curpos, SeekOrigin.Begin);
 			WriteBytes(tmp.ReadBytes((curlen - curpos) / 8));
 			if ((curlen - curpos) % 8 != 0)
-				WriteBits(tmp.ReadBits((curlen - curpos) % 8),(uint) (curlen - curpos) % 8);
+				WriteBits(tmp.ReadBits((curlen - curpos) % 8), (curlen - curpos) % 8);
 
 			// Copy over the DataElement positions
 			foreach (string key in tmp._elementPositions.Keys)

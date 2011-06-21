@@ -13,26 +13,37 @@ namespace TestThings
 {
 	class Program
 	{
+		protected static string Byte2String(byte b)
+		{
+			string ret = "";
+
+			for (int i = 0; i < 8; i++)
+			{
+				int bit = b >> 7 - i;
+				ret += bit == 0 ? "0" : "1";
+			}
+
+			return ret;
+		}
+
 		static void Main(string[] args)
 		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"TheDataModel\">" +
-				"		<Number name=\"TheNumber\" size=\"8\" signed=\"true\"/>" +
-				"	</DataModel>" +
-				"</Peach>";
+			BitStream bs = new BitStream();
 
-			PitParser parser = new PitParser();
-			Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			bs.WriteBit(0);
+			bs.WriteBit(1);
+			bs.WriteBit(1);
+			bs.WriteBit(0);
+			bs.WriteBit(0);
+			bs.WriteBit(1);
 
-			BitStream data = new BitStream();
-			data.WriteInt8(16);
-			data.SeekBits(0, SeekOrigin.Begin);
+			bs.SeekBits(0, SeekOrigin.Begin);
 
-			DataCracker cracker = new DataCracker();
-			cracker.CrackData(dom.dataModels[0], data);
+			foreach (byte b in bs.buff)
+			//foreach (byte b in new byte[] {0xff, 0x0, 0x1})
+					Console.WriteLine(Byte2String(b));
 
-			if (16 != (int)dom.dataModels[0][0].DefaultValue)
-				throw new Exception();
+			Console.ReadKey();
 		}
 	}
 }

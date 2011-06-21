@@ -54,7 +54,7 @@ namespace Peach.Core.Dom
 			try
 			{
 				_isRecursing = true;
-				ulong size = _of.Value.LengthBytes;
+				int size = _of.Value.LengthBytes;
 
 				if (_expressionGet != null)
 				{
@@ -64,7 +64,7 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
-					size = Convert.ToUInt64(value);
+					size = (int)Convert.ToUInt32(value);
 				}
 
 				return new Variant(size);

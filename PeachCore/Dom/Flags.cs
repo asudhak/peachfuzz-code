@@ -91,29 +91,33 @@ namespace Peach.Core.Dom
 
 	[DataElement("Flag")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("position", typeof(uint), "Bit position of flag", true)]
-	[ParameterAttribute("size", typeof(uint), "Size in bits", true)]
+	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
+	[ParameterAttribute("size", typeof(int), "Size in bits", true)]
 	[Serializable]
 	public class Flag : DataElement
 	{
-		protected uint _size = 0;
-		protected uint _position = 0;
+		protected int _size = 0;
+		protected int _position = 0;
 
-		public uint Size
+		public int Size
 		{
 			get { return _size; }
 			set
 			{
+				if (value < 0)
+					throw new ArgumentOutOfRangeException("Should not be null");
 				_size = value;
 				Invalidate();
 			}
 		}
 
-		public uint Position
+		public int Position
 		{
 			get { return _position; }
 			set
 			{
+				if (value < 0)
+					throw new ArgumentOutOfRangeException("Should not be null");
 				_position = value;
 				Invalidate();
 			}

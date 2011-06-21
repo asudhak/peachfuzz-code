@@ -59,7 +59,7 @@ namespace Peach.Core.Transformers.Encode
 
             byte[] ret = new byte[data.LengthBytes/2];
 
-            for (ulong i = 0; i < data.LengthBytes; i += 2)
+            for (int i = 0; i < data.LengthBytes; i += 2)
             {
                 int high = (data.Value[i] > 0x40 ? data.Value[i] - 0x37 : data.Value[i] - 0x30) << 4;
                 int low = data.Value[i + 1] > 0x40 ? data.Value[i + 1] - 0x37 : data.Value[i] - 0x30;
@@ -95,7 +95,7 @@ namespace Peach.Core.Transformers.Encode
             if (resolution % 2 != 0 && resolution != 1)
                 throw new Exception("HexString transformer internalEncode failed: Resolution must be 1 or a multiple of two.");
 
-            if(data.LengthBytes % (ulong)resolution != 0)
+            if(data.LengthBytes % resolution != 0)
                 throw new Exception("HexString transformer internalEncode failed: Data length must be divisible by resolution.");
 
             if (m_args.ContainsKey("prefix"))

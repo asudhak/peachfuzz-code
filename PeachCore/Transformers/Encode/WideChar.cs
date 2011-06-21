@@ -43,7 +43,7 @@ namespace Peach.Core.Transformers.Encode
         protected override BitStream internalEncode(BitStream data)
         {
             byte[] ret = new byte[data.LengthBytes * 2];
-            for (ulong i = 0; i < data.LengthBytes; i++)
+            for (int i = 0; i < data.LengthBytes; i++)
             {
                 ret[i * 2] = data.Value[i];
                 ret[i * 2 + 1] = (Byte)0; 
@@ -59,7 +59,7 @@ namespace Peach.Core.Transformers.Encode
 
             byte[] ret = new byte[data.LengthBytes / 2];
 
-            for (ulong i = 0; i < data.LengthBytes; i += 2)
+            for (int i = 0; i < data.LengthBytes; i += 2)
                 ret[i / 2] = data.Value[i];
 
             return new BitStream(ret);

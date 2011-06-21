@@ -98,7 +98,7 @@ namespace Peach.Core.Dom
 			_nullTerminated = nullTerminated;
 		}
 
-		public String(string name, string defaultValue, StringType type, bool nullTerminated, uint length)
+		public String(string name, string defaultValue, StringType type, bool nullTerminated, int length)
 			: base(name)
 		{
 			DefaultValue = new Variant(defaultValue);

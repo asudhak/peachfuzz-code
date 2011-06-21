@@ -106,7 +106,7 @@ namespace Peach.Core.Dom
 		protected bool _invalidated = false;
 
 		protected bool _hasLength = false;
-		protected ulong _length = 0;
+		protected int _length = 0;
 		protected LengthType _lengthType = LengthType.String;
 		protected string _lengthOther = null;
 
@@ -325,7 +325,7 @@ namespace Peach.Core.Dom
 		/// LengthType == "Calc" we will evaluate the
 		/// expression.
 		/// </summary>
-		public virtual ulong length
+		public virtual int length
 		{
 			get
 			{
@@ -336,7 +336,7 @@ namespace Peach.Core.Dom
 					case LengthType.Calc:
 						Dictionary<string, object> scope = new Dictionary<string,object>();
 						scope["self"] = this;
-						return (ulong)Scripting.EvalExpression(_lengthOther, scope);
+						return (int)Scripting.EvalExpression(_lengthOther, scope);
 					default:
 						throw new NotSupportedException("Error calculating length.");
 				}

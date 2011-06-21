@@ -48,7 +48,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Number : DataElement
 	{
-		protected uint _size = 8;
+		protected int _size = 8;
 		protected ulong _max = (ulong)sbyte.MaxValue;
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = true;
@@ -66,14 +66,14 @@ namespace Peach.Core.Dom
 			DefaultValue = new Variant(0);
 		}
 
-		public Number(string name, long value, uint size)
+		public Number(string name, long value, int size)
 			: base(name)
 		{
 			_size = size;
 			DefaultValue = new Variant(value);
 		}
 
-		public Number(string name, long value, uint size, bool signed, bool isLittleEndian)
+		public Number(string name, long value, int size, bool signed, bool isLittleEndian)
 			: base(name)
 		{
 			_size = size;
@@ -82,7 +82,7 @@ namespace Peach.Core.Dom
 			DefaultValue = new Variant(value);
 		}
 
-		public override ulong length
+		public override int length
 		{
 			get
 			{
@@ -124,7 +124,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public uint Size
+		public int Size
 		{
 			get { return _size; }
 			set

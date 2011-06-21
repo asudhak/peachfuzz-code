@@ -936,10 +936,10 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "size"))
 			{
-				uint size;
+				int size;
 				try
 				{
-					size = uint.Parse(getXmlAttribute(node, "size"));
+					size = int.Parse(getXmlAttribute(node, "size"));
 				}
 				catch
 				{
@@ -1073,7 +1073,10 @@ namespace Peach.Core.Analyzers
 				try
 				{
 					blob.lengthType = LengthType.String;
-					blob.length = ulong.Parse(getXmlAttribute(node, "length"));
+					blob.length = int.Parse(getXmlAttribute(node, "length"));
+
+					if (blob.length < 0)
+						throw new PeachException("Lengths cannot be negative");
 				}
 				catch (Exception e)
 				{
@@ -1203,7 +1206,7 @@ namespace Peach.Core.Analyzers
 				flag.name = getXmlAttribute(node, "name");
 
 			if (hasXmlAttribute(node, "position"))
-				flag.Position = uint.Parse(getXmlAttribute(node, "position"));
+				flag.Position = int.Parse(getXmlAttribute(node, "position"));
 			else
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
 
@@ -1211,7 +1214,7 @@ namespace Peach.Core.Analyzers
 			{
 				try
 				{
-					flag.Size = uint.Parse(getXmlAttribute(node, "size"));
+					flag.Size = int.Parse(getXmlAttribute(node, "size"));
 				}
 				catch (Exception e)
 				{

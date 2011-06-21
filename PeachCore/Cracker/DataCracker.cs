@@ -17,7 +17,7 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// Mapping of elements from _sizedBlockStack to there lengths.
 		/// </summary>
-		Dictionary<DataElement, ulong> _sizedBlockMap = new Dictionary<DataElement, ulong>();
+		Dictionary<DataElement, int> _sizedBlockMap = new Dictionary<DataElement, int>();
 
 		/// <summary>
 		/// The full data stream.
@@ -27,7 +27,7 @@ namespace Peach.Core.Cracker
 		public DataModel CrackData(DataModel model, BitStream data)
 		{
 			_sizedBlockStack = new List<DataElement>();
-			_sizedBlockMap = new Dictionary<DataElement, ulong>();
+			_sizedBlockMap = new Dictionary<DataElement, int>();
 			_data = data;
 
 			handleNode(model, data);
@@ -43,7 +43,7 @@ namespace Peach.Core.Cracker
 		/// <param name="element">Element to check</param>
 		/// <param name="size">Set to the number of bytes from element to end of the data.</param>
 		/// <returns>Returns true if last unsigned element, else false.</returns>
-		protected bool isLastUnsizedElement(DataElement element, ref ulong size)
+		protected bool isLastUnsizedElement(DataElement element, ref int size)
 		{
 			DataElement currentElement = element;
 			size = 0;
@@ -79,7 +79,7 @@ namespace Peach.Core.Cracker
 		/// <param name="size">Set to the number of bytes from element to token.</param>
 		/// <param name="token">Set to token element if found</param>
 		/// <returns>Returns true if found token, else false.</returns>
-		protected bool isTokenNext(DataElement element, ref ulong size, ref DataElement token)
+		protected bool isTokenNext(DataElement element, ref int size, ref DataElement token)
 		{
 			DataElement currentElement = element;
 			token = null;
@@ -129,7 +129,7 @@ namespace Peach.Core.Cracker
 		/// <param name="data">Input stream to use for data</param>
 		protected void handleNode(DataElement element, BitStream data)
 		{
-			ulong startingPosition = data.TellBits();
+			int startingPosition = data.TellBits();
 			bool hasOffsetRelation = false;
 
 			// Offset relation
@@ -189,7 +189,7 @@ namespace Peach.Core.Cracker
 			}
 
 			if (hasOffsetRelation)
-				data.SeekBits((long)startingPosition, System.IO.SeekOrigin.Begin);
+				data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);
 		}
 
 		protected void handleArray(Dom.Array element, BitStream data)
@@ -210,7 +210,7 @@ namespace Peach.Core.Cracker
 		{
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
-			ulong startPosition = data.TellBytes();
+			int startPosition = data.TellBytes();
 
 			// Do we have relations or a length?
 			if (element.relations.hasSizeRelation)
@@ -219,7 +219,7 @@ namespace Peach.Core.Cracker
 
 				if (!element.isParentOf(sizeRelation.From))
 				{
-					ulong size = (ulong)sizeRelation.GetValue();
+					int size = (int)sizeRelation.GetValue();
 					_sizedBlockStack.Add(element);
 					_sizedBlockMap[element] = size;
 
@@ -229,7 +229,7 @@ namespace Peach.Core.Cracker
 			}
 			else if (element.hasLength)
 			{
-				ulong size = (ulong)element.length;
+				int size = element.length;
 				_sizedBlockStack.Add(element);
 				_sizedBlockMap[element] = size;
 
@@ -248,7 +248,7 @@ namespace Peach.Core.Cracker
 					if (child is DataElementContainer && 
 						((DataElementContainer)child).isParentOf(sizeRelation.From))
 					{
-						ulong size = (ulong)sizeRelation.GetValue();
+						int size = (int)sizeRelation.GetValue();
 						_sizedBlockStack.Add(element);
 						_sizedBlockMap[element] = size;
 
@@ -260,7 +260,7 @@ namespace Peach.Core.Cracker
 					}
 					else if(child == sizeRelation.From)
 					{
-						ulong size = (ulong)sizeRelation.GetValue();
+						int size = (int)sizeRelation.GetValue();
 						_sizedBlockStack.Add(element);
 						_sizedBlockMap[element] = size;
 
@@ -294,7 +294,7 @@ namespace Peach.Core.Cracker
 
 				if (!element.isParentOf(sizeRelation.From))
 				{
-					ulong size = (ulong)sizeRelation.GetValue();
+					int size = (int)sizeRelation.GetValue();
 					_sizedBlockStack.Add(element);
 					_sizedBlockMap[element] = size;
 
@@ -304,20 +304,20 @@ namespace Peach.Core.Cracker
 			}
 			else if (element.hasLength)
 			{
-				ulong size = (ulong)element.length;
+				int size = element.length;
 				_sizedBlockStack.Add(element);
 				_sizedBlockMap[element] = size;
 
 				sizedData = new BitStream(data.ReadBytes(size));
 			}
 
-			ulong startPosition = sizedData.TellBits();
+			int startPosition = sizedData.TellBits();
 
 			foreach (DataElement child in element)
 			{
 				try
 				{
-					sizedData.SeekBits((long)startPosition, System.IO.SeekOrigin.Begin);
+					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
 					handleNode(child, sizedData);
 					element.SelectedElement = child;
 					break;
@@ -339,9 +339,9 @@ namespace Peach.Core.Cracker
 				// Locate NULL character in stream
 				bool foundNull = false;
 				bool twoNulls = element.stringType == StringType.Utf16 || element.stringType == StringType.Utf16be;
-				ulong currentPos = data.TellBits();
+				int currentPos = data.TellBits();
 
-				for (ulong i = data.TellBytes(); i < data.LengthBytes; i++)
+				for (int i = data.TellBytes(); i < data.LengthBytes; i++)
 				{
 					if (data.ReadByte() == 0)
 					{
@@ -369,14 +369,14 @@ namespace Peach.Core.Cracker
 				if (!foundNull)
 					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.");
 
-				ulong endPos = data.TellBits();
+				int endPos = data.TellBits();
 
 				// Do not include NULLs in our read.
-				ulong byteCount = ((endPos - currentPos) / 8) - 1;
+				int byteCount = ((endPos - currentPos) / 8) - 1;
 				if (twoNulls)
 					byteCount--;
 
-				data.SeekBits((long)currentPos, System.IO.SeekOrigin.Begin);
+				data.SeekBits(currentPos, System.IO.SeekOrigin.Begin);
 				byte [] value = data.ReadBytes(byteCount);
 				string strValue = ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(value);
 				element.DefaultValue = new Variant(strValue);
@@ -390,13 +390,13 @@ namespace Peach.Core.Cracker
 				return;
 			}
 
-			ulong? stringLength = null;
+			int? stringLength = null;
 
 			// Check for relation and/or size
 			if (element.relations.hasSizeRelation)
 			{
 				SizeRelation rel = element.relations.getSizeRelation();
-				stringLength = (ulong)rel.GetValue();
+				stringLength = (int)rel.GetValue();
 			}
 			else if (element.hasLength)
 			{
@@ -404,7 +404,7 @@ namespace Peach.Core.Cracker
 			}
 			else
 			{
-				ulong size = 0;
+				int size = 0;
 				DataElement token = null;
 
 				if (isLastUnsizedElement(element, ref size))
@@ -424,7 +424,7 @@ namespace Peach.Core.Cracker
 
 				element.DefaultValue = new Variant(
 					ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
-					data.ReadBytes((uint)stringLength)));
+					data.ReadBytes((int)stringLength)));
 
 				return;
 			}
