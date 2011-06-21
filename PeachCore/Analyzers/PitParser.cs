@@ -710,7 +710,16 @@ namespace Peach.Core.Analyzers
 						parent.parent[parent.name] = elem;
 					}
 					else
-						element[elem.name] = elem;
+					{
+						try
+						{
+							element[elem.name] = elem;
+						}
+						catch
+						{
+							element.Add(elem);
+						}
+					}
 				}
 				// Otherwise enforce unique element names.
 				else
