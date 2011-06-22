@@ -37,10 +37,10 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 
-namespace Peach.Core.Test
+namespace Peach.Core.Test.PitParserTests
 {
 	[TestFixture]
-	class BlockRefTest
+	class RefTests
 	{
 		[Test]
 		public void BasicTest()
@@ -177,14 +177,14 @@ namespace Peach.Core.Test
 		[Test]
 		public void BasicTestReplace2()
 		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"+
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Block name=\"Block1\">" +
 				"			<Block name=\"Block1a\">" +
 				"				<String name=\"Str1\" />" +
 				"				<String name=\"Str2\" />" +
-				"			</Block>"+
+				"			</Block>" +
 				"			<String name=\"Str3\" />" +
 				"		</Block>" +
 				"		<Block name=\"Block2\" ref=\"Block1\">" +

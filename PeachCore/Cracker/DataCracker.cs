@@ -361,7 +361,7 @@ namespace Peach.Core.Cracker
 			}
 
 			if (element.SelectedElement == null)
-				throw new CrackingFailure("Unable to crack '"+element.fullName+"'.");
+				throw new CrackingFailure("Unable to crack '"+element.fullName+"'.", element, data);
 		}
 
 		protected void handleString(Dom.String element, BitStream data)
@@ -399,7 +399,7 @@ namespace Peach.Core.Cracker
 				}
 
 				if (!foundNull)
-					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.");
+					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.", element, data);
 
 				int endPos = data.TellBits();
 
@@ -429,7 +429,7 @@ namespace Peach.Core.Cracker
 				if ((data.TellBytes() + stringLength) > data.LengthBytes)
 					throw new CrackingFailure("String '" + element.fullName +
 						"' has length of '" + stringLength + "' but buffer only has '" +
-						(data.LengthBytes - data.TellBytes()) + "' bytes left.");
+						(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
 				element.DefaultValue = new Variant(
 					ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
@@ -438,7 +438,7 @@ namespace Peach.Core.Cracker
 				return;
 			}
 
-			throw new CrackingFailure("Unable to crack '" + element.fullName + "'.");
+			throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 		}
 
 		protected int? determineElementSize(DataElement element, BitStream data)
@@ -474,7 +474,7 @@ namespace Peach.Core.Cracker
 		protected void handleNumber(Number element, BitStream data)
 		{
 			if (data.LengthBits < data.TellBits() + element.Size)
-				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.");
+				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
 
 			if (element.LittleEndian)
 				data.LittleEndian();
@@ -498,7 +498,7 @@ namespace Peach.Core.Cracker
 					value = (ulong)data.ReadInt64();
 					break;
 				default:
-					throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.");
+					throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
 			}
 
 			element.DefaultValue = new Variant(value);
@@ -507,7 +507,7 @@ namespace Peach.Core.Cracker
 		protected void handleFlags(Flags element, BitStream data)
 		{
 			if (data.LengthBits <= (data.TellBits() + element.Size))
-				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.");
+				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.", element, data);
 			
 			foreach (DataElement child in element)
 				handleFlag(child as Flag, data);
@@ -522,12 +522,12 @@ namespace Peach.Core.Cracker
 			int? blobLength = determineElementSize(element, data);
 
 			if (blobLength == null)
-				throw new CrackingFailure("Unable to crack Blob '" + element + "'.");
+				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
 
 			if ((data.TellBytes() + blobLength) > data.LengthBytes)
 				throw new CrackingFailure("Blob '" + element.fullName +
 					"' has length of '" + blobLength + "' but buffer only has '" +
-					(data.LengthBytes - data.TellBytes()) + "' bytes left.");
+					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
 			element.DefaultValue = new Variant(data.ReadBytes((int)blobLength));
 		}
@@ -535,12 +535,20 @@ namespace Peach.Core.Cracker
 
 	public class CrackingFailure : ApplicationException
 	{
-		public CrackingFailure() : base("Unknown error")
+		public DataElement element;
+		public BitStream data;
+
+		public CrackingFailure(DataElement element, BitStream data)
+			: base("Unknown error")
 		{
+			this.element = element;
+			this.data = data;
 		}
 
-		public CrackingFailure(string msg) : base(msg)
+		public CrackingFailure(string msg, DataElement element, BitStream data) : base(msg)
 		{
+			this.element = element;
+			this.data = data;
 		}
 	}
 
@@ -548,3 +556,5 @@ namespace Peach.Core.Cracker
 	{
 	}
 }
+
+// end

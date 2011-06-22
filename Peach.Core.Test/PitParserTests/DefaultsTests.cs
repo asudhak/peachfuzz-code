@@ -37,10 +37,10 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 
-namespace Peach.Core.Test
+namespace Peach.Core.Test.PitParserTests
 {
 	[TestFixture]
-	class PitParserTest
+	class DefaultTests
 	{
 		[Test]
 		public void NumberDefaults()

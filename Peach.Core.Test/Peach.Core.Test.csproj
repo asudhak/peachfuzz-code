@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitStreamTest.cs" />
-    <Compile Include="BlockRefTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />
     <Compile Include="CrackingTests\BlobTests.cs" />
     <Compile Include="CrackingTests\BlockTests.cs" />
@@ -61,7 +60,15 @@
     <Compile Include="CrackingTests\StringTests.cs" />
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
-    <Compile Include="PitParserTest.cs" />
+    <Compile Include="PitParserTests\BlockTests.cs" />
+    <Compile Include="PitParserTests\ChoiceTests.cs" />
+    <Compile Include="PitParserTests\DefaultsTests.cs" />
+    <Compile Include="PitParserTests\FlagTests.cs" />
+    <Compile Include="PitParserTests\GeneralTests.cs" />
+    <Compile Include="PitParserTests\NumberTests.cs" />
+    <Compile Include="PitParserTests\RefTests.cs" />
+    <Compile Include="PitParserTests\StringTests.cs" />
+    <Compile Include="PitParserTests\XmlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RelationSizeTest.cs" />
   </ItemGroup>

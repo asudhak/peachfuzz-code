@@ -36,40 +36,30 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
-using Peach.Core.Cracker;
 
-namespace Peach.Core.Test.CrackingTests
+namespace Peach.Core.Test.PitParserTests
 {
 	[TestFixture]
-	public class ChoiceTests
+	class ChoiceTests
 	{
-		[Test]
-		public void CrackChoice1()
-		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"TheDataModel\">" +
-				"		<Choice>"  +
-				"			<Blob name=\"Blob10\" length=\"10\" />" +
-				"			<Blob name=\"Blob5\" length=\"5\" />"   +
-				"		</Choice>" +
-				"	</DataModel>"  +
-				"</Peach>";
+		//[Test]
+		//public void NumberDefaults()
+		//{
+		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+		//        "	<Defaults>" +
+		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
+		//        "	</Defaults>" +
+		//        "	<DataModel name=\"TheDataModel\">" +
+		//        "		<Number name=\"TheNumber\" size=\"8\"/>" +
+		//        "	</DataModel>" +
+		//        "</Peach>";
 
-			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		//    PitParser parser = new PitParser();
+		//    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		//    Number num = dom.dataModels[0][0] as Number;
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5 });
-			data.SeekBits(0, SeekOrigin.Begin);
-
-			DataCracker cracker = new DataCracker();
-			cracker.CrackData(dom.dataModels[0], data);
-
-			Assert.AreEqual("Blob5", ((DataElementContainer) dom.dataModels[0][0])[0].name);
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
-		}
+		//    Assert.IsTrue(num.Signed);
+		//    Assert.IsFalse(num.LittleEndian);
+		//}
 	}
 }
-
-// end
