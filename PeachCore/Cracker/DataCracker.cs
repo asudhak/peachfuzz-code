@@ -422,30 +422,7 @@ namespace Peach.Core.Cracker
 				return;
 			}
 
-			int? stringLength = null;
-
-			// Check for relation and/or size
-			if (element.relations.hasSizeRelation)
-			{
-				SizeRelation rel = element.relations.getSizeRelation();
-				stringLength = (int)rel.GetValue();
-			}
-			else if (element.hasLength)
-			{
-				stringLength = element.length;
-			}
-			else
-			{
-				int size = 0;
-				DataElement token = null;
-
-				if (isLastUnsizedElement(element, ref size))
-					stringLength = data.LengthBytes - (data.TellBytes()+size);
-				else if (isTokenNext(element, ref size, ref token))
-				{
-					throw new NotImplementedException("Need to implement this!");
-				}
-			}
+			int? stringLength = determineElementSize(element, data);
 
 			if (stringLength != null)
 			{
@@ -462,6 +439,36 @@ namespace Peach.Core.Cracker
 			}
 
 			throw new CrackingFailure("Unable to crack '" + element.fullName + "'.");
+		}
+
+		protected int? determineElementSize(DataElement element, BitStream data)
+		{
+			int? size = null;
+
+			// Check for relation and/or size
+			if (element.relations.hasSizeRelation)
+			{
+				SizeRelation rel = element.relations.getSizeRelation();
+				size = (int)rel.GetValue();
+			}
+			else if (element.hasLength)
+			{
+				size = element.length;
+			}
+			else
+			{
+				int nextSize = 0;
+				DataElement token = null;
+
+				if (isLastUnsizedElement(element, ref nextSize))
+					size = data.LengthBytes - (data.TellBytes() + nextSize);
+				else if (isTokenNext(element, ref nextSize, ref token))
+				{
+					throw new NotImplementedException("Need to implement this!");
+				}
+			}
+
+			return size;
 		}
 
 		protected void handleNumber(Number element, BitStream data)
@@ -512,6 +519,17 @@ namespace Peach.Core.Cracker
 
 		protected void handleBlob(Blob element, BitStream data)
 		{
+			int? blobLength = determineElementSize(element, data);
+
+			if (blobLength == null)
+				throw new CrackingFailure("Unable to crack Blob '" + element + "'.");
+
+			if ((data.TellBytes() + blobLength) > data.LengthBytes)
+				throw new CrackingFailure("Blob '" + element.fullName +
+					"' has length of '" + blobLength + "' but buffer only has '" +
+					(data.LengthBytes - data.TellBytes()) + "' bytes left.");
+
+			element.DefaultValue = new Variant(data.ReadBytes((int)blobLength));
 		}
 	}
 
