@@ -500,7 +500,13 @@ namespace Peach.Core.Cracker
 					throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
 			}
 
-			element.DefaultValue = new Variant(value);
+			var defaultValue = new Variant(value);
+
+			if(element.isToken)
+				if(defaultValue != element.DefaultValue)
+					throw new CrackingFailure("Number marked as token, values did not match '"+defaultValue+"' vs. '"+element.DefaultValue+"'.", element, data);
+
+			element.DefaultValue = defaultValue;
 		}
 
 		protected void handleFlags(Flags element, BitStream data)
