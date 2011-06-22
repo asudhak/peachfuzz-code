@@ -423,21 +423,23 @@ namespace Peach.Core.Cracker
 
 			int? stringLength = determineElementSize(element, data);
 
-			if (stringLength != null)
-			{
-				if ((data.TellBytes() + stringLength) > data.LengthBytes)
-					throw new CrackingFailure("String '" + element.fullName +
-						"' has length of '" + stringLength + "' but buffer only has '" +
-						(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
+			if (stringLength == null)
+				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 
-				element.DefaultValue = new Variant(
-					ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
-					data.ReadBytes((int)stringLength)));
+			if ((data.TellBytes() + stringLength) > data.LengthBytes)
+				throw new CrackingFailure("String '" + element.fullName +
+					"' has length of '" + stringLength + "' but buffer only has '" +
+					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
-				return;
-			}
+			var defaultValue = new Variant(
+				ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
+				data.ReadBytes((int)stringLength)));
 
-			throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
+			if (element.isToken)
+				if (defaultValue != element.DefaultValue)
+					throw new CrackingFailure("String marked as token, values did not match '" + defaultValue + "' vs. '" + element.DefaultValue + "'.", element, data);
+
+			element.DefaultValue = defaultValue;
 		}
 
 		protected int? determineElementSize(DataElement element, BitStream data)
@@ -504,7 +506,7 @@ namespace Peach.Core.Cracker
 
 			if(element.isToken)
 				if(defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Number marked as token, values did not match '"+defaultValue+"' vs. '"+element.DefaultValue+"'.", element, data);
+					throw new CrackingFailure("Number marked as token, values did not match '"+ ((string)defaultValue) +"' vs. '"+((string)element.DefaultValue)+"'.", element, data);
 
 			element.DefaultValue = defaultValue;
 		}
@@ -520,6 +522,11 @@ namespace Peach.Core.Cracker
 
 		protected void handleFlag(Flag element, BitStream data)
 		{
+			//if (element.isToken)
+			//    if (defaultValue != element.DefaultValue)
+			//        throw new CrackingFailure("Blob marked as token, values did not match '" + defaultValue + "' vs. '" + element.DefaultValue + "'.", element, data);
+
+			//element.DefaultValue = defaultValue;
 		}
 
 		protected void handleBlob(Blob element, BitStream data)
@@ -534,7 +541,13 @@ namespace Peach.Core.Cracker
 					"' has length of '" + blobLength + "' but buffer only has '" +
 					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
-			element.DefaultValue = new Variant(data.ReadBytes((int)blobLength));
+			var defaultValue = new Variant(data.ReadBytes((int)blobLength));
+
+			if (element.isToken)
+				if (defaultValue != element.DefaultValue)
+					throw new CrackingFailure("Blob marked as token, values did not match '" + defaultValue + "' vs. '" + element.DefaultValue + "'.", element, data);
+
+			element.DefaultValue = defaultValue;
 		}
 	}
 

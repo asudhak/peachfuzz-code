@@ -337,5 +337,43 @@ namespace Peach.Core
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}
 		}
+
+		public static bool operator == (Variant a, Variant b)
+		{
+			if (((object)a == null) && ((object)b == null))
+				return true;
+
+			if (((object)a == null) || ((object)b == null))
+				return false;
+				
+			try
+			{
+				string stra = (string)a;
+				string strb = (string)b;
+
+				if (stra.Equals(strb))
+					return true;
+				else
+					return false;
+			}
+			catch { }
+
+			byte[] aa = (byte[])a;
+			byte[] bb = (byte[])b;
+
+			if (aa.Length != bb.Length)
+				return false;
+
+			for (int cnt = 0; cnt < aa.Length; cnt++)
+				if (aa[cnt] != bb[cnt])
+					return false;
+
+			return true;
+		}
+
+		public static bool operator !=(Variant a, Variant b)
+		{
+			return !(a == b);
+		}
 	}
 }

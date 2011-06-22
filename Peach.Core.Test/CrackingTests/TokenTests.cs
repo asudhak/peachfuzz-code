@@ -67,7 +67,7 @@ namespace Peach.Core.Test.CrackingTests
 				cracker.CrackData(dom.dataModels[0], data);
 
 				Assert.AreEqual(300, (int)dom.dataModels[0][0].DefaultValue);
-				Assert.AreEqual("Hello World", (int)dom.dataModels[0][1].DefaultValue);
+				Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
 			}
 			{
 				// Negative test
@@ -81,12 +81,12 @@ namespace Peach.Core.Test.CrackingTests
 				data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 				data.SeekBits(0, SeekOrigin.Begin);
 
-				// We should probably get an exception from here...
 				DataCracker cracker = new DataCracker();
-				cracker.CrackData(dom.dataModels[0], data);
+				TestDelegate myTestDelegate = () => cracker.CrackData(dom.dataModels[0], data);
+				Assert.Throws<CrackingFailure>(myTestDelegate);
 
 				Assert.AreEqual(300, (int)dom.dataModels[0][0].DefaultValue);
-				Assert.AreEqual("Foo Bar", (int)dom.dataModels[0][1].DefaultValue);
+				Assert.AreEqual("Foo Bar", (string)dom.dataModels[0][1].DefaultValue);
 			}
 		}
 	}

@@ -612,7 +612,7 @@ namespace Peach.Core.Analyzers
 		protected void handleCommonDataElementAttributes(XmlNode node, DataElement element)
 		{
 			if (hasXmlAttribute(node, "token"))
-				throw new NotSupportedException("implement token attribute");
+				element.isToken = true;
 			
 			if (hasXmlAttribute(node, "mutable"))
 				element.isMutable = false;
