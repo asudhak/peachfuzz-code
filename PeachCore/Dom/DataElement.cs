@@ -264,7 +264,7 @@ namespace Peach.Core.Dom
 				return null;
 
 			int nextIndex = _parent.IndexOf(this) + 1;
-			if (nextIndex > _parent.Count)
+			if (nextIndex >= _parent.Count)
 				return null;
 
 			return _parent[nextIndex];
@@ -345,6 +345,7 @@ namespace Peach.Core.Dom
 			{
 				_lengthType = LengthType.String;
 				_length = value;
+				_hasLength = true;
 			}
 		}
 

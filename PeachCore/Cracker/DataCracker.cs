@@ -45,29 +45,61 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns true if last unsigned element, else false.</returns>
 		protected bool isLastUnsizedElement(DataElement element, ref int size)
 		{
+			DataElement oldElement = element;
 			DataElement currentElement = element;
-			size = 0;
 
 			while (true)
 			{
-				currentElement = currentElement.nextSibling();
-				if (currentElement == null && currentElement.parent == null)
+				currentElement = oldElement.nextSibling();
+				if (currentElement == null && oldElement.parent == null)
 					break;
 				else if (currentElement == null)
-					currentElement = currentElement.parent;
+					currentElement = oldElement.parent;
 				else
 				{
 					if (currentElement.hasLength)
 						size += currentElement.length;
+					else if (currentElement is DataElementContainer)
+					{
+						foreach(DataElement child in ((DataElementContainer)currentElement))
+						{
+							if (!_isLastUnsizedElementRecursive(child, ref size))
+								return false;
+						}
+					}
 					else
 					{
 						size = 0;
 						return false;
 					}
 				}
+
+				oldElement = currentElement;
 			}
 
-			size = 0;
+			return true;
+		}
+
+		protected bool _isLastUnsizedElementRecursive(DataElement elem, ref int size)
+		{
+			if (elem == null)
+				return false;
+
+			if (elem.hasLength)
+			{
+				size += elem.length;
+				return true;
+			}
+
+			if(!(elem is DataElementContainer))
+				return false;
+
+			foreach(DataElement child in ((DataElementContainer)elem))
+			{
+				if (!_isLastUnsizedElementRecursive(child, ref size))
+					return false;
+			}
+
 			return true;
 		}
 
@@ -417,7 +449,7 @@ namespace Peach.Core.Cracker
 
 			if (stringLength != null)
 			{
-				if ((data.TellBytes() + stringLength) >= data.LengthBytes)
+				if ((data.TellBytes() + stringLength) > data.LengthBytes)
 					throw new CrackingFailure("String '" + element.fullName +
 						"' has length of '" + stringLength + "' but buffer only has '" +
 						(data.LengthBytes - data.TellBytes()) + "' bytes left.");

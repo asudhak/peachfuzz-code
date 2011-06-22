@@ -767,9 +767,6 @@ namespace Peach.Core.Analyzers
 			if (hasXmlAttribute(node, "name"))
 				str.name = getXmlAttribute(node, "name");
 
-			if (hasXmlAttribute(node, "length"))
-				throw new NotSupportedException("Implement length attribute on String");
-
 			if (hasXmlAttribute(node, "nullTerminated"))
 				str.nullTerminated = getXmlAttributeAsBool(node, "nullTerminated", false);
 			else if (hasDefaultAttribute(typeof(Dom.String), "nullTerminated"))
@@ -814,6 +811,23 @@ namespace Peach.Core.Analyzers
 					default:
 						throw new PeachException("Error, parsing lengthType on String '" + str.name + "', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
 				}
+			}
+
+			if (hasXmlAttribute(node, "length"))
+			{
+				if (str.lengthType == LengthType.String)
+				{
+					try
+					{
+						str.length = Int32.Parse(getXmlAttribute(node, "length"));
+					}
+					catch (Exception e)
+					{
+						throw new PeachException("Error, parsing length on String '" + str.name + "': " + e.Message);
+					}
+				}
+				else
+					str.lengthOther = getXmlAttribute(node, "length");
 			}
 
 			if (hasXmlAttribute(node, "tokens")) // This item has a default!

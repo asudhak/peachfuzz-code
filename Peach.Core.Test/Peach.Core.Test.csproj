@@ -50,6 +50,7 @@
     <Compile Include="BlockRefTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />
     <Compile Include="CrackingTests\BlobTests.cs" />
+    <Compile Include="CrackingTests\BlockTests.cs" />
     <Compile Include="CrackingTests\ChoiceTests.cs" />
     <Compile Include="CrackingTests\ContraintTests.cs" />
     <Compile Include="CrackingTests\CountRelationTests.cs" />

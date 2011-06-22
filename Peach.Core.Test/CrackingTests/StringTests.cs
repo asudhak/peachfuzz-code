@@ -43,7 +43,6 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	class StringTests
 	{
-
 		[Test]
 		public void CrackString1()
 		{
@@ -175,9 +174,9 @@ namespace Peach.Core.Test.CrackingTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<String />" +
-				"		<Block>" +
-				"			<Number size=\"16\" />" +
+				"		<String name=\"TheString\" />" +
+				"		<Block name=\"TheBlock\">" +
+				"			<Number name=\"TheNumber\" size=\"16\" />" +
 				"		</Block>" +
 				"	</DataModel>" +
 				"</Peach>";
