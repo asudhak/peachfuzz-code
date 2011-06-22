@@ -37,38 +37,57 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.Cracker;
-
-namespace Peach.Core.Test
+namespace Peach.Core.Test.CrackingTests
 {
 	[TestFixture]
-	class CrackingTests
+	public class TokenTests
 	{
 		[Test]
-		public void CrackNumber1()
+		public void CrackTokenNumber()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Number size=\"8\" signed=\"true\"/>" +
-				"		<Number size=\"16\" signed=\"true\"/>" +
-				"		<Number size=\"8\" signed=\"true\"/>" +
+				"		<Number size=\"16\" value=\"300\" token=\"true\" />" +
+				"		<String value=\"Foo Bar\" />" +
 				"	</DataModel>" +
 				"</Peach>";
+			{
+				// Positive test
 
-			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8(16);
-			data.WriteInt16(3000);
-			data.WriteInt8(25);
-			data.SeekBits(0, SeekOrigin.Begin);
+				BitStream data = new BitStream();
+				data.LittleEndian();
+				data.WriteInt16(300);
+				data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+				data.SeekBits(0, SeekOrigin.Begin);
 
-			DataCracker cracker = new DataCracker();
-			cracker.CrackData(dom.dataModels[0], data);
+				DataCracker cracker = new DataCracker();
+				cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(16, (int)dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(3000, (int)dom.dataModels[0][1].DefaultValue);
-			Assert.AreEqual(25, (int)dom.dataModels[0][2].DefaultValue);
+				Assert.AreEqual(300, (int)dom.dataModels[0][0].DefaultValue);
+				Assert.AreEqual("Hello World", (int)dom.dataModels[0][1].DefaultValue);
+			}
+			{
+				// Negative test
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+				BitStream data = new BitStream();
+				data.LittleEndian();
+				data.WriteInt16(200);
+				data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+				data.SeekBits(0, SeekOrigin.Begin);
+
+				// We should probably get an exception from here...
+				DataCracker cracker = new DataCracker();
+				cracker.CrackData(dom.dataModels[0], data);
+
+				Assert.AreEqual(300, (int)dom.dataModels[0][0].DefaultValue);
+				Assert.AreEqual("Foo Bar", (int)dom.dataModels[0][1].DefaultValue);
+			}
 		}
 	}
 }

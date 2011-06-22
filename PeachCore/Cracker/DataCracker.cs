@@ -442,7 +442,25 @@ namespace Peach.Core.Cracker
 			else
 				data.BigEndian();
 
-			ulong value = data.ReadBits(element.Size);
+			ulong value = 0;
+
+			switch (element.Size)
+			{
+				case 8:
+					value = (ulong)data.ReadInt8();
+					break;
+				case 16:
+					value = (ulong)data.ReadInt16();
+					break;
+				case 32:
+					value = (ulong)data.ReadInt32();
+					break;
+				case 64:
+					value = (ulong)data.ReadInt64();
+					break;
+				default:
+					throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.");
+			}
 
 			element.DefaultValue = new Variant(value);
 		}
