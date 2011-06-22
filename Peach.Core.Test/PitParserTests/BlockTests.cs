@@ -49,9 +49,6 @@ namespace Peach.Core.Test.PitParserTests
 		//        "	<Defaults>" +
 		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
 		//        "	</Defaults>" +
-		//        "	<DataModel name=\"TheDataModel\">" +
-		//        "		<Number name=\"TheNumber\" size=\"8\"/>" +
-		//        "	</DataModel>" +
 		//        "</Peach>";
 
 		//    PitParser parser = new PitParser();

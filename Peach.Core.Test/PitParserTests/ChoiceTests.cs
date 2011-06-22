@@ -42,24 +42,25 @@ namespace Peach.Core.Test.PitParserTests
 	[TestFixture]
 	class ChoiceTests
 	{
-		//[Test]
-		//public void NumberDefaults()
-		//{
-		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-		//        "	<Defaults>" +
-		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
-		//        "	</Defaults>" +
-		//        "	<DataModel name=\"TheDataModel\">" +
-		//        "		<Number name=\"TheNumber\" size=\"8\"/>" +
-		//        "	</DataModel>" +
-		//        "</Peach>";
+		[Test]
+		public void NumberDefaults()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Choice> "+
+				"			<Number name=\"N1\" size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"			<Number name=\"N2\" size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"			<Number name=\"N3\" size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"		</Choice> " +
+				"	</DataModel>" +
+				"</Peach>";
 
-		//    PitParser parser = new PitParser();
-		//    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		//    Number num = dom.dataModels[0][0] as Number;
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-		//    Assert.IsTrue(num.Signed);
-		//    Assert.IsFalse(num.LittleEndian);
-		//}
+			Assert.IsTrue(dom.dataModels[0].Count == 1);
+			Assert.IsTrue(dom.dataModels[0][0] is Choice);
+			Assert.AreEqual(3, ((Choice)dom.dataModels[0][0]).choiceElements.Count);
+		}
 	}
 }

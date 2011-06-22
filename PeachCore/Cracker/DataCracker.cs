@@ -191,13 +191,13 @@ namespace Peach.Core.Cracker
 			{
 				handleArray(element as Dom.Array, data);
 			}
-			else if (element is DataElementContainer) // Should also catch DataModel's
-			{
-				handleDataElementContainer(element as DataElementContainer, data);
-			}
 			else if (element is Choice)
 			{
 				handleChoice(element as Choice, data);
+			}
+			else if (element is DataElementContainer) // Should also catch DataModel's
+			{
+				handleDataElementContainer(element as DataElementContainer, data);
 			}
 			else if (element is Dom.String)
 			{
@@ -317,7 +317,6 @@ namespace Peach.Core.Cracker
 		{
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
-			element.SelectedElement = null;
 
 			// Do we have relations or a length?
 			if (element.relations.hasSizeRelation)
@@ -345,7 +344,7 @@ namespace Peach.Core.Cracker
 
 			int startPosition = sizedData.TellBits();
 
-			foreach (DataElement child in element)
+			foreach (DataElement child in element.choiceElements.Values)
 			{
 				try
 				{

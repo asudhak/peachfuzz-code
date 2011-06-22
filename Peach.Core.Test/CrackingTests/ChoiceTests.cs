@@ -66,7 +66,8 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Blob5", ((DataElementContainer) dom.dataModels[0][0])[0].name);
+			Assert.IsTrue(dom.dataModels[0][0] is Choice);
+			Assert.AreEqual("Blob5", ((Choice)dom.dataModels[0][0])[0].name);
 			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
 		}
 	}
