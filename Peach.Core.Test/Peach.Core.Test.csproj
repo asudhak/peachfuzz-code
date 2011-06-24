@@ -61,6 +61,7 @@
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
     <Compile Include="PitParserTests\BlockTests.cs" />
+    <Compile Include="PitParserTests\BlobTests.cs" />
     <Compile Include="PitParserTests\ChoiceTests.cs" />
     <Compile Include="PitParserTests\DefaultsTests.cs" />
     <Compile Include="PitParserTests\FlagTests.cs" />

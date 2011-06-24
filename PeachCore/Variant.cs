@@ -375,5 +375,29 @@ namespace Peach.Core
 		{
 			return !(a == b);
 		}
+
+		public string ToHex(int maxBytes = 0)
+		{
+			byte[] data = (byte[])this;
+			StringBuilder ret = new StringBuilder();
+
+			for (int cnt = 0; cnt < data.Length; cnt++)
+			{
+				if (cnt > 0 && cnt % 8 == 0)
+					ret.Append(" ");
+				if (cnt > 0 && cnt % 16 == 0)
+					ret.Append("\n");
+
+				ret.AppendFormat("{0:x2} ", data[cnt]);
+
+				if (maxBytes > 0 && cnt > maxBytes)
+				{
+					ret.Append("[cut]");
+					break;
+				}
+			}
+
+			return ret.ToString();
+		}
 	}
 }

@@ -195,6 +195,10 @@ namespace Peach.Core.Cracker
 			{
 				handleChoice(element as Choice, data);
 			}
+			else if (element is Flags)
+			{
+				handleFlags(element as Flags, data);
+			}
 			else if (element is DataElementContainer) // Should also catch DataModel's
 			{
 				handleDataElementContainer(element as DataElementContainer, data);
@@ -206,10 +210,6 @@ namespace Peach.Core.Cracker
 			else if (element is Number)
 			{
 				handleNumber(element as Number, data);
-			}
-			else if (element is Flags)
-			{
-				handleFlags(element as Flags, data);
 			}
 			else if (element is Blob)
 			{
@@ -423,6 +423,10 @@ namespace Peach.Core.Cracker
 
 			int? stringLength = determineElementSize(element, data);
 
+			// TODO - Make both length and size for strings.  Length is always in chars.
+			if (stringLength == null && element.isToken)
+				stringLength = ((string)element.DefaultValue).Length;
+
 			if (stringLength == null)
 				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 
@@ -515,23 +519,38 @@ namespace Peach.Core.Cracker
 		{
 			if (data.LengthBits <= (data.TellBits() + element.Size))
 				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.", element, data);
-			
+
+			int startPos = data.TellBits();
+
 			foreach (DataElement child in element)
+			{
+				data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
+				data.SeekBits(((Flag)child).Position, System.IO.SeekOrigin.Current);
 				handleFlag(child as Flag, data);
+			}
+
+			// Make sure we land at end of Flags
+			data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
+			data.SeekBits((int)element.Size, System.IO.SeekOrigin.Current);
 		}
 
 		protected void handleFlag(Flag element, BitStream data)
 		{
-			//if (element.isToken)
-			//    if (defaultValue != element.DefaultValue)
-			//        throw new CrackingFailure("Blob marked as token, values did not match '" + defaultValue + "' vs. '" + element.DefaultValue + "'.", element, data);
+			var defaultValue = new Variant(data.ReadBits(element.Size));
 
-			//element.DefaultValue = defaultValue;
+			if (element.isToken)
+			    if (defaultValue != element.DefaultValue)
+			        throw new CrackingFailure("Flag '" + element.name + "' marked as token, values did not match '" + (string)defaultValue + "' vs. '" + (string)element.DefaultValue + "'.", element, data);
+
+			element.DefaultValue = defaultValue;
 		}
 
 		protected void handleBlob(Blob element, BitStream data)
 		{
 			int? blobLength = determineElementSize(element, data);
+
+			if (blobLength == null && element.isToken)
+				blobLength = ((byte[])element.DefaultValue).Length;
 
 			if (blobLength == null)
 				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
@@ -545,7 +564,7 @@ namespace Peach.Core.Cracker
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Blob marked as token, values did not match '" + defaultValue + "' vs. '" + element.DefaultValue + "'.", element, data);
+					throw new CrackingFailure("Blob '"+element.name+"' marked as token, values did not match '" + defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
 
 			element.DefaultValue = defaultValue;
 		}

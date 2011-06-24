@@ -40,28 +40,38 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.PitParserTests
 {
 	[TestFixture]
-	class StringTests
+	class BlobTests
 	{
-		// TODO - Unicode and everything 
+		[Test]
+		public void BlobTest1()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob value=\"Hello World\" />" +
+				"	</DataModel>" +
+				"</Peach>";
 
-		//[Test]
-		//public void NumberDefaults()
-		//{
-		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-		//        "	<Defaults>" +
-		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
-		//        "	</Defaults>" +
-		//        "	<DataModel name=\"TheDataModel\">" +
-		//        "		<Number name=\"TheNumber\" size=\"8\"/>" +
-		//        "	</DataModel>" +
-		//        "</Peach>";
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Blob blob = dom.dataModels[0][0] as Blob;
 
-		//    PitParser parser = new PitParser();
-		//    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		//    Number num = dom.dataModels[0][0] as Number;
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])blob.DefaultValue);
+		}
 
-		//    Assert.IsTrue(num.Signed);
-		//    Assert.IsFalse(num.LittleEndian);
-		//}
+		[Test]
+		public void BlobTest2()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob value=\"41 42 43 44\" valueType=\"hex\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Blob blob = dom.dataModels[0][0] as Blob;
+
+			Assert.AreEqual(new byte[] { 0x41, 0x42, 0x43, 0x44 }, (byte[])blob.DefaultValue);
+		}
 	}
 }
