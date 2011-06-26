@@ -239,7 +239,7 @@ namespace Peach.Core.Agent
 		{
 			int port = 9001;
 
-			if (args.Keys.Contains("port"))
+			if (args.ContainsKey("port"))
 				port = int.Parse(args["port"]);
 
 			//select channel to communicate

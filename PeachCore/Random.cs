@@ -45,7 +45,23 @@ namespace Peach.Core
 
 		public T Choice<T>(IEnumerable<T> list)
 		{
-			return list.ElementAt(_random.Next(0, list.Count()));
+			return ElementAt<T>(list, _random.Next(0, list.Count()));
+		}
+
+		/// <summary>
+		/// Work around for missing method in Mono
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="list"></param>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		protected T ElementAt<T>(IEnumerable<T> list, int index)
+		{
+			var enumerator = list.GetEnumerator();
+			for (int cnt = 0; cnt < index; cnt++)
+				enumerator.MoveNext();
+
+			return enumerator.Current;
 		}
 	}
 }
