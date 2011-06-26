@@ -35,6 +35,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
@@ -889,7 +890,7 @@ namespace Peach.Core.Analyzers
 						}
 
 						for (int cnt = 0; cnt < value.Length; cnt += 2)
-							sout.WriteByte(byte.Parse(value.Substring(cnt, 2)));
+							sout.WriteByte(Convert.ToByte(value.Substring(cnt, 2), 16));
 
 						sout.SeekBits(0, SeekOrigin.Begin);
 

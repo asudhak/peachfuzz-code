@@ -549,7 +549,7 @@ namespace Peach.Core
 			return true;
 		}
 
-		static public IList Unpack(string description, byte[] buffer, int startIndex)
+		static public IList Unpack(string description, byte[] buffer, int startIndex = 0)
 		{
 			DataConverter conv = CopyConv;
 			ArrayList result = new ArrayList();

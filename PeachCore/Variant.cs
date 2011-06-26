@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Peach.Core.IO;
 
 namespace Peach.Core
 {

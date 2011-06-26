@@ -31,6 +31,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
+
 namespace Peach.Core.Transformers.Encode
 {
     [Transformer("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]

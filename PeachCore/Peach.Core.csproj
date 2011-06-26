@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -203,7 +203,7 @@
     <Compile Include="Analyzers\Shark.cs" />
     <Compile Include="Analyzers\StringToken.cs" />
     <Compile Include="Analyzers\Xml.cs" />
-    <Compile Include="BitStream.cs" />
+    <Compile Include="IO\BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\DataCracker.cs" />
     <Compile Include="Cracker\IncomingStream.cs" />
@@ -924,6 +924,10 @@
     <Compile Include="Fixup.cs" />
     <Compile Include="Fixups\Checksums.cs" />
     <Compile Include="Fixups\Libraries\CRCTool.cs" />
+    <Compile Include="IO\Conversion\BigEndianBitConverter.cs" />
+    <Compile Include="IO\Conversion\EndianBitConverter.cs" />
+    <Compile Include="IO\Conversion\Endianness.cs" />
+    <Compile Include="IO\Conversion\LittleEndianBitConverter.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
     <Compile Include="MutationStrategies\Random.cs" />

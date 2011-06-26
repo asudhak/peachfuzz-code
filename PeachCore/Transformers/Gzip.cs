@@ -32,6 +32,7 @@ using System.Text;
 using System.IO.Compression;
 using System.IO;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Transformers
 {

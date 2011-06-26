@@ -43,7 +43,9 @@ using System.Reflection;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 
-namespace Peach.Core
+using Peach.Core.IO.Conversion;
+
+namespace Peach.Core.IO
 {
 	/// <summary>
 	/// This stream is how all data is stored and read by
@@ -68,6 +70,7 @@ namespace Peach.Core
 		protected bool isNormalRead = true;
 		protected bool _padding = true;
 		protected bool _readLeftToRight = false;
+		protected EndianBitConverter bitConverter = null;
 
 		/// <summary>
 		/// Default constructor
@@ -241,7 +244,7 @@ namespace Peach.Core
 		public void BigEndian()
 		{
 			_isLittleEndian = false;
-			ReadLeftToRight();
+			bitConverter = new BigEndianBitConverter();
 		}
 
 		/// <summary>
@@ -250,34 +253,34 @@ namespace Peach.Core
 		public void LittleEndian()
 		{
 			_isLittleEndian = true;
-			ReadRightToLeft();
+			bitConverter = new LittleEndianBitConverter();
 		}
 
-		/// <summary>
-		/// Pack/Unack bits from left to right.  Normally
-		/// big endian is left to right and little endian
-		/// is right to left.
-		/// 
-		/// Changing endianness via LittleEndian() or BigEndian()
-		/// will reset this to default method.
-		/// </summary>
-		public void ReadLeftToRight()
-		{
-			_readLeftToRight = true;
-		}
+		///// <summary>
+		///// Pack/Unack bits from left to right.  Normally
+		///// big endian is left to right and little endian
+		///// is right to left.
+		///// 
+		///// Changing endianness via LittleEndian() or BigEndian()
+		///// will reset this to default method.
+		///// </summary>
+		//public void ReadLeftToRight()
+		//{
+		//    _readLeftToRight = true;
+		//}
 
-		/// <summary>
-		/// Pack/Unack bits from right to left.  Normally
-		/// big endian is left to right and little endian
-		/// is right to left.
-		/// 
-		/// Changing endianness via LittleEndian() or BigEndian()
-		/// will reset this to default method.
-		/// </summary>
-		public void ReadRightToLeft()
-		{
-			_readLeftToRight = false;
-		}
+		///// <summary>
+		///// Pack/Unack bits from right to left.  Normally
+		///// big endian is left to right and little endian
+		///// is right to left.
+		///// 
+		///// Changing endianness via LittleEndian() or BigEndian()
+		///// will reset this to default method.
+		///// </summary>
+		//public void ReadRightToLeft()
+		//{
+		//    _readLeftToRight = false;
+		//}
 
 		#endregion
 
@@ -396,11 +399,11 @@ namespace Peach.Core
 
 		public void WriteSByte(sbyte value)
 		{
-			WriteBits((byte)value, 8);
+			WriteByte((byte)value);
 		}
 		public void WriteInt8(sbyte value)
 		{
-			WriteBits((byte)value, 8);
+			WriteByte((byte)value);
 		}
 		public void WriteByte(byte value)
 		{
@@ -408,63 +411,63 @@ namespace Peach.Core
 		}
 		public void WriteUInt8(byte value)
 		{
-			WriteBits(value, 8);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteShort(short value)
 		{
-			WriteBits((ushort)value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt16(short value)
 		{
-			WriteBits((ushort)value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUShort(ushort value)
 		{
-			WriteBits(value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt16(ushort value)
 		{
-			WriteBits(value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteWORD(ushort value)
 		{
-			WriteBits(value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt(int value)
 		{
-			WriteBits((uint)value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt32(int value)
 		{
-			WriteBits((uint)value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt(uint value)
 		{
-			WriteBits(value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt32(uint value)
 		{
-			WriteBits(value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteDWORD(uint value)
 		{
-			WriteBits(value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteLong(long value)
 		{
-			WriteBits((ulong)value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt64(long value)
 		{
-			WriteBits((ulong)value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteULong(ulong value)
 		{
-			WriteBits(value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt64(ulong value)
 		{
-			WriteBits(value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 
 		#endregion
@@ -494,72 +497,72 @@ namespace Peach.Core
 		public void WriteShort(short value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits((ushort)value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt16(short value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits((ushort)value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUShort(ushort value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits(value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt16(ushort value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits(value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteWORD(ushort value, DataElement element)
 		{
 			MarkStartOfElement(element, 16);
-			WriteBits(value, 16);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt(int value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits((uint)value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt32(int value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits((uint)value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt(uint value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits(value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt32(uint value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits(value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteDWORD(uint value, DataElement element)
 		{
 			MarkStartOfElement(element, 32);
-			WriteBits(value, 32);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteLong(long value, DataElement element)
 		{
 			MarkStartOfElement(element, 64);
-			WriteBits((ulong)value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteInt64(long value, DataElement element)
 		{
 			MarkStartOfElement(element, 64);
-			WriteBits((ulong)value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteULong(ulong value, DataElement element)
 		{
 			MarkStartOfElement(element, 64);
-			WriteBits(value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 		public void WriteUInt64(ulong value, DataElement element)
 		{
 			MarkStartOfElement(element, 64);
-			WriteBits(value, 64);
+			WriteBytes(bitConverter.GetBytes(value));
 		}
 
 		#endregion
@@ -633,24 +636,24 @@ namespace Peach.Core
 			if (byteIndex >= buff.Count)
 				buff.Add(0);
 
-			if (_isLittleEndian)
-			{
-				if (bit == 0)
-					// clear bit
-					buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[7 - bitIndex]);
-				else
-					// Set bit
-					buff[byteIndex] = (byte)(buff[byteIndex] | (bit << bitIndex));
-			}
-			else
-			{
+			//if (_isLittleEndian)
+			//{
+			//    if (bit == 0)
+			//        // clear bit
+			//        buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[7 - bitIndex]);
+			//    else
+			//        // Set bit
+			//        buff[byteIndex] = (byte)(buff[byteIndex] | (bit << bitIndex));
+			//}
+			//else
+			//{
 				if (bit == 0)
 					// clear bit
 					buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[bitIndex]);
 				else
 					// Set bit
 					buff[byteIndex] = (byte)(buff[byteIndex] | (bit << (7 - bitIndex)));
-			}
+			//}
 
 			// Increment our current position
 			pos++;
@@ -716,11 +719,11 @@ namespace Peach.Core
 
 		public sbyte ReadSByte()
 		{
-			return (sbyte)ReadBits(8);
+			return (sbyte)ReadByte();
 		}
 		public sbyte ReadInt8()
 		{
-			return (sbyte)ReadBits(8);
+			return (sbyte)ReadByte();
 		}
 		public byte ReadByte()
 		{
@@ -728,63 +731,63 @@ namespace Peach.Core
 		}
 		public byte ReadUInt8()
 		{
-			return (byte)ReadBits(8);
+			return ReadByte();
 		}
 		public short ReadShort()
 		{
-			return (short)ByteArrayToLong(ReadBytes(2));
+			return bitConverter.ToInt16(ReadBytes(2));
 		}
 		public short ReadInt16()
 		{
-			return (short)ByteArrayToLong(ReadBytes(2));
+			return bitConverter.ToInt16(ReadBytes(2));
 		}
 		public ushort ReadUShort()
 		{
-			return (ushort)ByteArrayToLong(ReadBytes(2));
+			return bitConverter.ToUInt16(ReadBytes(2));
 		}
 		public ushort ReadUInt16()
 		{
-			return (ushort)ByteArrayToLong(ReadBytes(2));
+			return bitConverter.ToUInt16(ReadBytes(2));
 		}
 		public ushort ReadWORD()
 		{
-			return (ushort)ByteArrayToLong(ReadBytes(2));
+			return bitConverter.ToUInt16(ReadBytes(2));
 		}
 		public int ReadInt()
 		{
-			return (int)ByteArrayToLong(ReadBytes(4));
+			return  bitConverter.ToInt32(ReadBytes(4));
 		}
 		public int ReadInt32()
 		{
-			return (int)ByteArrayToLong(ReadBytes(4));
+			return bitConverter.ToInt32(ReadBytes(4));
 		}
 		public uint ReadUInt()
 		{
-			return (uint)ByteArrayToLong(ReadBytes(4));
+			return bitConverter.ToUInt32(ReadBytes(4));
 		}
 		public uint ReadUInt32()
 		{
-			return (uint)ByteArrayToLong(ReadBytes(4));
+			return bitConverter.ToUInt32(ReadBytes(4));
 		}
 		public uint ReadDWORD()
 		{
-			return (uint)ByteArrayToLong(ReadBytes(4));
+			return bitConverter.ToUInt32(ReadBytes(4));
 		}
 		public long ReadLong()
 		{
-			return (long)ByteArrayToLong(ReadBytes(8));
+			return bitConverter.ToInt64(ReadBytes(8));
 		}
 		public long ReadInt64()
 		{
-			return (long)ByteArrayToLong(ReadBytes(8));
+			return bitConverter.ToInt64(ReadBytes(8));
 		}
 		public ulong ReadULong()
 		{
-			return (ulong)ByteArrayToLong(ReadBytes(8));
+			return bitConverter.ToUInt64(ReadBytes(8));
 		}
 		public ulong ReadUInt64()
 		{
-			return (ulong)ByteArrayToLong(ReadBytes(8));
+			return bitConverter.ToUInt64(ReadBytes(8));
 		}
 
 		#endregion
@@ -802,10 +805,10 @@ namespace Peach.Core
 				// Index into byte from buff[] array
 				int bitIndex = pos - (byteIndex * 8);
 
-				if (_isLittleEndian)
-					// Shift and mask off 1 byte
-					return (byte)((buff[byteIndex] >> (byte)bitIndex) & 1);
-				else
+				//if (_isLittleEndian)
+				//    // Shift and mask off 1 byte
+				//    return (byte)((buff[byteIndex] >> (byte)bitIndex) & 1);
+				//else
 					// Shift and mask off 1 byte
 					return (byte)((buff[byteIndex] >> (byte)(7 - bitIndex)) & 1);
 			}

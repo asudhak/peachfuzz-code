@@ -30,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
+
 namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("WideChar", "Encode on output a string as wchar string.")] 

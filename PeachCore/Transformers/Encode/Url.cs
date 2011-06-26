@@ -30,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
+
 namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("UrlEncode", "Encode on output as a URL without pluses.")]

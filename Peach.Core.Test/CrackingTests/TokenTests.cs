@@ -37,6 +37,8 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.Cracker;
+using Peach.Core.IO;
+
 namespace Peach.Core.Test.CrackingTests
 {
 	[TestFixture]
