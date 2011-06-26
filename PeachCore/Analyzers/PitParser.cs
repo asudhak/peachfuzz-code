@@ -121,6 +121,11 @@ namespace Peach.Core.Analyzers
 		/// <param name="schema">Peach XML Schema file</param>
 		public void validatePit(Stream data)
 		{
+			// Right now XSD validation is disabled on Mono :(
+			Type t = Type.GetType("Mono.Runtime");
+			if (t != null)
+				return;
+
 			XmlTextReader tr = new XmlTextReader(
 				Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd"));
 			XmlSchemaSet set = new XmlSchemaSet();

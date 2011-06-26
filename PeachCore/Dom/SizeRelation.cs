@@ -64,7 +64,7 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
-					size = (int)Convert.ToUInt32(value);
+					size = Convert.ToInt32(value);
 				}
 
 				return new Variant(size);
@@ -77,7 +77,7 @@ namespace Peach.Core.Dom
 
 		public override void SetValue(Variant value)
 		{
-			ulong size = (ulong)value;
+			int size = (int)value;
 
 			if (_expressionSet != null)
 			{
@@ -87,7 +87,7 @@ namespace Peach.Core.Dom
 				state["self"] = this._parent;
 
 				object newValue = Scripting.EvalExpression(_expressionGet, state);
-				size = Convert.ToUInt64(newValue);
+				size = Convert.ToInt32(newValue);
 			}
 
 			_from.DefaultValue = new Variant(size);
