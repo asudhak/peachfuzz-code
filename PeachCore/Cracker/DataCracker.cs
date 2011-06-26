@@ -452,25 +452,28 @@ namespace Peach.Core.Cracker
 			int? size = null;
 
 			// Check for relation and/or size
-			if (element.relations.hasSizeRelation)
-			{
-				SizeRelation rel = element.relations.getSizeRelation();
-				size = (int)rel.GetValue();
-			}
-			else if (element.hasLength)
+			if (element.hasLength)
 			{
 				size = element.length;
 			}
 			else
 			{
-				int nextSize = 0;
-				DataElement token = null;
+				SizeRelation rel = element.GetSizeRelation();
 
-				if (isLastUnsizedElement(element, ref nextSize))
-					size = data.LengthBytes - (data.TellBytes() + nextSize);
-				else if (isTokenNext(element, ref nextSize, ref token))
+				if (rel != null)
+					size = (int)rel.GetValue();
+
+				else
 				{
-					throw new NotImplementedException("Need to implement this!");
+					int nextSize = 0;
+					DataElement token = null;
+
+					if (isLastUnsizedElement(element, ref nextSize))
+						size = data.LengthBytes - (data.TellBytes() + nextSize);
+					else if (isTokenNext(element, ref nextSize, ref token))
+					{
+						throw new NotImplementedException("Need to implement this!");
+					}
 				}
 			}
 

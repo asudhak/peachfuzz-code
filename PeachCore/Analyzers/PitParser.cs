@@ -1266,6 +1266,13 @@ namespace Peach.Core.Analyzers
 					{
 						SizeRelation rel = new SizeRelation();
 						rel.OfName = getXmlAttribute(node, "of");
+						
+						if(hasXmlAttribute(node, "expressionGet"))
+							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+
+						if(hasXmlAttribute(node, "expressionSet"))
+							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+						
 						parent.relations.Add(rel);
 					}
 					else if (hasXmlAttribute(node, "from"))
@@ -1281,6 +1288,13 @@ namespace Peach.Core.Analyzers
 					{
 						CountRelation rel = new CountRelation();
 						rel.OfName = getXmlAttribute(node, "of");
+
+						if (hasXmlAttribute(node, "expressionGet"))
+							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+
+						if (hasXmlAttribute(node, "expressionSet"))
+							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+
 						parent.relations.Add(rel);
 					}
 					else if (hasXmlAttribute(node, "from"))
@@ -1296,12 +1310,26 @@ namespace Peach.Core.Analyzers
 					{
 						OffsetRelation rel = new OffsetRelation();
 						rel.OfName = getXmlAttribute(node, "of");
+
+						if (hasXmlAttribute(node, "expressionGet"))
+							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+
+						if (hasXmlAttribute(node, "expressionSet"))
+							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+
 						parent.relations.Add(rel);
 					}
 					else if (hasXmlAttribute(node, "from"))
 					{
 						OffsetRelation rel = new OffsetRelation();
 						rel.FromName = getXmlAttribute(node, "from");
+
+						if (hasXmlAttribute(node, "expressionGet"))
+							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+
+						if (hasXmlAttribute(node, "expressionSet"))
+							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+
 						parent.relations.Add(rel);
 					}
 					break;

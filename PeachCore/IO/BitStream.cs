@@ -411,7 +411,7 @@ namespace Peach.Core.IO
 		}
 		public void WriteUInt8(byte value)
 		{
-			WriteBytes(bitConverter.GetBytes(value));
+			WriteByte(value);
 		}
 		public void WriteShort(short value)
 		{

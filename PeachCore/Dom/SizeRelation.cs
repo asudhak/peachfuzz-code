@@ -54,7 +54,7 @@ namespace Peach.Core.Dom
 			try
 			{
 				_isRecursing = true;
-				int size = _of.Value.LengthBytes;
+				int size = (int)From.DefaultValue;
 
 				if (_expressionGet != null)
 				{

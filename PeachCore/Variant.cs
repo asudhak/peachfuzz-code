@@ -185,7 +185,19 @@ namespace Peach.Core
 
 					return Convert.ToInt32(v._valueString);
 				case VariantType.ByteString:
+					BitStream bs = new BitStream(v._valueByteArray);
+					switch (bs.LengthBytes)
+					{
+						case 8:
+							return (int) bs.ReadInt8();
+						case 16:
+							return (int) bs.ReadInt16();
+						case 32:
+							return bs.ReadInt32();
+					}
+
 					throw new NotSupportedException("Unable to convert byte[] to int type.");
+
 				case VariantType.BitStream:
 					throw new NotSupportedException("Unable to convert BitStream to int type.");
 				default:

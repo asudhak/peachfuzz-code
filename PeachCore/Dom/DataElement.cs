@@ -321,6 +321,25 @@ namespace Peach.Core.Dom
 			set { _hasLength = value; }
 		}
 
+		public SizeRelation GetSizeRelation()
+		{
+			// TODO - Make this not suck
+
+			foreach (DataElement elem in this.EnumerateElementsUpTree())
+			{
+				if (elem.relations != null)
+				{
+					foreach (Relation relation in elem.relations)
+					{
+						if (relation is SizeRelation)
+							return relation as SizeRelation;
+					}
+				}
+			}
+
+			return null;
+		}
+
 		/// <summary>
 		/// Length of element.  In the case that 
 		/// LengthType == "Calc" we will evaluate the

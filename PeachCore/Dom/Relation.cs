@@ -60,7 +60,8 @@ namespace Peach.Core.Dom
 			set
 			{
 				_expressionGet = value;
-				From.Invalidate();
+				if(From != null)
+					From.Invalidate();
 			}
 		}
 
@@ -73,7 +74,8 @@ namespace Peach.Core.Dom
 			set
 			{
 				_expressionSet = value;
-				From.Invalidate();
+				if (From != null)
+					From.Invalidate();
 			}
 		}
 
