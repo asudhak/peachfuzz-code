@@ -203,6 +203,8 @@
     <Compile Include="Analyzers\Shark.cs" />
     <Compile Include="Analyzers\StringToken.cs" />
     <Compile Include="Analyzers\Xml.cs" />
+    <Compile Include="Debuggers\WindowsSystem\SystemDebugger.cs" />
+    <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
     <Compile Include="IO\BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\DataCracker.cs" />
