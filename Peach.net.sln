@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Test", "Peach.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachBuilder", "PeachBuilder\PeachBuilder.csproj", "{15D2ECC1-7F05-4245-BAF1-E10F73E0F7E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Analysis", "Peach.Core.Analyze\Peach.Core.Analysis.csproj", "{804677AE-9B84-473F-94FF-E0DB5F48F753}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Analysis", "Peach.Core.Analysis\Peach.Core.Analysis.csproj", "{804677AE-9B84-473F-94FF-E0DB5F48F753}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashingProgram", "CrashingProgram\CrashingProgram.vcxproj", "{3C73B151-DBE6-40D9-9458-88C87BCF5922}"
 EndProject
