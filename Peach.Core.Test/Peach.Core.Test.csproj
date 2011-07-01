@@ -60,6 +60,8 @@
     <Compile Include="CrackingTests\StringTests.cs" />
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
+    <Compile Include="Debuggers\WinDbgTestscs.cs" />
+    <Compile Include="Debuggers\WinSystemTests.cs" />
     <Compile Include="OutputTests\SizeRelationTests.cs" />
     <Compile Include="PitParserTests\BlockTests.cs" />
     <Compile Include="PitParserTests\BlobTests.cs" />
@@ -79,6 +81,9 @@
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Fixups\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

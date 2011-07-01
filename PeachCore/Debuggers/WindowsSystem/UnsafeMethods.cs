@@ -121,27 +121,26 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public static extern bool ContinueDebugEvent(uint dwProcessId, uint dwThreadId,
 		   uint dwContinueStatus);
 
-		[StructLayout(LayoutKind.Explicit)]
+		[StructLayout(LayoutKind.Explicit, Size=84)]
 		public struct Union
 		{
 			[FieldOffset(0)]
 			public EXCEPTION_DEBUG_INFO Exception;
-			[FieldOffset(0)]
-			public CREATE_THREAD_DEBUG_INFO CreateThread;
-			[FieldOffset(0)]
-			public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
-			[FieldOffset(0)]
-			public EXIT_THREAD_DEBUG_INFO ExitThread;
-			[FieldOffset(0)]
-			public EXIT_PROCESS_DEBUG_INFO ExitProcess;
-			[FieldOffset(0)]
-			public LOAD_DLL_DEBUG_INFO LoadDll;
-			[FieldOffset(0)]
-			public UNLOAD_DLL_DEBUG_INFO UnloadDll;
-			[FieldOffset(0)]
-			public OUTPUT_DEBUG_STRING_INFO DebugString;
-			[FieldOffset(0)]
-			public RIP_INFO RipInfo;
+			//public CREATE_THREAD_DEBUG_INFO CreateThread;
+			//[FieldOffset(0)]
+			//public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
+			//[FieldOffset(0)]
+			//public EXIT_THREAD_DEBUG_INFO ExitThread;
+			//[FieldOffset(0)]
+			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
+			//[FieldOffset(0)]
+			//public LOAD_DLL_DEBUG_INFO LoadDll;
+			//[FieldOffset(0)]
+			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
+			//[FieldOffset(0)]
+			//public OUTPUT_DEBUG_STRING_INFO DebugString;
+			//[FieldOffset(0)]
+			//public RIP_INFO RipInfo;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -243,13 +242,16 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		[DllImport("kernel32.dll", EntryPoint = "WaitForDebugEvent")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		public static extern bool WaitForDebugEvent([In] ref DEBUG_EVENT lpDebugEvent, uint dwMilliseconds);
+		public static extern bool WaitForDebugEvent(ref DEBUG_EVENT lpDebugEvent, uint dwMilliseconds);
 
 		[DllImport("kernel32.dll")]
 		public static extern bool DebugActiveProcess(uint dwProcessId);
 
 		[DllImport("kernel32.dll")]
-		public static extern bool DebugActiveProcessStop(uint dwProcessId
-);
+		public static extern bool DebugActiveProcessStop(uint dwProcessId);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool CloseHandle(IntPtr hObject);
 	}
 }

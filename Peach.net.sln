@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachBuilder", "PeachBuilde
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Analysis", "Peach.Core.Analyze\Peach.Core.Analysis.csproj", "{804677AE-9B84-473F-94FF-E0DB5F48F753}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashingProgram", "CrashingProgram\CrashingProgram.vcxproj", "{3C73B151-DBE6-40D9-9458-88C87BCF5922}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Peach.net3.vsmdi
@@ -204,6 +206,20 @@ Global
 		{804677AE-9B84-473F-94FF-E0DB5F48F753}.Release|Win32.ActiveCfg = Release|Any CPU
 		{804677AE-9B84-473F-94FF-E0DB5F48F753}.Release|x64.ActiveCfg = Release|Any CPU
 		{804677AE-9B84-473F-94FF-E0DB5F48F753}.Release|x86.ActiveCfg = Release|Any CPU
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Win32.Build.0 = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|x64.ActiveCfg = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|x86.ActiveCfg = Debug|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|Any CPU.ActiveCfg = Release|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|Win32.ActiveCfg = Release|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|Win32.Build.0 = Release|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|x64.ActiveCfg = Release|Win32
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
