@@ -35,6 +35,7 @@ using Peach.Core.Dom;
 using Peach.Core;
 using Peach.Core.Agent;
 using Peach.Core.Analyzers;
+using SharpPcap;
 
 namespace Peach
 {
@@ -85,6 +86,7 @@ namespace Peach
 					{ "a|agent=", v => agent = v},
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
+					{ "showdevices", var => ShowDevices() },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -301,6 +303,27 @@ Debug Peach XML File
   `'" + "\"" + @"'            `--'   \:    ._.-'                                      
                          }_`============>-             
 ");
+			throw new SyntaxException();
+		}
+
+		public void ShowDevices()
+		{
+			Console.WriteLine();
+			Console.WriteLine("The following devices are available on this machine:");
+			Console.WriteLine("----------------------------------------------------");
+			Console.WriteLine();
+
+			int i = 0;
+
+			var devices = CaptureDeviceList.Instance;
+
+			// Print out all available devices
+			foreach (ICaptureDevice dev in devices)
+			{
+				Console.WriteLine("Name: {0}\nDescription: {1}\n\n", dev.Name, dev.Description);
+				i++;
+			}
+
 			throw new SyntaxException();
 		}
 	}
