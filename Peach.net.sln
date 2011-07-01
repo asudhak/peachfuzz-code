@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.txt = README.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core", "PeachCore\Peach.Core.csproj", "{63C7C70D-0CBF-40EC-A11E-079B2E943D47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core", "Peach.Core\Peach.Core.csproj", "{63C7C70D-0CBF-40EC-A11E-079B2E943D47}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestThings", "TestThings\TestThings.csproj", "{4F69CE0E-E20A-47CE-A101-8939A966CF3F}"
 EndProject
@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachFileFuzzer", "PeachFil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachNetworkFuzzer", "PeachNetworkFuzzer\PeachNetworkFuzzer.csproj", "{6886D03D-9BEC-4F11-8C7B-2802EC714237}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Xml", "PeachCore.Xml\Peach.Core.Xml.csproj", "{E910D9AB-C56A-4452-8370-57E0F946CB34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Xml", "Peach.Core.Xml\Peach.Core.Xml.csproj", "{E910D9AB-C56A-4452-8370-57E0F946CB34}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachXmlGenerator", "PeachXmlGenerator\PeachXmlGenerator.csproj", "{14703DAB-4458-418D-B95E-5E2F2228F8C0}"
 EndProject
