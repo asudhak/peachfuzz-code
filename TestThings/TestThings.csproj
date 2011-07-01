@@ -119,7 +119,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PeachCore\Peach.Core.csproj">
+    <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>
     </ProjectReference>
