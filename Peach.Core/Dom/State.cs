@@ -35,41 +35,30 @@ using NLog;
 
 namespace Peach.Core.Dom
 {
-	public delegate void StateModelStartingEventHandler(StateModel model);
-	public delegate void StateModelFinishedEventHandler(StateModel model);
+	public delegate void StateStartingEventHandler(State state);
+	public delegate void StateFinishedEventHandler(State state);
+	public delegate void StateChangingStateEventHandler(State state, State toState);
 
-	//[Serializable]
-	public class StateModel
+	public class State
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.StateModel");
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.State");
+		public string name = "Unknown State";
+		public List<Action> actions = new List<Action>();
 
-		public string name = null;
-		public object parent;
-		protected State _initialState = null;
-
-		public List<State> states = new List<State>();
-
-		public State initialState
-		{
-			get
-			{
-				return _initialState;
-			}
-
-			set
-			{
-				_initialState = value;
-			}
-		}
+		public StateModel parent = null;
 
 		/// <summary>
-		/// StateModel is starting to execute.
+		/// State is starting to execute.
 		/// </summary>
-		public static event StateModelStartingEventHandler Starting;
+		public static event StateStartingEventHandler Starting;
 		/// <summary>
-		/// StateModel has finished executing.
+		/// State has finished executing.
 		/// </summary>
-		public static event StateModelFinishedEventHandler Finished;
+		public static event StateFinishedEventHandler Finished;
+		/// <summary>
+		/// Changing to another state.
+		/// </summary>
+		public static event StateChangingStateEventHandler ChangingState;
 
 		protected virtual void OnStarting()
 		{
@@ -83,13 +72,25 @@ namespace Peach.Core.Dom
 				Finished(this);
 		}
 
+		protected virtual void OnChanging(State toState)
+		{
+			if (ChangingState != null)
+				ChangingState(this, toState);
+		}
+
 		public void Run(RunContext context)
 		{
 			try
 			{
 				OnStarting();
-
-				_initialState.Run(context);
+				foreach (Action action in actions)
+				{
+					action.Run(context);
+				}
+			}
+			catch (ActionChangeStateException e)
+			{
+				OnChanging(e.changeToState);
 			}
 			finally
 			{

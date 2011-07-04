@@ -28,75 +28,57 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using System.Threading;
 using Peach.Core;
-using NLog;
 
 namespace Peach.Core.Dom
 {
-	public delegate void StateModelStartingEventHandler(StateModel model);
-	public delegate void StateModelFinishedEventHandler(StateModel model);
-
-	//[Serializable]
-	public class StateModel
+	/// <summary>
+	/// Hints are attached to data elements providing information
+	/// for mutators.
+	/// </summary>
+	[Serializable]
+	[Parameter("Name", typeof(string), "Name of hint", true)]
+	[Parameter("Value", typeof(string), "Value of hint", true)]
+	public class Hint
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.StateModel");
-
-		public string name = null;
-		public object parent;
-		protected State _initialState = null;
-
-		public List<State> states = new List<State>();
-
-		public State initialState
+		public Hint(string name, string value)
 		{
-			get
-			{
-				return _initialState;
-			}
-
-			set
-			{
-				_initialState = value;
-			}
+			Name = name;
+			Value = value;
 		}
 
-		/// <summary>
-		/// StateModel is starting to execute.
-		/// </summary>
-		public static event StateModelStartingEventHandler Starting;
-		/// <summary>
-		/// StateModel has finished executing.
-		/// </summary>
-		public static event StateModelFinishedEventHandler Finished;
-
-		protected virtual void OnStarting()
+		public Hint(Dictionary<string, Variant> args)
 		{
-			if (Starting != null)
-				Starting(this);
 		}
 
-		protected virtual void OnFinished()
+		public string Name
 		{
-			if (Finished != null)
-				Finished(this);
+			get;
+			set;
 		}
 
-		public void Run(RunContext context)
+		public string Value
 		{
-			try
-			{
-				OnStarting();
+			get;
+			set;
+		}
+	}
 
-				_initialState.Run(context);
-			}
-			finally
-			{
-				OnFinished();
-			}
+	/// <summary>
+	/// Used to indicate a mutator supports a type of Hint
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class HintAttribute : Attribute
+	{
+		public string name;
+		public string description;
+
+		public HintAttribute(string name, string description)
+		{
+			this.name = name;
+			this.description = description;
 		}
 	}
 }
-
-// END

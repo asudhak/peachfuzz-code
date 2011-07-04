@@ -90,6 +90,8 @@ namespace Peach.Core.Dom
 		public uint mutationFlags = MUTATE_DEFAULT;
 		public bool isToken = false;
 
+		protected Dictionary<string, Hint> hints = new Dictionary<string, Hint>();
+
 		protected bool _isReference = false;
 
 		protected Variant _defaultValue;
@@ -206,6 +208,12 @@ namespace Peach.Core.Dom
 
 				return fullname;
 			}
+		}
+
+		public Dictionary<string, Hint> Hints
+		{
+			get { return hints; }
+			set { hints = value; }
 		}
 
 		/// <summary>
