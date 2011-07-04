@@ -45,6 +45,7 @@ namespace Peach.Core.Agent
 	public class AgentClientTcpRemoting : AgentClient
 	{
 		AgentServiceTcpRemote proxy = null;
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentServiceTcpRemote");
 
 		public AgentClientTcpRemoting(string name, string uri, string password)
 		{
@@ -52,6 +53,9 @@ namespace Peach.Core.Agent
 
 		public override bool SupportedProtocol(string protocol)
 		{
+			logger.Trace("SupportedProtocol");
+			OnSupportedProtocolEvent(protocol);
+
 			protocol = protocol.ToLower();
 			if (protocol == "tcp")
 				return true;
@@ -61,6 +65,9 @@ namespace Peach.Core.Agent
 
 		public override void AgentConnect(string name, string url, string password)
 		{
+			logger.Trace("AgentConnect");
+			OnAgentConnectEvent(name, url, password);
+
 			if (proxy != null)
 				AgentDisconnect();
 
@@ -78,62 +85,87 @@ namespace Peach.Core.Agent
 
 		public override void AgentDisconnect()
 		{
+			logger.Trace("AgentDisconnect");
+			OnAgentDisconnectEvent();
+
 			proxy.AgentDisconnect();
 			proxy = null;
 		}
 
 		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
+			logger.Trace("StartMonitor: {0}, {1}", name, cls);
+			OnStartMonitorEvent(name, cls, args);
 			proxy.StartMonitor(name, cls, args);
 		}
 
 		public override void StopMonitor(string name)
 		{
+			logger.Trace("AgentConnect: {0}", name);
+			OnStopMonitorEvent(name);
 			proxy.StopMonitor(name);
 		}
 
 		public override void StopAllMonitors()
 		{
+			logger.Trace("StopAllMonitors");
+			OnStopAllMonitorsEvent();
 			proxy.StopAllMonitors();
 		}
 
 		public override void SessionStarting()
 		{
+			logger.Trace("SessionStarting");
+			OnSessionStartingEvent();
 			proxy.SessionStarting();
 		}
 
 		public override void SessionFinished()
 		{
+			logger.Trace("SessionFinished");
+			OnSessionFinishedEvent();
 			proxy.SessionFinished();
 		}
 
 		public override void IterationStarting(int iterationCount, bool isReproduction)
 		{
+			logger.Trace("IterationStarting: {0}, {1}", iterationCount, isReproduction);
+			OnIterationStartingEvent(iterationCount, isReproduction);
 			proxy.IterationStarting(iterationCount, isReproduction);
 		}
 
 		public override bool IterationFinished()
 		{
+			logger.Trace("IterationFinished");
+			OnIterationFinishedEvent();
 			return proxy.IterationFinished();
 		}
 
 		public override bool DetectedFault()
 		{
+			logger.Trace("DetectedFault");
+			OnDetectedFaultEvent();
 			return proxy.DetectedFault();
 		}
 
 		public override Hashtable GetMonitorData()
 		{
+			logger.Trace("GetMonitorData");
+			OnGetMonitorDataEvent();
 			return proxy.GetMonitorData();
 		}
 
 		public override bool MustStop()
 		{
+			logger.Trace("MustStop");
+			OnMustStopEvent();
 			return proxy.MustStop();
 		}
 
 		public override Variant Message(string name, Variant data)
 		{
+			logger.Trace("Message: {0}", name);
+			OnMessageEvent(name, data);
 			return proxy.Message(name, data);
 		}
 	}
