@@ -32,13 +32,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using Peach.Core.Dom;
+using NLog;
 
 namespace Peach.Core.Agent
 {
 
 	#region Event Delegates
 
-	public delegate void SupportedProtocolEventHandler(Agent agent, string protocol);
 	public delegate void AgentConnectEventHandler(Agent agent, string name, string url, string password);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
 	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, Dictionary<string, Variant> args);
@@ -64,16 +64,10 @@ namespace Peach.Core.Agent
 		string name;
 		string url;
 		string password;
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.Agent");
 
 
 		#region Events
-
-		public event SupportedProtocolEventHandler SupportedProtocolEvent;
-		protected void OnSupportedProtocolEvent(string protocol)
-		{
-			if (SupportedProtocolEvent != null)
-				SupportedProtocolEvent(this, protocol);
-		}
 
 		public event AgentConnectEventHandler AgentConnectEvent;
 		protected void OnAgentConnectEvent(string name, string url, string password)
@@ -171,19 +165,18 @@ namespace Peach.Core.Agent
 
 		public Agent(string name, string url, string password)
 		{
-		}
-
-		/// <summary>
-		/// Agent will not return from this method.
-		/// </summary>
-		public void Run()
-		{
+			this.name = name;
+			this.url = url;
+			this.password = password;
 		}
 
 		#region IAgent Members
 
 		public void AgentConnect(string password)
 		{
+			logger.Trace("AgentConnect");
+			OnAgentConnectEvent(null, null, password);
+
 			if (this.password == null)
 			{
 				if (password != null)
@@ -197,6 +190,8 @@ namespace Peach.Core.Agent
 
 		public void AgentDisconnect()
 		{
+			logger.Trace("AgentDisconnect");
+			OnAgentDisconnectEvent();
 			StopAllMonitors();
 			monitors.Clear();
 		}
@@ -226,6 +221,9 @@ namespace Peach.Core.Agent
 
 		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
+			logger.Trace("StartMonitor: {0} {1}", name, cls);
+			OnStartMonitorEvent(name, cls, args);
+
 			Type tMonitor = GetMonitorByClass(cls);
 			if (tMonitor == null)
 				throw new PeachException("Error, unable to locate Monitor '" + cls + "'");
@@ -238,12 +236,17 @@ namespace Peach.Core.Agent
 
 		public void StopMonitor(string name)
 		{
+			logger.Trace("StopMonitor: {0}", name);
+			OnStopMonitorEvent(name);
 			monitors[name].StopMonitor();
 			monitors.Remove(name);
 		}
 
 		public void StopAllMonitors()
 		{
+			logger.Trace("StopAllMonitors");
+			OnStopAllMonitorsEvent();
+
 			foreach (Monitor monitor in monitors.Values)
 				monitor.StopMonitor();
 
@@ -252,24 +255,36 @@ namespace Peach.Core.Agent
 
 		public void SessionStarting()
 		{
+			logger.Trace("SessionStarting");
+			OnSessionStartingEvent();
+
 			foreach (Monitor monitor in monitors.Values)
 				monitor.SessionStarting();
 		}
 
 		public void SessionFinished()
 		{
+			logger.Trace("SessionFinished");
+			OnSessionFinishedEvent();
+
 			foreach (Monitor monitor in monitors.Values)
 				monitor.SessionFinished();
 		}
 
 		public void IterationStarting(int iterationCount, bool isReproduction)
 		{
+			logger.Trace("IterationStarting: {0} {1}", iterationCount, isReproduction);
+			OnIterationStartingEvent(iterationCount, isReproduction);
+
 			foreach (Monitor monitor in monitors.Values)
 				monitor.IterationStarting(iterationCount, isReproduction);
 		}
 
 		public bool IterationFinished()
 		{
+			logger.Trace("IterationFinished");
+			OnIterationFinishedEvent();
+
 			bool replay = false;
 			foreach (Monitor monitor in monitors.Values)
 				if (monitor.IterationFinished())
@@ -280,6 +295,9 @@ namespace Peach.Core.Agent
 
 		public bool DetectedFault()
 		{
+			logger.Trace("DetectedFault");
+			OnDetectedFaultEvent();
+
 			bool detectedFault = false;
 			foreach (Monitor monitor in monitors.Values)
 				if (monitor.DetectedFault())
@@ -290,11 +308,17 @@ namespace Peach.Core.Agent
 
 		public Hashtable GetMonitorData()
 		{
+			logger.Trace("GetMonitorData");
+			OnGetMonitorDataEvent();
+
 			throw new NotImplementedException();
 		}
 
 		public bool MustStop()
 		{
+			logger.Trace("MustStop");
+			OnMustStopEvent();
+
 			foreach (Monitor monitor in monitors.Values)
 				if (monitor.MustStop())
 					return true;
@@ -304,6 +328,9 @@ namespace Peach.Core.Agent
 
 		public Variant Message(string name, Variant data)
 		{
+			logger.Trace("Message: {0}", name);
+			OnMessageEvent(name, data);
+
 			Variant ret = null;
 			Variant tmp = null;
 

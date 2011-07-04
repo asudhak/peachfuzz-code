@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using NLog;
 
 namespace Peach.Core.Cracker
 {
@@ -11,6 +12,8 @@ namespace Peach.Core.Cracker
 	/// </summary>
 	public class DataCracker
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Cracker.DataCracker");
+
 		/// <summary>
 		/// A stack of sized DataElement containers.
 		/// </summary>
@@ -46,6 +49,8 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns true if last unsigned element, else false.</returns>
 		protected bool isLastUnsizedElement(DataElement element, ref int size)
 		{
+			logger.Trace("isLastUnsizedElement: {0} {1}", element.fullName, size);
+
 			DataElement oldElement = element;
 			DataElement currentElement = element;
 
@@ -65,12 +70,16 @@ namespace Peach.Core.Cracker
 						foreach(DataElement child in ((DataElementContainer)currentElement))
 						{
 							if (!_isLastUnsizedElementRecursive(child, ref size))
+							{
+								logger.Debug("isLastUnsizedElement(false): {0} {1}", element.fullName, size);
 								return false;
+							}
 						}
 					}
 					else
 					{
 						size = 0;
+						logger.Debug("isLastUnsizedElement(false): {0} {1}", element.fullName, size);
 						return false;
 					}
 				}
@@ -78,6 +87,7 @@ namespace Peach.Core.Cracker
 				oldElement = currentElement;
 			}
 
+			logger.Debug("isLastUnsizedElement(true): {0} {1}", element.fullName, size);
 			return true;
 		}
 
@@ -114,6 +124,8 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns true if found token, else false.</returns>
 		protected bool isTokenNext(DataElement element, ref int size, ref DataElement token)
 		{
+			logger.Trace("isTokenNext: {0} {1}", element.fullName, size);
+
 			DataElement currentElement = element;
 			token = null;
 			size = 0;
@@ -137,6 +149,7 @@ namespace Peach.Core.Cracker
 					if (currentElement.isToken)
 					{
 						token = currentElement;
+						logger.Debug("isTokenNext(true): {0} {1}", element.fullName, size);
 						return true;
 					}
 					if (currentElement.hasLength)
@@ -144,12 +157,14 @@ namespace Peach.Core.Cracker
 					else
 					{
 						size = 0;
+						logger.Debug("isTokenNext(false): {0} {1}", element.fullName, size);
 						return false;
 					}
 				}
 			}
 
 			size = 0;
+			logger.Debug("isTokenNext(false): {0} {1}", element.fullName, size);
 			return false;
 		}
 
@@ -162,6 +177,8 @@ namespace Peach.Core.Cracker
 		/// <param name="data">Input stream to use for data</param>
 		protected void handleNode(DataElement element, BitStream data)
 		{
+			logger.Trace("handleNode: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			int startingPosition = data.TellBits();
 			bool hasOffsetRelation = false;
 
@@ -227,6 +244,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleArray(Dom.Array element, BitStream data)
 		{
+			logger.Trace("handleArray: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			if (element.minOccurs == 0)
 			{
 			}
@@ -241,6 +260,8 @@ namespace Peach.Core.Cracker
 		/// <param name="data">Data stream to use when cracking</param>
 		protected void handleDataElementContainer(DataElementContainer element, BitStream data)
 		{
+			logger.Trace("handleDataElementContainer: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
 			int startPosition = data.TellBytes();
@@ -316,6 +337,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleChoice(Choice element, BitStream data)
 		{
+			logger.Trace("handleChoice: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
 
@@ -366,6 +389,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleString(Dom.String element, BitStream data)
 		{
+			logger.Trace("handleString: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			if (element.nullTerminated)
 			{
 				// Locate NULL character in stream
@@ -449,6 +474,8 @@ namespace Peach.Core.Cracker
 
 		protected int? determineElementSize(DataElement element, BitStream data)
 		{
+			logger.Trace("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			int? size = null;
 
 			// Check for relation and/or size
@@ -482,6 +509,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleNumber(Number element, BitStream data)
 		{
+			logger.Trace("handleNumber: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			if (data.LengthBits < data.TellBits() + element.Size)
 				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
 
@@ -521,6 +550,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleFlags(Flags element, BitStream data)
 		{
+			logger.Trace("handleFlags: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			if (data.LengthBits <= (data.TellBits() + element.Size))
 				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.", element, data);
 
@@ -540,6 +571,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleFlag(Flag element, BitStream data)
 		{
+			logger.Trace("handleFlag: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			var defaultValue = new Variant(data.ReadBits(element.Size));
 
 			if (element.isToken)
@@ -551,6 +584,8 @@ namespace Peach.Core.Cracker
 
 		protected void handleBlob(Blob element, BitStream data)
 		{
+			logger.Trace("handleBlob: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
 			int? blobLength = determineElementSize(element, data);
 
 			if (blobLength == null && element.isToken)
