@@ -62,6 +62,7 @@
     <Compile Include="CrackingTests\XmlTests.cs" />
     <Compile Include="Debuggers\WinDbgTestscs.cs" />
     <Compile Include="Debuggers\WinSystemTests.cs" />
+    <Compile Include="Monitors\PcapMonitorTests.cs" />
     <Compile Include="OutputTests\SizeRelationTests.cs" />
     <Compile Include="PitParserTests\BlockTests.cs" />
     <Compile Include="PitParserTests\BlobTests.cs" />
