@@ -27,75 +27,152 @@
 // $Id$
 
 using System;
+using System.Collections;
+using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Peach.Core.Dom;
+using SharpPcap;
+using SharpPcap.LibPcap;
+using SharpPcap.WinPcap;
+using SharpPcap.AirPcap;
 
 namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("PcapMonitor")]
 	[Monitor("network.PcapMonitor")]
-	[Parameter("Device", typeof(string), "TODO", true)]
-	[Parameter("Filter", typeof(string), "TODO", true)]
+	[Parameter("Device", typeof(string), "Device name for capturing on", true)]
+	[Parameter("Filter", typeof(string), "PCAP Style filter", true)]
 	public class PcapMonitor : Monitor
     {
-		protected string _device = null;
+		protected string _deviceName = null;
 		protected string _filter = null;
+		protected string _tmpFilename = null;
+		protected ICaptureDevice _device = null;
+
+		protected EventWaitHandle eventStartCapture = new EventWaitHandle(false, EventResetMode.ManualReset);
+		protected EventWaitHandle eventStopCapture = new EventWaitHandle(false, EventResetMode.ManualReset);
+		protected EventWaitHandle eventResetCapture = new EventWaitHandle(false, EventResetMode.ManualReset);
 
 		public PcapMonitor(string name, Dictionary<string, Variant> args)
 			: base(name, args)
 		{
 			if (args.ContainsKey("Device"))
-				_device = (string)args["Device"];
+				_deviceName = (string)args["Device"];
 			if (args.ContainsKey("Filter"))
 				_filter = (string)args["Filter"];
+
+			_device.OnPacketArrival += new PacketArrivalEventHandler(device_OnPacketArrival);
+
+			_tmpFilename = Path.GetTempFileName();
+		}
+
+		private static void device_OnPacketArrival(object sender, CaptureEventArgs packet)
+		{
+			ICaptureDevice device = packet.Device;
+
+			// if device has a dump file opened
+			if (device.DumpOpened)
+			{
+				// dump the packet to the file
+				device.Dump(packet.Packet);
+			}
 		}
 
 		public override void StopMonitor()
 		{
-			throw new NotImplementedException();
+			_device.StopCapture();
+			_device.DumpClose();
+			_device.Close();
 		}
 
 		public override void SessionStarting()
 		{
-			throw new NotImplementedException();
+			// Retrieve all capture devices
+			var devices = CaptureDeviceList.Instance;
+
+			// differentiate based upon types
+			foreach(ICaptureDevice dev in devices)
+			{
+				if (dev.Name == _deviceName)
+				{
+					_device = dev;
+					break;
+				}
+			}
+
+			if (_device == null)
+			{
+				Console.WriteLine("Found the following pcap devices: ");
+
+				foreach (ICaptureDevice dev in devices)
+				{
+					Console.WriteLine(dev.Name);
+				}
+
+				throw new PeachException("Error, PcapMonitor was unable to locate device '" + _deviceName + "'.");
+			}
+
+			_device.Open();
+			_device.Filter = _filter;
+			_device.StartCapture();
 		}
 
 		public override void SessionFinished()
 		{
-			throw new NotImplementedException();
+			_device.StopCapture();
+			_device.Close();
 		}
 
 		public override void IterationStarting(int iterationCount, bool isReproduction)
 		{
-			throw new NotImplementedException();
+			// Clear old log
+			if (_device.DumpOpened)
+				_device.DumpClose();
+
+			_device.DumpOpen(_tmpFilename);
 		}
 
 		public override bool IterationFinished()
 		{
-			throw new NotImplementedException();
+			// Save log
+			_device.DumpFlush();
+			_device.DumpClose();
+
+			return false;
 		}
 
 		public override bool DetectedFault()
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 
 		public override System.Collections.Hashtable GetMonitorData()
 		{
-			throw new NotImplementedException();
+			// Return log
+			byte[] buff;
+			using (Stream sin = File.OpenRead(_tmpFilename))
+			{
+				buff = new byte[sin.Length];
+				sin.Read(buff, 0, buff.Length);
+			}
+
+			var ret = new Hashtable();
+			ret["NetworkCapture.pcap"] = buff;
+
+			return ret;
 		}
 
 		public override bool MustStop()
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 
 		public override Variant Message(string name, Variant data)
 		{
-			throw new NotImplementedException();
+			return null;
 		}
 	}
 }

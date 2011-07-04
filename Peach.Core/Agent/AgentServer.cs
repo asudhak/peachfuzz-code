@@ -30,8 +30,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Peach.Core.Agent;
 
-namespace Peach.Core.Agent
+namespace Peach.Core.Agent.Channels
 {
 	/// <summary>
 	/// Agent Servers are required to implement this interface
