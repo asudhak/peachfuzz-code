@@ -39,7 +39,7 @@ namespace Peach.Core.Agent
 
 	#region Event Delegates
 
-	public delegate void AgentConnectEventHandler(Agent agent, string name, string url, string password);
+	public delegate void AgentConnectEventHandler(Agent agent);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
 	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, Dictionary<string, Variant> args);
 	public delegate void StopMonitorEventHandler(Agent agent, string name);
@@ -56,24 +56,23 @@ namespace Peach.Core.Agent
 	#endregion
 
 	/// <summary>
+	/// Agent logic.  This class is typically
+	/// called from the server side of agent channels.
 	/// </summary>
-	public class Agent : IAgent
+	public class Agent
 	{
 		public object parent;
 		Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
 		string name;
-		string url;
-		string password;
 		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.Agent");
-
 
 		#region Events
 
 		public event AgentConnectEventHandler AgentConnectEvent;
-		protected void OnAgentConnectEvent(string name, string url, string password)
+		protected void OnAgentConnectEvent()
 		{
 			if (AgentConnectEvent != null)
-				AgentConnectEvent(this, name, url, password);
+				AgentConnectEvent(this);
 		}
 
 		public event AgentDisconnectEventHandler AgentDisconnectEvent;
@@ -162,30 +161,26 @@ namespace Peach.Core.Agent
 
 		#endregion
 
-
-		public Agent(string name, string url, string password)
+		public Agent(string name)
 		{
 			this.name = name;
-			this.url = url;
-			this.password = password;
+		}
+
+		/// <summary>
+		/// Dictionary of currently loaded monitor instances.
+		/// </summary>
+		public Dictionary<string, Monitor> Monitors
+		{
+			get { return monitors; }
+			protected set { monitors = value; }
 		}
 
 		#region IAgent Members
 
-		public void AgentConnect(string password)
+		public void AgentConnect()
 		{
 			logger.Trace("AgentConnect");
-			OnAgentConnectEvent(null, null, password);
-
-			if (this.password == null)
-			{
-				if (password != null)
-					throw new Exception("Authentication failure");
-			}
-			else if (this.password == password)
-			{
-				// All good!
-			}
+			OnAgentConnectEvent();
 		}
 
 		public void AgentDisconnect()

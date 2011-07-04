@@ -40,21 +40,21 @@ namespace Peach.Core.Cracker
 		#region Events
 
 		public event EnterHandleNodeEventHandler EnterHandleNodeEvent;
-		public void OnEnterHandleNodeEvent(DataElement element, BitStream data)
+		protected void OnEnterHandleNodeEvent(DataElement element, BitStream data)
 		{
 			if(EnterHandleNodeEvent != null)
 				EnterHandleNodeEvent(element, data);
 		}
 		
 		public event ExitHandleNodeEventHandler ExitHandleNodeEvent;
-		public void OnExitHandleNodeEvent(DataElement element, BitStream data)
+		protected void OnExitHandleNodeEvent(DataElement element, BitStream data)
 		{
 			if(ExitHandleNodeEvent != null)
 				ExitHandleNodeEvent(element, data);
 		}
 
 		public event ExceptionHandleNodeEventHandler ExceptionHandleNodeEvent;
-		public void OnExceptionHandleNodeEvent(DataElement element, BitStream data, Exception e)
+		protected void OnExceptionHandleNodeEvent(DataElement element, BitStream data, Exception e)
 		{
 			if(ExceptionHandleNodeEvent != null)
 				ExceptionHandleNodeEvent(element, data, e);
@@ -215,7 +215,7 @@ namespace Peach.Core.Cracker
 			try
 			{
 				logger.Trace("handleNode: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-				OnEnterHandleNodeEventHandler(element, data);
+				OnEnterHandleNodeEvent(element, data);
 
 				int startingPosition = data.TellBits();
 				bool hasOffsetRelation = false;
@@ -279,12 +279,12 @@ namespace Peach.Core.Cracker
 				if (hasOffsetRelation)
 					data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);
 
-				OnExitHandleNodeEventHandler(element, data);
+				OnExitHandleNodeEvent(element, data);
 			}
 			catch (Exception e)
 			{
 				logger.Debug("handleNode: Exception occured: {0}", e.ToString());
-				OnExceptionHandleNodeEventHandler(element, data, cf);
+				OnExceptionHandleNodeEvent(element, data, e);
 
 				// Rethrow
 				throw;

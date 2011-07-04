@@ -176,18 +176,18 @@ namespace Peach.Core.Agent.Channels
 	/// </summary>
 	public class AgentServiceTcpRemote : MarshalByRefObject, IAgent
 	{
-		public IAgent agent = null;
+		public Agent agent = null;
 		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentServiceTcpRemote");
 
 		public AgentServiceTcpRemote()
 		{
-			agent = new Agent("TcpRemote", "", null);
+			agent = new Agent("AgentServiceTcpRemote");
 		}
 
 		public void AgentConnect(string password)
 		{
 			logger.Trace("AgentConnect");
-			agent.AgentConnect(password);
+			agent.AgentConnect();
 		}
 
 		public void AgentDisconnect()

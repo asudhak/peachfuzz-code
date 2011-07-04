@@ -49,7 +49,7 @@ namespace Peach.Core.Agent.Channels
 
 		public AgentServerLocal(string name, string uri, string password)
 		{
-			agent = new Agent(name, uri, password);
+			agent = new Agent(name);
 		}
 
 		public override bool SupportedProtocol(string protocol)
@@ -62,7 +62,7 @@ namespace Peach.Core.Agent.Channels
 
 		public override void AgentConnect(string name, string url, string password)
 		{
-			agent.AgentConnect(password);
+			agent.AgentConnect();
 		}
 
 		public override void AgentDisconnect()
