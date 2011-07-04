@@ -32,7 +32,7 @@ using System.Linq;
 using System.Text;
 using Peach.Core.Agent;
 
-namespace Peach.Core.Agent.Channels
+namespace Peach.Core.Agent
 {
 	/// <summary>
 	/// Agent Servers are required to implement this interface
