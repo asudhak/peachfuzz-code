@@ -7,6 +7,15 @@ using NLog;
 
 namespace Peach.Core.Cracker
 {
+
+	#region Event Delegates
+
+	public delegate void EnterHandleNodeEventHandler(DataElement element, BitStream data);
+	public delegate void ExitHandleNodeEventHandler(DataElement element, BitStream data);
+	public delegate void ExceptionHandleNodeEventHandler(DataElement element, BitStream data, Exception e);
+
+	#endregion
+
 	/// <summary>
 	/// Crack data into a DataModel.
 	/// </summary>
@@ -27,6 +36,32 @@ namespace Peach.Core.Cracker
 		/// The full data stream.
 		/// </summary>
 		BitStream _data = null;
+
+		#region Events
+
+		public event EnterHandleNodeEventHandler EnterHandleNodeEvent;
+		public void OnEnterHandleNodeEvent(DataElement element, BitStream data)
+		{
+			if(EnterHandleNodeEvent != null)
+				EnterHandleNodeEvent(element, data);
+		}
+		
+		public event ExitHandleNodeEventHandler ExitHandleNodeEvent;
+		public void OnExitHandleNodeEvent(DataElement element, BitStream data)
+		{
+			if(ExitHandleNodeEvent != null)
+				ExitHandleNodeEvent(element, data);
+		}
+
+		public event ExceptionHandleNodeEventHandler ExceptionHandleNodeEvent;
+		public void OnExceptionHandleNodeEvent(DataElement element, BitStream data, Exception e)
+		{
+			if(ExceptionHandleNodeEvent != null)
+				ExceptionHandleNodeEvent(element, data, e);
+		}
+
+
+		#endregion
 
 		public DataModel CrackData(DataModel model, BitStream data)
 		{
@@ -177,69 +212,83 @@ namespace Peach.Core.Cracker
 		/// <param name="data">Input stream to use for data</param>
 		protected void handleNode(DataElement element, BitStream data)
 		{
-			logger.Trace("handleNode: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			int startingPosition = data.TellBits();
-			bool hasOffsetRelation = false;
-
-			// Offset relation
-			if (element.relations.hasOffsetRelation)
+			try
 			{
-				hasOffsetRelation = true;
-				OffsetRelation rel = element.relations.getOffsetRelation();
-				long offset = (long)rel.GetValue();
+				logger.Trace("handleNode: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+				OnEnterHandleNodeEventHandler(element, data);
 
-				if (!rel.isRelativeOffset)
+				int startingPosition = data.TellBits();
+				bool hasOffsetRelation = false;
+
+				// Offset relation
+				if (element.relations.hasOffsetRelation)
 				{
-					// Relative from start of data
-					
+					hasOffsetRelation = true;
+					OffsetRelation rel = element.relations.getOffsetRelation();
+					long offset = (long)rel.GetValue();
+
+					if (!rel.isRelativeOffset)
+					{
+						// Relative from start of data
+
+					}
+					else if (rel.relativeTo == null)
+					{
+						throw new NotImplementedException("Yah, we need some looove....");
+					}
+					else
+					{
+						throw new NotImplementedException("Yah, we need some looove....");
+					}
 				}
-				else if (rel.relativeTo == null)
+
+				// Do array handling
+				if (element is Dom.Array)
 				{
-					throw new NotImplementedException("Yah, we need some looove....");
+					handleArray(element as Dom.Array, data);
+				}
+				else if (element is Choice)
+				{
+					handleChoice(element as Choice, data);
+				}
+				else if (element is Flags)
+				{
+					handleFlags(element as Flags, data);
+				}
+				else if (element is DataElementContainer) // Should also catch DataModel's
+				{
+					handleDataElementContainer(element as DataElementContainer, data);
+				}
+				else if (element is Dom.String)
+				{
+					handleString(element as Dom.String, data);
+				}
+				else if (element is Number)
+				{
+					handleNumber(element as Number, data);
+				}
+				else if (element is Blob)
+				{
+					handleBlob(element as Blob, data);
 				}
 				else
 				{
-					throw new NotImplementedException("Yah, we need some looove....");
+					throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
 				}
-			}
-			
-			// Do array handling
-			if (element is Dom.Array)
-			{
-				handleArray(element as Dom.Array, data);
-			}
-			else if (element is Choice)
-			{
-				handleChoice(element as Choice, data);
-			}
-			else if (element is Flags)
-			{
-				handleFlags(element as Flags, data);
-			}
-			else if (element is DataElementContainer) // Should also catch DataModel's
-			{
-				handleDataElementContainer(element as DataElementContainer, data);
-			}
-			else if (element is Dom.String)
-			{
-				handleString(element as Dom.String, data);
-			}
-			else if (element is Number)
-			{
-				handleNumber(element as Number, data);
-			}
-			else if (element is Blob)
-			{
-				handleBlob(element as Blob, data);
-			}
-			else
-			{
-				throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
-			}
 
-			if (hasOffsetRelation)
-				data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);
+				if (hasOffsetRelation)
+					data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);
+
+				OnExitHandleNodeEventHandler(element, data);
+			}
+			catch (Exception e)
+			{
+				logger.Debug("handleNode: Exception occured: {0}", e.ToString());
+				OnExceptionHandleNodeEventHandler(element, data, cf);
+
+				// Rethrow
+				throw;
+			}
 		}
 
 		protected void handleArray(Dom.Array element, BitStream data)
