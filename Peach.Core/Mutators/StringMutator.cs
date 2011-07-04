@@ -34,6 +34,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
 	[Mutator("Perform common string mutations")]
+	[Hint("NumericalString", "Boolean hint indicating this string contains a numerical value")]
 	public partial class StringMutator : Mutator
 	{
 		uint pos = 0;
