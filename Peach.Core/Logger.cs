@@ -39,4 +39,20 @@ namespace Peach.Core
 	{
 		public object parent;
 	}
+
+	/// <summary>
+	/// Used to indicate a class is a valid Publisher and 
+	/// provide it's invoking name used in the Pit XML file.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class LoggerAttribute : Attribute
+	{
+		public string invokeName;
+
+		public LoggerAttribute(string invokeName)
+		{
+			this.invokeName = invokeName;
+		}
+	}
+
 }

@@ -2,54 +2,33 @@
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://phed.org/2008/Peach /peach3.0/peachcore/peach.xsd">
 
-	<!-- Import defaults for Peach instance -->
 	<Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
-		<Blob name="Data" value="12345" />
-		<Number size="8">
-			<Relation type="size" of="TheDataModel"/>
-		</Number>
+		<String value="Hello World" />
 	</DataModel>
 	
 	<Agent name="LocalAgent">
-		<Monitor class="debugger.WindowsDebugEngine">
-			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)"/>
-			<Param name="CommandLine" value="C:\Program Files (x86)\Mozilla Firefox\firefox.exe fuzzed.txt"/>
-			<Param name="StartOnCall" value="ScoobySnacks"/>
+		<Monitor class="PcapMonitor">
+			<Param name="Device" value="rpcap://\Device\NPF_{8DB9FD50-6702-4CB7-9ED3-D20E603BF543}"/>
+			<Param name="Filter" value="port 80"/>
 		</Monitor>
 	</Agent>
 	
-	<!-- TODO: Create state model -->
 	<StateModel name="TheState" initialState="Initial">
 		<State name="Initial">
 			<Action type="output" publisher="Stdout">
 				<DataModel ref="TheDataModel"/>
-				<Data>
-					<Field name="MyChoice.foo" value=""/>
-				</Data>
 			</Action>
-			
-			<Action type="output" publisher="FileWriter">
-				<DataModel ref="TheDataModel"/>
-			</Action>
-			<Action type="close" publisher="FileWriter"/>
-
-			<Action publisher="Peach.Agent" type="call" method="ScoobySnacks" />
 		</State>
-
 	</StateModel>
 	
 	<Test name="TheTest">
 		<Agent ref="LocalAgent"/>
 		<StateModel ref="TheState"/>
 		<Publisher class="Console" name="Stdout" />
-		<Publisher class="FileStream" name="FileWriter">
-			<Param name="FileName" value="fuzzed.txt"/>
-		</Publisher>
 	</Test>
 
-	<!-- Configure a single run -->
 	<Run name="DefaultRun">
 		<Test ref="TheTest"/>
 	</Run>

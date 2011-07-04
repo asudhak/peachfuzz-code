@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Agent;
@@ -55,7 +56,7 @@ namespace Peach.Core
 		public delegate void TestStartingEventHandler(RunContext context);
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
-		public delegate void FaultEventHandler(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData);
+		public delegate void FaultEventHandler(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 
@@ -99,7 +100,7 @@ namespace Peach.Core
 			if (IterationFinished != null)
 				IterationFinished(context, currentIteration);
 		}
-		public static void OnFault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
+		public static void OnFault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 		{
 			if (Fault != null)
 				Fault(context, currentIteration, stateModelData, faultData);
@@ -471,6 +472,11 @@ namespace Peach.Core
 		/// Name of run to perform
 		/// </summary>
 		public string runName = "DefaultRun";
+
+		/// <summary>
+		/// Name of PIT file (used by logger)
+		/// </summary>
+		public string pitFile = null;
 	}
 }
 

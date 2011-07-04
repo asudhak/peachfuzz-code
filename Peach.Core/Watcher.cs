@@ -27,9 +27,11 @@
 // $Id$
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.Agent;
 
 namespace Peach.Core
 {
@@ -92,7 +94,7 @@ namespace Peach.Core
 		{
 		}
 
-		protected virtual void Engine_Fault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
+		protected virtual void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 		{
 		}
 

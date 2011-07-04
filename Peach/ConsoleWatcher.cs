@@ -27,9 +27,11 @@
 // $Id$
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core;
+using Peach.Core.Agent;
 
 namespace Peach
 {
@@ -40,7 +42,7 @@ namespace Peach
 			Console.WriteLine(string.Format("DBG[{0}] {1}: {2}", level.ToString(), from, msg));
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
+		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 		{
 			throw new NotImplementedException();
 		}

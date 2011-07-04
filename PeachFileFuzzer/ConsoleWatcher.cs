@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Peach.Core;
+using Peach.Core.Agent;
 using System.Windows.Forms;
 
 namespace PeachFileFuzzer
@@ -19,7 +21,7 @@ namespace PeachFileFuzzer
 			{
 			}
 
-			protected override void Engine_Fault(RunContext context, uint currentIteration, object[] stateModelData, object[] faultData)
+			protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 			{
 				throw new NotImplementedException();
 			}
