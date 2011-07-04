@@ -38,8 +38,9 @@ using System.Threading;
 using Peach.Core;
 using Peach.Core.Dom;
 using NLog;
+using Peach.Core.Agent;
 
-namespace Peach.Core.Agent
+namespace Peach.Core.Agent.Channels
 {
 	[Agent("tcp")]
 	public class AgentClientTcpRemoting : AgentClient

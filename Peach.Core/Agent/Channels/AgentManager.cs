@@ -32,8 +32,9 @@ using System.Text;
 using System.Reflection;
 using Peach.Core.Dom;
 using NLog;
+using Peach.Core.Agent;
 
-namespace Peach.Core.Agent
+namespace Peach.Core.Agent.Channels
 {
 	/// <summary>
 	/// Manages all agents.  This includes

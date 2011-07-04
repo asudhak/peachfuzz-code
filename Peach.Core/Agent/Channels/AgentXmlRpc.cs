@@ -42,8 +42,9 @@ using Peach.Core.Dom;
 using Peach.Core.Agent.XmlRpc;
 using CookComputing.XmlRpc;
 using NLog;
+using Peach.Core.Agent;
 
-namespace Peach.Core.Agent
+namespace Peach.Core.Agent.Channels
 {
 	[Agent("http")]
 	[Agent("https")]

@@ -33,8 +33,9 @@ using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 using NLog;
+using Peach.Core.Agent;
 
-namespace Peach.Core.Agent
+namespace Peach.Core.Agent.Channels
 {
 	/// <summary>
 	/// This is an agent that runs in the local
