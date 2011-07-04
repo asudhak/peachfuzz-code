@@ -38,20 +38,20 @@ namespace Peach.Core.Agent
 
 	#region Event Delegates
 
-	public delegate void SupportedProtocolEventHandler(AgentClient agent, string protocol);
-	public delegate void AgentConnectEventHandler(AgentClient agent, string name, string url, string password);
-	public delegate void AgentDisconnectEventHandler(AgentClient agent);
-	public delegate void StartMonitorEventHandler(AgentClient agent, string name, string cls, Dictionary<string, Variant> args);
-	public delegate void StopMonitorEventHandler(AgentClient agent, string name);
-	public delegate void StopAllMonitorsEventHandler(AgentClient agent);
-	public delegate void SessionStartingEventHandler(AgentClient agent);
-	public delegate void SessionFinishedEventHandler(AgentClient agent);
-	public delegate void IterationStartingEventHandler(AgentClient agent, int iterationCount, bool isReproduction);
-	public delegate void IterationFinishedEventHandler(AgentClient agent);
-	public delegate void DetectedFaultEventHandler(AgentClient agent);
-	public delegate void GetMonitorDataEventHandler(AgentClient agent);
-	public delegate void MustStopEventHandler(AgentClient agent);
-	public delegate void MessageEventHandler(AgentClient agent, string name, Variant data);
+	public delegate void SupportedProtocolClientEventHandler(AgentClient agent, string protocol);
+	public delegate void AgentConnectClientEventHandler(AgentClient agent, string name, string url, string password);
+	public delegate void AgentDisconnectClientEventHandler(AgentClient agent);
+	public delegate void StartMonitorClientEventHandler(AgentClient agent, string name, string cls, Dictionary<string, Variant> args);
+	public delegate void StopMonitorClientEventHandler(AgentClient agent, string name);
+	public delegate void StopAllMonitorsClientEventHandler(AgentClient agent);
+	public delegate void SessionStartingClientEventHandler(AgentClient agent);
+	public delegate void SessionFinishedClientEventHandler(AgentClient agent);
+	public delegate void IterationStartingClientEventHandler(AgentClient agent, int iterationCount, bool isReproduction);
+	public delegate void IterationFinishedClientEventHandler(AgentClient agent);
+	public delegate void DetectedFaultClientEventHandler(AgentClient agent);
+	public delegate void GetMonitorDataClientEventHandler(AgentClient agent);
+	public delegate void MustStopClientEventHandler(AgentClient agent);
+	public delegate void MessageClientEventHandler(AgentClient agent, string name, Variant data);
 
 	#endregion
 
@@ -64,98 +64,98 @@ namespace Peach.Core.Agent
 
 		#region Events
 
-		public event SupportedProtocolEventHandler SupportedProtocolEvent;
+		public event SupportedProtocolClientEventHandler SupportedProtocolEvent;
 		protected void OnSupportedProtocolEvent(string protocol)
 		{
 			if (SupportedProtocolEvent != null)
 				SupportedProtocolEvent(this, protocol);
 		}
 
-		public event AgentConnectEventHandler AgentConnectEvent;
+		public event AgentConnectClientEventHandler AgentConnectEvent;
 		protected void OnAgentConnectEvent(string name, string url, string password)
 		{
 			if (AgentConnectEvent != null)
 				AgentConnectEvent(this, name, url, password);
 		}
 
-		public event AgentDisconnectEventHandler AgentDisconnectEvent;
+		public event AgentDisconnectClientEventHandler AgentDisconnectEvent;
 		protected void OnAgentDisconnectEvent()
 		{
 			if (AgentDisconnectEvent != null)
 				AgentDisconnectEvent(this);
 		}
 
-		public event StartMonitorEventHandler StartMonitorEvent;
+		public event StartMonitorClientEventHandler StartMonitorEvent;
 		protected void OnStartMonitorEvent(string name, string cls, Dictionary<string, Variant> args)
 		{
 			if (StartMonitorEvent != null)
 				StartMonitorEvent(this, name, cls, args);
 		}
 
-		public event StopMonitorEventHandler StopMonitorEvent;
+		public event StopMonitorClientEventHandler StopMonitorEvent;
 		protected void OnStopMonitorEvent(string name)
 		{
 			if (StopMonitorEvent != null)
 				StopMonitorEvent(this, name);
 		}
 
-		public event StopAllMonitorsEventHandler StopAllMonitorsEvent;
+		public event StopAllMonitorsClientEventHandler StopAllMonitorsEvent;
 		protected void OnStopAllMonitorsEvent()
 		{
 			if (StopAllMonitorsEvent != null)
 				StopAllMonitorsEvent(this);
 		}
 
-		public event SessionStartingEventHandler SessionStartingEvent;
+		public event SessionStartingClientEventHandler SessionStartingEvent;
 		protected void OnSessionStartingEvent()
 		{
 			if (SessionStartingEvent != null)
 				SessionStartingEvent(this);
 		}
 
-		public event SessionFinishedEventHandler SessionFinishedEvent;
+		public event SessionFinishedClientEventHandler SessionFinishedEvent;
 		protected void OnSessionFinishedEvent()
 		{
 			if (SessionFinishedEvent != null)
 				SessionFinishedEvent(this);
 		}
 
-		public event IterationStartingEventHandler IterationStartingEvent;
+		public event IterationStartingClientEventHandler IterationStartingEvent;
 		protected void OnIterationStartingEvent(int iterationCount, bool isReproduction)
 		{
 			if (IterationStartingEvent != null)
 				IterationStartingEvent(this, iterationCount, isReproduction);
 		}
 
-		public event IterationFinishedEventHandler IterationFinishedEvent;
+		public event IterationFinishedClientEventHandler IterationFinishedEvent;
 		protected void OnIterationFinishedEvent()
 		{
 			if (IterationFinishedEvent != null)
 				IterationFinishedEvent(this);
 		}
 
-		public event DetectedFaultEventHandler DetectedFaultEvent;
+		public event DetectedFaultClientEventHandler DetectedFaultEvent;
 		protected void OnDetectedFaultEvent()
 		{
 			if (DetectedFaultEvent != null)
 				DetectedFaultEvent(this);
 		}
 
-		public event GetMonitorDataEventHandler GetMonitorDataEvent;
+		public event GetMonitorDataClientEventHandler GetMonitorDataEvent;
 		protected void OnGetMonitorDataEvent()
 		{
 			if (GetMonitorDataEvent != null)
 				GetMonitorDataEvent(this);
 		}
 
-		public event MustStopEventHandler MustStopEvent;
+		public event MustStopClientEventHandler MustStopEvent;
 		protected void OnMustStopEvent()
 		{
 			if (MustStopEvent != null)
 				MustStopEvent(this);
 		}
 
-		public event MessageEventHandler MessageEvent;
+		public event MessageClientEventHandler MessageEvent;
 		protected void OnMessageEvent(string name, Variant data)
 		{
 			if (MessageEvent != null)

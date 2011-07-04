@@ -39,7 +39,7 @@ using System.IO;
 using System.Reflection;
 using Peach.Core;
 using Peach.Core.Dom;
-using Peach.Core.Agent.XmlRpc;
+using Peach.Core.Agent.Channels.XmlRpc;
 using CookComputing.XmlRpc;
 using NLog;
 using Peach.Core.Agent;

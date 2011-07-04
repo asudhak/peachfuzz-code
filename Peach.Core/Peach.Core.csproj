@@ -177,11 +177,11 @@
   <ItemGroup>
     <Compile Include="Agent\Agent.cs" />
     <Compile Include="Agent\AgentClient.cs" />
-    <Compile Include="Agent\AgentLocal.cs" />
+    <Compile Include="Agent\Channels\AgentLocal.cs" />
     <Compile Include="Agent\AgentManager.cs" />
     <Compile Include="Agent\AgentServer.cs" />
-    <Compile Include="Agent\AgentTcpRemoting.cs" />
-    <Compile Include="Agent\AgentXmlRpc.cs" />
+    <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
+    <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CrashReporter.cs" />
     <Compile Include="Agent\Monitors\CrashWrangler.cs" />
@@ -193,9 +193,9 @@
     <Compile Include="Agent\Monitors\UdpMonitor.cs" />
     <Compile Include="Agent\Monitors\UnixDebugger.cs" />
     <Compile Include="Agent\Monitors\WindowsDebugEngine.cs" />
-    <Compile Include="Agent\XmlRpc\HttpListenerController.cs" />
-    <Compile Include="Agent\XmlRpc\HttpListenerWorkerRequest.cs" />
-    <Compile Include="Agent\XmlRpc\HttpListenerWrapper.cs" />
+    <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
+    <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
+    <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\Asn1.cs" />
     <Compile Include="Analyzers\Binary.cs" />
