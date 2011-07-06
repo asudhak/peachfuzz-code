@@ -51,6 +51,15 @@ namespace Peach.Core.Dom
 		public string lengthCalc;
 		public Variant length;
 
+		public Block()
+		{
+		}
+
+		public Block(string name) : base()
+		{
+			this.name = name;
+		}
+
 		public override Variant GenerateInternalValue()
 		{
 			Variant value;

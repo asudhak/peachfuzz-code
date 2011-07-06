@@ -46,6 +46,14 @@ namespace Peach.Core.Dom
 		Calc
 	}
 
+	public enum ValueType
+	{
+		String,
+		Hex,
+		Python,
+		Ruby
+	}
+
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);
 	public delegate void DefaultValueChangedEventHandler(object sender, EventArgs e);
 	public delegate void MutatedValueChangedEventHandler(object sender, EventArgs e);
@@ -55,6 +63,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
+	[Parameter("name", typeof(string), "Optional name for element", false)]
+	[Parameter("value", typeof(string), "Optional default value", false)]
+	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
 	public abstract class DataElement
 	{
 		/// <summary>
@@ -85,7 +96,13 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public const uint MUTATE_DEFAULT = MUTATE_OVERRIDE_FIXUP;
 
-		public string name;
+		protected string _name;
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
+
 		public bool isMutable = true;
 		public uint mutationFlags = MUTATE_DEFAULT;
 		public bool isToken = false;

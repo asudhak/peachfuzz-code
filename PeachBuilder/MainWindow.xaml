@@ -1,0 +1,78 @@
+﻿<Window x:Class="PeachBuilder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:shared="http://schemas.actiprosoftware.com/winfx/xaml/shared"     
+		xmlns:docking="http://schemas.actiprosoftware.com/winfx/xaml/docking"     
+		xmlns:propgrid="http://schemas.actiprosoftware.com/winfx/xaml/propgrid"
+		xmlns:be="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
+		xmlns:editor="http://schemas.actiprosoftware.com/winfx/xaml/syntaxeditor"
+        Title="MainWindow" Height="529" Width="772">
+	<Grid>
+		
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="10*" />
+		</Grid.RowDefinitions>
+		
+		<ToolBarTray Grid.Row="0">
+			<ToolBar>
+				<Button>
+					<Image Source="/Icons/document-new.png"/>
+				</Button>
+				<Button>
+					<Image Source="/Icons/document-open.png"/>
+				</Button>
+				<Button>
+					<Image Source="/Icons/document-save.png"/>
+				</Button>
+				<Button>
+					<Image Source="/Icons/document-save-as.png"/>
+				</Button>
+			</ToolBar>
+		</ToolBarTray>
+		
+		<docking:DockSite Grid.Row="1">
+			<docking:SplitContainer>
+				<docking:ToolWindowContainer>
+					<docking:ToolWindow Title="Design">
+						<TreeView x:Name="DesignerTreeView" SelectedItemChanged="DesignerTreeView_SelectedItemChanged">
+							<TreeView.ItemTemplate>
+								<HierarchicalDataTemplate ItemsSource="{Binding Path=Children}">
+									<StackPanel Orientation="Horizontal">
+										<Image Source="{Binding Path=IconName}" />
+										<TextBlock Text="{Binding Path=DataElement.name}" />
+									</StackPanel>
+								</HierarchicalDataTemplate>
+							</TreeView.ItemTemplate>
+						</TreeView>
+					</docking:ToolWindow>
+				</docking:ToolWindowContainer>
+				<docking:Workspace>
+					<docking:TabbedMdiHost>
+						<docking:TabbedMdiContainer>
+							<docking:DocumentWindow Title="Xml Editor">
+								<editor:SyntaxEditor x:Name="xmlEditor" BorderThickness="0">
+									<editor:EditorDocument xml:space="preserve">
+											<editor:EditorDocument.Language>
+												<editor:XmlSyntaxLanguage />
+											</editor:EditorDocument.Language>
+										</editor:EditorDocument>
+								</editor:SyntaxEditor>
+							</docking:DocumentWindow>
+							<docking:DocumentWindow Title="Hex Editor">
+								<WindowsFormsHost>
+									<be:HexBox x:Name="TheHexBox" />
+								</WindowsFormsHost>
+							</docking:DocumentWindow>
+						</docking:TabbedMdiContainer>
+					</docking:TabbedMdiHost>
+				</docking:Workspace>
+				<docking:ToolWindowContainer>
+					<docking:ToolWindow Title="Properties">
+						<propgrid:PropertyGrid x:Name="DesignPropertyGrid"/>
+					</docking:ToolWindow>
+				</docking:ToolWindowContainer>
+			</docking:SplitContainer>
+		</docking:DockSite>
+	</Grid>
+</Window>
