@@ -49,11 +49,6 @@ namespace PeachBuilder
 			DynamicFileByteProvider dynamicFileByteProvider;
 			dynamicFileByteProvider = new DynamicFileByteProvider(new MemoryStream(buff));
 			TheHexBox.ByteProvider = dynamicFileByteProvider;
-			TheHexBox.HexCasing = HexCasing.Lower;
-			TheHexBox.LineInfoVisible = true;
-			TheHexBox.StringViewVisible = true;
-			TheHexBox.UseFixedBytesPerLine = true;
-			TheHexBox.VScrollBarVisible = true;
 
 			PitParser parser = new PitParser();
 			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(@"c:\peach3.0\peach\template.xml"));
@@ -64,20 +59,18 @@ namespace PeachBuilder
 			models.Add(new DesignPeachModel(dom));
 			DesignerTreeView.ItemsSource = models;
 
-			BitStream data = new BitStream(buff);
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5, 6, 0xff, 0xfe, 0xff });
-			data.SeekBits(0, SeekOrigin.Begin);
+			DesignHexDataModelsCombo.ItemsSource = dom.dataModels.Values;
 
+			BitStream data = new BitStream(buff);
 			DataCracker cracker = new DataCracker();
 			cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
 			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
-			cracker.CrackData(dom.dataModels[0], data);
+			cracker.CrackData(dom.dataModels[1], data);
 
 			CrackModel.Root = CrackRootModel;
 			CrackTree.Model = CrackRootModel;
 
-			DesignHexDataModels.Text = dom.dataModels[0].name;
+			DesignHexDataModelsCombo.Text = dom.dataModels[1].name;
 		}
 
 		protected Stack<CrackModel> containerStack = new Stack<CrackModel>();
@@ -138,6 +131,15 @@ namespace PeachBuilder
 				return "";
 
 			return pinfo.GetValue(elem, new object[0]).ToString();
+		}
+
+		private void CrackTree_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems.Count == 0)
+				return;
+
+			CrackModel model = (CrackModel) ((PeachBuilder.Controls.TreeNode)e.AddedItems[0]).Tag;
+			TheHexBox.Select(model.Position, model.Length);
 		}
 	}
 }

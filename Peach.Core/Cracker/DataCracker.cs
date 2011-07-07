@@ -568,27 +568,48 @@ namespace Peach.Core.Cracker
 			else
 				data.BigEndian();
 
-			ulong value = 0;
+			Variant defaultValue;
 
-			switch (element.Size)
+			if (element.Signed)
 			{
-				case 8:
-					value = (ulong)data.ReadInt8();
-					break;
-				case 16:
-					value = (ulong)data.ReadInt16();
-					break;
-				case 32:
-					value = (ulong)data.ReadInt32();
-					break;
-				case 64:
-					value = (ulong)data.ReadInt64();
-					break;
-				default:
-					throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
+				switch (element.Size)
+				{
+					case 8:
+						defaultValue = new Variant(data.ReadInt8());
+						break;
+					case 16:
+						defaultValue = new Variant(data.ReadInt16());
+						break;
+					case 32:
+						defaultValue = new Variant(data.ReadInt32());
+						break;
+					case 64:
+						defaultValue = new Variant(data.ReadInt64());
+						break;
+					default:
+						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
+				}
 			}
-
-			var defaultValue = new Variant(value);
+			else
+			{
+				switch (element.Size)
+				{
+					case 8:
+						defaultValue = new Variant(data.ReadUInt8());
+						break;
+					case 16:
+						defaultValue = new Variant(data.ReadUInt16());
+						break;
+					case 32:
+						defaultValue = new Variant(data.ReadUInt32());
+						break;
+					case 64:
+						defaultValue = new Variant(data.ReadUInt64());
+						break;
+					default:
+						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
+				}
+			}
 
 			if(element.isToken)
 				if(defaultValue != element.DefaultValue)

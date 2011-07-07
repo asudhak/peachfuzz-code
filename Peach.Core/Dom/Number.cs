@@ -118,10 +118,20 @@ namespace Peach.Core.Dom
 			get { return base.DefaultValue; }
 			set
 			{
-				if ((long)value >= _min && (ulong)value <= _max)
-					base.DefaultValue = value;
+				if (Signed)
+				{
+					if ((long)value >= _min)
+						base.DefaultValue = value;
+					else
+						throw new ApplicationException("DefaultValue not with in min/max values.");
+				}
 				else
-					throw new ApplicationException("DefaultValue not with in min/max values.");
+				{
+					if ((ulong)value <= _max)
+						base.DefaultValue = value;
+					else
+						throw new ApplicationException("DefaultValue not with in min/max values.");
+				}
 			}
 		}
 

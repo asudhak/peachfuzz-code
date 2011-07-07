@@ -698,6 +698,12 @@ namespace Peach.Core.Analyzers
 
 					case "Custom":
 						throw new NotSupportedException("Implement custom types");
+
+					default:
+						if (child.Name == "#comment")
+							continue;
+
+						throw new NotSupportedException("Unkown: "+child.Name);
 				}
 
 				// If parent was created by a reference (ref attribute)

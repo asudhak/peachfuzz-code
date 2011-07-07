@@ -68,6 +68,7 @@ namespace Peach.Core
 		protected abstract Variant fixupImpl(DataElement obj);
 	}
 
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class FixupAttribute : Attribute
 	{
 		public string className;
