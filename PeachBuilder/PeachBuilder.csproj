@@ -100,14 +100,27 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controls\Collection.cs" />
+    <Compile Include="Controls\Converters.cs" />
+    <Compile Include="Controls\ITreeModel.cs" />
+    <Compile Include="Controls\RowExpander.cs" />
+    <Compile Include="Controls\TreeList.cs" />
+    <Compile Include="Controls\TreeListItem.cs" />
+    <Compile Include="Controls\TreeNode.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\CrackModel.cs" />
     <Compile Include="Models\DesignDataElementModel.cs" />
     <Compile Include="Models\DesignModel.cs" />
+    <Compile Include="Models\DesignPeachModel.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -194,7 +207,7 @@
     <Resource Include="Icons\node-state.png" />
     <Resource Include="Icons\node-statemachine.png" />
     <Resource Include="Icons\node-string.png" />
-    <Resource Include="Icons\node-template.png" />
+    <Resource Include="Icons\node-datamodel.png" />
     <Resource Include="Icons\node-test.png" />
     <Resource Include="Icons\node-transform.png" />
     <Resource Include="Icons\node-unknown.png" />

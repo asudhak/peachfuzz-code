@@ -2,13 +2,15 @@
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://phed.org/2008/Peach /peach3.0/peachcore/peach.xsd">
 
-	<Include ns="default" src="file:defaults.xml"/>
+	<!--<Include ns="default" src="file:/peach3.0/peach/defaults.xml"/>-->
 
 	<DataModel name="TheDataModel">
-		<String value="Hello World" />
+		<Blob length="1" />
+		<String length="3" />
+		<Blob />
 	</DataModel>
 	
-	<Agent name="LocalAgent">
+	<!--<Agent name="LocalAgent">
 		<Monitor class="PcapMonitor">
 			<Param name="Device" value="rpcap://\Device\NPF_{8DB9FD50-6702-4CB7-9ED3-D20E603BF543}"/>
 			<Param name="Filter" value="port 80"/>
@@ -31,7 +33,7 @@
 
 	<Run name="DefaultRun">
 		<Test ref="TheTest"/>
-	</Run>
+	</Run>-->
 
 </Peach>
 <!-- end -->

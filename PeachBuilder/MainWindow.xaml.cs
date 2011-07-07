@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -16,6 +17,9 @@ using Be.Windows.Forms;
 using PeachBuilder.Models;
 using Peach.Core.Dom;
 using Peach.Core;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
+using Peach.Core.Analyzers;
 using System.Reflection;
 using ActiproSoftware.Products.PropertyGrid;
 using ActiproSoftware.Windows.Controls.PropertyGrid;
@@ -27,14 +31,23 @@ namespace PeachBuilder
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		CrackModel CrackRootModel = null;
+
 		public MainWindow()
 		{
 			InitializeComponent();
 
 			this.Title = "Peach Build v3 DEV - template.xml";
 
+			byte[] buff;
+			using (Stream sin = File.OpenRead(@"c:\4-Key.png"))
+			{
+				buff = new byte[sin.Length];
+				sin.Read(buff, 0, buff.Length);
+			}
+
 			DynamicFileByteProvider dynamicFileByteProvider;
-			dynamicFileByteProvider = new DynamicFileByteProvider(@"c:\4-Key.png");
+			dynamicFileByteProvider = new DynamicFileByteProvider(new MemoryStream(buff));
 			TheHexBox.ByteProvider = dynamicFileByteProvider;
 			TheHexBox.HexCasing = HexCasing.Lower;
 			TheHexBox.LineInfoVisible = true;
@@ -42,28 +55,65 @@ namespace PeachBuilder
 			TheHexBox.UseFixedBytesPerLine = true;
 			TheHexBox.VScrollBarVisible = true;
 
-			xmlEditor.Document.LoadFile(File.OpenRead(@"c:\peach\template.xml"), Encoding.UTF8);
+			PitParser parser = new PitParser();
+			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(@"c:\peach3.0\peach\template.xml"));
 
-			DesignDataElementModel model = new DesignDataElementModel();
-			model.DataElement = new Peach.Core.Dom.Block("DataModel");
-			model.IconName = "/Icons/node-template.png";
+			xmlEditor.Document.LoadFile(File.OpenRead(@"c:\peach3.0\peach\template.xml"), Encoding.UTF8);
 
-			for (int i = 0; i < 5; i++)
-			{
-				DesignDataElementModel child = new DesignDataElementModel();
-				child.DataElement = new Peach.Core.Dom.String("String #"+i.ToString());
-				child.IconName = "/Icons/node-string.png";
-				model.Children.Add(child);
-			}
-
-			var models = new List<DesignDataElementModel>();
-			models.Add(model);
+			var models = new List<DesignModel>();
+			models.Add(new DesignPeachModel(dom));
 			DesignerTreeView.ItemsSource = models;
+
+			BitStream data = new BitStream(buff);
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5, 6, 0xff, 0xfe, 0xff });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
+			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
+			cracker.CrackData(dom.dataModels[0], data);
+
+			CrackModel.Root = CrackRootModel;
+			CrackTree.Model = CrackRootModel;
+
+			DesignHexDataModels.Text = dom.dataModels[0].name;
+		}
+
+		protected Stack<CrackModel> containerStack = new Stack<CrackModel>();
+		protected CrackModel currentModel = null;
+
+		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
+		{
+			if (element is DataElementContainer)
+				currentModel = containerStack.Pop();
+
+			currentModel.Length = ((BitStream)currentModel.DataElement.Value).LengthBytes;
+
+			if(containerStack.Count > 0)
+				containerStack.Peek().Children.Add(currentModel);
+		}
+
+		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
+		{
+			currentModel = new CrackModel(element, data.TellBytes(), 0);
+
+			if (element is DataElementContainer)
+			{
+				if (CrackRootModel == null)
+					CrackRootModel = currentModel;
+
+				containerStack.Push(currentModel);
+			}
 		}
 
 		private void DesignerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
 			DesignPropertyGrid.Items.Clear();
+
+			if (!(DesignerTreeView.SelectedItem is DesignDataElementModel))
+				return;
+
 			DesignDataElementModel model = (DesignDataElementModel)DesignerTreeView.SelectedItem;
 			foreach (Attribute attribute in model.DataElement.GetType().GetCustomAttributes(true))
 			{
@@ -72,12 +122,22 @@ namespace PeachBuilder
 					var item = new PropertyGridPropertyItem();
 					item.Name = ((ParameterAttribute)attribute).name;
 					item.ValueName = ((ParameterAttribute)attribute).name;
+					item.Value = GetValue(model.DataElement, ((ParameterAttribute)attribute).name);
 					item.Description = ((ParameterAttribute)attribute).description;
 					item.ValueType = ((ParameterAttribute)attribute).type;
 
 					DesignPropertyGrid.Items.Add(item);
 				}
 			}
+		}
+
+		private string GetValue(DataElement elem, string property)
+		{
+			var pinfo = elem.GetType().GetProperty(property);
+			if (pinfo == null)
+				return "";
+
+			return pinfo.GetValue(elem, new object[0]).ToString();
 		}
 	}
 }
