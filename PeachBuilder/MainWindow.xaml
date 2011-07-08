@@ -14,14 +14,14 @@
 		<Grid.Resources>
 			<HierarchicalDataTemplate DataType="{x:Type models:DesignDataElementModel}"  ItemsSource="{Binding Path=Children}">
 				<StackPanel Orientation="Horizontal">
-					<Image Source="{Binding Path=IconName}" />
-					<TextBlock Text="{Binding Path=DataElement.name}" />
+					<Image Width="16" Height="16" Margin="2,2,2,2" Source="{Binding Path=IconName}" />
+					<TextBlock Margin="2,2,2,2" Text="{Binding Path=DataElement.name}" />
 				</StackPanel>
 			</HierarchicalDataTemplate>
 			<HierarchicalDataTemplate DataType="{x:Type models:DesignPeachModel}"  ItemsSource="{Binding Path=Children}">
 				<StackPanel Orientation="Horizontal">
-					<Image Source="{Binding Path=IconName}" />
-					<TextBlock Text="Peach" />
+					<Image Width="16" Height="16" Margin="2,2,2,2" Source="{Binding Path=IconName}" />
+					<TextBlock Text="Peach" Margin="2,2,2,2" />
 				</StackPanel>
 			</HierarchicalDataTemplate>
 		</Grid.Resources>
@@ -141,7 +141,7 @@
 																			<DataTemplate>
 																				<StackPanel Orientation="Horizontal">
 																					<controls:RowExpander/>
-																					<Image Source="{Binding Path=IconName}"  Margin="0, 0, 5, 0"/>
+																					<Image Width="16" Height="16" Margin="2,2,2,2" Source="{Binding Path=IconName}" />
 																					<TextBlock Text="{Binding Path=Name}"/>
 																				</StackPanel>
 																			</DataTemplate>
@@ -153,7 +153,7 @@
 																	<GridViewColumn Header="Value" Width="100">
 																		<GridViewColumn.CellTemplate>
 																			<DataTemplate>
-																				<TextBlock Text="{Binding Path=Value}" />
+																				<TextBlock Text="{Binding Path=Value}" TextWrapping="NoWrap" />
 																			</DataTemplate>
 																		</GridViewColumn.CellTemplate>
 																	</GridViewColumn>

@@ -58,16 +58,27 @@ namespace PeachBuilder.Models
 				if (DataElement is DataElementContainer)
 					return "";
 
+				string ret;
+
 				try
 				{
-					string ret = (string)this.DataElement.InternalValue;
-					return ret.Length > 20 ? ret.Substring(0, 20) : ret;
+					ret = (string)this.DataElement.InternalValue;
 				}
 				catch
 				{
-					string ret = ASCIIEncoding.ASCII.GetString((byte[])this.DataElement.InternalValue);
-					return ret.Length > 20 ? ret.Substring(0, 20) : ret;
+					ret = ASCIIEncoding.ASCII.GetString((byte[])this.DataElement.InternalValue);
 				}
+
+				for (int i = 0; i < ret.Length; i++)
+				{
+					if (ret[i].CompareTo(' ') < 0)
+						ret = ret.Replace(ret[i], '.');
+
+					if (ret[i].CompareTo('~') > 0)
+						ret = ret.Replace(ret[i], '.');
+				}
+
+				return ret.Length > 20 ? ret.Substring(0, 20) : ret;
 			}
 		}
 
