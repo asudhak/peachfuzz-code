@@ -37,6 +37,7 @@ namespace Peach.Core.IO.Conversion
 	/// <summary>
 	/// Equivalent of System.BitConverter, but with either endianness.
 	/// </summary>
+	[Serializable]
 	public abstract class EndianBitConverter
 	{
 		#region Endianness of this converter
