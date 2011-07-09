@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
+
+	<Include ns="default" src="file:defaults.xml"/>
+
+	<DataModel name="TheDataModel">
+		<String value="Hello World!" />
+	</DataModel>
+
+	<StateModel name="TheState" initialState="Initial">
+		<State name="Initial">
+			<Action type="output">
+				<DataModel ref="TheDataModel"/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name="TheTest">
+		<StateModel ref="TheState"/>
+		<Publisher class="stdout.Stdout" />
+	</Test>
+
+	<Run name="DefaultRun">
+		<Test ref="TheTest"/>
+	</Run>
+
+</Peach>
+<!-- end -->

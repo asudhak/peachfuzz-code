@@ -160,6 +160,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ross.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="template.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
