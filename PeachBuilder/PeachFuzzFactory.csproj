@@ -120,11 +120,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Icons\Models\CrackModel.cs" />
-    <Compile Include="Icons\Models\DesignDataElementModel.cs" />
-    <Compile Include="Icons\Models\DesignModel.cs" />
-    <Compile Include="Icons\Models\DesignPeachModel.cs" />
-    <Compile Include="Icons\Models\Model.cs" />
+    <Compile Include="Models\CrackModel.cs" />
+    <Compile Include="Models\DesignDataElementModel.cs" />
+    <Compile Include="Models\DesignModel.cs" />
+    <Compile Include="Models\DesignPeachModel.cs" />
+    <Compile Include="Models\Model.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
