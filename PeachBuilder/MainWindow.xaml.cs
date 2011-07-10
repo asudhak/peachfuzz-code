@@ -37,7 +37,7 @@ namespace PeachBuilder
 		{
 			InitializeComponent();
 
-			this.Title = "Peach Build v3 DEV - template.xml";
+			this.Title = "Peach Fuzz Factory v3 DEV - template.xml";
 
 			byte[] buff;
 			using (Stream sin = File.OpenRead(@"c:\4-Key.png"))

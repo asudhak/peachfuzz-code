@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PeachBuilder</RootNamespace>
-    <AssemblyName>PeachBuilder</AssemblyName>
+    <AssemblyName>PeachFuzzFactory</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -50,6 +50,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>peach20x20.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility">
@@ -117,11 +120,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\CrackModel.cs" />
-    <Compile Include="Models\DesignDataElementModel.cs" />
-    <Compile Include="Models\DesignModel.cs" />
-    <Compile Include="Models\DesignPeachModel.cs" />
-    <Compile Include="Models\Model.cs" />
+    <Compile Include="Icons\Models\CrackModel.cs" />
+    <Compile Include="Icons\Models\DesignDataElementModel.cs" />
+    <Compile Include="Icons\Models\DesignModel.cs" />
+    <Compile Include="Icons\Models\DesignPeachModel.cs" />
+    <Compile Include="Icons\Models\Model.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -214,6 +217,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\document-print-preview.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="peach20x20.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\peach20x20.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
