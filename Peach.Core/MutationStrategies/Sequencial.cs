@@ -57,6 +57,7 @@ namespace Peach.Core.MutationStrategies
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			_context = context;
 
 			// Locate all mutators
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
