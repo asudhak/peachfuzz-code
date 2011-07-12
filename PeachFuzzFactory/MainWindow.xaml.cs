@@ -22,6 +22,7 @@ using Peach.Core.IO;
 using Peach.Core.Analyzers;
 using System.Reflection;
 using ActiproSoftware.Windows.Controls.PropertyGrid;
+using ActiproSoftware.Windows.Controls.SyntaxEditor.EditActions;
 
 namespace PeachFuzzFactory
 {
@@ -30,7 +31,7 @@ namespace PeachFuzzFactory
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		CrackModel CrackRootModel = null;
+		Dictionary<DataElement, CrackModel> crackMap = new Dictionary<DataElement, CrackModel>();
 
 		public MainWindow()
 		{
@@ -66,37 +67,26 @@ namespace PeachFuzzFactory
 			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
 			cracker.CrackData(dom.dataModels[1], data);
 
-			CrackModel.Root = CrackRootModel;
-			CrackTree.Model = CrackRootModel;
+			CrackModel.Root = crackMap[dom.dataModels[1]];
+			CrackTree.Model = CrackModel.Root;
 
 			DesignHexDataModelsCombo.Text = dom.dataModels[1].name;
 		}
 
-		protected Stack<CrackModel> containerStack = new Stack<CrackModel>();
-		protected CrackModel currentModel = null;
-
 		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
 		{
-			if (element is DataElementContainer)
-				currentModel = containerStack.Pop();
-
+			var currentModel = crackMap[element];
 			currentModel.Length = ((BitStream)currentModel.DataElement.Value).LengthBytes;
 
-			if(containerStack.Count > 0)
-				containerStack.Peek().Children.Add(currentModel);
+			if (element.parent != null)
+				crackMap[element.parent].Children.Add(currentModel);
+			else
+				System.Diagnostics.Debugger.Break();
 		}
 
 		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
 		{
-			currentModel = new CrackModel(element, data.TellBytes(), 0);
-
-			if (element is DataElementContainer)
-			{
-				if (CrackRootModel == null)
-					CrackRootModel = currentModel;
-
-				containerStack.Push(currentModel);
-			}
+			crackMap[element] = new CrackModel(element, data.TellBytes(), 0);
 		}
 
 		private void DesignerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -139,6 +129,101 @@ namespace PeachFuzzFactory
 
 			CrackModel model = (CrackModel) ((PeachFuzzFactory.Controls.TreeNode)e.AddedItems[0]).Tag;
 			TheHexBox.Select(model.Position, model.Length);
+		}
+
+		private void ButtonNewPit_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonPitOpen_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonSavePit_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonSavePitAs_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonShowCracking_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonShowXml_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonCrackBinOpen_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonXmlSave_Click(object sender, RoutedEventArgs e)
+		{
+			// Save and update designer view
+		}
+
+		private void ButtonXmlCopy_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.CopyToClipboard();
+		}
+
+		private void ButtonXmlCut_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.CutToClipboard();
+		}
+
+		private void ButtonXmlPaste_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.PasteFromClipboard();
+		}
+
+		private void ButtonXmlDelete_Click(object sender, RoutedEventArgs e)
+		{
+			// TODO
+		}
+
+		private void ButtonXmlFind_Click(object sender, RoutedEventArgs e)
+		{
+			//xmlEditor
+		}
+
+		private void ButtonXmlFindAndReplace_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ButtonXmlRedo_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.ExecuteEditAction(new RedoAction());
+		}
+
+		private void ButtonXmlUndo_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.ExecuteEditAction(new ActiproSoftware.Windows.Controls.SyntaxEditor.EditActions.UndoAction());
+		}
+
+		private void ButtonXmlSelectAll_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.ExecuteEditAction(new SelectAllAction());
+		}
+
+		private void ButtonXmlIndent_Click(object sender, RoutedEventArgs e)
+		{
+			xmlEditor.ActiveView.ExecuteEditAction(new IndentAction());
+		}
+
+		private void ButtonXmlIndentLess_Click(object sender, RoutedEventArgs e)
+		{
+			// TODO
 		}
 	}
 }

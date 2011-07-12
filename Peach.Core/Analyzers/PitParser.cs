@@ -552,6 +552,37 @@ namespace Peach.Core.Analyzers
 			return dataModel;
 		}
 
+		protected Dom.Array handleArray(XmlNode node, DataElementContainer parent)
+		{
+			Dom.Array array = new Dom.Array();
+
+			// name
+			if (hasXmlAttribute(node, "name"))
+				array.name = getXmlAttribute(node, "name");
+
+			if (hasXmlAttribute(node, "minOccurs"))
+			{
+				array.minOccurs = int.Parse(getXmlAttribute(node, "minOccurs"));
+				array.maxOccurs = -1;
+			}
+
+			if (hasXmlAttribute(node, "maxOccurs"))
+				array.maxOccurs = int.Parse(getXmlAttribute(node, "maxOccurs"));
+
+			if (hasXmlAttribute(node, "occurs"))
+				array.occurs = int.Parse(getXmlAttribute(node, "occurs"));
+
+			return array;
+		}
+
+		protected bool IsArray(XmlNode node)
+		{
+			if (hasXmlAttribute(node, "minOccurs") || hasXmlAttribute(node, "maxOccurs") || hasXmlAttribute(node, "occurs"))
+				return true;
+
+			return false;
+		}
+
 		protected Block handleBlock(XmlNode node, DataElementContainer parent)
 		{
 			Block block = new Block();
@@ -706,6 +737,13 @@ namespace Peach.Core.Analyzers
 						throw new NotSupportedException("Unkown: "+child.Name);
 				}
 
+				if (IsArray(child))
+				{
+					var array = handleArray(child, element);
+					array.Add(elem);
+					elem = array;
+				}
+
 				// If parent was created by a reference (ref attribute)
 				// then allow replacing existing elements with new
 				// elements.  This includes "deep" replacement using "."
@@ -758,16 +796,6 @@ namespace Peach.Core.Analyzers
 				choice.choiceElements.Add(elem.name, elem);
 
 			choice.Clear();
-
-			// Array
-			if (hasXmlAttribute(node, "minOccurs") || hasXmlAttribute(node, "maxOccurs"))
-			{
-				Dom.Array array = new Dom.Array();
-				array.Add(choice);
-				array.name = choice.name;
-
-				return array;
-			}
 
 			return choice;
 		}

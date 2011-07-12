@@ -22,8 +22,7 @@
 	<DataModel name="Png">
 		<Blob name="Magic" length="8" valueType="hex" value="0x89 0x50 0x4e 0x47 0x0d 0x0a 0x1a 0x0a" />
 
-		<!--<Choice name="PngChunk" maxOccurs="2000">-->
-		<Choice name="PngChunk">
+		<Choice name="PngChunk" maxOccurs="2000">
 
 				<!-- ********************************************* -->
 			<Block name="IHDR" ref="Chunk">
@@ -232,7 +231,7 @@
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="sPLT" />
 					<Block name="Data">
-						<String name="PaletteName" nullTerminated="true" />
+						<!--<String name="PaletteName" nullTerminated="true" />
 						<Number size="8" endian="big" signed="false" />
 						<Choice name="depthChoice">
 							<Block name="8bit">
@@ -256,7 +255,8 @@
 									<Number size="16" signed="false" endian="big" />
 								</Block>
 							</Block>
-						</Choice>
+						</Choice>-->
+						<Blob/>
 					</Block>
 				</Block>
 			</Block>
@@ -301,7 +301,7 @@
 		</Choice>
 	</DataModel>
 
-	<!--<Agent name="LocalAgent">
+	<Agent name="LocalAgent">
 		<Monitor class="PcapMonitor">
 			<Param name="Device" value="rpcap://\Device\NPF_{8DB9FD50-6702-4CB7-9ED3-D20E603BF543}"/>
 			<Param name="Filter" value="port 80"/>
@@ -311,20 +311,21 @@
 	<StateModel name="TheState" initialState="Initial">
 		<State name="Initial">
 			<Action type="output" publisher="Stdout">
-				<DataModel ref="TheDataModel"/>
+				<DataModel ref="Png"/>
+				<Data fileName="c:\4-key.png" />
 			</Action>
 		</State>
 	</StateModel>
 	
 	<Test name="TheTest">
-		<Agent ref="LocalAgent"/>
+		<!--<Agent ref="LocalAgent"/>-->
 		<StateModel ref="TheState"/>
 		<Publisher class="Console" name="Stdout" />
 	</Test>
 
 	<Run name="DefaultRun">
 		<Test ref="TheTest"/>
-	</Run>-->
+	</Run>
 
 </Peach>
 <!-- end -->

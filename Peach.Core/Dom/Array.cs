@@ -52,10 +52,23 @@ namespace Peach.Core.Dom
 	{
 		public int minOccurs = 1;
 		public int maxOccurs = 1;
+		public int occurs = 1;
 
 		public bool hasExpanded = false;
 
 		public DataElement origionalElement = null;
+
+		public override string name
+		{
+			get { return _name; }
+			set
+			{
+				_name = value;
+
+				if(this.Count > 0)
+					this[0].name = value;
+			}
+		}
 	}
 }
 

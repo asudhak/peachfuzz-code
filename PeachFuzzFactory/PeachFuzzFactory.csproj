@@ -231,6 +231,18 @@
     <Content Include="4-Key.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\edit-copy.png" />
+    <Resource Include="Icons\edit-cut.png" />
+    <Resource Include="Icons\edit-delete.png" />
+    <Resource Include="Icons\edit-find-replace.png" />
+    <Resource Include="Icons\edit-find.png" />
+    <Resource Include="Icons\edit-paste.png" />
+    <Resource Include="Icons\edit-redo.png" />
+    <Resource Include="Icons\edit-select-all.png" />
+    <Resource Include="Icons\edit-undo.png" />
+    <Resource Include="Icons\format-indent-less.png" />
+    <Resource Include="Icons\format-indent-more.png" />
+    <Resource Include="Icons\node-array.png" />
     <Content Include="test.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

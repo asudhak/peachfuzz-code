@@ -97,7 +97,7 @@ namespace Peach.Core.Dom
 		public const uint MUTATE_DEFAULT = MUTATE_OVERRIDE_FIXUP;
 
 		protected string _name;
-		public string name
+		public virtual string name
 		{
 			get { return _name; }
 			set { _name = value; }

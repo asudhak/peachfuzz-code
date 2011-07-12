@@ -8,7 +8,7 @@
 		xmlns:models="clr-namespace:PeachFuzzFactory.Models"
 		xmlns:controls="clr-namespace:PeachFuzzFactory.Controls"
 		xmlns:editor="http://schemas.actiprosoftware.com/winfx/xaml/syntaxeditor"
-        Title="MainWindow" Height="529" Width="1100" Icon="/Icons/peach20x20.ico">
+        Title="MainWindow" Height="650" Width="1100" Icon="/Icons/peach20x20.ico">
 	<Grid>
 
 		<Grid.Resources>
@@ -33,7 +33,7 @@
 
 		<ToolBarTray Grid.Row="0">
 			<ToolBar>
-				<Button>
+				<Button x:Name="ButtonNewPit" Click="ButtonNewPit_Click">
 					<Image Source="/Icons/document-new.png"/>
 					<Button.ToolTip>
 						<ToolTip>
@@ -41,7 +41,7 @@
 						</ToolTip>
 					</Button.ToolTip>
 				</Button>
-				<Button>
+				<Button x:Name="ButtonPitOpen" Click="ButtonPitOpen_Click">
 					<Image Source="/Icons/document-open.png"/>
 					<Button.ToolTip>
 						<ToolTip>
@@ -49,7 +49,7 @@
 						</ToolTip>
 					</Button.ToolTip>
 				</Button>
-				<Button>
+				<Button x:Name="ButtonSavePit" Click="ButtonSavePit_Click">
 					<Image Source="/Icons/document-save.png"/>
 					<Button.ToolTip>
 						<ToolTip>
@@ -57,7 +57,7 @@
 						</ToolTip>
 					</Button.ToolTip>
 				</Button>
-				<Button>
+				<Button x:Name="ButtonSavePitAs" Click="ButtonSavePitAs_Click">
 					<Image Source="/Icons/document-save-as.png"/>
 					<Button.ToolTip>
 						<ToolTip>
@@ -67,7 +67,7 @@
 				</Button>
 			</ToolBar>
 			<ToolBar>
-				<Button>
+				<Button x:Name="ButtonShowCracking" Click="ButtonShowCracking_Click">
 					<Image Source="/Icons/document-print-preview.png"/>
 					<Button.ToolTip>
 						<ToolTip>
@@ -76,7 +76,7 @@
 					</Button.ToolTip>
 				</Button>
 
-				<Button Content="XML">
+				<Button Content="XML" x:Name="ButtonShowXml" Click="ButtonShowXml_Click">
 					<!--<Image Source="/Icons/document-print-preview.png"/>-->
 					<Button.ToolTip>
 						<ToolTip>
@@ -99,13 +99,120 @@
 					<docking:TabbedMdiHost>
 						<docking:TabbedMdiContainer>
 							<docking:DocumentWindow Title="Xml Editor">
-								<editor:SyntaxEditor x:Name="xmlEditor" BorderThickness="0">
-									<editor:EditorDocument xml:space="preserve">
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="10*"/>
+									</Grid.RowDefinitions>
+									<ToolBarTray Grid.Row="0">
+										<ToolBar>
+											<Button x:Name="ButtonXmlSave" Click="ButtonXmlSave_Click">
+												<Image Source="/Icons/document-save.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Save Pit File</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlCopy" Click="ButtonXmlCopy_Click">
+												<Image Source="/Icons/edit-copy.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Copy selection</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlCut" Click="ButtonXmlCut_Click">
+												<Image Source="/Icons/edit-cut.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Cut selection</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlPaste" Click="ButtonXmlPaste_Click">
+												<Image Source="/Icons/edit-paste.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Paste from clipboard</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlDelete" Click="ButtonXmlDelete_Click">
+												<Image Source="/Icons/edit-delete.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Delete selection</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlFind" Click="ButtonXmlFind_Click">
+												<Image Source="/Icons/edit-find.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Find in file</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlFindAndReplace" Click="ButtonXmlFindAndReplace_Click">
+												<Image Source="/Icons/edit-find-replace.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Find and replace in file</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlRedo" Click="ButtonXmlRedo_Click">
+												<Image Source="/Icons/edit-redo.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Redo last operation</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlUndo" Click="ButtonXmlUndo_Click">
+												<Image Source="/Icons/edit-undo.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Undo last operation</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlSelectAll" Click="ButtonXmlSelectAll_Click">
+												<Image Source="/Icons/edit-select-all.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Select all</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlIndent" Click="ButtonXmlIndent_Click">
+												<Image Source="/Icons/format-indent-more.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Indent selection</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+											<Button x:Name="ButtonXmlIndentLess" Click="ButtonXmlIndentLess_Click">
+												<Image Source="/Icons/format-indent-less.png"/>
+												<Button.ToolTip>
+													<ToolTip>
+														<TextBlock>Un-Indent selection</TextBlock>
+													</ToolTip>
+												</Button.ToolTip>
+											</Button>
+										</ToolBar>
+									</ToolBarTray>
+
+									<editor:SyntaxEditor Grid.Row="1" x:Name="xmlEditor" BorderThickness="0">
+										<editor:EditorDocument xml:space="preserve">
 											<editor:EditorDocument.Language>
 												<editor:XmlSyntaxLanguage />
 											</editor:EditorDocument.Language>
 										</editor:EditorDocument>
-								</editor:SyntaxEditor>
+									</editor:SyntaxEditor>
+								</Grid>
 							</docking:DocumentWindow>
 							<docking:DocumentWindow Title="Hex Editor">
 								<docking:DockSite Grid.Row="1">
@@ -120,7 +227,7 @@
 											</docking:ToolWindow>
 										</docking:ToolWindowContainer>
 										<docking:ToolWindowContainer>
-											
+
 											<docking:ToolWindow Title="Crack Display">
 												<Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 													<Grid.RowDefinitions>
@@ -128,8 +235,30 @@
 														<RowDefinition Height="10*"/>
 													</Grid.RowDefinitions>
 
-													<ComboBox x:Name="DesignHexDataModelsCombo" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Stretch"
-															DisplayMemberPath="name" SelectedValuePath="name"/>
+													<StackPanel Orientation="Horizontal" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+														<ToolBarTray Grid.Row="0">
+															<ToolBar>
+																<Button x:Name="ButtonCrackBinOpen" Click="ButtonCrackBinOpen_Click">
+																	<Image Source="/Icons/document-open.png"/>
+																	<Button.ToolTip>
+																		<ToolTip>
+																			<TextBlock>Open binary file to crack...</TextBlock>
+																		</ToolTip>
+																	</Button.ToolTip>
+																</Button>
+
+																<ComboBox x:Name="DesignHexDataModelsCombo" VerticalAlignment="Top" HorizontalAlignment="Stretch"
+															DisplayMemberPath="name" SelectedValuePath="name">
+																	<ComboBox.ToolTip>
+																		<ToolTip>
+																			<TextBlock>Select Data Model to parse with</TextBlock>
+																		</ToolTip>
+																	</ComboBox.ToolTip>
+																</ComboBox>
+
+															</ToolBar>
+														</ToolBarTray>
+													</StackPanel>
 
 													<controls:TreeList x:Name="CrackTree" Grid.Row="1" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
 													   SelectionChanged="CrackTree_SelectionChanged" SelectionMode="Single">

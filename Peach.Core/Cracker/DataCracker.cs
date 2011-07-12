@@ -294,12 +294,42 @@ namespace Peach.Core.Cracker
 		protected void handleArray(Dom.Array element, BitStream data)
 		{
 			logger.Trace("handleArray: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("handleArray: {0} type: {1}", element.fullName, element[0].GetType());
 
-			if (element.minOccurs == 0)
+			element.origionalElement = element[0];
+			element.Clear();
+
+			if (element.maxOccurs > 1)
 			{
-			}
+				for (int cnt = 0; true; cnt++)
+				{
+					logger.Debug("handleArray: Trying #{0}", cnt.ToString());
 
-			throw new NotImplementedException("Implement handArray");
+					int pos = data.TellBits();
+					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
+					clone.name = clone.name + "_" + cnt.ToString();
+					clone.parent = element;
+					element.Add(clone);
+
+					try
+					{
+						handleNode(clone, data);
+					}
+					catch
+					{
+						logger.Debug("handleArray: Failed on #{0}", cnt.ToString());
+						element.Remove(clone);
+						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
+						break;
+					}
+
+					if (data.TellBits() == data.LengthBits)
+					{
+						logger.Debug("handleArray: Found EOF, all done!");
+						break;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -421,6 +451,7 @@ namespace Peach.Core.Cracker
 			{
 				try
 				{
+					child.parent = element;
 					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
 					handleNode(child, sizedData);
 					element.SelectedElement = child;
@@ -516,7 +547,7 @@ namespace Peach.Core.Cracker
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("String marked as token, values did not match '" + defaultValue + "' vs. '" + element.DefaultValue + "'.", element, data);
+					throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
 
 			element.DefaultValue = defaultValue;
 		}
@@ -669,7 +700,10 @@ namespace Peach.Core.Cracker
 					"' has length of '" + blobLength + "' but buffer only has '" +
 					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
-			var defaultValue = new Variant(data.ReadBytes((int)blobLength));
+			Variant defaultValue = new Variant(new byte[0]);
+			
+			if(blobLength > 0)
+				defaultValue = new Variant(data.ReadBytes((int)blobLength));
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
