@@ -58,17 +58,16 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="ActiproSoftware.Docking.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.PropertyGrid.Interop.WinForms.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.PropertyGrid.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.Shared.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.SyntaxEditor.Addons.DotNet.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.SyntaxEditor.Addons.Xml.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.SyntaxEditor.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.Text.Addons.DotNet.Net351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.Text.Addons.Xml.Net351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.Text.Net351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.Views.Wpf351, Version=11.1.543.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Docking.Interop.Prism.Wpf351, Version=11.1.544.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Docking.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Navigation.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.PropertyGrid.Interop.WinForms.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.PropertyGrid.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Shared.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.SyntaxEditor.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Text.Net351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Views.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
+    <Reference Include="ActiproSoftware.Wizard.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
     <Reference Include="Be.Windows.Forms.HexBox">
       <HintPath>..\3rdParty\Be.HexEditor.146\bin\Be.Windows.Forms.HexBox.dll</HintPath>
     </Reference>

@@ -101,9 +101,9 @@
 							<docking:DocumentWindow Title="Xml Editor">
 								<editor:SyntaxEditor x:Name="xmlEditor" BorderThickness="0">
 									<editor:EditorDocument xml:space="preserve">
-											<editor:EditorDocument.Language>
+											<!--<editor:EditorDocument.Language>
 												<editor:XmlSyntaxLanguage />
-											</editor:EditorDocument.Language>
+											</editor:EditorDocument.Language>-->
 										</editor:EditorDocument>
 								</editor:SyntaxEditor>
 							</docking:DocumentWindow>
