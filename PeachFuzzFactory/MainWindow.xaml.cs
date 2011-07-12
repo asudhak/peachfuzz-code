@@ -80,8 +80,6 @@ namespace PeachFuzzFactory
 
 			if (element.parent != null)
 				crackMap[element.parent].Children.Add(currentModel);
-			else
-				System.Diagnostics.Debugger.Break();
 		}
 
 		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
