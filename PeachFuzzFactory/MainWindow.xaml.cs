@@ -37,10 +37,10 @@ namespace PeachBuilder
 		{
 			InitializeComponent();
 
-			this.Title = "Peach Fuzz Factory v3 DEV - template.xml";
+			this.Title = "Peach FuzzFactory v3 DEV - test.xml";
 
 			byte[] buff;
-			using (Stream sin = File.OpenRead(@"c:\4-Key.png"))
+			using (Stream sin = File.OpenRead(@"4-Key.png"))
 			{
 				buff = new byte[sin.Length];
 				sin.Read(buff, 0, buff.Length);
@@ -51,9 +51,9 @@ namespace PeachBuilder
 			TheHexBox.ByteProvider = dynamicFileByteProvider;
 
 			PitParser parser = new PitParser();
-			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(@"c:\peach3.0\peach\template.xml"));
+			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(@"test.xml"));
 
-			xmlEditor.Document.LoadFile(File.OpenRead(@"c:\peach3.0\peach\template.xml"), Encoding.UTF8);
+			xmlEditor.Document.LoadFile(File.OpenRead(@"test.xml"), Encoding.UTF8);
 
 			var models = new List<DesignModel>();
 			models.Add(new DesignPeachModel(dom));

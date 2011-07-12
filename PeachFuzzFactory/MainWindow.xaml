@@ -8,7 +8,7 @@
 		xmlns:models="clr-namespace:PeachBuilder.Models"
 		xmlns:controls="clr-namespace:PeachBuilder.Controls"
 		xmlns:editor="http://schemas.actiprosoftware.com/winfx/xaml/syntaxeditor"
-        Title="MainWindow" Height="529" Width="772" Icon="/Icons/peach20x20.ico">
+        Title="MainWindow" Height="529" Width="1100" Icon="/Icons/peach20x20.ico">
 	<Grid>
 
 		<Grid.Resources>
@@ -101,9 +101,9 @@
 							<docking:DocumentWindow Title="Xml Editor">
 								<editor:SyntaxEditor x:Name="xmlEditor" BorderThickness="0">
 									<editor:EditorDocument xml:space="preserve">
-											<!--<editor:EditorDocument.Language>
+											<editor:EditorDocument.Language>
 												<editor:XmlSyntaxLanguage />
-											</editor:EditorDocument.Language>-->
+											</editor:EditorDocument.Language>
 										</editor:EditorDocument>
 								</editor:SyntaxEditor>
 							</docking:DocumentWindow>
