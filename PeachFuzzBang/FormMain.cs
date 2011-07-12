@@ -14,7 +14,7 @@ using Peach.Core.Agent;
 using Peach.Core.MutationStrategies;
 using System.Threading;
 
-namespace PeachFileFuzzer
+namespace PeachFuzzBang
 {
 	public partial class FormMain : Form
 	{

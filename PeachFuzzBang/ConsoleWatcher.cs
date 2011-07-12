@@ -7,7 +7,7 @@ using Peach.Core;
 using Peach.Core.Agent;
 using System.Windows.Forms;
 
-namespace PeachFileFuzzer
+namespace PeachFuzzBang
 {
 		public class ConsoleWatcher : Watcher
 		{

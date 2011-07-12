@@ -1,4 +1,4 @@
-﻿namespace PeachFileFuzzer
+﻿namespace PeachFuzzBang
 {
 	partial class FormMain
 	{
