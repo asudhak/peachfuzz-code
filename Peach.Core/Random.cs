@@ -58,7 +58,9 @@ namespace Peach.Core
 		protected T ElementAt<T>(IEnumerable<T> list, int index)
 		{
 			var enumerator = list.GetEnumerator();
-			for (int cnt = 0; cnt < index; cnt++)
+
+                        // <= because Current is set before the first element and must be called once to get first element.
+			for (int cnt = 0; cnt <= index; cnt++) 
 				enumerator.MoveNext();
 
 			return enumerator.Current;
