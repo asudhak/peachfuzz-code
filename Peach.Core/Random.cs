@@ -48,6 +48,16 @@ namespace Peach.Core
 			return ElementAt<T>(list, _random.Next(0, list.Count()));
 		}
 
+        public T[] Sample<T>(IEnumerable<T> items, int k)
+        {
+            List<T> ret = new List<T>();
+
+            for (int i = 0; i < k; ++i)
+                ret.Add(items.ElementAt(_random.Next(0, items.Count())));
+
+            return ret.ToArray();
+        }
+
 		/// <summary>
 		/// Work around for missing method in Mono
 		/// </summary>
