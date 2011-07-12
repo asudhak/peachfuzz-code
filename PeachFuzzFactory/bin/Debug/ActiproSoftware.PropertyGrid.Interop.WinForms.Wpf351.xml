@@ -1,0 +1,46 @@
+<?xml version="1.0"?><doc><assembly><name>ActiproSoftware.PropertyGrid.Interop.WinForms.Wpf351</name></assembly><members><member name="T:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl"><summary>
+            Represents a control that is capable of leveraging a <c>UITypeEditor</c>.
+            </summary></member><member name="M:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.OnApplyTemplate"><summary>
+            When overridden in a derived class, is invoked whenever application code or internal processes call <see cref="M:System.Windows.FrameworkElement.ApplyTemplate" />.
+            </summary></member><member name="M:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.OnIsKeyboardFocusWithinChanged(System.Windows.DependencyPropertyChangedEventArgs)"><summary>
+            Invoked just before the <see cref="E:System.Windows.UIElement.IsKeyboardFocusWithinChanged" /> event is raised by this element. Implement this method to add class handling for this event.
+            </summary><param name="e">A <see cref="T:System.Windows.DependencyPropertyChangedEventArgs" /> that contains the event data.</param></member><member name="M:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.#ctor"><summary>
+            Initializes a new instance of the <see cref="T:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl" /> class.
+            </summary></member><member name="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDialogButtonVisible"><summary>
+            Gets or sets a value indicating whether the dialog button is visible.
+            This is a dependency property.
+            </summary><value><c>true</c> if the dialog button is visible; otherwise, <c>false</c>.
+            The default value is <c>false</c>.
+            </value></member><member name="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownButtonVisible"><summary>
+            Gets or sets a value indicating whether the drop-down button is visible.
+            This is a dependency property.
+            </summary><value><c>true</c> if the drop-down button is visible; otherwise, <c>false</c>.
+            The default value is <c>false</c>.
+            </value></member><member name="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownOpen"><summary>
+            Gets or sets a value indicating whether the drop-down is open.
+            This is a dependency property.
+            </summary><value><c>true</c> if the drop-down is open; otherwise, <c>false</c>.
+            The default value is <c>false</c>.
+            </value></member><member name="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.PropertyDataAccessor"><summary>
+            Gets or sets the associated <see cref="T:ActiproSoftware.Windows.Controls.PropertyGrid.Primitives.IPropertyDataAccessor" />.
+            This is a dependency property.
+            </summary><value>
+            The associated <see cref="T:ActiproSoftware.Windows.Controls.PropertyGrid.Primitives.IPropertyDataAccessor" />.
+            The default value is <see langword="null" />.
+            </value></member><member name="F:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDialogButtonVisibleProperty"><summary>
+            Identifies the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDialogButtonVisible" /> dependency property.  This field is read-only.
+            </summary><value>The identifier for the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDialogButtonVisible" /> dependency property.</value></member><member name="F:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownButtonVisibleProperty"><summary>
+            Identifies the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownButtonVisible" /> dependency property.  This field is read-only.
+            </summary><value>The identifier for the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownButtonVisible" /> dependency property.</value></member><member name="F:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownOpenProperty"><summary>
+            Identifies the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownOpen" /> dependency property.  This field is read-only.
+            </summary><value>The identifier for the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.IsDropDownOpen" /> dependency property.</value></member><member name="F:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.PropertyDataAccessorProperty"><summary>
+            Identifies the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.PropertyDataAccessor" /> dependency property.  This field is read-only.
+            </summary><value>The identifier for the <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.UITypeEditorControl.PropertyDataAccessor" /> dependency property.</value></member><member name="T:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.WinFormsInteropValueTemplateSelector"><summary>
+            Represents a <see cref="T:System.Windows.Controls.DataTemplateSelector" /> used to select a <see cref="T:System.Windows.DataTemplate" /> for the value cells in a <see cref="P:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.WinFormsInteropValueTemplateSelector.PropertyGrid" />.
+            </summary></member><member name="M:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.WinFormsInteropValueTemplateSelector.SelectTemplate(System.Object,System.Windows.DependencyObject)"><summary>
+            When overridden in a derived class, returns a <see cref="T:System.Windows.DataTemplate" /> based on custom logic.
+            </summary><param name="item">The data object for which to select the template.</param><param name="container">The data-bound object.</param><returns>
+            Returns a <see cref="T:System.Windows.DataTemplate" /> or null. The default value is null.
+            </returns></member><member name="M:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.WinFormsInteropValueTemplateSelector.#ctor(ActiproSoftware.Windows.Controls.PropertyGrid.PropertyGrid)"><summary>
+            Initializes a new instance of the <see cref="T:ActiproSoftware.Windows.Controls.PropertyGrid.Interop.WinForms.WinFormsInteropValueTemplateSelector" /> class.
+            </summary><param name="propertyGrid">The property grid.</param></member></members></doc>

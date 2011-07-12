@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach3.0/peachcore/peach.xsd">
+
+	<!--<Include ns="default" src="file:/peach3.0/peach/defaults.xml"/>-->
+
+	<DataModel name="Chunk">
+		<Number name="Length" size="32" endian="network" signed="false">
+			<Relation type="size" of="Data" />
+		</Number>
+		<Block name="Core">
+			<String name="Type" length="4" />
+			<Block name="Data"/>
+		</Block>
+		<Number name="CRC" size="32" signed="false" endian="network">
+			<Fixup class="checksums.Crc32Fixup">
+				<Param name="ref" value="Core" />
+			</Fixup>
+		</Number>
+	</DataModel>
+
+	<DataModel name="Png">
+		<Blob name="Magic" length="8" valueType="hex" value="0x89 0x50 0x4e 0x47 0x0d 0x0a 0x1a 0x0a" />
+
+		<!--<Choice name="PngChunk" maxOccurs="2000">-->
+		<Choice name="PngChunk">
+
+				<!-- ********************************************* -->
+			<Block name="IHDR" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="IHDR" />
+					<Block name="Data">
+						<Number name="Width" size="32" endian="network" signed="false" />
+						<Number name="Height" size="32" endian="network" signed="false" />
+						<Number name="BitDepth" size="8" endian="network" signed="false" />
+						<Number name="ColorType" size="8" endian="network" signed="false" />
+						<Number name="CompressMethod" size="8" endian="network" signed="false" />
+						<Number name="FilterMethod" size="8" endian="network" signed="false" />
+						<Number name="InterlaceMethod" size="8" endian="network" signed="false" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="PLTE" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="PLTE" />
+					<Blob name="Data"/>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="IDAT" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="IDAT" />
+					<Blob name="Data">
+						<Hint name="BitFlipperMutator-N" value="1"/>
+						<Hint name="DWORDSliderMutator" value="off"/>
+					</Blob>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="pHYs" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="pHYs" />
+					<Block name="Data">
+						<Number name="PixlesPerUnitX" size="32" signed="false" endian="big" />
+						<Number name="PixlesPerUnitY" size="32" signed="false" endian="big" />
+						<Number name="Unit" size="8" signed="false" endian="big" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="IEND" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="IEND" />
+					<Blob name="Data"/>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="tRNS" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="tRNS" />
+					<Block name="Data">
+						<Blob />
+						<!-- 
+							<Block name="ColorType0">
+							<Number name="Grey" size="16" signed="false" endian="big"/>
+							</Block>
+							<Block name="ColorType2">
+							<Number name="Red" size="8" signed="false" endian="big"/>
+							<Number name="Green" size="8" signed="false" endian="big"/>
+							<Number name="Blue" size="8" signed="false" endian="big"/>
+							</Block>
+							<Block name="ColorType3" minOccurs="1">
+							<Number name="AlphaValue" size="8" signed="false" endian="big"/>
+							</Block>
+						-->
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="cHRM" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="cHRM" />
+					<Block name="Data">
+						<Number name="WhitePointX" size="32" signed="false" endian="big" />
+						<Number name="WhitePointY" size="32" signed="false" endian="big" />
+						<Number name="RedX" size="32" signed="false" endian="big" />
+						<Number name="RedY" size="32" signed="false" endian="big" />
+						<Number name="GreenX" size="32" signed="false" endian="big" />
+						<Number name="GreenY" size="32" signed="false" endian="big" />
+						<Number name="BlueX" size="32" signed="false" endian="big" />
+						<Number name="BlueY" size="32" signed="false" endian="big" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="gAMA" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="gAMA" />
+					<Block name="Data">
+						<Number name="Data" size="32" signed="false" endian="big" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="iCCP" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="iCCP" />
+					<Block name="Data">
+						<String name="ProfileName" nullTerminated="true" />
+						<Number name="CompressionMethod" size="8" signed="false" endian="big" />
+						<Blob name="CompressionProfile" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="sBIT" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="sBIT" />
+					<Blob name="Data"/>
+					<!-- <Block name="Data">
+							Depending on HDR pick one of these... 
+							<Block name="ColorType0">
+							<Number name="Grey" size="8" signed="false" endian="big"/>
+							</Block>
+							<Block name="ColorType2or3">
+							<Number name="Red" size="8" signed="false" endian="big"/>
+							<Number name="Green" size="8" signed="false" endian="big"/>
+							<Number name="Blue" size="8" signed="false" endian="big"/>
+							</Block>
+							<Block name="ColorType4" minOccurs="1">
+							<Number name="Grey" size="8" signed="false" endian="big"/>
+							<Number name="Alpha" size="8" signed="false" endian="big"/>
+							</Block>
+							<Block name="ColorType6" minOccurs="1">
+							<Number name="Red" size="8" signed="false" endian="big"/>
+							<Number name="Green" size="8" signed="false" endian="big"/>
+							<Number name="Blue" size="8" signed="false" endian="big"/>
+							<Number name="Alpha" size="8" signed="false" endian="big"/>
+							</Block>
+							</Block>
+						-->
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="sRGB" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="sRGB" />
+					<Block name="Data">
+						<Number name="Data" size="8" signed="false" endian="big" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="tEXt" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="tEXT" />
+					<Block name="Data">
+						<String name="Keyword" nullTerminated="true" />
+						<String name="Value" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="zTXt" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="zTXt" />
+					<Block name="Data">
+						<String name="Keyword" nullTerminated="true" />
+						<Number name="CompressionMethod" size="8" signed="false" endian="big" />
+						<String name="CompressedValue">
+							<!-- <Transformer class="compress.GzipCompress" /> -->
+						</String>
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="iTXt" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="iTXt" />
+					<Choice name="Data">
+						<Block name="NoCompression">
+							<String name="Keyword" nullTerminated="true" />
+							<Number name="CompressionFlag" size="8" signed="false" endian="big" value="0" token="true" />
+							<Number name="CompressionMethod" size="8" signed="false" endian="big" />
+							<String name="LanguageTag" nullTerminated="true" />
+							<String name="TranslatedKeyword" nullTerminated="true" />
+							<String name="Value"/>
+						</Block>
+						<Block name="Compression">
+							<String name="Keyword" nullTerminated="true" />
+							<Number name="CompressionFlag" size="8" signed="false" endian="big" value="1" token="true" />
+							<Number name="CompressionMethod" size="8" signed="false" endian="big" />
+							<String name="LanguageTag" nullTerminated="true" />
+							<String name="TranslatedKeyword" nullTerminated="true" />
+							<String name="CompressedValue">
+								<!--<Transformer class="compress.GzipCompress" />-->
+							</String>
+						</Block>
+					</Choice>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="bKGD" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="bKGD" />
+					<Blob name="Data"/>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="sPLT" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="sPLT" />
+					<Block name="Data">
+						<String name="PaletteName" nullTerminated="true" />
+						<Number size="8" endian="big" signed="false" />
+						<Choice name="depthChoice">
+							<Block name="8bit">
+								<Number name="SampleDepth" size="8" endian="big" signed="false" value="8" token="true" />
+								<Block name="Entry" minOccurs="1" maxOccurs="2000">
+									<Number size="8" signed="false" endian="big" />
+									<Number size="8" signed="false" endian="big" />
+									<Number size="8" signed="false" endian="big" />
+									<Number size="8" signed="false" endian="big" />
+									<Number size="16" signed="false" endian="big" />
+								</Block>
+							</Block>
+
+							<Block name="16bit">
+								<Number name="SampleDepth" size="8" endian="big" signed="false" value="16" token="true" />
+								<Block name="Entry" minOccurs="1" maxOccurs="2000">
+									<Number size="16" signed="false" endian="big" />
+									<Number size="16" signed="false" endian="big" />
+									<Number size="16" signed="false" endian="big" />
+									<Number size="16" signed="false" endian="big" />
+									<Number size="16" signed="false" endian="big" />
+								</Block>
+							</Block>
+						</Choice>
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="hIST" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="hIST" />
+					<Blob name="Data"/>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="tIME" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" token="true" value="tIME" />
+					<Block name="Data">
+						<Number size="16" signed="false" endian="big" />
+						<Number size="8" signed="false" endian="big" />
+						<Number size="8" signed="false" endian="big" />
+						<Number size="8" signed="false" endian="big" />
+						<Number size="8" signed="false" endian="big" />
+						<Number size="8" signed="false" endian="big" />
+					</Block>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="cpIp" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" value="cpIp" token="true" />
+					<Blob name="Data">
+						<Hint name="BitFlipperMutator-N" value="0"/>
+						<!-- <Hint name="DWORDSliderMutator" value="off"/> -->
+					</Blob>
+				</Block>
+			</Block>
+			<!-- ********************************************* -->
+			<Block name="CatchAll" ref="Chunk">
+				<Block name="Core">
+					<String name="Type" length="4" />
+					<Blob name="Data"/>
+				</Block>
+			</Block>
+		</Choice>
+	</DataModel>
+
+	<!--<Agent name="LocalAgent">
+		<Monitor class="PcapMonitor">
+			<Param name="Device" value="rpcap://\Device\NPF_{8DB9FD50-6702-4CB7-9ED3-D20E603BF543}"/>
+			<Param name="Filter" value="port 80"/>
+		</Monitor>
+	</Agent>
+	
+	<StateModel name="TheState" initialState="Initial">
+		<State name="Initial">
+			<Action type="output" publisher="Stdout">
+				<DataModel ref="TheDataModel"/>
+			</Action>
+		</State>
+	</StateModel>
+	
+	<Test name="TheTest">
+		<Agent ref="LocalAgent"/>
+		<StateModel ref="TheState"/>
+		<Publisher class="Console" name="Stdout" />
+	</Test>
+
+	<Run name="DefaultRun">
+		<Test ref="TheTest"/>
+	</Run>-->
+
+</Peach>
+<!-- end -->
