@@ -115,49 +115,61 @@ namespace Peach.Core.Mutators
         //
         public void mutationRandomCase(Dom.DataElement obj)
         {
-            string str = (string)obj.InternalValue;
-            string[] cases = new string[2];
+			StringBuilder builder = new StringBuilder((string)obj.InternalValue);
+            char[] cases = new char[2];
+			char c;
 
-            // check for strings over 20 chars to poll random indices from
-            if (str.Length > 20)
+			foreach (int i in Sample(builder.Length))
             {
-                foreach (int i in Sample(str.Length))
-                {
-                    char c = str[i];
-                    cases[0] = c.ToString().ToLower();
-                    cases[1] = c.ToString().ToUpper();
-                    string s = context.random.Choice<string>(cases);
-                    str = str.Substring(0, i) + s + str.Substring(i + 1, str.Length - (i + 1));
-                }
+                c = builder[i];
+                cases[0] = Char.ToLower(c);
+                cases[1] = Char.ToUpper(c);
 
-                obj.MutatedValue = new Variant(str);
-                return;
+				builder[i] = context.random.Choice<char>(cases);
             }
 
-            // loop through string one char at a time
-            for (int i = 0; i < str.Length; ++i)
-            {
-                char c = str[i];
-                cases[0] = c.ToString().ToLower();
-                cases[1] = c.ToString().ToUpper();
-                string s = context.random.Choice<string>(cases);
-                str = str.Substring(0, i) + s + str.Substring(i + 1, str.Length - (i + 1));
-            }
-
-            obj.MutatedValue = new Variant(str);
+            obj.MutatedValue = new Variant(builder.ToString());
             return;
         }
 
-        // SAMPLE
-        //
+		/// <summary>
+		/// Return a sampling of indexes based on max index.
+		/// </summary>
+		/// <remarks>
+		/// For indexes &lt; 20 we return all indexes.  When
+		/// over 20 we return a max of 20 samples.
+		/// </remarks>
+		/// <param name="max">Max index</param>
+		/// <returns></returns>
         private int[] Sample(int max)
         {
-            int[] ret = new int[20];
+			if (max < 20)
+			{
+				int[] ret = new int[max];
 
-            for (int i = 0; i < 20; ++i)
-                ret[i] = context.random.Next(max);
+				for (int i = 0; i < ret.Length; i++)
+					ret[i] = i;
 
-            return ret;
+				return ret;
+			}
+			else
+			{
+				List<int> ret = new List<int>();
+				int index;
+
+				for (int i = 0; i < 20; ++i)
+				{
+					do
+					{
+						index = context.random.Next(max);
+					}
+					while(ret.Contains(index));
+
+					ret.Add(index);
+				}
+
+				return ret.ToArray();
+			}
         }
 	}
 }
