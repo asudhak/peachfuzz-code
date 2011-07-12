@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
-using PeachBuilder.Controls;
+using PeachFuzzFactory.Controls;
 
-namespace PeachBuilder.Models
+namespace PeachFuzzFactory.Models
 {
 	public class CrackModel : Model, ITreeModel
 	{

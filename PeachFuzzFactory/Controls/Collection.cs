@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Collections.Specialized;
 
-namespace PeachBuilder.Controls
+namespace PeachFuzzFactory.Controls
 {
 	public class ObservableCollectionAdv<T> : ObservableCollection<T>
 	{

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 
-namespace PeachBuilder.Models
+namespace PeachFuzzFactory.Models
 {
 	public class DesignPeachModel : DesignModel
 	{

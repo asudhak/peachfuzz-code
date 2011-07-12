@@ -13,7 +13,7 @@ using System.Windows.Input;
 using System.Windows.Controls.Primitives;
 
 
-namespace PeachBuilder.Controls
+namespace PeachFuzzFactory.Controls
 {
 	public class TreeList : ListView
 	{

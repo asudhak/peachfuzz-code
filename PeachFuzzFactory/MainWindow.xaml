@@ -1,12 +1,12 @@
-﻿<Window x:Class="PeachBuilder.MainWindow"
+﻿<Window x:Class="PeachFuzzFactory.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:shared="http://schemas.actiprosoftware.com/winfx/xaml/shared"     
 		xmlns:docking="http://schemas.actiprosoftware.com/winfx/xaml/docking"     
 		xmlns:propgrid="http://schemas.actiprosoftware.com/winfx/xaml/propgrid"
 		xmlns:be="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
-		xmlns:models="clr-namespace:PeachBuilder.Models"
-		xmlns:controls="clr-namespace:PeachBuilder.Controls"
+		xmlns:models="clr-namespace:PeachFuzzFactory.Models"
+		xmlns:controls="clr-namespace:PeachFuzzFactory.Controls"
 		xmlns:editor="http://schemas.actiprosoftware.com/winfx/xaml/syntaxeditor"
         Title="MainWindow" Height="529" Width="1100" Icon="/Icons/peach20x20.ico">
 	<Grid>

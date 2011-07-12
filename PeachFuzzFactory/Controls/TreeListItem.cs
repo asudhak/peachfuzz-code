@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.ComponentModel;
 using System.Windows;
 
-namespace PeachBuilder.Controls
+namespace PeachFuzzFactory.Controls
 {
 	public class TreeListItem : ListViewItem, INotifyPropertyChanged
 	{

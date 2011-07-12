@@ -8,7 +8,7 @@
     <ProjectGuid>{ABB8E5FE-D905-440D-B805-8D1DC8B3E79F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PeachBuilder</RootNamespace>
+    <RootNamespace>PeachFuzzFactory</RootNamespace>
     <AssemblyName>PeachFuzzFactory</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>

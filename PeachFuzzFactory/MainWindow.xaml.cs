@@ -14,17 +14,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Be.Windows.Forms;
-using PeachBuilder.Models;
+using PeachFuzzFactory.Models;
 using Peach.Core.Dom;
 using Peach.Core;
 using Peach.Core.Cracker;
 using Peach.Core.IO;
 using Peach.Core.Analyzers;
 using System.Reflection;
-using ActiproSoftware.Products.PropertyGrid;
 using ActiproSoftware.Windows.Controls.PropertyGrid;
 
-namespace PeachBuilder
+namespace PeachFuzzFactory
 {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
@@ -138,7 +137,7 @@ namespace PeachBuilder
 			if (e.AddedItems.Count == 0)
 				return;
 
-			CrackModel model = (CrackModel) ((PeachBuilder.Controls.TreeNode)e.AddedItems[0]).Tag;
+			CrackModel model = (CrackModel) ((PeachFuzzFactory.Controls.TreeNode)e.AddedItems[0]).Tag;
 			TheHexBox.Select(model.Position, model.Length);
 		}
 	}

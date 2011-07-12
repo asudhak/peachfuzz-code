@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Globalization;
 
-namespace PeachBuilder.Controls
+namespace PeachFuzzFactory.Controls
 {
 	/// <summary>
 	/// Convert Level to left margin

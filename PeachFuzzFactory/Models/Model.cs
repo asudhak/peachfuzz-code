@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Threading;
 
-namespace PeachBuilder.Models
+namespace PeachFuzzFactory.Models
 {
 	/// <summary>
 	/// Provides a base class for implementing models that encapsulate
