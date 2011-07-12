@@ -32,6 +32,9 @@ namespace PeachFuzzFactory
 	public partial class MainWindow : Window
 	{
 		Dictionary<DataElement, CrackModel> crackMap = new Dictionary<DataElement, CrackModel>();
+		protected string binaryFileName = null;
+		protected string tempPitFileName = null;
+		protected DataModel crackerSelectedDataModel = null;
 
 		public MainWindow()
 		{
@@ -39,8 +42,11 @@ namespace PeachFuzzFactory
 
 			this.Title = "Peach FuzzFactory v3 DEV - test.xml";
 
+			binaryFileName = @"4-Key.png";
+			tempPitFileName = @"test.xml";
+
 			byte[] buff;
-			using (Stream sin = File.OpenRead(@"4-Key.png"))
+			using (Stream sin = File.OpenRead(binaryFileName))
 			{
 				buff = new byte[sin.Length];
 				sin.Read(buff, 0, buff.Length);
@@ -51,26 +57,61 @@ namespace PeachFuzzFactory
 			TheHexBox.ByteProvider = dynamicFileByteProvider;
 
 			PitParser parser = new PitParser();
-			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(@"test.xml"));
+			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(tempPitFileName));
 
-			xmlEditor.Document.LoadFile(File.OpenRead(@"test.xml"), Encoding.UTF8);
+			xmlEditor.Document.LoadFile(File.OpenRead(tempPitFileName), Encoding.UTF8);
 
 			var models = new List<DesignModel>();
 			models.Add(new DesignPeachModel(dom));
 			DesignerTreeView.ItemsSource = models;
 
 			DesignHexDataModelsCombo.ItemsSource = dom.dataModels.Values;
+			if (dom.dataModels.Count > 0)
+				DesignHexDataModelsCombo.SelectedIndex = dom.dataModels.Count - 1;
+		}
 
-			BitStream data = new BitStream(buff);
-			DataCracker cracker = new DataCracker();
-			cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
-			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
-			cracker.CrackData(dom.dataModels[1], data);
+		protected void HandleCracking()
+		{
+			byte[] buff;
+			using (Stream sin = File.OpenRead(binaryFileName))
+			{
+				buff = new byte[sin.Length];
+				sin.Read(buff, 0, buff.Length);
+			}
 
-			CrackModel.Root = crackMap[dom.dataModels[1]];
+			PitParser parser = new PitParser();
+			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(tempPitFileName));
+
+			string dataModelName = crackerSelectedDataModel.name;
+			DesignHexDataModelsCombo.ItemsSource = dom.dataModels.Values;
+
+			for (int cnt = 0; cnt < dom.dataModels.Count; cnt++)
+			{
+				if (dom.dataModels[cnt].name == dataModelName)
+				{
+					DesignHexDataModelsCombo.SelectedIndex = cnt;
+					break;
+				}
+			}
+
+			try
+			{
+				BitStream data = new BitStream(buff);
+				DataCracker cracker = new DataCracker();
+				cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
+				cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
+				cracker.CrackData(crackerSelectedDataModel, data);
+			}
+			catch
+			{
+			}
+
+			CrackModel.Root = crackMap[crackerSelectedDataModel];
+			CrackModel.Root.Error = true;
 			CrackTree.Model = CrackModel.Root;
 
-			DesignHexDataModelsCombo.Text = dom.dataModels[1].name;
+			// No longer needed
+			crackMap.Clear();
 		}
 
 		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
@@ -222,6 +263,19 @@ namespace PeachFuzzFactory
 		private void ButtonXmlIndentLess_Click(object sender, RoutedEventArgs e)
 		{
 			// TODO
+		}
+
+		private void ButtonCrackBinRefresh_Click(object sender, RoutedEventArgs e)
+		{
+			HandleCracking();
+		}
+
+		private void DesignHexDataModelsCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems.Count > 0)
+				crackerSelectedDataModel = e.AddedItems[0] as DataModel;
+			else
+				crackerSelectedDataModel = null;
 		}
 	}
 }

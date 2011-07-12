@@ -23,6 +23,14 @@ namespace PeachFuzzFactory.Models
 					Children.Add(child);
 				}
 			}
+			if (elem is Choice)
+			{
+				foreach (var item in ((Choice)elem).choiceElements.Values)
+				{
+					var child = new DesignDataElementModel(item);
+					Children.Add(child);
+				}
+			}
 		}
 
 		public DataElement DataElement

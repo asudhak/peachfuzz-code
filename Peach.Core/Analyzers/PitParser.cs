@@ -793,7 +793,10 @@ namespace Peach.Core.Analyzers
 
 			// Move children to choiceElements collection
 			foreach (DataElement elem in choice)
+			{
 				choice.choiceElements.Add(elem.name, elem);
+				elem.parent = choice;
+			}
 
 			choice.Clear();
 

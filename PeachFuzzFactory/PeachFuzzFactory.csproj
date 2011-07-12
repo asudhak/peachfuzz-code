@@ -243,6 +243,7 @@
     <Resource Include="Icons\format-indent-less.png" />
     <Resource Include="Icons\format-indent-more.png" />
     <Resource Include="Icons\node-array.png" />
+    <Resource Include="Icons\reload.png" />
     <Content Include="test.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

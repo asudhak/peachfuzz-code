@@ -247,14 +247,23 @@
 																	</Button.ToolTip>
 																</Button>
 
-																<ComboBox x:Name="DesignHexDataModelsCombo" VerticalAlignment="Top" HorizontalAlignment="Stretch"
-															DisplayMemberPath="name" SelectedValuePath="name">
+																<ComboBox x:Name="DesignHexDataModelsCombo" VerticalAlignment="Top" HorizontalAlignment="Stretch" 
+																		  DisplayMemberPath="name" SelectedValuePath="name" SelectionChanged="DesignHexDataModelsCombo_SelectionChanged">
 																	<ComboBox.ToolTip>
 																		<ToolTip>
 																			<TextBlock>Select Data Model to parse with</TextBlock>
 																		</ToolTip>
 																	</ComboBox.ToolTip>
 																</ComboBox>
+																
+																<Button x:Name="ButtonCrackBinRefresh" Click="ButtonCrackBinRefresh_Click">
+																	<Image Source="/Icons/reload.png"/>
+																	<Button.ToolTip>
+																		<ToolTip>
+																			<TextBlock>Re-Parse binary file using selected data model</TextBlock>
+																		</ToolTip>
+																	</Button.ToolTip>
+																</Button>
 
 															</ToolBar>
 														</ToolBarTray>

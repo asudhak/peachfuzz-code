@@ -29,6 +29,9 @@ namespace PeachFuzzFactory.Models
 		{
 			get
 			{
+				if(Error)
+					return "/Icons/node-error.png";
+
 				return "/Icons/node-" + DataElement.GetType().Name.ToLower() + ".png";
 			}
 		}
@@ -46,6 +49,12 @@ namespace PeachFuzzFactory.Models
 		}
 
 		public int Length
+		{
+			get;
+			set;
+		}
+
+		public bool Error
 		{
 			get;
 			set;
