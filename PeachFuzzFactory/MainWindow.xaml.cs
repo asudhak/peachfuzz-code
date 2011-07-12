@@ -104,10 +104,10 @@ namespace PeachFuzzFactory
 			}
 			catch
 			{
+				crackMap[crackerSelectedDataModel].Error = true;
 			}
 
 			CrackModel.Root = crackMap[crackerSelectedDataModel];
-			CrackModel.Root.Error = true;
 			CrackTree.Model = CrackModel.Root;
 
 			// No longer needed

@@ -18,6 +18,7 @@ namespace PeachFuzzFactory.Models
 			DataElement = element;
 			Position = position;
 			Length = length;
+			Error = false;
 		}
 
 		public string Name
