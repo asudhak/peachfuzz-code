@@ -58,10 +58,8 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="ActiproSoftware.Docking.Interop.Prism.Wpf351, Version=11.1.544.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="ActiproSoftware.Docking.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
     <Reference Include="ActiproSoftware.Navigation.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
-    <Reference Include="ActiproSoftware.PropertyGrid.Interop.WinForms.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
     <Reference Include="ActiproSoftware.PropertyGrid.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
     <Reference Include="ActiproSoftware.Shared.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
     <Reference Include="ActiproSoftware.SyntaxEditor.Addons.Xml.Wpf351, Version=11.1.544.0, Culture=neutral, PublicKeyToken=36ff2196ab5654b9, processorArchitecture=MSIL" />
