@@ -29,10 +29,65 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class UnicodeStringsMutator
+    [Mutator("Perform common unicode string mutations")]
+	public partial class UnicodeStringsMutator : Mutator
 	{
+        // members
+        //
+        uint pos = 0;
+
+        // CTOR
+        //
+        public UnicodeStringsMutator()
+        {
+            pos = 0;
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            pos++;
+            if (pos >= values.Length)
+            {
+                pos = (uint)values.Length - 1;
+                throw new MutatorCompleted();
+            }
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return values.Length; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+            obj.MutatedValue = new Variant(values[pos]);
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+            obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+        }
 	}
 }
