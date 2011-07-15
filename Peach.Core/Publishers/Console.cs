@@ -73,7 +73,11 @@ namespace Peach.Core.Publishers
 
 			OnOutput(action, data);
 			byte[] buff = (byte[])data;
-			_sout.Write(buff, 0, buff.Length);
+
+			for (int cnt = 0; cnt < buff.Length; cnt += 1024)
+			{
+				_sout.Write(buff, cnt, ((buff.Length - cnt) > 1024) ? 1024 : (buff.Length - cnt));
+			}
 		}
 	}
 }
