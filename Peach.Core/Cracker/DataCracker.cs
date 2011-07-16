@@ -75,6 +75,28 @@ namespace Peach.Core.Cracker
 		}
 
 		/// <summary>
+		/// Perform optimizations of data model for cracking
+		/// </summary>
+		/// <remarks>
+		/// Optimization can be performed once on a data model and used
+		/// for any clones made.  Optimizations will increase the speed
+		/// of data cracking.
+		/// </remarks>
+		/// <param name="model">DataModel to optimize</param>
+		public void OptimizeDataModel(DataModel model)
+		{
+			foreach (var element in model.EnumerateElementsUpTree())
+			{
+				if (element is Choice)
+				{
+					var choice = element as Choice;
+
+					// TODO - Fast CACHE IT!
+				}
+			}
+		}
+
+		/// <summary>
 		/// Is element last unsized element in currently sized area.  If not
 		/// then 'size' is set to the number of bytes from element to ened of
 		/// the sized data.

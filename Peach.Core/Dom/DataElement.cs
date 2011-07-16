@@ -191,6 +191,18 @@ namespace Peach.Core.Dom
 		{
 		}
 
+		/// <summary>
+		/// Dynamic properties
+		/// </summary>
+		/// <remarks>
+		/// Any objects added to properties must be serializable!
+		/// </remarks>
+		public Dictionary<string, object> Properties
+		{
+			get;
+			set;
+		}
+
 		protected static uint _uniqueName = 0;
 		public DataElement()
 		{

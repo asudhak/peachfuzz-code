@@ -23,6 +23,8 @@ using Peach.Core.Analyzers;
 using System.Reflection;
 using ActiproSoftware.Windows.Controls.PropertyGrid;
 using ActiproSoftware.Windows.Controls.SyntaxEditor.EditActions;
+using ActiproSoftware.Text.Languages.Xml;
+using ActiproSoftware.Text.Languages.Xml.Implementation;
 
 namespace PeachFuzzFactory
 {
@@ -58,6 +60,13 @@ namespace PeachFuzzFactory
 
 			PitParser parser = new PitParser();
 			Dom dom = parser.asParser(new Dictionary<string, string>(), File.OpenRead(tempPitFileName));
+
+			XmlSchemaResolver schemaResolver = new XmlSchemaResolver();
+			using (Stream stream = typeof(Engine).Assembly.GetManifestResourceStream("Peach.Core.peach.xsd"))
+			{
+				schemaResolver.LoadSchemaFromStream(stream);
+			}
+			xmlEditor.Document.Language.RegisterXmlSchemaResolver(schemaResolver);
 
 			xmlEditor.Document.LoadFile(File.OpenRead(tempPitFileName), Encoding.UTF8);
 
