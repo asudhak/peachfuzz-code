@@ -34,43 +34,42 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
 	[Mutator("Perform common string mutations")]
-	[Hint("NumericalString", "Boolean hint indicating this string contains a numerical value")]
 	public partial class StringMutator : Mutator
 	{
 		uint pos = 0;
 
-		public StringMutator()
+		public StringMutator(DataElement obj)
 		{
 			pos = 0;
 		}
 
-		public new static bool supportedDataElement(DataElement obj)
-		{
-			if (obj is Dom.String)
-				return true;
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String)
+                return true;
 
-			return false;
-		}
+            return false;
+        }
 
-		public override void next()
-		{
-			pos++;
-			if (pos >= values.Length)
-			{
-				pos = (uint)values.Length - 1;
-				throw new MutatorCompleted();
-			}
-		}
+        public override void next()
+        {
+            pos++;
+            if (pos >= values.Length)
+            {
+                pos = (uint)values.Length - 1;
+                throw new MutatorCompleted();
+            }
+        }
 
-		public override int count
-		{
-			get { return values.Length; }
-		}
+        public override int count
+        {
+            get { return values.Length; }
+        }
 
-		public override void sequencialMutation(Dom.DataElement obj)
-		{
-			obj.MutatedValue = new Variant(values[pos]);
-		}
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+            obj.MutatedValue = new Variant(values[pos]);
+        }
 
 		public override void randomMutation(Dom.DataElement obj)
 		{

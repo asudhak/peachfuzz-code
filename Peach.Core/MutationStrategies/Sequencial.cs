@@ -109,7 +109,7 @@ namespace Peach.Core.MutationStrategies
 					foreach (Type t in _mutators)
 					{
 						if (SupportedDataElement(t, elem))
-							elemMutators.Add(GetMutatorInstance(t));
+							elemMutators.Add(GetMutatorInstance(t, elem));
 					}
 
 					_stuffs[elem] = elemMutators;

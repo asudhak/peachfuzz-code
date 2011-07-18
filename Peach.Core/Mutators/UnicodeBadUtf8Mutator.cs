@@ -29,10 +29,116 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class UnicodeBadUtf8Mutator
+    [Mutator("Generates bad UTF-8 strings")]
+	public partial class UnicodeBadUtf8Mutator : Mutator
 	{
+        // members
+        //
+        uint pos = 0;
+
+        // CTOR
+        //
+        public UnicodeBadUtf8Mutator(DataElement obj)
+        {
+            pos = 0;
+        }
+
+        // BINARY_FORMATTER
+        //
+        public void binaryFormatter(int num, int bits, bool strip = false)
+        {
+
+        }
+
+        // ONE_BYTE
+        //
+        public void utf8OneByte(char c)
+        {
+
+        }
+
+        // TWO_BYTES
+        //
+        public void utf8TwoByte(char c, short mask)
+        {
+
+        }
+
+        // THREE_BYTES
+        //
+        public void utf8ThreeByte(char c, int mask)
+        {
+
+        }
+
+        // FOUR_BYTES
+        //
+        public void utf8FourByte(char c, int mask)
+        {
+
+        }
+
+        // FIVE_BYTES
+        //
+        public void utf8FiveByte(char c, int mask)
+        {
+
+        }
+
+        // SIX_BYTES
+        //
+        public void utf8SixByte(char c, int mask)
+        {
+
+        }
+
+        // SEVEN_BYTES
+        //
+        public void utf8SevenByte(char c, int mask)
+        {
+
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 0; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+            //obj.MutatedValue = new Variant(values[pos]);
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+        }
 	}
 }

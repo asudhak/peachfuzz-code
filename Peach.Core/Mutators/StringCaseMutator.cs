@@ -30,12 +30,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
-//using System.Random;
 
 namespace Peach.Core.Mutators
 {
     [Mutator("Changes the case of a string")]
-	public partial class StringCaseMutator : Mutator
+	public class StringCaseMutator : Mutator
 	{
         // members
         //
@@ -47,7 +46,7 @@ namespace Peach.Core.Mutators
 
         // CTOR
         //
-        public StringCaseMutator()
+        public StringCaseMutator(DataElement obj)
         {
             index = 0;
             mutations[0] = new mutationType(mutationLowerCase);

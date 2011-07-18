@@ -52,6 +52,16 @@ namespace Peach.Core
 		/// Name of this mutator
 		/// </summary>
 		public string name = "Unknown";
+        
+        public Mutator()
+        {
+            
+        }
+
+        public Mutator(DataElement obj)
+        {
+            
+        }
 
 		/// <summary>
 		/// Check to see if DataElement is supported by this 

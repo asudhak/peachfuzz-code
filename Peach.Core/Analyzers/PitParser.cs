@@ -701,7 +701,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="element">Element to add items to</param>
 		protected void handleHint(XmlNode node, DataElement element)
 		{
-			Hint hint = new Hint(getXmlAttribute(node, "Name"), getXmlAttribute(node, "Value"));
+			Hint hint = new Hint(getXmlAttribute(node, "name"), getXmlAttribute(node, "value"));
 			element.Hints.Add(hint.Name, hint);
 		}
 

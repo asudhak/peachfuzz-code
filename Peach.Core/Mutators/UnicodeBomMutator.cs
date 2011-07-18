@@ -29,10 +29,60 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class UnicodeBomMutator
+    [Mutator("Injects BOM markers into default value and longer strings")]
+	public partial class  UnicodeBomMutator : Mutator 
 	{
+        // members
+        //
+        uint pos = 0;
+
+        // CTOR
+        //
+        public UnicodeBomMutator(DataElement obj)
+        {
+            pos = 0;
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 0; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+            //obj.MutatedValue = new Variant(values[pos]);
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+        }
 	}
 }

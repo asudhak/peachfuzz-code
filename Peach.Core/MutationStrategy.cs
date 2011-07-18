@@ -92,9 +92,9 @@ namespace Peach.Core
 			return (bool)supportedDataElement.Invoke(null, args);
 		}
 
-		protected Mutator GetMutatorInstance(Type t)
+		protected Mutator GetMutatorInstance(Type t, DataElement obj)
 		{
-			Mutator mutator = (Mutator)t.GetConstructor(new Type[] { }).Invoke(new object[] { });
+			Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(DataElement) }).Invoke(new object[] { obj });
 			mutator.context = this;
 
 			return mutator;
