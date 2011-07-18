@@ -687,8 +687,22 @@ namespace Peach.Core.Analyzers
 					case "Transformer":
 						element.transformer = handleTransformer(child, element);
 						break;
+
+					case "Hint":
+						handleHint(child, element);
+						break;
 				}
 			}
+		}
+
+		/// <summary>
+		/// </summary>
+		/// <param name="node">XmlNode tor read children elements from</param>
+		/// <param name="element">Element to add items to</param>
+		protected void handleHint(XmlNode node, DataElement element)
+		{
+			Hint hint = new Hint(getXmlAttribute(node, "Name"), getXmlAttribute(node, "Value"));
+			element.Hints.Add(hint.Name, hint);
 		}
 
 		/// <summary>
