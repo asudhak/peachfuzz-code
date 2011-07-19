@@ -40,7 +40,6 @@ namespace Peach.Core.Mutators
         // members
         //
         int pos = 0;
-        int max = 0;
         string[] values = new string[] { };
 
         // CTOR
@@ -59,19 +58,15 @@ namespace Peach.Core.Mutators
             // 2. Split on ';'
             // 3. Return each value in turn
 
-
-            //if (obj.Hints.ContainsKey("ValidValues"))
-            //{
-                //Hint h = new Hint("out", null);
-                //bool wtf = obj.Hints.TryGetValue("ValidValues", h);
-
-                //for (int i = 0; i < obj.Hints.Count; ++i)
-                //{
-
-                //}
-            //}
-
-            max = values.Length;
+            if (obj.Hints.ContainsKey("ValidValues"))
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("ValidValues", out h))
+                {
+                    StringBuilder str = new StringBuilder();
+                    values = h.Value.Split(';');
+                }
+            }
         }
 
         // NEXT
@@ -110,14 +105,14 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(Dom.DataElement obj)
         {
-            //obj.MutatedValue = new Variant(values[pos]);
+            obj.MutatedValue = new Variant(values[pos]);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(Dom.DataElement obj)
         {
-            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+            obj.MutatedValue = new Variant(context.random.Choice<string>(values));
         }
 	}
 }
