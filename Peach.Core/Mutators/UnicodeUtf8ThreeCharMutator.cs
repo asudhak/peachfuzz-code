@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Generates long UTF-8 three byte strings")]
+    //[Mutator("Generates long UTF-8 three byte strings")]
 	public partial class UnicodeUtf8ThreeCharMutator : Mutator
 	{
         // members
@@ -42,7 +42,7 @@ namespace Peach.Core.Mutators
 
         // CTOR
         //
-        public UnicodeUtf8ThreeCharMutator(DataElement obj)
+        public UnicodeUtf8ThreeCharMutator(/*DataElement obj*/)
         {
             pos = 0;
         }

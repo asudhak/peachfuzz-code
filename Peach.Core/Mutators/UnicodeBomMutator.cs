@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Injects BOM markers into default value and longer strings")]
+    //[Mutator("Injects BOM markers into default value and longer strings")]
 	public partial class  UnicodeBomMutator : Mutator 
 	{
         // members
@@ -42,7 +42,7 @@ namespace Peach.Core.Mutators
 
         // CTOR
         //
-        public UnicodeBomMutator(DataElement obj)
+        public UnicodeBomMutator(/*DataElement obj*/)
         {
             pos = 0;
         }

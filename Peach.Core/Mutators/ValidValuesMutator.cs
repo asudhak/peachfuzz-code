@@ -60,16 +60,16 @@ namespace Peach.Core.Mutators
             // 3. Return each value in turn
 
 
-            if (obj.Hints.ContainsKey("ValidValues"))
-            {
+            //if (obj.Hints.ContainsKey("ValidValues"))
+            //{
                 //Hint h = new Hint("out", null);
                 //bool wtf = obj.Hints.TryGetValue("ValidValues", h);
 
-                for (int i = 0; i < obj.Hints.Count; ++i)
-                {
+                //for (int i = 0; i < obj.Hints.Count; ++i)
+                //{
 
-                }
-            }
+                //}
+            //}
 
             max = values.Length;
         }
@@ -110,14 +110,14 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(Dom.DataElement obj)
         {
-            obj.MutatedValue = new Variant(values[pos]);
+            //obj.MutatedValue = new Variant(values[pos]);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(Dom.DataElement obj)
         {
-            obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
         }
 	}
 }
