@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     //[Mutator("Generates long UTF-8 three byte strings")]
-	public partial class UnicodeUtf8ThreeCharMutator : Mutator
+	public partial class UnicodeUtf8ThreeCharMutator : Mutator  // may inherit from UnicodeBadUtf8???
 	{
         // members
         //

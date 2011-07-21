@@ -29,10 +29,67 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class PathMutator
+    //[Mutator("Perform path mutations. Only works on <String> elements with a <Hint name=\"type\" value=\"path\">"]
+    //[Hint("type", "Allows string to be mutated by the PathMutator.")]
+    public class PathMutator : Mutator  // might inherit from SimpleGenerator???
 	{
+        // members
+        //
+
+        // CTOR
+        //
+        public PathMutator(DataElement obj)
+        {
+
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 0; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String && obj.isMutable)
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("type", out h))
+                {
+                    if (h.Value == "path")
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+
+        }
 	}
 }

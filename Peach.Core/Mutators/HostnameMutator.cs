@@ -29,10 +29,67 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class HostnameMutator
+    //[Mutator("Perform hostname mutations. Only works on <String> elements with a <Hint name=\"type\" value=\"hostname\">")]
+    //[Hint("type", "Allows string to be mutated by the HostnameMutator.")]
+    public class HostnameMutator : Mutator  // might inherit from SimpleGenerator???
 	{
+        // members
+        //
+
+        // CTOR
+        //
+        public HostnameMutator(DataElement obj)
+        {
+
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 0; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String && obj.isMutable)
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("type", out h))
+                {
+                    if (h.Value == "hostname")
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+
+        }
 	}
 }

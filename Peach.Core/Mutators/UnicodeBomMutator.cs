@@ -42,7 +42,7 @@ namespace Peach.Core.Mutators
 
         // CTOR
         //
-        public UnicodeBomMutator(/*DataElement obj*/)
+        public UnicodeBomMutator(DataElement obj)
         {
             pos = 0;
         }
@@ -51,21 +51,26 @@ namespace Peach.Core.Mutators
         //
         public override void next()
         {
-
+            pos++;
+            if (pos >= values.Length)
+            {
+                pos = (uint)values.Length - 1;
+                throw new MutatorCompleted();
+            }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 0; }
+            get { return values.Length; }
         }
 
         // SUPPORTED
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj is Dom.String)
+            if ((obj is Dom.String) && obj.isMutable)
                 return true;
 
             return false;

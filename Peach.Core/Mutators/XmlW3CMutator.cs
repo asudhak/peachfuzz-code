@@ -29,10 +29,67 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class XmlW3CMutator
+    //[Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
+    //[Hint("type", "Allows string to be mutated by the XmlW3CMutator.")]
+	public class XmlW3CMutator : Mutator    // might inherit from SimpleGenerator???
 	{
+        // members
+        //
+
+        // CTOR
+        //
+        public XmlW3CMutator(DataElement obj)
+        {
+
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 0; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String && obj.isMutable)
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("type", out h))
+                {
+                    if (h.Value == "xml")
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+            
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+
+        }
 	}
 }

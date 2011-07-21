@@ -29,10 +29,66 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class FilenameMutator
+    //[Mutator("Perform filename mutations. Only works on <String> elements with a <Hint name=\"type\" value=\"filename\">")]
+    //[Hint("type", "Allows string to be mutated by the FilenameMutator.")]
+    public class FilenameMutator : Mutator  // might inherit from SimpleGenerator???
 	{
+        // members
+        //
+
+        // CTOR
+        public FilenameMutator(DataElement obj)
+        {
+
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 0; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String && obj.isMutable)
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("type", out h))
+                {
+                    if (h.Value == "filename")
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(Dom.DataElement obj)
+        {
+
+        }
+
+        // RANDOM_MUTATION
+        //
+        public override void randomMutation(Dom.DataElement obj)
+        {
+
+        }
 	}
 }

@@ -63,7 +63,6 @@ namespace Peach.Core.Mutators
                 Hint h = null;
                 if (obj.Hints.TryGetValue("ValidValues", out h))
                 {
-                    StringBuilder str = new StringBuilder();
                     values = h.Value.Split(';');
                 }
             }
