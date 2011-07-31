@@ -31,23 +31,30 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this.groupBox6 = new System.Windows.Forms.GroupBox();
+			this.label16 = new System.Windows.Forms.Label();
+			this.label4 = new System.Windows.Forms.Label();
+			this.buttonPitFileNameLoad = new System.Windows.Forms.Button();
+			this.comboBoxPitDataModel = new System.Windows.Forms.ComboBox();
+			this.buttonPitFileNameBrowse = new System.Windows.Forms.Button();
+			this.label3 = new System.Windows.Forms.Label();
+			this.textBoxPitFileName = new System.Windows.Forms.TextBox();
 			this.label13 = new System.Windows.Forms.Label();
 			this.comboBoxFuzzingStrategy = new System.Windows.Forms.ComboBox();
 			this.textBoxIterations = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
-			this.button3 = new System.Windows.Forms.Button();
-			this.label4 = new System.Windows.Forms.Label();
 			this.button2 = new System.Windows.Forms.Button();
 			this.button1 = new System.Windows.Forms.Button();
-			this.textBoxCommandLine = new System.Windows.Forms.TextBox();
-			this.textBoxExecutable = new System.Windows.Forms.TextBox();
 			this.textBoxFuzzedFile = new System.Windows.Forms.TextBox();
-			this.label3 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
 			this.textBoxTemplateFiles = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
+			this.buttonDebuggerPathBrowse = new System.Windows.Forms.Button();
+			this.textBoxDebuggerPath = new System.Windows.Forms.TextBox();
+			this.label15 = new System.Windows.Forms.Label();
 			this.groupBox5 = new System.Windows.Forms.GroupBox();
+			this.buttonDebuggerCommandBrowse = new System.Windows.Forms.Button();
 			this.textBoxDebuggerCommandLine = new System.Windows.Forms.TextBox();
 			this.label14 = new System.Windows.Forms.Label();
 			this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -67,7 +74,7 @@
 			this.radioButton2 = new System.Windows.Forms.RadioButton();
 			this.radioButtonDebuggerStartProcess = new System.Windows.Forms.RadioButton();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
-			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this.tabPageFuzzing = new System.Windows.Forms.TabPage();
 			this.textBox13 = new System.Windows.Forms.TextBox();
 			this.label12 = new System.Windows.Forms.Label();
 			this.textBox12 = new System.Windows.Forms.TextBox();
@@ -85,17 +92,24 @@
 			this.button6 = new System.Windows.Forms.Button();
 			this.button5 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
+			this.tabPageAbout = new System.Windows.Forms.TabPage();
+			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.pictureBox2 = new System.Windows.Forms.PictureBox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage1.SuspendLayout();
+			this.groupBox6.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.groupBox5.SuspendLayout();
 			this.groupBox4.SuspendLayout();
 			this.groupBox3.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.groupBox1.SuspendLayout();
-			this.tabPage4.SuspendLayout();
+			this.tabPageFuzzing.SuspendLayout();
 			this.tabPageOutput.SuspendLayout();
 			this.panel1.SuspendLayout();
+			this.tabPageAbout.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -103,44 +117,123 @@
 			this.tabControl1.Controls.Add(this.tabPage1);
 			this.tabControl1.Controls.Add(this.tabPage2);
 			this.tabControl1.Controls.Add(this.tabPage3);
-			this.tabControl1.Controls.Add(this.tabPage4);
+			this.tabControl1.Controls.Add(this.tabPageFuzzing);
 			this.tabControl1.Controls.Add(this.tabPageOutput);
+			this.tabControl1.Controls.Add(this.tabPageAbout);
 			this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabControl1.Location = new System.Drawing.Point(0, 0);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(553, 420);
+			this.tabControl1.Size = new System.Drawing.Size(553, 433);
 			this.tabControl1.TabIndex = 0;
 			// 
 			// tabPage1
 			// 
+			this.tabPage1.Controls.Add(this.groupBox6);
 			this.tabPage1.Controls.Add(this.label13);
 			this.tabPage1.Controls.Add(this.comboBoxFuzzingStrategy);
 			this.tabPage1.Controls.Add(this.textBoxIterations);
 			this.tabPage1.Controls.Add(this.label7);
-			this.tabPage1.Controls.Add(this.button3);
-			this.tabPage1.Controls.Add(this.label4);
 			this.tabPage1.Controls.Add(this.button2);
 			this.tabPage1.Controls.Add(this.button1);
-			this.tabPage1.Controls.Add(this.textBoxCommandLine);
-			this.tabPage1.Controls.Add(this.textBoxExecutable);
 			this.tabPage1.Controls.Add(this.textBoxFuzzedFile);
-			this.tabPage1.Controls.Add(this.label3);
 			this.tabPage1.Controls.Add(this.label2);
 			this.tabPage1.Controls.Add(this.textBoxTemplateFiles);
 			this.tabPage1.Controls.Add(this.label1);
 			this.tabPage1.Location = new System.Drawing.Point(4, 22);
 			this.tabPage1.Name = "tabPage1";
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(545, 394);
+			this.tabPage1.Size = new System.Drawing.Size(545, 407);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "General";
 			this.tabPage1.UseVisualStyleBackColor = true;
 			// 
+			// groupBox6
+			// 
+			this.groupBox6.Controls.Add(this.label16);
+			this.groupBox6.Controls.Add(this.label4);
+			this.groupBox6.Controls.Add(this.buttonPitFileNameLoad);
+			this.groupBox6.Controls.Add(this.comboBoxPitDataModel);
+			this.groupBox6.Controls.Add(this.buttonPitFileNameBrowse);
+			this.groupBox6.Controls.Add(this.label3);
+			this.groupBox6.Controls.Add(this.textBoxPitFileName);
+			this.groupBox6.Location = new System.Drawing.Point(8, 195);
+			this.groupBox6.Name = "groupBox6";
+			this.groupBox6.Size = new System.Drawing.Size(529, 178);
+			this.groupBox6.TabIndex = 16;
+			this.groupBox6.TabStop = false;
+			this.groupBox6.Text = "Peach Pit (OPTIONAL)";
+			// 
+			// label16
+			// 
+			this.label16.AutoSize = true;
+			this.label16.Location = new System.Drawing.Point(17, 25);
+			this.label16.Name = "label16";
+			this.label16.Size = new System.Drawing.Size(270, 52);
+			this.label16.TabIndex = 21;
+			this.label16.Text = "Optionally an existing Peach PIT may be loaded.  After \r\nloading Peach Pit select" +
+				" the Data Model to use.\r\n\r\nThe selected Data Model will be used to fuzz the targ" +
+				"et.\r\n";
+			// 
+			// label4
+			// 
+			this.label4.AutoSize = true;
+			this.label4.Enabled = false;
+			this.label4.Location = new System.Drawing.Point(36, 137);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(65, 13);
+			this.label4.TabIndex = 18;
+			this.label4.Text = "Data Model:";
+			// 
+			// buttonPitFileNameLoad
+			// 
+			this.buttonPitFileNameLoad.Location = new System.Drawing.Point(433, 104);
+			this.buttonPitFileNameLoad.Name = "buttonPitFileNameLoad";
+			this.buttonPitFileNameLoad.Size = new System.Drawing.Size(75, 23);
+			this.buttonPitFileNameLoad.TabIndex = 20;
+			this.buttonPitFileNameLoad.Text = "Load";
+			this.buttonPitFileNameLoad.UseVisualStyleBackColor = true;
+			this.buttonPitFileNameLoad.Click += new System.EventHandler(this.buttonPitFileNameLoad_Click);
+			// 
+			// comboBoxPitDataModel
+			// 
+			this.comboBoxPitDataModel.Enabled = false;
+			this.comboBoxPitDataModel.FormattingEnabled = true;
+			this.comboBoxPitDataModel.Location = new System.Drawing.Point(107, 134);
+			this.comboBoxPitDataModel.Name = "comboBoxPitDataModel";
+			this.comboBoxPitDataModel.Size = new System.Drawing.Size(293, 21);
+			this.comboBoxPitDataModel.TabIndex = 17;
+			// 
+			// buttonPitFileNameBrowse
+			// 
+			this.buttonPitFileNameBrowse.Location = new System.Drawing.Point(352, 105);
+			this.buttonPitFileNameBrowse.Name = "buttonPitFileNameBrowse";
+			this.buttonPitFileNameBrowse.Size = new System.Drawing.Size(75, 23);
+			this.buttonPitFileNameBrowse.TabIndex = 19;
+			this.buttonPitFileNameBrowse.Text = "Browse";
+			this.buttonPitFileNameBrowse.UseVisualStyleBackColor = true;
+			this.buttonPitFileNameBrowse.Click += new System.EventHandler(this.buttonPitFileNameBrowse_Click);
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(60, 110);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(41, 13);
+			this.label3.TabIndex = 17;
+			this.label3.Text = "Pit File:";
+			// 
+			// textBoxPitFileName
+			// 
+			this.textBoxPitFileName.Location = new System.Drawing.Point(107, 107);
+			this.textBoxPitFileName.Name = "textBoxPitFileName";
+			this.textBoxPitFileName.Size = new System.Drawing.Size(239, 20);
+			this.textBoxPitFileName.TabIndex = 18;
+			// 
 			// label13
 			// 
 			this.label13.AutoSize = true;
-			this.label13.Location = new System.Drawing.Point(21, 133);
+			this.label13.Location = new System.Drawing.Point(21, 81);
 			this.label13.Name = "label13";
 			this.label13.Size = new System.Drawing.Size(88, 13);
 			this.label13.TabIndex = 15;
@@ -149,44 +242,26 @@
 			// comboBoxFuzzingStrategy
 			// 
 			this.comboBoxFuzzingStrategy.FormattingEnabled = true;
-			this.comboBoxFuzzingStrategy.Location = new System.Drawing.Point(115, 130);
+			this.comboBoxFuzzingStrategy.Location = new System.Drawing.Point(115, 78);
 			this.comboBoxFuzzingStrategy.Name = "comboBoxFuzzingStrategy";
 			this.comboBoxFuzzingStrategy.Size = new System.Drawing.Size(293, 21);
 			this.comboBoxFuzzingStrategy.TabIndex = 14;
 			// 
 			// textBoxIterations
 			// 
-			this.textBoxIterations.Location = new System.Drawing.Point(115, 188);
+			this.textBoxIterations.Location = new System.Drawing.Point(115, 105);
 			this.textBoxIterations.Name = "textBoxIterations";
-			this.textBoxIterations.Size = new System.Drawing.Size(293, 20);
+			this.textBoxIterations.Size = new System.Drawing.Size(100, 20);
 			this.textBoxIterations.TabIndex = 13;
 			// 
 			// label7
 			// 
 			this.label7.AutoSize = true;
-			this.label7.Location = new System.Drawing.Point(56, 191);
+			this.label7.Location = new System.Drawing.Point(56, 108);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(53, 13);
 			this.label7.TabIndex = 12;
 			this.label7.Text = "Iterations:";
-			// 
-			// button3
-			// 
-			this.button3.Location = new System.Drawing.Point(414, 82);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(75, 23);
-			this.button3.TabIndex = 10;
-			this.button3.Text = "Browse";
-			this.button3.UseVisualStyleBackColor = true;
-			// 
-			// label4
-			// 
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(12, 81);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(97, 13);
-			this.label4.TabIndex = 9;
-			this.label4.Text = "Target Executable:";
 			// 
 			// button2
 			// 
@@ -206,22 +281,6 @@
 			this.button1.Text = "Browse";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
-			// textBoxCommandLine
-			// 
-			this.textBoxCommandLine.Location = new System.Drawing.Point(115, 104);
-			this.textBoxCommandLine.Name = "textBoxCommandLine";
-			this.textBoxCommandLine.Size = new System.Drawing.Size(293, 20);
-			this.textBoxCommandLine.TabIndex = 6;
-			this.textBoxCommandLine.Text = "fuzzed.txt";
-			// 
-			// textBoxExecutable
-			// 
-			this.textBoxExecutable.Location = new System.Drawing.Point(115, 78);
-			this.textBoxExecutable.Name = "textBoxExecutable";
-			this.textBoxExecutable.Size = new System.Drawing.Size(293, 20);
-			this.textBoxExecutable.TabIndex = 5;
-			this.textBoxExecutable.Text = "notepad.exe";
-			// 
 			// textBoxFuzzedFile
 			// 
 			this.textBoxFuzzedFile.Location = new System.Drawing.Point(115, 52);
@@ -229,15 +288,6 @@
 			this.textBoxFuzzedFile.Size = new System.Drawing.Size(293, 20);
 			this.textBoxFuzzedFile.TabIndex = 4;
 			this.textBoxFuzzedFile.Text = "fuzzed.txt";
-			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(29, 107);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(80, 13);
-			this.label3.TabIndex = 3;
-			this.label3.Text = "Command Line:";
 			// 
 			// label2
 			// 
@@ -254,6 +304,7 @@
 			this.textBoxTemplateFiles.Name = "textBoxTemplateFiles";
 			this.textBoxTemplateFiles.Size = new System.Drawing.Size(293, 20);
 			this.textBoxTemplateFiles.TabIndex = 1;
+			this.textBoxTemplateFiles.Text = "sample.txt";
 			// 
 			// label1
 			// 
@@ -266,6 +317,9 @@
 			// 
 			// tabPage2
 			// 
+			this.tabPage2.Controls.Add(this.buttonDebuggerPathBrowse);
+			this.tabPage2.Controls.Add(this.textBoxDebuggerPath);
+			this.tabPage2.Controls.Add(this.label15);
 			this.tabPage2.Controls.Add(this.groupBox5);
 			this.tabPage2.Controls.Add(this.groupBox4);
 			this.tabPage2.Controls.Add(this.groupBox3);
@@ -274,28 +328,66 @@
 			this.tabPage2.Location = new System.Drawing.Point(4, 22);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(545, 394);
+			this.tabPage2.Size = new System.Drawing.Size(545, 407);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Debugger";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
+			// buttonDebuggerPathBrowse
+			// 
+			this.buttonDebuggerPathBrowse.Location = new System.Drawing.Point(462, 58);
+			this.buttonDebuggerPathBrowse.Name = "buttonDebuggerPathBrowse";
+			this.buttonDebuggerPathBrowse.Size = new System.Drawing.Size(71, 23);
+			this.buttonDebuggerPathBrowse.TabIndex = 5;
+			this.buttonDebuggerPathBrowse.Text = "Browse";
+			this.buttonDebuggerPathBrowse.UseVisualStyleBackColor = true;
+			this.buttonDebuggerPathBrowse.Click += new System.EventHandler(this.buttonDebuggerPathBrowse_Click);
+			// 
+			// textBoxDebuggerPath
+			// 
+			this.textBoxDebuggerPath.Location = new System.Drawing.Point(97, 61);
+			this.textBoxDebuggerPath.Name = "textBoxDebuggerPath";
+			this.textBoxDebuggerPath.Size = new System.Drawing.Size(359, 20);
+			this.textBoxDebuggerPath.TabIndex = 3;
+			this.textBoxDebuggerPath.Text = "C:\\Program Files (x86)\\Debugging Tools for Windows (x86)";
+			// 
+			// label15
+			// 
+			this.label15.AutoSize = true;
+			this.label15.Location = new System.Drawing.Point(14, 64);
+			this.label15.Name = "label15";
+			this.label15.Size = new System.Drawing.Size(74, 13);
+			this.label15.TabIndex = 2;
+			this.label15.Text = "WinDbg Path:";
+			// 
 			// groupBox5
 			// 
+			this.groupBox5.Controls.Add(this.buttonDebuggerCommandBrowse);
 			this.groupBox5.Controls.Add(this.textBoxDebuggerCommandLine);
 			this.groupBox5.Controls.Add(this.label14);
-			this.groupBox5.Location = new System.Drawing.Point(8, 61);
+			this.groupBox5.Location = new System.Drawing.Point(8, 87);
 			this.groupBox5.Name = "groupBox5";
 			this.groupBox5.Size = new System.Drawing.Size(529, 58);
 			this.groupBox5.TabIndex = 4;
 			this.groupBox5.TabStop = false;
 			this.groupBox5.Text = "Start Process";
 			// 
+			// buttonDebuggerCommandBrowse
+			// 
+			this.buttonDebuggerCommandBrowse.Location = new System.Drawing.Point(454, 19);
+			this.buttonDebuggerCommandBrowse.Name = "buttonDebuggerCommandBrowse";
+			this.buttonDebuggerCommandBrowse.Size = new System.Drawing.Size(71, 23);
+			this.buttonDebuggerCommandBrowse.TabIndex = 6;
+			this.buttonDebuggerCommandBrowse.Text = "Browse";
+			this.buttonDebuggerCommandBrowse.UseVisualStyleBackColor = true;
+			// 
 			// textBoxDebuggerCommandLine
 			// 
 			this.textBoxDebuggerCommandLine.Location = new System.Drawing.Point(92, 22);
 			this.textBoxDebuggerCommandLine.Name = "textBoxDebuggerCommandLine";
-			this.textBoxDebuggerCommandLine.Size = new System.Drawing.Size(431, 20);
+			this.textBoxDebuggerCommandLine.Size = new System.Drawing.Size(356, 20);
 			this.textBoxDebuggerCommandLine.TabIndex = 1;
+			this.textBoxDebuggerCommandLine.Text = "notepad.exe fuzzed.txt";
 			// 
 			// label14
 			// 
@@ -310,7 +402,7 @@
 			// 
 			this.groupBox4.Controls.Add(this.textBox7);
 			this.groupBox4.Controls.Add(this.label6);
-			this.groupBox4.Location = new System.Drawing.Point(8, 277);
+			this.groupBox4.Location = new System.Drawing.Point(8, 303);
 			this.groupBox4.Name = "groupBox4";
 			this.groupBox4.Size = new System.Drawing.Size(531, 68);
 			this.groupBox4.TabIndex = 3;
@@ -337,7 +429,7 @@
 			// 
 			this.groupBox3.Controls.Add(this.comboBox1);
 			this.groupBox3.Controls.Add(this.label5);
-			this.groupBox3.Location = new System.Drawing.Point(8, 207);
+			this.groupBox3.Location = new System.Drawing.Point(8, 233);
 			this.groupBox3.Name = "groupBox3";
 			this.groupBox3.Size = new System.Drawing.Size(529, 64);
 			this.groupBox3.TabIndex = 2;
@@ -367,7 +459,7 @@
 			this.groupBox2.Controls.Add(this.textBox5);
 			this.groupBox2.Controls.Add(this.radioButton6);
 			this.groupBox2.Controls.Add(this.radioButton5);
-			this.groupBox2.Location = new System.Drawing.Point(8, 125);
+			this.groupBox2.Location = new System.Drawing.Point(8, 151);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.Size = new System.Drawing.Size(529, 76);
 			this.groupBox2.TabIndex = 1;
@@ -469,29 +561,29 @@
 			// 
 			this.tabPage3.Location = new System.Drawing.Point(4, 22);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(545, 394);
+			this.tabPage3.Size = new System.Drawing.Size(545, 407);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "GUI";
 			this.tabPage3.UseVisualStyleBackColor = true;
 			// 
-			// tabPage4
+			// tabPageFuzzing
 			// 
-			this.tabPage4.Controls.Add(this.textBox13);
-			this.tabPage4.Controls.Add(this.label12);
-			this.tabPage4.Controls.Add(this.textBox12);
-			this.tabPage4.Controls.Add(this.textBox11);
-			this.tabPage4.Controls.Add(this.textBox10);
-			this.tabPage4.Controls.Add(this.textBox9);
-			this.tabPage4.Controls.Add(this.label11);
-			this.tabPage4.Controls.Add(this.label10);
-			this.tabPage4.Controls.Add(this.label9);
-			this.tabPage4.Controls.Add(this.label8);
-			this.tabPage4.Location = new System.Drawing.Point(4, 22);
-			this.tabPage4.Name = "tabPage4";
-			this.tabPage4.Size = new System.Drawing.Size(545, 394);
-			this.tabPage4.TabIndex = 3;
-			this.tabPage4.Text = "Fuzzing";
-			this.tabPage4.UseVisualStyleBackColor = true;
+			this.tabPageFuzzing.Controls.Add(this.textBox13);
+			this.tabPageFuzzing.Controls.Add(this.label12);
+			this.tabPageFuzzing.Controls.Add(this.textBox12);
+			this.tabPageFuzzing.Controls.Add(this.textBox11);
+			this.tabPageFuzzing.Controls.Add(this.textBox10);
+			this.tabPageFuzzing.Controls.Add(this.textBox9);
+			this.tabPageFuzzing.Controls.Add(this.label11);
+			this.tabPageFuzzing.Controls.Add(this.label10);
+			this.tabPageFuzzing.Controls.Add(this.label9);
+			this.tabPageFuzzing.Controls.Add(this.label8);
+			this.tabPageFuzzing.Location = new System.Drawing.Point(4, 22);
+			this.tabPageFuzzing.Name = "tabPageFuzzing";
+			this.tabPageFuzzing.Size = new System.Drawing.Size(545, 407);
+			this.tabPageFuzzing.TabIndex = 3;
+			this.tabPageFuzzing.Text = "Fuzzing";
+			this.tabPageFuzzing.UseVisualStyleBackColor = true;
 			// 
 			// textBox13
 			// 
@@ -580,7 +672,7 @@
 			this.tabPageOutput.Location = new System.Drawing.Point(4, 22);
 			this.tabPageOutput.Name = "tabPageOutput";
 			this.tabPageOutput.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPageOutput.Size = new System.Drawing.Size(545, 394);
+			this.tabPageOutput.Size = new System.Drawing.Size(545, 407);
 			this.tabPageOutput.TabIndex = 4;
 			this.tabPageOutput.Text = "Output";
 			this.tabPageOutput.UseVisualStyleBackColor = true;
@@ -607,7 +699,7 @@
 			this.panel1.Controls.Add(this.button5);
 			this.panel1.Controls.Add(this.button4);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.panel1.Location = new System.Drawing.Point(0, 388);
+			this.panel1.Location = new System.Drawing.Point(0, 401);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(553, 32);
 			this.panel1.TabIndex = 1;
@@ -640,20 +732,55 @@
 			this.button4.UseVisualStyleBackColor = true;
 			this.button4.Click += new System.EventHandler(this.button4_Click);
 			// 
+			// tabPageAbout
+			// 
+			this.tabPageAbout.Controls.Add(this.pictureBox2);
+			this.tabPageAbout.Controls.Add(this.pictureBox1);
+			this.tabPageAbout.Location = new System.Drawing.Point(4, 22);
+			this.tabPageAbout.Name = "tabPageAbout";
+			this.tabPageAbout.Size = new System.Drawing.Size(545, 407);
+			this.tabPageAbout.TabIndex = 5;
+			this.tabPageAbout.Text = "About";
+			this.tabPageAbout.UseVisualStyleBackColor = true;
+			// 
+			// pictureBox1
+			// 
+			this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+			this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
+			this.pictureBox1.Location = new System.Drawing.Point(8, 3);
+			this.pictureBox1.Name = "pictureBox1";
+			this.pictureBox1.Size = new System.Drawing.Size(529, 135);
+			this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.pictureBox1.TabIndex = 0;
+			this.pictureBox1.TabStop = false;
+			// 
+			// pictureBox2
+			// 
+			this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+			this.pictureBox2.Location = new System.Drawing.Point(9, 145);
+			this.pictureBox2.Name = "pictureBox2";
+			this.pictureBox2.Size = new System.Drawing.Size(528, 228);
+			this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.pictureBox2.TabIndex = 1;
+			this.pictureBox2.TabStop = false;
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(553, 420);
+			this.ClientSize = new System.Drawing.Size(553, 433);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.tabControl1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "FormMain";
-			this.Text = "Peach Dumb File Fuzzer";
+			this.Text = "Peach Fuzz Bang";
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.tabPage1.PerformLayout();
+			this.groupBox6.ResumeLayout(false);
+			this.groupBox6.PerformLayout();
 			this.tabPage2.ResumeLayout(false);
+			this.tabPage2.PerformLayout();
 			this.groupBox5.ResumeLayout(false);
 			this.groupBox5.PerformLayout();
 			this.groupBox4.ResumeLayout(false);
@@ -664,11 +791,14 @@
 			this.groupBox2.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
-			this.tabPage4.ResumeLayout(false);
-			this.tabPage4.PerformLayout();
+			this.tabPageFuzzing.ResumeLayout(false);
+			this.tabPageFuzzing.PerformLayout();
 			this.tabPageOutput.ResumeLayout(false);
 			this.tabPageOutput.PerformLayout();
 			this.panel1.ResumeLayout(false);
+			this.tabPageAbout.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -679,17 +809,12 @@
 		private System.Windows.Forms.TabPage tabPage1;
 		private System.Windows.Forms.Button button2;
 		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.TextBox textBoxCommandLine;
-		private System.Windows.Forms.TextBox textBoxExecutable;
 		private System.Windows.Forms.TextBox textBoxFuzzedFile;
-		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox textBoxTemplateFiles;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.TabPage tabPage3;
-		private System.Windows.Forms.Button button3;
-		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.GroupBox groupBox4;
 		private System.Windows.Forms.GroupBox groupBox3;
 		private System.Windows.Forms.GroupBox groupBox2;
@@ -708,7 +833,7 @@
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.TextBox textBoxIterations;
 		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.TabPage tabPage4;
+		private System.Windows.Forms.TabPage tabPageFuzzing;
 		private System.Windows.Forms.Label label11;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.Label label9;
@@ -731,6 +856,21 @@
 		private System.Windows.Forms.TabPage tabPageOutput;
 		public System.Windows.Forms.TextBox textBoxOutput;
 		public System.Windows.Forms.ProgressBar progressBarOuputFuzzing;
+		private System.Windows.Forms.Button buttonDebuggerPathBrowse;
+		private System.Windows.Forms.TextBox textBoxDebuggerPath;
+		private System.Windows.Forms.Label label15;
+		private System.Windows.Forms.Button buttonDebuggerCommandBrowse;
+		private System.Windows.Forms.GroupBox groupBox6;
+		private System.Windows.Forms.Button buttonPitFileNameBrowse;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.TextBox textBoxPitFileName;
+		private System.Windows.Forms.Label label16;
+		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.Button buttonPitFileNameLoad;
+		private System.Windows.Forms.ComboBox comboBoxPitDataModel;
+		private System.Windows.Forms.TabPage tabPageAbout;
+		private System.Windows.Forms.PictureBox pictureBox2;
+		private System.Windows.Forms.PictureBox pictureBox1;
 	}
 }
 

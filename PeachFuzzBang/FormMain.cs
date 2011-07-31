@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
+using System.IO;
 using Peach;
 using Peach.Core;
 using Peach.Core.Dom;
@@ -49,11 +50,21 @@ namespace PeachFuzzBang
 
 			Dom dom = new Dom();
 
+			MemoryStream sout = new MemoryStream();
+			byte [] buff = new byte[1024];
+			int cnt;
+
+			using(FileStream sin = System.IO.File.OpenRead(textBoxTemplateFiles.Text))
+			{
+				cnt = sin.Read(buff, 0, buff.Length);
+				sout.Write(buff, 0, cnt);
+			}
+
 			// DataModel
-			DataModel dataModel = new DataModel();
-			dataModel.name = "TheDataModel";
-			Peach.Core.Dom.String str = new Peach.Core.Dom.String();
-			str.DefaultValue = new Variant("Hello World!");
+			DataModel dataModel = new DataModel("TheDataModel");
+			//Peach.Core.Dom.Blob blob = new Peach.Core.Dom.Blob(new Variant(sout.ToArray()));
+			//dataModel.Add(blob);
+			Peach.Core.Dom.String str = new Peach.Core.Dom.String("Data", new Variant(ASCIIEncoding.ASCII.GetString(sout.ToArray())));
 			dataModel.Add(str);
 
 			dom.dataModels.Add(dataModel.name, dataModel);
@@ -61,7 +72,7 @@ namespace PeachFuzzBang
 			// Publisher
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["FileName"] = new Variant(textBoxFuzzedFile.Text);
-			Peach.Core.Publishers.File file = new File(args);
+			Peach.Core.Publishers.File file = new Peach.Core.Publishers.File(args);
 
 			// StateModel
 			StateModel stateModel = new StateModel();
@@ -98,8 +109,9 @@ namespace PeachFuzzBang
 
 			Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
 			monitor.cls = "WindowsDebugEngine";
-			monitor.parameters["CommandLine"] = new Variant(textBoxExecutable.Text + " " + textBoxCommandLine.Text);
+			monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
 			monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
+			monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
 
 			agent.monitors.Add(monitor);
 			dom.agents.Add(agent.name, agent);
@@ -136,6 +148,41 @@ namespace PeachFuzzBang
 			Engine e = new Engine(new ConsoleWatcher(this));
 
 			e.startFuzzing(dom, config);
+		}
+
+		private void buttonDebuggerPathBrowse_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog browse = new OpenFileDialog();
+			browse.DefaultExt = ".exe";
+			browse.Title = "Browse to WinDbg";
+			if (browse.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+				return;
+
+			string fileName = browse.FileName;
+			textBoxDebuggerPath.Text = fileName.Substring(0, fileName.LastIndexOf("\\"));
+		}
+
+		private void buttonPitFileNameLoad_Click(object sender, EventArgs e)
+		{
+			if (!System.IO.File.Exists(textBoxPitFileName.Text))
+			{
+				MessageBox.Show("Error, Pit file does not exist.");
+				return;
+			}
+
+			label4.Enabled = true;
+			comboBoxPitDataModel.Enabled = true;
+		}
+
+		private void buttonPitFileNameBrowse_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog dialog = new OpenFileDialog();
+			dialog.DefaultExt = ".xml";
+
+			if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
+				return;
+
+			textBoxPitFileName.Text = dialog.FileName;
 		}
 	}
 }

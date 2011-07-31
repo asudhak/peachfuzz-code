@@ -41,13 +41,33 @@ namespace Peach.Core.Dom
 	[DataElement("Flags")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[DataElementChildSupportedAttribute("Flag")]
-	[ParameterAttribute("size", typeof(uint), "Size in bits.  Typically [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]", true)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	[Serializable]
 	public class Flags : DataElementContainer
 	{
-		protected uint _size = 0;
+		protected int _size = 0;
 		protected bool _littleEndian = true;
+
+		public Flags()
+		{
+		}
+
+		public Flags(string name)
+		{
+			this.name = name;
+		}
+
+		public Flags(string name, int size)
+		{
+			this.name = name;
+			this.size = size;
+		}
+
+		public Flags(int size)
+		{
+			this.size = size;
+		}
 
 		public bool LittleEndian
 		{
@@ -59,7 +79,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public uint Size
+		public int size
 		{
 			get { return _size; }
 			set
@@ -77,7 +97,7 @@ namespace Peach.Core.Dom
 			{
 				if (child is Flag)
 				{
-					bits.SeekBits(((Flag)child).Position, System.IO.SeekOrigin.Begin);
+					bits.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Begin);
 					bits.Write(child.Value, child);
 				}
 				else
@@ -93,14 +113,36 @@ namespace Peach.Core.Dom
 	[DataElement("Flag")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
-	[ParameterAttribute("size", typeof(int), "Size in bits", true)]
+	[ParameterAttribute("size", typeof(int), "size in bits", true)]
 	[Serializable]
 	public class Flag : DataElement
 	{
 		protected int _size = 0;
 		protected int _position = 0;
 
-		public int Size
+		public Flag()
+		{
+		}
+
+		public Flag(string name)
+		{
+			this.name = name;
+		}
+
+		public Flag(string name, int size, int position)
+		{
+			this.name = name;
+			this.size = size;
+			this.position = position;
+		}
+
+		public Flag(int size, int position)
+		{
+			this.size = size;
+			this.position = position;
+		}
+
+		public int size
 		{
 			get { return _size; }
 			set
@@ -112,7 +154,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public int Position
+		public int position
 		{
 			get { return _position; }
 			set
@@ -129,9 +171,9 @@ namespace Peach.Core.Dom
 			BitStream bits = new BitStream();
 
 			if (v == null)
-				bits.WriteBits((ulong)0, Size);
+				bits.WriteBits((ulong)0, size);
 			else
-				bits.WriteBits((ulong)v, Size);
+				bits.WriteBits((ulong)v, size);
 
 			return bits;
 		}

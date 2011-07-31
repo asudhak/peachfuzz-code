@@ -51,6 +51,8 @@ namespace Peach.Core.Dom
 
 		public Hint(Dictionary<string, Variant> args)
 		{
+			Name = (string)args["Name"];
+			Value = (string)args["Value"];
 		}
 
 		public string Name

@@ -1,4 +1,4 @@
-﻿namespace DtdFuzzer
+﻿namespace PeachXmlGenerator
 {
 	partial class FormMain
 	{
@@ -31,20 +31,20 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this.label1 = new System.Windows.Forms.Label();
-			this.textBox1 = new System.Windows.Forms.TextBox();
+			this.textBoxDtd = new System.Windows.Forms.TextBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
-			this.textBox2 = new System.Windows.Forms.TextBox();
-			this.textBox3 = new System.Windows.Forms.TextBox();
-			this.button1 = new System.Windows.Forms.Button();
+			this.textBoxRootNamespace = new System.Windows.Forms.TextBox();
+			this.textBoxRootElement = new System.Windows.Forms.TextBox();
+			this.buttonDtdBrowse = new System.Windows.Forms.Button();
 			this.label6 = new System.Windows.Forms.Label();
-			this.button2 = new System.Windows.Forms.Button();
-			this.textBox4 = new System.Windows.Forms.TextBox();
+			this.buttonSamplesBrowse = new System.Windows.Forms.Button();
+			this.textBoxSamples = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
-			this.textBox5 = new System.Windows.Forms.TextBox();
-			this.button3 = new System.Windows.Forms.Button();
+			this.textBoxCount = new System.Windows.Forms.TextBox();
+			this.buttonGenerate = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -68,12 +68,13 @@
 			this.label1.TabIndex = 1;
 			this.label1.Text = "DTD File:";
 			// 
-			// textBox1
+			// textBoxDtd
 			// 
-			this.textBox1.Location = new System.Drawing.Point(133, 12);
-			this.textBox1.Name = "textBox1";
-			this.textBox1.Size = new System.Drawing.Size(212, 20);
-			this.textBox1.TabIndex = 2;
+			this.textBoxDtd.Location = new System.Drawing.Point(133, 12);
+			this.textBoxDtd.Name = "textBoxDtd";
+			this.textBoxDtd.Size = new System.Drawing.Size(212, 20);
+			this.textBoxDtd.TabIndex = 2;
+			this.textBoxDtd.Text = "svg.dtd";
 			// 
 			// label2
 			// 
@@ -111,28 +112,31 @@
 			this.label5.TabIndex = 6;
 			this.label5.Text = "(optional)";
 			// 
-			// textBox2
+			// textBoxRootNamespace
 			// 
-			this.textBox2.Location = new System.Drawing.Point(133, 64);
-			this.textBox2.Name = "textBox2";
-			this.textBox2.Size = new System.Drawing.Size(212, 20);
-			this.textBox2.TabIndex = 7;
+			this.textBoxRootNamespace.Location = new System.Drawing.Point(133, 64);
+			this.textBoxRootNamespace.Name = "textBoxRootNamespace";
+			this.textBoxRootNamespace.Size = new System.Drawing.Size(212, 20);
+			this.textBoxRootNamespace.TabIndex = 7;
+			this.textBoxRootNamespace.Text = "http://www.w3.org/2000/svg";
 			// 
-			// textBox3
+			// textBoxRootElement
 			// 
-			this.textBox3.Location = new System.Drawing.Point(133, 38);
-			this.textBox3.Name = "textBox3";
-			this.textBox3.Size = new System.Drawing.Size(212, 20);
-			this.textBox3.TabIndex = 8;
+			this.textBoxRootElement.Location = new System.Drawing.Point(133, 38);
+			this.textBoxRootElement.Name = "textBoxRootElement";
+			this.textBoxRootElement.Size = new System.Drawing.Size(212, 20);
+			this.textBoxRootElement.TabIndex = 8;
+			this.textBoxRootElement.Text = "svg";
 			// 
-			// button1
+			// buttonDtdBrowse
 			// 
-			this.button1.Location = new System.Drawing.Point(354, 10);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(75, 23);
-			this.button1.TabIndex = 9;
-			this.button1.Text = "Browse";
-			this.button1.UseVisualStyleBackColor = true;
+			this.buttonDtdBrowse.Location = new System.Drawing.Point(354, 10);
+			this.buttonDtdBrowse.Name = "buttonDtdBrowse";
+			this.buttonDtdBrowse.Size = new System.Drawing.Size(75, 23);
+			this.buttonDtdBrowse.TabIndex = 9;
+			this.buttonDtdBrowse.Text = "Browse";
+			this.buttonDtdBrowse.UseVisualStyleBackColor = true;
+			this.buttonDtdBrowse.Click += new System.EventHandler(this.buttonDtdBrowse_Click);
 			// 
 			// label6
 			// 
@@ -143,21 +147,23 @@
 			this.label6.TabIndex = 10;
 			this.label6.Text = "Sample XML Files:";
 			// 
-			// button2
+			// buttonSamplesBrowse
 			// 
-			this.button2.Location = new System.Drawing.Point(354, 96);
-			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(75, 23);
-			this.button2.TabIndex = 12;
-			this.button2.Text = "Browse";
-			this.button2.UseVisualStyleBackColor = true;
+			this.buttonSamplesBrowse.Location = new System.Drawing.Point(354, 96);
+			this.buttonSamplesBrowse.Name = "buttonSamplesBrowse";
+			this.buttonSamplesBrowse.Size = new System.Drawing.Size(75, 23);
+			this.buttonSamplesBrowse.TabIndex = 12;
+			this.buttonSamplesBrowse.Text = "Browse";
+			this.buttonSamplesBrowse.UseVisualStyleBackColor = true;
+			this.buttonSamplesBrowse.Click += new System.EventHandler(this.buttonSamplesBrowse_Click);
 			// 
-			// textBox4
+			// textBoxSamples
 			// 
-			this.textBox4.Location = new System.Drawing.Point(133, 90);
-			this.textBox4.Name = "textBox4";
-			this.textBox4.Size = new System.Drawing.Size(212, 20);
-			this.textBox4.TabIndex = 11;
+			this.textBoxSamples.Location = new System.Drawing.Point(133, 90);
+			this.textBoxSamples.Name = "textBoxSamples";
+			this.textBoxSamples.Size = new System.Drawing.Size(212, 20);
+			this.textBoxSamples.TabIndex = 11;
+			this.textBoxSamples.Text = "C:\\Peach3.0\\PeachXmlGenerator\\samples-svg";
 			// 
 			// label7
 			// 
@@ -168,43 +174,44 @@
 			this.label7.TabIndex = 13;
 			this.label7.Text = "Number of Output Files:";
 			// 
-			// textBox5
+			// textBoxCount
 			// 
-			this.textBox5.Location = new System.Drawing.Point(133, 116);
-			this.textBox5.Name = "textBox5";
-			this.textBox5.Size = new System.Drawing.Size(87, 20);
-			this.textBox5.TabIndex = 14;
-			this.textBox5.Text = "100";
+			this.textBoxCount.Location = new System.Drawing.Point(133, 116);
+			this.textBoxCount.Name = "textBoxCount";
+			this.textBoxCount.Size = new System.Drawing.Size(87, 20);
+			this.textBoxCount.TabIndex = 14;
+			this.textBoxCount.Text = "100";
 			// 
-			// button3
+			// buttonGenerate
 			// 
-			this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.button3.Location = new System.Drawing.Point(184, 167);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(75, 23);
-			this.button3.TabIndex = 15;
-			this.button3.Text = "Generate!";
-			this.button3.UseVisualStyleBackColor = true;
+			this.buttonGenerate.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.buttonGenerate.Location = new System.Drawing.Point(184, 167);
+			this.buttonGenerate.Name = "buttonGenerate";
+			this.buttonGenerate.Size = new System.Drawing.Size(75, 23);
+			this.buttonGenerate.TabIndex = 15;
+			this.buttonGenerate.Text = "Generate!";
+			this.buttonGenerate.UseVisualStyleBackColor = true;
+			this.buttonGenerate.Click += new System.EventHandler(this.buttonGenerate_Click);
 			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(448, 238);
-			this.Controls.Add(this.button3);
-			this.Controls.Add(this.textBox5);
+			this.Controls.Add(this.buttonGenerate);
+			this.Controls.Add(this.textBoxCount);
 			this.Controls.Add(this.label7);
-			this.Controls.Add(this.button2);
-			this.Controls.Add(this.textBox4);
+			this.Controls.Add(this.buttonSamplesBrowse);
+			this.Controls.Add(this.textBoxSamples);
 			this.Controls.Add(this.label6);
-			this.Controls.Add(this.button1);
-			this.Controls.Add(this.textBox3);
-			this.Controls.Add(this.textBox2);
+			this.Controls.Add(this.buttonDtdBrowse);
+			this.Controls.Add(this.textBoxRootElement);
+			this.Controls.Add(this.textBoxRootNamespace);
 			this.Controls.Add(this.label5);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.label2);
-			this.Controls.Add(this.textBox1);
+			this.Controls.Add(this.textBoxDtd);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.pictureBox1);
 			this.Name = "FormMain";
@@ -219,19 +226,19 @@
 
 		private System.Windows.Forms.PictureBox pictureBox1;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.TextBox textBoxDtd;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.TextBox textBox2;
-		private System.Windows.Forms.TextBox textBox3;
-		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.TextBox textBoxRootNamespace;
+		private System.Windows.Forms.TextBox textBoxRootElement;
+		private System.Windows.Forms.Button buttonDtdBrowse;
 		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.TextBox textBox4;
+		private System.Windows.Forms.Button buttonSamplesBrowse;
+		private System.Windows.Forms.TextBox textBoxSamples;
 		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.TextBox textBox5;
-		private System.Windows.Forms.Button button3;
+		private System.Windows.Forms.TextBox textBoxCount;
+		private System.Windows.Forms.Button buttonGenerate;
 	}
 }

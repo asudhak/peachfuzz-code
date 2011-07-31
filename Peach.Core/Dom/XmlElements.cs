@@ -29,6 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach;
+using System.Xml;
 
 namespace Peach.Core.Dom
 {

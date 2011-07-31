@@ -139,7 +139,7 @@ namespace Peach.Core.IO
 		}
 
 		/// <summary>
-		/// Length in bytes of buffer.  Size is
+		/// Length in bytes of buffer.  size is
 		/// badded out to 8 bit boundry.
 		/// </summary>
 		public int LengthBytes
@@ -316,7 +316,7 @@ namespace Peach.Core.IO
 		}
 
 		/// <summary>
-		/// Position in stream of DataElement
+		/// position in stream of DataElement
 		/// </summary>
 		/// <param name="e">DataElement that has already been written to the stream</param>
 		/// <returns>Returns bit position of DataElement</returns>
@@ -329,7 +329,7 @@ namespace Peach.Core.IO
 		}
 
 		/// <summary>
-		/// Position in stream of DataElement
+		/// position in stream of DataElement
 		/// </summary>
 		/// <param name="fullName">DataElement that has already been written to the stream</param>
 		/// <returns>Returns bit position of DataElement</returns>

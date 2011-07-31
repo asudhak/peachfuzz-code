@@ -52,6 +52,15 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, DataElement> choiceElements = new OrderedDictionary<string, DataElement>();
 		DataElement _selectedElement = null;
 
+		public Choice()
+		{
+		}
+
+		public Choice(string name)
+		{
+			this.name = name;
+		}
+
 		public DataElement SelectedElement
 		{
 			get

@@ -31,12 +31,22 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Windows.Forms;
+
 using Peach.Core.Xml;
 
 namespace PeachXmlGenerator
 {
 	class Program
 	{
+		static void DisplayTitle()
+		{
+			Console.WriteLine("");
+			Console.WriteLine("[ Peach v3.0 DEV");
+			Console.WriteLine("[ Peach DTD XML Fuzzer v1.0 DEV");
+			Console.WriteLine("[ Copyright (c) Michael Eddington\n");
+		}
+
 		static void Main(string[] args)
 		{
 			try
@@ -47,11 +57,6 @@ namespace PeachXmlGenerator
 				string samplesFolder = null;
 				int? iterations = null;
 				string xmlns = null;
-
-				Console.WriteLine("");
-				Console.WriteLine("[ Peach v3.0 DEV");
-				Console.WriteLine("[ Peach DTD XML Fuzzer v1.0 DEV");
-				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 
 				var p = new OptionSet()
 				{
@@ -66,7 +71,14 @@ namespace PeachXmlGenerator
 				List<string> extra = p.Parse(args);
 
 				if (dtdFile == null || rootElementName == null)
-					syntax();
+				{
+					Application.EnableVisualStyles();
+					Application.SetCompatibleTextRenderingDefault(false);
+					Application.Run(new FormMain());
+					return;
+				}
+
+				DisplayTitle();
 
 				Console.WriteLine(" * Using DTD '" + dtdFile + "'.");
 				Console.WriteLine(" * Root element '" + rootElementName + "'.");
@@ -129,6 +141,8 @@ namespace PeachXmlGenerator
 
 		static void syntax()
 		{
+			DisplayTitle();
+
 			string syntax = @"
 This is the experimental XML generation fuzzer.  It will consume a DTD
 XML definition and use it to produce structurally correct XML documents.

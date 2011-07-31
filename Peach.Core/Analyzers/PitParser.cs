@@ -1195,10 +1195,10 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "size"))
 			{
-				uint size;
+				int size;
 				try
 				{
-					size = uint.Parse(getXmlAttribute(node, "size"));
+					size = int.Parse(getXmlAttribute(node, "size"));
 				}
 				catch
 				{
@@ -1209,14 +1209,14 @@ namespace Peach.Core.Analyzers
 					throw new PeachException(string.Format(
 						"Error, unsupported size {0} for element {1}.", size, flags.name));
 
-				flags.Size = size;
+				flags.size = size;
 			}
 			else if (hasDefaultAttribute(typeof(Flags), "size"))
 			{
-				uint size;
+				int size;
 				try
 				{
-					size = uint.Parse((string)getDefaultAttribute(typeof(Flags), "size"));
+					size = int.Parse((string)getDefaultAttribute(typeof(Flags), "size"));
 				}
 				catch
 				{
@@ -1227,7 +1227,7 @@ namespace Peach.Core.Analyzers
 					throw new PeachException(string.Format(
 						"Error, unsupported size {0} for element {1}.", size, flags.name));
 
-				flags.Size = size;
+				flags.size = size;
 			}
 
 			if (hasXmlAttribute(node, "endian"))
@@ -1292,7 +1292,7 @@ namespace Peach.Core.Analyzers
 				flag.name = getXmlAttribute(node, "name");
 
 			if (hasXmlAttribute(node, "position"))
-				flag.Position = int.Parse(getXmlAttribute(node, "position"));
+				flag.position = int.Parse(getXmlAttribute(node, "position"));
 			else
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
 
@@ -1300,7 +1300,7 @@ namespace Peach.Core.Analyzers
 			{
 				try
 				{
-					flag.Size = int.Parse(getXmlAttribute(node, "size"));
+					flag.size = int.Parse(getXmlAttribute(node, "size"));
 				}
 				catch (Exception e)
 				{

@@ -43,7 +43,14 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class DataModel : Block
 	{
-		//public Dom dom = null;
+		public DataModel()
+		{
+		}
+
+		public DataModel(string name)
+		{
+			this.name = name;
+		}
 	}
 }
 

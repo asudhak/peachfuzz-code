@@ -390,14 +390,14 @@ namespace Peach.Core.Debuggers.DebugEngine
 		}
 
 		[DllImport("kernel32.dll", SetLastError = true)]
-		static extern int GetProcessId(ulong hWnd);
+		static extern int GetProcessId(uint hWnd);
 
 		public void CreateProcess(ulong ImageFileHandle, ulong Handle, ulong BaseOffset, 
 			uint ModuleSize, string ModuleName, string ImageName, 
 			uint CheckSum, uint TimeDateStamp, ulong InitialThreadHandle, 
 			ulong ThreadDataOffset, ulong StartOffset)
 		{
-			_engine.processId = GetProcessId(Handle);
+			_engine.processId = GetProcessId((uint)Handle);
 		}
 
 		public void ExitProcess(uint ExitCode)

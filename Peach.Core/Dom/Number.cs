@@ -43,7 +43,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Number")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("size", typeof(uint), "Size in bits [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("size", typeof(uint), "size in bits [8, 16, 24, 32, 64]", true)]
 	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	[Serializable]
@@ -91,7 +91,7 @@ namespace Peach.Core.Dom
 			}
 			set
 			{
-				throw new NotSupportedException("A numbers size must be set by Size.");
+				throw new NotSupportedException("A numbers size must be set by size.");
 			}
 		}
 
@@ -141,7 +141,7 @@ namespace Peach.Core.Dom
 			set
 			{
 				if (value == 0)
-					throw new ApplicationException("Size must be > 0");
+					throw new ApplicationException("size must be > 0");
 
 				_size = value;
 

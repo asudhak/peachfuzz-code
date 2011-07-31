@@ -675,7 +675,7 @@ namespace Peach.Core.Cracker
 		{
 			logger.Trace("handleFlags: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			if (data.LengthBits <= (data.TellBits() + element.Size))
+			if (data.LengthBits <= (data.TellBits() + element.size))
 				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.", element, data);
 
 			int startPos = data.TellBits();
@@ -683,20 +683,20 @@ namespace Peach.Core.Cracker
 			foreach (DataElement child in element)
 			{
 				data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
-				data.SeekBits(((Flag)child).Position, System.IO.SeekOrigin.Current);
+				data.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Current);
 				handleFlag(child as Flag, data);
 			}
 
 			// Make sure we land at end of Flags
 			data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
-			data.SeekBits((int)element.Size, System.IO.SeekOrigin.Current);
+			data.SeekBits((int)element.size, System.IO.SeekOrigin.Current);
 		}
 
 		protected void handleFlag(Flag element, BitStream data)
 		{
 			logger.Trace("handleFlag: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			var defaultValue = new Variant(data.ReadBits(element.Size));
+			var defaultValue = new Variant(data.ReadBits(element.size));
 
 			if (element.isToken)
 			    if (defaultValue != element.DefaultValue)

@@ -53,7 +53,8 @@ namespace Peach.Core.Loggers
 			logpath = args["Path"];
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
+		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, 
+			Dictionary<AgentClient, Hashtable> faultData)
 		{
 			string bucketKey = null;
 			string bucketData = null;

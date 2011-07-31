@@ -52,6 +52,43 @@ namespace Peach.Core.Dom
 		{
 			_defaultValue = new Variant(new byte[] { });
 		}
+		
+		public Blob(string name)
+		{
+			this.name = name;
+			_defaultValue = new Variant(new byte[] { });
+		}
+		
+		public Blob(string name, int length)
+		{
+			this.name = name;
+			this.length = length;
+			_defaultValue = new Variant(new byte[] { });
+		}
+		
+		public Blob(string name, int length, Variant defaultValue)
+		{
+			this.name = name;
+			this.length = length;
+			_defaultValue = defaultValue;
+		}
+		
+		public Blob(int length)
+		{
+			_defaultValue = new Variant(new byte[] { });
+			this.length = length;
+		}
+		
+		public Blob(int length, Variant defaultValue)
+		{
+			this.length = length;
+			_defaultValue = defaultValue;
+		}
+
+		public Blob(Variant defaultValue)
+		{
+			_defaultValue = defaultValue;
+		}
 	}
 }
 
