@@ -34,7 +34,7 @@
 //namespace Peach.Core.Mutators
 //{
 //    //[Mutator("Injects BOM markers into default value and longer strings")]
-//    public partial class  UnicodeBomMutator : Mutator 
+//    public partial class UnicodeBomMutator : Mutator
 //    {
 //        // members
 //        //
@@ -80,14 +80,14 @@
 //        //
 //        public override void sequencialMutation(Dom.DataElement obj)
 //        {
-//            //obj.MutatedValue = new Variant(values[pos]);
+//            obj.MutatedValue = new Variant(values[pos]);
 //        }
 
 //        // RANDOM_MUTATION
 //        //
 //        public override void randomMutation(Dom.DataElement obj)
 //        {
-//            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+//            obj.MutatedValue = new Variant(context.random.Choice<byte[]>(values));
 //        }
 //    }
 //}
