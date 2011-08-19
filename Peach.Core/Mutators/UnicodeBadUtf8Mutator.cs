@@ -49,9 +49,23 @@ namespace Peach.Core.Mutators
 
         // BINARY_FORMATTER
         //
-        public void binaryFormatter(int num, int bits, bool strip = false)
+        public Dom.String binaryFormatter(int num, int bits, bool strip = false)
         {
+            if (bits == 0)
+            {
+                bits = 64;
+                strip = true;
+            }
 
+            string temp = null;
+
+            for (int i = bits - 1; i > -1; --i)
+                temp += (Dom.String.)((num >> i) & 1).ToString();
+
+            if (strip)
+                temp = temp.TrimStart('0');
+
+            return (new Dom.String(temp));
         }
 
         // ONE_BYTE
