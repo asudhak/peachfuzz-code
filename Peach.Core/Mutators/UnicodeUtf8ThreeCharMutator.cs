@@ -42,7 +42,7 @@ namespace Peach.Core.Mutators
 
         // CTOR
         //
-        public UnicodeUtf8ThreeCharMutator(/*DataElement obj*/)
+        public UnicodeUtf8ThreeCharMutator(DataElement obj)
         {
             pos = 0;
         }

@@ -38,104 +38,43 @@ namespace Peach.Core.Mutators
 	{
         // members
         //
-        uint pos = 0;
+        uint pos;  
+        byte[][] values = new byte[][] {
+            new byte[] { 0xff, 0xee, 0x11 },
+            new byte[] { 0x11, 0xee, 0xff }
+            };
 
         // CTOR
         //
-        public UnicodeBadUtf8Mutator(/*DataElement obj*/)
+        public UnicodeBadUtf8Mutator(DataElement obj)
         {
             pos = 0;
-        }
-
-        // BINARY_FORMATTER
-        //
-        public Dom.String binaryFormatter(int num, int bits, bool strip = false)
-        {
-            if (bits == 0)
-            {
-                bits = 64;
-                strip = true;
-            }
-
-            string temp = null;
-
-            for (int i = bits - 1; i > -1; --i)
-                temp += (Dom.String.)((num >> i) & 1).ToString();
-
-            if (strip)
-                temp = temp.TrimStart('0');
-
-            return (new Dom.String(temp));
-        }
-
-        // ONE_BYTE
-        //
-        public void utf8OneByte(char c)
-        {
-
-        }
-
-        // TWO_BYTES
-        //
-        public void utf8TwoByte(char c, short mask)
-        {
-
-        }
-
-        // THREE_BYTES
-        //
-        public void utf8ThreeByte(char c, int mask)
-        {
-
-        }
-
-        // FOUR_BYTES
-        //
-        public void utf8FourByte(char c, int mask)
-        {
-
-        }
-
-        // FIVE_BYTES
-        //
-        public void utf8FiveByte(char c, int mask)
-        {
-
-        }
-
-        // SIX_BYTES
-        //
-        public void utf8SixByte(char c, int mask)
-        {
-
-        }
-
-        // SEVEN_BYTES
-        //
-        public void utf8SevenByte(char c, int mask)
-        {
-
         }
 
         // NEXT
         //
         public override void next()
         {
-            
+            pos++;
+            if (pos >= values.Length)
+            {
+                pos = (uint)values.Length - 1;
+                throw new MutatorCompleted();
+            }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 0; }
+            get { return values.Length; }
         }
 
         // SUPPORTED
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj is Dom.String)
+            if (obj is Dom.String && obj.isMutable)
                 return true;
 
             return false;
@@ -145,14 +84,14 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(Dom.DataElement obj)
         {
-            //obj.MutatedValue = new Variant(values[pos]);
+            obj.MutatedValue = new Variant(values[pos]);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(Dom.DataElement obj)
         {
-            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+            obj.MutatedValue = new Variant(context.random.Choice<byte[]>(values));
         }
 	}
 }

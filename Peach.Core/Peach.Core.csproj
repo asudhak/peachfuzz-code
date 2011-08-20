@@ -967,6 +967,7 @@
     <Compile Include="Mutators\StringMutator.Data.cs" />
     <Compile Include="Mutators\UnicodeBadUtf8Mutator.cs" />
     <Compile Include="Mutators\UnicodeBomMutator.cs" />
+    <Compile Include="Mutators\UnicodeBomMutator.Data.cs" />
     <Compile Include="Mutators\UnicodeStringsMutator.cs" />
     <Compile Include="Mutators\UnicodeStringsMutator.Data.cs" />
     <Compile Include="Mutators\UnicodeUtf8ThreeCharMutator.cs" />
