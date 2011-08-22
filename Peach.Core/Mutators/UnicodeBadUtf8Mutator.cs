@@ -39,10 +39,6 @@ namespace Peach.Core.Mutators
         // members
         //
         uint pos;  
-        byte[][] values = new byte[][] {
-            new byte[] { 0xff, 0xee, 0x11 },
-            new byte[] { 0x11, 0xee, 0xff }
-            };
 
         // CTOR
         //
