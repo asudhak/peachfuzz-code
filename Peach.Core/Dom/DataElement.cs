@@ -91,6 +91,10 @@ namespace Peach.Core.Dom
 		/// Mutated value overrides relations.
 		/// </summary>
 		public const uint MUTATE_OVERRIDE_RELATIONS = 0x8;
+        /// <summary>
+        /// Mutated value overrides type transforms.
+        /// </summary>
+        public const uint MUTATE_OVERRIDE_TYPE_TRANSFORM = 0xC;
 		/// <summary>
 		/// Default mutate value
 		/// </summary>

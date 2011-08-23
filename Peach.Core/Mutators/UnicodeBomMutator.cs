@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Injects BOM markers into default value and longer strings")]
+    [Mutator("Injects BOM markers into default value and longer strings")]
     public partial class UnicodeBomMutator : Mutator
     {
         // members
@@ -81,6 +81,7 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(Dom.DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
+			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTATION
@@ -88,6 +89,7 @@ namespace Peach.Core.Mutators
         public override void randomMutation(Dom.DataElement obj)
         {
             obj.MutatedValue = new Variant(context.random.Choice<byte[]>(values));
+			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
     }
 }

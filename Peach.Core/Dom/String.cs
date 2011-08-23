@@ -151,6 +151,9 @@ namespace Peach.Core.Dom
 		{
 			byte[] value = null;
 
+            if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
+                return (BitStream)v;
+
 			if (_type == StringType.Ascii)
 				value = Encoding.ASCII.GetBytes((string)v);
 
