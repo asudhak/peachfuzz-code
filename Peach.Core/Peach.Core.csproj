@@ -972,6 +972,7 @@
     <Compile Include="Mutators\UnicodeStringsMutator.cs" />
     <Compile Include="Mutators\UnicodeStringsMutator.Data.cs" />
     <Compile Include="Mutators\UnicodeUtf8ThreeCharMutator.cs" />
+    <Compile Include="Mutators\UnicodeUtf8ThreeCharMutator.Data.cs" />
     <Compile Include="Mutators\ValidValuesMutator.cs" />
     <Compile Include="Mutators\XmlW3CMutator.cs" />
     <Compile Include="PeachException.cs" />

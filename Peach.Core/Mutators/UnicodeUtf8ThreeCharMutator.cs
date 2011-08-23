@@ -33,8 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Generates long UTF-8 three byte strings")]
-	public partial class UnicodeUtf8ThreeCharMutator : Mutator  // may inherit from UnicodeBadUtf8???
+    [Mutator("Generates bad long UTF-8 three byte strings")]
+	public partial class UnicodeUtf8ThreeCharMutator : Mutator
 	{
         // members
         //
@@ -51,21 +51,26 @@ namespace Peach.Core.Mutators
         //
         public override void next()
         {
-
+            pos++;
+            if (pos >= values.Length)
+            {
+                pos = (uint)values.Length - 1;
+                throw new MutatorCompleted();
+            }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 0; }
+            get { return values.Length; }
         }
 
         // SUPPORTED
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj is Dom.String)
+            if (obj is Dom.String && obj.isMutable)
                 return true;
 
             return false;
@@ -75,14 +80,16 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(Dom.DataElement obj)
         {
-            //obj.MutatedValue = new Variant(values[pos]);
+            obj.MutatedValue = new Variant(values[pos]);
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(Dom.DataElement obj)
         {
-            //obj.MutatedValue = new Variant(context.random.Choice<string>(values));
+            obj.MutatedValue = new Variant(context.random.Choice<byte[]>(values));
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 	}
 }
