@@ -29,36 +29,127 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using Peach.Core.Dom;
+using Ionic.Zip;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
-    //[Hint("type", "Allows string to be mutated by the XmlW3CMutator.")]
-	public class XmlW3CMutator : Mutator    // might inherit from SimpleGenerator???
+    [Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
+    [Hint("type", "Allows string to be mutated by the XmlW3CMutator.")]
+	public class XmlW3CParserTestsMutator : Mutator
 	{
         // members
         //
+        int pos;
+        byte[] zipFileData;
+        string[] values = new string[] { };
+        MemoryStream ms;
+        Stream s;
+        ZipFile zip;
+        ZipEntry entry;
 
         // CTOR
         //
-        public XmlW3CMutator(DataElement obj)
+        public XmlW3CParserTestsMutator(DataElement obj)
         {
+            // some data
+            pos = 0;
+            string temp = null;
+            char[] delim = new char[] { '\r', '\n' };
+            string[] errorValues = new string[] { };
+            string[] invalidValues = new string[] { };
+            string[] nonwfValues = new string[] { };
+            string[] validValues = new string[] { };
 
+            // open the XMLTests.zip file and read it into a buffer
+            using (FileStream fs = new FileStream("../../../Peach.Core/xmltests.zip", FileMode.Open))
+            {
+                int len = (int)fs.Length;
+                zipFileData = new byte[len];
+                fs.Read(zipFileData, 0, len);
+            }
+
+            // create a memory stream of the buffer so that the ZipFile class can be used, then read in the zip file
+            ms = new MemoryStream(zipFileData);
+            zip = ZipFile.Read(ms);
+
+            // pull data from the zip file
+            
+            // ERROR
+            entry = zip["xmltests/error.txt"];
+            s = entry.OpenReader();
+            byte[] data2 = new byte[s.Length];
+            s.Read(data2, 0, data2.Length);
+            temp = Encoding.ASCII.GetString(data2);
+            errorValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+
+            // INVALID
+            entry = zip["xmltests/invalid.txt"];
+            s = entry.OpenReader();
+            data2 = new byte[s.Length];
+            s.Read(data2, 0, data2.Length);
+            temp = Encoding.ASCII.GetString(data2);
+            invalidValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+
+            // NONWF
+            entry = zip["xmltests/nonwf.txt"];
+            s = entry.OpenReader();
+            data2 = new byte[s.Length];
+            s.Read(data2, 0, data2.Length);
+            temp = Encoding.ASCII.GetString(data2);
+            nonwfValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+            
+            // VALID
+            entry = zip["xmltests/valid.txt"];
+            s = entry.OpenReader();
+            data2 = new byte[s.Length];
+            s.Read(data2, 0, data2.Length);
+            temp = Encoding.ASCII.GetString(data2);
+            validValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+
+            // build one array of values out of all of our lists
+            // ORDER IS:
+            // -- 1) error.txt
+            // -- 2) invalid.txt
+            // -- 3) nonwf.txt
+            // -- 4) valid.txt
+            int totalEntries = errorValues.Length + invalidValues.Length + nonwfValues.Length + validValues.Length;
+            string[] tempHolder = new string[totalEntries];
+            errorValues.CopyTo(tempHolder, 0);
+            invalidValues.CopyTo(tempHolder, errorValues.Length);
+            nonwfValues.CopyTo(tempHolder, errorValues.Length + invalidValues.Length);
+            validValues.CopyTo(tempHolder, errorValues.Length + invalidValues.Length + nonwfValues.Length);
+            values = tempHolder;           
+        }
+
+        // DTOR
+        //
+        ~XmlW3CParserTestsMutator()
+        {
+            // clean-up
+            ms.Close();
+            zip.Dispose();
+            s.Close();
         }
 
         // NEXT
         //
         public override void next()
         {
-            
+            pos++;
+            if (pos >= values.Length)
+            {
+                pos = values.Length - 1;
+                throw new MutatorCompleted();
+            }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 0; }
+            get { return values.Length; }
         }
 
         // SUPPORTED
@@ -68,7 +159,7 @@ namespace Peach.Core.Mutators
             if (obj is Dom.String && obj.isMutable)
             {
                 Hint h = null;
-                if (obj.Hints.TryGetValue("type", out h))
+                if (obj.Hints.TryGetValue("XMLhint", out h))
                 {
                     if (h.Value == "xml")
                         return true;
@@ -82,14 +173,102 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(Dom.DataElement obj)
         {
-            
+            string filePath = "xmltests/" + values[pos];
+            entry = zip[filePath];
+            s = entry.OpenReader();
+            byte[] data2 = new byte[s.Length];
+            s.Read(data2, 0, data2.Length);
+            obj.MutatedValue = new Variant(data2);
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(Dom.DataElement obj)
         {
-
+            string filePath = "xmltests/" + context.random.Choice<string>(values);
+            entry = zip[filePath];
+            s = entry.OpenReader();
+            byte[] data2 = new byte[s.Length];
+            s.Read(data2, 0, data2.Length);
+            obj.MutatedValue = new Variant(data2);
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 	}
 }
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------
+
+// OLD CTOR
+//// create a memory stream of the buffer so that the ZipFile class can be used
+//            //using (MemoryStream ms = new MemoryStream(zipFileData))
+//            //{
+//                // pull data from the zip file
+//                //using (ZipFile zip = ZipFile.Read(ms))
+//                //{
+//                    // ERROR
+//                    entry = zip["xmltests/error.txt"];
+//                    //using (Stream s = entry.OpenReader())
+//                    //{
+//                        s = entry.OpenReader();
+//                        byte[] data2 = new byte[s.Length];
+//                        s.Read(data2, 0, data2.Length);
+//                        temp = Encoding.ASCII.GetString(data2);
+//                        errorValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+//                    //}
+
+//                    // INVALID
+//                    entry = zip["xmltests/invalid.txt"];
+//                    //using (Stream s = entry.OpenReader())
+//                    //{
+//                        //byte[] data2 = new byte[s.Length];
+//                    s = entry.OpenReader();
+//                    data2 = new byte[s.Length];
+//                        s.Read(data2, 0, data2.Length);
+//                        temp = Encoding.ASCII.GetString(data2);
+//                        invalidValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+//                    //}
+
+//                    // NONWF
+//                    entry = zip["xmltests/nonwf.txt"];
+//                    //using (Stream s = entry.OpenReader())
+//                    //{
+//                       // byte[] data2 = new byte[s.Length];
+//                    s = entry.OpenReader();
+//                    data2 = new byte[s.Length];
+//                        s.Read(data2, 0, data2.Length);
+//                        temp = Encoding.ASCII.GetString(data2);
+//                        nonwfValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+//                    //}
+
+//                    // VALID
+//                    entry = zip["xmltests/valid.txt"];
+//                    //using (Stream s = entry.OpenReader())
+//                    //{
+//                    s = entry.OpenReader();
+//                    data2 = new byte[s.Length];
+//                        //byte[] data2 = new byte[s.Length];
+//                        s.Read(data2, 0, data2.Length);
+//                        temp = Encoding.ASCII.GetString(data2);
+//                        validValues = temp.Split(delim, StringSplitOptions.RemoveEmptyEntries);
+//                    //}
+//                //}           
+//            //}
+
+// OLD MUTATION
+////using (MemoryStream ms = new MemoryStream(zipFileData))
+//            //{
+//                //using (ZipFile zip = ZipFile.Read(ms))
+//                //{
+//                    string filePath = "xmltests/" + values[pos];
+//                    entry = zip[filePath];
+//                    //using (Stream s = entry.OpenReader())
+//                    //{
+//                    s = entry.OpenReader();
+//                        byte[] data2 = new byte[s.Length];
+//                        s.Read(data2, 0, data2.Length);
+//                        obj.MutatedValue = new Variant(data2);
+//                        obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+//                    //}
+//                //}
+//            //}
