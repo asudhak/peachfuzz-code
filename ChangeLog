@@ -3,8 +3,9 @@ NEW IN WAF 1.6.8
 * Fixed a typo in Utils.py affecting Win32 platforms (copystat) #1029
 * Fixed a minor bug in the Eclipse project generator
 * Fixed a typo that prevented Waf from running on Pypy-trunk
-* Make the xlc/xlc++ compiler detection more accurate by looking at the version number (#1022)
+* Make the xlc/xlc++ compiler detection more accurate by looking at the version number #1022
 * Minor perl, python and ruby tool improvements
+* Better logs for the boost detection #1036
 
 NEW IN WAF 1.6.7
 ----------------
