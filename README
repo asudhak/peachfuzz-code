@@ -31,6 +31,16 @@ $ cp waf demos/c/
 $ cd demos/c/
 $ ./waf configure build
 
+USING GIT
+---------
+
+$ git clone https://code.google.com/p/waf/
+set $HOME/.netrc to read:
+machine code.google.com login user@gmail.com password pass
+$ git remote add code https://code.google.com/p/waf.docs/
+... make a few changes
+$ git push code
+
 ---------------------------
-Thomas Nagy, 2010 (ita)
+Thomas Nagy, 2011 (ita)
 
