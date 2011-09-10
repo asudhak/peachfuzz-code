@@ -3,8 +3,8 @@ WHAT YOU WILL FIND HERE
 
 Waf (1.6)
 
-For the manual: http://waf.googlecode.com/svn/docs/wafbook/single.html
-For the api docs: http://waf.googlecode.com/svn/docs/apidocs/index.html
+For the manual: http://docs.waf.googlecode.com/git/book_16/single.html
+For the api docs: http://docs.waf.googlecode.com/git/apidocs_16/index.html
 For the examples: see the folder demos/
 
 HOW TO CREATE THE WAF SCRIPT

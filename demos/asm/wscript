@@ -5,7 +5,7 @@ def configure(conf):
 	conf.load('gcc gas')
 
 def build(bld):
-	# http://waf.googlecode.com/svn/docs/apidocs/tools/asm.html
+	# http://docs.waf.googlecode.com/git/apidocs_16/tools/asm.html
 	bld.program(
 		source = 'main.c test.S',
 		target = 'asmtest')

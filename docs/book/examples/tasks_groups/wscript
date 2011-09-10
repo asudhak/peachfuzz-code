@@ -3,7 +3,7 @@
 """
 waf configure clean build -j4 --dwidth=800 --dtitle='Parallel build representation for "waf -j4"'
 
-for this to work, make sure to either use waf svn or to create waf with './waf-light --make-waf --tools=compat15,parallel_debug'
+for this to work, make sure to either use waf git or to create waf with './waf-light --make-waf --tools=compat15,parallel_debug'
 """
 
 def options(ctx):

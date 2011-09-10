@@ -61,7 +61,7 @@ def init(*k, **kw):
 		pats.append(('^HEXVERSION(.*)', 'HEXVERSION=%s' % hexver))
 
 		try:
-			rev = k[0].cmd_and_log('svnversion').strip().replace('M', '')
+			rev = k[0].cmd_and_log('git log | grep "^commit" | wc -l', quiet=0).strip()
 			pats.append(('^WAFREVISION(.*)', 'WAFREVISION="%s"' % rev))
 		except:
 			pass
@@ -222,7 +222,7 @@ def sfilter(path):
 
 		if cnt.find('set(') > -1:
 			cnt = 'import sys\nif sys.hexversion < 0x020400f0: from sets import Set as set\n' + cnt
-		cnt = '#! /usr/bin/env python\n# encoding: utf-8\n# WARNING! Do not edit! http://waf.googlecode.com/svn/docs/wafbook/single.html#_obtaining_the_waf_file\n\n' + cnt
+		cnt = '#! /usr/bin/env python\n# encoding: utf-8\n# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file\n\n' + cnt
 
 	return (io.BytesIO(cnt.encode('utf-8')), len(cnt), cnt)
 

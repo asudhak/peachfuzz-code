@@ -17,7 +17,7 @@ HEXVERSION=0x1060800
 WAFVERSION="1.6.8"
 """Constant updated on new releases"""
 
-WAFREVISION="11517"
+WAFREVISION="8"
 """Constant updated on new releases"""
 
 ABI = 98
@@ -55,7 +55,7 @@ waf_dir = ''
 
 local_repo = ''
 """Local repository containing additional Waf tools (plugins)"""
-remote_repo = 'http://waf.googlecode.com/svn/'
+remote_repo = 'http://waf.googlecode.com/git/'
 """
 Remote directory containing downloadable waf tools. The missing tools can be downloaded by using::
 
