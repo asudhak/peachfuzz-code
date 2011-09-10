@@ -210,8 +210,8 @@ Waf is hosted on http://code.google.com/p/waf/source[Google code], and uses Subv
 
 [source,shishell]
 ---------------
-$ svn checkout http://waf.googlecode.com/svn/trunk/ waf-read-only
-$ cd waf-read-only
+$ git clone http://code.google.com/p/waf/ wafdir
+$ cd wafdir
 $ ./waf-light --make-waf
 ---------------
 

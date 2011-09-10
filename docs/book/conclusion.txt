@@ -6,7 +6,7 @@ Due to the amount of features provided by Waf, this book cannot be both complete
 [options="header"]
 |================
 |Link|Description
-|http://waf.googlecode.com/svn/docs/apidocs/index.html|The apidocs
+|http://docs.waf.googlecode.com/git/apidocs_16/index.html|The apidocs
 |http://code.google.com/p/waf|The Waf project page
 |http://code.google.com/p/waf/w/list|The Waf wiki, including the frequently asked questions (FAQ)
 |http://groups.google.com/group/waf-users|The Waf mailing-list

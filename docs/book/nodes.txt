@@ -140,10 +140,10 @@ foo.txt
 foo.txt
 None
 some text
-['.lock-wafbuild', 'foo.txt', 'build', 'wscript', '.svn']
+['.lock-wafbuild', 'foo.txt', 'build', 'wscript', '.git']
 ---------------
 
-NOTE: More methods may be found in the http://waf.googlecode.com/svn/docs/apidocs/index.html[API documentation]
+NOTE: More methods may be found in the http://docs.waf.googlecode.com/git/apidocs_16/index.html[API documentation]
 
 WARNING: These methods are not safe for concurrent access. The node class methods are not meant to be thread-safe.
 
@@ -246,7 +246,7 @@ Waf: Leaving directory `/tmp/nested/build'
 <3> When a configuration set is provided, the absolute path for a directory node is the build directory representation including the variant
 <4> When no configuration set is provided, the directory node absolute path is the one for the source directory
 
-NOTE: Several other methods such as 'relpath_gen' or 'srcpath' are provided. See the http://waf.googlecode.com/svn/docs/apidocs/index.html[API documentation]
+NOTE: Several other methods such as 'relpath_gen' or 'srcpath' are provided. See the http://docs.waf.googlecode.com/git/apidocs_16/index.html[API documentation]
 
 === BuildContext-specific methods
 
