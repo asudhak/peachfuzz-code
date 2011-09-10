@@ -173,10 +173,12 @@ def __boost_get_libs_path(self, *k, **kw):
 		if libs:
 			self.fatal('libs not found in %s' % libs)
 		else:
-			self.fatal('libs not found, \
-					   use --boost-includes=/path/to/boost/lib')
-	return path, files
+			self.fatal('libs not found, use --boost-includes=/path/to/boost/lib')
 
+	self.to_log('Found the boost path in %r with the libraries:' % path)
+	for x in files:
+		self.to_log('    %r' % x)
+	return path, files
 
 @conf
 def boost_get_libs(self, *k, **kw):
@@ -197,6 +199,7 @@ def boost_get_libs(self, *k, **kw):
 	def find_lib(re_lib, files):
 		for file in files:
 			if re_lib.search(file.name):
+				self.to_log('Found boost lib %s' % file)
 				return file
 		return None
 
@@ -216,6 +219,7 @@ def boost_get_libs(self, *k, **kw):
 						'boost_%s%s%s%s' % (lib, toolset, tags, py),
 						'boost_%s%s%s' % (lib, tags, py),
 						'boost_%s%s' % (lib, tags)]:
+			self.to_log('Trying pattern %s' % pattern)
 			file = find_lib(re.compile(pattern), files)
 			if file:
 				libs.append(format_lib_name(file.name))
