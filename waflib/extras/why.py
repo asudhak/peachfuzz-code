@@ -34,7 +34,7 @@ def signature(self):
 	# implicit deps / scanner results
 	if self.scan:
 		try:
-			imp_sig = self.sig_implicit_deps()
+			self.sig_implicit_deps()
 		except Errors.TaskRescan:
 			return self.signature()
 
