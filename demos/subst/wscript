@@ -1,0 +1,32 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+top = '.'
+out = 'bin'
+
+from waflib import Utils
+
+def configure(conf):
+	pass
+
+def build(bld):
+
+	# the test.pc.in is a special case which is always handled
+	bld(source='test.pc.in', VERSION='1.1', LIBS='moo', XPM_LIBS='-lxpm', LIBICONV='-liconv', XPM_CFLAGS='-O3')
+
+	tg = bld(
+		features     = 'subst', # the feature 'subst' overrides the source/target processing
+		source       = 'foo.in', # list of string or nodes
+		target       = 'foo.txt', # list of strings or nodes
+		install_path = '/tmp/uff/', # installation path, optional
+		chmod        = Utils.O755, # installation mode, optional
+		PREFIX       = bld.env.PREFIX, # variables to use in the substitution
+		BINDIR       = bld.env.BINDIR)
+
+	# if you are using an external dict, here is to merge the key/values:
+	dct =  {'BINDIR': '/opt'}
+	tg.__dict__.update(dct)
+
+	# this one is just a reminder that simple files can be created (and a test too)
+	#bld(rule='echo "การไฟ่" > ${TGT}', target='foo.txt')
+

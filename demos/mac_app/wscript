@@ -1,0 +1,36 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# Chris Pickel, 2011
+
+VERSION='0.0.1'
+APPNAME='mac_app_test'
+
+top = '.'
+out = 'build'
+
+def options(opt):
+	opt.load('compiler_c')
+
+def configure(conf):
+	conf.load('compiler_c')
+	conf.env.append_value('FRAMEWORK_COCOA', 'Cocoa')
+
+def build(bld):
+	bld.program(
+		features      = 'c cprogram',
+		target        = 'MacApp',
+		source        = 'sources/main.m',
+		mac_app       = True,
+		mac_plist     = 'Info.plist',
+		mac_resources = 'resources/MainMenu.nib resources/MacApp.icns',
+		use           = 'COCOA',
+		install_path  = '${PREFIX}',
+	)
+
+from waflib import TaskGen
+@TaskGen.extension('.m')
+def m_hook(self, node):
+	"""Alias .m files to be compiled the same as .c files, gcc will do the right thing."""
+	return self.create_compiled_task('c', node)
+
+# -*- indent-tabs-mode: t -*-

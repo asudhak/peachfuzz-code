@@ -1,0 +1,41 @@
+branches
+--------
+
+trunk             the current branch (waf 1.6)
+branches/waf-1.5  waf 1.5 (currently waf 1.5.19)
+branches/waf-1.6  waf 1.6.0 (before waf 1.6)
+tags              a tag is created each time a release is made
+
+docs/apidocs      located at the repository root - contains the apidocs
+                  the files have svn properties so they are browsable online from
+                  http://waf.googlecode.com/svn/docs/apidocs/index.html
+docs/wafbook      the waf book of waf 1.6, browsable online from
+                  http://waf.googlecode.com/svn/docs/wafbook/single.html
+docs/             the waf book of waf 1.5, browsable online from
+                  http://waf.googlecode.com/svn/docs/single.html
+
+other branches contain experimental things, most are unused now
+
+folders in trunk/
+-----------------
+
+trunk contains the source code which is being worked on (currently waf 1.6.3)
+
+waflib            the core library
+waflib/Tools      essential waf tools
+waflib/extras     tools which are not included in the waf file
+                  by default, except for the tool "compat15"
+build_system_kit  examples of build systems that can be created
+                  from waf
+tests             unit tests, most are unused
+playground        experiments and integration tests for the tools in
+                  the folder waflib/extras
+demos             integration tests - the folder can be configured
+                  as a standalone project
+demos/*           integration tests and examples used as documentation
+docs              documentation
+docs/sphinx       extract docstrings from the source code to extract
+                  the apidocs, they are put in the folder "docs/apidocs"
+                  at the root of the repository
+
+

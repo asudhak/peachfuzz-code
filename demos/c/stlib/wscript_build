@@ -1,0 +1,18 @@
+#! /usr/bin/env python
+
+bld.stlib(
+	source   = 'test_staticlib.c',
+	target   = 'my_static_lib')
+
+bld.program(
+	source   = 'main.c',
+	target   = 'test_static_link',
+	includes = '.',
+	use      = 'my_static_lib')
+
+def r1(self):
+	import time
+	time.sleep(1)
+	self.outputs[0].write(' ')
+bld(rule=r1, target='foo.h') # when in doubt, add   before=['c', 'cxx']
+

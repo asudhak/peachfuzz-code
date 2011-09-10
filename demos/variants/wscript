@@ -1,0 +1,82 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# Thomas Nagy, 2010 (ita)
+
+VERSION='0.0.1'
+APPNAME='cc_test'
+
+top = '.'
+out = 'build'
+
+"""
+Variant system for waf 1.6
+
+call for example
+$ waf configure build_debug build_release clean_debug clean_release
+"""
+
+def options(opt):
+	opt.load('compiler_c')
+
+def configure(conf):
+
+	conf.setenv('debug')
+	conf.load('compiler_c')
+	conf.define("A", 1)
+	conf.define("B", 1.1)
+	conf.define("C", "1.1e19", quote=False)
+	# the configuration file must be written in each variant
+	conf.write_config_header('debug/config.h', remove=False)
+
+	conf.setenv('release', env=conf.env.derive()) # start with a copy instead of a new env
+	conf.env.CFLAGS = ['-O2']
+	conf.options.prefix = '/opt' # warning: this changes the options globally
+	conf.load('compiler_c')
+	conf.define('E', 1)
+	conf.write_config_header('release/config.h')
+
+def build(bld):
+
+	# cleaning from the top-level directory might remove
+	# the file 'config.h' from the variants, so we
+	# are forcing the use of *debug or *release commands
+	#
+	# the config set 'debug' is loaded automatically when the 'debug' variant is used
+	if not bld.variant:
+		bld.fatal('call "waf build_debug" or "waf build_release", and try "waf --help"')
+
+	# the includes='.' add the build directory path to the command arguments
+	# (look at the -I flags by using waf -v)
+	bld.program(source='main.c', target='app', includes='.')
+
+	# To use multiple compilers at once, either:
+	#
+	# * use a particular environment from the configuration:
+	#     bld.env = bld.all_envs['debug']
+	#     bld.program(source='main.c', target='app2', includes='.')
+	# * add an 'env' parameter to a particular task generator:
+	#     bld.program(...,  env=bld.all_envs['release'].derive())
+
+# ------ new declaration for variants -------
+#
+# calling 'waf clean_debug debug' will build into another output directory
+# note how "bld.variant" is used to detect the current variant
+#
+
+from waflib.Build import BuildContext, CleanContext, \
+	InstallContext, UninstallContext
+
+for x in 'debug release'.split():
+	for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+		name = y.__name__.replace('Context','').lower()
+		class tmp(y):
+			cmd = name + '_' + x
+			variant = x
+
+def buildall(ctx):
+	import waflib.Options
+	for x in ['build_debug', 'build_release']:
+		waflib.Options.commands.insert(0, x)
+
+
+
