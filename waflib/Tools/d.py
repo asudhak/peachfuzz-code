@@ -28,7 +28,7 @@ class d_header(Task.Task):
 
 class dprogram(link_task):
 	"Link object files into a d program"
-	run_str = '${D_LINKER} ${DLNK_SRC_F}${SRC} ${DLNK_TGT_F:TGT} ${LINKFLAGS} ${RPATH_ST:RPATH} ${DSTLIB_MARKER} ${DSTLIBPATH_ST:STLIBPATH} ${DSTLIB_ST:STLIB} ${DSHLIB_MARKER} ${LIBPATH_ST:LIBPATH} ${DSHLIB_ST:LIB}'
+	run_str = '${D_LINKER} ${LINKFLAGS} ${DLNK_SRC_F}${SRC} ${DLNK_TGT_F:TGT} ${RPATH_ST:RPATH} ${DSTLIB_MARKER} ${DSTLIBPATH_ST:STLIBPATH} ${DSTLIB_ST:STLIB} ${DSHLIB_MARKER} ${LIBPATH_ST:LIBPATH} ${DSHLIB_ST:LIB}'
 	inst_to = '${BINDIR}'
 	chmod   = Utils.O755
 
