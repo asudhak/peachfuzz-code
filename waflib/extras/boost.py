@@ -260,7 +260,7 @@ def check_boost(self, *k, **kw):
 	if not params['lib']:
 		return
 	self.start_msg('Checking boost libs')
-	suffix = params.get('static', 'ST') or ''
+	suffix = params.get('static', None) and 'ST' or ''
 	path, libs = self.boost_get_libs(**params)
 	self.env['%sLIBPATH_%s' % (suffix, var)] = [path]
 	self.env['%sLIB_%s' % (suffix, var)] = libs
