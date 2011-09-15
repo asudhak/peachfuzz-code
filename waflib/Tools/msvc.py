@@ -875,7 +875,7 @@ def exec_response_command(self, cmd, **kw):
 			program = cmd[0] #unquoted program name, otherwise exec_command will fail
 			cmd = [self.quote_response_command(x) for x in cmd]
 			(fd, tmp) = tempfile.mkstemp()
-			os.write(fd, ' '.join(i.replace('\\', '\\\\') for i in cmd[1:]).encode())
+			os.write(fd, '\r\n'.join(i.replace('\\', '\\\\') for i in cmd[1:]).encode())
 			os.close(fd)
 			cmd = [program, '@' + tmp]
 		# no return here, that's on purpose
