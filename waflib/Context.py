@@ -378,11 +378,7 @@ class Context(ctx):
 			p = subprocess.Popen(cmd, **kw)
 			(out, err) = p.communicate()
 		except Exception as e:
-			try:
-				self.to_log(str(err))
-			except:
-				pass
-			raise Errors.WafError('Execution failure', ex=e)
+			raise Errors.WafError('Execution failure: %s' % str(e), ex=e)
 
 		if not isinstance(out, str):
 			out = out.decode(sys.stdout.encoding or 'iso8859-1')
@@ -395,7 +391,7 @@ class Context(ctx):
 			self.to_log('err: %s' % err)
 
 		if p.returncode:
-			e = Errors.WafError('command %r returned %r' % (cmd, p.returncode))
+			e = Errors.WafError('Command %r returned %r' % (cmd, p.returncode))
 			e.returncode = p.returncode
 			e.stderr = err
 			e.stdout = out
