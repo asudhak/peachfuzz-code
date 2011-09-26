@@ -64,7 +64,10 @@ def process_py(self, node):
 	except:
 		return
 
-	if not getattr(self, 'install_path', None):
+	try:
+		if not self.install_path:
+			return
+	except AttributeError:
 		self.install_path = '${PYTHONDIR}'
 
 	# i wonder now why we wanted to do this after the build is over
@@ -136,7 +139,10 @@ def init_pyext(self):
 	Change the values of *cshlib_PATTERN* and *cxxshlib_PATTERN* to remove the
 	*lib* prefix from library names.
 	"""
-	if not getattr(self, 'install_path', None):
+	try:
+		if not self.install_path:
+			return
+	except AttributeError:
 		self.install_path = '${PYTHONARCHDIR}'
 	self.uselib = self.to_list(getattr(self, 'uselib', []))
 	if not 'PYEXT' in self.uselib:
