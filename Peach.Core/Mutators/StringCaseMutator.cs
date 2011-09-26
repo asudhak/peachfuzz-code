@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Changes the case of a string")]
+    //[Mutator("Changes the case of a string")]
 	public class StringCaseMutator : Mutator
 	{
         // members

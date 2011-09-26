@@ -29,10 +29,128 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
-	class ArrayVarianceMutator
+    [Mutator("Change the length of arrays to count - N to count + N")]
+    [Hint("ArrayVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
+	public class ArrayVarianceMutator : Mutator
 	{
+        // members
+        //
+        int n;
+        int arrayCount;
+        int minCount;
+        int maxCount;
+        int currentCount;
+
+        // CTOR
+        //
+        public ArrayVarianceMutator(DataElement obj)
+        {
+            Dom.Array array = (Dom.Array)(obj);
+            var wtf2 = obj.Value.Value;
+            var wtf3 = obj.Value.buff;
+            var arrayElements = ((BitStream)((Variant)(array.InternalValue))).Value;
+            
+
+            n = getN(obj, 50);
+            arrayCount = obj.length;
+            minCount = count - n;
+            maxCount = count + n;
+            name = "ArrayVarianceMutator";
+
+            if (minCount < 0)
+                minCount = 0;
+
+            currentCount = minCount;
+        }
+
+        // GET N
+        //
+        public int getN(DataElement obj, int n)
+        {
+            // check for hint
+            if (obj.Hints.ContainsKey(name + "-N"))
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue(name + "-N", out h))
+                {
+                    try
+                    {
+                        n = Int32.Parse(h.Value);
+                    }
+                    catch
+                    {
+                        throw new PeachException("Expected numerical value for Hint named " + name + "-N");
+                    }
+                }
+            }
+
+            return n;
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            currentCount++;
+            if (currentCount > maxCount)
+                throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return maxCount - minCount; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.Array && obj.isMutable)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+            performMutation(obj, currentCount);
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            int count = context.random.Next(minCount, maxCount);
+            performMutation(obj, count);
+        }
+
+        // PERFORM_MUTATION
+        //
+        public void performMutation(DataElement obj, int count)
+        {
+            int newN = count;
+            Dom.Array arrayHead = (Dom.Array)(obj);
+
+            if (newN < arrayCount)
+            {
+                for (int i = arrayCount - 1; i > n - 1; --i)
+                {
+                    // remove some items
+                }
+            }
+            else if (newN > arrayCount)
+            {
+                // add some items
+            }
+        }
 	}
 }

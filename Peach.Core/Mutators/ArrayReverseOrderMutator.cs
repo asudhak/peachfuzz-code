@@ -29,10 +29,81 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class ArrayReverseOrderMutator
+    //[Mutator("Reverse the order of the array")]
+    class ArrayReverseOrderMutator : ArrayVarianceMutator
 	{
+        // CTOR
+        //
+        public ArrayReverseOrderMutator(DataElement obj) : base(obj)
+        {
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 1; }
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+            performMutation(obj);
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            performMutation(obj);
+        }
+
+        // PERFORM_MUTATION
+        //
+        public void performMutation(DataElement obj)
+        {
+            // pointer to head
+            // save head index
+            // empty array 'items'
+            // parent (???)
+            // loop through the array and add each element to 'items'
+            // loop through 'items' and delete parents (???)
+            // loop through 'items' inversely and add to parent (???)
+
+            Dom.Array arrayHead = (Dom.Array)(obj);
+            int headIdx = arrayHead.parent.IndexOf(arrayHead);
+            Dom.Array items = new Dom.Array();
+            var parent = arrayHead.parent;
+
+            for (int i = 0; i < arrayHead.Count; ++i)
+            {
+                var item = arrayHead[i];
+                items.Add(item);
+            }
+
+            foreach (var item in items)
+            {
+                parent.Remove(parent[item.name]);
+            }
+
+            int x = 0;
+            for (int i = items.Count - 1; i > 0; --i)
+            {
+                parent.Insert(headIdx + x, items[i]);
+                x++;
+            }
+        }
 	}
 }

@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Allows different valid values to be specified")]
+    //[Mutator("Allows different valid values to be specified")]
     [Hint("ValidValues", "Provide additional values for element separeted with ;.")]
 	public class ValidValuesMutator : Mutator
 	{

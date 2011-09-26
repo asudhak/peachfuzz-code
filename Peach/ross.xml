@@ -1,17 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
+	xsi:schemaLocation="http://phed.org/2008/Peach C:\Users\StaBByWork\Desktop\Peach3.0\Peach.Core">
+  <!--http://phed.org/2008/Peach /peach/peach.xsd-->
 
-	<Include ns="default" src="file:defaults.xml"/>
+  <Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
-		<String value="Hello World!" />
+    
+    <!--<String name="string1" value="Hello World!">
+      <Hint name="XMLhint" value="xml" />
+    </String>-->
+       
+    <String name="stringArray" minOccurs="1" maxOccurs="100"/>
+    
 	</DataModel>
 
 	<StateModel name="TheState" initialState="Initial">
 		<State name="Initial">
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
+        <Data>
+          <Field name="stringArray[0]" value="aoeu"/>
+          <Field name="stringArray[1]" value="htns"/>
+          <Field name="stringArray[2]" value="asdf"/>
+        </Data>
 			</Action>
 		</State>
 	</StateModel>
