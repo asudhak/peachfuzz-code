@@ -58,6 +58,19 @@ namespace Peach.Core
             return ret.ToArray();
         }
 
+        public void Shuffle<T>(IEnumerable<T> items)
+        {
+            if (items == null)
+                return;
+
+            List<T> ret = new List<T>();
+
+            for (int i = 0; i < items.Count(); ++i)
+                ret.Add(Choice(items));
+
+            items = ret;
+        }
+
         public int[] Range(int start, int stop, int step)
         {
             if (step == 0)

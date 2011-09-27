@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     //[Mutator("Randomize the order of the array")]
-	class ArrayRandomizeOrderMutator : ArrayVarianceMutator
+	public class ArrayRandomizeOrderMutator : ArrayVarianceMutator
 	{
         // members
         //
@@ -47,6 +47,8 @@ namespace Peach.Core.Mutators
         {
             currentCount = 0;
             n = ((Dom.Array)obj).Count;
+            //n = getN(obj, 50);
+            name = "ArrayRandomizeOrderMutator";
         }
 
         // NEXT
@@ -63,6 +65,16 @@ namespace Peach.Core.Mutators
         public override int count
         {
             get { return n; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.Array && obj.isMutable)
+                return true;
+
+            return false;
         }
 
         // SEQUENCIAL_MUTATION
@@ -94,7 +106,7 @@ namespace Peach.Core.Mutators
                 items.Add(item);
             }
 
-
+            context.random.Shuffle(items);
 
             foreach (var item in items)
             {
@@ -105,6 +117,8 @@ namespace Peach.Core.Mutators
             {
                 parent.Insert(headIdx + i, items[i]);
             }
+
+            obj.MutatedValue = new Variant(parent.GenerateValue());
         }
 	}
 }

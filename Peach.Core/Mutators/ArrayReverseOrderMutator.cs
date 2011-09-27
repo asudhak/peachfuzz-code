@@ -34,12 +34,13 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     //[Mutator("Reverse the order of the array")]
-    class ArrayReverseOrderMutator : ArrayVarianceMutator
+    public class ArrayReverseOrderMutator : ArrayVarianceMutator
 	{
         // CTOR
         //
         public ArrayReverseOrderMutator(DataElement obj) : base(obj)
         {
+            name = "ArrayReverseOrderMutator";
         }
 
         // NEXT
@@ -54,6 +55,16 @@ namespace Peach.Core.Mutators
         public override int count
         {
             get { return 1; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.Array && obj.isMutable)
+                return true;
+
+            return false;
         }
 
         // SEQUENCIAL_MUTATION
@@ -104,6 +115,8 @@ namespace Peach.Core.Mutators
                 parent.Insert(headIdx + x, items[i]);
                 x++;
             }
+
+            obj.MutatedValue = new Variant(parent.GenerateValue());
         }
 	}
 }

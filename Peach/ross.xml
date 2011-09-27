@@ -11,8 +11,9 @@
       <Hint name="XMLhint" value="xml" />
     </String>-->
 
-    <Blob name="blob1" valueType="hex" value="00 01 02 03 04" minOccurs="1" maxOccurs="100"/>
-    <!--<String name="stringArray" minOccurs="1" maxOccurs="100"/>-->
+    <!--<Blob name="blob1" valueType="hex" value="00 01 02 03 04" minOccurs="1" maxOccurs="5"/>-->
+    <String name="stringArray" minOccurs="1" maxOccurs="5"/>
+    <!--<String name="stringArray2" minOccurs="1" maxOccurs="5"/>-->
     
 	</DataModel>
 
@@ -24,6 +25,9 @@
           <Field name="stringArray[0]" value="0"/>
           <Field name="stringArray[1]" value="1"/>
           <Field name="stringArray[2]" value="2"/>
+          <!--<Field name="stringArray2[0]" value="abc"/>
+          <Field name="stringArray2[1]" value="def"/>
+          <Field name="stringArray2[2]" value="aoeu"/>-->
         </Data>
 			</Action>
 		</State>
