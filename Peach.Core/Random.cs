@@ -58,6 +58,16 @@ namespace Peach.Core
             return ret.ToArray();
         }
 
+        public int[] Range(int start, int stop, int step)
+        {
+            if (stop == 0)
+                return null;
+
+            List<int> ret = new List<int>();
+
+            return ret.ToArray();
+        }
+
 		/// <summary>
 		/// Work around for missing method in Mono
 		/// </summary>

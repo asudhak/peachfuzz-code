@@ -34,72 +34,72 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     //[Mutator("ArrayNumericalEdgeCasesMutator")]
-    public class ArrayNumericalEdgeCasesMutator : ArrayVarianceMutator
-    {
-        // members
-        //
-        int[] counts = new int[] { };
-        int currentCount;
-        int countsIndex;
+    //public class ArrayNumericalEdgeCasesMutator : ArrayVarianceMutator
+    //{
+    //    // members
+    //    //
+    //    int[] counts = new int[] { };
+    //    int currentCount;
+    //    int countsIndex;
 
-        // CTOR
-        //
-        public ArrayNumericalEdgeCasesMutator(DataElement obj) : base(obj)
-        {
-            //if self._counts == None:
-            //    ArrayNumericalEdgeCasesMutator._counts = []
-            //    gen = BadPositiveNumbersSmaller()
-            //    try:
-            //        while True:
-            //            self._counts.append(int(gen.getValue()))
-            //            gen.next()
-            //    except:
-            //        pass
+    //    // CTOR
+    //    //
+    //    public ArrayNumericalEdgeCasesMutator(DataElement obj) : base(obj)
+    //    {
+    //        //if self._counts == None:
+    //        //    ArrayNumericalEdgeCasesMutator._counts = []
+    //        //    gen = BadPositiveNumbersSmaller()
+    //        //    try:
+    //        //        while True:
+    //        //            self._counts.append(int(gen.getValue()))
+    //        //            gen.next()
+    //        //    except:
+    //        //        pass
 
-            currentCount = 0;
-            countsIndex = 0;
+    //        currentCount = 0;
+    //        countsIndex = 0;
 
-            //minCount = 0;
-            //maxCount = 0;
+    //        //minCount = 0;
+    //        //maxCount = 0;
 
-            //int countsIndex = 0;
-            //currentCount = counts[countsIndex];
-        }
+    //        //int countsIndex = 0;
+    //        //currentCount = counts[countsIndex];
+    //    }
 
-        // NEXT
-        //
-        public override void next()
-        {
-            countsIndex++;
-            if (countsIndex >= counts.Length)
-                throw new MutatorCompleted();
-        }
+    //    // NEXT
+    //    //
+    //    public override void next()
+    //    {
+    //        countsIndex++;
+    //        if (countsIndex >= counts.Length)
+    //            throw new MutatorCompleted();
+    //    }
 
-        // COUNT
-        //
-        public override int count
-        {
-            get { return counts.Length; }
-        }
+    //    // COUNT
+    //    //
+    //    public override int count
+    //    {
+    //        get { return counts.Length; }
+    //    }
 
-        // SUPPORTED
-        //
-        public new static bool supportedDataElement(DataElement obj)
-        {
-            return true;
-        }
+    //    // SUPPORTED
+    //    //
+    //    public new static bool supportedDataElement(DataElement obj)
+    //    {
+    //        return true;
+    //    }
 
-        // SEQUENCIAL_MUTATION
-        //
-        public override void sequencialMutation(DataElement obj)
-        {
-        }
+    //    // SEQUENCIAL_MUTATION
+    //    //
+    //    public override void sequencialMutation(DataElement obj)
+    //    {
+    //    }
 
-        // RANDOM_MUTATION
-        //
-        public override void randomMutation(DataElement obj)
-        {
-            base.performMutation(obj, 0);
-        }
-    }
+    //    // RANDOM_MUTATION
+    //    //
+    //    public override void randomMutation(DataElement obj)
+    //    {
+    //        //base.performMutation(obj, 0);
+    //    }
+    //}
 }

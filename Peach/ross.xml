@@ -10,8 +10,9 @@
     <!--<String name="string1" value="Hello World!">
       <Hint name="XMLhint" value="xml" />
     </String>-->
-       
-    <String name="stringArray" minOccurs="1" maxOccurs="100"/>
+
+    <Blob name="blob1" valueType="hex" value="00 01 02 03 04" minOccurs="1" maxOccurs="100"/>
+    <!--<String name="stringArray" minOccurs="1" maxOccurs="100"/>-->
     
 	</DataModel>
 
@@ -20,9 +21,9 @@
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
         <Data>
-          <Field name="stringArray[0]" value="aoeu"/>
-          <Field name="stringArray[1]" value="htns"/>
-          <Field name="stringArray[2]" value="asdf"/>
+          <Field name="stringArray[0]" value="0"/>
+          <Field name="stringArray[1]" value="1"/>
+          <Field name="stringArray[2]" value="2"/>
         </Data>
 			</Action>
 		</State>

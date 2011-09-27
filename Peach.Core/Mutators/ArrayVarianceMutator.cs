@@ -50,16 +50,10 @@ namespace Peach.Core.Mutators
         //
         public ArrayVarianceMutator(DataElement obj)
         {
-            Dom.Array array = (Dom.Array)(obj);
-            var wtf2 = obj.Value.Value;
-            var wtf3 = obj.Value.buff;
-            var arrayElements = ((BitStream)((Variant)(array.InternalValue))).Value;
-            
-
             n = getN(obj, 50);
-            arrayCount = obj.length;
-            minCount = count - n;
-            maxCount = count + n;
+            arrayCount = ((Dom.Array)obj).Count;
+            minCount = arrayCount - n;
+            maxCount = arrayCount + n;
             name = "ArrayVarianceMutator";
 
             if (minCount < 0)
@@ -129,28 +123,72 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            int count = context.random.Next(minCount, maxCount);
-            performMutation(obj, count);
+            int rand = context.random.Next(minCount, maxCount);
+            performMutation(obj, rand);
         }
 
         // PERFORM_MUTATION
         //
-        public void performMutation(DataElement obj, int count)
+        public void performMutation(DataElement obj, int num)
         {
-            int newN = count;
-            Dom.Array arrayHead = (Dom.Array)(obj);
+            Dom.Array array = (Dom.Array)(obj);
+            var arrayElements = array.Value.Value;
+            int newN = num; 
 
             if (newN < arrayCount)
             {
-                for (int i = arrayCount - 1; i > n - 1; --i)
+                // foreach item in the list of [arrayCount - 1 -> n - 1] moving by -1
+
+                int startIdx = arrayCount - 1;
+                int stopIdx = newN - 1;
+                int span = Math.Abs(stopIdx - startIdx);
+                int i = startIdx;
+
+                for (int x = 0; x < span; ++x)
                 {
                     // remove some items
+                    var elem = array[i];
+
+                    if (elem == null)
+                        break;
+
+                    elem.parent.Remove(elem);
+                    i--;
                 }
             }
             else if (newN > arrayCount)
             {
                 // add some items
+
+                int headIdx = array.parent.IndexOf(array);
+                var elem = array[arrayCount - 1];
+
+                //if (elem == null)
+                //    throw new OutOfMemoryException();
+
+                try
+                {
+                    //elem.Value = elem.Value. * (newN - arrayCount);
+
+                    int startIdx = arrayCount - 1;
+                    int stopIdx = newN - 1;
+                    int span = Math.Abs(stopIdx - startIdx);
+                    int i = startIdx;
+
+                    for (int x = 0; x < span; ++x)
+                    {
+                        var copy = array;
+                        array.parent.Insert(headIdx + i, copy);
+                        i++;
+                    }
+                }
+                catch
+                {
+                    // throw new OutOfMemoryException();
+                }
             }
+
+            obj.MutatedValue = new Variant(array.parent.GenerateValue());
         }
 	}
 }
