@@ -60,10 +60,28 @@ namespace Peach.Core
 
         public int[] Range(int start, int stop, int step)
         {
-            if (stop == 0)
+            if (step == 0)
                 return null;
 
             List<int> ret = new List<int>();
+            int value = start + step * ret.Count;
+
+            if (step > 0)
+            {
+                while (value < stop)
+                {
+                    ret.Add(value);
+                    value = start + step * ret.Count;
+                }
+            }
+            else
+            {
+                while (value > stop)
+                {
+                    ret.Add(value);
+                    value = start + step * ret.Count;
+                }
+            }
 
             return ret.ToArray();
         }

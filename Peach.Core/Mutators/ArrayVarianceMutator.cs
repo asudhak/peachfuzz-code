@@ -133,27 +133,20 @@ namespace Peach.Core.Mutators
         {
             Dom.Array array = (Dom.Array)(obj);
             var arrayElements = array.Value.Value;
-            int newN = num; 
+            int newN = num;
 
             if (newN < arrayCount)
             {
-                // foreach item in the list of [arrayCount - 1 -> n - 1] moving by -1
+                // remove some items
 
-                int startIdx = arrayCount - 1;
-                int stopIdx = newN - 1;
-                int span = Math.Abs(stopIdx - startIdx);
-                int i = startIdx;
-
-                for (int x = 0; x < span; ++x)
+                foreach (int i in context.random.Range(arrayCount - 1, newN - 1, -1))
                 {
-                    // remove some items
                     var elem = array[i];
 
                     if (elem == null)
                         break;
 
                     elem.parent.Remove(elem);
-                    i--;
                 }
             }
             else if (newN > arrayCount)
@@ -170,16 +163,10 @@ namespace Peach.Core.Mutators
                 {
                     //elem.Value = elem.Value. * (newN - arrayCount);
 
-                    int startIdx = arrayCount - 1;
-                    int stopIdx = newN - 1;
-                    int span = Math.Abs(stopIdx - startIdx);
-                    int i = startIdx;
-
-                    for (int x = 0; x < span; ++x)
+                    foreach (int i in context.random.Range(arrayCount, newN, 1))
                     {
                         var copy = array;
                         array.parent.Insert(headIdx + i, copy);
-                        i++;
                     }
                 }
                 catch
