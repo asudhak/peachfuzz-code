@@ -45,6 +45,7 @@ namespace Peach.Core.Mutators
         public UnicodeUtf8ThreeCharMutator(DataElement obj)
         {
             pos = 0;
+			name = "UnicodeUtf8ThreeCharMutator";
         }
 
         // NEXT

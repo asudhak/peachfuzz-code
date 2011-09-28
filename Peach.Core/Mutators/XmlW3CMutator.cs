@@ -55,6 +55,7 @@ namespace Peach.Core.Mutators
         {
             // some data
             pos = 0;
+            name = "XmlW3CParserTestsMutator";
             string temp = null;
             char[] delim = new char[] { '\r', '\n' };
             string[] errorValues = new string[] { };

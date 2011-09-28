@@ -45,6 +45,7 @@ namespace Peach.Core.Mutators
         public UnicodeBomMutator(DataElement obj)
         {
             pos = 0;
+			name = "UnicodeBomMutator";
         }
 
         // NEXT

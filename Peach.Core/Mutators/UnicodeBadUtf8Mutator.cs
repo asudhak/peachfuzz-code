@@ -45,6 +45,7 @@ namespace Peach.Core.Mutators
         public UnicodeBadUtf8Mutator(DataElement obj)
         {
             pos = 0;
+			name = "UnicodeBadUtf8Mutator";
         }
 
         // NEXT

@@ -41,6 +41,7 @@ namespace Peach.Core.Mutators
 		public StringMutator(DataElement obj)
 		{
 			pos = 0;
+            name = "StringMutator";
 		}
 
         public new static bool supportedDataElement(DataElement obj)

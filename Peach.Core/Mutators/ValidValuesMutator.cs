@@ -47,6 +47,7 @@ namespace Peach.Core.Mutators
         public ValidValuesMutator(DataElement obj)
         {
             pos = 0;
+            name = "ValidValuesMutator";
             generateValues(obj);
         }
 

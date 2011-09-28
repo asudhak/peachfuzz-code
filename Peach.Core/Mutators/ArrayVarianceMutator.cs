@@ -30,11 +30,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
-using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Change the length of arrays to count - N to count + N")]
+    //[Mutator("Change the length of arrays to count - N to count + N")]
     [Hint("ArrayVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class ArrayVarianceMutator : Mutator
 	{
@@ -132,8 +131,9 @@ namespace Peach.Core.Mutators
         public void performMutation(DataElement obj, int num)
         {
             Dom.Array array = (Dom.Array)(obj);
-            var arrayElements = array.Value.Value;
             int newN = num;
+
+            //var e0 = array[0];
 
             if (newN < arrayCount)
             {

@@ -29,10 +29,115 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class FiniteRandomNumbersMutator
+    //[Mutator("Produce a finite number of random numbers for each <Number> element")]
+	public class FiniteRandomNumbersMutator : Mutator
 	{
+        // members
+        //
+        int n;
+        int currentCount;
+        int minValue;
+        uint maxValue;
+
+        // CTOR
+        //
+        public FiniteRandomNumbersMutator(DataElement obj)
+        {
+            n = getN(obj, 50);  // 500 maybe (???)
+            currentCount = 0;
+
+            if (obj is Dom.String)
+            {
+                minValue = 0;
+                maxValue = UInt32.MaxValue;
+            }
+            else
+            {
+                minValue = -n;
+                maxValue = (uint)(n);
+            }
+        }
+
+        // GET N
+        //
+        public int getN(DataElement obj, int n)
+        {
+            // check for hint
+            if (obj.Hints.ContainsKey("FiniteRandomNumbersMutator-N"))
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("FiniteRandomNumbersMutator-N", out h))
+                {
+                    try
+                    {
+                        n = Int32.Parse(h.Value);
+                    }
+                    catch
+                    {
+                        throw new PeachException("Expected numerical value for Hint named FiniteRandomNumbersMutator-N");
+                    }
+                }
+            }
+
+            return n;
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            currentCount++;
+            if (currentCount > n)
+                throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return n; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if ((obj is Dom.String || obj is Dom.Flag) && obj.isMutable)    // size > 8 (???)
+                return true;
+
+            if (obj is Dom.String && obj.isMutable)
+            {
+                if (obj.Hints.ContainsKey("NumericalString"))
+                    return true;
+            }
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+            context.random.Seed = currentCount;
+
+            if (obj is Dom.String)
+                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue).ToString());
+            else
+                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue));
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            if (obj is Dom.String)
+                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue).ToString());
+            else
+                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue));
+        }
 	}
 }

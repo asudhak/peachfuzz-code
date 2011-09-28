@@ -45,6 +45,7 @@ namespace Peach.Core.Mutators
         public UnicodeStringsMutator(DataElement obj)
         {
             pos = 0;
+			name = "UnicodeStringsMutator";
         }
 
         // NEXT

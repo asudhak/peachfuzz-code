@@ -38,9 +38,11 @@ namespace Peach.Core.Mutators
     {
         // members
         //
-        //int[] counts = new int[] { };
-        //int currentCount;
-        //int countsIndex;
+        List<int> counts = new List<int>();
+        int currentCount;
+        int countsIndex;
+        int minCount;
+        int maxCount;
 
         // CTOR
         //
@@ -56,15 +58,15 @@ namespace Peach.Core.Mutators
             //    except:
             //        pass
 
-            //currentCount = 0;
-            //countsIndex = 0;
+            for (int i = 0; i < 10; ++i)
+                counts.Add(i);
 
-            //minCount = 0;
-            //maxCount = 0;
+            countsIndex = 0;
+            minCount = 0;
+            maxCount = 0;
 
-            //int countsIndex = 0;
-            //currentCount = counts[countsIndex];
-
+            currentCount = counts[countsIndex];
+            
             name = "ArrayNumericalEdgeCasesMutator";
         }
 
@@ -72,16 +74,16 @@ namespace Peach.Core.Mutators
         //
         public override void next()
         {
-            //countsIndex++;
-            //if (countsIndex >= counts.Length)
-            throw new MutatorCompleted();
+            countsIndex++;
+            if (countsIndex >= counts.Count)
+                throw new MutatorCompleted();
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 0; }
+            get { return counts.Count; }
         }
 
         // SUPPORTED
@@ -104,7 +106,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            //base.performMutation(obj, 0);
+            base.performMutation(obj, context.random.Choice(counts));
         }
     }
 }

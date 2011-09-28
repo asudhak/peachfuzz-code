@@ -29,10 +29,150 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class NumericalVarianceMutator
+    [Mutator("Produce numbers that are defaultValue - N to defaultValue + N")]
+    [Hint("NumericalVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
+	public class NumericalVarianceMutator : Mutator
 	{
+        // members
+        //
+        int n;
+        int minValue;
+        uint maxValue;
+        int currentCount;
+        int[] values;
+
+        // CTOR
+        //
+        public NumericalVarianceMutator(DataElement obj)
+        {
+            currentCount = 0;
+            n = getN(obj, 50);
+            values = context.random.Range(0 - n, n, 1);
+
+            if (obj is Dom.String)
+            {
+                minValue = Int32.MinValue;
+                maxValue = UInt32.MaxValue;
+            }
+            else
+            {
+                minValue = values[0];
+                maxValue = (uint)(values[values.Length - 1]);
+            }
+
+            int lol = 0;
+        }
+
+        // GET N
+        //
+        public int getN(DataElement obj, int n)
+        {
+            // check for hint
+            if (obj.Hints.ContainsKey("NumericalVarianceMutator-N"))
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("NumericalVarianceMutator-N", out h))
+                {
+                    try
+                    {
+                        n = Int32.Parse(h.Value);
+                    }
+                    catch
+                    {
+                        throw new PeachException("Expected numerical value for Hint named NumericalVarianceMutator-N");
+                    }
+                }
+            }
+
+            return n;
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            currentCount++;
+            if (currentCount > count)
+                throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return values.Length; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.String && obj.isMutable)
+            {
+                if (obj.Hints.ContainsKey("NumericalString"))
+                    return true;
+            }
+
+            // Disable for 8-bit ints, we've tried all values already
+            //if ((obj is Dom.Number || obj is Dom.Flag) && obj.isMutable && sizeof(obj) > 8)
+            //    return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+            // verify the value against min/max values and skip invalid ones
+            long value = 0;
+            while (true)
+            {
+                if (currentCount >= count)
+                    return;
+
+                value = (long)((int)(obj.InternalValue) - values[currentCount]);
+
+                if (value >= minValue && value <= maxValue)
+                {
+                    obj.MutatedValue = new Variant(value);
+                    break;
+                }
+
+                try
+                {
+                    next();
+                }
+                catch
+                {
+                }
+            }
+
+            if (obj is Dom.String)
+                obj.MutatedValue = new Variant(value.ToString());
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            try
+            {
+                int value = context.random.Choice(values);
+                string strValue = ((long)((int)(obj.InternalValue) + value)).ToString();
+
+                if (obj is Dom.String)
+                    obj.MutatedValue = new Variant(strValue);
+            }
+            catch
+            {
+                // OK to skip, another mutator probably changes this value already - (such as datatree)
+                return;
+            }
+        }
 	}
 }
