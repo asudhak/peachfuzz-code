@@ -201,7 +201,57 @@ namespace Peach.Core.Dom
 			else
 				bits.BigEndian();
 
-			bits.WriteBits((ulong)InternalValue, Size);
+			if (Signed)
+			{
+				switch (Size)
+				{
+					case 8:
+						bits.WriteInt8((sbyte)InternalValue);
+						break;
+					case 16:
+						bits.WriteInt16((short)InternalValue);
+						break;
+					case 24:
+						throw new NotImplementedException("Doh!");
+					//bits.WriteInt24((sbyte)InternalValue);
+					//break;
+					case 32:
+						bits.WriteInt32((int)InternalValue);
+						break;
+					case 64:
+						bits.WriteInt64((long)InternalValue);
+						break;
+					default:
+						throw new NotImplementedException("Urm, yah");
+				}
+			}
+			else
+			{
+				switch (Size)
+				{
+					case 8:
+						bits.WriteUInt8((byte)(int)InternalValue);
+						break;
+					case 16:
+						bits.WriteUInt16((ushort)(int)InternalValue);
+						break;
+					case 24:
+						throw new NotImplementedException("Doh!");
+					//bits.WriteInt24((sbyte)InternalValue);
+					//break;
+					case 32:
+						bits.WriteUInt32((uint)(int)InternalValue);
+						break;
+					case 64:
+						bits.WriteUInt64((ulong)InternalValue);
+						break;
+					default:
+						throw new NotImplementedException("Urm, yah");
+				}
+			}
+
+			
+			
 
 			return bits;
 		}
