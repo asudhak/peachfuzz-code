@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Produce a finite number of random numbers for each <Number> element")]
+    [Mutator("Produce a finite number of random numbers for each <Number> element")]
     [Hint("FiniteRandomNumbersMutator-N", "Gets N by checking node for hint, or returns default (5000).")]
 	public class FiniteRandomNumbersMutator : Mutator
 	{

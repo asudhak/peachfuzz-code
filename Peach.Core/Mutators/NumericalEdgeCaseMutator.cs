@@ -33,14 +33,12 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
+    [Mutator("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
     [Hint("NumericalEdgeCaseMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class NumericalEdgeCaseMutator : Mutator
 	{
         // members
         //
-        //int[][] values;
-        //int[] allowedSizes;
         Dictionary<int, int[]> values;
         List<int> allowedSizes;
         int currentCount;
@@ -49,6 +47,7 @@ namespace Peach.Core.Mutators
         ulong maxValue;
         int maxAsInt;
         int n;
+        int size;
         Number objAsNumber;
 
         // CTOR
@@ -62,6 +61,7 @@ namespace Peach.Core.Mutators
             currentCount = 0;
             selfCount = 0;
             objAsNumber = (Number)(obj);
+            size = objAsNumber.Size;
 
             PopulateValues();
 
@@ -77,13 +77,13 @@ namespace Peach.Core.Mutators
             }
 
             // if size is off, pick up the next largest one from allowedSizes
-            if (!allowedSizes.Contains(objAsNumber.Size))
+            if (!allowedSizes.Contains(size))
             {
                 foreach (int sz in allowedSizes)
                 {
-                    if (objAsNumber.Size <= sz)
+                    if (size <= sz)
                     {
-                        objAsNumber.Size = sz;
+                        size = sz;
                         break;
                     }
                 }
@@ -96,10 +96,12 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues()
         {
+            // create the list of values [-n, n]
             List<int> nValues = new List<int>();
             for (int i = -n; i <= n; ++i)
                 nValues.Add(i);
 
+            // apply n-values to each size
             List<int> temp = new List<int>();
             foreach (int sz in allowedSizes)
             {
@@ -141,7 +143,7 @@ namespace Peach.Core.Mutators
         public override void next()
         {
             currentCount++;
-            if (currentCount >= values[objAsNumber.Size].Length)
+            if (currentCount >= count)
                 throw new MutatorCompleted();
         }
 
@@ -155,9 +157,9 @@ namespace Peach.Core.Mutators
                 {
                     int cnt = 0;
 
-                    for (int i = 0; i < values[objAsNumber.Size].Length; ++i)
+                    for (int i = 0; i < values[size].Length; ++i)
                     {
-                        if (values[objAsNumber.Size][i] < minValue || values[objAsNumber.Size][i] > maxAsInt)
+                        if (values[size][i] < minValue || values[size][i] > maxAsInt)
                             continue;
                         cnt++;
                     }
@@ -190,28 +192,20 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             // verify the value against min/max values and skip invalid ones
-            while (true)
+            if (currentCount >= count)
+                return;
+
+            long value = values[size][currentCount];
+
+            if (value >= minValue)
             {
-                long value = values[objAsNumber.Size][currentCount];
-
-                if (value <= minValue || value >= maxAsInt)
-                    break;
-
-                if (obj is Dom.String)
+                if (value >= 0 && (ulong)value >= maxValue)
+                    return;
+                else if (obj is Dom.String)
                     obj.MutatedValue = new Variant(value.ToString());
                 else
                     obj.MutatedValue = new Variant(value);
-
-                try
-                {
-                    next();
-                }
-                catch
-                {
-                    break;
-                }
             }
-
         }
 
         // RANDOM_MUTAION
@@ -219,9 +213,9 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(context.random.Choice(values[objAsNumber.Size]).ToString());
+                obj.MutatedValue = new Variant(context.random.Choice(values[size]).ToString());
             else
-                obj.MutatedValue = new Variant(context.random.Choice(values[objAsNumber.Size]));
+                obj.MutatedValue = new Variant(context.random.Choice(values[size]));
         }
 	}
 }
