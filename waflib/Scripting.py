@@ -126,8 +126,6 @@ def waf_entry_point(current_directory, version, wafdir):
 		traceback.print_exc(file=sys.stdout)
 		sys.exit(2)
 
-	parse_options()
-
 	"""
 	import cProfile, pstats
 	cProfile.runctx("import Scripting; Scripting.run_commands()", {}, {}, 'profi.txt')
@@ -217,10 +215,11 @@ def run_command(cmd_name):
 
 def run_commands():
 	"""
-	Execute the commands that were given on the command-line.
+	Execute the commands that were given on the command-line, and the other options
 	Called by :py:func:`waflib.Scripting.waf_entry_point` during the initialization, and executed
 	after :py:func:`waflib.Scripting.parse_options`.
 	"""
+	parse_options()
 	run_command('init')
 	while Options.commands:
 		cmd_name = Options.commands.pop(0)
