@@ -77,7 +77,7 @@ namespace Peach.Core.Mutators
                     }
                     catch
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + name + "-N");
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
                     }
                 }
             }

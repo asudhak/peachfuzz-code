@@ -34,46 +34,82 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     //[Mutator("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
+    [Hint("NumericalEdgeCaseMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class NumericalEdgeCaseMutator : Mutator
 	{
         // members
         //
-        int[][] values;
-        int[] allowedSizes;
+        //int[][] values;
+        //int[] allowedSizes;
+        Dictionary<int, int[]> values;
+        List<int> allowedSizes;
         int currentCount;
         int selfCount;
-        int minValue;
-        uint maxValue;
-        int size;
+        long minValue;
+        ulong maxValue;
+        int maxAsInt;
         int n;
+        Number objAsNumber;
 
         // CTOR
         //
         public NumericalEdgeCaseMutator(DataElement obj)
         {
-            allowedSizes = new int[] { 8, 16, 32, 64 };
+            allowedSizes = new List<int>() { 8, 16, 32, 64};
+            values = new Dictionary<int, int[]>();
             name = "NumericalEdgeCaseMutator";
             n = getN(obj, 50);
             currentCount = 0;
             selfCount = 0;
+            objAsNumber = (Number)(obj);
 
-            if (values == null)
-                PopulateValues();
+            PopulateValues();
 
             if (obj is Dom.String)
             {
-                size = 32;                      // size is what size of data we are dealing with
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
             else
             {
-                minValue = values[0].Length;
-                maxValue = (uint)(values[values.Length - 1].Length);
-                //size = obj.size;
+                minValue = objAsNumber.MinValue;
+                maxValue = objAsNumber.MaxValue;
             }
 
             // if size is off, pick up the next largest one from allowedSizes
+            if (!allowedSizes.Contains(objAsNumber.Size))
+            {
+                foreach (int sz in allowedSizes)
+                {
+                    if (objAsNumber.Size <= sz)
+                    {
+                        objAsNumber.Size = sz;
+                        break;
+                    }
+                }
+            }
+
+            maxAsInt = (((int)maxValue) + 1) * -1;
+        }
+
+        // POPULATE_VALUES
+        //
+        private void PopulateValues()
+        {
+            List<int> nValues = new List<int>();
+            for (int i = -n; i <= n; ++i)
+                nValues.Add(i);
+
+            List<int> temp = new List<int>();
+            foreach (int sz in allowedSizes)
+            {
+                temp.Clear();
+                for (int i = 0; i < nValues.Count; ++i)
+                {
+                    temp.Add(sz - nValues[i]);
+                }
+                values[sz] = temp.ToArray();
+            }
         }
 
         // GET N
@@ -92,7 +128,7 @@ namespace Peach.Core.Mutators
                     }
                     catch
                     {
-                        throw new PeachException("Expected numerical value for Hint named NumericalEdgeCaseMutator-N");
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
                     }
                 }
             }
@@ -100,18 +136,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // POPULATE_VALUES
-        //
-        private void PopulateValues()
-        {
-        }
-
         // NEXT
         //
         public override void next()
         {
             currentCount++;
-            if (currentCount >= values.Length)
+            if (currentCount >= values[objAsNumber.Size].Length)
                 throw new MutatorCompleted();
         }
 
@@ -125,9 +155,9 @@ namespace Peach.Core.Mutators
                 {
                     int cnt = 0;
 
-                    for (int i = 0; i < values[size].Length; ++i)
+                    for (int i = 0; i < values[objAsNumber.Size].Length; ++i)
                     {
-                        if (values[size][i] < minValue || values[size][i] > maxValue)
+                        if (values[objAsNumber.Size][i] < minValue || values[objAsNumber.Size][i] > maxAsInt)
                             continue;
                         cnt++;
                     }
@@ -162,9 +192,9 @@ namespace Peach.Core.Mutators
             // verify the value against min/max values and skip invalid ones
             while (true)
             {
-                int value = values[size][currentCount];
+                long value = values[objAsNumber.Size][currentCount];
 
-                if ((long)value <= minValue || (long)value >= maxValue)
+                if (value <= minValue || value >= maxAsInt)
                     break;
 
                 if (obj is Dom.String)
@@ -189,9 +219,9 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(context.random.Choice(values[size]).ToString());
+                obj.MutatedValue = new Variant(context.random.Choice(values[objAsNumber.Size]).ToString());
             else
-                obj.MutatedValue = new Variant(context.random.Choice(values[size]));
+                obj.MutatedValue = new Variant(context.random.Choice(values[objAsNumber.Size]));
         }
 	}
 }

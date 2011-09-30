@@ -40,18 +40,21 @@ namespace Peach.Core.Mutators
         // members
         //
         int n;
-        int minValue;
-        uint maxValue;
+        long minValue;
+        ulong maxValue;
         int currentCount;
         int[] values;
+        Number objAsNumber;
 
         // CTOR
         //
         public NumericalVarianceMutator(DataElement obj)
         {
+            objAsNumber = (Number)(obj);
             currentCount = 0;
             n = getN(obj, 50);
-            values = context.random.Range(0 - n, n, 1);
+            name = "NumericalVarianceMutator";
+            PopulateValues();
 
             if (obj is Dom.String)
             {
@@ -60,11 +63,22 @@ namespace Peach.Core.Mutators
             }
             else
             {
-                minValue = values[0];
-                maxValue = (uint)(values[values.Length - 1]);
+                minValue = objAsNumber.MinValue;
+                maxValue = objAsNumber.MaxValue;
             }
+        }
 
-            int lol = 0;
+        // POPULATE_VALUES
+        //
+        private void PopulateValues()
+        {
+            // generate values from [-n, n]
+            List<int> temp = new List<int>();
+
+            for (int i = -n; i <= n; ++i)
+                temp.Add(i);
+
+            values = temp.ToArray();
         }
 
         // GET N
@@ -83,7 +97,7 @@ namespace Peach.Core.Mutators
                     }
                     catch
                     {
-                        throw new PeachException("Expected numerical value for Hint named NumericalVarianceMutator-N");
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
                     }
                 }
             }
@@ -118,8 +132,9 @@ namespace Peach.Core.Mutators
             }
 
             // Disable for 8-bit ints, we've tried all values already
-            //if ((obj is Dom.Number || obj is Dom.Flag) && obj.isMutable && sizeof(obj) > 8)
-            //    return true;
+            if ((obj is Dom.Number || obj is Dom.Flag) && obj.isMutable)
+                if (((Number)obj).Size > 8)
+                    return true;
 
             return false;
         }
@@ -129,31 +144,20 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             // verify the value against min/max values and skip invalid ones
-            long value = 0;
-            while (true)
+            if (currentCount >= count)
+                return;
+
+            long value = ((long)((Variant)objAsNumber.DefaultValue)) - values[currentCount];
+
+            if (value >= minValue)
             {
-                if (currentCount >= count)
+                if (value >= 0 && (ulong)value >= maxValue)
                     return;
-
-                value = (long)((int)(obj.InternalValue) - values[currentCount]);
-
-                if (value >= minValue && value <= maxValue)
-                {
+                else if (obj is Dom.String)
+                    obj.MutatedValue = new Variant(value.ToString());
+                else
                     obj.MutatedValue = new Variant(value);
-                    break;
-                }
-
-                try
-                {
-                    next();
-                }
-                catch
-                {
-                }
             }
-
-            if (obj is Dom.String)
-                obj.MutatedValue = new Variant(value.ToString());
         }
 
         // RANDOM_MUTAION
@@ -163,10 +167,10 @@ namespace Peach.Core.Mutators
             try
             {
                 int value = context.random.Choice(values);
-                string strValue = ((long)((int)(obj.InternalValue) + value)).ToString();
+                long finalValue = ((long)((Variant)objAsNumber.DefaultValue)) - value;
 
                 if (obj is Dom.String)
-                    obj.MutatedValue = new Variant(strValue);
+                    obj.MutatedValue = new Variant(finalValue.ToString());
             }
             catch
             {

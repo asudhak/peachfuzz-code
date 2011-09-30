@@ -6,29 +6,21 @@
   <Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
-    
-    <!--<String name="string1" value="Hello World!">
-      <Hint name="XMLhint" value="xml" />
-    </String>-->
-
-    <!--<Blob name="blob1" valueType="hex" value="00 01 02 03 04" minOccurs="1" maxOccurs="5"/>-->
-    <String name="stringArray" minOccurs="1" maxOccurs="5"/>
-    <!--<String name="stringArray2" minOccurs="1" maxOccurs="5"/>-->
-    
+    <Number name="int1" size="32">
+      <Hint name="NumericalEdgeCaseMutator-N" value="1"/>
+    </Number>
+    <!--<String name="string1" value="40" nullTerminated="true"/>-->
 	</DataModel>
 
 	<StateModel name="TheState" initialState="Initial">
 		<State name="Initial">
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
-        <Data>
-          <Field name="stringArray[0]" value="0"/>
-          <Field name="stringArray[1]" value="1"/>
-          <Field name="stringArray[2]" value="2"/>
-          <!--<Field name="stringArray2[0]" value="abc"/>
-          <Field name="stringArray2[1]" value="def"/>
-          <Field name="stringArray2[2]" value="aoeu"/>-->
-        </Data>
+        <!--<Data>
+          <Field name="stringArray[0]" value="aaa"/>
+          <Field name="stringArray[1]" value="bbb"/>
+          <Field name="stringArray[2]" value="ccc"/>
+        </Data>-->
 			</Action>
 		</State>
 	</StateModel>

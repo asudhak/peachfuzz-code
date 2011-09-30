@@ -34,21 +34,25 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     //[Mutator("Produce a finite number of random numbers for each <Number> element")]
+    [Hint("FiniteRandomNumbersMutator-N", "Gets N by checking node for hint, or returns default (5000).")]
 	public class FiniteRandomNumbersMutator : Mutator
 	{
         // members
         //
         int n;
         int currentCount;
-        int minValue;
-        uint maxValue;
+        long minValue;
+        ulong maxValue;
+        Number objAsNumber;
 
         // CTOR
         //
         public FiniteRandomNumbersMutator(DataElement obj)
         {
-            n = getN(obj, 50);  // 500 maybe (???)
+            objAsNumber = (Number)(obj);
             currentCount = 0;
+            n = getN(obj, 2500);
+            name = "FiniteRandomNumbersMutator";
 
             if (obj is Dom.String)
             {
@@ -57,8 +61,8 @@ namespace Peach.Core.Mutators
             }
             else
             {
-                minValue = -n;
-                maxValue = (uint)(n);
+                minValue = objAsNumber.MinValue;
+                maxValue = objAsNumber.MaxValue;
             }
         }
 
@@ -78,7 +82,7 @@ namespace Peach.Core.Mutators
                     }
                     catch
                     {
-                        throw new PeachException("Expected numerical value for Hint named FiniteRandomNumbersMutator-N");
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
                     }
                 }
             }
@@ -106,8 +110,9 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if ((obj is Dom.String || obj is Dom.Flag) && obj.isMutable)    // size > 8 (???)
-                return true;
+            if ((obj is Dom.Number || obj is Dom.Flag) && obj.isMutable)
+                if (((Number)obj).Size > 8)
+                    return true;
 
             if (obj is Dom.String && obj.isMutable)
             {
@@ -124,20 +129,26 @@ namespace Peach.Core.Mutators
         {
             context.random.Seed = currentCount;
 
+            int maxAsInt = (((int)maxValue) + 1) * -1;
+            int value = context.random.Next((int)minValue, maxAsInt);
+
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue).ToString());
+                obj.MutatedValue = new Variant(value.ToString());
             else
-                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue));
+                obj.MutatedValue = new Variant(value);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
+            int maxAsInt = (((int)maxValue) + 1) * -1;
+            int value = context.random.Next((int)minValue, maxAsInt);
+
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue).ToString());
+                obj.MutatedValue = new Variant(value.ToString());
             else
-                obj.MutatedValue = new Variant(context.random.Next(minValue, (int)maxValue));
+                obj.MutatedValue = new Variant(value);
         }
 	}
 }
