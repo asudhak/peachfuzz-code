@@ -61,7 +61,8 @@ def init(*k, **kw):
 		pats.append(('^HEXVERSION(.*)', 'HEXVERSION=%s' % hexver))
 
 		try:
-			rev = k[0].cmd_and_log('git log | grep "^commit" | wc -l', quiet=0).strip()
+			#rev = k[0].cmd_and_log('git log | grep "^commit" | wc -l', quiet=0).strip()
+			rev = k[0].cmd_and_log("git rev-parse HEAD").strip()
 			pats.append(('^WAFREVISION(.*)', 'WAFREVISION="%s"' % rev))
 		except:
 			pass

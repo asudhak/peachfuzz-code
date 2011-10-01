@@ -325,12 +325,6 @@ class Parallel(object):
 
 			if st == Task.ASK_LATER:
 				self.postpone(tsk)
-				# TODO optimize this
-				if self.outstanding:
-					for x in tsk.run_after:
-						if x in self.outstanding:
-							self.outstanding.remove(x)
-							self.outstanding.insert(0, x)
 			elif st == Task.SKIP_ME:
 				self.processed += 1
 				tsk.hasrun = Task.SKIPPED
