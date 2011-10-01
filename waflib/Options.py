@@ -35,7 +35,7 @@ commands = []
 List of commands to execute extracted from the command-line. This list is consumed during the execution, see :py:func:`waflib.Scripting.run_commands`.
 """
 
-lockfile = os.environ.get('WAFLOCK', '.lock-wafbuild%s' % sys.platform)
+lockfile = os.environ.get('WAFLOCK', '.lock-waf_%s_build' % sys.platform)
 try: cache_global = os.path.abspath(os.environ['WAFCACHE'])
 except KeyError: cache_global = ''
 platform = Utils.unversioned_sys_platform()

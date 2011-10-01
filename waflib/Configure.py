@@ -170,7 +170,7 @@ class ConfigurationContext(Context.Context):
 		if not out:
 			out = getattr(Context.g_module, Context.OUT, None)
 		if not out:
-			out = Options.lockfile.replace('.lock-waf', '')
+			out = Options.lockfile.replace('.lock-waf_%s_' % sys.platform, '').replace('.lock-waf', '')
 
 		self.bldnode = (os.path.isabs(out) and self.root or self.path).make_node(out)
 		self.bldnode.mkdir()
