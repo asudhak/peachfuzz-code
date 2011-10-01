@@ -311,8 +311,7 @@ def check_python_headers(conf):
 			# append include path, unless already given
 			if incstr not in includes:
 				includes.append(incstr)
-		conf.to_log("Include path for Python extensions "
-			       "(found via python-config --includes): %r\n" % (includes,))
+		conf.to_log("Include path for Python extensions (found via python-config --includes): %r\n" % (includes,))
 		env['INCLUDES_PYEXT'] = includes
 		env['INCLUDES_PYEMBED'] = includes
 	else:
@@ -346,8 +345,7 @@ def check_python_headers(conf):
 		# python3.2, oh yeah
 		conf.check_cfg(path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=['--cflags', '--libs'])
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting the python flags from python-config',
-			uselib='PYEMBED', fragment=FRAG,
-				errmsg='Could not find the python development headers elsewhere')
+			uselib='PYEMBED', fragment=FRAG, errmsg='Could not find the python development headers elsewhere')
 
 @conf
 def check_python_version(conf, minver=None):
