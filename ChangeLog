@@ -1,3 +1,6 @@
+NEW IN WAF 1.6.9
+----------------
+
 NEW IN WAF 1.6.8
 ----------------
 * Fixed a typo in Utils.py affecting Win32 platforms (copystat) #1029
@@ -6,6 +9,8 @@ NEW IN WAF 1.6.8
 * Make the xlc/xlc++ compiler detection more accurate by looking at the version number #1022
 * Minor perl, python and ruby tool improvements
 * Better logs for the boost detection #1036
+* Fixed a performance issue in Runner.py #1039
+* Changed the position of the linker flags #1025
 
 NEW IN WAF 1.6.7
 ----------------
