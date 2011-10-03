@@ -19,7 +19,8 @@ def configure(conf):
 	conf.load('compiler_c')
 
 def read_files(task):
-	for x in task.generator.bld.bldnode.ant_glob('**'):
+	# the real build files must be excluded, else they will get rebuilt
+	for x in task.generator.bld.bldnode.ant_glob('**', excl='**/*.o app'):
 		x.sig = Utils.h_file(x.abspath())
 
 def build(bld):
@@ -27,7 +28,7 @@ def build(bld):
 
 	bld(rule='tar xvf ${SRC[0].abspath()}', source='foo.tar', cwd=bld.bldnode.abspath())
 	bld.add_group()
-	bld(rule=read_files, always=True)
+	bld(rule=read_files, always=True, name='read_files')
 	bld.add_group()
 	bld.program(source='aa/main.c', target='app')
 
