@@ -78,5 +78,5 @@ def dynamic_post(self):
 	self.source.extend(self.path.get_bld().ant_glob(self.dynamic_source))
 
 	# if headers are created dynamically, assign signatures manually:
-	# for x in self.path.get_bld().ant_glob('*.h'): x.sig = Utils.md5(x.abspath())
+	# for x in self.path.get_bld().ant_glob('**/*.h'): x.sig = Utils.h_file(x.abspath())
 
