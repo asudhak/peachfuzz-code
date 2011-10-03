@@ -26,7 +26,7 @@ def read_files(task):
 def build(bld):
 	bld.post_mode = Build.POST_LAZY
 
-	bld(rule='tar xvf ${SRC[0].abspath()}', source='foo.tar', cwd=bld.bldnode.abspath())
+	bld(rule='tar xvf ${SRC[0].abspath()}', source='foo.tar')
 	bld.add_group()
 	bld(rule=read_files, always=True, name='read_files')
 	bld.add_group()
