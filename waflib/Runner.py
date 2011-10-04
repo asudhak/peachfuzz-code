@@ -312,13 +312,15 @@ class Parallel(object):
 				st = tsk.runnable_status()
 			except Exception:
 				self.processed += 1
+				tsk.err_msg = Utils.ex_stack()
 				if not self.stop and self.bld.keep:
 					tsk.hasrun = Task.SKIPPED
 					if self.bld.keep == 1:
 						# if -k stop at the first exception, if -kk try to go as far as possible
+						if Logs.verbose:
+							self.error.append(tsk)
 						self.stop = True
 					continue
-				tsk.err_msg = Utils.ex_stack()
 				tsk.hasrun = Task.EXCEPTION
 				self.error_handler(tsk)
 				continue
