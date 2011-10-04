@@ -87,6 +87,8 @@ def check_invalid_constraints(self):
 			for y in Utils.to_list(getattr(cls, x, [])):
 				if not Task.classes.get(y, None):
 					Logs.error('Erroneous order constraint %r=%r on task class %r' % (x, y, cls.__name__))
+		if getattr(cls, 'rule', None):
+			Logs.error('Erroneous attribute "rule" on task class %r (rename to "run_str")' % cls.__name__)
 
 def replace(m):
 	"""
