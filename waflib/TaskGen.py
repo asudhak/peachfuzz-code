@@ -505,10 +505,10 @@ def to_nodes(self, lst, path=None):
 	for x in Utils.to_list(lst):
 		if isinstance(x, str):
 			node = find(x)
-			if not node:
-				raise Errors.WafError("source not found: %r in %r" % (x, self))
 		else:
 			node = x
+		if not node:
+			raise Errors.WafError("source not found: %r in %r" % (x, self))
 		tmp.append(node)
 	return tmp
 

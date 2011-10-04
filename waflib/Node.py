@@ -283,6 +283,12 @@ class Node(object):
 		ret = cur
 
 		try:
+			os.stat(ret.abspath())
+		except:
+			del ret.parent.children[ret.name]
+			return None
+
+		try:
 			while not getattr(cur.parent, 'cache_isdir', None):
 				cur = cur.parent
 				cur.cache_isdir = True
@@ -688,9 +694,7 @@ class Node(object):
 		node = self.get_bld().search(lst)
 		if not node:
 			self = self.get_src()
-			node = self.search(lst)
-			if not node:
-				node = self.find_node(lst)
+			node = self.find_node(lst)
 		try:
 			pat = node.abspath()
 			if os.path.isdir(pat):
