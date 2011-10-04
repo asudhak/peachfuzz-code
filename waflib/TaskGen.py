@@ -346,7 +346,7 @@ def declare_chain(name='', rule=None, reentrant=None, color='BLUE',
 					self.source.append(k)
 			else:
 				for y in keys: # ~ nfile * nextensions :-/
-					if x.endswith(y):
+					if k.name.endswith(y):
 						self.source.append(k)
 						break
 			cnt += 1
