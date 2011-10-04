@@ -52,6 +52,5 @@ TaskGen.declare_chain(
 	rule = proc,
 	ext_in = '.pc',
 	ext_out = '.c',
-	reentrant = True,
 )
 

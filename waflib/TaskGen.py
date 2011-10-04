@@ -293,7 +293,7 @@ class task_gen(object):
 
 		return newobj
 
-def declare_chain(name='', rule=None, reentrant=True, color='BLUE',
+def declare_chain(name='', rule=None, reentrant=None, color='BLUE',
 	ext_in=[], ext_out=[], before=[], after=[], decider=None, scan=None, install_path=None, shell=False):
 	"""
 	Create a new mapping and a task class for processing files by extension.
@@ -303,8 +303,8 @@ def declare_chain(name='', rule=None, reentrant=True, color='BLUE',
 	:type name: string
 	:param rule: function to execute or string to be compiled in a function
 	:type rule: string or function
-	:param reentrant: re-inject the output file in the process
-	:type reentrant: bool
+	:param reentrant: re-inject the output file in the process (done automatically, set to 0 to disable)
+	:type reentrant: int
 	:param color: color for the task output
 	:type color: string
 	:param ext_in: execute the task only after the files of such extensions are created
@@ -332,13 +332,27 @@ def declare_chain(name='', rule=None, reentrant=True, color='BLUE',
 		ext = decider and decider(self, node) or cls.ext_out
 		if ext_in:
 			_ext_in = ext_in[0]
-		out_source = [node.change_ext(x, ext_in=_ext_in) for x in ext]
-		if reentrant:
-			for i in range(reentrant):
-				self.source.append(out_source[i])
-		tsk = self.create_task(name, node, out_source)
+
+		tsk = self.create_task(name, node)
+		cnt = 0
+
+		keys = self.mappings.keys() + self.__class__.mappings.keys()
+		for x in ext:
+			k = node.change_ext(x, ext_in=_ext_in)
+			tsk.outputs.append(k)
+
+			if reentrant != None:
+				if cnt < int(reentrant):
+					self.source.append(k)
+			else:
+				for y in keys: # ~ nfile * nextensions :-/
+					if x.endswith(y):
+						self.source.append(k)
+						break
+			cnt += 1
+
 		if install_path:
-			self.bld.install_files(install_path, out_source)
+			self.bld.install_files(install_path, tsk.outputs)
 		return tsk
 
 	for x in cls.ext_in:
