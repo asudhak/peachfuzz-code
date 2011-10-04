@@ -223,7 +223,10 @@ class Node(object):
 		return lst
 
 	def mkdir(self):
-		"""Create a folder represented by this node"""
+		"""
+		Create a folder represented by this node, creating intermediate nodes as needed
+		An exception will be raised only when the folder cannot possibly exist there
+		"""
 		if getattr(self, 'cache_isdir', None):
 			return
 
