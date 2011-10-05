@@ -12,7 +12,7 @@ try:
 	from queue import Queue
 except:
 	from Queue import Queue
-from waflib import Utils, Task, Errors
+from waflib import Utils, Task, Errors, Logs
 
 GAP = 10
 """
