@@ -38,35 +38,23 @@ namespace Peach.Core.Mutators
     {
         // members
         //
-        List<int> counts = new List<int>();
+        List<int> values = new List<int>();
         int currentCount;
-        int countsIndex;
         int minCount;
         int maxCount;
+        Dom.Array objAsArray;
 
         // CTOR
         //
         public ArrayNumericalEdgeCasesMutator(DataElement obj) : base(obj)
         {
-            //if self._counts == None:
-            //    ArrayNumericalEdgeCasesMutator._counts = []
-            //    gen = BadPositiveNumbersSmaller()
-            //    try:
-            //        while True:
-            //            self._counts.append(int(gen.getValue()))
-            //            gen.next()
-            //    except:
-            //        pass
-
             for (int i = 0; i < 10; ++i)
-                counts.Add(i);
+                values.Add(i);
 
-            countsIndex = 0;
+            currentCount = 0;
             minCount = 0;
             maxCount = 0;
-
-            currentCount = counts[countsIndex];
-            
+            objAsArray = (Dom.Array)(obj);
             name = "ArrayNumericalEdgeCasesMutator";
         }
 
@@ -74,8 +62,8 @@ namespace Peach.Core.Mutators
         //
         public override void next()
         {
-            countsIndex++;
-            if (countsIndex >= counts.Count)
+            currentCount++;
+            if (currentCount >= count)
                 throw new MutatorCompleted();
         }
 
@@ -83,7 +71,7 @@ namespace Peach.Core.Mutators
         //
         public override int count
         {
-            get { return counts.Count; }
+            get { return values.Count; }
         }
 
         // SUPPORTED
@@ -100,13 +88,14 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
+            base.performMutation(obj, values[currentCount]);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-            base.performMutation(obj, context.random.Choice(counts));
+            base.performMutation(obj, context.random.Choice(values));
         }
     }
 }

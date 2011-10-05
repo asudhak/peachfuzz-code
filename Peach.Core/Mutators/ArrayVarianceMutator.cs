@@ -33,26 +33,26 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Change the length of arrays to count - N to count + N")]
+    [Mutator("Change the length of arrays to count - N to count + N")]
     [Hint("ArrayVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class ArrayVarianceMutator : Mutator
 	{
         // members
         //
         int n;
-        int arrayCount;
         int minCount;
         int maxCount;
         int currentCount;
+        Dom.Array objAsArray;
 
         // CTOR
         //
         public ArrayVarianceMutator(DataElement obj)
         {
             n = getN(obj, 50);
-            arrayCount = ((Dom.Array)obj).Count;
-            minCount = arrayCount - n;
-            maxCount = arrayCount + n;
+            objAsArray = (Dom.Array)(obj);
+            minCount = objAsArray.Count - n;
+            maxCount = objAsArray.Count + n;
             name = "ArrayVarianceMutator";
 
             if (minCount < 0)
@@ -122,26 +122,23 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            int rand = context.random.Next(minCount, maxCount);
-            performMutation(obj, rand);
+            performMutation(obj, context.random.Next(minCount, maxCount));
         }
 
         // PERFORM_MUTATION
         //
         public void performMutation(DataElement obj, int num)
         {
-            Dom.Array array = (Dom.Array)(obj);
             int newN = num;
-
             //var e0 = array[0];
 
-            if (newN < arrayCount)
+            if (newN < objAsArray.Count)
             {
                 // remove some items
 
-                foreach (int i in context.random.Range(arrayCount - 1, newN - 1, -1))
+                foreach (int i in context.random.Range(objAsArray.Count - 1, newN - 1, -1))
                 {
-                    var elem = array[i];
+                    var elem = objAsArray[i];
 
                     if (elem == null)
                         break;
@@ -149,12 +146,12 @@ namespace Peach.Core.Mutators
                     elem.parent.Remove(elem);
                 }
             }
-            else if (newN > arrayCount)
+            else if (newN > objAsArray.Count)
             {
                 // add some items
 
-                int headIdx = array.parent.IndexOf(array);
-                var elem = array[arrayCount - 1];
+                int headIdx = objAsArray.parent.IndexOf(objAsArray);
+                var elem = objAsArray[objAsArray.Count - 1];
 
                 //if (elem == null)
                 //    throw new OutOfMemoryException();
@@ -163,10 +160,10 @@ namespace Peach.Core.Mutators
                 {
                     //elem.Value = elem.Value. * (newN - arrayCount);
 
-                    foreach (int i in context.random.Range(arrayCount, newN, 1))
+                    foreach (int i in context.random.Range(objAsArray.Count, newN, 1))
                     {
-                        var copy = array;
-                        array.parent.Insert(headIdx + i, copy);
+                        var copy = objAsArray;
+                        objAsArray.parent.Insert(headIdx + i, copy);
                     }
                 }
                 catch
@@ -175,7 +172,7 @@ namespace Peach.Core.Mutators
                 }
             }
 
-            obj.MutatedValue = new Variant(array.parent.GenerateValue());
+            obj.MutatedValue = new Variant(objAsArray.parent.GenerateValue());
         }
 	}
 }

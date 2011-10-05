@@ -1,33 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach C:\Users\StaBByWork\Desktop\Peach3.0\Peach.Core">
-  <!--http://phed.org/2008/Peach /peach/peach.xsd-->
+	xsi:schemaLocation="http://phed.org/2008/Peach C:\Users\StaBByWork\Desktop\Peach3.0\Peach.Core\peach.xsd">
 
   <Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
-    <Number name="int1" size="32">
-      <Hint name="NumericalEdgeCaseMutator-N" value="1"/>
+    <Number name="num1" size="16" signed="false">
+      <Hint name="SizedNumericalEdgeCasesMutator-N" value="1"/>
+      <Relation type="size" of="myString"/>
     </Number>
-    <!--<String name="string1" value="40" nullTerminated="true"/>-->
+    <String name="myString" value="Hello, World!"/>
+    <!--<String name="stringArray" value="Hello, World!" nullTerminated="true" maxOccurs="100"/>-->
 	</DataModel>
 
 	<StateModel name="TheState" initialState="Initial">
 		<State name="Initial">
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
-        <!--<Data>
-          <Field name="stringArray[0]" value="aaa"/>
-          <Field name="stringArray[1]" value="bbb"/>
-          <Field name="stringArray[2]" value="ccc"/>
-        </Data>-->
+          <!--<Data>
+            <Field name="stringArray[0]" value="aaa"/>
+            <Field name="stringArray[1]" value="bbb"/>
+            <Field name="stringArray[2]" value="ccc"/>
+          </Data>-->
 			</Action>
 		</State>
 	</StateModel>
 
 	<Test name="TheTest">
 		<StateModel ref="TheState"/>
-		<Publisher class="Stdout" />
+		<Publisher class="Stdout"/>
 	</Test>
 
 	<Run name="DefaultRun">
