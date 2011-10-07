@@ -36,7 +36,7 @@ class cxx_qt(waflib.Tools.cxx.cxx):
 			for x in [self.inputs[0]] + deps:
 				if x.read().find('Q_OBJECT') > 0:
 
-					cxx_node = x.parent.get_bld().make_node(x.name.replace('.', '_') + '_moc.cpp')
+					cxx_node = x.parent.get_bld().make_node(x.name.replace('.', '_') + '_%d_moc.cpp' % self.generator.idx)
 					if cxx_node in cache:
 						continue
 					cache[cxx_node] = self
