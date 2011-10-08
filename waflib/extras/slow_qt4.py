@@ -2,8 +2,11 @@
 # Thomas Nagy, 2011 (ita)
 
 """
-Create _moc.cpp files (the builds are 30-40% faster when .moc files are included).
-To use, just create a waf file including slow_qt4 and change the project configuration:
+Create _moc.cpp files
+
+The builds are 30-40% faster when .moc files are included,
+you should NOT use this tool. If you really
+really want it:
 
 def configure(conf):
 	conf.load('compiler_cxx qt4')
@@ -28,7 +31,7 @@ class cxx_qt(waflib.Tools.cxx.cxx):
 
 			try:
 				cache = self.generator.moc_cache
-			except:
+			except AttributeError:
 				cache = self.generator.moc_cache = {}
 
 
