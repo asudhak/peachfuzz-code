@@ -34,11 +34,22 @@ class cxx_qt(waflib.Tools.cxx.cxx):
 			except AttributeError:
 				cache = self.generator.moc_cache = {}
 
-
 			deps = self.generator.bld.node_deps[self.uid()]
 			for x in [self.inputs[0]] + deps:
 				if x.read().find('Q_OBJECT') > 0:
 
+					# process "foo.h -> foo.moc" only if "foo.cpp" is in the sources for the current task generator
+					# this code will work because it is in the main thread (runnable_status)
+					if x.name.rfind('.') > -1: # a .h file...
+						name = x.name[:x.name.rfind('.')]
+						for tsk in self.generator.compiled_tasks:
+							if tsk.inputs and tsk.inputs[0].name.startswith(name):
+								break
+						else:
+							# no corresponding file, continue
+							continue
+
+					# the file foo.cpp could be compiled for a static and a shared library - hence the %number in the name
 					cxx_node = x.parent.get_bld().make_node(x.name.replace('.', '_') + '_%d_moc.cpp' % self.generator.idx)
 					if cxx_node in cache:
 						continue
