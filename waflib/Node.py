@@ -682,7 +682,8 @@ class Node(object):
 				return self.ctx.bldnode.make_node(lst)
 			lst.append(cur.name)
 			cur = cur.parent
-		return self
+		# the file is external to the current project, make a fake root in the current build directory
+		return self.ctx.bldnode.make_node(['__root__'] + lst)
 
 	def find_resource(self, lst):
 		"""
