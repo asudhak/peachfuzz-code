@@ -317,7 +317,7 @@ class Parallel(object):
 					tsk.hasrun = Task.SKIPPED
 					if self.bld.keep == 1:
 						# if -k stop at the first exception, if -kk try to go as far as possible
-						if Logs.verbose or not self.error:
+						if Logs.verbose > 1 or not self.error:
 							self.error.append(tsk)
 						self.stop = True
 					continue
