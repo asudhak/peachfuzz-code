@@ -1,5 +1,8 @@
 NEW IN WAF 1.6.9
 ----------------
+* Fixed the duplicate moc file creation in slow_qt4 #1047
+* Added a workaround to avoid creating include folders not under the build directory #1049
+* Added a default virtual folder structure for out-of-tree build files #1053
 
 NEW IN WAF 1.6.8
 ----------------
