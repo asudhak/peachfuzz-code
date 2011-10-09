@@ -170,9 +170,13 @@ class OptionsContext(Context.Context):
 					elif 'SC_NPROCESSORS_CONF' in os.sysconf_names:
 						count = int(os.sysconf('SC_NPROCESSORS_CONF'))
 				if not count and os.name not in ('nt', 'java'):
-					tmp = self.cmd_and_log(['sysctl', '-n', 'hw.ncpu'])
-					if re.match('^[0-9]+$', tmp):
-						count = int(tmp)
+					try:
+						tmp = self.cmd_and_log(['sysctl', '-n', 'hw.ncpu'])
+					except Exception:
+						pass
+					else:
+						if re.match('^[0-9]+$', tmp):
+							count = int(tmp)
 		if count < 1:
 			count = 1
 		elif count > 1024:
