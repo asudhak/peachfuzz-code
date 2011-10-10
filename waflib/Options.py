@@ -171,7 +171,7 @@ class OptionsContext(Context.Context):
 						count = int(os.sysconf('SC_NPROCESSORS_CONF'))
 				if not count and os.name not in ('nt', 'java'):
 					try:
-						tmp = self.cmd_and_log(['sysctl', '-n', 'hw.ncpu'])
+						tmp = self.cmd_and_log(['sysctl', '-n', 'hw.ncpu'], quiet=0)
 					except Exception:
 						pass
 					else:
