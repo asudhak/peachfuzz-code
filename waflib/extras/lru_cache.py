@@ -12,11 +12,11 @@ For performance reasons, it is called after the build is complete.
 
 We assume that the the folders are written atomically
 
-Do export WAFCACHE=/tmp/foo-xyz where xyz represents the cache size in megabytes
+Do export WAFCACHE=/tmp/foo_xyz where xyz represents the cache size in megabytes
 If missing, the default cache size will be set to 10GB
 """
 
-re_num = re.compile('[a-zA-Z_]+(\d+)')
+re_num = re.compile('[a-zA-Z_-]+(\d+)')
 
 CACHESIZE = 10*1024*1024*1024 # in bytes
 CLEANRATIO = 0.8
