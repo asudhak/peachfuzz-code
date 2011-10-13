@@ -133,7 +133,7 @@ namespace Peach.Core.Mutators
 
         // PERFORM_MUTATION
         //
-        public void performMutation(DataElement obj, int curr)
+        private void performMutation(DataElement obj, int curr)
         {
             var sizeRelation = obj.GetSizeRelation();
             var objOf = sizeRelation.Of;
@@ -156,7 +156,7 @@ namespace Peach.Core.Mutators
             else if (n < size)
             {
                 // shorten the size
-                byte[] data = objOf.Value.buff.ToArray();
+                byte[] data = objOf.Value.Value;
                 List<byte> newData = new List<byte>();
 
                 for (int i = 0; i < n - diff; ++i)
@@ -181,7 +181,7 @@ namespace Peach.Core.Mutators
                 try
                 {
                     // wrap the data to fill size
-                    byte[] data = objOf.Value.buff.ToArray();
+                    byte[] data = objOf.Value.Value;
                     List<byte> newData = new List<byte>();
                     int cnt = 0;
 
@@ -206,6 +206,10 @@ namespace Peach.Core.Mutators
                     objOf.MutatedValue = new Variant("");
                 }
             }
+
+            objOf.Invalidate();
+            var wtf = obj.GenerateValue();
+            int wolol = 0;
         }
 	}
 }

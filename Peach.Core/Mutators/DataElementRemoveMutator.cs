@@ -29,10 +29,56 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class DataElementRemoveMutator
+    //[Mutator("Remove nodes from a data tree")]
+	public class DataElementRemoveMutator : Mutator
 	{
+        // CTOR
+        //
+        public DataElementRemoveMutator(DataElement obj)
+        {
+            name = "DataElementRemoveMutator";
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 1; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj.isMutable)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+            obj.MutatedValue = new Variant("");
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            obj.MutatedValue = new Variant("");
+        }
 	}
 }

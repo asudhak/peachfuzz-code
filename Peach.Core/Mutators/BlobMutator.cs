@@ -29,10 +29,62 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class BlobMutator
+    //[Mutator("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
+	public class BlobMutator : BlobBitFlipperMutator
 	{
+        // members
+        //
+
+        // CTOR
+        //
+        public BlobMutator(DataElement obj) : base(obj)
+        {
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return 1; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj is Dom.Blob && obj.isMutable)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+        }
+
+        // PERFORM_MUTATION
+        //
+        private void performMutation(DataElement obj)
+        {
+        }
 	}
 }

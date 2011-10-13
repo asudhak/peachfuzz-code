@@ -133,7 +133,7 @@ namespace Peach.Core.Mutators
 
         // PERFORM_MUTATION
         //
-        public void performMutation(DataElement obj, int curr)
+        private void performMutation(DataElement obj, int curr)
         {
             var sizeRelation = obj.GetSizeRelation();
             var objOf = sizeRelation.Of;
@@ -141,14 +141,53 @@ namespace Peach.Core.Mutators
             var realSize = objOf.Value.LengthBytes;
             n = size + curr;
 
-            //if (n == 0)
-            //    objOf.Value = new Variant("");
-            //else if (n < size)
-            //    objOf.Value = objOf.getValue()[:n];
-            //else if (size == 0)
-            //    objOf.Value = "A" * n;
-            //else
-            //    objOf.Value = (objOf.getValue() * ((n/realSize)+1))[:n];
+            var diff = size - realSize;
+            var aoeu = n - diff;
+
+            // keep size indicator the same
+            var wtf = obj.GenerateInternalValue();
+            obj.MutatedValue = obj.GenerateInternalValue();
+
+            byte[] data = objOf.Value.Value;
+            List<byte> newData = new List<byte>();
+
+            if (n == 0)
+            {
+                objOf.MutatedValue = new Variant("");
+            }
+            else if (n < realSize)
+            {
+                // shorten the size
+                for (int i = 0; i < n; ++i)
+                    newData.Add(data[i]);
+            }
+            else if (size == 0)
+            {
+                // fill in with A's
+                for (int i = 0; i < n; ++i)
+                    newData.Add((byte)('A'));
+            }
+            else
+            {
+                // wrap the data to fill size
+                int cnt = 0;
+
+                while (cnt < n)
+                {
+                    for (int i = 0; i < data.Length; ++i)
+                    {
+                        newData.Add(data[i]);
+                        cnt++;
+
+                        if (cnt >= n)
+                            break;
+                    }
+                }
+            }
+
+            objOf.MutatedValue = new Variant(newData.ToArray());
+            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
         }
 	}
 }

@@ -88,7 +88,7 @@ namespace Peach.Core.Mutators
 
         // PERFORM_MUTATION
         //
-        public void performMutation(DataElement obj)
+        private void performMutation(DataElement obj)
         {
             int headIdx = objAsArray.parent.IndexOf(objAsArray);
             Dom.Array items = new Dom.Array();

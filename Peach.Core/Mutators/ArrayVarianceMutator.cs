@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Change the length of arrays to count - N to count + N")]
+    //[Mutator("Change the length of arrays to count - N to count + N")]
     [Hint("ArrayVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class ArrayVarianceMutator : Mutator
 	{

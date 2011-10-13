@@ -29,10 +29,88 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	class DataElementDuplicateMutator
+    //[Mutator("Duplicate a node's value starting from 2x - 50x")]
+	public class DataElementDuplicateMutator : Mutator
 	{
+        // members
+        //
+        int currentCount;
+        int maxCount;
+
+        // CTOR
+        //
+        public DataElementDuplicateMutator(DataElement obj)
+        {
+            currentCount = 2;
+            maxCount = 50;
+            name = "DataElementDuplicateMutator";
+        }
+
+        // NEXT
+        //
+        public override void next()
+        {
+            currentCount++;
+            if (currentCount > maxCount)
+                throw new MutatorCompleted();
+        }
+
+        // COUNT
+        //
+        public override int count
+        {
+            get { return maxCount; }
+        }
+
+        // SUPPORTED
+        //
+        public new static bool supportedDataElement(DataElement obj)
+        {
+            if (obj.isMutable)
+                return true;
+
+            return false;
+        }
+
+        // SEQUENCIAL_MUTATION
+        //
+        public override void sequencialMutation(DataElement obj)
+        {
+            byte[] currentValue = obj.Value.Value;
+            List<byte> newData = new List<byte>();
+
+            int cnt = 0;
+            while (cnt < currentCount)
+            {
+                for (int i = 0; i < currentValue.Length; ++i)
+                    newData.Add(currentValue[i]);
+                cnt++;
+            }
+
+            obj.MutatedValue = new Variant(newData.ToArray());
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            byte[] currentValue = obj.Value.Value;
+            List<byte> newData = new List<byte>();
+
+            int cnt = 0;
+            int newCount = context.random.Next(currentCount);
+            while (cnt < newCount)
+            {
+                for (int i = 0; i < currentValue.Length; ++i)
+                    newData.Add(currentValue[i]);
+                cnt++;
+            }
+
+            obj.MutatedValue = new Variant(newData.ToArray());
+        }
 	}
 }

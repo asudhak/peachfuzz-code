@@ -6,10 +6,11 @@
 
 	<DataModel name="TheDataModel">
     <Number name="num1" size="16" signed="false">
-      <Hint name="SizedNumericalEdgeCasesMutator-N" value="1"/>
+      <Hint name="SizedVaranceMutator-N" value="1"/>
+      <Hint name="SizedDataVaranceMutator-N" value="1"/>
       <Relation type="size" of="myString"/>
     </Number>
-    <String name="myString" value="Hello, World!"/>
+    <String name="myString" value="aaaa"/>
     <!--<String name="stringArray" value="Hello, World!" nullTerminated="true" maxOccurs="100"/>-->
 	</DataModel>
 
