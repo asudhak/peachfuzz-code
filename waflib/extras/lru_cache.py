@@ -12,7 +12,7 @@ For performance reasons, it is called after the build is complete.
 
 We assume that the the folders are written atomically
 
-Do export WAFCACHE=/tmp/foo_xyz where xyz represents the cache size in megabytes
+Do export WAFCACHE=/tmp/foo_xyz where xyz represents the cache size in bytes
 If missing, the default cache size will be set to 10GB
 """
 
