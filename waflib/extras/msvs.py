@@ -180,7 +180,7 @@ FILTER_TEMPLATE = '''<?xml version="1.0" encoding="UTF-8"?>
 PROJECT_2008_TEMPLATE = r'''<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject ProjectType="Visual C++" Version="9,00"
 	Name="${xml: project.name}" ProjectGUID="{${project.uuid}}"
-	RootNamespace="" Keyword="MakeFileProj"
+	Keyword="MakeFileProj"
 	TargetFrameworkVersion="196613">
 	<Platforms>
 		${if project.build_properties}
@@ -198,21 +198,22 @@ PROJECT_2008_TEMPLATE = r'''<?xml version="1.0" encoding="UTF-8"?>
 		${for b in project.build_properties}
 		<Configuration
 			Name="${xml: b.configuration}|${xml: b.platform}"
+			IntermediateDirectory="$ConfigurationName"
 			OutputDirectory="${xml: b.outdir}"
-			ConfigurationType="0"
-			InheritedPropertySheets="">
+			ConfigurationType="0">
 			<Tool
 				Name="VCNMakeTool"
 				BuildCommandLine="${xml: project.get_build_command(b)}"
 				ReBuildCommandLine="${xml: project.get_rebuild_command(b)}"
 				CleanCommandLine="${xml: project.get_clean_command(b)}"
 				${if getattr(b, 'output_file', None)}
-				OutPut="${xml: b.output_file}"
+				Output="${xml: b.output_file}"
 				${endif}
 				PreprocessorDefinitions="${xml: b.preprocessor_definitions}"
 				IncludeSearchPath="${xml: b.includes_search_path}"
-				ForceIncludes=""
+				ForcedIncludes=""
 				ForcedUsingAssemblies=""
+				AssemblySearchPath=""
 				CompileAsManaged=""
 			/>
 		</Configuration>
