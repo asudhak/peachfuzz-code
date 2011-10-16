@@ -83,3 +83,7 @@ def init(ctx):
 	#	class tmp(y):
 	#		variant = 'debug'
 
+	# you may also set 'win32/debug' instead of 'debug' (waf 1.6.9)
+	# the commands will be "build_win32/debug" or "build_win32/release"
+	# in this case you may want to modify Options.commands in this "init" function
+
