@@ -9,7 +9,7 @@ ConfigSet: a special dict
 The values put in :py:class:`ConfigSet` must be lists
 """
 
-import copy, re
+import copy, re, os
 from waflib import Logs, Utils
 re_imp = re.compile('^(#)*?([^#=]*?)\ =\ (.*?)$', re.M)
 
@@ -270,6 +270,11 @@ class ConfigSet(object):
 		:param filename: file to use
 		:type filename: string
 		"""
+		try:
+			os.makedirs(os.path.split(filename)[0])
+		except OSError:
+			pass
+
 		f = None
 		try:
 			f = open(filename, 'w')
