@@ -173,31 +173,26 @@ class BuildContext(Context.Context):
 		creates a :py:class:`waflib.ConfigSet.ConfigSet` instance for each ``NAME`` by reading those
 		files. The config sets are then stored in the dict :py:attr:`waflib.Build.BuildContext.allenvs`.
 		"""
-		try:
-			lst = Utils.listdir(self.cache_dir)
-		except OSError as e:
-			if e.errno == errno.ENOENT:
-				raise Errors.WafError('The project was not configured: run "waf configure" first!')
-			else:
-				raise
+		node = self.root.find_node(self.cache_dir)
+		if not node:
+			raise Errors.WafError('The project was not configured: run "waf configure" first!')
+		lst = node.ant_glob('**/*%s' % CACHE_SUFFIX)
 
 		if not lst:
 			raise Errors.WafError('The cache directory is empty: reconfigure the project')
 
-		for fname in lst:
-			if fname.endswith(CACHE_SUFFIX):
-				env = ConfigSet.ConfigSet(os.path.join(self.cache_dir, fname))
-				name = fname[:-len(CACHE_SUFFIX)]
-				self.all_envs[name] = env
-
-				for f in env[CFG_FILES]:
-					newnode = self.root.find_resource(f)
-					try:
-						h = Utils.h_file(newnode.abspath())
-					except (IOError, AttributeError):
-						Logs.error('cannot find %r' % f)
-						h = Utils.SIG_NIL
-					newnode.sig = h
+		for x in lst:
+			name = x.path_from(node).replace(CACHE_SUFFIX, '').replace('\\', '/')
+			env = ConfigSet.ConfigSet(x.abspath())
+			self.all_envs[name] = env
+			for f in env[CFG_FILES]:
+				newnode = self.root.find_resource(f)
+				try:
+					h = Utils.h_file(newnode.abspath())
+				except (IOError, AttributeError):
+					Logs.error('cannot find %r' % f)
+					h = Utils.SIG_NIL
+				newnode.sig = h
 
 	def init_dirs(self):
 		"""
