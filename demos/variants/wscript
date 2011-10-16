@@ -43,7 +43,7 @@ def build(bld):
 	#
 	# the config set 'debug' is loaded automatically when the 'debug' variant is used
 	if not bld.variant:
-		bld.fatal('Call "waf build_debug" or "waf build_release", and look in the comments of the wscript file!')
+		bld.fatal('Call "waf build_debug" or "waf build_release", and read the comments in the wscript file!')
 
 	# the includes='.' add the build directory path to the command arguments
 	# (look at the -I flags by using waf -v)

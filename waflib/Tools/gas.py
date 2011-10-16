@@ -12,5 +12,6 @@ def configure(conf):
 	Find the programs gas/as/gcc and set the variable *AS*
 	"""
 	conf.find_program(['gas', 'as', 'gcc'], var='AS')
-	conf.env.AS_TGT_F = '-o'
+	conf.env.AS_TGT_F = ['-o']
+	conf.env.ASLNK_TGT_F = ['-o']
 	conf.find_ar()
