@@ -43,7 +43,7 @@ def build(bld):
 	#
 	# the config set 'debug' is loaded automatically when the 'debug' variant is used
 	if not bld.variant:
-		bld.fatal('call "waf build_debug" or "waf build_release", and try "waf --help"')
+		bld.fatal('Call "waf build_debug" or "waf build_release", and look in the comments of the wscript file!')
 
 	# the includes='.' add the build directory path to the command arguments
 	# (look at the -I flags by using waf -v)
@@ -63,20 +63,23 @@ def build(bld):
 # note how "bld.variant" is used to detect the current variant
 #
 
-from waflib.Build import BuildContext, CleanContext, \
-	InstallContext, UninstallContext
+def init(ctx):
+	from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
 
-for x in 'debug release'.split():
-	for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
-		name = y.__name__.replace('Context','').lower()
-		class tmp(y):
-			cmd = name + '_' + x
-			variant = x
+	for x in 'debug release'.split():
+		for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+			name = y.__name__.replace('Context','').lower()
+			class tmp(y):
+				cmd = name + '_' + x
+				variant = x
 
-def buildall(ctx):
-	import waflib.Options
-	for x in ['build_debug', 'build_release']:
-		waflib.Options.commands.insert(0, x)
+	def buildall(ctx):
+		import waflib.Options
+		for x in ['build_debug', 'build_release']:
+			waflib.Options.commands.insert(0, x)
 
-
+	## if you work on "debug" 99% of the time, here is how to re-enable "waf build":
+	#for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+	#	class tmp(y):
+	#		variant = 'debug'
 
