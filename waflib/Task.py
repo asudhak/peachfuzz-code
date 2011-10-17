@@ -356,6 +356,8 @@ class TaskBase(evil):
 		msg = getattr(self, 'last_cmd', '')
 		if getattr(self, "err_msg", None):
 			return self.err_msg
+		elif not self.hasrun:
+			return 'task was not executed for some reason'
 		elif self.hasrun == CRASHED:
 			try:
 				return ' -> task failed (exit status %r): %r\n%r' % (self.err_code, self, msg)
@@ -364,7 +366,7 @@ class TaskBase(evil):
 		elif self.hasrun == MISSING:
 			return ' -> missing files: %r\n%r' % (self, msg)
 		else:
-			return '?'
+			return 'invalid status %r' % self.hasrun
 
 	def colon(self, var1, var2):
 		"""
