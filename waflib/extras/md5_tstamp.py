@@ -17,6 +17,7 @@ try: import cPickle
 except: import pickle as cPickle
 from waflib import Utils, Build, Context
 
+STRONGEST = True
 Context.DBFILE += '_md5tstamp'
 
 Build.hash_cache = {}
@@ -46,9 +47,21 @@ def h_file(filename):
 		if Build.hash_cache[filename][0] == str(st.st_mtime):
 			return Build.hash_cache[filename][1]
 	m = Utils.md5()
-	m.update(str(st.st_mtime))
-	m.update(str(st.st_size))
-	m.update(filename)
+
+	if STRONGEST:
+		f = open(filename, 'rb')
+		read = 1
+		try:
+			while read:
+				read = f.read(100000)
+				m.update(read)
+		finally:
+			f.close()
+	else:
+		m.update(str(st.st_mtime))
+		m.update(str(st.st_size))
+		m.update(filename)
+
 	# ensure that the cache is overwritten
 	Build.hash_cache[filename] = (str(st.st_mtime), m.digest())
 	return m.digest()
