@@ -20,11 +20,11 @@ from waflib import Utils, Build, Context
 STRONGEST = True
 Context.DBFILE += '_md5tstamp'
 
-Build.hash_cache = {}
-Build.SAVED_ATTRS.append('hash_cache')
+Build.hashes_md5_tstamp = {}
+Build.SAVED_ATTRS.append('hashes_md5_tstamp')
 def store(self):
 	# save the hash cache as part of the default pickle file
-	self.hash_cache = Build.hash_cache
+	self.hashes_md5_tstamp = Build.hashes_md5_tstamp
 	self.store_real()
 Build.BuildContext.store_real = Build.BuildContext.store
 Build.BuildContext.store      = store
@@ -33,9 +33,9 @@ def restore(self):
 	# we need a module variable for h_file below
 	self.restore_real()
 	try:
-		Build.hash_cache = self.hash_cache or {}
+		Build.hashes_md5_tstamp = self.hashes_md5_tstamp or {}
 	except Exception as e:
-		Build.hash_cache = {}
+		Build.hashes_md5_tstamp = {}
 Build.BuildContext.restore_real = Build.BuildContext.restore
 Build.BuildContext.restore      = restore
 
@@ -43,9 +43,9 @@ def h_file(filename):
 	st = os.stat(filename)
 	if stat.S_ISDIR(st[stat.ST_MODE]): raise IOError('not a file')
 
-	if filename in Build.hash_cache:
-		if Build.hash_cache[filename][0] == str(st.st_mtime):
-			return Build.hash_cache[filename][1]
+	if filename in Build.hashes_md5_tstamp:
+		if Build.hashes_md5_tstamp[filename][0] == str(st.st_mtime):
+			return Build.hashes_md5_tstamp[filename][1]
 	m = Utils.md5()
 
 	if STRONGEST:
@@ -63,7 +63,7 @@ def h_file(filename):
 		m.update(filename)
 
 	# ensure that the cache is overwritten
-	Build.hash_cache[filename] = (str(st.st_mtime), m.digest())
+	Build.hashes_md5_tstamp[filename] = (str(st.st_mtime), m.digest())
 	return m.digest()
 Utils.h_file = h_file
 
