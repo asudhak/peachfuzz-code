@@ -3,11 +3,8 @@
 # Carlos Rafael Giani, 2007 (dv)
 # Thomas Nagy, 2007-2010 (ita)
 
-import os, sys
 from waflib import Utils, Task, Errors
-from waflib.TaskGen import taskgen_method, feature, after_method, before_method, extension
-from waflib.Configure import conf
-from waflib.Tools.ccroot import link_task
+from waflib.TaskGen import taskgen_method, feature, extension
 from waflib.Tools import d_scan, d_config
 from waflib.Tools.ccroot import link_task, stlink_task
 
