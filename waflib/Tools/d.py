@@ -7,7 +7,6 @@ import os, sys
 from waflib import Utils, Task, Errors
 from waflib.TaskGen import taskgen_method, feature, after_method, before_method, extension
 from waflib.Configure import conf
-from waflib.Tools.ccroot import link_task
 from waflib.Tools import d_scan, d_config
 from waflib.Tools.ccroot import link_task, stlink_task
 
@@ -49,23 +48,32 @@ def d_hook(self, node):
 			bld.program(source='foo.d', target='app', generate_headers=True)
 
 	"""
-
-	ext = Utils.destos_to_binfmt(self.env.DEST_OS) == 'pe' and 'obj' or 'o'
-	out = '%s.%d.%s' % (node.name, self.idx, ext)
-	def create_compiled_task(self, name, node):
-		task = self.create_task(name, node, node.parent.find_or_declare(out))
-		try:
-			self.compiled_tasks.append(task)
-		except AttributeError:
-			self.compiled_tasks = [task]
-		return task
-
 	if getattr(self, 'generate_headers', None):
-		tsk = create_compiled_task(self, 'd_with_header', node)
-		tsk.outputs.append(node.change_ext(self.env['DHEADER_ext']))
+		task = self.create_compiled_task('d_with_header', node)
+		header_node = node.change_ext(self.env['DHEADER_ext'])
+		task.outputs.append(header_node)
 	else:
-		tsk = create_compiled_task(self, 'd', node)
-	return tsk
+		if self.env.D2:
+			try:
+				task = self.link_task
+			except AttributeError:
+
+				name = ''
+				for x in self.features:
+					x = 'd2' + x[1:]
+					if x in Task.classes and issubclass(Task.classes[x], link_task):
+						name = x
+						break
+
+				task = self.link_task = self.create_task(name, node)
+				task.add_target(self.target)
+				if 'apply_link' in self.meths:
+					self.meths.remove('apply_link')
+			else:
+				task.inputs.append(node)
+		else:
+			task = self.create_compiled_task('d', node)
+	return task
 
 @taskgen_method
 def generate_header(self, filename, install_path=None):
