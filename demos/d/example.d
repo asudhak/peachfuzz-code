@@ -4,7 +4,7 @@ def.	gh;
 import std.stdio;       // for writefln()
 import std .  // system2;
 system  ;
-static import std.date, std.thread /+ /+ +/ , std.io +/ ;
+//static import std.date, std.thread /+ /+ +/ , std.io +/ ;
 
 import testlib.code;
 

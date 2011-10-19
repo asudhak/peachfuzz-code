@@ -64,7 +64,7 @@ def common_flags_dmd(conf):
 	v['D_HDR_F']           = '%s'
 
 class d2program(ccroot.link_task):
-	run_str = '${D} ${LINKFLAGS} ${D2LINKFLAGS} ${SRC} ${DLNK_TGT_F:TGT}'
+	run_str = '${D} ${LINKFLAGS} ${D2LINKFLAGS} ${DINC_ST:INCPATHS} ${SRC} ${DLNK_TGT_F:TGT} ${DSTLIB_MARKER} ${DSTLIBPATH_ST:STLIBPATH} ${DSTLIB_ST:STLIB} ${DSHLIB_MARKER} ${DLIBPATH_ST:LIBPATH} ${DSHLIB_ST:LIB}'
 	inst_to = '${BINDIR}'
 	chmod   = Utils.O755
 
@@ -96,6 +96,14 @@ def configure(conf):
 			conf.env['d2stlib_PATTERN']   = 'lib%s.a'
 
 		conf.env.D2LINKFLAGS_dstlib = ['-lib']
+		#conf.env.DSTLIBPATH_ST = '-L%s'
+		conf.env.DSTLIB_ST = '-l'
+		conf.env.DINC_ST   = '-I%s'
+
+		v = conf.env
+		v['DSHLIB_MARKER'] = v['DSTLIB_MARKER'] = ''
+		v['DSTLIB_ST'] = v['DSHLIB_ST']         = '-L-l%s'
+		v['DSTLIBPATH_ST'] = v['DLIBPATH_ST']   = '-L-L%s'
 	else:
 		conf.load('ar')
 		conf.load('d')
