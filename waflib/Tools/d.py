@@ -7,6 +7,7 @@ import os, sys
 from waflib import Utils, Task, Errors
 from waflib.TaskGen import taskgen_method, feature, after_method, before_method, extension
 from waflib.Configure import conf
+from waflib.Tools.ccroot import link_task
 from waflib.Tools import d_scan, d_config
 from waflib.Tools.ccroot import link_task, stlink_task
 
@@ -53,26 +54,7 @@ def d_hook(self, node):
 		header_node = node.change_ext(self.env['DHEADER_ext'])
 		task.outputs.append(header_node)
 	else:
-		if self.env.D2:
-			try:
-				task = self.link_task
-			except AttributeError:
-
-				name = ''
-				for x in self.features:
-					x = 'd2' + x[1:]
-					if x in Task.classes and issubclass(Task.classes[x], link_task):
-						name = x
-						break
-
-				task = self.link_task = self.create_task(name, node)
-				task.add_target(self.target)
-				if 'apply_link' in self.meths:
-					self.meths.remove('apply_link')
-			else:
-				task.inputs.append(node)
-		else:
-			task = self.create_compiled_task('d', node)
+		task = self.create_compiled_task('d', node)
 	return task
 
 @taskgen_method
