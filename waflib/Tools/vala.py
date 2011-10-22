@@ -88,6 +88,8 @@ def vala_file(self, node):
 				#gir_path     = '/tmp',
 				#vapi_path = '/tmp',
 				#pkg_name = 'hello'
+				# disable installing of gir, vapi and header
+				#install_binding = False
 			)
 
 
@@ -126,6 +128,7 @@ def vala_file(self, node):
 		valatask.vapi_path = getattr(self, 'vapi_path', '${DATAROOTDIR}/vala/vapi')
 		valatask.pkg_name = getattr(self, 'pkg_name', self.env['PACKAGE'])
 		valatask.header_path = getattr(self, 'header_path', '${INCLUDEDIR}/%s-%s' % (valatask.pkg_name, _get_api_version()))
+		valatask.install_binding = getattr(self, 'install_binding', True)
 
 		valatask.is_lib = False
 		if not 'cprogram' in self.features:
@@ -224,7 +227,7 @@ def vala_file(self, node):
 	valatask.outputs.append(c_node)
 	self.source.append(c_node)
 
-	if valatask.is_lib:
+	if valatask.is_lib and valatask.install_binding:
 		headers_list = [o for o in valatask.outputs if o.suffix() == ".h"]
 		try:
 			self.install_vheader.source = headers_list
