@@ -25,6 +25,10 @@ import shutil, os
 
 from waflib import Build
 class package_cls(Build.InstallContext):
+	# to skip the installation phase (not recommended!):
+	#    use "package_cls(Build.BuildContext)" instead of "package_cls(Build.InstallContext)",
+	#    remove the "init_dirs" method
+	#    change "self.tmp" to "self.bldnode"
 	cmd = 'package'
 	fun = 'build'
 
