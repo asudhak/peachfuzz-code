@@ -4,6 +4,9 @@
 Create a tarball of the build results
 """
 
+APPNAME = 'pack'
+VERSION = '1.0'
+
 top = '.'
 
 def configure(conf):
@@ -46,6 +49,7 @@ class package_cls(Build.InstallContext):
 		# we could mess with multiple inheritance but this is probably unnecessary
 		from waflib import Scripting
 		ctx = Scripting.Dist()
+		#ctx.arch_name = 'fffffuuuu.tar.bz2'
 		ctx.files = files
 		ctx.tar_prefix = ''
 		ctx.base_path = self.tmp
