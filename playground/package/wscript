@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+"""
+Create a tarball of the build results
+"""
+
 top = '.'
 
 def configure(conf):
@@ -11,7 +15,7 @@ def build(bld):
 
 # ---------------------------
 
-import shutil
+import shutil, os
 
 from waflib import Build
 class package_cls(Build.InstallContext):
@@ -25,6 +29,8 @@ class package_cls(Build.InstallContext):
 			shutil.rmtree(self.tmp.abspath())
 		except:
 			pass
+		if os.path.exists(self.tmp.abspath()):
+			self.fatal('Could not remove the temporary directory %r' % self.tmp)
 		self.tmp.mkdir()
 		self.options.destdir = self.tmp.abspath()
 
@@ -37,7 +43,7 @@ class package_cls(Build.InstallContext):
 
 		files = self.tmp.ant_glob('**')
 
-		# we could mess with multiple inheritance but that's probably unnecessary
+		# we could mess with multiple inheritance but this is probably unnecessary
 		from waflib import Scripting
 		ctx = Scripting.Dist()
 		ctx.files = files
@@ -46,4 +52,11 @@ class package_cls(Build.InstallContext):
 		ctx.archive()
 
 		shutil.rmtree(self.tmp.abspath())
+
+# for variants, add command subclasses "package_release", "package_debug", etc
+#def init(ctx):
+#	for x in VARIANTS.split():
+#			class tmp(y):
+#				cmd = package + '_' + x
+#				variant = x
 
