@@ -441,3 +441,21 @@ def set_lib_pat(self):
 	"""Set the fortran flags for linking with the python library"""
 	self.env['fcshlib_PATTERN'] = self.env['pyext_PATTERN']
 
+@conf
+def detect_openmp(self):
+	for x in ['-fopenmp','-openmp','-mp','-xopenmp','-omp','-qsmp=omp']:
+		try:
+			conf.check_fc(
+				msg='Checking for OpenMP flag %s' % x,
+				fragment='program main\n  call omp_get_num_threads()\nend program main',
+				fcflags=x,
+				linkflags=x,
+				uselib_store='OPENMP'
+			)
+		except conf.errors.ConfigurationError:
+			pass
+		else:
+			break
+	else:
+		conf.fatal('Could not find OpenMP')
+
