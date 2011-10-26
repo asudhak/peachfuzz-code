@@ -10,6 +10,7 @@ out = 'build'
 
 def options(opt):
 	opt.load('compiler_c')
+	opt.load('xcode')
 
 def configure(conf):
 	conf.load('compiler_c')
