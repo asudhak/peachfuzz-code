@@ -136,7 +136,7 @@ namespace Peach.Core.Mutators
             {
                 // remove some items
 
-                foreach (int i in context.random.Range(objAsArray.Count - 1, newN - 1, -1))
+                foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, newN - 1, -1))
                 {
                     var elem = objAsArray[i];
 
@@ -160,7 +160,7 @@ namespace Peach.Core.Mutators
                 {
                     //elem.Value = elem.Value. * (newN - arrayCount);
 
-                    foreach (int i in context.random.Range(objAsArray.Count, newN, 1))
+                    foreach (int i in ArrayExtensions.Range(objAsArray.Count, newN, 1))
                     {
                         var copy = objAsArray;
                         objAsArray.parent.Insert(headIdx + i, copy);

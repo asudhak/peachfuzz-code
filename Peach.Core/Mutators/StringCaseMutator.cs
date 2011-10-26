@@ -38,10 +38,8 @@ namespace Peach.Core.Mutators
 	{
         // members
         //
-        public delegate void mutationType(Dom.DataElement obj);
-        mutationType[] mutations = new mutationType[3]; // 1 - LowerCase
-                                                        // 2 - UpperCase
-                                                        // 3 - RandomCase
+        public delegate void mutationType(DataElement obj);
+        mutationType[] mutations = new mutationType[3];
         uint index;
 
         // CTOR
@@ -82,21 +80,21 @@ namespace Peach.Core.Mutators
 
         // SEQUENCIAL_MUTATION
         //
-        public override void sequencialMutation(Dom.DataElement obj)
+        public override void sequencialMutation(DataElement obj)
         {
             mutations[index](obj);
         }
 
         // RANDOM_MUTATION
         //
-        public override void randomMutation(Dom.DataElement obj)
+        public override void randomMutation(DataElement obj)
         {
             context.random.Choice<mutationType>(mutations)(obj);
         }
 
         // MUTATION_LOWER_CASE
         //
-        public void mutationLowerCase(Dom.DataElement obj)
+        public void mutationLowerCase(DataElement obj)
         {
             string str = (string)obj.InternalValue;
             obj.MutatedValue = new Variant(str.ToLower());
@@ -104,7 +102,7 @@ namespace Peach.Core.Mutators
 
         // MUTATION_UPPER_CASE
         //
-        public void mutationUpperCase(Dom.DataElement obj)
+        public void mutationUpperCase(DataElement obj)
         {
             string str = (string)obj.InternalValue;
             obj.MutatedValue = new Variant(str.ToUpper());
@@ -112,7 +110,7 @@ namespace Peach.Core.Mutators
 
         // MUTATION_RANDOM_CASE
         //
-        public void mutationRandomCase(Dom.DataElement obj)
+        public void mutationRandomCase(DataElement obj)
         {
 			StringBuilder builder = new StringBuilder((string)obj.InternalValue);
             char[] cases = new char[2];

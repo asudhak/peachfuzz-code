@@ -29,34 +29,45 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Slides a DWORD through the blob")]
+    [Mutator("Slides a DWORD through the blob")]
+    [Hint("BlobDWORDSliderMutator", "Ability to disable this mutator.")]
 	public class BlobDWORDSliderMutator : Mutator
 	{
         // members
         //
+        int position;
+        int length;
+        UInt32 DWORD;
 
         // CTOR
         //
         public BlobDWORDSliderMutator(DataElement obj)
         {
+            position = 0;
+            DWORD = 0xFFFFFFFF;
+            length = obj.Value.Value.Length;
+            name = "BlobDWORDSliderMutator";
         }
 
         // NEXT
         //
         public override void next()
         {
-            throw new MutatorCompleted();
+            position++;
+            if (position >= length)
+                throw new MutatorCompleted();
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 1; }
+            get { return length; }
         }
 
         // SUPPORTED
@@ -64,8 +75,15 @@ namespace Peach.Core.Mutators
         public new static bool supportedDataElement(DataElement obj)
         {
             if (obj is Dom.Blob && obj.isMutable)
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue("BlobDWORDSliderMutator", out h))
+                {
+                    if (h.Value == "off")
+                        return false;
+                }
                 return true;
-
+            }
             return false;
         }
 
@@ -73,18 +91,56 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
+            performMutation(obj, position);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
+            performMutation(obj, context.random.Next(length - 1));
         }
 
         // PERFORM_MUTATION
         //
-        private void performMutation(DataElement obj)
+        private void performMutation(DataElement obj, int pos)
         {
+            byte[] data = obj.Value.Value;
+            byte[] inject = new byte[] {};
+
+            if (pos >= length)
+                return;
+
+            int remaining = length - pos;
+
+            if (remaining == 1)
+            {
+                byte temp = (byte)(DWORD & 0x000000FF);
+                byte[] t = { temp };
+                inject = t;
+            }
+            else if (remaining == 2)
+            {
+                ushort temp = (ushort)(DWORD & 0x0000FFFF);
+                inject = BitConverter.GetBytes(temp);
+            }
+            else if (remaining == 3)
+            {
+                ushort temp1 = (ushort)((DWORD & 0x00FF0000) >> 16);
+                byte temp2 = (byte)(DWORD & 0xFFFF0000);
+                ushort temp = (ushort)(temp1 | temp2);
+                inject = BitConverter.GetBytes(temp);
+            }
+            else
+            {
+                inject = BitConverter.GetBytes(DWORD);
+            }
+
+            var pt1 = ArrayExtensions.Slice(data, 0, position);
+            var pt2 = ArrayExtensions.Slice(data, position + inject.Length, data.Length);
+
+            obj.MutatedValue = new Variant(ArrayExtensions.Combine(pt1, inject, pt2));
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 	}
 }
