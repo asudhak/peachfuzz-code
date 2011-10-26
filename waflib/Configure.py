@@ -111,7 +111,8 @@ class ConfigurationContext(Context.Context):
 
 	def setenv(self, name, env=None):
 		"""
-		Set a new config set for conf.env
+		Set a new config set for conf.env. If a config set of that name already exists,
+		recall it without modification.
 
 		The name is the filename prefix to save to ``c4che/NAME_cache.py``, and it
 		is also used as *variants* by the build commands.
@@ -130,12 +131,13 @@ class ConfigurationContext(Context.Context):
 		:param env: ConfigSet to copy, or an empty ConfigSet is created
 		:type env: :py:class:`waflib.ConfigSet.ConfigSet`
 		"""
-		if not env:
-			env = ConfigSet.ConfigSet()
-			self.prepare_env(env)
-		else:
-			env = env.derive()
-		self.all_envs[name] = env
+		if name not in self.all_envs or env:
+			if not env:
+				env = ConfigSet.ConfigSet()
+				self.prepare_env(env)
+			else:
+				env = env.derive()
+			self.all_envs[name] = env
 		self.variant = name
 
 	def get_env(self):

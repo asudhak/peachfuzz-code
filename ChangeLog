@@ -5,6 +5,7 @@ NEW IN WAF 1.6.9
 * Added a workaround to avoid creating include folders not under the build directory #1049
 * Added a default virtual folder structure for out-of-tree build files #1053
 * Added a way to set variants containing /, for example linux/debug
+* Added a more intuitive behaviour for conf.setenv() #1062
 
 NEW IN WAF 1.6.8
 ----------------
