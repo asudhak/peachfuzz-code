@@ -19,6 +19,8 @@ namespace PeachFuzzBang
 {
 	public partial class FormMain : Form
 	{
+		Thread thread = null;
+
 		public FormMain()
 		{
 			InitializeComponent();
@@ -137,7 +139,7 @@ namespace PeachFuzzBang
 			dom.runs.Add(run.name, run);
 
 			// START FUZZING!!!!!
-			Thread thread = new Thread(new ParameterizedThreadStart(Run));
+			thread = new Thread(new ParameterizedThreadStart(Run));
 			thread.Start(dom);
 		}
 
@@ -183,6 +185,12 @@ namespace PeachFuzzBang
 				return;
 
 			textBoxPitFileName.Text = dialog.FileName;
+		}
+
+		private void button6_Click(object sender, EventArgs e)
+		{
+			thread.Abort();
+			thread = null;
 		}
 	}
 }

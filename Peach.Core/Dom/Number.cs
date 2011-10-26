@@ -230,17 +230,17 @@ namespace Peach.Core.Dom
 				switch (Size)
 				{
 					case 8:
-						bits.WriteUInt8((byte)(int)InternalValue);
+						bits.WriteUInt8((byte)(uint)InternalValue);
 						break;
 					case 16:
-						bits.WriteUInt16((ushort)(int)InternalValue);
+						bits.WriteUInt16((ushort)(uint)InternalValue);
 						break;
 					case 24:
 						throw new NotImplementedException("Doh!");
 					//bits.WriteInt24((sbyte)InternalValue);
 					//break;
 					case 32:
-						bits.WriteUInt32((uint)(int)InternalValue);
+						bits.WriteUInt32((uint)InternalValue);
 						break;
 					case 64:
 						bits.WriteUInt64((ulong)InternalValue);

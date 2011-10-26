@@ -129,7 +129,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ionic.Zip">
-      <HintPath>..\3rdParty\DotNetZipLib-v1.7\Debug\Ionic.Zip.dll</HintPath>
+      <HintPath>..\3rdParty\DotNetZipLib-v1.7\Release\Ionic.Zip.dll</HintPath>
     </Reference>
     <Reference Include="IronRuby, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

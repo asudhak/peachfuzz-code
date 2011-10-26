@@ -164,44 +164,101 @@ namespace Peach.Core
 		{
 			if (v == null)
 				throw new ApplicationException("Parameter v is null");
-
-			switch (v._type)
+			unchecked
 			{
-				case VariantType.Int:
-					return v._valueInt;
-				case VariantType.Long:
-					if (v._valueLong > int.MaxValue || v._valueLong < int.MinValue)
-						throw new ApplicationException("Converting this long to an int would cause loss of data");
+				switch (v._type)
+				{
+					case VariantType.Int:
+						return v._valueInt;
+					case VariantType.Long:
+						if (v._valueLong > int.MaxValue || v._valueLong < int.MinValue)
+							throw new ApplicationException("Converting this long to an int would cause loss of data");
 
-					return (int)v._valueLong;
-				case VariantType.ULong:
-					if (v._valueULong > int.MaxValue)
-						throw new ApplicationException("Converting this ulong to an int would cause loss of data");
+						return (int)v._valueLong;
+					case VariantType.ULong:
+						if (v._valueULong > int.MaxValue)
+							throw new ApplicationException("Converting this ulong to an int would cause loss of data");
 
-					return (int)v._valueULong;
-				case VariantType.String:
-					if (v._valueString == string.Empty)
-						return 0;
+						return (int)v._valueULong;
+					case VariantType.String:
+						if (v._valueString == string.Empty)
+							return 0;
 
-					return Convert.ToInt32(v._valueString);
-				case VariantType.ByteString:
-					BitStream bs = new BitStream(v._valueByteArray);
-					switch (bs.LengthBytes)
-					{
-						case 8:
-							return (int) bs.ReadInt8();
-						case 16:
-							return (int) bs.ReadInt16();
-						case 32:
-							return bs.ReadInt32();
-					}
+						return Convert.ToInt32(v._valueString);
+					case VariantType.ByteString:
+						BitStream bs = new BitStream(v._valueByteArray);
+						switch (bs.LengthBytes)
+						{
+							case 8:
+								return (int)bs.ReadInt8();
+							case 16:
+								return (int)bs.ReadInt16();
+							case 32:
+								return bs.ReadInt32();
+						}
 
-					throw new NotSupportedException("Unable to convert byte[] to int type.");
+						throw new NotSupportedException("Unable to convert byte[] to int type.");
 
-				case VariantType.BitStream:
-					throw new NotSupportedException("Unable to convert BitStream to int type.");
-				default:
-					throw new NotSupportedException("Unable to convert to unknown type.");
+					case VariantType.BitStream:
+						throw new NotSupportedException("Unable to convert BitStream to int type.");
+					default:
+						throw new NotSupportedException("Unable to convert to unknown type.");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Access variant as an int value.
+		/// </summary>
+		/// <param name="v">Variant to cast</param>
+		/// <returns>int representation of value</returns>
+		public static explicit operator uint(Variant v)
+		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+			unchecked
+			{
+				switch (v._type)
+				{
+					case VariantType.Int:
+						if (v._valueLong < 0)
+							throw new ApplicationException("Converting this long to an int would cause loss of data");
+
+						return (uint)v._valueInt;
+					case VariantType.Long:
+						if (v._valueLong > uint.MaxValue || v._valueLong < uint.MinValue)
+							throw new ApplicationException("Converting this long to an int would cause loss of data");
+
+						return (uint)v._valueLong;
+					case VariantType.ULong:
+						if (v._valueULong > uint.MaxValue)
+							throw new ApplicationException("Converting this ulong to an int would cause loss of data");
+
+						return (uint)v._valueULong;
+					case VariantType.String:
+						if (v._valueString == string.Empty)
+							return 0;
+
+						return Convert.ToUInt32(v._valueString);
+					case VariantType.ByteString:
+						BitStream bs = new BitStream(v._valueByteArray);
+						switch (bs.LengthBytes)
+						{
+							case 8:
+								return (uint)bs.ReadUInt8();
+							case 16:
+								return (uint)bs.ReadUInt16();
+							case 32:
+								return bs.ReadUInt32();
+						}
+
+						throw new NotSupportedException("Unable to convert byte[] to int type.");
+
+					case VariantType.BitStream:
+						throw new NotSupportedException("Unable to convert BitStream to int type.");
+					default:
+						throw new NotSupportedException("Unable to convert to unknown type.");
+				}
 			}
 		}
 
@@ -210,28 +267,31 @@ namespace Peach.Core
 			if (v == null)
 				throw new ApplicationException("Parameter v is null");
 
-			switch (v._type)
+			unchecked
 			{
-				case VariantType.Int:
-					return (long)v._valueInt;
-				case VariantType.Long:
-					return v._valueLong;
-				case VariantType.ULong:
-					if (v._valueULong > long.MaxValue)
-						throw new ApplicationException("Converting this ulong to a long would cause loss of data");
+				switch (v._type)
+				{
+					case VariantType.Int:
+						return (long)v._valueInt;
+					case VariantType.Long:
+						return v._valueLong;
+					case VariantType.ULong:
+						if (v._valueULong > long.MaxValue)
+							throw new ApplicationException("Converting this ulong to a long would cause loss of data");
 
-					return (long)v._valueULong;
-				case VariantType.String:
-					if (v._valueString == string.Empty)
-						return 0;
+						return (long)v._valueULong;
+					case VariantType.String:
+						if (v._valueString == string.Empty)
+							return 0;
 
-					return Convert.ToInt64(v._valueString);
-				case VariantType.ByteString:
-					throw new NotSupportedException("Unable to convert byte[] to int type.");
-				case VariantType.BitStream:
-					throw new NotSupportedException("Unable to convert BitStream to int type.");
-				default:
-					throw new NotSupportedException("Unable to convert to unknown type.");
+						return Convert.ToInt64(v._valueString);
+					case VariantType.ByteString:
+						throw new NotSupportedException("Unable to convert byte[] to int type.");
+					case VariantType.BitStream:
+						throw new NotSupportedException("Unable to convert BitStream to int type.");
+					default:
+						throw new NotSupportedException("Unable to convert to unknown type.");
+				}
 			}
 		}
 
@@ -240,28 +300,31 @@ namespace Peach.Core
 			if (v == null)
 				throw new ApplicationException("Parameter v is null");
 
-			switch (v._type)
+			unchecked
 			{
-				case VariantType.Int:
-					return (ulong)v._valueInt;
-				case VariantType.Long:
-					if ((ulong)v._valueLong > ulong.MaxValue || v._valueLong < 0)
-						throw new ApplicationException("Converting this long to a ulong would cause loss of data");
+				switch (v._type)
+				{
+					case VariantType.Int:
+						return (ulong)v._valueInt;
+					case VariantType.Long:
+						if ((ulong)v._valueLong > ulong.MaxValue || v._valueLong < 0)
+							throw new ApplicationException("Converting this long to a ulong would cause loss of data");
 
-					return (ulong)v._valueLong;
-				case VariantType.ULong:
-					return v._valueULong;
-				case VariantType.String:
-					if (v._valueString == string.Empty)
-						return 0;
+						return (ulong)v._valueLong;
+					case VariantType.ULong:
+						return v._valueULong;
+					case VariantType.String:
+						if (v._valueString == string.Empty)
+							return 0;
 
-					return Convert.ToUInt64(v._valueString);
-				case VariantType.ByteString:
-					throw new NotSupportedException("Unable to convert byte[] to int type.");
-				case VariantType.BitStream:
-					throw new NotSupportedException("Unable to convert BitStream to int type.");
-				default:
-					throw new NotSupportedException("Unable to convert to unknown type.");
+						return Convert.ToUInt64(v._valueString);
+					case VariantType.ByteString:
+						throw new NotSupportedException("Unable to convert byte[] to int type.");
+					case VariantType.BitStream:
+						throw new NotSupportedException("Unable to convert BitStream to int type.");
+					default:
+						throw new NotSupportedException("Unable to convert to unknown type.");
+				}
 			}
 		}
 
