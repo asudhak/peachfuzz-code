@@ -16,6 +16,8 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class NumericalVarianceMutatorTests
     {
+		int? testValue = null;
+
         [Test]
         public void Test1()
         {            
@@ -48,11 +50,19 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
             config.rangeStart = 1;
             config.rangeStop = 2;
+
+			Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
+
 			Engine e = new Engine(null);
             e.config = config;
 			e.startFuzzing(dom, config);
             RunContext context = e.context;
-            //Assert.AreEqual(1,(int)context.dom.dataModels[0][0].InternalValue);
+            Assert.AreEqual(1,testValue);
         }
+
+		void Action_Finished(Dom.Action action)
+		{
+			testValue = (int)action.dataModel[0].InternalValue;
+		}
     }
 }
