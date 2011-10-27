@@ -19,7 +19,7 @@ namespace Peach.Core.WebProxy
 
         public static HttpHeader Parse(string data)
         {
-            Match m = Regex.Match(data, @"([^\s]+): ([^\r\n]+)\r\n");
+            Match m = Regex.Match(data, @"([^\s]+): ([^\r\n]+)(\r\n|$)");
 
             if (m == null)
                 return null;

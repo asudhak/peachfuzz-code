@@ -36,7 +36,7 @@ namespace Peach.Core.WebProxy
 
         public void ParseRequestHeader(string data)
         {
-            Match m = Regex.Match(data, @"[^\r\n]+\r\n(.*)");
+            Match m = Regex.Match(data, @"([^\r\n]+)\r\n(.*)");
             if (m == null)
                 throw new ArgumentException("Unable to parse data into HTTP Request Line");
 
@@ -44,7 +44,7 @@ namespace Peach.Core.WebProxy
 
         public void ParseRequestLine(string data)
         {
-            Match m = Regex.Match(data, @"[^\s]+ [^\s]+ [^\s]+\r\n");
+            Match m = Regex.Match(data, @"([^\s]+) ([^\s]+) ([^\s]+)\r\n");
             if (m == null)
                 throw new ArgumentException("Unable to parse data into HTTP Request Line");
 
