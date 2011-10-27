@@ -92,6 +92,7 @@ namespace Peach.Core.Mutators
             }
 
             obj.MutatedValue = new Variant(newData.ToArray());
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTAION
@@ -111,6 +112,7 @@ namespace Peach.Core.Mutators
             }
 
             obj.MutatedValue = new Variant(newData.ToArray());
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 	}
 }

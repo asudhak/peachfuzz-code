@@ -60,8 +60,9 @@
     <Compile Include="CrackingTests\StringTests.cs" />
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
-    <Compile Include="Debuggers\WinDbgTestscs.cs" />
-    <Compile Include="Debuggers\WinSystemTests.cs" />
+    <Compile Include="Mutators\NumericalVarianceMutatorTests.cs" />
+    <Compile Include="PitParserTests\Debuggers\WinDbgTestscs.cs" />
+    <Compile Include="PitParserTests\Debuggers\WinSystemTests.cs" />
     <Compile Include="Monitors\PcapMonitorTests.cs" />
     <Compile Include="OutputTests\SizeRelationTests.cs" />
     <Compile Include="PitParserTests\BlockTests.cs" />

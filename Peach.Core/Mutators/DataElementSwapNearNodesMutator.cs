@@ -82,6 +82,8 @@ namespace Peach.Core.Mutators
 
                 obj.MutatedValue = new Variant(v2);
                 nextNode.MutatedValue = new Variant(v1);
+                obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+                nextNode.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
             }
         }
 

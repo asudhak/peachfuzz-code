@@ -157,10 +157,10 @@ namespace Peach.Core
 			if (config == null)
 				throw new ArgumentNullException("config paremeter is null");
 
-			RunContext context = new RunContext();
+			context = new RunContext();
 			context.config = config;
 			context.dom = dom;
-			context.run = run;
+			context.run = run;            
 
 			// TODO: Start up agents!
 
@@ -299,7 +299,8 @@ namespace Peach.Core
 
 						try
 						{
-							Engine.IterationStarting(context, iterationCount, totalIterationCount);
+                            if (Engine.IterationStarting != null)
+							    Engine.IterationStarting(context, iterationCount, totalIterationCount);
 
 							// TODO - Handle bool for is reproduction
 							context.agentManager.IterationStarting((int)iterationCount, false);

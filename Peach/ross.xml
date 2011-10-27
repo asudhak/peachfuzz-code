@@ -5,8 +5,7 @@
   <Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
-    <Blob name="myData" valueType="hex" value="01 02 03 04"/>
-    <!--09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F 20-->
+    <Number name="num1" size="32" value="100" signed="false"/>
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">

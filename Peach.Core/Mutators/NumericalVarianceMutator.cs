@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Produce numbers that are defaultValue - N to defaultValue + N")]
+    [Mutator("Produce numbers that are defaultValue - N to defaultValue + N")]
     [Hint("NumericalVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class NumericalVarianceMutator : Mutator
 	{
