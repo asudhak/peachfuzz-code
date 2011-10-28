@@ -35,6 +35,7 @@ namespace Peach.Core.WebProxy
 {
     public abstract class HttpMessage
     {
+		public Connection Connection { get; set; }
         public string StartLine { get; set; }
         public string Body { get; set; }
         public HttpHeaderCollection Headers { get; set; }

@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -41,39 +42,94 @@ namespace Peach.Core.WebProxy
         public string Uri { get; set; }
         public string Version { get; set; }
 
-        public static HttpRequest Parse(string data)
+		static Regex rxSingleLine = new Regex(@"([^\r\n]+)\r\n");
+
+		public override string ToString()
+		{
+			return string.Format("{0} {1} HTTP/{2}\r\n{3}\r\n{4}",
+				Method,
+				Uri,
+				Version,
+				Headers.ToString(),
+				Body);
+		}
+
+        public static HttpRequest Parse(MemoryStream stream)
         {
-            Match m = Regex.Match(data, @"(.*\r\n\r\n)(.*)");
-            if (m == null)
-                return null;
+			long pos = stream.Position;
 
-            var request = new HttpRequest();
-            request.ParseRequestHeader(m.Groups[1].Value);
+			try
+			{
+				long newPos = pos;
+				Match m;
+				var request = new HttpRequest();
 
-            if (!request.Headers.ContainsKey("content-length"))
-            {
-                request.Body = m.Groups[2].Value;
-                return request;
-            }
+				byte[] buff = new byte[stream.Length - stream.Position];
+				stream.Read(buff, 0, (int)(stream.Length - stream.Position));
 
-            int contentLength = int.Parse(request.Headers["content-length"].Value);
-            request.Body = m.Groups[2].Value.Substring(0, contentLength);
+				string data = ASCIIEncoding.ASCII.GetString(buff);
 
-            return request;
+				m = rxSingleLine.Match(data);
+				if (m == null)
+					return null;
+
+				request.RequestLine = m.Groups[1].Value;
+				request.ParseRequestLine();
+				data = rxSingleLine.Replace(data, "", 1);
+
+				newPos += m.Groups[1].Index + m.Groups[1].Length;
+
+				m = Regex.Match(data, @"^(.*\r\n\r\n)(.*)$", RegexOptions.Singleline);
+				if (m == null)
+					return null;
+
+				request.ParseRequestHeader(m.Groups[1].Value);
+				newPos += m.Groups[1].Index + m.Groups[1].Length;
+
+				if (!request.Headers.ContainsKey("content-length"))
+				{
+					request.Body = m.Groups[2].Value;
+				}
+				else
+				{
+					int contentLength = int.Parse(request.Headers["content-length"].Value);
+					request.Body = m.Groups[2].Value.Substring(0, contentLength);
+				}
+
+				pos = newPos + request.Body.Length;
+
+				return request;
+			}
+			finally
+			{
+				stream.Position = pos;
+			}
         }
 
         public void ParseRequestHeader(string data)
         {
-            Match m = Regex.Match(data, @"([^\r\n]+)\r\n(.*)");
-            if (m == null)
+            MatchCollection matches = Regex.Matches(data, @"([^\r\n]+)\r\n");
+            if (matches == null)
                 throw new ArgumentException("Unable to parse data into HTTP Request Line");
 
+			Headers = new HttpHeaderCollection();
+			foreach (Match match in matches)
+			{
+				if (match.Groups.Count < 2)
+					break;
+
+				var header = HttpHeader.Parse(match.Groups[1].Value);
+				if (header == null)
+					break;
+
+				Headers.Add(header.Name.ToLower(), header);
+			}
         }
 
-        public void ParseRequestLine(string data)
+        public void ParseRequestLine()
         {
-            Match m = Regex.Match(data, @"([^\s]+) ([^\s]+) ([^\s]+)\r\n");
-            if (m == null)
+			Match m = Regex.Match(RequestLine, @"([^\s]+) ([^\s]+) HTTP/([^\s]+)(\r\n|$)");
+            if (m == null || m.Groups.Count < 4)
                 throw new ArgumentException("Unable to parse data into HTTP Request Line");
 
             Method = m.Groups[1].Value;

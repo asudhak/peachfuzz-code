@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core.WebProxy;
@@ -146,6 +147,42 @@ namespace Peach.Core.WebProxy.Test
 			Assert.NotNull(header);
 			Assert.AreEqual("Foo", header.Name);
 			Assert.AreEqual("Bar", header.Value);
+		}
+
+		[Test]
+		public void Request()
+		{
+			HttpRequest req;
+
+			req = HttpRequest.Parse(
+				new MemoryStream(
+					ASCIIEncoding.ASCII.GetBytes("GET /foo.bar HTTP/1.0\r\nContent-Length: 10\r\nHost: google.com\r\n\r\n1234567890")));
+			Assert.NotNull(req);
+			Assert.AreEqual("GET", req.Method);
+			Assert.AreEqual("/foo.bar", req.Uri);
+			Assert.AreEqual("1.0", req.Version);
+			Assert.AreEqual(2, req.Headers.Count);
+			Assert.IsTrue(req.Headers.ContainsKey("content-length"));
+			Assert.IsTrue(req.Headers.ContainsKey("host"));
+			Assert.AreEqual("1234567890", req.Body);
+		}
+
+		[Test]
+		public void Response()
+		{
+			HttpResponse res;
+
+			res = HttpResponse.Parse(
+				new MemoryStream(
+					ASCIIEncoding.ASCII.GetBytes("HTTP/1.0 200 OK\r\nContent-Length: 10\r\nHost: google.com\r\n\r\n1234567890")));
+			Assert.NotNull(res);
+			Assert.AreEqual("1.0", res.Version);
+			Assert.AreEqual("200", res.Status);
+			Assert.AreEqual("OK", res.Reason);
+			Assert.AreEqual(2, res.Headers.Count);
+			Assert.IsTrue(res.Headers.ContainsKey("content-length"));
+			Assert.IsTrue(res.Headers.ContainsKey("host"));
+			Assert.AreEqual("1234567890", res.Body);
 		}
 	}
 }
