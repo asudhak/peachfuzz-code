@@ -897,9 +897,18 @@ namespace Peach.Core.Analyzers
 			handleCommonDataElementValue(node, str);
 			handleCommonDataElementChildren(node, str);
 
+            // handle NumericalString hint properly
 			int test;
-			if (int.TryParse((string)str.DefaultValue, out test))
-				str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));
+            if (int.TryParse((string)str.DefaultValue, out test))
+            {
+                if (!str.Hints.ContainsKey("NumericalString"))
+                    str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));
+            }
+            else
+            {
+                if (str.Hints.ContainsKey("NumericalString"))
+                    str.Hints.Remove("NumericalString");
+            }
 
 			return str;
 		}

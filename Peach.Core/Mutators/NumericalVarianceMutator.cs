@@ -44,13 +44,11 @@ namespace Peach.Core.Mutators
         ulong maxValue;
         int currentCount;
         int[] values;
-        Number objAsNumber;
 
         // CTOR
         //
         public NumericalVarianceMutator(DataElement obj)
         {
-            objAsNumber = (Number)(obj);
             currentCount = 0;
             n = getN(obj, 50);
             name = "NumericalVarianceMutator";
@@ -63,8 +61,8 @@ namespace Peach.Core.Mutators
             }
             else
             {
-                minValue = objAsNumber.MinValue;
-                maxValue = objAsNumber.MaxValue;
+                minValue = ((Number)obj).MinValue;
+                maxValue = ((Number)obj).MaxValue;
             }
         }
 
@@ -147,7 +145,7 @@ namespace Peach.Core.Mutators
             if (currentCount >= count)
                 return;
 
-            long value = ((long)((Variant)objAsNumber.DefaultValue)) - values[currentCount];
+            long value = ((long)((Variant)obj.DefaultValue)) - values[currentCount];
 
             if (value >= minValue)
             {
@@ -167,7 +165,7 @@ namespace Peach.Core.Mutators
             try
             {
                 int value = context.random.Choice(values);
-                long finalValue = ((long)((Variant)objAsNumber.DefaultValue)) - value;
+                long finalValue = ((long)((Variant)obj.DefaultValue)) - value;
 
                 if (obj is Dom.String)
                     obj.MutatedValue = new Variant(finalValue.ToString());

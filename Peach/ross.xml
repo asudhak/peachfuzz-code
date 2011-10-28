@@ -5,7 +5,9 @@
   <Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
-    <Number name="num1" size="32" value="100" signed="false"/>
+    <String name="numStr1" value="abc">
+      <Hint name="NumericalString" value="true"/>
+    </String>
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">
