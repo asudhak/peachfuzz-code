@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Produce a finite number of random numbers for each <Number> element")]
+    [Mutator("Produce a finite number of random numbers for each <Number> element")]
     [Hint("FiniteRandomNumbersMutator-N", "Gets N by checking node for hint, or returns default (5000).")]
 	public class FiniteRandomNumbersMutator : Mutator
 	{
@@ -43,15 +43,14 @@ namespace Peach.Core.Mutators
         int currentCount;
         long minValue;
         ulong maxValue;
-        Number objAsNumber;
 
         // CTOR
         //
         public FiniteRandomNumbersMutator(DataElement obj)
         {
-            objAsNumber = (Number)(obj);
+            //objAsNumber = (Number)(obj);
             currentCount = 0;
-            n = getN(obj, 2500);
+            n = getN(obj, 5000);
             name = "FiniteRandomNumbersMutator";
 
             if (obj is Dom.String)
@@ -61,8 +60,8 @@ namespace Peach.Core.Mutators
             }
             else
             {
-                minValue = objAsNumber.MinValue;
-                maxValue = objAsNumber.MaxValue;
+                minValue = ((Number)obj).MinValue;
+                maxValue = ((Number)obj).MaxValue;
             }
         }
 
@@ -129,8 +128,7 @@ namespace Peach.Core.Mutators
         {
             context.random.Seed = currentCount;
 
-            int maxAsInt = (((int)maxValue) + 1) * -1;
-            int value = context.random.Next((int)minValue, maxAsInt);
+            int value = context.random.Next((int)minValue, Int32.MaxValue);     // max should be a ulong
 
             if (obj is Dom.String)
                 obj.MutatedValue = new Variant(value.ToString());

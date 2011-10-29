@@ -45,10 +45,8 @@ namespace Peach.Core.Mutators
         int selfCount;
         long minValue;
         ulong maxValue;
-        int maxAsInt;
         int n;
         int size;
-        Number objAsNumber;
 
         // CTOR
         //
@@ -60,20 +58,20 @@ namespace Peach.Core.Mutators
             n = getN(obj, 50);
             currentCount = 0;
             selfCount = 0;
-            objAsNumber = (Number)(obj);
-            size = objAsNumber.Size;
 
             PopulateValues();
 
             if (obj is Dom.String)
             {
+                size = 32;
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
             else
             {
-                minValue = objAsNumber.MinValue;
-                maxValue = objAsNumber.MaxValue;
+                size = ((Number)obj).Size;
+                minValue = ((Number)obj).MinValue;
+                maxValue = ((Number)obj).MaxValue;
             }
 
             // if size is off, pick up the next largest one from allowedSizes
@@ -88,8 +86,6 @@ namespace Peach.Core.Mutators
                     }
                 }
             }
-
-            maxAsInt = (((int)maxValue) + 1) * -1;
         }
 
         // POPULATE_VALUES
@@ -159,7 +155,7 @@ namespace Peach.Core.Mutators
 
                     for (int i = 0; i < values[size].Length; ++i)
                     {
-                        if (values[size][i] < minValue || values[size][i] > maxAsInt)
+                        if (values[size][i] < minValue || (ulong)(values[size][i]) > maxValue)
                             continue;
                         cnt++;
                     }
