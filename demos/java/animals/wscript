@@ -16,7 +16,7 @@ def build(bld):
 		manifest  = 'manifest',
 		use       = 'NNN',
 	)
-	t.env.JAVACFLAGS = ['-Xlint:unchecked', '-verbose']
+	t.env.JAVACFLAGS = ['-Xlint:unchecked']
 
 	if bld.env.DO_JUNIT:
 		t.features       += ' junit'

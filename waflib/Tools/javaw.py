@@ -13,7 +13,6 @@ Javac is one of the few compilers that behaves very badly:
 
 #. it outputs an undefined amount of files (inner classes)
 
-This tool uses the -verbose flag to track the java classes created.
 Remember that the compilation can be performed using Jython[1] rather than regular Python. Instead of
 running one of the following commands::
 
@@ -38,8 +37,6 @@ ccroot.USELIB_VARS['javac'] = set(['CLASSPATH', 'JAVACFLAGS'])
 
 SOURCE_RE = '**/*.java'
 JAR_RE = '**/*'
-re_verbose = re.compile(r'^\[.*?\]\n*', re.M)
-re_classes = re.compile(r'\[wrote (?:RegularFileObject\[)*(.*?\.class)\]')
 
 class_check_source = '''
 public class Test {
@@ -81,6 +78,7 @@ def apply_java(self):
 	else:
 		outdir = self.path.get_bld()
 	outdir.mkdir()
+	self.outdir = outdir
 	self.env['OUTDIR'] = outdir.abspath()
 
 	self.javac_task = tsk = self.create_task('javac')
@@ -283,28 +281,14 @@ class javac(Task.Task):
 		lst.extend(to_list(env['JAVACFLAGS']))
 		lst.extend([a.path_from(bld.bldnode) for a in self.inputs])
 		lst = [x for x in lst if x]
-		try:
-			self.out = self.generator.bld.cmd_and_log(lst, cwd=wd, env=env.env or None, output=0, quiet=0)[1]
-		except:
-			self.generator.bld.cmd_and_log(lst, cwd=wd, env=env.env or None)
+		return self.exec_command(lst, cwd=wd, env=env.env or None)
 
 	def post_run(self):
 		"""
-		The -verbose flags gives us the files created, so we have to parse the outputs
-		to update the signatures of the nodes created.
 		"""
-		for x in re_classes.findall(self.out):
-			if os.path.isabs(x):
-				n = self.generator.bld.root.find_node(x)
-			else:
-				n = self.generator.bld.bldnode.find_node(x)
-			if not n:
-				raise ValueError('cannot find %r in %r' % (x, self.generator.bld.bldnode.abspath()))
-			n.sig = Utils.h_file(n.abspath())
+		for n in self.generator.outdir.ant_glob('**/*.class'):
+			n.sig = Utils.h_file(n.abspath()) # careful with this
 		self.generator.bld.task_sigs[self.uid()] = self.cache_sig
-		out = re_verbose.sub('', self.out).strip()
-		if out:
-			self.generator.bld.to_log(out + '\n')
 
 def configure(self):
 	"""
@@ -328,7 +312,7 @@ def configure(self):
 	if not v['JAR']: self.fatal('jar is required for making java packages')
 	if not v['JAVAC']: self.fatal('javac is required for compiling java classes')
 	v['JARCREATE'] = 'cf' # can use cvf
-	v['JAVACFLAGS'] = ['-verbose'] # required
+	v['JAVACFLAGS'] = []
 
 @conf
 def check_java_class(self, classname, with_classpath=None):
