@@ -16,11 +16,42 @@ $ waf configure xcode
 
 from waflib import Context, TaskGen, Build, Utils
 import os, sys, random, time
-import random
+
+HEADERS_GLOB = '**/(*.h|*.hpp|*.H|*.inl)'
+
+MAP_EXT = {
+	'.h' :  "sourcecode.c.h",
+
+	'.hh':  "sourcecode.cpp.h",
+	'.inl': "sourcecode.cpp.h",
+	'.hpp': "sourcecode.cpp.h",
+
+	'.c':   "sourcecode.c.c",
+
+	'.m':   "sourcecode.c.objc",
+
+	'.mm':  "sourcecode.cpp.objcpp",
+
+	'.cc':  "sourcecode.cpp.cpp",
+
+	'.cpp': "sourcecode.cpp.cpp",
+	'.C':   "sourcecode.cpp.cpp",
+	'.cxx': "sourcecode.cpp.cpp",
+	'.c++': "sourcecode.cpp.cpp",
+
+	'.l':   "sourcecode.lex", # luthor
+	'.ll':  "sourcecode.lex",
+
+	'.y':   "sourcecode.yacc",
+	'.yy':  "sourcecode.yacc",
+
+	'.plist': "text.plist.xml",
+	".nib":   "wrapper.nib",
+	".xib":   "text.xib",
+}
 
 def newid():
 	return "%04X%04X%04X%012d" % (random.randint(0, 32767), random.randint(0, 32767), random.randint(0, 32767), int(time.time()))
-
 
 class XCodeNode:
 	def __init__(self):
@@ -93,30 +124,7 @@ class PBXFileReference(XCodeNode):
 		self.fileEncoding = 4
 		if not filetype:
 			_, ext = os.path.splitext(name)
-			if ext == '.h':
-				filetype = "sourcecode.c.h"
-			elif ext in ['.hh', '.inl', '.hpp']:
-				filetype = "sourcecode.cpp.h"
-			elif ext == '.c':
-				filetype = "sourcecode.c.c"
-			elif ext == '.m':
-				filetype = "sourcecode.c.objc"
-			elif ext == '.mm':
-				filetype = "sourcecode.cpp.objcpp"
-			elif ext in ['.cc', '.cpp', '.C', '.cxx', '.c++']:
-				filetype = "sourcecode.cpp.cpp"
-			elif ext in ['.l', '.ll']:
-				filetype = "sourcecode.lex"
-			elif ext in ['.y', '.yy']:
-				filetype = "sourcecode.yacc"
-			elif ext == '.plist':
-				filetype = "text.plist.xml"
-			elif ext == ".nib":
-				filetype = "wrapper.nib"
-			elif ext == ".xib":
-				filetype = "text.xib"
-			else:
-				filetype = "text"
+			filetype = MAP_EXT.get(ext, 'text')
 		self.lastKnownFileType = filetype
 		self.name = name
 		self.path = path
@@ -227,9 +235,6 @@ class PBXProject(XCodeNode):
 			target = PBXNativeTarget('build', tg.name, tg.link_task.outputs[0].change_ext('.app'))
 			self.targets.append(target)
 			self._output.children.append(target.productReference)
-		
-
-
 
 class xcode(Build.BuildContext):
 	cmd = 'xcode'
@@ -275,8 +280,6 @@ class xcode(Build.BuildContext):
 				tg.post()
 
 				features = Utils.to_list(getattr(tg, 'features', ''))
-				bldpath = tg.path.bldpath()
-				base = os.path.normpath(os.path.join(self.bldnode.name, tg.path.srcpath()))
 
 				group = PBXGroup(tg.name)
 				group.add(tg.path, self.collect_source(tg))
