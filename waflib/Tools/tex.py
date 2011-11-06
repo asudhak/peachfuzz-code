@@ -93,6 +93,27 @@ class tex(Task.Task):
 	Execute the program **makeindex**
 	"""
 
+	def scan_aux(self, node):
+		"""
+		A recursive regex-based scanner that finds included auxiliary files.
+		"""
+		env = self.env
+		nodes = [node]
+		re_aux = re.compile(r'\\@input{(?P<file>[^{}]*)}', re.M)
+
+		def parse_node(node):
+			code = node.read()
+			for match in re_aux.finditer(code):
+				path = match.group('file')
+				found = node.parent.find_or_declare(path)
+				if found and found not in nodes:
+					debug('tex: found aux node ' + found.abspath())
+					nodes.append(found)
+					parse_node(found)
+
+		parse_node(node)
+		return nodes
+
 	def scan(self):
 		"""
 		A recursive regex-based scanner that finds latex dependencies. It uses :py:attr:`waflib.Tools.tex.re_tex`
@@ -162,24 +183,27 @@ class tex(Task.Task):
 
 	def bibfile(self):
 		"""
-		Parse the *.aux* file to find a bibfile to process.
+		Parse the *.aux* files to find a bibfile to process.
 		If yes, execute :py:meth:`waflib.Tools.tex.tex.bibtex_fun`
 		"""
+		need_bibtex = False
 		try:
-			ct = self.aux_node.read()
+			for aux_node in self.aux_nodes:
+				ct = aux_node.read()
+				if g_bibtex_re.findall(ct):
+					need_bibtex = True
+					break
 		except (OSError, IOError):
 			error('error bibtex scan')
 		else:
-			fo = g_bibtex_re.findall(ct)
-
-			# there is a .aux file to process
-			if fo:
+			# only the main .aux file needs to be processed
+			if need_bibtex:
 				warn('calling bibtex')
 
 				self.env.env = {}
 				self.env.env.update(os.environ)
 				self.env.env.update({'BIBINPUTS': self.TEXINPUTS, 'BSTINPUTS': self.TEXINPUTS})
-				self.env.SRCFILE = self.aux_node.name[:-4]
+				self.env.SRCFILE = self.aux_nodes[0].name[:-4]
 				self.check_status('error when calling bibtex', self.bibtex_fun())
 
 	def bibunits(self):
@@ -247,8 +271,7 @@ class tex(Task.Task):
 		texinputs = self.env.TEXINPUTS or ''
 		self.TEXINPUTS = node.parent.get_bld().abspath() + os.pathsep + node.parent.get_src().abspath() + os.pathsep + texinputs + os.pathsep
 
-		self.aux_node = node.change_ext('.aux')
-		self.idx_node = node.change_ext('.idx')
+		self.aux_node = node.change_ext('.aux') # TODO waf 1.7 remove (left for compatibility)
 
 		# important, set the cwd for everybody
 		self.cwd = self.inputs[0].parent.get_bld().abspath()
@@ -261,6 +284,9 @@ class tex(Task.Task):
 		self.env.SRCFILE = srcfile
 		self.check_status('error when calling latex', fun())
 
+		self.aux_nodes = self.scan_aux(node.change_ext('.aux'))
+		self.idx_node = node.change_ext('.idx')
+
 		self.bibfile()
 		self.bibunits()
 		self.makeindex()
@@ -272,9 +298,10 @@ class tex(Task.Task):
 			# watch the contents of file.aux and stop if file.aux does not change anymore
 			prev_hash = hash
 			try:
-				hash = Utils.h_file(self.aux_node.abspath())
+				hashes = [Utils.h_file(x.abspath()) for x in self.aux_nodes]
+				hash = Utils.h_list(hashes)
 			except (OSError, IOError):
-				error('could not read aux.h -> %s' % self.aux_node.abspath())
+				error('could not read aux.h')
 				pass
 			if hash and hash == prev_hash:
 				break
