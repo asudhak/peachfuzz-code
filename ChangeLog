@@ -6,6 +6,7 @@ NEW IN WAF 1.6.9
 * Added a default virtual folder structure for out-of-tree build files #1053
 * Added a way to set variants containing /, for example linux/debug
 * Added a more intuitive behaviour for conf.setenv() #1062
+* Fixed the multiple bibliography processing for tex #1040
 
 NEW IN WAF 1.6.8
 ----------------
