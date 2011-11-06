@@ -92,7 +92,7 @@ MACRO_TO_DEST_CPU = {
 }
 
 @conf
-def parse_flags(self, line, uselib, env=None):
+def parse_flags(self, line, uselib, env=None, force_static=False):
 	"""
 	Parse the flags from the input lines, and add them to the relevant use variables::
 
@@ -142,7 +142,8 @@ def parse_flags(self, line, uselib, env=None):
 			app('DEFINES_' + uselib, [ot])
 		elif st == '-l':
 			if not ot: ot = lst.pop(0)
-			appu('LIB_' + uselib, [ot])
+			prefix = force_static and 'STLIB_' or 'LIB_'
+			appu(prefix + uselib, [ot])
 		elif st == '-L':
 			if not ot: ot = lst.pop(0)
 			appu('LIBPATH_' + uselib, [ot])
@@ -301,15 +302,19 @@ def exec_cfg(self, kw):
 			kw['okmsg'] = 'yes'
 		return
 
+	static = False
 	if 'args' in kw:
-		lst += Utils.to_list(kw['args'])
+		args = Utils.to_list(kw['args'])
+		if '--static' in args or '--static-libs' in args:
+			static = True
+		lst += args
 	# so we assume the command-line will output flags to be parsed afterwards
 	ret = self.cmd_and_log(lst)
 	if not 'okmsg' in kw:
 		kw['okmsg'] = 'yes'
 
 	self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
-	self.parse_flags(ret, kw.get('uselib_store', kw['package'].upper()), kw.get('env', self.env))
+	self.parse_flags(ret, kw.get('uselib_store', kw['package'].upper()), kw.get('env', self.env), force_static=static)
 	return ret
 
 @conf
