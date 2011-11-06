@@ -67,6 +67,9 @@ def bibunitscan(self):
 exts_deps_tex = ['', '.ltx', '.tex', '.bib', '.pdf', '.png', '.eps', '.ps']
 """List of typical file extensions included in latex files"""
 
+exts_tex = ['.ltx', '.tex']
+"""List of typical file extensions that contain latex"""
+
 re_tex = re.compile(r'\\(?P<type>include|bibliography|putbib|includegraphics|input|import|bringin|lstinputlisting)(\[[^\[\]]*\])?{(?P<file>[^{}]*)}',re.M)
 """Regexp for expressions that may include latex files"""
 
@@ -107,7 +110,6 @@ class tex(Task.Task):
 			classes['latex'].scan = myscanfunction
 		"""
 		node = self.inputs[0]
-		env = self.env
 
 		nodes = []
 		names = []
@@ -131,8 +133,10 @@ class tex(Task.Task):
 							if found and not found in self.outputs:
 								nodes.append(found)
 								add_name = False
-								if found.name.endswith('.tex') or found.name.endswith('.ltx'):
-									parse_node(found)
+								for ext in exts_tex:
+									if found.name.endswith(ext):
+										parse_node(found)
+										break
 							# no break, people are crazy
 						if add_name:
 							names.append(path)
