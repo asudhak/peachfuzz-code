@@ -28,7 +28,7 @@ To configure with a special program use::
 """
 
 import os, re
-from waflib import Utils, Task, Runner, Build, Errors
+from waflib import Utils, Task, Errors
 from waflib.TaskGen import feature, before_method
 from waflib.Logs import error, warn, debug
 
@@ -41,7 +41,6 @@ def bibunitscan(self):
 	:rtype: list of :py:class:`waflib.Node.Node`
 	"""
 	node = self.inputs[0]
-	env = self.env
 
 	nodes = []
 	if not node: return nodes
@@ -97,7 +96,6 @@ class tex(Task.Task):
 		"""
 		A recursive regex-based scanner that finds included auxiliary files.
 		"""
-		env = self.env
 		nodes = [node]
 		re_aux = re.compile(r'\\@input{(?P<file>[^{}]*)}', re.M)
 
@@ -247,16 +245,13 @@ class tex(Task.Task):
 		"""
 		Runs the TeX build process.
 
-		It may require multiple passes, depending on the
-		usage of cross-references, bibliographies, content susceptible of
-		needing such passes.
-		The appropriate TeX compiler is called until the *.aux* file ceases
-		changing.
+		It may require multiple passes, depending on the usage of cross-references,
+		bibliographies, content susceptible of needing such passes.
+		The appropriate TeX compiler is called until the *.aux* files stop changing.
 
 		Makeindex and bibtex are called if necessary.
 		"""
 		env = self.env
-		bld = self.generator.bld
 
 		if not env['PROMPT_LATEX']:
 			env.append_value('LATEXFLAGS', '-interaction=batchmode')
