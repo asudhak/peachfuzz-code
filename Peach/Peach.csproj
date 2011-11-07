@@ -161,14 +161,26 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ARP.xml" />
+    <Content Include="Ethernet.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="ICMP.xml" />
+    <Content Include="IPv4.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="ross.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="TCP.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="template.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="UDP.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

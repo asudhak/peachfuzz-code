@@ -147,7 +147,7 @@ namespace Peach.Core.Dom
 
 				if (_signed)
 				{
-					_max = (ulong)Math.Pow(2, _size) / 2;
+					_max = (ulong)(Math.Pow(2, _size) / 2) - 1;
 					_min = 0 - ((long)Math.Pow(2, _size) / 2);
 				}
 				else

@@ -44,6 +44,7 @@ namespace Peach.Core.Mutators
         ulong maxValue;
         int currentCount;
         int[] values;
+        int valuesLength;
 
         // CTOR
         //
@@ -70,6 +71,13 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues()
         {
+            // catch n == 0
+            if (n == 0)
+            {
+                valuesLength = 0;
+                return;
+            }
+
             // generate values from [-n, n]
             List<int> temp = new List<int>();
 
@@ -77,6 +85,7 @@ namespace Peach.Core.Mutators
                 temp.Add(i);
 
             values = temp.ToArray();
+            valuesLength = values.Length;
         }
 
         // GET N
@@ -108,7 +117,7 @@ namespace Peach.Core.Mutators
         public override void next()
         {
             currentCount++;
-            if (currentCount > count)
+            if (currentCount >= count)
                 throw new MutatorCompleted();
         }
 
@@ -116,7 +125,7 @@ namespace Peach.Core.Mutators
         //
         public override int count
         {
-            get { return values.Length; }
+            get { return valuesLength; }
         }
 
         // SUPPORTED

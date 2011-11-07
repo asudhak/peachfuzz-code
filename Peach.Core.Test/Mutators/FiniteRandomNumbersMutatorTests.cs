@@ -60,7 +60,7 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start default value (100)
+            // remove starting default value (100)
             listVals.RemoveAt(0);
 
             // verify values
@@ -115,11 +115,66 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start / end default values (100)
+            // remove starting default value (100)
             listVals.RemoveAt(0);
 
             // verify values
             Assert.IsTrue(listVals.Count == 6);     // n + 1
+
+            // reset
+            testValue = null;
+            listVals.Clear();
+        }
+
+        [Test]
+        public void Test3()
+        {
+            // testing numerical string with N = 10
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <String name=\"numStr1\" value=\"100\">" +
+                "           <Hint name=\"NumericalString\" value=\"true\"/>" +
+                "           <Hint name=\"FiniteRandomNumbersMutator-N\" value=\"10\"/>" +
+                "       </String>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
+
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            RunConfiguration config = new RunConfiguration();
+
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            // remove starting default value (100)
+            listVals.RemoveAt(0);
+
+            // verify values
+            Assert.IsTrue(listVals.Count == 11);     // n + 1
 
             // reset
             testValue = null;

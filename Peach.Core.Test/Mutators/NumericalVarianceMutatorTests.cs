@@ -60,9 +60,8 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
 			e.startFuzzing(dom, config);
 
-            // remove start / end default values (100)
+            // remove starting default value (100)
             listVals.RemoveAt(0);
-            listVals.RemoveAt(listVals.Count - 1);
 
             // verify values
             for (int i = 0; i <= 100; ++i)
@@ -117,9 +116,8 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start / end default values (100)
+            // remove starting default value (100)
             listVals.RemoveAt(0);
-            listVals.RemoveAt(listVals.Count - 1);
 
             // verify values
             for (int i = 0; i <= 10; ++i)
@@ -173,9 +171,8 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start / end default values (100)
+            // remove starting default value (100)
             listVals.RemoveAt(0);
-            listVals.RemoveAt(listVals.Count - 1);
 
             // verify values
             for (int i = 0; i <= 100; ++i)

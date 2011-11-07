@@ -22,7 +22,8 @@ namespace Peach.Core.Test.Mutators
         [Test]
         public void Test1()
         {
-            // standard test of generating values size + 50 through size - 50 (as long as >= 0)
+            // standard test of generating values size + 50 through size - 50
+            // - signed = "false" so we will only receive positive results
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -60,8 +61,9 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start default value (100)
-            listVals.RemoveAt(0);
+            // remove default return values of 100
+            // - we should be producing results of [82, 0]
+            listVals.RemoveAll(RemoveDefaults);
 
             // verify values
             for (int i = 0; i < listVals.Count; ++i)
@@ -76,7 +78,7 @@ namespace Peach.Core.Test.Mutators
         public void Test2()
         {
             // testing N-hint
-            // : N = 5, generating values size + N through size - N (as long as >= 0)
+            // : N = 5, generating values size + N through size - N
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -228,6 +230,116 @@ namespace Peach.Core.Test.Mutators
 
             // listVals should be empty!!
             Assert.IsEmpty(listVals);
+        }
+
+        [Test]
+        public void Test5()
+        {
+            // testing odd sizes, they should round up to the next power of 2
+            // : size = 10 should become 16, and then generating [0, 16 + 50]
+            // : - something currently crashes this in the PitParser?
+
+            //string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+            //    "<Peach>" +
+            //    "   <DataModel name=\"TheDataModel\">" +
+            //    "       <Number name=\"num1\" size=\"10\" value=\"100\" signed=\"false\"/>" +
+            //    "   </DataModel>" +
+
+            //    "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+            //    "       <State name=\"Initial\">" +
+            //    "           <Action type=\"output\">" +
+            //    "               <DataModel ref=\"TheDataModel\"/>" +
+            //    "           </Action>" +
+            //    "       </State>" +
+            //    "   </StateModel>" +
+
+            //    "   <Test name=\"TheTest\">" +
+            //    "       <StateModel ref=\"TheState\"/>" +
+            //    "       <Publisher class=\"Stdout\"/>" +
+            //    "   </Test>" +
+
+            //    "   <Run name=\"DefaultRun\">" +
+            //    "       <Test ref=\"TheTest\"/>" +
+            //    "   </Run>" +
+            //    "</Peach>";
+
+            //PitParser parser = new PitParser();
+
+            //Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            //RunConfiguration config = new RunConfiguration();
+
+            //Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+
+            //Engine e = new Engine(null);
+            //e.config = config;
+            //e.startFuzzing(dom, config);
+
+            //// remove start default value (100)
+            //listVals.RemoveAt(0);
+
+            //// verify values
+            //for (int i = 0; i < listVals.Count; ++i)
+            //    Assert.AreEqual(66 - i, listVals[i]);
+
+            //// reset
+            //testValue = null;
+            //listVals.Clear();
+        }
+
+        [Test]
+        public void Test6()
+        {
+            // standard test of generating values size + 50 through size - 50
+            // - signed = "true" so we will receive negative results
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"32\" value=\"100\" signed=\"true\"/>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
+
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            RunConfiguration config = new RunConfiguration();
+
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            // remove start default value (100)
+            listVals.RemoveAt(0);
+
+            // verify values
+            for (int i = 0; i < listVals.Count; ++i)
+                Assert.AreEqual(82 - i, listVals[i]);
+        }
+
+        static bool RemoveDefaults(int? n)
+        {
+            return n == 100;
         }
 
         void Action_FinishedTest(Dom.Action action)

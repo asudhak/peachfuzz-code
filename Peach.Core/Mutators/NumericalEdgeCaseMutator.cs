@@ -52,7 +52,7 @@ namespace Peach.Core.Mutators
         //
         public NumericalEdgeCaseMutator(DataElement obj)
         {
-            allowedSizes = new List<int>() { 8, 16, 32, 64};
+            allowedSizes = new List<int>() { 0, 8, 16, 32, 64 };
             values = new Dictionary<int, int[]>();
             name = "NumericalEdgeCaseMutator";
             n = getN(obj, 50);
@@ -149,21 +149,23 @@ namespace Peach.Core.Mutators
         {
             get 
             {
-                if (selfCount == 0)
-                {
-                    int cnt = 0;
+                //if (selfCount == 0)
+                //{
+                //    int cnt = 0;
 
-                    for (int i = 0; i < values[size].Length; ++i)
-                    {
-                        if (values[size][i] < minValue || (ulong)(values[size][i]) > maxValue)
-                            continue;
-                        cnt++;
-                    }
+                //    for (int i = 0; i < values[size].Length; ++i)
+                //    {
+                //        if (values[size][i] < minValue || (values[size][i]) > (int)(maxValue - 1))    // ulong / int error
+                //            continue;
+                //        cnt++;
+                //    }
 
-                    selfCount = cnt;
-                }
+                //    selfCount = cnt;
+                //}
 
-                return selfCount;
+                //return selfCount;
+
+                return values[size].Length;
             }
         }
 

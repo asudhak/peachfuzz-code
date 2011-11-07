@@ -92,7 +92,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if ((obj is Dom.String || obj is Dom.Number) && obj.isMutable)
+            if ((obj is Dom.String || obj is Dom.Number || obj is Dom.Blob) && obj.isMutable)
             {
                 if (obj.Hints.ContainsKey("ValidValues"))
                     return true;

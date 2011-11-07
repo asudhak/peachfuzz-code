@@ -63,6 +63,14 @@
     <Compile Include="Mutators\FiniteRandomNumbersMutatorTests.cs" />
     <Compile Include="Mutators\NumericalEdgeCaseMutatorTests.cs" />
     <Compile Include="Mutators\NumericalVarianceMutatorTests.cs" />
+    <Compile Include="Mutators\StringCaseMutatorTests.cs" />
+    <Compile Include="Mutators\StringMutatorTests.cs" />
+    <Compile Include="Mutators\UnicodeBadUtf8MutatorTests.cs" />
+    <Compile Include="Mutators\UnicodeBomMutatorTests.cs" />
+    <Compile Include="Mutators\UnicodeStringsMutatorTests.cs" />
+    <Compile Include="Mutators\UnicodeUtf8ThreeCharMutatorTests.cs" />
+    <Compile Include="Mutators\ValidValuesMutatorTests.cs" />
+    <Compile Include="Mutators\XmlW3CMutatorTests.cs" />
     <Compile Include="PitParserTests\Debuggers\WinDbgTestscs.cs" />
     <Compile Include="PitParserTests\Debuggers\WinSystemTests.cs" />
     <Compile Include="Monitors\PcapMonitorTests.cs" />
