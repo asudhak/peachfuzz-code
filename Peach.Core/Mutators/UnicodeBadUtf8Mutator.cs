@@ -38,7 +38,7 @@ namespace Peach.Core.Mutators
 	{
         // members
         //
-        uint pos;  
+        uint pos;
 
         // CTOR
         //

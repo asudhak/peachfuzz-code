@@ -63,7 +63,17 @@ namespace Peach.Core.Test.Mutators
             // remove starting default string ("Hello, World!")
             testResults.RemoveAt(0);
 
-            // verify values
+            // verify first two values, last two values, and count (= 2379)
+            string val1 = "Peach";
+            string val2 = "abcdefghijklmnopqrstuvwxyz";
+            string val3 = "18446744073709551664";
+            string val4 = "10";
+
+            Assert.AreEqual(2379, testResults.Count);
+            Assert.AreEqual(val1, testResults[0]);
+            Assert.AreEqual(val2, testResults[1]);
+            Assert.AreEqual(val3, testResults[testResults.Count - 2]);
+            Assert.AreEqual(val4, testResults[testResults.Count - 1]);
 
             // reset
             testString = null;
