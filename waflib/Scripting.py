@@ -345,19 +345,7 @@ class Dist(Context.Context):
 			tar = tarfile.open(arch_name, 'w:' + self.algo.replace('tar.', ''))
 
 			for x in files:
-				tinfo = tar.gettarinfo(name=x.abspath(), arcname=self.get_tar_prefix() + '/' + x.path_from(self.base_path))
-				tinfo.uid   = 0
-				tinfo.gid   = 0
-				tinfo.uname = 'root'
-				tinfo.gname = 'root'
-
-				fu = None
-				try:
-					fu = open(x.abspath(), 'rb')
-					tar.addfile(tinfo, fileobj=fu)
-				finally:
-					fu.close()
-
+				self.add_tar_file(x, tar)
 			tar.close()
 		elif self.algo == 'zip':
 			import zipfile
@@ -380,6 +368,29 @@ class Dist(Context.Context):
 			digest = ''
 
 		Logs.info('New archive created: %s%s' % (self.arch_name, digest))
+
+	def add_tar_file(self, x, tar):
+		"""
+		Add a file to the tar archive. Transform symlinks into files if the files lie out of the project tree.
+		"""
+		p = x.abspath()
+		realpath = os.path.realpath(p)
+		dir = os.path.dirname(self.path.abspath())
+		if not realpath.startswith(dir):
+			p = realpath
+
+		tinfo = tar.gettarinfo(name=p, arcname=self.get_tar_prefix() + '/' + x.path_from(self.base_path))
+		tinfo.uid   = 0
+		tinfo.gid   = 0
+		tinfo.uname = 'root'
+		tinfo.gname = 'root'
+
+		fu = None
+		try:
+			fu = open(p, 'rb')
+			tar.addfile(tinfo, fileobj=fu)
+		finally:
+			fu.close()
 
 	def get_tar_prefix(self):
 		try:
