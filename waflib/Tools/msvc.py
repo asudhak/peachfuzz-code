@@ -113,7 +113,7 @@ def setup_msvc(conf, versions):
 			for target in platforms:
 				try:
 					arch,(p1,p2,p3) = targets[target]
-					compiler,revision = version.split()
+					compiler,revision = version.rsplit(' ', 1)
 					return compiler,revision,p1,p2,p3
 				except KeyError: continue
 		except KeyError: continue
@@ -256,7 +256,11 @@ def gather_wince_supported_platforms():
 		try:
 			path,type = _winreg.QueryValueEx(sdk, 'SDKRootDir')
 		except WindowsError:
-			continue
+			try:
+				path,type = _winreg.QueryValueEx(sdk,'SDKInformation')
+				path,xml = os.path.split(path)
+			except WindowsError:
+				continue
 		path=str(path)
 		path,device = os.path.split(path)
 		if not device:
@@ -344,8 +348,8 @@ def gather_wince_targets(conf, versions, version, vc_path, vsvars, supported_pla
 				continue
 			if os.path.isdir(os.path.join(winCEpath, 'lib', platform)):
 				bindirs = [os.path.join(winCEpath, 'bin', compiler), os.path.join(winCEpath, 'bin', 'x86_'+compiler)] + common_bindirs
-				incdirs = [include, os.path.join(winCEpath, 'include'), os.path.join(winCEpath, 'atlmfc', 'include')]
-				libdirs = [lib, os.path.join(winCEpath, 'lib', platform), os.path.join(winCEpath, 'atlmfc', 'lib', platform)]
+				incdirs = [os.path.join(winCEpath, 'include'), os.path.join(winCEpath, 'atlmfc', 'include'), include]
+				libdirs = [os.path.join(winCEpath, 'lib', platform), os.path.join(winCEpath, 'atlmfc', 'lib', platform), lib]
 				cetargets.append((platform, (platform, (bindirs,incdirs,libdirs))))
 		if cetargets:
 			versions.append((device + ' ' + version, cetargets))
