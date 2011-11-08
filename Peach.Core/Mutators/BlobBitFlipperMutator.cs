@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Flip a % of total bits in a blob. Default is 20%.")]
+    [Mutator("Flip a % of total bits in a blob. Default is 20%.")]
     [Hint("BlobBitFlipperMutator-N", "Gets N by checking node for hint, or returns default (20).")]
 	public class BlobBitFlipperMutator : Mutator
 	{
@@ -141,6 +141,8 @@ namespace Peach.Core.Mutators
                 bs.WriteBit(1);
             else
                 bs.WriteBit(0);
+
+            var x = bs.Value;
 
             obj.MutatedValue = new Variant(bs.Value);
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;

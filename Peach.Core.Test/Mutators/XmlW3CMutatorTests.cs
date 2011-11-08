@@ -16,12 +16,9 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class XmlW3CMutatorTests
     {
-        string testString = null;
-        byte[] testBytes = new byte[] { };
-        List<string> testResults = new List<string>();
-        List<byte[]> testResults2 = new List<byte[]>();
-
-        int ctr = 0;
+        bool firstPass = true;
+        byte[] result = new byte[] { };
+        List<byte[]> testResults = new List<byte[]>();
 
         [Test]
         public void Test1()
@@ -66,25 +63,24 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove starting default string ("Hello, World!")
-            testResults.RemoveAt(0);
-
-            // verify values
+            // verify count (= 1510)           
+            Assert.AreEqual(1510, testResults.Count);
 
             // reset
-            testString = null;
+            firstPass = true;
             testResults.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            //if (ctr == 0)
-            //    testString = (string)action.dataModel[0].InternalValue;
-            //else
-            //    testBytes = (byte[])action.dataModel[0].InternalValue;
-            //ctr++;
-                        
-            //int wat = 0;
+            if (firstPass)
+            {
+                firstPass = false;
+                return;
+            }
+
+            result = (byte[])action.dataModel[0].InternalValue;
+            testResults.Add(result);
         }
     }
 }
