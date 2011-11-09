@@ -390,7 +390,8 @@ class Dist(Context.Context):
 			fu = open(p, 'rb')
 			tar.addfile(tinfo, fileobj=fu)
 		finally:
-			fu.close()
+			if fu:
+				fu.close()
 
 	def get_tar_prefix(self):
 		try:
