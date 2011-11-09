@@ -40,7 +40,7 @@ recursion_limit = 150
 "Limit on the amount of files to read in the dependency scanner"
 
 go_absolute = False
-"Set to 1 to track headers on files in /usr/include - else absolute paths are ignored"
+"Set to True to track headers on files in /usr/include, else absolute paths are ignored (but it becomes very slow)"
 
 standard_includes = ['/usr/include']
 if Utils.is_win32:
@@ -1018,7 +1018,7 @@ def scan(task):
 		raise Errors.WafError('%r is missing a feature such as "c", "cxx" or "includes": ' % task.generator)
 
 	if go_absolute:
-		nodepaths = incn
+		nodepaths = incn + standard_includes
 	else:
 		nodepaths = [x for x in incn if x.is_child_of(x.ctx.srcnode) or x.is_child_of(x.ctx.bldnode)]
 
