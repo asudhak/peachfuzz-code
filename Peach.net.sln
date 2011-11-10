@@ -28,7 +28,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachFuzzFactory", "PeachFu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Controls", "Peach.Core.Controls\Peach.Core.Controls.csproj", "{CA6A5046-7FF9-4A63-A22B-59A25A6FBAE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.WebProxy", "Peach.Core.WebProxy\Peach.Core.WebProxy.csproj", "{4E4B395D-1A06-45B3-9D81-8655270294AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Proxy.Web", "Peach.Core.Proxy.Web\Peach.Core.Proxy.Web.csproj", "{4E4B395D-1A06-45B3-9D81-8655270294AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachSpider", "PeachSpider\PeachSpider.csproj", "{9BD96F85-A10C-4CCA-9077-7AF66FF85C36}"
 EndProject
@@ -41,9 +41,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.txt = README.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.WebProxy.Test", "Peach.Core.WebProxy.Test\Peach.Core.WebProxy.Test.csproj", "{8115535F-E2F8-4547-BBAA-0FA2401C7952}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Proxy.Web.Test", "Peach.Core.Proxy.Web.Test\Peach.Core.Proxy.Web.Test.csproj", "{8115535F-E2F8-4547-BBAA-0FA2401C7952}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.WebProxy.Tester", "Peach.Core.WebProxy.Tester\Peach.Core.WebProxy.Tester.csproj", "{B03164AC-31F6-43CF-9D12-2CAEC1E28F48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Proxy.Web.Tester", "Peach.Core.Proxy.Web.Tester\Peach.Core.Proxy.Web.Tester.csproj", "{B03164AC-31F6-43CF-9D12-2CAEC1E28F48}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution

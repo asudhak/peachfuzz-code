@@ -96,9 +96,9 @@
     <SplashScreen Include="Icons\spider-logo.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peach.Core.WebProxy\Peach.Core.WebProxy.csproj">
+    <ProjectReference Include="..\Peach.Core.Proxy.Web\Peach.Core.Proxy.Web.csproj">
       <Project>{4E4B395D-1A06-45B3-9D81-8655270294AC}</Project>
-      <Name>Peach.Core.WebProxy</Name>
+      <Name>Peach.Core.Proxy.Web</Name>
     </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
