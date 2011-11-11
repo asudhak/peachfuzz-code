@@ -44,7 +44,10 @@ namespace Peach
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
+			Console.ForegroundColor = color;
 		}
 
 		protected override void Engine_IterationFinished(RunContext context, uint currentIteration)
@@ -55,42 +58,93 @@ namespace Peach
 		{
 			if (totalIterations == null)
 			{
-				Console.WriteLine(string.Format("\n[{0},-,-] Performing iteration", currentIteration));
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.DarkGray;
+				Console.Write("\n[");
+				Console.ForegroundColor = ConsoleColor.Gray;
+				Console.Write(string.Format("{0},-,-", currentIteration));
+				Console.ForegroundColor = ConsoleColor.DarkGray;
+				Console.Write("] ");
+				Console.ForegroundColor = ConsoleColor.DarkGreen;
+				Console.WriteLine("Performing iteration");
+				Console.ForegroundColor = color;
 			}
 			else
 			{
-				Console.WriteLine(string.Format("\n[{0},{1},-] Performing iteration", currentIteration, totalIterations));
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.DarkGray;
+				Console.Write("\n[");
+				Console.ForegroundColor = ConsoleColor.Gray;
+				Console.Write(string.Format("{0},{1},-", currentIteration, totalIterations));
+				Console.ForegroundColor = ConsoleColor.DarkGray;
+				Console.Write("] ");
+				Console.ForegroundColor = ConsoleColor.DarkGreen;
+				Console.WriteLine("Performing iteration");
+				Console.ForegroundColor = color;
 			}
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
 		{
-			Console.WriteLine("\n[!] Test '" + context.test.name + "' error: " + e.Message);
+			Console.Write("\n");
+			WriteErrorMark();
+			Console.WriteLine("Test '" + context.test.name + "' error: " + e.Message);
 		}
 
 		protected override void Engine_TestFinished(RunContext context)
 		{
-			Console.WriteLine("\n[*] Test '" + context.test.name + "' finished.");
+			Console.Write("\n");
+			WriteInfoMark();
+			Console.WriteLine("Test '" + context.test.name + "' finished.");
 		}
 
 		protected override void Engine_TestStarting(RunContext context)
 		{
-			Console.WriteLine("[*] Test '" + context.test.name + "' starting.");
+			WriteInfoMark();
+			Console.WriteLine("Test '" + context.test.name + "' starting.");
 		}
 
 		protected override void Engine_RunError(RunContext context, Exception e)
 		{
-			Console.WriteLine("\n[!] Run '" + context.run.name + "' error: " + e.Message);
+			Console.Write("\n");
+			WriteErrorMark();
+			Console.WriteLine("Run '" + context.run.name + "' error: " + e.Message);
 		}
 
 		protected override void Engine_RunFinished(RunContext context)
 		{
-			Console.WriteLine("[*] Run '" + context.run.name + "' finished.");
+			WriteInfoMark();
+			Console.WriteLine("Run '" + context.run.name + "' finished.");
 		}
 
 		protected override void Engine_RunStarting(RunContext context)
 		{
-			Console.WriteLine("[*] Run '" + context.run.name + "' starting.");
+			WriteInfoMark();
+			Console.WriteLine("Run '" + context.run.name + "' starting.");
+		}
+
+		void WriteInfoMark()
+		{
+			var foregroundColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("[");
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.Write("*");
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("] ");
+			Console.ForegroundColor = foregroundColor;
+		}
+
+		void WriteErrorMark()
+		{
+			var foregroundColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("[");
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.Write("!");
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("] ");
+			Console.ForegroundColor = foregroundColor;
 		}
 	}
 }

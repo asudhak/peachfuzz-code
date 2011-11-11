@@ -2,7 +2,7 @@
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://phed.org/2008/Peach /peach3/peach.core/peach.xsd">
 
-	<!--<Include ns="default" src="file:/peach3.0/peach/defaults.xml"/>-->
+	<Include ns="default" src="file:defaults.xml"/>
 
 	<DataModel name="TheDataModel">
 		<String value="Hello World" />

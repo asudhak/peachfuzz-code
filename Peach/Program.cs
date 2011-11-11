@@ -62,13 +62,23 @@ namespace Peach
 				bool test = false;
 				string agent = null;
 
-				Console.WriteLine("\n[ Peach v3.0 DEV");
-				Console.WriteLine("[ Copyright (c) Michael Eddington\n");
+				var color = Console.ForegroundColor;
+				Console.Write("\n");
+				Console.ForegroundColor = ConsoleColor.DarkRed;
+				Console.Write("[[ ");
+				Console.ForegroundColor = ConsoleColor.DarkCyan;
+				Console.WriteLine("Peach v3.0 DEV");
+				Console.ForegroundColor = ConsoleColor.DarkRed;
+				Console.Write("[[ ");
+				Console.ForegroundColor = ConsoleColor.DarkCyan;
+				Console.WriteLine("Copyright (c) Michael Eddington\n");
+				Console.ForegroundColor = color;
 
 				if (args.Length == 0)
 					syntax();
 
 				RunConfiguration config = new RunConfiguration();
+				config.debug = false;
 
 				var p = new OptionSet()
 				{
