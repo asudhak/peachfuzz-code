@@ -1,4 +1,32 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Michael Eddington (mike@phed.org)
+
+// $Id$
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +35,7 @@ using System.Net.Sockets;
 using System.Net;
 using NLog;
 
-namespace Peach.Core.Proxy.Web
+namespace Peach.Core.Proxy
 {
 
 	/// <summary>
@@ -19,18 +47,30 @@ namespace Peach.Core.Proxy.Web
 
 	public class Proxy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web.Proxy");
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy");
 		byte[] buff = new byte[1024];
-		int listenPort = 8080;
+		int listenPort;
+		string address;
 		public TcpListener listener = null;
 		public Dictionary<NetworkStream, Connection> connections = new Dictionary<NetworkStream, Connection>();
 
 		public WorkHandler WorkHandler;
 
+		/// <summary>
+		/// Create a proxy instance.
+		/// </summary>
+		/// <param name="address">To listen on all interaces specify 0.0.0.0 as the address (the default)</param>
+		/// <param name="port">Port to listen on, default is 8080.</param>
+		public Proxy(string address = "0.0.0.0", int port = 8080)
+		{
+			listenPort = port;
+			this.address = address;
+		}
+
 		public void Run()
 		{
 			logger.Info("Creating TcpListener");
-			listener = new TcpListener(IPAddress.Parse("0.0.0.0"), listenPort);
+			listener = new TcpListener(IPAddress.Parse(address), listenPort);
 			listener.Start();
 
 			while (true)
@@ -116,10 +156,10 @@ namespace Peach.Core.Proxy.Web
 					conn.ClientInputStream.Write(buff, 0, len);
 					conn.ClientInputStream.Position = pos;
 
-					using(FileStream sout = File.Open("c:\\client-"+conn.ClientTcpClient.Client.Handle.ToString()+".txt", FileMode.Append))
-					{
-						sout.Write(buff, 0, len);
-					}					
+					//using(FileStream sout = File.Open("c:\\client-"+conn.ClientTcpClient.Client.Handle.ToString()+".txt", FileMode.Append))
+					//{
+					//    sout.Write(buff, 0, len);
+					//}					
 
 					logger.Info(string.Format("Read {0} from client socket {1}", len, conn.ClientTcpClient.Client.RemoteEndPoint.ToString()));
 
