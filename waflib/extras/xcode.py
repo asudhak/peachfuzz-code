@@ -50,8 +50,15 @@ MAP_EXT = {
 	".xib":   "text.xib",
 }
 
+
+part1 = 0
+part2 = 10000
+part3 = 0
+id = 562000999
 def newid():
-	return "%04X%04X%04X%012d" % (random.randint(0, 32767), random.randint(0, 32767), random.randint(0, 32767), int(time.time()))
+	global id
+	id = id + 1
+	return "%04X%04X%04X%012d" % (0, 10000, 0, id)
 
 class XCodeNode:
 	def __init__(self):
@@ -60,7 +67,7 @@ class XCodeNode:
 	def tostring(self, value):
 		if isinstance(value, dict):
 			result = "{\n"
-			for k,v in value.iteritems():
+			for k,v in value.items():
 				result = result + "\t\t\t%s = %s;\n" % (k, self.tostring(v))
 			result = result + "\t\t}"
 			return result
@@ -79,23 +86,23 @@ class XCodeNode:
 
 	def write_recursive(self, value, file):
 		if isinstance(value, dict):
-			for k,v in value.iteritems():
+			for k,v in value.items():
 				self.write_recursive(v, file)
 		elif isinstance(value, list):
 			for i in value:
 				self.write_recursive(i, file)
 		elif isinstance(value, XCodeNode):
 			value.write(file)
-		
+
 	def write(self, file):
-		for attribute,value in self.__dict__.iteritems():
+		for attribute,value in self.__dict__.items():
 			if attribute[0] != '_':
 				self.write_recursive(value, file)
 
 		w = file.write
 		w("\t%s = {\n" % self._id)
 		w("\t\tisa = %s;\n" % self.__class__.__name__)
-		for attribute,value in self.__dict__.iteritems():
+		for attribute,value in self.__dict__.items():
 			if attribute[0] != '_':
 				w("\t\t%s = %s;\n" % (attribute, self.tostring(value)))
 		w("\t};\n\n")
@@ -104,11 +111,14 @@ class XCodeNode:
 
 # Configurations
 class XCBuildConfiguration(XCodeNode):
-	def __init__(self, name, settings = {}):
+	def __init__(self, name, settings = {}, env=None):
 		XCodeNode.__init__(self)
 		self.baseConfigurationReference = ""
 		self.buildSettings = settings
 		self.name = name
+		if env and env.ARCH:
+			settings['ARCHS'] = " ".join(env.ARCH)
+
 
 class XCConfigurationList(XCodeNode):
 	def __init__(self, settings):
@@ -185,9 +195,9 @@ class PBXShellScriptBuildPhase(XCodeNode):
 		self.shellScript = "%s %s %s --targets=%s" % (sys.executable, sys.argv[0], action, target)
 
 class PBXNativeTarget(XCodeNode):
-	def __init__(self, action, target, node):
+	def __init__(self, action, target, node, env):
 		XCodeNode.__init__(self)
-		conf = XCBuildConfiguration('waf', {'PRODUCT_NAME':target, 'CONFIGURATION_BUILD_DIR':node.parent.abspath()})
+		conf = XCBuildConfiguration('waf', {'PRODUCT_NAME':target, 'CONFIGURATION_BUILD_DIR':node.parent.abspath()}, env)
 		self.buildConfigurationList = XCConfigurationList([conf])
 		self.buildPhases = [PBXShellScriptBuildPhase(action, target)]
 		self.buildRules = []
@@ -232,7 +242,7 @@ class PBXProject(XCodeNode):
 		if not getattr(tg, 'mac_app', False):
 			self.targets.append(PBXLegacyTarget('build', tg.name))
 		else:
-			target = PBXNativeTarget('build', tg.name, tg.link_task.outputs[0].change_ext('.app'))
+			target = PBXNativeTarget('build', tg.name, tg.link_task.outputs[0].change_ext('.app'), tg.env)
 			self.targets.append(target)
 			self._output.children.append(target.productReference)
 
@@ -287,7 +297,6 @@ class xcode(Build.BuildContext):
 
 				if 'cprogram' or 'cxxprogram' in features:
 					p.add_task_gen(tg)
-
 
 
 		# targets that don't produce the executable but that you might want to run

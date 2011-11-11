@@ -15,6 +15,7 @@ def options(opt):
 def configure(conf):
 	conf.load('compiler_c')
 	conf.env.append_value('FRAMEWORK_COCOA', 'Cocoa')
+	conf.env.ARCH = ['i386', 'x86_64']
 
 def build(bld):
 	bld.program(
