@@ -75,6 +75,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="NetworkDumbFuzzer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -117,6 +118,16 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Peach.Core.Proxy\Peach.Core.Proxy.csproj">
+      <Project>{4E4B395D-1A06-45B3-9D81-8655270294AC}</Project>
+      <Name>Peach.Core.Proxy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
+      <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
+      <Name>Peach.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

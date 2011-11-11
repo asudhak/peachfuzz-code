@@ -14,5 +14,15 @@ namespace PeachNetworkFuzzer
 		{
 			InitializeComponent();
 		}
+
+		private void buttonStartFuzzing_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void buttonStopFuzzing_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 }
