@@ -95,7 +95,8 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-		
+			// TODO - Store action values!
+
 		//# Expand actionValues
 		
 		//for i in range(len(actionValues)):
@@ -119,12 +120,6 @@ namespace Peach.Core.Loggers
 		//            fout.write(actionValues[i][3])
 		//            fout.close()
 		
-		//for key in monitorData.keys():
-		//    if key.find("_Bucket") == -1:
-		//        fout = open(os.path.join(path,key), "wb")
-		//        fout.write(monitorData[key])
-		//        fout.close()
-
 			foreach (AgentClient agent in faultData.Keys)
 			{
 				Hashtable data = faultData[agent];
@@ -155,7 +150,7 @@ namespace Peach.Core.Loggers
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			if (currentIteration % 100 != 0)
+			if (currentIteration != 1 && currentIteration % 100 != 0)
 				return;
 
 			if (totalIterations != null)
