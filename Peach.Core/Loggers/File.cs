@@ -48,32 +48,30 @@ namespace Peach.Core.Loggers
 		string ourpath = null;
 		TextWriter log = null;
 
-		public FileLogger(Dictionary<string, string> args)
+		public FileLogger(Dictionary<string, Variant> args)
 		{
-			logpath = args["Path"];
+			logpath = (string)args["Path"];
 		}
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, 
 			Dictionary<AgentClient, Hashtable> faultData)
 		{
-			string bucketKey = null;
 			string bucketData = null;
 
 			log.WriteLine("! Fault detected at iteration {0}", currentIteration);
 
-			foreach (var data in faultData.Values)
+			foreach (Hashtable data in faultData.Values)
 			{
-				foreach (var key in data.Keys)
+				foreach (object subdata in data.Values)
 				{
-					if (((string)key).IndexOf("Bucket") > -1)
+					if (subdata is Dictionary<string, Variant> && ((Dictionary<string,Variant>)subdata).ContainsKey("Bucket"))
 					{
-						bucketKey = (string)key;
-						bucketData = (string)data[key];
+						bucketData = (string)((Dictionary<string,Variant>)subdata)["Bucket"];
 						break;
 					}
 				}
 
-				if (bucketKey != null)
+				if (bucketData != null)
 					break;
 			}
 
@@ -81,7 +79,7 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-			if (bucketKey != null)
+			if (bucketData != null)
 			{
 				faultPath = Path.Combine(faultPath, bucketData);
 			}
@@ -127,6 +125,32 @@ namespace Peach.Core.Loggers
 		//        fout.write(monitorData[key])
 		//        fout.close()
 
+			foreach (AgentClient agent in faultData.Keys)
+			{
+				Hashtable data = faultData[agent];
+
+				foreach (string key in data.Keys)
+				{
+					string path = Path.Combine(faultPath, key);
+					Directory.CreateDirectory(path);
+
+					object subdata = data[key];
+					if (subdata is Dictionary<string, Variant>)
+					{
+						var dict = subdata as Dictionary<string, Variant>;
+						foreach (string dictKey in dict.Keys)
+						{
+							string fileName = Path.Combine(path, dictKey);
+							Variant value = dict[dictKey];
+
+							if (value.GetVariantType() == Variant.VariantType.String)
+								File.WriteAllText(fileName, (string)value);
+							else
+								File.WriteAllBytes(fileName, (byte[])value);
+						}
+					}
+				}
+			}
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
@@ -181,6 +205,9 @@ namespace Peach.Core.Loggers
 				log = null;
 			}
 
+			if (!Directory.Exists(logpath))
+				Directory.CreateDirectory(logpath);
+
 			ourpath = Path.Combine(logpath, context.config.pitFile);
 
 			if (context.config.runName == "DefaultRun")
@@ -195,12 +222,15 @@ namespace Peach.Core.Loggers
 			log.WriteLine("Peach Fuzzing Run");
 			log.WriteLine("=================");
 			log.WriteLine("");
-			log.WriteLine("Date of run: ");
-			log.WriteLine("Peach Version: ");
+			log.WriteLine("Date of run: " + context.config.runDateTime.ToString());
+			log.WriteLine("Peach Version: " + context.config.version);
+
+			// TODO - Random seed!
 			log.WriteLine("Seed: ");
-			log.WriteLine("Command line: ");
-			log.WriteLine("Pit File: ");
-			log.WriteLine("Run name: ");
+
+			log.WriteLine("Command line: " + context.config.commandLine);
+			log.WriteLine("Pit File: " + context.config.pitFile);
+			log.WriteLine("Run name: " + context.run.name);
 			log.WriteLine("");
 		}
 	}

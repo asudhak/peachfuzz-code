@@ -50,6 +50,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", false)]
 	public class WindowsDebugEngine : Monitor
     {
+		string _name = null;
 		static bool _firstIteration = true;
         string _commandLine = null;
         string _processName = null;
@@ -68,6 +69,8 @@ namespace Peach.Core.Agent.Monitors
 
         public WindowsDebugEngine(string name, Dictionary<string, Variant> args) : base(name, args)
         {
+			_name = name;
+
 			if (args.ContainsKey("CommandLine"))
 				_commandLine = (string)args["CommandLine"];
 			else if (args.ContainsKey("ProcessName"))
@@ -150,22 +153,29 @@ namespace Peach.Core.Agent.Monitors
 		PerformanceCounter _performanceCounter = null;
 		public float GetProcessCpuUsage(System.Diagnostics.Process proc)
 		{
-			if(_performanceCounter == null)
+			try
 			{
-				_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
-				_performanceCounter.NextValue();
-				if (_firstIteration)
+				if (_performanceCounter == null)
 				{
-					_firstIteration = false;
-					System.Threading.Thread.Sleep(1000);
+					_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
+					_performanceCounter.NextValue();
+					if (_firstIteration)
+					{
+						_firstIteration = false;
+						System.Threading.Thread.Sleep(1000);
+					}
+					else
+					{
+						System.Threading.Thread.Sleep(100);
+					}
 				}
-				else
-				{
-					System.Threading.Thread.Sleep(100);
-				}
-			}
 
-			return _performanceCounter.NextValue();
+				return _performanceCounter.NextValue();
+			}
+			catch
+			{
+				return 100;
+			}
 		}
 
 		public override Variant Message(string name, Variant data)
@@ -178,23 +188,30 @@ namespace Peach.Core.Agent.Monitors
 
 			if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && !_noCpuKill)
 			{
-				if (!_IsDebuggerRunning())
-					return new Variant(0);
-
-				int pid = _debugger.ProcessId;
-				var proc = System.Diagnostics.Process.GetProcessById(pid);
-				if (proc.HasExited)
-					return new Variant(0);
-
-				float cpu = GetProcessCpuUsage(proc);
-				//Console.WriteLine("cpu: " + cpu);
-				if (cpu < 1.0)
+				try
 				{
-					_StopDebugger();
-					return new Variant(0);
-				}
+					if (!_IsDebuggerRunning())
+						return new Variant(0);
 
-				return new Variant(1);
+					int pid = _debugger.ProcessId;
+					var proc = System.Diagnostics.Process.GetProcessById(pid);
+					if (proc.HasExited)
+						return new Variant(0);
+
+					float cpu = GetProcessCpuUsage(proc);
+					//Console.WriteLine("cpu: " + cpu);
+					if (cpu < 1.0)
+					{
+						_StopDebugger();
+						return new Variant(0);
+					}
+
+					return new Variant(1);
+				}
+				catch (ArgumentException)
+				{
+					// Might get thrown if process has already died.
+				}
 			}
 
 			return null;
@@ -235,12 +252,18 @@ namespace Peach.Core.Agent.Monitors
 
         public override bool DetectedFault()
         {
+			if (_debugger.caughtException)
+				return true;
+
 			return false;
         }
 
-        public override System.Collections.Hashtable GetMonitorData()
+        public override void GetMonitorData(System.Collections.Hashtable data)
         {
-            throw new NotImplementedException();
+			if (!DetectedFault())
+				return;
+
+			data.Add(_name + "WindowsDebugEngine", _debugger.crashInfo);
         }
 
         public override bool MustStop()
@@ -304,6 +327,10 @@ namespace Peach.Core.Agent.Monitors
 		public bool ignoreSecondChanceGuardPage = false;
 		public bool noCpuKill = false;
 
+		public bool dbgExited = false;
+		public bool caughtException = false;
+		public Dictionary<string, Variant> crashInfo = null;
+
 		public DebuggerInstance()
 		{
 			Instance = this;
@@ -324,10 +351,10 @@ namespace Peach.Core.Agent.Monitors
 			_thread = new Thread(new ThreadStart(Run));
 			_thread.Start();
 
-			while (_dbg == null)
+			while (_dbg == null && !dbgExited)
 				Thread.Sleep(100);
 
-			if (!_dbg.loadModules.WaitOne())
+			if (_dbg != null && !_dbg.loadModules.WaitOne())
 				Console.Error.WriteLine("WaitOne == false");
 		}
 
@@ -369,8 +396,16 @@ namespace Peach.Core.Agent.Monitors
 					// TODO
 					throw new NotImplementedException();
 				}
+
+				if (_dbg.handledException.WaitOne(0, false))
+				{
+					// Caught exception!
+					caughtException = true;
+					crashInfo = _dbg.crashInfo;
+				}
 			}
 
+			dbgExited = true;
 			_dbg = null;
         }
     }

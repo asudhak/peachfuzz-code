@@ -161,6 +161,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="crashtest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="ross.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>

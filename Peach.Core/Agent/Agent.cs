@@ -306,7 +306,11 @@ namespace Peach.Core.Agent
 			logger.Trace("GetMonitorData");
 			OnGetMonitorDataEvent();
 
-			throw new NotImplementedException();
+			Hashtable data = new Hashtable();
+			foreach (Monitor monitor in monitors.Values)
+				monitor.GetMonitorData(data);
+
+			return data;
 		}
 
 		public bool MustStop()

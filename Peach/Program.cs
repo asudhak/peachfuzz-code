@@ -149,6 +149,10 @@ namespace Peach
 
 				Engine e = new Engine(new ConsoleWatcher());
 				Dom dom = Analyzer.defaultParser.asParser(null, extra[0]);
+				config.pitFile = extra[0];
+
+				foreach (string arg in args)
+					config.commandLine += arg + " ";
 
 				if (extra.Count > 1)
 					e.startFuzzing(dom, dom.runs[extra[1]], config);

@@ -43,7 +43,10 @@ namespace Peach.Core.Agent
 	{
 		public Monitor(string name, Dictionary<string, Variant> args)
 		{
+			Name = name;
 		}
+
+		public string Name { get; set; }
 
         public abstract void StopMonitor();
 
@@ -75,7 +78,7 @@ namespace Peach.Core.Agent
         /// <returns>True if a fault was detected, else false.</returns>
         public abstract bool DetectedFault();
 
-        public abstract Hashtable GetMonitorData();
+        public abstract void GetMonitorData(Hashtable data);
         /// <summary>
         /// Can the fuzzing session continue, or must we stop?
         /// </summary>

@@ -186,7 +186,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 			try
 			{
-				while (!exitDebugger.WaitOne(0, false))
+				while (!exitDebugger.WaitOne(0, false) && !handledException.WaitOne(0, false))
 					dbgControl.WaitForEvent(0, 100);
 			}
 			catch
@@ -249,10 +249,10 @@ namespace Peach.Core.Debuggers.DebugEngine
 	[Guid("287D0DC2-2E79-49FB-9113-CA3F34941320")]
 	public class EventCallbacks : IDebugEventCallbacks
 	{
-		Regex reMajorHash = new Regex(@"^MAJOR_HASH:(0x.*)$", RegexOptions.Multiline);
-		Regex reMinorHash = new Regex(@"^MINOR_HASH:(0x.*)$", RegexOptions.Multiline);
-		Regex reClassification = new Regex(@"^CLASSIFICATION:(.*)$", RegexOptions.Multiline);
-		Regex reShortDescription = new Regex(@"^SHORT_DESCRIPTION:(.*)$", RegexOptions.Multiline);
+		Regex reMajorHash = new Regex(@"^MAJOR_HASH:(0x.*)\r$", RegexOptions.Multiline);
+		Regex reMinorHash = new Regex(@"^MINOR_HASH:(0x.*)\r$", RegexOptions.Multiline);
+		Regex reClassification = new Regex(@"^CLASSIFICATION:(.*)\r$", RegexOptions.Multiline);
+		Regex reShortDescription = new Regex(@"^SHORT_DESCRIPTION:(.*)\r$", RegexOptions.Multiline);
 
 		WindowsDebugEngine _engine;
 		public EventCallbacks(WindowsDebugEngine engine)
@@ -343,12 +343,18 @@ namespace Peach.Core.Debuggers.DebugEngine
 				if (IntPtr.Size == 4)
 				{
 					// 32bit
-					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load %s\\msec.dll", (uint)Const.DEBUG_EXECUTE_ECHO);
+					string path = Assembly.GetExecutingAssembly().Location;
+					path = Path.GetDirectoryName(path);
+					path = Path.Combine(path, "Debuggers\\DebugEngine\\msec86.dll");
+					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load "+path, (uint)Const.DEBUG_EXECUTE_ECHO);
 				}
 				else
 				{
 					// 64bit
-					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load %s\\msec.dll", (uint)Const.DEBUG_EXECUTE_ECHO);
+					string path = Assembly.GetExecutingAssembly().Location;
+					path = Path.GetDirectoryName(path);
+					path = Path.Combine(path, "Debuggers\\DebugEngine\\msec64.dll");
+					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load "+path, (uint)Const.DEBUG_EXECUTE_ECHO);
 				}
 
 				_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, "!exploitable -m", (uint)Const.DEBUG_EXECUTE_ECHO);
@@ -376,7 +382,9 @@ namespace Peach.Core.Debuggers.DebugEngine
 			}
 			finally
 			{
-				_engine.dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
+				//_engine.dbgClient.TerminateProcesses();
+				//_engine.dbgClient.EndSession((uint)Const.DEBUG_END_PASSIVE);
+				//_engine.dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
 				_engine.handledException.Set();
 			}
 		}

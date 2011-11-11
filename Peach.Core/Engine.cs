@@ -30,6 +30,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
 using Peach.Core.Agent;
 using Peach.Core.Dom;
 using System.Threading;
@@ -216,6 +217,12 @@ namespace Peach.Core
 			}
 		}
 
+		/// <summary>
+		/// Run a test case.  Contains main fuzzing loop.
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="test"></param>
+		/// <param name="context"></param>
 		protected void runTest(Dom.Dom dom, Test test, RunContext context)
 		{
 			try
@@ -299,8 +306,8 @@ namespace Peach.Core
 
 						try
 						{
-                            if (Engine.IterationStarting != null)
-							    Engine.IterationStarting(context, iterationCount, totalIterationCount);
+							if (Engine.IterationStarting != null)
+								Engine.IterationStarting(context, iterationCount, totalIterationCount);
 
 							// TODO - Handle bool for is reproduction
 							context.agentManager.IterationStarting((int)iterationCount, false);
@@ -315,30 +322,52 @@ namespace Peach.Core
 						{
 							throw e;
 						}
-						catch (SoftException se)
+						catch (SoftException)
 						{
 							// We should just eat SoftExceptions.
 							// They indicate we should move to the next
 							// iteration.
+
+							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								"SoftException, skipping to next iteration");
 						}
-						catch (PathException pe)
+						catch (PathException)
 						{
 							// We should just eat PathException.
 							// They indicate we should move to the next
 							// iteration.
+
+							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								"PathException, skipping to next iteration");
+						}
+						finally
+						{
+							if (Engine.IterationFinished != null)
+								Engine.IterationFinished(context, iterationCount);
 						}
 
 						// TODO: Pause for run.waitTime
 
 						if (context.agentManager.DetectedFault())
 						{
-							// Now what?
-							throw new NotImplementedException("handle fault");
+							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								"detected fault on iteration " + iterationCount);
+
+							var monitorData = context.agentManager.GetMonitorData();
+							
+							// TODO get state model data
+
+							OnFault(context, iterationCount, null, monitorData);
 						}
 
 						// TODO: Check for agent stop signal
 						if (context.agentManager.MustStop())
+						{
+							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								"agents say we must stop!");
+
 							throw new PeachException("Error, agent monitor stopped run!");
+						}
 
 						// Increment to next test
 						mutationStrategy.next();
@@ -347,6 +376,9 @@ namespace Peach.Core
 					}
 					catch (RedoIterationException rte)
 					{
+						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							"redoing test iteration for the " + redoCount + " time.");
+
 						// Repeat the same iteration unless
 						// we have already retried 3 times.
 
@@ -360,9 +392,11 @@ namespace Peach.Core
 
 				//   - 
 			}
-			catch (MutatorCompleted mc)
+			catch (MutatorCompleted)
 			{
 				// Ignore, signals end of fuzzing run
+				context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+					"MutatorCompleted exception, ending fuzzing");
 			}
 			// TODO: Catch keyboard interrupt
 			//catch (Exception e)
@@ -478,6 +512,27 @@ namespace Peach.Core
 		/// Name of PIT file (used by logger)
 		/// </summary>
 		public string pitFile = null;
+
+		/// <summary>
+		/// Command line if any (used by logger)
+		/// </summary>
+		public string commandLine = null;
+
+		/// <summary>
+		/// Date and time of run (used by logger)
+		/// </summary>
+		public DateTime runDateTime = DateTime.Now;
+
+		/// <summary>
+		/// Peach version currently running (used by logger)
+		/// </summary>
+		public string version
+		{
+			get
+			{
+				return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+			}
+		}
 	}
 }
 

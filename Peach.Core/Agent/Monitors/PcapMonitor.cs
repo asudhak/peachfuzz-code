@@ -149,7 +149,7 @@ namespace Peach.Core.Agent.Monitors
 			return false;
 		}
 
-		public override System.Collections.Hashtable GetMonitorData()
+		public override void GetMonitorData(Hashtable data)
 		{
 			// Return log
 			byte[] buff;
@@ -162,7 +162,7 @@ namespace Peach.Core.Agent.Monitors
 			var ret = new Hashtable();
 			ret["NetworkCapture.pcap"] = buff;
 
-			return ret;
+			data[Name + "_NetworkCapture"] = ret;
 		}
 
 		public override bool MustStop()

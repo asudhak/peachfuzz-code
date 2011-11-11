@@ -1891,7 +1891,7 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")
-					throw new NotImplementedException("todo Logger");
+					run.logger = handleLogger(child);
 
 				if (child.Name == "Test")
 				{
@@ -1901,6 +1901,48 @@ namespace Peach.Core.Analyzers
 			}
 
 			return run;
+		}
+
+		protected Logger handleLogger(XmlNode node)
+		{
+			string reference = getXmlAttribute(node, "class");
+			Type pubType = null;
+
+			// Locate PublisherAttribute classes and check name
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is LoggerAttribute)
+						{
+							if ((attrib as LoggerAttribute).invokeName == reference)
+								pubType = t;
+						}
+					}
+				}
+			}
+
+			if (pubType == null)
+				throw new PeachException("Error, unable to locate logger '" + reference + "'.");
+
+			Type[] argTypes = new Type[1];
+			argTypes[0] = typeof(Dictionary<string, Variant>);
+			ConstructorInfo pubCo = pubType.GetConstructor(argTypes);
+
+			object[] args = new object[1];
+			args[0] = handleParams(node);
+
+			Logger logger = pubCo.Invoke(args) as Logger;
+
+			if(logger == null)
+				throw new PeachException("Error, unable to create logger '" + reference + "'.");
+
+			return logger;
 		}
 
 		#endregion

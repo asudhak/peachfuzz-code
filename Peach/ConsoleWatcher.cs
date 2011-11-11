@@ -44,7 +44,7 @@ namespace Peach
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 		{
-			throw new NotImplementedException();
+			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
 		}
 
 		protected override void Engine_IterationFinished(RunContext context, uint currentIteration)

@@ -294,7 +294,7 @@ namespace Peach.Core.Dom
 				while (true)
 				{
 					ret = context.agentManager.Message("Action.Call.IsRunning", new Variant(this.method));
-					if (((int)ret) == 0)
+					if (ret != null && ((int)ret) == 0)
 						break;
 
 					// TODO - Expose 10 as the timeout

@@ -1000,6 +1000,12 @@
     <Compile Include="Watcher.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Debuggers\DebugEngine\MSEC64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Debuggers\DebugEngine\MSEC86.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="defaults.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
