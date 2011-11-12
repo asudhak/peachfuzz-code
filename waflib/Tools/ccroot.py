@@ -493,7 +493,7 @@ def apply_vnum(self):
 		t3 = bld.symlink_as(path + os.sep + libname, name3)
 		self.vnum_install_task = (t1, t2, t3)
 
-	if '-dynamiclib' in self.env['LINKFLAGS']:
+	if '-dynamiclib' in self.env['LINKFLAGS'] and getattr(self, 'install_task', None):
 		self.env.append_value('LINKFLAGS', ['-install_name', self.install_task.get_install_path()])
 
 class vnum(Task.Task):
