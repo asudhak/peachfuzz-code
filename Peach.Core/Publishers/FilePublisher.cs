@@ -34,20 +34,21 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Publishers
 {
+	[Publisher("File")]
 	[Publisher("FileStream")]
 	[Publisher("file.FileWriter")]
 	[Publisher("file.FileReader")]
 	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing", true)]
 	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default true]", false)]
 	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
-	public class File : Publisher
+	public class FilePublisher : Publisher
 	{
 		public string fileName;
 		public bool overwrite = true;
 		public bool append = false;
 		protected FileStream stream = null;
 
-		public File(Dictionary<string, Variant> args) : base(args)
+		public FilePublisher(Dictionary<string, Variant> args) : base(args)
 		{
 			if (!args.ContainsKey("FileName"))
 				throw new PeachException("Error, File publisher missing parameter 'FileName' which is required.");

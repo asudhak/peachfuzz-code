@@ -38,11 +38,11 @@ namespace Peach.Core.Publishers
 	[PublisherAttribute("Stdout")]
 	[PublisherAttribute("stdout.Stdout")]
 	[NoParametersAttribute()]
-	public class Console : Publisher
+	public class ConsolePublisher : Publisher
 	{
 		Stream _sout = null;
 
-		public Console(Dictionary<string, Variant> args)
+		public ConsolePublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}

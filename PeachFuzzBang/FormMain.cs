@@ -74,7 +74,7 @@ namespace PeachFuzzBang
 			// Publisher
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["FileName"] = new Variant(textBoxFuzzedFile.Text);
-			Peach.Core.Publishers.File file = new Peach.Core.Publishers.File(args);
+			Peach.Core.Publishers.FilePublisher file = new Peach.Core.Publishers.FilePublisher(args);
 
 			// StateModel
 			StateModel stateModel = new StateModel();

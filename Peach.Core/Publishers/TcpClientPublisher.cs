@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading;
 using System.Net.Sockets;
 using Peach.Core.Dom;
 
@@ -42,7 +43,7 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
 	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
 	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
-	public class TcpPublisher : Publisher
+	public class TcpClientPublisher : Publisher
 	{
 		string _host = null;
 		int _port = 0;
@@ -53,9 +54,42 @@ namespace Peach.Core.Publishers
 		MemoryStream _buffer = new MemoryStream();
 		int _pos = 0;
 
-		public TcpPublisher(Dictionary<string, Variant> args)
+		public TcpClientPublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
+			_host = (string) args["Host"];
+			_port = (int)args["Port"];
+
+			if (args.ContainsKey("Timeout"))
+				_timeout = (int)args["Timeout"];
+			if (args.ContainsKey("Throttle"))
+				_throttle = (int)args["Throttle"];
+		}
+
+		public int Timeout
+		{
+			get { return _timeout; }
+			set { _timeout = value; }
+		}
+
+		public int Throttle
+		{
+			get { return _throttle; }
+			set { _throttle = value; }
+		}
+
+		protected TcpClient TcpClient
+		{
+			get { return _tcpClient; }
+			set
+			{
+				_tcpClient = value;
+
+				if (_tcpClient == null)
+					_tcpStream = null;
+				else
+					_tcpStream = _tcpClient.GetStream();
+			}
 		}
 
 		/// <summary>
@@ -72,17 +106,24 @@ namespace Peach.Core.Publishers
 
 			OnOpen(action);
 
-			try
+			for (int cnt = 0; cnt < 10 && _tcpClient == null; cnt++)
 			{
-				_tcpClient = new TcpClient(_host, _port);
+				try
+				{
+					_tcpClient = new TcpClient(_host, _port);
+				}
+				catch (SocketException)
+				{
+					Thread.Sleep(500);
+				}
 			}
-			catch (SocketException)
-			{
-				throw new SoftException();
-			}
+
+			if (_tcpClient == null)
+				throw new PeachException("Unable to connect to remote host " + _host + " on port " + _port);
 
 			_tcpStream = _tcpClient.GetStream();
 		}
+
 		/// <summary>
 		/// Close a resource.  Will be called automatically when
 		/// state model exists.  Can also be called explicitly when
@@ -193,22 +234,6 @@ namespace Peach.Core.Publishers
 		}
 	}
 
-	[Publisher("TcpListener")]
-	[Publisher("tcp.TcpListener")]
-	[ParameterAttribute("Interface", typeof(string), "Interface to bind to (0.0.0.0 for all)", true)]
-	[ParameterAttribute("Port", typeof(int), "Local port to listen on", true)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection", false)]
-	public class TcpListenerPublisher : Publisher
-	{
-		string _interface = null;
-		short _port = 0;
-		int _timeout = 0;
-
-		public TcpListenerPublisher(Dictionary<string, Variant> args)
-			: base(args)
-		{
-		}
-	}
 }
 
 // end
