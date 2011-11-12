@@ -374,11 +374,6 @@ class Dist(Context.Context):
 		Add a file to the tar archive. Transform symlinks into files if the files lie out of the project tree.
 		"""
 		p = x.abspath()
-		realpath = os.path.realpath(p)
-		dir = os.path.dirname(self.path.abspath())
-		if not realpath.startswith(dir):
-			p = realpath
-
 		tinfo = tar.gettarinfo(name=p, arcname=self.get_tar_prefix() + '/' + x.path_from(self.base_path))
 		tinfo.uid   = 0
 		tinfo.gid   = 0
