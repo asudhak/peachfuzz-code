@@ -494,7 +494,8 @@ def apply_vnum(self):
 		self.vnum_install_task = (t1, t2, t3)
 
 	if '-dynamiclib' in self.env['LINKFLAGS'] and getattr(self, 'install_task', None):
-		self.env.append_value('LINKFLAGS', ['-install_name', self.install_task.get_install_path()])
+		path = os.path.join(self.install_task.get_install_path(), self.link_task.outputs[0].name)
+		self.env.append_value('LINKFLAGS', ['-install_name', path])
 
 class vnum(Task.Task):
 	"""
