@@ -204,15 +204,15 @@ def apply_link(self):
 	self.link_task = self.create_task(link, objs)
 	self.link_task.add_target(self.target)
 
-	if getattr(self.bld, 'is_install', None):
-		# remember that the install paths are given by the task generators
-		try:
-			inst_to = self.install_path
-		except AttributeError:
-			inst_to = self.link_task.__class__.inst_to
-		if inst_to:
-			# install a copy of the node list we have at this moment (implib not added)
-			self.install_task = self.bld.install_files(inst_to, self.link_task.outputs[:], env=self.env, chmod=self.link_task.chmod)
+	# remember that the install paths are given by the task generators
+	# we need to define install_task even during the build phase because others might need the installation path
+	try:
+		inst_to = self.install_path
+	except AttributeError:
+		inst_to = self.link_task.__class__.inst_to
+	if inst_to:
+		# install a copy of the node list we have at this moment (implib not added)
+		self.install_task = self.bld.install_files(inst_to, self.link_task.outputs[:], env=self.env, chmod=self.link_task.chmod)
 
 @taskgen_method
 def use_rec(self, name, **kw):
