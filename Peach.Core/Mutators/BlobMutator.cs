@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
+    [Mutator("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
 	public class BlobMutator : BlobBitFlipperMutator
 	{
         // members

@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Randomize the order of the array")]
+    [Mutator("Randomize the order of the array")]
 	public class ArrayRandomizeOrderMutator : ArrayVarianceMutator
 	{
         // members

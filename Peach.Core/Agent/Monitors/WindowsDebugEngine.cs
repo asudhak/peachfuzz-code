@@ -193,17 +193,23 @@ namespace Peach.Core.Agent.Monitors
 					if (!_IsDebuggerRunning())
 						return new Variant(0);
 
-					int pid = _debugger.ProcessId;
-					var proc = System.Diagnostics.Process.GetProcessById(pid);
-					if (proc.HasExited)
-						return new Variant(0);
-
-					float cpu = GetProcessCpuUsage(proc);
-					//Console.WriteLine("cpu: " + cpu);
-					if (cpu < 1.0)
+					try
 					{
-						_StopDebugger();
-						return new Variant(0);
+						int pid = _debugger.ProcessId;
+						var proc = System.Diagnostics.Process.GetProcessById(pid);
+						if (proc.HasExited)
+							return new Variant(0);
+
+						float cpu = GetProcessCpuUsage(proc);
+						//Console.WriteLine("cpu: " + cpu);
+						if (cpu < 1.0)
+						{
+							_StopDebugger();
+							return new Variant(0);
+						}
+					}
+					catch
+					{
 					}
 
 					return new Variant(1);

@@ -35,7 +35,7 @@ using Ionic.Zip;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
+    [Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
     [Hint("type", "Allows string to be mutated by the XmlW3CMutator.")]
 	public class XmlW3CParserTestsMutator : Mutator
 	{

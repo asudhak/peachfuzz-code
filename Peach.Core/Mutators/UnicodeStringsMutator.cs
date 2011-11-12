@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Perform common unicode string mutations")]
+    [Mutator("Perform common unicode string mutations")]
 	public partial class UnicodeStringsMutator : Mutator
 	{
         // members

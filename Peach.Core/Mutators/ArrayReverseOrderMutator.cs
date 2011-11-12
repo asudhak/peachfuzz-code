@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Reverse the order of the array")]
+    [Mutator("Reverse the order of the array")]
     public class ArrayReverseOrderMutator : ArrayVarianceMutator
 	{
         // members

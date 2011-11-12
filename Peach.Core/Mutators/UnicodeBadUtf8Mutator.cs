@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Generates bad UTF-8 strings")]
+    [Mutator("Generates bad UTF-8 strings")]
 	public partial class UnicodeBadUtf8Mutator : Mutator
 	{
         // members

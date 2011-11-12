@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Swap two nodes in the data model that are near each other")]
+    [Mutator("Swap two nodes in the data model that are near each other")]
 	public class DataElementSwapNearNodesMutator : Mutator
 	{
         // members

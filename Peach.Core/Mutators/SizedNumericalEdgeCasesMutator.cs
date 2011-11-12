@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Change the length of sizes to numerical edge cases")]
+    [Mutator("Change the length of sizes to numerical edge cases")]
     [Hint("SizedNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class SizedNumericalEdgeCasesMutator : Mutator
 	{

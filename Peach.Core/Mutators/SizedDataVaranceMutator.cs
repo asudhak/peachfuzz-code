@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("Change the length of sized data to count - N to count + N. Size indicator will stay the same.")]
+    [Mutator("Change the length of sized data to count - N to count + N. Size indicator will stay the same.")]
     [Hint("SizedDataVaranceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class SizedDataVaranceMutator : Mutator
 	{

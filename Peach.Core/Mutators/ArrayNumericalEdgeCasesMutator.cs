@@ -33,7 +33,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    //[Mutator("ArrayNumericalEdgeCasesMutator")]
+    [Mutator("ArrayNumericalEdgeCasesMutator")]
     public class ArrayNumericalEdgeCasesMutator : ArrayVarianceMutator
     {
         // members
