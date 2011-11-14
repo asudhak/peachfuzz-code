@@ -50,6 +50,14 @@ namespace Peach
 			Console.ForegroundColor = color;
 		}
 
+		protected override void Engine_HaveCount(RunContext context, uint totalIterations)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine("\n -- A total of " + totalIterations + " iterations will be performed --\n");
+			Console.ForegroundColor = color;
+		}
+
 		protected override void Engine_IterationFinished(RunContext context, uint currentIteration)
 		{
 		}
@@ -119,11 +127,17 @@ namespace Peach
 
 		protected override void Engine_RunStarting(RunContext context)
 		{
+			if (context.config.countOnly)
+			{
+				WriteInfoMark();
+				Console.WriteLine("Calculating total iterations by running one.");
+			}
+
 			WriteInfoMark();
 			Console.WriteLine("Run '" + context.run.name + "' starting.");
 		}
 
-		void WriteInfoMark()
+		public static void WriteInfoMark()
 		{
 			var foregroundColor = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -135,7 +149,7 @@ namespace Peach
 			Console.ForegroundColor = foregroundColor;
 		}
 
-		void WriteErrorMark()
+		public static void WriteErrorMark()
 		{
 			var foregroundColor = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.DarkGray;

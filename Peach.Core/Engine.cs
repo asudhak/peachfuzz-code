@@ -60,6 +60,7 @@ namespace Peach.Core
 		public delegate void FaultEventHandler(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
+		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
 
 		public static event RunStartingEventHandler RunStarting;
 		public static event RunFinishedEventHandler RunFinished;
@@ -70,6 +71,7 @@ namespace Peach.Core
 		public static event FaultEventHandler Fault;
 		public static event TestFinishedEventHandler TestFinished;
 		public static event TestErrorEventHandler TestError;
+		public static event HaveCountEventHandler HaveCount;
 
 		public static void OnRunStarting(RunContext context)
 		{
@@ -115,6 +117,11 @@ namespace Peach.Core
 		{
 			if (TestError != null)
 				TestError(context, e);
+		}
+		public static void OnHaveCount(RunContext context, uint totalIterations)
+		{
+			if (HaveCount != null)
+				HaveCount(context, totalIterations);
 		}
 
 		#endregion
@@ -293,6 +300,13 @@ namespace Peach.Core
 
 							if (iterationRangeStop != null && iterationRangeStop < totalIterationCount)
 								totalIterationCount = iterationRangeStop;
+						}
+
+						// - Just getting count?
+						if (context.config.countOnly && iterationCount > 1 && totalIterationCount != null)
+						{
+							OnHaveCount(context, (uint)totalIterationCount);
+							break;
 						}
 
 						// - Should we skip ahead?

@@ -52,6 +52,7 @@ namespace Peach.Core
 			Engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
 			Engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 			Engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
+			Engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
 			RunContext.Debug += new RunContext.DebugEventHandler(RunContext_Debug);
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
@@ -60,6 +61,10 @@ namespace Peach.Core
 			State.ChangingState += new StateChangingStateEventHandler(State_ChangingState);
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			Core.Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
+		}
+
+		protected virtual void Engine_HaveCount(RunContext context, uint totalIterations)
+		{
 		}
 
 		protected virtual void Action_Finished(Core.Dom.Action action)

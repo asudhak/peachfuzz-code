@@ -143,7 +143,8 @@ namespace Peach
 					ConstructorInfo co = agentType.GetConstructor(new Type[0]);
 					IAgentServer agentServer = (IAgentServer) co.Invoke(new object[0]);
 
-					Console.WriteLine(" * Starting agent server");
+					ConsoleWatcher.WriteInfoMark();
+					Console.WriteLine("Starting agent server");
 
 					agentServer.Run(new Dictionary<string, string>());
 					return;
@@ -151,7 +152,8 @@ namespace Peach
 
 				if (test)
 				{
-					Console.Write(" * Validating file [" + extra[0] + "]...");
+					ConsoleWatcher.WriteInfoMark();
+					Console.Write("Validating file [" + extra[0] + "]...");
 					Analyzer.defaultParser.asParserValidation(null, extra[0]);
 					Console.WriteLine("No Errors Found.");
 					return;

@@ -43,7 +43,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Number")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("size", typeof(uint), "size in bits [8, 16, 24, 32, 64]", true)]
+	[ParameterAttribute("size", typeof(uint), "size in bits", true)]
 	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	[Serializable]
@@ -70,14 +70,14 @@ namespace Peach.Core.Dom
 		public Number(string name, long value, int size)
 			: base(name)
 		{
-			_size = size;
+			Size = size;
 			DefaultValue = new Variant(value);
 		}
 
 		public Number(string name, long value, int size, bool signed, bool isLittleEndian)
 			: base(name)
 		{
-			_size = size;
+			Size = size;
 			_signed = signed;
 			_isLittleEndian = isLittleEndian;
 			DefaultValue = new Variant(value);
