@@ -147,11 +147,13 @@ namespace Peach.Core.Mutators
             // pick a random bit
             int bit = context.random.Next(bs.LengthBits);
 
-            // seek
+            // seek, read, rewind
+            bs.SeekBits(bit, SeekOrigin.Begin);
+            var value = bs.ReadBit();
             bs.SeekBits(bit, SeekOrigin.Begin);
 
             // flip
-            if (bs.ReadBit() == 0)
+            if (value == 0)
                 bs.WriteBit(1);
             else
                 bs.WriteBit(0);
