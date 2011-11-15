@@ -211,9 +211,6 @@ namespace Peach.Core.Mutators
             if (end > start + 100)
                 end = start + 100;
 
-            start = 0;
-            end = 3;
-
             foreach (int i in ArrayExtensions.Range(start, end, 1))
             {
                 var pt1 = ArrayExtensions.Slice(data, 0, i);

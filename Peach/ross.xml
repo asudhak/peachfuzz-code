@@ -9,7 +9,7 @@
       <Hint name="FiniteRandomNumbers-N" value="5"/>
     </Number>-->
     <!--<String name="str1" value="Hello, World!"/>-->
-    <Blob name="blob1" valueType="hex" value="00"/>
+    <Blob name="blob1" length="1" valueType="hex" value="00"/>
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">

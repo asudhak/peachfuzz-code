@@ -116,33 +116,22 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            //int c;
-            //foreach (int i in context.random.Range(0, context.random.Next(10), 1))
-            //{
-            //    if (length - 1 <= 0)
-            //        c = 0;
-            //    else
-            //        c = context.random.Next(length - 1);
-
-            //    data = performMutation(obj, data, c);
-            //}
-
             byte[] data = obj.Value.Value;
             BitStream bs = new BitStream(data);
 
             // pick a random bit
             int bit = context.random.Next(bs.LengthBits);
 
-            // seek
+            // seek, read, rewind
+            bs.SeekBits(bit, SeekOrigin.Begin);
+            var value = bs.ReadBit();
             bs.SeekBits(bit, SeekOrigin.Begin);
 
             // flip
-            if (bs.ReadBit() == 0)
+            if (value == 0)
                 bs.WriteBit(1);
             else
                 bs.WriteBit(0);
-
-            var x = bs.Value;
 
             obj.MutatedValue = new Variant(bs.Value);
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
@@ -169,43 +158,6 @@ namespace Peach.Core.Mutators
 
             obj.MutatedValue = new Variant(bs.Value);
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
-        }
-
-        // PERFORM_MUTATION
-        //
-        private byte[] performMutation(DataElement obj, byte[] data, int pos)
-        {
-            //int currLength = data.Length;
-
-            //if (currLength == 0)
-            //    return data;
-
-            //int[] bytes = { 1, 2, 4, 8 };
-            //int size = context.random.Choice(bytes);
-
-            //if (pos + size >= length)
-            //    pos = length - size;
-            //if (pos < 0)
-            //    pos = 0;
-            //if (size > length)
-            //    size = length;
-
-            //foreach (int i in context.random.Range(pos, pos + size, 1))
-            //{
-            //    byte b = data[i];
-            //    b ^= (byte)(context.random.Next(255));
-
-            //    // reassemble data
-            //    var pt1 = context.random.Slice(data, 0, i);
-            //    byte[] pt2 = { b };
-            //    var pt3 = context.random.Slice(data, i + 1, data.Length);
-
-            //    data = context.random.Combine(pt1, pt2, pt3);
-            //}
-
-            //return data;
-
-            return null;
         }
 	}
 }

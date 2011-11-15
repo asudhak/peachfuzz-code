@@ -206,10 +206,6 @@ namespace Peach.Core.Mutators
                     objOf.MutatedValue = new Variant("");
                 }
             }
-
-            //objOf.Invalidate();
-            //var wtf = obj.GenerateValue();
-            //int wolol = 0;
         }
 	}
 }

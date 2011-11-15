@@ -809,8 +809,9 @@ namespace Peach.Core.IO
 				//    // Shift and mask off 1 byte
 				//    return (byte)((buff[byteIndex] >> (byte)bitIndex) & 1);
 				//else
-					// Shift and mask off 1 byte
-					return (byte)((buff[byteIndex] >> (byte)(7 - bitIndex)) & 1);
+			    
+                // Shift and mask off 1 byte
+                return (byte)((buff[byteIndex] >> (byte)(7 - bitIndex)) & 1);
 			}
 			finally
 			{
