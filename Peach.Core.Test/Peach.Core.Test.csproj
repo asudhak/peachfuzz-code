@@ -61,6 +61,7 @@
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
     <Compile Include="Mutators\BlobBitFlipperMutatorTests.cs" />
+    <Compile Include="Mutators\BlobMutatorTests.cs" />
     <Compile Include="Mutators\FiniteRandomNumbersMutatorTests.cs" />
     <Compile Include="Mutators\NumericalEdgeCaseMutatorTests.cs" />
     <Compile Include="Mutators\NumericalVarianceMutatorTests.cs" />
