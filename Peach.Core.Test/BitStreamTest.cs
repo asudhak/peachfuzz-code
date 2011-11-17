@@ -208,7 +208,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 
 			Console.WriteLine(Byte2String((byte)sbyte.MaxValue));
-			foreach (byte b in bs.buff)
+			foreach (byte b in bs.Value)
 				Console.WriteLine(Byte2String(b));
 			Console.WriteLine(Byte2String((byte)bs.ReadInt8()));
 
@@ -220,7 +220,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 
 			Console.WriteLine(Short2String(short.MaxValue));
-			foreach (byte b in bs.buff)
+			foreach (byte b in bs.Value)
 				Console.Write(Byte2String(b));
 			Console.WriteLine("\n" + Short2String(bs.ReadInt16()));
 
@@ -232,7 +232,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 
 			Console.WriteLine(Int2String(67305985));
-			foreach (byte b in bs.buff)
+			foreach (byte b in bs.Value)
 				Console.Write(Byte2String(b));
 			Console.WriteLine("\n" + Int2String(bs.ReadInt32()));
 
@@ -281,7 +281,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 
 			Console.WriteLine(Short2String(short.MinValue));
-			foreach (byte b in bs.buff)
+			foreach (byte b in bs.Value)
 				Console.Write(Byte2String(b));
 			Console.WriteLine("\n" + Short2String(bs.ReadInt16()));
 
@@ -381,7 +381,7 @@ namespace Peach.Core.Test
 			//bs.LittleEndian();
 
 			Console.WriteLine("After 3");
-			foreach (byte b in bs.buff)
+			foreach (byte b in bs.Value)
 				Console.Write(Byte2String(b));
 			Console.WriteLine("");
 
@@ -390,7 +390,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 
 			Console.WriteLine(Byte2String((byte)sbyte.MaxValue));
-			foreach (byte b in bs.buff)
+			foreach (byte b in bs.Value)
 				Console.Write(Byte2String(b));
 
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);

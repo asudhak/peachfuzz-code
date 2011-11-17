@@ -154,6 +154,8 @@ namespace Peach.Core.Dom
 					// TODO - What if null?
 					if (_of == null)
 						System.Diagnostics.Debugger.Break();
+
+					_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 				}
 
 				return _of;

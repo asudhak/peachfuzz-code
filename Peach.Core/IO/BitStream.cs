@@ -56,20 +56,11 @@ namespace Peach.Core.IO
 	[Serializable]
 	public class BitStream
 	{
-		/// <summary>
-		/// Data element positions in stream.  Key
-		/// is element name (full to data model) and
-		/// value = [0] start bit position, [1] length in bits.
-		/// </summary>
-		protected Dictionary<string, int[]> _elementPositions = new Dictionary<string, int[]>();
-		
-		public List<byte> buff;
-		protected int pos = 0;
-		protected int len = 0;
+		protected Dictionary<string, long[]> _elementPositions = new Dictionary<string, long[]>();
+		protected Stream stream;
+		protected long pos = 0;
+		protected long len = 0;
 		protected bool _isLittleEndian = true;
-		protected bool isNormalRead = true;
-		protected bool _padding = true;
-		protected bool _readLeftToRight = false;
 		protected EndianBitConverter bitConverter = null;
 
 		/// <summary>
@@ -77,7 +68,18 @@ namespace Peach.Core.IO
 		/// </summary>
 		public BitStream()
 		{
-			buff = new List<byte>();
+			stream = new MemoryStream();
+			LittleEndian();
+		}
+
+		/// <summary>
+		/// Constructor for BitStream class
+		/// </summary>
+		/// <param name="buff">Use buff as initial stream data.</param>
+		public BitStream(Stream stream)
+		{
+			this.stream = stream;
+			len = stream.Length * 8;
 			LittleEndian();
 		}
 
@@ -87,9 +89,18 @@ namespace Peach.Core.IO
 		/// <param name="buff">Use buff as initial stream data.</param>
 		public BitStream(byte[] buff)
 		{
-			this.buff = new List<byte>(buff);
-			len = buff.Length * 8;
+			stream = new MemoryStream();
+			stream.Write(buff, 0, buff.Length);
+			len = stream.Length * 8;
 			LittleEndian();
+		}
+
+		/// <summary>
+		/// Is the current endianess set to little?
+		/// </summary>
+		public bool IsLittleEndian
+		{
+			get { return _isLittleEndian; }
 		}
 
 		/// <summary>
@@ -98,25 +109,23 @@ namespace Peach.Core.IO
 		/// </summary>
 		public void Clear()
 		{
-			_elementPositions = new Dictionary<string, int[]>();
-			buff = new List<byte>();
+			if (!(stream is MemoryStream))
+				throw new ApplicationException("Error, unable to reset when stream is not a MemoryStream.");
+
+			stream = new MemoryStream();
+			_elementPositions = new Dictionary<string, long[]>();
 			pos = 0;
 			len = 0;
 			LittleEndian();
 		}
 
-		protected BitStream(byte [] buff, int pos, int len,
-			bool isLittleEndian, bool isNormalRead,
-			bool padding, bool readLeftToRight,
-			Dictionary<string, int[]> _elementPositions)
+		protected BitStream(Stream stream, long pos, long len,
+			bool isLittleEndian, Dictionary<string, long[]> _elementPositions)
 		{
-			this.buff = new List<byte>(buff);
+			this.stream = stream;
 			this.pos = pos;
 			this.len = len;
 			this._isLittleEndian = isLittleEndian;
-			this.isNormalRead = isNormalRead;
-			this._padding = padding;
-			this._readLeftToRight = readLeftToRight;
 			this._elementPositions = _elementPositions;
 		}
 
@@ -126,14 +135,20 @@ namespace Peach.Core.IO
 		/// <returns>Returns exact copy of this BitStream</returns>
 		public BitStream Clone()
 		{
-			return new BitStream(buff.ToArray(), pos, len, _isLittleEndian, 
-				isNormalRead, _padding, _readLeftToRight, _elementPositions);
+			if (stream is MemoryStream)
+			{
+				Dictionary<string, long[]> copyOfElementPositions = new Dictionary<string, long[]>(_elementPositions);
+				return new BitStream(new MemoryStream(((MemoryStream)stream).ToArray()), pos, len, _isLittleEndian,
+					copyOfElementPositions);
+			}
+
+			throw new ApplicationException("Error, unable to clone stream.");
 		}
 
 		/// <summary>
 		/// Length in bits of buffer
 		/// </summary>
-		public int LengthBits
+		public long LengthBits
 		{
 			get { return len; }
 		}
@@ -142,7 +157,7 @@ namespace Peach.Core.IO
 		/// Length in bytes of buffer.  size is
 		/// badded out to 8 bit boundry.
 		/// </summary>
-		public int LengthBytes
+		public long LengthBytes
 		{
 			get
 			{
@@ -154,7 +169,7 @@ namespace Peach.Core.IO
 		/// Current position in bits
 		/// </summary>
 		/// <returns>Returns current bit position</returns>
-		public int TellBits()
+		public long TellBits()
 		{
 			return pos;
 		}
@@ -163,7 +178,7 @@ namespace Peach.Core.IO
 		/// Current position in bytes
 		/// </summary>
 		/// <returns>Returns current byte position</returns>
-		public int TellBytes()
+		public long TellBytes()
 		{
 			return pos / 8;
 		}
@@ -174,18 +189,18 @@ namespace Peach.Core.IO
 		/// </summary>
 		/// <param name="offset">Offset from origion to seek to</param>
 		/// <param name="origin">Origin to seek from</param>
-		public void SeekBits(int offset, SeekOrigin origin)
+		public void SeekBits(long offset, SeekOrigin origin)
 		{
 			switch (origin)
 			{
 				case SeekOrigin.Begin:
-					pos = (int)offset;
+					pos = offset;
 					break;
 				case SeekOrigin.Current:
-					pos = (int)(((long)pos) + offset);
+					pos = pos + offset;
 					break;
 				case SeekOrigin.End:
-					pos = (int)(((long)len) - offset);
+					pos = len - offset;
 					break;
 			}
 		}
@@ -230,15 +245,6 @@ namespace Peach.Core.IO
 		#region BitControl
 
 		/// <summary>
-		/// Is byte padding enabled.
-		/// </summary>
-		public bool Padding
-		{
-			get { return _padding; }
-			set { _padding = value; }
-		}
-
-		/// <summary>
 		/// Pack/unpack as big endian values.
 		/// </summary>
 		public void BigEndian()
@@ -256,32 +262,6 @@ namespace Peach.Core.IO
 			bitConverter = new LittleEndianBitConverter();
 		}
 
-		///// <summary>
-		///// Pack/Unack bits from left to right.  Normally
-		///// big endian is left to right and little endian
-		///// is right to left.
-		///// 
-		///// Changing endianness via LittleEndian() or BigEndian()
-		///// will reset this to default method.
-		///// </summary>
-		//public void ReadLeftToRight()
-		//{
-		//    _readLeftToRight = true;
-		//}
-
-		///// <summary>
-		///// Pack/Unack bits from right to left.  Normally
-		///// big endian is left to right and little endian
-		///// is right to left.
-		///// 
-		///// Changing endianness via LittleEndian() or BigEndian()
-		///// will reset this to default method.
-		///// </summary>
-		//public void ReadRightToLeft()
-		//{
-		//    _readLeftToRight = false;
-		//}
-
 		#endregion
 
 		#region DataElements
@@ -291,7 +271,7 @@ namespace Peach.Core.IO
 		/// </summary>
 		/// <param name="e">DataElement that has already been written to stream</param>
 		/// <returns>Returns size in bits of DataElement</returns>
-		public int DataElementLength(DataElement e)
+		public long DataElementLength(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
@@ -304,7 +284,7 @@ namespace Peach.Core.IO
 		/// </summary>
 		/// <param name="fullName">Fullname of DataElement that has already been written to stream</param>
 		/// <returns>Returns size in bits of DataElement</returns>
-		public int DataElementLength(string fullName)
+		public long DataElementLength(string fullName)
 		{
 			if (fullName == null)
 				throw new ApplicationException("fullName is null");
@@ -320,7 +300,7 @@ namespace Peach.Core.IO
 		/// </summary>
 		/// <param name="e">DataElement that has already been written to the stream</param>
 		/// <returns>Returns bit position of DataElement</returns>
-		public int DataElementPosition(DataElement e)
+		public long DataElementPosition(DataElement e)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
@@ -333,7 +313,7 @@ namespace Peach.Core.IO
 		/// </summary>
 		/// <param name="fullName">DataElement that has already been written to the stream</param>
 		/// <returns>Returns bit position of DataElement</returns>
-		public int DataElementPosition(string fullName)
+		public long DataElementPosition(string fullName)
 		{
 			if (fullName == null)
 				throw new ApplicationException("fullName is null");
@@ -349,7 +329,7 @@ namespace Peach.Core.IO
 		/// </summary>
 		/// <param name="e">DataElement to mark the position of</param>
 		/// <param name="lengthInBits">Length of DataElement in stream</param>
-		public void MarkStartOfElement(DataElement e, int lengthInBits)
+		public void MarkStartOfElement(DataElement e, long lengthInBits)
 		{
 			if (e == null)
 				throw new ApplicationException("DataElement 'e' is null");
@@ -357,7 +337,7 @@ namespace Peach.Core.IO
 			if (HasDataElement(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
-				_elementPositions.Add(e.fullName, new int[] { pos, lengthInBits });
+				_elementPositions.Add(e.fullName, new long[] { pos, lengthInBits });
 		}
 
 		/// <summary>
@@ -372,7 +352,7 @@ namespace Peach.Core.IO
 			if (HasDataElement(e.fullName))
 				_elementPositions[e.fullName][0] = pos;
 			else
-				_elementPositions.Add(e.fullName, new int[] { pos, 0 });
+				_elementPositions.Add(e.fullName, new long[] { pos, 0 });
 		}
 
 		/// <summary>
@@ -586,14 +566,14 @@ namespace Peach.Core.IO
 			if(bits.LengthBits == 0)
 				return;
 
-			int bytesToWrite = bits.LengthBits / 8;
-			int extraBits = bits.LengthBits - (bytesToWrite * 8);
-			int origionalPos = pos;
+			long bytesToWrite = bits.LengthBits / 8;
+			long extraBits = bits.LengthBits - (bytesToWrite * 8);
+			long origionalPos = pos;
 
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bytesToWrite));
 			if(extraBits > 0)
-				WriteBits(bits.ReadBits(extraBits), extraBits);
+				WriteBits(bits.ReadBits((int)extraBits), (int)extraBits);
 
 			// Copy over DataElement positions, replace
 			// existing entries if they exist.
@@ -622,7 +602,7 @@ namespace Peach.Core.IO
 				throw new ApplicationException("WriteBit only takes values of 0 or 1.");
 
 			// Index into buff[] array
-			int byteIndex = 0;
+			long byteIndex = 0;
 			// Index into byte from buff[] array
 			int bitIndex = 0;
 
@@ -630,11 +610,14 @@ namespace Peach.Core.IO
 			byteIndex = pos / 8;
 
 			// Calc position in byte to set
-			bitIndex = pos - (byteIndex * 8);
+			bitIndex = (int) (pos - (byteIndex * 8));
 
 			// Do we need to grow buff?
-			if (byteIndex >= buff.Count)
-				buff.Add(0);
+			if (byteIndex >= stream.Length)
+				stream.WriteByte(0);
+
+			stream.Seek(byteIndex, SeekOrigin.Begin);
+			byte value = (byte)stream.ReadByte();
 
 			//if (_isLittleEndian)
 			//{
@@ -649,11 +632,14 @@ namespace Peach.Core.IO
 			//{
 				if (bit == 0)
 					// clear bit
-					buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[bitIndex]);
+				value = (byte)(value & ClearingMasks[bitIndex]);
 				else
 					// Set bit
-					buff[byteIndex] = (byte)(buff[byteIndex] | (bit << (7 - bitIndex)));
+				value = (byte)(value | (bit << (7 - bitIndex)));
 			//}
+
+			stream.Seek(byteIndex, SeekOrigin.Begin);
+			stream.WriteByte(value);
 
 			// Increment our current position
 			pos++;
@@ -801,17 +787,19 @@ namespace Peach.Core.IO
 			try
 			{
 				// Index into buff[] array
-				int byteIndex = pos / 8;
+				long byteIndex = pos / 8;
 				// Index into byte from buff[] array
-				int bitIndex = pos - (byteIndex * 8);
+				int bitIndex = (int) (pos - (byteIndex * 8));
 
 				//if (_isLittleEndian)
 				//    // Shift and mask off 1 byte
 				//    return (byte)((buff[byteIndex] >> (byte)bitIndex) & 1);
 				//else
-			    
-                // Shift and mask off 1 byte
-                return (byte)((buff[byteIndex] >> (byte)(7 - bitIndex)) & 1);
+				// Shift and mask off 1 byte
+				stream.Seek(byteIndex, SeekOrigin.Begin);
+				byte value = (byte) stream.ReadByte();
+
+				return (byte)((value >> (byte)(7 - bitIndex)) & 1);
 			}
 			finally
 			{
@@ -860,22 +848,19 @@ namespace Peach.Core.IO
 
 			return ret;
 		}
-		public byte[] ReadBytes(int count)
+		public byte[] ReadBytes(long count)
 		{
 			if (count == 0)
 				throw new ApplicationException("Asking for zero bytes");
-			if (((pos/8) + count) > buff.Count)
+			if (((pos/8) + count) > stream.Length)
 				throw new ApplicationException("Count overruns buffer");
 
 			byte[] ret = new byte[count];
 
-			//Console.WriteLine("ReadBytes()");
 			for (int i = 0; i < count; i++)
 			{
 				ret[i] = ReadByte();
-				//Console.Write(Byte2String(ret[i]));
 			}
-			//Console.WriteLine("");
 
 			return ret;
 		}
@@ -923,17 +908,25 @@ namespace Peach.Core.IO
 		/// Truncate stream to specific length in bits.
 		/// </summary>
 		/// <param name="sizeInBits">Length in bits of stream</param>
-		public void Truncate(int sizeInBits)
+		public void Truncate(long sizeInBits)
 		{
 			if (sizeInBits > len)
 				throw new ApplicationException("sizeInbits larger then length of data");
 
+			if (!(stream is MemoryStream))
+				throw new ApplicationException("Error, unable to truncate stream that is not a MemoryStream.");
+
 			if (pos > sizeInBits)
 				pos = sizeInBits;
 
+			List<byte> buff = new List<byte>(((MemoryStream)stream).ToArray());
+
 			len = sizeInBits;
-			int startBlock = sizeInBits / 8 + (sizeInBits % 8 == 0 ? 0 : 1);
+			long startBlock = sizeInBits / 8 + (sizeInBits % 8 == 0 ? 0 : 1);
 			buff.RemoveRange((int)startBlock, buff.Count - (int)startBlock);
+
+			stream = new MemoryStream(buff.ToArray());
+
 
 			// Remove element entries that were truncated off.
 
@@ -959,19 +952,26 @@ namespace Peach.Core.IO
 		/// <param name="bits">BitStream to insert.</param>
 		public void Insert(BitStream bits)
 		{
-			int currentBlock = pos / 8;
-			int curpos = pos;
-			int curlen = len;
-			int retpos = pos;
-			int[] vals = null;
+			if (!(stream is MemoryStream))
+				throw new ApplicationException("Error, unable to insert into non-MemoryStream");
+
+			long currentBlock = pos / 8;
+			long curpos = pos;
+			long curlen = len;
+			long retpos = pos;
+			long[] vals;
 
 			// If both streams are on an 8 bit boundry
 			// this is the quick 'n easy method.
 			if (pos % 8 == 0 && bits.LengthBits % 8 == 0)
 			{
+				List<byte> buff = new List<byte>(((MemoryStream)stream).ToArray());
 				buff.InsertRange((int)currentBlock, bits.Value);
 				len += bits.LengthBits;
 				pos += bits.LengthBits;
+
+				stream = new MemoryStream(buff.ToArray());
+				stream.Seek(pos / 8, SeekOrigin.Begin);
 
 				// Move existing DataElement positions
 
@@ -1005,14 +1005,14 @@ namespace Peach.Core.IO
 			bits.SeekBits(0, SeekOrigin.Begin);
 			WriteBytes(bits.ReadBytes(bits.LengthBits / 8));
 			if(bits.LengthBits % 8 != 0)
-				WriteBits(bits.ReadBits(bits.LengthBits % 8), bits.LengthBits % 8);
+				WriteBits(bits.ReadBits((int)(bits.LengthBits % 8)), (int)(bits.LengthBits % 8));
 
 			retpos = pos;
 
 			tmp.SeekBits(curpos, SeekOrigin.Begin);
 			WriteBytes(tmp.ReadBytes((curlen - curpos) / 8));
 			if ((curlen - curpos) % 8 != 0)
-				WriteBits(tmp.ReadBits((curlen - curpos) % 8), (curlen - curpos) % 8);
+				WriteBits(tmp.ReadBits((int)((curlen - curpos) % 8)),(int) ((curlen - curpos) % 8));
 
 			// Copy over the DataElement positions
 			foreach (string key in tmp._elementPositions.Keys)
@@ -1037,12 +1037,49 @@ namespace Peach.Core.IO
 		/// </summary>
 		public byte[] Value
 		{
-			get { return buff.ToArray(); }
+			get
+			{
+				if(stream is MemoryStream)
+					return ((MemoryStream)stream).ToArray();
+
+				byte [] buff = new byte[stream.Length];
+				stream.Seek(0, SeekOrigin.Begin);
+				stream.Read(buff, 0, buff.Length);
+				stream.Seek(TellBytes(), SeekOrigin.Begin);
+
+				return buff;
 		}
 	}
 
+		/// <summary>
+		/// Locate the first occurance of data and return index.
+		/// </summary>
+		/// <param name="data">Data to search for</param>
+		/// <returns>Returns index or -1 if not found.</returns>
+		public long IndexOf(byte[] data)
+		{
+			long currentPosition = TellBits();
+			bool found = false;
+			long foundAt = -1;
 
+			while (TellBits() < LengthBits)
+			{
+				found = true;
+				foundAt = TellBytes();
+				if (ReadByte() == data[0])
+				{
+					for (int i = 1; found && i < data.Length; i++)
+						if (data[i] != ReadByte())
+							found = false;
+				}
 
+				if (found)
+					return foundAt;
+			}
+
+			return -1;
+		}
+	}
 }
 
 // end

@@ -67,6 +67,8 @@ namespace Peach.Core.Test.OutputTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
+			var stuff = dom.dataModels[0][0].relations[0].Of;
+
 			byte[] newData = ASCIIEncoding.ASCII.GetBytes("This is a much longer value than before!");
 			dom.dataModels[0][1].DefaultValue = new Variant(newData);
 

@@ -30,7 +30,7 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// Mapping of elements from _sizedBlockStack to there lengths.
 		/// </summary>
-		Dictionary<DataElement, int> _sizedBlockMap = new Dictionary<DataElement, int>();
+		Dictionary<DataElement, long> _sizedBlockMap = new Dictionary<DataElement, long>();
 
 		/// <summary>
 		/// The full data stream.
@@ -66,7 +66,7 @@ namespace Peach.Core.Cracker
 		public DataModel CrackData(DataModel model, BitStream data)
 		{
 			_sizedBlockStack = new List<DataElement>();
-			_sizedBlockMap = new Dictionary<DataElement, int>();
+			_sizedBlockMap = new Dictionary<DataElement, long>();
 			_data = data;
 
 			handleNode(model, data);
@@ -239,7 +239,7 @@ namespace Peach.Core.Cracker
 				logger.Trace("handleNode: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 				OnEnterHandleNodeEvent(element, data);
 
-				int startingPosition = data.TellBits();
+				long startingPosition = data.TellBits();
 				bool hasOffsetRelation = false;
 
 				// Offset relation
@@ -327,7 +327,7 @@ namespace Peach.Core.Cracker
 				{
 					logger.Debug("handleArray: Trying #{0}", cnt.ToString());
 
-					int pos = data.TellBits();
+					long pos = data.TellBits();
 					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
 					clone.name = clone.name + "_" + cnt.ToString();
 					clone.parent = element;
@@ -365,7 +365,7 @@ namespace Peach.Core.Cracker
 
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
-			int startPosition = data.TellBytes();
+			long startPosition = data.TellBytes();
 
 			// Do we have relations or a length?
 			if (element.relations.hasSizeRelation)
@@ -403,7 +403,7 @@ namespace Peach.Core.Cracker
 					if (child is DataElementContainer && 
 						((DataElementContainer)child).isParentOf(sizeRelation.From))
 					{
-						int size = (int)sizeRelation.GetValue();
+						long size = (long)sizeRelation.GetValue();
 						_sizedBlockStack.Add(element);
 						_sizedBlockMap[element] = size;
 
@@ -415,7 +415,7 @@ namespace Peach.Core.Cracker
 					}
 					else if(child == sizeRelation.From)
 					{
-						int size = (int)sizeRelation.GetValue();
+						long size = (long)sizeRelation.GetValue();
 						_sizedBlockStack.Add(element);
 						_sizedBlockMap[element] = size;
 
@@ -467,7 +467,7 @@ namespace Peach.Core.Cracker
 				sizedData = new BitStream(data.ReadBytes(size));
 			}
 
-			int startPosition = sizedData.TellBits();
+			long startPosition = sizedData.TellBits();
 
 			foreach (DataElement child in element.choiceElements.Values)
 			{
@@ -498,9 +498,9 @@ namespace Peach.Core.Cracker
 				// Locate NULL character in stream
 				bool foundNull = false;
 				bool twoNulls = element.stringType == StringType.Utf16 || element.stringType == StringType.Utf16be;
-				int currentPos = data.TellBits();
+				long currentPos = data.TellBits();
 
-				for (int i = data.TellBytes(); i < data.LengthBytes; i++)
+				for (long i = data.TellBytes(); i < data.LengthBytes; i++)
 				{
 					if (data.ReadByte() == 0)
 					{
@@ -528,10 +528,10 @@ namespace Peach.Core.Cracker
 				if (!foundNull)
 					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.", element, data);
 
-				int endPos = data.TellBits();
+				long endPos = data.TellBits();
 
 				// Do not include NULLs in our read.
-				int byteCount = ((endPos - currentPos) / 8) - 1;
+				long byteCount = ((endPos - currentPos) / 8) - 1;
 				if (twoNulls)
 					byteCount--;
 
@@ -549,7 +549,7 @@ namespace Peach.Core.Cracker
 				return;
 			}
 
-			int? stringLength = determineElementSize(element, data);
+			long? stringLength = determineElementSize(element, data);
 
 			// TODO - Make both length and size for strings.  Length is always in chars.
 			if (stringLength == null && element.isToken)
@@ -574,11 +574,11 @@ namespace Peach.Core.Cracker
 			element.DefaultValue = defaultValue;
 		}
 
-		protected int? determineElementSize(DataElement element, BitStream data)
+		protected long? determineElementSize(DataElement element, BitStream data)
 		{
 			logger.Trace("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			int? size = null;
+			long? size = null;
 
 			// Check for relation and/or size
 			if (element.hasLength)
@@ -678,7 +678,7 @@ namespace Peach.Core.Cracker
 			if (data.LengthBits <= (data.TellBits() + element.size))
 				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.", element, data);
 
-			int startPos = data.TellBits();
+			long startPos = data.TellBits();
 
 			foreach (DataElement child in element)
 			{
@@ -709,7 +709,7 @@ namespace Peach.Core.Cracker
 		{
 			logger.Trace("handleBlob: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			int? blobLength = determineElementSize(element, data);
+			long? blobLength = determineElementSize(element, data);
 
 			if (blobLength == null && element.isToken)
 				blobLength = ((byte[])element.DefaultValue).Length;
