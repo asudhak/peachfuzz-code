@@ -790,6 +790,8 @@ class inst(Task.Task):
 			else:
 				y = self.path.find_resource(x)
 				if not y:
+					if Logs.verbose:
+						Logs.warn('Could not find %s immediately (may cause broken builds)' % x)
 					idx = self.generator.bld.get_group_idx(self)
 					for tg in self.generator.bld.groups[idx]:
 						if not isinstance(tg, inst) and id(tg) != id(self):
