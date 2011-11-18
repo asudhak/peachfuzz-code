@@ -369,11 +369,18 @@ class Dist(Context.Context):
 
 		Logs.info('New archive created: %s%s' % (self.arch_name, digest))
 
+	def get_tar_path(self, node):
+		"""
+		return the path to use for a node in the tar archive, the purpose of this
+		is to let subclases resolve symbolic links or to change file names
+		"""
+		return node.abspath()
+
 	def add_tar_file(self, x, tar):
 		"""
 		Add a file to the tar archive. Transform symlinks into files if the files lie out of the project tree.
 		"""
-		p = x.abspath()
+		p = self.get_tar_path(x)
 		tinfo = tar.gettarinfo(name=p, arcname=self.get_tar_prefix() + '/' + x.path_from(self.base_path))
 		tinfo.uid   = 0
 		tinfo.gid   = 0
