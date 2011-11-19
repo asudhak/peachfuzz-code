@@ -6,8 +6,9 @@
 Various configuration tests.
 """
 
+from waflib import Task
 from waflib.Configure import conf
-from waflib.TaskGen import feature, before_method
+from waflib.TaskGen import feature, before_method, after_method
 import sys
 
 LIB_CODE = '''
@@ -174,4 +175,44 @@ def check_large_file(self, **kw):
 
 ########################################################################################
 
+ENDIAN_FRAGMENT = '''
+short int ascii_mm[] = { 0x4249, 0x4765, 0x6E44, 0x6961, 0x6E53, 0x7953, 0 };
+short int ascii_ii[] = { 0x694C, 0x5454, 0x656C, 0x6E45, 0x6944, 0x6E61, 0 };
+int use_ascii (int i) {
+	return ascii_mm[i] + ascii_ii[i];
+}
+short int ebcdic_ii[] = { 0x89D3, 0xE3E3, 0x8593, 0x95C5, 0x89C4, 0x9581, 0 };
+short int ebcdic_mm[] = { 0xC2C9, 0xC785, 0x95C4, 0x8981, 0x95E2, 0xA8E2, 0 };
+int use_ebcdic (int i) {
+	return ebcdic_mm[i] + ebcdic_ii[i];
+}
+extern int foo;
+'''
+
+class grep_for_endianness(Task.Task):
+	color = 'PINK'
+	def run(self):
+		txt = self.inputs[0].read(flags='rb')
+		if txt.find('LiTTleEnDian') > -1:
+			self.generator.tmp.append('little')
+		elif txt.find('BIGenDianSyS') > -1:
+			self.generator.tmp.append('big')
+		else:
+			return -1
+
+@feature('grep_for_endianness')
+@after_method('process_source')
+def grep_for_endianness_fun(self):
+	self.create_task('grep_for_endianness', self.compiled_tasks[0].outputs[0])
+
+@conf
+def check_endianness(self):
+	"""
+	Execute a configuration test to determine the endianness
+	"""
+	tmp = []
+	def check_msg(self):
+		return tmp[0]
+	self.check(fragment=ENDIAN_FRAGMENT, features='c grep_for_endianness', msg="Checking for endianness", define='ENDIANNESS', tmp=tmp, okmsg=check_msg)
+	return tmp[0]
 

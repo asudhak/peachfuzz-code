@@ -666,7 +666,8 @@ COMPILE_ERRORS = 2
 def run_c_code(self, *k, **kw):
 	"""
 	Create a temporary build context to execute a build. A reference to that build
-	context is kept on self.test_bld for debugging purposes.
+	context is kept on self.test_bld for debugging purposes, and you should not rely
+	on it too much (read the note on the cache below).
 	The parameters given in the arguments to this function are passed as arguments for
 	a single task generator created in the build. Only three parameters are obligatory:
 
