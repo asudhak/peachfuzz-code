@@ -75,7 +75,7 @@ MACRO_TO_DESTOS = {
 '_UWIN'       : 'uwin',
 '_WIN64'      : 'win32',
 '_WIN32'      : 'win32',
-'__POWERPC__' : 'powerpc',
+'__POWERPC__' : 'darwin',
 '__QNX__'     : 'qnx'
 }
 
