@@ -45,14 +45,15 @@ def link_lib_test_fun(self):
 
 	mode = self.mode
 	m = '%s %s' % (mode, mode)
+	ex = self.test_exec and 'test_exec' or ''
 	bld = self.bld
 	bld(rule=write_test_file, target='test.' + mode, code=LIB_CODE)
 	bld(rule=write_test_file, target='main.' + mode, code=MAIN_CODE)
-	bld(features= m + 'shlib', source='test.' + mode, target='test')
-	bld(features= m + 'program test_exec', source='main.' + mode, target='app', use='test', rpath=rpath)
+	bld(features='%sshlib' % m, source='test.' + mode, target='test')
+	bld(features='%sprogram %s' % (m, ex), source='main.' + mode, target='app', use='test', rpath=rpath)
 
 @conf
-def check_library(self, mode=None):
+def check_library(self, mode=None, test_exec=True):
 	"""
 	Check if libraries can be linked with the current linker. Uses :py:func:`waflib.Tools.c_tests.link_lib_test_fun`.
 
@@ -67,7 +68,8 @@ def check_library(self, mode=None):
 		compile_filename = [],
 		features = 'link_lib_test',
 		msg = 'Checking for libraries',
-		mode = mode
+		mode = mode,
+		test_exec = test_exec,
 		)
 
 ########################################################################################
