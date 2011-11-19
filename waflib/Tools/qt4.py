@@ -635,8 +635,5 @@ def options(opt):
 	for i in 'qtdir qtbin qtlibs'.split():
 		opt.add_option('--'+i, type='string', default='', dest=i)
 
-	if sys.platform == "darwin":
-		opt.add_option('--no-qt4-framework', action="store_false", help='do not use the framework version of Qt4 in OS X', dest='use_qt4_osxframework',default=True)
-
 	opt.add_option('--translate', action="store_true", help="collect translation strings", dest="trans_qt4", default=False)
 
