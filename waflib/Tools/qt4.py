@@ -508,7 +508,7 @@ def find_qt4_libraries(self):
 	except self.errors.ConfigurationError:
 		for i in self.qt4_vars:
 			uselib = i.upper()
-			if sys.platform == "darwin":
+			if Utils.unversioned_sys_platform == "darwin":
 				# Since at least qt 4.7.3 each library locates in separate directory
 				frameworkName = i + ".framework"
 				qtDynamicLib = os.path.join(qtlibs, frameworkName, i)

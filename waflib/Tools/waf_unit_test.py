@@ -90,7 +90,7 @@ class utest(Task.Task):
 
 			if Utils.is_win32:
 				add_path(fu, lst, 'PATH')
-			elif sys.platform == 'darwin':
+			elif Utils.unversioned_sys_platform() == 'darwin':
 				add_path(fu, lst, 'DYLD_LIBRARY_PATH')
 				add_path(fu, lst, 'LD_LIBRARY_PATH')
 			else:

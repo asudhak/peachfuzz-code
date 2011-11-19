@@ -40,7 +40,7 @@ def set_macosx_deployment_target(self):
 	if self.env['MACOSX_DEPLOYMENT_TARGET']:
 		os.environ['MACOSX_DEPLOYMENT_TARGET'] = self.env['MACOSX_DEPLOYMENT_TARGET']
 	elif 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
-		if sys.platform == 'darwin':
+		if Utils.unversioned_sys_platform() == 'darwin':
 			os.environ['MACOSX_DEPLOYMENT_TARGET'] = '.'.join(platform.mac_ver()[0].split('.')[:2])
 
 @taskgen_method
