@@ -8,8 +8,8 @@ APPNAME='cc_test'
 
 top = '.'
 
-import waflib.Configure
-#waflib.Configure.autoconfig = True
+from waflib import Configure, Logs
+#Configure.autoconfig = True
 
 def options(opt):
 	opt.load('compiler_c')
@@ -18,13 +18,18 @@ def options(opt):
 def configure(conf):
 	conf.load('compiler_c')
 	conf.check_cc(fragment="int main() { return 0; }\n")
-	conf.check_cc(fragment="int main() { return 0; }\n", execute=True)
-	conf.check_cc(fragment="""#include<stdio.h>\nint main(){fprintf(stderr, "mu"); printf("%d", 22);return 0;}\n""", execute=True, define_name='HAVE_MU')
-	conf.check_cc(lib='m', cflags='-Wall', defines=['var=foo', 'x=y'], uselib_store='M', mandatory=False)
 
+	try:
+		conf.check_cc(fragment="int main() { return 0; }\n", execute=True) # 1
+	except conf.errors.WafError:
+		Logs.warn('You are probably using a cross-compiler (disabling specific configuration tests)')
+	else:
+		conf.check_cc(fragment="""#include<stdio.h>\nint main(){fprintf(stderr, "mu"); printf("%d", 22);return 0;}\n""", execute=True, define_name='HAVE_MU')
+		conf.check_library()
+
+	conf.check_cc(lib='m', cflags='-Wall', defines=['var=foo', 'x=y'], uselib_store='M', mandatory=False)
 	conf.check_large_file(mandatory=False)
 	conf.check_inline()
-	conf.check_library()
 
 	conf.multicheck(
 		{'header_name':'stdio.h'},
