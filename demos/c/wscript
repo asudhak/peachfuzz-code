@@ -31,6 +31,7 @@ def configure(conf):
 	conf.check_cc(lib='m', cflags='-Wall', defines=['var=foo', 'x=y'], uselib_store='M', mandatory=False)
 	conf.check_large_file(mandatory=False)
 	conf.check_inline()
+	conf.check_endianness()
 
 	conf.multicheck(
 		{'header_name':'stdio.h'},
