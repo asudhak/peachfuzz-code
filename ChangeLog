@@ -9,6 +9,7 @@ NEW IN WAF 1.6.9
 * Fixed the multiple bibliography processing for tex #1040
 * Windows CE detection improvements #1065
 * OSX library installation fix
+* Powerpc platform detection fixes
 
 NEW IN WAF 1.6.8
 ----------------
