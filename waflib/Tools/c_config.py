@@ -61,22 +61,23 @@ int main() {
 '''
 
 MACRO_TO_DESTOS = {
-'__linux__'   : 'linux',
-'__GNU__'     : 'gnu',
-'__FreeBSD__' : 'freebsd',
-'__NetBSD__'  : 'netbsd',
-'__OpenBSD__' : 'openbsd',
-'__sun'       : 'sunos',
-'__hpux'      : 'hpux',
-'__sgi'       : 'irix',
-'_AIX'        : 'aix',
-'__CYGWIN__'  : 'cygwin',
-'__MSYS__'    : 'msys',
-'_UWIN'       : 'uwin',
-'_WIN64'      : 'win32',
-'_WIN32'      : 'win32',
-'__POWERPC__' : 'darwin',
-'__QNX__'     : 'qnx'
+'__linux__'                                      : 'linux',
+'__GNU__'                                        : 'gnu',
+'__FreeBSD__'                                    : 'freebsd',
+'__NetBSD__'                                     : 'netbsd',
+'__OpenBSD__'                                    : 'openbsd',
+'__sun'                                          : 'sunos',
+'__hpux'                                         : 'hpux',
+'__sgi'                                          : 'irix',
+'_AIX'                                           : 'aix',
+'__CYGWIN__'                                     : 'cygwin',
+'__MSYS__'                                       : 'msys',
+'_UWIN'                                          : 'uwin',
+'_WIN64'                                         : 'win32',
+'_WIN32'                                         : 'win32',
+'__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__'  : 'darwin',
+'__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__' : 'darwin', #iphone
+'__QNX__'                                        : 'qnx'
 }
 
 MACRO_TO_DEST_CPU = {
