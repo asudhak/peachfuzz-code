@@ -60,10 +60,14 @@ class xsubpp(Task.Task):
 def check_perl_version(self, minver=None):
 	"""
 	Check if Perl is installed, and set the variable PERL.
+	minver is supposed to be a tuple
 	"""
 	res = True
 	
-	cver = "" if minver is None else ".".join(map(str,minver))
+	if minver:
+		cver = '.'.join(map(str,minver))
+	else:
+		cver = ''
 
 	self.start_msg('Checking for minimum perl version %s' % cver)
 
@@ -87,7 +91,7 @@ def check_perl_version(self, minver=None):
 		if ver < minver:
 			res = False
 
-	self.end_msg(version, color="GREEN" if res else "YELLOW")
+	self.end_msg(version, color=res and "GREEN" or "YELLOW")
 	return res
 
 @conf
