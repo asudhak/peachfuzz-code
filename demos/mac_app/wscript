@@ -10,7 +10,11 @@ out = 'build'
 
 def options(opt):
 	opt.load('compiler_c')
-	opt.load('xcode')
+	try:
+		# you must include the xcode generator in your waf file if you want to use it
+		opt.load('xcode')
+	except ImportError:
+		pass
 
 def configure(conf):
 	conf.load('compiler_c')
