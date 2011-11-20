@@ -8,8 +8,9 @@ NEW IN WAF 1.6.9
 * Added a more intuitive behaviour for conf.setenv() #1062
 * Fixed the multiple bibliography processing for tex #1040
 * Windows CE detection improvements #1065
-* OSX library installation fix
-* Powerpc platform detection fixes
+* Fixed the library installation on OSX
+* Fixed the Powerpc/IPhone platform detection
+* Added an Xcode project generator
 
 NEW IN WAF 1.6.8
 ----------------
