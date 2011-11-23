@@ -17,8 +17,17 @@ def configure(conf):
 def build(bld):
 	# Note: Doxgen parameters may be passed using pars attribute
 	#       e.g. pars={'EXCLUDE_PATTERNS':'*.babu'}
-	bld(
-		features='doxygen',
-		doxyfile='test.conf',
-		doxy_tar='docs.tar.bz2')
+
+	if bld.cmd == 'doxy':
+		bld(
+			features='doxygen',
+			doxyfile='test.conf',
+			doxy_tar='docs.tar.bz2')
+	else:
+		print('some kind of normal build')
+
+from waflib import Build
+class doxy(Build.BuildContext):
+	fun = 'build'
+	cmd = 'doxy'
 
