@@ -674,6 +674,9 @@ class subst_pc(Task.Task):
 		try: delattr(self, 'cache_sig')
 		except AttributeError: pass
 
+		if getattr(self.generator, 'chmod', None):
+			os.chmod(self.outputs[0].abspath(), self.generator.chmod)
+
 	def sig_vars(self):
 		"""
 		Compute a hash (signature) of the variables used in the substitution
