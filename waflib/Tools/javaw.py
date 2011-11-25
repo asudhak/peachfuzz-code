@@ -26,9 +26,9 @@ You would have to run::
 [1] http://www.jython.org/
 """
 
-import os, re
+import os, re, tempfile
 from waflib.Configure import conf
-from waflib import TaskGen, Task, Utils, Options, Build, Errors, Node
+from waflib import TaskGen, Task, Utils, Options, Build, Errors, Node, Logs
 from waflib.TaskGen import feature, before_method, after_method
 
 from waflib.Tools import ccroot
@@ -272,16 +272,38 @@ class javac(Task.Task):
 		def to_list(xx):
 			if isinstance(xx, str): return [xx]
 			return xx
-		self.last_cmd = lst = []
-		lst.extend(to_list(env['JAVAC']))
-		lst.extend(['-classpath'])
-		lst.extend(to_list(env['CLASSPATH']))
-		lst.extend(['-d'])
-		lst.extend(to_list(env['OUTDIR']))
-		lst.extend(to_list(env['JAVACFLAGS']))
-		lst.extend([a.path_from(bld.bldnode) for a in self.inputs])
-		lst = [x for x in lst if x]
-		return self.exec_command(lst, cwd=wd, env=env.env or None)
+		cmd = []
+		cmd.extend(to_list(env['JAVAC']))
+		cmd.extend(['-classpath'])
+		cmd.extend(to_list(env['CLASSPATH']))
+		cmd.extend(['-d'])
+		cmd.extend(to_list(env['OUTDIR']))
+		cmd.extend(to_list(env['JAVACFLAGS']))
+
+		files = [a.path_from(bld.bldnode) for a in self.inputs]
+
+		# workaround for command line length limit:
+		# http://support.microsoft.com/kb/830473
+		tmp = None
+		try:
+			if len(str(files)) + len(str(cmd)) > 8192:
+				(fd, tmp) = tempfile.mkstemp(dir=bld.bldnode.abspath())
+				try:
+					os.write(fd, '\n'.join(files).encode())
+				finally:
+					if tmp:
+						os.close(fd)
+				if Logs.verbose:
+					Logs.debug('runner: %r' % (cmd + files))
+				cmd.append('@' + tmp)
+			else:
+				cmd += files
+
+			ret = self.exec_command(cmd, cwd=wd, env=env.env or None)
+		finally:
+			if tmp:
+				os.unlink(tmp)
+		return ret
 
 	def post_run(self):
 		"""
