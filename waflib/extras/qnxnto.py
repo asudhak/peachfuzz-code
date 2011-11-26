@@ -34,7 +34,7 @@ class Popen(object):
 			else:
 				if Popen.verbose:
 					print("Emulating")
-		except Exception, e:
+		except Exception as e:
 			if Popen.verbose:
 				print("Exception: %s" % e)
 			raise
