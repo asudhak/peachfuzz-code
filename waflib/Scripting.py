@@ -32,6 +32,7 @@ def waf_entry_point(current_directory, version, wafdir):
 		sys.exit(1)
 
 	if '--version' in sys.argv:
+		Context.run_dir = current_directory
 		ctx = Context.create_context('options')
 		ctx.curdir = current_directory
 		ctx.parse_args()
@@ -102,6 +103,7 @@ def waf_entry_point(current_directory, version, wafdir):
 	if not Context.run_dir:
 		if '-h' in sys.argv or '--help' in sys.argv:
 			Logs.warn('No wscript file found: the help message may be incomplete')
+			Context.run_dir = current_directory
 			ctx = Context.create_context('options')
 			ctx.curdir = current_directory
 			ctx.parse_args()
