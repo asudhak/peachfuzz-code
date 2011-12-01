@@ -14,24 +14,22 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class SizedVarianceMutatorTests
+    class ArrayVarianceMutatorTests
     {
-        int? testValue = null;
-        List<int?> listVals = new List<int?>();
+        //bool firstPass = true;
+        //byte[] result = new byte[] { };
+        //List<byte[]> testResults = new List<byte[]>();
 
         [Test]
         public void Test1()
         {
-            // standard test ...
+            // standard test of flipping 20% of the bits in a blob
+            // : in this case, we'll use 1 byte with a value of 0, so we should get 1 bit flipped.
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"sizeRelation1\" length=\"2\">" +
-                "           <Relation type=\"size\" of=\"string1\"/>" +
-                "           <Hint name=\"SizedVarianceMutator-N\" value=\"5\"/>" +
-                "       </String>" +
-                "       <String name=\"string1\" value=\"Hello, World\"/>" +
+                "       <String name=\"string1\" value=\"Hello, World!\" maxOccurs=\"1024\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -56,6 +54,13 @@ namespace Peach.Core.Test.Mutators
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
+            var myArray = (Dom.Array)dom.dataModels[0][0];
+            myArray.hasExpanded = true;
+            myArray.occurs = 3;
+            myArray.origionalElement = myArray[0];
+            myArray.Add(new Dom.String("string1-1", "pos1"));
+            myArray.Add(new Dom.String("string1-2", "pos2"));
+
             RunConfiguration config = new RunConfiguration();
 
             Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
@@ -64,25 +69,16 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove starting default value (100)
-            //listVals.RemoveAt(0);
-
             // verify values
-            //for (int i = 0; i <= 100; ++i)
-            //    Assert.AreEqual(150 - i, listVals[i]);
+            //Assert.AreNotEqual(0, testResults[0]);
 
             // reset
-            //testValue = null;
-            //listVals.Clear();
+            //firstPass = true;
+            //testResults.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            //Number n1 = (Number)action.dataModel[0];
-            //Number n2 = (Number)action.dataModel[1];
-            int x = 0;
         }
     }
 }
-
-// end
