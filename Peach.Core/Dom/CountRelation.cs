@@ -42,14 +42,54 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class CountRelation : Relation
 	{
+		protected bool _isRecursing = false;
+
 		public override Variant GetValue()
 		{
-			throw new NotImplementedException();
+			if (_isRecursing)
+				return new Variant(0);
+
+			try
+			{
+				_isRecursing = true;
+
+				int count = ((Array)Of).Count;
+
+				if (_expressionGet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["count"] = count;
+					state["value"] = count;
+					state["self"] = this._parent;
+
+					object value = Scripting.EvalExpression(_expressionGet, state);
+					count = Convert.ToInt32(value);
+				}
+
+				return new Variant(count);
+			}
+			finally
+			{
+				_isRecursing = false;
+			}
 		}
 
 		public override void SetValue(Variant value)
 		{
-			throw new NotImplementedException();
+			int count = (int)value;
+
+			if (_expressionSet != null)
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["count"] = count;
+				state["value"] = count;
+				state["self"] = this._parent;
+
+				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				count = Convert.ToInt32(newValue);
+			}
+
+			_from.DefaultValue = new Variant(count);
 		}
 	}
 }

@@ -58,6 +58,16 @@ namespace Peach.Core.Proxy.Net
 			Connection.ServerDataReceived += new DataReceivedEventHandler(Connection_ServerDataReceived);
 		}
 
+		public void Stop()
+		{
+			proxy.KeepRunning = false;
+		}
+
+		public void Run()
+		{
+			proxy.Run();
+		}
+
 		void Connection_ClientDataReceived(Connection conn)
 		{
 			if (conn.ServerTcpClient == null)

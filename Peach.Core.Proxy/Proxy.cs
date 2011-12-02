@@ -67,13 +67,18 @@ namespace Peach.Core.Proxy
 			this.address = address;
 		}
 
+		public bool KeepRunning = true;
+
 		public void Run()
 		{
 			logger.Info("Creating TcpListener");
+
+			KeepRunning = true;
+
 			listener = new TcpListener(IPAddress.Parse(address), listenPort);
 			listener.Start();
 
-			while (true)
+			while (KeepRunning)
 			{
 				if (listener.Pending())
 					listener.BeginAcceptTcpClient(new AsyncCallback(ProcessAcceptTcpClient), null);
