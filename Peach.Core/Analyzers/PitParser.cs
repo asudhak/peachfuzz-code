@@ -756,6 +756,10 @@ namespace Peach.Core.Analyzers
 					var array = handleArray(child, element);
 					array.Add(elem);
 					elem = array;
+
+					// Copy over hints, some may be for array
+					foreach (var key in elem.Hints.Keys)
+						array.Hints[key] = elem.Hints[key];
 				}
 
 				// If parent was created by a reference (ref attribute)
