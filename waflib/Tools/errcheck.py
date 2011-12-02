@@ -113,14 +113,20 @@ def enhance_lib():
 		replace(m)
 
 	# catch '..' in ant_glob patterns
-	old_ant_glob = Node.Node.ant_glob
 	def ant_glob(self, *k, **kw):
 		if k:
 			lst=Utils.to_list(k[0])
 			for pat in lst:
 				if '..' in pat.split('/'):
 					Logs.error("In ant_glob pattern %r: '..' means 'two dots', not 'parent directory'" % k[0])
-		return old_ant_glob(self, *k, **kw)
+		if kw.get('remove', True):
+			try:
+				if self.is_child_of(self.ctx.bldnode) and not kw.get('quiet', False):
+					Logs.error('Using ant_glob on the build folder (%r) is dangerous (quiet=True to disable this warning)' % self)
+			except AttributeError:
+				pass
+		return self.old_ant_glob(*k, **kw)
+	Node.Node.old_ant_glob = Node.Node.ant_glob
 	Node.Node.ant_glob = ant_glob
 
 	# catch conflicting ext_in/ext_out/before/after declarations

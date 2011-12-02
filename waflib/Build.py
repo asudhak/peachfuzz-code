@@ -176,7 +176,7 @@ class BuildContext(Context.Context):
 		node = self.root.find_node(self.cache_dir)
 		if not node:
 			raise Errors.WafError('The project was not configured: run "waf configure" first!')
-		lst = node.ant_glob('**/*%s' % CACHE_SUFFIX)
+		lst = node.ant_glob('**/*%s' % CACHE_SUFFIX, quiet=True)
 
 		if not lst:
 			raise Errors.WafError('The cache directory is empty: reconfigure the project')
@@ -1159,7 +1159,7 @@ class CleanContext(BuildContext):
 		if self.bldnode != self.srcnode:
 			# would lead to a disaster if top == out
 			lst = [self.root.find_or_declare(f) for f in self.env[CFG_FILES]]
-			for n in self.bldnode.ant_glob('**/*', excl='lock* *conf_check_*/** config.log c4che/*'):
+			for n in self.bldnode.ant_glob('**/*', excl='lock* *conf_check_*/** config.log c4che/*', quiet=True):
 				if n in lst:
 					continue
 				n.delete()
