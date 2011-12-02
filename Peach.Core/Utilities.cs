@@ -275,6 +275,80 @@ namespace Peach.Core
             return ret.ToArray();
         }
     }
+
+    /// <summary>
+    /// A simple number generation class.
+    /// </summary>
+    public static class NumberGenerator
+    {
+        /// <summary>
+        /// Generate a list of numbers around size edge cases.
+        /// </summary>
+        /// <param name="size">The size (in bits) of the data</param>
+        /// <param name="n">The +/- range number</param>
+        /// <returns>Returns a list of all sizes to be used</returns>
+        public static long[] GenerateBadNumbers(int size, int n)
+        {
+            if (size == 8)
+                return BadNumbers8(n);
+            else if (size == 16)
+                return BadNumbers16(n);
+            else if (size == 24)
+                return BadNumbers24(n);
+            else if (size == 32)
+                return BadNumbers32(n);
+            else if (size == 64)
+                return BadNumbers64(n);
+            else
+                return null;
+        }
+
+        private static long[] BadNumbers8(int n)
+        {
+            long[] edgeCases = new long[] { 0, -128, 127, 255 };
+            return Populate(edgeCases, n);
+        }
+
+        private static long[] BadNumbers16(int n)
+        {
+            long[] edgeCases = new long[] { 0, -128, 127, 255, -32768, 32767, 65535 };
+            return Populate(edgeCases, n);
+        }
+
+        private static long[] BadNumbers24(int n)
+        {
+            long[] edgeCases = new long[] { 0, -128, 127, 255, -32768, 32767, 65535, -8388608, 8388607, 16777215 };
+            return Populate(edgeCases, n);
+        }
+
+        private static long[] BadNumbers32(int n)
+        {
+            long[] edgeCases = new long[] { 0, -128, 127, 255, -32768, 32767, 65535, -2147483648, 2147483647, 4294967295 };
+            return Populate(edgeCases, n);
+        }
+
+        private static long[] BadNumbers64(int n)
+        {
+            long[] edgeCases = new long[] { 0, -128, 127, 255, -32768, 32767, 65535, -2147483648, 2147483647, 4294967295, -9223372036854775808, 9223372036854775807 };    // UInt64.Max = 18446744073709551615;
+            return Populate(edgeCases, n);
+        }
+
+        private static long[] Populate(long[] values, int n)
+        {
+            List<long> temp = new List<long>();
+
+            for (int i = 0; i < values.Length; ++i)
+            {
+                long start = values[i] - n;
+                long end = values[i] + n;
+
+                for (long j = start; j <= end; ++j)
+                    temp.Add(j);
+            }
+
+            return temp.ToArray();
+        }
+    }
 }
 
 // end

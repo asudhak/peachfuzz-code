@@ -40,6 +40,7 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Array count relation
 	/// </summary>
+    [Serializable]
 	public class CountRelation : Relation
 	{
 		protected bool _isRecursing = false;
