@@ -72,6 +72,36 @@ namespace Peach.Core.Test
 			Assert.AreEqual(3, (int)num.InternalValue);
 			Assert.AreEqual("123", ASCIIEncoding.ASCII.GetString(array.Value.Value));
 		}
+
+		[Test]
+		public void ExpressionGetTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" expressionGet=\"count + 1\" />" +
+				"		</Number>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Number num = dom.dataModels[0][0] as Number;
+
+			Assert.AreEqual(2, (int)num.InternalValue);
+
+			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
+			array.origionalElement = array[0];
+			array.hasExpanded = true;
+
+			array.Add(new Dom.String("Child2", "2"));
+			array.Add(new Dom.String("Child3", "3"));
+
+			Assert.AreEqual(4, (int)num.InternalValue);
+			Assert.AreEqual("123", ASCIIEncoding.ASCII.GetString(array.Value.Value));
+		}
 	}
 }
 
