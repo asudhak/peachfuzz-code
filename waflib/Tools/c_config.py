@@ -62,7 +62,7 @@ int main() {
 
 MACRO_TO_DESTOS = {
 '__linux__'                                      : 'linux',
-'__GNU__'                                        : 'gnu',
+'__GNU__'                                        : 'gnu', # hurd
 '__FreeBSD__'                                    : 'freebsd',
 '__NetBSD__'                                     : 'netbsd',
 '__OpenBSD__'                                    : 'openbsd',
@@ -75,9 +75,10 @@ MACRO_TO_DESTOS = {
 '_UWIN'                                          : 'uwin',
 '_WIN64'                                         : 'win32',
 '_WIN32'                                         : 'win32',
-'__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__'  : 'darwin',
-'__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__' : 'darwin', #iphone
-'__QNX__'                                        : 'qnx'
+'__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__'  : 'darwin', # TODO Please check whether this is redundant with the 'defined __APPLE__ && defined __MACH__' test done somewhere below in this file.
+'__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__' : 'darwin', # iphone. TODO Same remark. Please check whether this is redundant with the 'defined __APPLE__ && defined __MACH__' test done somewhere below in this file.
+'__QNX__'                                        : 'qnx',
+'__native_client__'                              : 'nacl' # google native client platform
 }
 
 MACRO_TO_DEST_CPU = {
