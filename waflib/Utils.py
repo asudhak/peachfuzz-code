@@ -468,9 +468,6 @@ def unversioned_sys_platform():
 		elif s in ('SunOS', 'Solaris'):
 			return 'sunos'
 		else: s = s.lower()
-
-	if s == 'powerpc':
-		s = 'darwin'
 	if s == 'win32' or s.endswith('os2') and s != 'sunos2': return s
 	return re.split('\d+$', s)[0]
 
