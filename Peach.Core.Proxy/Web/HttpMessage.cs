@@ -88,7 +88,7 @@ namespace Peach.Core.Proxy.Web
 
 		protected static string ReadLine(BitStream data)
 		{
-			int currentPosition = data.TellBytes();
+			int currentPosition = (int)data.TellBytes();
 
 			try
 			{

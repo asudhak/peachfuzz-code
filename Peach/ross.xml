@@ -8,8 +8,19 @@
     <!--<Number name="num1" size="64" value="4611686018427387910" signed="true">
       <Hint name="FiniteRandomNumbers-N" value="5"/>
     </Number>-->
-    <!--<String name="str1" value="Hello, World!"/>-->
-    <Blob name="blob1" length="4" valueType="hex" value="00 01 02 03"/>
+    <!--<String name="Array" value="1" maxOccurs="100">
+      <Hint name="ArrayVarianceMutator-N" value="5"/>
+    </String>-->
+    <!--<String name="szRelation1">
+      <Relation type="size" of="string1"/>
+      <Hint name="SizedVaranceMutator-N" value="5"/>
+    </String>
+    <String name="string1" value="A"/>-->
+    <Blob name="E0" valueType="string" value="0"/>
+    <Blob name="E1" valueType="string" value="1"/>
+    <Blob name="E2" valueType="string" value="2"/>
+    <Blob name="E3" valueType="string" value="3"/>
+    <Blob name="E4" valueType="string" value="4"/>
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">
@@ -27,7 +38,12 @@
 
 	<Test name="TheTest">
 		<StateModel ref="TheState"/>
-		<Publisher class="Stdout"/>
+    <!--<Mutator class="datatree.DataTreeSwapNearNodesMutator"/>-->
+    <!--<Publisher class="file.FileWriter">
+      <Param name="FileName" value="..\..\..\..\output3.0.txt"/>
+      <Param name="FileName" value="..\output2.3.txt"/>
+    </Publisher>-->
+    <Publisher class="stdout.Stdout"/>
 	</Test>
 
 	<Run name="DefaultRun">

@@ -16,20 +16,15 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class ArrayVarianceMutatorTests
     {
-        //bool firstPass = true;
-        //byte[] result = new byte[] { };
-        //List<byte[]> testResults = new List<byte[]>();
-
         [Test]
         public void Test1()
         {
-            // standard test of flipping 20% of the bits in a blob
-            // : in this case, we'll use 1 byte with a value of 0, so we should get 1 bit flipped.
-
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"string1\" value=\"Hello, World!\" maxOccurs=\"1024\"/>" +
+                "       <String name=\"Array\" value=\"1\" maxOccurs=\"100\">" +
+                "           <Hint name=\"ArrayVarianceMutator-N\" value=\"5\"/>" +
+                "       </String>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -54,12 +49,13 @@ namespace Peach.Core.Test.Mutators
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            var myArray = (Dom.Array)dom.dataModels[0][0];
-            myArray.hasExpanded = true;
-            myArray.occurs = 3;
+            var myArray = (Dom.Array)dom.runs[0].tests[0].stateModel.initialState.actions[0].dataModel[0];
             myArray.origionalElement = myArray[0];
-            myArray.Add(new Dom.String("string1-1", "pos1"));
-            myArray.Add(new Dom.String("string1-2", "pos2"));
+            myArray.hasExpanded = true;
+            myArray.Add(new Dom.String("child2", "2"));
+            myArray.Add(new Dom.String("child3", "3"));
+            myArray.Add(new Dom.String("child4", "4"));
+            myArray.Add(new Dom.String("child5", "5"));
 
             RunConfiguration config = new RunConfiguration();
 

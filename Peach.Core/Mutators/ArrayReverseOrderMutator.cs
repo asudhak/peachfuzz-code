@@ -30,21 +30,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
     [Mutator("Reverse the order of the array")]
     public class ArrayReverseOrderMutator : ArrayVarianceMutator
 	{
-        // members
-        //
-        Dom.Array objAsArray;
-
         // CTOR
         //
         public ArrayReverseOrderMutator(DataElement obj) : base(obj)
         {
-            objAsArray = (Dom.Array)(obj);
             name = "ArrayReverseOrderMutator";
         }
 
@@ -90,27 +86,17 @@ namespace Peach.Core.Mutators
         //
         private void performMutation(DataElement obj)
         {
-            int headIdx = objAsArray.parent.IndexOf(objAsArray);
-            Dom.Array items = new Dom.Array();
-            var parent = objAsArray.parent;
+            Dom.Array objAsArray = (Dom.Array)obj;
+            List<DataElement> items = new List<DataElement>();
 
             for (int i = 0; i < objAsArray.Count; ++i)
-            {
-                var item = objAsArray[i];
-                items.Add(item);
-            }
+                items.Add(objAsArray[i]);
 
-            foreach (var item in items)
-                parent.Remove(parent[item.name]);
+            items.Reverse();
+            objAsArray.Clear();
 
-            int x = 0;
-            for (int i = items.Count - 1; i > 0; --i)
-            {
-                parent.Insert(headIdx + x, items[i]);
-                x++;
-            }
-
-            obj.MutatedValue = new Variant(parent.GenerateValue());
+            for (int i = 0; i < items.Count; ++i)
+                objAsArray.Add(items[i]);
         }
 	}
 }

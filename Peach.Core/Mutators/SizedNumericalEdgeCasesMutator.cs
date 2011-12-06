@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
@@ -40,8 +41,9 @@ namespace Peach.Core.Mutators
         // members
         //
         int n;
-        int[] values;
+        long[] values;
         int currentCount;
+        long originalDataLength;
 
         // CTOR
         //
@@ -50,6 +52,7 @@ namespace Peach.Core.Mutators
             currentCount = 0;
             n = getN(obj, 50);
             name = "SizedNumericalEdgeCasesMutator";
+            originalDataLength = (long)obj.GenerateInternalValue();
             PopulateValues(obj);
         }
 
@@ -57,12 +60,8 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues(DataElement obj)
         {
-            // create the list of values [-n, n]
-            List<int> nValues = new List<int>();
-            for (int i = -n; i <= n; ++i)
-                nValues.Add(i);
-
             int size = 0;
+
             if (obj is Number)
             {
                 size = ((Number)obj).Size;
@@ -85,19 +84,21 @@ namespace Peach.Core.Mutators
                 size = 64;
             }
 
-            int sz = 0;
+            size = 8;
             if (size < 16)
-                sz = 8;
+                values = NumberGenerator.GenerateBadNumbers(8, n);
             else
-                sz = 16;
+                values = NumberGenerator.GenerateBadNumbers(16, n);
 
-            // apply n-values to sz
-            List<int> temp = new List<int>();
-            for (int i = 0; i < nValues.Count; ++i)
-            {
-                temp.Add(sz - nValues[i]);
-            }
-            values = temp.ToArray();
+            // this will weed out invalid values that would cause the length to be less than 0
+            List<long> listVals = new List<long>(values);
+            listVals.RemoveAll(RemoveInvalid);
+            values = listVals.ToArray();
+        }
+
+        private bool RemoveInvalid(long n)
+        {
+            return originalDataLength + n < 0;
         }
 
         // GET N
@@ -167,56 +168,54 @@ namespace Peach.Core.Mutators
 
         // PERFORM_MUTATION
         //
-        private void performMutation(DataElement obj, int curr)
+        private void performMutation(DataElement obj, long curr)
         {
             var sizeRelation = obj.GetSizeRelation();
             var objOf = sizeRelation.Of;
-            var size = ((Number)obj).Size;
+            var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
-            n = size + curr;
+            n = (int)(size + curr);
+
+            // make sure the data hasn't changed somewhere along the line
+            if (originalDataLength != realSize)
+                PopulateValues(obj);
+
+            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
             if (n - diff < 0)
             {
-                objOf.MutatedValue = new Variant("");
+                objOf.MutatedValue = new Variant(new byte[0]);
                 return;
             }
+
+            byte[] data = objOf.Value.Value;
+            List<byte> newData = new List<byte>();
 
             // can we make the value?
             if (n <= 0)
             {
-                objOf.MutatedValue = new Variant("");
+                objOf.MutatedValue = new Variant(new byte[0]);
             }
             else if (n < size)
             {
                 // shorten the size
-                byte[] data = objOf.Value.Value;
-                List<byte> newData = new List<byte>();
-
                 for (int i = 0; i < n - diff; ++i)
                     newData.Add(data[i]);
-
                 objOf.MutatedValue = new Variant(newData.ToArray());
-                objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
             }
             else if (size == 0)
             {
                 // fill in with A's
-                List<byte> newData = new List<byte>();
-
                 for (int i = 0; i < n - diff; ++i)
                     newData.Add((byte)('A'));
-
                 objOf.MutatedValue = new Variant(newData.ToArray());
-                objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
             }
             else
             {
                 try
                 {
                     // wrap the data to fill size
-                    byte[] data = objOf.Value.Value;
-                    List<byte> newData = new List<byte>();
                     int cnt = 0;
 
                     while (cnt < n - diff)
@@ -232,12 +231,11 @@ namespace Peach.Core.Mutators
                     }
 
                     objOf.MutatedValue = new Variant(newData.ToArray());
-                    objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
                 }
                 catch
                 {
                     // catch divide by zero exception
-                    objOf.MutatedValue = new Variant("");
+                    objOf.MutatedValue = new Variant(new byte[0]);
                 }
             }
         }

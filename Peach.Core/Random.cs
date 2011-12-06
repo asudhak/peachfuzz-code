@@ -107,17 +107,29 @@ namespace Peach.Core
             return ret.ToArray();
         }
 
-        public void Shuffle<T>(IEnumerable<T> items)
+        /// <summary>
+        /// Fisher-Yates array shuffling algorithm.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public T[] Shuffle<T>(T[] items)
         {
-            if (items == null)
-                return;
+            T[] ret = items;
+            T temp;
+            int n = items.Length;
+            int k = 0;
 
-            List<T> ret = new List<T>();
+            while (n > 1)
+            {
+                k = Next(n);
+                n--;
+                temp = items[n];
+                items[n] = items[k];
+                items[k] = temp;
+            }
 
-            for (int i = 0; i < items.Count(); ++i)
-                ret.Add(Choice(items));
-
-            items = ret;
+            return items;
         }
 
 		/// <summary>

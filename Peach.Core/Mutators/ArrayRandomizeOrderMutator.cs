@@ -38,7 +38,6 @@ namespace Peach.Core.Mutators
 	{
         // members
         //
-        Dom.Array objAsArray;
         int currentCount;
         int n;
 
@@ -46,9 +45,8 @@ namespace Peach.Core.Mutators
         //
         public ArrayRandomizeOrderMutator(DataElement obj) : base(obj)
         {
-            objAsArray = (Dom.Array)(obj);
             currentCount = 0;
-            n = objAsArray.Count;
+            n = ((Dom.Array)obj).Count;
             name = "ArrayRandomizeOrderMutator";
         }
 
@@ -96,25 +94,17 @@ namespace Peach.Core.Mutators
         //
         private void performMutation(DataElement obj)
         {
-            int headIdx = objAsArray.parent.IndexOf(objAsArray);
-            Dom.Array items = new Dom.Array();
-            var parent = objAsArray.parent;
+            Dom.Array objAsArray = (Dom.Array)obj;
+            List<DataElement> items = new List<DataElement>();
 
             for (int i = 0; i < objAsArray.Count; ++i)
-            {
-                var item = objAsArray[i];
-                items.Add(item);
-            }
+                items.Add(objAsArray[i]);
 
-            context.random.Shuffle(items);
+            var shuffledItems = context.random.Shuffle(items.ToArray());
+            objAsArray.Clear();
 
-            foreach (var item in items)
-                parent.Remove(parent[item.name]);
-
-            for (int i = 0; i < items.Count; ++i)
-                parent.Insert(headIdx + i, items[i]);
-
-            obj.MutatedValue = new Variant(parent.GenerateValue());
+            for (int i = 0; i < shuffledItems.Length; ++i)
+                objAsArray.Add(shuffledItems[i]);
         }
 	}
 }

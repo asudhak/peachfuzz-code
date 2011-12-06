@@ -94,7 +94,7 @@ namespace Peach.Core.Dom
         /// <summary>
         /// Mutated value overrides type transforms.
         /// </summary>
-        public const uint MUTATE_OVERRIDE_TYPE_TRANSFORM = 0xC;
+        public const uint MUTATE_OVERRIDE_TYPE_TRANSFORM = 0x20;
 		/// <summary>
 		/// Default mutate value
 		/// </summary>
@@ -546,13 +546,11 @@ namespace Peach.Core.Dom
 		/// <returns></returns>
 		public BitStream GenerateValue()
 		{
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
-				return new BitStream((byte[]) MutatedValue);
-
 			BitStream value = InternalValueToBitStream(InternalValue);
 
-			if(_transformer != null)
-				value = _transformer.encode(value);
+            if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
+                if (_transformer != null)
+                    value = _transformer.encode(value);
 
 			_value = value;
 			return value;

@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
@@ -42,6 +43,7 @@ namespace Peach.Core.Mutators
         int n;
         int[] values;
         int currentCount;
+        long originalDataLength;
 
         // CTOR
         //
@@ -50,18 +52,24 @@ namespace Peach.Core.Mutators
             currentCount = 0;
             n = getN(obj, 50);
             name = "SizedDataVaranceMutator";
-            PopulateValues();
+            originalDataLength = (long)obj.GenerateInternalValue();
+            PopulateValues(originalDataLength);
         }
 
         // POPULATE_VALUES
         //
-        private void PopulateValues()
+        private void PopulateValues(long length)
         {
             // generate values from [-n, n]
             List<int> temp = new List<int>();
 
             for (int i = -n; i <= n; ++i)
+            {
+                // only add valid n-values
+                if (length + i <= 0)
+                    continue;
                 temp.Add(i);
+            }
 
             values = temp.ToArray();
         }
@@ -137,23 +145,30 @@ namespace Peach.Core.Mutators
         {
             var sizeRelation = obj.GetSizeRelation();
             var objOf = sizeRelation.Of;
-            var size = ((Number)obj).Size;
+            var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;
-            n = size + curr;
+            n = (int)size + curr;
 
-            var diff = size - realSize;
-            var aoeu = n - diff;
+            // make sure the data hasn't changed somewhere along the line
+            if (originalDataLength != realSize)
+                PopulateValues(realSize);
 
             // keep size indicator the same
-            var wtf = obj.GenerateInternalValue();
             obj.MutatedValue = obj.GenerateInternalValue();
 
             byte[] data = objOf.Value.Value;
             List<byte> newData = new List<byte>();
 
-            if (n == 0)
+            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+
+            if (n < 0)
             {
-                objOf.MutatedValue = new Variant("");
+                return;
+            }
+            else if (n == 0)
+            {
+                objOf.MutatedValue = new Variant(new byte[0]);
+                return;
             }
             else if (n < realSize)
             {
@@ -186,7 +201,6 @@ namespace Peach.Core.Mutators
             }
 
             objOf.MutatedValue = new Variant(newData.ToArray());
-            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
             objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
         }
 	}

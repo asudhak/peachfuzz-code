@@ -287,7 +287,7 @@ namespace Peach.Core
         /// <param name="size">The size (in bits) of the data</param>
         /// <param name="n">The +/- range number</param>
         /// <returns>Returns a list of all sizes to be used</returns>
-        public static long[] GenerateBadNumbers(int size, int n)
+        public static long[] GenerateBadNumbers(int size, int n = 50)
         {
             if (size == 8)
                 return BadNumbers8(n);
@@ -299,6 +299,14 @@ namespace Peach.Core
                 return BadNumbers32(n);
             else if (size == 64)
                 return BadNumbers64(n);
+            else
+                return null;
+        }
+
+        public static long[] GenerateBadPositiveNumbers(int size = 16, int n = 50)
+        {
+            if (size == 16)
+                return BadPositiveNumbers16(n);
             else
                 return null;
         }
@@ -330,6 +338,12 @@ namespace Peach.Core
         private static long[] BadNumbers64(int n)
         {
             long[] edgeCases = new long[] { 0, -128, 127, 255, -32768, 32767, 65535, -2147483648, 2147483647, 4294967295, -9223372036854775808, 9223372036854775807 };    // UInt64.Max = 18446744073709551615;
+            return Populate(edgeCases, n);
+        }
+
+        private static long[] BadPositiveNumbers16(int n)
+        {
+            long[] edgeCases = new long[] { 50, 127, 255, 32767, 65535 };
             return Populate(edgeCases, n);
         }
 

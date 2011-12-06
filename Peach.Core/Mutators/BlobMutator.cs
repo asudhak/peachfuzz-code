@@ -42,8 +42,7 @@ namespace Peach.Core.Mutators
         changeFcn[] changeFcns = new changeFcn[6];
 
         public delegate byte[] generateFcn(int size);
-        generateFcn[] generateFcns = new generateFcn[5];
-        
+        generateFcn[] generateFcns = new generateFcn[5];        
 
         // CTOR
         //

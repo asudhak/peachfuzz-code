@@ -128,7 +128,7 @@ namespace Peach.Core.Proxy.Web
 				}
 				else if(res.Headers.ContainsKey("transfer-encoding") && res.Headers["transfer-encoding"].Value == "chunked")
 				{
-					int startingPosistion = dataBuffer.TellBytes();
+					int startingPosistion = (int)dataBuffer.TellBytes();
 					res.Chunks = new List<byte[]>();
 					res.Body = null;
 					int length = 0;

@@ -39,7 +39,7 @@ namespace Peach.Core.Mutators
 	{
         // members
         //
-        Dictionary<int, int[]> values;
+        Dictionary<int, long[]> values;
         List<int> allowedSizes;
         int currentCount;
         int selfCount;
@@ -52,8 +52,8 @@ namespace Peach.Core.Mutators
         //
         public NumericalEdgeCaseMutator(DataElement obj)
         {
-            allowedSizes = new List<int>() { 0, 8, 16, 32, 64 };
-            values = new Dictionary<int, int[]>();
+            allowedSizes = new List<int>() { 8, 16, 24, 32, 64 };
+            values = new Dictionary<int, long[]>();
             name = "NumericalEdgeCaseMutator";
             n = getN(obj, 50);
             currentCount = 0;
@@ -92,22 +92,17 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues()
         {
-            // create the list of values [-n, n]
-            List<int> nValues = new List<int>();
-            for (int i = -n; i <= n; ++i)
-                nValues.Add(i);
+            long[] edges8 = NumberGenerator.GenerateBadNumbers(8, n);
+            long[] edges16 = NumberGenerator.GenerateBadNumbers(16, n);
+            long[] edges24 = NumberGenerator.GenerateBadNumbers(24, n);
+            long[] edges32 = NumberGenerator.GenerateBadNumbers(32, n);
+            long[] edges64 = NumberGenerator.GenerateBadNumbers(64, n);
 
-            // apply n-values to each size
-            List<int> temp = new List<int>();
-            foreach (int sz in allowedSizes)
-            {
-                temp.Clear();
-                for (int i = 0; i < nValues.Count; ++i)
-                {
-                    temp.Add(sz - nValues[i]);
-                }
-                values[sz] = temp.ToArray();
-            }
+            values[8] = edges8;
+            values[16] = edges16;
+            values[24] = edges24;
+            values[32] = edges32;
+            values[64] = edges64;
         }
 
         // GET N
@@ -149,23 +144,21 @@ namespace Peach.Core.Mutators
         {
             get 
             {
-                //if (selfCount == 0)
-                //{
-                //    int cnt = 0;
+                if (selfCount == 0)
+                {
+                    int cnt = 0;
 
-                //    for (int i = 0; i < values[size].Length; ++i)
-                //    {
-                //        if (values[size][i] < minValue || (values[size][i]) > (int)(maxValue - 1))    // ulong / int error
-                //            continue;
-                //        cnt++;
-                //    }
+                    for (int i = 0; i < values[size].Length; ++i)
+                    {
+                        if (values[size][i] < minValue || values[size][i] > (long)(maxValue))
+                            continue;
+                        cnt++;
+                    }
 
-                //    selfCount = cnt;
-                //}
+                    selfCount = cnt;
+                }
 
-                //return selfCount;
-
-                return values[size].Length;
+                return selfCount;
             }
         }
 

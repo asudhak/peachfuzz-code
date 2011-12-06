@@ -43,17 +43,17 @@ namespace Peach.Core.Mutators
         int minCount;
         int maxCount;
         int currentCount;
-        Dom.Array objAsArray;
+        int arrayCount;
 
         // CTOR
         //
         public ArrayVarianceMutator(DataElement obj)
         {
-            n = getN(obj, 50);
-            objAsArray = (Dom.Array)(obj);
-            minCount = objAsArray.Count - n;
-            maxCount = objAsArray.Count + n;
             name = "ArrayVarianceMutator";
+            n = getN(obj, 50);
+            arrayCount = ((Dom.Array)obj).Count;
+            minCount = arrayCount - n;
+            maxCount = arrayCount + n;
 
             if (minCount < 0)
                 minCount = 0;
@@ -129,50 +129,38 @@ namespace Peach.Core.Mutators
         //
         public void performMutation(DataElement obj, int num)
         {
-            int newN = num;
-            //var e0 = array[0];
+            Dom.Array objAsArray = (Dom.Array)obj;
 
-            if (newN < objAsArray.Count)
+            if (num == 0)
+                return;
+            else if (num < objAsArray.Count)
             {
                 // remove some items
-
-                foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, newN - 1, -1))
+                foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, num - 1, -1))
                 {
-                    var elem = objAsArray[i];
-
-                    if (elem == null)
+                    if (objAsArray[i] == null)
                         break;
 
-                    elem.parent.Remove(elem);
+                    objAsArray.RemoveAt(i);
                 }
             }
-            else if (newN > objAsArray.Count)
+            else if (num > objAsArray.Count)
             {
                 // add some items
-
-                int headIdx = objAsArray.parent.IndexOf(objAsArray);
-                var elem = objAsArray[objAsArray.Count - 1];
-
-                //if (elem == null)
-                //    throw new OutOfMemoryException();
-
                 try
                 {
-                    //elem.Value = elem.Value. * (newN - arrayCount);
-
-                    foreach (int i in ArrayExtensions.Range(objAsArray.Count, newN, 1))
+                    var newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
+                    foreach (int i in ArrayExtensions.Range(objAsArray.Count, num, 1))
                     {
-                        var copy = objAsArray;
-                        objAsArray.parent.Insert(headIdx + i, copy);
+                        newElem.name = "child" + (i + 1);
+                        objAsArray.Add(newElem);
                     }
                 }
                 catch
                 {
-                    // throw new OutOfMemoryException();
+                    throw new OutOfMemoryException();
                 }
             }
-
-            obj.MutatedValue = new Variant(objAsArray.parent.GenerateValue());
         }
 	}
 }

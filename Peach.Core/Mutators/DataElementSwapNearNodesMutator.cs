@@ -36,9 +36,6 @@ namespace Peach.Core.Mutators
     [Mutator("Swap two nodes in the data model that are near each other")]
 	public class DataElementSwapNearNodesMutator : Mutator
 	{
-        // members
-        //
-
         // CTOR
         //
         public DataElementSwapNearNodesMutator(DataElement obj)
@@ -92,30 +89,6 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             sequencialMutation(obj);
-        }
-
-        // NEXT_NODE
-        //
-        private void nextNode(DataElement obj)
-        {
-            // TODO ???
-
-            // walk down node tree
-
-            // walk over or up if we can
-        }
-
-        // MOVE_NEXT
-        //
-        private void moveNext(DataElement obj)
-        {
-            // TODO ???
-
-            // check if we are top
-
-            // get sibling
-
-            // get sibling of parent
         }
 	}
 }

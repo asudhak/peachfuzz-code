@@ -34,28 +34,26 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("ArrayNumericalEdgeCasesMutator")]
-    public class ArrayNumericalEdgeCasesMutator : ArrayVarianceMutator
+    public class ArrayNumericalEdgeCasesMutator : Mutator
     {
         // members
         //
-        List<int> values = new List<int>();
+        long[] values;
         int currentCount;
+        int arrayCount;
         int minCount;
         int maxCount;
-        Dom.Array objAsArray;
 
         // CTOR
         //
-        public ArrayNumericalEdgeCasesMutator(DataElement obj) : base(obj)
+        public ArrayNumericalEdgeCasesMutator(DataElement obj)
         {
-            for (int i = 0; i < 10; ++i)
-                values.Add(i);
-
             currentCount = 0;
             minCount = 0;
             maxCount = 0;
-            objAsArray = (Dom.Array)(obj);
+            arrayCount = ((Dom.Array)obj).Count;
             name = "ArrayNumericalEdgeCasesMutator";
+            values = NumberGenerator.GenerateBadPositiveNumbers();
         }
 
         // NEXT
@@ -71,7 +69,7 @@ namespace Peach.Core.Mutators
         //
         public override int count
         {
-            get { return values.Count; }
+            get { return values.Length; }
         }
 
         // SUPPORTED
@@ -88,14 +86,52 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            base.performMutation(obj, values[currentCount]);
+            performMutation(obj, (int)values[currentCount]);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-            base.performMutation(obj, context.random.Choice(values));
+            performMutation(obj, (int)context.random.Choice(values));
+        }
+
+        // PERFORM_MUTATION
+        //
+        public void performMutation(DataElement obj, int num)
+        {
+            Dom.Array objAsArray = (Dom.Array)obj;
+
+            if (num == 0)
+                return;
+            else if (num < objAsArray.Count)
+            {
+                // remove some items
+                foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, num - 1, -1))
+                {
+                    if (objAsArray[i] == null)
+                        break;
+
+                    objAsArray.RemoveAt(i);
+                }
+            }
+            else if (num > objAsArray.Count)
+            {
+                // add some items
+                try
+                {
+                    var newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
+                    foreach (int i in ArrayExtensions.Range(objAsArray.Count, num, 1))
+                    {
+                        newElem.name = "child" + (i + 1);
+                        objAsArray.Add(newElem);
+                    }
+                }
+                catch
+                {
+                    throw new OutOfMemoryException();
+                }
+            }
         }
     }
 }

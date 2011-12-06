@@ -50,7 +50,7 @@ namespace Peach.Core.Mutators
         {
             position = 0;
             DWORD = 0xFFFFFFFF;
-            length = obj.Value.Value.Length;
+            length = (int)obj.Value.LengthBytes;
             name = "BlobDWORDSliderMutator";
         }
 
@@ -107,11 +107,12 @@ namespace Peach.Core.Mutators
         {
             byte[] data = obj.Value.Value;
             byte[] inject = new byte[] {};
+            int currLen = data.Length;
 
-            if (pos >= length)
+            if (pos >= currLen)
                 return;
 
-            int remaining = length - pos;
+            int remaining = currLen - pos;
 
             if (remaining == 1)
             {

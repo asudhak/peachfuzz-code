@@ -46,14 +46,6 @@ namespace Peach.Core.Mutators
         long minValue;
         ulong maxValue;
 
-        //int i32min = Int32.MinValue;
-        //int i32max = Int32.MaxValue;
-        //uint ui32max = UInt32.MaxValue;
-
-        //long i64min = Int64.MinValue;
-        //long i64max = Int64.MaxValue;
-        //ulong ui64max = UInt64.MaxValue;
-
         // CTOR
         //
         public FiniteRandomNumbersMutator(DataElement obj)

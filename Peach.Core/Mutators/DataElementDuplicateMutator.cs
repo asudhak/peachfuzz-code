@@ -80,14 +80,14 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            byte[] currentValue = obj.Value.Value;
+            byte[] data = obj.Value.Value;
             List<byte> newData = new List<byte>();
 
             int cnt = 0;
             while (cnt < currentCount)
             {
-                for (int i = 0; i < currentValue.Length; ++i)
-                    newData.Add(currentValue[i]);
+                for (int i = 0; i < data.Length; ++i)
+                    newData.Add(data[i]);
                 cnt++;
             }
 
@@ -99,15 +99,15 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            byte[] currentValue = obj.Value.Value;
+            byte[] data = obj.Value.Value;
             List<byte> newData = new List<byte>();
 
             int cnt = 0;
             int newCount = context.random.Next(currentCount);
             while (cnt < newCount)
             {
-                for (int i = 0; i < currentValue.Length; ++i)
-                    newData.Add(currentValue[i]);
+                for (int i = 0; i < data.Length; ++i)
+                    newData.Add(data[i]);
                 cnt++;
             }
 

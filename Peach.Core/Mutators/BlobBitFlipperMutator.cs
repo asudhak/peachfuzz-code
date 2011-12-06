@@ -43,9 +43,9 @@ namespace Peach.Core.Mutators
         // members
         //
         int n;
-        int length;
         int countMax;
         int current;
+        long length;
 
         // CTOR
         //
@@ -53,13 +53,13 @@ namespace Peach.Core.Mutators
         {
             current = 0;
             n = getN(obj, 20);
-            length = obj.Value.Value.Length;
+            length = obj.Value.LengthBits;
             name = "BlobBitFlipperMutator";
 
             if (n != 0)
-                countMax = (int)((length * 8) * (n / 100.0));
+                countMax = (int)((length) * (n / 100.0));
             else
-                countMax = (int)((length * 8) * 0.2);
+                countMax = (int)((length) * 0.2);
         }
 
         // GET N
@@ -91,7 +91,7 @@ namespace Peach.Core.Mutators
         public override void next()
         {
             current++;
-            if (current >= count)
+            if (current > count)
                 throw new MutatorCompleted();
         }
 

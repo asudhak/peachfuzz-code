@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Mutators\ArrayVarianceMutatorTests.cs</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -60,11 +63,13 @@
     <Compile Include="CrackingTests\StringTests.cs" />
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
+    <Compile Include="Mutators\ArrayVarianceMutatorTests.cs" />
     <Compile Include="Mutators\BlobBitFlipperMutatorTests.cs" />
     <Compile Include="Mutators\BlobMutatorTests.cs" />
     <Compile Include="Mutators\FiniteRandomNumbersMutatorTests.cs" />
     <Compile Include="Mutators\NumericalEdgeCaseMutatorTests.cs" />
     <Compile Include="Mutators\NumericalVarianceMutatorTests.cs" />
+    <Compile Include="Mutators\SizedVarianceMutatorTests.cs" />
     <Compile Include="Mutators\StringCaseMutatorTests.cs" />
     <Compile Include="Mutators\StringMutatorTests.cs" />
     <Compile Include="Mutators\UnicodeBadUtf8MutatorTests.cs" />
