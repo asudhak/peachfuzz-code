@@ -280,8 +280,9 @@ class Context(ctx):
 					self.post_recurse(node)
 			elif not node:
 				node = self.root.find_node(WSCRIPT)
-				if node and (not once or node not in cache):
-					cache[node] = True
+				tup = (node, name or self.fun)
+				if node and (not once or tup not in cache):
+					cache[tup] = True
 					self.pre_recurse(node)
 					try:
 						wscript_module = load_module(node.abspath())
