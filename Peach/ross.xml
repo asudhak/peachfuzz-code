@@ -8,6 +8,9 @@
     <!--<Number name="num1" size="64" value="4611686018427387910" signed="true">
       <Hint name="FiniteRandomNumbers-N" value="5"/>
     </Number>-->
+    <Number name="num2" size="32" signed="false">
+      <!--<Hint name="FiniteRandomNumbersMutator-N" value="5"/>-->
+    </Number>
     <!--<String name="Array" value="1" maxOccurs="100">
       <Hint name="ArrayVarianceMutator-N" value="5"/>
     </String>-->
@@ -16,11 +19,6 @@
       <Hint name="SizedVaranceMutator-N" value="5"/>
     </String>
     <String name="string1" value="A"/>-->
-    <Blob name="E0" valueType="string" value="0"/>
-    <Blob name="E1" valueType="string" value="1"/>
-    <Blob name="E2" valueType="string" value="2"/>
-    <Blob name="E3" valueType="string" value="3"/>
-    <Blob name="E4" valueType="string" value="4"/>
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">

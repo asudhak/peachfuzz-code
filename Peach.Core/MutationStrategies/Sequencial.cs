@@ -69,10 +69,11 @@ namespace Peach.Core.MutationStrategies
 
 					foreach (object attrib in t.GetCustomAttributes(true))
 					{
-						if (attrib is MutatorAttribute)
-						{
-							_mutators.Add(t);
-						}
+                        if (attrib is MutatorAttribute)
+                        {
+                            //if (t.Name == "FiniteRandomNumbersMutator")
+                                _mutators.Add(t);
+                        }
 					}
 				}
 			}

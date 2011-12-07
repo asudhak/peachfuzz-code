@@ -61,12 +61,19 @@ namespace Peach.Core.Mutators
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
             }
-            else
+            else if (obj is Number)
             {
                 signed = ((Number)obj).Signed;
                 size = ((Number)obj).Size;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
+            }
+            else if (obj is Flag)
+            {
+                signed = false; 
+                size = ((Flag)obj).size;
+                minValue = 0;
+                maxValue = UInt32.MaxValue;
             }
         }
 
@@ -114,15 +121,17 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if ((obj is Dom.Number || obj is Dom.Flag) && obj.isMutable)
+            if (obj is Number && obj.isMutable)
                 if (((Number)obj).Size > 8)
                     return true;
 
+            if (obj is Flag && obj.isMutable)
+                if (((Flag)obj).size > 8)
+                    return true;
+
             if (obj is Dom.String && obj.isMutable)
-            {
                 if (obj.Hints.ContainsKey("NumericalString"))
                     return true;
-            }
 
             return false;
         }
@@ -133,58 +142,78 @@ namespace Peach.Core.Mutators
         {
             context.random.Seed = currentCount;
 
-            //byte[] value = GenerateValue();
-            //int value = context.random.Next((int)minValue, (int)maxValue);
-            int value = context.random.Next((int)minValue, Int32.MaxValue);
-
+            // handle strings
             if (obj is Dom.String)
+            {
+                UInt32 value = context.random.NextUInt32();
                 obj.MutatedValue = new Variant(value.ToString());
+                return;
+            }
+
+            if (signed)
+            {
+                if (size <= 32)
+                {
+                    Int32 value = context.random.Next((int)minValue, (int)maxValue);
+                    obj.MutatedValue = new Variant(value);
+                }
+                else
+                {
+                    Int64 value = context.random.NextInt64();
+                    obj.MutatedValue = new Variant(value);
+                }
+            }
             else
-                obj.MutatedValue = new Variant(value);
+            {
+                if (size <= 32)
+                {
+                    UInt32 value = context.random.NextUInt32();
+                    obj.MutatedValue = new Variant(value);
+                }
+                else
+                {
+                    UInt64 value = context.random.NextUInt64();
+                    obj.MutatedValue = new Variant(value);
+                }
+            }
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            //byte[] value = GenerateValue();
-            //int value = context.random.Next((int)minValue, (int)maxValue);
-            int value = context.random.Next((int)minValue, Int32.MaxValue);
-
+            // handle strings
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(value.ToString());
-            else
-                obj.MutatedValue = new Variant(value);
-        }
-
-        // GENERATE_VALUE
-        //
-        private byte[] GenerateValue()
-        {
-            if (size <= 32)
             {
-                if (signed)
+                UInt32 value = context.random.NextUInt32();
+                obj.MutatedValue = new Variant(value.ToString());
+                return;
+            }
+
+            if (signed)
+            {
+                if (size <= 32)
                 {
-                    int value = context.random.Next((int)minValue, (int)maxValue);
-                    return BitConverter.GetBytes(value);
+                    Int32 value = context.random.Next((int)minValue, (int)maxValue);
+                    obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-                    uint value = context.random.NextUInt32();
-                    return BitConverter.GetBytes(value);
+                    Int64 value = context.random.NextInt64();
+                    obj.MutatedValue = new Variant(value);
                 }
             }
             else
             {
-                if (signed)
+                if (size <= 32)
                 {
-                    long value = context.random.NextInt64((long)minValue, (long)maxValue);
-                    return BitConverter.GetBytes(value);
+                    UInt32 value = context.random.NextUInt32();
+                    obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-                    ulong value = context.random.NextUInt64();
-                    return BitConverter.GetBytes(value);
+                    UInt64 value = context.random.NextUInt64();
+                    obj.MutatedValue = new Variant(value);
                 }
             }
         }

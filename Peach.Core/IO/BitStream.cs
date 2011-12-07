@@ -571,7 +571,8 @@ namespace Peach.Core.IO
 			long origionalPos = pos;
 
 			bits.SeekBits(0, SeekOrigin.Begin);
-			WriteBytes(bits.ReadBytes(bytesToWrite));
+            if (bytesToWrite != 0)
+			    WriteBytes(bits.ReadBytes(bytesToWrite));
 			if(extraBits > 0)
 				WriteBits(bits.ReadBits((int)extraBits), (int)extraBits);
 

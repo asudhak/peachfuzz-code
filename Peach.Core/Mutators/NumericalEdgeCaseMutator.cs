@@ -67,11 +67,17 @@ namespace Peach.Core.Mutators
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
-            else
+            else if (obj is Number)
             {
                 size = ((Number)obj).Size;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
+            }
+            else if (obj is Flag)
+            {
+                size = ((Flag)obj).size;
+                minValue = 0;
+                maxValue = UInt32.MaxValue;
             }
 
             // if size is off, pick up the next largest one from allowedSizes

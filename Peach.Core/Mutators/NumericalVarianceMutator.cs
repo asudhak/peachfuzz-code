@@ -60,10 +60,15 @@ namespace Peach.Core.Mutators
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
-            else
+            else if (obj is Number)
             {
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
+            }
+            else if (obj is Flag)
+            {
+                minValue = 0;
+                maxValue = UInt32.MaxValue;
             }
         }
 
@@ -133,14 +138,15 @@ namespace Peach.Core.Mutators
         public new static bool supportedDataElement(DataElement obj)
         {
             if (obj is Dom.String && obj.isMutable)
-            {
                 if (obj.Hints.ContainsKey("NumericalString"))
                     return true;
-            }
 
-            // Disable for 8-bit ints, we've tried all values already
-            if ((obj is Dom.Number || obj is Dom.Flag) && obj.isMutable)
+            if (obj is Number && obj.isMutable)
                 if (((Number)obj).Size > 8)
+                    return true;
+
+            if (obj is Flag && obj.isMutable)
+                if (((Flag)obj).size > 8)
                     return true;
 
             return false;
@@ -178,6 +184,8 @@ namespace Peach.Core.Mutators
 
                 if (obj is Dom.String)
                     obj.MutatedValue = new Variant(finalValue.ToString());
+                else
+                    obj.MutatedValue = new Variant(finalValue);
             }
             catch
             {

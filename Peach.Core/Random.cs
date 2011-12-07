@@ -43,53 +43,19 @@ namespace Peach.Core
 			return _random.Next(min, max);
 		}
 
-        public uint NextUInt32()
+        public UInt32 NextUInt32(UInt32 min = 0, UInt32 max = UInt32.MaxValue)
         {
-            byte[] b = new byte[sizeof(UInt32)];
-            _random.NextBytes(b);
-            UInt32 num = BitConverter.ToUInt32(b, 0);
-            return num;
+            return (UInt32)(min + (UInt32)(_random.NextDouble() * (max - min)));
         }
 
-        public Int64 NextInt64()
+        public Int64 NextInt64(Int64 min = Int64.MinValue, Int64 max = Int64.MaxValue)
         {
-            byte[] b = new byte[sizeof(Int64)];
-            _random.NextBytes(b);
-            Int64 num = BitConverter.ToInt64(b, 0);
-            return num;
+            return (Int64)(min + (Int64)(_random.NextDouble() * (max - min)));
         }
 
-        public Int64 NextInt64(Int64 min, Int64 max)
+        public UInt64 NextUInt64(UInt64 min = 0, UInt64 max = UInt64.MaxValue)
         {
-            Int64 range = Math.Abs(max - min);
-
-            byte[] b;
-            if (range < 0x10000)
-            {
-                if (range < 0x100)
-                    b = new byte[1];
-                else
-                    b = new byte[sizeof(Int16)];
-            }
-            else
-            {
-                if (range < 0x100000000L)
-                    b = new byte[sizeof(Int32)];
-                else
-                    b = new byte[sizeof(Int64)];
-            }
-
-            _random.NextBytes(b);
-            Int64 num = BitConverter.ToInt64(b, 0);
-            return num;
-        }
-
-        public UInt64 NextUInt64()
-        {
-            byte[] b = new byte[sizeof(UInt64)];
-            _random.NextBytes(b);
-            UInt64 num = BitConverter.ToUInt64(b, 0);
-            return num;
+            return (UInt64)(min + (UInt64)(_random.NextDouble() * (max - min)));
         }
 
 		public T Choice<T>(IEnumerable<T> list)

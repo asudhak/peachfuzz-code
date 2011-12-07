@@ -71,7 +71,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj is Dom.String)
+            if (obj is Dom.String && obj.isMutable)
                 return true;
 
             return false;
@@ -79,14 +79,14 @@ namespace Peach.Core.Mutators
 
         // SEQUENCIAL_MUTATION
         //
-        public override void sequencialMutation(Dom.DataElement obj)
+        public override void sequencialMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
         }
 
         // RANDOM_MUTATION
         //
-        public override void randomMutation(Dom.DataElement obj)
+        public override void randomMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(context.random.Choice<string>(values));
         }

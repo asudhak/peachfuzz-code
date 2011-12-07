@@ -172,7 +172,7 @@ namespace Peach.Core.Mutators
 
         // SEQUENCIAL_MUTATION
         //
-        public override void sequencialMutation(Dom.DataElement obj)
+        public override void sequencialMutation(DataElement obj)
         {
             string filePath = "xmltests/" + values[pos];
             entry = zip[filePath];
@@ -185,7 +185,7 @@ namespace Peach.Core.Mutators
 
         // RANDOM_MUTATION
         //
-        public override void randomMutation(Dom.DataElement obj)
+        public override void randomMutation(DataElement obj)
         {
             string filePath = "xmltests/" + context.random.Choice<string>(values);
             entry = zip[filePath];
