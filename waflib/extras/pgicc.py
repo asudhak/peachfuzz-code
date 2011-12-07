@@ -35,11 +35,11 @@ def find_pgi_compiler(conf, var, name):
 def get_pgi_version(conf, cc):
 	"""Find the version of a pgi compiler."""
 	version_re = re.compile(r"The Portland Group", re.I).search
-	cmd = cc + ['-V']
+	cmd = cc + ['-V', '-E'] # Issue 1078, prevent wrappers from linking
 
 	try:
 		out, err = conf.cmd_and_log(cmd, output=0)
-	except:
+	except Exception:
 		conf.fatal('Could not find pgi compiler %r' % cmd)
 
 	if out: match = version_re(out)
@@ -51,7 +51,7 @@ def get_pgi_version(conf, cc):
 	cmd = cc + ['-help=variable']
 	try:
 		out, err = conf.cmd_and_log(cmd, output=0)
-	except:
+	except Exception:
 		conf.fatal('Could not find pgi compiler %r' % cmd)
 
 	version = re.findall('^COMPVER\s*=(.*)', out, re.M)
