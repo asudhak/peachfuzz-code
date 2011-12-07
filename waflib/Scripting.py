@@ -187,6 +187,7 @@ def parse_options():
 
 	if not Options.commands:
 		Options.commands = [default_cmd]
+	Options.commands = [x for x in Options.commands if x != 'options'] # issue 1076
 
 	# process some internal Waf options
 	Logs.verbose = Options.options.verbose
