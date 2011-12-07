@@ -8,9 +8,10 @@
     <!--<Number name="num1" size="64" value="4611686018427387910" signed="true">
       <Hint name="FiniteRandomNumbers-N" value="5"/>
     </Number>-->
-    <Number name="num2" size="32" signed="false">
-      <!--<Hint name="FiniteRandomNumbersMutator-N" value="5"/>-->
-    </Number>
+    <!--<Number name="num2" size="32" signed="false">
+      <Hint name="FiniteRandomNumbersMutator-N" value="5"/>
+    </Number>-->
+    <Blob name="blob1" valueType="hex" value="00 01 02 03 04"/> 
     <!--<String name="Array" value="1" maxOccurs="100">
       <Hint name="ArrayVarianceMutator-N" value="5"/>
     </String>-->
