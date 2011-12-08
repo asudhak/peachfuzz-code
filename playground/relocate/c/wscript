@@ -7,5 +7,5 @@ def configure(conf):
 	conf.load('relocation compiler_c')
 
 def build(bld):
-	bld.shlib(source='a.c', target='one')
+	bld.shlib(source='a.c', target='one', includes='a')
 	bld.program(source='main.c', target='two', use='one')

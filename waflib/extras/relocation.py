@@ -80,6 +80,6 @@ def apply_incpaths(self):
 	lst = self.to_incnodes(self.to_list(getattr(self, 'includes', [])) + self.env['INCLUDES'])
 	self.includes_nodes = lst
 	bld = self.bld
-	self.env['INCPATHS'] = [x.is_child_of(bld.srcnode) and x.path_from(bld.srcnode) or x.abspath() for x in lst]
+	self.env['INCPATHS'] = [x.is_child_of(bld.srcnode) and x.path_from(bld.bldnode) or x.abspath() for x in lst]
 
 
