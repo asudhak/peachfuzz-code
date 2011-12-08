@@ -11,9 +11,9 @@
     <!--<Number name="num2" size="32" signed="false">
       <Hint name="FiniteRandomNumbersMutator-N" value="5"/>
     </Number>-->
-    <Blob name="blob1" valueType="hex" value="00 01 02 03 04"/> 
+    <Blob name="blob1" valueType="hex" value="0"/> 
     <!--<String name="Array" value="1" maxOccurs="100">
-      <Hint name="ArrayVarianceMutator-N" value="5"/>
+      <Hint name="ArrayNumericalEdgeCasesMutator-N" value="5"/>
     </String>-->
     <!--<String name="szRelation1">
       <Relation type="size" of="string1"/>
@@ -37,7 +37,7 @@
 
 	<Test name="TheTest">
 		<StateModel ref="TheState"/>
-    <!--<Mutator class="datatree.DataTreeSwapNearNodesMutator"/>-->
+    <!--<Mutator class="blob.BitFlipperMutator"/>-->
     <!--<Publisher class="file.FileWriter">
       <Param name="FileName" value="..\..\..\..\output3.0.txt"/>
       <Param name="FileName" value="..\output2.3.txt"/>

@@ -35,11 +35,11 @@ using Peach.Core.IO;
 namespace Peach.Core.Mutators
 {
     [Mutator("Reverse the order of the array")]
-    public class ArrayReverseOrderMutator : ArrayVarianceMutator
+    public class ArrayReverseOrderMutator : Mutator
 	{
         // CTOR
         //
-        public ArrayReverseOrderMutator(DataElement obj) : base(obj)
+        public ArrayReverseOrderMutator(DataElement obj)
         {
             name = "ArrayReverseOrderMutator";
         }

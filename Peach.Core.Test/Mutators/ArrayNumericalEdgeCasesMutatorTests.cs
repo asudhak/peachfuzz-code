@@ -14,7 +14,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class ArrayVarianceMutatorTests
+    class ArrayNumericalEdgeCasesMutatorTests
     {
         byte[] testValue;
         List<byte[]> listVals = new List<byte[]>();
@@ -22,8 +22,8 @@ namespace Peach.Core.Test.Mutators
         [Test]
         public void Test1()
         {
-            // standard test -- change the length of the array to count - N to count + N (default is 50)
-            // 01234 -> [0, 01, 012, 0123, 01234, 012344, 0123444, ... len(55)]
+            // standard test - will change the length of arrays to lengths of +/- 50 around numerical edge cases
+            // -- edge cases are: 50, 127, 255, 32767, 65535
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -70,7 +70,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 57);
+            Assert.IsTrue(listVals.Count == 507);
 
             // reset
             testValue = null;
@@ -80,14 +80,15 @@ namespace Peach.Core.Test.Mutators
         [Test]
         public void Test2()
         {
-            // standard test -- change the length of the array to count - N to count + N (N = 5)
-            // 01234 -> [0, 01, 012, 0123, 01234, 012344, 0123444, 01234444, 012344444, 0123444444]
+            // standard test - will change the length of arrays to lengths of +/- N around numerical edge cases
+            // -- N = 5
+            // -- edge cases are: 50, 127, 255, 32767, 65535
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <String name=\"a0\" value=\"0\" maxOccurs=\"100\">" +
-                "           <Hint name=\"ArrayVarianceMutator-N\" value=\"5\"/>" +
+                "           <Hint name=\"ArrayNumericalEdgeCasesMutator-N\" value=\"5\"/>" +
                 "       </String>" +
                 "   </DataModel>" +
 
@@ -130,18 +131,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 12);
-            Assert.AreEqual(listVals[1], new byte[0]);
-            Assert.AreEqual(listVals[2], new byte[] { (byte)('0') });
-            Assert.AreEqual(listVals[3], new byte[] { (byte)('0'), (byte)('1') });
-            Assert.AreEqual(listVals[4], new byte[] { (byte)('0'), (byte)('1'), (byte)('2') });
-            Assert.AreEqual(listVals[5], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3') });
-            Assert.AreEqual(listVals[6], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') });
-            Assert.AreEqual(listVals[7], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[8], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[9], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[10], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[11], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
+            Assert.IsTrue(listVals.Count == 57);
 
             // reset
             testValue = null;

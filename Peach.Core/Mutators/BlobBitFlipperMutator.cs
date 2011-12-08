@@ -91,7 +91,7 @@ namespace Peach.Core.Mutators
         public override void next()
         {
             current++;
-            if (current > count)
+            if (current >= count)
                 throw new MutatorCompleted();
         }
 

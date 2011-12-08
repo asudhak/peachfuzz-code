@@ -131,9 +131,9 @@ namespace Peach.Core.Mutators
         {
             Dom.Array objAsArray = (Dom.Array)obj;
 
-            if (num == 0)
-                return;
-            else if (num < objAsArray.Count)
+            //if (num == 0)
+              //  return;
+            if (num < objAsArray.Count)
             {
                 // remove some items
                 foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, num - 1, -1))

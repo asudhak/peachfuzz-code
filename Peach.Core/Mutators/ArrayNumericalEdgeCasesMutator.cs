@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("ArrayNumericalEdgeCasesMutator")]
+    [Mutator("Change the length of arrays to numerical edge cases")]
+    [Hint("ArrayNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class ArrayNumericalEdgeCasesMutator : Mutator
     {
         // members
@@ -43,17 +44,43 @@ namespace Peach.Core.Mutators
         int arrayCount;
         int minCount;
         int maxCount;
+        int n;
 
         // CTOR
         //
         public ArrayNumericalEdgeCasesMutator(DataElement obj)
         {
+            name = "ArrayNumericalEdgeCasesMutator";
             currentCount = 0;
             minCount = 0;
             maxCount = 0;
             arrayCount = ((Dom.Array)obj).Count;
-            name = "ArrayNumericalEdgeCasesMutator";
-            values = NumberGenerator.GenerateBadPositiveNumbers();
+            n = getN(obj, 50);
+            values = NumberGenerator.GenerateBadPositiveNumbers(16, n);
+        }
+
+        // GET N
+        //
+        public int getN(DataElement obj, int n)
+        {
+            // check for hint
+            if (obj.Hints.ContainsKey(name + "-N"))
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue(name + "-N", out h))
+                {
+                    try
+                    {
+                        n = Int32.Parse(h.Value);
+                    }
+                    catch
+                    {
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                    }
+                }
+            }
+
+            return n;
         }
 
         // NEXT
@@ -102,9 +129,9 @@ namespace Peach.Core.Mutators
         {
             Dom.Array objAsArray = (Dom.Array)obj;
 
-            if (num == 0)
-                return;
-            else if (num < objAsArray.Count)
+            //if (num == 0)
+              //  return;
+            if (num < objAsArray.Count)
             {
                 // remove some items
                 foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, num - 1, -1))

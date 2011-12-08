@@ -34,7 +34,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Randomize the order of the array")]
-	public class ArrayRandomizeOrderMutator : ArrayVarianceMutator
+    [Hint("ArrayRandomizeOrderMutator-N", "Gets N by checking node for hint, or returns default (50).")]
+	public class ArrayRandomizeOrderMutator : Mutator
 	{
         // members
         //
@@ -45,9 +46,33 @@ namespace Peach.Core.Mutators
         //
         public ArrayRandomizeOrderMutator(DataElement obj) : base(obj)
         {
-            currentCount = 0;
-            n = ((Dom.Array)obj).Count;
             name = "ArrayRandomizeOrderMutator";
+            currentCount = 0;
+            n = getN(obj, 50);
+        }
+
+        // GET N
+        //
+        public int getN(DataElement obj, int n)
+        {
+            // check for hint
+            if (obj.Hints.ContainsKey(name + "-N"))
+            {
+                Hint h = null;
+                if (obj.Hints.TryGetValue(name + "-N", out h))
+                {
+                    try
+                    {
+                        n = Int32.Parse(h.Value);
+                    }
+                    catch
+                    {
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                    }
+                }
+            }
+
+            return n;
         }
 
         // NEXT
