@@ -71,16 +71,15 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            obj.MutatedValue = new Variant(new byte[0]);
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            // remove the element from the data model
+            obj.parent.Remove(obj);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            obj.MutatedValue = new Variant(new byte[0]);
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            obj.parent.Remove(obj);
         }
 	}
 }

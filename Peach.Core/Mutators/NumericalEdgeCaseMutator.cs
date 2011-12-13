@@ -47,6 +47,7 @@ namespace Peach.Core.Mutators
         ulong maxValue;
         int n;
         int size;
+        bool signed;
 
         // CTOR
         //
@@ -64,17 +65,20 @@ namespace Peach.Core.Mutators
             if (obj is Dom.String)
             {
                 size = 32;
+                signed = false;
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
             else if (obj is Number)
             {
                 size = ((Number)obj).Size;
+                signed = ((Number)obj).Signed;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
             }
             else if (obj is Flag)
             {
+                signed = false;
                 size = ((Flag)obj).size;
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
@@ -150,21 +154,22 @@ namespace Peach.Core.Mutators
         {
             get 
             {
-                if (selfCount == 0)
-                {
-                    int cnt = 0;
+                //if (selfCount == 0)
+                //{
+                //    int cnt = 0;
 
-                    for (int i = 0; i < values[size].Length; ++i)
-                    {
-                        if (values[size][i] < minValue || values[size][i] > (long)(maxValue))
-                            continue;
-                        cnt++;
-                    }
+                //    for (int i = 0; i < values[size].Length; ++i)
+                //    {
+                //        if (values[size][i] < minValue || values[size][i] > (long)(maxValue))
+                //            continue;
+                //        cnt++;
+                //    }
 
-                    selfCount = cnt;
-                }
+                //    selfCount = cnt;
+                //}
 
-                return selfCount;
+                //return selfCount;
+                return values[size].Length;
             }
         }
 
@@ -194,14 +199,22 @@ namespace Peach.Core.Mutators
 
             long value = values[size][currentCount];
 
-            if (value >= minValue)
+            if (obj is Dom.String)
             {
-                if (value >= 0 && (ulong)value >= maxValue)
-                    return;
-                else if (obj is Dom.String)
-                    obj.MutatedValue = new Variant(value.ToString());
+                obj.MutatedValue = new Variant(value.ToString());
+            }
+            else
+            {
+                if (signed)
+                {
+                    if (value >= minValue && value <= (long)maxValue)
+                        obj.MutatedValue = new Variant(value);
+                }
                 else
-                    obj.MutatedValue = new Variant(value);
+                {
+                    if (value >= minValue && (ulong)value <= maxValue)
+                        obj.MutatedValue = new Variant(value);
+                }
             }
         }
 

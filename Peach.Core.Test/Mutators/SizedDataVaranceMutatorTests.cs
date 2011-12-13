@@ -14,22 +14,37 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class BlobDWORDSliderMutatorTests
+    class SizedDataVaranceMutatorTests
     {
-        byte[] result;
-        List<byte[]> testResults = new List<byte[]>();
+        public struct TestResult
+        {
+            public long size;
+            public byte[] value;
+
+            public TestResult(long sz, byte[] vals)
+            {
+                size = sz;
+                value = vals;
+            }
+        }
+
+        List<TestResult> listResults = new List<TestResult>();
 
         [Test]
         public void Test1()
         {
-            // standard test of sliding a DWORD through a 8 byte blob
-            // { 00 01 02 03 04 05 06 07 } becomes...
-            // { FF FF FF FF 04 05 06 07 }, { 00 FF FF FF FF 05 06 07 }, { 00 01 FF FF FF FF 06 07 } ... etc
+            // standard test ... change the length of sizes to count +/- N (default is 50)
+            // - Initial string: "AAAAA"
+            // - will produce 1 A through 55 A's (the initial value just wraps when expanding and we negate <= 0 sized results)
+            // - NOTE: this mutator will *NOT* update the length of the size relation
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Blob name=\"blob1\" length=\"8\" valueType=\"hex\" value=\"00 01 02 03 04 05 06 07\"/>" +
+                "       <String name=\"sizeRelation1\">" +
+                "           <Relation type=\"size\" of=\"string1\"/>" +
+                "       </String>" +
+                "       <String name=\"string1\" value=\"AAAAA\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -63,32 +78,34 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(testResults.Count == 9);
-            Assert.AreEqual(testResults[1], new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0x04, 0x05, 0x06, 0x07 });
-            Assert.AreEqual(testResults[2], new byte[] { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x05, 0x06, 0x07 });
-            Assert.AreEqual(testResults[3], new byte[] { 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x06, 0x07 });
-            Assert.AreEqual(testResults[4], new byte[] { 0x00, 0x01, 0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0x07 });
-            Assert.AreEqual(testResults[5], new byte[] { 0x00, 0x01, 0x02, 0x03, 0xFF, 0xFF, 0xFF, 0xFF });
-            Assert.AreEqual(testResults[6], new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0xFF, 0xFF, 0xFF });
-            Assert.AreEqual(testResults[7], new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xFF, 0xFF });
-            Assert.AreEqual(testResults[8], new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0xFF });
+            Assert.IsTrue(listResults.Count == 56);
+            for (int i = 1; i < 56; ++i)
+            {
+                if (i == 5)
+                    continue;
+                Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
+            }
 
             // reset
-            result = null;
-            testResults.Clear();
+            listResults.Clear();
         }
 
         [Test]
         public void Test2()
         {
-            // testing "off" hint, which means nothing should happen!
+            // standard test ... change the length of sizes to count +/- N (N = 5)
+            // - Initial string: "AAAAA"
+            // - will produce 1 A through 10 A's (the initial value just wraps when expanding and we negate <= 0 sized results)
+            // - NOTE: this mutator will *NOT* update the length of the size relation
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Blob name=\"blob1\" length=\"8\" valueType=\"hex\" value=\"00 01 02 03 04 05 06 07\">" +
-                "           <Hint name=\"BlobDWORDSliderMutator\" value=\"off\"/>" +
-                "       </Blob>" +
+                "       <String name=\"sizeRelation1\">" +
+                "           <Relation type=\"size\" of=\"string1\"/>" +
+                "           <Hint name=\"SizedDataVaranceMutator-N\" value=\"5\"/>" +
+                "       </String>" +
+                "       <String name=\"string1\" value=\"AAAAA\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -122,18 +139,24 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            // - list should only contain initial pass, and no mutated data (count == 1)
-            Assert.IsTrue(testResults.Count == 1);
+            Assert.IsTrue(listResults.Count == 11);
+            for (int i = 1; i < 11; ++i)
+            {
+                if (i == 5)
+                    continue;
+                Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
+            }
 
             // reset
-            result = null;
-            testResults.Clear();
+            listResults.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            result = action.dataModel[0].Value.Value;
-            testResults.Add(result);
+            TestResult tr;
+            tr.size = (long)action.dataModel[0].InternalValue;
+            tr.value = action.dataModel[1].Value.Value;
+            listResults.Add(tr);
         }
     }
 }

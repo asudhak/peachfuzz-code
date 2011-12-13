@@ -42,8 +42,9 @@ namespace Peach.Core.Mutators
         int n;
         long minValue;
         ulong maxValue;
+        bool signed;
         int currentCount;
-        int[] values;
+        long[] values;
         int valuesLength;
 
         // CTOR
@@ -57,16 +58,19 @@ namespace Peach.Core.Mutators
 
             if (obj is Dom.String)
             {
+                signed = false;
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
             else if (obj is Number)
             {
+                signed = ((Number)obj).Signed;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
             }
             else if (obj is Flag)
             {
+                signed = false;
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
             }
@@ -84,7 +88,7 @@ namespace Peach.Core.Mutators
             }
 
             // generate values from [-n, n]
-            List<int> temp = new List<int>();
+            List<long> temp = new List<long>();
 
             for (int i = -n; i <= n; ++i)
                 temp.Add(i);
@@ -160,17 +164,35 @@ namespace Peach.Core.Mutators
             if (currentCount >= count)
                 return;
 
-            long value = ((long)((Variant)obj.DefaultValue)) - values[currentCount];
+            long value = ((long)((Variant)obj.DefaultValue)) + values[currentCount];
 
-            if (value >= minValue)
+            if (obj is Dom.String)
             {
-                if (value >= 0 && (ulong)value >= maxValue)
-                    return;
-                else if (obj is Dom.String)
-                    obj.MutatedValue = new Variant(value.ToString());
-                else
-                    obj.MutatedValue = new Variant(value);
+                obj.MutatedValue = new Variant(value.ToString());
             }
+            else
+            {
+                if (signed)
+                {
+                    if (value >= minValue && value <= (long)maxValue)
+                        obj.MutatedValue = new Variant(value);
+                }
+                else
+                {
+                    if (value >= minValue && (ulong)value <= maxValue)
+                        obj.MutatedValue = new Variant(value);
+                }
+            }
+
+            //if (value >= minValue)
+            //{
+            //    if (value >= 0 && (ulong)value >= maxValue)
+            //        return;
+            //    else if (obj is Dom.String)
+            //        obj.MutatedValue = new Variant(value.ToString());
+            //    else
+            //        obj.MutatedValue = new Variant(value);
+            //}
         }
 
         // RANDOM_MUTAION
@@ -179,8 +201,8 @@ namespace Peach.Core.Mutators
         {
             try
             {
-                int value = context.random.Choice(values);
-                long finalValue = ((long)((Variant)obj.DefaultValue)) - value;
+                long value = context.random.Choice(values);
+                long finalValue = ((long)((Variant)obj.DefaultValue)) + value;
 
                 if (obj is Dom.String)
                     obj.MutatedValue = new Variant(finalValue.ToString());

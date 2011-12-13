@@ -70,9 +70,15 @@
     <Compile Include="Mutators\BlobBitFlipperMutatorTests.cs" />
     <Compile Include="Mutators\BlobDWORDSliderMutatorTests.cs" />
     <Compile Include="Mutators\BlobMutatorTests.cs" />
+    <Compile Include="Mutators\DataElementDuplicateMutatorTests.cs" />
+    <Compile Include="Mutators\DataElementRemoveMutatorTests.cs" />
+    <Compile Include="Mutators\DataElementSwapNearNodesMutatorTests.cs" />
     <Compile Include="Mutators\FiniteRandomNumbersMutatorTests.cs" />
     <Compile Include="Mutators\NumericalEdgeCaseMutatorTests.cs" />
     <Compile Include="Mutators\NumericalVarianceMutatorTests.cs" />
+    <Compile Include="Mutators\SizedDataNumericalEdgeCasesMutatorTests.cs" />
+    <Compile Include="Mutators\SizedDataVaranceMutatorTests.cs" />
+    <Compile Include="Mutators\SizedNumericalEdgeCasesMutatorTests.cs" />
     <Compile Include="Mutators\SizedVarianceMutatorTests.cs" />
     <Compile Include="Mutators\StringCaseMutatorTests.cs" />
     <Compile Include="Mutators\StringMutatorTests.cs" />

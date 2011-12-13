@@ -45,6 +45,9 @@ namespace Peach.Core.Mutators
         int currentCount;
         long originalDataLength;
 
+        //int oldSz;
+        //int newSz;
+
         // CTOR
         //
         public SizedNumericalEdgeCasesMutator(DataElement obj)
@@ -84,11 +87,21 @@ namespace Peach.Core.Mutators
                 size = 64;
             }
 
-            size = 8;
+            //size = 8;
             if (size < 16)
                 values = NumberGenerator.GenerateBadNumbers(8, n);
             else
                 values = NumberGenerator.GenerateBadNumbers(16, n);
+
+            //List<long> newVals = new List<long>();
+            //newVals.Add(-1);
+
+            //for (int i = 0; i < values.Length; ++i)
+            //{
+            //    var val = values[i] / 8;
+            //    if (val != newVals[newVals.Count - 1])
+            //        newVals.Add(values[i]);
+            //}
 
             // this will weed out invalid values that would cause the length to be less than 0
             List<long> listVals = new List<long>(values);
@@ -98,7 +111,7 @@ namespace Peach.Core.Mutators
 
         private bool RemoveInvalid(long n)
         {
-            return originalDataLength + n < 0;
+            return originalDataLength + n <= 0;
         }
 
         // GET N

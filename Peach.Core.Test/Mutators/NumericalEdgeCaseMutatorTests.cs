@@ -22,13 +22,14 @@ namespace Peach.Core.Test.Mutators
         [Test]
         public void Test1()
         {
-            // standard test of generating values size + 50 through size - 50
-            // - signed = "false" so we will only receive positive results
+            // standard test of generating values of +/- 50 around numerical edge cases
+            // - testing with a number size of 8, and signed, so edge cases are [0, -128, 127, 255]
+            // - if the value produced is out of range, the default value of '0' is returned
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" value=\"100\" signed=\"false\"/>" +
+                "       <Number name=\"num1\" size=\"8\" signed=\"true\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -61,13 +62,13 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove default return values of 100
-            // - we should be producing results of [82, 0]
-            listVals.RemoveAll(RemoveDefaults);
-
             // verify values
+            Assert.IsTrue(listVals.Count == 405);
             for (int i = 0; i < listVals.Count; ++i)
-                Assert.AreEqual(82 - i, listVals[i]);
+            {
+                Assert.IsTrue(listVals[i] >= sbyte.MinValue);
+                Assert.IsTrue(listVals[i] <= sbyte.MaxValue);
+            }
 
             // reset
             testValue = null;
@@ -78,12 +79,14 @@ namespace Peach.Core.Test.Mutators
         public void Test2()
         {
             // testing N-hint
-            // : N = 5, generating values size + N through size - N
+            // : N = 5, generating values of +/- 5 around numerical edge cases
+            // - testing with a number size of 8, and signed, so edge cases are [0, -128, 127, 255]
+            // - if the value produced is out of range, the default value of '0' is returned
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"8\" value=\"100\" signed=\"true\">" +
+                "       <Number name=\"num1\" size=\"8\" signed=\"true\">" +
                 "           <Hint name=\"NumericalEdgeCaseMutator-N\" value=\"5\"/>" +
                 "       </Number>" +
                 "   </DataModel>" +
@@ -118,12 +121,13 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start default value (100)
-            listVals.RemoveAt(0);
-
             // verify values
-            //for (int i = 0; i <= 10; ++i)
-            //    Assert.AreEqual(37 - i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 45);
+            for (int i = 0; i < listVals.Count; ++i)
+            {
+                Assert.IsTrue(listVals[i] >= sbyte.MinValue);
+                Assert.IsTrue(listVals[i] <= sbyte.MaxValue);
+            }
 
             // reset
             testValue = null;
@@ -133,14 +137,17 @@ namespace Peach.Core.Test.Mutators
         [Test]
         public void Test3()
         {
-            // testing numerical string (strings default to size 32)
+            // testing unsigned
+            // : N = 5, generating values of +/- 5 around numerical edge cases
+            // - testing with a number size of 8, and UNsigned, so edge cases are [0, -128, 127, 255], but no negatives
+            // - if the value produced is out of range, the default value of '0' is returned
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"numStr1\" value=\"100\">" +
-                "           <Hint name=\"NumericalString\" value=\"true\"/>" +
-                "       </String>" +
+                "       <Number name=\"num1\" size=\"8\" signed=\"false\">" +
+                "           <Hint name=\"NumericalEdgeCaseMutator-N\" value=\"5\"/>" +
+                "       </Number>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -173,68 +180,124 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove start default value (100)
-            listVals.RemoveAt(0);
-
             // verify values
+            Assert.IsTrue(listVals.Count == 45);
             for (int i = 0; i < listVals.Count; ++i)
-                Assert.AreEqual(82 - i, listVals[i]);
+            {
+                Assert.IsTrue(listVals[i] >= byte.MinValue);
+                Assert.IsTrue(listVals[i] <= byte.MaxValue);
+            }
 
             // reset
             testValue = null;
             listVals.Clear();
         }
 
-        [Test]
-        public void Test4()
-        {
-            // testing INVALID use of numerical string, this should produce 0 results
+        //[Test]
+        //public void Test3()
+        //{
+        //    // testing numerical string (strings default to size 32)
 
-            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-                "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"numStr1\" value=\"abc\">" +
-                "           <Hint name=\"NumericalString\" value=\"true\"/>" +
-                "       </String>" +
-                "   </DataModel>" +
+        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+        //        "<Peach>" +
+        //        "   <DataModel name=\"TheDataModel\">" +
+        //        "       <String name=\"numStr1\" value=\"100\">" +
+        //        "           <Hint name=\"NumericalString\" value=\"true\"/>" +
+        //        "       </String>" +
+        //        "   </DataModel>" +
 
-                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-                "       <State name=\"Initial\">" +
-                "           <Action type=\"output\">" +
-                "               <DataModel ref=\"TheDataModel\"/>" +
-                "           </Action>" +
-                "       </State>" +
-                "   </StateModel>" +
+        //        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+        //        "       <State name=\"Initial\">" +
+        //        "           <Action type=\"output\">" +
+        //        "               <DataModel ref=\"TheDataModel\"/>" +
+        //        "           </Action>" +
+        //        "       </State>" +
+        //        "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
-                "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
-                "   </Test>" +
+        //        "   <Test name=\"TheTest\">" +
+        //        "       <StateModel ref=\"TheState\"/>" +
+        //        "       <Publisher class=\"Stdout\"/>" +
+        //        "   </Test>" +
 
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
-                "</Peach>";
+        //        "   <Run name=\"DefaultRun\">" +
+        //        "       <Test ref=\"TheTest\"/>" +
+        //        "   </Run>" +
+        //        "</Peach>";
 
-            PitParser parser = new PitParser();
+        //    PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+        //    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            RunConfiguration config = new RunConfiguration();
+        //    RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+        //    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
-            Engine e = new Engine(null);
-            e.config = config;
-            e.startFuzzing(dom, config);
+        //    Engine e = new Engine(null);
+        //    e.config = config;
+        //    e.startFuzzing(dom, config);
 
-            // listVals should be empty!!
-            Assert.IsEmpty(listVals);
-        }
+        //    // remove start default value (100)
+        //    //listVals.RemoveAt(0);
 
-        [Test]
-        public void Test5()
-        {
+        //    // verify values
+        //    //for (int i = 0; i < listVals.Count; ++i)
+        //    //    Assert.AreEqual(82 - i, listVals[i]);
+
+        //    // reset
+        //    testValue = null;
+        //    listVals.Clear();
+        //}
+
+        //[Test]
+        //public void Test4()
+        //{
+        //    // testing INVALID use of numerical string, this should produce 0 results
+
+        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+        //        "<Peach>" +
+        //        "   <DataModel name=\"TheDataModel\">" +
+        //        "       <String name=\"numStr1\" value=\"abc\">" +
+        //        "           <Hint name=\"NumericalString\" value=\"true\"/>" +
+        //        "       </String>" +
+        //        "   </DataModel>" +
+
+        //        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+        //        "       <State name=\"Initial\">" +
+        //        "           <Action type=\"output\">" +
+        //        "               <DataModel ref=\"TheDataModel\"/>" +
+        //        "           </Action>" +
+        //        "       </State>" +
+        //        "   </StateModel>" +
+
+        //        "   <Test name=\"TheTest\">" +
+        //        "       <StateModel ref=\"TheState\"/>" +
+        //        "       <Publisher class=\"Stdout\"/>" +
+        //        "   </Test>" +
+
+        //        "   <Run name=\"DefaultRun\">" +
+        //        "       <Test ref=\"TheTest\"/>" +
+        //        "   </Run>" +
+        //        "</Peach>";
+
+        //    PitParser parser = new PitParser();
+
+        //    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+        //    RunConfiguration config = new RunConfiguration();
+
+        //    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+
+        //    Engine e = new Engine(null);
+        //    e.config = config;
+        //    e.startFuzzing(dom, config);
+
+        //    // listVals should be empty!!
+        //    Assert.IsEmpty(listVals);
+        //}
+
+        //[Test]
+        //public void Test5()
+        //{
             // testing odd sizes, they should round up to the next power of 2
             // : size = 10 should become 16, and then generating [0, 16 + 50]
             // : - something currently crashes this in the PitParser?
@@ -285,62 +348,57 @@ namespace Peach.Core.Test.Mutators
             //// reset
             //testValue = null;
             //listVals.Clear();
-        }
+        //}
 
-        [Test]
-        public void Test6()
-        {
-            // standard test of generating values size + 50 through size - 50
-            // - signed = "true" so we will receive negative results
+        //[Test]
+        //public void Test6()
+        //{
+        //    // standard test of generating values size + 50 through size - 50
+        //    // - signed = "true" so we will receive negative results
 
-            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-                "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" value=\"100\" signed=\"true\"/>" +
-                "   </DataModel>" +
+        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+        //        "<Peach>" +
+        //        "   <DataModel name=\"TheDataModel\">" +
+        //        "       <Number name=\"num1\" size=\"32\" value=\"100\" signed=\"true\"/>" +
+        //        "   </DataModel>" +
 
-                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-                "       <State name=\"Initial\">" +
-                "           <Action type=\"output\">" +
-                "               <DataModel ref=\"TheDataModel\"/>" +
-                "           </Action>" +
-                "       </State>" +
-                "   </StateModel>" +
+        //        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+        //        "       <State name=\"Initial\">" +
+        //        "           <Action type=\"output\">" +
+        //        "               <DataModel ref=\"TheDataModel\"/>" +
+        //        "           </Action>" +
+        //        "       </State>" +
+        //        "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
-                "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
-                "   </Test>" +
+        //        "   <Test name=\"TheTest\">" +
+        //        "       <StateModel ref=\"TheState\"/>" +
+        //        "       <Publisher class=\"Stdout\"/>" +
+        //        "   </Test>" +
 
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
-                "</Peach>";
+        //        "   <Run name=\"DefaultRun\">" +
+        //        "       <Test ref=\"TheTest\"/>" +
+        //        "   </Run>" +
+        //        "</Peach>";
 
-            PitParser parser = new PitParser();
+        //    PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+        //    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            RunConfiguration config = new RunConfiguration();
+        //    RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+        //    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
-            Engine e = new Engine(null);
-            e.config = config;
-            e.startFuzzing(dom, config);
+        //    Engine e = new Engine(null);
+        //    e.config = config;
+        //    e.startFuzzing(dom, config);
 
-            // remove start default value (100)
-            listVals.RemoveAt(0);
+        //    // remove start default value (100)
+        //    //listVals.RemoveAt(0);
 
-            // verify values
-            for (int i = 0; i < listVals.Count; ++i)
-                Assert.AreEqual(82 - i, listVals[i]);
-        }
-
-        static bool RemoveDefaults(int? n)
-        {
-            return n == 100;
-        }
+        //    // verify values
+        //    //for (int i = 0; i < listVals.Count; ++i)
+        //    //    Assert.AreEqual(82 - i, listVals[i]);
+        //}
 
         void Action_FinishedTest(Dom.Action action)
         {

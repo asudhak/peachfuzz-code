@@ -17,8 +17,12 @@ namespace Peach.Core.Test.Mutators
     class BlobMutatorTests
     {
         bool firstPass = true;
-        byte[] result = new byte[] { };
+        byte[] result;
         List<byte[]> testResults = new List<byte[]>();
+
+        // NOTE:    The BlobMutator selects its options on how to change/expand the buffer randomly from a list of functions
+        //          in the mutator. These tests were pre-calibrated to use the specific functionality they were testing.
+        //          Therefore, the results of these tests will be inaccurate unless the mutator is specifically set up before running them.
 
         [Test]
         public void Test1()

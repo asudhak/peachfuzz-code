@@ -106,7 +106,7 @@ namespace Peach.Core.Mutators
         private void performMutation(DataElement obj, int pos)
         {
             byte[] data = obj.Value.Value;
-            byte[] inject = new byte[] {};
+            byte[] inject;
             int currLen = data.Length;
 
             if (pos >= currLen)
@@ -116,29 +116,23 @@ namespace Peach.Core.Mutators
 
             if (remaining == 1)
             {
-                byte temp = (byte)(DWORD & 0x000000FF);
-                byte[] t = { temp };
-                inject = t;
+                inject = new byte[] { 0xFF };
             }
             else if (remaining == 2)
             {
-                ushort temp = (ushort)(DWORD & 0x0000FFFF);
-                inject = BitConverter.GetBytes(temp);
+                inject = new byte[] { 0xFF, 0xFF };
             }
             else if (remaining == 3)
             {
-                ushort temp1 = (ushort)((DWORD & 0x00FF0000) >> 16);
-                byte temp2 = (byte)(DWORD & 0xFFFF0000);
-                ushort temp = (ushort)(temp1 | temp2);
-                inject = BitConverter.GetBytes(temp);
+                inject = new byte[] { 0xFF, 0xFF, 0xFF };
             }
             else
             {
                 inject = BitConverter.GetBytes(DWORD);
             }
 
-            var pt1 = ArrayExtensions.Slice(data, 0, position);
-            var pt2 = ArrayExtensions.Slice(data, position + inject.Length, data.Length);
+            var pt1 = ArrayExtensions.Slice(data, 0, pos);
+            var pt2 = ArrayExtensions.Slice(data, pos + inject.Length, data.Length);
 
             obj.MutatedValue = new Variant(ArrayExtensions.Combine(pt1, inject, pt2));
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;

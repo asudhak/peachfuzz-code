@@ -22,7 +22,8 @@ namespace Peach.Core.Test.Mutators
         [Test]
         public void Test1()
         {
-            // standard test of generating values 50 - 150
+            // standard test of generating values +/- 50 around default value (100)
+            // - should produce values 50 - 150
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -60,12 +61,10 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
 			e.startFuzzing(dom, config);
 
-            // remove starting default value (100)
-            listVals.RemoveAt(0);
-
             // verify values
-            for (int i = 0; i <= 100; ++i)
-                Assert.AreEqual(150 - i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 102);
+            for (int i = 1; i < listVals.Count; ++i)
+                Assert.AreEqual(49 + i, listVals[i]);
 
             // reset
             testValue = null;
@@ -116,12 +115,10 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove starting default value (100)
-            listVals.RemoveAt(0);
-
             // verify values
-            for (int i = 0; i <= 10; ++i)
-                Assert.AreEqual(105 - i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 12);
+            for (int i = 1; i < listVals.Count; ++i)
+                Assert.AreEqual(94 + i, listVals[i]);
 
             // reset
             testValue = null;
@@ -171,12 +168,10 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove starting default value (100)
-            listVals.RemoveAt(0);
-
             // verify values
-            for (int i = 0; i <= 100; ++i)
-                Assert.AreEqual(150 - i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 102);
+            for (int i = 1; i < listVals.Count; ++i)
+                Assert.AreEqual(49 + i, listVals[i]);
 
             // reset
             testValue = null;

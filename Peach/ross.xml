@@ -8,10 +8,14 @@
     <!--<Number name="num1" size="64" value="4611686018427387910" signed="true">
       <Hint name="FiniteRandomNumbers-N" value="5"/>
     </Number>-->
-    <!--<Number name="num2" size="32" signed="false">
-      <Hint name="FiniteRandomNumbersMutator-N" value="5"/>
+    <!--<Number name="num2" size="8" signed="true" value="2">
+      <Hint name="NumericalEdgeCaseMutator-N" value="1"/>
     </Number>-->
-    <Blob name="blob1" valueType="hex" value="0"/> 
+    <Number name="num0" size="16" signed="true" value="40"/>
+    <!--<Blob name="blob1" valueType="hex" value="42"/>
+    <Blob name="blob2" valueType="hex" value="43"/>
+    <Blob name="blob3" valueType="hex" value="44"/>-->
+    <Blob name="blob4" valueType="hex" value="45"/>
     <!--<String name="Array" value="1" maxOccurs="100">
       <Hint name="ArrayNumericalEdgeCasesMutator-N" value="5"/>
     </String>-->
@@ -37,7 +41,7 @@
 
 	<Test name="TheTest">
 		<StateModel ref="TheState"/>
-    <!--<Mutator class="blob.BitFlipperMutator"/>-->
+    <!--<Mutator class="datatree.DataTreeDuplicateMutator"/>-->
     <!--<Publisher class="file.FileWriter">
       <Param name="FileName" value="..\..\..\..\output3.0.txt"/>
       <Param name="FileName" value="..\output2.3.txt"/>
