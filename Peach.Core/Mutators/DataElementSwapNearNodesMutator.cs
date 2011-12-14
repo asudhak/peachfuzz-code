@@ -71,16 +71,21 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
+            var idx1 = obj.parent.IndexOf(obj);
+            var copy1 = ObjectCopier.Clone<DataElement>(obj);
             var nextNode = obj.nextSibling();
+            var dataModel = (DataElementContainer)obj.getRoot();
+
             if (nextNode != null)
             {
-                var v1 = obj.Value.Value;
-                var v2 = nextNode.Value.Value;
+                var idx2 = obj.parent.IndexOf(nextNode);
+                var copy2 = ObjectCopier.Clone<DataElement>(nextNode);
 
-                obj.MutatedValue = new Variant(v2);
-                nextNode.MutatedValue = new Variant(v1);
-                obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
-                nextNode.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+                dataModel.Remove(obj);
+                dataModel.Remove(nextNode);
+
+                dataModel.Insert(idx1, copy2);
+                dataModel.Insert(idx2, copy1);
             }
         }
 

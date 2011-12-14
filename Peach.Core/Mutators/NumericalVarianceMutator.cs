@@ -40,21 +40,22 @@ namespace Peach.Core.Mutators
         // members
         //
         int n;
+        int currentCount;
+        int valuesLength;
+        long defaultValue;
         long minValue;
         ulong maxValue;
-        bool signed;
-        int currentCount;
         long[] values;
-        int valuesLength;
+        bool signed;
 
         // CTOR
         //
         public NumericalVarianceMutator(DataElement obj)
         {
-            currentCount = 0;
-            n = getN(obj, 50);
             name = "NumericalVarianceMutator";
-            PopulateValues();
+            currentCount = 0;
+            defaultValue = (long)obj.DefaultValue;
+            n = getN(obj, 50);
 
             if (obj is Dom.String)
             {
@@ -74,11 +75,13 @@ namespace Peach.Core.Mutators
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
             }
+
+            PopulateValues(defaultValue);
         }
 
         // POPULATE_VALUES
         //
-        private void PopulateValues()
+        private void PopulateValues(long val)
         {
             // catch n == 0
             if (n == 0)
@@ -89,10 +92,13 @@ namespace Peach.Core.Mutators
 
             // generate values from [-n, n]
             List<long> temp = new List<long>();
-
             for (int i = -n; i <= n; ++i)
-                temp.Add(i);
+            {
+                if ((val + i) >= minValue && (val + i) <= (long)maxValue)
+                    temp.Add(i);
+            }
 
+            // setup values
             values = temp.ToArray();
             valuesLength = values.Length;
         }
@@ -160,50 +166,29 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            // verify the value against min/max values and skip invalid ones
+            // value should be valid by this point
             if (currentCount >= count)
                 return;
 
-            long value = ((long)((Variant)obj.DefaultValue)) + values[currentCount];
+            long value = (long)obj.DefaultValue + values[currentCount];
 
             if (obj is Dom.String)
-            {
                 obj.MutatedValue = new Variant(value.ToString());
-            }
             else
-            {
-                if (signed)
-                {
-                    if (value >= minValue && value <= (long)maxValue)
-                        obj.MutatedValue = new Variant(value);
-                }
-                else
-                {
-                    if (value >= minValue && (ulong)value <= maxValue)
-                        obj.MutatedValue = new Variant(value);
-                }
-            }
-
-            //if (value >= minValue)
-            //{
-            //    if (value >= 0 && (ulong)value >= maxValue)
-            //        return;
-            //    else if (obj is Dom.String)
-            //        obj.MutatedValue = new Variant(value.ToString());
-            //    else
-            //        obj.MutatedValue = new Variant(value);
-            //}
+                obj.MutatedValue = new Variant(value);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
+            if (currentCount >= count)
+                return;
+
             try
             {
                 long value = context.random.Choice(values);
-                long finalValue = ((long)((Variant)obj.DefaultValue)) + value;
-
+                long finalValue = (long)obj.DefaultValue + value;
                 if (obj is Dom.String)
                     obj.MutatedValue = new Variant(finalValue.ToString());
                 else

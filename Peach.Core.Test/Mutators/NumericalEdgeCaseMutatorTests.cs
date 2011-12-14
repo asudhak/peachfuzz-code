@@ -63,7 +63,6 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 405);
             for (int i = 0; i < listVals.Count; ++i)
             {
                 Assert.IsTrue(listVals[i] >= sbyte.MinValue);
@@ -122,7 +121,6 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 45);
             for (int i = 0; i < listVals.Count; ++i)
             {
                 Assert.IsTrue(listVals[i] >= sbyte.MinValue);
@@ -181,7 +179,6 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 45);
             for (int i = 0; i < listVals.Count; ++i)
             {
                 Assert.IsTrue(listVals[i] >= byte.MinValue);
@@ -421,3 +418,5 @@ namespace Peach.Core.Test.Mutators
         }
     }
 }
+
+// end

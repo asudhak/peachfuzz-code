@@ -79,48 +79,26 @@ namespace Peach.Core.Mutators
         // SEQUENCIAL_MUTATION
         //
         public override void sequencialMutation(DataElement obj)
-        {
-            //byte[] data = obj.Value.Value;
-            //List<byte> newData = new List<byte>();
-
-            //int cnt = 0;
-            //while (cnt < currentCount)
-            //{
-            //    for (int i = 0; i < data.Length; ++i)
-            //        newData.Add(data[i]);
-            //    cnt++;
-            //}
-
-            //obj.MutatedValue = new Variant(newData.ToArray());
-            //obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
-
+        {            
             var newElem = ObjectCopier.Clone<DataElement>(obj);
-            for (int i = 0; i < currentCount; ++i)
+            for (int i = 0; i < currentCount - 1; ++i)
             {
                 newElem.name += i;
-                obj.parent.Add(newElem);
+                obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
             }
-            int lol = 0;
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            //byte[] data = obj.Value.Value;
-            //List<byte> newData = new List<byte>();
-
-            //int cnt = 0;
-            //int newCount = context.random.Next(currentCount);
-            //while (cnt < newCount)
-            //{
-            //    for (int i = 0; i < data.Length; ++i)
-            //        newData.Add(data[i]);
-            //    cnt++;
-            //}
-
-            //obj.MutatedValue = new Variant(newData.ToArray());
-            //obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            var newElem = ObjectCopier.Clone<DataElement>(obj);
+            int newCount = context.random.Next(currentCount);
+            for (int i = 0; i < newCount; ++i)
+            {
+                newElem.name += i;
+                obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
+            }
         }
 	}
 }

@@ -45,16 +45,13 @@ namespace Peach.Core.Mutators
         int currentCount;
         long originalDataLength;
 
-        //int oldSz;
-        //int newSz;
-
         // CTOR
         //
         public SizedNumericalEdgeCasesMutator(DataElement obj)
         {
+            name = "SizedNumericalEdgeCasesMutator";
             currentCount = 0;
             n = getN(obj, 50);
-            name = "SizedNumericalEdgeCasesMutator";
             originalDataLength = (long)obj.GenerateInternalValue();
             PopulateValues(obj);
         }
@@ -87,26 +84,23 @@ namespace Peach.Core.Mutators
                 size = 64;
             }
 
-            //size = 8;
             if (size < 16)
                 values = NumberGenerator.GenerateBadNumbers(8, n);
             else
                 values = NumberGenerator.GenerateBadNumbers(16, n);
 
-            //List<long> newVals = new List<long>();
-            //newVals.Add(-1);
-
-            //for (int i = 0; i < values.Length; ++i)
-            //{
-            //    var val = values[i] / 8;
-            //    if (val != newVals[newVals.Count - 1])
-            //        newVals.Add(values[i]);
-            //}
+            // convert bits to bytes
+            List<long> newVals = new List<long>();
+            for (int i = 0; i < values.Length; ++i)
+            {
+                var val = values[i] / 8;
+                if (!newVals.Contains(val))
+                    newVals.Add(val);
+            }
 
             // this will weed out invalid values that would cause the length to be less than 0
-            List<long> listVals = new List<long>(values);
-            listVals.RemoveAll(RemoveInvalid);
-            values = listVals.ToArray();
+            newVals.RemoveAll(RemoveInvalid);
+            values = newVals.ToArray();
         }
 
         private bool RemoveInvalid(long n)
@@ -191,8 +185,8 @@ namespace Peach.Core.Mutators
             n = (int)(size + curr);
 
             // make sure the data hasn't changed somewhere along the line
-            if (originalDataLength != realSize)
-                PopulateValues(obj);
+            //if (originalDataLength != realSize)
+                //PopulateValues(obj);
 
             objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 

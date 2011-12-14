@@ -132,7 +132,7 @@ namespace Peach.Core.Mutators
             Dom.Array objAsArray = (Dom.Array)obj;
 
             //if (num == 0)
-              //  return;
+              //  next();
             if (num < objAsArray.Count)
             {
                 // remove some items

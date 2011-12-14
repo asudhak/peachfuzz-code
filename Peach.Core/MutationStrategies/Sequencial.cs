@@ -71,7 +71,7 @@ namespace Peach.Core.MutationStrategies
 					{
                         if (attrib is MutatorAttribute)
                         {
-                            if (t.Name == "DataElementDuplicateMutator")
+                            //if (t.Name == "SizedDataNumericalEdgeCasesMutator")
                                 _mutators.Add(t);
                         }
 					}

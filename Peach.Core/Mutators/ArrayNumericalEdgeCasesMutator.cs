@@ -42,8 +42,6 @@ namespace Peach.Core.Mutators
         long[] values;
         int currentCount;
         int arrayCount;
-        int minCount;
-        int maxCount;
         int n;
 
         // CTOR
@@ -52,8 +50,6 @@ namespace Peach.Core.Mutators
         {
             name = "ArrayNumericalEdgeCasesMutator";
             currentCount = 0;
-            minCount = 0;
-            maxCount = 0;
             arrayCount = ((Dom.Array)obj).Count;
             n = getN(obj, 50);
             values = NumberGenerator.GenerateBadPositiveNumbers(16, n);

@@ -11,19 +11,24 @@
     <!--<Number name="num2" size="8" signed="true" value="2">
       <Hint name="NumericalEdgeCaseMutator-N" value="1"/>
     </Number>-->
-    <Number name="num0" size="16" signed="true" value="40"/>
+    <!--<Number name="num0" size="16" signed="false" value="1">
+      <Hint name="NumericalVarianceMutator-N" value="5"/>
+    </Number>-->
+    <!--<Number name="num1" size="32" signed="true" value="66"/>
+    <Number name="num2" size="32" signed="true" value="67"/>
+    <Number name="num3" size="32" signed="true" value="68"/>-->
+    <!--<Blob name="blob0" valueType="hex" value="42"/>-->
     <!--<Blob name="blob1" valueType="hex" value="42"/>
     <Blob name="blob2" valueType="hex" value="43"/>
-    <Blob name="blob3" valueType="hex" value="44"/>-->
-    <Blob name="blob4" valueType="hex" value="45"/>
+    <Blob name="blob3" valueType="hex" value="44"/>
+    <Blob name="blob4" valueType="hex" value="45"/>-->
     <!--<String name="Array" value="1" maxOccurs="100">
       <Hint name="ArrayNumericalEdgeCasesMutator-N" value="5"/>
     </String>-->
-    <!--<String name="szRelation1">
+    <String name="szRelation1">
       <Relation type="size" of="string1"/>
-      <Hint name="SizedVaranceMutator-N" value="5"/>
     </String>
-    <String name="string1" value="A"/>-->
+    <String name="string1" value="A"/>
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">

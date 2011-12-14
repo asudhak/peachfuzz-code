@@ -88,16 +88,24 @@ namespace Peach.Core.Mutators
                 values = NumberGenerator.GenerateBadNumbers(8, n);
             else
                 values = NumberGenerator.GenerateBadNumbers(16, n);
+
+            // convert bits to bytes
+            List<long> newVals = new List<long>();
+            for (int i = 0; i < values.Length; ++i)
+            {
+                var val = values[i] / 8;
+                if (!newVals.Contains(val))
+                    newVals.Add(val);
+            }
             
             // this will weed out invalid values that would cause the length to be less than 0
-            List<long> listVals = new List<long>(values);
-            listVals.RemoveAll(RemoveInvalid);
-            values = listVals.ToArray();
+            newVals.RemoveAll(RemoveInvalid);
+            values = newVals.ToArray();
         }
 
         private bool RemoveInvalid(long n)
         {
-            return originalDataLength + n < 0;
+            return n <= 0;
         }
 
         // GET N
@@ -186,11 +194,7 @@ namespace Peach.Core.Mutators
 
             objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
-            if (n < 0)
-            {
-                return;
-            }
-            else if (n == 0)
+            if (n <= 0)
             {
                 objOf.MutatedValue = new Variant(new byte[0]);
                 return;

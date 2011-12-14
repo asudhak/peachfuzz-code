@@ -42,7 +42,6 @@ namespace Peach.Core.Test.Mutators
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <String name=\"sizeRelation1\">" +
                 "           <Relation type=\"size\" of=\"string1\"/>" +
-                "           <Hint name=\"SizedNumericalEdgeCasesMutator-N\" value=\"5\"/>" +
                 "       </String>" +
                 "       <String name=\"string1\" value=\"AAAAA\"/>" +
                 "   </DataModel>" +
@@ -78,12 +77,8 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            //Assert.IsTrue(listResults.Count == 11);
-            //for (int i = 1; i < 11; ++i)
-            //{
-            //    Assert.AreEqual(i, listResults[i].size);
-            //    Assert.AreEqual(listResults[i].size, listResults[i].value.Length);
-            //}
+            for (int i = 1; i < listResults.Count; ++i)
+                Assert.AreEqual(listResults[i].size, listResults[i].value.Length);
 
             // reset
             listResults.Clear();
@@ -98,3 +93,5 @@ namespace Peach.Core.Test.Mutators
         }
     }
 }
+
+// end

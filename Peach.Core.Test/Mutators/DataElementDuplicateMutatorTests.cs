@@ -27,7 +27,6 @@ namespace Peach.Core.Test.Mutators
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Number name=\"num0\" size=\"32\" signed=\"true\" value=\"41\"/>" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"true\" value=\"42\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -61,6 +60,9 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
+            Assert.IsTrue(results.Count == 50);
+            for (int i = 1; i < results.Count; ++i)
+                Assert.AreEqual(i + 1, results[i].Count);
 
             // reset
             results.Clear();
@@ -72,3 +74,5 @@ namespace Peach.Core.Test.Mutators
         }
     }
 }
+
+// end

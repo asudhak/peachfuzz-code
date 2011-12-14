@@ -150,8 +150,8 @@ namespace Peach.Core.Mutators
             n = (int)size + curr;
 
             // make sure the data hasn't changed somewhere along the line
-            if (originalDataLength != realSize)
-                PopulateValues(realSize);
+            //if (originalDataLength != realSize)
+                //PopulateValues(realSize);
 
             // keep size indicator the same
             obj.MutatedValue = obj.GenerateInternalValue();
