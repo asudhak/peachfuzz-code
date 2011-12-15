@@ -16,8 +16,8 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class NumericalVarianceMutatorTests
     {
-		int? testValue = null;
-        List<int?> listVals = new List<int?>();
+		long? testValue = null;
+        List<long?> listVals = new List<long?>();
 
         [Test]
         public void Test1()
@@ -230,14 +230,14 @@ namespace Peach.Core.Test.Mutators
             // handle numbers
             if (action.dataModel[0] is Number)
             {
-                testValue = (int)action.dataModel[0].InternalValue;
+                testValue = (long)action.dataModel[0].InternalValue;
                 listVals.Add(testValue);
             }
             // handle numerical strings
             else if (action.dataModel[0] is Dom.String)
             {
-                int test = 0;
-                if (Int32.TryParse((string)action.dataModel[0].InternalValue, out test))
+                long test = 0;
+                if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
                 {
                     testValue = test;
                     listVals.Add(testValue);

@@ -70,7 +70,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 5002);  // +2 for intial and final passes
+            Assert.IsTrue(listVals.Count == 5001);
 
             // reset
             testValue = null;
@@ -122,7 +122,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 7);
+            Assert.IsTrue(listVals.Count == 6);
 
             // reset
             testValue = null;
@@ -175,7 +175,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsUInt.Count == 12);
+            Assert.IsTrue(listValsUInt.Count == 11);
 
             // reset
             testValueUInt = null;
@@ -226,7 +226,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 102);
+            Assert.IsTrue(listVals.Count == 101);
             for (int i = 0; i < listVals.Count; ++i)
             {
                 Assert.GreaterOrEqual(listVals[i], int.MinValue);
@@ -282,7 +282,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsUInt.Count == 102);
+            Assert.IsTrue(listValsUInt.Count == 101);
             for (int i = 0; i < listValsUInt.Count; ++i)
             {
                 Assert.GreaterOrEqual(listValsUInt[i], uint.MinValue);
@@ -338,7 +338,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsLong.Count == 102);
+            Assert.IsTrue(listValsLong.Count == 101);
             for (int i = 0; i < listValsLong.Count; ++i)
             {
                 Assert.GreaterOrEqual(listValsLong[i], long.MinValue);
@@ -394,7 +394,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsULong.Count == 102);
+            Assert.IsTrue(listValsULong.Count == 101);
             for (int i = 0; i < listValsULong.Count; ++i)
             {
                 Assert.GreaterOrEqual(listValsULong[i], ulong.MinValue);

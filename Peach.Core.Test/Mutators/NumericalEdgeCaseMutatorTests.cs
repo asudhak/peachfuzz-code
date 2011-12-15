@@ -16,8 +16,11 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class NumericalEdgeCaseMutatorTests
     {
-        int? testValue = null;
-        List<int?> listVals = new List<int?>();
+        long? testValue = null;
+        List<long?> listVals = new List<long?>();
+
+        ulong? ulongTestValue = null;
+        List<ulong?> ulongListVals = new List<ulong?>();
 
         [Test]
         public void Test1()
@@ -190,231 +193,354 @@ namespace Peach.Core.Test.Mutators
             listVals.Clear();
         }
 
-        //[Test]
-        //public void Test3()
-        //{
-        //    // testing numerical string (strings default to size 32)
+        [Test]
+        public void Test4()
+        {
+            // testing larger sized numbers
+            // - int16
 
-        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-        //        "<Peach>" +
-        //        "   <DataModel name=\"TheDataModel\">" +
-        //        "       <String name=\"numStr1\" value=\"100\">" +
-        //        "           <Hint name=\"NumericalString\" value=\"true\"/>" +
-        //        "       </String>" +
-        //        "   </DataModel>" +
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"16\" signed=\"true\"/>" +
+                "   </DataModel>" +
 
-        //        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-        //        "       <State name=\"Initial\">" +
-        //        "           <Action type=\"output\">" +
-        //        "               <DataModel ref=\"TheDataModel\"/>" +
-        //        "           </Action>" +
-        //        "       </State>" +
-        //        "   </StateModel>" +
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
 
-        //        "   <Test name=\"TheTest\">" +
-        //        "       <StateModel ref=\"TheState\"/>" +
-        //        "       <Publisher class=\"Stdout\"/>" +
-        //        "   </Test>" +
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
 
-        //        "   <Run name=\"DefaultRun\">" +
-        //        "       <Test ref=\"TheTest\"/>" +
-        //        "   </Run>" +
-        //        "</Peach>";
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
 
-        //    PitParser parser = new PitParser();
+            PitParser parser = new PitParser();
 
-        //    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-        //    RunConfiguration config = new RunConfiguration();
+            RunConfiguration config = new RunConfiguration();
 
-        //    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
-        //    Engine e = new Engine(null);
-        //    e.config = config;
-        //    e.startFuzzing(dom, config);
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
 
-        //    // remove start default value (100)
-        //    //listVals.RemoveAt(0);
+            // verify values
+            for (int i = 0; i < listVals.Count; ++i)
+            {
+                Assert.IsTrue(listVals[i] >= short.MinValue);
+                Assert.IsTrue(listVals[i] <= short.MaxValue);
+            }
 
-        //    // verify values
-        //    //for (int i = 0; i < listVals.Count; ++i)
-        //    //    Assert.AreEqual(82 - i, listVals[i]);
+            // reset
+            testValue = null;
+            listVals.Clear();
+        }
 
-        //    // reset
-        //    testValue = null;
-        //    listVals.Clear();
-        //}
+        [Test]
+        public void Test5()
+        {
+            // testing larger sized numbers
+            // - uint16
 
-        //[Test]
-        //public void Test4()
-        //{
-        //    // testing INVALID use of numerical string, this should produce 0 results
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"16\" signed=\"false\"/>" +
+                "   </DataModel>" +
 
-        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-        //        "<Peach>" +
-        //        "   <DataModel name=\"TheDataModel\">" +
-        //        "       <String name=\"numStr1\" value=\"abc\">" +
-        //        "           <Hint name=\"NumericalString\" value=\"true\"/>" +
-        //        "       </String>" +
-        //        "   </DataModel>" +
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
 
-        //        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-        //        "       <State name=\"Initial\">" +
-        //        "           <Action type=\"output\">" +
-        //        "               <DataModel ref=\"TheDataModel\"/>" +
-        //        "           </Action>" +
-        //        "       </State>" +
-        //        "   </StateModel>" +
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
 
-        //        "   <Test name=\"TheTest\">" +
-        //        "       <StateModel ref=\"TheState\"/>" +
-        //        "       <Publisher class=\"Stdout\"/>" +
-        //        "   </Test>" +
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
 
-        //        "   <Run name=\"DefaultRun\">" +
-        //        "       <Test ref=\"TheTest\"/>" +
-        //        "   </Run>" +
-        //        "</Peach>";
+            PitParser parser = new PitParser();
 
-        //    PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-        //    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            RunConfiguration config = new RunConfiguration();
 
-        //    RunConfiguration config = new RunConfiguration();
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
-        //    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
 
-        //    Engine e = new Engine(null);
-        //    e.config = config;
-        //    e.startFuzzing(dom, config);
+            // verify values
+            for (int i = 0; i < listVals.Count; ++i)
+            {
+                Assert.IsTrue(listVals[i] >= ushort.MinValue);
+                Assert.IsTrue(listVals[i] <= ushort.MaxValue);
+            }
 
-        //    // listVals should be empty!!
-        //    Assert.IsEmpty(listVals);
-        //}
+            // reset
+            testValue = null;
+            listVals.Clear();
+        }
 
-        //[Test]
-        //public void Test5()
-        //{
-            // testing odd sizes, they should round up to the next power of 2
-            // : size = 10 should become 16, and then generating [0, 16 + 50]
-            // : - something currently crashes this in the PitParser?
+        [Test]
+        public void Test6()
+        {
+            // testing larger sized numbers
+            // - int32
 
-            //string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-            //    "<Peach>" +
-            //    "   <DataModel name=\"TheDataModel\">" +
-            //    "       <Number name=\"num1\" size=\"10\" value=\"100\" signed=\"false\"/>" +
-            //    "   </DataModel>" +
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"32\" signed=\"true\"/>" +
+                "   </DataModel>" +
 
-            //    "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-            //    "       <State name=\"Initial\">" +
-            //    "           <Action type=\"output\">" +
-            //    "               <DataModel ref=\"TheDataModel\"/>" +
-            //    "           </Action>" +
-            //    "       </State>" +
-            //    "   </StateModel>" +
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
 
-            //    "   <Test name=\"TheTest\">" +
-            //    "       <StateModel ref=\"TheState\"/>" +
-            //    "       <Publisher class=\"Stdout\"/>" +
-            //    "   </Test>" +
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
 
-            //    "   <Run name=\"DefaultRun\">" +
-            //    "       <Test ref=\"TheTest\"/>" +
-            //    "   </Run>" +
-            //    "</Peach>";
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
 
-            //PitParser parser = new PitParser();
+            PitParser parser = new PitParser();
 
-            //Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            //RunConfiguration config = new RunConfiguration();
+            RunConfiguration config = new RunConfiguration();
 
-            //Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
-            //Engine e = new Engine(null);
-            //e.config = config;
-            //e.startFuzzing(dom, config);
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
 
-            //// remove start default value (100)
-            //listVals.RemoveAt(0);
+            // verify values
+            for (int i = 0; i < listVals.Count; ++i)
+            {
+                Assert.IsTrue(listVals[i] >= int.MinValue);
+                Assert.IsTrue(listVals[i] <= int.MaxValue);
+            }
 
-            //// verify values
-            //for (int i = 0; i < listVals.Count; ++i)
-            //    Assert.AreEqual(66 - i, listVals[i]);
+            // reset
+            testValue = null;
+            listVals.Clear();
+        }
 
-            //// reset
-            //testValue = null;
-            //listVals.Clear();
-        //}
+        [Test]
+        public void Test7()
+        {
+            // testing larger sized numbers
+            // - uint32
 
-        //[Test]
-        //public void Test6()
-        //{
-        //    // standard test of generating values size + 50 through size - 50
-        //    // - signed = "true" so we will receive negative results
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"32\" signed=\"false\"/>" +
+                "   </DataModel>" +
 
-        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-        //        "<Peach>" +
-        //        "   <DataModel name=\"TheDataModel\">" +
-        //        "       <Number name=\"num1\" size=\"32\" value=\"100\" signed=\"true\"/>" +
-        //        "   </DataModel>" +
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
 
-        //        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-        //        "       <State name=\"Initial\">" +
-        //        "           <Action type=\"output\">" +
-        //        "               <DataModel ref=\"TheDataModel\"/>" +
-        //        "           </Action>" +
-        //        "       </State>" +
-        //        "   </StateModel>" +
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
 
-        //        "   <Test name=\"TheTest\">" +
-        //        "       <StateModel ref=\"TheState\"/>" +
-        //        "       <Publisher class=\"Stdout\"/>" +
-        //        "   </Test>" +
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
 
-        //        "   <Run name=\"DefaultRun\">" +
-        //        "       <Test ref=\"TheTest\"/>" +
-        //        "   </Run>" +
-        //        "</Peach>";
+            PitParser parser = new PitParser();
 
-        //    PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-        //    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            RunConfiguration config = new RunConfiguration();
 
-        //    RunConfiguration config = new RunConfiguration();
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
-        //    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
 
-        //    Engine e = new Engine(null);
-        //    e.config = config;
-        //    e.startFuzzing(dom, config);
+            // verify values
+            for (int i = 0; i < listVals.Count; ++i)
+            {
+                Assert.IsTrue(listVals[i] >= uint.MinValue);
+                Assert.IsTrue(listVals[i] <= uint.MaxValue);
+            }
 
-        //    // remove start default value (100)
-        //    //listVals.RemoveAt(0);
+            // reset
+            testValue = null;
+            listVals.Clear();
+        }
 
-        //    // verify values
-        //    //for (int i = 0; i < listVals.Count; ++i)
-        //    //    Assert.AreEqual(82 - i, listVals[i]);
-        //}
+        [Test]
+        public void Test8()
+        {
+            // testing larger sized numbers
+            // - int64
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"64\" signed=\"true\"/>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
+
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            RunConfiguration config = new RunConfiguration();
+
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            // verify values
+            for (int i = 0; i < listVals.Count; ++i)
+            {
+                Assert.IsTrue(listVals[i] >= long.MinValue);
+                Assert.IsTrue(listVals[i] <= long.MaxValue);
+            }
+
+            // reset
+            testValue = null;
+            listVals.Clear();
+        }
+
+        [Test]
+        public void Test9()
+        {
+            // testing larger sized numbers
+            // - uint64
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"64\" signed=\"false\"/>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"TheTest\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Stdout\"/>" +
+                "   </Test>" +
+
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            RunConfiguration config = new RunConfiguration();
+
+            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTestULong);
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            // verify values
+            for (int i = 0; i < ulongListVals.Count; ++i)
+            {
+                Assert.IsTrue(ulongListVals[i] >= ulong.MinValue);
+                Assert.IsTrue(ulongListVals[i] <= ulong.MaxValue);
+            }
+
+            // reset
+            ulongTestValue = null;
+            ulongListVals.Clear();
+        }
 
         void Action_FinishedTest(Dom.Action action)
         {
             // handle numbers
             if (action.dataModel[0] is Number)
             {
-                testValue = (int)action.dataModel[0].InternalValue;
+                testValue = (long)action.dataModel[0].InternalValue;
                 listVals.Add(testValue);
             }
             // handle numerical strings
             else if (action.dataModel[0] is Dom.String)
             {
-                int test = 0;
-                if (Int32.TryParse((string)action.dataModel[0].InternalValue, out test))
+                long test = 0;
+                if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
                 {
                     testValue = test;
                     listVals.Add(testValue);
                 }
             }
+        }
+
+        void Action_FinishedTestULong(Dom.Action action)
+        {
+            ulongTestValue = (ulong)action.dataModel[0].InternalValue;
+            ulongListVals.Add(ulongTestValue);
         }
     }
 }

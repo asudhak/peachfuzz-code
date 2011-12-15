@@ -41,12 +41,14 @@ namespace Peach.Core.Mutators
         //
         Dictionary<int, long[]> values;
         List<int> allowedSizes;
+        ulong[] ulongValues;
         int n;
         int size;
         int currentCount;
         long minValue;
         ulong maxValue;
         bool signed;
+        bool isULong;
 
         // CTOR
         //
@@ -55,6 +57,7 @@ namespace Peach.Core.Mutators
             allowedSizes = new List<int>() { 8, 16, 24, 32, 64 };
             values = new Dictionary<int, long[]>();
             name = "NumericalEdgeCaseMutator";
+            isULong = false;
             n = getN(obj, 50);
             currentCount = 0;
 
@@ -65,19 +68,22 @@ namespace Peach.Core.Mutators
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
-            else if (obj is Number)
-            {
-                size = ((Number)obj).Size;
-                signed = ((Number)obj).Signed;
-                minValue = ((Number)obj).MinValue;
-                maxValue = ((Number)obj).MaxValue;
-            }
             else if (obj is Flag)
             {
                 signed = false;
                 size = ((Flag)obj).size;
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
+            }
+            else if (obj is Number)
+            {
+                size = ((Number)obj).Size;
+                signed = ((Number)obj).Signed;
+                minValue = ((Number)obj).MinValue;
+                maxValue = ((Number)obj).MaxValue;
+
+                if (size == 64 && !signed)
+                    isULong = true;
             }
 
             // if size is off, pick up the next largest one from allowedSizes
@@ -100,29 +106,54 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues()
         {
-            // generate numbers
-            long[] edges8 = NumberGenerator.GenerateBadNumbers(8, n);
-            long[] edges16 = NumberGenerator.GenerateBadNumbers(16, n);
-            long[] edges24 = NumberGenerator.GenerateBadNumbers(24, n);
-            long[] edges32 = NumberGenerator.GenerateBadNumbers(32, n);
-            long[] edges64 = NumberGenerator.GenerateBadNumbers(64, n);
-
-            values[8] = edges8;
-            values[16] = edges16;
-            values[24] = edges24;
-            values[32] = edges32;
-            values[64] = edges64;
-
-            // setup values
-            List<long> listVals = new List<long>();
-
-            for (int i = 0; i < values[size].Length; ++i)
+            if (!isULong)
             {
-                if (values[size][i] >= minValue && values[size][i] <= (long)maxValue)
-                    listVals.Add(values[size][i]);
-            }
+                // generate numbers
+                long[] edges8 = NumberGenerator.GenerateBadNumbers(8, n);
+                long[] edges16 = NumberGenerator.GenerateBadNumbers(16, n);
+                long[] edges24 = NumberGenerator.GenerateBadNumbers(24, n);
+                long[] edges32 = NumberGenerator.GenerateBadNumbers(32, n);
+                long[] edges64 = NumberGenerator.GenerateBadNumbers(64, n);
 
-            values[size] = listVals.ToArray();
+                values[8] = edges8;
+                values[16] = edges16;
+                values[24] = edges24;
+                values[32] = edges32;
+                values[64] = edges64;
+
+                // setup values
+                List<long> listVals = new List<long>();
+
+                for (int i = 0; i < values[size].Length; ++i)
+                {
+                    if (signed)
+                    {
+                        if (values[size][i] >= minValue && values[size][i] <= (long)maxValue)
+                            listVals.Add(values[size][i]);
+                    }
+                    else
+                    {
+                        if (values[size][i] >= minValue && (ulong)values[size][i] <= maxValue)
+                            listVals.Add(values[size][i]);
+                    }
+                }
+
+                values[size] = listVals.ToArray();
+            }
+            else
+            {
+                ulong[] uEdges64 = NumberGenerator.GenerateBadPositiveUInt64(5);
+                ulongValues = uEdges64;
+
+                List<ulong> listUVals = new List<ulong>();
+                for (int i = 0; i < ulongValues.Length; ++i)
+                {
+                    if (ulongValues[i] >= 0 && ulongValues[i] <= maxValue)
+                        listUVals.Add(ulongValues[i]);
+                }
+
+                ulongValues = listUVals.ToArray();
+            }
         }
 
         // GET N
@@ -162,7 +193,13 @@ namespace Peach.Core.Mutators
         //
         public override int count
         {
-            get { return values[size].Length; }
+            get 
+            {
+                if (isULong)
+                    return ulongValues.Length;
+                else
+                    return values[size].Length;
+            }
         }
 
         // SUPPORTED
@@ -191,6 +228,8 @@ namespace Peach.Core.Mutators
 
             if (obj is Dom.String)
                 obj.MutatedValue = new Variant(values[size][currentCount].ToString());
+            else if (isULong)
+                obj.MutatedValue = new Variant(ulongValues[currentCount]);
             else
                 obj.MutatedValue = new Variant(values[size][currentCount]);
         }
@@ -201,6 +240,8 @@ namespace Peach.Core.Mutators
         {
             if (obj is Dom.String)
                 obj.MutatedValue = new Variant(context.random.Choice(values[size]).ToString());
+            else if (isULong)
+                obj.MutatedValue = new Variant(context.random.Choice(ulongValues));
             else
                 obj.MutatedValue = new Variant(context.random.Choice(values[size]));
         }

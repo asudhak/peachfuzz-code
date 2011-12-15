@@ -50,9 +50,9 @@ namespace Peach.Core.Mutators
         //
         public FiniteRandomNumbersMutator(DataElement obj)
         {
+            name = "FiniteRandomNumbersMutator";
             currentCount = 0;
             n = getN(obj, 5000);
-            name = "FiniteRandomNumbersMutator";
 
             if (obj is Dom.String)
             {
@@ -106,7 +106,7 @@ namespace Peach.Core.Mutators
         public override void next()
         {
             currentCount++;
-            if (currentCount > n)
+            if (currentCount >= n)
                 throw new MutatorCompleted();
         }
 

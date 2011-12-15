@@ -311,6 +311,31 @@ namespace Peach.Core
                 return null;
         }
 
+        public static ulong[] GenerateBadPositiveUInt64(int n = 50)
+        {
+            ulong[] edgeCases = new ulong[] { 50, 127, 255, 32767, 65535, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615 };
+            List<ulong> temp = new List<ulong>();
+
+            ulong start;
+            ulong end;
+            for (int i = 0; i < edgeCases.Length - 1; ++i)
+            {
+                start = edgeCases[i] - (ulong)n;
+                end = edgeCases[i] + (ulong)n;
+
+                for (ulong j = start; j <= end; ++j)
+                    temp.Add(j);
+            }
+
+            start = edgeCases[8] - (ulong)n;
+            end = edgeCases[8];
+            for (ulong i = start; i < end; ++i)
+                temp.Add(i);
+            temp.Add(end);
+
+            return temp.ToArray();
+        }
+
         private static long[] BadNumbers8(int n)
         {
             long[] edgeCases = new long[] { 0, -128, 127, 255 };

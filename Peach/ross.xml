@@ -8,9 +8,9 @@
     <!--<Number name="num1" size="64" value="4611686018427387910" signed="true">
       <Hint name="FiniteRandomNumbers-N" value="5"/>
     </Number>-->
-    <!--<Number name="num2" size="8" signed="true" value="2">
-      <Hint name="NumericalEdgeCaseMutator-N" value="1"/>
-    </Number>-->
+    <Number name="num1" size="64" signed="false" value="65">
+      <Hint name="NumericalEdgeCaseMutator-N" value="5"/>
+    </Number>
     <!--<Number name="num0" size="16" signed="false" value="1">
       <Hint name="NumericalVarianceMutator-N" value="5"/>
     </Number>-->
@@ -25,10 +25,10 @@
     <!--<String name="Array" value="1" maxOccurs="100">
       <Hint name="ArrayNumericalEdgeCasesMutator-N" value="5"/>
     </String>-->
-    <String name="szRelation1">
+    <!--<String name="szRelation1">
       <Relation type="size" of="string1"/>
     </String>
-    <String name="string1" value="A"/>
+    <String name="string1" value="A"/>-->
   </DataModel>
 
 	<StateModel name="TheState" initialState="Initial">
@@ -46,7 +46,7 @@
 
 	<Test name="TheTest">
 		<StateModel ref="TheState"/>
-    <!--<Mutator class="datatree.DataTreeDuplicateMutator"/>-->
+    <!--<Mutator class="number.NumericalEdgeCaseMutator"/>-->
     <!--<Publisher class="file.FileWriter">
       <Param name="FileName" value="..\..\..\..\output3.0.txt"/>
       <Param name="FileName" value="..\output2.3.txt"/>
