@@ -53,6 +53,8 @@ py_compile.compile(sys.argv[1], sys.argv[2], sys.argv[3])
 Piece of Python code used in :py:func:`waflib.Tools.python.install_pyfile` for installing python files
 """
 
+DISTUTILS_IMP = ['from distutils.sysconfig import get_config_var, get_python_lib']
+
 @extension('.py')
 def process_py(self, node):
 	"""
@@ -167,9 +169,9 @@ def init_pyembed(self):
 		self.uselib.append('PYEMBED')
 
 @conf
-def get_python_variables(conf, variables, imports=['import sys']):
+def get_python_variables(self, variables, imports=None):
 	"""
-	Execute a python interpreter to dump configuration variables
+	Spawn a new python process to dump configuration variables
 
 	:param variables: variables to print
 	:type variables: list of string
@@ -178,7 +180,13 @@ def get_python_variables(conf, variables, imports=['import sys']):
 	:return: the variable values
 	:rtype: list of string
 	"""
-	program = list(imports)
+	if not imports:
+		try:
+			imports = self.python_imports
+		except AttributeError:
+			imports = DISTUTILS_IMP
+
+	program = list(imports) # copy
 	program.append('')
 	for v in variables:
 		program.append("print(repr(%s))" % v)
@@ -189,9 +197,9 @@ def get_python_variables(conf, variables, imports=['import sys']):
 		pass
 
 	try:
-		out = conf.cmd_and_log(conf.env.PYTHON + ['-c', '\n'.join(program)], env=os_env)
+		out = self.cmd_and_log(self.env.PYTHON + ['-c', '\n'.join(program)], env=os_env)
 	except Errors.WafError:
-		conf.fatal('The distutils module is unusable: install "python-devel"?')
+		self.fatal('The distutils module is unusable: install "python-devel"?')
 	return_values = []
 	for s in out.split('\n'):
 		s = s.strip()
@@ -231,8 +239,7 @@ def check_python_headers(conf):
 
 	v = 'prefix SO LDFLAGS LIBDIR LIBPL INCLUDEPY Py_ENABLE_SHARED MACOSX_DEPLOYMENT_TARGET LDSHARED CFLAGS'.split()
 	try:
-		lst = conf.get_python_variables(["get_config_var('%s') or ''" % x for x in v],
-			['from distutils.sysconfig import get_config_var'])
+		lst = conf.get_python_variables(["get_config_var('%s') or ''" % x for x in v])
 	except RuntimeError:
 		conf.fatal("Python development headers not found (-v for details).")
 
@@ -386,17 +393,12 @@ def check_python_version(conf, minver=None):
 			pydir = conf.environ['PYTHONDIR']
 		else:
 			if Utils.is_win32:
-				(python_LIBDEST, pydir) = \
-						conf.get_python_variables(
-											  ["get_config_var('LIBDEST') or ''",
-											   "get_python_lib(standard_lib=0, prefix=%r) or ''" % conf.env['PREFIX']],
-											  ['from distutils.sysconfig import get_config_var, get_python_lib'])
+				(python_LIBDEST, pydir) = conf.get_python_variables(
+					  ["get_config_var('LIBDEST') or ''",
+					   "get_python_lib(standard_lib=0, prefix=%r) or ''" % conf.env['PREFIX']])
 			else:
 				python_LIBDEST = None
-				(pydir,) = \
-						conf.get_python_variables(
-											  ["get_python_lib(standard_lib=0, prefix=%r) or ''" % conf.env['PREFIX']],
-											  ['from distutils.sysconfig import get_python_lib'])
+				(pydir,) = conf.get_python_variables( ["get_python_lib(standard_lib=0, prefix=%r) or ''" % conf.env['PREFIX']])
 			if python_LIBDEST is None:
 				if conf.env['LIBDIR']:
 					python_LIBDEST = os.path.join(conf.env['LIBDIR'], "python" + pyver)
@@ -407,9 +409,7 @@ def check_python_version(conf, minver=None):
 		if 'PYTHONARCHDIR' in conf.environ:
 			pyarchdir = conf.environ['PYTHONARCHDIR']
 		else:
-			(pyarchdir, ) = conf.get_python_variables(
-											["get_python_lib(plat_specific=1, standard_lib=0, prefix=%r) or ''" % conf.env['PREFIX']],
-											['from distutils.sysconfig import get_python_lib'])
+			(pyarchdir, ) = conf.get_python_variables( ["get_python_lib(plat_specific=1, standard_lib=0, prefix=%r) or ''" % conf.env['PREFIX']])
 			if not pyarchdir:
 				pyarchdir = pydir
 
