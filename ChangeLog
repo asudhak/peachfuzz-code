@@ -7,6 +7,7 @@ NEW IN WAF 1.6.10
 * Fixed the behavior of 'waf options' #1076
 * Process larger java projects #1074
 * Remove the ':' from the drives when dealing with foreign files and folders on Win32
+* Let the 'subst' feature process a chmod attribute
 
 NEW IN WAF 1.6.9
 ----------------
