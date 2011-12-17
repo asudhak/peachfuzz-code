@@ -347,8 +347,7 @@ def configure(conf):
 
 def build(bld):
 	waf = bld.path.make_node('waf') # create the node right here
-	tg = bld(name='create_waf', rule=create_waf, target=waf, always=True, color='PINK', update_outputs=True)
-	tg.post()
+	bld(name='create_waf', rule=create_waf, target=waf, always=True, color='PINK', update_outputs=True)
 
 
 #def dist():
