@@ -51,7 +51,7 @@ from waflib.Tools import c_preproc, cxx
 from waflib import Task, Utils, Options, Errors
 from waflib.TaskGen import feature, after_method, extension
 from waflib.Configure import conf
-from waflib.Logs import error
+from waflib import Logs
 
 MOC_H = ['.h', '.hpp', '.hxx', '.hh']
 """
@@ -142,7 +142,7 @@ class qxx(cxx.cxx):
 				continue
 			# paranoid check
 			if d in mocfiles:
-				error("paranoia owns")
+				Logs.error("paranoia owns")
 				continue
 			# process that base.moc only once
 			mocfiles.append(d)
@@ -320,6 +320,11 @@ class rcc(Task.Task):
 	def scan(self):
 		"""Parse the *.qrc* files"""
 		node = self.inputs[0]
+
+		if not has_xml:
+			Logs.error('no xml support was found, the rcc dependencies will be incomplete!')
+			return ([], [])
+
 		parser = make_parser()
 		curHandler = XMLHandler()
 		parser.setContentHandler(curHandler)
