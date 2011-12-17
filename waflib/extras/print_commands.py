@@ -7,6 +7,7 @@ In this case, print the commands being executed as strings
 (the commands are usually lists, so this can be misleading)
 """
 
+import sys
 from waflib import Context, Utils, Logs
 
 def exec_command(self, cmd, **kw):
