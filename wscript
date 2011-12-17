@@ -48,7 +48,7 @@ def sub_file(fname, lst):
 	f.close()
 
 print("------> Executing code from the top-level wscript <-----")
-def init(*k, **kw):
+def init(ctx):
 	if Options.options.setver: # maintainer only (ita)
 		ver = Options.options.setver
 		hexver = Utils.num2ver(ver)
@@ -64,14 +64,11 @@ def init(*k, **kw):
 			#rev = k[0].cmd_and_log('git log | grep "^commit" | wc -l', quiet=0).strip()
 			rev = k[0].cmd_and_log("git rev-parse HEAD").strip()
 			pats.append(('^WAFREVISION(.*)', 'WAFREVISION="%s"' % rev))
-		except:
+		except Exception:
 			pass
 
 		sub_file('waflib/Context.py', pats)
 
-		sys.exit(0)
-	elif Options.options.waf:
-		create_waf()
 		sys.exit(0)
 
 def check(ctx):
@@ -228,8 +225,8 @@ def sfilter(path):
 	return (io.BytesIO(cnt.encode('utf-8')), len(cnt), cnt)
 
 def create_waf(*k, **kw):
-	#print("-> preparing waf")
 	mw = 'tmp-waf-'+VERSION
+	print("-> preparing %r" % mw)
 
 	import tarfile, re
 
@@ -323,11 +320,9 @@ def create_waf(*k, **kw):
 	ccc = code1.replace("C1='x'", "C1='%s'" % C1).replace("C2='x'", "C2='%s'" % C2)
 
 	f.write(ccc.encode())
-	f.write(b'#==>\n')
-	f.write(b'#')
+	f.write(b'#==>\n#')
 	f.write(cnt)
-	f.write(b'\n')
-	f.write(b'#<==\n')
+	f.write(b'\n#<==\n')
 	f.close()
 
 	if sys.platform == 'win32' or Options.options.make_batch:
@@ -352,7 +347,9 @@ def configure(conf):
 
 def build(bld):
 	waf = bld.path.make_node('waf') # create the node right here
-	bld(name='create_waf', rule=create_waf, target=waf, always=True, color='PINK', update_outputs=True)
+	tg = bld(name='create_waf', rule=create_waf, target=waf, always=True, color='PINK', update_outputs=True)
+	tg.post()
+
 
 #def dist():
 #	import Scripting
