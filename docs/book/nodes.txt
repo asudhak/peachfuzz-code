@@ -315,7 +315,7 @@ Since the build directory can be enabled or disabled, the following file copy is
 [source,python]
 ---------------
 def build(bld):
-    bld(rule='cp ${SRC}' ${TGT}, source='foo.txt', target='foo.txt')
+    bld(rule='cp ${SRC} ${TGT}', source='foo.txt', target='foo.txt')
 ---------------
 
 To actually copy a file into the corresponding build directory with the same name, the ambiguity must be removed:
@@ -324,7 +324,7 @@ To actually copy a file into the corresponding build directory with the same nam
 ---------------
 def build(bld):
     bld(
-        rule   = 'cp ${SRC}' ${TGT},
+        rule   = 'cp ${SRC} ${TGT}',
         source = bld.path.make_node('foo.txt'),
         target = bld.path.get_bld().make_node('foo.txt')
     )
