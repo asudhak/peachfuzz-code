@@ -95,7 +95,7 @@ Such files do not have to be Python files, yet, a typical scenario is to add an 
 functions and classes from the Waf modules. Various from the http://code.google.com/p/waf/source/browse/trunk/build_system_kit/[build system kit] illustrate how to create custom
 build systems derived from Waf.
 
-=== Using the waf file
+=== Using the Waf file
 
 ==== Permissions and aliases
 
