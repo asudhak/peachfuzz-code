@@ -301,8 +301,8 @@ def check_boost(self, *k, **kw):
 			  '#include <boost/system/error_code.hpp>',
 			  'int main() { boost::system::error_code c; }',
 			 ]),
-			 use='BOOST',
-			 execute=True,
+			 use=var,
+			 execute=True, # TODO breaks cross-compilation
 			)
 		if 'thread' in params['lib']:
 			self.check_cxx(
@@ -310,8 +310,8 @@ def check_boost(self, *k, **kw):
 			  '#include <boost/thread.hpp>',
 			  'int main() { boost::thread t; }',
 			 ]),
-			 use='BOOST',
-			 execute=True,
+			 use=var,
+			 execute=True, # TODO breaks cross-compilation
 			)
 
 	if params.get('linkage_autodetect', False):
@@ -358,5 +358,4 @@ def check_boost(self, *k, **kw):
 		except Errors.ConfigurationError as e:
 			self.fatal("Could not link against boost libraries using supplied options")
 		self.end_msg('ok')
-
 
