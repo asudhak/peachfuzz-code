@@ -137,8 +137,7 @@ def boost_get_version(self, dir):
 	try:
 		val = re_but.search(self.__boost_get_version_file(dir).read()).group(1)
 	except:
-		val = self.check_cxx(fragment=BOOST_VERSION_CODE, includes=[dir],
-							 execute=True, define_ret=True)
+		val = self.check_cxx(fragment=BOOST_VERSION_CODE, includes=[dir], execute=False, define_ret=True)
 	return val
 
 
@@ -302,7 +301,7 @@ def check_boost(self, *k, **kw):
 			  'int main() { boost::system::error_code c; }',
 			 ]),
 			 use=var,
-			 execute=True, # TODO breaks cross-compilation
+			 execute=False,
 			)
 		if 'thread' in params['lib']:
 			self.check_cxx(
@@ -311,7 +310,7 @@ def check_boost(self, *k, **kw):
 			  'int main() { boost::thread t; }',
 			 ]),
 			 use=var,
-			 execute=True, # TODO breaks cross-compilation
+			 execute=False,
 			)
 
 	if params.get('linkage_autodetect', False):
