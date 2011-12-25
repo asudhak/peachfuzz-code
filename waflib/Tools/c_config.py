@@ -1016,12 +1016,13 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 	The variables CC_VERSION, DEST_OS, DEST_BINFMT and DEST_CPU will be set in *conf.env*
 	"""
 	cmd = cc + ['-dM', '-E', '-']
+	env = conf.env.env or None
 	try:
-		p = Utils.subprocess.Popen(cmd, stdin=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE)
+		p = Utils.subprocess.Popen(cmd, stdin=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE, env=env)
 		p.stdin.write('\n'.encode())
 		out = p.communicate()[0]
 	except:
-		conf.fatal('could not determine the compiler version %r' % cmd)
+		conf.fatal('Could not determine the compiler version %r' % cmd)
 
 	if not isinstance(out, str):
 		out = out.decode(sys.stdout.encoding)
@@ -1038,8 +1039,6 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 	k = {}
 	if icc or gcc:
 		out = out.split('\n')
-		import shlex
-
 		for line in out:
 			lst = shlex.split(line)
 			if len(lst)>2:

@@ -327,12 +327,13 @@ def getoutput(conf, cmd, stdin=False):
 	"""
 	TODO a bit redundant, can be removed anytime
 	"""
+	if stdin:
+		stdin = Utils.subprocess.PIPE
+	else:
+		stdin = None
+	env = conf.env.env or None
 	try:
-		if stdin:
-			stdin = Utils.subprocess.PIPE
-		else:
-			stdin = None
-		p = Utils.subprocess.Popen(cmd, stdin=stdin, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE)
+		p = Utils.subprocess.Popen(cmd, stdin=stdin, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE, env=env)
 		if stdin:
 			p.stdin.write('\n'.encode())
 		stdout, stderr = p.communicate()

@@ -87,7 +87,8 @@ class doxygen(Task.Task):
 		code = code.encode() # for python 3
 		#fmt = DOXY_STR % (self.inputs[0].parent.abspath())
 		cmd = Utils.subst_vars(DOXY_STR, self.env)
-		proc = Utils.subprocess.Popen(cmd, shell=True, stdin=Utils.subprocess.PIPE)
+		env = self.env.env or None
+		proc = Utils.subprocess.Popen(cmd, shell=True, stdin=Utils.subprocess.PIPE, env=env)
 		proc.communicate(code)
 		return proc.returncode
 

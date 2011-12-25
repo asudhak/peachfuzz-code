@@ -24,7 +24,7 @@ def build(bld):
 			doxyfile='test.conf',
 			doxy_tar='docs.tar.bz2')
 	else:
-		print('some kind of normal build')
+		print('Call "waf doxy" for building the documentation')
 
 from waflib import Build
 class doxy(Build.BuildContext):

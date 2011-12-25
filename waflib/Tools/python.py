@@ -122,7 +122,8 @@ def install_pyfile(self, node, install_from=None):
 				(a, b, c) = (path, path + x, tsk.get_install_path(destdir=False) + x)
 				argv = self.env['PYTHON'] + lst + ['-c', INST, a, b, c]
 				info('+ byte compiling %r' % (path + x))
-				ret = Utils.subprocess.Popen(argv).wait()
+				env = self.env.env or None
+				ret = Utils.subprocess.Popen(argv, env=env).wait()
 				if ret:
 					raise Errors.WafError('py%s compilation failed %r' % (x, path))
 
