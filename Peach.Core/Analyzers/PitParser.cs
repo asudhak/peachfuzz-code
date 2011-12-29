@@ -751,6 +751,7 @@ namespace Peach.Core.Analyzers
 						throw new NotSupportedException("Unkown: "+child.Name);
 				}
 
+				// Wrap elements that are arrays with an Array object
 				if (IsArray(child))
 				{
 					var array = handleArray(child, element);
@@ -1423,6 +1424,7 @@ namespace Peach.Core.Analyzers
 			string cls = getXmlAttribute(node, "class");
 			Type tFixup = null;
 			var arg = handleParams(node);
+			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
 
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -1432,42 +1434,54 @@ namespace Peach.Core.Analyzers
 					if (!t.IsClass)
 						continue;
 
+					parameters.Clear();
+
 					foreach (object attrib in t.GetCustomAttributes(true))
 					{
-						if (attrib is FixupAttribute)
+						if (attrib is FixupAttribute && (attrib as FixupAttribute).className == cls)
 						{
-							if ((attrib as FixupAttribute).className == cls)
-							{
-								tFixup = t;
-
-								Type[] targs = new Type[1];
-								targs[0] = typeof(Dictionary<string, Variant>);
-
-								ConstructorInfo co = tFixup.GetConstructor(targs);
-
-								if (co == null)
-									throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
-
-								object[] args = new object[1];
-								args[0] = arg;
-
-								try
-								{
-									parent.fixup = co.Invoke(args) as Fixup;
-								}
-								catch (Exception e)
-								{
-									throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
-								}
-
-								return parent.fixup;
-							}
+							tFixup = t;
 						}
+						else if (attrib is ParameterAttribute)
+							parameters.Add(attrib as ParameterAttribute);
 					}
+
+					if (tFixup != null)
+						break;
 				}
+
+				if (tFixup != null)
+					break;
 			}
 
-			throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.");
+			if(tFixup == null)
+				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.");
+
+			validateParameterAttributes("Fixup", cls, parameters, arg);
+
+			Type[] targs = new Type[1];
+			targs[0] = typeof(Dictionary<string, Variant>);
+
+			ConstructorInfo co = tFixup.GetConstructor(targs);
+
+			if (co == null)
+				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
+
+			object[] args = new object[1];
+			args[0] = arg;
+
+			try
+			{
+				parent.fixup = co.Invoke(args) as Fixup;
+			}
+			catch (Exception e)
+			{
+				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
+			}
+
+			return parent.fixup;
+
+
 		}
 
 		protected Transformer handleTransformer(XmlNode node, DataElement parent)
@@ -1475,6 +1489,7 @@ namespace Peach.Core.Analyzers
 			string cls = getXmlAttribute(node, "class");
 			Type tTransformer = null;
 			var arg = handleParams(node);
+			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
 
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -1484,38 +1499,40 @@ namespace Peach.Core.Analyzers
 					if (!t.IsClass)
 						continue;
 
+					parameters.Clear();
+
 					foreach (object attrib in t.GetCustomAttributes(true))
 					{
-						if (attrib is TransformerAttribute)
-						{
-							if ((attrib as TransformerAttribute).elementName == cls)
-							{
-								tTransformer = t;
-
-								Type[] targs = new Type[1];
-								targs[0] = typeof(Dictionary<string, Variant>);
-
-								ConstructorInfo co = tTransformer.GetConstructor(targs);
-
-								object[] args = new object[1];
-								args[0] = arg;
-
-								parent.transformer = co.Invoke(args) as Transformer;
-
-								return parent.transformer;
-							}
-						}
+						if (attrib is TransformerAttribute && (attrib as TransformerAttribute).elementName == cls)
+							tTransformer = t;
+						else if (attrib is ParameterAttribute)
+							parameters.Add(attrib as ParameterAttribute);
 					}
+
+					if (tTransformer != null)
+						break;
 				}
+
+				if (tTransformer != null)
+					break;
 			}
 
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				if (child.Name == "Transformer")
-					throw new NotImplementedException("todo, sub-transformer");
-			}
+			if (tTransformer == null)
+				throw new PeachException("Error, unable to locate Transformer named '" + cls + "'.");
 
-			throw new PeachException("Error, unable to locate Transformer named '" + cls + "'.");
+			validateParameterAttributes("Transformer", cls, parameters, arg);
+
+			Type[] targs = new Type[1];
+			targs[0] = typeof(Dictionary<string, Variant>);
+
+			ConstructorInfo co = tTransformer.GetConstructor(targs);
+
+			object[] args = new object[1];
+			args[0] = arg;
+
+			parent.transformer = co.Invoke(args) as Transformer;
+
+			return parent.transformer;
 		}
 
 #endregion
@@ -1833,6 +1850,7 @@ namespace Peach.Core.Analyzers
 		{
 			string reference = getXmlAttribute(node, "class");
 			Type pubType = null;
+			List<ParameterAttribute> publisherParameters = new List<ParameterAttribute>();
 
 			// Locate PublisherAttribute classes and check name
 			foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -1842,15 +1860,26 @@ namespace Peach.Core.Analyzers
 					if (!t.IsClass)
 						continue;
 
+					publisherParameters.Clear();
+
 					foreach (object attrib in t.GetCustomAttributes(true))
 					{
-						if (attrib is PublisherAttribute)
+						if (attrib is PublisherAttribute && (attrib as PublisherAttribute).invokeName == reference)
 						{
-							if ((attrib as PublisherAttribute).invokeName == reference)
 								pubType = t;
 						}
+						else if (attrib is ParameterAttribute)
+						{
+							publisherParameters.Add(attrib as ParameterAttribute);
+						}
 					}
+
+					if (pubType != null)
+						break;
 				}
+
+				if (pubType != null)
+					break;
 			}
 
 			if (pubType == null)
@@ -1860,12 +1889,68 @@ namespace Peach.Core.Analyzers
 			argTypes[0] = typeof(Dictionary<string, Variant>);
 			ConstructorInfo pubCo = pubType.GetConstructor(argTypes);
 
+			// Validate parameters
+			var xmlParams = handleParams(node);
+			validateParameterAttributes("Publisher", reference, publisherParameters, xmlParams);
+
+			// Create instance of publisher
 			object [] args = new object[1];
-			args[0] = handleParams(node);
+			args[0] = xmlParams;
 
 			Publisher pub = pubCo.Invoke(args) as Publisher;
 
 			return pub;
+		}
+
+		protected void validateParameterAttributes(string type, string name, List<ParameterAttribute> publisherParameters,
+			Dictionary<string, Variant> xmlParameters)
+		{
+			foreach (ParameterAttribute p in publisherParameters)
+			{
+				if (p.required)
+				{
+					if (!xmlParameters.ContainsKey(p.name))
+						throw new PeachException(
+							string.Format("Error, {0} '{1}' is missing required parameter '{2}'.\n{3}",
+								type, name, p.name, formatParameterAttributes(publisherParameters)));
+				}
+			}
+
+			bool found = false;
+			foreach (string p in xmlParameters.Keys)
+			{
+				found = false;
+
+				foreach (ParameterAttribute pa in publisherParameters)
+				{
+					if (pa.name == p)
+					{
+						found = true;
+						break;
+					}
+				}
+
+				if(!found)
+					throw new PeachException(string.Format("Error, {0} '{1}' has unknown parameter '{2}'.\n{3}",
+						type, name, p, formatParameterAttributes(publisherParameters)));
+			}
+		}
+
+		protected string formatParameterAttributes(List<ParameterAttribute> publisherParameters)
+		{
+			publisherParameters.Reverse();
+
+			string s = "\nSupported Parameters:\n\n";
+			foreach (var p in publisherParameters)
+			{
+				if(p.required)
+					s += "  " + p.name + ": [REQUIRED] " + p.description + "\n";
+				else
+					s += "  " + p.name + ": " + p.description + "\n";
+			}
+			s += "\n";
+
+			return s;
 		}
 
 		protected Dictionary<string, Variant> handleParams(XmlNode node)
@@ -1913,6 +1998,8 @@ namespace Peach.Core.Analyzers
 		{
 			string reference = getXmlAttribute(node, "class");
 			Type pubType = null;
+			var arg = handleParams(node);
+			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
 
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -1922,26 +2009,35 @@ namespace Peach.Core.Analyzers
 					if (!t.IsClass)
 						continue;
 
+					parameters.Clear();
+
 					foreach (object attrib in t.GetCustomAttributes(true))
 					{
-						if (attrib is LoggerAttribute)
-						{
-							if ((attrib as LoggerAttribute).invokeName == reference)
-								pubType = t;
-						}
+						if (attrib is LoggerAttribute && (attrib as LoggerAttribute).invokeName == reference)
+							pubType = t;
+						else if (attrib is ParameterAttribute)
+							parameters.Add(attrib as ParameterAttribute);
 					}
+
+					if (pubType != null)
+						break;
 				}
+
+				if (pubType != null)
+					break;
 			}
 
 			if (pubType == null)
 				throw new PeachException("Error, unable to locate logger '" + reference + "'.");
+
+			validateParameterAttributes("Logger", reference, parameters, arg);
 
 			Type[] argTypes = new Type[1];
 			argTypes[0] = typeof(Dictionary<string, Variant>);
 			ConstructorInfo pubCo = pubType.GetConstructor(argTypes);
 
 			object[] args = new object[1];
-			args[0] = handleParams(node);
+			args[0] = arg;
 
 			Logger logger = pubCo.Invoke(args) as Logger;
 

@@ -228,6 +228,9 @@ namespace Peach.Core.Publishers
 
 		public override void output(Core.Dom.Action action, Variant data)
 		{
+			if (_tcpStream == null)
+				open(action);
+
 			OnOutput(action, data);
 			byte [] buff = (byte[]) data;
 			_tcpStream.Write(buff, 0, buff.Length);
