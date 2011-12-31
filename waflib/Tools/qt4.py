@@ -160,14 +160,23 @@ class qxx(cxx.cxx):
 					h_node = x.find_node(base2 + e)
 					if h_node:
 						break
-				else:
-					continue
-				break
+				if h_node:
+					m_node = h_node.change_ext('.moc')
+					break
 			else:
+				for k in EXT_QT4:
+					if base2.endswith(k):
+						for x in [node.parent] + self.generator.includes_nodes:
+							h_node = x.find_node(base2)
+							if h_node:
+								break
+					if h_node:
+						m_node = h_node.change_ext(k + '.moc')
+						break
+			if not h_node:
 				raise Errors.WafError('no header found for %r which is a moc file' % d)
 
 			# next time we will not search for the extension (look at the 'for' loop below)
-			m_node = h_node.change_ext('.moc')
 			bld.node_deps[(self.inputs[0].parent.abspath(), m_node.name)] = h_node
 
 			# create the task
