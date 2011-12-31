@@ -71,15 +71,6 @@ def init(ctx):
 
 		sys.exit(0)
 
-def check(ctx):
-	sys.path.insert(0,'')
-	# some tests clobber g_module. We must preserve it here, otherwise we get an error
-	# about an undefined shutdown function
-	mod = Utils.g_module
-	import test.Test
-	test.Test.run_tests()
-	Utils.g_module = mod
-
 # this function is called before any other for parsing the command-line
 def options(opt):
 
