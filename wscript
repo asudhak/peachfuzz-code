@@ -27,7 +27,7 @@ import tokenize
 
 import os, sys, re, io, optparse
 
-from waflib import Utils, Options
+from waflib import Utils, Options, Logs
 from hashlib import md5
 
 from waflib import Configure
@@ -70,6 +70,9 @@ def init(ctx):
 		sub_file('waflib/Context.py', pats)
 
 		sys.exit(0)
+
+def check(ctx):
+	Logs.warn('Nothing to do')
 
 # this function is called before any other for parsing the command-line
 def options(opt):

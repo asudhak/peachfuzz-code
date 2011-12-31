@@ -26,7 +26,7 @@ You would have to run::
 [1] http://www.jython.org/
 """
 
-import os, re, tempfile
+import os, re, tempfile, shutil
 from waflib.Configure import conf
 from waflib import TaskGen, Task, Utils, Options, Build, Errors, Node, Logs
 from waflib.TaskGen import feature, before_method, after_method
@@ -346,8 +346,6 @@ def check_java_class(self, classname, with_classpath=None):
 	:param with_classpath: additional classpath to give
 	:type with_classpath: string
 	"""
-
-	import shutil
 
 	javatestdir = '.waf-javatest'
 
