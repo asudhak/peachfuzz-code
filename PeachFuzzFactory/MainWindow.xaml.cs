@@ -126,7 +126,7 @@ namespace PeachFuzzFactory
 		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
 		{
 			var currentModel = crackMap[element];
-			currentModel.Length = ((BitStream)currentModel.DataElement.Value).LengthBytes;
+			currentModel.Length = (int) ((BitStream)currentModel.DataElement.Value).LengthBytes;
 
 			if (element.parent != null)
 				crackMap[element.parent].Children.Add(currentModel);
@@ -134,7 +134,7 @@ namespace PeachFuzzFactory
 
 		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
 		{
-			crackMap[element] = new CrackModel(element, data.TellBytes(), 0);
+			crackMap[element] = new CrackModel(element, (int)data.TellBytes(), 0);
 		}
 
 		private void DesignerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

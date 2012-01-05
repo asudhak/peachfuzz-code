@@ -32,9 +32,6 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 
-using System;
-using System.IO;
-using System.Text;
 using System.Collections.Specialized;
 using System.Resources;
 using System.Globalization;

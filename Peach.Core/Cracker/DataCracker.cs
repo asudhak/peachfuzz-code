@@ -1,4 +1,32 @@
-﻿using System;
+﻿
+//
+// Copyright (c) Michael Eddington
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy 
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+// copies of the Software, and to permit persons to whom the Software is 
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in	
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
+// Authors:
+//   Michael Eddington (mike@phed.org)
+
+// $Id$
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
@@ -63,7 +91,15 @@ namespace Peach.Core.Cracker
 
 		#endregion
 
-		public DataModel CrackData(DataModel model, BitStream data)
+		/// <summary>
+		/// Main entry method that will take a data stream and parse it into a data model.
+		/// </summary>
+		/// <remarks>
+		/// Method will throw one of two exceptions on an error: CrackingFailure, or NotEnoughDataException.
+		/// </remarks>
+		/// <param name="model">DataModel to import data into</param>
+		/// <param name="data">Data stream to read data from</param>
+		public void CrackData(DataModel model, BitStream data)
 		{
 			_sizedBlockStack = new List<DataElement>();
 			_sizedBlockMap = new Dictionary<DataElement, long>();
@@ -71,7 +107,125 @@ namespace Peach.Core.Cracker
 
 			handleNode(model, data);
 
-			return model;
+			// Handle any Placement's
+			handlePlacement(model, data);
+		}
+
+		protected void handlePlacement(DataModel model, BitStream data)
+		{
+			List<DataElement> elementsWithPlacement = new List<DataElement>();
+			foreach (DataElement element in model.EnumerateAllElements())
+			{
+				if (element.placement != null)
+					elementsWithPlacement.Add(element);
+			}
+
+			foreach (DataElement element in elementsWithPlacement)
+			{
+				// Locate any fixups and relations so we can update them
+
+				List<Relation> ofs = new List<Relation>();
+				List<Relation> froms = new List<Relation>();
+				List<Fixup> fixups = new List<Fixup>();
+
+				foreach (Relation relation in element.relations)
+				{
+					if(relation.Of == element)
+						ofs.Add(relation);
+					else if(relation.From == element)
+						froms.Add(relation);
+					else
+						throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.",
+							element, data);
+				}
+
+				foreach (DataElement child in model.EnumerateAllElements())
+				{
+					if (child.relations.Count > 0)
+					{
+						foreach (Relation relation in child.relations)
+						{
+							if (relation.Of == element)
+								ofs.Add(relation);
+						}
+					}
+
+					if (child.fixup != null && child.fixup.arguments.ContainsKey("ref"))
+					{
+						if (child.find((string)child.fixup.arguments["ref"]) == element)
+							fixups.Add(child.fixup);
+					}
+				}
+
+				// Move element
+
+				DataElementContainer oldParent = element.parent;
+				DataElementContainer newParent = null;
+
+				string oldName = element.name;
+				string newName = null;
+				string newFullname = null;
+
+				if (element.placement.after != null)
+				{
+					DataElement after = element.find(element.placement.after);
+					if (after == null)
+						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name + 
+							"' with 'after' == '" + element.placement.after + "'.", element, data);
+
+					newParent = after.parent;
+
+					newName = oldName;
+					for (int i = 0; newParent.ContainsKey(oldName); i++)
+						newName = oldName + "_" + i;
+
+					element.parent.Remove(element);
+					element.name = newName;
+
+					newParent.Insert(newParent.IndexOf(after)+1, element);
+				}
+				else if (element.placement.before != null)
+				{
+					DataElement before = element.find(element.placement.before);
+					if (before == null)
+						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name + 
+							"' with 'before' == '" + element.placement.before + "'.", element, data);
+
+					newParent = before.parent;
+
+					newName = oldName;
+					for (int i = 0; newParent.ContainsKey(oldName); i++)
+						newName = oldName + "_" + i;
+
+					element.parent.Remove(element);
+					element.name = newName;
+
+					newParent.Insert(newParent.IndexOf(before), element);
+				}
+
+				newFullname = element.fullName;
+
+				// Update relations
+
+				foreach (Relation relation in ofs)
+				{
+					relation.OfName = newFullname;
+				}
+				foreach (Relation relation in froms)
+				{
+					relation.FromName = newFullname;
+				}
+
+				// Update fixups
+
+				foreach (Fixup fixup in fixups)
+				{
+					// We might have to create a new fixup!
+
+					fixup.arguments["ref"] = new Variant(newFullname);
+				}
+				
+			}
 		}
 
 		/// <summary>
@@ -733,29 +887,6 @@ namespace Peach.Core.Cracker
 
 			element.DefaultValue = defaultValue;
 		}
-	}
-
-	public class CrackingFailure : ApplicationException
-	{
-		public DataElement element;
-		public BitStream data;
-
-		public CrackingFailure(DataElement element, BitStream data)
-			: base("Unknown error")
-		{
-			this.element = element;
-			this.data = data;
-		}
-
-		public CrackingFailure(string msg, DataElement element, BitStream data) : base(msg)
-		{
-			this.element = element;
-			this.data = data;
-		}
-	}
-
-	public class NotEnoughData : ApplicationException
-	{
 	}
 }
 

@@ -28,64 +28,42 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using Peach.Core.Dom;
+using Peach.Core;
 
-namespace Peach.Core
+namespace Peach.Core.Dom
 {
+	/// <summary>
+	/// Hints are attached to data elements providing information
+	/// for mutators.
+	/// </summary>
 	[Serializable]
-	public abstract class Fixup
+	[Parameter("after", typeof(string), "Place after this element", false)]
+	[Parameter("before", typeof(string), "Place before this element", false)]
+	public class Placement
 	{
-		protected Dictionary<string, Variant> args;
-		protected bool isRecursing = false;
-
-		public Fixup(Dictionary<string, Variant> args)
+		public Placement(Dictionary<string, Variant> args)
 		{
-			this.args = args;
+			if(args.ContainsKey("after"))
+				after = (string)args["after"];
+			if (args.ContainsKey("before"))
+				before = (string)args["before"];
+
+			if (string.IsNullOrEmpty(after) && string.IsNullOrEmpty(before))
+				throw new PeachException("Error, Placement must have one of 'after' or 'before' defined.");
 		}
 
-		public Dictionary<string, Variant> arguments
+		public string after
 		{
-			get { return args; }
-			set { args = value; }
+			get;
+			set;
 		}
 
-		/// <summary>
-		/// Perform fixup operation
-		/// </summary>
-		/// <param name="obj">Parent data element</param>
-		/// <returns></returns>
-		public Variant fixup(DataElement obj)
+		public string before
 		{
-			if (isRecursing)
-				return obj.DefaultValue;
-
-			try
-			{
-				isRecursing = true;
-				return fixupImpl(obj);
-			}
-			finally
-			{
-				isRecursing = false;
-			}
-		}
-
-		protected abstract Variant fixupImpl(DataElement obj);
-	}
-
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class FixupAttribute : Attribute
-	{
-		public string className;
-		public string description;
-
-		public FixupAttribute(string className, string description)
-		{
-			this.className = className;
-			this.description = description;
+			get;
+			set;
 		}
 	}
 }
-
-// end

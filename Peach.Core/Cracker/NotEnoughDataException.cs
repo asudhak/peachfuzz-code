@@ -30,62 +30,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
+using NLog;
 
-namespace Peach.Core
+namespace Peach.Core.Cracker
 {
-	[Serializable]
-	public abstract class Fixup
+	public class NotEnoughDataException : ApplicationException
 	{
-		protected Dictionary<string, Variant> args;
-		protected bool isRecursing = false;
-
-		public Fixup(Dictionary<string, Variant> args)
-		{
-			this.args = args;
-		}
-
-		public Dictionary<string, Variant> arguments
-		{
-			get { return args; }
-			set { args = value; }
-		}
-
-		/// <summary>
-		/// Perform fixup operation
-		/// </summary>
-		/// <param name="obj">Parent data element</param>
-		/// <returns></returns>
-		public Variant fixup(DataElement obj)
-		{
-			if (isRecursing)
-				return obj.DefaultValue;
-
-			try
-			{
-				isRecursing = true;
-				return fixupImpl(obj);
-			}
-			finally
-			{
-				isRecursing = false;
-			}
-		}
-
-		protected abstract Variant fixupImpl(DataElement obj);
-	}
-
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class FixupAttribute : Attribute
-	{
-		public string className;
-		public string description;
-
-		public FixupAttribute(string className, string description)
-		{
-			this.className = className;
-			this.description = description;
-		}
 	}
 }
-
-// end

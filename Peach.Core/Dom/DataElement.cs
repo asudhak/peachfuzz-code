@@ -111,6 +111,8 @@ namespace Peach.Core.Dom
 		public uint mutationFlags = MUTATE_DEFAULT;
 		public bool isToken = false;
 
+		public Analyzer analyzer = null;
+
 		protected Dictionary<string, Hint> hints = new Dictionary<string, Hint>();
 
 		protected bool _isReference = false;
@@ -121,6 +123,7 @@ namespace Peach.Core.Dom
 		protected RelationContainer _relations = null;
 		protected Fixup _fixup = null;
 		protected Transformer _transformer = null;
+		protected Placement _placement = null;
 
 		protected DataElementContainer _parent;
 
@@ -193,6 +196,21 @@ namespace Peach.Core.Dom
 
 		static DataElement()
 		{
+		}
+
+		/// <summary>
+		/// Recursively returns elements of a specific type.  Will not
+		/// return elements of our partent.
+		/// </summary>
+		/// <param name="type">Type of elements to locate and return</param>
+		/// <returns>Returns elements of a specific type</returns>
+		public IEnumerable<DataElement> getElementsByType(Type type)
+		{
+			foreach(DataElement element in EnumerateAllElements())
+			{
+				if(element.GetType() == type)
+					yield return element;
+			}
 		}
 
 		/// <summary>
@@ -814,6 +832,15 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
+		/// Placement for this data element. Can be null.
+		/// </summary>
+		public Placement placement
+		{
+			get { return _placement; }
+			set { _placement = value; }
+		}
+
+		/// <summary>
 		/// Transformer for this data element.  Can be null.
 		/// </summary>
 		public Transformer transformer
@@ -869,6 +896,16 @@ namespace Peach.Core.Dom
 			{
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// Does container contain child element with name key?
+		/// </summary>
+		/// <param name="key">Name of child element to check</param>
+		/// <returns>Returns true if child exits</returns>
+		public bool ContainsKey(string key)
+		{
+			return _childrenDict.ContainsKey(key);
 		}
 
 		/// <summary>

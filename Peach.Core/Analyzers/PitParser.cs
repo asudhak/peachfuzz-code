@@ -179,11 +179,15 @@ namespace Peach.Core.Analyzers
 						PitParser parser = new PitParser();
 						if (!File.Exists(fileName))
 						{
-							string newFileName = Path.Combine(Assembly.GetExecutingAssembly().Location,
+							string newFileName = Path.Combine(
+								Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 								fileName);
 
-							if(!File.Exists(newFileName))
+							if (!File.Exists(newFileName))
+							{
+								Console.WriteLine(newFileName);
 								throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
+							}
 
 							fileName = newFileName;
 						}
@@ -206,12 +210,14 @@ namespace Peach.Core.Analyzers
 					case "Require":
 						Scripting.Imports.Add(getXmlAttribute(child, "require"));
 						break;
+
 					case "Import":
 						if (hasXmlAttribute(child, "from"))
 							throw new PeachException("Error, This version of Peach does not support the 'from' attribute for 'Import' elements.");
 
 						Scripting.Imports.Add(getXmlAttribute(child, "import"));
 						break;
+
 					case "PythonPath":
 						if (isScriptingLanguageSet && 
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Python)
@@ -222,6 +228,7 @@ namespace Peach.Core.Analyzers
 						Scripting.Paths.Add(getXmlAttribute(child, "import"));
 						isScriptingLanguageSet = true;
 						break;
+
 					case "RubyPath":
 						if (isScriptingLanguageSet && 
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Ruby)
@@ -232,6 +239,7 @@ namespace Peach.Core.Analyzers
 						Scripting.Paths.Add(getXmlAttribute(child, "require"));
 						isScriptingLanguageSet = true;
 						break;
+
 					case "Python":
 						if (isScriptingLanguageSet && 
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Python)
@@ -242,6 +250,7 @@ namespace Peach.Core.Analyzers
 						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string,object>());
 						isScriptingLanguageSet = true;
 						break;
+
 					case "Ruby":
 						if (isScriptingLanguageSet && 
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Ruby)
@@ -691,6 +700,14 @@ namespace Peach.Core.Analyzers
 					case "Hint":
 						handleHint(child, element);
 						break;
+
+					case "Analyzer":
+						handleAnalyzerDataElement(child, element);
+						break;
+
+					case "Placement":
+						handlePlacement(child, element);
+						break;
 				}
 			}
 		}
@@ -703,6 +720,21 @@ namespace Peach.Core.Analyzers
 		{
 			Hint hint = new Hint(getXmlAttribute(node, "name"), getXmlAttribute(node, "value"));
 			element.Hints.Add(hint.Name, hint);
+		}
+
+		protected void handlePlacement(XmlNode node, DataElement element)
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+
+			if (hasXmlAttribute(node, "after"))
+				args["after"] = new Variant(getXmlAttribute(node, "after"));
+			else if (hasXmlAttribute(node, "before"))
+				args["before"] = new Variant(getXmlAttribute(node, "before"));
+			else
+				throw new PeachException("Error, Placement on element \"" + element.name + "\" is missing 'after' or 'before' attribute.");
+
+			Placement placement = new Placement(args);
+			element.placement = placement;
 		}
 
 		/// <summary>
@@ -895,10 +927,10 @@ namespace Peach.Core.Analyzers
 			}
 
 			if (hasXmlAttribute(node, "tokens")) // This item has a default!
-				throw new NotSupportedException("Implement tokens attribute on String");
+				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
 
 			if (hasXmlAttribute(node, "analyzer")) // this should be passed via a child element me things!
-				throw new NotSupportedException("Implement analyzer attribute on String");
+				throw new NotSupportedException("Analyzer attribute is depricated in Peach 3.  Use a child element instead.");
 
 			handleCommonDataElementAttributes(node, str);
 			handleCommonDataElementValue(node, str);
@@ -1416,6 +1448,72 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
+		protected Analyzer handleAnalyzerDataElement(XmlNode node, DataElement parent)
+		{
+			if (!hasXmlAttribute(node, "class"))
+				throw new PeachException("Analyzer element has no 'class' attribute [" + node.OuterXml + "].");
+
+			string cls = getXmlAttribute(node, "class");
+			Type tFixup = null;
+			var arg = handleParams(node);
+			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
+
+			// Locate PublisherAttribute classes and check name
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					parameters.Clear();
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is AnalyzerAttribute && (attrib as AnalyzerAttribute).invokeName == cls)
+						{
+							tFixup = t;
+						}
+						else if (attrib is ParameterAttribute)
+							parameters.Add(attrib as ParameterAttribute);
+					}
+
+					if (tFixup != null)
+						break;
+				}
+
+				if (tFixup != null)
+					break;
+			}
+
+			if (tFixup == null)
+				throw new PeachException("Error, unable to locate Analyzer named '" + cls + "'.");
+
+			validateParameterAttributes("Analyzer", cls, parameters, arg);
+
+			Type[] targs = new Type[1];
+			targs[0] = typeof(Dictionary<string, Variant>);
+
+			ConstructorInfo co = tFixup.GetConstructor(targs);
+
+			if (co == null)
+				throw new PeachException("Error, unable to locate Analyzer named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
+
+			object[] args = new object[1];
+			args[0] = arg;
+
+			try
+			{
+				parent.analyzer = co.Invoke(args) as Analyzer;
+			}
+			catch (Exception e)
+			{
+				throw new PeachException("Error, unable to locate Analyzer named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
+			}
+
+			return parent.analyzer;
+		}
+
 		protected Fixup handleFixup(XmlNode node, DataElement parent)
 		{
 			if (!hasXmlAttribute(node, "class"))
@@ -1454,7 +1552,7 @@ namespace Peach.Core.Analyzers
 					break;
 			}
 
-			if(tFixup == null)
+			if (tFixup == null)
 				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.");
 
 			validateParameterAttributes("Fixup", cls, parameters, arg);

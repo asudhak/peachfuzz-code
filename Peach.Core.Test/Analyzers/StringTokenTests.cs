@@ -28,63 +28,45 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.IO;
+using NUnit.Framework;
+using NUnit.Framework.Constraints;
+using Peach.Core;
 using Peach.Core.Dom;
+using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
-namespace Peach.Core
+namespace Peach.Core.Test.CrackingTests
 {
-	[Serializable]
-	public abstract class Fixup
+	[TestFixture]
+	class StringTokenTests
 	{
-		protected Dictionary<string, Variant> args;
-		protected bool isRecursing = false;
-
-		public Fixup(Dictionary<string, Variant> args)
+		[Test]
+		public void BasicTest()
 		{
-			this.args = args;
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" analyzer=\"StringToken\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
 		}
 
-		public Dictionary<string, Variant> arguments
-		{
-			get { return args; }
-			set { args = value; }
-		}
-
-		/// <summary>
-		/// Perform fixup operation
-		/// </summary>
-		/// <param name="obj">Parent data element</param>
-		/// <returns></returns>
-		public Variant fixup(DataElement obj)
-		{
-			if (isRecursing)
-				return obj.DefaultValue;
-
-			try
-			{
-				isRecursing = true;
-				return fixupImpl(obj);
-			}
-			finally
-			{
-				isRecursing = false;
-			}
-		}
-
-		protected abstract Variant fixupImpl(DataElement obj);
-	}
-
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class FixupAttribute : Attribute
-	{
-		public string className;
-		public string description;
-
-		public FixupAttribute(string className, string description)
-		{
-			this.className = className;
-			this.description = description;
-		}
 	}
 }
 

@@ -49,6 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="BitStreamTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />
     <Compile Include="CrackingTests\BlobTests.cs" />
@@ -59,6 +60,7 @@
     <Compile Include="CrackingTests\FlagsTests.cs" />
     <Compile Include="CrackingTests\NumberTests.cs" />
     <Compile Include="CrackingTests\OffsetRelationTests.cs" />
+    <Compile Include="CrackingTests\PlacementTests.cs" />
     <Compile Include="CrackingTests\SizeRelationTests.cs" />
     <Compile Include="CrackingTests\StringTests.cs" />
     <Compile Include="CrackingTests\TokenTests.cs" />

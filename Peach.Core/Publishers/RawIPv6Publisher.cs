@@ -28,64 +28,47 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.IO;
+using System.Threading;
+using System.Net.Sockets;
+using System.Net;
 using Peach.Core.Dom;
 
-namespace Peach.Core
+namespace Peach.Core.Publishers
 {
-	[Serializable]
-	public abstract class Fixup
+	[Publisher("RawIPv6")]
+	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
+	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
+	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
+	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
+	public class RawIPv6Publisher : RawIPv4Publisher
 	{
-		protected Dictionary<string, Variant> args;
-		protected bool isRecursing = false;
-
-		public Fixup(Dictionary<string, Variant> args)
+		public RawIPv6Publisher(Dictionary<string, Variant> args)
+			: base(args)
 		{
-			this.args = args;
-		}
-
-		public Dictionary<string, Variant> arguments
-		{
-			get { return args; }
-			set { args = value; }
 		}
 
 		/// <summary>
-		/// Perform fixup operation
+		/// Open or connect to a resource.  Will be called
+		/// automatically if not called specifically.
 		/// </summary>
-		/// <param name="obj">Parent data element</param>
-		/// <returns></returns>
-		public Variant fixup(DataElement obj)
+		/// <param name="action">Action calling publisher</param>
+		public override void open(Core.Dom.Action action)
 		{
-			if (isRecursing)
-				return obj.DefaultValue;
+			// If socket is open, call close first.  This is what
+			// we call an implicit action
+			if (_socket != null)
+				close(action);
 
-			try
-			{
-				isRecursing = true;
-				return fixupImpl(obj);
-			}
-			finally
-			{
-				isRecursing = false;
-			}
-		}
+			OnOpen(action);
 
-		protected abstract Variant fixupImpl(DataElement obj);
-	}
+			_socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.IP);
+			_socket.Bind(new IPEndPoint(IPAddress.Parse("::"), 0));
+			_socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class FixupAttribute : Attribute
-	{
-		public string className;
-		public string description;
-
-		public FixupAttribute(string className, string description)
-		{
-			this.className = className;
-			this.description = description;
+			_remoteEndpoint = new IPEndPoint(Dns.GetHostEntry(_host).AddressList[0], _port);
 		}
 	}
 }
-
-// end

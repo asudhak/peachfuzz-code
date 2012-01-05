@@ -209,10 +209,13 @@
     <Compile Include="Analyzers\Shark.cs" />
     <Compile Include="Analyzers\StringToken.cs" />
     <Compile Include="Analyzers\Xml.cs" />
+    <Compile Include="Cracker\CrackingFailure.cs" />
+    <Compile Include="Cracker\NotEnoughDataException.cs" />
     <Compile Include="Debuggers\WindowsSystem\SystemDebugger.cs" />
     <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
     <Compile Include="Dom\Action.cs" />
     <Compile Include="Dom\Hint.cs" />
+    <Compile Include="Dom\Placement.cs" />
     <Compile Include="Dom\State.cs" />
     <Compile Include="IO\BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
@@ -981,6 +984,8 @@
     <Compile Include="Publishers\ConsolePublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
     <Compile Include="Dom\StateModel.cs" />
+    <Compile Include="Publishers\RawIPv4Publisher.cs" />
+    <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
     <Compile Include="Publishers\TcpListenerPublisher.cs" />
     <Compile Include="Random.cs" />

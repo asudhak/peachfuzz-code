@@ -5,7 +5,7 @@
 
 	<!--
 		
-		Copyright (c) 2007-2009 Michael Eddington
+		Copyright (c) 2007-2012 Michael Eddington
 		
 		Permission is hereby granted, free of charge, to any person obtaining a copy 
 		of this software and associated documentation files (the "Software"), to deal
@@ -708,6 +708,7 @@
 			<xs:element ref="Fixup" minOccurs="0" maxOccurs="1" />
 			<xs:element ref="Hint" minOccurs="0" maxOccurs="unbounded" />
 			<xs:element ref="Placement" minOccurs="0" maxOccurs="1"/>
+			<xs:element ref="Analyzer" minOccurs="0" maxOccurs="1"/>
 		</xs:choice>
 	</xs:group>
 	<xs:element name="Data">
@@ -1862,11 +1863,13 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
-	
+
 	<xs:element name="Fixup">
 		<xs:annotation>
-			<xs:documentation>Transform data into another format. This can include encoding it in some way
-				(base64), compressing it (gzip), etc.</xs:documentation>
+			<xs:documentation>
+				Transform data into another format. This can include encoding it in some way
+				(base64), compressing it (gzip), etc.
+			</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -1874,8 +1877,10 @@
 			</xs:choice>
 			<xs:attribute name="class">
 				<xs:annotation>
-					<xs:documentation>Specify the python class name of a Peach Fixup class. You can
-						implement your own fixups as needed.</xs:documentation>
+					<xs:documentation>
+						Specify the python class name of a Peach Fixup class. You can
+						implement your own fixups as needed.
+					</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:union>
@@ -1923,8 +1928,10 @@
 								</xs:enumeration>
 								<xs:enumeration value="checksums.Crc32DualFixup">
 									<xs:annotation>
-										<xs:documentation>Standard CRC32 as defined in ISO 3309.  This version takes 
-											two ref arguments and will calculate the first CRC32 and then add the 2nd.</xs:documentation>
+										<xs:documentation>
+											Standard CRC32 as defined in ISO 3309.  This version takes
+											two ref arguments and will calculate the first CRC32 and then add the 2nd.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="checksums.EthernetChecksumFixup">
@@ -1939,16 +1946,18 @@
 								</xs:enumeration>
 								<xs:enumeration value="sequence.SequenceIncrementFixup">
 									<xs:annotation>
-										<xs:documentation>Allows a field to emit a sequential value without adding additional test cases. This is useful for sequence numbers common in network protocols. 
+										<xs:documentation>
+											Allows a field to emit a sequential value without adding additional test cases. This is useful for sequence numbers common in network protocols.
 										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="sequence.SequenceRandomFixup">
 									<xs:annotation>
-										<xs:documentation>Allows a field to emit a random value without adding additional test cases. This is useful for sequence numbers common in network protocols. 
+										<xs:documentation>
+											Allows a field to emit a random value without adding additional test cases. This is useful for sequence numbers common in network protocols.
 										</xs:documentation>
 									</xs:annotation>
-								</xs:enumeration>							
+								</xs:enumeration>
 							</xs:restriction>
 						</xs:simpleType>
 					</xs:union>

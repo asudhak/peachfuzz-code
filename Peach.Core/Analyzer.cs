@@ -35,6 +35,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core
 {
+	[Serializable]
 	public abstract class Analyzer
 	{
 		public static bool supportParser = false;
@@ -87,7 +88,7 @@ namespace Peach.Core
 			throw new NotImplementedException("");
 		}
 
-		public virtual void asDataElement(DataElement parent, Dictionary<string, string> args, object dataBuffer)
+		public virtual void asDataElement(DataElement parent, object dataBuffer)
 		{
 			throw new NotImplementedException("");
 		}
@@ -102,6 +103,22 @@ namespace Peach.Core
 			throw new NotImplementedException("");
 		}
 	}
+
+	/// <summary>
+	/// Used to indicate a class is a valid Publisher and 
+	/// provide it's invoking name used in the Pit XML file.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class AnalyzerAttribute : Attribute
+	{
+		public string invokeName;
+
+		public AnalyzerAttribute(string invokeName)
+		{
+			this.invokeName = invokeName;
+		}
+	}
+
 }
 
 // end
