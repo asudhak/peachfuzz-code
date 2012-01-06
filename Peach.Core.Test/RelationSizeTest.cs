@@ -110,7 +110,7 @@ namespace Peach.Core.Test
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World".Length - 5, (int)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
 		}
 

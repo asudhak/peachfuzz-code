@@ -54,7 +54,7 @@ namespace Peach.Core.Dom
 			{
 				_isRecursing = true;
 
-				int count = (int)From.InternalValue;
+				int count = (int)From.DefaultValue;
 
 				if (_expressionGet != null)
 				{
@@ -86,7 +86,7 @@ namespace Peach.Core.Dom
 
 				int count = ((Array)Of).Count;
 
-				if (_expressionGet != null)
+				if (_expressionSet != null)
 				{
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["count"] = count;

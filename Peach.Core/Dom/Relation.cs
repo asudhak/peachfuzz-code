@@ -147,7 +147,7 @@ namespace Peach.Core.Dom
 			{
 				// When request we should evaluate
 
-				if (_of == null)
+				if (_of == null && parent != null)
 				{
 					_of = parent.find(_ofName);
 

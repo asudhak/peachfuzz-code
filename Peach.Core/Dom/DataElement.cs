@@ -365,12 +365,9 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public void Invalidate()
 		{
-			_invalidated = true;
+			//_invalidated = true;
 
 			OnInvalidated(null);
-
-			if(parent != null)
-				parent.Invalidate();
 		}
 
 		/// <summary>
