@@ -130,38 +130,7 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		public void ReferenceTest()
-		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"TheDataModel\">" +
-				"		<String name=\"TheString\" length=\"2\">" +
-				"			<Relation type=\"size\" of=\"Data\"/>" +
-				"		</String>" +
-				"		<Block name=\"Block1\">" +
-				"			<Blob name=\"Data\">" +
-				"				<Placement after=\"Block1\"/>" +
-				"			</Blob>" +
-				"		</Block>" +
-				"	</DataModel>" +
-				"</Peach>";
-
-			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("11Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
-
-			DataCracker cracker = new DataCracker();
-			cracker.CrackData(dom.dataModels[0], data);
-
-			Assert.AreEqual("TheDataModel.Data", dom.dataModels[0][0].relations[0].OfName);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
-		}
-
-		[Test]
-		public void ReferenceTest()
+		public void RelationTest()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
@@ -196,8 +165,10 @@ namespace Peach.Core.Test.CrackingTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<String name=\"TheString\" length=\"2\">" +
-				"			<Relation type=\"size\" of=\"Data\"/>" +
+				"		<String name=\"TheString\" length=\"11\">" +
+				"			<Fixup class=\"CopyValue\">" +
+				"				<Param name=\"ref\" value=\"Data\"/>"+
+				"			</Fixup>"+
 				"		</String>" +
 				"		<Block name=\"Block1\">" +
 				"			<Blob name=\"Data\">" +
@@ -207,21 +178,19 @@ namespace Peach.Core.Test.CrackingTests
 				"	</DataModel>" +
 				"</Peach>";
 
-			// TODO IMPLEMENT THIS CHECK!
-			Assert.IsTrue(false);
-
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
 
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("11Hello World"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("HELLO WORLDHello World"));
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("TheDataModel.Data", dom.dataModels[0][0].relations[0].OfName);
+			Assert.AreEqual("TheDataModel.Data", (string)dom.dataModels[0][0].fixup.arguments["ref"]);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][0].InternalValue);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
 		}
 	}

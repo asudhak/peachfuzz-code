@@ -217,6 +217,8 @@
     <Compile Include="Dom\Hint.cs" />
     <Compile Include="Dom\Placement.cs" />
     <Compile Include="Dom\State.cs" />
+    <Compile Include="Fixups\CopyValueFixup.cs" />
+    <Compile Include="Fixups\Crc32DualFixup.cs" />
     <Compile Include="IO\BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\DataCracker.cs" />
@@ -936,7 +938,7 @@
     <Compile Include="Dom\XmlElements.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Fixup.cs" />
-    <Compile Include="Fixups\Checksums.cs" />
+    <Compile Include="Fixups\Crc32Fixup.cs" />
     <Compile Include="Fixups\Libraries\CRCTool.cs" />
     <Compile Include="IO\Conversion\BigEndianBitConverter.cs" />
     <Compile Include="IO\Conversion\EndianBitConverter.cs" />
