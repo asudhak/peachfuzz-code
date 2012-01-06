@@ -97,7 +97,7 @@ namespace Peach.Core.Agent.Channels.XmlRpc
 				// ignore
 				return;
 			}
-			catch (ObjectDisposedException e)
+			catch (ObjectDisposedException)
 			{
 				// ignore
 				return;

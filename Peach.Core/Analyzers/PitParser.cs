@@ -328,6 +328,10 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			// Pass 8 - Resolve all relations
+
+			finalUpdateRelations(dom.dataModels.Values);
+
 			return dom;
 		}
 
@@ -444,6 +448,50 @@ namespace Peach.Core.Analyzers
 		}
 
 #endregion
+
+		/// <summary>
+		/// Locate all relations and pair from/of.
+		/// </summary>
+		/// <remarks>
+		/// After we have completed creating our base dom tree we will perform
+		/// a second pass on all data models to locate every relation and resolve
+		/// both from/of and verify both sides are connected correctly.
+		/// 
+		/// After this, all relations will be bound to both from and of elements.
+		/// </remarks>
+		/// <param name="models"></param>
+		protected void finalUpdateRelations(ICollection<DataModel> models)
+		{
+			foreach (DataModel model in models)
+			{
+				foreach (DataElement elem in model.EnumerateAllElements())
+				{
+					foreach (Relation rel in elem.relations)
+					{
+						if (rel.From == elem)
+						{
+							DataElement of = rel.Of;
+							if (of == null)
+								throw new PeachException("Error, unable to resolve '" +
+									rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
+
+							if (!of.relations.Contains(rel))
+								of.relations.Add(rel);
+						}
+						else if (rel.Of == elem)
+						{
+							DataElement from = rel.From;
+							if (from == null)
+								throw new PeachException("Error, unable to resolve '" +
+									rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
+
+							if (!from.relations.Contains(rel))
+								from.relations.Add(rel);
+						}
+					}
+				}
+			}
+		}
 
 		protected void handleDefaults(XmlNode node)
 		{
@@ -1383,12 +1431,7 @@ namespace Peach.Core.Analyzers
 						
 						parent.relations.Add(rel);
 					}
-					else if (hasXmlAttribute(node, "from"))
-					{
-						SizeRelation rel = new SizeRelation();
-						rel.FromName = getXmlAttribute(node, "from");
-						parent.relations.Add(rel);
-					}
+
 					break;
 				
 				case "count":
@@ -1405,12 +1448,6 @@ namespace Peach.Core.Analyzers
 
 						parent.relations.Add(rel);
 					}
-					else if (hasXmlAttribute(node, "from"))
-					{
-						CountRelation rel = new CountRelation();
-						rel.FromName = getXmlAttribute(node, "from");
-						parent.relations.Add(rel);
-					}
 					break;
 				
 				case "offset":
@@ -1425,18 +1462,14 @@ namespace Peach.Core.Analyzers
 						if (hasXmlAttribute(node, "expressionSet"))
 							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
 
-						parent.relations.Add(rel);
-					}
-					else if (hasXmlAttribute(node, "from"))
-					{
-						OffsetRelation rel = new OffsetRelation();
-						rel.FromName = getXmlAttribute(node, "from");
+						if (hasXmlAttribute(node, "relative"))
+							rel.isRelativeOffset = true;
 
-						if (hasXmlAttribute(node, "expressionGet"))
-							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
-
-						if (hasXmlAttribute(node, "expressionSet"))
-							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+						if (hasXmlAttribute(node, "relativeTo"))
+						{
+							rel.isRelativeOffset = true;
+							rel.relativeTo = getXmlAttribute(node, "relativeTo");
+						}
 
 						parent.relations.Add(rel);
 					}

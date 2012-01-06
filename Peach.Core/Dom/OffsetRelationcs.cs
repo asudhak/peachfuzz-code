@@ -35,6 +35,9 @@ using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using Peach.Core;
+using Peach.Core.IO;
+
 namespace Peach.Core.Dom
 {
 
@@ -47,17 +50,156 @@ namespace Peach.Core.Dom
 		public bool isRelativeOffset;
 		public string relativeTo = null;
 
+		protected bool _isRecursing = false;
+
 		public override Variant GetValue()
 		{
-			throw new NotImplementedException();
+			if (_isRecursing)
+				return new Variant(0);
+
+			try
+			{
+				_isRecursing = true;
+				long offset = (long)From.DefaultValue;
+
+				if (_expressionGet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["offset"] = offset;
+					state["value"] = offset;
+					state["self"] = this._parent;
+
+					object value = Scripting.EvalExpression(_expressionGet, state);
+					offset = Convert.ToInt32(value);
+				}
+
+				return new Variant(offset);
+			}
+			finally
+			{
+				_isRecursing = false;
+			}
+		}
+
+		public override Variant CalculateFromValue()
+		{
+			if (_isRecursing)
+				return new Variant(0);
+
+			try
+			{
+				_isRecursing = true;
+				long offset = calculateOffset(From, Of);
+
+				if (_expressionGet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["offset"] = offset;
+					state["value"] = offset;
+					state["self"] = this._parent;
+
+					object value = Scripting.EvalExpression(_expressionSet, state);
+					offset = Convert.ToInt32(value);
+				}
+
+				return new Variant(offset);
+			}
+			finally
+			{
+				_isRecursing = false;
+			}
 		}
 
 		public override void SetValue(Variant value)
 		{
-			throw new NotImplementedException();
+			int offset = (int)value;
+
+			if (_expressionSet != null)
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["offset"] = offset;
+				state["value"] = offset;
+				state["self"] = this._parent;
+
+				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				offset = Convert.ToInt32(newValue);
+			}
+
+			_from.DefaultValue = new Variant(offset);
+		}
+
+		/// <summary>
+		/// Caluclate the offset in bytes between two data elements.
+		/// </summary>
+		/// <param name="from"></param>
+		/// <param name="to"></param>
+		/// <returns>Returns the offset in bytes between two elements.  Return can be negative.</returns>
+		protected long calculateOffset(DataElement from, DataElement to)
+		{
+			DataElementContainer commonAncestor = null;
+
+			if (isRelativeOffset)
+			{
+				if (string.IsNullOrEmpty(relativeTo))
+				{
+					commonAncestor = findCommonRoot(from, to);
+				}
+				else
+				{
+					commonAncestor = findCommonRoot(from.find(relativeTo), to);
+				}
+			}
+			else
+			{
+				commonAncestor = findCommonRoot(from.getRoot(), to);
+			}
+
+			if (commonAncestor == null)
+				throw new PeachException("Error, unable to calculate offset between '" + 
+					from.fullName + "' and '" + to.fullName + "'.");
+
+			BitStream stream = commonAncestor.Value;
+			long fromPosition = stream.DataElementPosition(from);
+			long toPosition = stream.DataElementPosition(to);
+
+			return toPosition - fromPosition;
+		}
+
+		/// <summary>
+		/// Locate the nearest common ancestor conainer.
+		/// </summary>
+		/// <remarks>
+		/// To calculate the offset of elem2 from elem1 we need a the
+		/// nearest common ancestor.  From that ancestor we can determine
+		/// the offset of the two elements.  If the elements do not share
+		/// a common ancestor we cannot calculate the offset.
+		/// </remarks>
+		/// <param name="elem1"></param>
+		/// <param name="elem2"></param>
+		/// <returns></returns>
+		protected DataElementContainer findCommonRoot(DataElement elem1, DataElement elem2)
+		{
+			List<DataElementContainer> parentsElem1 = new List<DataElementContainer>();
+
+			DataElementContainer parent = elem1.parent;
+			while (parent != null)
+			{
+				parentsElem1.Add(parent);
+				parent = parent.parent;
+			}
+
+			parent = elem2.parent;
+			while (parent != null)
+			{
+				if (parentsElem1.Contains(parent))
+					return parent;
+
+				parent = parent.parent;
+			}
+
+			return null;
 		}
 	}
-	
 }
 
 // end

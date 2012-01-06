@@ -54,8 +54,7 @@ namespace Peach.Core.Dom
 			try
 			{
 				_isRecursing = true;
-				//int size = (int)From.DefaultValue;
-				long size = Of.Value.LengthBytes;
+				long size = (long)From.InternalValue;
 
 				if (_expressionGet != null)
 				{
@@ -66,6 +65,35 @@ namespace Peach.Core.Dom
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
 					size = Convert.ToInt32(value);
+				}
+
+				return new Variant(size);
+			}
+			finally
+			{
+				_isRecursing = false;
+			}
+		}
+
+		public override Variant CalculateFromValue()
+		{
+			if (_isRecursing)
+				return new Variant(0);
+
+			try
+			{
+				_isRecursing = true;
+				long size = Of.Value.LengthBytes;
+
+				if (_expressionSet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["size"] = size;
+					state["value"] = size;
+					state["self"] = this._parent;
+
+					object newValue = Scripting.EvalExpression(_expressionSet, state);
+					size = Convert.ToInt32(newValue);
 				}
 
 				return new Variant(size);
@@ -87,14 +115,13 @@ namespace Peach.Core.Dom
 				state["value"] = size;
 				state["self"] = this._parent;
 
-				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				object newValue = Scripting.EvalExpression(_expressionSet, state);
 				size = Convert.ToInt32(newValue);
 			}
 
 			_from.DefaultValue = new Variant(size);
 		}
 	}
-
 }
 
 // end

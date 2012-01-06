@@ -31,12 +31,15 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Peach.Core;
+using Peach.Core.IO;
+using Peach.Core.Dom;
+using Peach.Core.Cracker;
+using Peach.Core.Analyzers;
+
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Peach.Core;
-using Peach.Core.Dom;
-using Peach.Core.Analyzers;
-using Peach.Core.IO;
 
 namespace Peach.Core.Test
 {
@@ -81,6 +84,54 @@ namespace Peach.Core.Test
 
 			Variant val = num.InternalValue;
 			Assert.AreEqual(6, (int)val);
+		}
+
+		[Test]
+		public void ExpressionGet()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"size\" of=\"Data\" expressionGet=\"size + 5\" />" +
+				"		</Number>" +
+				"		<Blob name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteInt8((sbyte)("Hello World".Length - 5));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAA"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void ExpressionSet()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"Data\" value=\"12345\"/>" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"size\" of=\"TheDataModel\" expressionSet=\"size + 10\" />" +
+				"		</Number>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Number num = dom.dataModels[0][1] as Number;
+
+			Variant val = num.InternalValue;
+			Assert.AreEqual(6 + 10, (int)val);
 		}
 
 		[Test]

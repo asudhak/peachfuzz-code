@@ -147,18 +147,31 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnInvalidated(EventArgs e)
 		{
-			// Cause values to be regenerated next time they are
-			// requested.  We don't want todo this now as there could
-			// be a series of invalidations that occur.
-			_internalValue = null;
-			_value = null;
+			try
+			{
+				// Prevent infinite loops
+				if (_invalidated)
+					return;
 
-            // Bubble this up the chain
-            if(_parent != null)
-                _parent.Invalidate();
+				_invalidated = true;
 
-			if (Invalidated != null)
-				Invalidated(this, e);
+				// Cause values to be regenerated next time they are
+				// requested.  We don't want todo this now as there could
+				// be a series of invalidations that occur.
+				_internalValue = null;
+				_value = null;
+
+				// Bubble this up the chain
+				if (_parent != null)
+					_parent.Invalidate();
+
+				if (Invalidated != null)
+					Invalidated(this, e);
+			}
+			finally
+			{
+				_invalidated = false;
+			}
 		}
 
 		protected virtual void OnDefaultValueChanged(EventArgs e)
@@ -531,7 +544,7 @@ namespace Peach.Core.Dom
 			foreach(Relation r in _relations)
 			{
 				if (r.Of != this)
-					value = r.GetValue();
+					value = r.CalculateFromValue();
 			}
 
 			// 3. Fixup

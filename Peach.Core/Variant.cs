@@ -62,9 +62,9 @@ namespace Peach.Core
 		}
 
 		VariantType _type = VariantType.Unknown;
-		int _valueInt;
-		long _valueLong;
-		ulong _valueULong;
+		int? _valueInt;
+		long? _valueLong;
+		ulong? _valueULong;
 		string _valueString;
 		byte[] _valueByteArray;
 		BitStream _valueBitStream = null;
@@ -169,7 +169,7 @@ namespace Peach.Core
 				switch (v._type)
 				{
 					case VariantType.Int:
-						return v._valueInt;
+						return (int)v._valueInt;
 					case VariantType.Long:
 						if (v._valueLong > int.MaxValue || v._valueLong < int.MinValue)
 							throw new ApplicationException("Converting this long to an int would cause loss of data");
@@ -200,6 +200,13 @@ namespace Peach.Core
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 
 					case VariantType.BitStream:
+						if (v._valueInt != null)
+							return (int)v._valueInt;
+						if (v._valueLong != null)
+							return (int)v._valueLong;
+						if (v._valueULong != null)
+							return (int)v._valueULong;
+
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -255,6 +262,13 @@ namespace Peach.Core
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 
 					case VariantType.BitStream:
+						if (v._valueInt != null)
+							return (uint)v._valueInt;
+						if (v._valueLong != null)
+							return (uint)v._valueLong;
+						if (v._valueULong != null)
+							return (uint)v._valueULong;
+
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -274,7 +288,7 @@ namespace Peach.Core
 					case VariantType.Int:
 						return (long)v._valueInt;
 					case VariantType.Long:
-						return v._valueLong;
+						return (long)v._valueLong;
 					case VariantType.ULong:
 						if (v._valueULong > long.MaxValue)
 							throw new ApplicationException("Converting this ulong to a long would cause loss of data");
@@ -312,15 +326,29 @@ namespace Peach.Core
 
 						return (ulong)v._valueLong;
 					case VariantType.ULong:
-						return v._valueULong;
+						return (ulong)v._valueULong;
 					case VariantType.String:
 						if (v._valueString == string.Empty)
 							return 0;
 
 						return Convert.ToUInt64(v._valueString);
 					case VariantType.ByteString:
+						if (v._valueInt != null)
+							return (ulong)v._valueInt;
+						if (v._valueLong != null)
+							return (ulong)v._valueLong;
+						if (v._valueULong != null)
+							return (ulong)v._valueULong;
+
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 					case VariantType.BitStream:
+						if (v._valueInt != null)
+							return (ulong)v._valueInt;
+						if (v._valueLong != null)
+							return (ulong)v._valueLong;
+						if (v._valueULong != null)
+							return (ulong)v._valueULong;
+
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -474,6 +502,38 @@ namespace Peach.Core
 			}
 
 			return ret.ToString();
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+				return false;
+
+			if (obj.GetType() != obj.GetType())
+				return false;
+
+			return ((Variant)obj) == this;
+		}
+
+		public override int GetHashCode()
+		{
+			switch (_type)
+			{
+				case VariantType.Int:
+					return this._valueInt.GetHashCode();
+				case VariantType.Long:
+					return this._valueLong.GetHashCode();
+				case VariantType.ULong:
+					return this._valueULong.GetHashCode();
+				case VariantType.String:
+					return this._valueString.GetHashCode();
+				case VariantType.ByteString:
+					return _valueByteArray.GetHashCode();
+				case VariantType.BitStream:
+					return _valueBitStream.GetHashCode();
+				default:
+					return base.GetHashCode();
+			}
 		}
 	}
 }

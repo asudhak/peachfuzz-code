@@ -60,7 +60,6 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
-
 			data.WriteInt8((sbyte)"Hello World".Length);
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAA"));

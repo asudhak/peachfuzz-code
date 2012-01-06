@@ -406,17 +406,26 @@ namespace Peach.Core.Cracker
 					if (!rel.isRelativeOffset)
 					{
 						// Relative from start of data
-
+						data.SeekBytes((int)offset, System.IO.SeekOrigin.Begin);
 					}
 					else if (rel.relativeTo == null)
 					{
-						throw new NotImplementedException("Yah, we need some looove....");
+						data.SeekBytes((int)offset, System.IO.SeekOrigin.Current);
 					}
 					else
 					{
-						throw new NotImplementedException("Yah, we need some looove....");
+						DataElement relativeTo = rel.From.find(rel.relativeTo);
+						if (relativeTo == null)
+							throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to '" + 
+								rel.From.fullName + "'.", element, data);
+
+						long relativePosition = data.DataElementPosition(relativeTo);
+						data.SeekBits((int)relativePosition, System.IO.SeekOrigin.Begin);
+						data.SeekBytes((int)offset, System.IO.SeekOrigin.Current);
 					}
 				}
+
+				data.MarkStartOfElement(element);
 
 				// Do array handling
 				if (element is Dom.Array)
@@ -451,6 +460,8 @@ namespace Peach.Core.Cracker
 				{
 					throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
 				}
+
+				data.MarkEndOfElement(element);
 
 				if (hasOffsetRelation)
 					data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);

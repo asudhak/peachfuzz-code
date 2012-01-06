@@ -85,7 +85,7 @@ namespace Peach.Core.Agent.Channels.XmlRpc
 					{
 						_listener.ProcessRequest();
 					}
-					catch (Exception e)
+					catch (Exception)
 					{
 					}
 				}

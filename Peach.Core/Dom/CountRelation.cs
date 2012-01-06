@@ -54,7 +54,7 @@ namespace Peach.Core.Dom
 			{
 				_isRecursing = true;
 
-				int count = ((Array)Of).Count;
+				int count = (int)From.InternalValue;
 
 				if (_expressionGet != null)
 				{
@@ -64,6 +64,36 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
+					count = Convert.ToInt32(value);
+				}
+
+				return new Variant(count);
+			}
+			finally
+			{
+				_isRecursing = false;
+			}
+		}
+
+		public override Variant CalculateFromValue()
+		{
+			if (_isRecursing)
+				return new Variant(0);
+
+			try
+			{
+				_isRecursing = true;
+
+				int count = ((Array)Of).Count;
+
+				if (_expressionGet != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["count"] = count;
+					state["value"] = count;
+					state["self"] = this._parent;
+
+					object value = Scripting.EvalExpression(_expressionSet, state);
 					count = Convert.ToInt32(value);
 				}
 
@@ -86,7 +116,7 @@ namespace Peach.Core.Dom
 				state["value"] = count;
 				state["self"] = this._parent;
 
-				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				object newValue = Scripting.EvalExpression(_expressionSet, state);
 				count = Convert.ToInt32(newValue);
 			}
 
