@@ -60,6 +60,7 @@
     <Compile Include="CrackingTests\FlagsTests.cs" />
     <Compile Include="CrackingTests\NumberTests.cs" />
     <Compile Include="CrackingTests\OffsetRelationTests.cs" />
+    <Compile Include="CrackingTests\PaddingTests.cs" />
     <Compile Include="CrackingTests\PlacementTests.cs" />
     <Compile Include="CrackingTests\SizeRelationTests.cs" />
     <Compile Include="CrackingTests\StringTests.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="PitParserTests\FlagTests.cs" />
     <Compile Include="PitParserTests\GeneralTests.cs" />
     <Compile Include="PitParserTests\NumberTests.cs" />
+    <Compile Include="PitParserTests\PaddingTests.cs" />
     <Compile Include="PitParserTests\RefTests.cs" />
     <Compile Include="PitParserTests\StringTests.cs" />
     <Compile Include="PitParserTests\XmlTests.cs" />

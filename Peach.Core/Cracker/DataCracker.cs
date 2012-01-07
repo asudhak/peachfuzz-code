@@ -464,6 +464,10 @@ namespace Peach.Core.Cracker
 				{
 					handleBlob(element as Blob, data);
 				}
+				else if (element is Padding)
+				{
+					handlePadding(element as Padding, data);
+				}
 				else
 				{
 					throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
@@ -902,16 +906,31 @@ namespace Peach.Core.Cracker
 					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
 
 			Variant defaultValue = new Variant(new byte[0]);
-			
-			if(blobLength > 0)
+
+			if (blobLength > 0)
 				defaultValue = new Variant(data.ReadBitsAsBitStream((long)blobLength));
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Blob '"+element.name+"' marked as token, values did not match '" + 
+					throw new CrackingFailure("Blob '" + element.name + "' marked as token, values did not match '" +
 						defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
 
 			element.DefaultValue = defaultValue;
+		}
+
+		protected void handlePadding(Padding element, BitStream data)
+		{
+			logger.Trace("handlePadding: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			// Length in bits
+			long paddingLength = element.Value.LengthBits;
+
+			if ((data.TellBits() + paddingLength) > data.LengthBits)
+				throw new CrackingFailure("Placement '" + element.fullName +
+					"' has length of '" + paddingLength + "' bits but buffer only has '" +
+					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
+
+			data.SeekBits(paddingLength, System.IO.SeekOrigin.Current);
 		}
 	}
 }

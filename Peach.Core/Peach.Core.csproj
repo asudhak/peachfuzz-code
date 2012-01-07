@@ -212,6 +212,7 @@
     <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
     <Compile Include="Dom\Action.cs" />
     <Compile Include="Dom\Hint.cs" />
+    <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />
     <Compile Include="Dom\RelationContainer.cs" />
     <Compile Include="Dom\State.cs" />

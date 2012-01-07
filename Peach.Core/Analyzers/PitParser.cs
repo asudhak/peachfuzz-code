@@ -851,6 +851,10 @@ namespace Peach.Core.Analyzers
 						elem = handleFlags(child, element);
 						break;
 
+					case "Padding":
+						elem = handlePadding(child, element);
+						break;
+
 					case "Custom":
 						throw new NotSupportedException("Implement custom types");
 
@@ -1243,13 +1247,38 @@ namespace Peach.Core.Analyzers
 				BitStream sout = new BitStream();
 				sout.BigEndian();
 
-				if( ((string)blob.DefaultValue) != null)
+				if (((string)blob.DefaultValue) != null)
 					sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
 				sout.SeekBytes(0, SeekOrigin.Begin);
 				blob.DefaultValue = new Variant(sout);
 			}
 
 			return blob;
+		}
+
+		protected Padding handlePadding(XmlNode node, DataElementContainer parent)
+		{
+			Padding padding = new Padding();
+
+			if (hasXmlAttribute(node, "name"))
+				padding.name = getXmlAttribute(node, "name");
+
+			padding.aligned = getXmlAttributeAsBool(node, "aligned", false);
+
+			if (hasXmlAttribute(node, "alignment"))
+				padding.alignment = int.Parse(getXmlAttribute(node, "alignment"));
+
+			if (hasXmlAttribute(node, "alignedTo"))
+			{
+				padding.alignedTo = parent.find(getXmlAttribute(node, "alignedTo"));
+				if (padding.alignedTo == null)
+					throw new PeachException("Error, unable to resolve alignedTo '" + getXmlAttribute(node, "alignedTo") + "'.");
+			}
+
+			handleCommonDataElementAttributes(node, padding);
+			handleCommonDataElementChildren(node, padding);
+
+			return padding;
 		}
 
 		protected Flags handleFlags(XmlNode node, DataElementContainer parent)

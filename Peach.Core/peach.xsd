@@ -144,7 +144,8 @@
 			<xs:element ref="String" minOccurs="0" />
 			<xs:element ref="Flags" minOccurs="0" />
       <xs:element ref="Flag" minOccurs="0" />
-      <xs:element ref="Blob" minOccurs="0" />
+			<xs:element ref="Blob" minOccurs="0" />
+			<xs:element ref="Padding" minOccurs="0" />
 			<xs:element ref="Seek" minOccurs="0" />
 			<xs:element ref="Choice" minOccurs="0" />
 			<xs:element ref="Custom" minOccurs="0" />
@@ -243,6 +244,7 @@
 				<xs:element ref="String" minOccurs="0" />
 				<xs:element ref="Flags" minOccurs="0" />
 				<xs:element ref="Blob" minOccurs="0" />
+				<xs:element ref="Padding" minOccurs="0" />
 				<xs:element ref="Seek" minOccurs="0" />
 				<xs:element ref="Choice" minOccurs="0" />
 				<xs:element ref="Custom" minOccurs="0" />
@@ -270,6 +272,7 @@
 				<xs:element ref="String" minOccurs="0" />
 				<xs:element ref="Flags" minOccurs="0" />
 				<xs:element ref="Blob" minOccurs="0" />
+				<xs:element ref="Padding" minOccurs="0" />
 				<xs:element ref="Seek" minOccurs="0" />
 				<xs:element ref="Choice" minOccurs="0" />
 				<xs:element ref="Custom" minOccurs="0" />
@@ -302,6 +305,7 @@
 				<xs:element ref="String" minOccurs="0" />
 				<xs:element ref="Flags" minOccurs="0" />
 				<xs:element ref="Blob" minOccurs="0" />
+				<xs:element ref="Padding" minOccurs="0" />
 				<xs:element ref="Seek" minOccurs="0" />
 				<xs:element ref="Choice" minOccurs="0" />
 				<xs:element ref="Custom" minOccurs="0" />
@@ -464,7 +468,8 @@
 			<xs:element ref="String" minOccurs="0" />
       <xs:element ref="Flags" minOccurs="0" />
       <xs:element ref="Flag" minOccurs="0" />
-      <xs:element ref="Blob" minOccurs="0" />
+			<xs:element ref="Blob" minOccurs="0" />
+			<xs:element ref="Padding" minOccurs="0" />
 			<xs:element ref="Seek" minOccurs="0" />
 			<xs:element ref="Choice" minOccurs="0" />
 			<xs:element ref="Custom" minOccurs="0" />
@@ -840,10 +845,12 @@
 						</xs:enumeration>
 						<xs:enumeration value="calc">
 							<xs:annotation>
-								<xs:documentation>Indicates the length value is actually a python expression 
+								<xs:documentation>
+									Indicates the length value is actually a python expression
 									that is evaulated to calculate the length value.  This expression will be evauluated
 									every time the length value is needed.  A special variable of "self" is available in the
-									expression which is the current object in the dom.</xs:documentation>
+									expression which is the current object in the dom.
+								</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
 					</xs:restriction>
@@ -852,6 +859,39 @@
 			<xs:attribute name="length" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>[Optional] Specify length of blob.  Default is unbounded.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Padding">
+		<xs:annotation>
+			<xs:documentation>Align a model/block with padding.  Will automatically pad to specified bit boundry, or provide an expression.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="peachCommonDataElements" minOccurs="0" maxOccurs="unbounded" />
+			</xs:choice>
+			<xs:attributeGroup ref="peachCommonAttributes" />
+			<xs:attributeGroup ref="commonTemplateAttributes" />
+			<xs:attributeGroup ref="ValueAttributes" />
+			<xs:attribute name="aligned" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Align to a specified byte boundry?  Default is false.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="alignment" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>Bit boundry to align to. Default is 8 bits (1 byte).</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="alignedTo" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Align to a specific element.  Default is parent element.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="lengthCalc" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>If aligned=false provide an expression to calculate padding amount.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
