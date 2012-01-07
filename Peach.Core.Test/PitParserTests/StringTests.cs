@@ -40,7 +40,7 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.PitParserTests
 {
 	[TestFixture]
-	class StringTests
+	public class StringTests
 	{
 		// TODO - Unicode and everything 
 

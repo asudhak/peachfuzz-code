@@ -45,16 +45,16 @@ namespace Peach.Core.Dom
 	{
 		protected bool _isRecursing = false;
 
-		public override Variant GetValue()
+		public override long GetValue()
 		{
 			if (_isRecursing)
-				return new Variant(0);
+				return 0;
 
 			try
 			{
 				_isRecursing = true;
 
-				int count = (int)From.DefaultValue;
+				long count = (long)From.DefaultValue;
 
 				if (_expressionGet != null)
 				{
@@ -64,10 +64,10 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
-					count = Convert.ToInt32(value);
+					count = Convert.ToInt64(value);
 				}
 
-				return new Variant(count);
+				return count;
 			}
 			finally
 			{

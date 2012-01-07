@@ -259,7 +259,7 @@ namespace Peach.Core.Dom
 		/// Gets the value from our "from" side and run it through expressionGet (if set).
 		/// This method is only called by the DataCracker and never from DataElement.
 		/// </remarks>
-		public abstract Variant GetValue();
+		public abstract long GetValue();
 
 		/// <summary>
 		/// Set value on from side

@@ -111,7 +111,7 @@ namespace Peach.Core.Test.PitParserTests
 				"		<Blob lengthType=\"bits\"/>" +
 				"	</Defaults>" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Blob lengthType=\"python\"/>" +
+				"		<Blob lengthType=\"bits\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 

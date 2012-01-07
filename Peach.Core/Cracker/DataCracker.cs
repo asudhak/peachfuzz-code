@@ -56,7 +56,8 @@ namespace Peach.Core.Cracker
 		/// </summary>
 		List<DataElement> _sizedBlockStack = new List<DataElement>();
 		/// <summary>
-		/// Mapping of elements from _sizedBlockStack to there lengths.
+		/// Mapping of elements from _sizedBlockStack to there lengths.  All lengths are in
+		/// BITS!
 		/// </summary>
 		Dictionary<DataElement, long> _sizedBlockMap = new Dictionary<DataElement, long>();
 
@@ -176,7 +177,7 @@ namespace Peach.Core.Cracker
 					newParent = after.parent;
 
 					newName = oldName;
-					for (int i = 0; newParent.ContainsKey(oldName); i++)
+					for (int i = 0; newParent.ContainsKey(newName); i++)
 						newName = oldName + "_" + i;
 
 					element.parent.Remove(element);
@@ -256,7 +257,7 @@ namespace Peach.Core.Cracker
 		/// the sized data.
 		/// </summary>
 		/// <param name="element">Element to check</param>
-		/// <param name="size">Set to the number of bytes from element to end of the data.</param>
+		/// <param name="size">Set to the number of BITS from element to end of the data.</param>
 		/// <returns>Returns true if last unsigned element, else false.</returns>
 		protected bool isLastUnsizedElement(DataElement element, ref long size)
 		{
@@ -275,7 +276,8 @@ namespace Peach.Core.Cracker
 				else
 				{
 					if (currentElement.hasLength)
-						size += currentElement.length;
+						size += currentElement.lengthAsBits;
+
 					else if (currentElement is DataElementContainer)
 					{
 						foreach(DataElement child in ((DataElementContainer)currentElement))
@@ -302,6 +304,12 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="elem"></param>
+		/// <param name="size">In bits</param>
+		/// <returns></returns>
 		protected bool _isLastUnsizedElementRecursive(DataElement elem, ref long size)
 		{
 			if (elem == null)
@@ -309,7 +317,7 @@ namespace Peach.Core.Cracker
 
 			if (elem.hasLength)
 			{
-				size += elem.length;
+				size += elem.lengthAsBits;
 				return true;
 			}
 
@@ -330,7 +338,7 @@ namespace Peach.Core.Cracker
 		/// can we calculate our distance to the next token?
 		/// </summary>
 		/// <param name="element">Element to check</param>
-		/// <param name="size">Set to the number of bytes from element to token.</param>
+		/// <param name="size">Set to the number of bits from element to token.</param>
 		/// <param name="token">Set to token element if found</param>
 		/// <returns>Returns true if found token, else false.</returns>
 		protected bool isTokenNext(DataElement element, ref long size, ref DataElement token)
@@ -364,7 +372,7 @@ namespace Peach.Core.Cracker
 						return true;
 					}
 					if (currentElement.hasLength)
-						size += currentElement.length;
+						size += currentElement.lengthAsBits;
 					else
 					{
 						size = 0;
@@ -530,7 +538,7 @@ namespace Peach.Core.Cracker
 
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
-			long startPosition = data.TellBytes();
+			long startPosition = data.TellBits();
 
 			// Do we have relations or a length?
 			if (element.relations.hasSizeRelation)
@@ -539,21 +547,21 @@ namespace Peach.Core.Cracker
 
 				if (!element.isParentOf(sizeRelation.From))
 				{
-					int size = (int)sizeRelation.GetValue();
+					long size = sizeRelation.GetValue();
 					_sizedBlockStack.Add(element);
 					_sizedBlockMap[element] = size;
 
-					sizedData = new BitStream(data.ReadBytes(size));
+					sizedData = data.ReadBitsAsBitStream(size);
 					sizeRelation = null;
 				}
 			}
 			else if (element.hasLength)
 			{
-				long size = element.length;
+				long size = element.lengthAsBits;
 				_sizedBlockStack.Add(element);
 				_sizedBlockMap[element] = size;
 
-				sizedData = new BitStream(data.ReadBytes(size));
+				sizedData = data.ReadBitsAsBitStream(size);
 			}
 
 			// Handle children
@@ -573,9 +581,9 @@ namespace Peach.Core.Cracker
 						_sizedBlockMap[element] = size;
 
 						// update size based on what we have currently read
-						size -= data.TellBytes() - startPosition;
+						size -= data.TellBits() - startPosition;
 
-						sizedData = new BitStream(data.ReadBytes(size));
+						sizedData = data.ReadBitsAsBitStream(size);
 						sizeRelation = null;
 					}
 					else if(child == sizeRelation.From)
@@ -585,9 +593,9 @@ namespace Peach.Core.Cracker
 						_sizedBlockMap[element] = size;
 
 						// update size based on what we have currently read
-						size -= data.TellBytes() - startPosition;
+						size -= data.TellBits() - startPosition;
 
-						sizedData = new BitStream(data.ReadBytes(size));
+						sizedData = data.ReadBitsAsBitStream(size);
 						sizeRelation = null;
 					}
 				}
@@ -625,7 +633,7 @@ namespace Peach.Core.Cracker
 			}
 			else if (element.hasLength)
 			{
-				long size = element.length;
+				long size = element.lengthAsBits;
 				_sizedBlockStack.Add(element);
 				_sizedBlockMap[element] = size;
 
@@ -714,7 +722,8 @@ namespace Peach.Core.Cracker
 				return;
 			}
 
-			long? stringLength = determineElementSize(element, data);
+			// String length in bytes
+			long? stringLength = determineElementSize(element, data) / 8 ;
 
 			// TODO - Make both length and size for strings.  Length is always in chars.
 			if (stringLength == null && element.isToken)
@@ -738,36 +747,40 @@ namespace Peach.Core.Cracker
 
 			element.DefaultValue = defaultValue;
 		}
-
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="element"></param>
+		/// <param name="data"></param>
+		/// <returns>Returns size in bits</returns>
 		protected long? determineElementSize(DataElement element, BitStream data)
 		{
 			logger.Trace("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
+			// Size in bits
 			long? size = null;
 
 			// Check for relation and/or size
 			if (element.hasLength)
 			{
-				size = element.length;
+				size = element.lengthAsBits;
+			}
+			else if(element.relations.hasSizeRelation)
+			{
+				size = element.relations.getSizeRelation().GetValue();
 			}
 			else
 			{
-				SizeRelation rel = element.GetSizeRelation();
+				long nextSize = 0;
+				DataElement token = null;
 
-				if (rel != null)
-					size = (int)rel.GetValue();
-
-				else
+				if (isLastUnsizedElement(element, ref nextSize))
+					size = data.LengthBits - (data.TellBits() + nextSize);
+				
+				else if (isTokenNext(element, ref nextSize, ref token))
 				{
-					long nextSize = 0;
-					DataElement token = null;
-
-					if (isLastUnsizedElement(element, ref nextSize))
-						size = data.LengthBytes - (data.TellBytes() + nextSize);
-					else if (isTokenNext(element, ref nextSize, ref token))
-					{
-						throw new NotImplementedException("Need to implement this!");
-					}
+					throw new NotImplementedException("Need to implement this!");
 				}
 			}
 
@@ -874,27 +887,29 @@ namespace Peach.Core.Cracker
 		{
 			logger.Trace("handleBlob: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
+			// Length in bits
 			long? blobLength = determineElementSize(element, data);
 
 			if (blobLength == null && element.isToken)
-				blobLength = ((byte[])element.DefaultValue).Length;
+				blobLength = ((BitStream)element.DefaultValue).LengthBits;
 
 			if (blobLength == null)
 				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
 
-			if ((data.TellBytes() + blobLength) > data.LengthBytes)
+			if ((data.TellBits() + blobLength) > data.LengthBits)
 				throw new CrackingFailure("Blob '" + element.fullName +
-					"' has length of '" + blobLength + "' but buffer only has '" +
-					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
+					"' has length of '" + blobLength + "' bits but buffer only has '" +
+					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
 
 			Variant defaultValue = new Variant(new byte[0]);
 			
 			if(blobLength > 0)
-				defaultValue = new Variant(data.ReadBytes((int)blobLength));
+				defaultValue = new Variant(data.ReadBitsAsBitStream((long)blobLength));
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Blob '"+element.name+"' marked as token, values did not match '" + defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
+					throw new CrackingFailure("Blob '"+element.name+"' marked as token, values did not match '" + 
+						defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
 
 			element.DefaultValue = defaultValue;
 		}

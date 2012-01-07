@@ -411,25 +411,6 @@ namespace Peach.Core.Dom
 			set { _hasLength = value; }
 		}
 
-		public SizeRelation GetSizeRelation()
-		{
-			// TODO - Make this not suck
-
-			foreach (DataElement elem in this.EnumerateElementsUpTree())
-			{
-				if (elem.relations != null)
-				{
-					foreach (Relation relation in elem.relations)
-					{
-						if (relation is SizeRelation)
-							return relation as SizeRelation;
-					}
-				}
-			}
-
-			return null;
-		}
-
 		/// <summary>
 		/// Length of element in bits.
 		/// </summary>
@@ -481,7 +462,18 @@ namespace Peach.Core.Dom
 
 			set
 			{
-				_length = value;
+				switch (_lengthType)
+				{
+					case LengthType.Bytes:
+						_length = value * 8;
+						break;
+					case LengthType.Bits:
+						_length = value;
+						break;
+					case LengthType.Chars:
+						throw new NotSupportedException("Length type of Chars not supported by DataElement.");
+				}
+
 				_hasLength = true;
 			}
 		}

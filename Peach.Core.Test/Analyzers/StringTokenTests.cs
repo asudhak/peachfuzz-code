@@ -39,7 +39,7 @@ using Peach.Core.Analyzers;
 using Peach.Core.Cracker;
 using Peach.Core.IO;
 
-namespace Peach.Core.Test.CrackingTests
+namespace Peach.Core.Test.Analyzers
 {
 	[TestFixture]
 	class StringTokenTests

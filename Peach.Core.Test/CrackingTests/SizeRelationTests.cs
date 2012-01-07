@@ -89,7 +89,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			BitStream data = new BitStream();
 
-			data.WriteInt8((sbyte)"Hello World".Length);
+			data.WriteInt8((sbyte)("Hello World".Length+1));
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAA"));
 			data.SeekBits(0, SeekOrigin.Begin);
@@ -97,7 +97,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World".Length + 1, (int)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
 		}
 

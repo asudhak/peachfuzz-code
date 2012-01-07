@@ -229,7 +229,19 @@ namespace Peach.Core.Dom
 
 			set
 			{
-				_length = value;
+				switch (_lengthType)
+				{
+					case LengthType.Bytes:
+						_length = value * 8;
+						break;
+					case LengthType.Bits:
+						_length = value;
+						break;
+					case LengthType.Chars:
+						_length = value * 8; // TODO - This is a bug!
+						break;
+				}
+
 				_hasLength = true;
 			}
 		}

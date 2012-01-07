@@ -45,16 +45,20 @@ namespace Peach.Core.Dom
 	public class SizeRelation : Relation
 	{
 		protected bool _isRecursing = false;
+		protected bool _isByteRelation = true;
 
-		public override Variant GetValue()
+		public override long GetValue()
 		{
 			if (_isRecursing)
-				return new Variant(0);
+				return 0;
 
 			try
 			{
 				_isRecursing = true;
 				long size = (long)From.DefaultValue;
+
+				if (_isByteRelation)
+					size = size * 8;
 
 				if (_expressionGet != null)
 				{
@@ -64,10 +68,10 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
-					size = Convert.ToInt32(value);
+					size = Convert.ToInt64(value);
 				}
 
-				return new Variant(size);
+				return size;
 			}
 			finally
 			{
@@ -83,7 +87,10 @@ namespace Peach.Core.Dom
 			try
 			{
 				_isRecursing = true;
-				long size = Of.Value.LengthBytes;
+				long size = Of.Value.LengthBits;
+
+				if (_isByteRelation)
+					size = size / 8;
 
 				if (_expressionSet != null)
 				{
@@ -93,7 +100,7 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object newValue = Scripting.EvalExpression(_expressionSet, state);
-					size = Convert.ToInt32(newValue);
+					size = Convert.ToInt64(newValue);
 				}
 
 				return new Variant(size);

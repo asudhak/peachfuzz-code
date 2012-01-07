@@ -833,6 +833,19 @@ namespace Peach.Core.IO
 			return ret;
 		}
 
+		public BitStream ReadBitsAsBitStream(long bits)
+		{
+			BitStream newStream = new BitStream();
+
+			newStream.WriteBytes(ReadBytes(bits / 8));
+
+			if(bits % 8 > 0)
+				newStream.WriteBits(ReadBits((int)(bits % 8)), (int)bits%8);
+
+			newStream.SeekBits(0, SeekOrigin.Begin);
+
+			return newStream;
+		}
 
 		protected static string Byte2String(byte b)
 		{

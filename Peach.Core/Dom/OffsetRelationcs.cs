@@ -52,10 +52,10 @@ namespace Peach.Core.Dom
 
 		protected bool _isRecursing = false;
 
-		public override Variant GetValue()
+		public override long GetValue()
 		{
 			if (_isRecursing)
-				return new Variant(0);
+				return 0;
 
 			try
 			{
@@ -70,10 +70,10 @@ namespace Peach.Core.Dom
 					state["self"] = this._parent;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
-					offset = Convert.ToInt32(value);
+					offset = Convert.ToInt64(value);
 				}
 
-				return new Variant(offset);
+				return offset;
 			}
 			finally
 			{

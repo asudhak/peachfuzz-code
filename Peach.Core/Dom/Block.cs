@@ -86,7 +86,7 @@ namespace Peach.Core.Dom
 			{
 				if (r.Of != this)
 				{
-					value = r.GetValue();
+					value = r.CalculateFromValue();
 				}
 			}
 

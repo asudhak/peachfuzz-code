@@ -720,7 +720,7 @@ namespace Peach.Core.Analyzers
 							"', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
 				}
 			}
-			else if (hasDefaultAttribute(typeof(Dom.String), "lengthType"))
+			else if (hasDefaultAttribute(element.GetType(), "lengthType"))
 			{
 				switch ((string)getDefaultAttribute(element.GetType(), "lengthType"))
 				{
@@ -946,12 +946,47 @@ namespace Peach.Core.Analyzers
 			else if (hasDefaultAttribute(typeof(Dom.String), "nullTerminated"))
 				str.nullTerminated = getDefaultAttributeAsBool(typeof(Dom.String), "nullTerminated", false);
 
+			string type = null;
 			if (hasXmlAttribute(node, "type"))
-				throw new NotSupportedException("Implement type attribute on String");
+				type = getXmlAttribute(node, "type");
+			else if (hasDefaultAttribute(str.GetType(), "type"))
+				type = getDefaultAttribute(str.GetType(), "type");
+
+			if (type != null)
+			{
+				switch (type)
+				{
+					case "ascii":
+						str.stringType = StringType.Ascii;
+						break;
+					case "utf16":
+						str.stringType = StringType.Utf16;
+						break;
+					case "utf16be":
+						str.stringType = StringType.Utf16be;
+						break;
+					case "utf32":
+						str.stringType = StringType.Utf32;
+						break;
+					case "utf7":
+						str.stringType = StringType.Utf7;
+						break;
+					case "utf8":
+						str.stringType = StringType.Utf8;
+						break;
+					default:
+						throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
+				}
+			}
 
 			if (hasXmlAttribute(node, "padCharacter"))
-				throw new NotSupportedException("Implement padCharacter attribute on String");
-
+			{
+				str.padCharacter = getXmlAttribute(node, "padCharacter")[0];
+			}
+			else if (hasDefaultAttribute(str.GetType(), "padCharacter"))
+			{
+				str.padCharacter = getDefaultAttribute(str.GetType(), "padCharacter")[0];
+			}
 
 			if (hasXmlAttribute(node, "tokens")) // This item has a default!
 				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
