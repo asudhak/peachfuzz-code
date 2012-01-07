@@ -46,13 +46,22 @@ def d_hook(self, node):
 			bld.program(source='foo.d', target='app', generate_headers=True)
 
 	"""
+	ext = Utils.destos_to_binfmt(self.env.DEST_OS) == 'pe' and 'obj' or 'o'
+	out = '%s.%d.%s' % (node.name, self.idx, ext)
+	def create_compiled_task(self, name, node):
+		task = self.create_task(name, node, node.parent.find_or_declare(out))
+		try:
+			self.compiled_tasks.append(task)
+		except AttributeError:
+			self.compiled_tasks = [task]
+		return task
+
 	if getattr(self, 'generate_headers', None):
-		task = self.create_compiled_task('d_with_header', node)
-		header_node = node.change_ext(self.env['DHEADER_ext'])
-		task.outputs.append(header_node)
+		tsk = create_compiled_task(self, 'd_with_header', node)
+		tsk.outputs.append(node.change_ext(self.env['DHEADER_ext']))
 	else:
-		task = self.create_compiled_task('d', node)
-	return task
+		tsk = create_compiled_task(self, 'd', node)
+	return tsk
 
 @taskgen_method
 def generate_header(self, filename, install_path=None):
