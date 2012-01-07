@@ -1,0 +1,44 @@
+// ComTest.idl : IDL source for ComTest
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ComTest.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(F4FCA5E2-BBC4-409D-B50C-7F1D116F0ED9),
+	dual,
+	nonextensible,
+	helpstring("IPeachComTest Interface"),
+	pointer_default(unique)
+]
+interface IPeachComTest : IDispatch{
+	[id(1), helpstring("method Method1")] HRESULT Method1([in] BSTR str, [out,retval] BSTR* ret);
+	[id(2), helpstring("method Method2")] HRESULT Method2([out,retval] BSTR* ret);
+	[id(3), helpstring("method Method3")] HRESULT Method3([in] BSTR str);
+	[id(4), helpstring("method Method4")] HRESULT Method4(void);
+	[propget, id(5), helpstring("property Property1")] HRESULT Property1([out, retval] BSTR* pVal);
+	[propput, id(5), helpstring("property Property1")] HRESULT Property1([in] BSTR newVal);
+	[id(6), helpstring("method Method5")] HRESULT Method5([in] LONG int1, [in] SHORT short1, [out,retval] LONG* retval);
+	[id(7), helpstring("method Method6")] HRESULT Method6([in] SHORT shortParam, [in] INT intParam);
+};
+[
+	uuid(BA7F9B7B-ABB3-46BD-9594-5F643A5BED35),
+	version(1.0),
+	helpstring("ComTest 1.0 Type Library")
+]
+library ComTestLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8),
+		helpstring("PeachComTest Class")
+	]
+	coclass PeachComTest
+	{
+		[default] interface IPeachComTest;
+	};
+};

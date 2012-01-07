@@ -295,7 +295,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "StateModel")
 				{
-					StateModel sm = handleStateModel(child);
+					StateModel sm = handleStateModel(child, dom);
 					dom.stateModels.Add(sm.name, sm);
 				}
 
@@ -1669,19 +1669,20 @@ namespace Peach.Core.Analyzers
 
 		#region State Model
 
-		protected StateModel handleStateModel(XmlNode node)
+		protected StateModel handleStateModel(XmlNode node, Dom.Dom parent)
 		{
 			string name = getXmlAttribute(node, "name");
 			string initialState = getXmlAttribute(node, "initialState");
 			StateModel stateModel = new StateModel();
 			stateModel.name = name;
+			stateModel.parent = parent;
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "State")
 				{
 					State state = handleState(child, stateModel);
-					stateModel.states.Add(state);
+					stateModel.states.Add(state.name, state);
 					if (state.name == initialState)
 						stateModel.initialState = state;
 				}
@@ -1714,6 +1715,7 @@ namespace Peach.Core.Analyzers
 		protected Core.Dom.Action handleAction(XmlNode node, State parent)
 		{
 			Core.Dom.Action action = new Core.Dom.Action();
+			action.parent = parent;
 
 			if (hasXmlAttribute(node, "name"))
 				action.name = getXmlAttribute(node, "name");
@@ -1829,8 +1831,8 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Param")
-					throw new NotImplementedException("Action.Param TODO");
-				
+					action.parameters.Add(handleActionParameter(child, action));
+
 				if (child.Name == "Result")
 					throw new NotImplementedException("Action.Result TODO");
 
@@ -1842,6 +1844,22 @@ namespace Peach.Core.Analyzers
 			}
 
 			return action;
+		}
+
+		protected ActionParameter handleActionParameter(XmlNode node, Dom.Action parent)
+		{
+			ActionParameter param = new ActionParameter();
+			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if(child.Name == "DataModel")
+					param.dataModel = dom.dataModels[getXmlAttribute(child, "ref")];
+				if (child.Name == "Data")
+					param.data = handleData(child);
+			}
+
+			return param;
 		}
 
 		protected Data handleData(XmlNode node)

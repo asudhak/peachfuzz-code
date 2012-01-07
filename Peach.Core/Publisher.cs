@@ -41,7 +41,7 @@ namespace Peach.Core
 	public delegate void CloseEventHandler(Publisher publisher, Core.Dom.Action action);
 	public delegate void InputEventHandler(Publisher publisher, Core.Dom.Action action, int size);
 	public delegate void OutputEventHandler(Publisher publisher, Core.Dom.Action action, Variant data);
-	public delegate void CallEventHandler(Publisher publisher, Core.Dom.Action action, string method, Dictionary<string, Variant> aregs);
+	public delegate void CallEventHandler(Publisher publisher, Core.Dom.Action action, string method, List<ActionParameter> aregs);
 	public delegate void SetPropertyEventHandler(Publisher publisher, Core.Dom.Action action, string property, Variant value);
 	public delegate void GetPropertyEventHandler(Publisher publisher, Core.Dom.Action action, string property);
 
@@ -113,7 +113,7 @@ namespace Peach.Core
 			if (Output != null)
 				Output(this, action, data);
 		}
-		public void OnCall(Core.Dom.Action action, string method, Dictionary<string, Variant> args)
+		public void OnCall(Core.Dom.Action action, string method, List<ActionParameter> args)
 		{
 			if (Call != null)
 				Call(this, action, method, args);
@@ -201,7 +201,7 @@ namespace Peach.Core
 			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
 
-		public virtual Variant call(Core.Dom.Action action, string method, Dictionary<string, Variant> args)
+		public virtual Variant call(Core.Dom.Action action, string method, List<ActionParameter> args)
 		{
 			OnCall(action, method, args);
 			throw new PeachException("Error, action 'call' not supported by publisher");

@@ -43,6 +43,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Proxy.Web.Test",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.Proxy.Web.Tester", "Peach.Core.Proxy.Web.Tester\Peach.Core.Proxy.Web.Tester.csproj", "{B03164AC-31F6-43CF-9D12-2CAEC1E28F48}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Programs", "Test Programs", "{AC1178FE-69E3-442E-ACA5-6C552119A151}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComTest", "ComTest\ComTest.vcxproj", "{21441695-C170-456D-911C-F8316B4B8309}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Peach.net3.vsmdi
@@ -295,8 +299,26 @@ Global
 		{B03164AC-31F6-43CF-9D12-2CAEC1E28F48}.Release|x64.ActiveCfg = Release|x86
 		{B03164AC-31F6-43CF-9D12-2CAEC1E28F48}.Release|x86.ActiveCfg = Release|x86
 		{B03164AC-31F6-43CF-9D12-2CAEC1E28F48}.Release|x86.Build.0 = Release|x86
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Win32.ActiveCfg = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Win32.Build.0 = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|x64.ActiveCfg = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug|x86.ActiveCfg = Debug|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|Any CPU.ActiveCfg = Release|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|Win32.ActiveCfg = Release|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|Win32.Build.0 = Release|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|x64.ActiveCfg = Release|Win32
+		{21441695-C170-456D-911C-F8316B4B8309}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922} = {AC1178FE-69E3-442E-ACA5-6C552119A151}
+		{21441695-C170-456D-911C-F8316B4B8309} = {AC1178FE-69E3-442E-ACA5-6C552119A151}
 	EndGlobalSection
 EndGlobal

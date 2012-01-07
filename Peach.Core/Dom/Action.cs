@@ -80,6 +80,8 @@ namespace Peach.Core.Dom
 		protected DataModel _origionalDataModel;
 		protected Data _data;
 
+		protected List<ActionParameter> _params = new List<ActionParameter>();
+
 		protected string _publisher = null;
 		protected string _when = null;
 		protected string _onStart = null;
@@ -91,12 +93,18 @@ namespace Peach.Core.Dom
 		protected string _setXpath = null;
 		protected string _valueXpath = null;
 
+		/// <summary>
+		/// Data attached to action
+		/// </summary>
 		public Data data
 		{
 			get { return _data; }
 			set { _data = value; }
 		}
 
+		/// <summary>
+		/// Current copy of the data model we are mutating.
+		/// </summary>
 		public DataModel dataModel
 		{
 			get { return _dataModel; }
@@ -114,6 +122,9 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		/// <summary>
+		/// Origional copy of the data model we will be mutating.
+		/// </summary>
 		public DataModel origionalDataModel
 		{
 			get { return _origionalDataModel; }
@@ -126,54 +137,94 @@ namespace Peach.Core.Dom
 			set { _value = value; }
 		}
 
+		public List<ActionParameter> parameters
+		{
+			get { return _params; }
+			set { _params = value; }
+		}
+
+		/// <summary>
+		/// xpath for selecting set targets during slurp.
+		/// </summary>
+		/// <remarks>
+		/// Can return multiple elements.  All returned elements
+		/// will be updated with a new value.
+		/// </remarks>
 		public string setXpath
 		{
 			get { return _setXpath; }
 			set { _setXpath = value; }
 		}
 
+		/// <summary>
+		/// xpath for selecting value during slurp
+		/// </summary>
+		/// <remarks>
+		/// Must return a single element.
+		/// </remarks>
 		public string valueXpath
 		{
 			get { return _valueXpath; }
 			set { _valueXpath = value; }
 		}
 
+		/// <summary>
+		/// Name of publisher to use
+		/// </summary>
 		public string publisher
 		{
 			get { return _publisher; }
 			set { _publisher = value; }
 		}
 
+		/// <summary>
+		/// Only run action when expression is true
+		/// </summary>
 		public string when
 		{
 			get { return _when; }
 			set { _when = value; }
 		}
 
+		/// <summary>
+		/// Expression to run when action is starting
+		/// </summary>
 		public string onStart
 		{
 			get { return _onStart; }
 			set { _onStart = value; }
 		}
 
+		/// <summary>
+		/// Expression to run when action is completed
+		/// </summary>
 		public string onComplete
 		{
 			get { return _onComplete; }
 			set { _onComplete = value; }
 		}
 
-		public string refDataModel
+		/// <summary>
+		/// Name of state to change to, type=ChangeState
+		/// </summary>
+		public string reference
 		{
 			get { return _ref; }
 			set { _ref = value; }
 		}
 
+		/// <summary>
+		/// Method to call
+		/// </summary>
 		public string method
 		{
 			get { return _method; }
 			set { _method = value; }
 		}
 
+		/// <summary>
+		/// Property to operate on
+		/// </summary>
 		public string property
 		{
 			get { return _property; }
@@ -208,17 +259,41 @@ namespace Peach.Core.Dom
 
 			try
 			{
-				// TODO: Locate publisher by name
-				//       or get default.
-
 				Publisher publisher = null;
 				if (this.publisher != null && this.publisher != "Peach.Agent")
 				{
+					if (!context.test.publishers.ContainsKey(this.publisher))
+					{
+						logger.Debug("Run: Publisher '" + this.publisher + "' not found!");
+						throw new PeachException("Error, Action '"+name+"' publisher value '" + this.publisher + "' was not found!");
+					}
+
 					publisher = context.test.publishers[this.publisher];
 				}
 				else
 				{
 					publisher = context.test.publishers[0];
+				}
+
+				if (when != null)
+				{
+					Dictionary<string, object> state = new Dictionary<string, object>();
+					state["action"] = this;
+					state["state"] = this.parent;
+					state["self"] = this;
+
+					object value = Scripting.EvalExpression(when, state);
+					if (!(value is bool))
+					{
+						logger.Debug("Run: when return is not boolean: " + value.ToString());
+						return;
+					}
+
+					if (!(bool)value)
+					{
+						logger.Debug("Run: when returned false");
+						return;
+					}
 				}
 
 				OnStarting();
@@ -243,11 +318,11 @@ namespace Peach.Core.Dom
 						handleInput();
 						break;
 					case ActionType.Output:
-						publisher.output(this, new Variant(this.dataModel.Value));
+						publisher.output(this, new Variant(dataModel.Value));
 						break;
 
 					case ActionType.Call:
-						handleCall(context);
+						handleCall(publisher, context);
 						break;
 					case ActionType.GetProperty:
 						handleGetProperty();
@@ -277,11 +352,7 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		protected void handleOutput()
-		{
-		}
-
-		protected void handleCall(RunContext context)
+		protected void handleCall(Publisher publisher, RunContext context)
 		{
 			// Are we sending to Agents?
 			if (this.publisher == "Peach.Agent")
@@ -307,7 +378,7 @@ namespace Peach.Core.Dom
 				return;
 			}
 
-			throw new NotImplementedException("TODO");
+			publisher.call(this, method, parameters);
 		}
 
 		protected void handleGetProperty()
@@ -320,6 +391,15 @@ namespace Peach.Core.Dom
 
 		protected void handleChangeState()
 		{
+			if (!this.parent.parent.states.ContainsKey(reference))
+			{
+				logger.Debug("handleChangeState: Error, unable to locate state '" + reference + "'");
+				throw new PeachException("Error, unable to locate state '" + reference + "' provided to action '" + name + "'");
+			}
+
+			logger.Debug("handleChangeState: Changing to state: " + reference);
+
+			throw new ActionChangeStateException(this.parent.parent.states[reference]);
 		}
 
 		protected void handleSlurp()

@@ -47,7 +47,7 @@ namespace Peach.Core.Dom
 		public object parent;
 		protected State _initialState = null;
 
-		public List<State> states = new List<State>();
+		public Dictionary<string, State> states = new Dictionary<string, State>();
 
 		public State initialState
 		{

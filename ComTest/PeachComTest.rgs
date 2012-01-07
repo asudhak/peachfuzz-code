@@ -1,0 +1,26 @@
+HKCR
+{
+	ComTest.PeachComTest.1 = s 'PeachComTest Class'
+	{
+		CLSID = s '{8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8}'
+	}
+	ComTest.PeachComTest = s 'PeachComTest Class'
+	{
+		CLSID = s '{8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8}'
+		CurVer = s 'ComTest.PeachComTest.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8} = s 'PeachComTest Class'
+		{
+			ProgID = s 'ComTest.PeachComTest.1'
+			VersionIndependentProgID = s 'ComTest.PeachComTest'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{BA7F9B7B-ABB3-46BD-9594-5F643A5BED35}'
+		}
+	}
+}

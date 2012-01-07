@@ -99,7 +99,7 @@ namespace PeachFuzzBang
 			state.actions.Add(actionClose);
 			state.actions.Add(actionCall);
 
-			stateModel.states.Add(state);
+			stateModel.states.Add(state.name, state);
 			stateModel.initialState = state;
 
 			dom.stateModels.Add(stateModel.name, stateModel);

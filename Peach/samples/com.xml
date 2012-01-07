@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
+
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml"/>
+
+	<!-- TODO: Create data model -->
+	<DataModel name="TheDataModel">
+		<String value="Hello World!" />
+	</DataModel>
+
+	<!-- TODO: Create state model -->
+	<StateModel name="TheState" initialState="Initial">
+
+		<State name="Initial">
+			<Action type="call" method="Method1">
+				<Param name="arg1">
+					<DataModel ref="TheDataModel" />
+				</Param>
+			</Action>
+		</State>
+
+	</StateModel>
+
+	<Test name="TheTest">
+		<StateModel ref="TheState"/>
+		<Publisher class="Com">
+			<Param name="clsid" value="{8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8}"/>
+		</Publisher>
+	</Test>
+
+	<!-- Configure a single run -->
+	<Run name="DefaultRun">
+		<Test ref="TheTest"/>
+	</Run>
+
+</Peach>
+<!-- end -->
