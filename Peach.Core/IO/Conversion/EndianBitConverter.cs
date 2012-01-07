@@ -401,7 +401,7 @@ namespace Peach.Core.IO.Conversion
 		/// </summary>
 		/// <param name="value">The value to get bytes for</param>
 		/// <param name="bytes">The number of significant bytes to return</param>
-		byte[] GetBytes(long value, int bytes)
+		public byte[] GetBytes(long value, int bytes)
 		{
 			byte[] buffer = new byte[bytes];
 			CopyBytes(value, bytes, buffer, 0);

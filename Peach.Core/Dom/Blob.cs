@@ -46,8 +46,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Blob : DataElement
 	{
-		protected uint _length;
-
 		public Blob()
 		{
 			_defaultValue = new Variant(new byte[] { });

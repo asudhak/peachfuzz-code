@@ -258,7 +258,7 @@ namespace Peach.Core.Cracker
 		/// <param name="element">Element to check</param>
 		/// <param name="size">Set to the number of bytes from element to end of the data.</param>
 		/// <returns>Returns true if last unsigned element, else false.</returns>
-		protected bool isLastUnsizedElement(DataElement element, ref int size)
+		protected bool isLastUnsizedElement(DataElement element, ref long size)
 		{
 			logger.Trace("isLastUnsizedElement: {0} {1}", element.fullName, size);
 
@@ -302,7 +302,7 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
-		protected bool _isLastUnsizedElementRecursive(DataElement elem, ref int size)
+		protected bool _isLastUnsizedElementRecursive(DataElement elem, ref long size)
 		{
 			if (elem == null)
 				return false;
@@ -333,7 +333,7 @@ namespace Peach.Core.Cracker
 		/// <param name="size">Set to the number of bytes from element to token.</param>
 		/// <param name="token">Set to token element if found</param>
 		/// <returns>Returns true if found token, else false.</returns>
-		protected bool isTokenNext(DataElement element, ref int size, ref DataElement token)
+		protected bool isTokenNext(DataElement element, ref long size, ref DataElement token)
 		{
 			logger.Trace("isTokenNext: {0} {1}", element.fullName, size);
 
@@ -549,7 +549,7 @@ namespace Peach.Core.Cracker
 			}
 			else if (element.hasLength)
 			{
-				int size = element.length;
+				long size = element.length;
 				_sizedBlockStack.Add(element);
 				_sizedBlockMap[element] = size;
 
@@ -625,7 +625,7 @@ namespace Peach.Core.Cracker
 			}
 			else if (element.hasLength)
 			{
-				int size = element.length;
+				long size = element.length;
 				_sizedBlockStack.Add(element);
 				_sizedBlockMap[element] = size;
 
@@ -759,7 +759,7 @@ namespace Peach.Core.Cracker
 
 				else
 				{
-					int nextSize = 0;
+					long nextSize = 0;
 					DataElement token = null;
 
 					if (isLastUnsizedElement(element, ref nextSize))
@@ -778,7 +778,7 @@ namespace Peach.Core.Cracker
 		{
 			logger.Trace("handleNumber: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			if (data.LengthBits < data.TellBits() + element.Size)
+			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
 				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
 
 			if (element.LittleEndian)
@@ -790,7 +790,7 @@ namespace Peach.Core.Cracker
 
 			if (element.Signed)
 			{
-				switch (element.Size)
+				switch (element.lengthAsBits)
 				{
 					case 8:
 						defaultValue = new Variant(data.ReadInt8());
@@ -805,12 +805,12 @@ namespace Peach.Core.Cracker
 						defaultValue = new Variant(data.ReadInt64());
 						break;
 					default:
-						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
+						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
 				}
 			}
 			else
 			{
-				switch (element.Size)
+				switch (element.lengthAsBits)
 				{
 					case 8:
 						defaultValue = new Variant(data.ReadUInt8());
@@ -825,7 +825,7 @@ namespace Peach.Core.Cracker
 						defaultValue = new Variant(data.ReadUInt64());
 						break;
 					default:
-						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.Size + "'.", element, data);
+						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
 				}
 			}
 

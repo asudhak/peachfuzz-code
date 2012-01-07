@@ -77,7 +77,7 @@ namespace Peach.Core.Mutators
             }
             else if (obj is Number)
             {
-                size = ((Number)obj).Size;
+                size = (int) ((Number)obj).lengthAsBits;
                 signed = ((Number)obj).Signed;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;

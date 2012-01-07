@@ -67,7 +67,7 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<Defaults>" +
-				"		<String lengthType=\"python\" padCharacter=\"z\" nullTerminated=\"true\" type=\"utf8\"/>" +
+				"		<String lengthType=\"chars\" padCharacter=\"z\" nullTerminated=\"true\" type=\"utf8\"/>" +
 				"	</Defaults>" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<String name=\"TheNumber\"/>" +
@@ -80,7 +80,7 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.IsTrue(str.nullTerminated);
 			Assert.IsTrue(str.stringType == StringType.Utf8);
-			Assert.IsTrue(str.lengthType == LengthType.Python);
+			Assert.IsTrue(str.lengthType == LengthType.Chars);
 			Assert.IsTrue(str.padCharacter == 'z');
 		}
 
@@ -108,7 +108,7 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<Defaults>" +
-				"		<Blob lengthType=\"python\"/>" +
+				"		<Blob lengthType=\"bits\"/>" +
 				"	</Defaults>" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Blob lengthType=\"python\"/>" +
@@ -119,7 +119,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.IsTrue(blob.lengthType == LengthType.Python);
+			Assert.IsTrue(blob.lengthType == LengthType.Bits);
 		}
 	}
 }

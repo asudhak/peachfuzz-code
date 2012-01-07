@@ -664,24 +664,6 @@ namespace Peach.Core.Analyzers
 			if(hasXmlAttribute(node, "name"))
 				block.name = getXmlAttribute(node, "name");
 
-			// lengthType
-			if (hasXmlAttribute(node, "lengthType"))
-			{
-				block.lengthType = getXmlAttribute(node, "lengthType");
-				block.lengthCalc = getXmlAttribute(node, "length");
-				block.length = null;
-
-				if (block.lengthType == null)
-					throw new PeachException("Error, Block attribute 'lengthType' has invalid value.");
-				if (block.lengthCalc == null)
-					throw new PeachException("Error, When specifying lenghType=\"calc\" you must also provide a valid 'length' attribute.");
-			}
-			// length
-			else if (hasXmlAttribute(node, "length"))
-			{
-				block.length = new Variant(Convert.ToInt32(getXmlAttribute(node, "length")));
-			}
-
 			// alignment
 
 			handleCommonDataElementAttributes(node, block);
@@ -719,6 +701,54 @@ namespace Peach.Core.Analyzers
 			
 			if (hasXmlAttribute(node, "pointerDepth"))
 				throw new NotSupportedException("Implement pointerDepth attribute");
+
+			if (hasXmlAttribute(node, "lengthType"))
+			{
+				switch (getXmlAttribute(node, "lengthType"))
+				{
+					case "bytes":
+						element.lengthType = LengthType.Bytes;
+						break;
+					case "bits":
+						element.lengthType = LengthType.Bits;
+						break;
+					case "chars":
+						element.lengthType = LengthType.Chars;
+						break;
+					default:
+						throw new PeachException("Error, parsing lengthType on '" + element.name + 
+							"', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
+				}
+			}
+			else if (hasDefaultAttribute(typeof(Dom.String), "lengthType"))
+			{
+				switch ((string)getDefaultAttribute(element.GetType(), "lengthType"))
+				{
+					case "bytes":
+						element.lengthType = LengthType.Bytes;
+						break;
+					case "bits":
+						element.lengthType = LengthType.Bits;
+						break;
+					case "chars":
+						element.lengthType = LengthType.Chars;
+						break;
+				}
+			}
+
+			if (hasXmlAttribute(node, "length"))
+			{
+				try
+				{
+					element.length = Int32.Parse(getXmlAttribute(node, "length"));
+				}
+				catch (Exception e)
+				{
+					throw new PeachException("Error, parsing length on '" + element.name + "': " + e.Message);
+				}
+			}
+
+			element.lengthCalc = getXmlAttribute(node, "lengthCalc");
 		}
 
 		/// <summary>
@@ -922,57 +952,6 @@ namespace Peach.Core.Analyzers
 			if (hasXmlAttribute(node, "padCharacter"))
 				throw new NotSupportedException("Implement padCharacter attribute on String");
 
-			if (hasXmlAttribute(node, "lengthType"))
-			{
-				switch (getXmlAttribute(node, "lengthType"))
-				{
-					case "calc":
-						str.lengthType = LengthType.Calc;
-						break;
-					case "python":
-						str.lengthType = LengthType.Python;
-						break;
-					case "ruby":
-						str.lengthType = LengthType.Ruby;
-						break;
-					default:
-						throw new PeachException("Error, parsing lengthType on String '" + str.name + "', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
-				}
-			}
-			else if (hasDefaultAttribute(typeof(Dom.String), "lengthType"))
-			{
-				switch ((string)getDefaultAttribute(typeof(Dom.String), "lengthType"))
-				{
-					case "calc":
-						str.lengthType = LengthType.Calc;
-						break;
-					case "python":
-						str.lengthType = LengthType.Python;
-						break;
-					case "ruby":
-						str.lengthType = LengthType.Ruby;
-						break;
-					default:
-						throw new PeachException("Error, parsing lengthType on String '" + str.name + "', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
-				}
-			}
-
-			if (hasXmlAttribute(node, "length"))
-			{
-				if (str.lengthType == LengthType.String)
-				{
-					try
-					{
-						str.length = Int32.Parse(getXmlAttribute(node, "length"));
-					}
-					catch (Exception e)
-					{
-						throw new PeachException("Error, parsing length on String '" + str.name + "': " + e.Message);
-					}
-				}
-				else
-					str.lengthOther = getXmlAttribute(node, "length");
-			}
 
 			if (hasXmlAttribute(node, "tokens")) // This item has a default!
 				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
@@ -1053,7 +1032,7 @@ namespace Peach.Core.Analyzers
 						if(elem is Number)
 						{
 							Number num = elem as Number;
-							switch(num.Size)
+							switch(num.lengthAsBits)
 							{
 								case 8:
 									if(num.Signed)
@@ -1129,7 +1108,7 @@ namespace Peach.Core.Analyzers
 				if (size < 1 || size > 64)
 					throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, num.name));
 
-				num.Size = size;
+				num.length = size;
 			}
 
 			if (hasXmlAttribute(node, "endian"))
@@ -1219,50 +1198,6 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "name"))
 				blob.name = getXmlAttribute(node, "name");
-
-			string type = null;
-
-			if (hasXmlAttribute(node, "lengthType"))
-				type = getXmlAttribute(node, "lengthType");
-
-			else if(hasDefaultAttribute(typeof(Blob), "lengthType"))
-				type = (string) getDefaultAttribute(typeof(Blob), "lengthType");
-
-			if (type != null)
-			{
-				switch (type)
-				{
-					case "calc":
-						blob.lengthType = LengthType.Calc;
-						blob.lengthOther = getXmlAttribute(node, "length");
-						break;
-					case "python":
-						blob.lengthType = LengthType.Python;
-						blob.lengthOther = getXmlAttribute(node, "length");
-						break;
-					case "ruby":
-						blob.lengthType = LengthType.Ruby;
-						blob.lengthOther = getXmlAttribute(node, "length");
-						break;
-					default:
-						throw new PeachException("Error parsing Blob lengthType attribute, unknown value '" + getXmlAttribute(node, "lengthType") + "'.");
-				}
-			}
-			else if (hasXmlAttribute(node, "length"))
-			{
-				try
-				{
-					blob.lengthType = LengthType.String;
-					blob.length = int.Parse(getXmlAttribute(node, "length"));
-
-					if (blob.length < 0)
-						throw new PeachException("Lengths cannot be negative");
-				}
-				catch (Exception e)
-				{
-					throw new PeachException("Error parsing Blob length attribute: " + e.Message);
-				}
-			}
 
 			handleCommonDataElementAttributes(node, blob);
 			handleCommonDataElementChildren(node, blob);

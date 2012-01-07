@@ -49,7 +49,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Number : DataElement
 	{
-		protected int _size = 8;
 		protected ulong _max = (ulong)sbyte.MaxValue;
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = true;
@@ -58,40 +57,73 @@ namespace Peach.Core.Dom
 		public Number()
 			: base()
 		{
+			length = 8;
+			lengthType = LengthType.Bits;
 			DefaultValue = new Variant(0);
 		}
 
 		public Number(string name)
 			: base(name)
 		{
+			length = 8;
+			lengthType = LengthType.Bits;
 			DefaultValue = new Variant(0);
 		}
 
 		public Number(string name, long value, int size)
 			: base(name)
 		{
-			Size = size;
+			lengthType = LengthType.Bits;
+			length = size;
 			DefaultValue = new Variant(value);
 		}
 
 		public Number(string name, long value, int size, bool signed, bool isLittleEndian)
 			: base(name)
 		{
-			Size = size;
+			lengthType = LengthType.Bits;
+			length = size;
 			_signed = signed;
 			_isLittleEndian = isLittleEndian;
 			DefaultValue = new Variant(value);
 		}
 
-		public override int length
+		public override long length
 		{
 			get
 			{
-				return _size / 8;
+				if (lengthType == LengthType.Bits)
+					return _length;
+				if (lengthType == LengthType.Bytes)
+				{
+					if (_length % 8 != 0)
+						throw new InvalidOperationException("Error, Number is not power of 8, cannot return length in bytes.");
+
+					return _length / 8;
+				}
+
+				throw new NotSupportedException("Error, invalid LenngType for Number.");
 			}
+
 			set
 			{
-				throw new NotSupportedException("A numbers size must be set by size.");
+				if (value == 0)
+					throw new ApplicationException("size must be > 0");
+
+				_length = value;
+
+				if (_signed)
+				{
+					_max = (ulong)(Math.Pow(2, lengthAsBits) / 2) - 1;
+					_min = 0 - (long)(Math.Pow(2, lengthAsBits) / 2);
+				}
+				else
+				{
+					_max = (ulong)Math.Pow(2, lengthAsBits) - 1;
+					_min = 0;
+				}
+
+				Invalidate();
 			}
 		}
 
@@ -105,12 +137,6 @@ namespace Peach.Core.Dom
 			{
 				throw new NotSupportedException("A number always has a size.");
 			}
-		}
-
-		public override LengthType lengthType
-		{
-			get { return LengthType.String; }
-			set { throw new NotSupportedException("Cannot set LengthType on a Number."); }
 		}
 
 		public override Variant DefaultValue
@@ -135,38 +161,13 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public int Size
-		{
-			get { return _size; }
-			set
-			{
-				if (value == 0)
-					throw new ApplicationException("size must be > 0");
-
-				_size = value;
-
-				if (_signed)
-				{
-					_max = (ulong)(Math.Pow(2, _size) / 2) - 1;
-                    _min = 0 - (long)(Math.Pow(2, _size) / 2);
-				}
-				else
-				{
-					_max = (ulong)Math.Pow(2, _size) - 1;
-					_min = 0;
-				}
-
-				Invalidate();
-			}
-		}
-
 		public bool Signed
 		{
 			get { return _signed; }
 			set
 			{
 				_signed = value;
-				Size = Size;
+				length = length;
 
 				Invalidate();
 			}
@@ -201,54 +202,56 @@ namespace Peach.Core.Dom
 			else
 				bits.BigEndian();
 
-            if (Signed)
-            {
-                switch (Size)
-                {
-                    case 8:
-                        bits.WriteInt8((sbyte)InternalValue);
-                        break;
-                    case 16:
-                        bits.WriteInt16((short)InternalValue);
-                        break;
-                    case 24:
-                        throw new NotImplementedException("Doh!");
-                    //bits.WriteInt24((sbyte)InternalValue);
-                    //break;
-                    case 32:
-                        bits.WriteInt32((int)InternalValue);
-                        break;
-                    case 64:
-                        bits.WriteInt64((long)InternalValue);
-                        break;
-                    default:
-                        throw new NotImplementedException("Urm, yah");
-                }
-            }
-            else
-            {
-                switch (Size)
-                {
-                    case 8:
-                        bits.WriteUInt8((byte)(uint)InternalValue);
-                        break;
-                    case 16:
-                        bits.WriteUInt16((ushort)(uint)InternalValue);
-                        break;
-                    case 24:
-                        throw new NotImplementedException("Doh!");
-                    //bits.WriteInt24((sbyte)InternalValue);
-                    //break;
-                    case 32:
-                        bits.WriteUInt32((uint)InternalValue);
-                        break;
-                    case 64:
-                        bits.WriteUInt64((ulong)InternalValue);
-                        break;
-                    default:
-                        throw new NotImplementedException("Urm, yah");
-                }
-            }
+			if (lengthAsBits % 8 == 0)
+			{
+				bits.WriteBytes(bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)lengthAsBits / 8));
+			}
+			else
+			{
+				byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
+				byte lastByte = buff[buff.Length - 1];
+				bits.WriteBytes(buff, 0, buff.Length - 1);
+				bits.WriteBits(lastByte, (int)lengthAsBits % 8);
+			}
+
+			//if (Signed)
+			//{
+			//    switch (lengthAsBits)
+			//    {
+			//        case 8:
+			//            bits.WriteInt8((sbyte)InternalValue);
+			//            break;
+			//        case 16:
+			//            bits.WriteInt16((short)InternalValue);
+			//            break;
+			//        case 24:
+			//            throw new NotImplementedException("Doh!");
+			//        //bits.WriteInt24((sbyte)InternalValue);
+			//        //break;
+			//        case 32:
+			//            bits.WriteInt32((int)InternalValue);
+			//            break;
+			//        case 64:
+			//            bits.WriteInt64((long)InternalValue);
+			//            break;
+			//        default:
+			//            throw new NotImplementedException("Urm, yah");
+			//    }
+			//}
+			//else
+			//{
+			//    if (lengthAsBits % 8 == 0)
+			//    {
+			//        bits.WriteBytes(bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)lengthAsBits / 8));
+			//    }
+			//    else
+			//    {
+			//        byte [] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits/8)+1);
+			//        byte lastByte = buff[buff.Length - 1];
+			//        bits.WriteBytes(buff, 0, buff.Length - 1);
+			//        bits.WriteBits(lastByte, (int)lengthAsBits % 8);
+			//    }
+			//}
 
 			return bits;
 		}

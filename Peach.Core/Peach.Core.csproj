@@ -169,9 +169,6 @@
     <Reference Include="Microsoft.Scripting.Debugging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <HintPath>..\3rdParty\IronPython-2.6.2\Microsoft.Scripting.Debugging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting.ExtensionAttribute, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\3rdParty\IronPython-2.6.2\Microsoft.Scripting.ExtensionAttribute.dll</HintPath>
-    </Reference>
     <Reference Include="SharpPcap, Version=3.6.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\3rdParty\SharpPcap-3.6.0\SharpPcap.dll</HintPath>
     </Reference>

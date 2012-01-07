@@ -43,14 +43,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Block")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	//[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
 	[Serializable]
 	public class Block : DataElementContainer
 	{
-		public string lengthType;
-		public string lengthCalc;
-		public Variant length;
-
 		public Block()
 		{
 		}

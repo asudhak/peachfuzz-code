@@ -33,11 +33,14 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Peach.Core.IO;
+using NLog;
 
 namespace Peach.Core.Proxy.Web
 {
     public class HttpRequest : HttpMessage
     {
+		static NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web.HttpRequest");
+
         public string RequestLine { get; set; }
         public string Method { get; set; }
         public string Uri { get; set; }
@@ -73,6 +76,8 @@ namespace Peach.Core.Proxy.Web
         {
 			long pos = stream.Position;
 
+			logger.Debug("Parse: Position: " + pos);
+
 			try
 			{
 				long newPos = pos;
@@ -83,16 +88,32 @@ namespace Peach.Core.Proxy.Web
 				stream.Read(buff, 0, (int)(stream.Length - stream.Position));
 
 				string data = ASCIIEncoding.ASCII.GetString(buff);
+				data = data.TrimStart(new char[] { '\xff', ' ', '\r', '\n', '\t', '?' });
 
 				m = rxSingleLine.Match(data);
-				if (m == null)
+				if (m == null || m.Groups[1].Value.Length == 0)
+				{
+					if(data.Length > 50)
+						logger.Debug("Parse: rxSingleLine.Match failed: [" + data.Substring(0, 50) + "]");
+					else
+						logger.Debug("Parse: rxSingleLine.Match failed: [" + data + "]");
+
+					logger.Debug("Char: " + ((int)data[0]));
+
 					return null;
+				}
 
 				request.RequestLine = m.Groups[1].Value;
 				request.ParseRequestLine();
 				data = rxSingleLine.Replace(data, "", 1);
 
 				newPos += m.Groups[1].Index + m.Groups[1].Length;
+
+				if (data.IndexOf("\r\n\r\n") == -1)
+				{
+					logger.Debug("Parse: Didn't locate \r\n\r\n end marker");
+					return null;
+				}
 
 				m = Regex.Match(data, @"^[\xff]*([^\xff]+\r\n\r\n)(.*)$", RegexOptions.Singleline);
 				if (m == null)
@@ -113,10 +134,12 @@ namespace Peach.Core.Proxy.Web
 
 				pos = newPos + request.Body.Length;
 
+				logger.Debug("Parse: Done! New position: " + pos);
 				return request;
 			}
-			catch
+			catch(Exception ex)
 			{
+				logger.Debug("Parse: Exception: " + ex.Message);
 				return null;
 			}
 			finally
@@ -128,8 +151,13 @@ namespace Peach.Core.Proxy.Web
         public void ParseRequestHeader(string data)
         {
             MatchCollection matches = Regex.Matches(data, @"([^\r\n]+)\r\n");
-            if (matches == null)
-                throw new ArgumentException("Unable to parse data into HTTP Request Line");
+			if (matches == null)
+			{
+				if(data.Length > 50)
+					throw new ArgumentException("Unable to parse HTTP header from data: [" + data.Substring(0, 50) + "]");
+				else
+					throw new ArgumentException("Unable to parse HTTP header from data: [" + data + "]");
+			}
 
 			Headers = new HttpHeaderCollection();
 			foreach (Match match in matches)
@@ -141,6 +169,7 @@ namespace Peach.Core.Proxy.Web
 				if (header == null)
 					break;
 
+				logger.Debug("ParseRequestHeader: Header: " + header.Name);
 				Headers.Add(header.Name.ToLower(), header);
 			}
         }
@@ -148,8 +177,10 @@ namespace Peach.Core.Proxy.Web
         public void ParseRequestLine()
         {
 			Match m = Regex.Match(RequestLine, @"([^\s]+) ([^\s]+) HTTP/([^\s]+)(\r\n|$)");
-            if (m == null || m.Groups.Count < 4)
-                throw new ArgumentException("Unable to parse data into HTTP Request Line");
+			if (m == null || m.Groups.Count < 4)
+			{
+				throw new ArgumentException("Unable to parse data into HTTP Request Line: [" + RequestLine + "]");
+			}
 
             Method = m.Groups[1].Value;
             Uri = m.Groups[2].Value;

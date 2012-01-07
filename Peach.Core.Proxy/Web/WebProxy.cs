@@ -41,7 +41,7 @@ namespace Peach.Core.Proxy.Web
 
 	public class WebProxy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web");
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web.WebProxy");
 		Proxy proxy = null;
 
 		public event HttpRequestEventHandler NewHttpRequest;
@@ -58,7 +58,10 @@ namespace Peach.Core.Proxy.Web
 		{
 			var req = HttpRequest.Parse(conn.ClientInputStream);
 			if (req == null)
+			{
+				logger.Debug("Connection_ClientDataReceived: Did not parse message from stream");
 				return;
+			}
 
 			req.Connection = conn;
 

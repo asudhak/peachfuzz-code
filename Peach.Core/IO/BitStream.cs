@@ -58,7 +58,7 @@ namespace Peach.Core.IO
 		protected long pos = 0;
 		protected long len = 0;
 		protected bool _isLittleEndian = true;
-		protected EndianBitConverter bitConverter = null;
+		public EndianBitConverter bitConverter = null;
 
 		/// <summary>
 		/// Default constructor

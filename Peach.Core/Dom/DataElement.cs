@@ -38,12 +38,18 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
+	/// <summary>
+	/// Length types
+	/// </summary>
+	/// <remarks>
+	/// The "length" property defaults to Bytes.  Not all
+	/// implementations of DataElement will support all LengthTypes.
+	/// </remarks>
 	public enum LengthType
 	{
-		String,
-		Python,
-		Ruby,
-		Calc
+		Bytes,
+		Bits,
+		Chars
 	}
 
 	public enum ValueType
@@ -132,10 +138,25 @@ namespace Peach.Core.Dom
 
 		protected bool _invalidated = false;
 
+		/// <summary>
+		/// Does this element have a defined length?
+		/// </summary>
 		protected bool _hasLength = false;
-		protected int _length = 0;
-		protected LengthType _lengthType = LengthType.String;
-		protected string _lengthOther = null;
+
+		/// <summary>
+		/// Length in bits
+		/// </summary>
+		protected long _length = 0;
+
+		/// <summary>
+		/// Determines how the length property works.
+		/// </summary>
+		protected LengthType _lengthType = LengthType.Bytes;
+
+		/// <summary>
+		/// Contains the calculation if any
+		/// </summary>
+		protected string _lengthCalc = null;
 
 		protected string _constraint = null;
 
@@ -410,31 +431,79 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
-		/// Length of element.  In the case that 
-		/// LengthType == "Calc" we will evaluate the
-		/// expression.
+		/// Length of element in bits.
 		/// </summary>
-		public virtual int length
+		/// <remarks>
+		/// In the case that LengthType == "Calc" we will evaluate the
+		/// expression.
+		/// </remarks>
+		public virtual long length
+		{
+			get
+			{
+				if (_lengthCalc != null)
+				{
+					Dictionary<string, object> scope = new Dictionary<string, object>();
+					scope["self"] = this;
+					return (int)Scripting.EvalExpression(_lengthCalc, scope);
+				}
+
+				if (_hasLength)
+				{
+					switch (_lengthType)
+					{
+						case LengthType.Bytes:
+							return _length / 8;
+						case LengthType.Bits:
+							return _length;
+						case LengthType.Chars:
+							throw new NotSupportedException("Length type of Chars not supported by DataElement.");
+						default:
+							throw new NotSupportedException("Error calculating length.");
+					}
+				}
+				else
+				{
+					switch (_lengthType)
+					{
+						case LengthType.Bytes:
+							return Value.LengthBytes;
+						case LengthType.Bits:
+							return Value.LengthBits;
+						case LengthType.Chars:
+							throw new NotSupportedException("Length type of Chars not supported by DataElement.");
+						default:
+							throw new NotSupportedException("Error calculating length.");
+					}
+					
+				}
+			}
+
+			set
+			{
+				_length = value;
+				_hasLength = true;
+			}
+		}
+
+		/// <summary>
+		/// Returns length as bits.
+		/// </summary>
+		public virtual long lengthAsBits
 		{
 			get
 			{
 				switch (_lengthType)
 				{
-					case LengthType.String:
-						return _length;
-					case LengthType.Calc:
-						Dictionary<string, object> scope = new Dictionary<string,object>();
-						scope["self"] = this;
-						return (int)Scripting.EvalExpression(_lengthOther, scope);
+					case LengthType.Bytes:
+						return length * 8;
+					case LengthType.Bits:
+						return length;
+					case LengthType.Chars:
+						throw new NotSupportedException("Length type of Chars not supported by DataElement.");
 					default:
 						throw new NotSupportedException("Error calculating length.");
 				}
-			}
-			set
-			{
-				_lengthType = LengthType.String;
-				_length = value;
-				_hasLength = true;
 			}
 		}
 
@@ -442,12 +511,22 @@ namespace Peach.Core.Dom
 		/// Length expression.  This expression is used
 		/// to calculate the length of this element.
 		/// </summary>
-		public virtual string lengthOther
+		public virtual string lengthCalc
 		{
-			get { return _lengthOther; }
-			set { _lengthOther = value; }
+			get { return _lengthCalc; }
+			set { _lengthCalc= value; }
 		}
 
+		/// <summary>
+		/// Type of length.
+		/// </summary>
+		/// <remarks>
+		/// Not all DataElement implementations support "Chars".
+		/// 
+		/// Note: A breaking change between Peach 2.3 and Peach 3 is 
+		/// the removal of the "calc" length type.  Instead use the
+		/// "lengthCalc" property.
+		/// </remarks>
 		public virtual LengthType lengthType
 		{
 			get { return _lengthType; }

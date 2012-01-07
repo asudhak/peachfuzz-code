@@ -95,7 +95,7 @@ namespace Peach.Core.Proxy
 					if (!WorkHandler())
 						break;
 
-				Console.Error.Write(".");
+				//Console.Error.Write(".");
 			}
 
 			foreach (Connection conn in connections.Values)

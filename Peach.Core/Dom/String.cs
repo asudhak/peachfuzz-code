@@ -106,7 +106,7 @@ namespace Peach.Core.Dom
 			_type = type;
 			_nullTerminated = nullTerminated;
 			_length = length;
-			_lengthType = LengthType.String;
+			_lengthType = LengthType.Bytes;
 		}
 
 		/// <summary>
@@ -176,6 +176,83 @@ namespace Peach.Core.Dom
 				throw new ApplicationException("String._type not set properly!");
 
 			return new BitStream(value);
+		}
+
+		/// <summary>
+		/// Length of element in bits.
+		/// </summary>
+		/// <remarks>
+		/// In the case that LengthType == "Calc" we will evaluate the
+		/// expression.
+		/// </remarks>
+		public override long length
+		{
+			get
+			{
+				if (_lengthCalc != null)
+				{
+					Dictionary<string, object> scope = new Dictionary<string, object>();
+					scope["self"] = this;
+					return (int)Scripting.EvalExpression(_lengthCalc, scope);
+				}
+
+				if (_hasLength)
+				{
+					switch (_lengthType)
+					{
+						case LengthType.Bytes:
+							return _length / 8;
+						case LengthType.Bits:
+							return _length;
+						case LengthType.Chars:
+							return _length;
+						default:
+							throw new NotSupportedException("Error calculating length.");
+					}
+				}
+				else
+				{
+					switch (_lengthType)
+					{
+						case LengthType.Bytes:
+							return Value.LengthBytes;
+						case LengthType.Bits:
+							return Value.LengthBits;
+						case LengthType.Chars:
+							return ((string)InternalValue).Length;
+						default:
+							throw new NotSupportedException("Error calculating length.");
+					}
+
+				}
+			}
+
+			set
+			{
+				_length = value;
+				_hasLength = true;
+			}
+		}
+
+		/// <summary>
+		/// Returns length as bits.
+		/// </summary>
+		public override long lengthAsBits
+		{
+			get
+			{
+				switch (_lengthType)
+				{
+					case LengthType.Bytes:
+						return length * 8;
+					case LengthType.Bits:
+						return length;
+					case LengthType.Chars:
+						return Value.LengthBits;
+					default:
+						throw new NotSupportedException("Error calculating length.");
+				}
+			}
 		}
 	}
 

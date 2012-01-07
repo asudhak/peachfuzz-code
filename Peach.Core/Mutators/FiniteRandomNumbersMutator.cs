@@ -64,7 +64,7 @@ namespace Peach.Core.Mutators
             else if (obj is Number)
             {
                 signed = ((Number)obj).Signed;
-                size = ((Number)obj).Size;
+                size = (int) ((Number)obj).lengthAsBits;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
             }
@@ -122,7 +122,7 @@ namespace Peach.Core.Mutators
         public new static bool supportedDataElement(DataElement obj)
         {
             if (obj is Number && obj.isMutable)
-                if (((Number)obj).Size > 8)
+                if (((Number)obj).lengthAsBits > 8)
                     return true;
 
             if (obj is Flag && obj.isMutable)
