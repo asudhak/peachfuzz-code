@@ -222,6 +222,7 @@ class Parallel(object):
 			self.add_more_tasks(tsk)
 		self.count -= 1
 		self.dirty = True
+		return tsk
 
 	def error_handler(self, tsk):
 		"""
