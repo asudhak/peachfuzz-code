@@ -19,13 +19,14 @@ def build(ctx):
 		ctx(rule='sleep 0.1', color='GREEN', name='green', always=True)
 	ctx(rule='sleep 6', color='RED', name='red', after='blue')
 
+
 from waflib import Task, Runner
 
 old = Task.set_file_constraints
-def meth(lst):
+def bluefirst(lst):
 	lst.sort(cmp=lambda x, y: cmp(x.__class__.__name__, y.__class__.__name__))
 	old(lst)
-Task.set_file_constraints = meth
+Task.set_file_constraints = bluefirst
 
 def get_out(self):
 	tsk = self.prev_get_out()
@@ -40,10 +41,6 @@ def get_out(self):
 			lst.reverse()
 			return reds
 		self.outstanding = remove_red(self.outstanding) + remove_red(self.frozen) + self.outstanding
-		#remove_red(self.outstanding)
-		#remove_red(self.frozen)
-		#for x in reds:
-		#	self.outstanding.insert(0, x)
 	return tsk
 Runner.Parallel.prev_get_out = Runner.Parallel.get_out
 Runner.Parallel.get_out      = get_out

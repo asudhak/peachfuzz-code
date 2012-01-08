@@ -240,6 +240,40 @@ Here is a representation of the effect:
 
 image::tasks_sort{PIC}["Slowest task first"{backend@docbook:,width=440:},align="center"]
 
+==== Pseudo-sequential constraints
+
+Though the weak order constraints can schedule specific tasks to run as soon as possible, they do not affect tasks that are posponed. The tasks that are waiting on others can be executed at any time. On the following diagram, the task type *red* is waiting on the task type *blue*, but other tasks (*green*) get executed before:
+
+image::tasks_pseudo_before{PIC}["No particular order"{backend@docbook:,width=440:},align="center"]
+
+To force the execution of *red* be as soon as possible after *blue*, another constraint is added. It sorts the waiting tasks so that the *red* tasks are getting a higher priority
+
+// tasks_weak2
+[source,python]
+---------------
+from waflib import Runner
+def get_out(self):
+	tsk = self.prev_get_out()
+	if tsk.__class__.__name__ == 'blue':
+		def remove_red(lst):
+			reds = []
+			lst.reverse()
+			for tsk in lst:
+				if tsk.__class__.__name__ == 'red':
+					lst.remove(tsk)
+					reds.append(tsk)
+			lst.reverse()
+			return reds
+		self.outstanding = remove_red(self.outstanding) + remove_red(self.frozen) + self.outstanding
+	return tsk
+Runner.Parallel.prev_get_out = Runner.Parallel.get_out
+Runner.Parallel.get_out      = get_out
+---------------
+
+On the results, a few *green* tasks are still executed before the *red* ones because a certain amount tasks is already waiting to be processed by the consumer threads (*waflib.Task.GAP*).
+
+image::tasks_pseudo_after{PIC}["Additional constraints"{backend@docbook:,width=440:},align="center"]
+
 === Dependencies
 
 ==== Task signatures
