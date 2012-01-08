@@ -165,7 +165,7 @@ else:
 			attr = sbinfo.Attributes
 			for c in cols:
 				if is_vista:
-					c = to_int(c)
+					c = int(c)
 				else:
 					c = to_int(c, 0)
 				if c in range(30,38): # fgcolor
