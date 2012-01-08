@@ -270,7 +270,7 @@ Runner.Parallel.prev_get_out = Runner.Parallel.get_out
 Runner.Parallel.get_out      = get_out
 ---------------
 
-On the results, a few *green* tasks are still executed before the *red* ones because a certain amount tasks is already waiting to be processed by the consumer threads (*waflib.Task.GAP*).
+On the results, a few *green* tasks are still executed before the *red* ones because a certain amount tasks is already about to be processed by the consumer threads (a multiple of *waflib.Task.GAP*).
 
 image::tasks_pseudo_after{PIC}["Additional constraints"{backend@docbook:,width=440:},align="center"]
 
