@@ -30,16 +30,20 @@ Task.set_file_constraints = meth
 def get_out(self):
 	tsk = self.prev_get_out()
 	if tsk.__class__.__name__ == 'blue':
-		reds = []
 		def remove_red(lst):
-			for tsk in reversed(lst):
+			reds = []
+			lst.reverse()
+			for tsk in lst:
 				if tsk.__class__.__name__ == 'red':
 					lst.remove(tsk)
 					reds.append(tsk)
-		remove_red(self.outstanding)
-		remove_red(self.frozen)
-		for x in reds:
-			self.outstanding.insert(0, x)
+			lst.reverse()
+			return reds
+		self.outstanding = remove_red(self.outstanding) + remove_red(self.frozen) + self.outstanding
+		#remove_red(self.outstanding)
+		#remove_red(self.frozen)
+		#for x in reds:
+		#	self.outstanding.insert(0, x)
 	return tsk
 Runner.Parallel.prev_get_out = Runner.Parallel.get_out
 Runner.Parallel.get_out      = get_out
