@@ -28,6 +28,8 @@ except Exception:
 else:
 	import re, threading
 
+	is_vista = getattr(sys, "getwindowsversion", None) and sys.getwindowsversion()[0] >= 6
+
 	try:
 		_type = unicode
 	except:
@@ -162,7 +164,10 @@ else:
 			windll.kernel32.GetConsoleScreenBufferInfo(self.hconsole, byref(sbinfo))
 			attr = sbinfo.Attributes
 			for c in cols:
-				c = to_int(c, 0)
+				if is_vista:
+					c = to_int(c)
+				else:
+					c = to_int(c, 0)
 				if c in range(30,38): # fgcolor
 					attr = (attr & 0xfff0) | self.rgb2bgr(c-30)
 				elif c in range(40,48): # bgcolor
