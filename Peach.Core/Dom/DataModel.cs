@@ -46,11 +46,27 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Dom parent of data model if any
 		/// </summary>
+		/// <remarks>
+		/// A data model can be the child of two (okay three) different types,
+		///   1. Dom (dom.datamodel collection)
+		///   2. Action (Action.dataModel)
+		///   3. ActionParam (Action.parameters[0].dataModel)
+		///   
+		/// This variable is one of those parent holders.
+		/// </remarks>
 		public Dom dom = null;
 
 		/// <summary>
 		/// Action parent of data model if any
 		/// </summary>
+		/// <remarks>
+		/// A data model can be the child of two (okay three) different types,
+		///   1. Dom (dom.datamodel collection)
+		///   2. Action (Action.dataModel)
+		///   3. ActionParam (Action.parameters[0].dataModel)
+		///   
+		/// This variable is one of those parent holders.
+		/// </remarks>
 		public Action action = null;
 
 		public DataModel()
