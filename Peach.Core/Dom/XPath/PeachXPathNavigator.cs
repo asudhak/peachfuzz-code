@@ -59,6 +59,11 @@ namespace Peach.Core.Dom.XPath
 		/// </summary>
 		protected int attributeIndex = 0;
 
+		/// <summary>
+		/// Are we iterating attributes?
+		/// </summary>
+		protected bool iteratingAttributes = false;
+
 		static PeachXPathNavigator()
 		{
 			AttributeMatrix[typeof(Dom)] = new string[] { "name" };
@@ -95,12 +100,14 @@ namespace Peach.Core.Dom.XPath
 			currentNodeType = PeachXPathNodeType.Root;
 		}
 
-		protected PeachXPathNavigator(Dom dom, object currentNode, PeachXPathNodeType currentNodeType, int attributeIndex)
+		protected PeachXPathNavigator(Dom dom, object currentNode, PeachXPathNodeType currentNodeType, 
+			int attributeIndex, bool iteratingAttributes)
 		{
 			this.dom = dom;
 			this.currentNode = currentNode;
 			this.currentNodeType = currentNodeType;
 			this.attributeIndex = attributeIndex;
+			this.iteratingAttributes = iteratingAttributes;
 		}
 
 		#region Abstract XPathNavigator
@@ -112,7 +119,7 @@ namespace Peach.Core.Dom.XPath
 
 		public override XPathNavigator Clone()
 		{
-			return new PeachXPathNavigator(dom, currentNode, currentNodeType, attributeIndex);
+			return new PeachXPathNavigator(dom, currentNode, currentNodeType, attributeIndex, iteratingAttributes);
 		}
 
 		public override bool IsEmptyElement
@@ -135,6 +142,9 @@ namespace Peach.Core.Dom.XPath
 		{
 			get
 			{
+				if (iteratingAttributes)
+					return GetCurrentNodeAttributeMatrix().ElementAt(attributeIndex);
+
 				return ((INamed)currentNode).name;
 			}
 		}
@@ -158,6 +168,7 @@ namespace Peach.Core.Dom.XPath
 		{
 			logger.Trace("MoveToFirstAttribute");
 
+			iteratingAttributes = true;
 			attributeIndex = 0;
 			return true;
 		}
@@ -454,11 +465,23 @@ namespace Peach.Core.Dom.XPath
 		{
 			logger.Trace("MoveToNextAttribute");
 
-			if (AttributeMatrix[currentNode.GetType()].Length >= (attributeIndex + 1))
+			if (GetCurrentNodeAttributeMatrix().Length <= (attributeIndex + 1))
 				return false;
 
+			iteratingAttributes = true;
 			attributeIndex++;
 			return true;
+		}
+
+		protected string[] GetCurrentNodeAttributeMatrix()
+		{
+			foreach (Type key in AttributeMatrix.Keys)
+			{
+				if (key.IsInstanceOfType(currentNode))
+					return AttributeMatrix[key];
+			}
+
+			return null;
 		}
 
 		public override bool MoveToNextNamespace(XPathNamespaceScope namespaceScope)
@@ -471,6 +494,12 @@ namespace Peach.Core.Dom.XPath
 		public override bool MoveToParent()
 		{
 			logger.Trace("MoveToParent");
+
+			if (iteratingAttributes)
+			{
+				iteratingAttributes = false;
+				return true;
+			}
 
 			if (currentNodeType == PeachXPathNodeType.Root)
 				return false;
@@ -520,6 +549,9 @@ namespace Peach.Core.Dom.XPath
 		{
 			get
 			{
+				if (iteratingAttributes)
+					return XPathNodeType.Attribute;
+
 				if (currentNodeType == PeachXPathNodeType.Root)
 					return XPathNodeType.Root;
 
@@ -541,6 +573,11 @@ namespace Peach.Core.Dom.XPath
 			{
 				return string.Empty;
 			}
+		}
+
+		public override string GetAttribute(string localName, string namespaceURI)
+		{
+			return string.Empty;
 		}
 
 		#endregion

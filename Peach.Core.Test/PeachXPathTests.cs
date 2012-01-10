@@ -186,7 +186,7 @@ namespace Peach.Core.Test
 				"		</Block>" +
 				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
 				"		<Block>" +
-				"			<String name=\"FindMe\" isToken=\"true\"/>" +
+				"			<String name=\"FindMe\" token=\"true\"/>" +
 				"		</Block>" +
 				"	</DataModel>" +
 				"</Peach>";
@@ -220,7 +220,7 @@ namespace Peach.Core.Test
 				"		</Block>" +
 				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
 				"		<Block>" +
-				"			<String name=\"FindMe\" isToken=\"true\"/>" +
+				"			<String name=\"FindMe\" token=\"true\"/>" +
 				"		</Block>" +
 				"	</DataModel>" +
 				"	<StateModel name=\"FOo\" initialState=\"State1\">"+
