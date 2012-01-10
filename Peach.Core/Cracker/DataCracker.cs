@@ -405,7 +405,7 @@ namespace Peach.Core.Cracker
 				bool hasOffsetRelation = false;
 
 				// Offset relation
-				if (element.relations.hasOffsetRelation)
+				if (element.relations.hasOfOffsetRelation)
 				{
 					hasOffsetRelation = true;
 					OffsetRelation rel = element.relations.getOffsetRelation();
@@ -545,7 +545,7 @@ namespace Peach.Core.Cracker
 			long startPosition = data.TellBits();
 
 			// Do we have relations or a length?
-			if (element.relations.hasSizeRelation)
+			if (element.relations.hasOfSizeRelation)
 			{
 				sizeRelation = element.relations.getSizeRelation();
 
@@ -621,7 +621,7 @@ namespace Peach.Core.Cracker
 			SizeRelation sizeRelation = null;
 
 			// Do we have relations or a length?
-			if (element.relations.hasSizeRelation)
+			if (element.relations.hasOfSizeRelation)
 			{
 				sizeRelation = element.relations.getSizeRelation();
 
@@ -770,7 +770,7 @@ namespace Peach.Core.Cracker
 			{
 				size = element.lengthAsBits;
 			}
-			else if(element.relations.hasSizeRelation)
+			else if(element.relations.hasOfSizeRelation)
 			{
 				size = element.relations.getSizeRelation().GetValue();
 			}

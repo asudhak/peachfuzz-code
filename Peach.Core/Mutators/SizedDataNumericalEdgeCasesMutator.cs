@@ -153,7 +153,7 @@ namespace Peach.Core.Mutators
         public new static bool supportedDataElement(DataElement obj)
         {
             // verify data element has size relation
-            if (obj.isMutable && obj.relations.hasSizeRelation)
+            if (obj.isMutable && obj.relations.hasOfSizeRelation)
                 return true;
 
             return false;

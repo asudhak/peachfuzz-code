@@ -68,10 +68,10 @@ namespace Peach.Core.Dom
 	/// Performs an Action such as sending output,
 	/// calling a method, etc.
 	/// </summary>
-	public class Action
+	public class Action : INamed
 	{
 		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.Action");
-		public string name = "Unknown Action";
+		public string _name = "Unknown Action";
 		public ActionType type = ActionType.Unknown;
 
 		public State parent = null;
@@ -92,6 +92,12 @@ namespace Peach.Core.Dom
 		protected string _value = null;
 		protected string _setXpath = null;
 		protected string _valueXpath = null;
+
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
 
 		/// <summary>
 		/// Data attached to action

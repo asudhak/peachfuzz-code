@@ -27,31 +27,47 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Collections;
+using System.Linq;
 using System.Text;
-using System.Runtime.InteropServices;
-using System.Runtime;
-using System.Reflection;
-using System.Runtime.Serialization;
+using System.Xml.XPath;
+using NUnit.Framework;
+using NUnit.Framework.Constraints;
+using Peach.Core;
+using Peach.Core.Dom;
+using Peach.Core.Dom.XPath;
+using Peach.Core.Analyzers;
+using Peach.Core.IO;
 
-namespace Peach.Core.Dom
+namespace Peach.Core.Test
 {
-	/// <summary>
-	/// DataModel is just a top level Block.
-	/// </summary>
-	[Serializable]
-	public class DataModel : Block
+	[TestFixture]
+	class PeachXPathTests
 	{
-		public Dom dom = null;
-
-		public DataModel()
+		[Test]
+		public void BasicTest()
 		{
-		}
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" />" +
+				"		</Number>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
 
-		public DataModel(string name)
-		{
-			this.name = name;
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("//TheNumber");
+
+			while (iter.MoveNext())
+			{
+				XPathNavigator n = iter.Current;
+			}
+
+			string a = "a";
 		}
 	}
 }

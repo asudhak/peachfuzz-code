@@ -107,13 +107,20 @@ namespace Peach.Core.Publishers
 			{
 				state["ComArgs_" + count] = (string)((DataElementContainer)arg.dataModel)[0].InternalValue;
 				cmd += "ComArgs_" + count + ",";
+				count++;
 			}
 
-			// Remove that last comma :)
-			cmd = cmd.Substring(0, cmd.Length - 1) + ")";
+			if (count > 0)
+				// Remove that last comma :)
+				cmd = cmd.Substring(0, cmd.Length - 1);
+			
+			cmd += ")";
 
 			object value = Scripting.EvalExpression(cmd, state);
-			return new Variant(value.ToString());
+			if(value != null)
+				return new Variant(value.ToString());
+
+			return null;
 		}
 
 		public override void setProperty(Core.Dom.Action action, string property, Variant value)

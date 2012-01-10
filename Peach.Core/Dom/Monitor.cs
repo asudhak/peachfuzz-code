@@ -30,30 +30,22 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using System.Runtime.InteropServices;
-using System.Runtime;
-using System.Reflection;
+using Peach.Core.Agent;
 using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
 	/// <summary>
-	/// DataModel is just a top level Block.
+	/// A dom element to hold Monitor config information
 	/// </summary>
 	[Serializable]
-	public class DataModel : Block
+	public class Monitor
 	{
-		public Dom dom = null;
-
-		public DataModel()
-		{
-		}
-
-		public DataModel(string name)
-		{
-			this.name = name;
-		}
+		public string cls;
+		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
 	}
+
 }
 
-// end
+
+// END

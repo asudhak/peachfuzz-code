@@ -39,10 +39,10 @@ namespace Peach.Core.Dom
 	public delegate void StateFinishedEventHandler(State state);
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
-	public class State
+	public class State : INamed
 	{
 		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.State");
-		public string name = "Unknown State";
+		public string _name = "Unknown State";
 		public List<Action> actions = new List<Action>();
 
 		public StateModel parent = null;
@@ -59,6 +59,12 @@ namespace Peach.Core.Dom
 		/// Changing to another state.
 		/// </summary>
 		public static event StateChangingStateEventHandler ChangingState;
+
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
 
 		protected virtual void OnStarting()
 		{

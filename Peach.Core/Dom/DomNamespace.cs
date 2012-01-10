@@ -28,81 +28,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Text;
-using System.Threading;
-using Peach.Core;
-using NLog;
+using Peach.Core.Agent;
+using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
-	public delegate void StateModelStartingEventHandler(StateModel model);
-	public delegate void StateModelFinishedEventHandler(StateModel model);
-
-	//[Serializable]
-	public class StateModel : INamed
+	[Serializable]
+	public class DomNamespace : Dom
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.StateModel");
+		protected string _name = "Root";
+		public Dom parent;
 
-		public string _name = null;
-		public object parent;
-		protected State _initialState = null;
-
-		public Dictionary<string, State> states = new Dictionary<string, State>();
-
-		public string name
+		public override string name
 		{
 			get { return _name; }
 			set { _name = value; }
 		}
-
-		public State initialState
-		{
-			get
-			{
-				return _initialState;
-			}
-
-			set
-			{
-				_initialState = value;
-			}
-		}
-
-		/// <summary>
-		/// StateModel is starting to execute.
-		/// </summary>
-		public static event StateModelStartingEventHandler Starting;
-		/// <summary>
-		/// StateModel has finished executing.
-		/// </summary>
-		public static event StateModelFinishedEventHandler Finished;
-
-		protected virtual void OnStarting()
-		{
-			if (Starting != null)
-				Starting(this);
-		}
-
-		protected virtual void OnFinished()
-		{
-			if (Finished != null)
-				Finished(this);
-		}
-
-		public void Run(RunContext context)
-		{
-			try
-			{
-				OnStarting();
-
-				_initialState.Run(context);
-			}
-			finally
-			{
-				OnFinished();
-			}
-		}
 	}
 }
+
 
 // END

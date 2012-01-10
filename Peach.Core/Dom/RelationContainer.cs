@@ -92,7 +92,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public bool hasSizeRelation
+		public bool hasOfSizeRelation
 		{
 			get
 			{
@@ -104,7 +104,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public bool hasOffsetRelation
+		public bool hasOfOffsetRelation
 		{
 			get
 			{
@@ -116,7 +116,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public bool hasCountRelation
+		public bool hasOfCountRelation
 		{
 			get
 			{

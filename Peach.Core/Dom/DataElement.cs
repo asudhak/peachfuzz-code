@@ -72,7 +72,7 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Optional name for element", false)]
 	[Parameter("value", typeof(string), "Optional default value", false)]
 	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
-	public abstract class DataElement
+	public abstract class DataElement : INamed
 	{
 		/// <summary>
 		/// Mutated vale override's fixupImpl

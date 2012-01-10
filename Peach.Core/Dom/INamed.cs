@@ -28,32 +28,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.Linq;
 using System.Text;
-using System.Runtime.InteropServices;
-using System.Runtime;
-using System.Reflection;
-using System.Runtime.Serialization;
 
 namespace Peach.Core.Dom
 {
 	/// <summary>
-	/// DataModel is just a top level Block.
+	/// Named object that is part of Peach DOM
 	/// </summary>
-	[Serializable]
-	public class DataModel : Block
+	public interface INamed
 	{
-		public Dom dom = null;
-
-		public DataModel()
-		{
-		}
-
-		public DataModel(string name)
-		{
-			this.name = name;
-		}
+		string name { get; }
 	}
 }
-
-// end

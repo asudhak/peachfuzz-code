@@ -36,7 +36,7 @@ using System.Runtime.Serialization;
 namespace Peach.Core.Dom
 {
 	[Serializable]
-	public class Dom
+	public class Dom : INamed
     {
 		public string fileName;
 		public string version;
@@ -84,7 +84,7 @@ namespace Peach.Core.Dom
 
 		void dataModels_AddEvent(OrderedDictionary<string, DataModel> sender, string key, DataModel value)
 		{
-			//value.dom = this;
+			value.dom = this;
 		}
 
 		void ns_AddEvent(OrderedDictionary<string, DomNamespace> sender, string key, DomNamespace value)
@@ -94,109 +94,16 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-	}
 
-	/// <summary>
-	/// A dom element to hold Agent configuration information
-	/// </summary>
-	[Serializable]
-	public class Agent
-	{
-		public string name;
-		public string url;
-		public string password;
+		#region INamed Members
 
-		public List<Monitor> monitors = new List<Monitor>();
-	}
-
-	/// <summary>
-	/// A dom element to hold Monitor config information
-	/// </summary>
-	[Serializable]
-	public class Monitor
-	{
-		public string cls;
-		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
-	}
-
-	[Serializable]
-	public class DomNamespace : Dom
-	{
-		public Dom parent;
-		public string name;
-	}
-
-	[Serializable]
-	public class Run
-	{
-		public string name = null;
-		public object parent = null;
-		public Logger logger = null;
-		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
-
-		public Run()
+		public virtual string name
 		{
-			tests.AddEvent += new AddEventHandler<string, Test>(tests_AddEvent);
-		}
-
-		void tests_AddEvent(OrderedDictionary<string, Test> sender, string key, Test value)
-		{
-			value.parent = this;
-		}
-	}
-
-	[Serializable]
-	public class Test
-	{
-		public string name = null;
-		public object parent = null;
-		public Run run = null;
-		public StateModel stateModel = null;
-		public MutationStrategy strategy = null;
-		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
-		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
-		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
-
-		public Test()
-		{
-			loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
-			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
-			//agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
-		}
-
-		#region OrderedDictionary AddEvent Handlers
-
-		//void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
-		//{
-		//    value.parent = this;
-		//}
-
-		void publishers_AddEvent(OrderedDictionary<string, Publisher> sender, string key, Publisher value)
-		{
-			value.parent = this;
-		}
-
-		void loggers_AddEvent(OrderedDictionary<string, Logger> sender, string key, Logger value)
-		{
-			value.parent = this;
+			get { return "root"; }
+			set { throw new Exception("Error, Dom.name is static and cannot be set"); }
 		}
 
 		#endregion
-
-	}
-
-	/// <summary>
-	/// Data specification for a DataModel
-	/// </summary>
-	[Serializable]
-	public class Data
-	{
-		public string name = null;
-		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
-
-		public Data()
-		{
-		}
 	}
 }
 
