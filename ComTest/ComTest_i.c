@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Sat Jan 07 02:07:43 2012
+/* at Mon Jan 09 20:47:07 2012
  */
 /* Compiler settings for ComTest.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 

@@ -214,6 +214,15 @@
     <Compile Include="Dom\State.cs" />
     <Compile Include="Fixups\CopyValueFixup.cs" />
     <Compile Include="Fixups\Crc32DualFixup.cs" />
+    <Compile Include="Fixups\EthernetChecksumFixup.cs" />
+    <Compile Include="Fixups\IcmpChecksumFixup.cs" />
+    <Compile Include="Fixups\MD5Fixup.cs" />
+    <Compile Include="Fixups\SequenceIncrementFixup.cs" />
+    <Compile Include="Fixups\SequenceRandomFixup.cs" />
+    <Compile Include="Fixups\SHA1Fixup.cs" />
+    <Compile Include="Fixups\SHA256Fixup.cs" />
+    <Compile Include="Fixups\SHA384Fixup.cs" />
+    <Compile Include="Fixups\SHA512Fixup.cs" />
     <Compile Include="IO\BitStream.cs" />
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\DataCracker.cs" />

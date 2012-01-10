@@ -43,8 +43,11 @@ namespace Peach.Core.Fixups
 		public Crc32DualFixup(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			if (!args.ContainsKey("ref"))
-				throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
+			if (!args.ContainsKey("ref1"))
+				throw new PeachException("Error, Crc32DualFixup requires a 'ref1' argument!");
+
+            if (!args.ContainsKey("ref2"))
+                throw new PeachException("Error, Crc32DualFixup requires a 'ref2' arguement!");
 		}
 
 		protected override Variant fixupImpl(DataElement obj)
