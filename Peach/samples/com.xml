@@ -5,12 +5,14 @@
 	<!-- Import defaults for Peach instance -->
 	<Include ns="default" src="file:defaults.xml"/>
 
-	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
 		<String value="Hello World!" />
 	</DataModel>
 
-	<!-- TODO: Create state model -->
+	<DataModel name="TheDataModelNumber">
+		<String value="100" />
+	</DataModel>
+
 	<StateModel name="TheState" initialState="Initial">
 
 		<State name="Initial">
@@ -18,6 +20,50 @@
 				<Param name="arg1">
 					<DataModel ref="TheDataModel" />
 				</Param>
+			</Action>
+			
+			<!-- TODO - Capture result -->
+			<Action type="call" method="Method2">
+			</Action>
+			
+			<Action type="call" method="Method3">
+				<Param name="arg1">
+					<DataModel ref="TheDataModel" />
+				</Param>
+			</Action>
+
+			<Action type="call" method="Method4"/>
+
+			<Action type="call" method="Method4">
+				<Param name="arg1">
+					<DataModel ref="TheDataModel" />
+				</Param>
+			</Action>
+
+			<Action type="call" method="Method5">
+				<Param name="arg1">
+					<DataModel ref="TheDataModelNumber" />
+				</Param>
+				<Param name="arg2">
+					<DataModel ref="TheDataModelNumber" />
+				</Param>
+			</Action>
+
+			<Action type="call" method="Method6">
+				<Param name="arg1">
+					<DataModel ref="TheDataModelNumber" />
+				</Param>
+				<Param name="arg2">
+					<DataModel ref="TheDataModelNumber" />
+				</Param>
+			</Action>
+
+			<Action type="getprop" property="Property1">
+				<DataModel ref="TheDataModel" />
+			</Action>
+
+			<Action type="setprop" property="Property1">
+				<DataModel ref="TheDataModel" />
 			</Action>
 		</State>
 
