@@ -227,6 +227,7 @@ namespace Peach.Core.Dom.XPath
 					return false;
 
 				currentNode = state.actions[0];
+				return true;
 			}
 			else if (currentNode is Action)
 			{
@@ -243,7 +244,6 @@ namespace Peach.Core.Dom.XPath
 
 				currentNode = action.parameters[0].dataModel;
 				currentNodeType = PeachXPathNodeType.DataModel;
-
 				return true;
 			}
 			else if (currentNode is Test)
@@ -264,6 +264,7 @@ namespace Peach.Core.Dom.XPath
 
 				currentNode = run.tests[0];
 				currentNodeType = PeachXPathNodeType.Test;
+				return true;
 			}
 
 			throw new ArgumentException("Error, unknown type");
@@ -296,14 +297,59 @@ namespace Peach.Core.Dom.XPath
 			if (parent == null)
 			{
 				if (currentNode is DataModel)
-					parent = obj.dom;
+				{
+					if (obj.dom != null)
+						parent = obj.dom;
+					else if (obj.action != null)
+						parent = obj.action;
+				}
 
 				if(parent == null)
 					throw new Exception("Error, parent was unexpectedly null for object '" +
 						obj.name + "' of type " + currentNode.GetType().ToString() + ".");
 			}
+			if (currentNode is DataModel)
+			{
+				if(parent is Dom)
+				{
+					var dom = parent as Dom;
+					int index = dom.dataModels.IndexOfKey(((INamed)currentNode).name);
+					if ((index + 1) >= dom.dataModels.Count)
+					{
+						if (dom.stateModels.Count > 0)
+						{
+							currentNode = dom.stateModels[0];
+							currentNodeType = PeachXPathNodeType.StateModel;
+							return true;
+						}
+						else if (dom.tests.Count > 0)
+						{
+							currentNode = dom.tests[0];
+							currentNodeType = PeachXPathNodeType.Test;
+							return true;
+						}
+						else if (dom.runs.Count > 0)
+						{
+							currentNode = dom.runs[0];
+							currentNodeType = PeachXPathNodeType.Run;
+							return true;
+						}
 
-			if (currentNode is DataElement)
+						return false;
+					}
+
+					currentNode = dom.dataModels[index+1];
+					return true;
+				}
+				else if(parent is Action)
+				{
+					return false;
+				}
+
+				throw new Exception("Error, data model has weird parent!");
+
+			}
+			else if (currentNode is DataElement)
 			{
 				if (parent is DataElementContainer)
 				{
@@ -313,6 +359,7 @@ namespace Peach.Core.Dom.XPath
 						return false;
 
 					currentNode = block[index + 1];
+					return true;
 				}
 				return false;
 			}
@@ -429,9 +476,16 @@ namespace Peach.Core.Dom.XPath
 				return false;
 
 			dynamic obj = currentNode;
-			
+
 			if (obj is DataModel)
-				currentNode = obj.dom;
+			{
+				if (obj.dom != null)
+					currentNode = obj.dom;
+				else if (obj.action != null)
+					currentNode = obj.action;
+				else
+					throw new Exception("Error, data model with no dom/action parent!");
+			}
 			else
 				currentNode = obj.parent;
 

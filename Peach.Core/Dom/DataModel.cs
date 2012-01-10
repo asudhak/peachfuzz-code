@@ -43,7 +43,15 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class DataModel : Block
 	{
+		/// <summary>
+		/// Dom parent of data model if any
+		/// </summary>
 		public Dom dom = null;
+
+		/// <summary>
+		/// Action parent of data model if any
+		/// </summary>
+		public Action action = null;
 
 		public DataModel()
 		{

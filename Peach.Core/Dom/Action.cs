@@ -68,6 +68,7 @@ namespace Peach.Core.Dom
 	/// Performs an Action such as sending output,
 	/// calling a method, etc.
 	/// </summary>
+	[Serializable]
 	public class Action : INamed
 	{
 		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.Action");
@@ -119,12 +120,16 @@ namespace Peach.Core.Dom
 				if (_origionalDataModel == null)
 				{
 					_origionalDataModel = value;
+					_origionalDataModel.action = this;
+					_origionalDataModel.dom = null;
 
 					// Get the value to optimize next generation based on invalidation
 					object tmp = _origionalDataModel.Value;
 				}
 
 				_dataModel = value;
+				_dataModel.action = this;
+				_dataModel.dom = null;
 			}
 		}
 

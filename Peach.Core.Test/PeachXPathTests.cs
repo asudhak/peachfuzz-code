@@ -62,12 +62,196 @@ namespace Peach.Core.Test
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
 			XPathNodeIterator iter = navi.Select("//TheNumber");
 
-			while (iter.MoveNext())
-			{
-				XPathNavigator n = iter.Current;
-			}
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(dom.dataModels[0][0], ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
+		}
 
-			string a = "a";
+		[Test]
+		public void BasicTest2()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" />" +
+				"		</Number>" +
+				"		<Block>" +
+				"			<Block>" +
+				"				<String name=\"FindMe\"/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"		<Block>" +
+				"			<String name=\"FindMe\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
+			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
+
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("//FindMe");
+
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe2, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
+		}
+
+		[Test]
+		public void BasicTest3()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" />" +
+				"		</Number>" +
+				"		<Block name=\"Block1\">" +
+				"			<Block name=\"Block1.1\">" +
+				"				<String name=\"FindMe\"/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"		<Block>" +
+				"			<String name=\"FindMe\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
+			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
+
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("//Block1//FindMe");
+
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
+		}
+
+		[Test]
+		public void BasicTest4()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" />" +
+				"		</Number>" +
+				"		<Block name=\"Block1\">" +
+				"			<Block name=\"Block1.1\">" +
+				"				<String name=\"FindMe\"/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"		<Block>" +
+				"			<String name=\"FindMe\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
+			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
+
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("/TheDataModel/Block1/Block1.1/FindMe");
+
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
+		}
+
+		[Test]
+		public void BasicAttributeTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" />" +
+				"		</Number>" +
+				"		<Block name=\"Block1\">" +
+				"			<Block name=\"Block1.1\">" +
+				"				<String name=\"FindMe\"/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"		<Block>" +
+				"			<String name=\"FindMe\" isToken=\"true\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
+			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
+
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("//FindMe[@isToken=true]");
+
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe2, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
+		}
+
+		[Test]
+		public void StateModelTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"count\" of=\"Array\" />" +
+				"		</Number>" +
+				"		<Block name=\"Block1\">" +
+				"			<Block name=\"Block1.1\">" +
+				"				<String name=\"FindMe\"/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<String name=\"Array\" value=\"1\" maxOccurs=\"100\"/>" +
+				"		<Block>" +
+				"			<String name=\"FindMe\" isToken=\"true\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"	<StateModel name=\"FOo\" initialState=\"State1\">"+
+				"		<State name=\"State1\">"+
+				"			<Action name=\"Action1\">"+
+				"				<DataModel name=\"Action1DataModel\" ref=\"TheDataModel\"/>"+
+				"			</Action>"+
+				"		</State>"+
+				"	</StateModel>"+
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
+			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
+			DataElement findMe3 = ((DataElementContainer)((DataElementContainer)dom.stateModels[0].states["State1"].actions[0].dataModel[1])[0])[0];
+			DataElement findMe4 = ((DataElementContainer)dom.stateModels[0].states["State1"].actions[0].dataModel[3])[0];
+
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("//FindMe");
+
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe2, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe3, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe4, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
 		}
 	}
 }
