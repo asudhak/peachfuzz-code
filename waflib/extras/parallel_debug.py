@@ -105,7 +105,8 @@ def process(self):
 
 	self.master.set_running(-1, id(Utils.threading.currentThread()), self)
 	m.out.put(self)
-Task.Task.process = process
+Task.TaskBase.process_back = Task.TaskBase.process
+Task.TaskBase.process = process
 
 old_start = Runner.Parallel.start
 def do_start(self):
