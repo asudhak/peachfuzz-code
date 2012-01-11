@@ -43,7 +43,7 @@ namespace Peach.Core.Fixups
 		public Crc32DualFixup(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			if (!args.ContainsKey("ref1"))
+			if (!args.ContainsKey("ref1") || !args.ContainsKey("ref2"))
 				throw new PeachException("Error, Crc32DualFixup requires a 'ref1' argument!");
 
             if (!args.ContainsKey("ref2"))
@@ -56,13 +56,15 @@ namespace Peach.Core.Fixups
 			string objRef2 = (string)args["ref2"];
 			byte[] data1 = obj.find(objRef1).Value.Value;
 			byte[] data2 = obj.find(objRef2).Value.Value;
-			byte[] data3 = new byte[data1.Length + data2.Length];
+            byte[] data3 = ArrayExtensions.Combine(data1, data2);
 
-			int cnt = 0;
-			for (int cnt1 = 0; cnt1 < data1.Length; cnt1++, cnt++)
-				data3[cnt] = data1[cnt1];
-			for (int cnt2 = 0; cnt2 < data2.Length; cnt2++, cnt++)
-				data3[cnt] = data2[cnt2];
+            //byte[] data3 = new byte[data1.Length + data2.Length];
+
+            //int cnt = 0;
+            //for (int cnt1 = 0; cnt1 < data1.Length; cnt1++, cnt++)
+            //    data3[cnt] = data1[cnt1];
+            //for (int cnt2 = 0; cnt2 < data2.Length; cnt2++, cnt++)
+            //    data3[cnt] = data2[cnt2];
 
 			CRCTool crcTool = new CRCTool();
 			crcTool.Init(CRCTool.CRCCode.CRC32);

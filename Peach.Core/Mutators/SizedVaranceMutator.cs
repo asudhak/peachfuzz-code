@@ -144,6 +144,7 @@ namespace Peach.Core.Mutators
         private void performMutation(DataElement obj, int curr)
         {
             var sizeRelation = obj.relations.getSizeRelation();
+            //var sizeRelation2 = obj.relations.getSizeRelation();
             var objOf = sizeRelation.Of;
             var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;

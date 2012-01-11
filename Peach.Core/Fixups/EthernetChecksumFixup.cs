@@ -26,7 +26,6 @@ namespace Peach.Core.Fixups
             DataElement from = obj.find(objRef);
             byte[] data = from.Value.Value;
             byte[] ethernetKey = new byte[] { 0x04, 0xC1, 0x1D, 0xB7 };
-
             byte[] final = ArrayExtensions.Combine(data, ethernetKey);
 
             CRCTool crcTool = new CRCTool();

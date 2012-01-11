@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
-using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
@@ -22,10 +21,6 @@ namespace Peach.Core.Fixups
 
         protected override Variant fixupImpl(DataElement obj)
         {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-            byte[] data = from.Value.Value;
-
             return new Variant("");
         }
     }

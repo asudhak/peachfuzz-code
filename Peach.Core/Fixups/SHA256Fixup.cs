@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using Peach.Core.Dom;
-using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {

@@ -1007,6 +1007,7 @@
     <Compile Include="Random.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="Transformer.cs" />
+    <Compile Include="Transformers\Bz2.cs" />
     <Compile Include="Transformers\Encode\Base64.cs" />
     <Compile Include="Transformers\Encode\Hex.cs" />
     <Compile Include="Transformers\Encode\Html.cs" />

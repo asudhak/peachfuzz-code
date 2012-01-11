@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
-using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
@@ -13,6 +12,8 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class SequenceIncrementFixup : Fixup
     {
+        int num = 1;
+
         public SequenceIncrementFixup(Dictionary<string, Variant> args)
             : base(args)
         {
@@ -22,11 +23,8 @@ namespace Peach.Core.Fixups
 
         protected override Variant fixupImpl(DataElement obj)
         {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-            byte[] data = from.Value.Value;
-
-            return new Variant("");
+            ++num;
+            return new Variant(num);
         }
     }
 }
