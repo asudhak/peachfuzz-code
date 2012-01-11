@@ -54,6 +54,7 @@ namespace Peach.Core.Dom
 		///   
 		/// This variable is one of those parent holders.
 		/// </remarks>
+		[NonSerialized]
 		public Dom dom = null;
 
 		/// <summary>
@@ -67,6 +68,7 @@ namespace Peach.Core.Dom
 		///   
 		/// This variable is one of those parent holders.
 		/// </remarks>
+		[NonSerialized]
 		public Action action = null;
 
 		public DataModel()
