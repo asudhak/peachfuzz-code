@@ -77,7 +77,7 @@ namespace Peach.Core.Mutators
             }
             else if (obj is Number)
             {
-                size = (int) ((Number)obj).lengthAsBits;
+                size = (int)((Number)obj).lengthAsBits;
                 signed = ((Number)obj).Signed;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
@@ -142,7 +142,7 @@ namespace Peach.Core.Mutators
             }
             else
             {
-                ulong[] uEdges64 = NumberGenerator.GenerateBadPositiveUInt64(5);
+                ulong[] uEdges64 = NumberGenerator.GenerateBadPositiveUInt64(n);
                 ulongValues = uEdges64;
 
                 List<ulong> listUVals = new List<ulong>();

@@ -153,7 +153,7 @@ namespace Peach.Core.Mutators
         public new static bool supportedDataElement(DataElement obj)
         {
             // verify data element has size relation
-            if (obj.isMutable && obj.relations.hasOfSizeRelation)
+            if (obj.isMutable && obj.relations.hasFromSizeRelation)
                 return true;
 
             return false;
@@ -177,7 +177,7 @@ namespace Peach.Core.Mutators
         //
         private void performMutation(DataElement obj, long curr)
         {
-            var sizeRelation = obj.relations.getSizeRelation();
+            var sizeRelation = obj.relations.getFromSizeRelation();
             var objOf = sizeRelation.Of;
             var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;

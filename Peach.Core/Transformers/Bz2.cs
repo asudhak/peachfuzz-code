@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.IO;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using Ionic.BZip2;
 
 namespace Peach.Core.Transformers
 {

@@ -408,7 +408,7 @@ namespace Peach.Core.Cracker
 				if (element.relations.hasOfOffsetRelation)
 				{
 					hasOffsetRelation = true;
-					OffsetRelation rel = element.relations.getOffsetRelation();
+					OffsetRelation rel = element.relations.getOfOffsetRelation();
 					long offset = (long)rel.GetValue();
 
 					if (!rel.isRelativeOffset)
@@ -547,7 +547,7 @@ namespace Peach.Core.Cracker
 			// Do we have relations or a length?
 			if (element.relations.hasOfSizeRelation)
 			{
-				sizeRelation = element.relations.getSizeRelation();
+				sizeRelation = element.relations.getOfSizeRelation();
 
 				if (!element.isParentOf(sizeRelation.From))
 				{
@@ -623,7 +623,7 @@ namespace Peach.Core.Cracker
 			// Do we have relations or a length?
 			if (element.relations.hasOfSizeRelation)
 			{
-				sizeRelation = element.relations.getSizeRelation();
+				sizeRelation = element.relations.getOfSizeRelation();
 
 				if (!element.isParentOf(sizeRelation.From))
 				{
@@ -772,7 +772,7 @@ namespace Peach.Core.Cracker
 			}
 			else if(element.relations.hasOfSizeRelation)
 			{
-				size = element.relations.getSizeRelation().GetValue();
+				size = element.relations.getOfSizeRelation().GetValue();
 			}
 			else
 			{

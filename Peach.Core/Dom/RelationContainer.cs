@@ -128,7 +128,43 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public SizeRelation getSizeRelation()
+        public bool hasFromSizeRelation
+        {
+            get
+            {
+                foreach (Relation rel in _childrenList)
+                    if (rel is SizeRelation && rel.From == parent)
+                        return true;
+
+                return false;
+            }
+        }
+
+        public bool hasFromOffsetRelation
+        {
+            get
+            {
+                foreach (Relation rel in _childrenList)
+                    if (rel is OffsetRelation && rel.From == parent)
+                        return true;
+
+                return false;
+            }
+        }
+
+        public bool hasFromCountRelation
+        {
+            get
+            {
+                foreach (Relation rel in _childrenList)
+                    if (rel is CountRelation && rel.From == parent)
+                        return true;
+
+                return false;
+            }
+        }
+
+		public SizeRelation getOfSizeRelation()
 		{
 			foreach (Relation rel in _childrenList)
 			{
@@ -139,7 +175,7 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-		public CountRelation getCountRelation()
+		public CountRelation getOfCountRelation()
 		{
 			foreach (Relation rel in _childrenList)
 			{
@@ -150,7 +186,7 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-		public OffsetRelation getOffsetRelation()
+		public OffsetRelation getOfOffsetRelation()
 		{
 			foreach (Relation rel in _childrenList)
 			{
@@ -160,6 +196,39 @@ namespace Peach.Core.Dom
 
 			return null;
 		}
+
+        public SizeRelation getFromSizeRelation()
+        {
+            foreach (Relation rel in _childrenList)
+            {
+                if (rel is SizeRelation && rel.From == parent)
+                    return rel as SizeRelation;
+            }
+
+            return null;
+        }
+
+        public CountRelation getFromCountRelation()
+        {
+            foreach (Relation rel in _childrenList)
+            {
+                if (rel is CountRelation && rel.From == parent)
+                    return rel as CountRelation;
+            }
+
+            return null;
+        }
+
+        public OffsetRelation getFromOffsetRelation()
+        {
+            foreach (Relation rel in _childrenList)
+            {
+                if (rel is OffsetRelation && rel.From == parent)
+                    return rel as OffsetRelation;
+            }
+
+            return null;
+        }
 
 		#region IEnumerable<Relation> Members
 
