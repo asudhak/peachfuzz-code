@@ -1015,6 +1015,13 @@
     <Compile Include="Transformers\Encode\Utf.cs" />
     <Compile Include="Transformers\Encode\WideChar.cs" />
     <Compile Include="Transformers\Compress\Gzip.cs" />
+    <Compile Include="Transformers\Type\IntToHex.cs" />
+    <Compile Include="Transformers\Type\NumberToString.cs" />
+    <Compile Include="Transformers\Type\Pack.cs" />
+    <Compile Include="Transformers\Type\SignedNumberToString.cs" />
+    <Compile Include="Transformers\Type\StringToFloat.cs" />
+    <Compile Include="Transformers\Type\StringToInt.cs" />
+    <Compile Include="Transformers\Type\UnsignedNumberToString.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Variant.cs" />
     <Compile Include="Watcher.cs" />
@@ -1052,6 +1059,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
