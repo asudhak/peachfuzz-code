@@ -36,9 +36,9 @@ using System.Runtime.Serialization;
 namespace Peach.Core.Dom
 {
 	[Serializable]
-	public class Run
+	public class Run : INamed
 	{
-		public string name = null;
+		public string _name = null;
 		public object parent = null;
 		public Logger logger = null;
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
@@ -51,6 +51,12 @@ namespace Peach.Core.Dom
 		void tests_AddEvent(OrderedDictionary<string, Test> sender, string key, Test value)
 		{
 			value.parent = this;
+		}
+
+		public virtual string name
+		{
+			get { return _name; }
+			set { _name = value; }
 		}
 	}
 }

@@ -1820,13 +1820,13 @@ namespace Peach.Core.Analyzers
 				action.valueXpath = getXmlAttribute(node, "valueXpath");
 			}
 
-			if (hasXmlAttribute(node, "value"))
-			{
-				if (action.type != ActionType.Slurp)
-					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'value' attribute");
+			//if (hasXmlAttribute(node, "value"))
+			//{
+			//    if (action.type != ActionType.Slurp)
+			//        throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'value' attribute");
 
-				action.value = getXmlAttribute(node, "value");
-			}
+			//    action.value = getXmlAttribute(node, "value");
+			//}
 
 			foreach (XmlNode child in node.ChildNodes)
 			{

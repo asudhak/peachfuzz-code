@@ -587,6 +587,11 @@ namespace Peach.Core.Dom
 
 				return _value;
 			}
+
+			set
+			{
+				_value = value;
+			}
 		}
 
 		/// <summary>

@@ -2213,11 +2213,11 @@
 											<xs:documentation>xpath expression that finds a single node to get a value from.  Only used when type is xpath.</xs:documentation>
 										</xs:annotation>
 									</xs:attribute>
-									<xs:attribute name="value" type="xs:string">
+									<!--<xs:attribute name="value" type="xs:string">
 										<xs:annotation>
 											<xs:documentation>value to set on setXpath nodes.  Only used when type is xpath.</xs:documentation>
 										</xs:annotation>
-									</xs:attribute>
+									</xs:attribute>-->
 									<xs:attribute name="when" type="xs:string">
 										<xs:annotation>
 											<xs:documentation>Python expression that will be evauluated before this Action is performed.  If the 

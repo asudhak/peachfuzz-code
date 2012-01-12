@@ -20,6 +20,8 @@ namespace Peach.Core.Dom.XPath
 	/// from a Peach DOM.  By implementing an XPathNavigator we 
 	/// should beable to use the built in .NET XPath system with
 	/// our Peach DOM.
+	/// 
+	/// This XPath navigator will only search root -> run -> test -> stateModel -> States* -> Actions* -> DataModels*.
 	/// </remarks>
 	public class PeachXPathNavigator : XPathNavigator
 	{
@@ -175,7 +177,7 @@ namespace Peach.Core.Dom.XPath
 
 		public override bool MoveToFirstChild()
 		{
-			logger.Trace("MoveToFirstChild");
+			logger.Trace("MoveToFirstChild(" + ((INamed)currentNode).name + ")");
 
 			if (currentNode is DataElementContainer)
 			{
@@ -194,25 +196,26 @@ namespace Peach.Core.Dom.XPath
 			{
 				var dom = currentNode as Dom;
 
-				if (dom.dataModels.Count > 0)
-				{
-					currentNode = dom.dataModels[0];
-					currentNodeType = PeachXPathNodeType.DataModel;
-					return true;
-				}
-				else if (dom.stateModels.Count > 0)
-				{
-					currentNode = dom.stateModels[0];
-					currentNodeType = PeachXPathNodeType.StateModel;
-					return true;
-				}
-				else if (dom.tests.Count > 0)
-				{
-					currentNode = dom.tests[0];
-					currentNodeType = PeachXPathNodeType.Test;
-					return true;
-				}
-				else if (dom.runs.Count > 0)
+				//if (dom.dataModels.Count > 0)
+				//{
+				//    currentNode = dom.dataModels[0];
+				//    currentNodeType = PeachXPathNodeType.DataModel;
+				//    return true;
+				//}
+				//else if (dom.stateModels.Count > 0)
+				//{
+				//    currentNode = dom.stateModels[0];
+				//    currentNodeType = PeachXPathNodeType.StateModel;
+				//    return true;
+				//}
+				//else if (dom.tests.Count > 0)
+				//{
+				//    currentNode = dom.tests[0];
+				//    currentNodeType = PeachXPathNodeType.Test;
+				//    return true;
+				//}
+
+				if (dom.runs.Count > 0)
 				{
 					currentNode = dom.runs[0];
 					currentNodeType = PeachXPathNodeType.Run;
@@ -297,7 +300,7 @@ namespace Peach.Core.Dom.XPath
 
 		public override bool MoveToNext()
 		{
-			logger.Trace("MoveToNext");
+			logger.Trace("MoveToNext(" + ((INamed)currentNode).name + ")");
 
 			if (currentNodeType == PeachXPathNodeType.Root)
 				return false;
@@ -321,38 +324,7 @@ namespace Peach.Core.Dom.XPath
 			}
 			if (currentNode is DataModel)
 			{
-				if(parent is Dom)
-				{
-					var dom = parent as Dom;
-					int index = dom.dataModels.IndexOfKey(((INamed)currentNode).name);
-					if ((index + 1) >= dom.dataModels.Count)
-					{
-						if (dom.stateModels.Count > 0)
-						{
-							currentNode = dom.stateModels[0];
-							currentNodeType = PeachXPathNodeType.StateModel;
-							return true;
-						}
-						else if (dom.tests.Count > 0)
-						{
-							currentNode = dom.tests[0];
-							currentNodeType = PeachXPathNodeType.Test;
-							return true;
-						}
-						else if (dom.runs.Count > 0)
-						{
-							currentNode = dom.runs[0];
-							currentNodeType = PeachXPathNodeType.Run;
-							return true;
-						}
-
-						return false;
-					}
-
-					currentNode = dom.dataModels[index+1];
-					return true;
-				}
-				else if(parent is Action)
+				if(parent is Action)
 				{
 					return false;
 				}
@@ -376,30 +348,7 @@ namespace Peach.Core.Dom.XPath
 			}
 			else if (currentNode is StateModel)
 			{
-				var stateModel = currentNode as StateModel;
-				var dom = parent as Dom;
-
-				int index = dom.stateModels.IndexOfKey(stateModel.name);
-				if (dom.stateModels.Count <= (index + 1))
-				{
-					if (dom.tests.Count > 0)
-					{
-						currentNode = dom.tests[0];
-						currentNodeType = PeachXPathNodeType.Test;
-						return true;
-					}
-					else if (dom.runs.Count > 0)
-					{
-						currentNode = dom.runs[0];
-						currentNodeType = PeachXPathNodeType.Run;
-						return true;
-					}
-
-					return false;
-				}
-
-				currentNode = dom.stateModels[index + 1];
-				return true;
+				return false;
 			}
 			else if (currentNode is State)
 			{
@@ -432,19 +381,12 @@ namespace Peach.Core.Dom.XPath
 			}
 			else if (currentNode is Test)
 			{
-				var dom = parent as Dom;
-				int index = dom.tests.IndexOfKey(((INamed)currentNode).name);
-				if (dom.tests.Count <= (index + 1))
-				{
-					if (dom.runs.Count == 0)
-						return false;
+				var run = parent as Run;
+				int index = run.tests.IndexOfKey(((INamed)currentNode).name);
+				if (run.tests.Count <= (index + 1))
+					return false;
 
-					currentNode = dom.runs[0];
-					currentNodeType = PeachXPathNodeType.Run;
-					return true;
-				}
-
-				currentNode = dom.tests[index + 1];
+				currentNode = run.tests[index + 1];
 				return true;
 			}
 			else if (currentNode is Run)
@@ -493,7 +435,7 @@ namespace Peach.Core.Dom.XPath
 
 		public override bool MoveToParent()
 		{
-			logger.Trace("MoveToParent");
+			logger.Trace("MoveToParent(" + ((INamed)currentNode).name + ")");
 
 			if (iteratingAttributes)
 			{

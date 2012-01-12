@@ -33,6 +33,8 @@ using System.Threading;
 using Peach.Core;
 using NLog;
 
+using Peach.Core.Dom.XPath;
+
 namespace Peach.Core.Dom
 {
 	/// <summary>
@@ -90,7 +92,7 @@ namespace Peach.Core.Dom
 		protected string _ref = null;
 		protected string _method = null;
 		protected string _property = null;
-		protected string _value = null;
+		//protected string _value = null;
 		protected string _setXpath = null;
 		protected string _valueXpath = null;
 
@@ -142,12 +144,15 @@ namespace Peach.Core.Dom
 			set { _origionalDataModel = value; }
 		}
 
-		public string value
-		{
-			get { return _value; }
-			set { _value = value; }
-		}
+		//public string value
+		//{
+		//    get { return _value; }
+		//    set { _value = value; }
+		//}
 
+		/// <summary>
+		/// Array of parameters for a method call
+		/// </summary>
 		public List<ActionParameter> parameters
 		{
 			get { return _params; }
@@ -336,17 +341,17 @@ namespace Peach.Core.Dom
 						handleCall(publisher, context);
 						break;
 					case ActionType.GetProperty:
-						handleGetProperty();
+						handleGetProperty(publisher);
 						break;
 					case ActionType.SetProperty:
-						handleSetProperty();
+						handleSetProperty(publisher);
 						break;
 
 					case ActionType.ChangeState:
 						handleChangeState();
 						break;
 					case ActionType.Slurp:
-						handleSlurp();
+						handleSlurp(context);
 						break;
 
 					default:
@@ -392,12 +397,15 @@ namespace Peach.Core.Dom
 			publisher.call(this, method, parameters);
 		}
 
-		protected void handleGetProperty()
+		protected void handleGetProperty(Publisher publisher)
 		{
+			Variant result = publisher.getProperty(this, property);
+			this.dataModel.DefaultValue = result;
 		}
 
-		protected void handleSetProperty()
+		protected void handleSetProperty(Publisher publisher)
 		{
+			publisher.setProperty(this, property, this.dataModel.InternalValue);
 		}
 
 		protected void handleChangeState()
@@ -413,8 +421,34 @@ namespace Peach.Core.Dom
 			throw new ActionChangeStateException(this.parent.parent.states[reference]);
 		}
 
-		protected void handleSlurp()
+		protected void handleSlurp(RunContext context)
 		{
+			PeachXPathNavigator navi = new PeachXPathNavigator(context.dom);
+			var iter = navi.Select(valueXpath);
+			if (!iter.MoveNext())
+				throw new PeachException("Error, slurp valueXpath returned no values. [" + valueXpath + "]");
+
+			DataElement valueElement = ((PeachXPathNavigator)iter.Current).currentNode as DataElement;
+			if (valueElement == null)
+				throw new PeachException("Error, slurp valueXpath did not return a Data Element. [" + valueXpath + "]");
+
+			if (iter.MoveNext())
+				throw new PeachException("Error, slurp valueXpath returned multiple values. [" + valueXpath + "]");
+
+			iter = navi.Select(setXpath);
+
+			if (!iter.MoveNext())
+				throw new PeachException("Error, slurp setXpath returned no values. [" + setXpath + "]");
+
+			do
+			{
+				var setElement = ((PeachXPathNavigator)iter.Current).currentNode as DataElement;
+				if (setElement == null)
+					throw new PeachException("Error, slurp setXpath did not return a Data Element. [" + valueXpath + "]");
+
+				setElement.Value = valueElement.Value;
+			}
+			while (iter.MoveNext());
 		}
 	}
 
