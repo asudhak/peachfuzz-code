@@ -8,7 +8,7 @@ using Peach.Core.Dom;
 using Peach.Core.IO;
 using Ionic.BZip2;
 
-namespace Peach.Core.Transformers
+namespace Peach.Core.Transformers.Compress
 {
     [TransformerAttribute("Bz2Compress", "Compress on output using bz2.")]
     public class Bz2Compress : Transformer

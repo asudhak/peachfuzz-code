@@ -34,7 +34,7 @@ using System.IO;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
-namespace Peach.Core.Transformers
+namespace Peach.Core.Transformers.Compress
 {
 	[TransformerAttribute("GzipCompress", "Compress on output using gzip.")]
 	public class GzipCompress : Transformer

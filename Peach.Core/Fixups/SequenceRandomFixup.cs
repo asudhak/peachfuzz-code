@@ -12,6 +12,8 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class SequenceRandomFixup : Fixup
     {
+        Random rand = new Random();
+
         public SequenceRandomFixup(Dictionary<string, Variant> args)
             : base(args)
         {
@@ -21,7 +23,7 @@ namespace Peach.Core.Fixups
 
         protected override Variant fixupImpl(DataElement obj)
         {
-            return new Variant("");
+            return new Variant(rand.Next());
         }
     }
 }

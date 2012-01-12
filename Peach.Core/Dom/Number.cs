@@ -202,56 +202,70 @@ namespace Peach.Core.Dom
 			else
 				bits.BigEndian();
 
-			if (lengthAsBits % 8 == 0)
-			{
-				bits.WriteBytes(bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)lengthAsBits / 8));
-			}
-			else
-			{
-				byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
-				byte lastByte = buff[buff.Length - 1];
-				bits.WriteBytes(buff, 0, buff.Length - 1);
-				bits.WriteBits(lastByte, (int)lengthAsBits % 8);
-			}
+            if (Signed)
+            {
+                switch (lengthAsBits)
+                {
+                    case 8:
+                        bits.WriteInt8((sbyte)InternalValue);
+                        break;
+                    case 16:
+                        bits.WriteInt16((short)InternalValue);
+                        break;
+                    case 32:
+                        bits.WriteInt32((int)InternalValue);
+                        break;
+                    case 64:
+                        bits.WriteInt64((long)InternalValue);
+                        break;
+                    default:
+                        {
+                            byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
+                            byte lastByte = buff[buff.Length - 1];
+                            bits.WriteBytes(buff, 0, buff.Length - 1);
+                            bits.WriteBits(lastByte, (int)lengthAsBits % 8);
+                            break;
+                        }
+                }
+            }
+            else
+            {
+                switch (lengthAsBits)
+                {
+                    case 8:
+                        bits.WriteUInt8((byte)(uint)InternalValue);
+                        break;
+                    case 16:
+                        bits.WriteUInt16((ushort)(uint)InternalValue);
+                        break;
+                    case 32:
+                        bits.WriteUInt32((uint)InternalValue);
+                        break;
+                    case 64:
+                        bits.WriteUInt64((ulong)InternalValue);
+                        break;
+                    default:
+                        {
+                            byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
+                            byte lastByte = buff[buff.Length - 1];
+                            bits.WriteBytes(buff, 0, buff.Length - 1);
+                            bits.WriteBits(lastByte, (int)lengthAsBits % 8);
+                            break;
+                        }
+                }
+            }
 
-			//if (Signed)
-			//{
-			//    switch (lengthAsBits)
-			//    {
-			//        case 8:
-			//            bits.WriteInt8((sbyte)InternalValue);
-			//            break;
-			//        case 16:
-			//            bits.WriteInt16((short)InternalValue);
-			//            break;
-			//        case 24:
-			//            throw new NotImplementedException("Doh!");
-			//        //bits.WriteInt24((sbyte)InternalValue);
-			//        //break;
-			//        case 32:
-			//            bits.WriteInt32((int)InternalValue);
-			//            break;
-			//        case 64:
-			//            bits.WriteInt64((long)InternalValue);
-			//            break;
-			//        default:
-			//            throw new NotImplementedException("Urm, yah");
-			//    }
-			//}
-			//else
-			//{
-			//    if (lengthAsBits % 8 == 0)
-			//    {
-			//        bits.WriteBytes(bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)lengthAsBits / 8));
-			//    }
-			//    else
-			//    {
-			//        byte [] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits/8)+1);
-			//        byte lastByte = buff[buff.Length - 1];
-			//        bits.WriteBytes(buff, 0, buff.Length - 1);
-			//        bits.WriteBits(lastByte, (int)lengthAsBits % 8);
-			//    }
-			//}
+            //if (lengthAsBits % 8 == 0)
+            //{
+            //    bits.WriteBytes(bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)lengthAsBits / 8));
+            //}
+            //else
+            //{
+            //    byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
+            //    byte lastByte = buff[buff.Length - 1];
+            //    bits.WriteBytes(buff, 0, buff.Length - 1);
+            //    bits.WriteBits(lastByte, (int)lengthAsBits % 8);
+            //}
 
 			return bits;
 		}
