@@ -997,6 +997,7 @@
     <Compile Include="Publishers\ConsolePublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
     <Compile Include="Dom\StateModel.cs" />
+    <Compile Include="Publishers\MemoryStreamPublisher.cs" />
     <Compile Include="Publishers\RawIPv4Publisher.cs" />
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />

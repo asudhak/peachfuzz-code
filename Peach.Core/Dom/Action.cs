@@ -30,9 +30,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Peach.Core;
+
 using NLog;
 
+using Peach.Core;
+using Peach.Core.Cracker;
 using Peach.Core.Dom.XPath;
 
 namespace Peach.Core.Dom
@@ -259,12 +261,32 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnStarting()
 		{
+			if(!string.IsNullOrEmpty(onStart))
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["action"] = this;
+				state["state"] = this.parent;
+				state["self"] = this;
+
+				Scripting.EvalExpression(onStart, state);
+			}
+
 			if (Starting != null)
 				Starting(this);
 		}
 
 		protected virtual void OnFinished()
 		{
+			if (!string.IsNullOrEmpty(onComplete))
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["action"] = this;
+				state["state"] = this.parent;
+				state["self"] = this;
+
+				Scripting.EvalExpression(onComplete, state);
+			}
+
 			if (Finished != null)
 				Finished(this);
 		}
@@ -272,6 +294,27 @@ namespace Peach.Core.Dom
 		public void Run(RunContext context)
 		{
 			logger.Trace("Run({0}): {1}", name, type);
+
+			if (when != null)
+			{
+				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["action"] = this;
+				state["state"] = this.parent;
+				state["self"] = this;
+
+				object value = Scripting.EvalExpression(when, state);
+				if (!(value is bool))
+				{
+					logger.Debug("Run: when return is not boolean: " + value.ToString());
+					return;
+				}
+
+				if (!(bool)value)
+				{
+					logger.Debug("Run: when returned false");
+					return;
+				}
+			}
 
 			try
 			{
@@ -289,27 +332,6 @@ namespace Peach.Core.Dom
 				else
 				{
 					publisher = context.test.publishers[0];
-				}
-
-				if (when != null)
-				{
-					Dictionary<string, object> state = new Dictionary<string, object>();
-					state["action"] = this;
-					state["state"] = this.parent;
-					state["self"] = this;
-
-					object value = Scripting.EvalExpression(when, state);
-					if (!(value is bool))
-					{
-						logger.Debug("Run: when return is not boolean: " + value.ToString());
-						return;
-					}
-
-					if (!(bool)value)
-					{
-						logger.Debug("Run: when returned false");
-						return;
-					}
 				}
 
 				OnStarting();
@@ -330,8 +352,12 @@ namespace Peach.Core.Dom
 						publisher.close(this);
 						break;
 
+					case ActionType.Accept:
+						publisher.accept(this);
+						break;
+
 					case ActionType.Input:
-						handleInput();
+						handleInput(publisher);
 						break;
 					case ActionType.Output:
 						publisher.output(this, new Variant(dataModel.Value));
@@ -364,8 +390,11 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		protected void handleInput()
+		protected void handleInput(Publisher publisher)
 		{
+			dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dataModel, new IO.BitStream(publisher));
 		}
 
 		protected void handleCall(Publisher publisher, RunContext context)

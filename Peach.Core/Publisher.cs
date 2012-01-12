@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
@@ -56,7 +57,7 @@ namespace Peach.Core
 	/// for more complex opertions such as writeing to the registry and
 	/// then calling an RPC method.
 	/// </summary>
-	public abstract class Publisher
+	public abstract class Publisher : Stream
 	{
 		public object parent;
 
@@ -216,6 +217,67 @@ namespace Peach.Core
 			OnGetProperty(action, property);
 			throw new PeachException("Error, action 'getProperty' not supported by publisher");
 		}
+
+		#region Stream
+
+		public override bool CanRead
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public override bool CanSeek
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public override bool CanWrite
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public override void Flush()
+		{
+			throw new NotImplementedException();
+		}
+
+		public override long Length
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public override long Position
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+			set
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void SetLength(long value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void Write(byte[] buffer, int offset, int count)
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
 	}
 
 	/// <summary>
