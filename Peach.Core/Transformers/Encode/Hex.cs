@@ -34,8 +34,9 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
+	[Serializable]
     [TransformerAttribute("Hex", "Encode on output as a hex string.")]
-    class Hex : Transformer
+    public class Hex : Transformer
     {
         public Hex(Dictionary<string,Variant>  args) : base(args)
 		{
@@ -77,7 +78,8 @@ namespace Peach.Core.Transformers.Encode
     [Parameter("resolution", typeof(int), "Number of nibbles between separator. (Must be a positive, even int.)", false)]
     [Parameter("prefix", typeof(string), "A value to prepend each chunk with. (defaults to ' ')", false)]
     [TransformerAttribute("HexString", "Transforms a string of bytes into the specified hex format.")]
-    class HexString : Transformer
+	[Serializable]
+    public class HexString : Transformer
     {
         Dictionary<string,Variant> m_args;
         public HexString(Dictionary<string,Variant> args)

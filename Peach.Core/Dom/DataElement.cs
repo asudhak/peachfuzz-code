@@ -652,7 +652,7 @@ namespace Peach.Core.Dom
 		{
 			BitStream value = InternalValueToBitStream(InternalValue);
 
-            if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
+            if (_mutatedValue == null || (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
                 if (_transformer != null)
                     value = _transformer.encode(value);
 
