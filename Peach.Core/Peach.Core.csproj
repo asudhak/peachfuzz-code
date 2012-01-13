@@ -1006,6 +1006,13 @@
     <Compile Include="Scripting.cs" />
     <Compile Include="Transformer.cs" />
     <Compile Include="Transformers\Compress\Bz2.cs" />
+    <Compile Include="Transformers\Crypto\ApacheMd5Crypt.cs" />
+    <Compile Include="Transformers\Crypto\Crypt.cs" />
+    <Compile Include="Transformers\Crypto\CvsScramble.cs" />
+    <Compile Include="Transformers\Crypto\Hmac.cs" />
+    <Compile Include="Transformers\Crypto\Md5.cs" />
+    <Compile Include="Transformers\Crypto\Sha1.cs" />
+    <Compile Include="Transformers\Crypto\UnixMd5Crypt.cs" />
     <Compile Include="Transformers\Encode\Base64.cs" />
     <Compile Include="Transformers\Encode\Hex.cs" />
     <Compile Include="Transformers\Encode\Html.cs" />

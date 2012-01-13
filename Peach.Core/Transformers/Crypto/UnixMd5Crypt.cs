@@ -7,20 +7,18 @@ using System.IO;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
-namespace Peach.Core.Transformers.Type
+namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("IntToHex", "Transforms an integer into hex.")]
-    public class IntToHex : Transformer
+    [TransformerAttribute("UnixMd5Crypt", "UNIX style MD5 crypt.")]
+    public class UnixMd5Crypt : Transformer
     {
-        public IntToHex(Dictionary<string,Variant> args) : base(args)
+        public UnixMd5Crypt(Dictionary<string,Variant> args) : base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            int dataAsInt = BitConverter.ToInt32(data.Value, 0);
-            string dataAsHex = dataAsInt.ToString("X");
-            return new BitStream(ASCIIEncoding.ASCII.GetBytes(dataAsHex));
+            throw new NotImplementedException();
 		}
 
 		protected override BitStream internalDecode(BitStream data)

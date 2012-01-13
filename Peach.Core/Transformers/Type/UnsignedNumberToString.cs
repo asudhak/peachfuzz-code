@@ -18,24 +18,17 @@ namespace Peach.Core.Transformers.Type
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-			byte[] buff = new byte[1024];
-			int ret;
+            StringBuilder sb = new StringBuilder((int)data.LengthBytes * 2);
 
-			MemoryStream sin = new MemoryStream(data.Value);
-			MemoryStream sout = new MemoryStream();
+            foreach (byte b in data.Value)
+                sb.Append(b);
 
-            return new BitStream();
+            return new BitStream(ASCIIEncoding.ASCII.GetBytes(sb.ToString()));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			byte[] buff = new byte[1024];
-			int ret;
-
-			MemoryStream sin = new MemoryStream(data.Value);
-			MemoryStream sout = new MemoryStream();
-
-            return new BitStream();
+            throw new NotImplementedException();
 		}
     }
 }

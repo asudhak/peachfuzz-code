@@ -7,23 +7,18 @@ using System.IO;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
-namespace Peach.Core.Transformers.Type
+namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Pack", "Single pack transform.")]
-    public class Pack : Transformer
+    [TransformerAttribute("Hmac", "HMAC as described in RFC 2104.")]
+    public class Hmac : Transformer
     {
-        public Pack(Dictionary<string,Variant> args) : base(args)
+        public Hmac(Dictionary<string, Variant> args) : base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-			MemoryStream sin = new MemoryStream(data.Value);
-			MemoryStream sout = new MemoryStream();
-
-            sin.CopyTo(sout);
-
-            return new BitStream(sout.ToArray());
+            throw new NotImplementedException();
 		}
 
 		protected override BitStream internalDecode(BitStream data)
@@ -32,5 +27,3 @@ namespace Peach.Core.Transformers.Type
 		}
     }
 }
-
-// end
