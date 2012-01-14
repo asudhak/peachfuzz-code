@@ -1037,6 +1037,7 @@
     <Compile Include="Transformers\Encode\Utf8.cs" />
     <Compile Include="Transformers\Encode\WideChar.cs" />
     <Compile Include="Transformers\Compress\GzipCompress.cs" />
+    <Compile Include="Transformers\Eval.cs" />
     <Compile Include="Transformers\Type\IntToHex.cs" />
     <Compile Include="Transformers\Type\NumberToString.cs" />
     <Compile Include="Transformers\Type\Pack.cs" />

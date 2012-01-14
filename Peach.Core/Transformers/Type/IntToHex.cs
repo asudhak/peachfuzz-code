@@ -18,9 +18,12 @@ namespace Peach.Core.Transformers.Type
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            int dataAsInt = BitConverter.ToInt32(data.Value, 0);
-            string dataAsHex = dataAsInt.ToString("X");
-            return new BitStream(ASCIIEncoding.ASCII.GetBytes(dataAsHex));
+            StringBuilder sb = new StringBuilder(((int)data.LengthBytes * 2));
+
+            foreach (byte b in data.Value)
+                sb.AppendFormat("{0:x2}", b);
+
+            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sb.ToString()));
 		}
 
 		protected override BitStream internalDecode(BitStream data)

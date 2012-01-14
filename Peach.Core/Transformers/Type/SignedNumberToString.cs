@@ -20,7 +20,7 @@ namespace Peach.Core.Transformers.Type
 		{
             StringBuilder sb = new StringBuilder((int)data.LengthBytes * 2);
 
-            foreach (byte b in data.Value)
+            foreach (sbyte b in data.Value)
                 sb.Append(b);
 
             return new BitStream(ASCIIEncoding.ASCII.GetBytes(sb.ToString()));

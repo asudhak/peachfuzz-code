@@ -18,7 +18,7 @@ namespace Peach.Core.Transformers.Type
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsString = Encoding.Unicode.GetString(data.Value);
+            string dataAsString = Encoding.ASCII.GetString(data.Value);
             Int32 dataAsInt32 = Int32.Parse(dataAsString);
             return new BitStream(BitConverter.GetBytes(dataAsInt32));
 		}
