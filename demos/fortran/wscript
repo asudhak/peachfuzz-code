@@ -7,13 +7,13 @@ top = '.'
 out = 'build'
 
 def options(opt):
-	opt.load('compiler_c')
 	opt.load('compiler_fc')
+	opt.load('compiler_c')
 	opt.recurse('typemap')
 
 def configure(conf):
-	conf.load('compiler_c')
 	conf.load('compiler_fc')
+	conf.load('compiler_c')
 	if conf.env.FC_NAME == 'IFORT':
 		conf.env['FCFLAGS'] = ['-warn']
 	elif conf.env.FC_NAME == 'GFORTRAN':
