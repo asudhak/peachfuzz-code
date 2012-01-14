@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 
@@ -12,8 +11,7 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class IcmpChecksumFixup : Fixup
     {
-        public IcmpChecksumFixup(Dictionary<string, Variant> args)
-            : base(args)
+        public IcmpChecksumFixup(Dictionary<string, Variant> args) : base(args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, IcmpChecksumFixup requires a 'ref' argument!");
@@ -51,3 +49,5 @@ namespace Peach.Core.Fixups
         }
     }
 }
+
+// end

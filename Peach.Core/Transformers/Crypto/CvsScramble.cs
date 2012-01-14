@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
@@ -10,6 +9,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("CvsScramble", "CVS pserver password scramble.")]
+    [TransformerAttribute("crypto.CvsScramble", "CVS pserver password scramble.")]
     public class CvsScramble : Transformer
     {
         public CvsScramble(Dictionary<string, Variant> args) : base(args)

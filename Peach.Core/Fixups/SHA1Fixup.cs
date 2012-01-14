@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using Peach.Core.Dom;
@@ -13,8 +12,7 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class SHA1Fixup : Fixup
     {
-        public SHA1Fixup(Dictionary<string, Variant> args)
-            : base(args)
+        public SHA1Fixup(Dictionary<string, Variant> args) : base(args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, SHA1Fixup requires a 'ref' argument!");
@@ -32,3 +30,5 @@ namespace Peach.Core.Fixups
         }
     }
 }
+
+// end

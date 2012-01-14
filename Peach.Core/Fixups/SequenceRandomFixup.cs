@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 
@@ -14,8 +13,7 @@ namespace Peach.Core.Fixups
     {
         Random rand = new Random();
 
-        public SequenceRandomFixup(Dictionary<string, Variant> args)
-            : base(args)
+        public SequenceRandomFixup(Dictionary<string, Variant> args) : base(args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, SequenceRandomFixup requires a 'ref' argument!");
@@ -27,3 +25,5 @@ namespace Peach.Core.Fixups
         }
     }
 }
+
+// end

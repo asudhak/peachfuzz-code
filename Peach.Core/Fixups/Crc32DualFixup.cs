@@ -35,13 +35,13 @@ using Peach.Core.Fixups.Libraries;
 namespace Peach.Core.Fixups
 {
 	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
+    [FixupAttribute("checksums.Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref1", typeof(DataElement), "Reference to data element", true)]
 	[ParameterAttribute("ref2", typeof(DataElement), "Reference to data element", true)]
-	[Serializable]
+    [Serializable]
 	public class Crc32DualFixup : Fixup
 	{
-		public Crc32DualFixup(Dictionary<string, Variant> args)
-			: base(args)
+		public Crc32DualFixup(Dictionary<string, Variant> args) : base(args)
 		{
 			if (!args.ContainsKey("ref1") || !args.ContainsKey("ref2"))
 				throw new PeachException("Error, Crc32DualFixup requires a 'ref1' argument!");

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
@@ -10,6 +9,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("StringToFloat", "Transforms a string into an float.")]
+    [TransformerAttribute("encode.StringToFloat", "Transforms a string into an float.")]
     public class StringToFloat : Transformer
     {
         public StringToFloat(Dictionary<string,Variant> args) : base(args)

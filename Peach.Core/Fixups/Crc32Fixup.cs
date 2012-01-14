@@ -37,11 +37,10 @@ namespace Peach.Core.Fixups
 	[FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
 	[FixupAttribute("checksums.Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-	[Serializable]
+    [Serializable]
 	public class Crc32Fixup : Fixup
 	{
-		public Crc32Fixup(Dictionary<string, Variant> args)
-			: base(args)
+		public Crc32Fixup(Dictionary<string, Variant> args) : base(args)
 		{
 			if (!args.ContainsKey("ref"))
 				throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");

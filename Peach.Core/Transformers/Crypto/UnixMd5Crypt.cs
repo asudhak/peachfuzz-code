@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
@@ -10,6 +9,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("UnixMd5Crypt", "UNIX style MD5 crypt.")]
+    [TransformerAttribute("crypto.UnixMd5Crypt", "UNIX style MD5 crypt.")]
     public class UnixMd5Crypt : Transformer
     {
         public UnixMd5Crypt(Dictionary<string,Variant> args) : base(args)

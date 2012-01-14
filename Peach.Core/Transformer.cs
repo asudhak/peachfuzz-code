@@ -94,7 +94,7 @@ namespace Peach.Core
 	/// <summary>
 	/// Use this attribute to identify Transformers
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class TransformerAttribute : Attribute
 	{
 		public string elementName;

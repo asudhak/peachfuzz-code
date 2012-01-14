@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 
@@ -14,8 +13,7 @@ namespace Peach.Core.Fixups
     {
         int num = 1;
 
-        public SequenceIncrementFixup(Dictionary<string, Variant> args)
-            : base(args)
+        public SequenceIncrementFixup(Dictionary<string, Variant> args) : base(args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, SequenceIncrementFixup requires a 'ref' argument!");
@@ -28,3 +26,5 @@ namespace Peach.Core.Fixups
         }
     }
 }
+
+// end

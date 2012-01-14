@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
@@ -10,6 +9,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("SignedNumberToString", "Transforms signed numbers to strings.")]
+    [TransformerAttribute("encode.SignedNumberToString", "Transforms signed numbers to strings.")]
     public class SignedNumberToString : Transformer
     {
         public SignedNumberToString(Dictionary<string,Variant> args) : base(args)

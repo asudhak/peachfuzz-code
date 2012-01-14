@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
@@ -10,6 +9,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("StringToInt", "Transforms a string into an integer.")]
+    [TransformerAttribute("encode.StringToInt", "Transforms a string into an integer.")]
     public class StringToInt : Transformer
     {
         public StringToInt(Dictionary<string,Variant> args) : base(args)

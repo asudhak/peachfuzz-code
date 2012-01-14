@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.Fixups.Libraries;
@@ -13,8 +12,7 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class EthernetChecksumFixup : Fixup
     {
-        public EthernetChecksumFixup(Dictionary<string, Variant> args)
-            : base(args)
+        public EthernetChecksumFixup(Dictionary<string, Variant> args) : base(args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
@@ -35,3 +33,5 @@ namespace Peach.Core.Fixups
         }
     }
 }
+
+// end

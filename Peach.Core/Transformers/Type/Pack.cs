@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
@@ -10,6 +9,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("Pack", "Single pack transform.")]
+    [TransformerAttribute("type.Pack", "Single pack transform.")]
     public class Pack : Transformer
     {
         public Pack(Dictionary<string,Variant> args) : base(args)
