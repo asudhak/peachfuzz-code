@@ -37,8 +37,6 @@ def configure(conf):
 			Logs.debug('compiler_fortran: %r' % e)
 		else:
 			if conf.env['FC']:
-				orig.table = conf.env.get_merged_dict()
-				conf.env = orig
 				conf.end_msg(conf.env.get_flat('FC'))
 				conf.env.COMPILER_FORTRAN = compiler
 				break
