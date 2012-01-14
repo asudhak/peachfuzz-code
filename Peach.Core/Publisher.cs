@@ -67,7 +67,7 @@ namespace Peach.Core
 		public static event StopEventHandler Stop;
 		public static event AcceptEventHandler Accept;
 		public static event OpenEventHandler Open;
-		public static event CloseEventHandler Close;
+		public static event CloseEventHandler Closing;
 		public static event InputEventHandler Input;
 		public static event OutputEventHandler Output;
 		public static event CallEventHandler Call;
@@ -96,8 +96,8 @@ namespace Peach.Core
 		}
 		public void OnClose(Core.Dom.Action action)
 		{
-			if (Close != null)
-				Close(this, action);
+			if (Closing != null)
+				Closing(this, action);
 		}
 		public void OnInput(Core.Dom.Action action)
 		{

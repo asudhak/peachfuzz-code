@@ -114,6 +114,8 @@
     <Compile Include="RelationCountTests.cs" />
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="StateModel\ActionWhenTests.cs" />
+    <Compile Include="StateModel\InputTests.cs" />
+    <Compile Include="StateModel\OutputTests.cs" />
     <Compile Include="StateModel\SlurpTests.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>
