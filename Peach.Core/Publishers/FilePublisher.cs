@@ -205,6 +205,8 @@ namespace Peach.Core.Publishers
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			OnInput(currentAction, count);
+
 			return stream.Read(buffer, offset, count);
 		}
 
@@ -220,6 +222,8 @@ namespace Peach.Core.Publishers
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
+			OnOutput(currentAction, new Variant(buffer));
+
 			stream.Write(buffer, offset, count);
 		}
 

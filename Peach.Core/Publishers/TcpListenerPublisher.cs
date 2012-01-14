@@ -15,11 +15,8 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection", false)]
 	public class TcpListenerPublisher : TcpClientPublisher
 	{
-		string _interface = "0.0.0.0";
-		short _port = 0;
-		int _timeout = 0;
-
-		TcpListener _listener = null;
+		protected string _interface = "0.0.0.0";
+		protected TcpListener _listener = null;
 
 		public TcpListenerPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -37,16 +34,22 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
+				_buffer = new MemoryStream();
 				TcpClient = _listener.AcceptTcpClient();
 			}
 			catch (SocketException e)
 			{
 				throw new PeachException("Error, unable to accept incoming connection: " + e.Message);
 			}
+
+			TcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+				new AsyncCallback(ReceiveData), null);
+
 		}
 
 		public override void close(Dom.Action action)
 		{
+			TcpClient.Close();
 			base.close(action);
 		}
 
@@ -76,8 +79,106 @@ namespace Peach.Core.Publishers
 
 		public override void open(Dom.Action action)
 		{
-			throw new PeachException("Error, TcpListener publisher does not support open action type.");
 		}
+
+		#region Stream
+
+		public override bool CanRead
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.CanRead;
+				}
+			}
+		}
+
+		public override bool CanSeek
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.CanSeek;
+				}
+			}
+		}
+
+		public override bool CanWrite
+		{
+			get { return TcpClient.GetStream().CanWrite; }
+		}
+
+		public override void Flush()
+		{
+			TcpClient.GetStream().Flush();
+		}
+
+		public override long Length
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.Length;
+				}
+			}
+		}
+
+		public override long Position
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.Position;
+				}
+			}
+			set
+			{
+				lock (_buffer)
+				{
+					_buffer.Position = value;
+				}
+			}
+		}
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			OnInput(currentAction, count);
+
+			lock (_buffer)
+			{
+				return _buffer.Read(buffer, offset, count);
+			}
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			lock (_buffer)
+			{
+				return _buffer.Seek(offset, origin);
+			}
+		}
+
+		public override void SetLength(long value)
+		{
+			lock (_buffer)
+			{
+				_buffer.SetLength(value);
+			}
+		}
+
+		public override void Write(byte[] buffer, int offset, int count)
+		{
+			OnOutput(currentAction, new Variant(buffer));
+
+			TcpClient.GetStream().Write(buffer, offset, count);
+		}
+
+		#endregion
+
 	}
 }
 

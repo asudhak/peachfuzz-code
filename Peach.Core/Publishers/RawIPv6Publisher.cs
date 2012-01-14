@@ -69,6 +69,9 @@ namespace Peach.Core.Publishers
 			_socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 
 			_remoteEndpoint = new IPEndPoint(Dns.GetHostEntry(_host).AddressList[0], _port);
+
+			_socket.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+				new AsyncCallback(ReceiveData), null);
 		}
 	}
 }

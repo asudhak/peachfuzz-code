@@ -45,14 +45,15 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
 	public class TcpClientPublisher : Publisher
 	{
-		string _host = null;
-		int _port = 0;
-		int _timeout = 3 * 1000;
-		int _throttle = 0;
-		TcpClient _tcpClient = null;
-		NetworkStream _tcpStream = null;
-		MemoryStream _buffer = new MemoryStream();
-		int _pos = 0;
+		protected string _host = null;
+		protected int _port = 0;
+		protected int _timeout = 3 * 1000;
+		protected int _throttle = 0;
+		protected TcpClient _tcpClient = null;
+		protected MemoryStream _buffer = new MemoryStream();
+		protected int _pos = 0;
+
+		protected byte[] receiveBuffer = new byte[1024];
 
 		public TcpClientPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -84,11 +85,6 @@ namespace Peach.Core.Publishers
 			set
 			{
 				_tcpClient = value;
-
-				if (_tcpClient == null)
-					_tcpStream = null;
-				else
-					_tcpStream = _tcpClient.GetStream();
 			}
 		}
 
@@ -121,7 +117,25 @@ namespace Peach.Core.Publishers
 			if (_tcpClient == null)
 				throw new PeachException("Unable to connect to remote host " + _host + " on port " + _port);
 
-			_tcpStream = _tcpClient.GetStream();
+			_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+				new AsyncCallback(ReceiveData), null);
+		}
+
+		protected void ReceiveData(IAsyncResult iar)
+		{
+			Socket remote = (Socket)iar.AsyncState;
+			int recv = remote.EndReceive(iar);
+
+			lock(_buffer)
+			{
+				long pos = _buffer.Position;
+				_buffer.Seek(0, SeekOrigin.End);
+				_buffer.Write(receiveBuffer, 0, recv);
+				_buffer.Position = pos;
+			}
+
+			_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+				new AsyncCallback(ReceiveData), null);
 		}
 
 		/// <summary>
@@ -134,109 +148,107 @@ namespace Peach.Core.Publishers
 		{
 			OnClose(action);
 
-			if (_tcpStream != null)
-				_tcpStream.Close();
 			if (_tcpClient != null)
 				_tcpClient.Close();
 
-			_tcpStream = null;
 			_tcpClient = null;
 		}
 
-		public override Variant input(Core.Dom.Action action)
+		#region Stream
+
+		public override bool CanRead
 		{
-			OnInput(action);
-
-			if (_tcpClient == null || _tcpStream == null)
-				throw new PeachException("Error, socket not open!");
-
-			if (!_tcpClient.Connected)
-				throw new SoftException();
-
-			byte[] buff = new byte[1024];
-			int len;
-
-			// Always write to end of _buffer.
-			_buffer.Seek(0, SeekOrigin.End);
-
-			// Short read timeout
-			_tcpStream.ReadTimeout = 10;
-			while (true)
+			get
 			{
-				try
+				lock (_buffer)
 				{
-					len = _tcpStream.Read(buff, 0, buff.Length);
+					return _buffer.CanRead;
 				}
-				catch
-				{
-					len = 0;
-				}
-
-				if (len == 0)
-					break;
-
-				_buffer.Write(buff, 0, len);
 			}
-
-			Variant ret = new Variant(_buffer.ToArray());
-			_buffer.Close();
-			_buffer.Dispose();
-			_buffer = new MemoryStream();
-
-			return ret;
 		}
 
-		public override Variant input(Core.Dom.Action action, int size)
+		public override bool CanSeek
 		{
-			OnInput(action, size);
-
-			// Open socket if not already, this is an implicit action
-			if (_tcpClient == null || _tcpStream == null)
-				open(action);
-
-			if (!_tcpClient.Connected)
-				throw new SoftException();
-
-			byte[] buff;
-
-			// Do we already have enough data?
-			if (_buffer.Length - _pos >= size)
+			get
 			{
-				buff = new byte[size];
-				_buffer.Position = _pos;
-				_buffer.Read(buff, 0, size);
-
-				_pos = (int)_buffer.Position;
-				return new Variant(buff);
+				lock (_buffer)
+				{
+					return _buffer.CanSeek;
+				}
 			}
-
-			int neededLength = size - ((int)_buffer.Length - _pos);
-			buff = new byte[size];
-			int len;
-
-			_tcpStream.ReadTimeout = _timeout;
-			_buffer.Position = 0;
-			len = _tcpStream.Read(buff, 0, neededLength);
-			_buffer.Write(buff, 0, len);
-
-			_buffer.Position = _pos;
-			_buffer.Read(buff, 0, size);
-			_pos = (int)_buffer.Position;
-
-			return new Variant(buff);
 		}
 
-		public override void output(Core.Dom.Action action, Variant data)
+		public override bool CanWrite
 		{
-			if (_tcpStream == null)
-				open(action);
-
-			OnOutput(action, data);
-			byte [] buff = (byte[]) data;
-			_tcpStream.Write(buff, 0, buff.Length);
+			get { return _tcpClient.GetStream().CanWrite; }
 		}
+
+		public override void Flush()
+		{
+			_tcpClient.GetStream().Flush();
+		}
+
+		public override long Length
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.Length;
+				}
+			}
+		}
+
+		public override long Position
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.Position;
+				}
+			}
+			set
+			{
+				lock (_buffer)
+				{
+					_buffer.Position = value;
+				}
+			}
+		}
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			lock (_buffer)
+			{
+				return _buffer.Read(buffer, offset, count);
+			}
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			lock (_buffer)
+			{
+				return _buffer.Seek(offset, origin);
+			}
+		}
+
+		public override void SetLength(long value)
+		{
+			lock (_buffer)
+			{
+				_buffer.SetLength(value);
+			}
+		}
+
+		public override void Write(byte[] buffer, int offset, int count)
+		{
+			_tcpClient.GetStream().Write(buffer, offset, count);
+		}
+
+		#endregion
+
 	}
-
 }
 
 // end

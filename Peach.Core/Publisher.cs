@@ -137,6 +137,15 @@ namespace Peach.Core
 		}
 
 		/// <summary>
+		/// The current Action operating on the Publisher.
+		/// </summary>
+		public virtual Core.Dom.Action currentAction
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Called to Start publisher.  This action is always performed
 		/// even if not specifically called.
 		/// </summary>
@@ -186,36 +195,75 @@ namespace Peach.Core
 			throw new PeachException("Error, action 'close' not supported by publisher");
 		}
 
-		public virtual Variant input(Core.Dom.Action action)
-		{
-			OnInput(action);
-			throw new PeachException("Error, action 'input' not supported by publisher");
-		}
-		public virtual Variant input(Core.Dom.Action action, int size)
-		{
-			OnInput(action, size);
-			throw new PeachException("Error, action 'input' not supported by publisher");
-		}
-		public virtual void output(Core.Dom.Action action, Variant data)
-		{
-			OnOutput(action, data);
-			throw new PeachException("Error, action 'output' not supported by publisher");
-		}
-
+		/// <summary>
+		/// Call a method on the Publishers resource
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="method">Name of method to call</param>
+		/// <param name="args">Arguments to pass</param>
+		/// <returns>Returns resulting data</returns>
 		public virtual Variant call(Core.Dom.Action action, string method, List<ActionParameter> args)
 		{
 			OnCall(action, method, args);
 			throw new PeachException("Error, action 'call' not supported by publisher");
 		}
+
+		/// <summary>
+		/// Set a property on the Publishers resource.
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="property">Name of property to set</param>
+		/// <param name="value">Value to set on property</param>
 		public virtual void setProperty(Core.Dom.Action action, string property, Variant value)
 		{
 			OnSetProperty(action, property, value);
 			throw new PeachException("Error, action 'setProperty' not supported by publisher");
 		}
+
+		/// <summary>
+		/// Get value of a property exposed by Publishers resource
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="property">Name of property</param>
+		/// <returns>Returns value of property</returns>
 		public virtual Variant getProperty(Core.Dom.Action action, string property)
 		{
 			OnGetProperty(action, property);
 			throw new PeachException("Error, action 'getProperty' not supported by publisher");
+		}
+
+		/// <summary>
+		/// Receive data
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <returns>Returns received data</returns>
+		public virtual Variant input(Core.Dom.Action action)
+		{
+			OnInput(action);
+			throw new PeachException("Error, action 'input' not supported by publisher");
+		}
+
+		/// <summary>
+		/// Receive data
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="size">Size of data to read</param>
+		/// <returns>Returns Data received</returns>
+		public virtual Variant input(Core.Dom.Action action, int size)
+		{
+			OnInput(action, size);
+			throw new PeachException("Error, action 'input' not supported by publisher");
+		}
+
+		/// <summary>
+		/// Send data
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="data">Data to send/write</param>
+		public virtual void output(Core.Dom.Action action, Variant data)
+		{
+			OnOutput(action, data);
+			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
 
 		#region Stream
@@ -259,6 +307,8 @@ namespace Peach.Core
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			OnInput(currentAction);
+
 			throw new NotImplementedException();
 		}
 
@@ -274,6 +324,8 @@ namespace Peach.Core
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
+			OnOutput(currentAction, new Variant(buffer));
+
 			throw new NotImplementedException();
 		}
 

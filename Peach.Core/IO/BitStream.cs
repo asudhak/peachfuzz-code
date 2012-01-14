@@ -93,6 +93,18 @@ namespace Peach.Core.IO
 		}
 
 		/// <summary>
+		/// Constructor for BitStream class
+		/// </summary>
+		/// <param name="buff">Use buff as initial stream data.</param>
+		public BitStream(byte[] buff, int offset, int length)
+		{
+			stream = new MemoryStream();
+			stream.Write(buff, offset, length);
+			len = stream.Length * 8;
+			LittleEndian();
+		}
+
+		/// <summary>
 		/// Is the current endianess set to little?
 		/// </summary>
 		public bool IsLittleEndian

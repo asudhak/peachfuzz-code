@@ -35,6 +35,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -54,6 +55,7 @@ namespace Peach.Core.Publishers
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
 		protected EndPoint _remoteEndpoint = null;
+		protected byte[] receiveBuffer = new byte[1024];
 
 		public RawIPv4Publisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -110,6 +112,26 @@ namespace Peach.Core.Publishers
 			_socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 
 			_remoteEndpoint = new IPEndPoint(Dns.GetHostEntry(_host).AddressList[0], _port);
+
+			_socket.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+				new AsyncCallback(ReceiveData), null);
+		}
+
+		protected void ReceiveData(IAsyncResult iar)
+		{
+			Socket remote = (Socket)iar.AsyncState;
+			int recv = remote.EndReceive(iar);
+
+			lock (_buffer)
+			{
+				long pos = _buffer.Position;
+				_buffer.Seek(0, SeekOrigin.End);
+				_buffer.Write(receiveBuffer, 0, recv);
+				_buffer.Position = pos;
+			}
+
+			_socket.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+				new AsyncCallback(ReceiveData), null);
 		}
 
 		/// <summary>
@@ -133,39 +155,17 @@ namespace Peach.Core.Publishers
 			if (_socket == null)
 				open(action);
 
-			byte[] buff = new byte[1024];
-			int len;
+			byte[] buff;
+			int readAmount;
 
-			// Always write to end of _buffer.
-			_buffer.Seek(0, SeekOrigin.End);
-
-			// Short read timeout
-			//_tcpStream.ReadTimeout = 10;
-			_socket.Blocking = false;
-			while (true)
+			lock (_buffer)
 			{
-				try
-				{
-					len = _socket.Receive(buff, buff.Length, SocketFlags.None);
-				}
-				catch
-				{
-					len = 0;
-				}
-
-				if (len == 0)
-					break;
-
-				_buffer.Write(buff, 0, len);
+				int size = (int)( _buffer.Length - _buffer.Position);
+				buff = new byte[size];
+				readAmount = _buffer.Read(buff, 0, buff.Length);
 			}
-			_socket.Blocking = true;
 
-			Variant ret = new Variant(_buffer.ToArray());
-			_buffer.Close();
-			_buffer.Dispose();
-			_buffer = new MemoryStream();
-
-			return ret;
+			return new Variant(new BitStream(buff, 0, readAmount));
 		}
 
 		public override Variant input(Core.Dom.Action action, int size)
@@ -176,30 +176,40 @@ namespace Peach.Core.Publishers
 			if (_socket != null)
 				open(action);
 
-			byte[] buff;
+			byte[] buff = new byte[size];
+			int readAmount = 0;
+			long available = 0;
 
-			// Do we already have enough data?
-			if (_buffer.Length - _pos >= size)
+			DateTime startTime = DateTime.Now;
+			TimeSpan diff;
+
+			while (available < size)
 			{
-				buff = new byte[size];
-				_buffer.Position = _pos;
-				_buffer.Read(buff, 0, size);
+				lock (_buffer)
+				{
+					available = _buffer.Length - _buffer.Position;
+				}
 
-				_pos = (int)_buffer.Position;
-				return new Variant(buff);
+				if (available >= size)
+					break;
+
+				diff = DateTime.Now - startTime;
+				if (diff.TotalMilliseconds > Timeout)
+					throw new TimeoutException();
+
+				Thread.Sleep(200);
 			}
 
-			int neededLength = size - ((int)_buffer.Length - _pos);
-			buff = new byte[size];
-			int len;
+			lock (_buffer)
+			{
+				readAmount = _buffer.Read(buff, 0, buff.Length);
+			}
 
-			_buffer.Position = 0;
-			len = _socket.Receive(buff, neededLength, SocketFlags.None);
-			_buffer.Write(buff, 0, len);
-
-			_buffer.Position = _pos;
-			_buffer.Read(buff, 0, size);
-			_pos = (int)_buffer.Position;
+			if (readAmount != size)
+			{
+				// WTF!?!?!?
+				throw new PeachException("Error, we had the bytes available, but failed to read them all?!");
+			}
 
 			return new Variant(buff);
 		}
@@ -213,6 +223,105 @@ namespace Peach.Core.Publishers
 			byte[] buff = (byte[])data;
 			_socket.SendTo(buff, _remoteEndpoint);
 		}
+
+
+		#region Stream
+
+		public override bool CanRead
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.CanRead;
+				}
+			}
+		}
+
+		public override bool CanSeek
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.CanSeek;
+				}
+			}
+		}
+
+		public override bool CanWrite
+		{
+			get { return true; }
+		}
+
+		public override void Flush()
+		{
+		}
+
+		public override long Length
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.Length;
+				}
+			}
+		}
+
+		public override long Position
+		{
+			get
+			{
+				lock (_buffer)
+				{
+					return _buffer.Position;
+				}
+			}
+			set
+			{
+				lock (_buffer)
+				{
+					_buffer.Position = value;
+				}
+			}
+		}
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			OnInput(currentAction, count);
+
+			lock (_buffer)
+			{
+				return _buffer.Read(buffer, offset, count);
+			}
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			lock (_buffer)
+			{
+				return _buffer.Seek(offset, origin);
+			}
+		}
+
+		public override void SetLength(long value)
+		{
+			lock (_buffer)
+			{
+				_buffer.SetLength(value);
+			}
+		}
+
+		public override void Write(byte[] buffer, int offset, int count)
+		{
+			OnOutput(currentAction, new Variant(buffer));
+
+			_socket.Send(buffer, offset, count, SocketFlags.None);
+		}
+
+		#endregion
+
 	}
 }
 
