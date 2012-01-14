@@ -20,6 +20,8 @@ def configure(conf):
 	conf.check_python_version((2,4,2))
 	conf.check_python_headers()
 
+	conf.check_python_module('os')
+	conf.check_python_module('re', condition="ver > num(2,0,4) and ver <= num(2,3,0)")
 	try:
 		conf.check_python_module('pygccxml')
 	except conf.errors.ConfigurationError:

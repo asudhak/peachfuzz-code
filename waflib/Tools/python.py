@@ -433,28 +433,57 @@ def check_python_version(conf, minver=None):
 		conf.fatal('The python version is too old, expecting %r' % (minver,))
 
 PYTHON_MODULE_TEMPLATE = '''
-import %s
-print(1)
+import %s as current_module
+version = getattr(current_module, '__version__', None)
+if version is not None:
+    print(str(version))
+else:
+    print('unknown version')
 '''
 
 @conf
-def check_python_module(conf, module_name):
+def check_python_module(conf, module_name, condition=''):
 	"""
 	Check if the selected python interpreter can import the given python module::
 
 		def configure(conf):
 			conf.check_python_module('pygccxml')
+			conf.check_python_module('re', condition="ver > num(2, 0, 4) and ver <= num(3, 0, 0)")
 
 	:param module_name: module
 	:type module_name: string
 	"""
-	conf.start_msg('Python module %s' % module_name)
+	msg = 'Python module %s' % module_name
+	if condition:
+		msg = '%s (%s)' % (msg, condition)
+	conf.start_msg(msg)
 	try:
-		conf.cmd_and_log(conf.env['PYTHON'] + ['-c', PYTHON_MODULE_TEMPLATE % module_name])
-	except:
+		ret = conf.cmd_and_log(conf.env['PYTHON'] + ['-c', PYTHON_MODULE_TEMPLATE % module_name])
+	except Exception:
 		conf.end_msg(False)
 		conf.fatal('Could not find the python module %r' % module_name)
-	conf.end_msg(True)
+
+	ret = ret.strip()
+	if condition:
+		conf.end_msg(ret)
+		if ret == 'unknown version':
+			conf.fatal('Could not check the %s version' % module_name)
+
+		from distutils.version import LooseVersion
+		def num(*k):
+			if isinstance(k[0], int):
+				return LooseVersion('.'.join([str(x) for x in k]))
+			else:
+				return LooseVersion(k[0])
+		d = {'num': num, 'ver': LooseVersion(ret)}
+		ev = eval(condition, {}, d)
+		if not ev:
+			conf.fatal('The %s version does not satisfy the requirements' % module_name)
+	else:
+		if ret == 'unknown version':
+			conf.end_msg(True)
+		else:
+			conf.end_msg(ret)
 
 def configure(conf):
 	"""
