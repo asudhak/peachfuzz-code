@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington" description="Examples of size relation">
+
+	<!--
+
+	Demonstraits the "size" data relation.
+	
+	Syntax:
+	
+      python peach.py samples\RelationSize.xml 
+	  
+	Output:
+	
+	  TODO
+	
+	Authors:
+	  Michael Eddington (mike@phed.org)
+	
+	$Id: RelationSize.xml 1762 2009-06-11 23:46:24Z meddingt $
+	
+	-->
+
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml" />
+
+	<!-- Create a simple data template containing a single string -->
+	<DataModel name="RelationSizeTemplate">
+
+		<String isStatic="true" value="Length of following string is: " />
+		<String isStatic="true">
+			<Relation type="size" of="HelloWorld" />
+		</String>
+		<String isStatic="true" value="\n" />
+		<String name="HelloWorld" isStatic="true" value="Hello World!" />
+
+	</DataModel>
+	
+	<StateModel name="State" initialState="Initial">
+		<State name="Initial">
+			<Action type="output">
+				<DataModel ref="RelationCountTemplate" />
+			</Action>
+		</State>
+	</StateModel>
+	
+	<!-- Out tests set will contain this single test -->
+	<Test name="RelationSizeTests">
+		<StateModel ref="State" />
+
+		<!-- Display test cases to the console -->
+		<Publisher class="stdout.Stdout" />
+	</Test>
+
+	<!-- Configure a single run -->
+	<Run name="RelationSizeRun" description="Stdout HelloWorld Run">
+
+		<!-- The set of tests to run -->
+		<Test ref="RelationSizeTests" />
+
+	</Run>
+</Peach>
+<!-- end -->

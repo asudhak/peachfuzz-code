@@ -34,6 +34,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
+
+using NLog;
+
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
@@ -67,6 +70,8 @@ namespace Peach.Core.Analyzers
 	/// </summary>
 	public class PitParser : Analyzer
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Analyzers.PitParser");
+
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";
 		Dom.Dom _dom = null;

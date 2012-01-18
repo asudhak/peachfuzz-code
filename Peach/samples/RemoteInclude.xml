@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington">
+	
+	<!--
+		
+		Example of including a remote Peach DDL file.
+		
+		Syntax:
+		
+		python peach.py samples\RemoteInclude.xml
+		
+		Output:
+		
+		Will display "Hello from phed.org!"
+		
+		Authors:
+		Michael Eddington (mike@phed.org)
+		
+		$Id: RemoteInclude.xml 1762 2009-06-11 23:46:24Z meddingt $
+		
+	-->
+	
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml" />
+	
+	<!-- Include a file from a web-site -->
+	<Include ns="example" src="http://phed.org/Peach/Example.xml" />
+
+	<StateModel name="State" initialState="Initial">
+		<State name="Initial">
+			<Action type="output">
+				<DataModel ref="example:HelloWorldTemplate" />
+			</Action>
+		</State>
+	</StateModel>
+	
+	<Test name="RemoteIncludeTest">
+		<!-- Reference our remote template using a namespace prefix -->
+		<StateModel ref="State" />
+		
+		<Publisher class="stdout.Stdout" />
+	</Test>
+	
+	<Run name="DefaultRun" description="Stdout HelloWorld Run">
+		<Test ref="RemoteIncludeTest" />
+	</Run>
+	
+</Peach>
+<!-- end -->

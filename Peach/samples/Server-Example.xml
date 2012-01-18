@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington">
+	
+	<!--
+		
+		Server side of the remote include example.
+		
+		Authors:
+		Michael Eddington (mike@phed.org)
+		
+		$Id: Server-Example.xml 1762 2009-06-11 23:46:24Z meddingt $
+		
+	-->
+	
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml" />
+	
+	<DataModel name="HelloWorldTemplate">
+		<String isStatic="true" value="Hello from phed.org!" />
+	</DataModel>
+	
+	<StateModel name="State" initialState="State1">
+		<State name="State1">
+			<!-- Wait for incoming connection -->
+			<Action type="accept" />
+			
+			<Action type="output">
+				<DataModel ref="HelloWorldTemplate"/>
+			</Action>
+		</State>
+	</StateModel>
+	
+	<Test name="TheTest">
+		<StateModel ref="TestState" />
+		
+		<Publisher class="tcp.TcpListener">
+			<Param name="host" value="127.0.0.1"/>
+			<Param name="port" value="9001"/>
+		</Publisher>
+	</Test>
+
+	<Run name="DefaultRun">
+		<Test ref="TheTest" />
+	</Run>
+</Peach>
+<!-- end -->

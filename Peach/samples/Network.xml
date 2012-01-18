@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington" description="Hello World Example">
+
+	<!--
+		
+	Example of the Network monitor.  This example requires two machines.
+		
+	The included example program will fault on test 47.
+		
+	Configure:
+		
+		Change 192.168.1.195 to IP of second machine.
+		
+	Syntax:
+		
+		2nd machine: python peach.py -a
+		1st machine:  python peach.py samples\Debugger.xml
+		
+	Output:
+		
+		You will see the tests scroll along.  Once test 47 has occured you can check
+		the c:\peach\logfiles folder for a log of this test that will include a Debugger.txt
+		and Network.pcap faul output.
+		
+	Authors:
+		
+		Michael Eddington (mike@phed.org)
+		
+		$Id: Network.xml 2174 2010-10-28 00:12:48Z meddingt $
+		
+	-->
+
+	<DataModel name="HttpRequest">
+		<String value="Hello World!" />
+	</DataModel>
+	
+	<StateModel name="TheStateModel" initialState="TheState">
+		<State name="TheState">
+			<Action type="output">
+				<DataModel ref="HttpRequest" />
+			</Action>
+		</State>
+	</StateModel>
+
+	<!-- Agents that run localy will be started automatically by Peach -->
+	<Agent name="LocalAgent">
+		<Monitor name="Debugger" class="WindowsDebugEngine">
+			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 127.0.0.1 4242"/>
+		</Monitor>
+
+		<Monitor name="Network" class="PcapMonitor">
+			<Param name="filter" value="tcp"/>
+		</Monitor>
+	</Agent>
+
+	<Test name="NetworkTest">
+		<Agent ref="LocalAgent" />
+		<StateModel ref="TheStateModel"/>
+
+		<Publisher class="TcpClient">
+			<Param name="Host" value="127.0.0.1" />
+			<Param name="Port" value="4242" />
+		</Publisher>
+	</Test>
+
+	<Run name="DefaultRun">
+		<Test ref="NetworkTest" />
+
+		<Logger class="Filesystem">
+			<Param name="Path" value="Logs" />
+		</Logger>
+	</Run>
+
+</Peach>
+<!-- end -->

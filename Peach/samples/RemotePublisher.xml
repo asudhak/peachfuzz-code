@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington">
+	
+	<!--
+		
+		Example of the WindowsDebugger monitor.  This example will launch a 
+		program with an attached debugger and log stack traces on faults.  The
+		included example program will fault on test 47.
+		
+		Syntax:
+		
+		python peach.py -a
+		
+		python peach.py samples\Debugger.xml
+		
+		Output:
+		
+		You will see the tests scroll along.  Once test 47 has occured you can check
+		the c:\peach\logfiles folder for a log of this test that will include a Debugger.txt
+		faul output.
+		
+		Authors:
+		
+		Michael Eddington (mike@phed.org)
+		
+		$Id: Debugger.xml 807 2008-03-25 08:34:38Z meddingt $
+		
+	-->
+	
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml" />
+	
+	<DataModel name="TestTemplate">
+		<String name="TheString" value="Hello World!" />
+	</DataModel>
+	
+	<StateModel name="State" initialState="Initial">
+		<State name="Initial">
+			<Action name="SendValue1" type="output">
+				<DataModel ref="TestTemplate" />
+			</Action>
+		</State>
+	</StateModel>
+	
+	<Agent name="RemoteAgent" location="http://192.168.1.190:9000"> 
+		<!-- This agent will get our remote publisher -->
+		
+		<!-- Load up our target -->
+		<Monitor class="debugger.WindowsDebugEngine">
+			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 192.168.1.190 4242" />
+		</Monitor>
+	</Agent>
+	
+	<Test name="TheTest">
+ 	<Agent ref="LocalAgent" />
+		<Agent ref="RemoteAgent" />
+		
+		<StateModel ref="State"/>
+		<Publisher class="remote.RemotePublisher">
+			<Param name="agent" value="RemoteAgent" />
+			<Param name="name" value="pub1" />
+			<Param name="class" value="tcp.Tcp"/>
+			<Param name="host" value="192.168.1.190" />
+			<Param name="port" value="4242" />
+		</Publisher>
+	</Test>
+	
+	<Run name="DefaultRun">
+		<Test ref="TheTest" />
+		
+		<Logger class="logger.Filesystem">
+			<Param name="path" value="c:\peach\logtest" />
+		</Logger>
+	</Run>
+	
+</Peach>
+<!-- end -->

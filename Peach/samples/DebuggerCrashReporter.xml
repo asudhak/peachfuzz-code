@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington">
+
+	<!--
+		
+		Example of the OS X Crash Reporter monitor.  This example will use the OS X
+		Crash Repoter functionality to detect faults.  This feature is still in BETA.
+		
+		Syntax:
+		
+		  python peach.py -a
+		  
+		  python peach.py samples\DebuggerCrashReporter.xml
+				
+		Authors:
+		
+		  Michael Eddington (mike@phed.org)
+		
+		$Id: Debugger.xml 807 2008-03-25 08:34:38Z meddingt $
+		
+	-->
+
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml" />
+
+	<DataModel name="TestTemplate">
+		<String name="TheString" value="Hello World!" />
+	</DataModel>
+
+	<StateModel name="State" initialState="Initial">
+		<State name="Initial">
+			<Action name="SendValue1" type="output">
+				<DataModel ref="TestTemplate" />
+			</Action>
+		</State>
+	</StateModel>
+
+	<Agent name="LocalAgent" location="http://127.0.0.1:9000">
+		<Monitor class="process.Process">
+			<Param name="Command" value="samples/UnixCrashServer/unixcrash" />
+		</Monitor>
+		<Monitor class="osx.CrashReporter" />
+	</Agent>
+
+	<Test name="TheTest">
+		<Agent ref="LocalAgent" />
+
+		<StateModel ref="State"/>
+		<Publisher class="tcp.Tcp">
+			<Param name="host" value="127.0.0.1" />
+			<Param name="port" value="4242" />
+		</Publisher>
+	</Test>
+
+	<Run name="DefaultRun">
+		<Test ref="TheTest" />
+	
+		<Logger class="logger.Filesystem">
+			<Param name="path" value="logs" />
+		</Logger>
+	</Run>
+
+</Peach>
+<!-- end -->

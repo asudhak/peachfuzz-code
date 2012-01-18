@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington" description="Hello World Example">
+
+	<!--
+
+	Example of using the FilePerIteration publisher
+	
+	Syntax:
+	
+	  python peach.py samples\FilePerIteration.xml
+	  
+	Output:
+	
+	  Lots and lots of "FilePer-%d.txt files.
+	
+	Authors:
+	  Michael Eddington (mike@phed.org)
+	
+	$Id$
+	
+	-->
+
+	<!-- Create a simple data template containing a single string -->
+	<DataModel name="HelloWorldTemplate">
+		<String value="Hello World!" />
+	</DataModel>
+	
+	<StateModel name="State" initialState="State1">
+		<State name="State1">
+			<Action type="output">
+				<DataModel ref="HelloWorldTemplate"/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name="HelloWorldTest">
+		<StateModel ref="State"/>
+		<Publisher class="FilePerIteration">
+			<Param name="fileName" value="FilePer-%d.txt"/>
+		</Publisher>
+	</Test>
+
+	<!-- Configure a single run -->
+	<Run name="DefaultRun">
+		<Test ref="HelloWorldTest" />
+	</Run>
+
+</Peach>
+<!-- end -->

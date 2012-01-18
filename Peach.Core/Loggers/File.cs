@@ -41,6 +41,8 @@ namespace Peach.Core.Loggers
 	/// Standard file system logger.
 	/// </summary>
 	[Logger("File")]
+	[Logger("Filesystem")]
+	[Logger("logger.Filesystem")]
 	[Parameter("Path", typeof(string), "Log folder", true)]
 	public class FileLogger : Logger
 	{

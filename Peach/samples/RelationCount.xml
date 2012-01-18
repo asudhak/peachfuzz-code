@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
+	author="Michael Eddington" description="Example of count relations">
+
+	<!--
+
+	Demonstraits the "count" data relation.
+	
+	Syntax:
+	
+      python peach.py samples\RelationCount.xml
+	  
+	Output:
+	
+	  TODO
+	
+	Authors:
+	  Michael Eddington (mike@phed.org)
+	
+	$Id: RelationCount.xml 1762 2009-06-11 23:46:24Z meddingt $
+	
+	-->
+
+	<!-- Import defaults for Peach instance -->
+	<Include ns="default" src="file:defaults.xml" />
+
+	<!-- Create a simple data template containing a single string -->
+	<DataModel name="RelationCountTemplate">
+
+		<String isStatic="true" value="Count of hello worlds is " />
+		<String isStatic="true">
+			<Relation type="count" of="HelloWorld" />
+		</String>
+		<String isStatic="true" value="\n" />
+		<String name="HelloWorld" minOccurs="5" maxOccurs="10" isStatic="true" value="Hello World! " />
+
+	</DataModel>
+
+	<StateModel name="TheState" initialState="FirstState">
+		<State name="FirstState">
+			<Action type="output">
+				<DataModel ref="RelationCountTemplate" />
+			</Action>
+		</State>
+	</StateModel>
+
+	<!-- Out tests set will contain this single test -->
+	<Test name="RelationCountTest">
+		<StateModel ref="TheState"/>
+		<!-- Display test cases to the console -->
+		<Publisher class="stdout.Stdout" />
+	</Test>
+
+	<!-- Configure a single run -->
+	<Run name="DefaultRun" description="Stdout HelloWorld Run">
+
+		<!-- The set of tests to run -->
+		<Test ref="RelationCountTest" />
+
+	</Run>
+
+</Peach>
+<!-- end -->
