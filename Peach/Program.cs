@@ -37,6 +37,8 @@ using Peach.Core.Agent;
 using Peach.Core.Analyzers;
 using SharpPcap;
 
+using NLog;
+
 namespace Peach
 {
 	/// <summary>
@@ -179,6 +181,9 @@ namespace Peach
 			{
 				Console.WriteLine(ee.Message + "\n");
 			}
+
+			// HACK - Required on Mono with NLog 2.0
+			LogManager.Configuration = null;
 		}
 
 		public void syntax()
