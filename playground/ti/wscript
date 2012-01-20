@@ -3,11 +3,6 @@
 # Jérôme Carretero, 2012 (zougloub)
 # Put this file in ti-dsplink-tree/dsplink/dsp/src/samples/message
 
-
-import os, sys
-
-opj = os.path.join
-
 def options(opt):
 	opt.load('ticgt')
 
@@ -35,15 +30,23 @@ def build(bld):
 	)
 
 	bld(
-	 target='message-demo',
-	 features='c cprogram',
+	 target='messagelib',
+	 features='c cstlib',
 	 source=bld.path.ant_glob('*.c'),
 	 use=[
 	  'DSPBIOS', 'DSPLINK',
-	  'message',
 	 ],
 	 # Taken from DSP/Link generated _defines.txt files, replaced a -D by a -d
 	 defines=' -dTSK_MODE -dDDSP_DEBUG -dMAX_DSPS=1 -dMAX_PROCESSORS=2 -dID_GPP=1 -dOMAPL138 -dPROC_COMPONENT -dPOOL_COMPONENT -dNOTIFY_COMPONENT -dMPCS_COMPONENT -dRINGIO_COMPONENT -dMPLIST_COMPONENT -dMSGQ_COMPONENT -dMSGQ_ZCPY_LINK -dCHNL_COMPONENT -dCHNL_ZCPY_LINK -dZCPY_LINK -dPROCID=0 -dDA8XXGEM -dDA8XXGEM_INTERFACE=SHMEM_INTERFACE -dPHYINTERFACE=SHMEM_INTERFACE -dDSP_SWI_MODE'.split(" -d")[1:] + [
+	 ],
+	)
+
+	bld(
+	 target='message-demo',
+	 features='c cprogram',
+	 use=[
+	  'messagelib',
+	  'message',
 	 ],
 	)
 

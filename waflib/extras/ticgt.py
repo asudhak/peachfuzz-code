@@ -31,7 +31,7 @@ def find_tiar(conf):
 	ar = conf.cmd_to_list(ar)
 	conf.env.AR = ar
 	conf.env.AR_NAME = 'tiar'
-	conf.env.ARFLAGS = 'rcs'
+	conf.env.ARFLAGS = 'qru'
 
 @conf
 def ticc_common_flags(conf):
@@ -45,7 +45,7 @@ def ticc_common_flags(conf):
 
 	v['LIB_ST']	      = '-l%s' # template for adding libs
 	v['LIBPATH_ST']	  = '-i%s' # template for adding libpaths
-	v['STLIB_ST']	    = '-l%s'
+	v['STLIB_ST']	    = '-l=%s.lib'
 	v['STLIBPATH_ST']	= '-i%s'
 
 	# program
@@ -53,7 +53,7 @@ def ticc_common_flags(conf):
 
 	# static lib
 	#v['LINKFLAGS_cstlib']    = ['-Wl,-Bstatic']
-	v['cstlib_PATTERN']      = 'lib%s.a'
+	v['cstlib_PATTERN']      = '%s.lib'
 
 def configure(conf):
 	v = conf.env
