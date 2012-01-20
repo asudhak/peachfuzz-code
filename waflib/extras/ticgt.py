@@ -7,6 +7,7 @@ from waflib.Tools import c, ccroot, c_preproc
 from waflib.Configure import conf
 from waflib.TaskGen import feature, before_method, taskgen_method
 from waflib.Tools.ccroot import link_task, stlink_task
+from waflib.Tools.c import cprogram
 
 import os, re
 
@@ -214,32 +215,33 @@ def options(opt):
 	opt.add_option('--with-ti-dsplink', type='string', dest='ti-dsplink-dir', help = 'Specify alternate dsplink folder', default="")
 	opt.add_option('--with-ti-xdctools', type='string', dest='ti-xdctools-dir', help = 'Specify alternate xdctools folder', default="")
 
-class ti_cprogram(link_task):
-	"Link object files into a c program"
-	run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
-	ext_out = ['.bin']
-	vars    = ['LINKDEPS']
-	inst_to = '${BINDIR}'
-	chmod   = Utils.O755
-
-def hack():
+class ti_cprogram(cprogram):
 	"""
-	Hack to change:
+	Link object files into a c program
+	
+	Changes:
 
-	- the linked executable to have a relative path
+	- the linked executable to have a relative path (because we can)
 	- put the LIBPATH first
-
 	"""
-	t = Task.classes['cprogram']
-	t.run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
-	(f,dvars) = Task.compile_fun(t.run_str, t.shell)
-	t.hcode = t.run_str
-	t.run = f
-	t.vars.extend(dvars)
+	run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
 
-hack()
+@feature("c")
+@before_method('apply_link')
+def use_ti_cprogram(self):
+	"""
+	Automatically uses ti_cprogram link process
+	"""
+	if 'cprogram' in self.features and self.env.CC_NAME == 'ticc':
+		self.features.insert(0, "ti_cprogram")
 
 class ti_c(Task.Task):
+	"""
+	Compile task for the TI codegen compiler
+
+	This compiler does not allow specifying the output file name, only the output path.
+
+	"""
 	"Compile C files into object files"
 	run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${SRC} -c ${OUT}'
 	vars    = ['CCDEPS'] # unused variable to depend on, just in case
@@ -248,6 +250,9 @@ class ti_c(Task.Task):
 
 @taskgen_method
 def create_compiled_task(self, name, node):
+	"""
+	Overrides ccroot.create_compiled_task to support ti_c
+	"""
 	out = '%s' % (node.change_ext('.obj').name)
 	if self.env.CC_NAME == 'ticc':
 		name = 'ti_c'
@@ -260,5 +265,4 @@ def create_compiled_task(self, name, node):
 	return task
 
 ccroot.create_compiled_task = create_compiled_task
-
 
