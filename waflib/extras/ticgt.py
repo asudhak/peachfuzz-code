@@ -136,21 +136,27 @@ class ti_tconf(Task.Task):
 	color   = 'PINK'
 
 	def scan(self):
-		node = self.inputs[0]
 		includes = Utils.to_list(getattr(self, 'includes', []))
-		nodes, names = [], []
-		if node:
-			code = Utils.readf(node.abspath())
-			for match in re_tconf_include.finditer(code):
-				path = match.group('file')
-				if path:
-					for x in includes:
-						filename = opj(x, path)
-						fi = self.path.find_resource(filename)
-						if fi:
-							nodes.append(fi)
-							names.append(path)
-							break
+
+		def deps(node):
+			nodes, names = [], []
+			if node:
+				code = Utils.readf(node.abspath())
+				for match in re_tconf_include.finditer(code):
+					path = match.group('file')
+					if path:
+						for x in includes:
+							filename = opj(x, path)
+							fi = self.path.find_resource(filename)
+							if fi:
+								subnodes, subnames = deps(fi)
+								nodes += subnodes
+								names += subnames
+								nodes.append(fi)
+								names.append(path)
+								break
+			return nodes, names
+		return deps(self.inputs[0])
 
 		return (nodes, names)
 
