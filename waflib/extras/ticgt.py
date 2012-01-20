@@ -157,8 +157,7 @@ class ti_tconf(Task.Task):
 @feature("ti-tconf")
 @before_method('process_source')
 def apply_tconf(self):
-	bld = self.bld
-	sources = [x.get_src() for x in self.to_nodes(self.source, path=bld.path.get_src())]
+	sources = [x.get_src() for x in self.to_nodes(self.source, path=self.path.get_src())]
 	node = sources[0]
 	assert(sources[0].name.endswith(".tcf"))
 	if len(sources) > 1:
@@ -171,15 +170,15 @@ def apply_tconf(self):
 
 	importpaths = []
 	includes = Utils.to_list(getattr(self, 'includes', []))
-	for x in includes + bld.env.TCONF_INCLUDES:
+	for x in includes + self.env.TCONF_INCLUDES:
 		if x == os.path.abspath(x):
 			importpaths.append(x)
 		else:
-			relpath = bld.path.find_node(x).path_from(target_node.parent)
+			relpath = self.path.find_node(x).path_from(target_node.parent)
 			importpaths.append(relpath)
 
 	task = self.create_task('ti_tconf', sources, target_node.change_ext('.cdb'))
-	task.path = bld.path
+	task.path = self.path
 	task.includes = includes
 	task.cwd = target_node.parent.abspath()
 	task.env = self.env
