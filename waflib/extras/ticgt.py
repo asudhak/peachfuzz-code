@@ -7,7 +7,7 @@ from waflib.Tools import c, ccroot, c_preproc
 from waflib.Configure import conf
 from waflib.TaskGen import feature, before_method, taskgen_method
 
-import os
+import os, re
 
 opj = os.path.join
 
@@ -70,16 +70,89 @@ def configure(conf):
 	conf.cc_add_flags()
 	conf.link_add_flags()
 	v.TCONF = conf.cmd_to_list(conf.find_program(['tconf'], var='TCONF', path_list=v.TI_XDCTOOLS_DIR))
+	
+	conf.env.TCONF_INCLUDES += [
+	 opj(conf.env.TI_DSPBIOS_DIR, 'packages'),
+	]
+	
+	conf.env.INCLUDES += [
+	 opj(conf.env.TI_CGT_DIR, 'include'),
+	]
+	
+	conf.env.LIBPATH += [
+	 opj(conf.env.TI_CGT_DIR, "lib"),
+	]
 
+	conf.env.LINKFLAGS += []
+
+	conf.env.INCLUDES_DSPBIOS += [
+	 opj(conf.env.TI_DSPBIOS_DIR, 'packages', 'ti', 'bios', 'include'),
+	]
+	
+	conf.env.LIBPATH_DSPBIOS += [
+	 opj(conf.env.TI_DSPBIOS_DIR, 'packages', 'ti', 'bios', 'lib'),
+	]
+
+	conf.env.INCLUDES_DSPLINK += [
+	 opj(conf.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'inc'),
+	]
+	
+@conf
+def ti_set_debug(cfg, debug=1):
+	if debug:
+		cfg.env.CFLAGS += "-d_DEBUG -dDEBUG".split()
+		# TODO for each TI CFLAG/INCLUDES/LINKFLAGS/LIBPATH replace RELEASE by DEBUG
+
+@conf
+def ti_dsplink_set_platform_flags(cfg, splat, dsp, dspbios_ver, board):
+	"""
+	Sets the INCLUDES, LINKFLAGS for DSPLINK and TCONF_INCLUDES
+	For the specific hardware.
+
+	Assumes that DSPLINK was built in its own folder.
+
+	:param splat: short platform name (eg. OMAPL138)
+	:param dsp: DSP name (eg. 674X)
+	:param dspbios_ver: string identifying DspBios version (eg. 5.XX)
+	:param board: board name (eg. OMAPL138GEM)
+
+	"""
+	d = opj(cfg.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'inc', 'DspBios', dspbios_ver, board)
+	cfg.env.TCONF_INCLUDES += [d]
+	cfg.env.INCLUDES_DSPLINK += [
+	 opj(cfg.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'inc', dsp),
+	 d,
+	]
+	
+	cfg.env.LINKFLAGS_DSPLINK += [
+	 opj(cfg.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'export', 'BIN', 'DspBios', splat, board+'_0', 'RELEASE', 'dsplink%s.lib' % x)
+	 for x in ['', 'pool', 'mpcs', 'mplist', 'msg', 'data', 'notify', 'ringio']
+	]
+
+
+re_tconf_include = re.compile(r'(?P<type>utils\.importFile)\("(?P<file>.*)"\)',re.M)
 class ti_tconf(Task.Task):
-	run_str = '${TCONF} ${TCONFINC} ${TCONFPROGNAME} ${SRC[0].bldpath()} ${PROCID}'
+	run_str = '${TCONF} ${TCONFINC} ${TCONFPROGNAME} ${TCONFSRC} ${PROCID}'
 	color   = 'PINK'
 
 	def scan(self):
-		nodes = self.inputs
-		names = []
+		node = self.inputs[0]
+		includes = Utils.to_list(getattr(self, 'includes', []))
+		nodes, names = [], []
+		if node:
+			code = Utils.readf(node.abspath())
+			for match in re_tconf_include.finditer(code):
+				path = match.group('file')
+				if path:
+					for x in includes:
+						filename = opj(x, path)
+						fi = self.path.find_resource(filename)
+						if fi:
+							nodes.append(fi)
+							names.append(path)
+							break
+
 		return (nodes, names)
-		
 
 @feature("ti-tconf")
 @before_method('process_source')
@@ -87,23 +160,44 @@ def apply_tconf(self):
 	bld = self.bld
 	sources = [x.get_src() for x in self.to_nodes(self.source, path=bld.path.get_src())]
 	node = sources[0]
-	target = getattr(self, 'target', sources[0].name)
+	assert(sources[0].name.endswith(".tcf"))
+	if len(sources) > 1:
+		assert(sources[1].name.endswith(".cmd"))
 
-	# TODO prevent directory creation when using relative paths
+	target = getattr(self, 'target', self.source)
+	target_node = node.get_bld().parent.find_or_declare(node.name)
+	
+	procid = "%d" % int(getattr(self, 'procid', 0))
+
 	importpaths = []
-	for x in getattr(self, 'includes', []):
-		importpaths.append(bld.path.find_node(x).bldpath())
+	includes = Utils.to_list(getattr(self, 'includes', []))
+	for x in includes + bld.env.TCONF_INCLUDES:
+		if x == os.path.abspath(x):
+			importpaths.append(x)
+		else:
+			relpath = bld.path.find_node(x).path_from(target_node.parent)
+			importpaths.append(relpath)
 
-	task = self.create_task('ti_tconf', sources, node.change_ext('.cdb'))
+	task = self.create_task('ti_tconf', sources, target_node.change_ext('.cdb'))
+	task.path = bld.path
+	task.includes = includes
+	task.cwd = target_node.parent.abspath()
 	task.env = self.env
+	task.env["TCONFSRC"] = node.path_from(target_node.parent)
 	task.env["TCONFINC"] = '-Dconfig.importPath=%s' % ";".join(importpaths)
-	task.env['TCONFPROGNAME'] = '-Dconfig.programName=%s' % node.get_bld().change_ext("").bldpath()
-	task.env['PROCID'] = '0'
-	task.outputs = [node.change_ext("cfg_c.c"), node.change_ext("cfg.s62"), node.change_ext("cfg.cmd")]
+	task.env['TCONFPROGNAME'] = '-Dconfig.programName=%s' % target
+	task.env['PROCID'] = procid
+	task.outputs = [
+	 target_node.change_ext("cfg_c.c"),
+	 target_node.change_ext("cfg.s62"),
+	 target_node.change_ext("cfg.cmd"),
+	]
 
 	s62task = create_compiled_task(self, 'c', task.outputs[1])
 	ctask = create_compiled_task(self, 'c', task.outputs[0])
-	ctask.env.LINKFLAGS += [node.change_ext("cfg.cmd").abspath()]
+	ctask.env.LINKFLAGS += [target_node.change_ext("cfg.cmd").abspath()]
+	if len(sources) > 1:
+		ctask.env.LINKFLAGS += [sources[1].bldpath()]
 
 	self.source = []
 
@@ -130,6 +224,13 @@ ccroot.create_compiled_task = create_compiled_task
 def hack():
 	t = Task.classes['c']
 	t.run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${SRC} -c ${OUT}'
+	(f,dvars) = Task.compile_fun(t.run_str, t.shell)
+	t.hcode = t.run_str
+	t.run = f
+	t.vars.extend(dvars)
+
+	t = Task.classes['cprogram']
+	t.run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
 	(f,dvars) = Task.compile_fun(t.run_str, t.shell)
 	t.hcode = t.run_str
 	t.run = f
