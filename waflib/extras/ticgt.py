@@ -6,6 +6,7 @@ from waflib import Configure, Options, Utils, Task, TaskGen
 from waflib.Tools import c, ccroot, c_preproc
 from waflib.Configure import conf
 from waflib.TaskGen import feature, before_method, taskgen_method
+from waflib.Tools.ccroot import link_task, stlink_task
 
 import os, re
 
@@ -213,9 +214,43 @@ def options(opt):
 	opt.add_option('--with-ti-dsplink', type='string', dest='ti-dsplink-dir', help = 'Specify alternate dsplink folder', default="")
 	opt.add_option('--with-ti-xdctools', type='string', dest='ti-xdctools-dir', help = 'Specify alternate xdctools folder', default="")
 
+class ti_cprogram(link_task):
+	"Link object files into a c program"
+	run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
+	ext_out = ['.bin']
+	vars    = ['LINKDEPS']
+	inst_to = '${BINDIR}'
+	chmod   = Utils.O755
+
+def hack():
+	"""
+	Hack to change:
+
+	- the linked executable to have a relative path
+	- put the LIBPATH first
+
+	"""
+	t = Task.classes['cprogram']
+	t.run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
+	(f,dvars) = Task.compile_fun(t.run_str, t.shell)
+	t.hcode = t.run_str
+	t.run = f
+	t.vars.extend(dvars)
+
+hack()
+
+class ti_c(Task.Task):
+	"Compile C files into object files"
+	run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${SRC} -c ${OUT}'
+	vars    = ['CCDEPS'] # unused variable to depend on, just in case
+	ext_in  = ['.h'] # set the build order easily by using ext_out=['.h']
+	scan    = c_preproc.scan
+
 @taskgen_method
 def create_compiled_task(self, name, node):
 	out = '%s' % (node.change_ext('.obj').name)
+	if self.env.CC_NAME == 'ticc':
+		name = 'ti_c'
 	task = self.create_task(name, node, node.parent.find_or_declare(out))
 	self.env.OUT = '-fr%s' % (node.parent.get_bld().abspath())
 	try:
@@ -226,20 +261,4 @@ def create_compiled_task(self, name, node):
 
 ccroot.create_compiled_task = create_compiled_task
 
-def hack():
-	t = Task.classes['c']
-	t.run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${SRC} -c ${OUT}'
-	(f,dvars) = Task.compile_fun(t.run_str, t.shell)
-	t.hcode = t.run_str
-	t.run = f
-	t.vars.extend(dvars)
-
-	t = Task.classes['cprogram']
-	t.run_str = '${LINK_CC} ${LIBPATH_ST:LIBPATH} ${LIB_ST:LIB} ${LINKFLAGS} ${CCLNK_SRC_F}${SRC} ${CCLNK_TGT_F}${TGT[0].bldpath()} ${RPATH_ST:RPATH} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${ARCH_ST:ARCH} ${STLIB_MARKER} ${STLIBPATH_ST:STLIBPATH} ${STLIB_ST:STLIB} ${SHLIB_MARKER} '
-	(f,dvars) = Task.compile_fun(t.run_str, t.shell)
-	t.hcode = t.run_str
-	t.run = f
-	t.vars.extend(dvars)
-
-hack()
 
