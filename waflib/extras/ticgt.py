@@ -132,82 +132,6 @@ def ti_dsplink_set_platform_flags(cfg, splat, dsp, dspbios_ver, board):
 	]
 
 
-re_tconf_include = re.compile(r'(?P<type>utils\.importFile)\("(?P<file>.*)"\)',re.M)
-class ti_tconf(Task.Task):
-	run_str = '${TCONF} ${TCONFINC} ${TCONFPROGNAME} ${TCONFSRC} ${PROCID}'
-	color   = 'PINK'
-
-	def scan(self):
-		includes = Utils.to_list(getattr(self, 'includes', []))
-
-		def deps(node):
-			nodes, names = [], []
-			if node:
-				code = Utils.readf(node.abspath())
-				for match in re_tconf_include.finditer(code):
-					path = match.group('file')
-					if path:
-						for x in includes:
-							filename = opj(x, path)
-							fi = self.path.find_resource(filename)
-							if fi:
-								subnodes, subnames = deps(fi)
-								nodes += subnodes
-								names += subnames
-								nodes.append(fi)
-								names.append(path)
-								break
-			return nodes, names
-		return deps(self.inputs[0])
-
-		return (nodes, names)
-
-@feature("ti-tconf")
-@before_method('process_source')
-def apply_tconf(self):
-	sources = [x.get_src() for x in self.to_nodes(self.source, path=self.path.get_src())]
-	node = sources[0]
-	assert(sources[0].name.endswith(".tcf"))
-	if len(sources) > 1:
-		assert(sources[1].name.endswith(".cmd"))
-
-	target = getattr(self, 'target', self.source)
-	target_node = node.get_bld().parent.find_or_declare(node.name)
-	
-	procid = "%d" % int(getattr(self, 'procid', 0))
-
-	importpaths = []
-	includes = Utils.to_list(getattr(self, 'includes', []))
-	for x in includes + self.env.TCONF_INCLUDES:
-		if x == os.path.abspath(x):
-			importpaths.append(x)
-		else:
-			relpath = self.path.find_node(x).path_from(target_node.parent)
-			importpaths.append(relpath)
-
-	task = self.create_task('ti_tconf', sources, target_node.change_ext('.cdb'))
-	task.path = self.path
-	task.includes = includes
-	task.cwd = target_node.parent.abspath()
-	task.env = self.env
-	task.env["TCONFSRC"] = node.path_from(target_node.parent)
-	task.env["TCONFINC"] = '-Dconfig.importPath=%s' % ";".join(importpaths)
-	task.env['TCONFPROGNAME'] = '-Dconfig.programName=%s' % target
-	task.env['PROCID'] = procid
-	task.outputs = [
-	 target_node.change_ext("cfg_c.c"),
-	 target_node.change_ext("cfg.s62"),
-	 target_node.change_ext("cfg.cmd"),
-	]
-
-	s62task = create_compiled_task(self, 'c', task.outputs[1])
-	ctask = create_compiled_task(self, 'c', task.outputs[0])
-	ctask.env.LINKFLAGS += [target_node.change_ext("cfg.cmd").abspath()]
-	if len(sources) > 1:
-		ctask.env.LINKFLAGS += [sources[1].bldpath()]
-
-	self.source = []
-
 def options(opt):
 	opt.add_option('--with-ti-cgt', type='string', dest='ti-cgt-dir', help = 'Specify alternate cgt root folder', default="")
 	opt.add_option('--with-ti-biosutils', type='string', dest='ti-biosutils-dir', help = 'Specify alternate biosutils folder', default="")
@@ -248,7 +172,6 @@ class ti_c(Task.Task):
 	ext_in  = ['.h'] # set the build order easily by using ext_out=['.h']
 	scan    = c_preproc.scan
 
-@taskgen_method
 def create_compiled_task(self, name, node):
 	"""
 	Overrides ccroot.create_compiled_task to support ti_c
@@ -264,5 +187,89 @@ def create_compiled_task(self, name, node):
 		self.compiled_tasks = [task]
 	return task
 
-ccroot.create_compiled_task = create_compiled_task
+@TaskGen.extension('.c')
+def c_hook(self, node):
+	"Bind the c file extension to the creation of a :py:class:`waflib.Tools.c.c` instance"
+	if self.env.CC_NAME == 'ticc':
+		return create_compiled_task(self, 'ti_c', node)
+	else:
+		return self.create_compiled_task('c', node)
+
+
+@feature("ti-tconf")
+@before_method('process_source')
+def apply_tconf(self):
+	sources = [x.get_src() for x in self.to_nodes(self.source, path=self.path.get_src())]
+	node = sources[0]
+	assert(sources[0].name.endswith(".tcf"))
+	if len(sources) > 1:
+		assert(sources[1].name.endswith(".cmd"))
+
+	target = getattr(self, 'target', self.source)
+	target_node = node.get_bld().parent.find_or_declare(node.name)
+	
+	procid = "%d" % int(getattr(self, 'procid', 0))
+
+	importpaths = []
+	includes = Utils.to_list(getattr(self, 'includes', []))
+	for x in includes + self.env.TCONF_INCLUDES:
+		if x == os.path.abspath(x):
+			importpaths.append(x)
+		else:
+			relpath = self.path.find_node(x).path_from(target_node.parent)
+			importpaths.append(relpath)
+
+	task = self.create_task('ti_tconf', sources, target_node.change_ext('.cdb'))
+	task.path = self.path
+	task.includes = includes
+	task.cwd = target_node.parent.abspath()
+	task.env = self.env
+	task.env["TCONFSRC"] = node.path_from(target_node.parent)
+	task.env["TCONFINC"] = '-Dconfig.importPath=%s' % ";".join(importpaths)
+	task.env['TCONFPROGNAME'] = '-Dconfig.programName=%s' % target
+	task.env['PROCID'] = procid
+	task.outputs = [
+	 target_node.change_ext("cfg_c.c"),
+	 target_node.change_ext("cfg.s62"),
+	 target_node.change_ext("cfg.cmd"),
+	]
+
+	s62task = create_compiled_task(self, 'ti_c', task.outputs[1])
+	ctask = create_compiled_task(self, 'ti_c', task.outputs[0])
+	ctask.env.LINKFLAGS += [target_node.change_ext("cfg.cmd").abspath()]
+	if len(sources) > 1:
+		ctask.env.LINKFLAGS += [sources[1].bldpath()]
+
+	self.source = []
+
+re_tconf_include = re.compile(r'(?P<type>utils\.importFile)\("(?P<file>.*)"\)',re.M)
+class ti_tconf(Task.Task):
+	run_str = '${TCONF} ${TCONFINC} ${TCONFPROGNAME} ${TCONFSRC} ${PROCID}'
+	color   = 'PINK'
+
+	def scan(self):
+		includes = Utils.to_list(getattr(self, 'includes', []))
+
+		def deps(node):
+			nodes, names = [], []
+			if node:
+				code = Utils.readf(node.abspath())
+				for match in re_tconf_include.finditer(code):
+					path = match.group('file')
+					if path:
+						for x in includes:
+							filename = opj(x, path)
+							fi = self.path.find_resource(filename)
+							if fi:
+								subnodes, subnames = deps(fi)
+								nodes += subnodes
+								names += subnames
+								nodes.append(fi)
+								names.append(path)
+								break
+			return nodes, names
+		return deps(self.inputs[0])
+
+		return (nodes, names)
+
 
