@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -1012,7 +1012,9 @@
     <Compile Include="Transformers\Crypto\Hmac.cs" />
     <Compile Include="Transformers\Crypto\Md5.cs" />
     <Compile Include="Transformers\Crypto\Sha1.cs" />
+    <Compile Include="Transformers\Crypto\UnixCryptTool.cs" />
     <Compile Include="Transformers\Crypto\UnixMd5Crypt.cs" />
+    <Compile Include="Transformers\Crypto\UnixMd5CryptTool.cs" />
     <Compile Include="Transformers\Encode\Base64Encode.cs" />
     <Compile Include="Transformers\Encode\Base64Decode.cs" />
     <Compile Include="Transformers\Encode\Hex.cs" />

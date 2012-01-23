@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
-using System.Runtime.InteropServices;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
@@ -13,10 +12,6 @@ namespace Peach.Core.Transformers.Crypto
     [TransformerAttribute("crypto.Crypt", "UNIX style crypt.")]
     public class Crypt : Transformer
     {
-        [DllImport("libcrypt.so", EntryPoint = "crypt", ExactSpelling = true, CharSet = CharSet.Ansi)]
-        public static extern IntPtr UnixCrypt([MarshalAs(UnmanagedType.LPStr)]string key, [MarshalAs(UnmanagedType.LPStr)]string salt);
-        //public static extern IntPtr UnixCrypt(string key, string salt);
-
         public Crypt(Dictionary<string,Variant> args) : base(args)
 		{
 		}
@@ -25,9 +20,8 @@ namespace Peach.Core.Transformers.Crypto
 		{
             string dataAsString = Convert.ToBase64String(data.Value);
             string salt = dataAsString.Substring(0, 2);
-            var result = UnixCrypt(dataAsString, salt);
-            string strResult = Marshal.PtrToStringAnsi(result);
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(strResult));
+            string result = UnixCryptTool.Crypt(salt, dataAsString);
+            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(result));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
