@@ -31,6 +31,9 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.tabControl = new System.Windows.Forms.TabControl();
 			this.tabPageGeneral = new System.Windows.Forms.TabPage();
+			this.buttonLogPathBrowse = new System.Windows.Forms.Button();
+			this.textBoxLogPath = new System.Windows.Forms.TextBox();
+			this.label17 = new System.Windows.Forms.Label();
 			this.groupBox6 = new System.Windows.Forms.GroupBox();
 			this.label16 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
@@ -95,9 +98,10 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.buttonLogPathBrowse = new System.Windows.Forms.Button();
-			this.textBoxLogPath = new System.Windows.Forms.TextBox();
-			this.label17 = new System.Windows.Forms.Label();
+			this.label18 = new System.Windows.Forms.Label();
+			this.textBoxFaultCount = new System.Windows.Forms.TextBox();
+			this.textBoxIterationCount = new System.Windows.Forms.TextBox();
+			this.label19 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
 			this.groupBox6.SuspendLayout();
@@ -153,6 +157,33 @@
 			this.tabPageGeneral.TabIndex = 0;
 			this.tabPageGeneral.Text = "General";
 			this.tabPageGeneral.UseVisualStyleBackColor = true;
+			// 
+			// buttonLogPathBrowse
+			// 
+			this.buttonLogPathBrowse.Location = new System.Drawing.Point(414, 106);
+			this.buttonLogPathBrowse.Name = "buttonLogPathBrowse";
+			this.buttonLogPathBrowse.Size = new System.Drawing.Size(75, 23);
+			this.buttonLogPathBrowse.TabIndex = 19;
+			this.buttonLogPathBrowse.Text = "Browse";
+			this.buttonLogPathBrowse.UseVisualStyleBackColor = true;
+			this.buttonLogPathBrowse.Click += new System.EventHandler(this.buttonLogPathBrowse_Click);
+			// 
+			// textBoxLogPath
+			// 
+			this.textBoxLogPath.Location = new System.Drawing.Point(115, 105);
+			this.textBoxLogPath.Name = "textBoxLogPath";
+			this.textBoxLogPath.Size = new System.Drawing.Size(293, 20);
+			this.textBoxLogPath.TabIndex = 18;
+			this.textBoxLogPath.Text = "Logs";
+			// 
+			// label17
+			// 
+			this.label17.AutoSize = true;
+			this.label17.Location = new System.Drawing.Point(56, 108);
+			this.label17.Name = "label17";
+			this.label17.Size = new System.Drawing.Size(53, 13);
+			this.label17.TabIndex = 17;
+			this.label17.Text = "Log Path:";
 			// 
 			// groupBox6
 			// 
@@ -692,6 +723,10 @@
 			// 
 			// tabPageOutput
 			// 
+			this.tabPageOutput.Controls.Add(this.textBoxIterationCount);
+			this.tabPageOutput.Controls.Add(this.label19);
+			this.tabPageOutput.Controls.Add(this.textBoxFaultCount);
+			this.tabPageOutput.Controls.Add(this.label18);
 			this.tabPageOutput.Controls.Add(this.textBoxOutput);
 			this.tabPageOutput.Controls.Add(this.progressBarOuputFuzzing);
 			this.tabPageOutput.Location = new System.Drawing.Point(4, 22);
@@ -709,7 +744,7 @@
 			this.textBoxOutput.Name = "textBoxOutput";
 			this.textBoxOutput.ReadOnly = true;
 			this.textBoxOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.textBoxOutput.Size = new System.Drawing.Size(529, 325);
+			this.textBoxOutput.Size = new System.Drawing.Size(529, 315);
 			this.textBoxOutput.TabIndex = 1;
 			// 
 			// progressBarOuputFuzzing
@@ -791,32 +826,41 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
-			// buttonLogPathBrowse
+			// label18
 			// 
-			this.buttonLogPathBrowse.Location = new System.Drawing.Point(414, 106);
-			this.buttonLogPathBrowse.Name = "buttonLogPathBrowse";
-			this.buttonLogPathBrowse.Size = new System.Drawing.Size(75, 23);
-			this.buttonLogPathBrowse.TabIndex = 19;
-			this.buttonLogPathBrowse.Text = "Browse";
-			this.buttonLogPathBrowse.UseVisualStyleBackColor = true;
-			this.buttonLogPathBrowse.Click += new System.EventHandler(this.buttonLogPathBrowse_Click);
+			this.label18.AutoSize = true;
+			this.label18.Location = new System.Drawing.Point(211, 359);
+			this.label18.Name = "label18";
+			this.label18.Size = new System.Drawing.Size(64, 13);
+			this.label18.TabIndex = 2;
+			this.label18.Text = "Fault Count:";
 			// 
-			// textBoxLogPath
+			// textBoxFaultCount
 			// 
-			this.textBoxLogPath.Location = new System.Drawing.Point(115, 105);
-			this.textBoxLogPath.Name = "textBoxLogPath";
-			this.textBoxLogPath.Size = new System.Drawing.Size(293, 20);
-			this.textBoxLogPath.TabIndex = 18;
-			this.textBoxLogPath.Text = "Logs";
+			this.textBoxFaultCount.Location = new System.Drawing.Point(281, 356);
+			this.textBoxFaultCount.Name = "textBoxFaultCount";
+			this.textBoxFaultCount.ReadOnly = true;
+			this.textBoxFaultCount.Size = new System.Drawing.Size(100, 20);
+			this.textBoxFaultCount.TabIndex = 3;
+			this.textBoxFaultCount.Text = "0";
 			// 
-			// label17
+			// textBoxIterationCount
 			// 
-			this.label17.AutoSize = true;
-			this.label17.Location = new System.Drawing.Point(56, 108);
-			this.label17.Name = "label17";
-			this.label17.Size = new System.Drawing.Size(53, 13);
-			this.label17.TabIndex = 17;
-			this.label17.Text = "Log Path:";
+			this.textBoxIterationCount.Location = new System.Drawing.Point(92, 356);
+			this.textBoxIterationCount.Name = "textBoxIterationCount";
+			this.textBoxIterationCount.ReadOnly = true;
+			this.textBoxIterationCount.Size = new System.Drawing.Size(100, 20);
+			this.textBoxIterationCount.TabIndex = 5;
+			this.textBoxIterationCount.Text = "0";
+			// 
+			// label19
+			// 
+			this.label19.AutoSize = true;
+			this.label19.Location = new System.Drawing.Point(7, 359);
+			this.label19.Name = "label19";
+			this.label19.Size = new System.Drawing.Size(79, 13);
+			this.label19.TabIndex = 4;
+			this.label19.Text = "Iteration Count:";
 			// 
 			// FormMain
 			// 
@@ -928,6 +972,10 @@
 		private System.Windows.Forms.Button buttonLogPathBrowse;
 		private System.Windows.Forms.TextBox textBoxLogPath;
 		private System.Windows.Forms.Label label17;
+		private System.Windows.Forms.Label label19;
+		private System.Windows.Forms.Label label18;
+		public System.Windows.Forms.TextBox textBoxIterationCount;
+		public System.Windows.Forms.TextBox textBoxFaultCount;
 	}
 }
 

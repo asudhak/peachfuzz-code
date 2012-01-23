@@ -51,7 +51,12 @@ namespace PeachFuzzBang
 
 			protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 			{
-				//throw new NotImplementedException();
+				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
+					new object[] { _form.textBoxOutput, "\r\n**** FAULT DETECTED AND LOGGED! ****\r\n" });
+
+				_form.progressBarOuputFuzzing.Invoke(new DeligateFaultIncrement(FaultIncrement),
+					new object[] { });
+
 			}
 
 			protected override void Engine_IterationFinished(RunContext context, uint currentIteration)
@@ -62,6 +67,21 @@ namespace PeachFuzzBang
 			public void Increment(ProgressBar ctrl)
 			{
 				ctrl.Increment(1);
+				_form.IterationCount++;
+				_form.textBoxIterationCount.Text = _form.IterationCount.ToString();
+			}
+
+			public delegate void DeligateFaultIncrement();
+			public void FaultIncrement()
+			{
+				_form.FaultCount++;
+				_form.textBoxFaultCount.Text = _form.FaultCount.ToString();
+			}
+
+			public delegate void DeligateStopFuzzing();
+			public void StopFuzzing()
+			{
+				_form.StoppedFuzzing();
 			}
 
 			public delegate void DeligateSetMax(ProgressBar cltr, int max);
@@ -119,12 +139,18 @@ namespace PeachFuzzBang
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
 					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' finished.\r\n" });
+
+				_form.textBoxOutput.Invoke(new DeligateStopFuzzing(StopFuzzing),
+					new object[] { });
 			}
 
 			public delegate void DeligateAppendToText(TextBox cltr, String text);
 			public void AppendToText(TextBox ctrl, string text)
 			{
 				ctrl.Text += text;
+				ctrl.SelectionStart = ctrl.Text.Length;
+				ctrl.ScrollToCaret();
+				ctrl.Refresh();
 			}
 
 			protected override void Engine_RunStarting(RunContext context)

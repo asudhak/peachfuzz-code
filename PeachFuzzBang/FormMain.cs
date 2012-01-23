@@ -48,6 +48,9 @@ namespace PeachFuzzBang
 {
 	public partial class FormMain : Form
 	{
+		public int IterationCount = 0;
+		public int FaultCount = 0;
+
 		Thread thread = null;
 
 		public FormMain()
@@ -99,6 +102,12 @@ namespace PeachFuzzBang
 			buttonStartFuzzing.Enabled = false;
 			buttonSaveConfiguration.Enabled = false;
 			buttonStopFuzzing.Enabled = true;
+
+			IterationCount = 0;
+			FaultCount = 0;
+			textBoxIterationCount.Text = IterationCount.ToString();
+			textBoxFaultCount.Text = FaultCount.ToString();
+			textBoxOutput.Text = "";
 
 			Dom dom = new Dom();
 
@@ -260,6 +269,15 @@ namespace PeachFuzzBang
 				return;
 
 			textBoxPitFileName.Text = dialog.FileName;
+		}
+
+		public void StoppedFuzzing()
+		{
+			buttonStartFuzzing.Enabled = true;
+			buttonSaveConfiguration.Enabled = false;
+			buttonStopFuzzing.Enabled = false;
+
+			//tabControl.SelectedTab = tabPageGeneral;
 		}
 
 		private void buttonStopFuzzing_Click(object sender, EventArgs e)
