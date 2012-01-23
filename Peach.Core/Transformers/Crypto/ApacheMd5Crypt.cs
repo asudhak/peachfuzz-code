@@ -18,7 +18,10 @@ namespace Peach.Core.Transformers.Crypto
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            throw new NotImplementedException();
+            string dataAsString = Convert.ToBase64String(data.Value);
+            string salt = dataAsString.Substring(0, 2);
+            string result = UnixMd5CryptTool.crypt(dataAsString, salt, "$apr1$");
+            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(result));
 		}
 
 		protected override BitStream internalDecode(BitStream data)

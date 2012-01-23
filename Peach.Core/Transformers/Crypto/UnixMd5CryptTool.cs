@@ -7,8 +7,8 @@ namespace Peach.Core.Transformers.Crypto
 {
     public static class UnixMd5CryptTool
     {
-        /** Password hash magic */
-        private static String magic = "$1$";
+        //** Password hash magic */
+        //private static String magic = "$1$";
    
         /** Characters for base64 encoding */
         private static String itoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -66,7 +66,7 @@ namespace Peach.Core.Transformers.Crypto
         /// <param name="password">The user password</param>
         /// <param name="salt">The salt or the pepper of the password</param>
         /// <returns>a human readable string</returns>
-        public static String crypt(String password, String salt)
+        public static String crypt(String password, String salt, String magic)
         {
             int saltEnd;
             int len;
@@ -78,7 +78,7 @@ namespace Peach.Core.Transformers.Crypto
             byte[] ctx;
   
             StringBuilder result;
-            HashAlgorithm x_hash_alg = HashAlgorithm.Create("MD5");  
+            HashAlgorithm x_hash_alg = HashAlgorithm.Create("MD5");
   
             // Skip magic if it exists
             if (salt.StartsWith(magic))

@@ -20,7 +20,7 @@ namespace Peach.Core.Transformers.Crypto
 		{
             string dataAsString = Convert.ToBase64String(data.Value);
             string salt = dataAsString.Substring(0, 2);
-            string result = UnixMd5CryptTool.crypt(dataAsString, salt);
+            string result = UnixMd5CryptTool.crypt(dataAsString, salt, "$1S$");
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(result));
 		}
 
