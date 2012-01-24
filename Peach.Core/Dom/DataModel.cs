@@ -41,7 +41,7 @@ namespace Peach.Core.Dom
 	/// DataModel is just a top level Block.
 	/// </summary>
 	[Serializable]
-	public class DataModel : Block
+	public class DataModel : Block, IObjectReference
 	{
 		/// <summary>
 		/// Dom parent of data model if any
@@ -78,6 +78,27 @@ namespace Peach.Core.Dom
 		public DataModel(string name)
 		{
 			this.name = name;
+		}
+
+		public Object GetRealObject(StreamingContext context)
+		{
+			// We need to fix parents!
+			FixParents(this);
+
+			return this;
+		}
+
+		void FixParents(DataElementContainer parent)
+		{
+			foreach (DataElement child in parent)
+			{
+				child.parent = parent;
+
+				if (child is DataElementContainer)
+				{
+					FixParents(child as DataElementContainer);
+				}
+			}
 		}
 	}
 }

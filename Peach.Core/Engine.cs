@@ -62,15 +62,48 @@ namespace Peach.Core
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
 
+		/// <summary>
+		/// Fired when a Run is starting
+		/// </summary>
 		public static event RunStartingEventHandler RunStarting;
+		/// <summary>
+		/// Fired when a Run is finished
+		/// </summary>
 		public static event RunFinishedEventHandler RunFinished;
+		/// <summary>
+		/// Fired when an error is detected during run.
+		/// </summary>
 		public static event RunErrorEventHandler RunError;
+		/// <summary>
+		/// Fired when a Test is starting.  This could be fired
+		/// multiple times after the RunStarting event if the Run
+		/// contains multiple Tests.
+		/// </summary>
 		public static event TestStartingEventHandler TestStarting;
+		/// <summary>
+		/// Fired at the start of each iteration.  This event will
+		/// be fired often.
+		/// </summary>
 		public static event IterationStartingEventHandler IterationStarting;
+		/// <summary>
+		/// Fired at end of each iteration.  This event will be fired often.
+		/// </summary>
 		public static event IterationFinishedEventHandler IterationFinished;
+		/// <summary>
+		/// Fired when a Fault is detected.
+		/// </summary>
 		public static event FaultEventHandler Fault;
+		/// <summary>
+		/// Fired when a Test is finished.
+		/// </summary>
 		public static event TestFinishedEventHandler TestFinished;
+		/// <summary>
+		/// Fired when an error occurs during a Test.
+		/// </summary>
 		public static event TestErrorEventHandler TestError;
+		/// <summary>
+		/// FIred when we know the count of iterations the Test will take.
+		/// </summary>
 		public static event HaveCountEventHandler HaveCount;
 
 		public static void OnRunStarting(RunContext context)

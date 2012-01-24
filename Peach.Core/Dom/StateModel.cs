@@ -47,6 +47,9 @@ namespace Peach.Core.Dom
 		public object parent;
 		protected State _initialState = null;
 
+		/// <summary>
+		/// All states in state model.
+		/// </summary>
 		public Dictionary<string, State> states = new Dictionary<string, State>();
 
 		public string name
@@ -55,6 +58,9 @@ namespace Peach.Core.Dom
 			set { _name = value; }
 		}
 
+		/// <summary>
+		/// The initial state to run when state machine executes.
+		/// </summary>
 		public State initialState
 		{
 			get
@@ -89,11 +95,26 @@ namespace Peach.Core.Dom
 				Finished(this);
 		}
 
+		/// <summary>
+		/// Start running the State Machine
+		/// </summary>
+		/// <remarks>
+		/// This will start the initial State.
+		/// </remarks>
+		/// <param name="context"></param>
 		public void Run(RunContext context)
 		{
 			try
 			{
 				OnStarting();
+
+				// Update all data model to clones of origionalDataModel
+				// before we start down the state path.
+				foreach (State state in states.Values)
+				{
+					foreach (Action action in state.actions)
+						action.UpdateToOrigionalDataModel();
+				}
 
 				_initialState.Run(context);
 			}

@@ -129,11 +129,17 @@ namespace Peach.Core.Dom
 
 					// Get the value to optimize next generation based on invalidation
 					object tmp = _origionalDataModel.Value;
-				}
 
-				_dataModel = value;
-				_dataModel.action = this;
-				_dataModel.dom = null;
+					_dataModel = ObjectCopier.Clone<DataModel>(_origionalDataModel);
+					_dataModel.action = this;
+					_dataModel.dom = null;
+				}
+				else
+				{
+					_dataModel = value;
+					_dataModel.action = this;
+					_dataModel.dom = null;
+				}
 			}
 		}
 
@@ -291,6 +297,48 @@ namespace Peach.Core.Dom
 				Finished(this);
 		}
 
+		/// <summary>
+		/// Update any DataModels we contain to new clones of
+		/// origionalDataModel.
+		/// </summary>
+		/// <remarks>
+		/// This should be performed in StateModel to every State/Action at
+		/// start of the iteration.
+		/// </remarks>
+		public void UpdateToOrigionalDataModel()
+		{
+			switch (type)
+			{
+				case ActionType.Start:
+				case ActionType.Stop:
+				case ActionType.Open:
+				case ActionType.Connect:
+				case ActionType.Close:
+				case ActionType.Accept:
+				case ActionType.ChangeState:
+				case ActionType.Slurp:
+					break;
+
+				case ActionType.Input:
+				case ActionType.Output:
+				case ActionType.GetProperty:
+				case ActionType.SetProperty:
+					dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
+					break;
+
+				case ActionType.Call:
+					foreach (ActionParameter p in this.parameters)
+						p.dataModel = ObjectCopier.Clone<DataModel>(p.origionalDataModel);
+
+					// TODO - Also set ActionResult
+
+					break;
+
+				default:
+					throw new ApplicationException("Error, Action.Run fell into unknown Action type handler!");
+			}
+		}
+
 		public void Run(RunContext context)
 		{
 			logger.Trace("Run({0}): {1}", name, type);
@@ -392,7 +440,6 @@ namespace Peach.Core.Dom
 
 		protected void handleInput(Publisher publisher)
 		{
-			dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dataModel, new IO.BitStream(publisher));
 		}
@@ -490,14 +537,63 @@ namespace Peach.Core.Dom
 
 	public class ActionParameter
 	{
+		DataModel _origionalDataModel = null;
+		DataModel _dataModel = null;
+
 		public ActionParameterType type;
-		public DataElement dataModel;
 		public object data;
+
+		public DataModel origionalDataModel
+		{
+			get { return _origionalDataModel; }
+			set { _origionalDataModel = value; }
+		}
+
+		public DataModel dataModel
+		{
+			get { return _dataModel; }
+			set
+			{
+				if (_origionalDataModel == null)
+				{
+					_dataModel = value;
+					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
+				}
+				else
+				{
+					_dataModel = value;
+				}
+			}
+		}
 	}
 
 	public class ActionResult
 	{
-		DataElement dataModel;
+		DataModel _origionalDataModel = null;
+		DataModel _dataModel = null;
+
+		public DataModel origionalDataModel
+		{
+			get { return _origionalDataModel; }
+			set { _origionalDataModel = value; }
+		}
+
+		public DataModel dataModel
+		{
+			get { return _dataModel; }
+			set
+			{
+				if (_origionalDataModel == null)
+				{
+					_dataModel = value;
+					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
+				}
+				else
+				{
+					_dataModel = value;
+				}
+			}
+		}
 	}
 
 	public class ActionChangeStateException : Exception

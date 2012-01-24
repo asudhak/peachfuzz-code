@@ -67,6 +67,9 @@ namespace Peach.Core
         {
             List<T> ret = new List<T>();
 
+			if (items.Count() < k)
+				k = items.Count();
+
             for (int i = 0; i < k; ++i)
                 ret.Add(items.ElementAt(_random.Next(0, items.Count())));
 
