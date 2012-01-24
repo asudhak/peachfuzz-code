@@ -52,10 +52,18 @@ namespace Peach
 			new Program(args);
 		}
 
+		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
+		static ConsoleColor DefaultBackground = ConsoleColor.DarkRed;
+
 		public Program(string[] args)
 		{
 			try
 			{
+				DefaultBackground = Console.BackgroundColor;
+				DefaultForground = Console.ForegroundColor;
+
+				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
+
 				string analyzer = null;
 				string parser = null;
 				string strategy = null;
@@ -106,7 +114,7 @@ namespace Peach
 				if (extra.Count == 0 && agent == null)
 					syntax();
 
-				if(agent != null)
+				if (agent != null)
 				{
 					Type agentType = null;
 					foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -143,7 +151,7 @@ namespace Peach
 					}
 
 					ConstructorInfo co = agentType.GetConstructor(new Type[0]);
-					IAgentServer agentServer = (IAgentServer) co.Invoke(new object[0]);
+					IAgentServer agentServer = (IAgentServer)co.Invoke(new object[0]);
 
 					ConsoleWatcher.WriteInfoMark();
 					Console.WriteLine("Starting agent server");
@@ -181,9 +189,29 @@ namespace Peach
 			{
 				Console.WriteLine(ee.Message + "\n");
 			}
+			finally
+			{
+				// HACK - Required on Mono with NLog 2.0
+				LogManager.Configuration = null;
 
-			// HACK - Required on Mono with NLog 2.0
-			LogManager.Configuration = null;
+				// Reset console colors
+				Console.ForegroundColor = DefaultForground;
+				Console.BackgroundColor = DefaultBackground;
+			}
+		}
+
+		void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+		{
+			// Reset console colors
+			Console.Write("\n");
+			Console.ForegroundColor = DefaultForground;
+			Console.BackgroundColor = DefaultBackground;
+
+			Console.WriteLine(" --- Ctrl+C Detected --- ");
+
+			Console.ForegroundColor = DefaultForground;
+			Console.BackgroundColor = DefaultBackground;
+			Console.SetOut(new System.IO.StringWriter());
 		}
 
 		public void syntax()

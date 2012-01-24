@@ -204,6 +204,7 @@
     <Compile Include="Dom\Action.cs" />
     <Compile Include="Dom\Agent.cs" />
     <Compile Include="Dom\Data.cs" />
+    <Compile Include="Dom\DataSet.cs" />
     <Compile Include="Dom\DomNamespace.cs" />
     <Compile Include="Dom\Hint.cs" />
     <Compile Include="Dom\INamed.cs" />
@@ -954,7 +955,7 @@
     <Compile Include="IO\Conversion\LittleEndianBitConverter.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
-    <Compile Include="MutationStrategies\Random.cs" />
+    <Compile Include="MutationStrategies\RandomStrategy.cs" />
     <Compile Include="MutationStrategies\Sequencial.cs" />
     <Compile Include="MutationStrategy.cs" />
     <Compile Include="Mutator.cs" />

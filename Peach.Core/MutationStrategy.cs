@@ -119,6 +119,7 @@ namespace Peach.Core
 	{
 	}
 
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple=true)]
 	public class MutationStrategyAttribute : Attribute
 	{
 		public string name = null;

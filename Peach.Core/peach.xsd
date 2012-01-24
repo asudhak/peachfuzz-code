@@ -1171,6 +1171,72 @@
 			<xs:choice minOccurs="1" maxOccurs="unbounded">
 				<xs:element name="Include" type="tInclude"/>
 				<xs:element name="Exclude" type="tExclude"/>
+				<xs:element name="Strategy" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>
+							Select a fuzzing strategy for this Test.  This is an optional element, by default
+							the "sequencial" fuzzing strategy is used.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="class" use="required">
+							<xs:annotation>
+								<xs:documentation>Class name of Strategy to be used.</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:union>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:maxLength value="1024"/>
+										</xs:restriction>
+									</xs:simpleType>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:enumeration value="RandomDeterministic">
+												<xs:annotation>
+													<xs:documentation>
+														This is the default strategy.  Each element will be mutated
+														using all mutators one at a time.  This strategy is deterministic and is
+														able to calculate the number of test cases it is capable of genreating.  The order
+														is shuffled which sometimes makes it look random.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Sequencial">
+												<xs:annotation>
+													<xs:documentation>
+														Each element will be mutated
+														using all mutators one at a time.  This strategy is deterministic and is
+														able to calculate the number of test cases it is capable of genreating.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="ReproStrategy">
+												<xs:annotation>
+													<xs:documentation>
+														This strategy is used to replay an already fuzzed set of
+														files through Peach.  No additional fuzzing is performed by this strategy.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Random">
+												<xs:annotation>
+													<xs:documentation>
+														This strategy will select a random number of elements to
+														mutate on each iteration from 1 to 5.  Each selected element will have a
+														mutator selected at random and the mutater will be asked to produce a
+														value at random. This strategy will produce an infinite number of iterations
+														cases.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:union>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
 				<xs:element name="StateModel" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Reference an already declared StateMachine using the 'ref' attribute.</xs:documentation>

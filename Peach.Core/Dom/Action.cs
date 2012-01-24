@@ -83,7 +83,7 @@ namespace Peach.Core.Dom
 
 		protected DataModel _dataModel;
 		protected DataModel _origionalDataModel;
-		protected Data _data;
+		protected DataSet _dataSet;
 
 		protected List<ActionParameter> _params = new List<ActionParameter>();
 
@@ -107,10 +107,10 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Data attached to action
 		/// </summary>
-		public Data data
+		public DataSet dataSet
 		{
-			get { return _data; }
-			set { _data = value; }
+			get { return _dataSet; }
+			set { _dataSet = value; }
 		}
 
 		/// <summary>

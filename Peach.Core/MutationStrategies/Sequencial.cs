@@ -71,8 +71,7 @@ namespace Peach.Core.MutationStrategies
 					{
                         if (attrib is MutatorAttribute)
                         {
-                            //if (t.Name == "FiniteRandomNumbersMutator")
-                                _mutators.Add(t);
+							_mutators.Add(t);
                         }
 					}
 				}

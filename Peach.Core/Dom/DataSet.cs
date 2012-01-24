@@ -36,24 +36,21 @@ using System.Runtime.Serialization;
 namespace Peach.Core.Dom
 {
 	/// <summary>
-	/// Data specification for a DataModel
+	/// Specify a set of Data for a DataModel
 	/// </summary>
 	[Serializable]
-	public class Data : INamed
+	public class DataSet : INamed
 	{
 		string _name = null;
 
-		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
+		/// <summary>
+		/// Collection of Data objects
+		/// </summary>
+		public List<Data> Datas = new List<Data>();
 
-		public Data()
+		public DataSet()
 		{
-			DataType = Core.Dom.DataType.Fields;
-			FileName = null;
 		}
-
-		public DataType DataType { get; set; }
-		public List<string> Files = new List<string>();
-		public string FileName { get; set; }
 
 		#region INamed Members
 
@@ -65,17 +62,6 @@ namespace Peach.Core.Dom
 
 		#endregion
 	}
-
-	/// <summary>
-	/// Type of Data
-	/// </summary>
-	public enum DataType
-	{
-		Fields,
-		File,
-		Files
-	}
 }
-
 
 // END

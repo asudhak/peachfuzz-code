@@ -1551,6 +1551,70 @@ namespace Peach.Core.Analyzers
 			return parent.analyzer;
 		}
 
+		protected MutationStrategy handleMutationStrategy(XmlNode node)
+		{
+			if (!hasXmlAttribute(node, "class"))
+				throw new PeachException("Strategy element has no 'class' attribute [" + node.OuterXml + "].");
+
+			string cls = getXmlAttribute(node, "class");
+			Type tFixup = null;
+			var arg = handleParams(node);
+			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
+
+			// Locate PublisherAttribute classes and check name
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					parameters.Clear();
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is MutationStrategyAttribute && (attrib as MutationStrategyAttribute).name == cls)
+						{
+							tFixup = t;
+						}
+						else if (attrib is ParameterAttribute)
+							parameters.Add(attrib as ParameterAttribute);
+					}
+
+					if (tFixup != null)
+						break;
+				}
+
+				if (tFixup != null)
+					break;
+			}
+
+			if (tFixup == null)
+				throw new PeachException("Error, unable to locate Strategy named '" + cls + "'.");
+
+			validateParameterAttributes("MutationStrategy", cls, parameters, arg);
+
+			Type[] targs = new Type[1];
+			targs[0] = typeof(Dictionary<string, Variant>);
+
+			ConstructorInfo co = tFixup.GetConstructor(targs);
+
+			if (co == null)
+				throw new PeachException("Error, unable to locate MutationStrategy named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
+
+			object[] args = new object[1];
+			args[0] = arg;
+
+			try
+			{
+				return co.Invoke(args) as MutationStrategy;
+			}
+			catch (Exception e)
+			{
+				throw new PeachException("Error, unable to locate MutationStrategy named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
+			}
+		}
+
 		protected Fixup handleFixup(XmlNode node, DataElement parent)
 		{
 			if (!hasXmlAttribute(node, "class"))
@@ -1844,8 +1908,8 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "DataModel")
 					action.dataModel = handleDataModel(child);
 
-				if (child.Name == "Data")
-					action.data = handleData(child);
+				//if (child.Name == "Data")
+				//	action.data = handleData(child);
 			}
 
 			return action;
@@ -1911,7 +1975,7 @@ namespace Peach.Core.Analyzers
 				// Strategy
 				if (child.Name == "Strategy")
 				{
-					throw new NotImplementedException("Test.Strategy TODO");
+					test.strategy = handleMutationStrategy(child);
 				}
 
 				// Agent
