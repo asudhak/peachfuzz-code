@@ -354,19 +354,20 @@ class TaskBase(evil):
 		:rtype: string
 		"""
 		msg = getattr(self, 'last_cmd', '')
+		name = getattr(self.generator, 'name', '')
 		if getattr(self, "err_msg", None):
 			return self.err_msg
 		elif not self.hasrun:
-			return 'task was not executed for some reason'
+			return 'task in %r was not executed for some reason: %r' % (name, self)
 		elif self.hasrun == CRASHED:
 			try:
-				return ' -> task failed (exit status %r): %r\n%r' % (self.err_code, self, msg)
+				return ' -> task in %r failed (exit status %r): %r\n%r' % (name, self.err_code, self, msg)
 			except AttributeError:
-				return ' -> task failed: %r\n%r' % (self, msg)
+				return ' -> task in %r failed: %r\n%r' % (name, self, msg)
 		elif self.hasrun == MISSING:
-			return ' -> missing files: %r\n%r' % (self, msg)
+			return ' -> missing files in %r: %r\n%r' % (name, self, msg)
 		else:
-			return 'invalid status %r' % self.hasrun
+			return 'invalid status for task in %r: %r' % (name, self.hasrun)
 
 	def colon(self, var1, var2):
 		"""
