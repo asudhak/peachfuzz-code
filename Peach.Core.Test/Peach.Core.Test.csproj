@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -62,6 +62,17 @@
     <Compile Include="CrackingTests\StringTests.cs" />
     <Compile Include="CrackingTests\TokenTests.cs" />
     <Compile Include="CrackingTests\XmlTests.cs" />
+    <Compile Include="Fixups\Crc32DualFixupTests.cs" />
+    <Compile Include="Fixups\Crc32FixupTests.cs" />
+    <Compile Include="Fixups\EthernetChecksumFixupTests.cs" />
+    <Compile Include="Fixups\IcmpChecksumFixupTests.cs" />
+    <Compile Include="Fixups\MD5FixupTests.cs" />
+    <Compile Include="Fixups\SequenceIncrementFixupTests.cs" />
+    <Compile Include="Fixups\SequenceRandomFixupTests.cs" />
+    <Compile Include="Fixups\SHA1FixupTests.cs" />
+    <Compile Include="Fixups\SHA256FixupTests.cs" />
+    <Compile Include="Fixups\SHA384FixupTests.cs" />
+    <Compile Include="Fixups\SHA512FixupTests.cs" />
     <Compile Include="Mutators\ArrayNumericalEdgeCasesMutatorTests.cs" />
     <Compile Include="Mutators\ArrayRandomizeOrderMutatorTests.cs" />
     <Compile Include="Mutators\ArrayReverseOrderMutatorTests.cs" />
@@ -119,9 +130,7 @@
       <Name>Peach.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Fixups\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
