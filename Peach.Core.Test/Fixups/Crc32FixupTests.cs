@@ -28,7 +28,7 @@ namespace Peach.Core.Test.Fixups
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "           </Fixup>" +
                 "       </Number>" +
-                "       <Blob name=\"Data\" value=\"12345\"/>" +
+                "       <Blob name=\"Data\" value=\"Hello\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +

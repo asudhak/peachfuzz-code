@@ -57,7 +57,6 @@ namespace Peach.Core.Fixups
 
 			CRCTool crcTool = new CRCTool();
 			crcTool.Init(CRCTool.CRCCode.CRC32);
-
 			return new Variant((uint)crcTool.crctablefast(data3));
 		}
 	}
