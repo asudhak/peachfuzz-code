@@ -266,7 +266,8 @@ class TaskBase(evil):
 
 	def run(self):
 		"""
-		Execute the task (executed by threads). Override in subclasses.
+		Called by threads to execute the tasks. The default is empty and meant to be overridden in subclasses.
+		It is a bad idea to create nodes in this method (so, no node.ant_glob)
 
 		:rtype: int
 		"""

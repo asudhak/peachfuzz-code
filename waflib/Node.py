@@ -97,6 +97,8 @@ class Node(object):
 
 	* The basic methods meant for filesystem access (compute paths, create folders, etc)
 	* The methods bound to a :py:class:`waflib.Build.BuildContext` (require ``bld.srcnode`` and ``bld.bldnode``)
+
+	The Node objects are not thread safe in any way.
 	"""
 
 	__slots__ = ('name', 'sig', 'children', 'parent', 'cache_abspath', 'cache_isdir')
@@ -504,7 +506,8 @@ class Node(object):
 
 		For more information see http://ant.apache.org/manual/dirtasks.html
 
-		The nodes that correspond to files and folders that do not exist will be removed
+		The nodes that correspond to files and folders that do not exist will be removed. To prevent this
+		behaviour, pass 'remove=False'
 
 		:param incl: ant patterns or list of patterns to include
 		:type incl: string or list of strings
