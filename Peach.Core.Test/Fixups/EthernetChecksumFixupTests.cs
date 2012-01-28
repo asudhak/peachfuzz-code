@@ -63,8 +63,8 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated checksum from Peach2.3 on the blob: { 1, 2, 3, 4, 5 }
-            byte[] precalcChecksum = new byte[] { 0x29, 0x58, 0x60, 0x3F };
+            // -- this is the pre-calculated checksum from Peach2.3 on the blob: { Hello }
+            byte[] precalcChecksum = new byte[] { 0xB7, 0xEB, 0x44, 0x03 };
             Assert.AreEqual(testValue, precalcChecksum);
 
             // reset

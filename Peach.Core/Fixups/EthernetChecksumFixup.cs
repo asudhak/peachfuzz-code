@@ -23,12 +23,16 @@ namespace Peach.Core.Fixups
             string objRef = (string)args["ref"];
             DataElement from = obj.find(objRef);
             byte[] data = from.Value.Value;
-            byte[] ethernetKey = new byte[] { 0x04, 0xC1, 0x1D, 0xB7 };
-            byte[] final = ArrayExtensions.Combine(data, ethernetKey);
 
-            CRCTool crcTool = new CRCTool();
-            crcTool.Init(CRCTool.CRCCode.CRC32);
-            return new Variant((uint)crcTool.crctablefast(final));
+            //CRCTool crcTool = new CRCTool();
+            //crcTool.Init(CRCTool.CRCCode.CRC32);
+            //return new Variant((uint)crcTool.crctablefast(data, 0x04C11DB7));
+
+            CRC32 crc = new CRC32();
+            //crc.ComputeHash(new byte[] { 0x04, 0xC1, 0x1D, 0xB7 });
+            crc.ComputeHash(data);
+
+            return new Variant(crc.GetHashCode());
         }
     }
 }

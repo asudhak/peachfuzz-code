@@ -50,7 +50,7 @@ namespace Peach.Core.Fixups.Libraries
 		private ulong[] crctab = new ulong[256];
 
 		// Enumeration used in the init function to specify which CRC algorithm to use
-		public enum CRCCode { CRC_CCITT, CRC16, CRC32 };
+		public enum CRCCode { CRC_CCITT, CRC16, CRC32, ETHERNET };
 
 		public CRCTool()
 		{
@@ -71,6 +71,9 @@ namespace Peach.Core.Fixups.Libraries
 					break;
 				case CRCCode.CRC32:
 					order = 32; direct = 1; polynom = 0x4c11db7; crcinit = 0xFFFFFFFF; crcxor = 0xFFFFFFFF; refin = 1; refout = 1;
+					break;
+				case CRCCode.ETHERNET:
+					order = 32; direct = 1; polynom = 0x4c11db7; crcinit = 0x4c11db7; crcxor = 0xFFFFFFFF; refin = 1; refout = 1;
 					break;
 			}
 
@@ -123,42 +126,78 @@ namespace Peach.Core.Fixups.Libraries
 		}
 
 
-		/// <summary>
-		/// 4 ways to calculate the crc checksum. If you have to do a lot of encoding
-		/// you should use the table functions. Since they use precalculated values, which 
-		/// saves some calculating.
-		/// </summary>.
-		public ulong crctablefast(byte[] p)
-		{
-			// fast lookup table algorithm without augmented zero bytes, e.g. used in pkzip.
-			// only usable with polynom orders of 8, 16, 24 or 32.
-			ulong crc = crcinit_direct;
-			if (refin != 0)
-			{
-				crc = reflect(crc, order);
-			}
-			if (refin == 0)
-			{
-				for (int i = 0; i < p.Length; i++)
-				{
-					crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ p[i]];
-				}
-			}
-			else
-			{
-				for (int i = 0; i < p.Length; i++)
-				{
-					crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ p[i]];
-				}
-			}
-			if ((refout ^ refin) != 0)
-			{
-				crc = reflect(crc, order);
-			}
-			crc ^= crcxor;
-			crc &= crcmask;
-			return (crc);
-		}
+        /// <summary>
+        /// 4 ways to calculate the crc checksum. If you have to do a lot of encoding
+        /// you should use the table functions. Since they use precalculated values, which 
+        /// saves some calculating.
+        /// </summary>.
+        public ulong crctablefast(byte[] p)
+        {
+            // fast lookup table algorithm without augmented zero bytes, e.g. used in pkzip.
+            // only usable with polynom orders of 8, 16, 24 or 32.
+            ulong crc = crcinit_direct;
+            if (refin != 0)
+            {
+                crc = reflect(crc, order);
+            }
+            if (refin == 0)
+            {
+                for (int i = 0; i < p.Length; i++)
+                {
+                    crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ p[i]];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < p.Length; i++)
+                {
+                    crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ p[i]];
+                }
+            }
+            if ((refout ^ refin) != 0)
+            {
+                crc = reflect(crc, order);
+            }
+            crc ^= crcxor;
+            crc &= crcmask;
+            return (crc);
+        }
+        /// <summary>
+        /// 4 ways to calculate the crc checksum. If you have to do a lot of encoding
+        /// you should use the table functions. Since they use precalculated values, which 
+        /// saves some calculating.
+        /// </summary>.
+        public ulong crctablefast(byte[] p, ulong lastOfTheCrcs)
+        {
+            // fast lookup table algorithm without augmented zero bytes, e.g. used in pkzip.
+            // only usable with polynom orders of 8, 16, 24 or 32.
+            ulong crc = lastOfTheCrcs;
+            if (refin != 0)
+            {
+                crc = reflect(crc, order);
+            }
+            if (refin == 0)
+            {
+                for (int i = 0; i < p.Length; i++)
+                {
+                    crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ p[i]];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < p.Length; i++)
+                {
+                    crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ p[i]];
+                }
+            }
+            if ((refout ^ refin) != 0)
+            {
+                crc = reflect(crc, order);
+            }
+            crc ^= crcxor;
+            crc &= crcmask;
+            return (crc);
+        }
 
 		public ulong crctable(byte[] p)
 		{
