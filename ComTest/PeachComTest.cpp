@@ -4,6 +4,13 @@
 #include "PeachComTest.h"
 
 
+void Call1(char *buff)
+{
+	strcpy(buff, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	for(int i = 0; i<100; i++)
+		strcat(buff, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+}
+
 // CPeachComTest
 
 
@@ -39,6 +46,10 @@ STDMETHODIMP CPeachComTest::Method4(void)
 {
 	// TODO: Add your implementation code here
 	printf("CPeachComTest::Method4()\n");
+
+	char buff[10];
+
+	Call1(buff);
 
 	return S_OK;
 }

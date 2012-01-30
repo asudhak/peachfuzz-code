@@ -28,6 +28,8 @@
 
 using System;
 using System.IO;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
@@ -388,6 +390,42 @@ namespace Peach.Core
             return temp.ToArray();
         }
     }
+
+	/// <summary>
+	/// Some utility methods that be usefull
+	/// </summary>
+	public class Utilities
+	{
+		public bool TcpPortAvailable(int port)
+		{
+			bool isAvailable = true;
+
+			IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+			TcpConnectionInformation[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
+
+			foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
+			{
+				if (tcpi.LocalEndPoint.Port == port)
+				{
+					isAvailable = false;
+					break;
+				}
+			}
+
+			IPEndPoint[] objEndPoints = ipGlobalProperties.GetActiveTcpListeners();
+
+			foreach (IPEndPoint endp in objEndPoints)
+			{
+				if (endp.Port == port)
+				{
+					isAvailable = false;
+					break;
+				}
+			}
+
+			return isAvailable;
+		}
+	}
 }
 
 // end

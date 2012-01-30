@@ -187,6 +187,7 @@
     </Content>
     <Content Include="samples\DebuggerWindows.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="samples\FileFuzzer.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

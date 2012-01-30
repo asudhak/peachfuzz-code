@@ -25,15 +25,22 @@
 			<!-- TODO - Capture result -->
 			<Action type="call" method="Method2">
 			</Action>
-			
-			<Action type="call" method="Method3">
+
+			<!--<Action type="call" method="Method3">
 				<Param name="arg1">
 					<DataModel ref="TheDataModel" />
 				</Param>
-			</Action>
+			</Action>-->
 
 			<Action type="call" method="Method4"/>
+			<Action type="call" method="Method4"/>
 
+			<Action type="call" method="Method2"/>
+			<Action type="call" method="Method2"/>
+			<Action type="call" method="Method2"/>
+			<Action type="call" method="Method2"/>
+
+			<!--
 			<Action type="call" method="Method4">
 				<Param name="arg1">
 					<DataModel ref="TheDataModel" />
@@ -56,20 +63,28 @@
 				<Param name="arg2">
 					<DataModel ref="TheDataModelNumber" />
 				</Param>
-			</Action>
+			</Action>-->
 
-			<Action type="getprop" property="Property1">
+			<!--<Action type="getprop" property="Property1">
 				<DataModel ref="TheDataModel" />
 			</Action>
 
 			<Action type="setprop" property="Property1">
 				<DataModel ref="TheDataModel" />
-			</Action>
+			</Action>-->
 		</State>
 
 	</StateModel>
 
+	<Agent name="MyAgent">
+		<Monitor class="WindowsDebugEngine">
+			<Param name="CommandLine" value="C:\Peach3\Peach.Core.ComContainer\bin\debug\Peach.Core.ComContainer.exe" />
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)"/>
+		</Monitor>
+	</Agent>
+
 	<Test name="TheTest">
+		<Agent ref="MyAgent"/>
 		<StateModel ref="TheState"/>
 		<Publisher class="Com">
 			<Param name="clsid" value="{8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8}"/>
@@ -79,6 +94,10 @@
 	<!-- Configure a single run -->
 	<Run name="DefaultRun">
 		<Test ref="TheTest"/>
+
+		<Logger class="Filesystem">
+			<Param name="Path" value="Logs" />
+		</Logger>
 	</Run>
 
 </Peach>

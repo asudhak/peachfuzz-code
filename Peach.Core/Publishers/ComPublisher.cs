@@ -31,7 +31,12 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
+
 using Peach.Core.Dom;
+using Peach.Core.Publishers.Com;
 
 namespace Peach.Core.Publishers
 {
@@ -40,116 +45,125 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("clsid", typeof(string), "COM CLSID of object", true)]
 	public class ComPublisher : Publisher
 	{
-		dynamic _object = null;
 		string _clsid = null;
+		string _host = "localhost";
+		int _port = 9001;
+		IComContainer _proxy = null;
+		TcpChannel _chan = null;
+		bool _initialized = false;
 
 		public ComPublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
 			_clsid = (string)args["clsid"];
+
+			if (args.ContainsKey("host"))
+				_host = (string) args["host"];
+			if (args.ContainsKey("port"))
+				_port = (int)args["port"];
+		}
+
+		protected void startTcpRemoting()
+		{
+			if (_proxy != null)
+				return;
+
+			TcpChannel chan = new TcpChannel();
+			ChannelServices.RegisterChannel(chan, false); // Disable security for speed
+			_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
+				string.Format("tcp://{0}:{1}/PeachComContainer", _host, _port));
+
+			_initialized = false;
+		}
+
+		protected void stopTcpRemoting()
+		{
+			// TODO - How do we stop this madnes?
+			_proxy = null;
+			_initialized = false;
 		}
 
 		public override void open(Core.Dom.Action action)
 		{
-			if (_object == null)
-			{
-				OnOpen(action);
+			if (_initialized)
+				return;
 
+			OnOpen(action);
 
-				Type type = null;
-				type = Type.GetTypeFromProgID(_clsid);
-				if (type == null)
-				{
-					try
-					{
-						type = Type.GetTypeFromCLSID(Guid.Parse(_clsid));
-					}
-					catch
-					{
-					}
-				}
+			if (_proxy == null)
+				startTcpRemoting();
 
-				if (type == null)
-					throw new PeachException("Error, ComPublisher was unable to create object from id '" + _clsid + "'");
+			if (!_proxy.Intialize(_clsid))
+				throw new PeachException("Error, ComPublisher was unable to create object from id '" + _clsid + "'");
 
-				_object = Activator.CreateInstance(type);
-				
-				if (_object == null)
-					throw new PeachException("Error, ComPublisher was unable to create object from id '" + _clsid + "'");
-			}
+			_initialized = true;
 		}
 
 		public override void close(Core.Dom.Action action)
 		{
 			OnClose(action);
 
-			if (_object != null)
-			{
-				Marshal.ReleaseComObject(_object);
-				_object = null;
-			}
+			stopTcpRemoting();
 		}
 
 		public override Variant call(Core.Dom.Action action, string method, List<ActionParameter> args)
 		{
-			if (_object == null)
-				open(action);
+			open(action);
 
 			OnCall(action, method, args);
 
-			Dictionary<string, object> state = new Dictionary<string, object>();
-			state["ComObject"] = _object;
+			List<object> parameters = new List<object>();
 
-			string cmd = "ComObject." + method + "(";
-
-			int count = 0;
 			foreach(ActionParameter arg in args)
+				parameters.Add((string)((DataElementContainer)arg.dataModel)[0].InternalValue);
+
+			try
 			{
-				state["ComArgs_" + count] = (string)((DataElementContainer)arg.dataModel)[0].InternalValue;
-				cmd += "ComArgs_" + count + ",";
-				count++;
+				object value = _proxy.CallMethod(method, parameters.ToArray());
+
+				if (value != null)
+					return new Variant(value.ToString());
 			}
-
-			if (count > 0)
-				// Remove that last comma :)
-				cmd = cmd.Substring(0, cmd.Length - 1);
-			
-			cmd += ")";
-
-			object value = Scripting.EvalExpression(cmd, state);
-			if(value != null)
-				return new Variant(value.ToString());
+			catch
+			{
+			}
 
 			return null;
 		}
 
 		public override void setProperty(Core.Dom.Action action, string property, Variant value)
 		{
-			if (_object == null)
-				open(action);
+			open(action);
 
 			OnSetProperty(action, property, value);
 
-			Dictionary<string, object> state = new Dictionary<string, object>();
-			state["ComObject"] = _object;
-			state["ComArg"] = (string)value;
-
-			string cmd = "ComObject." + property + " = ComArg";
-			Scripting.EvalExpression(cmd, state);
+			try
+			{
+				_proxy.SetProperty(property, (string)value);
+			}
+			catch
+			{
+			}
 		}
 
 		public override Variant getProperty(Core.Dom.Action action, string property)
 		{
-			if (_object == null)
-				open(action);
+			open(action);
 
 			OnGetProperty(action, property);
 
-			Dictionary<string, object> state = new Dictionary<string, object>();
-			state["ComObject"] = _object;
+			try
+			{
+				object value = _proxy.GetProperty(property);
 
-			string cmd = "ComObject." + property;
-			return new Variant(Scripting.EvalExpression(cmd, state).ToString());
+				if (value != null)
+					return new Variant(value.ToString());
+			}
+			catch
+			{
+			}
+
+			return null;
 		}
 	}
 }

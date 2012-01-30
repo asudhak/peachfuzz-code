@@ -30,41 +30,43 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Tcp;
-using System.Threading;
 
-using Peach.Core.Publishers.Com;
-
-using NLog;
-
-namespace Peach.Core.ComContainer
+namespace Peach.Core.Publishers.Com
 {
-	public class Program
+	public interface IComContainer
 	{
-		public static bool Shutdown = false;
+		/// <summary>
+		/// Initialize COM control
+		/// </summary>
+		/// <param name="control">Control name or CLSID</param>
+		/// <returns>Returns true on success of false on failure.</returns>
+		bool Intialize(string control);
 
-		static void Main(string[] args)
-		{
-			int port = 9001;
+		/// <summary>
+		/// Shutdown ComCOntainer process.
+		/// </summary>
+		void Shutdown();
 
-			if (args.Count() > 0)
-				port = int.Parse(args[0]);
+		/// <summary>
+		/// Call method on COM control
+		/// </summary>
+		/// <param name="method">Name of method</param>
+		/// <param name="args">Arguments to pass</param>
+		/// <returns>Returns result if any</returns>
+		object CallMethod(string method, object[] args);
 
-			//select channel to communicate
-			TcpChannel chan = new TcpChannel(port);
-			ChannelServices.RegisterChannel(chan, false);    //register channel
+		/// <summary>
+		/// Get Property value
+		/// </summary>
+		/// <param name="property">Name of property</param>
+		/// <returns>Returns property value or null.</returns>
+		object GetProperty(string property);
 
-			//register remote object
-			RemotingConfiguration.RegisterWellKnownServiceType(
-				typeof(ComContainer),
-				"PeachComContainer", WellKnownObjectMode.Singleton);
-
-			//inform console
-			while (!Shutdown)
-				Thread.Sleep(500);
-		}
+		/// <summary>
+		/// Set property value
+		/// </summary>
+		/// <param name="property">Name of property</param>
+		/// <param name="value">Value to set</param>
+		void SetProperty(string property, object value);
 	}
 }
