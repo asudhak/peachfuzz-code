@@ -32,6 +32,8 @@
 				</Param>
 			</Action>-->
 
+			<!-- CRASH -->
+			<!--
 			<Action type="call" method="Method4"/>
 			<Action type="call" method="Method4"/>
 
@@ -39,6 +41,7 @@
 			<Action type="call" method="Method2"/>
 			<Action type="call" method="Method2"/>
 			<Action type="call" method="Method2"/>
+			-->
 
 			<!--
 			<Action type="call" method="Method4">

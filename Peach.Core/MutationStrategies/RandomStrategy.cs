@@ -221,7 +221,32 @@ namespace Peach.Core.MutationStrategies
 
 				dataModels[action.dataModel.fullName] = action.dataModel;
 			}
-			else if(action.dataModel != null && dataModelToChange == action.dataModel.fullName)
+			else if (isFirstIteration && action.parameters.Count > 0)
+			{
+				foreach (ActionParameter param in action.parameters)
+				{
+					if (dataModels.ContainsKey(param.dataModel.fullName))
+						continue;
+
+					List<DataElement> allElements = new List<DataElement>();
+					RecursevlyGetElements(param.dataModel as DataElementContainer, allElements);
+					foreach (DataElement elem in allElements)
+					{
+						List<Mutator> elemMutators = new List<Mutator>();
+
+						foreach (Type t in _mutators)
+						{
+							if (SupportedDataElement(t, elem))
+								elemMutators.Add(GetMutatorInstance(t, elem));
+						}
+
+						dataElementMutators[elem.fullName] = elemMutators;
+					}
+
+					dataModels[param.dataModel.fullName] = param.dataModel;
+				}
+			}
+			else if (action.dataModel != null && dataModelToChange == action.dataModel.fullName)
 			{
 				List<DataElement> elements = new List<DataElement>();
 				foreach (DataElement elem in action.dataModel.EnumerateAllElements())
@@ -230,7 +255,7 @@ namespace Peach.Core.MutationStrategies
 						elements.Add(elem);
 				}
 
-				DataElement [] elementsToMutate = random.Sample<DataElement>(elements, random.Next(maxFieldsToMutate));
+				DataElement[] elementsToMutate = random.Sample<DataElement>(elements, random.Next(maxFieldsToMutate));
 
 				// TODO - Report which elements are mutating!
 

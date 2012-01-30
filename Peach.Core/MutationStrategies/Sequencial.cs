@@ -70,10 +70,7 @@ namespace Peach.Core.MutationStrategies
 					foreach (object attrib in t.GetCustomAttributes(true))
 					{
                         if (attrib is MutatorAttribute)
-                        {
-                            if (t.Name == "FiniteRandomNumbersMutator")
-							    _mutators.Add(t);
-                        }
+						    _mutators.Add(t);
 					}
 				}
 			}
@@ -95,6 +92,23 @@ namespace Peach.Core.MutationStrategies
 						_mutatorEnumerator.Current.sequencialMutation(elem);
 					}
 				}
+				else if(action.parameters != null && action.parameters.Count > 0)
+				{
+					foreach (ActionParameter param in action.parameters)
+					{
+						if (param.dataModel == null)
+							continue;
+
+						DataElement elem = param.origionalDataModel.find(fullName);
+						if (elem != null)
+						{
+							// Clone the data model, not the internal data element
+							param.dataModel = (DataModel)ObjectCopier.Clone<DataElement>(elem.getRoot());
+							elem = param.dataModel.find(fullName);
+							_mutatorEnumerator.Current.sequencialMutation(elem);
+						}
+					}
+				}
 
 				return;
 			}
@@ -103,7 +117,7 @@ namespace Peach.Core.MutationStrategies
 			{
 				List<DataElement> allElements = new List<DataElement>();
 				RecursevlyGetElements(action.dataModel as DataElementContainer, allElements);
-				foreach(DataElement elem in allElements)
+				foreach (DataElement elem in allElements)
 				{
 					List<Mutator> elemMutators = new List<Mutator>();
 
@@ -116,8 +130,29 @@ namespace Peach.Core.MutationStrategies
 					_stuffs[elem] = elemMutators;
 				}
 			}
-			
-			// TODO Support parameters
+			else if (action.parameters != null && action.parameters.Count > 0)
+			{
+				foreach (ActionParameter param in action.parameters)
+				{
+					if (param.dataModel == null)
+						continue;
+
+					List<DataElement> allElements = new List<DataElement>();
+					RecursevlyGetElements(param.dataModel as DataElementContainer, allElements);
+					foreach (DataElement elem in allElements)
+					{
+						List<Mutator> elemMutators = new List<Mutator>();
+
+						foreach (Type t in _mutators)
+						{
+							if (SupportedDataElement(t, elem))
+								elemMutators.Add(GetMutatorInstance(t, elem));
+						}
+
+						_stuffs[elem] = elemMutators;
+					}
+				}
+			}
 		}
 
 		void StateModel_Finished(StateModel model)

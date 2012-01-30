@@ -38,6 +38,8 @@ using System.Runtime.Remoting.Channels.Tcp;
 using Peach.Core.Dom;
 using Peach.Core.Publishers.Com;
 
+using NLog;
+
 namespace Peach.Core.Publishers
 {
 	[PublisherAttribute("Com")]
@@ -45,11 +47,12 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("clsid", typeof(string), "COM CLSID of object", true)]
 	public class ComPublisher : Publisher
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Publishers.ComPublisher");
+
 		string _clsid = null;
 		string _host = "localhost";
 		int _port = 9001;
 		IComContainer _proxy = null;
-		TcpChannel _chan = null;
 		bool _initialized = false;
 
 		public ComPublisher(Dictionary<string, Variant> args)
@@ -112,20 +115,21 @@ namespace Peach.Core.Publishers
 
 			OnCall(action, method, args);
 
-			List<object> parameters = new List<object>();
-
-			foreach(ActionParameter arg in args)
-				parameters.Add((string)((DataElementContainer)arg.dataModel)[0].InternalValue);
-
 			try
 			{
+				List<object> parameters = new List<object>();
+
+				foreach(ActionParameter arg in args)
+					parameters.Add((string)((DataElementContainer)arg.dataModel)[0].InternalValue);
+
 				object value = _proxy.CallMethod(method, parameters.ToArray());
 
 				if (value != null)
 					return new Variant(value.ToString());
 			}
-			catch
+			catch(Exception ex)
 			{
+				logger.Error("Ignoring exception: " + ex.Message);
 			}
 
 			return null;
@@ -141,8 +145,9 @@ namespace Peach.Core.Publishers
 			{
 				_proxy.SetProperty(property, (string)value);
 			}
-			catch
+			catch (Exception ex)
 			{
+				logger.Error("Ignoring exception: " + ex.Message);
 			}
 		}
 
@@ -159,8 +164,9 @@ namespace Peach.Core.Publishers
 				if (value != null)
 					return new Variant(value.ToString());
 			}
-			catch
+			catch (Exception ex)
 			{
+				logger.Error("Ignoring exception: " + ex.Message);
 			}
 
 			return null;
