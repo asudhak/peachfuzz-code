@@ -32,8 +32,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
-using Peach.Core.Dom;
 using Peach.Core.IO;
+using Peach.Core.Dom;
 using Peach.Core.Cracker;
 
 namespace Peach.Core.MutationStrategies
