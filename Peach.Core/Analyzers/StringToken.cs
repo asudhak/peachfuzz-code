@@ -46,6 +46,7 @@ namespace Peach.Core.Analyzers
 	[Serializable]
 	public class StringToken : Analyzer
 	{
+
 		/// <summary>
 		/// Default token set.  Order is important!
 		/// </summary>

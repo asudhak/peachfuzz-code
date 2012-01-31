@@ -111,7 +111,7 @@ namespace Peach
 
 				List<string> extra = p.Parse(args);
 
-				if (extra.Count == 0 && agent == null)
+				if (extra.Count == 0 && agent == null && analyzer == null)
 					syntax();
 
 				if (agent != null)
@@ -157,6 +157,60 @@ namespace Peach
 					Console.WriteLine("Starting agent server");
 
 					agentServer.Run(new Dictionary<string, string>());
+					return;
+				}
+
+				if (analyzer != null)
+				{
+					Type analyzerType = null;
+					foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+					{
+						foreach (Type t in a.GetExportedTypes())
+						{
+							if (!t.IsClass)
+								continue;
+
+							foreach (object attrib in t.GetCustomAttributes(true))
+							{
+								if (attrib is AnalyzerAttribute)
+								{
+									if ((attrib as AnalyzerAttribute).invokeName == analyzer)
+									{
+										analyzerType = t;
+										break;
+									}
+								}
+							}
+
+							if (analyzerType != null)
+								break;
+						}
+
+						if (analyzerType != null)
+							break;
+					}
+
+					if (analyzerType == null)
+					{
+						Console.WriteLine("Error, unable to locate analyzer called '" + analyzer + "'.\n");
+						return;
+					}
+
+					var field = analyzerType.GetField("supportCommandLine", 
+						BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+					if ((bool)field.GetValue(null) == false)
+					{
+						Console.WriteLine("Error, analyzer not configured to run from command line.");
+						return;
+					}
+
+					ConstructorInfo co = analyzerType.GetConstructor(new Type[0]);
+					Analyzer analyzerInstance = (Analyzer)co.Invoke(new object[0]);
+
+					ConsoleWatcher.WriteInfoMark();
+					Console.WriteLine("Starting Analyzer");
+
+					analyzerInstance.asCommandLine(new Dictionary<string, string>());
 					return;
 				}
 

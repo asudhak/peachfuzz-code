@@ -192,6 +192,7 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\Asn1.cs" />
     <Compile Include="Analyzers\Binary.cs" />
+    <Compile Include="Analyzers\ComAnalyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="Analyzers\Shark.cs" />
     <Compile Include="Analyzers\StringToken.cs" />
