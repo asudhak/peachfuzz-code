@@ -36,6 +36,8 @@ using Peach.Core.IO;
 using Peach.Core.Dom;
 using Peach.Core.Cracker;
 
+using NLog;
+
 namespace Peach.Core.MutationStrategies
 {
 	[MutationStrategy("Random")]
@@ -45,6 +47,8 @@ namespace Peach.Core.MutationStrategies
 	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once (default is 7).", false)]
 	public class RandomStrategy : MutationStrategy
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.MutationStrategies.RandomStrategy");
+
 		/// <summary>
 		/// DataElement's fullname to list of mutators
 		/// </summary>
@@ -149,7 +153,7 @@ namespace Peach.Core.MutationStrategies
 
 		void Action_Starting(Core.Dom.Action action)
 		{
-			if (action.dataSet != null && action.dataSet.Datas.Count > 0 && iterationCount % switchCount == 0)
+			if (action.dataSet != null && action.dataSet.Datas.Count > 1 && iterationCount % switchCount == 0)
 			{
 				// Time to switch the data!
 				// We will try 5 times to load some data then error out.
@@ -255,13 +259,17 @@ namespace Peach.Core.MutationStrategies
 						elements.Add(elem);
 				}
 
-				DataElement[] elementsToMutate = random.Sample<DataElement>(elements, random.Next(maxFieldsToMutate));
+				DataElement[] elementsToMutate = random.Sample<DataElement>(elements, random.Next(1, maxFieldsToMutate));
 
 				// TODO - Report which elements are mutating!
 
 				foreach (DataElement elem in elementsToMutate)
 				{
 					Mutator mutator = random.Choice<Mutator>(dataElementMutators[elem.fullName]);
+
+					logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
+					logger.Info("Action_Starting: Mutator: " + mutator.name);
+
 					mutator.randomMutation(elem);
 				}
 			}
