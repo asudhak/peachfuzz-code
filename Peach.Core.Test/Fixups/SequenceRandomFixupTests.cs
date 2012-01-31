@@ -24,11 +24,8 @@ namespace Peach.Core.Test.Fixups
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Number name=\"num1\" size=\"32\" signed=\"false\">" +
-                "           <Fixup class=\"SequenceRandomFixup\">" +
-                "               <Param name=\"ref\" value=\"Data\"/>" +
-                "           </Fixup>" +
+                "           <Fixup class=\"SequenceRandomFixup\"/>" +
                 "       </Number>" +
-                "       <Blob name=\"Data\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
