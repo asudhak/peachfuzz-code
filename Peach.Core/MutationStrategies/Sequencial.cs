@@ -32,12 +32,16 @@ using System.Text;
 using Peach.Core.Dom;
 using System.Reflection;
 
+using NLog;
+
 namespace Peach.Core.MutationStrategies
 {
 	[DefaultMutationStrategy]
 	[MutationStrategy("Sequencial")]
 	public class Sequencial : MutationStrategy
 	{
+		NLog.Logger logger = LogManager.GetLogger("Peach.Core.MutationStrategies.Sequencial");
+
 		Dictionary<DataElement, List<Mutator>> _stuffs = new Dictionary<DataElement, List<Mutator>>();
 		List<Type> _mutators = new List<Type>();
 		bool recording = true;
@@ -86,9 +90,9 @@ namespace Peach.Core.MutationStrategies
 					DataElement elem = action.origionalDataModel.find(fullName);
 					if (elem != null)
 					{
-						// Clone the data model, not the internal data element
-						action.dataModel = (DataModel)ObjectCopier.Clone<DataElement>(elem.getRoot());
-						elem = action.dataModel.find(fullName);
+						logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
+						logger.Info("Action_Starting: Mutator: " + _mutatorEnumerator.Current.name);
+
 						_mutatorEnumerator.Current.sequencialMutation(elem);
 					}
 				}
@@ -102,9 +106,9 @@ namespace Peach.Core.MutationStrategies
 						DataElement elem = param.origionalDataModel.find(fullName);
 						if (elem != null)
 						{
-							// Clone the data model, not the internal data element
-							param.dataModel = (DataModel)ObjectCopier.Clone<DataElement>(elem.getRoot());
-							elem = param.dataModel.find(fullName);
+							logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
+							logger.Info("Action_Starting: Mutator: " + _mutatorEnumerator.Current.name);
+
 							_mutatorEnumerator.Current.sequencialMutation(elem);
 						}
 					}
