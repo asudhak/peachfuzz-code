@@ -24,7 +24,7 @@ namespace Peach.Core.Test.Fixups
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Number name=\"num1\" size=\"32\" signed=\"false\">" +
-                "           <Fixup class=\"SequenceIncrementFixup\"/>" +
+                "           <Fixup class=\"SequenceIncrementFixup\">" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "           </Fixup>" +
                 "       </Number>" +
@@ -63,6 +63,7 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
 
             // verify values
+            Assert.AreEqual(BitConverter.ToUInt32(testValue, 0), 2);
 
             // reset
             testValue = null;

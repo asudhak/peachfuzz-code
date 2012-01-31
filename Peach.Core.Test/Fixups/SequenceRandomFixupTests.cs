@@ -63,6 +63,9 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
 
             // verify values
+            uint val = BitConverter.ToUInt32(testValue, 0);
+            Assert.GreaterOrEqual(val, 0);
+            Assert.LessOrEqual(val, UInt32.MaxValue);
 
             // reset
             testValue = null;
