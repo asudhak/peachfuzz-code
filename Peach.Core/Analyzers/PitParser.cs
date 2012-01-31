@@ -1908,8 +1908,26 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "DataModel")
 					action.dataModel = handleDataModel(child);
 
-				//if (child.Name == "Data")
-				//	action.data = handleData(child);
+				if (child.Name == "Data")
+				{
+					// TODO - Expand support
+					action.dataSet = new DataSet();
+					action.dataSet.Datas.Add(handleData(child));
+				}
+			}
+
+			// Still old way todo things.
+			if (action.dataModel != null && action.dataSet != null &&
+				action.dataSet.Datas.Count > 0 &&
+				action.dataSet.Datas[0].FileName != null)
+			{
+				Cracker.DataCracker cracker = new Cracker.DataCracker();
+				cracker.CrackData(action.dataModel,
+					new BitStream(File.OpenRead(action.dataSet.Datas[0].FileName)));
+
+				// update origionalDataModel
+				if (action.origionalDataModel != null)
+					action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
 			}
 
 			return action;
@@ -1935,6 +1953,7 @@ namespace Peach.Core.Analyzers
 		{
 			Data data = new Data();
 			data.name = getXmlAttribute(node, "name");
+			data.FileName = getXmlAttribute(node, "fileName");
 
 			foreach (XmlNode child in node.ChildNodes)
 			{

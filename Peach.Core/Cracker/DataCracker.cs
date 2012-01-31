@@ -788,6 +788,7 @@ namespace Peach.Core.Cracker
 				}
 			}
 
+			logger.Trace("determineElementSize: Returning: "+size);
 			return size;
 		}
 

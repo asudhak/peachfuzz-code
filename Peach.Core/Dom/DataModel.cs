@@ -41,7 +41,7 @@ namespace Peach.Core.Dom
 	/// DataModel is just a top level Block.
 	/// </summary>
 	[Serializable]
-	public class DataModel : Block, IObjectReference
+	public class DataModel : Block//, IObjectReference
 	{
 		/// <summary>
 		/// Dom parent of data model if any

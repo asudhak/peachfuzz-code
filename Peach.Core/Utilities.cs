@@ -69,7 +69,9 @@ namespace Peach.Core
 			{
 				formatter.Serialize(stream, source);
 				stream.Seek(0, SeekOrigin.Begin);
-				return (T)formatter.Deserialize(stream);
+				T obj = (T)formatter.Deserialize(stream);
+
+				return obj;
 			}
 		}
 	}

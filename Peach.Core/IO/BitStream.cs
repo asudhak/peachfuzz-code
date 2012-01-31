@@ -575,6 +575,36 @@ namespace Peach.Core.IO
 			if(bits.LengthBits == 0)
 				return;
 
+			// Are we starting from 0?
+			if (pos == 0 && bits.LengthBits % 8 == 0)
+			{
+				long oPos = bits.stream.Position;
+				bits.stream.Position = 0;
+				bits.Stream.CopyTo(stream);
+				bits.Stream.Position = oPos;
+
+				stream.Position = 0;
+
+				return;
+			}
+
+			// Are we working in bytes?
+			if (pos % 8 == 0 && bits.LengthBits % 8 == 0)
+			{
+				long ourPos = stream.Position;
+				long oPos = bits.stream.Position;
+
+				bits.stream.Position = 0;
+				bits.Stream.CopyTo(stream);
+				bits.Stream.Position = oPos;
+
+				stream.Position = ourPos;
+
+				SeekBits(0, SeekOrigin.End);
+
+				return;
+			}
+
 			long bytesToWrite = bits.LengthBits / 8;
 			long extraBits = bits.LengthBits - (bytesToWrite * 8);
 			long origionalPos = pos;
@@ -845,18 +875,108 @@ namespace Peach.Core.IO
 			return ret;
 		}
 
+		/// <summary>
+		/// Read from our stream into a new BitStream.  This call
+		/// is optimized for large reads.
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <returns></returns>
 		public BitStream ReadBitsAsBitStream(long bits)
+		{
+			if (bits % 8 == 0)
+				return RealReadBytesAsBitStream(bits / 8);
+
+			return RealReadBitsAsBitStream(bits);
+		}
+
+		/// <summary>
+		/// Bit copies are fairly slow.  We need to optimize
+		/// this somehow.
+		/// </summary>
+		/// <param name="bits"></param>
+		/// <returns></returns>
+		protected BitStream RealReadBitsAsBitStream(long bits)
 		{
 			BitStream newStream = new BitStream();
 
-			newStream.WriteBytes(ReadBytes(bits / 8));
+			while (pos % 8 == 0 && bits > 0)
+			{
+				bits--;
+				newStream.WriteBit(ReadBit());
+			}
 
-			if(bits % 8 > 0)
-				newStream.WriteBits(ReadBits((int)(bits % 8)), (int)bits%8);
+			byte[] buff = new byte[1024];
+			long streamPosition = stream.Position;
+			long streamCount = 0;
+
+			while (bits / (8 * 1024) > 0)
+			{
+				bits -= (8 * 1024);
+				this.stream.Read(buff, 0, 1024);
+				newStream.WriteBytes(buff);
+			}
+
+			while (bits / 8 > 0)
+			{
+				bits -= 8;
+				newStream.WriteByte((byte)stream.ReadByte());
+			}
+
+			streamCount = stream.Position - streamPosition;
+			stream.Position = streamPosition;
+			if (streamCount > 0)
+				SeekBytes((int)streamCount, SeekOrigin.Current);
+
+			if (bits % 8 > 0)
+				newStream.WriteBits(ReadBits((int)(bits % 8)), (int)bits % 8);
 
 			newStream.SeekBits(0, SeekOrigin.Begin);
 
 			return newStream;
+		}
+
+		/// <summary>
+		/// Optimized reading of bytes from our stream.
+		/// </summary>
+		/// <param name="bytes">Number of bytes to copy</param>
+		/// <returns>Returns BitStream instance with our data.</returns>
+		protected BitStream RealReadBytesAsBitStream(long bytes)
+		{
+			MemoryStream sin = new MemoryStream();
+
+			// Are we copying entire stream over?
+			if ((bytes * 8) == LengthBits && pos == 0)
+			{
+				stream.CopyTo(sin);
+				sin.Position = 0;
+				stream.Position = 0;
+
+				return new BitStream(sin);
+			}
+
+			// Do a fast copy if we are byte aligned
+			if (pos % 8 == 0)
+			{
+				byte[] buff = new byte[32768];
+				long streamPosition = stream.Position;
+
+				while (bytes / 32768 > 0)
+				{
+					bytes -= this.stream.Read(buff, 0, 32768);
+					sin.Write(buff, 0, 32768);
+				}
+
+				stream.Read(buff, 0, (int)bytes);
+				sin.Write(buff, 0, (int)bytes);
+
+				stream.Position = streamPosition;
+				sin.Position = 0;
+
+				return new BitStream(sin);
+			}
+
+			// Perform slow bit copy if we are not byte alligned.
+			return RealReadBitsAsBitStream(bytes * 8);
 		}
 
 		protected static string Byte2String(byte b)
@@ -1102,7 +1222,13 @@ namespace Peach.Core.IO
 
 			return -1;
 		}
+
+		public Stream Stream
+		{
+			get { return stream; }
+		}
 	}
+
 }
 
 // end

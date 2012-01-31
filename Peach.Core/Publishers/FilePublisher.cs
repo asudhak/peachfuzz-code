@@ -30,7 +30,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -159,6 +161,12 @@ namespace Peach.Core.Publishers
 				open(action);
 
 			OnOutput(action, data);
+
+			if (data.GetVariantType() == Variant.VariantType.BitStream)
+			{
+				((BitStream)data).Stream.Position = 0;
+				((BitStream)data).Stream.CopyTo(stream);
+			}
 
 			byte [] buff = (byte[])data;
 			stream.Write(buff, 0, buff.Length);
