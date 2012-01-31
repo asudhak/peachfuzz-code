@@ -24,15 +24,10 @@ namespace Peach.Core.Fixups
             DataElement from = obj.find(objRef);
             byte[] data = from.Value.Value;
 
-            //CRCTool crcTool = new CRCTool();
-            //crcTool.Init(CRCTool.CRCCode.CRC32);
-            //return new Variant((uint)crcTool.crctablefast(data, 0x04C11DB7));
-
             CRC32 crc = new CRC32();
-            //crc.ComputeHash(new byte[] { 0x04, 0xC1, 0x1D, 0xB7 });
-            crc.ComputeHash(data);
+            uint checksum = BitConverter.ToUInt32(crc.ComputeHash(data), 0);
 
-            return new Variant(crc.GetHashCode());
+            return new Variant(checksum);
         }
     }
 }

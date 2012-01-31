@@ -24,6 +24,7 @@ namespace Peach.Core.Test.Transformers.Compress
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"Bz2Compress\"/>" +
                 "           <Blob name=\"Data\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +

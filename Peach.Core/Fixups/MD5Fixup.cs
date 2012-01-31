@@ -12,8 +12,7 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class MD5Fixup : Fixup
     {
-        public MD5Fixup(Dictionary<string, Variant> args)
-            : base(args)
+        public MD5Fixup(Dictionary<string, Variant> args) : base(args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, MD5Fixup requires a 'ref' argument!");

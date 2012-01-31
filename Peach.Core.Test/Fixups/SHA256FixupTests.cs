@@ -23,11 +23,11 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"Checksum\" size=\"32\" signed=\"false\" endian=\"little\">" +
+                "       <Blob name=\"Checksum\">" +
                 "           <Fixup class=\"SHA256Fixup\">" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "           </Fixup>" +
-                "       </Number>" +
+                "       </Blob>" +
                 "       <Blob name=\"Data\" value=\"12345\"/>" +
                 "   </DataModel>" +
 
@@ -64,8 +64,13 @@ namespace Peach.Core.Test.Fixups
 
             // verify values
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: { 1, 2, 3, 4, 5 }
-            //byte[] precalcChecksum = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-            //Assert.AreEqual(testValue, precalcChecksum);
+            byte[] precalcChecksum = new byte[] 
+            { 
+                0x59, 0x94, 0x47, 0x1A, 0xBB, 0x01, 0x11, 0x2A, 0xFC, 0xC1, 0x81, 0x59, 0xF6, 0xCC, 0x74, 0xB4, 
+                0xF5, 0x11, 0xB9, 0x98, 0x06, 0xDA, 0x59, 0xB3, 0xCA, 0xF5, 0xA9, 0xC1, 0x73, 0xCA, 0xCF, 0xC5 
+            };
+
+            Assert.AreEqual(testValue, precalcChecksum);
 
             // reset
             testValue = null;
