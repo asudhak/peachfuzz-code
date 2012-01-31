@@ -23,12 +23,12 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"Checksum\" size=\"32\" signed=\"false\" endian=\"little\">" +
-                "           <Fixup class=\"SequenceIncrementFixup\">" +
+                "       <Number name=\"num1\" size=\"32\" signed=\"false\">" +
+                "           <Fixup class=\"SequenceIncrementFixup\"/>" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "           </Fixup>" +
                 "       </Number>" +
-                "       <Blob name=\"Data\" value=\"12345\"/>" +
+                "       <Blob name=\"Data\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -63,9 +63,6 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated checksum from Peach2.3 on the blob: { 1, 2, 3, 4, 5 }
-            //byte[] precalcChecksum = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-            //Assert.AreEqual(testValue, precalcChecksum);
 
             // reset
             testValue = null;

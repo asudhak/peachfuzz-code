@@ -11,7 +11,7 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class SequenceRandomFixup : Fixup
     {
-        Random rand = new Random();
+        System.Random rand = new System.Random();
 
         public SequenceRandomFixup(Dictionary<string, Variant> args) : base(args)
         {
