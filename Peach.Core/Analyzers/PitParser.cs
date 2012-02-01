@@ -867,7 +867,9 @@ namespace Peach.Core.Analyzers
 						if (child.Name == "#comment")
 							continue;
 
-						throw new NotSupportedException("Unkown: "+child.Name);
+						// NOTE: Don't exception here or will break Fixups, etc.
+
+						continue;
 				}
 
 				// Wrap elements that are arrays with an Array object
