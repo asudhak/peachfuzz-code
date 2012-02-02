@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Compress
 {
     [TransformerAttribute("GzipDecompress", "Decompress on output using gzip.")]
     [TransformerAttribute("compress.GzipDecompress", "Decompress on output using gzip.")]
+    [Serializable]
     public class GzipDecompress : Transformer
     {
         public GzipDecompress(Dictionary<string, Variant> args) : base(args)

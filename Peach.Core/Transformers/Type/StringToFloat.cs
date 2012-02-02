@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("StringToFloat", "Transforms a string into an float.")]
     [TransformerAttribute("encode.StringToFloat", "Transforms a string into an float.")]
+    [Serializable]
     public class StringToFloat : Transformer
     {
         public StringToFloat(Dictionary<string,Variant> args) : base(args)
@@ -18,8 +19,8 @@ namespace Peach.Core.Transformers.Type
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsString = Encoding.ASCII.GetString(data.Value);
-            float dataAsFloat = float.Parse(dataAsString);
+            string dataAsStr = Encoding.ASCII.GetString(data.Value);
+            float dataAsFloat = float.Parse(dataAsStr);
             return new BitStream(BitConverter.GetBytes(dataAsFloat));
 		}
 

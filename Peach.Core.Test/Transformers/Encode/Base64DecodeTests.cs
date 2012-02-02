@@ -13,16 +13,20 @@ namespace Peach.Core.Test.Transformers.Encode
     [TestFixture]
     class Base64DecodeTests
     {
+        byte[] testValue = null;
+
         [Test]
         public void Test1()
         {
-            // standard test
+            // standard test (internal encode)
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\" endian=\"little\"/>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"Base64Decode\"/>" +
+                "           <Blob name=\"Data\" value=\"12345678\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -57,13 +61,17 @@ namespace Peach.Core.Test.Transformers.Encode
             e.startFuzzing(dom, config);
 
             // verify values
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "12345678"
+            byte[] precalcResult = new byte[] { 0xD7, 0x6D, 0xF8, 0xE7, 0xAE, 0xFC };
+            Assert.AreEqual(testValue, precalcResult);
 
             // reset
+            testValue = null;
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-
+            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

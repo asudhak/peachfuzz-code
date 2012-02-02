@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("NumberToString", "Transforms any type of number to a string.")]
     [TransformerAttribute("type.NumberToString", "Transforms any type of number to a string.")]
+    [Serializable]
     public class NumberToString : Transformer
     {
         public NumberToString(Dictionary<string,Variant> args) : base(args)
@@ -18,12 +19,8 @@ namespace Peach.Core.Transformers.Type
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            StringBuilder sb = new StringBuilder((int)data.LengthBytes * 2);
-
-            foreach (byte b in data.Value)
-                sb.Append(b);
-
-            return new BitStream(ASCIIEncoding.ASCII.GetBytes(sb.ToString()));
+            string dataAsStr = ASCIIEncoding.ASCII.GetString(data.Value);
+            return new BitStream(Encoding.ASCII.GetBytes(dataAsStr));
 		}
 
 		protected override BitStream internalDecode(BitStream data)

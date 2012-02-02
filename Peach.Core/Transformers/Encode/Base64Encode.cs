@@ -36,6 +36,7 @@ namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("Base64Encode", "Encode on output as Base64.")]
     [TransformerAttribute("encode.Base64Encode", "Encode on output as Base64.")]
+    [Serializable]
     public class Base64Encode : Transformer
     {
         public Base64Encode(Dictionary<string,Variant>  args) : base(args)

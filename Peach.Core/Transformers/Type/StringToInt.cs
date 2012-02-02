@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Type
 {
     [TransformerAttribute("StringToInt", "Transforms a string into an integer.")]
     [TransformerAttribute("encode.StringToInt", "Transforms a string into an integer.")]
+    [Serializable]
     public class StringToInt : Transformer
     {
         public StringToInt(Dictionary<string,Variant> args) : base(args)

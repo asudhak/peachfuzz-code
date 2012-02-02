@@ -13,6 +13,8 @@ namespace Peach.Core.Test.Transformers.Type
     [TestFixture]
     class StringToFloatTests
     {
+        byte[] testValue = null;
+
         [Test]
         public void Test1()
         {
@@ -21,8 +23,10 @@ namespace Peach.Core.Test.Transformers.Type
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\" endian=\"little\"/>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"StringToFloat\"/>" +
+                "           <Blob name=\"blob1\" value=\"100.55\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -59,11 +63,12 @@ namespace Peach.Core.Test.Transformers.Type
             // verify values
 
             // reset
+            testValue = null;
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-
+            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

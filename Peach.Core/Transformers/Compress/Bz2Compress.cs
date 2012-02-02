@@ -11,6 +11,7 @@ namespace Peach.Core.Transformers.Compress
 {
     [TransformerAttribute("Bz2Compress", "Compress on output using bz2.")]
     [TransformerAttribute("compress.Bz2Compress", "Compress on output using bz2.")]
+    [Serializable]
     public class Bz2Compress : Transformer
     {
         public Bz2Compress(Dictionary<string,Variant> args) : base(args)
