@@ -270,7 +270,14 @@ namespace Peach.Core.MutationStrategies
 					logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
 					logger.Info("Action_Starting: Mutator: " + mutator.name);
 
-					mutator.randomMutation(elem);
+					try
+					{
+						mutator.randomMutation(elem);
+					}
+					catch (OutOfMemoryException)
+					{
+						logger.Debug("Mutator caused out of memory exception, Ignoring!");
+					}
 				}
 			}
 		}

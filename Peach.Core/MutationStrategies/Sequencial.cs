@@ -93,7 +93,14 @@ namespace Peach.Core.MutationStrategies
 						logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
 						logger.Info("Action_Starting: Mutator: " + _mutatorEnumerator.Current.name);
 
-						_mutatorEnumerator.Current.sequencialMutation(elem);
+						try
+						{
+							_mutatorEnumerator.Current.sequencialMutation(elem);
+						}
+						catch (OutOfMemoryException)
+						{
+							logger.Debug("Mutator caused out of memory exception, Ignoring!");
+						}
 					}
 				}
 				else if(action.parameters != null && action.parameters.Count > 0)
@@ -109,7 +116,14 @@ namespace Peach.Core.MutationStrategies
 							logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
 							logger.Info("Action_Starting: Mutator: " + _mutatorEnumerator.Current.name);
 
-							_mutatorEnumerator.Current.sequencialMutation(elem);
+							try
+							{
+								_mutatorEnumerator.Current.sequencialMutation(elem);
+							}
+							catch (OutOfMemoryException)
+							{
+								logger.Debug("Mutator caused out of memory exception, Ignoring!");
+							}
 						}
 					}
 				}

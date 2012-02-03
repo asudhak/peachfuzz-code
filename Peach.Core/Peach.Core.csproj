@@ -189,6 +189,7 @@
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
+    <Compile Include="Agent\Monitors\WindowsDebug\DebuggerInstance.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\Asn1.cs" />
     <Compile Include="Analyzers\Binary.cs" />
@@ -954,12 +955,15 @@
     <Compile Include="IO\Conversion\EndianBitConverter.cs" />
     <Compile Include="IO\Conversion\Endianness.cs" />
     <Compile Include="IO\Conversion\LittleEndianBitConverter.cs" />
+    <Compile Include="IWeighted.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
     <Compile Include="MutationStrategies\RandomStrategy.cs" />
     <Compile Include="MutationStrategies\Sequencial.cs" />
     <Compile Include="MutationStrategy.cs" />
     <Compile Include="Mutator.cs" />
+    <Compile Include="MutatorAttribute.cs" />
+    <Compile Include="MutatorException.cs" />
     <Compile Include="Mutators\ArrayNumericalEdgeCasesMutator.cs" />
     <Compile Include="Mutators\ArrayRandomizeOrderMutator.cs" />
     <Compile Include="Mutators\ArrayReverseOrderMutator.cs" />

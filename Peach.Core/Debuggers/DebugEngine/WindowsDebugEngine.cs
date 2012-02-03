@@ -175,10 +175,14 @@ namespace Peach.Core.Debuggers.DebugEngine
 			dbgClient.SetEventCallbacks(new EventCallbacks(this));
 		}
 
+		static int count = 0;
+
 		public void CreateProcessAndAttach(string CommandLine)
 		{
 			if (_disposed)
 				throw new ApplicationException("Object already disposed");
+
+			count++;
 
 			dbgClient.CreateProcessAndAttach(0,
 				CommandLine, 1, 0, 0);
@@ -190,7 +194,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 			}
 			catch
 			{
-				Debugger.Break();
+				//Debugger.Break();
 			}
 
 			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);

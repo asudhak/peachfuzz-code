@@ -36,7 +36,7 @@ namespace Peach.Core
 	/// <summary>
 	/// Base class for Mutators.
 	/// </summary>
-	public abstract class Mutator
+	public abstract class Mutator : IWeighted
 	{
 		/// <summary>
 		/// Instance of current mutation strategy
@@ -101,25 +101,14 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="obj"></param>
 		public abstract void randomMutation(DataElement obj);
-	}
 
-	// Mark a class as a Peach Mutator
-	public class MutatorAttribute : Attribute
-	{
-		public string description = null;
+		#region IWeighted Members
 
-		public MutatorAttribute()
+		public int SelectionWeight
 		{
-			description = "Unknown";
+			get { return weight; }
 		}
 
-		public MutatorAttribute(string description)
-		{
-			this.description = description;
-		}
-	}
-
-	public class MutatorCompleted : Exception
-	{
+		#endregion
 	}
 }

@@ -168,7 +168,9 @@ namespace PeachFuzzBang
 			dom.agents.Add(agent.name, agent);
 
 			// Mutation Strategy
-			Sequencial strat = new Sequencial(new Dictionary<string, string>());
+			MutationStrategy strat = new RandomStrategy(new Dictionary<string, Variant>());
+			if (comboBoxFuzzingStrategy.Text.ToLower().IndexOf("Squencial") > -1)
+				strat = new Sequencial(new Dictionary<string, string>());
 
 			// Test
 			Test test = new Test();

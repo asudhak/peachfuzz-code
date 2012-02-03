@@ -89,6 +89,10 @@
 			this.label9 = new System.Windows.Forms.Label();
 			this.label8 = new System.Windows.Forms.Label();
 			this.tabPageOutput = new System.Windows.Forms.TabPage();
+			this.textBoxIterationCount = new System.Windows.Forms.TextBox();
+			this.label19 = new System.Windows.Forms.Label();
+			this.textBoxFaultCount = new System.Windows.Forms.TextBox();
+			this.label18 = new System.Windows.Forms.Label();
 			this.textBoxOutput = new System.Windows.Forms.TextBox();
 			this.progressBarOuputFuzzing = new System.Windows.Forms.ProgressBar();
 			this.tabPageAbout = new System.Windows.Forms.TabPage();
@@ -98,10 +102,6 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.label18 = new System.Windows.Forms.Label();
-			this.textBoxFaultCount = new System.Windows.Forms.TextBox();
-			this.textBoxIterationCount = new System.Windows.Forms.TextBox();
-			this.label19 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
 			this.groupBox6.SuspendLayout();
@@ -284,11 +284,14 @@
 			// comboBoxFuzzingStrategy
 			// 
 			this.comboBoxFuzzingStrategy.FormattingEnabled = true;
+			this.comboBoxFuzzingStrategy.Items.AddRange(new object[] {
+            "Sequencial Strategy",
+            "Random Strategy"});
 			this.comboBoxFuzzingStrategy.Location = new System.Drawing.Point(115, 78);
 			this.comboBoxFuzzingStrategy.Name = "comboBoxFuzzingStrategy";
 			this.comboBoxFuzzingStrategy.Size = new System.Drawing.Size(293, 21);
 			this.comboBoxFuzzingStrategy.TabIndex = 14;
-			this.comboBoxFuzzingStrategy.Text = "Sequencial";
+			this.comboBoxFuzzingStrategy.Text = "Random Strategy";
 			// 
 			// textBoxIterations
 			// 
@@ -737,6 +740,42 @@
 			this.tabPageOutput.Text = "Output";
 			this.tabPageOutput.UseVisualStyleBackColor = true;
 			// 
+			// textBoxIterationCount
+			// 
+			this.textBoxIterationCount.Location = new System.Drawing.Point(92, 356);
+			this.textBoxIterationCount.Name = "textBoxIterationCount";
+			this.textBoxIterationCount.ReadOnly = true;
+			this.textBoxIterationCount.Size = new System.Drawing.Size(100, 20);
+			this.textBoxIterationCount.TabIndex = 5;
+			this.textBoxIterationCount.Text = "0";
+			// 
+			// label19
+			// 
+			this.label19.AutoSize = true;
+			this.label19.Location = new System.Drawing.Point(7, 359);
+			this.label19.Name = "label19";
+			this.label19.Size = new System.Drawing.Size(79, 13);
+			this.label19.TabIndex = 4;
+			this.label19.Text = "Iteration Count:";
+			// 
+			// textBoxFaultCount
+			// 
+			this.textBoxFaultCount.Location = new System.Drawing.Point(281, 356);
+			this.textBoxFaultCount.Name = "textBoxFaultCount";
+			this.textBoxFaultCount.ReadOnly = true;
+			this.textBoxFaultCount.Size = new System.Drawing.Size(100, 20);
+			this.textBoxFaultCount.TabIndex = 3;
+			this.textBoxFaultCount.Text = "0";
+			// 
+			// label18
+			// 
+			this.label18.AutoSize = true;
+			this.label18.Location = new System.Drawing.Point(211, 359);
+			this.label18.Name = "label18";
+			this.label18.Size = new System.Drawing.Size(64, 13);
+			this.label18.TabIndex = 2;
+			this.label18.Text = "Fault Count:";
+			// 
 			// textBoxOutput
 			// 
 			this.textBoxOutput.Location = new System.Drawing.Point(8, 35);
@@ -825,42 +864,6 @@
 			this.buttonStartFuzzing.Text = "Start Fuzzing";
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
-			// 
-			// label18
-			// 
-			this.label18.AutoSize = true;
-			this.label18.Location = new System.Drawing.Point(211, 359);
-			this.label18.Name = "label18";
-			this.label18.Size = new System.Drawing.Size(64, 13);
-			this.label18.TabIndex = 2;
-			this.label18.Text = "Fault Count:";
-			// 
-			// textBoxFaultCount
-			// 
-			this.textBoxFaultCount.Location = new System.Drawing.Point(281, 356);
-			this.textBoxFaultCount.Name = "textBoxFaultCount";
-			this.textBoxFaultCount.ReadOnly = true;
-			this.textBoxFaultCount.Size = new System.Drawing.Size(100, 20);
-			this.textBoxFaultCount.TabIndex = 3;
-			this.textBoxFaultCount.Text = "0";
-			// 
-			// textBoxIterationCount
-			// 
-			this.textBoxIterationCount.Location = new System.Drawing.Point(92, 356);
-			this.textBoxIterationCount.Name = "textBoxIterationCount";
-			this.textBoxIterationCount.ReadOnly = true;
-			this.textBoxIterationCount.Size = new System.Drawing.Size(100, 20);
-			this.textBoxIterationCount.TabIndex = 5;
-			this.textBoxIterationCount.Text = "0";
-			// 
-			// label19
-			// 
-			this.label19.AutoSize = true;
-			this.label19.Location = new System.Drawing.Point(7, 359);
-			this.label19.Name = "label19";
-			this.label19.Size = new System.Drawing.Size(79, 13);
-			this.label19.TabIndex = 4;
-			this.label19.Text = "Iteration Count:";
 			// 
 			// FormMain
 			// 

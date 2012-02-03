@@ -123,22 +123,25 @@ namespace Peach.Core.Dom
 			{
 				if (_origionalDataModel == null)
 				{
-					_origionalDataModel = value;
+					// Optimize output by generateing value
+					object tmp = value.Value;
+
+					_origionalDataModel = ObjectCopier.Clone<DataModel>(value);
 					_origionalDataModel.action = this;
 					_origionalDataModel.dom = null;
 
-					// Get the value to optimize next generation based on invalidation
-					object tmp = _origionalDataModel.Value;
-
-					_dataModel = ObjectCopier.Clone<DataModel>(_origionalDataModel);
+					_dataModel = value;
 					_dataModel.action = this;
 					_dataModel.dom = null;
 				}
 				else
 				{
 					_dataModel = value;
-					_dataModel.action = this;
-					_dataModel.dom = null;
+					if (_dataModel != null)
+					{
+						_dataModel.action = this;
+						_dataModel.dom = null;
+					}
 				}
 			}
 		}
@@ -149,7 +152,13 @@ namespace Peach.Core.Dom
 		public DataModel origionalDataModel
 		{
 			get { return _origionalDataModel; }
-			set { _origionalDataModel = value; }
+			set
+			{
+				_origionalDataModel = value;
+
+				// Optimize output by pre-generating value
+				object tmp = _origionalDataModel.Value;
+			}
 		}
 
 		//public string value
@@ -323,12 +332,17 @@ namespace Peach.Core.Dom
 				case ActionType.Output:
 				case ActionType.GetProperty:
 				case ActionType.SetProperty:
+					dataModel = null;
 					dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
+					dataModel.action = this;
 					break;
 
 				case ActionType.Call:
 					foreach (ActionParameter p in this.parameters)
+					{
 						p.dataModel = ObjectCopier.Clone<DataModel>(p.origionalDataModel);
+						p.dataModel.action = this;
+					}
 
 					// TODO - Also set ActionResult
 

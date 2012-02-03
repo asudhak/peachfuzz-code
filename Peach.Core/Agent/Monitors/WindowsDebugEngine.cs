@@ -32,7 +32,13 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Reflection;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Ipc;
+
 using Peach.Core.Dom;
+using Peach.Core.Agent.Monitors.WindowsDebug;
 
 namespace Peach.Core.Agent.Monitors
 {
@@ -102,17 +108,9 @@ namespace Peach.Core.Agent.Monitors
             if(args.ContainsKey("NoCpuKill") && ((string)args["NoCpuKill"]).ToLower() == "true")
                 _noCpuKill = true;
 
-			_debugger = new DebuggerInstance();
-			_debugger.commandLine = _commandLine;
-			_debugger.processName = _processName;
-			_debugger.kernelConnectionString = _kernelConnectionString;
-			_debugger.service = _service;
-			_debugger.symbolsPath = _symbolsPath;
-			_debugger.startOnCall = _startOnCall;
-			_debugger.ignoreFirstChanceGuardPage = _ignoreFirstChanceGuardPage;
-			_debugger.ignoreSecondChanceGuardPage = _ignoreSecondChanceGuardPage;
-			_debugger.noCpuKill = _noCpuKill;
-			_debugger.winDbgPath = _winDbgPath;
+			// Register IPC Channel for connecting to debug process
+			IpcChannel ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
+			ChannelServices.RegisterChannel(ipcChannel, false);
 		}
 
 		protected string FindWinDbg()
@@ -258,10 +256,19 @@ namespace Peach.Core.Agent.Monitors
 
         public override bool DetectedFault()
         {
-			if (_debugger.caughtException)
-				return true;
+			bool fault = false;
 
-			return false;
+			if (_debugger.caughtException)
+			{
+				// Kill off our debugger process and re-create
+				_debuggerProcessUsage = _debuggerProcessUsageMax;
+				fault = true;
+			}
+
+			if (_startOnCall != null)
+				_FinishDebugger();
+
+			return fault;
         }
 
         public override void GetMonitorData(System.Collections.Hashtable data)
@@ -285,25 +292,110 @@ namespace Peach.Core.Agent.Monitors
             return false;
         }
 
+		System.Diagnostics.Process _debuggerProcess = null;
+		int _debuggerProcessUsage = 0;
+		int _debuggerProcessUsageMax = 100;
+		string _debuggerChannelName = null;
+
         protected void _StartDebugger()
         {
-			if (!_debugger.IsRunning)
+			if (_debuggerProcessUsage >= _debuggerProcessUsageMax && _debuggerProcess != null)
 			{
-				if (_performanceCounter != null)
+				_FinishDebugger();
+
+				_debuggerProcess.Kill();
+				_debuggerProcess = null;
+				_debuggerProcessUsage = 0;
+			}
+
+			if (_debuggerProcess == null || _debuggerProcess.HasExited)
+			{
+				_debuggerChannelName = "PeachCore_" + (new Random().Next().ToString());
+
+				// Launch the server process
+				_debuggerProcess = new System.Diagnostics.Process();
+				_debuggerProcess.StartInfo.CreateNoWindow = true;
+				_debuggerProcess.StartInfo.UseShellExecute = false;
+				_debuggerProcess.StartInfo.Arguments = _debuggerChannelName;
+				_debuggerProcess.StartInfo.FileName = Path.Combine(
+					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+					"Peach.Core.WindowsDebugInstance.exe");
+				_debuggerProcess.Start();
+			}
+
+			_debuggerProcessUsage++;
+
+			for (int cnt = 0; cnt < 100; cnt++)
+			{
+				try
 				{
-					_performanceCounter.Close();
-					_performanceCounter = null;
+					_debugger = (DebuggerInstance)Activator.GetObject(typeof(DebuggerInstance), 
+						"ipc://" + _debuggerChannelName + "/DebuggerInstance");
+					//_debugger = new DebuggerInstance();
+					
+					_debugger.commandLine = _commandLine;
+					_debugger.processName = _processName;
+					_debugger.kernelConnectionString = _kernelConnectionString;
+					_debugger.service = _service;
+					_debugger.symbolsPath = _symbolsPath;
+					_debugger.startOnCall = _startOnCall;
+					_debugger.ignoreFirstChanceGuardPage = _ignoreFirstChanceGuardPage;
+					_debugger.ignoreSecondChanceGuardPage = _ignoreSecondChanceGuardPage;
+					_debugger.noCpuKill = _noCpuKill;
+					_debugger.winDbgPath = _winDbgPath;
+
+					break;
+				}
+				catch
+				{
+					if (cnt == 99)
+						throw;
+				}
+			}
+
+			_debugger.StartDebugger();
+        }
+
+		protected void _FinishDebugger()
+		{
+			_StopDebugger();
+
+			if (_debugger != null)
+				_debugger.FinishDebugging();
+
+			_debugger = null;
+
+			if (_performanceCounter != null)
+			{
+				_performanceCounter.Close();
+				_performanceCounter = null;
+			}
+
+			if (_debuggerProcess != null)
+			{
+				try
+				{
+					_debuggerProcess.Kill();
+				}
+				catch
+				{
 				}
 
-				_debugger.StartDebugger();
+				_debuggerProcess = null;
 			}
-        }
+		}
 
         protected void _StopDebugger()
         {
-			if (_debugger.IsRunning)
+			if (_debugger != null)
 			{
-				_debugger.StopDebugger();
+				try
+				{
+					_debugger.StopDebugger();
+				}
+				catch
+				{
+				}
 
 				if (_performanceCounter != null)
 				{
@@ -311,109 +403,8 @@ namespace Peach.Core.Agent.Monitors
 					_performanceCounter = null;
 				}
 			}
-        }
-    }
 
-    class DebuggerInstance
-    {
-		public static DebuggerInstance Instance = null;
-        Thread _thread = null;
-		Debuggers.DebugEngine.WindowsDebugEngine _dbg = null;
-
-        public string commandLine = null;
-		public string processName = null;
-		public string kernelConnectionString = null;
-		public string service = null;
-
-		public string symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
-		public string startOnCall = null;
-		public string winDbgPath = null;
-
-		public bool ignoreFirstChanceGuardPage = false;
-		public bool ignoreSecondChanceGuardPage = false;
-		public bool noCpuKill = false;
-
-		public bool dbgExited = false;
-		public bool caughtException = false;
-		public Dictionary<string, Variant> crashInfo = null;
-
-		public DebuggerInstance()
-		{
-			Instance = this;
 		}
-
-		public int ProcessId
-		{
-			get { return _dbg.processId; }
-		}
-
-        public bool IsRunning
-        {
-            get { return _thread != null && _thread.IsAlive; }
-        }
-
-		public void StartDebugger()
-		{
-			_thread = new Thread(new ThreadStart(Run));
-			_thread.Start();
-
-			while (_dbg == null && !dbgExited)
-				Thread.Sleep(100);
-
-			if (_dbg != null && !_dbg.loadModules.WaitOne())
-				Console.Error.WriteLine("WaitOne == false");
-		}
-
-		public void StopDebugger()
-		{
-			_dbg.exitDebugger.Set();
-
-			for (int cnt = 0; _thread.IsAlive && cnt < 100; cnt++)
-				Thread.Sleep(100);
-
-			_thread.Abort();
-			_thread.Join();
-		}
-
-        public void Run()
-		{
-			using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine(winDbgPath))
-			{
-				_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
-				_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
-				_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;
-
-				if (commandLine != null)
-				{
-					_dbg.CreateProcessAndAttach(commandLine);
-				}
-				else if (processName != null)
-				{
-					// TODO
-					throw new NotImplementedException();
-				}
-				else if (kernelConnectionString != null)
-				{
-					// TODO
-					throw new NotImplementedException();
-				}
-				else if (service != null)
-				{
-					// TODO
-					throw new NotImplementedException();
-				}
-
-				if (_dbg.handledException.WaitOne(0, false))
-				{
-					// Caught exception!
-					caughtException = true;
-					crashInfo = _dbg.crashInfo;
-				}
-			}
-
-			dbgExited = true;
-			_dbg = null;
-        }
     }
 }
 

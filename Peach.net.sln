@@ -55,6 +55,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComTest", "ComTest\ComTest.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashingProgram", "CrashingProgram\CrashingProgram.vcxproj", "{3C73B151-DBE6-40D9-9458-88C87BCF5922}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashingFileConsumer", "CrashingFileConsumer\CrashingFileConsumer.vcxproj", "{ABA857FF-840B-4839-BE6D-61EA8B292B62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peach.Core.WindowsDebugInstance", "Peach.Core.WindowsDebugInstance\Peach.Core.WindowsDebugInstance.csproj", "{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Peach.net3.vsmdi
@@ -377,6 +381,34 @@ Global
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|Win32.Build.0 = Release|Win32
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|x64.ActiveCfg = Release|Win32
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Release|x86.ActiveCfg = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Win32.Build.0 = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|x64.ActiveCfg = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|x86.ActiveCfg = Debug|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|Any CPU.ActiveCfg = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|Win32.ActiveCfg = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|Win32.Build.0 = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|x64.ActiveCfg = Release|Win32
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Release|x86.ActiveCfg = Release|Win32
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|Win32.ActiveCfg = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|x64.ActiveCfg = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|x86.ActiveCfg = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Debug|x86.Build.0 = Debug|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|Any CPU.ActiveCfg = Release|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|Mixed Platforms.Build.0 = Release|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|Win32.ActiveCfg = Release|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|x64.ActiveCfg = Release|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|x86.ActiveCfg = Release|x86
+		{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -384,6 +416,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{21441695-C170-456D-911C-F8316B4B8309} = {AC1178FE-69E3-442E-ACA5-6C552119A151}
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922} = {AC1178FE-69E3-442E-ACA5-6C552119A151}
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62} = {AC1178FE-69E3-442E-ACA5-6C552119A151}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Peach\Peach.csproj
