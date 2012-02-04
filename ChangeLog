@@ -1,6 +1,12 @@
 NEW IN WAF 1.6.11
 -----------------
-* Apply the chmod attribute to the versioned libraries (vnum)
+* Enable custom variables for the boost detection #1089
+* Disable the config test execution when detecting boost #1090
+* Process moc classes in .cpp files by default #1095
+* Apply the chmod attribute to the versioned libraries (vnum) #1097
+* Fixed the python detection on OSX #1098
+* Changed the win32 color settings for Windows 7 #1099
+* Set the default fortran linker for ifort to xiar #1104
 
 NEW IN WAF 1.6.10
 -----------------
