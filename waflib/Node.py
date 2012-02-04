@@ -581,34 +581,6 @@ class Node(object):
 
 		return ret
 
-	def find_nodes(self, find_dirs=True, find_files=True, match_fun=lambda x: True):
-		# FIXME not part of the stable API: find_node vs find_nodes? consistency with argument names on other functions?
-		x = """
-		Recursively finds nodes::
-
-			def configure(cnf):
-				cnf.find_nodes()
-
-		:param find_dirs: whether to return directories
-		:param find_files: whether to return files
-		:param match_fun: matching function, taking a node as parameter
-		:rtype generator
-		:return: a generator that iterates over all the requested files
-		"""
-		files = self.listdir()
-		for f in files:
-			node = self.make_node([f])
-			if os.path.isdir(node.abspath()):
-				if find_dirs and match_fun(node):
-					yield node
-				gen = node.find_nodes(find_dirs, find_files, match_fun)
-				for g in gen:
-					yield g
-			else:
-				if find_files and match_fun(node):
-					yield node
-
-
 	# --------------------------------------------------------------------------------
 	# the following methods require the source/build folders (bld.srcnode/bld.bldnode)
 	# using a subclass is a possibility, but is that really necessary?

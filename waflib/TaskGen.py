@@ -586,8 +586,7 @@ def process_rule(self):
 	if getattr(self, 'cwd', None):
 		tsk.cwd = self.cwd
 
-	# TODO remove on_results in waf 1.7
-	if getattr(self, 'update_outputs', None) or getattr(self, 'on_results', None):
+	if getattr(self, 'update_outputs', None):
 		Task.update_outputs(cls)
 
 	if getattr(self, 'always', None):

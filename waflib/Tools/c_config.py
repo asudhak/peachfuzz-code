@@ -6,9 +6,9 @@
 C/C++/D configuration helpers
 """
 
-import os, imp, sys, re, shlex, shutil
-from waflib import Build, Utils, Configure, Task, Options, Logs, TaskGen, Errors, ConfigSet, Runner
-from waflib.TaskGen import before_method, after_method, feature
+import os, re, shlex, sys
+from waflib import Build, Utils, Task, Options, Logs, Errors, ConfigSet, Runner
+from waflib.TaskGen import after_method, feature
 from waflib.Configure import conf
 
 WAF_CONFIG_H   = 'config.h'
@@ -39,12 +39,6 @@ int main() {
 }
 '''
 """Code template for checking for types"""
-
-SNIP_CLASS = '''
-int main() {
-	if (
-}
-'''
 
 SNIP_EMPTY_PROGRAM = '''
 int main() {
@@ -354,7 +348,7 @@ def check_cfg(self, *k, **kw):
 	ret = None
 	try:
 		ret = self.exec_cfg(kw)
-	except self.errors.WafError as e:
+	except self.errors.WafError:
 		if 'errmsg' in kw:
 			self.end_msg(kw['errmsg'], 'YELLOW')
 		if Logs.verbose > 1:
@@ -567,7 +561,6 @@ def post_check(self, *k, **kw):
 	if 'define_name' in kw:
 		# TODO simplify?
 		if 'header_name' in kw or 'function_name' in kw or 'type_name' in kw or 'fragment' in kw:
-			nm = kw['define_name']
 			if kw['execute'] and kw.get('define_ret', None) and isinstance(is_success, str):
 				self.define(kw['define_name'], is_success, quote=kw.get('quote', 1))
 			else:
@@ -612,7 +605,7 @@ def check(self, *k, **kw):
 	ret = None
 	try:
 		ret = self.run_c_code(*k, **kw)
-	except self.errors.ConfigurationError as e:
+	except self.errors.ConfigurationError:
 		self.end_msg(kw['errmsg'], 'YELLOW')
 		if Logs.verbose > 1:
 			raise
