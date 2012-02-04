@@ -21,7 +21,7 @@ def process_pch(self):
 	if getattr(self, 'pch', ''):
 		nodes = self.to_nodes(self.pch)
 		for x in nodes:
-			self.create_task('gchx', x, x.change_ext('.gch'))
+			self.create_task('gchx', x, x.change_ext('.h.gch'))
 feature('cxx')(process_pch)
 after('apply_link')(process_pch)
 
@@ -30,6 +30,8 @@ class gchx(Task):
 	scan    = c_preproc.scan
 	ext_out = ['.h']
 	color   = 'BLUE'
+from waflib.Task import update_outputs
+update_outputs(gchx)
 
 #################################################
 # example below
