@@ -266,8 +266,6 @@ class tex(Task.Task):
 		texinputs = self.env.TEXINPUTS or ''
 		self.TEXINPUTS = node.parent.get_bld().abspath() + os.pathsep + node.parent.get_src().abspath() + os.pathsep + texinputs + os.pathsep
 
-		self.aux_node = node.change_ext('.aux') # TODO waf 1.7 remove (left for compatibility)
-
 		# important, set the cwd for everybody
 		self.cwd = self.inputs[0].parent.get_bld().abspath()
 

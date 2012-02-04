@@ -189,8 +189,7 @@ class task_gen(object):
 			else:
 				tmp.append(a)
 
-		# TODO waf 1.7
-		#tmp.sort()
+		tmp.sort()
 
 		# topological sort
 		out = []
