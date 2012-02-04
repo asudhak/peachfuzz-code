@@ -461,7 +461,6 @@
 			// 
 			// textBoxKernelConnectionString
 			// 
-			this.textBoxKernelConnectionString.Enabled = false;
 			this.textBoxKernelConnectionString.Location = new System.Drawing.Point(141, 28);
 			this.textBoxKernelConnectionString.Name = "textBoxKernelConnectionString";
 			this.textBoxKernelConnectionString.Size = new System.Drawing.Size(384, 20);
@@ -489,7 +488,6 @@
 			// 
 			// comboBoxAttachToServiceServices
 			// 
-			this.comboBoxAttachToServiceServices.Enabled = false;
 			this.comboBoxAttachToServiceServices.FormattingEnabled = true;
 			this.comboBoxAttachToServiceServices.Location = new System.Drawing.Point(58, 26);
 			this.comboBoxAttachToServiceServices.Name = "comboBoxAttachToServiceServices";
@@ -520,7 +518,6 @@
 			// 
 			// textBoxAttachToProcessProcessName
 			// 
-			this.textBoxAttachToProcessProcessName.Enabled = false;
 			this.textBoxAttachToProcessProcessName.Location = new System.Drawing.Point(110, 44);
 			this.textBoxAttachToProcessProcessName.Name = "textBoxAttachToProcessProcessName";
 			this.textBoxAttachToProcessProcessName.Size = new System.Drawing.Size(219, 20);
@@ -528,7 +525,6 @@
 			// 
 			// textBoxAttachToProcessPID
 			// 
-			this.textBoxAttachToProcessPID.Enabled = false;
 			this.textBoxAttachToProcessPID.Location = new System.Drawing.Point(110, 18);
 			this.textBoxAttachToProcessPID.Name = "textBoxAttachToProcessPID";
 			this.textBoxAttachToProcessPID.Size = new System.Drawing.Size(219, 20);
@@ -537,7 +533,6 @@
 			// radioButtonAttachToProcessProcessName
 			// 
 			this.radioButtonAttachToProcessProcessName.AutoSize = true;
-			this.radioButtonAttachToProcessProcessName.Enabled = false;
 			this.radioButtonAttachToProcessProcessName.Location = new System.Drawing.Point(9, 45);
 			this.radioButtonAttachToProcessProcessName.Name = "radioButtonAttachToProcessProcessName";
 			this.radioButtonAttachToProcessProcessName.Size = new System.Drawing.Size(94, 17);
@@ -549,7 +544,6 @@
 			// radioButtonAttachToProcessPID
 			// 
 			this.radioButtonAttachToProcessPID.AutoSize = true;
-			this.radioButtonAttachToProcessPID.Enabled = false;
 			this.radioButtonAttachToProcessPID.Location = new System.Drawing.Point(9, 19);
 			this.radioButtonAttachToProcessPID.Name = "radioButtonAttachToProcessPID";
 			this.radioButtonAttachToProcessPID.Size = new System.Drawing.Size(43, 17);
@@ -574,7 +568,6 @@
 			// radioButtonDebuggerAttachToProcess
 			// 
 			this.radioButtonDebuggerAttachToProcess.AutoSize = true;
-			this.radioButtonDebuggerAttachToProcess.Enabled = false;
 			this.radioButtonDebuggerAttachToProcess.Location = new System.Drawing.Point(128, 19);
 			this.radioButtonDebuggerAttachToProcess.Name = "radioButtonDebuggerAttachToProcess";
 			this.radioButtonDebuggerAttachToProcess.Size = new System.Drawing.Size(109, 17);
@@ -585,7 +578,6 @@
 			// radioButtonDebuggerKernelDebugger
 			// 
 			this.radioButtonDebuggerKernelDebugger.AutoSize = true;
-			this.radioButtonDebuggerKernelDebugger.Enabled = false;
 			this.radioButtonDebuggerKernelDebugger.Location = new System.Drawing.Point(418, 19);
 			this.radioButtonDebuggerKernelDebugger.Name = "radioButtonDebuggerKernelDebugger";
 			this.radioButtonDebuggerKernelDebugger.Size = new System.Drawing.Size(105, 17);
@@ -596,7 +588,6 @@
 			// radioButtonDebuggerAttachToService
 			// 
 			this.radioButtonDebuggerAttachToService.AutoSize = true;
-			this.radioButtonDebuggerAttachToService.Enabled = false;
 			this.radioButtonDebuggerAttachToService.Location = new System.Drawing.Point(273, 19);
 			this.radioButtonDebuggerAttachToService.Name = "radioButtonDebuggerAttachToService";
 			this.radioButtonDebuggerAttachToService.Size = new System.Drawing.Size(107, 17);

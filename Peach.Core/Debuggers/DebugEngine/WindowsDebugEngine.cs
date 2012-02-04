@@ -200,6 +200,50 @@ namespace Peach.Core.Debuggers.DebugEngine
 			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
 		}
 
+		public void AttachProcess(int pid)
+		{
+			if (_disposed)
+				throw new ApplicationException("Object already disposed");
+
+			count++;
+
+			dbgClient.AttachProcess(0, (uint)pid, 0);
+
+			try
+			{
+				while (!exitDebugger.WaitOne(0, false) && !handledException.WaitOne(0, false))
+					dbgControl.WaitForEvent(0, 100);
+			}
+			catch
+			{
+				//Debugger.Break();
+			}
+
+			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
+		}
+
+		public void AttachKernel(string connectionString)
+		{
+			if (_disposed)
+				throw new ApplicationException("Object already disposed");
+
+			count++;
+
+			dbgClient.AttachKernel((uint)Const.DEBUG_ATTACH_KERNEL_CONNECTION, ref connectionString);
+
+			try
+			{
+				while (!exitDebugger.WaitOne(0, false) && !handledException.WaitOne(0, false))
+					dbgControl.WaitForEvent(0, 100);
+			}
+			catch
+			{
+				//Debugger.Break();
+			}
+
+			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
+		}
+
 		protected Guid CLSID(object o)
 		{
 			return CLSID(typeof(object));

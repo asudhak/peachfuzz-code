@@ -32,6 +32,8 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.ServiceProcess;
+using System.Management;
 
 using Peach.Core.Dom;
 using Peach.Core.Agent.Monitors;
@@ -131,18 +133,45 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				}
 				else if (processName != null)
 				{
-					// TODO
-					throw new NotImplementedException();
+					int pid = 0;
+					System.Diagnostics.Process proc = null;
+					var procs = System.Diagnostics.Process.GetProcessesByName(processName);
+					if(procs != null && procs.Length > 0)
+						proc = procs[0];
+
+					if (proc == null && int.TryParse(processName, out pid))
+						proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
+
+					if(proc == null)
+						throw new Exception("Unable to locate process by \""+processName+"\".");
+
+					pid = proc.Id;
+
+					proc.Dispose();
+
+					_dbg.AttachProcess(pid);
 				}
 				else if (kernelConnectionString != null)
 				{
-					// TODO
-					throw new NotImplementedException();
+					_dbg.AttachKernel(kernelConnectionString);
 				}
 				else if (service != null)
 				{
-					// TODO
-					throw new NotImplementedException();
+					int processId = 0;
+
+					using (ServiceController srv = new ServiceController(service))
+					{
+						if (srv.Status == ServiceControllerStatus.Stopped)
+							srv.Start();
+
+						using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
+						{
+							object o = manageService.GetPropertyValue("ProcessId");
+							processId = (int)((UInt32)o);
+						}
+					}
+
+					_dbg.AttachProcess(processId);
 				}
 
 				if (_dbg.handledException.WaitOne(0, false))

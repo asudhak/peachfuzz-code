@@ -35,6 +35,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
 using System.IO;
+using System.ServiceProcess;
+
 using Peach;
 using Peach.Core;
 using Peach.Core.Loggers;
@@ -75,6 +77,12 @@ namespace PeachFuzzBang
 						}
 					}
 				}
+			}
+
+			comboBoxAttachToServiceServices.Items.Clear();
+			foreach (ServiceController srv in ServiceController.GetServices())
+			{
+				comboBoxAttachToServiceServices.Items.Add(srv.ServiceName);
 			}
 
 			tabControl.TabPages.Remove(tabPageGUI);
@@ -186,9 +194,22 @@ namespace PeachFuzzBang
 
 			Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
 			monitor.cls = "WindowsDebugEngine";
-			monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
 			monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 			monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
+
+			if(radioButtonDebuggerStartProcess.Checked)
+				monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
+			else if (radioButtonDebuggerAttachToProcess.Checked)
+			{
+				if (radioButtonAttachToProcessPID.Checked)
+					monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessPID.Text);
+				else if (radioButtonAttachToProcessProcessName.Checked)
+					monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessProcessName.Text);
+			}
+			else if (radioButtonDebuggerAttachToService.Checked)
+				monitor.parameters["Service"] = new Variant(comboBoxAttachToServiceServices.Text);
+			else if (radioButtonDebuggerKernelDebugger.Checked)
+				monitor.parameters["KernelConnectionString"] = new Variant(textBoxKernelConnectionString.Text);
 
 			agent.monitors.Add(monitor);
 			dom.agents.Add(agent.name, agent);
