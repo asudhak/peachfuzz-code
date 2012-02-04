@@ -88,6 +88,7 @@ namespace Peach.Core.IO
 		{
 			stream = new MemoryStream();
 			stream.Write(buff, 0, buff.Length);
+			stream.Position = 0;
 			len = stream.Length * 8;
 			LittleEndian();
 		}

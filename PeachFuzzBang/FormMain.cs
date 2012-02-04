@@ -111,14 +111,38 @@ namespace PeachFuzzBang
 
 			Dom dom = new Dom();
 
-			byte [] buff = File.ReadAllBytes(textBoxTemplateFiles.Text);
-
 			// DataModel
 			DataModel dataModel = new DataModel("TheDataModel");
-			Peach.Core.Dom.Blob blob = new Peach.Core.Dom.Blob(new Variant(buff));
-			dataModel.Add(blob);
+			Peach.Core.Dom.Blob blob = null;
 
+			Data fileData = new Data();
+			if (Directory.Exists(textBoxTemplateFiles.Text))
+			{
+				List<string> files = new List<string>();
+				foreach (string fileName in Directory.GetFiles(textBoxTemplateFiles.Text))
+					files.Add(fileName);
+
+				fileData.DataType = DataType.Files;
+				fileData.Files = files;
+
+				blob = new Peach.Core.Dom.Blob(new Variant(File.ReadAllBytes(files[0])));
+			}
+			else if (File.Exists(textBoxTemplateFiles.Text))
+			{
+				fileData.DataType = DataType.File;
+				fileData.FileName = textBoxTemplateFiles.Text;
+
+				blob = new Peach.Core.Dom.Blob(new Variant(File.ReadAllBytes(fileData.FileName)));
+			}
+			else
+			{
+				MessageBox.Show("Error, Unable to locate file/folder called \"" + textBoxTemplateFiles.Text + "\".");
+				return;
+			}
+
+			dataModel.Add(blob);
 			dom.dataModels.Add(dataModel.name, dataModel);
+
 
 			// Publisher
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
@@ -135,6 +159,8 @@ namespace PeachFuzzBang
 			Peach.Core.Dom.Action actionOutput = new Peach.Core.Dom.Action();
 			actionOutput.type = ActionType.Output;
 			actionOutput.dataModel = dataModel;
+			actionOutput.dataSet = new Peach.Core.Dom.DataSet();
+			actionOutput.dataSet.Datas.Add(fileData);
 
 			Peach.Core.Dom.Action actionClose = new Peach.Core.Dom.Action();
 			actionClose.type = ActionType.Close;

@@ -265,9 +265,6 @@ namespace Peach.Core.Agent.Monitors
 				fault = true;
 			}
 
-			if (_startOnCall != null)
-				_FinishDebugger();
-
 			return fault;
         }
 
@@ -303,8 +300,6 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_FinishDebugger();
 
-				_debuggerProcess.Kill();
-				_debuggerProcess = null;
 				_debuggerProcessUsage = 0;
 			}
 
@@ -325,7 +320,10 @@ namespace Peach.Core.Agent.Monitors
 
 			_debuggerProcessUsage++;
 
-			for (int cnt = 0; cnt < 100; cnt++)
+			// Try and create instance over IPC.  We will continue trying for 1 minute.
+
+			DateTime startTimer = DateTime.Now;
+			while (true)
 			{
 				try
 				{
@@ -348,8 +346,11 @@ namespace Peach.Core.Agent.Monitors
 				}
 				catch
 				{
-					if (cnt == 99)
+					if((DateTime.Now - startTimer).Minutes >= 1)
+					{
+						_debuggerProcess.Kill();
 						throw;
+					}
 				}
 			}
 

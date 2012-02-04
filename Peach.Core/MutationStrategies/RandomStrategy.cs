@@ -153,7 +153,9 @@ namespace Peach.Core.MutationStrategies
 
 		void Action_Starting(Core.Dom.Action action)
 		{
-			if (action.dataSet != null && action.dataSet.Datas.Count > 1 && iterationCount % switchCount == 0)
+			if (action.dataSet != null && 
+				(action.dataSet.Datas.Count > 1 || action.dataSet.Datas[0].Files.Count>1) && 
+				iterationCount % switchCount == 0)
 			{
 				// Time to switch the data!
 				// We will try 5 times to load some data then error out.

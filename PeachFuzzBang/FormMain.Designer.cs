@@ -336,7 +336,7 @@
 			this.textBoxFuzzedFile.Name = "textBoxFuzzedFile";
 			this.textBoxFuzzedFile.Size = new System.Drawing.Size(293, 20);
 			this.textBoxFuzzedFile.TabIndex = 4;
-			this.textBoxFuzzedFile.Text = "fuzzed.txt";
+			this.textBoxFuzzedFile.Text = "fuzzed.png";
 			// 
 			// label2
 			// 
@@ -353,7 +353,7 @@
 			this.textBoxTemplateFiles.Name = "textBoxTemplateFiles";
 			this.textBoxTemplateFiles.Size = new System.Drawing.Size(293, 20);
 			this.textBoxTemplateFiles.TabIndex = 1;
-			this.textBoxTemplateFiles.Text = "sample.txt";
+			this.textBoxTemplateFiles.Text = "samples";
 			// 
 			// label1
 			// 
@@ -437,7 +437,7 @@
 			this.textBoxDebuggerCommandLine.Name = "textBoxDebuggerCommandLine";
 			this.textBoxDebuggerCommandLine.Size = new System.Drawing.Size(356, 20);
 			this.textBoxDebuggerCommandLine.TabIndex = 1;
-			this.textBoxDebuggerCommandLine.Text = "notepad.exe fuzzed.txt";
+			this.textBoxDebuggerCommandLine.Text = "mspaint.exe fuzzed.png";
 			// 
 			// label14
 			// 

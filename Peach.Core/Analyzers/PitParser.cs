@@ -1921,11 +1921,17 @@ namespace Peach.Core.Analyzers
 			// Still old way todo things.
 			if (action.dataModel != null && action.dataSet != null &&
 				action.dataSet.Datas.Count > 0 &&
-				action.dataSet.Datas[0].FileName != null)
+				(action.dataSet.Datas[0].FileName != null || action.dataSet.Datas[0].Files.Count>0))
 			{
+				string fileName = null;
+				if(action.dataSet.Datas[0].FileName != null)
+					fileName = action.dataSet.Datas[0].FileName;
+				else
+					fileName = action.dataSet.Datas[0].Files[0];
+
 				Cracker.DataCracker cracker = new Cracker.DataCracker();
 				cracker.CrackData(action.dataModel,
-					new BitStream(File.OpenRead(action.dataSet.Datas[0].FileName)));
+					new BitStream(File.OpenRead(fileName)));
 
 				// update origionalDataModel
 				if (action.origionalDataModel != null)
