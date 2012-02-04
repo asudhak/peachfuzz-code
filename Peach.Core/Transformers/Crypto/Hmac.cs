@@ -11,6 +11,7 @@ namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("Hmac", "HMAC as described in RFC 2104.")]
     [TransformerAttribute("crypto.Hmac", "HMAC as described in RFC 2104.")]
+    [Serializable]
     public class Hmac : Transformer
     {
         public Hmac(Dictionary<string, Variant> args) : base(args)

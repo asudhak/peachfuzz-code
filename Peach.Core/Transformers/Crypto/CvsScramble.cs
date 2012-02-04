@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("CvsScramble", "CVS pserver password scramble.")]
     [TransformerAttribute("crypto.CvsScramble", "CVS pserver password scramble.")]
+    [Serializable]
     public class CvsScramble : Transformer
     {
         byte[] shifts = new byte[] 
@@ -38,10 +39,10 @@ namespace Peach.Core.Transformers.Crypto
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            byte[] ret = new byte[data.LengthBytes + 1];
+            byte[] ret = new byte[data.Value.Length + 1];
             ret[0] = data.Value[0];
 
-            for (int i = 0; i < data.LengthBytes; ++i)
+            for (int i = 0; i < data.Value.Length; ++i)
                 ret[i + 1] = shifts[(int)(data.Value[i])];
                 
             return new BitStream(ret);

@@ -8,6 +8,7 @@ namespace Peach.Core.Transformers.Encode
 {
     [Transformer("HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
     [Transformer("encode.HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
+    [Serializable]
     public class HtmlEncode : Transformer
     {
         public HtmlEncode(Dictionary<string, Variant> args) : base(args)

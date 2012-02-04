@@ -36,6 +36,7 @@ namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("Utf8", "Encode on output a string as UTF-8.")]
     [TransformerAttribute("encode.Utf8", "Encode on output a string as UTF-8.")]
+    [Serializable]
     public class Utf8 : Transformer
     {
         public Utf8(Dictionary<string,Variant>  args) : base(args)

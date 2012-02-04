@@ -13,6 +13,8 @@ namespace Peach.Core.Test.Transformers.Crypto
     [TestFixture]
     class ApacheMd5CryptTests
     {
+        byte[] testValue = null;
+
         [Test]
         public void Test1()
         {
@@ -21,8 +23,10 @@ namespace Peach.Core.Test.Transformers.Crypto
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\" endian=\"little\"/>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"ApacheMd5Crypt\"/>" +
+                "           <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -57,13 +61,17 @@ namespace Peach.Core.Test.Transformers.Crypto
             e.startFuzzing(dom, config);
 
             // verify values
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
+            byte[] precalcResult = new byte[] { 0x24, 0x61, 0x70, 0x72, 0x31, 0x24, 0x48, 0x65, 0x24, 0x6B, 0x4C, 0x64, 0x4C, 0x49, 0x72, 0x69, 0x44, 0x52, 0x78, 0x7A, 0x34, 0x6F, 0x30, 0x52, 0x39, 0x37, 0x47, 0x58, 0x78, 0x38, 0x30 };
+            Assert.AreEqual(testValue, precalcResult);
 
             // reset
+            testValue = null;
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-
+            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

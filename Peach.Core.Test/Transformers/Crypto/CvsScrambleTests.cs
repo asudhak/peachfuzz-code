@@ -13,6 +13,8 @@ namespace Peach.Core.Test.Transformers.Crypto
     [TestFixture]
     class CvsScrambleTests
     {
+        byte[] testValue = null;
+
         [Test]
         public void Test1()
         {
@@ -21,8 +23,10 @@ namespace Peach.Core.Test.Transformers.Crypto
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\" endian=\"little\"/>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"CvsScramble\"/>" +
+                "           <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -57,13 +61,17 @@ namespace Peach.Core.Test.Transformers.Crypto
             e.startFuzzing(dom, config);
 
             // verify values
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
+            byte[] precalcResult = new byte[] { 0x48, 0x26, 0x64, 0x27, 0x27, 0x30 };
+            Assert.AreEqual(testValue, precalcResult);
 
             // reset
+            testValue = null;
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-
+            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

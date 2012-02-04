@@ -36,6 +36,7 @@ namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("UrlEncode", "Encode on output as a URL without pluses.")]
     [TransformerAttribute("encode.UrlEncode", "Encode on output as a URL without pluses.")]
+    [Serializable]
     public class UrlEncode : Transformer
     {
         public UrlEncode(Dictionary<string,Variant>  args) : base(args)

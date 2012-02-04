@@ -11,6 +11,7 @@ namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("Md5", "MD5 transform (hex & binary).")]
     [TransformerAttribute("crypto.Md5", "MD5 transform (hex & binary).")]
+    [Serializable]
     public class Md5 : Transformer
     {
         public Md5(Dictionary<string, Variant> args) : base(args)

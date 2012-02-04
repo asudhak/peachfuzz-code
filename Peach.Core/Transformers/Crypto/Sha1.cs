@@ -11,6 +11,7 @@ namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("Sha1", "SHA-1 transform (hex & binary).")]
     [TransformerAttribute("crypto.Sha1", "SHA-1 transform (hex & binary).")]
+    [Serializable]
     public class Sha1 : Transformer
     {
         public Sha1(Dictionary<string, Variant> args) : base(args)

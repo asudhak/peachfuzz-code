@@ -36,6 +36,7 @@ namespace Peach.Core.Transformers.Encode
 {
     [TransformerAttribute("SidStringToBytes", "Encode on output from a string reprisentation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
     [TransformerAttribute("encode.SidStringToBytes", "Encode on output from a string reprisentation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
+    [Serializable]
     public class SidStringToBytes : Transformer
     {
         public SidStringToBytes(Dictionary<string,Variant> args) : base(args)

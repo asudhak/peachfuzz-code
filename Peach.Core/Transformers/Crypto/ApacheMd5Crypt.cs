@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("ApacheMd5Crypt", "Apache style crypt.")]
     [TransformerAttribute("crypto.ApacheMd5Crypt", "Apache style crypt.")]
+    [Serializable]
     public class ApacheMd5Crypt : Transformer
     {
         public ApacheMd5Crypt(Dictionary<string, Variant> args) : base(args)
@@ -18,7 +19,7 @@ namespace Peach.Core.Transformers.Crypto
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsString = Convert.ToBase64String(data.Value);
+            string dataAsString = Encoding.ASCII.GetString(data.Value);
             string salt = dataAsString.Substring(0, 2);
             string result = UnixMd5CryptTool.crypt(dataAsString, salt, "$apr1$");
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(result));

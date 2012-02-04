@@ -10,6 +10,7 @@ namespace Peach.Core.Transformers.Crypto
 {
     [TransformerAttribute("Crypt", "UNIX style crypt.")]
     [TransformerAttribute("crypto.Crypt", "UNIX style crypt.")]
+    [Serializable]
     public class Crypt : Transformer
     {
         public Crypt(Dictionary<string,Variant> args) : base(args)
@@ -18,7 +19,7 @@ namespace Peach.Core.Transformers.Crypto
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsString = Convert.ToBase64String(data.Value);
+            string dataAsString = Encoding.ASCII.GetString(data.Value);
             string salt = dataAsString.Substring(0, 2);
             string result = UnixCryptTool.Crypt(salt, dataAsString);
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(result));

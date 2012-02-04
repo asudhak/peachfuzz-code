@@ -8,6 +8,7 @@ namespace Peach.Core.Transformers.Encode
 {
     [Transformer("HtmlDecode", "Decode on output from HTML encoding.")]
     [Transformer("encode.HtmlDecode", "Decode on output from HTML encoding.")]
+    [Serializable]
     public class HtmlDecode : Transformer
     {
         public HtmlDecode(Dictionary<string, Variant> args) : base(args)

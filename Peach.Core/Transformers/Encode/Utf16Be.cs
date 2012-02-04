@@ -9,6 +9,7 @@ namespace Peach.Core.Transformers.Encode
     //TODO: Validate claims same for C#.
     [TransformerAttribute("Utf16Be", "Encode on output a string as UTF-16BE. Supports surrogate pair encoding of values larger then 0xFFFF.")]
     [TransformerAttribute("encode.Utf16Be", "Encode on output a string as UTF-16BE. Supports surrogate pair encoding of values larger then 0xFFFF.")]
+    [Serializable]
     public class Utf16Be : Transformer
     {
         public Utf16Be(Dictionary<string, Variant> args) : base(args)
