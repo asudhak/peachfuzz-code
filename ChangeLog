@@ -1,3 +1,7 @@
+NEW IN WAF 1.7.0
+----------------
+* Do not load the compat15 tool by default
+
 NEW IN WAF 1.6.11
 -----------------
 * Enable custom variables for the boost detection #1089
