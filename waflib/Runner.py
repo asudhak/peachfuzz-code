@@ -234,20 +234,9 @@ class Parallel(object):
 		:param tsk: task
 		:type tsk: :py:attr:`waflib.Task.TaskBase`
 		"""
-		tsk.err_msg = Utils.ex_stack()
-		if not self.stop and self.bld.keep:
-			tsk.hasrun = Task.SKIPPED
-			if self.bld.keep == 1:
-				# if -k stop at the first exception, if -kk try to go as far as possible
-				if Logs.verbose > 1 or not self.error:
-					self.error.append(tsk)
-				self.stop = True
-			else:
-				if Logs.verbose > 1:
-					self.error.append(tsk)
-		else:
-			tsk.hasrun = Task.EXCEPTION
-			self.error.append(tsk)
+		if not self.bld.keep:
+			self.stop = True
+		self.error.append(tsk)
 
 	def add_task(self, tsk):
 		"""
@@ -324,6 +313,20 @@ class Parallel(object):
 				st = tsk.runnable_status()
 			except Exception:
 				self.processed += 1
+				# TODO waf 1.7 this piece of code should go in the error_handler
+				tsk.err_msg = Utils.ex_stack()
+				if not self.stop and self.bld.keep:
+					tsk.hasrun = Task.SKIPPED
+					if self.bld.keep == 1:
+						# if -k stop at the first exception, if -kk try to go as far as possible
+						if Logs.verbose > 1 or not self.error:
+							self.error.append(tsk)
+						self.stop = True
+					else:
+						if Logs.verbose > 1:
+							self.error.append(tsk)
+					continue
+				tsk.hasrun = Task.EXCEPTION
 				self.error_handler(tsk)
 				continue
 
