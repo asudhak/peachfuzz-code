@@ -136,12 +136,7 @@ class fc(Task.Task):
 				for t in outs[k]:
 					tmp.extend(t.outputs)
 				a.dep_nodes.extend(tmp)
-
-				# old python versions
-				try:
-					a.dep_nodes.sort(key=lambda x: x.abspath())
-				except:
-					a.dep_nodes.sort(lambda x, y: cmp(x.abspath(), y.abspath()))
+				a.dep_nodes.sort(key=lambda x: x.abspath())
 
 		# the task objects have changed: clear the signature cache
 		for tsk in lst:

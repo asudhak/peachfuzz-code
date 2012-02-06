@@ -304,11 +304,7 @@ def gather_msvc_detected_versions():
 	def fun(tup):
 		return tup[0]
 
-	try:
-		detected_versions.sort(key = fun)
-	except:
-		# old python sort
-		detected_versions.sort(lambda x,y: cmp(x[0], y[0]))
+	detected_versions.sort(key = fun)
 	return detected_versions
 
 @conf
