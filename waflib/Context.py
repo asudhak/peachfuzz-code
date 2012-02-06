@@ -308,8 +308,8 @@ class Context(ctx):
 				ret = tsk.generator.bld.exec_command('touch foo.txt')
 				return ret
 
-		Do not confuse this method with :py:meth:`waflib.Context.Context.cmd_and_log` which is used to
-		return the standard output/error values.
+		This method captures the standard/error outputs (Issue 1101), but it does not return the values
+		unlike :py:meth:`waflib.Context.Context.cmd_and_log`
 
 		:param cmd: command argument for subprocess.Popen
 		:param kw: keyword arguments for subprocess.Popen
@@ -319,25 +319,31 @@ class Context(ctx):
 		Logs.debug('runner: %r' % cmd)
 		Logs.debug('runner_env: kw=%s' % kw)
 
+		if self.logger:
+			self.logger.info(cmd)
+
+		kw['stdout'] = kw['stderr'] = subprocess.PIPE
+
 		try:
+			p = subprocess.Popen(cmd, **kw)
+			(out, err) = p.communicate()
+		except Exception as e:
+			raise Errors.WafError('Execution failure: %s' % str(e), ex=e)
+
+		if out:
+			if not isinstance(out, str):
+				out = out.decode(sys.stdout.encoding or 'iso8859-1')
+			sys.stdout.write(out)
 			if self.logger:
-				# warning: may deadlock with a lot of output (subprocess limitation)
+				self.logger.debug('out: %s' % out)
+		if err:
+			if not isinstance(err, str):
+				err = err.decode(sys.stdout.encoding or 'iso8859-1')
+			sys.stderr.write(err)
+			if self.logger:
+				self.logger.error('err: %s' % err)
 
-				self.logger.info(cmd)
-
-				kw['stdout'] = kw['stderr'] = subprocess.PIPE
-				p = subprocess.Popen(cmd, **kw)
-				(out, err) = p.communicate()
-				if out:
-					self.logger.debug('out: %s' % out.decode(sys.stdout.encoding or 'iso8859-1'))
-				if err:
-					self.logger.error('err: %s' % err.decode(sys.stdout.encoding or 'iso8859-1'))
-				return p.returncode
-			else:
-				p = subprocess.Popen(cmd, **kw)
-				return p.wait()
-		except OSError:
-			return -1
+		return p.returncode
 
 	def cmd_and_log(self, cmd, **kw):
 		"""
