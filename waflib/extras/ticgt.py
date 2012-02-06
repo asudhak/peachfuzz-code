@@ -102,8 +102,9 @@ def configure(conf):
 @conf
 def ti_set_debug(cfg, debug=1):
 	if debug:
-		cfg.env.CFLAGS += "-d_DEBUG -dDEBUG".split()
+		cfg.env.CFLAGS += "-d_DEBUG -dDEBUG -dDDSP_DEBUG".split()
 		# TODO for each TI CFLAG/INCLUDES/LINKFLAGS/LIBPATH replace RELEASE by DEBUG
+		# -g --no_compress
 
 @conf
 def ti_dsplink_set_platform_flags(cfg, splat, dsp, dspbios_ver, board):
