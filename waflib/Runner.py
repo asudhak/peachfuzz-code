@@ -245,9 +245,9 @@ class Parallel(object):
 			else:
 				if Logs.verbose > 1:
 					self.error.append(tsk)
-			continue
-		tsk.hasrun = Task.EXCEPTION
-		self.error.append(tsk)
+		else:
+			tsk.hasrun = Task.EXCEPTION
+			self.error.append(tsk)
 
 	def add_task(self, tsk):
 		"""
