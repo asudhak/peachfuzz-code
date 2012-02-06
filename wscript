@@ -210,10 +210,11 @@ def sfilter(path):
 
 	f.close()
 	if path.endswith('.py') :
-		cnt = process_decorators(cnt)
-
-		if cnt.find('set(') > -1:
-			cnt = 'import sys\nif sys.hexversion < 0x020400f0: from sets import Set as set\n' + cnt
+		# WARNING: since we now require python 2.4, we do not process the decorators anymore
+		# if you need such a thing, uncomment the code below:
+		#cnt = process_decorators(cnt)
+		#if cnt.find('set(') > -1:
+		#	cnt = 'import sys\nif sys.hexversion < 0x020400f0: from sets import Set as set\n' + cnt
 		cnt = '#! /usr/bin/env python\n# encoding: utf-8\n# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file\n\n' + cnt
 
 	return (io.BytesIO(cnt.encode('utf-8')), len(cnt), cnt)
