@@ -1014,11 +1014,11 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 		p = Utils.subprocess.Popen(cmd, stdin=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE, env=env)
 		p.stdin.write('\n'.encode())
 		out = p.communicate()[0]
-	except:
+	except Exception:
 		conf.fatal('Could not determine the compiler version %r' % cmd)
 
 	if not isinstance(out, str):
-		out = out.decode(sys.stdout.encoding)
+		out = out.decode(sys.stdout.encoding or 'iso8859-1')
 
 	if gcc:
 		if out.find('__INTEL_COMPILER') >= 0:
@@ -1031,7 +1031,7 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 
 	k = {}
 	if icc or gcc:
-		out = out.split('\n')
+		out = out.splitlines()
 		for line in out:
 			lst = shlex.split(line)
 			if len(lst)>2:

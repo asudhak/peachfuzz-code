@@ -336,15 +336,14 @@ def getoutput(conf, cmd, stdin=False):
 		p = Utils.subprocess.Popen(cmd, stdin=stdin, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE, env=env)
 		if stdin:
 			p.stdin.write('\n'.encode())
-		stdout, stderr = p.communicate()
-	except:
+		out, err = p.communicate()
+	except Exception:
 		conf.fatal('could not determine the compiler version %r' % cmd)
-	else:
-		if not isinstance(stdout, str):
-			stdout = stdout.decode(sys.stdout.encoding)
-		if not isinstance(stderr, str):
-			stderr = stderr.decode(sys.stdout.encoding)
-		return stdout, stderr
+	if not isinstance(out, str):
+		out = out.decode(sys.stdout.encoding or 'iso8859-1')
+	if not isinstance(err, str):
+		err = err.decode(sys.stdout.encoding or 'iso8859-1')
+	return (out, err)
 
 # ------------------------------------------------------------------------
 
