@@ -11,12 +11,9 @@ through Python versions 2.3 to 3.X and across different platforms (win32, linux,
 
 import os, sys, errno, traceback, inspect, re, shutil, datetime, gc
 try:
+	from waflib.extras import subprocess
+except ImportError:
 	import subprocess
-except:
-	try:
-		import waflib.extras.subprocess as subprocess
-	except:
-		print("The subprocess module is missing (python2.3?):\n try calling 'waf update --files=subprocess'\n or add a copy of subprocess.py to the python libraries")
 
 try:
 	from collections import deque
