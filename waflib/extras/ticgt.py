@@ -120,8 +120,9 @@ def ti_dsplink_set_platform_flags(cfg, splat, dsp, dspbios_ver, board):
 	:param board: board name (eg. OMAPL138GEM)
 
 	"""
+	d1 = opj(cfg.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'inc', 'DspBios', dspbios_ver)
 	d = opj(cfg.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'inc', 'DspBios', dspbios_ver, board)
-	cfg.env.TCONF_INCLUDES += [d]
+	cfg.env.TCONF_INCLUDES += [d1, d]
 	cfg.env.INCLUDES_DSPLINK += [
 	 opj(cfg.env.TI_DSPLINK_DIR, 'dsplink', 'dsp', 'inc', dsp),
 	 d,
