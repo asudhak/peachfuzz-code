@@ -454,6 +454,7 @@ namespace Peach.Core
 			finally
 			{
 				context.agentManager.SessionFinished();
+				context.agentManager.StopAllMonitors();
 				OnTestFinished(context);
 
 				context.test = null;

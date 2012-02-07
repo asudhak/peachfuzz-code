@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -54,6 +55,9 @@ namespace PeachFuzzBang
 		public int FaultCount = 0;
 
 		Thread thread = null;
+
+		Peach.Core.Dom.Dom userSelectedDom = null;
+		DataModel userSelectedDataModel = null;
 
 		public FormMain()
 		{
@@ -85,6 +89,12 @@ namespace PeachFuzzBang
 				comboBoxAttachToServiceServices.Items.Add(srv.ServiceName);
 			}
 
+			textBoxAttachToProcessProcessName.Items.Clear();
+			foreach (Process proc in Process.GetProcesses())
+			{
+				textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
+			}
+
 			tabControl.TabPages.Remove(tabPageGUI);
 			tabControl.TabPages.Remove(tabPageFuzzing);
 			//tabControl.TabPages.Remove(tabPageOutput);
@@ -99,6 +109,15 @@ namespace PeachFuzzBang
 				textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x86)";
 			if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows"))
 				textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows";
+
+			comboBoxPitDataModel.SelectedIndexChanged += new EventHandler(comboBoxPitDataModel_SelectedIndexChanged);
+
+			richTextBoxIntroduction.LoadFile("Introduction.rtf");
+		}
+
+		void comboBoxPitDataModel_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			userSelectedDataModel = userSelectedDom.dataModels[comboBoxPitDataModel.Text];
 		}
 
 		private void buttonStartFuzzing_Click(object sender, EventArgs e)
@@ -118,11 +137,9 @@ namespace PeachFuzzBang
 			textBoxOutput.Text = "";
 
 			Dom dom = new Dom();
+			DataModel dataModel = null;
 
-			// DataModel
-			DataModel dataModel = new DataModel("TheDataModel");
-			Peach.Core.Dom.Blob blob = null;
-
+			// Data Set
 			Data fileData = new Data();
 			if (Directory.Exists(textBoxTemplateFiles.Text))
 			{
@@ -132,15 +149,11 @@ namespace PeachFuzzBang
 
 				fileData.DataType = DataType.Files;
 				fileData.Files = files;
-
-				blob = new Peach.Core.Dom.Blob(new Variant(File.ReadAllBytes(files[0])));
 			}
 			else if (File.Exists(textBoxTemplateFiles.Text))
 			{
 				fileData.DataType = DataType.File;
 				fileData.FileName = textBoxTemplateFiles.Text;
-
-				blob = new Peach.Core.Dom.Blob(new Variant(File.ReadAllBytes(fileData.FileName)));
 			}
 			else
 			{
@@ -148,9 +161,21 @@ namespace PeachFuzzBang
 				return;
 			}
 
-			dataModel.Add(blob);
-			dom.dataModels.Add(dataModel.name, dataModel);
+			// DataModel
+			if (userSelectedDataModel != null)
+			{
+				dataModel = ObjectCopier.Clone<DataModel>(dataModel);
+				dataModel.dom = dom;
+				dataModel.name = "TheDataModel";
 
+				dom.dataModels.Add(dataModel.name, dataModel);
+			}
+			else
+			{
+				dataModel = new DataModel("TheDataModel");
+				dataModel.Add(new Blob());
+				dom.dataModels.Add(dataModel.name, dataModel);
+			}
 
 			// Publisher
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
@@ -258,9 +283,12 @@ namespace PeachFuzzBang
 				try
 				{
 					int iter = int.Parse(textBoxIterations.Text);
-					config.range = true;
-					config.rangeStart = 0;
-					config.rangeStop = (uint)iter;
+					if (iter > 0)
+					{
+						config.range = true;
+						config.rangeStart = 0;
+						config.rangeStop = (uint)iter;
+					}
 				}
 				catch
 				{
@@ -295,6 +323,8 @@ namespace PeachFuzzBang
 
 			string fileName = browse.FileName;
 			textBoxDebuggerPath.Text = fileName.Substring(0, fileName.LastIndexOf("\\"));
+
+			buttonPitFileNameLoad_Click(null, null);
 		}
 
 		private void buttonPitFileNameLoad_Click(object sender, EventArgs e)
@@ -305,8 +335,35 @@ namespace PeachFuzzBang
 				return;
 			}
 
-			label4.Enabled = true;
-			comboBoxPitDataModel.Enabled = true;
+			var currentCursor = this.Cursor;
+			this.Cursor = Cursors.WaitCursor;
+
+			try
+			{
+
+				var pitParser = new Peach.Core.Analyzers.PitParser();
+				userSelectedDom = pitParser.asParser(new Dictionary<string, string>(), textBoxPitFileName.Text);
+
+				comboBoxPitDataModel.Items.Clear();
+				foreach (var model in userSelectedDom.dataModels.Keys)
+				{
+					comboBoxPitDataModel.Items.Add(model);
+				}
+
+				if (userSelectedDom.dataModels.Count > 0)
+					comboBoxPitDataModel.SelectedIndex = 0;
+
+				label4.Enabled = true;
+				comboBoxPitDataModel.Enabled = true;
+			}
+			catch (PeachException ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+			finally
+			{
+				this.Cursor = currentCursor;
+			}
 		}
 
 		private void buttonPitFileNameBrowse_Click(object sender, EventArgs e)

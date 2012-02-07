@@ -224,6 +224,7 @@ namespace Peach.Core.Agent.Monitors
         public override void StopMonitor()
         {
 			_StopDebugger();
+			_FinishDebugger();
 			_debugger = null;
         }
 
@@ -238,7 +239,8 @@ namespace Peach.Core.Agent.Monitors
         public override void SessionFinished()
         {
 			_StopDebugger();
-        }
+			_FinishDebugger();
+		}
 
         public override void IterationStarting(int iterationCount, bool isReproduction)
         {

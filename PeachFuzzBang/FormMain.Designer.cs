@@ -67,7 +67,6 @@
 			this.comboBoxAttachToServiceServices = new System.Windows.Forms.ComboBox();
 			this.label5 = new System.Windows.Forms.Label();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.textBoxAttachToProcessProcessName = new System.Windows.Forms.TextBox();
 			this.textBoxAttachToProcessPID = new System.Windows.Forms.TextBox();
 			this.radioButtonAttachToProcessProcessName = new System.Windows.Forms.RadioButton();
 			this.radioButtonAttachToProcessPID = new System.Windows.Forms.RadioButton();
@@ -102,6 +101,10 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
+			this.textBoxAttachToProcessProcessName = new System.Windows.Forms.ComboBox();
+			this.label20 = new System.Windows.Forms.Label();
+			this.tabPageIntroduction = new System.Windows.Forms.TabPage();
+			this.richTextBoxIntroduction = new System.Windows.Forms.RichTextBox();
 			this.tabControl.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
 			this.groupBox6.SuspendLayout();
@@ -117,10 +120,12 @@
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.panel1.SuspendLayout();
+			this.tabPageIntroduction.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl
 			// 
+			this.tabControl.Controls.Add(this.tabPageIntroduction);
 			this.tabControl.Controls.Add(this.tabPageGeneral);
 			this.tabControl.Controls.Add(this.tabPageDebugger);
 			this.tabControl.Controls.Add(this.tabPageGUI);
@@ -136,6 +141,7 @@
 			// 
 			// tabPageGeneral
 			// 
+			this.tabPageGeneral.Controls.Add(this.label20);
 			this.tabPageGeneral.Controls.Add(this.buttonLogPathBrowse);
 			this.tabPageGeneral.Controls.Add(this.textBoxLogPath);
 			this.tabPageGeneral.Controls.Add(this.label17);
@@ -194,7 +200,6 @@
 			this.groupBox6.Controls.Add(this.buttonPitFileNameBrowse);
 			this.groupBox6.Controls.Add(this.label3);
 			this.groupBox6.Controls.Add(this.textBoxPitFileName);
-			this.groupBox6.Enabled = false;
 			this.groupBox6.Location = new System.Drawing.Point(8, 195);
 			this.groupBox6.Name = "groupBox6";
 			this.groupBox6.Size = new System.Drawing.Size(529, 178);
@@ -216,7 +221,6 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Enabled = false;
 			this.label4.Location = new System.Drawing.Point(36, 137);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(65, 13);
@@ -225,7 +229,6 @@
 			// 
 			// buttonPitFileNameLoad
 			// 
-			this.buttonPitFileNameLoad.Enabled = false;
 			this.buttonPitFileNameLoad.Location = new System.Drawing.Point(433, 104);
 			this.buttonPitFileNameLoad.Name = "buttonPitFileNameLoad";
 			this.buttonPitFileNameLoad.Size = new System.Drawing.Size(75, 23);
@@ -236,16 +239,14 @@
 			// 
 			// comboBoxPitDataModel
 			// 
-			this.comboBoxPitDataModel.Enabled = false;
 			this.comboBoxPitDataModel.FormattingEnabled = true;
 			this.comboBoxPitDataModel.Location = new System.Drawing.Point(107, 134);
 			this.comboBoxPitDataModel.Name = "comboBoxPitDataModel";
-			this.comboBoxPitDataModel.Size = new System.Drawing.Size(293, 21);
+			this.comboBoxPitDataModel.Size = new System.Drawing.Size(239, 21);
 			this.comboBoxPitDataModel.TabIndex = 17;
 			// 
 			// buttonPitFileNameBrowse
 			// 
-			this.buttonPitFileNameBrowse.Enabled = false;
 			this.buttonPitFileNameBrowse.Location = new System.Drawing.Point(352, 105);
 			this.buttonPitFileNameBrowse.Name = "buttonPitFileNameBrowse";
 			this.buttonPitFileNameBrowse.Size = new System.Drawing.Size(75, 23);
@@ -257,7 +258,6 @@
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Enabled = false;
 			this.label3.Location = new System.Drawing.Point(60, 110);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(41, 13);
@@ -266,7 +266,6 @@
 			// 
 			// textBoxPitFileName
 			// 
-			this.textBoxPitFileName.Enabled = false;
 			this.textBoxPitFileName.Location = new System.Drawing.Point(107, 107);
 			this.textBoxPitFileName.Name = "textBoxPitFileName";
 			this.textBoxPitFileName.Size = new System.Drawing.Size(239, 20);
@@ -461,7 +460,7 @@
 			// 
 			// textBoxKernelConnectionString
 			// 
-			this.textBoxKernelConnectionString.Location = new System.Drawing.Point(141, 28);
+			this.textBoxKernelConnectionString.Location = new System.Drawing.Point(110, 28);
 			this.textBoxKernelConnectionString.Name = "textBoxKernelConnectionString";
 			this.textBoxKernelConnectionString.Size = new System.Drawing.Size(384, 20);
 			this.textBoxKernelConnectionString.TabIndex = 1;
@@ -471,9 +470,9 @@
 			this.label6.AutoSize = true;
 			this.label6.Location = new System.Drawing.Point(8, 31);
 			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(127, 13);
+			this.label6.Size = new System.Drawing.Size(94, 13);
 			this.label6.TabIndex = 0;
-			this.label6.Text = "Kernel Connection String:";
+			this.label6.Text = "Connection String:";
 			// 
 			// groupBox3
 			// 
@@ -489,15 +488,15 @@
 			// comboBoxAttachToServiceServices
 			// 
 			this.comboBoxAttachToServiceServices.FormattingEnabled = true;
-			this.comboBoxAttachToServiceServices.Location = new System.Drawing.Point(58, 26);
+			this.comboBoxAttachToServiceServices.Location = new System.Drawing.Point(110, 26);
 			this.comboBoxAttachToServiceServices.Name = "comboBoxAttachToServiceServices";
-			this.comboBoxAttachToServiceServices.Size = new System.Drawing.Size(187, 21);
+			this.comboBoxAttachToServiceServices.Size = new System.Drawing.Size(219, 21);
 			this.comboBoxAttachToServiceServices.TabIndex = 1;
 			// 
 			// label5
 			// 
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(6, 29);
+			this.label5.Location = new System.Drawing.Point(56, 29);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(46, 13);
 			this.label5.TabIndex = 0;
@@ -515,13 +514,6 @@
 			this.groupBox2.TabIndex = 1;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "Attach to Process";
-			// 
-			// textBoxAttachToProcessProcessName
-			// 
-			this.textBoxAttachToProcessProcessName.Location = new System.Drawing.Point(110, 44);
-			this.textBoxAttachToProcessProcessName.Name = "textBoxAttachToProcessProcessName";
-			this.textBoxAttachToProcessProcessName.Size = new System.Drawing.Size(219, 20);
-			this.textBoxAttachToProcessProcessName.TabIndex = 3;
 			// 
 			// textBoxAttachToProcessPID
 			// 
@@ -856,6 +848,42 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
+			// textBoxAttachToProcessProcessName
+			// 
+			this.textBoxAttachToProcessProcessName.FormattingEnabled = true;
+			this.textBoxAttachToProcessProcessName.Location = new System.Drawing.Point(110, 45);
+			this.textBoxAttachToProcessProcessName.Name = "textBoxAttachToProcessProcessName";
+			this.textBoxAttachToProcessProcessName.Size = new System.Drawing.Size(219, 21);
+			this.textBoxAttachToProcessProcessName.TabIndex = 3;
+			// 
+			// label20
+			// 
+			this.label20.AutoSize = true;
+			this.label20.Location = new System.Drawing.Point(221, 134);
+			this.label20.Name = "label20";
+			this.label20.Size = new System.Drawing.Size(204, 13);
+			this.label20.TabIndex = 20;
+			this.label20.Text = "To perform infinite iterations enter zero (0).";
+			// 
+			// tabPageIntroduction
+			// 
+			this.tabPageIntroduction.Controls.Add(this.richTextBoxIntroduction);
+			this.tabPageIntroduction.Location = new System.Drawing.Point(4, 22);
+			this.tabPageIntroduction.Name = "tabPageIntroduction";
+			this.tabPageIntroduction.Size = new System.Drawing.Size(545, 407);
+			this.tabPageIntroduction.TabIndex = 6;
+			this.tabPageIntroduction.Text = "Introduction";
+			this.tabPageIntroduction.UseVisualStyleBackColor = true;
+			// 
+			// richTextBoxIntroduction
+			// 
+			this.richTextBoxIntroduction.Location = new System.Drawing.Point(3, 3);
+			this.richTextBoxIntroduction.Name = "richTextBoxIntroduction";
+			this.richTextBoxIntroduction.ReadOnly = true;
+			this.richTextBoxIntroduction.Size = new System.Drawing.Size(539, 373);
+			this.richTextBoxIntroduction.TabIndex = 0;
+			this.richTextBoxIntroduction.Text = "";
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -865,7 +893,7 @@
 			this.Controls.Add(this.tabControl);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "FormMain";
-			this.Text = "Peach Fuzz Bang";
+			this.Text = "Peach 3 - Fuzz Bang";
 			this.tabControl.ResumeLayout(false);
 			this.tabPageGeneral.ResumeLayout(false);
 			this.tabPageGeneral.PerformLayout();
@@ -891,6 +919,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.panel1.ResumeLayout(false);
+			this.tabPageIntroduction.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -910,7 +939,6 @@
 		private System.Windows.Forms.GroupBox groupBox4;
 		private System.Windows.Forms.GroupBox groupBox3;
 		private System.Windows.Forms.GroupBox groupBox2;
-		private System.Windows.Forms.TextBox textBoxAttachToProcessProcessName;
 		private System.Windows.Forms.TextBox textBoxAttachToProcessPID;
 		private System.Windows.Forms.RadioButton radioButtonAttachToProcessProcessName;
 		private System.Windows.Forms.RadioButton radioButtonAttachToProcessPID;
@@ -970,6 +998,10 @@
 		private System.Windows.Forms.Label label18;
 		public System.Windows.Forms.TextBox textBoxIterationCount;
 		public System.Windows.Forms.TextBox textBoxFaultCount;
+		private System.Windows.Forms.ComboBox textBoxAttachToProcessProcessName;
+		private System.Windows.Forms.TabPage tabPageIntroduction;
+		private System.Windows.Forms.Label label20;
+		private System.Windows.Forms.RichTextBox richTextBoxIntroduction;
 	}
 }
 
