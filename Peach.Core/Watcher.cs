@@ -43,17 +43,22 @@ namespace Peach.Core
 	{
 		public Watcher()
 		{
-			Engine.RunStarting += new Engine.RunStartingEventHandler(Engine_RunStarting);
-			Engine.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
-			Engine.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
-			Engine.TestStarting += new Engine.TestStartingEventHandler(Engine_TestStarting);
-			Engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
-			Engine.TestError += new Engine.TestErrorEventHandler(Engine_TestError);
-			Engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
-			Engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
-			Engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
-			Engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
-			RunContext.Debug += new RunContext.DebugEventHandler(RunContext_Debug);
+		}
+
+		public void Initialize(Engine engine, RunContext context)
+		{
+			engine.RunStarting += new Engine.RunStartingEventHandler(Engine_RunStarting);
+			engine.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
+			engine.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
+			engine.TestStarting += new Engine.TestStartingEventHandler(Engine_TestStarting);
+			engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
+			engine.TestError += new Engine.TestErrorEventHandler(Engine_TestError);
+			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
+			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
+			engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
+			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
+			context.Debug += new RunContext.DebugEventHandler(RunContext_Debug);
+
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 			State.Starting += new StateStartingEventHandler(State_Starting);
@@ -63,32 +68,15 @@ namespace Peach.Core
 			Core.Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
 		}
 
-		~Watcher()
+		public void Finalize(Engine engine, RunContext context)
 		{
-			try
-			{
-				Engine.RunStarting -= Engine_RunStarting;
-				Engine.RunFinished -= Engine_RunFinished;
-				Engine.RunError -= Engine_RunError;
-				Engine.TestStarting -= Engine_TestStarting;
-				Engine.TestFinished -= Engine_TestFinished;
-				Engine.TestError -= Engine_TestError;
-				Engine.IterationStarting -= Engine_IterationStarting;
-				Engine.IterationFinished -= Engine_IterationFinished;
-				Engine.Fault -= Engine_Fault;
-				Engine.HaveCount -= Engine_HaveCount;
-				RunContext.Debug -= RunContext_Debug;
-				StateModel.Starting -= StateModel_Starting;
-				StateModel.Finished -= StateModel_Finished;
-				State.Starting -= State_Starting;
-				State.Finished -= State_Finished;
-				State.ChangingState -= State_ChangingState;
-				Core.Dom.Action.Starting -= Action_Starting;
-				Core.Dom.Action.Finished -= Action_Finished;
-			}
-			catch
-			{
-			}
+			StateModel.Starting -= StateModel_Starting;
+			StateModel.Finished -= StateModel_Finished;
+			State.Starting -= State_Starting;
+			State.Finished -= State_Finished;
+			State.ChangingState -= State_ChangingState;
+			Core.Dom.Action.Starting -= Action_Starting;
+			Core.Dom.Action.Finished -= Action_Finished;
 		}
 
 		protected virtual void Engine_HaveCount(RunContext context, uint totalIterations)

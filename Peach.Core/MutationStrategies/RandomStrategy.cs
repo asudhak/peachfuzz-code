@@ -93,6 +93,8 @@ namespace Peach.Core.MutationStrategies
 		/// </summary>
 		Random random = null;
 
+		static bool eventsRegistered = false;
+
 		public RandomStrategy(Dictionary<string, Variant> args)
 			: base(new Dictionary<string,string>())
 		{
@@ -111,11 +113,14 @@ namespace Peach.Core.MutationStrategies
 
 		public override void Initialize(RunContext context, Engine engine)
 		{
+			base.Initialize(context, engine);
+
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			_context = context;
 
-			Engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
-			Engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
+			eventsRegistered = true;
+			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
+			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 
 			// Locate all mutators
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -134,6 +139,15 @@ namespace Peach.Core.MutationStrategies
 					}
 				}
 			}
+		}
+
+		public override void Finalize(RunContext context, Engine engine)
+		{
+			base.Finalize(context, engine);
+
+			Core.Dom.Action.Starting -= Action_Starting;
+			engine.IterationStarting -= Engine_IterationStarting;
+			engine.IterationFinished -= Engine_IterationFinished;
 		}
 
 		void Engine_IterationFinished(RunContext context, uint currentIteration)

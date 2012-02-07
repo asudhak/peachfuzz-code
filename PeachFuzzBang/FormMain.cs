@@ -284,7 +284,7 @@ namespace PeachFuzzBang
 			Dom dom = obj as Dom;
 			RunConfiguration config = new RunConfiguration();
 			Engine e = new Engine(consoleWatcher);
-
+			
 			config.pitFile = "PeachFuzzBang";
 
 			if (!string.IsNullOrEmpty(textBoxIterations.Text))
@@ -304,8 +304,8 @@ namespace PeachFuzzBang
 				}
 			}
 
-			Engine.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
-			Engine.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
+			e.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
+			e.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
 
 			e.startFuzzing(dom, config);
 		}

@@ -57,6 +57,12 @@ namespace Peach.Core
 			_engine = engine;
 		}
 
+		public virtual void Finalize(RunContext context, Engine engine)
+		{
+			_context = null;
+			_engine = null;
+		}
+
 		public bool isFinite
 		{
 			get { return false; }

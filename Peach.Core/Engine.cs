@@ -65,93 +65,93 @@ namespace Peach.Core
 		/// <summary>
 		/// Fired when a Run is starting
 		/// </summary>
-		public static event RunStartingEventHandler RunStarting;
+		public event RunStartingEventHandler RunStarting;
 		/// <summary>
 		/// Fired when a Run is finished
 		/// </summary>
-		public static event RunFinishedEventHandler RunFinished;
+		public event RunFinishedEventHandler RunFinished;
 		/// <summary>
 		/// Fired when an error is detected during run.
 		/// </summary>
-		public static event RunErrorEventHandler RunError;
+		public event RunErrorEventHandler RunError;
 		/// <summary>
 		/// Fired when a Test is starting.  This could be fired
 		/// multiple times after the RunStarting event if the Run
 		/// contains multiple Tests.
 		/// </summary>
-		public static event TestStartingEventHandler TestStarting;
+		public event TestStartingEventHandler TestStarting;
 		/// <summary>
 		/// Fired at the start of each iteration.  This event will
 		/// be fired often.
 		/// </summary>
-		public static event IterationStartingEventHandler IterationStarting;
+		public event IterationStartingEventHandler IterationStarting;
 		/// <summary>
 		/// Fired at end of each iteration.  This event will be fired often.
 		/// </summary>
-		public static event IterationFinishedEventHandler IterationFinished;
+		public event IterationFinishedEventHandler IterationFinished;
 		/// <summary>
 		/// Fired when a Fault is detected.
 		/// </summary>
-		public static event FaultEventHandler Fault;
+		public event FaultEventHandler Fault;
 		/// <summary>
 		/// Fired when a Test is finished.
 		/// </summary>
-		public static event TestFinishedEventHandler TestFinished;
+		public event TestFinishedEventHandler TestFinished;
 		/// <summary>
 		/// Fired when an error occurs during a Test.
 		/// </summary>
-		public static event TestErrorEventHandler TestError;
+		public event TestErrorEventHandler TestError;
 		/// <summary>
 		/// FIred when we know the count of iterations the Test will take.
 		/// </summary>
-		public static event HaveCountEventHandler HaveCount;
+		public event HaveCountEventHandler HaveCount;
 
-		public static void OnRunStarting(RunContext context)
+		public void OnRunStarting(RunContext context)
 		{
 			if (RunStarting != null)
 				RunStarting(context);
 		}
-		public static void OnRunFinished(RunContext context)
+		public void OnRunFinished(RunContext context)
 		{
 			if (RunFinished != null)
 				RunFinished(context);
 		}
-		public static void OnRunError(RunContext context, Exception e)
+		public void OnRunError(RunContext context, Exception e)
 		{
 			if (RunError != null)
 				RunError(context, e);
 		}
-		public static void OnTestStarting(RunContext context)
+		public void OnTestStarting(RunContext context)
 		{
 			if (TestStarting != null)
 				TestStarting(context);
 		}
-		public static void OnIterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
+		public void OnIterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
 			if (IterationStarting != null)
 				IterationStarting(context, currentIteration, totalIterations);
 		}
-		public static void OnIterationFinished(RunContext context, uint currentIteration)
+		public void OnIterationFinished(RunContext context, uint currentIteration)
 		{
 			if (IterationFinished != null)
 				IterationFinished(context, currentIteration);
 		}
-		public static void OnFault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
+		public void OnFault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
 		{
 			if (Fault != null)
 				Fault(context, currentIteration, stateModelData, faultData);
 		}
-		public static void OnTestFinished(RunContext context)
+		public void OnTestFinished(RunContext context)
 		{
 			if (TestFinished != null)
 				TestFinished(context);
 		}
-		public static void OnTestError(RunContext context, Exception e)
+		public void OnTestError(RunContext context, Exception e)
 		{
 			if (TestError != null)
 				TestError(context, e);
 		}
-		public static void OnHaveCount(RunContext context, uint totalIterations)
+		public void OnHaveCount(RunContext context, uint totalIterations)
 		{
 			if (HaveCount != null)
 				HaveCount(context, totalIterations);
@@ -191,21 +191,28 @@ namespace Peach.Core
 
 		public void startFuzzing(Dom.Dom dom, Run run, RunConfiguration config)
 		{
-			if (dom == null)
-				throw new ArgumentNullException("dom parameter is null");
-			if (run == null)
-				throw new ArgumentNullException("run parameter is null");
-			if (config == null)
-				throw new ArgumentNullException("config paremeter is null");
+			try
+			{
+				if (dom == null)
+					throw new ArgumentNullException("dom parameter is null");
+				if (run == null)
+					throw new ArgumentNullException("run parameter is null");
+				if (config == null)
+					throw new ArgumentNullException("config paremeter is null");
 
-			context = new RunContext();
-			context.config = config;
-			context.dom = dom;
-			context.run = run;            
+				context = new RunContext();
+				context.config = config;
+				context.dom = dom;
+				context.run = run;
 
-			// TODO: Start up agents!
+				watcher.Initialize(this, context);
 
-			runRun(context);
+				runRun(context);
+			}
+			finally
+			{
+				watcher.Finalize(this, context);
+			}
 		}
 
 		/// <summary>
@@ -353,8 +360,8 @@ namespace Peach.Core
 
 						try
 						{
-							if (Engine.IterationStarting != null)
-								Engine.IterationStarting(context, iterationCount, totalIterationCount);
+							if (IterationStarting != null)
+								IterationStarting(context, iterationCount, totalIterationCount);
 
 							// TODO - Handle bool for is reproduction
 							context.agentManager.IterationStarting((int)iterationCount, false);
@@ -389,8 +396,8 @@ namespace Peach.Core
 						}
 						finally
 						{
-							if (Engine.IterationFinished != null)
-								Engine.IterationFinished(context, iterationCount);
+							if (IterationFinished != null)
+								IterationFinished(context, iterationCount);
 						}
 
 						// TODO: Pause for run.waitTime
@@ -458,6 +465,8 @@ namespace Peach.Core
 				OnTestFinished(context);
 
 				context.test = null;
+
+				test.strategy.Finalize(context, this);
 			}
 		}
 	}
@@ -479,7 +488,7 @@ namespace Peach.Core
 	public class RunContext
 	{
 		public delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
-		public static event DebugEventHandler Debug;
+		public event DebugEventHandler Debug;
 
 		public void CriticalMessage(string from, string msg)
 		{
