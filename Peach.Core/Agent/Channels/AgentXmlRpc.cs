@@ -34,7 +34,6 @@ using System.Text;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-//using System.ServiceProcess;
 using System.IO;
 using System.Reflection;
 using Peach.Core;

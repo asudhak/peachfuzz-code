@@ -64,7 +64,6 @@ namespace PeachFuzzBang
 			InitializeComponent();
 
 			List<MutationStrategy> strategies = new List<MutationStrategy>();
-
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
 				foreach (Type t in a.GetExportedTypes())
