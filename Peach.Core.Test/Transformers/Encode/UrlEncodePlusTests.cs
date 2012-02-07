@@ -13,6 +13,8 @@ namespace Peach.Core.Test.Transformers.Encode
     [TestFixture]
     class UrlEncodePlusTests
     {
+        byte[] testValue = null;
+
         [Test]
         public void Test1()
         {
@@ -21,8 +23,10 @@ namespace Peach.Core.Test.Transformers.Encode
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\" endian=\"little\"/>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"UrlEncodePlus\"/>" +
+                "           <Blob name=\"Data\" value=\"test space\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -57,13 +61,17 @@ namespace Peach.Core.Test.Transformers.Encode
             e.startFuzzing(dom, config);
 
             // verify values
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "test space"
+            byte[] precalcResult = new byte[] { 0x74, 0x65, 0x73, 0x74, 0x2B, 0x73, 0x70, 0x61, 0x63, 0x65 };
+            Assert.AreEqual(testValue, precalcResult);
 
             // reset
+            testValue = null;
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-
+            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Peach.Core.Transformers.Encode
 
             var ip = System.Net.IPAddress.Parse(sip);
             var ipb = ip.GetAddressBytes();
+            System.Array.Reverse(ipb);
 
             int ipaddr = BitConverter.ToInt32(ipb, 0);
             int ipaddr_network = System.Net.IPAddress.HostToNetworkOrder(ipaddr);

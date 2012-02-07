@@ -13,6 +13,8 @@ namespace Peach.Core.Test.Transformers.Encode
     [TestFixture]
     class Ipv4StringToNetworkOctetTests
     {
+        byte[] testValue = null;
+
         [Test]
         public void Test1()
         {
@@ -21,8 +23,10 @@ namespace Peach.Core.Test.Transformers.Encode
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\" endian=\"little\"/>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"Ipv4StringToNetworkOctet\"/>" +
+                "           <Blob name=\"Data\" value=\"192.168.1.1\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -57,13 +61,17 @@ namespace Peach.Core.Test.Transformers.Encode
             e.startFuzzing(dom, config);
 
             // verify values
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "192.168.1.1"
+            byte[] precalcResult = new byte[] { 0xC0, 0xA8, 0x01, 0x01 };
+            Assert.AreEqual(testValue, precalcResult);
 
             // reset
+            testValue = null;
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-
+            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

@@ -46,6 +46,7 @@ namespace Peach.Core.Transformers.Encode
 
                 if (tmp.Length / 2 == resolution)
                 {
+                    tmp.Append(prefix);
                     ret.Append(tmp.ToString());
                     tmp = new StringBuilder();
                 }

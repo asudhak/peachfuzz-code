@@ -45,8 +45,8 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalEncode(BitStream data)
         {
-            byte[] ret = new byte[data.LengthBytes * 2];
-            for (int i = 0; i < data.LengthBytes; i++)
+            byte[] ret = new byte[data.Value.Length * 2];
+            for (int i = 0; i < data.Value.Length; i++)
             {
                 ret[i * 2] = data.Value[i];
                 ret[i * 2 + 1] = (Byte)0; 
@@ -57,13 +57,13 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalDecode(BitStream data)
         {
-            if (data.LengthBytes % 2 != 0)
+            if (data.Value.Length % 2 != 0)
                 //TODO: transformer soft exception?
                 throw new Exception("WideChar transfromer internalDecode failed: Invalid length.");
 
-            byte[] ret = new byte[data.LengthBytes / 2];
+            byte[] ret = new byte[data.Value.Length / 2];
 
-            for (int i = 0; i < data.LengthBytes; i += 2)
+            for (int i = 0; i < data.Value.Length; i += 2)
                 ret[i / 2] = data.Value[i];
 
             return new BitStream(ret);
