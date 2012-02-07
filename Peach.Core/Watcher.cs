@@ -63,6 +63,34 @@ namespace Peach.Core
 			Core.Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
 		}
 
+		~Watcher()
+		{
+			try
+			{
+				Engine.RunStarting -= Engine_RunStarting;
+				Engine.RunFinished -= Engine_RunFinished;
+				Engine.RunError -= Engine_RunError;
+				Engine.TestStarting -= Engine_TestStarting;
+				Engine.TestFinished -= Engine_TestFinished;
+				Engine.TestError -= Engine_TestError;
+				Engine.IterationStarting -= Engine_IterationStarting;
+				Engine.IterationFinished -= Engine_IterationFinished;
+				Engine.Fault -= Engine_Fault;
+				Engine.HaveCount -= Engine_HaveCount;
+				RunContext.Debug -= RunContext_Debug;
+				StateModel.Starting -= StateModel_Starting;
+				StateModel.Finished -= StateModel_Finished;
+				State.Starting -= State_Starting;
+				State.Finished -= State_Finished;
+				State.ChangingState -= State_ChangingState;
+				Core.Dom.Action.Starting -= Action_Starting;
+				Core.Dom.Action.Finished -= Action_Finished;
+			}
+			catch
+			{
+			}
+		}
+
 		protected virtual void Engine_HaveCount(RunContext context, uint totalIterations)
 		{
 		}

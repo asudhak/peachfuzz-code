@@ -259,10 +259,14 @@ namespace PeachFuzzBang
 			run.name = "DefaultRun";
 			run.tests.Add(test.name, test);
 
-			Dictionary<string, Variant> loggerArgs = new Dictionary<string, Variant>();
-			loggerArgs["Path"] = new Variant(textBoxLogPath.Text);
-			run.logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
+			if (logger == null)
+			{
+				Dictionary<string, Variant> loggerArgs = new Dictionary<string, Variant>();
+				loggerArgs["Path"] = new Variant(textBoxLogPath.Text);
+				logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
+			}
 
+			run.logger = logger;
 			dom.runs.Add(run.name, run);
 
 			// START FUZZING!!!!!
@@ -270,11 +274,17 @@ namespace PeachFuzzBang
 			thread.Start(dom);
 		}
 
+		Logger logger = null;
+		ConsoleWatcher consoleWatcher = null;
+
 		public void Run(object obj)
 		{
+			if(consoleWatcher == null)
+				consoleWatcher = new ConsoleWatcher(this);
+
 			Dom dom = obj as Dom;
 			RunConfiguration config = new RunConfiguration();
-			Engine e = new Engine(new ConsoleWatcher(this));
+			Engine e = new Engine(consoleWatcher);
 
 			config.pitFile = "PeachFuzzBang";
 

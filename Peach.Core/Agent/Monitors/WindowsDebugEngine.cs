@@ -72,6 +72,7 @@ namespace Peach.Core.Agent.Monitors
         bool _noCpuKill = false;
 
         DebuggerInstance _debugger = null;
+		IpcChannel _ipcChannel = null;
 
         public WindowsDebugEngine(string name, Dictionary<string, Variant> args) : base(name, args)
         {
@@ -109,8 +110,8 @@ namespace Peach.Core.Agent.Monitors
                 _noCpuKill = true;
 
 			// Register IPC Channel for connecting to debug process
-			IpcChannel ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
-			ChannelServices.RegisterChannel(ipcChannel, false);
+			_ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
+			ChannelServices.RegisterChannel(_ipcChannel, false);
 		}
 
 		protected string FindWinDbg()
@@ -225,6 +226,8 @@ namespace Peach.Core.Agent.Monitors
         {
 			_StopDebugger();
 			_FinishDebugger();
+			ChannelServices.UnregisterChannel(_ipcChannel);
+			_ipcChannel = null;
 			_debugger = null;
         }
 
