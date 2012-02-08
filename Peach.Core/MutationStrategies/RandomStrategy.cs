@@ -122,23 +122,7 @@ namespace Peach.Core.MutationStrategies
 			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 
-			// Locate all mutators
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is MutatorAttribute)
-						{
-							_mutators.Add(t);
-						}
-					}
-				}
-			}
+			_mutators.AddRange(EnumerateValidMutators());
 		}
 
 		public override void Finalize(RunContext context, Engine engine)

@@ -106,6 +106,43 @@ namespace Peach.Core
             return mutator;
 		}
 
+		/// <summary>
+		/// Enumerate mutators valid to use in this test.
+		/// </summary>
+		/// <remarks>
+		/// Function checks against included/exluded mutators list.
+		/// </remarks>
+		/// <returns></returns>
+		protected IEnumerable<Type> EnumerateValidMutators()
+		{
+			if (_context.test == null)
+				throw new ArgumentException("Error, _context.test == null");
+
+			// Locate all mutators
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is MutatorAttribute)
+						{
+							if (_context.test.includedMutators != null && !_context.test.includedMutators.Contains(t.Name))
+								continue;
+
+							if (_context.test.exludedMutators != null && _context.test.exludedMutators.Contains(t.Name))
+								continue;
+
+							yield return t;
+						}
+					}
+				}
+			}
+		}
+
 		protected void RecursevlyGetElements(DataElementContainer d, List<DataElement> all)
 		{
 			foreach (DataElement elem in d)
@@ -121,6 +158,7 @@ namespace Peach.Core
 
 	}
 
+	[AttributeUsage(AttributeTargets.Class)]
 	public class DefaultMutationStrategyAttribute : Attribute
 	{
 	}

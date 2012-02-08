@@ -46,6 +46,8 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
+		public List<string> includedMutators = null;
+		public List<string> exludedMutators = null;
 
 		public Test()
 		{

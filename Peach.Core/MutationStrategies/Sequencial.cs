@@ -56,28 +56,15 @@ namespace Peach.Core.MutationStrategies
 
 		public override void Initialize(RunContext context, Engine engine)
 		{
+			base.Initialize(context, engine);
+
 			// Setup our handlers to record first iteration
 			recording = true;
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
-			_context = context;
 
-			// Locate all mutators
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-                        if (attrib is MutatorAttribute)
-						    _mutators.Add(t);
-					}
-				}
-			}
+			_mutators.AddRange(EnumerateValidMutators());
 		}
 
 		void Action_Starting(Core.Dom.Action action)
