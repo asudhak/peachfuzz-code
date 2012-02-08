@@ -618,3 +618,24 @@ def add_those_o_files(self, node):
 	except AttributeError:
 		self.compiled_tasks = [tsk]
 
+@feature('fake_obj')
+@before_method('process_source')
+def process_objs(self):
+	"""
+	Puts object files in the task generator outputs
+	"""
+	for node in self.to_nodes(self.source):
+		self.add_those_o_files(node)
+	self.source = []
+
+@conf
+def read_object(self, obj):
+	"""
+	Read an object file, enabling injection in libs/programs. Will trigger a rebuild if the file changes.
+
+	:param obj: object file path, as string or Node
+	"""
+	if not isinstance(obj, self.path.__class__):
+		obj = self.path.find_resource(obj)
+	return self(features='fake_obj', source=obj, name=obj.name)
+
