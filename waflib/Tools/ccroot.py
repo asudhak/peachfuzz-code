@@ -342,10 +342,22 @@ def process_use(self):
 				if not self.env['STLIB_' + k] and not k in self.uselib:
 					self.uselib.append(k)
 
+def filtered_object(self, node):
+	"""
+	Determines which objects are not to be used by the link task.
+
+	"""
+	return self.env.DEST_BINFMT == 'pe' and x.name.endswith('.pdb')
+
 @taskgen_method
 def add_objects_from_tgen(self, tg):
-	# Not public yet, wait for waf 1.6.7 at least - the purpose of this is to add pdb files to the compiled
-	# tasks but not to the link tasks (to avoid errors)
+	"""
+	Add the objects from the depending compiled tasks as link task inputs.
+
+	Some objects are filtered: for instance, .pdb files are added
+	to the compiled tasks but not to the link tasks (to avoid errors)
+	"""
+	# Not public yet, wait for waf 1.6.12 at least
 	try:
 		link_task = self.link_task
 	except AttributeError:
@@ -353,7 +365,7 @@ def add_objects_from_tgen(self, tg):
 	else:
 		for tsk in getattr(tg, 'compiled_tasks', []):
 			for x in tsk.outputs:
-				if x.name.endswith('.o') or x.name.endswith('.obj'):
+				if not filtered_object(self, x):
 					link_task.inputs.append(x)
 
 @taskgen_method
