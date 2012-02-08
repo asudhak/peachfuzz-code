@@ -213,6 +213,8 @@ namespace Peach.Core.IO
 					pos = len - offset;
 					break;
 			}
+
+			stream.Position = pos / 8;
 		}
 
 		/// <summary>
@@ -585,7 +587,7 @@ namespace Peach.Core.IO
 				bits.Stream.Position = oPos;
 
 				stream.Position = 0;
-				this.len = stream.Length * 8;
+				this.len = bits.LengthBits;
 
 				SeekBits(0, SeekOrigin.End);
 
@@ -603,7 +605,7 @@ namespace Peach.Core.IO
 				bits.Stream.Position = oPos;
 
 				stream.Position = ourPos;
-				this.len += stream.Length * 8;
+				len += bits.LengthBits;
 
 				SeekBits(0, SeekOrigin.End);
 
