@@ -585,6 +585,9 @@ namespace Peach.Core.IO
 				bits.Stream.Position = oPos;
 
 				stream.Position = 0;
+				this.len = stream.Length * 8;
+
+				SeekBits(0, SeekOrigin.End);
 
 				return;
 			}
@@ -600,6 +603,7 @@ namespace Peach.Core.IO
 				bits.Stream.Position = oPos;
 
 				stream.Position = ourPos;
+				this.len += stream.Length * 8;
 
 				SeekBits(0, SeekOrigin.End);
 

@@ -114,6 +114,9 @@ namespace Peach.Core.Dom
 
 				// Prior to starting our state model, on iteration #1 lets
 				// locate all data sets and load our initial data.
+				//
+				// Additionally this is were we setup origionalDataModel.
+				//
 				if (context.currentIteration == 1)
 				{
 					foreach (State state in states.Values)
@@ -136,8 +139,13 @@ namespace Peach.Core.Dom
 								cracker.CrackData(action.dataModel,
 									new BitStream(File.OpenRead(fileName)));
 
-								// Invalidate model and produce value
-								action.dataModel.Invalidate();
+								var value = action.dataModel.Value;
+
+								// Update our origional copy to have data!
+								action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
+							}
+							else if (action.dataModel != null)
+							{
 								var value = action.dataModel.Value;
 
 								// Update our origional copy to have data!
@@ -162,14 +170,13 @@ namespace Peach.Core.Dom
 										Cracker.DataCracker cracker = new Cracker.DataCracker();
 										cracker.CrackData(action.dataModel,
 											new BitStream(File.OpenRead(fileName)));
-
-										// Invalidate model and produce value
-										param.dataModel.Invalidate();
-										var value = param.dataModel.Value;
-
-										// Update our origional copy to have data!
-										param.origionalDataModel = ObjectCopier.Clone<DataModel>(param.dataModel);
 									}
+
+									// Invalidate model and produce value
+									var value = param.dataModel.Value;
+
+									// Update our origional copy to have data!
+									param.origionalDataModel = ObjectCopier.Clone<DataModel>(param.dataModel);
 								}
 							}
 						}

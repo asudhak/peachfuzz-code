@@ -121,28 +121,28 @@ namespace Peach.Core.Dom
 			get { return _dataModel; }
 			set
 			{
-				if (_origionalDataModel == null)
-				{
-					// Optimize output by generateing value
-					object tmp = value.Value;
+				//if (_origionalDataModel == null)
+				//{
+				//    // Optimize output by generateing value
+				//    object tmp = value.Value;
 
-					_origionalDataModel = ObjectCopier.Clone<DataModel>(value);
-					_origionalDataModel.action = this;
-					_origionalDataModel.dom = null;
+				//    _origionalDataModel = ObjectCopier.Clone<DataModel>(value);
+				//    _origionalDataModel.action = this;
+				//    _origionalDataModel.dom = null;
 
-					_dataModel = value;
-					_dataModel.action = this;
-					_dataModel.dom = null;
-				}
-				else
-				{
+				//    _dataModel = value;
+				//    _dataModel.action = this;
+				//    _dataModel.dom = null;
+				//}
+				//else
+				//{
 					_dataModel = value;
 					if (_dataModel != null)
 					{
 						_dataModel.action = this;
 						_dataModel.dom = null;
 					}
-				}
+				//}
 			}
 		}
 
