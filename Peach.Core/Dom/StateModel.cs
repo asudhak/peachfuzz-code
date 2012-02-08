@@ -135,6 +135,13 @@ namespace Peach.Core.Dom
 								Cracker.DataCracker cracker = new Cracker.DataCracker();
 								cracker.CrackData(action.dataModel,
 									new BitStream(File.OpenRead(fileName)));
+
+								// Invalidate model and produce value
+								action.dataModel.Invalidate();
+								var value = action.dataModel.Value;
+
+								// Update our origional copy to have data!
+								action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
 							}
 							else if (action.parameters.Count > 0)
 							{
@@ -155,6 +162,13 @@ namespace Peach.Core.Dom
 										Cracker.DataCracker cracker = new Cracker.DataCracker();
 										cracker.CrackData(action.dataModel,
 											new BitStream(File.OpenRead(fileName)));
+
+										// Invalidate model and produce value
+										param.dataModel.Invalidate();
+										var value = param.dataModel.Value;
+
+										// Update our origional copy to have data!
+										param.origionalDataModel = ObjectCopier.Clone<DataModel>(param.dataModel);
 									}
 								}
 							}
