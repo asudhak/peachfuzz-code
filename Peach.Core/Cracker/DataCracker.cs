@@ -398,7 +398,7 @@ namespace Peach.Core.Cracker
 		{
 			try
 			{
-				logger.Trace("handleNode: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+				logger.Trace("handleNode: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
 				OnEnterHandleNodeEvent(element, data);
 
 				long startingPosition = data.TellBits();
@@ -424,7 +424,7 @@ namespace Peach.Core.Cracker
 					{
 						DataElement relativeTo = rel.From.find(rel.relativeTo);
 						if (relativeTo == null)
-							throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to '" + 
+							throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to '" +
 								rel.From.fullName + "'.", element, data);
 
 						long relativePosition = data.DataElementPosition(relativeTo);
@@ -479,6 +479,11 @@ namespace Peach.Core.Cracker
 					data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);
 
 				OnExitHandleNodeEvent(element, data);
+			}
+			catch (CrackingFailure ex)
+			{
+				logger.Debug("handleNode: Cracking failed: {0}", ex.Message);
+				throw;
 			}
 			catch (Exception e)
 			{
@@ -645,24 +650,33 @@ namespace Peach.Core.Cracker
 			}
 
 			long startPosition = sizedData.TellBits();
+			bool foundElement = false;
 
 			foreach (DataElement child in element.choiceElements.Values)
 			{
 				try
 				{
+					logger.Debug("handleChoice: Trying next child: " + child.fullName);
+
 					child.parent = element;
 					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
 					handleNode(child, sizedData);
 					element.SelectedElement = child;
+					foundElement = true;
 					break;
 				}
 				catch (CrackingFailure)
 				{
-					// NEXT!
+					logger.Debug("handleChoice: Child failed to crack: " + child.fullName);
+					foundElement = false;
+				}
+				catch (Exception ex)
+				{
+					logger.Debug("handleChoice: Child threw exception: " + child.fullName + ": " + ex.Message);
 				}
 			}
 
-			if (element.SelectedElement == null)
+			if (!foundElement)
 				throw new CrackingFailure("Unable to crack '"+element.fullName+"'.", element, data);
 		}
 

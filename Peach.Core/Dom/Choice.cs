@@ -61,16 +61,23 @@ namespace Peach.Core.Dom
 			this.name = name;
 		}
 
+		public void SelectDefault()
+		{
+			this.Clear();
+			this.Add(choiceElements[0]);
+			_selectedElement = this[0];
+		}
+
 		public DataElement SelectedElement
 		{
 			get
 			{
-				if (_selectedElement == null && choiceElements.Count > 0)
-				{
-					this.Clear();
-					this.Add(choiceElements[0]);
-					_selectedElement = this[0];
-				}
+				//if (_selectedElement == null && choiceElements.Count > 0)
+				//{
+				//    this.Clear();
+				//    this.Add(choiceElements[0]);
+				//    _selectedElement = this[0];
+				//}
 
 				return _selectedElement;
 			}
@@ -86,11 +93,47 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public override IEnumerable<DataElement> EnumerateAllElements(List<DataElement> knownParents)
+		{
+			// First our children
+			foreach (DataElement child in this)
+				yield return child;
+
+			// Next our children's children
+			foreach (DataElement child in this)
+			{
+				if (!knownParents.Contains(child))
+				{
+					foreach (DataElement subChild in child.EnumerateAllElements(knownParents))
+						yield return subChild;
+				}
+			}
+
+			if (_selectedElement == null)
+			{
+				foreach (DataElement child in choiceElements.Values)
+					yield return child;
+
+				// Next our children's children
+				foreach (DataElement child in choiceElements.Values)
+				{
+					if (!knownParents.Contains(child))
+					{
+						foreach (DataElement subChild in child.EnumerateAllElements(knownParents))
+							yield return subChild;
+					}
+				}
+			}
+		}
+
 		public override Variant GenerateInternalValue()
 		{
 			Variant value;
 
 			// 1. Default value
+
+			if (_selectedElement == null)
+				SelectDefault();
 
 			if (_mutatedValue == null)
 				value = new Variant(SelectedElement.Value);

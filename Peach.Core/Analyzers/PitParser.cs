@@ -284,6 +284,10 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			// Pass 3.5 - Resolve all relations
+
+			finalUpdateRelations(dom.dataModels.Values);
+
 			// Pass 4 - Handle Data
 
 			foreach (XmlNode child in node)
@@ -332,10 +336,6 @@ namespace Peach.Core.Analyzers
 					dom.runs.Add(run.name, run);
 				}
 			}
-
-			// Pass 8 - Resolve all relations
-
-			finalUpdateRelations(dom.dataModels.Values);
 
 			return dom;
 		}
@@ -467,12 +467,20 @@ namespace Peach.Core.Analyzers
 		/// <param name="models"></param>
 		protected void finalUpdateRelations(ICollection<DataModel> models)
 		{
+			logger.Trace("finalUpdateRelations");
+
 			foreach (DataModel model in models)
 			{
+				logger.Debug("finalUpdateRelations: DataModel: " + model.name);
+
 				foreach (DataElement elem in model.EnumerateAllElements())
 				{
+					logger.Debug("finalUpdateRelations: " + elem.fullName);
+
 					foreach (Relation rel in elem.relations)
 					{
+						logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
+
 						if (rel.From == elem)
 						{
 							DataElement of = rel.Of;
@@ -492,6 +500,11 @@ namespace Peach.Core.Analyzers
 
 							if (!from.relations.Contains(rel))
 								from.relations.Add(rel);
+						}
+						else
+						{
+							logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
+							throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
 						}
 					}
 				}
@@ -1929,10 +1942,6 @@ namespace Peach.Core.Analyzers
 				else
 					fileName = action.dataSet.Datas[0].Files[0];
 
-				Cracker.DataCracker cracker = new Cracker.DataCracker();
-				cracker.CrackData(action.dataModel,
-					new BitStream(File.OpenRead(fileName)));
-
 				// update origionalDataModel
 				if (action.origionalDataModel != null)
 					action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
@@ -1962,11 +1971,13 @@ namespace Peach.Core.Analyzers
 			Data data = new Data();
 			data.name = getXmlAttribute(node, "name");
 			data.FileName = getXmlAttribute(node, "fileName");
+			data.DataType = DataType.File;
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Field")
 				{
+					data.DataType = DataType.Fields;
 					// Hack to call common value parsing code.
 					Blob tmp = new Blob();
 					handleCommonDataElementValue(child, tmp);

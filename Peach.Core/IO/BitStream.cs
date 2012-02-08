@@ -945,12 +945,16 @@ namespace Peach.Core.IO
 		{
 			MemoryStream sin = new MemoryStream();
 
+			long totalBytes = bytes;
+
 			// Are we copying entire stream over?
 			if ((bytes * 8) == LengthBits && pos == 0)
 			{
 				stream.CopyTo(sin);
 				sin.Position = 0;
 				stream.Position = 0;
+
+				SeekBits(0, SeekOrigin.End);
 
 				return new BitStream(sin);
 			}
@@ -972,6 +976,8 @@ namespace Peach.Core.IO
 
 				stream.Position = streamPosition;
 				sin.Position = 0;
+
+				SeekBits((totalBytes * 8), SeekOrigin.Current);
 
 				return new BitStream(sin);
 			}

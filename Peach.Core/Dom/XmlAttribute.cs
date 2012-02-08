@@ -34,17 +34,6 @@ using System.Xml;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("XmlElement")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
-	[Parameter("elementName", typeof(string), "XML Element Name", true)]
-	[Serializable]
-	public class XmlElement : DataElementContainer
-	{
-	}
-
 	[DataElement("XmlAttribute")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[Parameter("name", typeof(string), "", false)]

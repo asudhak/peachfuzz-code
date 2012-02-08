@@ -20,11 +20,11 @@
 	</DataModel>
 
 	<DataModel name="Png">
-		<Blob name="Magic" length="8" valueType="hex" value="0x89 0x50 0x4e 0x47 0x0d 0x0a 0x1a 0x0a" />
+		<Blob name="Magic" length="8" />
 
 		<Choice name="PngChunk" maxOccurs="2000">
 
-				<!-- ********************************************* -->
+			<!-- ********************************************* -->
 			<Block name="IHDR" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="IHDR" />
@@ -39,14 +39,18 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="PLTE" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="PLTE" />
 					<Blob name="Data"/>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="IDAT" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="IDAT" />
@@ -56,7 +60,9 @@
 					</Blob>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="pHYs" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="pHYs" />
@@ -67,14 +73,18 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="IEND" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="IEND" />
 					<Blob name="Data"/>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="tRNS" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="tRNS" />
@@ -96,7 +106,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="cHRM" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="cHRM" />
@@ -112,7 +124,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="gAMA" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="gAMA" />
@@ -121,7 +135,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="iCCP" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="iCCP" />
@@ -132,7 +148,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="sBIT" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="sBIT" />
@@ -161,7 +179,9 @@
 						-->
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="sRGB" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="sRGB" />
@@ -170,7 +190,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="tEXt" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="tEXT" />
@@ -180,7 +202,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="zTXt" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="zTXt" />
@@ -193,7 +217,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="iTXt" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="iTXt" />
@@ -219,19 +245,23 @@
 					</Choice>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="bKGD" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="bKGD" />
 					<Blob name="Data"/>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="sPLT" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="sPLT" />
 					<Block name="Data">
-						<!--<String name="PaletteName" nullTerminated="true" />
+						<String name="PaletteName" nullTerminated="true" />
 						<Number size="8" endian="big" signed="false" />
 						<Choice name="depthChoice">
 							<Block name="8bit">
@@ -255,19 +285,23 @@
 									<Number size="16" signed="false" endian="big" />
 								</Block>
 							</Block>
-						</Choice>-->
-						<Blob/>
+						</Choice>
+						<!-- <Blob/> -->
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="hIST" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="hIST" />
 					<Blob name="Data"/>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="tIME" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" token="true" value="tIME" />
@@ -281,7 +315,9 @@
 					</Block>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
+			
 			<Block name="cpIp" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" value="cpIp" token="true" />
@@ -291,13 +327,15 @@
 					</Blob>
 				</Block>
 			</Block>
+			
 			<!-- ********************************************* -->
-			<Block name="CatchAll" ref="Chunk">
+			
+			<!--<Block name="CatchAll" ref="Chunk">
 				<Block name="Core">
 					<String name="Type" length="4" />
 					<Blob name="Data"/>
 				</Block>
-			</Block>
+			</Block>-->
 		</Choice>
 	</DataModel>
 
@@ -316,12 +354,12 @@
 				<Data fileName="c:\sample.png" />
 			</Action>
 			<Action type="close"/>
-			<Action type="call" method="ScoobySnacks" publisher="Peach.Agent"/>
+			<!-- <Action type="call" method="ScoobySnacks" publisher="Peach.Agent"/> -->
 		</State>
 	</StateModel>
 	
 	<Test name="TheTest">
-		<Agent ref="LocalAgent"/>
+		<!--<Agent ref="LocalAgent"/>-->
 		<StateModel ref="TheState"/>
 		<Publisher class="File">
 			<Param name="FileName" value="fuzzed.png" />

@@ -27,10 +27,14 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+
 using Peach.Core;
+using Peach.Core.IO;
+
 using NLog;
 
 namespace Peach.Core.Dom
@@ -107,6 +111,56 @@ namespace Peach.Core.Dom
 			try
 			{
 				OnStarting();
+
+				// Prior to starting our state model, on iteration #1 lets
+				// locate all data sets and load our initial data.
+				if (context.currentIteration == 1)
+				{
+					foreach (State state in states.Values)
+					{
+						foreach (Action action in state.actions)
+						{
+							if (action.dataModel != null && action.dataSet != null && action.dataSet.Datas.Count > 0)
+							{
+								Data data = action.dataSet.Datas[0];
+								string fileName = null;
+
+								if (data.DataType == DataType.File)
+									fileName = data.FileName;
+								else if (data.DataType == DataType.Files)
+									fileName = data.Files[0];
+								else
+									throw new PeachException("Error, don't support fields yet!");
+
+								Cracker.DataCracker cracker = new Cracker.DataCracker();
+								cracker.CrackData(action.dataModel,
+									new BitStream(File.OpenRead(fileName)));
+							}
+							else if (action.parameters.Count > 0)
+							{
+								foreach (ActionParameter param in action.parameters)
+								{
+									if (param.dataModel != null && param.data != null)
+									{
+										Data data = param.data as Data;
+										string fileName = null;
+
+										if (data.DataType == DataType.File)
+											fileName = data.FileName;
+										else if (data.DataType == DataType.Files)
+											fileName = data.Files[0];
+										else
+											throw new PeachException("Error, don't support fields yet!");
+
+										Cracker.DataCracker cracker = new Cracker.DataCracker();
+										cracker.CrackData(action.dataModel,
+											new BitStream(File.OpenRead(fileName)));
+									}
+								}
+							}
+						}
+					}
+				}
 
 				// Update all data model to clones of origionalDataModel
 				// before we start down the state path.

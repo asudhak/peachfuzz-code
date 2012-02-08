@@ -330,6 +330,7 @@ namespace Peach.Core
 					try
 					{
 						iterationCount++;
+						context.currentIteration = iterationCount;
 
 						// - Did we finish our test range?
 						if (iterationRangeStop != null && iterationCount >= (iterationRangeStop+1))
@@ -516,6 +517,8 @@ namespace Peach.Core
 		public Run run = null;
 		public Test test = null;
 		public AgentManager agentManager = null;
+
+		public long currentIteration = 0;
 
 		/// <summary>
 		/// Controls if we continue fuzzing or exit

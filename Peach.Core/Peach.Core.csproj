@@ -207,6 +207,7 @@
     <Compile Include="Dom\Action.cs" />
     <Compile Include="Dom\Agent.cs" />
     <Compile Include="Dom\Data.cs" />
+    <Compile Include="Dom\DataElementContainer.cs" />
     <Compile Include="Dom\DataSet.cs" />
     <Compile Include="Dom\DomNamespace.cs" />
     <Compile Include="Dom\Hint.cs" />
@@ -218,6 +219,8 @@
     <Compile Include="Dom\Run.cs" />
     <Compile Include="Dom\State.cs" />
     <Compile Include="Dom\Test.cs" />
+    <Compile Include="Dom\XmlAttribute.cs" />
+    <Compile Include="Dom\XmlElement.cs" />
     <Compile Include="Dom\XPath\PeachXPathNavigator.cs" />
     <Compile Include="Dom\XPath\PeachXPathNodeType.cs" />
     <Compile Include="Fixups\CopyValueFixup.cs" />
@@ -948,7 +951,6 @@
     <Compile Include="Dom\Relation.cs" />
     <Compile Include="Dom\SizeRelation.cs" />
     <Compile Include="Dom\String.cs" />
-    <Compile Include="Dom\XmlElements.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Fixup.cs" />
     <Compile Include="Fixups\Crc32Fixup.cs" />
