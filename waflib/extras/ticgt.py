@@ -225,7 +225,7 @@ def apply_tconf(self):
 	task.path = self.path
 	task.includes = includes
 	task.cwd = target_node.parent.abspath()
-	task.env = self.env
+	task.env = self.env.derive()
 	task.env["TCONFSRC"] = node.path_from(target_node.parent)
 	task.env["TCONFINC"] = '-Dconfig.importPath=%s' % ";".join(importpaths)
 	task.env['TCONFPROGNAME'] = '-Dconfig.programName=%s' % target
@@ -238,10 +238,11 @@ def apply_tconf(self):
 
 	s62task = create_compiled_task(self, 'ti_c', task.outputs[1])
 	ctask = create_compiled_task(self, 'ti_c', task.outputs[0])
-	ctask.env.LINKFLAGS += [target_node.change_ext("cfg.cmd").abspath()]
-	if len(sources) > 1:
-		ctask.env.LINKFLAGS += [sources[1].bldpath()]
+	ctask.env = self.env.derive()
 
+	self.add_those_o_files(target_node.change_ext("cfg.cmd"))
+	if len(sources) > 1:
+		self.add_those_o_files(sources[1])
 	self.source = []
 
 re_tconf_include = re.compile(r'(?P<type>utils\.importFile)\("(?P<file>.*)"\)',re.M)
@@ -271,7 +272,4 @@ class ti_tconf(Task.Task):
 								break
 			return nodes, names
 		return deps(self.inputs[0])
-
-		return (nodes, names)
-
 
