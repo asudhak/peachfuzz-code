@@ -19,6 +19,7 @@ namespace Peach.Core.Test.Transformers.Type
         public void Test1()
         {
             // standard test
+            // - trim ending bytes
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +

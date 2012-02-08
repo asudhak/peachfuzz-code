@@ -33,24 +33,33 @@ namespace Peach.Core.Transformers.Type
             if (m_args.ContainsKey("isLittleEndian"))
                 littleEndian = Int32.Parse((string)m_args["isLittleEndian"]);
 
+            byte[] final;
+            int len = data.Value.Length;
+            int sz = sizeof(Int64);
 
-            List<byte> tmp = new List<byte>();
-
-            for (int i = 0; i < data.Value.Length; ++i)
+            if (len == sz)
             {
-                if (i >= 8)
-                    break;
-                tmp.Add(data.Value[i]);
+                final = data.Value;
             }
-
-            if (tmp.Count < 8)
+            else if (len < sz)
             {
-                int remaining = 8 - tmp.Count;
-                for (int i = 0; i < remaining; ++i)
+                int remaining = sz - len;
+                List<byte> tmp = new List<byte>();
+
+                while (remaining > 0)
+                {
                     tmp.Add(0x00);
+                    --remaining;
+                }
+
+                final = ArrayExtensions.Combine(data.Value, tmp.ToArray());
+            }
+            else
+            {
+                final = ArrayExtensions.Slice(data.Value, 0, sz);
             }
 
-            return new BitStream(tmp.ToArray());
+            return new BitStream(final);
         }
 
         protected override BitStream internalDecode(BitStream data)
