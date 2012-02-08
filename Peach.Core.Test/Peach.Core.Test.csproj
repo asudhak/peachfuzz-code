@@ -155,13 +155,14 @@
     <Compile Include="Transformers\Encode\Utf16Tests.cs" />
     <Compile Include="Transformers\Encode\Utf8Tests.cs" />
     <Compile Include="Transformers\Encode\WideCharTests.cs" />
+    <Compile Include="Transformers\Type\AsInt16Test.cs" />
+    <Compile Include="Transformers\Type\AsInt32Tests.cs" />
+    <Compile Include="Transformers\Type\AsInt64Tests.cs" />
+    <Compile Include="Transformers\Type\AsInt8Tests.cs" />
     <Compile Include="Transformers\Type\IntToHexTests.cs" />
     <Compile Include="Transformers\Type\NumberToStringTests.cs" />
-    <Compile Include="Transformers\Type\PackTests.cs" />
-    <Compile Include="Transformers\Type\SignedNumberToStringTests.cs" />
     <Compile Include="Transformers\Type\StringToFloatTests.cs" />
     <Compile Include="Transformers\Type\StringToIntTests.cs" />
-    <Compile Include="Transformers\Type\UnsignedNumberToStringTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">

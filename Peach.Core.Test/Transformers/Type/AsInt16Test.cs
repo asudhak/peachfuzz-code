@@ -4,14 +4,14 @@ using System.Text;
 using System.IO;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Peach.Core.IO;
+using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 
-namespace Peach.Core.Test.Fixups
+namespace Peach.Core.Test.Transformers.Type
 {
     [TestFixture]
-    class Crc32FixupTests
+    class AsInt16Tests
     {
         byte[] testValue = null;
 
@@ -23,12 +23,10 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"CRC\" size=\"32\" signed=\"false\">" +
-                "           <Fixup class=\"Crc32Fixup\">" +
-                "               <Param name=\"ref\" value=\"Data\"/>" +
-                "           </Fixup>" +
-                "       </Number>" +
-                "       <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"AsInt16\"/>" +
+                "           <Blob name=\"blob1\" value=\"1\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -63,9 +61,7 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
-            byte[] precalcChecksum = new byte[] { 0x82, 0x89, 0xD1, 0xF7 };
-            Assert.AreEqual(testValue, precalcChecksum);
+            Assert.AreEqual(testValue.Length, 2);
 
             // reset
             testValue = null;

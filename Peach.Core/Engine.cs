@@ -161,7 +161,7 @@ namespace Peach.Core
 
 		public Engine(Watcher watcher)
 		{
-			this.watcher = watcher;
+            this.watcher = watcher;
 		}
 
 		/// <summary>
@@ -205,13 +205,15 @@ namespace Peach.Core
 				context.dom = dom;
 				context.run = run;
 
-				watcher.Initialize(this, context);
+                if (watcher != null)
+				    watcher.Initialize(this, context);
 
 				runRun(context);
 			}
 			finally
 			{
-				watcher.Finalize(this, context);
+                if (watcher != null)
+				    watcher.Finalize(this, context);
 			}
 		}
 

@@ -22,30 +22,24 @@ namespace Peach.Core.Fixups
             string objRef = (string)args["ref"];
             DataElement from = obj.find(objRef);
             byte[] data = from.Value.Value;
-            byte[] final;
+            uint chcksm = 0;
+            int idx = 0;
 
             // add a byte if not divisible by 2
             if (data.Length % 2 != 0)
-                final = ArrayExtensions.Combine(data, new byte[] { (byte)('\0') });
-            else
-                final = data;
+                data = ArrayExtensions.Combine(data, new byte[] { 0x00 });
 
-            // build a list of 16-bit words
-            List<short> words = new List<short>();
-            for (int i = 0; i < final.Length; i += 2)
-                words.Add((short)final[i]);
+            // calculate checksum
+            while (idx < data.Length)
+            {
+                chcksm += Convert.ToUInt32(BitConverter.ToUInt16(data, idx));
+                idx += 2;
+            }
 
-            // perform ones-compliment arithmetic
-            int sum = 0;
-            for (int i = 0; i < words.Count; ++i)
-                sum += (words[i] & 0xFFFF);
+            chcksm = (chcksm >> 16) + (chcksm & 0xFFFF);
+            chcksm += (chcksm >> 16);
 
-            int hi = sum >> 16;
-            int lo = sum & 0xFFFF;
-            sum = hi + lo;
-            sum += sum >> 16;
-
-            return new Variant((int)((~sum) & 0xFFFF));
+            return new Variant((ushort)(~chcksm));
         }
     }
 }
