@@ -50,10 +50,12 @@ namespace Peach.Core.Test.Mutators
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("NumericalVarianceMutator");
 
             RunConfiguration config = new RunConfiguration();
 
-			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);            
 
 			Engine e = new Engine(null);
             e.config = config;
@@ -104,6 +106,8 @@ namespace Peach.Core.Test.Mutators
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("NumericalVarianceMutator");
 
             RunConfiguration config = new RunConfiguration();
 
@@ -157,6 +161,8 @@ namespace Peach.Core.Test.Mutators
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("NumericalVarianceMutator");
 
             RunConfiguration config = new RunConfiguration();
 
@@ -210,6 +216,8 @@ namespace Peach.Core.Test.Mutators
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("NumericalVarianceMutator");
 
             RunConfiguration config = new RunConfiguration();
 

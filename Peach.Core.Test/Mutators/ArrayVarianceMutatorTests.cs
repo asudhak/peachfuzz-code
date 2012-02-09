@@ -50,6 +50,8 @@ namespace Peach.Core.Test.Mutators
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("ArrayVarianceMutator");
 
             var myArray = (Dom.Array)dom.runs[0].tests[0].stateModel.initialState.actions[0].dataModel[0];
             myArray.origionalElement = myArray[0];
@@ -110,6 +112,8 @@ namespace Peach.Core.Test.Mutators
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("ArrayVarianceMutator");
 
             var myArray = (Dom.Array)dom.runs[0].tests[0].stateModel.initialState.actions[0].dataModel[0];
             myArray.origionalElement = myArray[0];
