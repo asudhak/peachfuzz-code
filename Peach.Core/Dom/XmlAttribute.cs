@@ -36,12 +36,28 @@ namespace Peach.Core.Dom
 {
 	[DataElement("XmlAttribute")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", false)]
-	[Parameter("attributeName", typeof(string), "", true)]
+	[Parameter("name", typeof(string), "Name of element", false)]
+	[Parameter("attributeName", typeof(string), "Name of attribute", true)]
 	[Parameter("ns", typeof(string), "XML Namespace", false)]
 	[Serializable]
-	public class XmlAttribute : DataElement
+	public class XmlAttribute : DataElementContainer
 	{
+		string attributeName = null;
+		string ns = null;
+
+		/// <summary>
+		/// Generate a System.Xml.XmlAttribute instance and populate with
+		/// correct information.
+		/// </summary>
+		/// <param name="doc">XmlDocument this attribute will be part of.</param>
+		/// <param name="parent">The parent XmlNode</param>
+		/// <returns>Returns a valid instance of an XmlAttribute.</returns>
+		public virtual System.Xml.XmlAttribute GenerateXmlAttribute(XmlDocument doc, XmlNode parent)
+		{
+			var xmlAttrib = doc.CreateAttribute(attributeName, ns);
+			xmlAttrib.Value = (string)this[0].InternalValue;
+			return xmlAttrib;
+		}
 	}
 }
 

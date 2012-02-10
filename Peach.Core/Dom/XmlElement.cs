@@ -43,6 +43,52 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class XmlElement : DataElementContainer
 	{
+		protected string elementName = null;
+		protected string ns = null;
+
+		public XmlElement()
+		{
+		}
+
+		public XmlElement(string name) : base()
+		{
+			this.name = name;
+		}
+
+		public virtual XmlNode GenerateXmlNode(XmlDocument doc, XmlNode parent)
+		{
+			XmlNode xmlNode = doc.CreateElement(elementName, ns);
+
+			foreach (DataElement child in this)
+			{
+				if (child is XmlAttribute)
+				{
+					XmlAttribute attrib = child as XmlAttribute;
+					xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
+				}
+				else if (child is String)
+				{
+					xmlNode.Value = (string)child.InternalValue;
+				}
+				else if (child is XmlElement)
+				{
+					xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
+				}
+				else
+				{
+					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single String element.");
+				}
+			}
+
+			return xmlNode;
+		}
+
+		public override Variant GenerateInternalValue()
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.AppendChild(GenerateXmlNode(doc, null));
+			return new Variant(doc.OuterXml);
+		}
 	}
 }
 
