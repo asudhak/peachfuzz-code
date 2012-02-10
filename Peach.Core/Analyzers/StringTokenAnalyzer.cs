@@ -44,7 +44,7 @@ namespace Peach.Core.Analyzers
 	[Analyzer("stringtoken.StringTokenAnalyzer")]
 	[Parameter("Tokens", typeof(string), "List of character tokens", false)]
 	[Serializable]
-	public class StringToken : Analyzer
+	public class StringTokenAnalyzer : Analyzer
 	{
 
 		/// <summary>
@@ -55,7 +55,7 @@ namespace Peach.Core.Analyzers
 		protected string tokens = TOKENS;
 		protected Dictionary<string, Variant> args = null;
 
-		static StringToken()
+		static StringTokenAnalyzer()
 		{
 			supportParser = false;
 			supportDataElement = true;
@@ -63,11 +63,11 @@ namespace Peach.Core.Analyzers
 			supportTopLevel = false;
 		}
 
-		public StringToken()
+		public StringTokenAnalyzer()
 		{
 		}
 
-		public StringToken(Dictionary<string, Variant> args)
+		public StringTokenAnalyzer(Dictionary<string, Variant> args)
 		{
 			this.args = args;
 		}
@@ -144,7 +144,12 @@ namespace Peach.Core.Analyzers
 			}
 			else if (el is Dom.Block)
 			{
+				List<DataElement> children = new List<DataElement>();
+
 				foreach (DataElement child in ((Block)el))
+					children.Add(child);
+
+				foreach (DataElement child in children)
 					splitOnToken(child, token);
 			}
 		}

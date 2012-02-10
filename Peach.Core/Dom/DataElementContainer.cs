@@ -147,6 +147,37 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
+		/// <summary>
+		/// Create a pretty string representation of model from here.
+		/// </summary>
+		/// <returns></returns>
+		public string prettyPrint(StringBuilder sb = null, int indent = 0)
+		{
+			if(sb == null)
+				sb = new StringBuilder();
+
+			stringPrintLineWithIndent(sb, name + ": " + GetType().Name, indent);
+
+			foreach (DataElement child in this)
+			{
+				if (child is DataElementContainer)
+					((DataElementContainer)child).prettyPrint(sb, indent + 1);
+				else
+					stringPrintLineWithIndent(sb, child.name + ": " + child.GetType().Name, indent);
+			}
+
+			return sb.ToString();
+		}
+
+		void stringPrintLineWithIndent(StringBuilder sb, string line, int indent)
+		{
+			for (int i = 0; i < indent; i++)
+				sb.Append(' ');
+
+			sb.Append(line);
+			sb.Append("\n");
+		}
+
 		public DataElement this[int index]
 		{
 			get { return _childrenList[index]; }

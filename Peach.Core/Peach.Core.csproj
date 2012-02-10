@@ -198,7 +198,7 @@
     <Compile Include="Analyzers\ComAnalyzer.cs" />
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="Analyzers\Shark.cs" />
-    <Compile Include="Analyzers\StringToken.cs" />
+    <Compile Include="Analyzers\StringTokenAnalyzer.cs" />
     <Compile Include="Analyzers\XmlAnalyzer.cs" />
     <Compile Include="Cracker\CrackingFailure.cs" />
     <Compile Include="Cracker\NotEnoughDataException.cs" />

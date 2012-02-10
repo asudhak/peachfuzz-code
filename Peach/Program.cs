@@ -228,6 +228,9 @@ namespace Peach
 				config.pitFile = extra[0];
 				dom.evaulateDataModelAnalyzers();
 
+				//foreach (DataModel model in dom.dataModels.Values)
+				//    Console.WriteLine(model.prettyPrint());
+
 				foreach (string arg in args)
 					config.commandLine += arg + " ";
 
