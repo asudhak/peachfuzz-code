@@ -29,8 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Peach;
 using System.Xml;
+
+using Peach;
 
 namespace Peach.Core.Dom
 {
@@ -42,8 +43,34 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class XmlAttribute : DataElementContainer
 	{
-		string attributeName = null;
-		string ns = null;
+		string _attributeName = null;
+		string _ns = null;
+
+		/// <summary>
+		/// XML attribute name
+		/// </summary>
+		public virtual string attributeName
+		{
+			get { return _attributeName; }
+			set
+			{
+				_attributeName = value;
+				Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// XML Namespace for element
+		/// </summary>
+		public virtual string ns
+		{
+			get { return _ns; }
+			set
+			{
+				_ns = value;
+				Invalidate();
+			}
+		}
 
 		/// <summary>
 		/// Generate a System.Xml.XmlAttribute instance and populate with

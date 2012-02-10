@@ -29,8 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Peach;
 using System.Xml;
+
+using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
@@ -43,8 +44,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class XmlElement : DataElementContainer
 	{
-		protected string elementName = null;
-		protected string ns = null;
+		string _elementName = null;
+		string _ns = null;
 
 		public XmlElement()
 		{
@@ -53,6 +54,32 @@ namespace Peach.Core.Dom
 		public XmlElement(string name) : base()
 		{
 			this.name = name;
+		}
+
+		/// <summary>
+		/// XML Element tag name
+		/// </summary>
+		public virtual string elementName
+		{
+			get { return _elementName; }
+			set
+			{
+				_elementName = value;
+				Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// XML Namespace for element
+		/// </summary>
+		public virtual string ns
+		{
+			get { return _ns; }
+			set
+			{
+				_ns = value;
+				Invalidate();
+			}
 		}
 
 		public virtual XmlNode GenerateXmlNode(XmlDocument doc, XmlNode parent)
@@ -87,8 +114,18 @@ namespace Peach.Core.Dom
 		{
 			XmlDocument doc = new XmlDocument();
 			doc.AppendChild(GenerateXmlNode(doc, null));
-			return new Variant(doc.OuterXml);
+			_internalValue = new Variant(doc.OuterXml);
+			return _internalValue;
 		}
+
+		protected override BitStream InternalValueToBitStream(Variant v)
+		{
+			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
+				return (BitStream)MutatedValue;
+
+			return new BitStream(Encoding.UTF8.GetBytes((string)v));
+		}
+
 	}
 }
 

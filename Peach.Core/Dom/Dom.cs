@@ -94,6 +94,32 @@ namespace Peach.Core.Dom
 
 		#endregion
 
+		/// <summary>
+		/// Execute all analyzers on all data models in DOM.
+		/// </summary>
+		public void evaulateDataModelAnalyzers()
+		{
+			foreach (DataModel model in dataModels.Values)
+				model.evaulateAnalyzers();
+
+			foreach (Test test in tests.Values)
+			{
+				foreach (State state in test.stateModel.states.Values)
+				{
+					foreach (Action action in state.actions)
+					{
+						if (action.dataModel != null)
+							action.dataModel.evaulateAnalyzers();
+
+						foreach (ActionParameter ap in action.parameters)
+						{
+							if (ap.dataModel != null)
+								ap.dataModel.evaulateAnalyzers();
+						}
+					}
+				}
+			}
+		}
 
 		#region INamed Members
 

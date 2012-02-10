@@ -590,7 +590,7 @@ namespace Peach.Core.Analyzers
 
 		protected DataModel handleDataModel(XmlNode node)
 		{
-			DataModel dataModel = new DataModel();
+			var dataModel = new DataModel();
 
 			if (hasXmlAttribute(node, "ref"))
 			{
@@ -629,7 +629,7 @@ namespace Peach.Core.Analyzers
 
 		protected Dom.Array handleArray(XmlNode node, DataElementContainer parent)
 		{
-			Dom.Array array = new Dom.Array();
+			var array = new Dom.Array();
 
 			// name
 			if (hasXmlAttribute(node, "name"))
@@ -660,7 +660,7 @@ namespace Peach.Core.Analyzers
 
 		protected Block handleBlock(XmlNode node, DataElementContainer parent)
 		{
-			Block block = new Block();
+			var block = new Block();
 
 			if (hasXmlAttribute(node, "ref"))
 			{
@@ -814,7 +814,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="element">Element to add items to</param>
 		protected void handleHint(XmlNode node, DataElement element)
 		{
-			Hint hint = new Hint(getXmlAttribute(node, "name"), getXmlAttribute(node, "value"));
+			var hint = new Hint(getXmlAttribute(node, "name"), getXmlAttribute(node, "value"));
 			element.Hints.Add(hint.Name, hint);
 		}
 
@@ -871,6 +871,14 @@ namespace Peach.Core.Analyzers
 
 					case "Padding":
 						elem = handlePadding(child, element);
+						break;
+
+					case "XmlElement":
+						elem = handleXmlElement(child, element);
+						break;
+
+					case "XmlAttribute":
+						elem = handleXmlAttribute(child, element);
 						break;
 
 					case "Custom":
@@ -934,9 +942,49 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
+		protected DataElement handleXmlElement(XmlNode node, DataElementContainer parent)
+		{
+			var xmlElement = new Dom.XmlElement();
+
+			if (hasXmlAttribute(node, "name"))
+				xmlElement.name = getXmlAttribute(node, "name");
+
+			if (!hasXmlAttribute(node, "elementName"))
+				throw new PeachException("Error, elementName is a required attribute for XmlElement: " + xmlElement.name);
+
+			xmlElement.elementName = getXmlAttribute(node, "elementName");
+			xmlElement.ns = getXmlAttribute(node, "ns");
+
+			handleCommonDataElementAttributes(node, xmlElement);
+			handleCommonDataElementChildren(node, xmlElement);
+			handleDataElementContainer(node, xmlElement);
+
+			return xmlElement;
+		}
+
+		protected DataElement handleXmlAttribute(XmlNode node, DataElementContainer parent)
+		{
+			var xmlAttribute = new Dom.XmlAttribute();
+
+			if (hasXmlAttribute(node, "name"))
+				xmlAttribute.name = getXmlAttribute(node, "name");
+
+			if (!hasXmlAttribute(node, "attributeName"))
+				throw new PeachException("Error, attributeName is a required attribute for XmlAttribute: " + xmlAttribute.name);
+
+			xmlAttribute.attributeName = getXmlAttribute(node, "attributeName");
+			xmlAttribute.ns = getXmlAttribute(node, "ns");
+
+			handleCommonDataElementAttributes(node, xmlAttribute);
+			handleCommonDataElementChildren(node, xmlAttribute);
+			handleDataElementContainer(node, xmlAttribute);
+
+			return xmlAttribute;
+		}
+
 		protected DataElement handleChoice(XmlNode node, DataElementContainer parent)
 		{
-			Choice choice = new Choice();
+			var choice = new Choice();
 
 			// First name
 			if (hasXmlAttribute(node, "name"))
@@ -960,7 +1008,7 @@ namespace Peach.Core.Analyzers
 
 		protected Dom.String handleString(XmlNode node, DataElementContainer parent)
 		{
-			Dom.String str = new Dom.String();
+			var str = new Dom.String();
 
 			if (hasXmlAttribute(node, "name"))
 				str.name = getXmlAttribute(node, "name");
@@ -1142,7 +1190,7 @@ namespace Peach.Core.Analyzers
 
 		protected Number handleNumber(XmlNode node, DataElementContainer parent)
 		{
-			Number num = new Number();
+			var num = new Number();
 
 			if (hasXmlAttribute(node, "name"))
 				num.name = getXmlAttribute(node, "name");
@@ -1253,7 +1301,7 @@ namespace Peach.Core.Analyzers
 
 		protected Blob handleBlob(XmlNode node, DataElementContainer parent)
 		{
-			Blob blob = new Blob();
+			var blob = new Blob();
 
 			if (hasXmlAttribute(node, "name"))
 				blob.name = getXmlAttribute(node, "name");
@@ -1278,7 +1326,7 @@ namespace Peach.Core.Analyzers
 
 		protected Padding handlePadding(XmlNode node, DataElementContainer parent)
 		{
-			Padding padding = new Padding();
+			var padding = new Padding();
 
 			if (hasXmlAttribute(node, "name"))
 				padding.name = getXmlAttribute(node, "name");
@@ -1303,7 +1351,7 @@ namespace Peach.Core.Analyzers
 
 		protected Flags handleFlags(XmlNode node, DataElementContainer parent)
 		{
-			Flags flags = new Flags();
+			var flags = new Flags();
 
 			if (hasXmlAttribute(node, "name"))
 				flags.name = getXmlAttribute(node, "name");
@@ -1401,7 +1449,7 @@ namespace Peach.Core.Analyzers
 
 		protected DataElement handleFlag(XmlNode node, DataElement parent)
 		{
-			Flag flag = new Flag();
+			var flag = new Flag();
 
 			if (hasXmlAttribute(node, "name"))
 				flag.name = getXmlAttribute(node, "name");

@@ -226,6 +226,7 @@ namespace Peach
 				Engine e = new Engine(new ConsoleWatcher());
 				Dom dom = Analyzer.defaultParser.asParser(null, extra[0]);
 				config.pitFile = extra[0];
+				dom.evaulateDataModelAnalyzers();
 
 				foreach (string arg in args)
 					config.commandLine += arg + " ";

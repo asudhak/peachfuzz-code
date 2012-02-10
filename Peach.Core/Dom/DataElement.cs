@@ -295,6 +295,17 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		/// <summary>
+		/// Recursively execute analyzers
+		/// </summary>
+		public virtual void evaulateAnalyzers()
+		{
+			if (analyzer == null)
+				return;
+
+			analyzer.asDataElement(this, null);
+		}
+
 		public Dictionary<string, Hint> Hints
 		{
 			get { return hints; }

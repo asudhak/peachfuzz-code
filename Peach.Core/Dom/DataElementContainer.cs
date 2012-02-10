@@ -79,6 +79,20 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
+		/// Recursively execute analyzers
+		/// </summary>
+		public override void evaulateAnalyzers()
+		{
+			foreach (DataElement child in this._childrenList.ToArray())
+				child.evaulateAnalyzers();
+
+			if (analyzer == null)
+				return;
+
+			analyzer.asDataElement(this, null);
+		}
+
+		/// <summary>
 		/// Does container contain child element with name key?
 		/// </summary>
 		/// <param name="key">Name of child element to check</param>
