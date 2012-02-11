@@ -682,8 +682,9 @@ class Node(object):
 		if not node:
 			self = self.get_src()
 			node = self.find_node(lst)
-		if os.path.isdir(node.abspath()):
-			return None
+		if node:
+			if os.path.isdir(node.abspath()):
+				return None
 		return node
 
 	def find_or_declare(self, lst):
