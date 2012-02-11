@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class NumericalVarianceMutatorTests
     {
+        bool firstPass = true;
 		long? testValue = null;
         List<long?> listVals = new List<long?>();
 
@@ -62,11 +63,12 @@ namespace Peach.Core.Test.Mutators
 			e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 102);
-            for (int i = 1; i < listVals.Count; ++i)
-                Assert.AreEqual(49 + i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 101);
+            Assert.AreEqual(listVals[0], 50);
+            Assert.AreEqual(listVals[listVals.Count - 1], 150);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -118,11 +120,12 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 12);
-            for (int i = 1; i < listVals.Count; ++i)
-                Assert.AreEqual(94 + i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 11);
+            Assert.AreEqual(listVals[0], 95);
+            Assert.AreEqual(listVals[listVals.Count - 1], 105);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -173,11 +176,12 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 102);
-            for (int i = 1; i < listVals.Count; ++i)
-                Assert.AreEqual(49 + i, listVals[i]);
+            Assert.IsTrue(listVals.Count == 101);
+            Assert.AreEqual(listVals[0], 50);
+            Assert.AreEqual(listVals[listVals.Count - 1], 150);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -229,24 +233,35 @@ namespace Peach.Core.Test.Mutators
 
             // listVals should be empty!!
             Assert.IsEmpty(listVals);
+
+            // reset
+            firstPass = true;
         }
 
         void Action_FinishedTest(Dom.Action action)
 		{
-            // handle numbers
-            if (action.dataModel[0] is Number)
+            if (firstPass)
             {
-                testValue = (long)action.dataModel[0].InternalValue;
-                listVals.Add(testValue);
+                firstPass = false;
             }
-            // handle numerical strings
-            else if (action.dataModel[0] is Dom.String)
+            else
             {
-                long test = 0;
-                if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
+                // handle numbers
+                if (action.dataModel[0] is Number)
                 {
-                    testValue = test;
+                    //testValue = (long)action.dataModel[0].InternalValue;
+                    testValue = (long)action.origionalDataModel[0].MutatedValue;
                     listVals.Add(testValue);
+                }
+                // handle numerical strings
+                else if (action.dataModel[0] is Dom.String)
+                {
+                    long test = 0;
+                    if (Int64.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
+                    {
+                        testValue = test;
+                        listVals.Add(testValue);
+                    }
                 }
             }
 		}

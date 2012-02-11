@@ -68,9 +68,9 @@ namespace Peach.Core.Dom
 					stream.Write(child.Value, child);
 
 				// TODO - Remove this debugging code!
-				if (stream.TellBytes() != stream.Value.Length)
-					throw new ApplicationException("Whoa, something is way off here: " + 
-						stream.TellBytes() + " != " + stream.Value.Length);
+                //if (stream.TellBytes() != stream.Value.Length)
+                //    throw new ApplicationException("Whoa, something is way off here: " +
+                //        stream.TellBytes() + " != " + stream.Value.Length);
 
 				value = new Variant(stream);
 			}
