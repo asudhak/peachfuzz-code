@@ -4,7 +4,7 @@
 
 "Module called for configuring, compiling and installing targets"
 
-import os, shutil, traceback, errno, sys, stat
+import os, shlex, shutil, traceback, errno, sys, stat
 from waflib import Utils, Configure, Logs, Options, ConfigSet, Context, Errors, Build, Node
 
 build_dir_override = None
@@ -515,8 +515,15 @@ class DistCheck(Dist):
 			if t:
 				t.close()
 
+		cfg = []
+
+		if Options.options.distcheck_args:
+			cfg = shlex.split(Options.options.distcheck_args)
+		else:
+			cfg = [x for x in sys.argv if x.startswith('-')]
+
 		instdir = tempfile.mkdtemp('.inst', self.get_base_name())
-		ret = Utils.subprocess.Popen([sys.argv[0], 'configure', 'install', 'uninstall', '--destdir=' + instdir], cwd=self.get_base_name()).wait()
+		ret = Utils.subprocess.Popen([sys.argv[0], 'configure', 'install', 'uninstall', '--destdir=' + instdir] + cfg, cwd=self.get_base_name()).wait()
 		if ret:
 			raise Errors.WafError('distcheck failed with code %i' % ret)
 

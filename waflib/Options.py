@@ -93,6 +93,8 @@ class opt_parser(optparse.OptionParser):
 		gr.add_option('--destdir', help='installation root [default: %r]' % default_destdir, default=default_destdir, dest='destdir')
 		gr.add_option('-f', '--force', dest='force', default=False, action='store_true', help='force file installation')
 
+		gr.add_option('--distcheck-args', help='arguments to pass to distcheck', default=None, action='store')
+
 	def get_usage(self):
 		"""
 		Return the message to print on ``waf --help``
