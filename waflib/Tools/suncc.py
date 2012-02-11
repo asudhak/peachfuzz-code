@@ -23,7 +23,7 @@ def find_scc(conf):
 
 	try:
 		conf.cmd_and_log(cc + ['-flags'])
-	except:
+	except Exception:
 		conf.fatal('%r is not a Sun compiler' % cc)
 
 	v['CC']  = cc

@@ -812,7 +812,7 @@ class c_parser(object):
 		"""
 		try:
 			nd = node.ctx.cache_nd
-		except:
+		except AttributeError:
 			nd = node.ctx.cache_nd = {}
 
 		tup = (node, filename)
@@ -987,7 +987,7 @@ class c_parser(object):
 				elif token == 'define':
 					try:
 						self.defs[define_name(line)] = line
-					except:
+					except Exception:
 						raise PreprocError("Invalid define line %s" % line)
 				elif token == 'undef':
 					m = re_mac.match(line)

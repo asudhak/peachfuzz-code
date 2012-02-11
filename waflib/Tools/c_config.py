@@ -695,22 +695,22 @@ def run_c_code(self, *k, **kw):
 
 	try:
 		os.makedirs(dir)
-	except:
+	except OSError:
 		pass
 
 	try:
 		os.stat(dir)
-	except:
+	except OSError:
 		self.fatal('cannot use the configuration test folder %r' % dir)
 
 	cachemode = getattr(Options.options, 'confcache', None)
 	if cachemode == CACHE_RESULTS:
 		try:
 			proj = ConfigSet.ConfigSet(os.path.join(dir, 'cache_run_c_code'))
-			ret = proj['cache_run_c_code']
-		except:
+		except OSError:
 			pass
 		else:
+			ret = proj['cache_run_c_code']
 			if isinstance(ret, str) and ret.startswith('Test does not build'):
 				self.fatal(ret)
 			return ret
@@ -1139,7 +1139,7 @@ class cfgtask(Task.TaskBase):
 		bld.logger = self.logger
 		try:
 			bld.check(**self.args)
-		except:
+		except Exception:
 			return 1
 
 @conf

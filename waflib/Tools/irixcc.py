@@ -23,7 +23,7 @@ def find_irixcc(conf):
 
 	try:
 		conf.cmd_and_log(cc + ['-version'])
-	except:
+	except Exception:
 		conf.fatal('%r -version could not be executed' % cc)
 
 	v['CC']  = cc

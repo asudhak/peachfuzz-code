@@ -65,13 +65,13 @@ def check_ruby_version(self, minver=()):
 
 	try:
 		version = self.cmd_and_log([ruby, '-e', 'puts defined?(VERSION) ? VERSION : RUBY_VERSION']).strip()
-	except:
+	except Exception:
 		self.fatal('could not determine ruby version')
 	self.env.RUBY_VERSION = version
 
 	try:
 		ver = tuple(map(int, version.split(".")))
-	except:
+	except Exception:
 		self.fatal('unsupported ruby version %r' % version)
 
 	cver = ''
@@ -158,7 +158,7 @@ def check_ruby_module(self, module_name):
 	self.start_msg('Ruby module %s' % module_name)
 	try:
 		self.cmd_and_log([self.env['RUBY'], '-e', 'require \'%s\';puts 1' % module_name])
-	except:
+	except Exception:
 		self.end_msg(False)
 		self.fatal('Could not find the ruby module %r' % module_name)
 	self.end_msg(True)

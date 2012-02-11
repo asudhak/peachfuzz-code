@@ -21,7 +21,7 @@ def get_extensions(lst):
 			if not isinstance(x, str):
 				x = x.name
 			ret.append(x[x.rfind('.') + 1:])
-		except:
+		except Exception:
 			pass
 	return ret
 

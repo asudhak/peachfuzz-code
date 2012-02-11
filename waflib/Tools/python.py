@@ -63,7 +63,7 @@ def process_py(self, node):
 	try:
 		if not self.bld.is_install:
 			return
-	except:
+	except AttributeError:
 		return
 
 	try:
@@ -104,7 +104,7 @@ def install_pyfile(self, node, install_from=None):
 	if self.bld.is_install > 0:
 		try:
 			st1 = os.stat(path)
-		except:
+		except OSError:
 			error('The python file is missing, this should not happen')
 
 		for x in ['c', 'o']:

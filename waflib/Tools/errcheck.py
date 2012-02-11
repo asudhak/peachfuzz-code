@@ -36,7 +36,7 @@ def check_same_targets(self):
 			mp[node].append(tsk)
 		try:
 			uids[tsk.uid()].append(tsk)
-		except:
+		except KeyError:
 			uids[tsk.uid()] = [tsk]
 
 	for g in self.groups:

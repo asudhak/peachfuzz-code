@@ -311,7 +311,7 @@ def check_fortran_clib(self, autoadd=True, *k, **kw):
 			features = 'fc fcprogram_test',
 			linkflags = [self.env.FC_VERBOSE_FLAG]
 		)
-	except:
+	except Exception:
 		self.end_msg(False)
 		if kw.get('mandatory', True):
 			conf.fatal('Could not find the c library flags')

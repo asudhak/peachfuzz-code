@@ -122,7 +122,7 @@ def use_javac_files(self):
 	for x in names:
 		try:
 			y = get(x)
-		except:
+		except Exception:
 			self.uselib.append(x)
 		else:
 			y.post()
@@ -201,7 +201,7 @@ def use_jar_files(self):
 	for x in names:
 		try:
 			y = get(x)
-		except:
+		except Exception:
 			self.uselib.append(x)
 		else:
 			y.post()
@@ -226,7 +226,7 @@ class jar_create(Task.Task):
 			global JAR_RE
 			try:
 				self.inputs = [x for x in self.basedir.ant_glob(JAR_RE, remove=False) if id(x) != id(self.outputs[0])]
-			except:
+			except Exception:
 				raise Errors.WafError('Could not find the basedir %r for %r' % (self.basedir, self))
 		return super(jar_create, self).runnable_status()
 
@@ -422,7 +422,7 @@ def check_jni_headers(conf):
 		try:
 			conf.check(header_name='jni.h', define_name='HAVE_JNI_H', lib='jvm',
 				libpath=d, includes=incDirs, uselib_store='JAVA', uselib='JAVA')
-		except:
+		except Exception:
 			pass
 		else:
 			break

@@ -252,7 +252,7 @@ def use_rec(self, name, **kw):
 	for x in self.to_list(getattr(y, 'use', [])):
 		try:
 			p[x].append(name)
-		except:
+		except KeyError:
 			p[x] = [name]
 		self.use_rec(x, objects=objects, stlib=stlib)
 
@@ -334,7 +334,7 @@ def process_use(self):
 	for x in names:
 		try:
 			y = self.bld.get_tgen_by_name(x)
-		except:
+		except Exception:
 			if not self.env['STLIB_' + x] and not x in self.uselib:
 				self.uselib.append(x)
 		else:

@@ -109,7 +109,7 @@ def check_perl_module(self, module):
 	self.start_msg('perl module %s' % module)
 	try:
 		r = self.cmd_and_log(cmd)
-	except:
+	except Exception:
 		self.end_msg(False)
 		return None
 	self.end_msg(r or True)
