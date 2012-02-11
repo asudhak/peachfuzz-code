@@ -32,7 +32,7 @@ else:
 
 	try:
 		_type = unicode
-	except:
+	except NameError:
 		_type = str
 
 	to_int = lambda number, default: number and int(number) or default

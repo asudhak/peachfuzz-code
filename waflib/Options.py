@@ -203,7 +203,7 @@ class OptionsContext(Context.Context):
 		"""
 		try:
 			gr = self.option_groups[k[0]]
-		except:
+		except KeyError:
 			gr = self.parser.add_option_group(*k, **kw)
 		self.option_groups[k[0]] = gr
 		return gr

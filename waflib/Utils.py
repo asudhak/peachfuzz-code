@@ -21,31 +21,31 @@ except ImportError:
 			return self.pop(0)
 try:
 	import _winreg as winreg
-except:
+except ImportError:
 	try:
 		import winreg
-	except:
+	except ImportError:
 		winreg = None
 
 from waflib import Errors
 
 try:
 	from collections import UserDict
-except:
+except ImportError:
 	from UserDict import UserDict
 
 try:
 	from hashlib import md5
-except:
+except ImportError:
 	try:
 		from md5 import md5
-	except:
+	except ImportError:
 		# never fail to enable fixes from another module
 		pass
 
 try:
 	import threading
-except:
+except ImportError:
 	class threading(object):
 		"""
 			A fake threading class for platforms lacking the threading module.
@@ -66,7 +66,7 @@ else:
 			run_old(*args, **kwargs)
 		except (KeyboardInterrupt, SystemExit):
 			raise
-		except:
+		except Exception:
 			sys.excepthook(*sys.exc_info())
 	threading.Thread.run = run
 
@@ -167,7 +167,7 @@ def h_file(filename):
 
 try:
 	x = ''.encode('hex')
-except:
+except LookupError:
 	import binascii
 	def to_hex(s):
 		ret = binascii.hexlify(s)
@@ -197,7 +197,7 @@ if is_win32:
 		if not s:
 			try:
 				import ctypes
-			except:
+			except ImportError:
 				# there is nothing much we can do
 				return [x + ':\\' for x in list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')]
 			else:
