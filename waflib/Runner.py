@@ -10,7 +10,7 @@ Runner.py: Task scheduling and execution
 import random, atexit
 try:
 	from queue import Queue
-except:
+except ImportError:
 	from Queue import Queue
 from waflib import Utils, Task, Errors, Logs
 
@@ -40,7 +40,7 @@ class TaskConsumer(Utils.threading.Thread):
 		"""
 		try:
 			self.loop()
-		except:
+		except Exception:
 			pass
 
 	def loop(self):
@@ -70,7 +70,7 @@ def get_pool():
 	"""
 	try:
 		return pool.get(False)
-	except:
+	except Exception:
 		return TaskConsumer()
 
 def put_pool(x):
@@ -176,7 +176,7 @@ class Parallel(object):
 			elif self.frozen:
 				try:
 					cond = self.deadlock == self.processed
-				except:
+				except AttributeError:
 					pass
 				else:
 					if cond:
@@ -268,7 +268,7 @@ class Parallel(object):
 			self.out.put(self)
 		try:
 			pool = self.pool
-		except:
+		except AttributeError:
 			pass
 		else:
 			for x in pool:

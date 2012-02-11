@@ -230,7 +230,7 @@ class TaskBase(evil):
 		# in case of failure the task will be executed again
 		try:
 			del self.generator.bld.task_sigs[self.uid()]
-		except:
+		except KeyError:
 			pass
 
 		try:
@@ -707,7 +707,7 @@ class Task(TaskBase):
 			try:
 				if prev == self.compute_sig_implicit_deps():
 					return prev
-			except:
+			except Exception:
 				# when a file was renamed (IOError usually), remove the stale nodes (headers in folders without source files)
 				# this will break the order calculation for headers created during the build in the source directory (should be uncommon)
 				# the behaviour will differ when top != out
@@ -715,10 +715,10 @@ class Task(TaskBase):
 					if x.is_child_of(bld.srcnode):
 						try:
 							os.stat(x.abspath())
-						except:
+						except OSErrror:
 							try:
 								del x.parent.children[x.name]
-							except:
+							except KeyError:
 								pass
 			del bld.task_sigs[(key, 'imp')]
 			raise Errors.TaskRescan('rescan')
@@ -738,12 +738,12 @@ class Task(TaskBase):
 		# recompute the signature and return it
 		try:
 			bld.task_sigs[(key, 'imp')] = sig = self.compute_sig_implicit_deps()
-		except:
+		except Exception:
 			if Logs.verbose:
 				for k in bld.node_deps.get(self.uid(), []):
 					try:
 						k.get_bld_sig()
-					except:
+					except Exception:
 						Logs.warn('Missing signature for node %r (may cause rebuilds)' % k)
 		else:
 			return sig
@@ -780,7 +780,7 @@ class Task(TaskBase):
 		bld = self.generator.bld
 		try:
 			cache = bld.dct_implicit_nodes
-		except:
+		except AttributeError:
 			bld.dct_implicit_nodes = cache = {}
 
 		try:
@@ -878,7 +878,7 @@ class Task(TaskBase):
 
 		try:
 			shutil.rmtree(dname)
-		except:
+		except Exception:
 			pass
 
 		try:
@@ -888,7 +888,7 @@ class Task(TaskBase):
 		except (OSError, IOError):
 			try:
 				shutil.rmtree(tmpdir)
-			except:
+			except Exception:
 				pass
 		else:
 			try:
@@ -896,12 +896,12 @@ class Task(TaskBase):
 			except OSError:
 				try:
 					shutil.rmtree(tmpdir)
-				except:
+				except Exception:
 					pass
 			else:
 				try:
 					os.chmod(dname, Utils.O755)
-				except:
+				except Exception:
 					pass
 
 def is_before(t1, t2):

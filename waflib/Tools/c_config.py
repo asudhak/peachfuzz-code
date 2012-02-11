@@ -1127,6 +1127,9 @@ class cfgtask(Task.TaskBase):
 	def runnable_status(self):
 		return Task.RUN_ME
 
+	def uid(self):
+		return Utils.SIG_NIL
+
 	def run(self):
 		conf = self.conf
 		bld = Build.BuildContext(top_dir=conf.srcnode.abspath(), out_dir=conf.bldnode.abspath())
@@ -1152,6 +1155,7 @@ def multicheck(self, *k, **kw):
 			self.cache_global = Options.cache_global
 			self.nocache = Options.options.nocache
 			self.returned_tasks = []
+			self.task_sigs = {}
 		def total(self):
 			return len(tasks)
 		def to_log(self, *k, **kw):

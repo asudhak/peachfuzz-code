@@ -196,12 +196,12 @@ class Node(object):
 				shutil.rmtree(self.abspath())
 			else:
 				os.unlink(self.abspath())
-		except:
+		except OSError:
 			pass
 
 		try:
 			delattr(self, 'children')
-		except:
+		except AttributeError:
 			pass
 
 	def suffix(self):
@@ -234,7 +234,7 @@ class Node(object):
 
 		try:
 			self.parent.mkdir()
-		except:
+		except OSError:
 			pass
 
 		if self.name:
@@ -248,7 +248,7 @@ class Node(object):
 
 			try:
 				self.children
-			except:
+			except AttributeError:
 				self.children = {}
 
 		self.cache_isdir = True
@@ -271,17 +271,21 @@ class Node(object):
 				continue
 
 			try:
-				if x in cur.children:
+				ch = cur.children
+			except AttributeError:
+				cur.children = {}
+			else:
+				try:
 					cur = cur.children[x]
 					continue
-			except:
-				cur.children = {}
+				except KeyError:
+					pass
 
 			# optimistic: create the node first then look if it was correct to do so
 			cur = self.__class__(x, cur)
 			try:
 				os.stat(cur.abspath())
-			except:
+			except OSError:
 				del cur.parent.children[x]
 				return None
 
@@ -289,7 +293,7 @@ class Node(object):
 
 		try:
 			os.stat(ret.abspath())
-		except:
+		except OSError:
 			del ret.parent.children[ret.name]
 			return None
 
@@ -338,15 +342,15 @@ class Node(object):
 			lst = [x for x in split_path(lst) if x and x != '.']
 
 		cur = self
-		try:
-			for x in lst:
-				if x == '..':
-					cur = cur.parent or cur
-				else:
+		for x in lst:
+			if x == '..':
+				cur = cur.parent or cur
+			else:
+				try:
 					cur = cur.children[x]
-			return cur
-		except:
-			pass
+				except (AttributeError, KeyError):
+					return None
+		return cur
 
 	def path_from(self, node):
 		"""
@@ -398,7 +402,7 @@ class Node(object):
 		"""
 		try:
 			return self.cache_abspath
-		except:
+		except AttributeError:
 			pass
 		# think twice before touching this (performance + complexity + correctness)
 
@@ -460,11 +464,12 @@ class Node(object):
 
 		try:
 			lst = set(self.children.keys())
+		except AttributeError:
+			self.children = {}
+		else:
 			if remove:
 				for x in lst - set(dircont):
 					del self.children[x]
-		except:
-			self.children = {}
 
 		for name in dircont:
 			npats = accept(name, pats)
@@ -677,12 +682,8 @@ class Node(object):
 		if not node:
 			self = self.get_src()
 			node = self.find_node(lst)
-		try:
-			pat = node.abspath()
-			if os.path.isdir(pat):
-				return None
-		except:
-			pass
+		if os.path.isdir(node.abspath()):
+			return None
 		return node
 
 	def find_or_declare(self, lst):
@@ -704,7 +705,7 @@ class Node(object):
 				node.sig = None
 				try:
 					node.parent.mkdir()
-				except:
+				except OSError:
 					pass
 			return node
 		self = self.get_src()
@@ -714,7 +715,7 @@ class Node(object):
 				node.sig = None
 				try:
 					node.parent.mkdir()
-				except:
+				except OSError:
 					pass
 			return node
 		node = self.get_bld().make_node(lst)
