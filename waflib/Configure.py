@@ -17,7 +17,7 @@ from waflib import ConfigSet, Utils, Options, Logs, Context, Build, Errors
 
 try:
 	from urllib import request
-except:
+except ImportError:
 	from urllib import urlopen
 else:
 	urlopen = request.urlopen
@@ -72,11 +72,11 @@ def download_tool(tool, force=False, ctx=None):
 				download_check(tmp)
 				try:
 					module = Context.load_tool(tool)
-				except:
+				except Exception:
 					Logs.warn('The tool %s from %s is unusable' % (tool, url))
 					try:
 						tmp.delete()
-					except:
+					except Exception:
 						pass
 					continue
 				return module
@@ -559,7 +559,7 @@ def find_perl_program(self, filename, path_list=[], var=None, environ=None, exts
 
 	try:
 		app = self.find_program(filename, path_list=path_list, var=var, environ=environ, exts=exts)
-	except:
+	except Exception:
 		self.find_program('perl', var='PERL')
 		app = self.find_file(filename, os.environ['PATH'].split(os.pathsep))
 		if not app:

@@ -12,7 +12,7 @@ _nocolor = os.environ.get('NOCOLOR', 'no') not in ('no', '0', 'false')
 try:
 	if not _nocolor:
 		import waflib.ansiterm
-except:
+except ImportError:
 	# optional module for colors on win32, just ignore if it cannot be imported
 	pass
 
@@ -71,7 +71,7 @@ else:
 		# try the function once to see if it really works
 		try:
 			get_term_cols_real()
-		except:
+		except Exception:
 			pass
 		else:
 			get_term_cols = get_term_cols_real
@@ -155,7 +155,7 @@ class formatter(logging.Formatter):
 		if rec.levelno >= logging.WARNING or rec.levelno == logging.INFO:
 			try:
 				msg = rec.msg.decode('utf-8')
-			except:
+			except Exception:
 				msg = rec.msg
 			return '%s%s%s' % (rec.c1, msg, rec.c2)
 		return logging.Formatter.format(self, rec)

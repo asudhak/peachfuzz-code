@@ -10,8 +10,10 @@ The inheritance tree is the following:
 """
 
 import os, sys, errno, re, shutil
-try: import cPickle
-except: import pickle as cPickle
+try:
+	import cPickle
+except ImportError:
+	import pickle as cPickle
 from waflib import Runner, TaskGen, Utils, ConfigSet, Task, Logs, Options, Context, Errors
 import waflib.Node
 
@@ -1198,7 +1200,7 @@ class ListContext(BuildContext):
 		try:
 			# force the cache initialization
 			self.get_tgen_by_name('')
-		except:
+		except Exception:
 			pass
 		lst = list(self.task_gen_cache_names.keys())
 		lst.sort()

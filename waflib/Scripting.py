@@ -72,7 +72,7 @@ def waf_entry_point(current_directory, version, wafdir):
 						# if the filesystem features symlinks, compare the inode numbers
 						try:
 							ino2 = os.stat(x)[stat.ST_INO]
-						except:
+						except OSError:
 							pass
 						else:
 							if ino == ino2:
@@ -258,18 +258,18 @@ def distclean_dir(dirname):
 				fname = root + os.sep + f
 				try:
 					os.unlink(fname)
-				except:
+				except OSError:
 					Logs.warn('could not remove %r' % fname)
 
 	for x in [Context.DBFILE, 'config.log']:
 		try:
 			os.unlink(x)
-		except:
+		except OSError:
 			pass
 
 	try:
 		shutil.rmtree('c4che')
-	except:
+	except OSError:
 		pass
 
 def distclean(ctx):
@@ -279,7 +279,7 @@ def distclean(ctx):
 		if f == Options.lockfile:
 			try:
 				proj = ConfigSet.ConfigSet(f)
-			except:
+			except IOError:
 				Logs.warn('could not read %r' % f)
 				continue
 
@@ -333,13 +333,13 @@ class Dist(Context.Context):
 
 		try:
 			self.base_path
-		except:
+		except AttributeError:
 			self.base_path = self.path
 
 		node = self.base_path.make_node(arch_name)
 		try:
 			node.delete()
-		except:
+		except Exception:
 			pass
 
 		files = self.get_files()
@@ -367,7 +367,7 @@ class Dist(Context.Context):
 			from sha import sha
 		try:
 			digest = " (sha=%r)" % sha(node.read()).hexdigest()
-		except:
+		except Exception:
 			digest = ''
 
 		Logs.info('New archive created: %s%s' % (self.arch_name, digest))
@@ -401,7 +401,7 @@ class Dist(Context.Context):
 	def get_tar_prefix(self):
 		try:
 			return self.tar_prefix
-		except:
+		except AttributeError:
 			return self.get_base_name()
 
 	def get_arch_name(self):
@@ -415,7 +415,7 @@ class Dist(Context.Context):
 		"""
 		try:
 			self.arch_name
-		except:
+		except AttributeError:
 			self.arch_name = self.get_base_name() + '.' + self.ext_algo.get(self.algo, self.algo)
 		return self.arch_name
 
@@ -431,7 +431,7 @@ class Dist(Context.Context):
 		"""
 		try:
 			self.base_name
-		except:
+		except AttributeError:
 			appname = getattr(Context.g_module, Context.APPNAME, 'noname')
 			version = getattr(Context.g_module, Context.VERSION, '1.0')
 			self.base_name = appname + '-' + version
@@ -449,7 +449,7 @@ class Dist(Context.Context):
 		"""
 		try:
 			return self.excl
-		except:
+		except AttributeError:
 			self.excl = Node.exclude_regs + ' **/waf-1.6.* **/.waf-1.6* **/waf3-1.6.* **/.waf3-1.6* **/*~ **/*.rej **/*.orig **/*.pyc **/*.pyo **/*.bak **/*.swp **/.lock-w*'
 			nd = self.root.find_node(Context.out_dir)
 			if nd:
@@ -473,7 +473,7 @@ class Dist(Context.Context):
 		"""
 		try:
 			files = self.files
-		except:
+		except AttributeError:
 			files = self.base_path.ant_glob('**/*', excl=self.get_excl())
 		return files
 

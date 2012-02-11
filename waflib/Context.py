@@ -257,7 +257,7 @@ class Context(ctx):
 		"""
 		try:
 			cache = self.recurse_cache
-		except:
+		except AttributeError:
 			cache = self.recurse_cache = {}
 
 		for d in Utils.to_list(dirs):
@@ -426,7 +426,7 @@ class Context(ctx):
 			self.logger.info('from %s: %s' % (self.path.abspath(), msg))
 		try:
 			msg = '%s\n(complete log in %s)' % (msg, self.logger.handlers[0].baseFilename)
-		except:
+		except Exception:
 			pass
 		raise self.errors.ConfigurationError(msg, ex=ex)
 
@@ -485,7 +485,7 @@ class Context(ctx):
 			if self.in_msg:
 				self.in_msg += 1
 				return
-		except:
+		except AttributeError:
 			self.in_msg = 0
 		self.in_msg += 1
 
@@ -587,13 +587,15 @@ def load_tool(tool, tooldir=None):
 		global waf_dir
 		try:
 			os.stat(os.path.join(waf_dir, 'waflib', 'extras', tool + '.py'))
-			d = 'waflib.extras.%s' % tool
-		except:
+		except OSError:
 			try:
 				os.stat(os.path.join(waf_dir, 'waflib', 'Tools', tool + '.py'))
-				d = 'waflib.Tools.%s' % tool
-			except:
+			except OSError:
 				d = tool # user has messed with sys.path
+			else:
+				d = 'waflib.Tools.%s' % tool
+		else:
+			d = 'waflib.extras.%s' % tool
 
 		__import__(d)
 		ret = sys.modules[d]
