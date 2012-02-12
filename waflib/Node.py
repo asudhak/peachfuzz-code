@@ -204,6 +204,10 @@ class Node(object):
 		except AttributeError:
 			pass
 
+	def evict(self):
+		"""Internal - called when a node is removed"""
+		del self.parent.children[self.name]
+
 	def suffix(self):
 		"""Return the file extension"""
 		k = max(0, self.name.rfind('.'))
@@ -286,7 +290,7 @@ class Node(object):
 			try:
 				os.stat(cur.abspath())
 			except OSError:
-				del cur.parent.children[x]
+				cur.evict()
 				return None
 
 		ret = cur
@@ -294,7 +298,7 @@ class Node(object):
 		try:
 			os.stat(ret.abspath())
 		except OSError:
-			del ret.parent.children[ret.name]
+			ret.evict()
 			return None
 
 		try:
@@ -469,7 +473,7 @@ class Node(object):
 		else:
 			if remove:
 				for x in lst - set(dircont):
-					del self.children[x]
+					self.children[x].evict()
 
 		for name in dircont:
 			npats = accept(name, pats)

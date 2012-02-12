@@ -3,6 +3,7 @@ NEW IN WAF 1.7.0
 * Do not load the compat15 tool by default
 * Minor API cleanup
 * Require Python >= 2.4
+* Utils.writef (similar to Utils.readf)
 
 NEW IN WAF 1.6.11
 -----------------
