@@ -134,6 +134,29 @@ def readf(fname, m='r'):
 		f.close()
 	return txt
 
+def writef(fname, data, m='w'):
+	"""
+	Write an entire file from a string, in practice the wrapper
+	node.write(..) should be used instead of this method::
+
+		def build(ctx):
+			from waflib import Utils
+			txt = Utils.writef(self.path.make_node('i_like_kittens').abspath(), 'some data')
+			self.path.make_node('i_like_kittens').write('some data')
+
+	:type  fname: string
+	:param fname: Path to file
+	:type   data: string
+	:param  data: The contents to write to the file
+	:type  m: string
+	:param m: Open mode
+	"""
+	f = open(fname, m)
+	try:
+		txt = f.write(data)
+	finally:
+		f.close()
+
 def h_file(filename):
 	"""
 	Compute a hash value for a file by using md5. This method may be replaced by
