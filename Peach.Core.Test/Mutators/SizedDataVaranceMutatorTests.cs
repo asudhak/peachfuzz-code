@@ -80,11 +80,13 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listResults.Count == 56);
-            for (int i = 1; i < 56; ++i)
+            Assert.IsTrue(listResults.Count == 55);
+            for (int i = 0; i < 55; ++i)
             {
-                if (i == 5)
+                // 5th element will obviously have a length of 5
+                if (i == 4)
                     continue;
+
                 Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
             }
 
@@ -144,11 +146,13 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listResults.Count == 11);
-            for (int i = 1; i < 11; ++i)
+            Assert.IsTrue(listResults.Count == 10);
+            for (int i = 0; i < 10; ++i)
             {
-                if (i == 5)
+                // 5th element will obviously have a length of 5
+                if (i == 4)
                     continue;
+
                 Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
             }
 
@@ -166,8 +170,8 @@ namespace Peach.Core.Test.Mutators
             else
             {
                 TestResult tr;
-                tr.size = (long)action.origionalDataModel[0].MutatedValue;
-                tr.value = action.origionalDataModel[1].Value.Value;
+                tr.size = (long)action.dataModel[0].InternalValue;
+                tr.value = action.dataModel[1].Value.Value;
                 listResults.Add(tr);
             }
         }

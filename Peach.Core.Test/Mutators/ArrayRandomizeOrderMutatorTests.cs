@@ -72,7 +72,7 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             byte[] ogArray = { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') };
-            Assert.IsTrue(listVals.Count == 51);
+            Assert.IsTrue(listVals.Count == 50);
 
             for (int i = 0; i < listVals.Count - 1; ++i)
             {
@@ -142,7 +142,7 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             byte[] ogArray = { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') };
-            Assert.IsTrue(listVals.Count == 6);
+            Assert.IsTrue(listVals.Count == 5);
 
             for (int i = 0; i < listVals.Count - 1; ++i)
             {
@@ -164,7 +164,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testValue = action.origionalDataModel[0].Value.Value;
+                testValue = action.dataModel[0].Value.Value;
                 listVals.Add(testValue);
             }
         }

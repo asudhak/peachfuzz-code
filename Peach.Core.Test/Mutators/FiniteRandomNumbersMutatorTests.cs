@@ -72,7 +72,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 5001);
+            Assert.IsTrue(listVals.Count == 5000);
 
             // reset
             firstPass = true;
@@ -127,7 +127,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 6);
+            Assert.IsTrue(listVals.Count == 5);
 
             // reset
             firstPass = true;
@@ -183,7 +183,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsUInt.Count == 11);
+            Assert.IsTrue(listValsUInt.Count == 10);
 
             // reset
             firstPass = true;
@@ -237,7 +237,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 101);
+            Assert.IsTrue(listVals.Count == 100);
             for (int i = 0; i < listVals.Count; ++i)
             {
                 Assert.GreaterOrEqual(listVals[i], int.MinValue);
@@ -296,7 +296,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsUInt.Count == 101);
+            Assert.IsTrue(listValsUInt.Count == 100);
             for (int i = 0; i < listValsUInt.Count; ++i)
             {
                 Assert.GreaterOrEqual(listValsUInt[i], uint.MinValue);
@@ -355,7 +355,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsLong.Count == 101);
+            Assert.IsTrue(listValsLong.Count == 100);
             for (int i = 0; i < listValsLong.Count; ++i)
             {
                 Assert.GreaterOrEqual(listValsLong[i], long.MinValue);
@@ -414,7 +414,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listValsULong.Count == 101);
+            Assert.IsTrue(listValsULong.Count == 100);
             for (int i = 0; i < listValsULong.Count; ++i)
             {
                 Assert.GreaterOrEqual(listValsULong[i], ulong.MinValue);
@@ -435,7 +435,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testValue = (int)action.origionalDataModel[0].MutatedValue;
+                testValue = (int)action.dataModel[0].InternalValue;
                 listVals.Add(testValue);
             }
         }
@@ -451,14 +451,14 @@ namespace Peach.Core.Test.Mutators
                 // handle numbers
                 if (action.dataModel[0] is Number)
                 {
-                    testValueUInt = (uint)action.origionalDataModel[0].MutatedValue;
+                    testValueUInt = (uint)action.dataModel[0].InternalValue;
                     listValsUInt.Add(testValueUInt);
                 }
                 // handle numerical strings
                 else if (action.dataModel[0] is Dom.String)
                 {
                     uint test = 0;
-                    if (UInt32.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
+                    if (UInt32.TryParse((string)action.dataModel[0].InternalValue, out test))
                     {
                         testValueUInt = test;
                         listValsUInt.Add(testValueUInt);
@@ -475,7 +475,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testValueLong = (long)action.origionalDataModel[0].MutatedValue;
+                testValueLong = (long)action.dataModel[0].InternalValue;
                 listValsLong.Add(testValueLong);
             }
         }
@@ -488,7 +488,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testValueULong = (ulong)action.origionalDataModel[0].MutatedValue;
+                testValueULong = (ulong)action.dataModel[0].InternalValue;
                 listValsULong.Add(testValueULong);
             }
         }

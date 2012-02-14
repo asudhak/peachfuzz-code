@@ -62,7 +62,7 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             for (int i = 0; i < 49; ++i)
-                Assert.AreEqual(i + 1, results[i].Count);
+                Assert.AreEqual(i + 2, results[i].Count);
 
             // reset
             firstPass = true;
@@ -164,7 +164,6 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                //results.Add(action.origionalDataModel);
                 results.Add(action.dataModel);
             }
         }

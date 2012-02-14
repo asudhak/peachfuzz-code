@@ -67,35 +67,35 @@ namespace Peach.Core.Test.Mutators
             // verify values
             Assert.IsTrue(results.Count == 5);
 
-            //Assert.IsTrue(results[1].Count == 4);
-            //Assert.AreEqual(results[1][0].name, "num1");
-            //Assert.AreEqual(results[1][1].name, "num2");
-            //Assert.AreEqual(results[1][2].name, "num3");
-            //Assert.AreEqual(results[1][3].name, "num4");
+            Assert.IsTrue(results[0].Count == 4);
+            Assert.AreEqual(results[0][0].name, "num1");
+            Assert.AreEqual(results[0][1].name, "num2");
+            Assert.AreEqual(results[0][2].name, "num3");
+            Assert.AreEqual(results[0][3].name, "num4");
 
-            //Assert.IsTrue(results[2].Count == 3);
-            //Assert.AreEqual(results[1][0].name, "num0");
-            //Assert.AreEqual(results[1][1].name, "num2");
-            //Assert.AreEqual(results[1][2].name, "num3");
-            //Assert.AreEqual(results[1][3].name, "num4");
+            Assert.IsTrue(results[1].Count == 4);
+            Assert.AreEqual(results[1][0].name, "num0");
+            Assert.AreEqual(results[1][1].name, "num2");
+            Assert.AreEqual(results[1][2].name, "num3");
+            Assert.AreEqual(results[1][3].name, "num4");
 
-            //Assert.IsTrue(results[3].Count == 2);
-            //Assert.AreEqual(results[2][0].name, "num0");
-            //Assert.AreEqual(results[2][1].name, "num1");
-            //Assert.AreEqual(results[2][1].name, "num3");
-            //Assert.AreEqual(results[2][2].name, "num4");
+            Assert.IsTrue(results[2].Count == 4);
+            Assert.AreEqual(results[2][0].name, "num0");
+            Assert.AreEqual(results[2][1].name, "num1");
+            Assert.AreEqual(results[2][2].name, "num3");
+            Assert.AreEqual(results[2][3].name, "num4");
 
-            //Assert.IsTrue(results[4].Count == 1);
-            //Assert.AreEqual(results[3][0].name, "num0");
-            //Assert.AreEqual(results[3][1].name, "num1");
-            //Assert.AreEqual(results[3][2].name, "num2");
-            //Assert.AreEqual(results[3][1].name, "num4");
+            Assert.IsTrue(results[3].Count == 4);
+            Assert.AreEqual(results[3][0].name, "num0");
+            Assert.AreEqual(results[3][1].name, "num1");
+            Assert.AreEqual(results[3][2].name, "num2");
+            Assert.AreEqual(results[3][3].name, "num4");
 
-            //Assert.IsTrue(results[4].Count == 4);
-            //Assert.AreEqual(results[4][0].name, "num0");
-            //Assert.AreEqual(results[4][1].name, "num1");
-            //Assert.AreEqual(results[4][2].name, "num2");
-            //Assert.AreEqual(results[4][3].name, "num3");
+            Assert.IsTrue(results[4].Count == 4);
+            Assert.AreEqual(results[4][0].name, "num0");
+            Assert.AreEqual(results[4][1].name, "num1");
+            Assert.AreEqual(results[4][2].name, "num2");
+            Assert.AreEqual(results[4][3].name, "num3");
 
             // reset
             firstPass = true;
@@ -110,7 +110,6 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                //results.Add(action.origionalDataModel);
                 results.Add(action.dataModel);
             }
         }

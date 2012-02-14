@@ -92,7 +92,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testValue = action.origionalDataModel[0].Value.Value;
+                testValue = action.dataModel[0].Value.Value;
                 listVals.Add(testValue);
             }
         }

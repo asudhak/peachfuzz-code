@@ -64,19 +64,14 @@ namespace Peach.Core.Test.Mutators
 			e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 102);
-            Assert.AreEqual(listVals[1], 50);
+            Assert.IsTrue(listVals.Count == 101);
+            Assert.AreEqual(listVals[0], 50);
             Assert.AreEqual(listVals[listVals.Count - 1], 150);
 
             // reset
             firstPass = true;
             testValue = null;
             listVals.Clear();
-        }
-
-        void Action_Starting(Dom.Action action)
-        {
-            System.Diagnostics.Debugger.Break();
         }
 
         [Test]
@@ -244,33 +239,36 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
         }
 
+        void Action_Starting(Dom.Action action)
+        {
+            System.Diagnostics.Debugger.Break();
+        }
+
         void Action_FinishedTest(Dom.Action action)
 		{
-            // handle numbers
-            if (action.dataModel[0] is Number)
+            if (firstPass)
             {
-                testValue = (long)action.dataModel[0].InternalValue;
-                //testValue = (long)action.origionalDataModel[0].MutatedValue;
-                listVals.Add(testValue);
+                firstPass = false;
             }
-            // handle numerical strings
-            else if (action.dataModel[0] is Dom.String)
+            else
             {
-                long test = 0;
-                if (Int64.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
+                // handle numbers
+                if (action.dataModel[0] is Number)
                 {
-                    testValue = test;
+                    testValue = (long)action.dataModel[0].InternalValue;
                     listVals.Add(testValue);
                 }
+                // handle numerical strings
+                else if (action.dataModel[0] is Dom.String)
+                {
+                    long test = 0;
+                    if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
+                    {
+                        testValue = test;
+                        listVals.Add(testValue);
+                    }
+                }
             }
-
-            //if (firstPass)
-            //{
-            //    firstPass = false;
-            //}
-            //else
-            //{
-            //}
 		}
     }
 }

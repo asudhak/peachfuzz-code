@@ -53,7 +53,7 @@ namespace Peach.Core.Test.Mutators
 
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
-            dom.tests[0].includedMutators.Add("XmlW3CMutator");
+            dom.tests[0].includedMutators.Add("XmlW3CParserTestsMutator");
 
             RunConfiguration config = new RunConfiguration();
 
@@ -79,7 +79,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                result = (byte[])action.origionalDataModel[0].MutatedValue;
+                result = (byte[])action.dataModel[0].InternalValue;
                 testResults.Add(result);
             }
         }

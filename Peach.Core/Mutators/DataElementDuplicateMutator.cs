@@ -40,15 +40,11 @@ namespace Peach.Core.Mutators
         //
         int currentCount;
         int maxCount;
-        int ctr;
-        bool updateMax;
 
         // CTOR
         //
         public DataElementDuplicateMutator(DataElement obj)
         {
-            ctr = 1;
-            updateMax = true;
             currentCount = 2;
             maxCount = 50;
             name = "DataElementDuplicateMutator";
@@ -87,28 +83,26 @@ namespace Peach.Core.Mutators
             var newElem = ObjectCopier.Clone<DataElement>(obj);
             var originalName = newElem.name;
 
-            newElem.name = originalName + "_" + ctr;
-            obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
-            ++ctr;
+            for (int i = 0; i < currentCount - 1; ++i)
+            {
+                newElem.name = originalName + "_" + i;
+                obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
+            }
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            if (updateMax)
-            {
-                int newMax = context.random.Next(maxCount);
-                maxCount = newMax;
-                updateMax = false;
-            }
-
             var newElem = ObjectCopier.Clone<DataElement>(obj);
             var originalName = newElem.name;
+            int newCount = context.random.Next(currentCount);
 
-            newElem.name = originalName + "_" + ctr;
-            obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
-            ++ctr;
+            for (int i = 0; i < newCount; ++i)
+            {
+                newElem.name = originalName + "_" + i;
+                obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
+            }
         }
 	}
 }

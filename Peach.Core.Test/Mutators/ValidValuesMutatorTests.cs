@@ -63,9 +63,6 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove starting default string ("Hello, World!")
-            testResults.RemoveAt(0);
-
             // verify values
             Assert.IsTrue(testResults[0] == "one");
             Assert.IsTrue(testResults[1] == "two");
@@ -89,7 +86,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testString = (string)action.origionalDataModel[0].MutatedValue;
+                testString = (string)action.dataModel[0].InternalValue;
                 testResults.Add(testString);
             }
         }

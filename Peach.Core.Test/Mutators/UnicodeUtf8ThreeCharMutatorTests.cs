@@ -86,7 +86,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                result = (byte[])action.origionalDataModel[0].MutatedValue;
+                result = (byte[])action.dataModel[0].InternalValue;
                 testResults.Add(result);
             }
         }

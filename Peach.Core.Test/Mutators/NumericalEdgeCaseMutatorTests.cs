@@ -555,14 +555,14 @@ namespace Peach.Core.Test.Mutators
                 // handle numbers
                 if (action.dataModel[0] is Number)
                 {
-                    testValue = (long)action.origionalDataModel[0].MutatedValue;
+                    testValue = (long)action.dataModel[0].InternalValue;
                     listVals.Add(testValue);
                 }
                 // handle numerical strings
                 else if (action.dataModel[0] is Dom.String)
                 {
                     long test = 0;
-                    if (Int64.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
+                    if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
                     {
                         testValue = test;
                         listVals.Add(testValue);
@@ -579,7 +579,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                ulongTestValue = (ulong)action.origionalDataModel[0].MutatedValue;
+                ulongTestValue = (ulong)action.dataModel[0].InternalValue;
                 ulongListVals.Add(ulongTestValue);
             }
         }

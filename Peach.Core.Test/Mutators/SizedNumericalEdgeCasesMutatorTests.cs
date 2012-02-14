@@ -79,7 +79,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 1; i < listResults.Count; ++i)
+            for (int i = 0; i < listResults.Count; ++i)
                 Assert.AreEqual(listResults[i].size, listResults[i].value.Length);
 
             // reset
@@ -96,8 +96,8 @@ namespace Peach.Core.Test.Mutators
             else
             {
                 TestResult tr;
-                tr.size = (long)action.origionalDataModel[0].MutatedValue;
-                tr.value = action.origionalDataModel[1].Value.Value;
+                tr.size = (long)action.dataModel[0].InternalValue;
+                tr.value = action.dataModel[1].Value.Value;
                 listResults.Add(tr);
             }
         }

@@ -498,7 +498,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                result = action.origionalDataModel[0].Value.Value;
+                result = action.dataModel[0].Value.Value;
                 testResults.Add(result);
             }
         }

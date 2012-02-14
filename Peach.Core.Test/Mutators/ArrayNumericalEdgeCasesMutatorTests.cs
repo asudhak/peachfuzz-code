@@ -71,7 +71,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 507);
+            Assert.IsTrue(listVals.Count == 505);
 
             // reset
             firstPass = true;
@@ -135,7 +135,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 57);
+            Assert.IsTrue(listVals.Count == 55);
 
             // reset
             firstPass = true;
@@ -151,7 +151,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testValue = action.origionalDataModel[0].Value.Value;
+                testValue = action.dataModel[0].Value.Value;
                 listVals.Add(testValue);
             }
         }

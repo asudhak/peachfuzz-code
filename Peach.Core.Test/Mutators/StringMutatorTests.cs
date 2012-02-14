@@ -61,9 +61,6 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // remove starting default string ("Hello, World!")
-            testResults.RemoveAt(0);
-
             // verify first two values, last two values, and count (= 2379)
             string val1 = "Peach";
             string val2 = "abcdefghijklmnopqrstuvwxyz";
@@ -90,7 +87,7 @@ namespace Peach.Core.Test.Mutators
             }
             else
             {
-                testString = (string)action.origionalDataModel[0].MutatedValue;
+                testString = (string)action.dataModel[0].InternalValue;
                 testResults.Add(testString);
             }
         }
