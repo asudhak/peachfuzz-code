@@ -56,21 +56,27 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);            
+			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            //Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 
 			Engine e = new Engine(null);
             e.config = config;
 			e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 101);
-            Assert.AreEqual(listVals[0], 50);
+            Assert.IsTrue(listVals.Count == 102);
+            Assert.AreEqual(listVals[1], 50);
             Assert.AreEqual(listVals[listVals.Count - 1], 150);
 
             // reset
             firstPass = true;
             testValue = null;
             listVals.Clear();
+        }
+
+        void Action_Starting(Dom.Action action)
+        {
+            System.Diagnostics.Debugger.Break();
         }
 
         [Test]

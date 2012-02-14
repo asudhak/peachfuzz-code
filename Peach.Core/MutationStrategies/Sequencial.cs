@@ -74,7 +74,7 @@ namespace Peach.Core.MutationStrategies
 				string fullName = _dataElementEnumerator.Current.fullName;
 				if (action.dataModel != null)
 				{
-					DataElement elem = action.origionalDataModel.find(fullName);
+					DataElement elem = action.dataModel.find(fullName);
 					if (elem != null)
 					{
 						logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
@@ -97,7 +97,7 @@ namespace Peach.Core.MutationStrategies
 						if (param.dataModel == null)
 							continue;
 
-						DataElement elem = param.origionalDataModel.find(fullName);
+						DataElement elem = param.dataModel.find(fullName);
 						if (elem != null)
 						{
 							logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
