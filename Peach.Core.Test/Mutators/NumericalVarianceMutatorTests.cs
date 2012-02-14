@@ -240,30 +240,31 @@ namespace Peach.Core.Test.Mutators
 
         void Action_FinishedTest(Dom.Action action)
 		{
-            if (firstPass)
+            // handle numbers
+            if (action.dataModel[0] is Number)
             {
-                firstPass = false;
+                testValue = (long)action.dataModel[0].InternalValue;
+                //testValue = (long)action.origionalDataModel[0].MutatedValue;
+                listVals.Add(testValue);
             }
-            else
+            // handle numerical strings
+            else if (action.dataModel[0] is Dom.String)
             {
-                // handle numbers
-                if (action.dataModel[0] is Number)
+                long test = 0;
+                if (Int64.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
                 {
-                    //testValue = (long)action.dataModel[0].InternalValue;
-                    testValue = (long)action.origionalDataModel[0].MutatedValue;
+                    testValue = test;
                     listVals.Add(testValue);
                 }
-                // handle numerical strings
-                else if (action.dataModel[0] is Dom.String)
-                {
-                    long test = 0;
-                    if (Int64.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
-                    {
-                        testValue = test;
-                        listVals.Add(testValue);
-                    }
-                }
             }
+
+            //if (firstPass)
+            //{
+            //    firstPass = false;
+            //}
+            //else
+            //{
+            //}
 		}
     }
 }

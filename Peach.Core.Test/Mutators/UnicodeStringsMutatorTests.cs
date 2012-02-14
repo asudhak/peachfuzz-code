@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class UnicodeStringsMutatorTests
     {
+        bool firstPass = true;
         string testString = null;
         List<string> testResults = new List<string>();
 
@@ -82,8 +83,15 @@ namespace Peach.Core.Test.Mutators
 
         void Action_FinishedTest(Dom.Action action)
         {
-            testString = (string)action.dataModel[0].InternalValue;
-            testResults.Add(testString);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testString = (string)action.origionalDataModel[0].MutatedValue;
+                testResults.Add(testString);
+            }
         }
     }
 }

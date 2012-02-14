@@ -14,6 +14,8 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class NumericalEdgeCaseMutatorTests
     {
+        bool firstPass = true;
+
         long? testValue = null;
         List<long?> listVals = new List<long?>();
 
@@ -73,6 +75,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -133,6 +136,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -193,6 +197,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -249,6 +254,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -305,6 +311,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -361,6 +368,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -417,6 +425,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -473,6 +482,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -529,34 +539,49 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             ulongTestValue = null;
             ulongListVals.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            // handle numbers
-            if (action.dataModel[0] is Number)
+            if (firstPass)
             {
-                testValue = (long)action.dataModel[0].InternalValue;
-                listVals.Add(testValue);
+                firstPass = false;
             }
-            // handle numerical strings
-            else if (action.dataModel[0] is Dom.String)
+            else
             {
-                long test = 0;
-                if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
+                // handle numbers
+                if (action.dataModel[0] is Number)
                 {
-                    testValue = test;
+                    testValue = (long)action.origionalDataModel[0].MutatedValue;
                     listVals.Add(testValue);
+                }
+                // handle numerical strings
+                else if (action.dataModel[0] is Dom.String)
+                {
+                    long test = 0;
+                    if (Int64.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
+                    {
+                        testValue = test;
+                        listVals.Add(testValue);
+                    }
                 }
             }
         }
 
         void Action_FinishedTestULong(Dom.Action action)
         {
-            ulongTestValue = (ulong)action.dataModel[0].InternalValue;
-            ulongListVals.Add(ulongTestValue);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                ulongTestValue = (ulong)action.origionalDataModel[0].MutatedValue;
+                ulongListVals.Add(ulongTestValue);
+            }
         }
     }
 }

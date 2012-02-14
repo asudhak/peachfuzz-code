@@ -495,11 +495,12 @@ namespace Peach.Core.Test.Mutators
             if (firstPass)
             {
                 firstPass = false;
-                return;
             }
-
-            result = (byte[])action.dataModel[0].InternalValue;
-            testResults.Add(result);
+            else
+            {
+                result = action.origionalDataModel[0].Value.Value;
+                testResults.Add(result);
+            }
         }
     }
 }

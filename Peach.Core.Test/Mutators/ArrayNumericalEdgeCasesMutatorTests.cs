@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class ArrayNumericalEdgeCasesMutatorTests
     {
+        bool firstPass = true;
         byte[] testValue;
         List<byte[]> listVals = new List<byte[]>();
 
@@ -73,6 +74,7 @@ namespace Peach.Core.Test.Mutators
             Assert.IsTrue(listVals.Count == 507);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -136,14 +138,22 @@ namespace Peach.Core.Test.Mutators
             Assert.IsTrue(listVals.Count == 57);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            testValue = action.dataModel[0].Value.Value;
-            listVals.Add(testValue);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValue = action.origionalDataModel[0].Value.Value;
+                listVals.Add(testValue);
+            }
         }
     }
 }

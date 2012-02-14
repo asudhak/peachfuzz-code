@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class ArrayReverseOrderMutatorTests
     {
+        bool firstPass = true;
         byte[] testValue;
         List<byte[]> listVals = new List<byte[]>();
 
@@ -70,22 +71,30 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals[1].Length == 5);
-            Assert.AreEqual(listVals[1][0], (byte)('4'));
-            Assert.AreEqual(listVals[1][1], (byte)('3'));
-            Assert.AreEqual(listVals[1][2], (byte)('2'));
-            Assert.AreEqual(listVals[1][3], (byte)('1'));
-            Assert.AreEqual(listVals[1][4], (byte)('0'));
+            Assert.IsTrue(listVals[0].Length == 5);
+            Assert.AreEqual(listVals[0][0], (byte)('4'));
+            Assert.AreEqual(listVals[0][1], (byte)('3'));
+            Assert.AreEqual(listVals[0][2], (byte)('2'));
+            Assert.AreEqual(listVals[0][3], (byte)('1'));
+            Assert.AreEqual(listVals[0][4], (byte)('0'));
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            testValue = action.dataModel[0].Value.Value;
-            listVals.Add(testValue);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValue = action.origionalDataModel[0].Value.Value;
+                listVals.Add(testValue);
+            }
         }
     }
 }

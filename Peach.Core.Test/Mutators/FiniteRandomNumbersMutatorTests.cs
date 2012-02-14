@@ -14,6 +14,8 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class FiniteRandomNumbersMutatorTests
     {
+        bool firstPass = true;
+
         int? testValue = null;
         List<int?> listVals = new List<int?>();
 
@@ -73,6 +75,7 @@ namespace Peach.Core.Test.Mutators
             Assert.IsTrue(listVals.Count == 5001);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -127,6 +130,7 @@ namespace Peach.Core.Test.Mutators
             Assert.IsTrue(listVals.Count == 6);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -182,6 +186,7 @@ namespace Peach.Core.Test.Mutators
             Assert.IsTrue(listValsUInt.Count == 11);
 
             // reset
+            firstPass = true;
             testValueUInt = null;
             listValsUInt.Clear();
         }
@@ -240,6 +245,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -298,6 +304,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValueUInt = null;
             listValsUInt.Clear();
         }
@@ -356,6 +363,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValueLong = null;
             listValsLong.Clear();
         }
@@ -414,46 +422,75 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             testValueULong = null;
             listValsULong.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            testValue = (int)action.dataModel[0].InternalValue;
-            listVals.Add(testValue);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValue = (int)action.origionalDataModel[0].MutatedValue;
+                listVals.Add(testValue);
+            }
         }
 
         void Action_FinishedTestUInt(Dom.Action action)
         {
-            // handle numbers
-            if (action.dataModel[0] is Number)
+            if (firstPass)
             {
-                testValueUInt = (uint)action.dataModel[0].InternalValue;
-                listValsUInt.Add(testValueUInt);
+                firstPass = false;
             }
-            // handle numerical strings
-            else if (action.dataModel[0] is Dom.String)
+            else
             {
-                uint test = 0;
-                if (UInt32.TryParse((string)action.dataModel[0].InternalValue, out test))
+                // handle numbers
+                if (action.dataModel[0] is Number)
                 {
-                    testValueUInt = test;
+                    testValueUInt = (uint)action.origionalDataModel[0].MutatedValue;
                     listValsUInt.Add(testValueUInt);
+                }
+                // handle numerical strings
+                else if (action.dataModel[0] is Dom.String)
+                {
+                    uint test = 0;
+                    if (UInt32.TryParse((string)action.origionalDataModel[0].MutatedValue, out test))
+                    {
+                        testValueUInt = test;
+                        listValsUInt.Add(testValueUInt);
+                    }
                 }
             }
         }
 
         void Action_FinishedTestLong(Dom.Action action)
         {
-            testValueLong = (long)action.dataModel[0].InternalValue;
-            listValsLong.Add(testValueLong);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValueLong = (long)action.origionalDataModel[0].MutatedValue;
+                listValsLong.Add(testValueLong);
+            }
         }
 
         void Action_FinishedTestULong(Dom.Action action)
         {
-            testValueULong = (ulong)action.dataModel[0].InternalValue;
-            listValsULong.Add(testValueULong);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValueULong = (ulong)action.origionalDataModel[0].MutatedValue;
+                listValsULong.Add(testValueULong);
+            }
         }
     }
 }

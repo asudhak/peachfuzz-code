@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class DataElementDuplicateMutatorTests
     {
+        bool firstPass = true;
         List<DataModel> results = new List<DataModel>();
 
         [Test]
@@ -60,10 +61,11 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 1; i <= 50; ++i)
-                Assert.AreEqual(i, results[i].Count);
+            for (int i = 0; i < 49; ++i)
+                Assert.AreEqual(i + 1, results[i].Count);
 
             // reset
+            firstPass = true;
             results.Clear();
         }
 
@@ -150,12 +152,21 @@ namespace Peach.Core.Test.Mutators
             // verify values
 
             // reset
+            firstPass = true;
             results.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            results.Add(action.dataModel);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                //results.Add(action.origionalDataModel);
+                results.Add(action.dataModel);
+            }
         }
     }
 }

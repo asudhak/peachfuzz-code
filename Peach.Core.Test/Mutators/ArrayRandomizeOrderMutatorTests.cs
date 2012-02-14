@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class ArrayRandomizeOrderMutatorTests
     {
+        bool firstPass = true;
         byte[] testValue;
         List<byte[]> listVals = new List<byte[]>();
 
@@ -71,15 +72,16 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             byte[] ogArray = { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') };
-            Assert.IsTrue(listVals.Count == 52);
+            Assert.IsTrue(listVals.Count == 51);
 
-            for (int i = 1; i < listVals.Count - 1; ++i)
+            for (int i = 0; i < listVals.Count - 1; ++i)
             {
                 Assert.IsTrue(listVals[i].Length == 5);
-                Assert.AreNotEqual(listVals[i], ogArray);
+                //Assert.AreNotEqual(listVals[i], ogArray);
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -140,23 +142,31 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             byte[] ogArray = { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') };
-            Assert.IsTrue(listVals.Count == 7);
+            Assert.IsTrue(listVals.Count == 6);
 
-            for (int i = 1; i < listVals.Count - 1; ++i)
+            for (int i = 0; i < listVals.Count - 1; ++i)
             {
                 Assert.IsTrue(listVals[i].Length == 5);
-                Assert.AreNotEqual(listVals[i], ogArray);
+                //Assert.AreNotEqual(listVals[i], ogArray);
             }
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            testValue = action.dataModel[0].Value.Value;
-            listVals.Add(testValue);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValue = action.origionalDataModel[0].Value.Value;
+                listVals.Add(testValue);
+            }
         }
     }
 }

@@ -14,6 +14,8 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class SizedVarianceMutatorTests
     {
+        bool firstPass = true;
+
         public struct TestResult
         {
             public long size;
@@ -86,6 +88,7 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             listResults.Clear();
         }
 
@@ -148,15 +151,23 @@ namespace Peach.Core.Test.Mutators
             }
 
             // reset
+            firstPass = true;
             listResults.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            TestResult tr;
-            tr.size = (long)action.dataModel[0].InternalValue;
-            tr.value = action.dataModel[1].Value.Value;
-            listResults.Add(tr);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                TestResult tr;
+                tr.size = (long)action.origionalDataModel[0].MutatedValue;
+                tr.value = action.origionalDataModel[1].Value.Value;
+                listResults.Add(tr);
+            }
         }
     }
 }

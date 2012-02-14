@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class DataElementSwapNearNodesMutatorTests
     {
+        bool firstPass = true;
         List<DataModel> results = new List<DataModel>();
 
         [Test]
@@ -102,12 +103,20 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual(results[5][4].name, "num4");
 
             // reset
+            firstPass = true;
             results.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            results.Add(action.dataModel);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                results.Add(action.origionalDataModel);
+            }
         }
     }
 }

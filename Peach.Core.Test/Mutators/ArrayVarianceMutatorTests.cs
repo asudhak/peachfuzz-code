@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class ArrayVarianceMutatorTests
     {
+        bool firstPass = true;
         byte[] testValue;
         List<byte[]> listVals = new List<byte[]>();
 
@@ -70,9 +71,10 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 57);
+            Assert.IsTrue(listVals.Count == 56);
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
@@ -132,28 +134,36 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 12);
-            Assert.AreEqual(listVals[1], new byte[0]);
-            Assert.AreEqual(listVals[2], new byte[] { (byte)('0') });
-            Assert.AreEqual(listVals[3], new byte[] { (byte)('0'), (byte)('1') });
-            Assert.AreEqual(listVals[4], new byte[] { (byte)('0'), (byte)('1'), (byte)('2') });
-            Assert.AreEqual(listVals[5], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3') });
-            Assert.AreEqual(listVals[6], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') });
-            Assert.AreEqual(listVals[7], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[8], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[9], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[10], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[11], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
+            Assert.IsTrue(listVals.Count == 11);
+            Assert.AreEqual(listVals[0], new byte[0]);
+            Assert.AreEqual(listVals[1], new byte[] { (byte)('0') });
+            Assert.AreEqual(listVals[2], new byte[] { (byte)('0'), (byte)('1') });
+            Assert.AreEqual(listVals[3], new byte[] { (byte)('0'), (byte)('1'), (byte)('2') });
+            Assert.AreEqual(listVals[4], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3') });
+            Assert.AreEqual(listVals[5], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') });
+            Assert.AreEqual(listVals[6], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4') });
+            Assert.AreEqual(listVals[7], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4') });
+            Assert.AreEqual(listVals[8], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
+            Assert.AreEqual(listVals[9], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
+            Assert.AreEqual(listVals[10], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
 
             // reset
+            firstPass = true;
             testValue = null;
             listVals.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            testValue = action.dataModel[0].Value.Value;
-            listVals.Add(testValue);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testValue = action.origionalDataModel[0].Value.Value;
+                listVals.Add(testValue);
+            }
         }
     }
 }

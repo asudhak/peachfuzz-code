@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class BlobBitFlipperMutatorTests
     {
+        bool firstPass = true;
         byte[] result;
         List<byte[]> testResults = new List<byte[]>();
 
@@ -62,9 +63,10 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue((testResults[1][0] == 1) | (testResults[1][0] == 2) | (testResults[1][0] == 4) | (testResults[1][0] == 8) | (testResults[1][0] == 16) | (testResults[1][0] == 32) | (testResults[1][0] == 64) | (testResults[1][0] == 128));
+            Assert.IsTrue((testResults[0][0] == 1) | (testResults[0][0] == 2) | (testResults[0][0] == 4) | (testResults[0][0] == 8) | (testResults[0][0] == 16) | (testResults[0][0] == 32) | (testResults[0][0] == 64) | (testResults[0][0] == 128));
 
             // reset
+            firstPass = true;
             result = null;
             testResults.Clear();
         }
@@ -115,22 +117,31 @@ namespace Peach.Core.Test.Mutators
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // verify values
-            Assert.IsTrue(testResults.Count == 5);
+            // verify values 
+            Assert.IsTrue(testResults.Count == 4);
+            Assert.IsTrue((testResults[0][0] == 1) | (testResults[0][0] == 2) | (testResults[0][0] == 4) | (testResults[0][0] == 8) | (testResults[0][0] == 16) | (testResults[0][0] == 32) | (testResults[0][0] == 64) | (testResults[0][0] == 128));
             Assert.IsTrue((testResults[1][0] == 1) | (testResults[1][0] == 2) | (testResults[1][0] == 4) | (testResults[1][0] == 8) | (testResults[1][0] == 16) | (testResults[1][0] == 32) | (testResults[1][0] == 64) | (testResults[1][0] == 128));
             Assert.IsTrue((testResults[2][0] == 1) | (testResults[2][0] == 2) | (testResults[2][0] == 4) | (testResults[2][0] == 8) | (testResults[2][0] == 16) | (testResults[2][0] == 32) | (testResults[2][0] == 64) | (testResults[2][0] == 128));
             Assert.IsTrue((testResults[3][0] == 1) | (testResults[3][0] == 2) | (testResults[3][0] == 4) | (testResults[3][0] == 8) | (testResults[3][0] == 16) | (testResults[3][0] == 32) | (testResults[3][0] == 64) | (testResults[3][0] == 128));
-            Assert.IsTrue((testResults[4][0] == 1) | (testResults[4][0] == 2) | (testResults[4][0] == 4) | (testResults[4][0] == 8) | (testResults[4][0] == 16) | (testResults[4][0] == 32) | (testResults[4][0] == 64) | (testResults[4][0] == 128));
 
             // reset
+            firstPass = true;
             result = null;
             testResults.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            result = action.dataModel[0].Value.Value;
-            testResults.Add(result);
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                //result = action.origionalDataModel[0].Value.Value;
+                result = action.dataModel[0].Value.Value;
+                testResults.Add(result);
+            }
         }
     }
 }
