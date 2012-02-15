@@ -20,12 +20,13 @@ class valadoc(Task.Task):
 	quiet = True # no outputs .. this is weird
 
 	def __init__(self, *k, **kw):
-		Task.Task.__init__(*k, **kw)
+		Task.Task.__init__(self, *k, **kw)
 		self.output_dir = ''
 		self.doclet = ''
 		self.package_name = ''
 		self.package_version = ''
 		self.files = []
+		self.vapi_dirs = []
 		self.protected = True
 		self.private = False
 		self.inherit = False
@@ -41,7 +42,7 @@ class valadoc(Task.Task):
 		if getattr(self, 'doclet', None):
 			cmd.append ('--doclet %s' % self.doclet)
 		cmd.append ('--package-name %s' % self.package_name)
-		if getattr(self, 'version', None):
+		if getattr(self, 'package_version', None):
 			cmd.append ('--package-version %s' % self.package_version)
 		if getattr(self, 'packages', None):
 			for package in self.packages:
@@ -61,14 +62,14 @@ class valadoc(Task.Task):
 			cmd.append ('--enable-non-null-experimental')
 		if getattr(self, 'force', None):
 			cmd.append ('--force')
-		cmd.append (' '.join ([x.relpath_gen (self.generator.bld.bldnode) for x in self.files]))
+		cmd.append (' '.join ([x.abspath() for x in self.files]))
 		return self.generator.bld.exec_command(' '.join(cmd))
 
 @feature('valadoc')
 def process_valadoc(self):
 	task = self.create_task('valadoc')
 	if getattr(self, 'output_dir', None):
-		task.output_dir = self.output_dir
+		task.output_dir = self.path.find_or_declare(self.output_dir).abspath()
 	else:
 		Errors.WafError('no output directory')
 	if getattr(self, 'doclet', None):
@@ -84,7 +85,12 @@ def process_valadoc(self):
 	if getattr(self, 'packages', None):
 		task.packages = Utils.to_list(self.packages)
 	if getattr(self, 'vapi_dirs', None):
-		task.vapi_dirs = Utils.to_list(self.vapi_dirs)
+		vapi_dirs = Utils.to_list(self.vapi_dirs)
+		for vapi_dir in vapi_dirs:
+			try:
+				task.vapi_dirs.append(self.path.find_dir(vapi_dir).abspath())
+			except AttributeError:
+				warn("Unable to locate Vala API directory: '%s'" % vapi_dir)
 	if getattr(self, 'files', None):
 		task.files = self.files
 	else:
