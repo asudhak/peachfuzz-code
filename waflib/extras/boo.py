@@ -15,7 +15,7 @@ Support for the boo programming language, for example::
 
 from waflib import Task
 from waflib.Configure import conf
-from waflib.TaskGen import feature, after, before, extension
+from waflib.TaskGen import feature, after_method, before_method, extension
 
 @extension('.boo')
 def boo_hook(self, node):
@@ -24,7 +24,7 @@ def boo_hook(self, node):
 	pass
 
 @feature('boo')
-@before('process_source')
+@before_method('process_source')
 def apply_booc(self):
 	"""Create a booc task """
 	src_nodes = self.to_nodes(self.source)
@@ -40,7 +40,7 @@ def apply_booc(self):
 	self.boo_task.env.BOO_TARGET_TYPE = "-target:%s" % type
 
 @feature('boo')
-@after('apply_boo')
+@after_method('apply_boo')
 def use_boo(self):
 	""""
 	boo applications honor the **use** keyword::
