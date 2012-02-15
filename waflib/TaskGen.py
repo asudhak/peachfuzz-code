@@ -335,7 +335,7 @@ def declare_chain(name='', rule=None, reentrant=None, color='BLUE',
 		tsk = self.create_task(name, node)
 		cnt = 0
 
-		keys = self.mappings.keys() + self.__class__.mappings.keys()
+		keys = list(self.mappings.keys()) + list(self.__class__.mappings.keys())
 		for x in ext:
 			k = node.change_ext(x, ext_in=_ext_in)
 			tsk.outputs.append(k)
