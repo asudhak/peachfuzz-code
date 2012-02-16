@@ -228,6 +228,7 @@
     <Compile Include="Fixups\EthernetChecksumFixup.cs" />
     <Compile Include="Fixups\IcmpChecksumFixup.cs" />
     <Compile Include="Fixups\Libraries\CRC32.cs" />
+    <Compile Include="Fixups\LRCFixup.cs" />
     <Compile Include="Fixups\MD5Fixup.cs" />
     <Compile Include="Fixups\SequenceIncrementFixup.cs" />
     <Compile Include="Fixups\SequenceRandomFixup.cs" />
