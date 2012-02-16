@@ -6,8 +6,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Ipv6StringToOctet", "Encode on output from a collen notiation ipv6 address into a 16 byte octect representation.")]
-    [TransformerAttribute("encode.Ipv6StringToOctet", "Encode on output from a collen notiation ipv6 address into a 16 byte octect representation.")]
+    [TransformerAttribute("Ipv6StringToOctet", "Encode on output from a colon notation ipv6 address into a 16 byte octect representation.")]
+    [TransformerAttribute("encode.Ipv6StringToOctet", "Encode on output from a colon notation ipv6 address into a 16 byte octect representation.")]
     [Serializable]
     public class Ipv6StringToOctet : Transformer
     {

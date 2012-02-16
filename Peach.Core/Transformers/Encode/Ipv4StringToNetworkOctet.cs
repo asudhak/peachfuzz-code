@@ -6,8 +6,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet reprisentaiton.")]
-    [TransformerAttribute("encode.Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet reprisentaiton.")]
+    [TransformerAttribute("Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [TransformerAttribute("encode.Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
     [Serializable]
     public class Ipv4StringToNetworkOctet : Transformer
     {

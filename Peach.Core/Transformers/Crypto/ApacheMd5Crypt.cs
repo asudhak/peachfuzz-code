@@ -8,8 +8,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("ApacheMd5Crypt", "Apache style crypt.")]
-    [TransformerAttribute("crypto.ApacheMd5Crypt", "Apache style crypt.")]
+    [TransformerAttribute("ApacheMd5Crypt", "Apache style MD5 crypt.")]
+    [TransformerAttribute("crypto.ApacheMd5Crypt", "Apache style MD5 crypt.")]
     [Serializable]
     public class ApacheMd5Crypt : Transformer
     {
