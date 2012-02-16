@@ -4,14 +4,14 @@ using System.Text;
 using System.IO;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Peach.Core.IO;
+using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 
-namespace Peach.Core.Test.Fixups
+namespace Peach.Core.Test.Transformers
 {
     [TestFixture]
-    class LRCFixupTests
+    class EvalTests
     {
         byte[] testValue = null;
 
@@ -23,12 +23,10 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"CRC\" size=\"32\" signed=\"false\">" +
-                "           <Fixup class=\"LRCFixup\">" +
-                "               <Param name=\"ref\" value=\"Data\"/>" +
-                "           </Fixup>" +
-                "       </Number>" +
-                "       <Blob name=\"Data\" value=\"12345\"/>" +
+                "       <Block name=\"TheBlock\">" +
+                "           <Transformer class=\"Eval\"/>" +
+                "           <Blob name=\"Data\" value=\"Hello\"/>" +
+                "       </Block>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -63,9 +61,9 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: "12345"
-            byte[] precalcResult = new byte[] { 0x01, 0x00, 0x00, 0x00 };
-            Assert.AreEqual(testValue, precalcResult);
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
+            //byte[] precalcResult = new byte[] {  };
+            //Assert.AreEqual(testValue, precalcResult);
 
             // reset
             testValue = null;

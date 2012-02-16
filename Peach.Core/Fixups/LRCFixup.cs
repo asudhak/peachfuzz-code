@@ -27,7 +27,7 @@ namespace Peach.Core.Fixups
             foreach (byte b in data)
                 lrc ^= b;
 
-            return new Variant(lrc);
+            return new Variant(Convert.ToChar(lrc).ToString());
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Peach.Core.Test.Transformers.Compress
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
                 "           <Transformer class=\"Bz2Compress\"/>" +
-                "           <Blob name=\"Data\" value=\"Hello\"/>" +
+                "           <Blob name=\"Data\" value=\"abc\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +
 
@@ -61,6 +61,10 @@ namespace Peach.Core.Test.Transformers.Compress
             e.startFuzzing(dom, config);
 
             // verify values
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "abc"
+            //byte[] precalcResult = new byte[] { 0x42, 0x5A, 0x68, 0x39, 0x17, 0x72, 0x45, 0x38, 0x50, 0x90, 0x00, 0x00, 0x00, 0x00 }; // on ""
+            //byte[] precalcResult = new byte[] { 42 5A 68 39 31 41 59 26 53 59 64 8C BB 73 00 00 00 01 00 38 00 20 00 21 98 19 84 61 77 24 53 85 09 06 48 CB B7 30 }; // on "abc"
+            //Assert.AreEqual(testValue, precalcResult);
 
             // reset
             testValue = null;
