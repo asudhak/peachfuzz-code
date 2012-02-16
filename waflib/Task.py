@@ -715,7 +715,7 @@ class Task(TaskBase):
 					if x.is_child_of(bld.srcnode):
 						try:
 							os.stat(x.abspath())
-						except OSErrror:
+						except OSError:
 							try:
 								del x.parent.children[x.name]
 							except KeyError:
