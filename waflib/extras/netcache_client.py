@@ -273,7 +273,7 @@ def hash_env_vars(self, env, vars_lst):
 			pass
 
 	v = str([env[a] for a in vars_lst])
-	v = v.replace(self.srcnode.abspath(), '') # here
+	v = v.replace(self.srcnode.abspath().__repr__()[:-1], '')
 	m = Utils.md5()
 	m.update(v.encode())
 	ret = m.digest()
