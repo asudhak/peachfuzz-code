@@ -156,6 +156,7 @@
     <Compile Include="Transformers\Encode\Utf16Tests.cs" />
     <Compile Include="Transformers\Encode\Utf8Tests.cs" />
     <Compile Include="Transformers\Encode\WideCharTests.cs" />
+    <Compile Include="Transformers\EvalTests.cs" />
     <Compile Include="Transformers\Type\AsInt16Test.cs" />
     <Compile Include="Transformers\Type\AsInt32Tests.cs" />
     <Compile Include="Transformers\Type\AsInt64Tests.cs" />

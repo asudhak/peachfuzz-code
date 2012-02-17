@@ -62,7 +62,8 @@ namespace Peach.Core.Test.Transformers.Compress
 
             // verify values
             // -- this is the pre-calculated result from Peach2.3 on the blob: ""
-            //byte[] precalcResult = new byte[] { 0x42, 0x5A, 0x68, 0x39, 0x17, 0x72, 0x45, 0x38, 0x50, 0x90, 0x00, 0x00, 0x00, 0x00 };
+            //byte[] precalcResult = new byte[] { 78 9C 03 00 00 00 00 01 };    // on ""
+            //byte[] precalcResult = new byte[] { 78 9C 4B 4C 4A 06 00 02 4D 01 27 };    // on "abc"
             //Assert.AreEqual(testValue, precalcResult);
 
             // reset

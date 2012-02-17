@@ -1049,6 +1049,7 @@
     <Compile Include="Transformers\Encode\Utf8.cs" />
     <Compile Include="Transformers\Encode\WideChar.cs" />
     <Compile Include="Transformers\Compress\GzipCompress.cs" />
+    <Compile Include="Transformers\Eval.cs" />
     <Compile Include="Transformers\Type\AsInt16.cs" />
     <Compile Include="Transformers\Type\AsInt32.cs" />
     <Compile Include="Transformers\Type\AsInt64.cs" />

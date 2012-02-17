@@ -24,8 +24,10 @@ namespace Peach.Core.Test.Transformers
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
-                "           <Transformer class=\"Eval\"/>" +
-                "           <Blob name=\"Data\" value=\"Hello\"/>" +
+                "           <Transformer class=\"Eval\">" +
+                "               <Param name=\"eval\" value=\"%s\"/>" +
+                "           </Transformer>" +
+                "           <String name=\"Data\" value=\"Hello\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +
 
@@ -61,9 +63,6 @@ namespace Peach.Core.Test.Transformers
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
-            //byte[] precalcResult = new byte[] {  };
-            //Assert.AreEqual(testValue, precalcResult);
 
             // reset
             testValue = null;
