@@ -141,6 +141,8 @@ def waf_entry_point(current_directory, version, wafdir):
 			Logs.pprint('RED', e.verbose_msg)
 		Logs.error(e.msg)
 		sys.exit(1)
+	except SystemExit:
+		raise
 	except Exception as e:
 		traceback.print_exc(file=sys.stdout)
 		sys.exit(2)
