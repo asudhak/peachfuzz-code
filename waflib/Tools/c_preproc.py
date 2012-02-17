@@ -270,6 +270,7 @@ def get_num(lst):
 			num, lst = get_num(lst[1:])
 			return (int(not int(num)), lst)
 		elif v == '~':
+			num, lst = get_num(lst[1:])
 			return (~ int(num), lst)
 		else:
 			raise PreprocError("Invalid op token %r for get_num" % lst)
