@@ -712,7 +712,6 @@ def parse_char(txt):
 		try: return chr_esc[c]
 		except KeyError: raise PreprocError("could not parse char literal '%s'" % txt)
 
-@Utils.run_once
 def tokenize(s):
 	"""
 	Convert a string into a list of tokens (shlex.split does not apply to c/c++/d)
@@ -722,7 +721,10 @@ def tokenize(s):
 	:return: a list of tokens
 	:rtype: list of tuple(token, value)
 	"""
-	# the same headers are read again and again - 10% improvement on preprocessing the samba headers
+	return tokenize_private(s)[:] # force a copy of the results
+
+@Utils.run_once
+def tokenize_private(s):
 	ret = []
 	for match in re_clexer.finditer(s):
 		m = match.group
