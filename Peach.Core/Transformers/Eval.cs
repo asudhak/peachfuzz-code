@@ -19,7 +19,7 @@ namespace Peach.Core.Transformers
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            return new BitStream();
+            return new BitStream(data.Value);
 		}
 
 		protected override BitStream internalDecode(BitStream data)
