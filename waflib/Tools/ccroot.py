@@ -344,7 +344,7 @@ def accept_node_to_link(self, node):
 	"""
 	PRIVATE INTERNAL USE ONLY
 	"""
-	return not x.name.endswith('.pdb')
+	return not node.name.endswith('.pdb')
 
 @taskgen_method
 def add_objects_from_tgen(self, tg):
