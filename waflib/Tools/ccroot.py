@@ -31,9 +31,6 @@ USELIB_VARS['dprogram'] = set(['LIB', 'STLIB', 'LIBPATH', 'STLIBPATH', 'LINKFLAG
 USELIB_VARS['dshlib']   = set(['LIB', 'STLIB', 'LIBPATH', 'STLIBPATH', 'LINKFLAGS', 'RPATH', 'LINKDEPS'])
 USELIB_VARS['dstlib']   = set(['ARFLAGS', 'LINKDEPS'])
 
-USELIB_VARS['go'] = set(['GOCFLAGS'])
-USELIB_VARS['goprogram'] = set(['GOLFLAGS'])
-
 USELIB_VARS['asm'] = set(['ASFLAGS'])
 
 # =================================================================================================
@@ -102,7 +99,7 @@ def to_incnodes(self, inlst):
 				lst.append(v)
 	return lst
 
-@feature('c', 'cxx', 'd', 'go', 'asm', 'fc', 'includes')
+@feature('c', 'cxx', 'd', 'asm', 'fc', 'includes')
 @after_method('propagate_uselib_vars', 'process_source')
 def apply_incpaths(self):
 	"""
@@ -173,7 +170,7 @@ def rm_tgt(cls):
 	setattr(cls, 'run', wrap)
 rm_tgt(stlink_task)
 
-@feature('c', 'cxx', 'd', 'go', 'fc', 'asm')
+@feature('c', 'cxx', 'd', 'fc', 'asm')
 @after_method('process_source')
 def apply_link(self):
 	"""
