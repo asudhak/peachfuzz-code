@@ -335,7 +335,7 @@ class Node(object):
 			cur = self.__class__(x, cur)
 		return cur
 
-	def search(self, lst):
+	def search_node(self, lst):
 		"""
 		Search for a node without looking on the filesystem
 
@@ -682,7 +682,7 @@ class Node(object):
 		if isinstance(lst, str):
 			lst = [x for x in split_path(lst) if x and x != '.']
 
-		node = self.get_bld().search(lst)
+		node = self.get_bld().search_node(lst)
 		if not node:
 			self = self.get_src()
 			node = self.find_node(lst)
@@ -704,7 +704,7 @@ class Node(object):
 		if isinstance(lst, str):
 			lst = [x for x in split_path(lst) if x and x != '.']
 
-		node = self.get_bld().search(lst)
+		node = self.get_bld().search_node(lst)
 		if node:
 			if not os.path.isfile(node.abspath()):
 				node.sig = None
@@ -817,6 +817,9 @@ class Node(object):
 			self.sig = Utils.h_file(self.abspath())
 		self.ctx.hash_cache[id(self)] = ret = self.sig
 		return ret
+
+	# TODO Waf 1.8
+	search = search_node
 
 pickle_lock = Utils.threading.Lock()
 """Lock mandatory for thread-safe node serialization"""

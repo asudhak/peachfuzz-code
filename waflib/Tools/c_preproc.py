@@ -827,7 +827,7 @@ class c_parser(object):
 				if getattr(ret, 'children', None):
 					ret = None
 				elif ret.is_child_of(node.ctx.bldnode):
-					tmp = node.ctx.srcnode.search(ret.path_from(node.ctx.bldnode))
+					tmp = node.ctx.srcnode.search_node(ret.path_from(node.ctx.bldnode))
 					if tmp and getattr(tmp, 'children', None):
 						ret = None
 			nd[tup] = ret
