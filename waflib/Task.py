@@ -462,7 +462,7 @@ class Task(TaskBase):
 		try:
 			return self.uid_
 		except AttributeError:
-			# this is not a real hot zone, but we want to avoid surprizes here
+			# this is not a real hot zone, but we want to avoid surprises here
 			m = Utils.md5()
 			up = m.update
 			up(self.__class__.__name__.encode())

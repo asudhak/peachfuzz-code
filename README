@@ -1,7 +1,7 @@
 WHAT YOU WILL FIND HERE
 -----------------------
 
-Waf (1.6)
+Waf (1.7)
 
 For the manual: http://docs.waf.googlecode.com/git/book_16/single.html
 For the api docs: http://docs.waf.googlecode.com/git/apidocs_16/index.html
@@ -19,9 +19,9 @@ The Waf tools in waflib/extras are not added to the waf script. To add
 some of them, use the --tools switch:
 $ ./waf-light --tools=compat15,swig
 
-To add a tool that does not exist in the folder compat15, pass an absolute path
+To add a tool that does not exist in the folder extras, pass an absolute path
 To customize the initialization, pass the parameter 'prelude'
-$ ./waf-light --make-waf --tools=compat15,/comp/waf/aba.py --prelude=$'\tfrom waflib.extras import aba\n\taba.foo()'
+$ ./waf-light --make-waf --tools=compat15,/comp/waf/aba.py --prelude=$'\tfrom waflib.extras import compat15\n\print "ok"'
 
 HOW TO TRY THE EXAMPLES
 -----------------------
@@ -42,5 +42,5 @@ $ git remote add code https://code.google.com/p/waf.docs/
 $ git push code
 
 ---------------------------
-Thomas Nagy, 2011 (ita)
+Thomas Nagy, 2012 (ita)
 

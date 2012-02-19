@@ -6,6 +6,7 @@ NEW IN WAF 1.7.0
 * Utils.writef (similar to Utils.readf)
 * Added Node.evict() to provide more control over invalid references
 * Do not raise exception on --help when running on python 2.4
+* Node.search -> Node.search_node (consistent with make_node and find_node)
 
 NEW IN WAF 1.6.11
 -----------------

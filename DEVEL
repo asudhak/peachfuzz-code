@@ -4,7 +4,7 @@ previous branches
 old svn repository http://waf.googlecode.com/svn/trunk/ (unused)
 branch for waf 1.5 http://waf.googlecode.com/svn/branches/waf-1.5/ (read-only, should be moved to git)
 
-Main repository for waf 1.6 on http://waf.googlecode.com/git/
+Main repository for waf 1.7 on http://waf.googlecode.com/git/
 -------------------------------------------------------------
 
 waflib            the core library
