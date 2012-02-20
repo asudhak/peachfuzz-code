@@ -750,7 +750,8 @@ def process_subst(self):
 	tgt = getattr(self, 'target', [])
 	if isinstance(tgt, self.path.__class__):
 		tgt = [tgt]
-	tgt = [isinstance(x, self.path.__class__) and x or self.path.find_or_declare(x) for x in Utils.to_list(tgt)]
+	else:
+		tgt = [isinstance(x, self.path.__class__) and x or self.path.find_or_declare(x) for x in Utils.to_list(tgt)]
 
 	if len(src) != len(tgt):
 		raise Errors.WafError('invalid source or target for %r' % self)
