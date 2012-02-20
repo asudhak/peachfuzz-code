@@ -540,9 +540,48 @@ def process_rule(self):
 
 	# create the task class
 	name = str(getattr(self, 'name', None) or self.target or self.rule)
-	cls = Task.task_factory(name, self.rule,
-		getattr(self, 'vars', []),
-		shell=getattr(self, 'shell', True), color=getattr(self, 'color', 'BLUE'))
+
+	# or we can put the class in a cache for performance reasons
+	try:
+		cache = self.bld.cache_rule_attr
+	except AttributeError:
+		cache = self.bld.cache_rule_attr = {}
+
+	cls = None
+	if getattr(self, 'cache_rule', 'True'):
+		try:
+			cls = cache[(name, self.rule)]
+		except KeyError:
+			pass
+	if not cls:
+		cls = Task.task_factory(name, self.rule,
+			getattr(self, 'vars', []),
+			shell=getattr(self, 'shell', True), color=getattr(self, 'color', 'BLUE'),
+			scan = getattr(self, 'scan', None))
+		if getattr(self, 'scan', None):
+			cls.scan = self.scan
+		elif getattr(self, 'deps', None):
+			def scan(self):
+				nodes = []
+				for x in self.generator.to_list(getattr(self.generator, 'deps', None)):
+					node = self.generator.path.find_resource(x)
+					if not node:
+						self.generator.bld.fatal('Could not find %r (was it declared?)' % x)
+					nodes.append(node)
+				return [nodes, []]
+			cls.scan = scan
+
+		if getattr(self, 'update_outputs', None):
+			Task.update_outputs(cls)
+
+		if getattr(self, 'always', None):
+			Task.always_run(cls)
+
+		for x in ['after', 'before', 'ext_in', 'ext_out']:
+			setattr(cls, x, getattr(self, x, []))
+
+		if getattr(self, 'cache_rule', 'True'):
+			cache[(name, self.rule)] = cls
 
 	# now create one instance
 	tsk = self.create_task(name)
@@ -569,30 +608,8 @@ def process_rule(self):
 		# bypass the execution of process_source by setting the source to an empty list
 		self.source = []
 
-	if getattr(self, 'scan', None):
-		cls.scan = self.scan
-	elif getattr(self, 'deps', None):
-		def scan(self):
-			nodes = []
-			for x in self.generator.to_list(self.generator.deps):
-				node = self.generator.path.find_resource(x)
-				if not node:
-					self.generator.bld.fatal('Could not find %r (was it declared?)' % x)
-				nodes.append(node)
-			return [nodes, []]
-		cls.scan = scan
-
 	if getattr(self, 'cwd', None):
 		tsk.cwd = self.cwd
-
-	if getattr(self, 'update_outputs', None):
-		Task.update_outputs(cls)
-
-	if getattr(self, 'always', None):
-		Task.always_run(cls)
-
-	for x in ['after', 'before', 'ext_in', 'ext_out']:
-		setattr(cls, x, getattr(self, x, []))
 
 @feature('seq')
 def sequence_order(self):
