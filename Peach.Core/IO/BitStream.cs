@@ -40,7 +40,9 @@ using System.Reflection;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 
+#if PEACH
 using Peach.Core.IO.Conversion;
+#endif
 
 namespace Peach.Core.IO
 {
@@ -51,14 +53,17 @@ namespace Peach.Core.IO
 	/// bytes.
 	/// </summary>
 	[Serializable]
-	public class BitStream
+	public class BitStream : IDisposable
 	{
+#if PEACH
 		protected Dictionary<string, long[]> _elementPositions = new Dictionary<string, long[]>();
+#endif
 		protected Stream stream;
 		protected long pos = 0;
 		protected long len = 0;
 		protected bool _isLittleEndian = true;
 		public EndianBitConverter bitConverter = null;
+		protected bool isDisposed = false;
 
 		/// <summary>
 		/// Default constructor
@@ -119,6 +124,9 @@ namespace Peach.Core.IO
 		/// </summary>
 		public void Clear()
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if (!(stream is MemoryStream))
 				throw new ApplicationException("Error, unable to reset when stream is not a MemoryStream.");
 
@@ -137,6 +145,8 @@ namespace Peach.Core.IO
 			this.len = len;
 			this._isLittleEndian = isLittleEndian;
 			this._elementPositions = _elementPositions;
+
+			this.stream.Seek(pos / 8, SeekOrigin.Begin);
 		}
 
 		/// <summary>
@@ -145,6 +155,9 @@ namespace Peach.Core.IO
 		/// <returns>Returns exact copy of this BitStream</returns>
 		public BitStream Clone()
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if (stream is MemoryStream)
 			{
 				Dictionary<string, long[]> copyOfElementPositions = new Dictionary<string, long[]>(_elementPositions);
@@ -201,6 +214,9 @@ namespace Peach.Core.IO
 		/// <param name="origin">Origin to seek from</param>
 		public void SeekBits(long offset, SeekOrigin origin)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			switch (origin)
 			{
 				case SeekOrigin.Begin:
@@ -228,6 +244,7 @@ namespace Peach.Core.IO
 			SeekBits(offset * 8, origin);
 		}
 
+#if PEACH
 		public void SeekToDataElement(DataElement elem)
 		{
 			SeekToDataElement(elem.fullName);
@@ -253,6 +270,7 @@ namespace Peach.Core.IO
 
 			pos = _elementPositions[name][0];
 		}
+#endif
 
 		#region BitControl
 
@@ -261,6 +279,9 @@ namespace Peach.Core.IO
 		/// </summary>
 		public void BigEndian()
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			_isLittleEndian = false;
 			bitConverter = new BigEndianBitConverter();
 		}
@@ -270,6 +291,9 @@ namespace Peach.Core.IO
 		/// </summary>
 		public void LittleEndian()
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			_isLittleEndian = true;
 			bitConverter = new LittleEndianBitConverter();
 		}
@@ -466,6 +490,8 @@ namespace Peach.Core.IO
 
 		#region Writing Methods with DataElement
 
+#if PEACH
+
 		public void WriteSByte(sbyte value, DataElement element)
 		{
 			MarkStartOfElement(element, 8);
@@ -557,12 +583,30 @@ namespace Peach.Core.IO
 			WriteBytes(bitConverter.GetBytes(value));
 		}
 
-		#endregion
 
 		public void Write(BitStream bits, DataElement element)
 		{
 			MarkStartOfElement(element, bits.LengthBits);
 			Write(bits);
+		}
+
+#endif
+
+		#endregion
+
+		public void CopyTo(Stream sin, Stream sout)
+		{
+			byte[] buff = new byte[1024 * 3];
+			int ret;
+
+			while (true)
+			{
+				ret = sin.Read(buff, 0, buff.Length);
+				if (ret == 0)
+					break;
+
+				sout.Write(buff, 0, ret);
+			}
 		}
 
 		/// <summary>
@@ -572,6 +616,9 @@ namespace Peach.Core.IO
 		/// <param name="bits">BitStream to write data from.</param>
 		public void Write(BitStream bits)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if(bits == null)
 				throw new ApplicationException("bits parameter is null");
 			
@@ -583,8 +630,8 @@ namespace Peach.Core.IO
 			{
 				long oPos = bits.stream.Position;
 				bits.stream.Position = 0;
-				bits.Stream.CopyTo(stream);
-				bits.Stream.Position = oPos;
+				CopyTo(bits.stream, stream);
+				bits.stream.Position = oPos;
 
 				stream.Position = 0;
 				this.len = bits.LengthBits;
@@ -601,8 +648,8 @@ namespace Peach.Core.IO
 				long oPos = bits.stream.Position;
 
 				bits.stream.Position = 0;
-				bits.Stream.CopyTo(stream);
-				bits.Stream.Position = oPos;
+				CopyTo(bits.stream, stream);
+				bits.stream.Position = oPos;
 
 				stream.Position = ourPos;
 				len += bits.LengthBits;
@@ -622,6 +669,7 @@ namespace Peach.Core.IO
 			if(extraBits > 0)
 				WriteBits(bits.ReadBits((int)extraBits), (int)extraBits);
 
+#if PEACH
 			// Copy over DataElement positions, replace
 			// existing entries if they exist.
 			foreach (string key in bits._elementPositions.Keys)
@@ -633,6 +681,7 @@ namespace Peach.Core.IO
 
 				_elementPositions[key][0] += origionalPos;
 			}
+#endif
 		}
 
 		public void WriteBits(ulong value, int bits, DataElement element)
@@ -645,6 +694,9 @@ namespace Peach.Core.IO
 
 		public void WriteBit(byte bit)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if (bit > 1)
 				throw new ApplicationException("WriteBit only takes values of 0 or 1.");
 
@@ -701,6 +753,9 @@ namespace Peach.Core.IO
 		/// <param name="bits">Number of bits to write</param>
 		public void WriteBits(ulong value, int bits)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if(bits == 0 || bits > 64)
 				throw new ApplicationException("bits is invalid value, but be > 0 and < 64");
 
@@ -717,6 +772,9 @@ namespace Peach.Core.IO
 		/// <returns>Number of bits required to store number.</returns>
 		protected ulong BitLength(ulong value)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			return BitLength(value, 64);
 		}
 
@@ -728,6 +786,9 @@ namespace Peach.Core.IO
 		/// <returns>Returns number of bits required to store number.</returns>
 		protected ulong BitLength(ulong value, ulong maxBits)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			ulong blen = 0;
 			for (ulong i = 0; i < maxBits; i++)
 				if (((value >> 1) & 1) == 1)
@@ -831,6 +892,9 @@ namespace Peach.Core.IO
 		/// <returns>Return a byte containing 0/1</returns>
 		public byte ReadBit()
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			try
 			{
 				// Index into buff[] array
@@ -856,6 +920,9 @@ namespace Peach.Core.IO
 
 		protected byte ReadBit(byte b, int pos)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			// Index into byte from buff[] array
 			int bitIndex = pos;
 
@@ -869,6 +936,9 @@ namespace Peach.Core.IO
 
 		public ulong ReadBits(int bits)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if (bits < 0 || bits > 64)
 				throw new ArgumentOutOfRangeException("Must be between 0 and 64");
 
@@ -956,7 +1026,7 @@ namespace Peach.Core.IO
 			// Are we copying entire stream over?
 			if ((bytes * 8) == LengthBits && pos == 0)
 			{
-				stream.CopyTo(sin);
+				CopyTo(stream, sin);
 				sin.Position = 0;
 				stream.Position = 0;
 
@@ -1066,6 +1136,9 @@ namespace Peach.Core.IO
 		/// <param name="sizeInBits">Length in bits of stream</param>
 		public void Truncate(long sizeInBits)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if (sizeInBits > len)
 				throw new ApplicationException("sizeInbits larger then length of data");
 
@@ -1083,7 +1156,7 @@ namespace Peach.Core.IO
 
 			stream = new MemoryStream(buff.ToArray());
 
-
+#if PEACH
 			// Remove element entries that were truncated off.
 
 			List<string> keysToRemove = new List<string>();
@@ -1097,6 +1170,7 @@ namespace Peach.Core.IO
 
 			foreach (string key in keysToRemove)
 				_elementPositions.Remove(key);
+#endif
 		}
 
 		/// <summary>
@@ -1108,6 +1182,9 @@ namespace Peach.Core.IO
 		/// <param name="bits">BitStream to insert.</param>
 		public void Insert(BitStream bits)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			if (!(stream is MemoryStream))
 				throw new ApplicationException("Error, unable to insert into non-MemoryStream");
 
@@ -1129,6 +1206,7 @@ namespace Peach.Core.IO
 				stream = new MemoryStream(buff.ToArray());
 				stream.Seek(pos / 8, SeekOrigin.Begin);
 
+#if PEACH
 				// Move existing DataElement positions
 
 				foreach (string key in _elementPositions.Keys)
@@ -1151,6 +1229,7 @@ namespace Peach.Core.IO
 					vals[0] += curpos;
 					_elementPositions.Add(key, vals);
 				}
+#endif
 
 				return;
 			}
@@ -1170,6 +1249,7 @@ namespace Peach.Core.IO
 			if ((curlen - curpos) % 8 != 0)
 				WriteBits(tmp.ReadBits((int)((curlen - curpos) % 8)),(int) ((curlen - curpos) % 8));
 
+#if PEACH
 			// Copy over the DataElement positions
 			foreach (string key in tmp._elementPositions.Keys)
 			{
@@ -1184,6 +1264,7 @@ namespace Peach.Core.IO
 							string.Format("DataElement {0} already exists!", key));
 				}
 			}
+#endif
 
 			pos = retpos;
 		}
@@ -1195,6 +1276,9 @@ namespace Peach.Core.IO
 		{
 			get
 			{
+				if (isDisposed)
+					throw new ObjectDisposedException("BitStream already disposed");
+
 				if(stream is MemoryStream)
 					return ((MemoryStream)stream).ToArray();
 
@@ -1214,25 +1298,33 @@ namespace Peach.Core.IO
 		/// <returns>Returns index or -1 if not found.</returns>
 		public long IndexOf(byte[] data)
 		{
+			if (isDisposed)
+				throw new ObjectDisposedException("BitStream already disposed");
+
 			long currentPosition = TellBits();
 			bool found = false;
 			long foundAt = -1;
 
 			while (TellBits() < LengthBits)
 			{
-				found = true;
 				foundAt = TellBytes();
+
 				if (ReadByte() == data[0])
 				{
+					found = true;
 					for (int i = 1; found && i < data.Length; i++)
 						if (data[i] != ReadByte())
 							found = false;
 				}
 
 				if (found)
+				{
+					SeekBits(currentPosition, SeekOrigin.Begin);
 					return foundAt;
 			}
+			}
 
+			SeekBits(currentPosition, SeekOrigin.Begin);
 			return -1;
 		}
 
@@ -1240,6 +1332,20 @@ namespace Peach.Core.IO
 		{
 			get { return stream; }
 		}
+
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			isDisposed = true;
+
+			if (stream != null)
+			stream.Dispose();
+
+			stream = null;
+		}
+
+		#endregion
 	}
 
 }
