@@ -218,6 +218,7 @@ namespace PeachFuzzBang
 
 			Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
 			monitor.cls = "WindowsDebugEngine";
+			//monitor.cls = "WindowsDebugger";
 			monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 			monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
 

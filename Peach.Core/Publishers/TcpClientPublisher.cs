@@ -38,6 +38,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Publishers
 {
 	[Publisher("Tcp")]
+	[Publisher("TcpClient")]
 	[Publisher("tcp.Tcp")]
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
@@ -110,6 +111,7 @@ namespace Peach.Core.Publishers
 				}
 				catch (SocketException)
 				{
+					_tcpClient = null;
 					Thread.Sleep(500);
 				}
 			}
@@ -121,21 +123,50 @@ namespace Peach.Core.Publishers
 				new AsyncCallback(ReceiveData), null);
 		}
 
+		/// <summary>
+		/// Send data
+		/// </summary>
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="data">Data to send/write</param>
+		public override void output(Core.Dom.Action action, Variant data)
+		{
+			if (_tcpClient == null)
+				open(action);
+
+			OnOutput(action, data);
+
+			try
+			{
+				_tcpClient.Client.Send((byte[])data);
+			}
+			catch (Exception ex)
+			{
+				// TODO - Log the exception, but continue!
+			}
+		}
+
 		protected void ReceiveData(IAsyncResult iar)
 		{
-			Socket remote = (Socket)iar.AsyncState;
-			int recv = remote.EndReceive(iar);
-
-			lock(_buffer)
+			try
 			{
-				long pos = _buffer.Position;
-				_buffer.Seek(0, SeekOrigin.End);
-				_buffer.Write(receiveBuffer, 0, recv);
-				_buffer.Position = pos;
-			}
+				Socket remote = (Socket)iar.AsyncState;
+				int recv = remote.EndReceive(iar);
 
-			_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-				new AsyncCallback(ReceiveData), null);
+				lock (_buffer)
+				{
+					long pos = _buffer.Position;
+					_buffer.Seek(0, SeekOrigin.End);
+					_buffer.Write(receiveBuffer, 0, recv);
+					_buffer.Position = pos;
+				}
+
+				_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+					new AsyncCallback(ReceiveData), null);
+			}
+			catch (Exception ex)
+			{
+				// TODO -- Log this exception
+			}
 		}
 
 		/// <summary>

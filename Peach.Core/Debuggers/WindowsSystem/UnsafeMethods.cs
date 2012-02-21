@@ -109,17 +109,42 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		static extern IntPtr OpenProcess(ProcessAccess dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
 
+		//[DllImport("kernel32.dll")]
+		//public static extern bool CreateProcess(string lpApplicationName,
+		//   string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes,
+		//   ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles,
+		//   uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory,
+		//   [In] ref STARTUPINFO lpStartupInfo,
+		//   out PROCESS_INFORMATION lpProcessInformation);
+
 		[DllImport("kernel32.dll")]
-		public static extern bool CreateProcess(string lpApplicationName,
-		   string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes,
-		   ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles,
-		   uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory,
-		   [In] ref STARTUPINFO lpStartupInfo,
-		   out PROCESS_INFORMATION lpProcessInformation);
+		public static extern bool CreateProcess(
+			string lpApplicationName,
+			string lpCommandLine, 
+			int lpProcessAttributes,
+			int lpThreadAttributes, 
+			bool bInheritHandles,
+			uint dwCreationFlags, 
+			IntPtr lpEnvironment, 
+			string lpCurrentDirectory,
+			[In] ref STARTUPINFO lpStartupInfo,
+			out PROCESS_INFORMATION lpProcessInformation);
 
 		[DllImport("kernel32.dll")]
 		public static extern bool ContinueDebugEvent(uint dwProcessId, uint dwThreadId,
 		   uint dwContinueStatus);
+
+		[DllImport("kernel32.dll")]
+		public static extern uint GetCurrentThread();
+
+		[DllImport("kernel32.dll")]
+		public static extern bool TerminateProcess(int hProcess, uint uExitCode);
+
+		[DllImport("kernel32.dll")]
+		public static extern int GetProcessId(int hProcess);
+
+		[DllImport("kernel32.dll")]
+		public static extern bool DebugSetProcessKillOnExit(bool KillOnExit);
 
 		[StructLayout(LayoutKind.Explicit, Size=84)]
 		public struct Union

@@ -152,8 +152,30 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			UnsafeMethods.SECURITY_ATTRIBUTES sa1 = new UnsafeMethods.SECURITY_ATTRIBUTES();
 			UnsafeMethods.SECURITY_ATTRIBUTES sa2 = new UnsafeMethods.SECURITY_ATTRIBUTES();
 
+			//if (!UnsafeMethods.CreateProcess(
+			//        null,			// lpApplicationName 
+			//        command,		// lpCommandLine 
+			//        ref sa1,		// lpProcessAttributes 
+			//        ref sa2,		// lpThreadAttributes 
+			//        false,			// bInheritHandles 
+			//        1,				// dwCreationFlags, DEBUG_PROCESS
+			//        IntPtr.Zero,	// lpEnvironment 
+			//        null,			// lpCurrentDirectory 
+			//        ref startUpInfo, // lpStartupInfo 
+			//        out processInformation)) // lpProcessInformation 
+			//    throw new Exception("Failed to create new process and attach debugger.");
+
 			if (!UnsafeMethods.CreateProcess(
-					null, command, ref sa1, ref sa2, false, 1, IntPtr.Zero, null, ref startUpInfo, out processInformation))
+					null,			// lpApplicationName 
+					command,		// lpCommandLine 
+					0,		// lpProcessAttributes 
+					0,		// lpThreadAttributes 
+					false,			// bInheritHandles 
+					1,				// dwCreationFlags, DEBUG_PROCESS
+					IntPtr.Zero,	// lpEnvironment 
+					null,			// lpCurrentDirectory 
+					ref startUpInfo, // lpStartupInfo 
+					out processInformation)) // lpProcessInformation 
 				throw new Exception("Failed to create new process and attach debugger.");
 
 			UnsafeMethods.CloseHandle(processInformation.hProcess);
@@ -171,9 +193,9 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			return new SystemDebugger(dwProcessId);
 		}
 
-		protected int dwProcessId = 0;
-		protected bool processExit = false;
-		protected bool verbose = false;
+		public int dwProcessId = 0;
+		public bool processExit = false;
+		public bool verbose = false;
 
 		protected SystemDebugger(int dwProcessId)
 		{
@@ -194,27 +216,29 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public void MainLoop()
 		{
 			UnsafeMethods.DEBUG_EVENT debug_event = new UnsafeMethods.DEBUG_EVENT();
+			UnsafeMethods.DebugSetProcessKillOnExit(true);
 
 			try
 			{
 				while (!processExit && ContinueDebugging())
 				{
 
-					if (!UnsafeMethods.WaitForDebugEvent(ref debug_event, 1000))
+					if (!UnsafeMethods.WaitForDebugEvent(ref debug_event, 100))
 						continue;
 
 					ProcessDebugEvent(ref debug_event);
 
 					if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId,
-									  debug_event.dwThreadId, DBG_EXCEPTION_NOT_HANDLED))
+										debug_event.dwThreadId, DBG_EXCEPTION_NOT_HANDLED))
 						throw new Exception("ContinueDebugEvent failed");
-
-					//DBG_EXCEPTION_NOT_HANDLED DBG_CONTINUE
 				}
 			}
 			finally
 			{
-				UnsafeMethods.DebugActiveProcessStop(debug_event.dwProcessId);
+				uint threadId = UnsafeMethods.GetCurrentThread();
+				//UnsafeMethods.DebugActiveProcessStop(debug_event.dwProcessId);
+				//UnsafeMethods.DebugActiveProcessStop((uint)dwProcessId);
+				//UnsafeMethods.TerminateProcess(dwProcessId, 0);
 			}
 		}
 
