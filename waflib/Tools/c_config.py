@@ -884,7 +884,7 @@ def have_define(self, key):
 	:return: the input key prefixed by *HAVE_* and substitute any invalid characters.
 	:rtype: string
 	"""
-	return self.__dict__.get('HAVE_PAT', 'HAVE_%s') % Utils.quote_define_name(key)
+	return (self.env.HAVE_PAT or 'HAVE_%s') % Utils.quote_define_name(key)
 
 @conf
 def write_config_header(self, configfile='', guard='', top=False, env=None, defines=True, headers=False, remove=True):
