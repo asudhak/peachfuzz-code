@@ -1,6 +1,36 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Jérôme Carretero, 2012 (zougloub)
+
+# Texas Instruments code generator support (experimental)
+# When reporting issues, please directly assign the bug to the maintainer.
+
+__author__ = __maintainer__ = "Jérôme Carretero <cJ-waf@zougloub.eu>"
+__copyright__ = "Jérôme Carretero, 2012"
+
+"""
+TI cgt6x is a compiler suite for TI DSPs.
+
+The toolchain does pretty weird things, and I'm sure I'm missing some of them.
+But still, the tool saves time.
+
+What this tool does is:
+
+- create a TI compiler environment
+- create TI compiler features, to handle some specifics about this compiler
+  It has a few idiosyncracies, such as not giving the liberty of the .o file names
+- automatically activate them when using the TI compiler
+- handle the tconf tool
+  The tool 
+
+TODO:
+
+- the set_platform_flags() function is not nice
+- more tests
+- broaden tool scope, if needed
+
+"""
+
+import os, re
 
 from waflib import Configure, Options, Utils, Task, TaskGen
 from waflib.Tools import c, ccroot, c_preproc
@@ -8,8 +38,6 @@ from waflib.Configure import conf
 from waflib.TaskGen import feature, before_method, taskgen_method
 from waflib.Tools.ccroot import link_task, stlink_task
 from waflib.Tools.c import cprogram
-
-import os, re
 
 opj = os.path.join
 
@@ -85,8 +113,6 @@ def configure(conf):
 	 opj(conf.env.TI_CGT_DIR, "lib"),
 	]
 
-	conf.env.LINKFLAGS += []
-
 	conf.env.INCLUDES_DSPBIOS += [
 	 opj(conf.env.TI_DSPBIOS_DIR, 'packages', 'ti', 'bios', 'include'),
 	]
@@ -101,10 +127,15 @@ def configure(conf):
 	
 @conf
 def ti_set_debug(cfg, debug=1):
+	"""
+	Sets debug flags for the compiler.
+
+	TODO:
+	- for each TI CFLAG/INCLUDES/LINKFLAGS/LIBPATH replace RELEASE by DEBUG
+	- -g --no_compress
+	"""
 	if debug:
 		cfg.env.CFLAGS += "-d_DEBUG -dDEBUG -dDDSP_DEBUG".split()
-		# TODO for each TI CFLAG/INCLUDES/LINKFLAGS/LIBPATH replace RELEASE by DEBUG
-		# -g --no_compress
 
 @conf
 def ti_dsplink_set_platform_flags(cfg, splat, dsp, dspbios_ver, board):
