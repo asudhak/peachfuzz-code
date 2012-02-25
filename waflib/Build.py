@@ -781,6 +781,10 @@ class inst(Task.Task):
 	"""
 	color = 'CYAN'
 
+	def uid(self):
+		lst = [self.dest, self.path] + self.source
+		return Utils.h_list(repr(lst))
+
 	def post(self):
 		"""
 		Same interface as in :py:meth:`waflib.TaskGen.task_gen.post`
