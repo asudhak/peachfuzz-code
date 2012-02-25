@@ -14,6 +14,8 @@ from waflib.TaskGen import after_method, before_method, feature, taskgen_method,
 from waflib.Tools import c_aliases, c_preproc, c_config, c_osx, c_tests
 from waflib.Configure import conf
 
+SYSTEM_LIB_PATHS = ['/usr/lib64', '/usr/lib', '/usr/local/lib64', '/usr/local/lib']
+
 USELIB_VARS = Utils.defaultdict(set)
 """
 Mapping for features to :py:class:`waflib.ConfigSet.ConfigSet` variables. See :py:func:`waflib.Tools.ccroot.propagate_uselib_vars`.
@@ -583,7 +585,7 @@ def process_lib(self):
 	node = None
 
 	names = [x % self.name for x in lib_patterns[self.lib_type]]
-	for x in self.lib_paths + [self.path, '/usr/lib64', '/usr/lib', '/usr/local/lib64', '/usr/local/lib']:
+	for x in self.lib_paths + [self.path] + SYSTEM_LIB_PATHS:
 		if not isinstance(x, Node.Node):
 			x = self.bld.root.find_node(x) or self.path.find_node(x)
 			if not x:
