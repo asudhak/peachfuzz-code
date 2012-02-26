@@ -46,7 +46,7 @@ def f(tsk):
 	p = env.get_flat
 	tsk.last_cmd = cmd = \'\'\' %s \'\'\' % s
 	return tsk.exec_command(cmd, cwd=wd, env=env.env or None)
-'''[1:-1]
+'''
 
 COMPILE_TEMPLATE_NOSHELL = '''
 def f(tsk):
@@ -61,7 +61,7 @@ def f(tsk):
 	%s
 	lst = [x for x in lst if x]
 	return tsk.exec_command(lst, cwd=wd, env=env.env or None)
-'''[1:-1]
+'''
 
 def cache_outputs(cls):
 	"""
@@ -1046,7 +1046,7 @@ def compile_fun_shell(line):
 
 	c = COMPILE_TEMPLATE_SHELL % (line, parm)
 
-	Logs.debug('action: %s' % c.split("\n"))
+	Logs.debug('action: %s' % c.strip().splitlines())
 	return (funex(c), dvars)
 
 def compile_fun_noshell(line):
@@ -1100,7 +1100,7 @@ def compile_fun_noshell(line):
 		if params[-1]:
 			app("lst.extend(%r)" % params[-1].split())
 	fun = COMPILE_TEMPLATE_NOSHELL % "\n\t".join(buf)
-	Logs.debug('action: %s' % fun.split("\n"))
+	Logs.debug('action: %s' % fun.strip().splitlines())
 	return (funex(fun), dvars)
 
 def compile_fun(line, shell=False):
