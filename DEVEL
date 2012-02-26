@@ -30,8 +30,15 @@ API documentation                      http://docs.waf.googlecode.com/git/apidoc
 The Waf Book                           http://docs.waf.googlecode.com/git/book_16/single.html
 The Waf Book for Waf 1.5 (deprecated)  http://docs.waf.googlecode.com/git/book_15/single.html
 
+Programming details
+-------------------
+
+* Do not use x.split("\n") but x.splitlines()
+* Do not catch all exceptions unless you have a good reason to do so
+* File handles are too easy to get wrong, use Node.readf/Node.writef/Utils.readf/Utils.writef
+
 Wiki documentation on http://wiki.waf.googlecode.com/git/
 ---------------------------------------------------------
 
-Not much to see yet
+...
 
