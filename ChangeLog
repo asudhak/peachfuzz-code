@@ -7,6 +7,9 @@ NEW IN WAF 1.7.0
 * Added Node.evict() to provide more control over invalid references
 * Do not raise exception on --help when running on python 2.4
 * Node.search -> Node.search_node (consistent with make_node and find_node)
+* Report errors on configuration test failures with execute=True #1111
+* Added header prefixing (autoconf-like) #1117
+* Removed the warnings on "waf install" #1120
 
 NEW IN WAF 1.6.11
 -----------------
