@@ -153,8 +153,11 @@ namespace PeachCoreDebuggersWindows {
 				throw gcnew System::Exception("Error, thread already created!");
 			}
 
-			pin_ptr<const wchar_t> unmngStr = PtrToStringChars(command);
+			pin_ptr<const wchar_t> unmngStr = PtrToStringChars(command);			
 			_command = wcsdup(unmngStr);
+
+			_ExitDebugger = FALSE;
+			_AccessViolation = FALSE;
 
 			DWORD currentThreadId = GetCurrentThreadId();
 
