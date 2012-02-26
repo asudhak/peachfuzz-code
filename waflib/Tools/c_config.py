@@ -887,7 +887,7 @@ def have_define(self, key):
 	return (self.env.HAVE_PAT or 'HAVE_%s') % Utils.quote_define_name(key)
 
 @conf
-def write_config_header(self, configfile='', guard='', top=False, env=None, defines=True, headers=False, remove=True):
+def write_config_header(self, configfile='', guard='', top=False, env=None, defines=True, headers=False, remove=True, define_prefix=''):
 	"""
 	Write a configuration header containing defines and includes::
 
@@ -917,7 +917,7 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 
 	lst = ['/* WARNING! All changes made to this file will be lost! */\n']
 	lst.append('#ifndef %s\n#define %s\n' % (waf_guard, waf_guard))
-	lst.append(self.get_config_header(defines, headers))
+	lst.append(self.get_config_header(defines, headers, define_prefix=define_prefix))
 	lst.append('\n#endif /* %s */\n' % waf_guard)
 
 	node.write('\n'.join(lst))
@@ -933,7 +933,7 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 		self.env[DEFKEYS] = []
 
 @conf
-def get_config_header(self, defines=True, headers=False):
+def get_config_header(self, defines=True, headers=False, define_prefix=''):
 	"""
 	Create the contents of a ``config.h`` file from the defines and includes
 	set in conf.env.define_key / conf.env.include_key. No include guards are added.
@@ -954,7 +954,7 @@ def get_config_header(self, defines=True, headers=False):
 		for x in self.env[DEFKEYS]:
 			if self.is_defined(x):
 				val = self.get_define(x)
-				lst.append('#define %s %s' % (x, val))
+				lst.append('#define %s %s' % (define_prefix + x, val))
 			else:
 				lst.append('/* #undef %s */' % x)
 	return "\n".join(lst)
