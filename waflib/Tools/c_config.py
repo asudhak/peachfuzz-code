@@ -613,11 +613,13 @@ def check(self, *k, **kw):
 			self.fatal('The configuration failed')
 	else:
 		kw['success'] = ret
-		self.end_msg(self.ret_msg(kw['okmsg'], kw))
 
 	ret = self.post_check(*k, **kw)
 	if not ret:
+		self.end_msg(kw['errmsg'], 'YELLOW')
 		self.fatal('The configuration failed %r' % ret)
+	else:
+		self.end_msg(self.ret_msg(kw['okmsg'], kw))
 	return ret
 
 class test_exec(Task.Task):
