@@ -26,7 +26,6 @@ class cprogram(link_task):
 	ext_out = ['.bin']
 	vars    = ['LINKDEPS']
 	inst_to = '${BINDIR}'
-	chmod   = Utils.O755
 
 class cshlib(cprogram):
 	"Link object files into a c shared library"

@@ -29,7 +29,6 @@ class cxxprogram(link_task):
 	vars    = ['LINKDEPS']
 	ext_out = ['.bin']
 	inst_to = '${BINDIR}'
-	chmod   = Utils.O755
 
 class cxxshlib(cxxprogram):
 	"Link object files into a c++ shared library"

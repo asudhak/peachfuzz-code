@@ -27,7 +27,6 @@ class dprogram(link_task):
 	"Link object files into a d program"
 	run_str = '${D_LINKER} ${LINKFLAGS} ${DLNK_SRC_F}${SRC} ${DLNK_TGT_F:TGT} ${RPATH_ST:RPATH} ${DSTLIB_MARKER} ${DSTLIBPATH_ST:STLIBPATH} ${DSTLIB_ST:STLIB} ${DSHLIB_MARKER} ${DLIBPATH_ST:LIBPATH} ${DSHLIB_ST:LIB}'
 	inst_to = '${BINDIR}'
-	chmod   = Utils.O755
 
 class dshlib(dprogram):
 	"Link object files into a d shared library"

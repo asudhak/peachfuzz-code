@@ -132,7 +132,7 @@ class link_task(Task.Task):
 	inst_to = None
 	"""Default installation path for the link task outputs, or None to disable"""
 
-	chmod   = Utils.O644
+	chmod   = Utils.O755
 	"""Default installation mode for the link task outputs"""
 
 	def add_target(self, target):

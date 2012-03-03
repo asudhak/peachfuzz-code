@@ -62,7 +62,6 @@ class asmprogram(link_task):
 	run_str = '${ASLINK} ${ASLINKFLAGS} ${ASLNK_TGT_F}${TGT} ${ASLNK_SRC_F}${SRC}'
 	ext_out = ['.bin']
 	inst_to = '${BINDIR}'
-	chmod   = Utils.O755
 
 class asmshlib(asmprogram):
 	"Link object files into a c shared library"
