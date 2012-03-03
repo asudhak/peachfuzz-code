@@ -213,6 +213,7 @@ def run_command(cmd_name):
 	:type cmd_name: string
 	"""
 	ctx = Context.create_context(cmd_name)
+	ctx.log_timer = Utils.Timer()
 	ctx.options = Options.options # provided for convenience
 	ctx.cmd = cmd_name
 	ctx.execute()
@@ -228,12 +229,9 @@ def run_commands():
 	run_command('init')
 	while Options.commands:
 		cmd_name = Options.commands.pop(0)
-
-		timer = Utils.Timer()
-		run_command(cmd_name)
+		ctx = run_command(cmd_name)
 		if not Options.options.progress_bar:
-			elapsed = ' (%s)' % str(timer)
-			Logs.info('%r finished successfully%s' % (cmd_name, elapsed))
+			Logs.info('%r finished successfully %s' % (cmd_name, str(ctx.log_timer)))
 	run_command('shutdown')
 
 ###########################################################################################
