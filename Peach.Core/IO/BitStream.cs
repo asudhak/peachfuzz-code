@@ -886,6 +886,11 @@ namespace Peach.Core.IO
 
 		#endregion
 
+		// Used by ReadBit
+		byte[] currentBytes = new byte[1024];
+		long currentByteStartPosition = -1;
+		long currentByteStopPosition = -1;
+
 		/// <summary>
 		/// Read a single bit from our bitstream
 		/// </summary>
@@ -897,20 +902,22 @@ namespace Peach.Core.IO
 
 			try
 			{
-				// Index into buff[] array
 				long byteIndex = pos / 8;
-				// Index into byte from buff[] array
 				int bitIndex = (int) (pos - (byteIndex * 8));
 
-				//if (_isLittleEndian)
-				//    // Shift and mask off 1 byte
-				//    return (byte)((buff[byteIndex] >> (byte)bitIndex) & 1);
-				//else
-				// Shift and mask off 1 byte
-				stream.Seek(byteIndex, SeekOrigin.Begin);
-				byte value = (byte) stream.ReadByte();
+				// Performance testing shows reading in blocks of 1024 to be a massive improvement
 
-				return (byte)((value >> (byte)(7 - bitIndex)) & 1);
+				if (currentByteStartPosition > byteIndex || currentByteStopPosition < byteIndex)
+				{
+					currentByteStartPosition = byteIndex;
+					if (stream.Position != byteIndex)
+						stream.Seek(byteIndex, SeekOrigin.Begin);
+
+					int length = (byte)stream.Read(currentBytes, 0, currentBytes.Length);
+					currentByteStopPosition = stream.Position - 1;
+				}
+
+				return (byte)((currentBytes[byteIndex - currentByteStartPosition] >> (byte)(7 - bitIndex)) & 1);
 			}
 			finally
 			{

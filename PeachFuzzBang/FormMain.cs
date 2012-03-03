@@ -94,7 +94,7 @@ namespace PeachFuzzBang
 				textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
 			}
 
-			tabControl.TabPages.Remove(tabPageGUI);
+			//tabControl.TabPages.Remove(tabPageGUI);
 			tabControl.TabPages.Remove(tabPageFuzzing);
 			//tabControl.TabPages.Remove(tabPageOutput);
 

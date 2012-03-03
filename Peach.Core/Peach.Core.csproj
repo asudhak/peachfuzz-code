@@ -158,6 +158,7 @@
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceProcess" />
@@ -1060,6 +1061,11 @@
     <Compile Include="Transformers\Type\NumberToString.cs" />
     <Compile Include="Transformers\Type\StringToFloat.cs" />
     <Compile Include="Transformers\Type\StringToInt.cs" />
+    <Compile Include="UI\Windows\APIRECT.cs" />
+    <Compile Include="UI\Windows\HwndInterface.cs" />
+    <Compile Include="UI\Windows\HwndObject.cs" />
+    <Compile Include="UI\Windows\PositioningFlags.cs" />
+    <Compile Include="UI\Windows\WindowMessages.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Variant.cs" />
     <Compile Include="Watcher.cs" />

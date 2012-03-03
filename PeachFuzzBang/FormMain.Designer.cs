@@ -30,7 +30,10 @@
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.tabControl = new System.Windows.Forms.TabControl();
+			this.tabPageIntroduction = new System.Windows.Forms.TabPage();
+			this.richTextBoxIntroduction = new System.Windows.Forms.RichTextBox();
 			this.tabPageGeneral = new System.Windows.Forms.TabPage();
+			this.label20 = new System.Windows.Forms.Label();
 			this.buttonLogPathBrowse = new System.Windows.Forms.Button();
 			this.textBoxLogPath = new System.Windows.Forms.TextBox();
 			this.label17 = new System.Windows.Forms.Label();
@@ -67,6 +70,7 @@
 			this.comboBoxAttachToServiceServices = new System.Windows.Forms.ComboBox();
 			this.label5 = new System.Windows.Forms.Label();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.textBoxAttachToProcessProcessName = new System.Windows.Forms.ComboBox();
 			this.textBoxAttachToProcessPID = new System.Windows.Forms.TextBox();
 			this.radioButtonAttachToProcessProcessName = new System.Windows.Forms.RadioButton();
 			this.radioButtonAttachToProcessPID = new System.Windows.Forms.RadioButton();
@@ -101,11 +105,13 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.textBoxAttachToProcessProcessName = new System.Windows.Forms.ComboBox();
-			this.label20 = new System.Windows.Forms.Label();
-			this.tabPageIntroduction = new System.Windows.Forms.TabPage();
-			this.richTextBoxIntroduction = new System.Windows.Forms.RichTextBox();
+			this.textBox1 = new System.Windows.Forms.TextBox();
+			this.checkBoxEnableWmClose = new System.Windows.Forms.CheckBox();
+			this.groupBox7 = new System.Windows.Forms.GroupBox();
+			this.textBoxWindowTitle = new System.Windows.Forms.TextBox();
+			this.label21 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
+			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
 			this.groupBox6.SuspendLayout();
 			this.tabPageDebugger.SuspendLayout();
@@ -114,13 +120,14 @@
 			this.groupBox3.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.groupBox1.SuspendLayout();
+			this.tabPageGUI.SuspendLayout();
 			this.tabPageFuzzing.SuspendLayout();
 			this.tabPageOutput.SuspendLayout();
 			this.tabPageAbout.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.panel1.SuspendLayout();
-			this.tabPageIntroduction.SuspendLayout();
+			this.groupBox7.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl
@@ -138,6 +145,25 @@
 			this.tabControl.SelectedIndex = 0;
 			this.tabControl.Size = new System.Drawing.Size(553, 433);
 			this.tabControl.TabIndex = 0;
+			// 
+			// tabPageIntroduction
+			// 
+			this.tabPageIntroduction.Controls.Add(this.richTextBoxIntroduction);
+			this.tabPageIntroduction.Location = new System.Drawing.Point(4, 22);
+			this.tabPageIntroduction.Name = "tabPageIntroduction";
+			this.tabPageIntroduction.Size = new System.Drawing.Size(545, 407);
+			this.tabPageIntroduction.TabIndex = 6;
+			this.tabPageIntroduction.Text = "Introduction";
+			this.tabPageIntroduction.UseVisualStyleBackColor = true;
+			// 
+			// richTextBoxIntroduction
+			// 
+			this.richTextBoxIntroduction.Location = new System.Drawing.Point(3, 3);
+			this.richTextBoxIntroduction.Name = "richTextBoxIntroduction";
+			this.richTextBoxIntroduction.ReadOnly = true;
+			this.richTextBoxIntroduction.Size = new System.Drawing.Size(539, 373);
+			this.richTextBoxIntroduction.TabIndex = 0;
+			this.richTextBoxIntroduction.Text = "";
 			// 
 			// tabPageGeneral
 			// 
@@ -163,6 +189,15 @@
 			this.tabPageGeneral.TabIndex = 0;
 			this.tabPageGeneral.Text = "General";
 			this.tabPageGeneral.UseVisualStyleBackColor = true;
+			// 
+			// label20
+			// 
+			this.label20.AutoSize = true;
+			this.label20.Location = new System.Drawing.Point(221, 134);
+			this.label20.Name = "label20";
+			this.label20.Size = new System.Drawing.Size(204, 13);
+			this.label20.TabIndex = 20;
+			this.label20.Text = "To perform infinite iterations enter zero (0).";
 			// 
 			// buttonLogPathBrowse
 			// 
@@ -515,6 +550,14 @@
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "Attach to Process";
 			// 
+			// textBoxAttachToProcessProcessName
+			// 
+			this.textBoxAttachToProcessProcessName.FormattingEnabled = true;
+			this.textBoxAttachToProcessProcessName.Location = new System.Drawing.Point(110, 45);
+			this.textBoxAttachToProcessProcessName.Name = "textBoxAttachToProcessProcessName";
+			this.textBoxAttachToProcessProcessName.Size = new System.Drawing.Size(219, 21);
+			this.textBoxAttachToProcessProcessName.TabIndex = 3;
+			// 
 			// textBoxAttachToProcessPID
 			// 
 			this.textBoxAttachToProcessPID.Location = new System.Drawing.Point(110, 18);
@@ -601,6 +644,8 @@
 			// 
 			// tabPageGUI
 			// 
+			this.tabPageGUI.Controls.Add(this.groupBox7);
+			this.tabPageGUI.Controls.Add(this.textBox1);
 			this.tabPageGUI.Location = new System.Drawing.Point(4, 22);
 			this.tabPageGUI.Name = "tabPageGUI";
 			this.tabPageGUI.Size = new System.Drawing.Size(545, 407);
@@ -848,41 +893,53 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
-			// textBoxAttachToProcessProcessName
+			// textBox1
 			// 
-			this.textBoxAttachToProcessProcessName.FormattingEnabled = true;
-			this.textBoxAttachToProcessProcessName.Location = new System.Drawing.Point(110, 45);
-			this.textBoxAttachToProcessProcessName.Name = "textBoxAttachToProcessProcessName";
-			this.textBoxAttachToProcessProcessName.Size = new System.Drawing.Size(219, 21);
-			this.textBoxAttachToProcessProcessName.TabIndex = 3;
+			this.textBox1.Location = new System.Drawing.Point(8, 252);
+			this.textBox1.Multiline = true;
+			this.textBox1.Name = "textBox1";
+			this.textBox1.ReadOnly = true;
+			this.textBox1.Size = new System.Drawing.Size(529, 121);
+			this.textBox1.TabIndex = 0;
+			this.textBox1.Text = resources.GetString("textBox1.Text");
 			// 
-			// label20
+			// checkBoxEnableWmClose
 			// 
-			this.label20.AutoSize = true;
-			this.label20.Location = new System.Drawing.Point(221, 134);
-			this.label20.Name = "label20";
-			this.label20.Size = new System.Drawing.Size(204, 13);
-			this.label20.TabIndex = 20;
-			this.label20.Text = "To perform infinite iterations enter zero (0).";
+			this.checkBoxEnableWmClose.AutoSize = true;
+			this.checkBoxEnableWmClose.Location = new System.Drawing.Point(9, 19);
+			this.checkBoxEnableWmClose.Name = "checkBoxEnableWmClose";
+			this.checkBoxEnableWmClose.Size = new System.Drawing.Size(211, 17);
+			this.checkBoxEnableWmClose.TabIndex = 1;
+			this.checkBoxEnableWmClose.Text = "Enable sending WM_CLOSE message.";
+			this.checkBoxEnableWmClose.UseVisualStyleBackColor = true;
 			// 
-			// tabPageIntroduction
+			// groupBox7
 			// 
-			this.tabPageIntroduction.Controls.Add(this.richTextBoxIntroduction);
-			this.tabPageIntroduction.Location = new System.Drawing.Point(4, 22);
-			this.tabPageIntroduction.Name = "tabPageIntroduction";
-			this.tabPageIntroduction.Size = new System.Drawing.Size(545, 407);
-			this.tabPageIntroduction.TabIndex = 6;
-			this.tabPageIntroduction.Text = "Introduction";
-			this.tabPageIntroduction.UseVisualStyleBackColor = true;
+			this.groupBox7.Controls.Add(this.label21);
+			this.groupBox7.Controls.Add(this.checkBoxEnableWmClose);
+			this.groupBox7.Controls.Add(this.textBoxWindowTitle);
+			this.groupBox7.Location = new System.Drawing.Point(9, 12);
+			this.groupBox7.Name = "groupBox7";
+			this.groupBox7.Size = new System.Drawing.Size(528, 78);
+			this.groupBox7.TabIndex = 2;
+			this.groupBox7.TabStop = false;
+			this.groupBox7.Text = "Configure WM_CLOSE";
 			// 
-			// richTextBoxIntroduction
+			// textBoxWindowTitle
 			// 
-			this.richTextBoxIntroduction.Location = new System.Drawing.Point(3, 3);
-			this.richTextBoxIntroduction.Name = "richTextBoxIntroduction";
-			this.richTextBoxIntroduction.ReadOnly = true;
-			this.richTextBoxIntroduction.Size = new System.Drawing.Size(539, 373);
-			this.richTextBoxIntroduction.TabIndex = 0;
-			this.richTextBoxIntroduction.Text = "";
+			this.textBoxWindowTitle.Location = new System.Drawing.Point(84, 42);
+			this.textBoxWindowTitle.Name = "textBoxWindowTitle";
+			this.textBoxWindowTitle.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle.TabIndex = 0;
+			// 
+			// label21
+			// 
+			this.label21.AutoSize = true;
+			this.label21.Location = new System.Drawing.Point(6, 45);
+			this.label21.Name = "label21";
+			this.label21.Size = new System.Drawing.Size(72, 13);
+			this.label21.TabIndex = 1;
+			this.label21.Text = "Window Title:";
 			// 
 			// FormMain
 			// 
@@ -895,6 +952,7 @@
 			this.Name = "FormMain";
 			this.Text = "Peach 3 - Fuzz Bang";
 			this.tabControl.ResumeLayout(false);
+			this.tabPageIntroduction.ResumeLayout(false);
 			this.tabPageGeneral.ResumeLayout(false);
 			this.tabPageGeneral.PerformLayout();
 			this.groupBox6.ResumeLayout(false);
@@ -911,6 +969,8 @@
 			this.groupBox2.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
+			this.tabPageGUI.ResumeLayout(false);
+			this.tabPageGUI.PerformLayout();
 			this.tabPageFuzzing.ResumeLayout(false);
 			this.tabPageFuzzing.PerformLayout();
 			this.tabPageOutput.ResumeLayout(false);
@@ -919,7 +979,8 @@
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.panel1.ResumeLayout(false);
-			this.tabPageIntroduction.ResumeLayout(false);
+			this.groupBox7.ResumeLayout(false);
+			this.groupBox7.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -1002,6 +1063,11 @@
 		private System.Windows.Forms.TabPage tabPageIntroduction;
 		private System.Windows.Forms.Label label20;
 		private System.Windows.Forms.RichTextBox richTextBoxIntroduction;
+		private System.Windows.Forms.GroupBox groupBox7;
+		private System.Windows.Forms.Label label21;
+		private System.Windows.Forms.CheckBox checkBoxEnableWmClose;
+		private System.Windows.Forms.TextBox textBoxWindowTitle;
+		private System.Windows.Forms.TextBox textBox1;
 	}
 }
 
