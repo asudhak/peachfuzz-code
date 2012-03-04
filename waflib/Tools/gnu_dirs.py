@@ -76,9 +76,13 @@ def configure(conf):
 		return getattr(Options.options, varname, '') or default
 
 	env = conf.env
-	conf.env.LIBDIR = conf.env.BINDIR = []
-	env['EXEC_PREFIX'] = get_param('EXEC_PREFIX', env['PREFIX'])
-	env['PACKAGE'] = getattr(Context.g_module, 'APPNAME', None) or env['PACKAGE']
+	env.LIBDIR = env.BINDIR = []
+	env.EXEC_PREFIX = get_param('EXEC_PREFIX', env.PREFIX)
+	corner_case = False
+	if str(env.PREFIX) == '/usr': # Issue 722, corner case
+		corner_case = True
+		env.PREFIX = ''
+	env.PACKAGE = getattr(Context.g_module, 'APPNAME', None) or env.PACKAGE
 
 	complete = False
 	iter = 0
@@ -92,6 +96,10 @@ def configure(conf):
 					env[name] = Utils.subst_vars(get_param(name, default).replace('/', os.sep), env)
 				except TypeError:
 					complete = False
+
+	if corner_case:
+		env.PREFIX = '/usr'
+
 	if not complete:
 		lst = [name for name, _, _ in _options if not env[name.upper()]]
 		raise conf.errors.WafError('Variable substitution failure %r' % lst)

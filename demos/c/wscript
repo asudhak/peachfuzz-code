@@ -12,11 +12,10 @@ from waflib import Configure, Logs
 #Configure.autoconfig = True
 
 def options(opt):
-	opt.load('compiler_c')
-	opt.load('gnu_dirs')
+	opt.load('compiler_c gnu_dirs')
 
 def configure(conf):
-	conf.load('compiler_c')
+	conf.load('compiler_c gnu_dirs')
 	conf.check_cc(fragment="int main() { return 0; }\n")
 
 	try:
