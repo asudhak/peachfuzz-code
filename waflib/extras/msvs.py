@@ -304,7 +304,6 @@ def compile_template(line):
 
 	indent = 0
 	buf = []
-	dvars = []
 	app = buf.append
 
 	def app(txt):
@@ -759,7 +758,12 @@ class msvs_generator(BuildContext):
 		self.collect_targets()
 		self.add_aliases()
 		self.collect_dirs()
-		self.all_projects.sort(key=lambda x: getattr(x, 'path', None) and x.path.abspath() or x.name)
+		default_project = getattr(self, 'default_project', None)
+		def sortfun(x):
+			if self.name == default_project:
+				return ''
+			return getattr(x, 'path', None) and x.path.abspath() or self.name
+		self.all_projects.sort(key=sortfun)
 
 	def write_files(self):
 		"""
