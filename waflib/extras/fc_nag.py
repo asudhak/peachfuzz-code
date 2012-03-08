@@ -18,7 +18,7 @@ def find_nag(conf):
 	fc = conf.cmd_to_list(fc)
 	conf.get_nag_version(fc)
 	conf.env.FC_NAME = 'NAG'
-	conf.env.FC_MOD_CAPITALIZATION = 'lower.mod'
+	conf.env.FC_MOD_CAPITALIZATION = 'lower'
 
 @conf
 def nag_flags(conf):
