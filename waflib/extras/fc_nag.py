@@ -40,7 +40,10 @@ def get_nag_version(conf, fc):
 	cmd = fc + ['-v']
 
 	out, err = fc_config.getoutput(conf,cmd,stdin=False)
-	if out: match = version_re(out)
+	if out:
+		match = version_re(out)
+		if not match:
+			match = version_re(err)
 	else: match = version_re(err)
 	if not match:
 		conf.fatal('Could not determine the NAG version.')
