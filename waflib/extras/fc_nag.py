@@ -36,7 +36,7 @@ def nag_modifier_platform(conf):
 def get_nag_version(conf, fc):
 	"""Get the NAG compiler version"""
 
-	version_re = re.compile(r"NAG Fortran Compiler *Release *(?P<major>\d*)\.(?P<minor>\d*)", re.I).search
+	version_re = re.compile(r"^NAG Fortran Compiler *Release *(?P<major>\d*)\.(?P<minor>\d*)", re.M).search
 	cmd = fc + ['-v']
 
 	out, err = fc_config.getoutput(conf,cmd,stdin=False)
