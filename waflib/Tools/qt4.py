@@ -449,7 +449,7 @@ def find_qt4_binaries(self):
 		else:
 			try:
 				version = self.cmd_and_log([qmake, '-query', 'QT_VERSION']).strip()
-			except self.errors.ConfigurationError:
+			except self.errors.WafError:
 				pass
 			else:
 				if version:
