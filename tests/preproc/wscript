@@ -134,6 +134,27 @@ def build(bld):
 	add_defs(0, 0, 0, 'h.h')
 
 
+	defs = {
+		'a' : 'a 0',
+		'b' : 'b 1',
+		'c' : 'c 1',
+		'd' : 'd 0',
+		'e' : 'a || b || c || d'
+	}
+
+	def test(x, result):
+		toks = c_preproc.tokenize(x)
+		c_preproc.reduce_tokens(toks, defs, [])
+		(_, ret) = c_preproc.reduce_eval(toks)
+		if int(ret) == result:
+			color = "GREEN"
+		else:
+			color = "RED"
+		pprint(color, "%s\t\t%r" % (ret, toks))
+
+	test('a||b||c||d', 1)
+	test('a&&b&&c&&d', 0)
+	test('e', 1)
 
 	return
 	test("1?1,(0?5:9):3,4", 0) # <- invalid expression
