@@ -1017,7 +1017,7 @@ def scan(task):
 		raise Errors.WafError('%r is missing a feature such as "c", "cxx" or "includes": ' % task.generator)
 
 	if go_absolute:
-		nodepaths = incn + standard_includes
+		nodepaths = incn + [task.generator.bld.root.find_dir(x) for x in standard_includes]
 	else:
 		nodepaths = [x for x in incn if x.is_child_of(x.ctx.srcnode) or x.is_child_of(x.ctx.bldnode)]
 
