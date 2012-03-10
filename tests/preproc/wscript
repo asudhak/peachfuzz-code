@@ -114,7 +114,7 @@ def build(bld):
 	def add_defs(a, b, c, expected):
 		main = bld.path.find_resource('src/main.c')
 		defs = ['A=%d' % a, 'B=%d' % b, 'C=%d' % c]
-		bld.env['DEFLINES'] = ["%s %s" %(x[0], trimquotes('='.join(x[1:]))) for x in [y.split('=') for y in defs]]
+		bld.env['DEFINES'] = ["%s %s" %(x[0], trimquotes('='.join(x[1:]))) for x in [y.split('=') for y in defs]]
 		gruik = c_preproc.c_parser([main.parent])
 		gruik.start(main, bld.env)
 
