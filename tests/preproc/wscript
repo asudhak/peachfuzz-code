@@ -139,7 +139,7 @@ def build(bld):
 		'b' : 'b 1',
 		'c' : 'c 1',
 		'd' : 'd 0',
-		'e' : 'a || b || c || d'
+		'e' : 'e a || b || c || d'
 	}
 
 	def test(x, result):
