@@ -446,8 +446,10 @@ def reduce_tokens(lst, defs, ban=[]):
 			if isinstance(macro_def[0], list):
 				# macro without arguments
 				del lst[i]
-				for x in range(len(to_add)):
-					lst.insert(i, to_add[x])
+				accu = to_add[:]
+				reduce_tokens(accu, defs, ban+[v])
+				for x in range(len(accu)):
+					lst.insert(i, accu[x])
 					i += 1
 			else:
 				# collect the arguments for the funcall
