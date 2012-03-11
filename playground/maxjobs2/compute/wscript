@@ -30,19 +30,23 @@ from waflib import Task
 lock = threading.Lock()
 
 def lock_maxjob(self):
+	# lock the file, telling other build processes to avoid spawining tasks during that time
 	while True:
 		try:
 			self.lockfd = os.open(self.generator.bld.lockfile, os.O_TRUNC | os.O_CREAT | os.O_RDWR)
 			fcntl.flock(self.lockfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
 		except (OSError, IOError), e:
 			if e.errno in (errno.EACCES, errno.EAGAIN):
-				time.sleep(0.1)
+				time.sleep(0.3)
 				continue
 			raise
 		os.write(self.lockfd, "%d" % os.getpid())
+		self.start_time = time.time()
 		break
 
 def release_maxjob(self):
+	# release the lock file
+	print "> long task %d" % (time.time() - self.start_time)
 	try:
 		os.unlink(self.generator.bld.lockfile)
 		os.close(self.lockfd)
@@ -52,6 +56,7 @@ def release_maxjob(self):
 		pass
 
 def wait_maxjob(self):
+	# wait on the lock file.. up to a certain limit
 	while True:
 		try:
 			ini = os.stat(self.generator.bld.lockfile).st_mtime
@@ -60,7 +65,7 @@ def wait_maxjob(self):
 		diff = time.time() - ini
 		if diff > 300: # stale lock file? wait 5 minutes
 			return
-		time.sleep(0.1)
+		time.sleep(0.5)
 
 # the method process is called by threads...
 def process2(self):
@@ -83,6 +88,7 @@ def process2(self):
 		finally:
 			lock.release()
 	return ret
+
 def process(self):
 	try:
 		process2(self)
