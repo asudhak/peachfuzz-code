@@ -29,7 +29,8 @@ def runnable_status(self):
 	ret = super(c.c, self).runnable_status()
 
 	if ret != Task.ASK_LATER and not getattr(self, 'all_mock_done', False):
-		self.all_mock_done = True # this should happen once by task
+		self.all_mock_done = True # run once
+
 
 		bld = self.generator.bld
 		add = False
@@ -60,7 +61,9 @@ def runnable_status(self):
 
 					# preprocessor cache :-/
 					try:
-						del bld.cache_nd[x]
+						for key in list(bld.cache_nd.keys()):
+							if key[1] == x:
+								del bld.cache_nd[key]
 					except (KeyError, AttributeError):
 						pass
 
