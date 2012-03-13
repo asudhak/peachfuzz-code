@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -147,7 +147,7 @@ namespace PeachXmlGenerator
 This is the experimental XML generation fuzzer.  It will consume a DTD
 XML definition and use it to produce structurally correct XML documents.
 
-Please submit any bugs to Michael Eddington <mike@phed.org>.
+Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 
 Syntax:
 

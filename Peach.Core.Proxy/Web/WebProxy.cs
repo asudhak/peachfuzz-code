@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -41,7 +41,7 @@ namespace Peach.Core.Proxy.Web
 
 	public class WebProxy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web.WebProxy");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		Proxy proxy = null;
 
 		public event HttpRequestEventHandler NewHttpRequest;

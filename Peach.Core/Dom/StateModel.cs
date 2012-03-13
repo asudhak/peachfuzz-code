@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -45,7 +45,7 @@ namespace Peach.Core.Dom
     //[Serializable]
 	public class StateModel : INamed
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.StateModel");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public string _name = null;
 		public object parent;

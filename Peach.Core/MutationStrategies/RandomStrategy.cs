@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -47,7 +47,7 @@ namespace Peach.Core.MutationStrategies
 	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once (default is 7).", false)]
 	public class RandomStrategy : MutationStrategy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.MutationStrategies.RandomStrategy");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		/// <summary>
 		/// DataElement's fullname to list of mutators

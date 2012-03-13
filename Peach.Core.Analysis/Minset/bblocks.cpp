@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 //
 // PIN Tool to find all basic blocks a program hits.

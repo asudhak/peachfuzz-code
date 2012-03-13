@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Remoting.Channels.Ipc;
 
 using Peach.Core.Dom;
 using Peach.Core.Publishers.Com;
@@ -47,7 +48,7 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("clsid", typeof(string), "COM CLSID of object", true)]
 	public class ComPublisher : Publisher
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Publishers.ComPublisher");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		string _clsid = null;
 		string _host = "localhost";
@@ -71,11 +72,15 @@ namespace Peach.Core.Publishers
 			if (_proxy != null)
 				return;
 
-			TcpChannel chan = new TcpChannel();
-			ChannelServices.RegisterChannel(chan, false); // Disable security for speed
-			_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
-				string.Format("tcp://{0}:{1}/PeachComContainer", _host, _port));
+			//TcpChannel chan = new TcpChannel();
+			//ChannelServices.RegisterChannel(chan, false); // Disable security for speed
+			//_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
+			//    string.Format("tcp://{0}:{1}/PeachComContainer", _host, _port));
 
+			ChannelServices.RegisterChannel(new IpcChannel(), false);
+			_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
+				"ipc://Peach_Com_Container/PeachComContainer");
+			
 			_initialized = false;
 		}
 

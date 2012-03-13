@@ -10,7 +10,7 @@ namespace Peach.Core.Proxy.Web.Tester
 {
 	class Program
 	{
-		static NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web.Tester.Program");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		static void Main(string[] args)
 		{

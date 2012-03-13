@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -42,7 +42,7 @@ namespace Peach.Core.Agent
 	/// </summary>
 	public class AgentManager
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentManager");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		static int UniqueNames = 0;
 		OrderedDictionary<string, AgentClient> _agents = new OrderedDictionary<string, AgentClient>();
 		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();

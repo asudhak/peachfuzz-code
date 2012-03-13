@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -75,7 +75,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Action : INamed
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.Action");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public string _name = "Unknown Action";
 		public ActionType type = ActionType.Unknown;
 

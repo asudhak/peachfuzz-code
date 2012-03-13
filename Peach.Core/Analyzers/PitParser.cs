@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -70,7 +70,7 @@ namespace Peach.Core.Analyzers
 	/// </summary>
 	public class PitParser : Analyzer
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Analyzers.PitParser");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";

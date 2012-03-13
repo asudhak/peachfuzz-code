@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -68,14 +68,16 @@ namespace PeachFuzzBang
 			{
 				ctrl.Increment(1);
 				_form.IterationCount++;
-				_form.textBoxIterationCount.Text = _form.IterationCount.ToString();
+				int count = _form.IterationCount;
+				_form.textBoxIterationCount.Text = count.ToString();
 			}
 
 			public delegate void DeligateFaultIncrement();
 			public void FaultIncrement()
 			{
 				_form.FaultCount++;
-				_form.textBoxFaultCount.Text = _form.FaultCount.ToString();
+				int count = _form.FaultCount;
+				_form.textBoxFaultCount.Text = count.ToString();
 			}
 
 			public delegate void DeligateStopFuzzing();

@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -40,7 +40,7 @@ namespace Peach.Core.MutationStrategies
 	[MutationStrategy("Sequencial")]
 	public class Sequencial : MutationStrategy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.MutationStrategies.Sequencial");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		Dictionary<DataElement, List<Mutator>> _stuffs = new Dictionary<DataElement, List<Mutator>>();
 		List<Type> _mutators = new List<Type>();

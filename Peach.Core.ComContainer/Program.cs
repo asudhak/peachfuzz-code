@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -34,6 +34,7 @@ using System.Collections;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Remoting.Channels.Ipc;
 using System.Threading;
 
 using Peach.Core.Publishers.Com;
@@ -48,23 +49,57 @@ namespace Peach.Core.ComContainer
 
 		static void Main(string[] args)
 		{
-			int port = 9001;
+			//int port = 9001;
 
-			if (args.Count() > 0)
-				port = int.Parse(args[0]);
+			//if (args.Count() > 0)
+			//    port = int.Parse(args[0]);
 
-			//select channel to communicate
-			TcpChannel chan = new TcpChannel(port);
-			ChannelServices.RegisterChannel(chan, false);    //register channel
+			////select channel to communicate
+			//TcpChannel chan = new TcpChannel(port);
+			//ChannelServices.RegisterChannel(chan, false);    //register channel
 
-			//register remote object
-			RemotingConfiguration.RegisterWellKnownServiceType(
-				typeof(ComContainer),
-				"PeachComContainer", WellKnownObjectMode.Singleton);
+			////register remote object
+			//RemotingConfiguration.RegisterWellKnownServiceType(
+			//    typeof(ComContainer),
+			//    "PeachComContainer", WellKnownObjectMode.Singleton);
 
-			//inform console
-			while (!Shutdown)
-				Thread.Sleep(500);
+			////inform console
+			//while (!Shutdown)
+			//    Thread.Sleep(500);
+
+			var ipcChannelName = "Peach_Com_Container";
+
+			if (args.Length == 1 && args[0] == "-h")
+			{
+				Console.WriteLine("> Peach.Core.ComContainer");
+				Console.WriteLine("> Copyright (c) Deja vu Security\n");
+
+				Console.WriteLine("Syntax:");
+				Console.WriteLine(" Peach.Core.ComContainer.exe IPC_CHANNEL_NAME\n\n");
+
+				return;
+			}
+
+			if (args.Length == 1)
+				ipcChannelName = args[0];
+
+			IpcChannel ipcChannel = new IpcChannel(ipcChannelName);
+			ChannelServices.RegisterChannel(ipcChannel, false);
+
+			try
+			{
+				Type commonInterfaceType = typeof(Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance);
+
+				RemotingConfiguration.RegisterWellKnownServiceType(
+					typeof(ComContainer), "PeachComContainer", WellKnownObjectMode.Singleton);
+
+				while (!Shutdown)
+					Thread.Sleep(200);
+			}
+			finally
+			{
+				ChannelServices.UnregisterChannel(ipcChannel);
+			}
 		}
 	}
 }

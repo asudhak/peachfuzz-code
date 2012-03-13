@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -47,7 +47,7 @@ namespace Peach.Core.Proxy
 
 	public class Proxy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		byte[] buff = new byte[1024];
 		int listenPort;
 		string address;

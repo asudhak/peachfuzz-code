@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -46,7 +46,7 @@ namespace Peach.Core.Agent.Channels
 	public class AgentClientTcpRemoting : AgentClient
 	{
 		AgentServiceTcpRemote proxy = null;
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentServiceTcpRemote");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public AgentClientTcpRemoting(string name, string uri, string password)
 		{
@@ -177,7 +177,7 @@ namespace Peach.Core.Agent.Channels
 	public class AgentServiceTcpRemote : MarshalByRefObject, IAgent
 	{
 		public Agent agent = null;
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.AgentServiceTcpRemote");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public AgentServiceTcpRemote()
 		{

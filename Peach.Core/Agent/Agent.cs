@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -64,7 +64,7 @@ namespace Peach.Core.Agent
 		public object parent;
 		Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
 		string name;
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Agent.Agent");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		#region Events
 

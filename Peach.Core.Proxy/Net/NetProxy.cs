@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -42,7 +42,7 @@ namespace Peach.Core.Proxy.Net
 
 	public class NetProxy
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Net");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		Proxy proxy = null;
 		string _remoteAddress;
 		int _remotePort;

@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -280,7 +280,7 @@ but already exposes several abilities to the end-user such as performing
 simple fuzzer runs, converting WireShark captures into Peach XML and
 performing parsing tests of Peach XML files.
 
-Please submit any bugs to Michael Eddington <mike@phed.org>.
+Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 
 Syntax:
 

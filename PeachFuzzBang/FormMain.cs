@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -51,8 +51,8 @@ namespace PeachFuzzBang
 {
 	public partial class FormMain : Form
 	{
-		public int IterationCount = 0;
-		public int FaultCount = 0;
+		public Int32 IterationCount = 0;
+		public Int32 FaultCount = 0;
 
 		Thread thread = null;
 
@@ -121,157 +121,165 @@ namespace PeachFuzzBang
 
 		private void buttonStartFuzzing_Click(object sender, EventArgs e)
 		{
-			//tabControl.TabPages.Remove(tabPageGeneral);
-			//tabControl.TabPages.Remove(tabPageDebugger);
-			//tabControl.TabPages.Insert(0, tabPageOutput);
-			tabControl.SelectedTab = tabPageOutput;
-			buttonStartFuzzing.Enabled = false;
-			buttonSaveConfiguration.Enabled = false;
-			buttonStopFuzzing.Enabled = true;
-
-			IterationCount = 0;
-			FaultCount = 0;
-			textBoxIterationCount.Text = IterationCount.ToString();
-			textBoxFaultCount.Text = FaultCount.ToString();
-			textBoxOutput.Text = "";
-
-			Dom dom = new Dom();
-			DataModel dataModel = null;
-
-			// Data Set
-			Data fileData = new Data();
-			if (Directory.Exists(textBoxTemplateFiles.Text))
+			try
 			{
-				List<string> files = new List<string>();
-				foreach (string fileName in Directory.GetFiles(textBoxTemplateFiles.Text))
-					files.Add(fileName);
+				//tabControl.TabPages.Remove(tabPageGeneral);
+				//tabControl.TabPages.Remove(tabPageDebugger);
+				//tabControl.TabPages.Insert(0, tabPageOutput);
+				tabControl.SelectedTab = tabPageOutput;
+				buttonStartFuzzing.Enabled = false;
+				buttonSaveConfiguration.Enabled = false;
+				buttonStopFuzzing.Enabled = true;
 
-				fileData.DataType = DataType.Files;
-				fileData.Files = files;
+				IterationCount = 0;
+				FaultCount = 0;
+				textBoxIterationCount.Text = IterationCount.ToString();
+				textBoxFaultCount.Text = FaultCount.ToString();
+				textBoxOutput.Text = "";
+
+				Dom dom = new Dom();
+				DataModel dataModel = null;
+
+				// Data Set
+				Data fileData = new Data();
+				if (Directory.Exists(textBoxTemplateFiles.Text))
+				{
+					List<string> files = new List<string>();
+					foreach (string fileName in Directory.GetFiles(textBoxTemplateFiles.Text))
+						files.Add(fileName);
+
+					fileData.DataType = DataType.Files;
+					fileData.Files = files;
+				}
+				else if (File.Exists(textBoxTemplateFiles.Text))
+				{
+					fileData.DataType = DataType.File;
+					fileData.FileName = textBoxTemplateFiles.Text;
+				}
+				else
+				{
+					MessageBox.Show("Error, Unable to locate file/folder called \"" + textBoxTemplateFiles.Text + "\".");
+					return;
+				}
+
+				// DataModel
+				if (userSelectedDataModel != null)
+				{
+					dataModel = ObjectCopier.Clone<DataModel>(dataModel);
+					dataModel.dom = dom;
+					dataModel.name = "TheDataModel";
+
+					dom.dataModels.Add(dataModel.name, dataModel);
+				}
+				else
+				{
+					dataModel = new DataModel("TheDataModel");
+					dataModel.Add(new Blob());
+					dom.dataModels.Add(dataModel.name, dataModel);
+				}
+
+				// Publisher
+				Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+				args["FileName"] = new Variant(textBoxFuzzedFile.Text);
+				Peach.Core.Publishers.FilePublisher file = new Peach.Core.Publishers.FilePublisher(args);
+
+				// StateModel
+				StateModel stateModel = new StateModel();
+				stateModel.name = "TheStateModel";
+
+				State state = new State();
+				state.name = "TheState";
+
+				Peach.Core.Dom.Action actionOutput = new Peach.Core.Dom.Action();
+				actionOutput.type = ActionType.Output;
+				actionOutput.dataModel = dataModel;
+				actionOutput.dataSet = new Peach.Core.Dom.DataSet();
+				actionOutput.dataSet.Datas.Add(fileData);
+
+				Peach.Core.Dom.Action actionClose = new Peach.Core.Dom.Action();
+				actionClose.type = ActionType.Close;
+
+				Peach.Core.Dom.Action actionCall = new Peach.Core.Dom.Action();
+				actionCall.type = ActionType.Call;
+				actionCall.publisher = "Peach.Agent";
+				actionCall.method = "ScoobySnacks";
+
+				state.actions.Add(actionOutput);
+				state.actions.Add(actionClose);
+				state.actions.Add(actionCall);
+
+				stateModel.states.Add(state.name, state);
+				stateModel.initialState = state;
+
+				dom.stateModels.Add(stateModel.name, stateModel);
+
+				// Agent
+				Peach.Core.Dom.Agent agent = new Peach.Core.Dom.Agent();
+				agent.name = "TheAgent";
+				agent.url = "local://";
+
+				Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
+				monitor.cls = "WindowsDebugEngine";
+				//monitor.cls = "WindowsDebugger";
+				monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
+				monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
+
+				if (radioButtonDebuggerStartProcess.Checked)
+					monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
+				else if (radioButtonDebuggerAttachToProcess.Checked)
+				{
+					if (radioButtonAttachToProcessPID.Checked)
+						monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessPID.Text);
+					else if (radioButtonAttachToProcessProcessName.Checked)
+						monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessProcessName.Text);
+				}
+				else if (radioButtonDebuggerAttachToService.Checked)
+					monitor.parameters["Service"] = new Variant(comboBoxAttachToServiceServices.Text);
+				else if (radioButtonDebuggerKernelDebugger.Checked)
+					monitor.parameters["KernelConnectionString"] = new Variant(textBoxKernelConnectionString.Text);
+
+				agent.monitors.Add(monitor);
+				dom.agents.Add(agent.name, agent);
+
+				// Mutation Strategy
+				MutationStrategy strat = new RandomStrategy(new Dictionary<string, Variant>());
+				if (comboBoxFuzzingStrategy.Text.ToLower().IndexOf("Squencial") > -1)
+					strat = new Sequencial(new Dictionary<string, string>());
+
+				// Test
+				Test test = new Test();
+				test.name = "TheTest";
+				test.stateModel = stateModel;
+				test.agents.Add(agent.name, agent);
+				test.publishers.Add("FileWriter", file);
+				test.strategy = strat;
+
+				dom.tests.Add(test.name, test);
+
+				// Run
+				Run run = new Run();
+				run.name = "DefaultRun";
+				run.tests.Add(test.name, test);
+
+				if (logger == null)
+				{
+					Dictionary<string, Variant> loggerArgs = new Dictionary<string, Variant>();
+					loggerArgs["Path"] = new Variant(textBoxLogPath.Text);
+					logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
+				}
+
+				run.logger = logger;
+				dom.runs.Add(run.name, run);
+
+				// START FUZZING!!!!!
+				thread = new Thread(new ParameterizedThreadStart(Run));
+				thread.Start(dom);
 			}
-			else if (File.Exists(textBoxTemplateFiles.Text))
+			catch(Exception ex)
 			{
-				fileData.DataType = DataType.File;
-				fileData.FileName = textBoxTemplateFiles.Text;
+				MessageBox.Show(ex.ToString());
+				throw ex;
 			}
-			else
-			{
-				MessageBox.Show("Error, Unable to locate file/folder called \"" + textBoxTemplateFiles.Text + "\".");
-				return;
-			}
-
-			// DataModel
-			if (userSelectedDataModel != null)
-			{
-				dataModel = ObjectCopier.Clone<DataModel>(dataModel);
-				dataModel.dom = dom;
-				dataModel.name = "TheDataModel";
-
-				dom.dataModels.Add(dataModel.name, dataModel);
-			}
-			else
-			{
-				dataModel = new DataModel("TheDataModel");
-				dataModel.Add(new Blob());
-				dom.dataModels.Add(dataModel.name, dataModel);
-			}
-
-			// Publisher
-			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
-			args["FileName"] = new Variant(textBoxFuzzedFile.Text);
-			Peach.Core.Publishers.FilePublisher file = new Peach.Core.Publishers.FilePublisher(args);
-
-			// StateModel
-			StateModel stateModel = new StateModel();
-			stateModel.name = "TheStateModel";
-
-			State state = new State();
-			state.name = "TheState";
-
-			Peach.Core.Dom.Action actionOutput = new Peach.Core.Dom.Action();
-			actionOutput.type = ActionType.Output;
-			actionOutput.dataModel = dataModel;
-			actionOutput.dataSet = new Peach.Core.Dom.DataSet();
-			actionOutput.dataSet.Datas.Add(fileData);
-
-			Peach.Core.Dom.Action actionClose = new Peach.Core.Dom.Action();
-			actionClose.type = ActionType.Close;
-
-			Peach.Core.Dom.Action actionCall = new Peach.Core.Dom.Action();
-			actionCall.type = ActionType.Call;
-			actionCall.publisher = "Peach.Agent";
-			actionCall.method = "ScoobySnacks";
-
-			state.actions.Add(actionOutput);
-			state.actions.Add(actionClose);
-			state.actions.Add(actionCall);
-
-			stateModel.states.Add(state.name, state);
-			stateModel.initialState = state;
-
-			dom.stateModels.Add(stateModel.name, stateModel);
-
-			// Agent
-			Peach.Core.Dom.Agent agent = new Peach.Core.Dom.Agent();
-			agent.name = "TheAgent";
-			agent.url = "local://";
-
-			Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
-			monitor.cls = "WindowsDebugEngine";
-			//monitor.cls = "WindowsDebugger";
-			monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
-			monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
-
-			if(radioButtonDebuggerStartProcess.Checked)
-				monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
-			else if (radioButtonDebuggerAttachToProcess.Checked)
-			{
-				if (radioButtonAttachToProcessPID.Checked)
-					monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessPID.Text);
-				else if (radioButtonAttachToProcessProcessName.Checked)
-					monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessProcessName.Text);
-			}
-			else if (radioButtonDebuggerAttachToService.Checked)
-				monitor.parameters["Service"] = new Variant(comboBoxAttachToServiceServices.Text);
-			else if (radioButtonDebuggerKernelDebugger.Checked)
-				monitor.parameters["KernelConnectionString"] = new Variant(textBoxKernelConnectionString.Text);
-
-			agent.monitors.Add(monitor);
-			dom.agents.Add(agent.name, agent);
-
-			// Mutation Strategy
-			MutationStrategy strat = new RandomStrategy(new Dictionary<string, Variant>());
-			if (comboBoxFuzzingStrategy.Text.ToLower().IndexOf("Squencial") > -1)
-				strat = new Sequencial(new Dictionary<string, string>());
-
-			// Test
-			Test test = new Test();
-			test.name = "TheTest";
-			test.stateModel = stateModel;
-			test.agents.Add(agent.name, agent);
-			test.publishers.Add("FileWriter", file);
-			test.strategy = strat;
-
-			dom.tests.Add(test.name, test);
-
-			// Run
-			Run run = new Run();
-			run.name = "DefaultRun";
-			run.tests.Add(test.name, test);
-
-			if (logger == null)
-			{
-				Dictionary<string, Variant> loggerArgs = new Dictionary<string, Variant>();
-				loggerArgs["Path"] = new Variant(textBoxLogPath.Text);
-				logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
-			}
-
-			run.logger = logger;
-			dom.runs.Add(run.name, run);
-
-			// START FUZZING!!!!!
-			thread = new Thread(new ParameterizedThreadStart(Run));
-			thread.Start(dom);
 		}
 
 		Logger logger = null;
@@ -279,36 +287,44 @@ namespace PeachFuzzBang
 
 		public void Run(object obj)
 		{
-			if(consoleWatcher == null)
-				consoleWatcher = new ConsoleWatcher(this);
-
-			Dom dom = obj as Dom;
-			RunConfiguration config = new RunConfiguration();
-			Engine e = new Engine(consoleWatcher);
-			
-			config.pitFile = "PeachFuzzBang";
-
-			if (!string.IsNullOrEmpty(textBoxIterations.Text))
+			try
 			{
-				try
+				if (consoleWatcher == null)
+					consoleWatcher = new ConsoleWatcher(this);
+
+				Dom dom = obj as Dom;
+				RunConfiguration config = new RunConfiguration();
+				Engine e = new Engine(consoleWatcher);
+
+				config.pitFile = "PeachFuzzBang";
+
+				if (!string.IsNullOrEmpty(textBoxIterations.Text))
 				{
-					int iter = int.Parse(textBoxIterations.Text);
-					if (iter > 0)
+					try
 					{
-						config.range = true;
-						config.rangeStart = 0;
-						config.rangeStop = (uint)iter;
+						int iter = int.Parse(textBoxIterations.Text);
+						if (iter > 0)
+						{
+							config.range = true;
+							config.rangeStart = 0;
+							config.rangeStop = (uint)iter;
+						}
+					}
+					catch
+					{
 					}
 				}
-				catch
-				{
-				}
+
+				e.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
+				e.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
+
+				e.startFuzzing(dom, config);
 			}
-
-			e.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
-			e.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
-
-			e.startFuzzing(dom, config);
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.ToString());
+				throw ex;
+			}
 		}
 
 		void Engine_RunError(RunContext context, Exception e)

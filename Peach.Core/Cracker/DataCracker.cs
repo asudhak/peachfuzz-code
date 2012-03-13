@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -49,7 +49,7 @@ namespace Peach.Core.Cracker
 	/// </summary>
 	public class DataCracker
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Cracker.DataCracker");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		/// <summary>
 		/// A stack of sized DataElement containers.

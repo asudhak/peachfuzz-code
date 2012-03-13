@@ -22,7 +22,7 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@phed.org)
+//   Michael Eddington (mike@dejavusecurity.com)
 
 // $Id$
 
@@ -39,7 +39,7 @@ namespace Peach.Core.Proxy.Web
 {
     public class HttpRequest : HttpMessage
     {
-		static NLog.Logger logger = LogManager.GetLogger("Peach.Core.Proxy.Web.HttpRequest");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
         public string RequestLine { get; set; }
         public string Method { get; set; }

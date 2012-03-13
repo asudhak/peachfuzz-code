@@ -25,7 +25,7 @@ namespace Peach.Core.Dom.XPath
 	/// </remarks>
 	public class PeachXPathNavigator : XPathNavigator
 	{
-		NLog.Logger logger = LogManager.GetLogger("Peach.Core.Dom.XPath.PeachXPathNavigator");
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		/// <summary>
 		/// Attributes for each known type
