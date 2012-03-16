@@ -60,9 +60,9 @@ namespace PeachMinset
 				{
 					{ "h|?|help", v => Syntax() },
 					{ "k", v => kill = true },
-					{ "samples=", v => samples = v },
-					{ "traces=", v => traces = v},
-					{ "minset=", v => minset = v }
+					{ "s|samples=", v => samples = v },
+					{ "t|traces=", v => traces = v},
+					{ "m|minset=", v => minset = v }
 				};
 
 			List<string> extra = p.Parse(args);
@@ -89,6 +89,8 @@ namespace PeachMinset
 			}
 
 			var ms = new Minset();
+			ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
+			ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
 			var both = false;
 
 			if (extra.Count > 0 && minset != null && traces != null && samples != null)
@@ -142,6 +144,16 @@ namespace PeachMinset
 				return;
 			}
 
+		}
+
+		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)
+		{
+			Console.WriteLine("[{0}:{1}]   Converage trace of {2}.", 
+				count, totalCount, fileName);
+		}
+
+		void ms_TraceCompleted(Minset sender, string fileName, int count, int totalCount)
+		{
 		}
 
 		string[] GetFiles(string path)

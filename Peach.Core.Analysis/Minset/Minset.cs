@@ -213,7 +213,7 @@ namespace Peach.Core.Analysis.Minset
 		{
 			string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			string pin32 = Path.Combine(assemblyPath, @"pin-msvc10-ia32_intel64-windows\ia32\bin\pin.exe");
-			string pin64 = Path.Combine(assemblyPath, @"pin-msvc10-ia32_intel64-windows\intel64\bin");
+			string pin64 = Path.Combine(assemblyPath, @"pin-msvc10-ia32_intel64-windows\intel64\bin\pin.exe");
 			string bblocks = Path.Combine(assemblyPath, "bblocks.dll");
 
 			if (!File.Exists(pin32) || !File.Exists(pin64))
