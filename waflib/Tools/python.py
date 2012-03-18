@@ -142,16 +142,17 @@ def init_pyext(self):
 	Change the values of *cshlib_PATTERN* and *cxxshlib_PATTERN* to remove the
 	*lib* prefix from library names.
 	"""
-	try:
-		if not self.install_path:
-			return
-	except AttributeError:
-		self.install_path = '${PYTHONARCHDIR}'
 	self.uselib = self.to_list(getattr(self, 'uselib', []))
 	if not 'PYEXT' in self.uselib:
 		self.uselib.append('PYEXT')
 	# override shlib_PATTERN set by the osx module
 	self.env['cshlib_PATTERN'] = self.env['cxxshlib_PATTERN'] = self.env['macbundle_PATTERN'] = self.env['pyext_PATTERN']
+
+	try:
+		if not self.install_path:
+			return
+	except AttributeError:
+		self.install_path = '${PYTHONARCHDIR}'
 
 @feature('pyext')
 @before_method('apply_link', 'apply_bundle')
