@@ -333,9 +333,9 @@ class javadoc(Task.Task):
 		wd = bld.bldnode.abspath()
 
 		#add src node + bld node (for generated java code)
-		srcpath = bld.bldnode.abspath() + os.sep + self.generator.srcdir
+		srcpath = self.generator.path.abspath() + os.sep + self.generator.srcdir
 		srcpath += os.pathsep
-		srcpath += bld.srcnode.abspath() + os.sep + self.generator.srcdir
+		srcpath += self.generator.path.get_bld().abspath() + os.sep + self.generator.srcdir
 
 		classpath = env.CLASSPATH
 		classpath += os.pathsep
