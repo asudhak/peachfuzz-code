@@ -314,18 +314,18 @@ class javac(Task.Task):
 
 @feature('javadoc')
 @after_method('process_rule')
-def createJavadoc(self):
+def create_javadoc(self):
 	tsk = self.create_task('javadoc')
 	tsk.classpath = getattr(self, 'classpath', [])
-	tsk.src = self.srcdir
-	tsk.javadoc_package = self.javadoc_package
-	tsk.javadoc_output = self.javadoc_output
+	self.javadoc_package = Utils.to_list(self.javadoc_package)
+	if not isinstance(self.javadoc_output, Node.Node):
+		self.javadoc_output = self.bld.path.find_or_declare(self.javadoc_output)
 
 class javadoc(Task.Task):
 	color = 'BLUE'
 
 	def __str__(self):
-		return '%s: %s -> %s\n' % (self.__class__.__name__, self.src, self.javadoc_output)
+		return '%s: %s -> %s\n' % (self.__class__.__name__, self.generator.srcdir, self.generator.javadoc_output)
 
 	def run(self):
 		env = self.env
@@ -333,33 +333,28 @@ class javadoc(Task.Task):
 		wd = bld.bldnode.abspath()
 
 		#add src node + bld node (for generated java code)
-		srcpath = bld.bldnode.abspath() + os.sep + self.src
+		srcpath = bld.bldnode.abspath() + os.sep + self.generator.srcdir
 		srcpath += os.pathsep
-		srcpath += bld.srcnode.abspath() + os.sep + self.src
-
-		if not isinstance(self.javadoc_output, Node.Node):
-			self.javadoc_output = bld.path.find_or_declare(self.javadoc_output)
+		srcpath += bld.srcnode.abspath() + os.sep + self.generator.srcdir
 
 		classpath = env.CLASSPATH
 		classpath += os.pathsep
 		classpath += os.pathsep.join(self.classpath)
 		classpath = "".join(classpath)
 
-		package = os.pathsep.join(Utils.to_list(self.javadoc_package))
-
-
 		self.last_cmd = lst = []
 		lst.extend(Utils.to_list(env['JAVADOC']))
-		lst.extend(['-d', self.javadoc_output.abspath()])
+		lst.extend(['-d', self.generator.javadoc_output.abspath()])
 		lst.extend(['-sourcepath', srcpath])
 		lst.extend(['-classpath', classpath])
-		lst.extend(['-subpackages', package])
+		lst.extend(['-subpackages'])
+		lst.extend(self.generator.javadoc_package)
 		lst = [x for x in lst if x]
 
 		self.generator.bld.cmd_and_log(lst, cwd=wd, env=env.env or None, quiet=0)
 
 	def post_run(self):
-		nodes = self.javadoc_output.ant_glob('**')
+		nodes = self.generator.javadoc_output.ant_glob('**')
 		for x in nodes:
 			x.sig = Utils.h_file(x.abspath())
 		self.generator.bld.task_sigs[self.uid()] = self.cache_sig
