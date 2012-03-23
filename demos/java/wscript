@@ -33,7 +33,7 @@ def configure(conf):
 
 def build(bld):
 
-	bld(features   = 'javac jar',
+	bld(features   = 'javac jar javadoc',
 		srcdir     = 'src/', # folder containing the sources to compile
 		outdir     = 'src', # folder where to output the classes (in the build directory)
 		compat     = '1.3', # java compatibility version number
@@ -42,8 +42,12 @@ def build(bld):
 		#jaropts = '-C default/src/ .', # can be used to give files
 		basedir    = 'src', # folder containing the classes and other files to package (must match outdir)
 		destfile   = 'foo.jar', # do not put the destfile in the folder of the java classes!
-		use        = 'NNN'
-		)
+		use        = 'NNN',
+
+		# javadoc
+		javadoc_package	= ['com.meow' , 'com.meow.truc.bar', 'com.meow.truc.foo'],
+		javadoc_output	= 'javadoc',
+	)
 
 	bld.recurse('animals cats')
 
