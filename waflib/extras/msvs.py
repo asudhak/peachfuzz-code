@@ -760,9 +760,9 @@ class msvs_generator(BuildContext):
 		self.collect_dirs()
 		default_project = getattr(self, 'default_project', None)
 		def sortfun(x):
-			if self.name == default_project:
+			if x.name == default_project:
 				return ''
-			return getattr(x, 'path', None) and x.path.abspath() or self.name
+			return getattr(x, 'path', None) and x.path.abspath() or x.name
 		self.all_projects.sort(key=sortfun)
 
 	def write_files(self):
