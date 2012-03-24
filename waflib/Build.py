@@ -401,13 +401,20 @@ class BuildContext(Context.Context):
 		:param value: value to depend on
 		:type value: :py:class:`waflib.Node.Node`, string, or function returning a string
 		"""
+		if path is None:
+			raise ValueError('Invalid input')
+
 		if isinstance(path, waflib.Node.Node):
 			node = path
 		elif os.path.isabs(path):
 			node = self.root.find_resource(path)
 		else:
 			node = self.path.find_resource(path)
-		self.deps_man[id(node)].append(value)
+
+		if isinstance(value, list):
+			self.deps_man[id(node)].extend(value)
+		else:
+			self.deps_man[id(node)].append(value)
 
 	def launch_node(self):
 		"""Returns the launch directory as a :py:class:`waflib.Node.Node` object"""
