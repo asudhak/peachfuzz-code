@@ -1239,8 +1239,15 @@ class StepContext(BuildContext):
 			BuildContext.compile(self)
 			return
 
+		targets = None
+		if self.targets and self.targets != '*':
+			targets = self.targets.split(',')
+
 		for g in self.groups:
 			for tg in g:
+				if targets and tg.name not in targets:
+					continue
+
 				try:
 					f = tg.post
 				except AttributeError:
