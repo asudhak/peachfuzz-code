@@ -27,6 +27,9 @@ def build(bld):
 	dct =  {'BINDIR': '/opt'}
 	tg.__dict__.update(dct)
 
+	# if you want a file copy, pass "is_copy=True"
+	bld(features='subst', source='wscript', target='wscript', is_copy=True)
+
 	# this one is just a reminder that simple files can be created (and a test too)
 	#bld(rule='echo "การไฟ่" > ${TGT}', target='foo.txt')
 

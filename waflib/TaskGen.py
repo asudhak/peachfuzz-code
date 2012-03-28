@@ -659,6 +659,12 @@ class subst_pc(Task.Task):
 	def run(self):
 		"Substitutes variables in a .in file"
 
+		if getattr(self.generator, 'is_copy', None):
+			self.outputs[0].write(self.inputs[0].read('rb'), 'wb')
+			if getattr(self.generator, 'chmod', None):
+				os.chmod(self.outputs[0].abspath(), self.generator.chmod)
+			return
+
 		code = self.inputs[0].read()
 
 		# replace all % by %% to prevent errors by % signs
@@ -746,24 +752,38 @@ def process_subst(self):
 
 	This method overrides the processing by :py:meth:`waflib.TaskGen.process_source`.
 	"""
-	src = self.to_nodes(getattr(self, 'source', []))
-	tgt = getattr(self, 'target', [])
-	if isinstance(tgt, self.path.__class__):
-		tgt = [tgt]
-	else:
-		tgt = [isinstance(x, self.path.__class__) and x or self.path.find_or_declare(x) for x in Utils.to_list(tgt)]
 
+	src = Utils.to_list(getattr(self, 'source', []))
+	tgt = Utils.to_list(getattr(self, 'target', []))
 	if len(src) != len(tgt):
-		raise Errors.WafError('invalid source or target for %r' % self)
+		raise Errors.WafError('invalid number of source/target for %r' % self)
 
 	for x, y in zip(src, tgt):
-		if not (x and y):
-			raise Errors.WafError('invalid source or target for %r' % self)
-		tsk = self.create_task('subst', x, y)
-		for a in ('after', 'before', 'ext_in', 'ext_out'):
-			val = getattr(self, a, None)
+		if not x or not y:
+			raise Errors.WafError('null source or target for %r' % self)
+		a, b = None, None
+
+		if isinstance(x, str) and isinstance(y, str) and x == y:
+			a = self.path.find_node(x)
+			b = self.path.get_bld().make_node(y)
+		else:
+			if isinstance(x, str):
+				a = self.path.find_resource(x)
+			elif isinstance(x, Node.Node):
+				a = x
+			if isinstance(y, str):
+				b = self.path.find_or_declare(y)
+			elif isinstance(y, Node.Node):
+				b = y
+
+		if not a:
+			raise Errors.WafError('cound not find %r for %r' % (x, self))
+
+		tsk = self.create_task('subst', a, b)
+		for k in ('after', 'before', 'ext_in', 'ext_out'):
+			val = getattr(self, k, None)
 			if val:
-				setattr(tsk, a, val)
+				setattr(tsk, k, val)
 
 	inst_to = getattr(self, 'install_path', None)
 	if inst_to:
