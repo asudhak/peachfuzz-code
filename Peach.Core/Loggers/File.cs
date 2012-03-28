@@ -156,29 +156,39 @@ namespace Peach.Core.Loggers
 				return;
 
 			if (totalIterations != null)
+			{
 				log.WriteLine(". Iteration {0} of {1}", currentIteration, (uint)totalIterations);
+				log.Flush();
+			}
 			else
+			{
 				log.WriteLine(". Iteration {0}", currentIteration);
+				log.Flush();
+			}
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
 		{
 			log.WriteLine("! Test error: " + e.ToString());
+			log.Flush();
 		}
 
 		protected override void Engine_TestFinished(RunContext context)
 		{
 			log.WriteLine(". Test finished: " + context.run.name + "." + context.test.name);
+			log.Flush();
 		}
 
 		protected override void Engine_TestStarting(RunContext context)
 		{
 			log.WriteLine(". Test starting: " + context.run.name + "." + context.test.name);
+			log.Flush();
 		}
 
 		protected override void Engine_RunError(RunContext context, Exception e)
 		{
 			log.WriteLine("! Run error: " + e.ToString());
+			log.Flush();
 		}
 
 		protected override void Engine_RunFinished(RunContext context)
@@ -205,7 +215,7 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(logpath))
 				Directory.CreateDirectory(logpath);
 
-			ourpath = Path.Combine(logpath, context.config.pitFile);
+			ourpath = Path.Combine(logpath, context.config.pitFile.Replace(Path.DirectorySeparatorChar, '_'));
 
 			if (context.config.runName == "DefaultRun")
 				ourpath += "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
@@ -229,6 +239,8 @@ namespace Peach.Core.Loggers
 			log.WriteLine("Pit File: " + context.config.pitFile);
 			log.WriteLine("Run name: " + context.run.name);
 			log.WriteLine("");
+
+			log.Flush();
 		}
 	}
 }

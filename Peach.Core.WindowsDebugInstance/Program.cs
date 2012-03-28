@@ -76,3 +76,12 @@ namespace Peach.Core.WindowsDebugInstance
 		}
 	}
 }
+
+//To work around this issue, you can configure your server so that exclusiveAddressUse = false. This allows your server to create the channel even if existing clients already have a handle on the named pipe.
+
+//Hashtable channelProperties = new Hashtable(); 
+// channelProperties.Add("portName", "localhost:8888"); 
+// channelProperties.Add("exclusiveAddressUse", false); 
+//IChannel _serverChannel = new IpcServerChannel(channelProperties, null); 
+// ChannelServices.RegisterChannel(_serverChannel, true); 
+

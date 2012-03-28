@@ -94,7 +94,7 @@ VOID Fini(INT32 code, VOID *v)
 	{
 		for (set<ADDRINT>::iterator i = setKnownBlocks.begin(); i!=setKnownBlocks.end(); ++i)
 		{
-			fprintf(existing, "%x\n", *i);
+			fprintf(existing, "%p\n", *i);
 		}
 
 		fclose(existing);
@@ -106,7 +106,7 @@ VOID Fini(INT32 code, VOID *v)
 	{
 		for (set<ADDRINT>::iterator i = setUnknownBlocks.begin(); i != setUnknownBlocks.end(); ++i)
 		{
-			fprintf(existing, "%x\n", *i);
+			fprintf(existing, "%p\n", *i);
 		}
 
 		fclose(existing);

@@ -93,9 +93,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /y $(TargetPath) $(SolutionDir)\Peach.Core\bin\x86\Debug
+    <PostBuildEvent>copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Debug
 copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Debug
-copy /y $(TargetPath) $(SolutionDir)\Peach.Core\bin\x86\Release
+copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Release
 copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Release
 </PostBuildEvent>
   </PropertyGroup>

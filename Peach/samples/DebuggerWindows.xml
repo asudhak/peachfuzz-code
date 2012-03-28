@@ -49,30 +49,31 @@
 
 	<Agent name="LocalAgent">
 		<Monitor class="WindowsDebugEngine">
-			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 127.0.0.1 4244" />
+			<Param name="CommandLine" value="C:\Peach3\Release\CrashableServer.exe 127.0.0.1 4244" />
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />
 		</Monitor>
- 		<Monitor class="PageHeap">
+ 		<!--<Monitor class="PageHeap">
 			<Param name="Executable" value="CrashableServer.exe"/>
-		</Monitor>
+		</Monitor>-->
 	</Agent>
 
 	<Test name="TheTest">
 		<Agent ref="LocalAgent" />
 
 		<StateModel ref="State"/>
-		<Publisher class="tcp.Tcp">
-			<Param name="host" value="127.0.0.1" />
-			<Param name="port" value="4244" />
+		<Publisher class="Tcp">
+			<Param name="Host" value="127.0.0.1" />
+			<Param name="Port" value="4244" />
 		</Publisher>
 	</Test>
 
-<Run name="DefaultRun">
-	<Test ref="TheTest" />
+	<Run name="DefaultRun">
+		<Test ref="TheTest" />
 
-	<Logger class="Filesystem">
-		<Param name="Path" value="Logs" />
-	</Logger>
-</Run>
+		<Logger class="Filesystem">
+			<Param name="Path" value="Logs" />
+		</Logger>
+	</Run>
 
 </Peach>
 <!-- end -->

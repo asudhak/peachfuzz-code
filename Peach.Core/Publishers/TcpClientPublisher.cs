@@ -33,7 +33,10 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Net.Sockets;
+
 using Peach.Core.Dom;
+
+using NLog;
 
 namespace Peach.Core.Publishers
 {
@@ -46,6 +49,8 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
 	public class TcpClientPublisher : Publisher
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		protected string _host = null;
 		protected int _port = 0;
 		protected int _timeout = 3 * 1000;
@@ -96,31 +101,42 @@ namespace Peach.Core.Publishers
 		/// <param name="action">Action calling publisher</param>
 		public override void open(Core.Dom.Action action)
 		{
-			// If socket is open, call close first.  This is what
-			// we call an implicit action
-			if (_tcpClient != null)
-				close(action);
-
-			OnOpen(action);
-
-			for (int cnt = 0; cnt < 10 && _tcpClient == null; cnt++)
+			try
 			{
-				try
+				// If socket is open, call close first.  This is what
+				// we call an implicit action
+				if (_tcpClient != null)
+					close(action);
+
+				OnOpen(action);
+
+				for (int cnt = 0; cnt < 10 && _tcpClient == null; cnt++)
 				{
-					_tcpClient = new TcpClient(_host, _port);
+					try
+					{
+						_tcpClient = new TcpClient(_host, _port);
+					}
+					catch (SocketException)
+					{
+						logger.Warn("open: Warn, Unable to connect to remote host " + _host + " on port " + _port + ". Trying again...");
+						_tcpClient = null;
+						Thread.Sleep(500);
+					}
 				}
-				catch (SocketException)
+
+				if (_tcpClient == null)
 				{
-					_tcpClient = null;
-					Thread.Sleep(500);
+					logger.Error("open: Error, Unable to connect to remote host " + _host + " on port " + _port);
+					throw new PeachException("Unable to connect to remote host " + _host + " on port " + _port);
 				}
+
+				_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+					new AsyncCallback(ReceiveData), null);
 			}
-
-			if (_tcpClient == null)
-				throw new PeachException("Unable to connect to remote host " + _host + " on port " + _port);
-
-			_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-				new AsyncCallback(ReceiveData), null);
+			catch (Exception ex)
+			{
+				logger.Error("open: Throwing error: " + ex.ToString());
+			}
 		}
 
 		/// <summary>
@@ -141,7 +157,7 @@ namespace Peach.Core.Publishers
 			}
 			catch (Exception ex)
 			{
-				// TODO - Log the exception, but continue!
+				logger.Error("output: Ignoring error from send.: " + ex.ToString());
 			}
 		}
 
@@ -165,7 +181,7 @@ namespace Peach.Core.Publishers
 			}
 			catch (Exception ex)
 			{
-				// TODO -- Log this exception
+				logger.Error("ReceiveData: Ignoring error: " + ex.ToString());
 			}
 		}
 
@@ -180,7 +196,10 @@ namespace Peach.Core.Publishers
 			OnClose(action);
 
 			if (_tcpClient != null)
+			{
+				_tcpClient.Client.Disconnect(true);
 				_tcpClient.Close();
+			}
 
 			_tcpClient = null;
 		}
