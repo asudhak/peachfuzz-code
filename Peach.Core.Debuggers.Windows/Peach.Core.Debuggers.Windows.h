@@ -8,6 +8,7 @@ using namespace System;
 void MainLoop();
 void ProcessDebugEvent(DEBUG_EVENT* DebugEv);
 
+int _attachToProcessId = 0;
 WCHAR* _command = NULL;
 DWORD _dwThreadId = 0;
 HANDLE _hThread = NULL;
@@ -56,6 +57,27 @@ DWORD WINAPI _CreateProcess(LPVOID lpParam)
 	return 0;
 }
 
+// Method will run in new thead
+DWORD WINAPI _AttachToProcess(LPVOID lpParam)
+{
+	startUpInfo = new STARTUPINFOW();
+	processInformation = new PROCESS_INFORMATION();
+
+	DWORD currentThreadId = GetCurrentThreadId();
+
+	if(!DebugActiveProcess(_attachToProcessId))
+	{
+		// TODO -- Handle Errors
+	}
+
+	DebugSetProcessKillOnExit(TRUE);
+
+	MainLoop();
+
+	return 0;
+}
+
+// Main debugger loop
 void MainLoop()
 {
 	DEBUG_EVENT* debugEvent = new DEBUG_EVENT();
@@ -80,26 +102,45 @@ void MainLoop()
 
 void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 {
+	BOOL handle = FALSE;
+
 	switch (DebugEv->dwDebugEventCode)
 	{
 		case EXCEPTION_DEBUG_EVENT:
-			// Process the exception code. When handling 
-			// exceptions, remember to set the continuation 
-			// status parameter (dwContinueStatus). This value 
-			// is used by the ContinueDebugEvent function. 
-
-			//if (verbose)
-			//	System::Console.Error.WriteLine("EXCEPTION_DEBUG_EVENT");
 
 			switch (DebugEv->u.Exception.ExceptionRecord.ExceptionCode)
 			{
 				case EXCEPTION_ACCESS_VIOLATION:
-					// First chance: Pass this on to the system. 
-					// Last chance: Display an appropriate error. 
 
-					//if(HandleAccessViolation != null)
-					//	HandleAccessViolation(DebugEv);
+					if(DebugEv->u.Exception.dwFirstChance == 1)
+					{
+						// Only some first chance exceptions are interesting
+
+						if (DebugEv->u.Exception.ExceptionRecord.ExceptionCode == 0x80000001 || 
+							DebugEv->u.Exception.ExceptionRecord.ExceptionCode == 0xC000001D)
+						{
+							handle = TRUE;
+						}
+
+						if (DebugEv->u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
+						{
+							// A/V on EIP || DEP
+							if (DebugEv->u.Exception.ExceptionRecord.ExceptionInformation[0] == 0)
+								handle = TRUE;
+
+							// write a/v not near null
+							else if (DebugEv->u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 &&
+								DebugEv->u.Exception.ExceptionRecord.ExceptionInformation[1] != 0)
+								handle = TRUE;
+						}
+
+						// Skip uninteresting first chance
+						if (handle == FALSE)
+							return;
+					}
+
 					_AccessViolation = TRUE;
+					_ExitDebugger = TRUE;
 
 					break;
 
@@ -110,11 +151,7 @@ void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 			break;
 
 		case EXIT_PROCESS_DEBUG_EVENT:
-			// Display the process's exit code. 
 
-			//dwContinueStatus = OnExitProcessDebugEvent(DebugEv);
-			//if (verbose)
-			//	Console.Error.WriteLine("EXIT_PROCESS_DEBUG_EVENT");
 			if (processInformation->dwProcessId == DebugEv->dwProcessId)
 			{
 				_ExitDebugger = TRUE;
@@ -174,8 +211,38 @@ namespace PeachCoreDebuggersWindows {
 			_ProcessStarted = NULL;
 		}
 
+		void AttachToProcess(int processId)
+		{
+			if(_dwThreadId != 0 || _hThread != 0)
+			{
+				// This is not good!
+				throw gcnew System::Exception("Error, thread already created!");
+			}
+
+			_attachToProcessId = processId;
+			_ExitDebugger = FALSE;
+			_AccessViolation = FALSE;
+
+			DWORD currentThreadId = GetCurrentThreadId();
+
+			_hThread = CreateThread(
+				NULL,		// default security attributes
+				0,			// use default stack size
+				_AttachToProcess,	// thread function
+				0,			// argument to thread
+				0,			// use default creation flags
+				&_dwThreadId);
+
+			WaitForSingleObject(_ProcessStarted, INFINITE);
+			CloseHandle(_ProcessStarted);
+			_ProcessStarted = NULL;
+		}
+
 		unsigned int dwProcessId()
 		{
+			if(processInformation == NULL)
+				return _attachToProcessId;
+
 			return processInformation->dwProcessId;
 		}
 

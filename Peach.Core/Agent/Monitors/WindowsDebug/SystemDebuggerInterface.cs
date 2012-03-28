@@ -43,7 +43,6 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 	public class SystemDebuggerInstance
 	{
 		public static bool ExitInstance = false;
-		Thread _thread = null;
 		SystemDebugger _dbg = null;
 
 		public string commandLine = null;
@@ -57,10 +56,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public bool noCpuKill = false;
 
 		public bool dbgExited = false;
-		public bool caughtException = false;
+		public bool _caughtException = false;
 		public Dictionary<string, Variant> crashInfo = null;
-
-		int processId = 0;
 
 		public SystemDebuggerInstance()
 		{
@@ -71,9 +68,51 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			get { return (int)_dbg.dwProcessId(); }
 		}
 
+		public bool caughtException
+		{
+			get
+			{
+				if (_caughtException)
+					return true;
+
+				if (_dbg.HasAccessViolation())
+				{
+					_caughtException = true;
+					crashInfo = new Dictionary<string, Variant>();
+					crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
+
+					return true;
+				}
+
+				return false;
+			}
+		}
+
 		public bool IsRunning
 		{
-			get { return true; }
+			get
+			{
+				if (_dbg == null)
+					return false;
+
+				foreach(System.Diagnostics.Process process in System.Diagnostics.Process.GetProcesses())
+				{
+					if (process.Id == (int)_dbg.dwProcessId())
+						return true;
+				}
+
+				if (_dbg.HasAccessViolation())
+				{
+					_caughtException = true;
+					crashInfo = new Dictionary<string, Variant>();
+					crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
+				}
+
+				dbgExited = true;
+				_dbg = null;
+
+				return false;
+			}
 		}
 
 		public void StartDebugger()
@@ -81,11 +120,6 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg != null)
 				FinishDebugging();
 
-			//_thread = new Thread(new ThreadStart(Run));
-			//_thread.Start();
-
-			//while (_dbg == null && !dbgExited)
-			//    Thread.Sleep(100);
 			Run();
 		}
 
@@ -94,17 +128,17 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg == null)
 				return;
 
-			//_dbg.processExit = true;
+			if (_dbg.HasAccessViolation())
+			{
+				_caughtException = true;
+				crashInfo = new Dictionary<string, Variant>();
+				crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
+			}
+
 			_dbg.StopDebugger();
 
-			//for (int cnt = 0; _thread.IsAlive && cnt < 100; cnt++)
-			//    Thread.Sleep(100);
-
-			//_thread.Abort();
-			//_thread.Join();
-
-			//uint threadId = UnsafeMethods.GetCurrentThread();
-			//UnsafeMethods.TerminateProcess(processId, 0);
+			dbgExited = true;
+			_dbg = null;
 		}
 
 		public void FinishDebugging()
@@ -121,75 +155,6 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			return !caughtException;
 		}
 
-		//void handleAccessViolation(UnsafeMethods.DEBUG_EVENT debugEvent)
-		//{
-		//    try
-		//    {
-		//        string message = "";
-		//        var Exception = debugEvent.u.Exception;
-
-		//        if (Exception.dwFirstChance == 1)
-		//        {
-		//            bool handle = false;
-
-		//            if (ignoreFirstChanceGuardPage && Exception.ExceptionRecord.ExceptionCode == 0x80000001)
-		//                return;
-
-		//            // Guard page or illegal op
-		//            if (Exception.ExceptionRecord.ExceptionCode == 0x80000001 || Exception.ExceptionRecord.ExceptionCode == 0xC000001D)
-		//                handle = true;
-
-		//            if (Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
-		//            {
-		//                // A/V on EIP || DEP
-		//                if (Exception.ExceptionRecord.ExceptionInformation[0] == 0)
-		//                    handle = true;
-
-		//                // write a/v not near null
-		//                else if (Exception.ExceptionRecord.ExceptionInformation[0] == 1 &&
-		//                    Exception.ExceptionRecord.ExceptionInformation[1] != 0)
-		//                    handle = true;
-		//            }
-
-		//            // Skip uninteresting first chance
-		//            if (!handle)
-		//                return;
-		//        }
-
-		//        if (ignoreSecondChanceGuardPage && Exception.dwFirstChance == 0 &&
-		//            Exception.ExceptionRecord.ExceptionCode == 0x80000001)
-		//        {
-		//            return;
-		//        }
-
-		//        // Guard page or illegal op
-		//        if (Exception.ExceptionRecord.ExceptionCode == 0x80000001 || Exception.ExceptionRecord.ExceptionCode == 0xC000001D)
-		//            message = "Guard page or illegal operation";
-
-		//        if (Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
-		//        {
-		//            // A/V on EIP || DEP
-		//            if (Exception.ExceptionRecord.ExceptionInformation[0] == 0)
-		//                message = "A/V on EIP or DEP";
-
-		//            // write a/v not near null
-		//            else if (Exception.ExceptionRecord.ExceptionInformation[0] == 1 &&
-		//                Exception.ExceptionRecord.ExceptionInformation[1] != 0)
-		//                message = "Write A/V not at null";
-		//        }
-
-		//        message = "Unknown Access Violation!";
-
-		//        caughtException = true;
-		//        crashInfo = new Dictionary<string, Variant>();
-		//        crashInfo["SystemDebugger_Infoz.txt"] = new Variant(message);
-		//    }
-		//    catch
-		//    {
-		//        string a = "a";
-		//    }
-		//}
-
 		public void Run()
 		{
 			_dbg = new SystemDebugger();
@@ -198,54 +163,44 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			{
 				_dbg.CreateProcessW(commandLine);
 			}
-			//else if (processName != null)
-			//{
-			//    int pid = 0;
-			//    System.Diagnostics.Process proc = null;
-			//    var procs = System.Diagnostics.Process.GetProcessesByName(processName);
-			//    if (procs != null && procs.Length > 0)
-			//        proc = procs[0];
+			else if (processName != null)
+			{
+				int pid = 0;
+				System.Diagnostics.Process proc = null;
+				var procs = System.Diagnostics.Process.GetProcessesByName(processName);
+				if (procs != null && procs.Length > 0)
+					proc = procs[0];
 
-			//    if (proc == null && int.TryParse(processName, out pid))
-			//        proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
+				if (proc == null && int.TryParse(processName, out pid))
+					proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
 
-			//    if (proc == null)
-			//        throw new Exception("Unable to locate process by \"" + processName + "\".");
+				if (proc == null)
+					throw new Exception("Unable to locate process by \"" + processName + "\".");
 
-			//    pid = proc.Id;
+				pid = proc.Id;
 
-			//    proc.Dispose();
+				proc.Dispose();
 
-			//    _dbg = SystemDebugger.AttachToProcess(pid);
-			//}
-			//else if (service != null)
-			//{
-			//    processId = 0;
+				_dbg.AttachToProcess(pid);
+			}
+			else if (service != null)
+			{
+				int processId = 0;
 
-			//    using (ServiceController srv = new ServiceController(service))
-			//    {
-			//        if (srv.Status == ServiceControllerStatus.Stopped)
-			//            srv.Start();
+				using (ServiceController srv = new ServiceController(service))
+				{
+					if (srv.Status == ServiceControllerStatus.Stopped)
+						srv.Start();
 
-			//        using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
-			//        {
-			//            object o = manageService.GetPropertyValue("ProcessId");
-			//            processId = (int)((UInt32)o);
-			//        }
-			//    }
+					using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
+					{
+						object o = manageService.GetPropertyValue("ProcessId");
+						processId = (int)((UInt32)o);
+					}
+				}
 
-			//    _dbg = SystemDebugger.AttachToProcess(processId);
-			//}
-
-			//processId = _dbg.dwProcessId;
-			//_dbg.ContinueDebugging = new ContinueDebugging(continueDebugging);
-			//_dbg.HandleAccessViolation = new HandleAccessViolation(handleAccessViolation);
-			//_dbg.MainLoop();
-
-			//UnsafeMethods.TerminateProcess(processId, 0);
-
-			//dbgExited = true;
-			//_dbg = null;
+				_dbg.AttachToProcess(processId);
+			}
 		}
 	}
 }

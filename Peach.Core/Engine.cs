@@ -435,6 +435,13 @@ namespace Peach.Core
 
 						redoCount = 0;
 					}
+					catch (ReplayTestException)
+					{
+						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							"replaying iteration " + iterationCount);
+
+						iterationCount--;
+					}
 					catch (RedoIterationException rte)
 					{
 						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
@@ -479,6 +486,10 @@ namespace Peach.Core
 	}
 
 	public class RedoTestException : Exception
+	{
+	}
+
+	public class ReplayTestException : Exception
 	{
 	}
 

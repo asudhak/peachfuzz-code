@@ -168,8 +168,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			if (!UnsafeMethods.CreateProcess(
 					null,			// lpApplicationName 
 					command,		// lpCommandLine 
-					0,		// lpProcessAttributes 
-					0,		// lpThreadAttributes 
+					0,				// lpProcessAttributes 
+					0,				// lpThreadAttributes 
 					false,			// bInheritHandles 
 					1,				// dwCreationFlags, DEBUG_PROCESS
 					IntPtr.Zero,	// lpEnvironment 

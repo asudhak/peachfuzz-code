@@ -97,6 +97,7 @@
 copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Debug
 copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Release
 copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Release
+copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x64\Debug
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -21,8 +21,9 @@
 	</StateModel>
 
 	<Agent name="LocalAgent">
-		<Monitor class="WindowsDebugger">
-			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 127.0.0.1 4244" />
+		<Monitor class="WindowsDebuggerHybrid">
+			<Param name="CommandLine" value="C:\Peach3\Release\CrashableServer.exe 127.0.0.1 4244" />
+			<Param name="WinDbgPath" value="C:\Program Files\Debugging Tools for Windows (x64)" />
 		</Monitor>
 		<!--<Monitor class="PageHeap">
 			<Param name="Executable" value="CrashableServer.exe"/>
