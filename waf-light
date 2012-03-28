@@ -37,7 +37,7 @@ REVISION="x"
 INSTALL="x"
 C1='x'
 C2='x'
-cwd = os.getcwd()
+cwd = os.path.normcase(os.getcwd())
 join = os.path.join
 
 if sys.hexversion<0x206000f:
