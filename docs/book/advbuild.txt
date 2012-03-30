@@ -86,7 +86,7 @@ NOTE: The build commands are using this system: _waf install_ → _waflib.Build.
 
 ==== Command composition
 
-To re-use existing commands that have incompatible context classes, insert them in the _command stack_:
+To re-use commands that have context object of different base classes, insert them in the _command stack_:
 
 // advbuild_composition
 [source,python]
@@ -133,7 +133,7 @@ def test(ctx):
 	Options.commands = lst + Options.commands
 ---------------
 
-<1> To share data between different commands, use a global variable
+<1> A global variable may be used to share data between commands deriving from different classes
 <2> The test command is used to add more commands
 
 The following output will be observed:
@@ -162,7 +162,7 @@ Waf: Leaving directory `/tmp/advbuild_testcase/build'
 
 ==== Binding a command from a Waf tool
 
-When the top-level wscript is read, it is converted into a python module and kept in memory. Commands may be added dynamically by injecting the desired function into that module. We will now show how to load a waf tool to count the amount of task generators in the project.
+When the top-level wscript is read, it is converted into a python module and kept in memory. Commands may be added dynamically by injecting the desired function into that module. We will now show how to bind a simple command from a Waf tool:
 
 // advbuild_cmdtool
 [source,python]
@@ -183,12 +183,15 @@ Waf tools are loaded once for the configuration and for the build. To ensure tha
 ---------------
 from waflib import Context
 
-def cnt(ctx):
+def cnt(ctx): <1>
 	"""do something"""
 	print('just a test')
 
-Context.g_module.__dict__['cnt'] = cnt
+Context.g_module.__dict__['cnt'] = cnt <2>
 ---------------
+
+<1> The function to bind must accept a `Context` object as first argument
+<2> The main wscript file of the project is loaded as a python module and stored as `Context.g_module`
 
 The execution output will be the following.
 

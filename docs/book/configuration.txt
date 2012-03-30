@@ -182,7 +182,7 @@ def configure(ctx):
 	ctx.find_file('fstab', ['/opt', '/etc'])
 ---------------
 
-Although these methods are provided by the context class _waflib.Configure.ConfigurationContext_, they will not appear on it in http://docs.waf.googlecode.com/git/apidocs_16/index.html[API documentation]. For modularity reasons, they are defined as simple functions and then bound dynamically:
+Although these methods are provided by the context class _waflib.Configure.ConfigurationContext_, they will not appear on it in http://docs.waf.googlecode.com/git/apidocs_17/index.html[API documentation]. For modularity reasons, they are defined as simple functions and then bound dynamically:
 
 [source,python]
 ---------------

@@ -143,7 +143,7 @@ some text
 ['.lock-wafbuild', 'foo.txt', 'build', 'wscript', '.git']
 ---------------
 
-NOTE: More methods may be found in the http://docs.waf.googlecode.com/git/apidocs_16/index.html[API documentation]
+NOTE: More methods may be found in the http://docs.waf.googlecode.com/git/apidocs_17/index.html[API documentation]
 
 WARNING: These methods are not safe for concurrent access. The node class methods are not meant to be thread-safe.
 
@@ -200,7 +200,7 @@ ctx.path.parent.ant_glob('wscript') <2>
 
 ==== Path manipulation: abspath, path_from
 
-The method 'abspath' is used to obtain the absolute path for a node. In the following example, three nodes are used:
+The following example illustrates a few ways of obtaining absolute and relative paths:
 
 [source,python]
 ---------------
@@ -215,17 +215,19 @@ def build(ctx):
 	src = ctx.path.find_resource('wscript')
 	bld = ctx.path.find_or_declare('out.out')
 
-	print(src.abspath(ctx.env)) <2>
-	print(bld.abspath(ctx.env))
-	print(dir.abspath(ctx.env)) <3>
+	print(src.abspath()) <2>
+	print(bld.abspath())
 	print(dir.abspath())
+	print(src.path_from(dir.parent)) <3>
+	print(ctx.root.path_from(src)) <4>
 ---------------
 
 <1> Directory node, source node and build node
-<2> Computing the absolute path for source node or a build node takes a configuration set as parameter
-<3> Computing the absolute path for a directory may use a configuration set or not
+<2> Print the absolute path
+<3> Compute the path relative to another node
+<4> Compute the relative path in reverse order
 
-Here is the execution trace:
+Here is the execution trace on a unix-like system:
 
 [source,shishell]
 ---------------
@@ -233,20 +235,15 @@ $ waf distclean configure build
 'distclean' finished successfully (0.002s)
 'configure' finished successfully (0.005s)
 Waf: Entering directory `/tmp/nested/build'
-/tmp/nested/wscript <1>
-/tmp/nested/build/out.out <2>
-/tmp/nested/build/ <3>
-/tmp/nested <4>
+/tmp/nested/wscript
+/tmp/nested/build/out.out
+/tmp/nested/build/
+/tmp/nested
+nested/wscript
+../../../..
 Waf: Leaving directory `/tmp/nested/build'
 'build' finished successfully (0.003s)
 ---------------
-
-<1> Absolute path for the source node
-<2> The absolute path for the build node depends on the variant in use
-<3> When a configuration set is provided, the absolute path for a directory node is the build directory representation including the variant
-<4> When no configuration set is provided, the directory node absolute path is the one for the source directory
-
-NOTE: Several other methods such as 'relpath_gen' or 'srcpath' are provided. See the http://docs.waf.googlecode.com/git/apidocs_16/index.html[API documentation]
 
 === BuildContext-specific methods
 
@@ -310,7 +307,7 @@ def build(bld):
 As seen in the previous chapter, Task objects can process files represented as lists of input and output nodes. The task generators
 will usually process the input files given as strings to obtain such nodes and bind them to the tasks.
 
-Since the build directory can be enabled or disabled, the following file copy is invalid: footnote:[When file copies cannot be avoided, the best practice is to change the file names]
+Because the build directory can be enabled or disabled, the following file copy would be ambiguous: footnote:[When file copies cannot be avoided, the best practice is to change the file names]
 
 [source,python]
 ---------------
