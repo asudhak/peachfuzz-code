@@ -431,12 +431,11 @@ def cmd_to_list(self, cmd):
 	return cmd
 
 @conf
-def check_waf_version(self, mini='1.6.0', maxi='1.7.0'):
+def check_waf_version(self, mini='1.6.99', maxi='1.8.0'):
 	"""
-	check for the waf version
+	Raise a Configuration error if the Waf version does not strictly match the given bounds::
 
-	Versions should be supplied as hex. 0x01000000 means 1.0.0,
-	0x010408 means 1.4.8, etc.
+		conf.check_waf_version(mini='1.7.0', maxi='1.8.0')
 
 	:type  mini: number, tuple or string
 	:param mini: Minimum required version
