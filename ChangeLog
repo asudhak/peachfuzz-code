@@ -10,6 +10,7 @@ NEW IN WAF 1.7.0
 * Report errors on configuration test failures with execute=True #1111
 * Added header prefixing (autoconf-like) #1117
 * Removed the warnings on "waf install" #1120
+* Extended bld.subst() to perform simple copies to the build directory
 
 NEW IN WAF 1.6.11
 -----------------
