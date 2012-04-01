@@ -754,7 +754,11 @@ def process_subst(self):
 	"""
 
 	src = Utils.to_list(getattr(self, 'source', []))
+	if isinstance(src, Node.Node):
+		src = [src]
 	tgt = Utils.to_list(getattr(self, 'target', []))
+	if isinstance(tgt, Node.Node):
+		tgt = [tgt]
 	if len(src) != len(tgt):
 		raise Errors.WafError('invalid number of source/target for %r' % self)
 
