@@ -13,7 +13,7 @@ is always postponed. To achieve this, various methods are called from the method
 """
 
 import copy, re, os
-from waflib import Task, Utils, Logs, Errors, ConfigSet
+from waflib import Task, Utils, Logs, Errors, ConfigSet, Node
 
 feats = Utils.defaultdict(set)
 """remember the methods declaring features"""
