@@ -86,18 +86,18 @@ def configure(conf):
 	conf.find_program('dia', var='DIA')
 	conf.find_program('convert', var='CONVERT')
 	conf.find_program('source-highlight', var='SOURCE_HIGHLIGHT')
+	conf.find_program('dot')
 
 def build(bld):
 
 
 	for x in bld.path.ant_glob('*.eps'):
-		nd = bld.path.get_bld().make_node(x.name)
-		bld(rule='cp ${SRC} ${TGT}', source=x, target=nd)
+		bld(features='subst', source=x.name, target=x.name, is_copy=True)
 		bld(rule='${CONVERT} ${bld.raw_deps[tsk.uid()]} -density 600 ${SRC} ${TGT}', source=x, target=x.change_ext('.png'), scan=scansize)
 
 	for x in bld.path.ant_glob('*.dot'):
-		tg = bld(rule='dot -Teps -o${TGT} ${SRC}', source=x, target=x.change_ext('.eps'))
-		tg = bld(rule='dot -Tpng -o${TGT} ${SRC}', source=x, target=x.change_ext('.png'), scan=scansize)
+		tg = bld(rule='${DOT} -Teps -o${TGT} ${SRC}', source=x, target=x.change_ext('.eps'))
+		tg = bld(rule='${DOT} -Tpng -o${TGT} ${SRC}', source=x, target=x.change_ext('.png'), scan=scansize)
 		#tg = bld(rule='${CONVERT} ${bld.raw_deps[tsk.uid()]} ${SRC} ${TGT}', source=x.change_ext('.eps'), target=x.change_ext('.png'), scan=scansize)
 
 	for x in bld.path.ant_glob('*.dia'):
@@ -106,12 +106,16 @@ def build(bld):
 		#bld(rule='${CONVERT} ${bld.raw_deps[tsk.uid()]} ${SRC} ${TGT}', source=tg.target, target=tg.target.change_ext('.png'), scan=scansize)
 
 	for x in bld.path.ant_glob('pics/*.png'):
-		bld(rule='cp ${SRC} ${TGT}', source=x, target=x.name)
+		bld(features='subst', source=x, target=x.name, is_copy=True)
 
-	bld(rule='mkdir -p ${SRC[0].parent.get_bld().abspath()} && cp ${SRC} ${SRC[0].parent.get_bld().abspath()}',
-		source=bld.path.ant_glob('callouts/*.png'))
+	for x in bld.path.ant_glob('callouts/*.png'):
+		 bld(features='subst', source=x.name, target=x.name, is_copy=True, path=x.parent)
 
-	bld(rule='cp ${SRC} ${bld.bldnode.abspath()}', source='shishell.lang symbols.lang default.style lang.map waf.css')
+	#bld(rule='mkdir -p ${SRC[0].parent.get_bld().abspath()} && cp ${SRC} ${SRC[0].parent.get_bld().abspath()}',
+	#	source=bld.path.ant_glob('callouts/*.png'))
+
+	for x in 'shishell.lang symbols.lang default.style lang.map waf.css'.split():
+		bld(features='subst', source=x, target=x, is_copy=True)
 
 	bld.add_group() # separator, the documents may require any of the pictures from above
 
