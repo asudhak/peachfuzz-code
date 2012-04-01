@@ -770,6 +770,9 @@ def process_subst(self):
 		if isinstance(x, str) and isinstance(y, str) and x == y:
 			a = self.path.find_node(x)
 			b = self.path.get_bld().make_node(y)
+			if not os.path.isfile(b.abspath()):
+				b.sig = None
+				b.parent.mkdir()
 		else:
 			if isinstance(x, str):
 				a = self.path.find_resource(x)
