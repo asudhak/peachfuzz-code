@@ -3,6 +3,8 @@
 
 """
 Windows-specific optimizations
+
+This module can help reducing the overhead of listing files on windows (more than 10000 files).
 """
 
 import os
@@ -11,36 +13,8 @@ except: import pickle as cPickle
 from waflib import Utils, Build, Context, Node, Logs
 
 if Utils.is_win32:
+	from waflib.extras import md5_tstamp
 	import ctypes, ctypes.wintypes
-
-	Context.DBFILE += '_md5tstamp'
-
-	try:
-		Build.BuildContext.store_real
-	except AttributeError:
-		pass
-	else:
-		raise ValueError('win32opts has been loaded twice (or the incompatible md5_tstamp tool was loaded before)')
-
-	Build.hashes_md5_tstamp = {}
-	Build.SAVED_ATTRS.append('hashes_md5_tstamp')
-	def store(self):
-		# save the hash cache as part of the default pickle file
-		self.hashes_md5_tstamp = Build.hashes_md5_tstamp
-		self.store_real()
-	Build.BuildContext.store_real = Build.BuildContext.store
-	Build.BuildContext.store      = store
-
-	def restore(self):
-		# we need a module variable for h_file below
-		self.restore_real()
-		try:
-			Build.hashes_md5_tstamp = self.hashes_md5_tstamp or {}
-		except Exception as e:
-			Build.hashes_md5_tstamp = {}
-
-	Build.BuildContext.restore_real = Build.BuildContext.restore
-	Build.BuildContext.restore      = restore
 
 	FindFirstFile        = ctypes.windll.kernel32.FindFirstFileW
 	FindNextFile         = ctypes.windll.kernel32.FindNextFileW
