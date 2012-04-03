@@ -1,0 +1,256 @@
+# Suppression for Error #1
+UNINITIALIZED READ
+name=Error #1 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+USER32.dll!SetScrollInfo
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!AttachScrollBars
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!DPA_Clone
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetDC
+
+## Mod+offs-style suppression for Error #1:
+UNINITIALIZED READ
+name=Error #1 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+<USER32.dll+0x2410f>
+<COMCTL32.dll+0x57df2>
+<COMCTL32.dll+0x57ce5>
+<COMCTL32.dll+0x5209f>
+<COMCTL32.dll+0x57911>
+<COMCTL32.dll+0x8c7b>
+<COMCTL32.dll+0x57723>
+<COMCTL32.dll+0x57674>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x17316>
+
+# Suppression for Error #2
+UNINITIALIZED READ
+name=Error #2 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+USER32.dll!SetScrollInfo
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetDC
+USER32.dll!GetThreadDesktop
+
+## Mod+offs-style suppression for Error #2:
+UNINITIALIZED READ
+name=Error #2 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+<USER32.dll+0x2410f>
+<COMCTL32.dll+0x57df2>
+<COMCTL32.dll+0x57ce5>
+<COMCTL32.dll+0x5797c>
+<COMCTL32.dll+0x950ba>
+<COMCTL32.dll+0x57737>
+<COMCTL32.dll+0x57674>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x17316>
+<USER32.dll+0x16de8>
+
+# Suppression for Error #3
+UNINITIALIZED READ
+name=Error #3 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+USER32.dll!SetScrollInfo
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!AttachScrollBars
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!GetThreadDesktop
+USER32.dll!GetThreadDesktop
+
+## Mod+offs-style suppression for Error #3:
+UNINITIALIZED READ
+name=Error #3 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+<USER32.dll+0x2410f>
+<COMCTL32.dll+0x57df2>
+<COMCTL32.dll+0x57ce5>
+<COMCTL32.dll+0x5209f>
+<COMCTL32.dll+0x57911>
+<COMCTL32.dll+0x5798b>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+<USER32.dll+0x16de8>
+<USER32.dll+0x16e44>
+
+# Suppression for Error #4
+UNINITIALIZED READ
+name=Error #4 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+USER32.dll!SetScrollInfo
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!GetWindow
+USER32.dll!SendMessageW
+notepad.exe!*
+notepad.exe!*
+
+## Mod+offs-style suppression for Error #4:
+UNINITIALIZED READ
+name=Error #4 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+<USER32.dll+0x2410f>
+<COMCTL32.dll+0x57df2>
+<COMCTL32.dll+0x57ce5>
+<COMCTL32.dll+0x578b5>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+<USER32.dll+0x1965e>
+<USER32.dll+0x196c5>
+<notepad.exe+0x2141>
+<notepad.exe+0x1455>
+
+# Suppression for Error #5
+UNINITIALIZED READ
+name=Error #5 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+USER32.dll!SetScrollInfo
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!AttachScrollBars
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!DPA_Clone
+COMCTL32.dll!DPA_Clone
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!GetWindow
+USER32.dll!SendMessageW
+
+## Mod+offs-style suppression for Error #5:
+UNINITIALIZED READ
+name=Error #5 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+<USER32.dll+0x2410f>
+<COMCTL32.dll+0x57df2>
+<COMCTL32.dll+0x57ce5>
+<COMCTL32.dll+0x5209f>
+<COMCTL32.dll+0x57911>
+<COMCTL32.dll+0x8c7b>
+<COMCTL32.dll+0x8db0>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+<USER32.dll+0x1965e>
+<USER32.dll+0x196c5>
+
+# Suppression for Error #6
+WARNING
+name=Error #6 (update to meaningful name)
+system call NtUserCallOneParam.RELEASEDC
+COMCTL32.dll!DPA_Clone
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!GetThreadDesktop
+USER32.dll!GetThreadDesktop
+ntdll.dll!KiUserCallbackDispatcher
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+
+## Mod+offs-style suppression for Error #6:
+WARNING
+name=Error #6 (update to meaningful name)
+system call NtUserCallOneParam.RELEASEDC
+<COMCTL32.dll+0x89de>
+<COMCTL32.dll+0x57843>
+<COMCTL32.dll+0x577a1>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+<USER32.dll+0x16de8>
+<USER32.dll+0x16e44>
+<ntdll.dll+0x1010a>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+
+# Suppression for Error #7
+UNINITIALIZED READ
+name=Error #7 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+USER32.dll!SetScrollInfo
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!AttachScrollBars
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!LoadStringW
+USER32.dll!gapfnScSendMessage
+
+## Mod+offs-style suppression for Error #7:
+UNINITIALIZED READ
+name=Error #7 (update to meaningful name)
+system call NtUserSetScrollInfo parameter #2
+<USER32.dll+0x2410f>
+<COMCTL32.dll+0x57df2>
+<COMCTL32.dll+0x57ce5>
+<COMCTL32.dll+0x5209f>
+<COMCTL32.dll+0x57911>
+<COMCTL32.dll+0x5798b>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+<USER32.dll+0x190c9>
+<USER32.dll+0x16a8c>
+
+# Suppression for Error #8
+WARNING
+name=Error #8 (update to meaningful name)
+system call NtUserCallOneParam.RELEASEDC
+COMCTL32.dll!DPA_Clone
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!CreateStatusWindowW
+COMCTL32.dll!Ordinal392
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!GetWindow
+USER32.dll!SendMessageW
+notepad.exe!*
+notepad.exe!*
+notepad.exe!*
+
+## Mod+offs-style suppression for Error #8:
+WARNING
+name=Error #8 (update to meaningful name)
+system call NtUserCallOneParam.RELEASEDC
+<COMCTL32.dll+0x89de>
+<COMCTL32.dll+0x587cb>
+<COMCTL32.dll+0x58763>
+<COMCTL32.dll+0x9111d>
+<USER32.dll+0x162fa>
+<USER32.dll+0x16d3a>
+<USER32.dll+0x1965e>
+<USER32.dll+0x196c5>
+<notepad.exe+0x232b>
+<notepad.exe+0x1455>
+<notepad.exe+0x16ec>
+

@@ -1,0 +1,104 @@
+
+######################################################################################
+# This file defines options for Microsoft compiler and linker when building PIN tools
+# in Windows.
+# NOTE: This file is used as an input for Microsoft NMAKE and GNU make programs. 
+# Please, use only those language constructs that are common to both programs.
+######################################################################################
+
+######################################################################################
+#           Variables that must be defined before including this file
+# PIN_HOME      root directory of the PinTool project or PIN kit
+######################################################################################
+
+######################################################################################
+#               MSVC compiler options for PIN tools
+# PIN_COMMON_CXXFLAGS      mandatory compilation switches common to all platforms
+#                               /MT            link to static CRT library. Using
+#                                              CRT DLL could cause conflict with
+#                                              the application using the same DLL.
+#                               /EHs- /EHa-    disable exception handling in the tool,
+#                                              otherwise it could interfere in the
+#                                              apllication's exception handling
+#                               /wd4530        turn off the warning about not having 
+#                                              /EHsc turned on, while using STL.
+# PIN_IA32_CXXFLAGS        mandatory compilation switches for ia32 architecture
+# PIN_IA32E_CXXFLAGS       mandatory compilation switches for intel64 architecture
+# PIN_EXTRA_CXXFLAGS       optional compilation switches common to all platforms
+# PIN_EXTRA_IA32_CXXFLAGS  optional compilation switches for ia32 architecture
+# PIN_EXTRA_IA32E_CXXFLAGS optional compilation switches for intel64 architecture
+# PIN_DEBUG_CXXFLAGS       additional compilation switches for debug build
+# PIN_RELEASE_CXXFLAGS     additional compilation switches for release build
+######################################################################################
+
+PIN_COMMON_CXXFLAGS = \
+    /MT /EHs- /EHa- /wd4530 \
+    /DTARGET_WINDOWS /DBIGARRAY_MULTIPLIER=1 /DUSING_XED /D_CRT_SECURE_NO_DEPRECATE /D_SECURE_SCL=0
+
+PIN_IA32_CXXFLAGS           = /DTARGET_IA32 /DHOST_IA32
+PIN_IA32E_CXXFLAGS          = /DTARGET_IA32E /DHOST_IA32E
+
+PIN_EXTRA_CXXFLAGS          = /nologo /Gy
+PIN_EXTRA_IA32_CXXFLAGS     = 
+PIN_EXTRA_IA32E_CXXFLAGS    = 
+
+PIN_DEBUG_CXXFLAGS          = /Od /Zi
+PIN_RELEASE_CXXFLAGS        = /O2
+
+######################################################################################
+#               MS linker options for PIN tools
+# PIN_COMMON_LDFLAGS      mandatory linking switches common to all platforms
+#                           /EXPORT:main    main function of the tool has to be exported
+#                           /ENTRY:         tool DLL should be initilized by pin.lib
+#                           /NODEFAULTLIB   do not link and use any system library except
+#                                           for those listed explicitly to avoid conflicts
+#                                           with an application using the same library
+#                           /BASE:          helps to avoid layout conflicts with DLLs linked
+#                                           to the application
+# PIN_IA32_LDFLAGS        mandatory linking switches for ia32 architecture
+# PIN_IA32E_LDFLAGS       mandatory linking switches for intel64 architecture
+# PIN_EXTRA_LDFLAGS       optional linking switches common to all platforms
+# PIN_EXTRA_IA32_LDFLAGS  optional linking switches for ia32 architecture
+# PIN_EXTRA_IA32E_LDFLAGS optional linking switches for intel64 architecture
+# PIN_DEBUG_LDFLAGS       additional linking switches for debug build
+# PIN_RELEASE_LDFLAGS     additional linking switches for release build
+# PIN_COMMON_LIBS         libraries to be linked to the tool on all platforms
+# PIN_IA32_LIBS           libraries to be linked to the tool on ia32 machine
+# PIN_IA32E_LIBS          libraries to be linked to the tool on intel64 machine
+######################################################################################
+
+PIN_COMMON_LIBS         = pin.lib libxed.lib libcpmt.lib libcmt.lib pinvm.lib kernel32.lib
+PIN_IA32_LIBS           = ntdll-32.lib
+PIN_IA32E_LIBS          = ntdll-64.lib
+
+PIN_COMMON_LDFLAGS      = /DLL /EXPORT:main /NODEFAULTLIB
+PIN_IA32_LDFLAGS        = /MACHINE:x86 /ENTRY:Ptrace_DllMainCRTStartup@12 /BASE:0x55000000
+PIN_IA32E_LDFLAGS       = /MACHINE:x64 /ENTRY:Ptrace_DllMainCRTStartup /BASE:0xC5000000
+
+PIN_EXTRA_LDFLAGS       = /NOLOGO /INCREMENTAL:NO
+PIN_EXTRA_IA32_LDFLAGS  =
+PIN_EXTRA_IA32E_LDFLAGS =
+
+PIN_DEBUG_LDFLAGS       = /DEBUG
+PIN_RELEASE_LDFLAGS     = /OPT:REF
+
+
+PIN_ICL_CODE_COVERAGE_LIBS = libmmt.lib libipgo.lib libirc.lib svml_disp.lib
+PIN_ICL_LIBS = libirc.lib
+
+######################################################################################
+# ICL building tools.
+######################################################################################
+ICXXL                   = icl 
+ICCL                    = icl
+XILINKER                = xilink
+
+
+######################################################################################
+# MS building tools.
+######################################################################################
+CXX                      = cl 
+CC                       = cl
+LINKER                   = link
+PIN_LD                   = $(LINKER)
+SHLINK                   = $(LINKER)

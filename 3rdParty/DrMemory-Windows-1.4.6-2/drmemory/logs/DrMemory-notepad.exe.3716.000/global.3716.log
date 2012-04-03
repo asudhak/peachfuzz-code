@@ -1,0 +1,206 @@
+Dr. Memory version 1.4.6 build 2 built on Mar  7 2012 10:14:04
+start time: 3604538:08:14.316 == 02:08:14.316 03/16/2012
+Recorded 62 suppression(s) from default C:\Peach3\3rdParty\DrMemory-Windows-1.4.6-2/bin/suppress-default.txt
+WARNING: new == new[] => disabling mismatch detection for msvcrt.dll
+WARNING: unhandled system calls found
+WARNING: unknown ioctl 0x390008 => op 2
+WARNING: unknown ioctl 0x390008 => op 2
+
+NEW THREAD: main thread 7104
+
+
+Error #1: UNINITIALIZED READ: reading 0x0029ef24-0x0029ef28 4 byte(s) within 0x0029ef0c-0x0029ef28
+# 0 system call NtUserSetScrollInfo parameter #2
+# 1 USER32.dll!SetScrollInfo                                  +0x3f     (0x74a7410f <USER32.dll+0x2410f>)
+# 2 COMCTL32.dll!CreateStatusWindowW                          +0x811    (0x735a7df2 <COMCTL32.dll+0x57df2>)
+# 3 COMCTL32.dll!CreateStatusWindowW                          +0x704    (0x735a7ce5 <COMCTL32.dll+0x57ce5>)
+# 4 COMCTL32.dll!AttachScrollBars                             +0x1ef0   (0x735a209f <COMCTL32.dll+0x5209f>)
+# 5 COMCTL32.dll!CreateStatusWindowW                          +0x330    (0x735a7911 <COMCTL32.dll+0x57911>)
+# 6 COMCTL32.dll!DPA_Clone                                    +0x25da   (0x73558c7b <COMCTL32.dll+0x8c7b>)
+# 7 COMCTL32.dll!CreateStatusWindowW                          +0x142    (0x735a7723 <COMCTL32.dll+0x57723>)
+# 8 COMCTL32.dll!CreateStatusWindowW                          +0x93     (0x735a7674 <COMCTL32.dll+0x57674>)
+# 9 COMCTL32.dll!Ordinal392                                   +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+#10 USER32.dll!gapfnScSendMessage                             +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+#11 USER32.dll!GetDC                                          +0x51     (0x74a67316 <USER32.dll+0x17316>)
+Note: @0:00:02.194 in thread 7104
+
+Error #2: UNINITIALIZED READ: reading 0x0029efbc-0x0029efc0 4 byte(s) within 0x0029efa4-0x0029efc0
+# 0 system call NtUserSetScrollInfo parameter #2
+# 1 USER32.dll!SetScrollInfo                                  +0x3f     (0x74a7410f <USER32.dll+0x2410f>)
+# 2 COMCTL32.dll!CreateStatusWindowW                          +0x811    (0x735a7df2 <COMCTL32.dll+0x57df2>)
+# 3 COMCTL32.dll!CreateStatusWindowW                          +0x704    (0x735a7ce5 <COMCTL32.dll+0x57ce5>)
+# 4 COMCTL32.dll!CreateStatusWindowW                          +0x39b    (0x735a797c <COMCTL32.dll+0x5797c>)
+# 5 COMCTL32.dll!Ordinal392                                   +0x89f3   (0x735e50ba <COMCTL32.dll+0x950ba>)
+# 6 COMCTL32.dll!CreateStatusWindowW                          +0x156    (0x735a7737 <COMCTL32.dll+0x57737>)
+# 7 COMCTL32.dll!CreateStatusWindowW                          +0x93     (0x735a7674 <COMCTL32.dll+0x57674>)
+# 8 COMCTL32.dll!Ordinal392                                   +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+# 9 USER32.dll!gapfnScSendMessage                             +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+#10 USER32.dll!GetDC                                          +0x51     (0x74a67316 <USER32.dll+0x17316>)
+#11 USER32.dll!GetThreadDesktop                               +0x184    (0x74a66de8 <USER32.dll+0x16de8>)
+Note: @0:00:02.423 in thread 7104
+
+Error #3: UNINITIALIZED READ: reading 0x0029f008-0x0029f00c 4 byte(s) within 0x0029eff0-0x0029f00c
+# 0 system call NtUserSetScrollInfo parameter #2
+# 1 USER32.dll!SetScrollInfo                                  +0x3f     (0x74a7410f <USER32.dll+0x2410f>)
+# 2 COMCTL32.dll!CreateStatusWindowW                          +0x811    (0x735a7df2 <COMCTL32.dll+0x57df2>)
+# 3 COMCTL32.dll!CreateStatusWindowW                          +0x704    (0x735a7ce5 <COMCTL32.dll+0x57ce5>)
+# 4 COMCTL32.dll!AttachScrollBars                             +0x1ef0   (0x735a209f <COMCTL32.dll+0x5209f>)
+# 5 COMCTL32.dll!CreateStatusWindowW                          +0x330    (0x735a7911 <COMCTL32.dll+0x57911>)
+# 6 COMCTL32.dll!CreateStatusWindowW                          +0x3aa    (0x735a798b <COMCTL32.dll+0x5798b>)
+# 7 COMCTL32.dll!Ordinal392                                   +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+# 8 USER32.dll!gapfnScSendMessage                             +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+# 9 USER32.dll!GetThreadDesktop                               +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+#10 USER32.dll!GetThreadDesktop                               +0x184    (0x74a66de8 <USER32.dll+0x16de8>)
+#11 USER32.dll!GetThreadDesktop                               +0x1e0    (0x74a66e44 <USER32.dll+0x16e44>)
+Note: @0:00:02.427 in thread 7104
+
+Error #4: UNINITIALIZED READ: reading 0x0029f488-0x0029f48c 4 byte(s) within 0x0029f470-0x0029f48c
+# 0 system call NtUserSetScrollInfo parameter #2
+# 1 USER32.dll!SetScrollInfo                                  +0x3f     (0x74a7410f <USER32.dll+0x2410f>)
+# 2 COMCTL32.dll!CreateStatusWindowW                          +0x811    (0x735a7df2 <COMCTL32.dll+0x57df2>)
+# 3 COMCTL32.dll!CreateStatusWindowW                          +0x704    (0x735a7ce5 <COMCTL32.dll+0x57ce5>)
+# 4 COMCTL32.dll!CreateStatusWindowW                          +0x2d4    (0x735a78b5 <COMCTL32.dll+0x578b5>)
+# 5 COMCTL32.dll!Ordinal392                                   +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+# 6 USER32.dll!gapfnScSendMessage                             +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+# 7 USER32.dll!GetThreadDesktop                               +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+# 8 USER32.dll!GetWindow                                      +0x3ef    (0x74a6965e <USER32.dll+0x1965e>)
+# 9 USER32.dll!SendMessageW                                   +0x4b     (0x74a696c5 <USER32.dll+0x196c5>)
+#10 notepad.exe!?                                             +0x0      (0x00642141 <notepad.exe+0x2141>)
+#11 notepad.exe!?                                             +0x0      (0x00641455 <notepad.exe+0x1455>)
+Note: @0:00:02.503 in thread 7104
+
+Error #5: UNINITIALIZED READ: reading 0x0029f434-0x0029f438 4 byte(s) within 0x0029f41c-0x0029f438
+# 0 system call NtUserSetScrollInfo parameter #2
+# 1 USER32.dll!SetScrollInfo                                  +0x3f     (0x74a7410f <USER32.dll+0x2410f>)
+# 2 COMCTL32.dll!CreateStatusWindowW                          +0x811    (0x735a7df2 <COMCTL32.dll+0x57df2>)
+# 3 COMCTL32.dll!CreateStatusWindowW                          +0x704    (0x735a7ce5 <COMCTL32.dll+0x57ce5>)
+# 4 COMCTL32.dll!AttachScrollBars                             +0x1ef0   (0x735a209f <COMCTL32.dll+0x5209f>)
+# 5 COMCTL32.dll!CreateStatusWindowW                          +0x330    (0x735a7911 <COMCTL32.dll+0x57911>)
+# 6 COMCTL32.dll!DPA_Clone                                    +0x25da   (0x73558c7b <COMCTL32.dll+0x8c7b>)
+# 7 COMCTL32.dll!DPA_Clone                                    +0x270f   (0x73558db0 <COMCTL32.dll+0x8db0>)
+# 8 USER32.dll!gapfnScSendMessage                             +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+# 9 USER32.dll!GetThreadDesktop                               +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+#10 USER32.dll!GetWindow                                      +0x3ef    (0x74a6965e <USER32.dll+0x1965e>)
+#11 USER32.dll!SendMessageW                                   +0x4b     (0x74a696c5 <USER32.dll+0x196c5>)
+Note: @0:00:02.526 in thread 7104
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+
+Error #6: WARNING: GDI usage error: DC 0x1c011432 that contains selected object being deleted
+# 0 system call NtUserCallOneParam.RELEASEDC
+# 1 COMCTL32.dll!DPA_Clone                                +0x233d   (0x735589de <COMCTL32.dll+0x89de>)
+# 2 COMCTL32.dll!CreateStatusWindowW                      +0x262    (0x735a7843 <COMCTL32.dll+0x57843>)
+# 3 COMCTL32.dll!CreateStatusWindowW                      +0x1c0    (0x735a77a1 <COMCTL32.dll+0x577a1>)
+# 4 COMCTL32.dll!Ordinal392                               +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+# 5 USER32.dll!gapfnScSendMessage                         +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+# 6 USER32.dll!GetThreadDesktop                           +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+# 7 USER32.dll!GetThreadDesktop                           +0x184    (0x74a66de8 <USER32.dll+0x16de8>)
+# 8 USER32.dll!GetThreadDesktop                           +0x1e0    (0x74a66e44 <USER32.dll+0x16e44>)
+# 9 ntdll.dll!KiUserCallbackDispatcher                    +0x2d     (0x76f6010a <ntdll.dll+0x1010a>)
+#10 USER32.dll!gapfnScSendMessage                         +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+#11 USER32.dll!GetThreadDesktop                           +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+Note: @0:00:03.807 in thread 7104
+
+Error #7: UNINITIALIZED READ: reading 0x0029ef1c-0x0029ef20 4 byte(s) within 0x0029ef04-0x0029ef20
+# 0 system call NtUserSetScrollInfo parameter #2
+# 1 USER32.dll!SetScrollInfo                                  +0x3f     (0x74a7410f <USER32.dll+0x2410f>)
+# 2 COMCTL32.dll!CreateStatusWindowW                          +0x811    (0x735a7df2 <COMCTL32.dll+0x57df2>)
+# 3 COMCTL32.dll!CreateStatusWindowW                          +0x704    (0x735a7ce5 <COMCTL32.dll+0x57ce5>)
+# 4 COMCTL32.dll!AttachScrollBars                             +0x1ef0   (0x735a209f <COMCTL32.dll+0x5209f>)
+# 5 COMCTL32.dll!CreateStatusWindowW                          +0x330    (0x735a7911 <COMCTL32.dll+0x57911>)
+# 6 COMCTL32.dll!CreateStatusWindowW                          +0x3aa    (0x735a798b <COMCTL32.dll+0x5798b>)
+# 7 COMCTL32.dll!Ordinal392                                   +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+# 8 USER32.dll!gapfnScSendMessage                             +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+# 9 USER32.dll!GetThreadDesktop                               +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+#10 USER32.dll!LoadStringW                                    +0x20f    (0x74a690c9 <USER32.dll+0x190c9>)
+#11 USER32.dll!gapfnScSendMessage                             +0xac3    (0x74a66a8c <USER32.dll+0x16a8c>)
+Note: @0:00:03.838 in thread 7104
+
+Error #8: WARNING: GDI usage error: DC 0x1c011432 that contains selected object being deleted
+# 0 system call NtUserCallOneParam.RELEASEDC
+# 1 COMCTL32.dll!DPA_Clone                                +0x233d   (0x735589de <COMCTL32.dll+0x89de>)
+# 2 COMCTL32.dll!CreateStatusWindowW                      +0x11ea   (0x735a87cb <COMCTL32.dll+0x587cb>)
+# 3 COMCTL32.dll!CreateStatusWindowW                      +0x1182   (0x735a8763 <COMCTL32.dll+0x58763>)
+# 4 COMCTL32.dll!Ordinal392                               +0x4a56   (0x735e111d <COMCTL32.dll+0x9111d>)
+# 5 USER32.dll!gapfnScSendMessage                         +0x331    (0x74a662fa <USER32.dll+0x162fa>)
+# 6 USER32.dll!GetThreadDesktop                           +0xd6     (0x74a66d3a <USER32.dll+0x16d3a>)
+# 7 USER32.dll!GetWindow                                  +0x3ef    (0x74a6965e <USER32.dll+0x1965e>)
+# 8 USER32.dll!SendMessageW                               +0x4b     (0x74a696c5 <USER32.dll+0x196c5>)
+# 9 notepad.exe!?                                         +0x0      (0x0064232b <notepad.exe+0x232b>)
+#10 notepad.exe!?                                         +0x0      (0x00641455 <notepad.exe+0x1455>)
+#11 notepad.exe!?                                         +0x0      (0x006416ec <notepad.exe+0x16ec>)
+Note: @0:00:03.887 in thread 7104
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+WARNING: ignore_unaddr_table entry came to slowpath
+
+IGNORED LEAK 128 direct bytes 0x027809f0-0x02780a70 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 24 direct bytes 0x00869440-0x00869458 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 24 direct bytes 0x00869460-0x00869478 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 24 direct bytes 0x00869480-0x00869498 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x008697d0-0x008697f0 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x008697f8-0x00869818 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 304 direct bytes 0x0086a030-0x0086a160 + 0 indirect bytes
+
+IGNORED LEAK 128 direct bytes 0x00ab09f0-0x00ab0a70 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 128 direct bytes 0x001b09f0-0x001b0a70 + 0 indirect bytes
+
+IGNORED LEAK 96 direct bytes 0x001b1280-0x001b12e0 + 0 indirect bytes
+
+IGNORED LEAK 100 direct bytes 0x001b12e8-0x001b134c + 0 indirect bytes
+
+IGNORED LEAK 60 direct bytes 0x00834e70-0x00834eac + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x00835d50-0x00835d70 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x00858840-0x00858860 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 120 direct bytes 0x00859220-0x00859298 + 180 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x0085c748-0x0085c768 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x0085cef8-0x0085cf18 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x0085d150-0x0085d170 + 0 indirect bytes
+
+IGNORED POSSIBLE LEAK 32 direct bytes 0x0085d178-0x0085d198 + 0 indirect bytes
+
+IGNORED LEAK 52 direct bytes 0x0085d370-0x0085d3a4 + 4128 indirect bytes
+
+DUPLICATE ERROR COUNTS:
+
+SUPPRESSIONS USED:
+	     1x: default i#494 (custom data not all initialized)
+	     1x: default i#493 (bit manip)
+	    11x: default i#493 (bit manip)
+	     9x: default i#337 (real bug in RtlpLowFragHeapAllocFromContext)
+	     1x (leaked     264 bytes): default i#18 LockEntry::ThreadInit pool leak (nosyms win7)
+	     2x (leaked    1864 bytes): default i#286 (activation context leak)
+	     1x (leaked      24 bytes): default i#18 CreatePoolEntry mid-chunk linked list leak (nosyms win7)
+	     1x (leaked     768 bytes): default i#733 (nosyms)
+	     1x (leaked      32 bytes): default i#306 (critical section 8-byte-in pointer)
+
+ERRORS FOUND:
+      0 unique,     0 total unaddressable access(es)
+      6 unique,     6 total uninitialized access(es)
+      0 unique,     0 total invalid heap argument(s)
+      2 unique,     2 total warning(s)
+      0 unique,     0 total,      0 byte(s) of leak(s)
+      0 unique,     0 total,      0 byte(s) of possible leak(s)
+ERRORS IGNORED:
+     20 ignored assumed-innocuous system leak(s)
+    970 still-reachable allocation(s)
+         (re-run with "-show_reachable" for details)
+Details: C:\Peach3\3rdParty\DrMemory-Windows-1.4.6-2/drmemory/logs/DrMemory-notepad.exe.3716.000/results.txt
+LOG END
