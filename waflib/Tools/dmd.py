@@ -12,7 +12,7 @@ def find_dmd(conf):
 	"""
 	Find the program *dmd* or *ldc* and set the variable *D*
 	"""
-	conf.find_program(['dmd', 'ldc'], var='D')
+	conf.find_program(['dmd', 'ldc', 'ldc2'], var='D')
 
 @conf
 def common_flags_ldc(conf):
