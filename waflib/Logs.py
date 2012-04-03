@@ -8,15 +8,44 @@ logging, colors, terminal width and pretty-print
 
 import os, re, traceback, sys
 
-_nocolor = os.environ.get('NOCOLOR', 'no') not in ('no', '0', 'false')
 try:
-	if not _nocolor:
-		import waflib.ansiterm
+	import threading
 except ImportError:
-	# optional module for colors on win32, just ignore if it cannot be imported
 	pass
+else:
+	wlock = threading.Lock()
 
-import logging # do it after
+	class sync_stream(object):
+		def __init__(self, stream):
+			self.stream = stream
+
+		def write(self, txt):
+			try:
+				wlock.acquire()
+				self.stream.write(txt)
+				self.stream.flush()
+			finally:
+				wlock.release()
+
+		def flush(self):
+			self.stream.flush()
+
+		def isatty(self):
+			return self.stream.isatty()
+
+	_nocolor = os.environ.get('NOCOLOR', 'no') not in ('no', '0', 'false')
+	try:
+		if not _nocolor:
+			import waflib.ansiterm
+	except ImportError:
+		pass
+
+	if not os.environ.get('NOSYNC', False):
+		if id(sys.stdout) == id(sys.__stdout__):
+			sys.stdout = sync_stream(sys.stdout)
+			sys.stderr = sync_stream(sys.stderr)
+
+import logging # import other modules only after
 
 LOG_FORMAT = "%(asctime)s %(c1)s%(zone)s%(c2)s %(message)s"
 HOUR_FORMAT = "%H:%M:%S"
