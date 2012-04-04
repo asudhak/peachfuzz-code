@@ -47,10 +47,16 @@ namespace PeachHooker
 
 		static void Main(string[] args)
 		{
-			Context = new Program(args);
+			Context = new Program();
+			Context.Run(args);
 		}
 
-		public Program(string[] args)
+		public Program()
+		{
+		}
+
+
+		public void Run(string[] args)
 		{
 			try
 			{
@@ -62,6 +68,7 @@ namespace PeachHooker
 				bool networkMode = false;
 
 				string command = null;
+				string executable = null;
 				int TargetPid = -1;
 				string onlyfile = null;
 
@@ -75,6 +82,7 @@ namespace PeachHooker
 					{ "onlyfile=", v => onlyfile = v},
 					{ "r|recv", v => recv = true},
 					{ "s|send", v => send = true},
+					{ "e|executable=", v => executable = v },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -85,6 +93,9 @@ namespace PeachHooker
 				if (TargetPid == -1 && command == null)
 					syntax();
 
+				if (command != null && executable == null)
+					syntax();
+
 				if (recv == false && send == false && networkMode)
 				{
 					recv = true;
@@ -93,25 +104,26 @@ namespace PeachHooker
 
 				try
 				{
-					try
-					{
-						Config.Register(
-							"Hook System Calls for InProc Fuzzing!",
-							"PeachHooker.exe",
-							"PeachHooker.Network.dll");
-					}
-					catch (ApplicationException ex)
-					{
-						Console.WriteLine(ex.ToString());
-						System.Diagnostics.Process.GetCurrentProcess().Kill();
-					}
+					//try
+					//{
+					//    Config.Register(
+					//        "Hook System Calls for InProc Fuzzing!",
+					//        "PeachHooker.exe",
+					//        "PeachHooker.Network.dll");
+					//}
+					//catch (ApplicationException ex)
+					//{
+					//    Console.WriteLine("Exception while calling Config.Register!");
+					//    Console.WriteLine(ex.ToString());
+					//    System.Diagnostics.Process.GetCurrentProcess().Kill();
+					//}
 
 					RemoteHooking.IpcCreateServer<NetworkInterface>(ref ChannelName, WellKnownObjectMode.SingleCall);
 
 					if (command != null)
 					{
 						RemoteHooking.CreateAndInject(
-							@"c:\windows\system32",
+							executable,
 							command,
 							0,
 							"PeachHooker.Network.dll",	// 32bit
@@ -128,6 +140,7 @@ namespace PeachHooker
 							ChannelName);
 					}
 
+					Console.WriteLine("Press any key to close");
 					Console.ReadLine();
 				}
 				catch (Exception ExtInfo)
@@ -137,6 +150,12 @@ namespace PeachHooker
 			}
 			catch (SyntaxException)
 			{
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.ToString());
+				if(ex.InnerException != null)
+					Console.WriteLine(ex.InnerException.ToString());
 			}
 		}
 
@@ -157,7 +176,7 @@ namespace PeachHooker
 
   This program is almost never used by itself.
 
-Syntax: PeachHooker --network -c COMMAND_LINE
+Syntax: PeachHooker --network -e EXECUTABLE -c COMMAND_LINE
 Syntax: PeachHooker --network --pid PID
 Syntax: PeachHooker --network --recv --pid PID
 Syntax: PeachHooker --network --send --pid PID
@@ -185,7 +204,11 @@ Network Hooking Arguments
   -r --recv     Only hook receive functions
   -s --send     Only hook send functions
 
-@");
+Examples
+
+  PeachHooker --network -e c:\netcat.exe -c " + "\"netcat.exe 127.0.0.1 9000\"" + @"
+
+");
 
 			throw new SyntaxException();
 		}

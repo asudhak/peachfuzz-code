@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -45,32 +46,48 @@ namespace PeachHooker.Network
 
 		public Hook(RemoteHooking.IContext inContext, string inChannelName)
 		{
+			log("Hook()");
 			hookInterface = RemoteHooking.IpcConnectClient<Interface>(inChannelName);
 			hookInterface.Ping();
 		}
 
+		public static void log(string foo)
+		{
+			File.AppendAllText(@"c:\log.txt", foo + "\n");
+		}
+
 		public void Run(RemoteHooking.IContext inContext, string inChannelName)
 		{
+			log("Run()");
+
 			try
 			{
-				RecvHook = LocalHook.Create(LocalHook.GetProcAddress("ws2_32.dll", "recv"),
+				RecvHook = LocalHook.Create(LocalHook.GetProcAddress("WS2_32.dll", "recv"),
 					new DRecv(recv_Hooked), this);
+
+				if (LocalHook.GetProcAddress("WS2_32.dll", "recv") == IntPtr.Zero)
+					log("Run(): recv address is zero.");
+				if (LocalHook.GetProcAddress("WS2_32.dll", "send") == IntPtr.Zero)
+					log("Run(): send address is zero.");
 
 				RecvHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 
-				SendHook = LocalHook.Create(LocalHook.GetProcAddress("ws2_32.dll", "send"),
-					new DRecv(send_Hooked), this);
+				SendHook = LocalHook.Create(LocalHook.GetProcAddress("WS2_32.dll", "send"),
+					new DSend(send_Hooked), this);
 
 				SendHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
 			}
 			catch(Exception ex)
 			{
+				log(ex.ToString());
 				hookInterface.ReportException(ex);
 				return;
 			}
 
+			log("IsInstalled");
 			hookInterface.IsInstalled(RemoteHooking.GetCurrentProcessId());
 
+			log("Waking up process");
 			RemoteHooking.WakeUpProcess();
 
 			try
@@ -93,12 +110,14 @@ namespace PeachHooker.Network
 						{
 							if (item.hookedCall == HookedCall.recv)
 							{
+								log("OnRecv");
 								var data = hookInterface.OnRecv((byte[])item.parameters[1]);
 								item.result = new object[] { data };
 								item.resultReady.Set();
 							}
 							else
 							{
+								log("OnSend");
 								var data = hookInterface.OnSend((byte[])item.parameters[1]);
 								item.result = new object[] { data };
 								item.resultReady.Set();
@@ -107,12 +126,14 @@ namespace PeachHooker.Network
 					}
 					else
 					{
+						log("Ping");
 						hookInterface.Ping();
 					}
 				}
 			}
 			catch (Exception ex)
 			{
+				log("ReportException: "+ ex.ToString());
 				hookInterface.ReportException(ex);
 				return;
 			}
@@ -125,26 +146,36 @@ namespace PeachHooker.Network
 		//  __in   int flags
 		//);
 		//Ws2_32.dll
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
-		delegate int DRecv(uint s, byte[] buff, int len, int flags);
+		[UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
+		delegate int DRecv(uint s, ref byte[] buff, int len, int flags);
 
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
+		[UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
 		delegate int DSend(uint s, byte[] buff, int len, int flags);
 
-		[DllImport("ws2_32.dll", CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
-		static extern int recv(uint s, byte[] buff, int len, int flags);
+		[DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+		static extern int recv(uint s, ref byte[] buff, int len, int flags);
 
-		[DllImport("ws2_32.dll", CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
+		[DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
 		static extern int send(uint s, byte[] buff, int len, int flags);
 
-		static int recv_Hooked(uint s, byte[] buff, int len, int flags)
+		static int recv_Hooked(uint s, ref byte[] buff, int len, int flags)
 		{
+			log("recv_Hooked");
+
+			log("calling recv: " + len);
+			int ret = recv(s, ref buff, len, flags);
+			log("recv returned: " + ret);
+
+			if (ret == 0)
+				return 0;
+
 			try
 			{
+
 				Hook This = (Hook)HookRuntimeInfo.Callback;
 				HookQueue entry = new HookQueue()
 				{
-					parameters = new object[] { s, buff, len, flags },
+					parameters = new object[] { s, buff, ret, flags },
 					hookedCall = HookedCall.recv
 				};
 
@@ -153,22 +184,33 @@ namespace PeachHooker.Network
 					This.Queue.Push(entry);
 				}
 
+				log("entry.resultReady.WaitOne()");
 				entry.resultReady.WaitOne();
 
 				if (entry.result != null && entry.result.Length == 1)
-					return recv(s, (byte[])entry.result[0], ((byte[])entry.result[0]).Length, flags);
+				{
+					log("reciving returned data");
 
-				return recv(s, buff, len, flags);
+					for (int i = 0; i < buff.Length; i++)
+						buff[i] = ((byte[])entry.result[0])[i];
+
+					return ret;
+				}
+
+				log("receiving origional data");
+				return ret;
 			}
 			catch (Exception ex)
 			{
 				// TODO - Log exception
-				return recv(s, buff, len, flags);
+				log("recv_Hooked: " + ex.ToString());
+				return ret;
 			}
 		}
 
 		static int send_Hooked(uint s, byte[] buff, int len, int flags)
 		{
+			log("send_Hooked");
 			try
 			{
 				Hook This = (Hook)HookRuntimeInfo.Callback;
@@ -183,16 +225,22 @@ namespace PeachHooker.Network
 					This.Queue.Push(entry);
 				}
 
+				log("entry.resultReady.WaitOne()");
 				entry.resultReady.WaitOne();
 
 				if (entry.result != null && entry.result.Length == 1)
+				{
+					log("sending returned data");
 					return send(s, (byte[])entry.result[0], ((byte[])entry.result[0]).Length, flags);
+				}
 
+				log("sending origional");
 				return send(s, buff, len, flags);
 			}
 			catch (Exception ex)
 			{
 				// TODO - Log exception
+				log("send_Hooked: " + ex.ToString());
 				return send(s, buff, len, flags);
 			}
 		}

@@ -16,9 +16,9 @@
  ABSOLUTELY NO WARRANTY WHATSOEVER for this product.  Caveat hacker.
 ***********************************************************************/
 
-#include "ws-util.h"
+//#include "ws-util.h"
 
-#include <winsock.h>
+#include <winsock2.h>
 
 #include <iostream>
 
@@ -49,7 +49,7 @@ int DoWinsock(const char* pcAddress, int nPort)
     cout << "Establishing the listener..." << endl;
     SOCKET ListeningSocket = SetUpListener(pcAddress, htons(nPort));
     if (ListeningSocket == INVALID_SOCKET) {
-        cout << endl << WSAGetLastErrorMessage("establish listener") << 
+        cout << endl << "establish listener error:" << WSAGetLastError() <<
                 endl;
         return 3;
     }
@@ -66,8 +66,7 @@ int DoWinsock(const char* pcAddress, int nPort)
                     ntohs(sinRemote.sin_port) << "." << endl;
         }
         else {
-            cout << endl << WSAGetLastErrorMessage(
-                    "accept connection") << endl;
+            cout << endl << "accept connection error: " << WSAGetLastError() << endl;
             return 3;
         }
         
@@ -76,18 +75,16 @@ int DoWinsock(const char* pcAddress, int nPort)
             // Successfully bounced all connections back to client, so
             // close the connection down gracefully.
             cout << "Shutting connection down..." << flush;
-            if (ShutdownConnection(sd)) {
+            if (closesocket(sd)) {
                 cout << "Connection is down." << endl;
             }
             else {
-                cout << endl << WSAGetLastErrorMessage(
-                        "shutdown connection") << endl;
+                cout << endl << "shutdown connection error: " << WSAGetLastError() << endl;
                 return 3;
             }
         }
         else {
-            cout << endl << WSAGetLastErrorMessage(
-                    "echo incoming packets") << endl;
+            cout << endl << "echo incoming packets error: " << WSAGetLastError() << endl;
             return 3;
         }
     }

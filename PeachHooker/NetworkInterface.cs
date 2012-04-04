@@ -14,12 +14,16 @@ namespace PeachHooker
 
 		public override void IsInstalled(int clientPid)
 		{
+			Console.WriteLine("IsIntalled");
 		}
 
 		public override byte[] OnRecv(byte[] data)
 		{
 			if (Program.Context.recv)
+			{
+				Console.WriteLine("Fuzzing received data");
 				return fuzzData(data);
+			}
 
 			return data;
 		}
@@ -27,17 +31,22 @@ namespace PeachHooker
 		public override byte[] OnSend(byte[] data)
 		{
 			if (Program.Context.send)
+			{
+				Console.WriteLine("Fuzzing sent data");
 				return fuzzData(data);
+			}
 
 			return data;
 		}
 
 		public override void ReportException(Exception ex)
 		{
+			Console.WriteLine("ReportException: " + ex.ToString());
 		}
 
 		public override void Ping()
 		{
+			Console.WriteLine("Ping");
 		}
 
 		public byte[] fuzzData(byte[] data)
