@@ -120,8 +120,8 @@ namespace Peach.Core.Agent.Monitors
 				_noCpuKill = true;
 
 			// Register IPC Channel for connecting to debug process
-			_ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
-			ChannelServices.RegisterChannel(_ipcChannel, false);
+			//_ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
+			//ChannelServices.RegisterChannel(_ipcChannel, false);
 		}
 
 		protected string FindWinDbg()
@@ -294,6 +294,10 @@ namespace Peach.Core.Agent.Monitors
 				_debuggerProcessUsage = _debuggerProcessUsageMax;
 				fault = true;
 			}
+			else if (_debugger != null && _hybrid)
+			{
+				_StopDebugger();
+			}
 
 			return fault;
 		}
@@ -304,6 +308,9 @@ namespace Peach.Core.Agent.Monitors
 				return;
 
 			data.Add(_name + "WindowsDebuggerHybrid", _debugger.crashInfo);
+
+			if (_hybrid)
+				_StopDebugger();
 		}
 
 		public override bool MustStop()
@@ -374,6 +381,8 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
+		static int ipcChannelCount = 0;
+
 		/// <summary>
 		/// Hybrid replay mode uses windbg
 		/// </summary>
@@ -381,7 +390,9 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (_debuggerProcess == null || _debuggerProcess.HasExited)
 			{
-				_debuggerChannelName = "PeachCore_" + (new Random().Next().ToString());
+				_debuggerChannelName = "PeachCore_" + 
+					System.Diagnostics.Process.GetCurrentProcess().Id.ToString() + "_" + 
+					(ipcChannelCount++);
 
 				// Launch the server process
 				_debuggerProcess = new System.Diagnostics.Process();
@@ -392,6 +403,9 @@ namespace Peach.Core.Agent.Monitors
 					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 					"Peach.Core.WindowsDebugInstance.exe");
 				_debuggerProcess.Start();
+
+				// Let the process get started.
+				Thread.Sleep(5000);
 			}
 
 			// Try and create instance over IPC.  We will continue trying for 1 minute.
@@ -570,6 +584,7 @@ namespace Peach.Core.Agent.Monitors
 
 			if (_hybrid && _debuggerProcess != null)
 			{
+				_debugger = null;
 				_debuggerProcess.Kill();
 				_debuggerProcess = null;
 			}

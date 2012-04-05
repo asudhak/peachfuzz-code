@@ -127,11 +127,15 @@ namespace Peach.Core.Publishers
 				if (_tcpClient == null)
 				{
 					logger.Error("open: Error, Unable to connect to remote host " + _host + " on port " + _port);
-					throw new PeachException("Unable to connect to remote host " + _host + " on port " + _port);
+					throw new ActionException();
 				}
 
 				_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
 					new AsyncCallback(ReceiveData), null);
+			}
+			catch (ActionException)
+			{
+				throw;
 			}
 			catch (Exception ex)
 			{
@@ -158,6 +162,7 @@ namespace Peach.Core.Publishers
 			catch (Exception ex)
 			{
 				logger.Error("output: Ignoring error from send.: " + ex.ToString());
+				throw new ActionException();
 			}
 		}
 
@@ -182,6 +187,7 @@ namespace Peach.Core.Publishers
 			catch (Exception ex)
 			{
 				logger.Error("ReceiveData: Ignoring error: " + ex.ToString());
+				//throw new ActionException();
 			}
 		}
 

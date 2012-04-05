@@ -193,6 +193,10 @@ namespace Peach.Core.Dom
 
 				_initialState.Run(context);
 			}
+			catch (ActionException)
+			{
+				// Exit state model!
+			}
 			finally
 			{
 				foreach (Publisher publisher in context.test.publishers.Values)

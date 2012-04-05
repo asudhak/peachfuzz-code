@@ -172,6 +172,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionException.cs" />
     <Compile Include="Agent\Agent.cs" />
     <Compile Include="Agent\AgentClient.cs" />
     <Compile Include="Agent\Channels\AgentLocal.cs" />
