@@ -276,7 +276,6 @@ namespace Peach.Core.Agent.Monitors
 		public override bool DetectedFault()
 		{
 			bool fault = false;
-			_replay = false;
 
 			if (_systemDebugger != null && _systemDebugger.caughtException)
 			{
@@ -287,16 +286,33 @@ namespace Peach.Core.Agent.Monitors
 
 				throw new ReplayTestException();
 			}
+			else if (_hybrid && _replay)
+			{
+				_replay = false;
 
-			if (_debugger != null && _debugger.caughtException)
+				// Lets give windbg a chance to detect the crash.
+				// 10 seconds should be enough.
+				for (int i = 0; i < 10; i++)
+				{
+					if (_debugger != null && _debugger.caughtException)
+					{
+						// Kill off our debugger process and re-create
+						_debuggerProcessUsage = _debuggerProcessUsageMax;
+						fault = true;
+						break;
+					}
+
+					Thread.Sleep(1000);
+				}
+
+				if (_debugger != null && _hybrid && !fault)
+					_StopDebugger();
+			}
+			else if (_debugger != null && _debugger.caughtException)
 			{
 				// Kill off our debugger process and re-create
 				_debuggerProcessUsage = _debuggerProcessUsageMax;
 				fault = true;
-			}
-			else if (_debugger != null && _hybrid)
-			{
-				_StopDebugger();
 			}
 
 			return fault;
