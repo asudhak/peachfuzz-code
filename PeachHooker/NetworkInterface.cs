@@ -46,14 +46,17 @@ namespace PeachHooker
 
 		public override void Ping()
 		{
-			Console.WriteLine("Ping");
+			//Console.WriteLine("Ping");
 		}
 
 		public byte[] fuzzData(byte[] data)
 		{
 			// Flip a coin, should we fuzz?
-			if(_random.Next(2) == 0)
+			if (_random.Next(2) == 0)
+			{
+				Console.WriteLine("Coin flip says skip this one");
 				return data;
+			}
 
 			int numwrites = (int)Math.Ceiling( ((decimal)data.Length) / ((decimal)_fuzzFactor) ) + 1;
 			for(int count = 0; count < numwrites; count++)
