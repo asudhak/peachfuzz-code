@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+	xsi:schemaLocation="http://phed.org/2008/Peach /peach3/peach.core/peach.xsd">
 
 	<DataModel name="TestTemplate">
 		<String name="TheString" value="Hello World!" />

@@ -421,7 +421,7 @@ namespace Peach.Core.Agent.Monitors
 				_debuggerProcess.Start();
 
 				// Let the process get started.
-				Thread.Sleep(5000);
+				Thread.Sleep(2000);
 			}
 
 			// Try and create instance over IPC.  We will continue trying for 1 minute.

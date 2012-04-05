@@ -75,7 +75,7 @@ int DoWinsock(const char* pcAddress, int nPort)
             // Successfully bounced all connections back to client, so
             // close the connection down gracefully.
             cout << "Shutting connection down..." << flush;
-            if (closesocket(sd)) {
+            if (closesocket(sd) == 0) {
                 cout << "Connection is down." << endl;
             }
             else {
@@ -178,7 +178,7 @@ bool EchoIncomingPackets(SOCKET sd)
                     " bytes from client." << endl;
 			
 			// Add a silly stack overflow
-			if( nReadBytes >= 100 )
+			if( nReadBytes >= 1024 )
 			{
 				CrashMe(acReadBuffer);
 			}

@@ -162,7 +162,7 @@ namespace Peach.Core.Publishers
 			catch (Exception ex)
 			{
 				logger.Error("output: Ignoring error from send.: " + ex.ToString());
-				throw new ActionException();
+				//throw new ActionException();
 			}
 		}
 
@@ -171,6 +171,10 @@ namespace Peach.Core.Publishers
 			try
 			{
 				Socket remote = (Socket)iar.AsyncState;
+
+				if (remote == null)
+					return;
+
 				int recv = remote.EndReceive(iar);
 
 				lock (_buffer)
@@ -201,13 +205,22 @@ namespace Peach.Core.Publishers
 		{
 			OnClose(action);
 
-			if (_tcpClient != null)
+			try
 			{
-				_tcpClient.Client.Disconnect(true);
-				_tcpClient.Close();
+				if (_tcpClient != null)
+				{
+					_tcpClient.Close();
+				}
 			}
-
-			_tcpClient = null;
+			catch
+			{
+				// Ignore any errors on close, they should just
+				// indicate we are already closed :)
+			}
+			finally
+			{
+				_tcpClient = null;
+			}
 		}
 
 		#region Stream
