@@ -257,7 +257,10 @@ namespace PeachCoreDebuggersWindows {
 		void StopDebugger()
 		{
 			if(_hThread == NULL)
+			{
+				_dwThreadId = 0;
 				return;
+			}
 
 			_ExitDebugger = TRUE;
 			WaitForSingleObject(_hThread, INFINITE);

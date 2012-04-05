@@ -43,6 +43,9 @@ using Peach.Core.Agent.Monitors.WindowsDebug;
 namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("WindowsDebuggerHybrid")]
+	[Monitor("WindowsDebugEngine")]
+	[Monitor("WindowsDebugger")]
+	[Monitor("debugger.WindowsDebugEngine")]
 	[Parameter("CommandLine", typeof(string), "Command line of program to start.", false)]
 	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", false)]
 	[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", false)]
@@ -273,10 +276,14 @@ namespace Peach.Core.Agent.Monitors
 		public override bool DetectedFault()
 		{
 			bool fault = false;
+			_replay = false;
 
 			if (_systemDebugger != null && _systemDebugger.caughtException)
 			{
 				_replay = true;
+
+				_systemDebugger.StopDebugger();
+				_systemDebugger = null;
 
 				throw new ReplayTestException();
 			}
@@ -362,6 +369,7 @@ namespace Peach.Core.Agent.Monitors
 					_systemDebugger.noCpuKill = _noCpuKill;
 				}
 
+				_systemDebugger.StopDebugger();
 				_systemDebugger.StartDebugger();
 			}
 		}
@@ -371,20 +379,20 @@ namespace Peach.Core.Agent.Monitors
 		/// </summary>
 		protected void _StartDebuggerHybridReplay()
 		{
-			//if (_debuggerProcess == null || _debuggerProcess.HasExited)
-			//{
-			//    _debuggerChannelName = "PeachCore_" + (new Random().Next().ToString());
+			if (_debuggerProcess == null || _debuggerProcess.HasExited)
+			{
+				_debuggerChannelName = "PeachCore_" + (new Random().Next().ToString());
 
-			//    // Launch the server process
-			//    _debuggerProcess = new System.Diagnostics.Process();
-			//    _debuggerProcess.StartInfo.CreateNoWindow = true;
-			//    _debuggerProcess.StartInfo.UseShellExecute = false;
-			//    _debuggerProcess.StartInfo.Arguments = _debuggerChannelName;
-			//    _debuggerProcess.StartInfo.FileName = Path.Combine(
-			//        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-			//        "Peach.Core.WindowsDebugInstance.exe");
-			//    _debuggerProcess.Start();
-			//}
+				// Launch the server process
+				_debuggerProcess = new System.Diagnostics.Process();
+				_debuggerProcess.StartInfo.CreateNoWindow = true;
+				_debuggerProcess.StartInfo.UseShellExecute = false;
+				_debuggerProcess.StartInfo.Arguments = _debuggerChannelName;
+				_debuggerProcess.StartInfo.FileName = Path.Combine(
+					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+					"Peach.Core.WindowsDebugInstance.exe");
+				_debuggerProcess.Start();
+			}
 
 			// Try and create instance over IPC.  We will continue trying for 1 minute.
 
@@ -395,7 +403,6 @@ namespace Peach.Core.Agent.Monitors
 				{
 					_debugger = (DebuggerInstance)Activator.GetObject(typeof(DebuggerInstance),
 						"ipc://" + _debuggerChannelName + "/DebuggerInstance");
-					//_debugger = new DebuggerInstance();
 
 					_debugger.commandLine = _commandLine;
 					_debugger.processName = _processName;
@@ -559,6 +566,12 @@ namespace Peach.Core.Agent.Monitors
 					_performanceCounter.Close();
 					_performanceCounter = null;
 				}
+			}
+
+			if (_hybrid && _debuggerProcess != null)
+			{
+				_debuggerProcess.Kill();
+				_debuggerProcess = null;
 			}
 		}
 	}

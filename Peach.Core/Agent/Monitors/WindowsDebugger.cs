@@ -42,17 +42,19 @@ using Peach.Core.Agent.Monitors.WindowsDebug;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("WindowsDebugger")]
-	[Parameter("CommandLine", typeof(string), "Command line of program to start.", false)]
-	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", false)]
-	[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", false)]
-	[Parameter("Service", typeof(string), "Name of Windows Service to attach to.  Service will be started if stopped or crashes.", false)]
-	[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", false)]
-	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", false)]
-	[Parameter("StartOnCall", typeof(string), "Indicate the debugger should wait to start or attach to process until notified by state machine.", false)]
-	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
-	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
-	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", false)]
+	// NOTE: THIS DEBUGGER IS CURRENTLY DISABLED!
+
+	//[Monitor("WindowsDebugger")]
+	//[Parameter("CommandLine", typeof(string), "Command line of program to start.", false)]
+	//[Parameter("ProcessName", typeof(string), "Name of process to attach too.", false)]
+	//[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", false)]
+	//[Parameter("Service", typeof(string), "Name of Windows Service to attach to.  Service will be started if stopped or crashes.", false)]
+	//[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", false)]
+	//[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", false)]
+	//[Parameter("StartOnCall", typeof(string), "Indicate the debugger should wait to start or attach to process until notified by state machine.", false)]
+	//[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
+	//[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
+	//[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", false)]
 	public class WindowsDebugger : Monitor
 	{
 		string _name = null;

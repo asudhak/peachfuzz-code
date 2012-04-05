@@ -17,6 +17,10 @@
 				<DataModel ref="TestTemplate" />
 			</Action>
 
+			<Action type="output">
+				<DataModel ref="TestTemplate" />
+			</Action>
+
 		</State>
 	</StateModel>
 

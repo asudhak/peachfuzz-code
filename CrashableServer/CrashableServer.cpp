@@ -145,6 +145,23 @@ void CrashMe(char* in)
 	strcpy(buff, in);
 	strcat(buff, in);
 	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
+	strcat(buff, in);
 }
 
 bool EchoIncomingPackets(SOCKET sd)
@@ -161,7 +178,7 @@ bool EchoIncomingPackets(SOCKET sd)
                     " bytes from client." << endl;
 			
 			// Add a silly stack overflow
-			if( nReadBytes >= 1024 )
+			if( nReadBytes >= 100 )
 			{
 				CrashMe(acReadBuffer);
 			}

@@ -109,7 +109,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				}
 
 				dbgExited = true;
-				_dbg = null;
+				StopDebugger();
 
 				return false;
 			}
