@@ -140,12 +140,12 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            context.random.Seed = currentCount;
+			var rand = new Random((int)context.count);
 
             // handle strings
             if (obj is Dom.String)
             {
-                UInt32 value = context.random.NextUInt32();
+				UInt32 value = rand.NextUInt32();
                 obj.MutatedValue = new Variant(value.ToString());
                 return;
             }
@@ -154,12 +154,12 @@ namespace Peach.Core.Mutators
             {
                 if (size <= 32)
                 {
-                    Int32 value = context.random.Next((int)minValue, (int)maxValue);
+					Int32 value = rand.Next((int)minValue, (int)maxValue);
                     obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-                    Int64 value = context.random.NextInt64();
+					Int64 value = rand.NextInt64();
                     obj.MutatedValue = new Variant(value);
                 }
             }
@@ -167,12 +167,12 @@ namespace Peach.Core.Mutators
             {
                 if (size <= 32)
                 {
-                    UInt32 value = context.random.NextUInt32();
+					UInt32 value = rand.NextUInt32();
                     obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-                    UInt64 value = context.random.NextUInt64();
+					UInt64 value = rand.NextUInt64();
                     obj.MutatedValue = new Variant(value);
                 }
             }
@@ -182,40 +182,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            // handle strings
-            if (obj is Dom.String)
-            {
-                UInt32 value = context.random.NextUInt32();
-                obj.MutatedValue = new Variant(value.ToString());
-                return;
-            }
-
-            if (signed)
-            {
-                if (size <= 32)
-                {
-                    Int32 value = context.random.Next((int)minValue, (int)maxValue);
-                    obj.MutatedValue = new Variant(value);
-                }
-                else
-                {
-                    Int64 value = context.random.NextInt64();
-                    obj.MutatedValue = new Variant(value);
-                }
-            }
-            else
-            {
-                if (size <= 32)
-                {
-                    UInt32 value = context.random.NextUInt32();
-                    obj.MutatedValue = new Variant(value);
-                }
-                else
-                {
-                    UInt64 value = context.random.NextUInt64();
-                    obj.MutatedValue = new Variant(value);
-                }
-            }
+			sequencialMutation(obj);
         }
 	}
 }

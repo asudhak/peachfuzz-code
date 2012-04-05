@@ -41,6 +41,7 @@ namespace Peach.Core.Mutators
         public delegate void mutationType(DataElement obj);
         mutationType[] mutations = new mutationType[3];
         uint index;
+		Random rand = null;
 
         // CTOR
         //
@@ -82,14 +83,16 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            mutations[index](obj);
+			rand = new Random((int)context.count);
+			mutations[index](obj);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-            context.random.Choice<mutationType>(mutations)(obj);
+			rand = new Random((int)context.count);
+			rand.Choice<mutationType>(mutations)(obj);
         }
 
         // MUTATION_LOWER_CASE
@@ -122,7 +125,7 @@ namespace Peach.Core.Mutators
                 cases[0] = Char.ToLower(c);
                 cases[1] = Char.ToUpper(c);
 
-				builder[i] = context.random.Choice<char>(cases);
+				builder[i] = rand.Choice<char>(cases);
             }
 
             obj.MutatedValue = new Variant(builder.ToString());
@@ -158,7 +161,7 @@ namespace Peach.Core.Mutators
 				{
 					do
 					{
-						index = context.random.Next(max);
+						index = rand.Next(max);
 					}
 					while(ret.Contains(index));
 
