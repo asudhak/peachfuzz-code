@@ -67,6 +67,23 @@ class valadoc(Task.Task):
 
 @feature('valadoc')
 def process_valadoc(self):
+	"""
+	Generate API documentation from Vala source code with valadoc
+
+	doc = bld.new_task_gen (
+		features = 'valadoc',
+		output_dir = '../doc/html',
+		package_name = 'vala-gtk-example',
+		package_version = '1.0.0',
+		packages = 'gtk+-2.0',
+		vapi_dirs = '../vapi',
+		force = True
+	)
+
+	path = bld.path.find_dir ('../src')
+	doc.files = path.ant_glob (incl='**/*.vala')
+	"""
+
 	task = self.create_task('valadoc')
 	if getattr(self, 'output_dir', None):
 		task.output_dir = self.path.find_or_declare(self.output_dir).abspath()
