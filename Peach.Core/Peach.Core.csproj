@@ -188,6 +188,7 @@
     <Compile Include="Agent\Monitors\PingMonitor.cs" />
     <Compile Include="Agent\Monitors\PopupWatcher.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
+    <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
     <Compile Include="Agent\Monitors\UdpMonitor.cs" />
     <Compile Include="Agent\Monitors\WindowsDebugEngine.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />

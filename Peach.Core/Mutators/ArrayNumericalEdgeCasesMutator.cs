@@ -116,7 +116,8 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            performMutation(obj, (int)context.random.Choice(values));
+            var rand = new Random((int)context.count);
+            performMutation(obj, (int)rand.Choice(values));
         }
 
         // PERFORM_MUTATION

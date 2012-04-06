@@ -96,7 +96,8 @@ namespace Peach.Core.Mutators
         {
             var newElem = ObjectCopier.Clone<DataElement>(obj);
             var originalName = newElem.name;
-            int newCount = context.random.Next(currentCount);
+            var rand = new Random((int)context.count);
+            int newCount = rand.Next(currentCount);
 
             for (int i = 0; i < newCount; ++i)
             {

@@ -9,6 +9,7 @@ namespace Peach.Core.Agent.Monitors
     public class ReplayMonitor : Monitor
     {
         bool alreadyPaused = false;
+        bool replay = true;
 
         public ReplayMonitor(string name, Dictionary<string, Variant> args) : base(name, args)
 		{
@@ -58,7 +59,16 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool IterationFinished()
 		{
-			return true;
+            if (replay)
+            {
+                replay = false;
+                throw new ReplayTestException();
+            }
+            else
+            {
+                replay = true;
+                return true;
+            }
 		}
 
 		public override Variant Message(string name, Variant data)

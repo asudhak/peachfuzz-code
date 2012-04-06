@@ -45,6 +45,7 @@ namespace Peach.Core.Mutators
         int countMax;
         int current;
         long length;
+        Random rand = null;
 
         // CTOR
         //
@@ -119,7 +120,8 @@ namespace Peach.Core.Mutators
             BitStream bs = new BitStream(data);
 
             // pick a random bit
-            int bit = context.random.Next((int)bs.LengthBits);
+            rand = new Random((int)context.count);
+            int bit = rand.Next((int)bs.LengthBits);
 
             // seek, read, rewind
             bs.SeekBits(bit, SeekOrigin.Begin);
@@ -144,7 +146,8 @@ namespace Peach.Core.Mutators
             BitStream bs = new BitStream(data);
 
             // pick a random bit
-            int bit = context.random.Next((int)bs.LengthBits);
+            rand = new Random((int)context.count);
+            int bit = rand.Next((int)bs.LengthBits);
 
             // seek, read, rewind
             bs.SeekBits(bit, SeekOrigin.Begin);

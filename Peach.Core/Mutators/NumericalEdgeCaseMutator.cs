@@ -50,8 +50,6 @@ namespace Peach.Core.Mutators
         bool signed;
         bool isULong;
 
-
-
         // CTOR
         //
         public NumericalEdgeCaseMutator(DataElement obj)
@@ -240,12 +238,13 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
+            var rand = new Random((int)context.count);
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(context.random.Choice(values[size]).ToString());
+                obj.MutatedValue = new Variant(rand.Choice(values[size]).ToString());
             else if (isULong)
-                obj.MutatedValue = new Variant(context.random.Choice(ulongValues));
+                obj.MutatedValue = new Variant(rand.Choice(ulongValues));
             else
-                obj.MutatedValue = new Variant(context.random.Choice(values[size]));
+                obj.MutatedValue = new Variant(rand.Choice(values[size]));
         }
 	}
 }
