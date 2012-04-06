@@ -191,6 +191,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (name == "Action.Call" && ((string)data) == _startOnCall)
 			{
+				_StopDebugger();
 				_StartDebugger();
 				return null;
 			}
@@ -568,7 +569,7 @@ namespace Peach.Core.Agent.Monitors
 			{
 				try
 				{
-					_debugger.StopDebugger();
+					_systemDebugger.StopDebugger();
 				}
 				catch
 				{

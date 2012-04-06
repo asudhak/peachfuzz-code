@@ -75,7 +75,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				if (_caughtException)
 					return true;
 
-				if (_dbg.HasAccessViolation())
+				if (_dbg != null && _dbg.HasAccessViolation())
 				{
 					_caughtException = true;
 					crashInfo = new Dictionary<string, Variant>();
@@ -128,12 +128,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg == null)
 				return;
 
-			if (_dbg.HasAccessViolation())
-			{
-				_caughtException = true;
-				crashInfo = new Dictionary<string, Variant>();
-				crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
-			}
+			// remember if we caught an exception
+			var b = this.caughtException;
 
 			_dbg.StopDebugger();
 
