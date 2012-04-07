@@ -709,6 +709,11 @@ class BuildContext(Context.Context):
 					tg.post()
 		else:
 			ln = self.launch_node()
+			if ln.is_child_of(self.bldnode):
+				Logs.warn('Building from the build directory, forcing --targets=*')
+			elif not ln.is_child_of(self.srcnode):
+				Logs.warn('CWD %s is not under %s, forcing --targets=* (run distclean?)' % (ln.abspath(), self.srcnode.abspath()))
+				ln = self.srcnode
 			for tg in self.groups[self.cur]:
 				try:
 					f = tg.post
