@@ -729,11 +729,10 @@ class BuildContext(Context.Context):
 		"""
 		tasks = []
 		for tg in self.groups[idx]:
-			# TODO a try-except might be more efficient
-			if isinstance(tg, Task.TaskBase):
-				tasks.append(tg)
-			else:
+			try:
 				tasks.extend(tg.tasks)
+			except AttributeError: # not a task generator, can be the case for installation tasks
+				tasks.append(tg)
 		return tasks
 
 	def get_build_iterator(self):
@@ -1171,7 +1170,7 @@ class CleanContext(BuildContext):
 			self.store()
 
 	def clean(self):
-		"""clean the data and some files in the build dir .. well, TODO"""
+		"""Remove files from the build directory if possible, and reset the caches"""
 		Logs.debug('build: clean called')
 
 		if self.bldnode != self.srcnode:

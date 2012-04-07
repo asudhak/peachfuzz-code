@@ -80,8 +80,6 @@ def gxx_modifier_win32(conf):
 
 	v['CXXFLAGS_cxxshlib']   = []
 
-	v.append_value('CXXFLAGS_cxxshlib', ['-DDLL_EXPORT']) # TODO adding nonstandard defines like this DLL_EXPORT is not a good idea
-
 	# Auto-import is enabled by default even without this option,
 	# but enabling it explicitly has the nice effect of suppressing the rather boring, debug-level messages
 	# that the linker emits otherwise.

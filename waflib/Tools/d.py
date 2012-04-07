@@ -63,7 +63,7 @@ def d_hook(self, node):
 	return tsk
 
 @taskgen_method
-def generate_header(self, filename, install_path=None):
+def generate_header(self, filename):
 	"""
 	See feature request #104::
 
@@ -75,7 +75,6 @@ def generate_header(self, filename, install_path=None):
 
 	:param filename: header to create
 	:type filename: string
-	:param install_path: unused (TODO)
 	"""
 	try:
 		self.header_lst.append([filename, install_path])

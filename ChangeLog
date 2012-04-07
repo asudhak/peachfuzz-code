@@ -11,6 +11,7 @@ NEW IN WAF 1.7.0
 * Added header prefixing (autoconf-like) #1117
 * Removed the warnings on "waf install" #1120
 * Extended bld.subst() to perform simple copies to the build directory
+* Removed the default DLL_EXPORT define on gcc/g++ shared libraries
 
 NEW IN WAF 1.6.11
 -----------------

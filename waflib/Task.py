@@ -494,11 +494,11 @@ class Task(TaskBase):
 	def set_run_after(self, task):
 		"""
 		Run this task only after *task*. Affect :py:meth:`waflib.Task.runnable_status`
+		You probably want to use tsk.run_after.add(task) directly
 
 		:param task: task
 		:type task: :py:class:`waflib.Task.Task`
 		"""
-		# TODO: handle lists too?
 		assert isinstance(task, TaskBase)
 		self.run_after.add(task)
 

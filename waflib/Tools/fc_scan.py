@@ -13,11 +13,6 @@ INC_REGEX = """(?:^|['">]\s*;)\s*INCLUDE\s+(?:\w+_)?[<"'](.+?)(?=["'>])"""
 USE_REGEX = """(?:^|;)\s*USE(?:\s+|(?:(?:\s*,\s*(?:NON_)?INTRINSIC)?\s*::))\s*(\w+)"""
 MOD_REGEX = """(?:^|;)\s*MODULE(?!\s*PROCEDURE)(?:\s+|(?:(?:\s*,\s*(?:NON_)?INTRINSIC)?\s*::))\s*(\w+)"""
 
-# TODO (DC)
-#   - handle pre-processed files (FORTRANPPCOM in scons)
-#   - handle multiple dialects
-# TODO (ita) understand what the above is supposed to mean ^^
-
 re_inc = re.compile(INC_REGEX, re.I)
 re_use = re.compile(USE_REGEX, re.I)
 re_mod = re.compile(MOD_REGEX, re.I)

@@ -39,7 +39,6 @@ def configure(conf):
 			if conf.env.D:
 				conf.end_msg(conf.env.get_flat('D'))
 				conf.env['COMPILER_D'] = compiler
-				conf.env.D_COMPILER = conf.env.D # TODO remove this, left for compatibility
 				break
 			conf.end_msg(False)
 	else:

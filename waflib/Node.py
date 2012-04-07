@@ -58,8 +58,6 @@ Ant patterns for files and folders to exclude while doing the
 recursive traversal in :py:meth:`waflib.Node.Node.ant_glob`
 """
 
-# TODO optimize split_path by performing a replacement when unpacking?
-
 def split_path(path):
 	"""
 	Split a path by os.sep (This is not os.path.split)
@@ -760,8 +758,8 @@ class Node(object):
 
 	def nice_path(self, env=None):
 		"""
-		Return the path seen from the launch directory. It is often used for printing nodes in the console to open
-		files easily.
+		Return the path seen from the launch directory.
+		Can be used for opening files easily (copy-paste in the console).
 		"""
 		return self.path_from(self.ctx.launch_node())
 
