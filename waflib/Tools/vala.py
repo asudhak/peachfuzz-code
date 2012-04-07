@@ -24,13 +24,6 @@ class valac(Task.Task):
 
 	def run(self):
 		cmd = [self.env['VALAC']] + self.env['VALAFLAGS']
-
-		for vapi_dir in self.vapi_dirs:
-			cmd.append('--vapidir=%s' % vapi_dir)
-
-		for package in self.generator.packages:
-			cmd.append('--pkg=%s' % package)
-
 		cmd.extend([a.abspath() for a in self.inputs])
 		ret = self.exec_command(cmd, cwd=self.outputs[0].parent.abspath())
 
@@ -115,7 +108,6 @@ def init_vala_task(self):
 
 	self.includes = Utils.to_list(getattr(self, 'includes', []))
 	self.uselib = self.to_list(getattr(self, 'uselib', []))
-	valatask.vapi_dirs = []
 	valatask.install_path = getattr(self, 'install_path', '')
 
 	valatask.vapi_path = getattr(self, 'vapi_path', '${DATAROOTDIR}/vala/vapi')
@@ -124,7 +116,7 @@ def init_vala_task(self):
 	valatask.install_binding = getattr(self, 'install_binding', True)
 
 	self.packages = packages = Utils.to_list(getattr(self, 'packages', []))
-	vapi_dirs = Utils.to_list(getattr(self, 'vapi_dirs', []))
+	self.vapi_dirs = vapi_dirs = Utils.to_list(getattr(self, 'vapi_dirs', []))
 	includes =  []
 
 	if hasattr(self, 'use'):
@@ -161,19 +153,20 @@ def init_vala_task(self):
 				lst.reverse()
 				local_packages = [pkg for pkg in lst if pkg not in seen] + local_packages
 
-	for vapi_dir in vapi_dirs:
-		try:
-			valatask.vapi_dirs.append(self.path.find_dir(vapi_dir).abspath())
-			valatask.vapi_dirs.append(self.path.find_dir(vapi_dir).get_bld().abspath())
-		except AttributeError:
-			Logs.warn("Unable to locate Vala API directory: '%s'" % vapi_dir)
+	addflags(['--pkg=%s' % p for p in packages])
 
+	for vapi_dir in vapi_dirs:
+		v_node = self.path.find_dir(vapi_dir)
+		if not v_node:
+			Logs.warn('Unable to locate Vala API directory: %r' % vapi_dir)
+		else:
+			addflags('--vapidir=%s' % v_node.abspath())
+			addflags('--vapidir=%s' % v_node.get_bld().abspath())
 
 	self.dump_deps_node = None
 	if self.is_lib and self.packages:
 		self.dump_deps_node = self.path.find_or_declare('%s.deps' % self.target)
 		valatask.outputs.append(self.dump_deps_node)
-
 
 	self.includes.append(self.bld.srcnode.abspath())
 	self.includes.append(self.bld.bldnode.abspath())
