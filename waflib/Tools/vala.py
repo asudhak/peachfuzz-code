@@ -10,7 +10,7 @@ this tool to be too stable either (apis, etc)
 
 import os.path, shutil, re
 from waflib import Context, Task, Utils, Logs, Options, Errors
-from waflib.TaskGen import extension
+from waflib.TaskGen import extension, taskgen_method
 from waflib.Configure import conf
 
 class valac(Task.Task):
@@ -59,33 +59,8 @@ class valac(Task.Task):
 
 		return ret
 
-@extension('.vala', '.gs')
-def vala_file(self, node):
-	"""
-	Compile a vala file and bind the task to *self.valatask*. If an existing vala task is already set, add the node
-	to its inputs. The typical example is::
-
-		def build(bld):
-			bld.program(
-				packages      = 'gtk+-2.0',
-				target        = 'vala-gtk-example',
-				uselib        = 'GTK GLIB',
-				source        = 'vala-gtk-example.vala foo.vala',
-				vala_defines  = ['DEBUG']
-				# the following arguments are for libraries
-				#gir          = 'hello-1.0',
-				#gir_path     = '/tmp',
-				#vapi_path = '/tmp',
-				#pkg_name = 'hello'
-				# disable installing of gir, vapi and header
-				#install_binding = False
-			)
-
-
-	:param node: vala file
-	:type node: :py:class:`waflib.Node.Node`
-	"""
-
+@taskgen_method
+def process_vala_attributes(self):
 	self.profile = getattr(self, 'profile', 'gobject')
 
 	if self.profile == 'gobject':
@@ -114,10 +89,45 @@ def vala_file(self, node):
 
 	self.env.append_value('VALAFLAGS', ['--define=%s' % x for x in getattr(self, 'vala_defines', [])])
 
+
+@extension('.vala', '.gs')
+def vala_file(self, node):
+	"""
+	Compile a vala file and bind the task to *self.valatask*. If an existing vala task is already set, add the node
+	to its inputs. The typical example is::
+
+		def build(bld):
+			bld.program(
+				packages      = 'gtk+-2.0',
+				target        = 'vala-gtk-example',
+				uselib        = 'GTK GLIB',
+				source        = 'vala-gtk-example.vala foo.vala',
+				vala_defines  = ['DEBUG'] # adds --define=<xyz> values to the command-line
+
+				# the following arguments are for libraries
+				#gir          = 'hello-1.0',
+				#gir_path     = '/tmp',
+				#vapi_path = '/tmp',
+				#pkg_name = 'hello'
+				# disable installing of gir, vapi and header
+				#install_binding = False
+
+				# profile     = 'xyz' # adds --profile=<xyz> to enable profiling
+				# threading   = True, # add --threading, except if profile is on or not on 'gobject'
+				# vala_target_glib = 'xyz' # adds --target-glib=<xyz>, can be given through the command-line option --vala-target-glib=<xyz>
+			)
+
+
+	:param node: vala file
+	:type node: :py:class:`waflib.Node.Node`
+	"""
+
 	# TODO: the vala task should use self.generator.attribute instead of copying attributes from self to the task
 	valatask = getattr(self, "valatask", None)
 	# there is only one vala task and it compiles all vala files .. :-/
 	if not valatask:
+		self.process_vala_attributes()
+
 		def _get_api_version():
 			api_version = '1.0'
 			if hasattr(Context.g_module, 'API_VERSION'):
