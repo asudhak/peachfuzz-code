@@ -762,8 +762,6 @@ class Node(object):
 		"""
 		Return the path seen from the launch directory. It is often used for printing nodes in the console to open
 		files easily.
-
-		:param env: unused, left for compatibility with waf 1.5
 		"""
 		return self.path_from(self.ctx.launch_node())
 

@@ -432,8 +432,8 @@ class Task(TaskBase):
 	def __str__(self):
 		"string to display to the user"
 		env = self.env
-		src_str = ' '.join([a.nice_path(env) for a in self.inputs])
-		tgt_str = ' '.join([a.nice_path(env) for a in self.outputs])
+		src_str = ' '.join([a.nice_path() for a in self.inputs])
+		tgt_str = ' '.join([a.nice_path() for a in self.outputs])
 		if self.outputs: sep = ' -> '
 		else: sep = ''
 		return '%s: %s%s%s\n' % (self.__class__.__name__.replace('_task', ''), src_str, sep, tgt_str)
@@ -1133,7 +1133,7 @@ def compile_fun(line, shell=False):
 def task_factory(name, func=None, vars=None, color='GREEN', ext_in=[], ext_out=[], before=[], after=[], shell=False, scan=None):
 	"""
 	Return a new task subclass with the function ``run`` compiled from the line given.
-	Provided for compatibility with waf 1.4-1.5, when we did not use metaclasses to register new objects.
+	Provided for compatibility with waf 1.4-1.5, when we did not have the metaclass to register new classes
 
 	:param func: method run
 	:type func: string or function
