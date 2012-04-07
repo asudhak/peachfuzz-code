@@ -23,25 +23,12 @@ class valac(Task.Task):
 	ext_out = ['.h']
 
 	def run(self):
-		env = self.env
-		cmd = [env['VALAC'], '-C', '--quiet']
-		cmd.extend(Utils.to_list(env['VALAFLAGS']))
-
-		if self.is_lib:
-			cmd.append('--library=' + self.target)
-			for x in self.outputs:
-				if x.name.endswith('.h'):
-					cmd.append('--header=' + x.name)
-			if self.gir:
-				cmd.append('--gir=%s.gir' % self.gir)
+		cmd = [self.env['VALAC']] + self.env['VALAFLAGS']
 
 		for vapi_dir in self.vapi_dirs:
 			cmd.append('--vapidir=%s' % vapi_dir)
 
-		for package in self.packages:
-			cmd.append('--pkg=%s' % package)
-
-		for package in self.packages_private:
+		for package in self.generator.packages:
 			cmd.append('--pkg=%s' % package)
 
 		cmd.extend([a.abspath() for a in self.inputs])
@@ -54,13 +41,15 @@ class valac(Task.Task):
 			if id(x.parent) != id(self.outputs[0].parent):
 				shutil.move(self.outputs[0].parent.abspath() + os.sep + x.name, x.abspath())
 
-		if self.packages and getattr(self, 'deps_node', None):
-			self.deps_node.write('\n'.join(self.packages))
+		if self.generator.dump_deps_node:
+			self.generator.dump_deps_node.write('\n'.join(self.generator.packages))
 
 		return ret
 
+valac = Task.update_outputs(valac) # no decorators for python2 classes
+
 @taskgen_method
-def process_vala_attributes(self):
+def init_vala_task(self):
 	self.profile = getattr(self, 'profile', 'gobject')
 
 	if self.profile == 'gobject':
@@ -68,8 +57,11 @@ def process_vala_attributes(self):
 		if not 'GOBJECT' in self.uselib:
 			self.uselib.append('GOBJECT')
 
+	def addflags(flags):
+		self.env.append_value('VALAFLAGS', flags)
+
 	if self.profile:
-		self.env.append_value('VALAFLAGS', '--profile=%s' % self.profile)
+		addflags('--profile=%s' % self.profile)
 
 	if hasattr(self, 'threading'):
 		if self.profile == 'gobject':
@@ -81,14 +73,136 @@ def process_vala_attributes(self):
 			self.threading = False
 
 		if self.threading:
-			self.env.append_value('VALAFLAGS', '--threading')
+			addflags('--threading')
+
+	valatask = self.valatask
+
+	self.is_lib = 'cprogram' not in self.features
+	if self.is_lib:
+		addflags('--library=%s' % self.target)
+
+		h_node = self.path.find_or_declare('%s.h' % self.target)
+		valatask.outputs.append(h_node)
+		addflags('--header=%s' % h_node.name)
+
+		valatask.outputs.append(self.path.find_or_declare('%s.vapi' % self.target))
+
+		if getattr(self, 'gir', None):
+			gir_node = self.path.find_or_declare('%s.gir' % self.gir)
+			addflags('--gir=%s' % gir_node.name)
+			valatask.outputs.append(gir_node)
 
 	self.vala_target_glib = getattr(self, 'vala_target_glib', getattr(Options.options, 'vala_target_glib', None))
 	if self.vala_target_glib:
-		self.env.append_value('VALAFLAGS', '--target-glib=%s' % self.vala_target_glib)
+		addflags('--target-glib=%s' % self.vala_target_glib)
 
-	self.env.append_value('VALAFLAGS', ['--define=%s' % x for x in getattr(self, 'vala_defines', [])])
+	addflags(['--define=%s' % x for x in getattr(self, 'vala_defines', [])])
 
+
+	packages_private = Utils.to_list(getattr(self, 'packages_private', []))
+	addflags(['--pkg=%s' % x for x in packages_private])
+
+
+	def _get_api_version():
+		api_version = '1.0'
+		if hasattr(Context.g_module, 'API_VERSION'):
+			version = Context.g_module.API_VERSION.split(".")
+			if version[0] == "0":
+				api_version = "0." + version[1]
+			else:
+				api_version = version[0] + ".0"
+		return api_version
+
+	self.includes = Utils.to_list(getattr(self, 'includes', []))
+	self.uselib = self.to_list(getattr(self, 'uselib', []))
+	valatask.vapi_dirs = []
+	valatask.install_path = getattr(self, 'install_path', '')
+
+	valatask.vapi_path = getattr(self, 'vapi_path', '${DATAROOTDIR}/vala/vapi')
+	valatask.pkg_name = getattr(self, 'pkg_name', self.env['PACKAGE'])
+	valatask.header_path = getattr(self, 'header_path', '${INCLUDEDIR}/%s-%s' % (valatask.pkg_name, _get_api_version()))
+	valatask.install_binding = getattr(self, 'install_binding', True)
+
+	self.packages = packages = Utils.to_list(getattr(self, 'packages', []))
+	vapi_dirs = Utils.to_list(getattr(self, 'vapi_dirs', []))
+	includes =  []
+
+	if hasattr(self, 'use'):
+		local_packages = Utils.to_list(self.use)[:] # make sure to have a copy
+		seen = []
+		while len(local_packages) > 0:
+			package = local_packages.pop()
+			if package in seen:
+				continue
+			seen.append(package)
+
+			# check if the package exists
+			try:
+				package_obj = self.bld.get_tgen_by_name(package)
+			except Errors.WafError:
+				continue
+			package_name = package_obj.target
+			package_node = package_obj.path
+			package_dir = package_node.path_from(self.path)
+
+			for task in package_obj.tasks:
+				for output in task.outputs:
+					if output.name == package_name + ".vapi":
+						valatask.set_run_after(task)
+						if package_name not in packages:
+							packages.append(package_name)
+						if package_dir not in vapi_dirs:
+							vapi_dirs.append(package_dir)
+						if package_dir not in includes:
+							includes.append(package_dir)
+
+			if hasattr(package_obj, 'use'):
+				lst = self.to_list(package_obj.use)
+				lst.reverse()
+				local_packages = [pkg for pkg in lst if pkg not in seen] + local_packages
+
+	for vapi_dir in vapi_dirs:
+		try:
+			valatask.vapi_dirs.append(self.path.find_dir(vapi_dir).abspath())
+			valatask.vapi_dirs.append(self.path.find_dir(vapi_dir).get_bld().abspath())
+		except AttributeError:
+			Logs.warn("Unable to locate Vala API directory: '%s'" % vapi_dir)
+
+
+	self.dump_deps_node = None
+	if self.is_lib and self.packages:
+		self.dump_deps_node = self.path.find_or_declare('%s.deps' % self.target)
+		valatask.outputs.append(self.dump_deps_node)
+
+
+	self.includes.append(self.bld.srcnode.abspath())
+	self.includes.append(self.bld.bldnode.abspath())
+	for include in includes:
+		try:
+			self.includes.append(self.path.find_dir(include).abspath())
+			self.includes.append(self.path.find_dir(include).get_bld().abspath())
+		except AttributeError:
+			Logs.warn("Unable to locate include directory: '%s'" % include)
+
+
+	if self.is_lib and valatask.install_binding:
+		headers_list = [o for o in valatask.outputs if o.suffix() == ".h"]
+		try:
+			self.install_vheader.source = headers_list
+		except AttributeError:
+			self.install_vheader = self.bld.install_files(valatask.header_path, headers_list, self.env)
+
+		vapi_list = [o for o in valatask.outputs if (o.suffix() in (".vapi", ".deps"))]
+		try:
+			self.install_vapi.source = vapi_list
+		except AttributeError:
+			self.install_vapi = self.bld.install_files(valatask.vapi_path, vapi_list, self.env)
+
+		gir_list = [o for o in valatask.outputs if o.suffix() == '.gir']
+		try:
+			self.install_gir.source = gir_list
+		except AttributeError:
+			self.install_gir = self.bld.install_files(getattr(self, 'gir_path', '${DATAROOTDIR}/gir-1.0'), gir_list, self.env)
 
 @extension('.vala', '.gs')
 def vala_file(self, node):
@@ -122,138 +236,16 @@ def vala_file(self, node):
 	:type node: :py:class:`waflib.Node.Node`
 	"""
 
-	# TODO: the vala task should use self.generator.attribute instead of copying attributes from self to the task
-	valatask = getattr(self, "valatask", None)
-	# there is only one vala task and it compiles all vala files .. :-/
-	if not valatask:
-		self.process_vala_attributes()
-
-		def _get_api_version():
-			api_version = '1.0'
-			if hasattr(Context.g_module, 'API_VERSION'):
-				version = Context.g_module.API_VERSION.split(".")
-				if version[0] == "0":
-					api_version = "0." + version[1]
-				else:
-					api_version = version[0] + ".0"
-			return api_version
-
-		valatask = self.create_task('valac')
-		self.valatask = valatask # this assumes one vala task by task generator
-		self.includes = Utils.to_list(getattr(self, 'includes', []))
-		self.uselib = self.to_list(getattr(self, 'uselib', []))
-		valatask.packages = []
-		valatask.packages_private = Utils.to_list(getattr(self, 'packages_private', []))
-		valatask.vapi_dirs = []
-		valatask.target = self.target
-		valatask.install_path = getattr(self, 'install_path', '')
-
-		valatask.target_glib = None
-		valatask.gir = getattr(self, 'gir', None)
-		valatask.gir_path = getattr(self, 'gir_path', '${DATAROOTDIR}/gir-1.0')
-		valatask.vapi_path = getattr(self, 'vapi_path', '${DATAROOTDIR}/vala/vapi')
-		valatask.pkg_name = getattr(self, 'pkg_name', self.env['PACKAGE'])
-		valatask.header_path = getattr(self, 'header_path', '${INCLUDEDIR}/%s-%s' % (valatask.pkg_name, _get_api_version()))
-		valatask.install_binding = getattr(self, 'install_binding', True)
-
-		valatask.is_lib = False
-		if not 'cprogram' in self.features:
-			valatask.is_lib = True
-
-		packages = Utils.to_list(getattr(self, 'packages', []))
-		vapi_dirs = Utils.to_list(getattr(self, 'vapi_dirs', []))
-		includes =  []
-
-		if hasattr(self, 'use'):
-			local_packages = Utils.to_list(self.use)[:] # make sure to have a copy
-			seen = []
-			while len(local_packages) > 0:
-				package = local_packages.pop()
-				if package in seen:
-					continue
-				seen.append(package)
-
-				# check if the package exists
-				try:
-					package_obj = self.bld.get_tgen_by_name(package)
-				except Errors.WafError:
-					continue
-				package_name = package_obj.target
-				package_node = package_obj.path
-				package_dir = package_node.path_from(self.path)
-
-				for task in package_obj.tasks:
-					for output in task.outputs:
-						if output.name == package_name + ".vapi":
-							valatask.set_run_after(task)
-							if package_name not in packages:
-								packages.append(package_name)
-							if package_dir not in vapi_dirs:
-								vapi_dirs.append(package_dir)
-							if package_dir not in includes:
-								includes.append(package_dir)
-
-				if hasattr(package_obj, 'use'):
-					lst = self.to_list(package_obj.use)
-					lst.reverse()
-					local_packages = [pkg for pkg in lst if pkg not in seen] + local_packages
-
-		valatask.packages = packages
-		for vapi_dir in vapi_dirs:
-			try:
-				valatask.vapi_dirs.append(self.path.find_dir(vapi_dir).abspath())
-				valatask.vapi_dirs.append(self.path.find_dir(vapi_dir).get_bld().abspath())
-			except AttributeError:
-				Logs.warn("Unable to locate Vala API directory: '%s'" % vapi_dir)
-
-		self.includes.append(self.bld.srcnode.abspath())
-		self.includes.append(self.bld.bldnode.abspath())
-		for include in includes:
-			try:
-				self.includes.append(self.path.find_dir(include).abspath())
-				self.includes.append(self.path.find_dir(include).get_bld().abspath())
-			except AttributeError:
-				Logs.warn("Unable to locate include directory: '%s'" % include)
-
-
-		if valatask.is_lib:
-			valatask.outputs.append(self.path.find_or_declare('%s.h' % self.target))
-			valatask.outputs.append(self.path.find_or_declare('%s.vapi' % self.target))
-
-			if valatask.gir:
-				valatask.outputs.append(self.path.find_or_declare('%s.gir' % self.gir))
-
-			if valatask.packages:
-				d = self.path.find_or_declare('%s.deps' % self.target)
-				valatask.outputs.append(d)
-				valatask.deps_node = d
+	try:
+		valatask = self.valatask
+	except AttributeError:
+		valatask = self.valatask = self.create_task('valac')
+		self.init_vala_task()
 
 	valatask.inputs.append(node)
 	c_node = node.change_ext('.c')
-
 	valatask.outputs.append(c_node)
 	self.source.append(c_node)
-
-	if valatask.is_lib and valatask.install_binding:
-		headers_list = [o for o in valatask.outputs if o.suffix() == ".h"]
-		try:
-			self.install_vheader.source = headers_list
-		except AttributeError:
-			self.install_vheader = self.bld.install_files(valatask.header_path, headers_list, self.env)
-
-		vapi_list = [o for o in valatask.outputs if (o.suffix() in (".vapi", ".deps"))]
-		try:
-			self.install_vapi.source = vapi_list
-		except AttributeError:
-			self.install_vapi = self.bld.install_files(valatask.vapi_path, vapi_list, self.env)
-
-		gir_list = [o for o in valatask.outputs if o.suffix() == ".gir"]
-		try:
-			self.install_gir.source = gir_list
-		except AttributeError:
-			self.install_gir = self.bld.install_files(valatask.gir_path, gir_list, self.env)
-
-valac = Task.update_outputs(valac) # no decorators for python2 classes
 
 @conf
 def find_valac(self, valac_name, min_version):
@@ -333,6 +325,7 @@ def configure(self):
 	self.load('gnu_dirs')
 	self.check_vala_deps()
 	self.check_vala()
+	self.env.VALAFLAGS = ['-C', '--quiet']
 
 def options(opt):
 	"""
