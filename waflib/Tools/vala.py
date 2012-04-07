@@ -17,23 +17,15 @@ class valac(Task.Task):
 	"""
 	Task to compile vala files.
 	"""
+	#run_str = "${VALAC} ${VALAFLAGS}" # ideally
+	#vars = ['VALAC_VERSION']
 	vars = ["VALAC", "VALAC_VERSION", "VALAFLAGS"]
 	ext_out = ['.h']
 
 	def run(self):
 		env = self.env
-
 		cmd = [env['VALAC'], '-C', '--quiet']
 		cmd.extend(Utils.to_list(env['VALAFLAGS']))
-
-		if self.threading:
-			cmd.append('--thread')
-
-		if self.profile:
-			cmd.append('--profile=%s' % self.profile)
-
-		if self.target_glib:
-			cmd.append('--target-glib=%s' % self.target_glib)
 
 		if self.is_lib:
 			cmd.append('--library=' + self.target)
@@ -51,9 +43,6 @@ class valac(Task.Task):
 
 		for package in self.packages_private:
 			cmd.append('--pkg=%s' % package)
-
-		for define in self.vala_defines:
-			cmd.append('--define=%s' % define)
 
 		cmd.extend([a.abspath() for a in self.inputs])
 		ret = self.exec_command(cmd, cwd=self.outputs[0].parent.abspath())
@@ -96,6 +85,35 @@ def vala_file(self, node):
 	:param node: vala file
 	:type node: :py:class:`waflib.Node.Node`
 	"""
+
+	self.profile = getattr(self, 'profile', 'gobject')
+
+	if self.profile == 'gobject':
+		self.uselib = Utils.to_list(getattr(self, 'uselib', []))
+		if not 'GOBJECT' in self.uselib:
+			self.uselib.append('GOBJECT')
+
+	if self.profile:
+		self.env.append_value('VALAFLAGS', '--profile=%s' % self.profile)
+
+	if hasattr(self, 'threading'):
+		if self.profile == 'gobject':
+			if not 'GTHREAD' in self.uselib:
+				self.uselib.append('GTHREAD')
+		else:
+			#Vala doesn't have threading support for dova nor posix
+			Logs.warn("Profile %s means no threading support" % self.profile)
+			self.threading = False
+
+		if self.threading:
+			self.env.append_value('VALAFLAGS', '--threading')
+
+	self.vala_target_glib = getattr(self, 'vala_target_glib', getattr(Options.options, 'vala_target_glib', None))
+	if self.vala_target_glib:
+		self.env.append_value('VALAFLAGS', '--target-glib=%s' % self.vala_target_glib)
+
+	self.env.append_value('VALAFLAGS', ['--define=%s' % x for x in getattr(self, 'vala_defines', [])])
+
 	# TODO: the vala task should use self.generator.attribute instead of copying attributes from self to the task
 	valatask = getattr(self, "valatask", None)
 	# there is only one vala task and it compiles all vala files .. :-/
@@ -118,10 +136,8 @@ def vala_file(self, node):
 		valatask.packages_private = Utils.to_list(getattr(self, 'packages_private', []))
 		valatask.vapi_dirs = []
 		valatask.target = self.target
-		valatask.threading = False
 		valatask.install_path = getattr(self, 'install_path', '')
-		valatask.profile = getattr(self, 'profile', 'gobject')
-		valatask.vala_defines = getattr(self, 'vala_defines', [])
+
 		valatask.target_glib = None
 		valatask.gir = getattr(self, 'gir', None)
 		valatask.gir_path = getattr(self, 'gir_path', '${DATAROOTDIR}/gir-1.0')
@@ -189,25 +205,6 @@ def vala_file(self, node):
 			except AttributeError:
 				Logs.warn("Unable to locate include directory: '%s'" % include)
 
-
-		if valatask.profile == 'gobject':
-			if hasattr(self, 'target_glib'):
-				Logs.warn('target_glib on vala tasks is not supported --vala-target-glib=MAJOR.MINOR from the vala tool options')
-
-			if getattr(Options.options, 'vala_target_glib', None):
-				valatask.target_glib = Options.options.vala_target_glib
-
-			if not 'GOBJECT' in self.uselib:
-				self.uselib.append('GOBJECT')
-
-		if hasattr(self, 'threading'):
-			if valatask.profile == 'gobject':
-				valatask.threading = self.threading
-				if not 'GTHREAD' in self.uselib:
-					self.uselib.append('GTHREAD')
-			else:
-				#Vala doesn't have threading support for dova nor posix
-				Logs.warn("Profile %s does not have threading support" % valatask.profile)
 
 		if valatask.is_lib:
 			valatask.outputs.append(self.path.find_or_declare('%s.h' % self.target))
