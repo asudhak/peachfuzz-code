@@ -3,7 +3,7 @@
 # Thomas Nagy, 2011 (ita)
 
 """
-errheck: Search for common mistakes
+errcheck: highlight common mistakes
 
 There is a performance hit, so this tool is only loaded when running "waf -v"
 """
@@ -151,7 +151,7 @@ def enhance_lib():
 
 	# check for erroneous order constraints
 	def check_err_order(self):
-		if not hasattr(self, 'rule'):
+		if not hasattr(self, 'rule') and not 'subst' in Utils.to_list(self.features):
 			for x in ('before', 'after', 'ext_in', 'ext_out'):
 				if hasattr(self, x):
 					Logs.warn('Erroneous order constraint %r on non-rule based task generator %r' % (x, self))
@@ -159,7 +159,7 @@ def enhance_lib():
 			for x in ('before', 'after'):
 				for y in self.to_list(getattr(self, x, [])):
 					if not Task.classes.get(y, None):
-						Logs.error('Erroneous order constraint %s=%r on %r' % (x, y, self))
+						Logs.error('Erroneous order constraint %s=%r on %r (no such class)' % (x, y, self))
 	TaskGen.feature('*')(check_err_order)
 
 	# check for @extension used with @feature/@before_method/@after_method
