@@ -786,11 +786,17 @@ def process_subst(self):
 		if not a:
 			raise Errors.WafError('cound not find %r for %r' % (x, self))
 
+		has_constraints = False
 		tsk = self.create_task('subst', a, b)
 		for k in ('after', 'before', 'ext_in', 'ext_out'):
 			val = getattr(self, k, None)
 			if val:
+				has_constraints = True
 				setattr(tsk, k, val)
+
+		# paranoid safety measure for the general case foo.in->foo.h with ambiguous dependencies
+		if not has_constraints and b.name.endswith('.h'):
+			tsk.before = [k for k in ('c', 'cxx') if k in Task.classes]
 
 	inst_to = getattr(self, 'install_path', None)
 	if inst_to:
