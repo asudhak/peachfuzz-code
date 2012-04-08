@@ -333,15 +333,17 @@ class Context(ctx):
 		if out:
 			if not isinstance(out, str):
 				out = out.decode(sys.stdout.encoding or 'iso8859-1')
-			sys.stdout.write(out)
 			if self.logger:
 				self.logger.debug('out: %s' % out)
+			else:
+				sys.stdout.write(out)
 		if err:
 			if not isinstance(err, str):
 				err = err.decode(sys.stdout.encoding or 'iso8859-1')
-			sys.stderr.write(err)
 			if self.logger:
 				self.logger.error('err: %s' % err)
+			else:
+				sys.stderr.write(err)
 
 		return p.returncode
 
