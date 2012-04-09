@@ -18,6 +18,7 @@ else:
 	class sync_stream(object):
 		def __init__(self, stream):
 			self.stream = stream
+			self.encoding = self.stream.encoding
 
 		def write(self, txt):
 			try:
@@ -26,6 +27,9 @@ else:
 				self.stream.flush()
 			finally:
 				wlock.release()
+
+		def fileno(self):
+			return self.stream.fileno()
 
 		def flush(self):
 			self.stream.flush()
