@@ -128,6 +128,7 @@ namespace Peach.Core.MutationStrategies
 
 					foreach (Type t in _mutators)
 					{
+                        // can add specific mutators here
 						if (SupportedDataElement(t, elem))
 							elemMutators.Add(GetMutatorInstance(t, elem));
 					}

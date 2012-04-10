@@ -57,8 +57,8 @@ namespace Peach.Core.Agent.Monitors
 		{
 		}
 
-		public override bool IterationFinished()
-		{
+        public override bool IterationFinished()
+        {
             if (replay)
             {
                 replay = false;
@@ -69,7 +69,7 @@ namespace Peach.Core.Agent.Monitors
                 replay = true;
                 return true;
             }
-		}
+        }
 
 		public override Variant Message(string name, Variant data)
 		{
