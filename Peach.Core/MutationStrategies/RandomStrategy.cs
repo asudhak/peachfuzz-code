@@ -48,7 +48,6 @@ namespace Peach.Core.MutationStrategies
 	public class RandomStrategy : MutationStrategy
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-        int? _count = null;
 
 		/// <summary>
 		/// DataElement's fullname to list of mutators
@@ -287,20 +286,7 @@ namespace Peach.Core.MutationStrategies
 		{
 			get
 			{
-				//return Int32.MaxValue;
-                if (_count != null)
-                    return (uint)_count;
-
-                _count = 1; // Always one iteration before us!
-                foreach (List<Mutator> l in dataElementMutators.Values)
-                {
-                    foreach (Mutator m in l)
-                    {
-                        _count += m.count;
-                    }
-                }
-
-                return (uint)_count;
+				return Int32.MaxValue;
 			}
 		}
 
