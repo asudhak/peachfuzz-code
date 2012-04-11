@@ -31,14 +31,14 @@ Else: Do not load the 'run_m_script' tool in the main wscript.\n\n"""  % MATLAB_
 @Task.update_outputs
 class RunMScript(Task.Task):
 	"""Run a Matlab script."""
-	run_str = '"${MATLABCMD}" ${MATLABFLAGS} -logfile "${LOGFILEPATH}" -r "try, ${MSCRIPTTRUNK}, exit(0), catch err, err.getReport(), exit(1), end"'
+	run_str = '"${MATLABCMD}" ${MATLABFLAGS} -logfile "${LOGFILEPATH}" -r "try, ${MSCRIPTTRUNK}, exit(0), catch err, disp(err.getReport()), exit(1), end"'
 	shell = True
 
 @TaskGen.feature('run_m_script')
 @TaskGen.before_method('process_source')
 def apply_run_m_script(tg):
 	"""Task generator, customising the options etc. to call Matlab in batch
-	 mode for running a m-script.
+	mode for running a m-script.
 
 	The function is passed a waflib.TaskGen.task_gen object.
 	"""
@@ -56,10 +56,9 @@ def apply_run_m_script(tg):
 	for x in tg.to_list(getattr(tg, 'deps', [])):
 		node = tg.path.find_resource(x)
 		if not node:
-			tg.fatal('Could not find %r (was it declared?)' % x)
+			tg.bld.fatal('Could not find dependency %r for %r' % (x, src_node.relpath()))
 		tsk.dep_nodes.append(node)
-	Logs.debug('deps: found dependencies %r for %r' % (tsk.dep_nodes, src_node))
+	Logs.debug('deps: found dependencies %r for %r' % (tsk.dep_nodes, src_node.relpath()))
 
 	# Bypass the execution of process_source by setting the source to an empty list
 	tg.source = []
-
