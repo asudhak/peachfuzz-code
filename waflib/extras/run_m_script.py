@@ -29,10 +29,29 @@ Else: Do not load the 'run_m_script' tool in the main wscript.\n\n"""  % MATLAB_
 	ctx.env.MATLABFLAGS = '-wait -nojvm -nosplash -minimize'
 
 @Task.update_outputs
-class RunMScript(Task.Task):
+class run_m_script_base(Task.Task):
 	"""Run a Matlab script."""
 	run_str = '"${MATLABCMD}" ${MATLABFLAGS} -logfile "${LOGFILEPATH}" -r "try, ${MSCRIPTTRUNK}, exit(0), catch err, disp(err.getReport()), exit(1), end"'
 	shell = True
+
+class run_m_script(run_m_script_base):
+	"""Erase the Matlab overall log file if everything went okay, else raise an
+	error and print its 10 last lines.
+	"""
+	def run(self):
+		ret = run_m_script_base.run(self)
+		logfile = self.env.LOGFILEPATH
+		if ret:
+			mode = 'r'
+			if sys.version_info.major >= 3:
+				mode = 'rb'
+			with open(logfile, mode=mode) as f:
+				tail = f.readlines()[-10:]
+			Logs.error("""Running Matlab on %s returned the code %r\n\nCheck the log file %s, last 10 lines\n\n%s\n\n\n""" % (
+				self.inputs[0].abspath(), ret, logfile, '\n'.join(tail))
+		else:
+			os.remove(logfile)
+		return ret
 
 @TaskGen.feature('run_m_script')
 @TaskGen.before_method('process_source')
@@ -47,7 +66,7 @@ def apply_run_m_script(tg):
 	src_node = tg.path.find_resource(tg.source)
 	tgt_nodes = [tg.path.find_or_declare(t) for t in tg.to_list(tg.target)]
 
-	tsk = tg.create_task('RunMScript', src=src_node, tgt=tgt_nodes)
+	tsk = tg.create_task('run_m_script', src=src_node, tgt=tgt_nodes)
 	tsk.cwd = src_node.parent.abspath()
 	tsk.env.MSCRIPTTRUNK = os.path.splitext(src_node.name)[0]
 	tsk.env.LOGFILEPATH = os.path.join(tg.bld.bldnode.abspath(), '%s_%d.log' % (tsk.env.MSCRIPTTRUNK, tg.idx))
@@ -62,3 +81,4 @@ def apply_run_m_script(tg):
 
 	# Bypass the execution of process_source by setting the source to an empty list
 	tg.source = []
+
