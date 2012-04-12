@@ -683,6 +683,15 @@ class BuildContext(Context.Context):
 				to_post.append(tg)
 		return (min_grp, to_post)
 
+	def get_all_task_gen(self):
+		"""
+		Utility method, returns a list of all task generators - if you need something more complicated, implement your own
+		"""
+		lst = []
+		for g in self.groups:
+			lst.extend(g)
+		return lst
+
 	def post_group(self):
 		"""
 		Post the task generators from the group indexed by self.cur, used by :py:meth:`waflib.Build.BuildContext.get_build_iterator`
