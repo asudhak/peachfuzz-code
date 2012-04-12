@@ -711,6 +711,7 @@ class BuildContext(Context.Context):
 			ln = self.launch_node()
 			if ln.is_child_of(self.bldnode):
 				Logs.warn('Building from the build directory, forcing --targets=*')
+				ln = self.srcnode
 			elif not ln.is_child_of(self.srcnode):
 				Logs.warn('CWD %s is not under %s, forcing --targets=* (run distclean?)' % (ln.abspath(), self.srcnode.abspath()))
 				ln = self.srcnode
@@ -1176,7 +1177,7 @@ class CleanContext(BuildContext):
 		if self.bldnode != self.srcnode:
 			# would lead to a disaster if top == out
 			lst = [self.root.find_or_declare(f) for f in self.env[CFG_FILES]]
-			for n in self.bldnode.ant_glob('**/*', excl='lock* *conf_check_*/** config.log c4che/*', quiet=True):
+			for n in self.bldnode.ant_glob('**/*', excl='.lock* *conf_check_*/** config.log c4che/*', quiet=True):
 				if n in lst:
 					continue
 				n.delete()
