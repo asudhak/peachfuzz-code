@@ -200,7 +200,7 @@ class OptionsContext(Context.Context):
 		Wrapper for optparse.add_option_group::
 
 			def options(ctx):
-				ctx.add_option_group('some options')
+				gr = ctx.add_option_group('some options')
 				gr.add_option('-u', '--use', dest='use', default=False, action='store_true')
 		"""
 		try:
