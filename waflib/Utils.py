@@ -213,9 +213,10 @@ if is_win32:
 	def listdir_win32(s):
 		"""
 		List the contents of a folder in a portable manner.
+		On Win32, return the list of drive letters: ['C:', 'X:', 'Z:']
 
 		:type s: string
-		:param s: a string, which can be empty on Windows for listing the drive letters
+		:param s: a string, which can be empty on Windows
 		"""
 		if not s:
 			try:
@@ -228,7 +229,7 @@ if is_win32:
 				maxdrives = 26
 				buf = ctypes.create_string_buffer(maxdrives * dlen)
 				ndrives = ctypes.windll.kernel32.GetLogicalDriveStringsA(maxdrives*dlen, ctypes.byref(buf))
-				return [ buf.raw[4*i:4*i+3].decode('ascii') for i in range(int(ndrives/dlen)) ]
+				return [ str(buf.raw[4*i:4*i+2].decode('ascii')) for i in range(int(ndrives/dlen)) ]
 
 		if len(s) == 2 and s[1] == ":":
 			s += os.sep
