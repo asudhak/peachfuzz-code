@@ -3,29 +3,29 @@
 # Hans-Martin von Gaudecker, 2012
 
 """
-Run a Stata do-file in the directory specified by **ctx.bldnode**. The
-first and only argument will be the name of the do-file (no extension),
-which can be accessed inside the do-file by the local macro `1'. Useful
+Run a Stata do-script in the directory specified by **ctx.bldnode**. The
+first and only argument will be the name of the do-script (no extension),
+which can be accessed inside the do-script by the local macro `1'. Useful
 for keeping a log file.
 
-The tool uses the log-file that is automatically kept by Stata only 
+The tool uses the log file that is automatically kept by Stata only 
 for error-catching purposes, it will be destroyed if the task finished
-without error. In case of an error, you can inspect it as **do_file.log** 
-in the **ctx.bldnode** directory.
+without error. In case of an error in **some_script.do**, you can inspect
+it as **some_script.log** in the **ctx.bldnode** directory.
 
 Note that Stata will not return an error code if it exits abnormally -- 
-catching errors relies on parsing the log-file mentioned before. Should
+catching errors relies on parsing the log file mentioned before. Should
 the parser behave incorrectly please send an email to hmgaudecker [at] gmail.
 
 **WARNING**
 
-    The tool will not work if multiple do-files of the same name---but in
+    The tool will not work if multiple do-scripts of the same name---but in
     different directories---are run at the same time! Avoid this situation.
 
 Usage::
 
-    ctx(features='run_do_file', 
-        source='some_file.do',
+    ctx(features='run_do_script', 
+        source='some_script.do',
         target=['some_table.tex', 'some_figure.eps'],
         deps='some_data.csv')
 """
@@ -65,23 +65,23 @@ If Stata is needed:\n
 	2) Note we are looking for Stata executables called: %s
 	   If yours has a different name, please report to hmgaudecker [at] gmail\n
 Else:\n
-	Do not load the 'run_do_file' tool in the main wscript.\n\n""" % STATA_COMMANDS)
+	Do not load the 'run_do_script' tool in the main wscript.\n\n""" % STATA_COMMANDS)
 	ctx.env.STATAFLAGS = STATAFLAGS
 	ctx.env.STATAENCODING = STATAENCODING
 
 @Task.update_outputs
-class run_do_file_base(Task.Task):
-	"""Run a Stata do-file from the bldnode directory."""
+class run_do_script_base(Task.Task):
+	"""Run a Stata do-script from the bldnode directory."""
 	run_str = '"${STATACMD}" ${STATAFLAGS} "${SRC[0].abspath()}" "${DOFILETRUNK}"'
 	shell = True
 
-class run_do_file(run_do_file_base):
-	"""Use the log-file automatically kept by Stata for error-catching.
+class run_do_script(run_do_script_base):
+	"""Use the log file automatically kept by Stata for error-catching.
 	Erase it if the task finished without error. If not, it will show 
-	up as do_file.log in the bldnode directory.
+	up as do_script.log in the bldnode directory.
 	"""
 	def run(self):
-		run_do_file_base.run(self)
+		run_do_script_base.run(self)
 		ret, log_tail  = self.check_erase_log_file()
 		if ret:
 			Logs.error("""Running Stata on %s failed with code %r.\n\nCheck the log file %s, last 10 lines\n\n%s\n\n\n""" % (
@@ -113,18 +113,18 @@ class run_do_file(run_do_file_base):
 		return None, None
 
 
-@TaskGen.feature('run_do_file')
+@TaskGen.feature('run_do_script')
 @TaskGen.before_method('process_source')
-def apply_run_do_file(tg):
+def apply_run_do_script(tg):
 	"""Task generator customising the options etc. to call Stata in batch
-	mode for running a do-file.
+	mode for running a do-script.
 	"""
 
 	# Convert sources and targets to nodes
 	src_node = tg.path.find_resource(tg.source)
 	tgt_nodes = [tg.path.find_or_declare(t) for t in tg.to_list(tg.target)]
 
-	tsk = tg.create_task('run_do_file', src=src_node, tgt=tgt_nodes)
+	tsk = tg.create_task('run_do_script', src=src_node, tgt=tgt_nodes)
 	tsk.env.DOFILETRUNK = os.path.splitext(src_node.name)[0]
 	tsk.env.LOGFILEPATH = os.path.join(tg.bld.bldnode.abspath(), '%s.log' % (tsk.env.DOFILETRUNK))
 
