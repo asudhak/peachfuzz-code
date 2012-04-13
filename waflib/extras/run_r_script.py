@@ -18,7 +18,7 @@ Usage::
 """
 
 
-import os, re, sys
+import os, sys
 from waflib import Task, TaskGen, Logs
 
 R_COMMANDS = ['RTerm', 'R', 'r']

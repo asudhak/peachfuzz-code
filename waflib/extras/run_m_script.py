@@ -20,7 +20,7 @@ Usage::
         deps='some_data.mat')
 """
 
-import os, re, sys
+import os, sys
 from waflib import Task, TaskGen, Logs
 
 MATLAB_COMMANDS = ['matlab']

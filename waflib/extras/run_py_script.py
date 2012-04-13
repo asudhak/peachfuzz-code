@@ -26,17 +26,14 @@ import os, re
 from waflib import Task, TaskGen, Logs
 
 
-def configure(ctx):
-	"""TODO: Needs updating for Windows once
+def configure(conf):
+	"""TODO: Might need to be updated for Windows once
 	"PEP 397":http://www.python.org/dev/peps/pep-0397/ is settled.
-	
 	"""
-	# Counter how many Python interpreters are found
-	cnt = 0
 	conf.find_program('python', var='PY2CMD', mandatory=False)
 	conf.find_program('python3', var='PY3CMD', mandatory=False)
 	if not conf.env.PY2CMD and not conf.env.PY3CMD:
-		ctx.fatal("No Python interpreter found!")
+		conf.fatal("No Python interpreter found!")
 
 @Task.update_outputs
 class run_py_2_script(Task.Task):
