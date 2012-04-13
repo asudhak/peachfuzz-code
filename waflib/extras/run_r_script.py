@@ -9,13 +9,12 @@ For error-catching purposes, keep an own log-file that is destroyed if the
 task finished without error. If not, it will show up as rscript_[index].log 
 in the bldnode directory.
 
-Usage:
+Usage::
 
     ctx(features='run_r_script', 
         source='some_script.r',
         target=['some_table.tex', 'some_figure.eps'],
         deps='some_data.csv')
-
 """
 
 

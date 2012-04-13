@@ -13,14 +13,13 @@ a key "PROJECT_ROOT", its value will be appended to the PYTHONPATH.
 Same a string passed to the optional **add_to_pythonpath**
 keyword (appended after the PROJECT_ROOT).
 
-Usage:
+Usage::
 
     ctx(features='run_py_script', version=3,
         source='some_script.py',
         target=['some_table.tex', 'some_figure.eps'],
         deps='some_data.csv',
         add_to_pythonpath='src/some/library')
-
 """
 
 import os, re

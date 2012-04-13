@@ -17,18 +17,17 @@ Note that Stata will not return an error code if it exits abnormally --
 catching errors relies on parsing the log-file mentioned before. Should
 the parser behave incorrectly please send an email to hmgaudecker [at] gmail.
 
-**Careful**
+**WARNING**
 
     The tool will not work if multiple do-files of the same name---but in
     different directories---are run at the same time! Avoid this situation.
 
-Usage:
+Usage::
 
     ctx(features='run_do_file', 
         source='some_file.do',
         target=['some_table.tex', 'some_figure.eps'],
         deps='some_data.csv')
-
 """
 
 

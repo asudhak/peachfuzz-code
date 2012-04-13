@@ -9,8 +9,15 @@ Note that the script is run in the directory where it lives -- Matlab won't
 allow it any other way.
 
 For error-catching purposes, keep an own log-file that is destroyed if the
-task finished without error. If not, it will show up as mscript_HASH.log 
+task finished without error. If not, it will show up as mscript_[index].log 
 in the bldnode directory.
+
+Usage::
+
+    ctx(features='run_m_script', 
+        source='some_script.m',
+        target=['some_table.tex', 'some_figure.eps'],
+        deps='some_data.mat')
 """
 
 import os, re, sys
@@ -19,13 +26,14 @@ from waflib import Task, TaskGen, Logs
 MATLAB_COMMANDS = ['matlab']
 
 def configure(ctx):
-	ctx.find_program(['matlab'], var='MATLABCMD', errmsg = """\n
-No Matlab executable found!\n
-If Matlab is needed: 
+	ctx.find_program(MATLAB_COMMANDS, var='MATLABCMD', errmsg = """\n
+No Matlab executable found!\n\n
+If Matlab is needed:\n
     1) Check the settings of your system path.
     2) Note we are looking for Matlab executables called: %s
        If yours has a different name, please report to hmgaudecker [at] gmail\n
-Else: Do not load the 'run_m_script' tool in the main wscript.\n\n"""  % MATLAB_COMMANDS)
+Else:\n
+    Do not load the 'run_m_script' tool in the main wscript.\n\n"""  % MATLAB_COMMANDS)
 	ctx.env.MATLABFLAGS = '-wait -nojvm -nosplash -minimize'
 
 @Task.update_outputs
@@ -47,8 +55,8 @@ class run_m_script(run_m_script_base):
 				mode = 'rb'
 			with open(logfile, mode=mode) as f:
 				tail = f.readlines()[-10:]
-			Logs.error("""Running Matlab on %s returned the code %r\n\nCheck the log file %s, last 10 lines\n\n%s\n\n\n""" % (
-				self.inputs[0].abspath(), ret, logfile, '\n'.join(tail))
+			Logs.error("""Running Matlab on %s returned the error %r\n\nCheck the log file %s, last 10 lines\n\n%s\n\n\n""" % (
+				self.inputs[0].nice_path(), ret, logfile, '\n'.join(tail)))
 		else:
 			os.remove(logfile)
 		return ret
@@ -56,10 +64,8 @@ class run_m_script(run_m_script_base):
 @TaskGen.feature('run_m_script')
 @TaskGen.before_method('process_source')
 def apply_run_m_script(tg):
-	"""Task generator, customising the options etc. to call Matlab in batch
+	"""Task generator customising the options etc. to call Matlab in batch
 	mode for running a m-script.
-
-	The function is passed a waflib.TaskGen.task_gen object.
 	"""
 
 	# Convert sources and targets to nodes 
@@ -75,10 +81,9 @@ def apply_run_m_script(tg):
 	for x in tg.to_list(getattr(tg, 'deps', [])):
 		node = tg.path.find_resource(x)
 		if not node:
-			tg.bld.fatal('Could not find dependency %r for %r' % (x, src_node.relpath()))
+			tg.bld.fatal('Could not find dependency %r for running %r' % (x, src_node.nice_path()))
 		tsk.dep_nodes.append(node)
-	Logs.debug('deps: found dependencies %r for %r' % (tsk.dep_nodes, src_node.relpath()))
+	Logs.debug('deps: found dependencies %r for running %r' % (tsk.dep_nodes, src_node.nice_path()))
 
 	# Bypass the execution of process_source by setting the source to an empty list
 	tg.source = []
-
