@@ -12,6 +12,7 @@ NEW IN WAF 1.7.0
 * Removed the warnings on "waf install" #1120
 * Extended bld.subst() to perform simple copies to the build directory
 * Removed the default DLL_EXPORT define on gcc/g++ shared libraries
+* Calling ctx.root.ant_glob(abspath) will return results #1135
 
 NEW IN WAF 1.6.11
 -----------------
