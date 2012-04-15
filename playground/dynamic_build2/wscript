@@ -20,7 +20,7 @@ def configure(conf):
 
 def read_files(task):
 	# the real build files must be excluded, else they will get rebuilt
-	for x in task.generator.bld.bldnode.ant_glob('**', excl='**/*.o app'):
+	for x in task.generator.bld.bldnode.ant_glob('**', excl='**/*.o app', remove=False):
 		x.sig = Utils.h_file(x.abspath())
 
 def build(bld):
