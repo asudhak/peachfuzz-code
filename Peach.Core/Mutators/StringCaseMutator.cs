@@ -48,6 +48,7 @@ namespace Peach.Core.Mutators
         public StringCaseMutator(DataElement obj)
         {
             index = 0;
+            name = "StringCaseMutator";
             mutations[0] = new mutationType(mutationLowerCase);
             mutations[1] = new mutationType(mutationUpperCase);
             mutations[2] = new mutationType(mutationRandomCase);
