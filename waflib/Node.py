@@ -528,7 +528,7 @@ class Node(object):
 		:type remove: bool
 		:param maxdepth: maximum depth of recursion
 		:type maxdepth: int
-		:param ignorecase: ignore case while matching (True by default on Windows, False by default elsewhere)
+		:param ignorecase: ignore case while matching (False by default)
 		:type ignorecase: bool
 		"""
 
@@ -537,8 +537,7 @@ class Node(object):
 
 		excl = kw.get('excl', exclude_regs)
 		incl = k and k[0] or kw.get('incl', '**')
-		ignc = kw.get('ignorecase', Utils.is_win32)
-		reflags = ignc and re.I or 0
+		reflags = kw.get('ignorecase', 0) and re.I
 
 		def to_pat(s):
 			lst = Utils.to_list(s)
