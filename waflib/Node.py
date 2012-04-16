@@ -528,6 +528,8 @@ class Node(object):
 		:type remove: bool
 		:param maxdepth: maximum depth of recursion
 		:type maxdepth: int
+		:param ignorecase: ignore case while matching (True by default on Windows, False by default elsewhere)
+		:type ignorecase: bool
 		"""
 
 		src = kw.get('src', True)
@@ -535,6 +537,8 @@ class Node(object):
 
 		excl = kw.get('excl', exclude_regs)
 		incl = k and k[0] or kw.get('incl', '**')
+		ignc = kw.get('ignorecase', Utils.is_win32)
+		reflags = ignc and re.I or 0
 
 		def to_pat(s):
 			lst = Utils.to_list(s)
@@ -553,7 +557,7 @@ class Node(object):
 						k = '^%s$' % k
 						try:
 							#print "pattern", k
-							accu.append(re.compile(k))
+							accu.append(re.compile(k, flags=reflags))
 						except Exception as e:
 							raise Errors.WafError("Invalid pattern: %s" % k, e)
 				ret.append(accu)
