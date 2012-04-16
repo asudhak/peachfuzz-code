@@ -10,6 +10,7 @@ namespace Peach.Core.Agent.Monitors
     {
         bool alreadyPaused = false;
         bool replay = true;
+        bool firstIteration = true;
 
         public ReplayMonitor(string name, Dictionary<string, Variant> args) : base(name, args)
 		{
@@ -59,7 +60,12 @@ namespace Peach.Core.Agent.Monitors
 
         public override bool IterationFinished()
         {
-            if (replay)
+            if (firstIteration)
+            {
+                firstIteration = false;
+                return false;
+            }
+            else if (replay)
             {
                 replay = false;
                 throw new ReplayTestException();
@@ -67,7 +73,7 @@ namespace Peach.Core.Agent.Monitors
             else
             {
                 replay = true;
-                return true;
+                return false;
             }
         }
 

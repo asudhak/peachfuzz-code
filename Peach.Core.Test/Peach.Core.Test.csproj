@@ -104,6 +104,7 @@
     <Compile Include="Fixups\SHA256FixupTests.cs" />
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
+    <Compile Include="Monitors\ReplayMonitorTests.cs" />
     <Compile Include="Mutators\ArrayNumericalEdgeCasesMutatorTests.cs" />
     <Compile Include="Mutators\ArrayRandomizeOrderMutatorTests.cs" />
     <Compile Include="Mutators\ArrayReverseOrderMutatorTests.cs" />
