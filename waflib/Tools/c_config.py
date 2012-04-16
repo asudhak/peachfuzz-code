@@ -907,6 +907,8 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 	:type defines: bool
 	:param headers: add #include in the file
 	:type headers: bool
+	:type define_prefix: string
+	:param define_prefix: prefix all the defines in the file with a particular prefix
 	:param remove: remove the defines after they are added (yes by default)
 	:type remove: bool
 	"""
@@ -944,6 +946,8 @@ def get_config_header(self, defines=True, headers=False, define_prefix=''):
 	:type defines: bool
 	:param headers: write the headers
 	:type headers: bool
+	:type define_prefix: string
+	:param define_prefix: prefix all the defines with a particular prefix
 	:return: the contents of a ``config.h`` file
 	:rtype: string
 	"""
@@ -958,7 +962,7 @@ def get_config_header(self, defines=True, headers=False, define_prefix=''):
 				val = self.get_define(x)
 				lst.append('#define %s %s' % (define_prefix + x, val))
 			else:
-				lst.append('/* #undef %s */' % x)
+				lst.append('/* #undef %s */' % (define_prefix + x))
 	return "\n".join(lst)
 
 @conf
