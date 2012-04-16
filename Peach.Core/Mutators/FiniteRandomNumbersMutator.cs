@@ -140,7 +140,7 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			var rand = new Random((int)context.count);
+			var rand = new Random((int)(context.random.Seed + currentCount));
 
             // handle strings
             if (obj is Dom.String)

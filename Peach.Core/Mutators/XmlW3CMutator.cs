@@ -187,7 +187,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random((int)context.count);
+            var rand = new Random((int)(context.random.Seed + pos));
             string filePath = "xmltests/" + rand.Choice<string>(values);
             entry = zip[filePath];
             s = entry.OpenReader();

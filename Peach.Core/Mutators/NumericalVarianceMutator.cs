@@ -187,7 +187,7 @@ namespace Peach.Core.Mutators
 
             try
             {
-                var rand = new Random((int)context.count);
+                var rand = new Random((int)(context.random.Seed + currentCount));
                 long value = rand.Choice(values);
                 long finalValue = (long)obj.DefaultValue + value;
                 if (obj is Dom.String)
