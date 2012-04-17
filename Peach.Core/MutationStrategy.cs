@@ -70,13 +70,13 @@ namespace Peach.Core
 
 		public abstract uint count
 		{
-			get;
+            get;
 		}
 
-		public Random random
-		{
-			get { return _context.random; }
-		}
+        public Random random
+        {
+            get { return _context.random; }
+        }
 
 		public abstract Mutator currentMutator();
 

@@ -15,9 +15,15 @@ namespace Peach.Core.Test.Monitors
     [TestFixture]
     class ReplayMonitorTests
     {
+        bool firstPass = true;
+        string testString = null;
+        List<string> testResults = new List<string>();
+
         [Test]
         public void Test1()
         {
+            // Test that the repeated iterations are producing the same values.
+
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
@@ -32,7 +38,14 @@ namespace Peach.Core.Test.Monitors
                 "       </State>" +
                 "   </StateModel>" +
 
+                "   <Agent name=\"LocalAgent\">" +
+                "       <Monitor class=\"ReplayMonitor\">" +
+                "           <Param name=\"Name\" value=\"ReplayMonitor1\"/>" +
+                "       </Monitor>" +
+                "   </Agent>" +
+
                 "   <Test name=\"TheTest\">" +
+                "       <Agent ref=\"LocalAgent\"/>" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
                 "   </Test>" +
@@ -57,28 +70,27 @@ namespace Peach.Core.Test.Monitors
             e.startFuzzing(dom, config);
 
             // verify values
-            //Assert.IsTrue(testResults[0] == "hello, world!");
-            //Assert.IsTrue(testResults[1] == "HELLO, WORLD!");
-            //Assert.IsFalse(testResults[2] == "hello, world!");
-            //Assert.IsFalse(testResults[2] == "HELLO, WORLD!");
+            Assert.AreEqual(testResults[0], testResults[1]);
+            Assert.AreEqual(testResults[2], testResults[3]);
+            Assert.AreEqual(testResults[4], testResults[5]);
 
             // reset
-            //firstPass = true;
-            //testString = null;
-            //testResults.Clear();
+            firstPass = true;
+            testString = null;
+            testResults.Clear();
         }
 
         void Action_FinishedTest(Dom.Action action)
         {
-            //if (firstPass)
-            //{
-            //    firstPass = false;
-            //}
-            //else
-            //{
-            //    testString = (string)action.dataModel[0].InternalValue;
-            //    testResults.Add(testString);
-            //}
+            if (firstPass)
+            {
+                firstPass = false;
+            }
+            else
+            {
+                testString = (string)action.dataModel[0].InternalValue;
+                testResults.Add(testString);
+            }
         }
     }
 }
