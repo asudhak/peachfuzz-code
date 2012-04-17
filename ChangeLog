@@ -13,6 +13,7 @@ NEW IN WAF 1.7.0
 * Extended bld.subst() to perform simple copies to the build directory
 * Removed the default DLL_EXPORT define on gcc/g++ shared libraries
 * Calling ctx.root.ant_glob(abspath) will return results #1135
+* New case-insentive option for ant_glob #1148
 
 NEW IN WAF 1.6.11
 -----------------
