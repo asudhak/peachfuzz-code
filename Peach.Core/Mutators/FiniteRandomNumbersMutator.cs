@@ -140,8 +140,13 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			var rand = new Random((int)(context.random.Seed + currentCount));
+			// Sequencial random number generator
+			var rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
+			sequencialMutation(obj, rand);
+		}
 
+		public void sequencialMutation(DataElement obj, Random rand)
+		{
             // handle strings
             if (obj is Dom.String)
             {
@@ -182,7 +187,9 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-			sequencialMutation(obj);
+			// Random random :)
+			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+			sequencialMutation(obj, rand);
         }
 	}
 }

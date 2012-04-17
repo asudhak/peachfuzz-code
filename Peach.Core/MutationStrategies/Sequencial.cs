@@ -48,6 +48,7 @@ namespace Peach.Core.MutationStrategies
 		int elementPosition = 0;
 		int mutatorPosition = 0;
 		int? _count = null;
+		int _iterationCount = 0;
 
 		public Sequencial(Dictionary<string,string> args)
 			: base(args)
@@ -64,7 +65,14 @@ namespace Peach.Core.MutationStrategies
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 
+			_iterationCount = 0;
+
 			_mutators.AddRange(EnumerateValidMutators());
+		}
+
+		public override int IterationCount
+		{
+			get { return _iterationCount; }
 		}
 
 		void Action_Starting(Core.Dom.Action action)
@@ -205,6 +213,8 @@ namespace Peach.Core.MutationStrategies
 
 		public override void next()
 		{
+			_iterationCount++;
+
 			if (enumeratorsInitialized)
 			{
 				try

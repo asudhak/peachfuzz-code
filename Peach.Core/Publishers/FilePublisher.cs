@@ -30,6 +30,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 using Peach.Core.Dom;
 using Peach.Core.IO;
@@ -93,12 +94,27 @@ namespace Peach.Core.Publishers
 
 			OnOpen(action);
 
-			if (overwrite)
-				stream = System.IO.File.Open(fileName, FileMode.Create);
-			else if (append)
-				stream = System.IO.File.Open(fileName, FileMode.Append | FileMode.OpenOrCreate);
-			else
-				stream = System.IO.File.Open(fileName, FileMode.OpenOrCreate);
+			for (int i = 0; i < 10; i++)
+			{
+				try
+				{
+					if (overwrite)
+						stream = System.IO.File.Open(fileName, FileMode.Create);
+					else if (append)
+						stream = System.IO.File.Open(fileName, FileMode.Append | FileMode.OpenOrCreate);
+					else
+						stream = System.IO.File.Open(fileName, FileMode.OpenOrCreate);
+
+					break;
+				}
+				catch (Exception ex)
+				{
+					if (i < 9)
+						Thread.Sleep(200);
+					else
+						throw ex;
+				}
+			}
 		}
 
 		public override void close(Core.Dom.Action action)
@@ -106,7 +122,15 @@ namespace Peach.Core.Publishers
 			if (stream != null)
 			{
 				OnClose(action);
-				stream.Close();
+
+				try
+				{
+					stream.Close();
+				}
+				catch
+				{
+				}
+
 				stream = null;
 			}
 		}

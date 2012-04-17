@@ -91,7 +91,17 @@ namespace Peach.Core.MutationStrategies
 		/// <summary>
 		/// Random number generator.
 		/// </summary>
-		Random random = null;
+		Random _random = null;
+
+		public override Random random
+		{
+			get { return _random; }
+		}
+
+		public override int IterationCount
+		{
+			get { return iterationCount; }
+		}
 
 		static bool eventsRegistered = false;
 
@@ -108,7 +118,7 @@ namespace Peach.Core.MutationStrategies
 			if (randomSeed == 0)
 				randomSeed = DateTime.Now.GetHashCode();
 
-			random = new Random(randomSeed + iterationCount);
+			_random = new Random(randomSeed + iterationCount);
 		}
 
 		public override void Initialize(RunContext context, Engine engine)
@@ -298,7 +308,7 @@ namespace Peach.Core.MutationStrategies
 		public override void next()
 		{
 			iterationCount++;
-			random = new Random(randomSeed + iterationCount);
+			_random = new Random(randomSeed + iterationCount);
 		}
 	}
 }

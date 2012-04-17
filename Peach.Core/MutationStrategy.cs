@@ -73,10 +73,18 @@ namespace Peach.Core
             get;
 		}
 
-        public Random random
-        {
-            get { return _context.random; }
-        }
+		public virtual Random random
+		{
+			get { return _context.random; }
+		}
+
+		/// <summary>
+		/// Current iteration count
+		/// </summary>
+		public abstract int IterationCount
+		{
+			get;
+		}
 
 		public abstract Mutator currentMutator();
 
