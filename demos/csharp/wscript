@@ -31,6 +31,7 @@ def build(bld):
 
 	bld(features='cs', source='My.cs Dye.cs', gen='my.dll', name='mylib', csdebug='full')
 	bld(features='cs', source='Hi.cs', includes='.', gen='hi.exe', use='mylib', name='hi')
+	bld(features='cs', source='Hi.cs', includes='.', gen='hi-x86.exe', use='mylib', name='hi', platform='x86')
 	if bld.env.HAS_GTKSHARP:
 		bld(features='cs', source='Simple.cs', includes='.', gen='mono-hello.exe', csflags=['-pkg:gtk-sharp-2.0'])
 
