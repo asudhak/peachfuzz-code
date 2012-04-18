@@ -238,7 +238,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random((int)(context.random.Seed + currentCount));
+            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             if (obj is Dom.String)
                 obj.MutatedValue = new Variant(rand.Choice(values[size]).ToString());
             else if (isULong)

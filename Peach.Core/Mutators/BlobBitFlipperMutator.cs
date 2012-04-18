@@ -120,7 +120,7 @@ namespace Peach.Core.Mutators
             BitStream bs = new BitStream(data);
 
             // pick a random bit
-            rand = new Random((int)(context.random.Seed + current));
+            rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
             int bit = rand.Next((int)bs.LengthBits);
 
             // seek, read, rewind
@@ -146,7 +146,7 @@ namespace Peach.Core.Mutators
             BitStream bs = new BitStream(data);
 
             // pick a random bit
-            rand = new Random((int)(context.random.Seed + current));
+            rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             int bit = rand.Next((int)bs.LengthBits);
 
             // seek, read, rewind

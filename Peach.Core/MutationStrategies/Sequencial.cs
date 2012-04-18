@@ -91,6 +91,7 @@ namespace Peach.Core.MutationStrategies
 						try
 						{
 							_mutatorEnumerator.Current.sequencialMutation(elem);
+                            //_mutatorEnumerator.Current.randomMutation(elem);
 						}
 						catch (OutOfMemoryException)
 						{

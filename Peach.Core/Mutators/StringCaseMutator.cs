@@ -84,7 +84,8 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			rand = new Random((int)(context.random.Seed + index));
+			//rand = new Random((int)(context.random.Seed + index));
+            rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
 			mutations[index](obj);
         }
 
@@ -92,7 +93,8 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            rand = new Random((int)(context.random.Seed + index));
+            //rand = new Random((int)(context.random.Seed + index));
+            rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
 			rand.Choice<mutationType>(mutations)(obj);
         }
 

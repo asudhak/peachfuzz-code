@@ -40,6 +40,8 @@ using NLog;
 
 namespace Peach.Core.MutationStrategies
 {
+    public delegate void RandomStrategyIterationEventHandler(string elementName, string mutatorName);
+
 	[MutationStrategy("Random")]
 	[MutationStrategy("RandomStrategy")]
 	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching. (default is 200)", false)]
@@ -48,6 +50,7 @@ namespace Peach.Core.MutationStrategies
 	public class RandomStrategy : MutationStrategy
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+        public static event RandomStrategyIterationEventHandler Iterating;
 
 		/// <summary>
 		/// DataElement's fullname to list of mutators
@@ -279,6 +282,9 @@ namespace Peach.Core.MutationStrategies
 
 					logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
 					logger.Info("Action_Starting: Mutator: " + mutator.name);
+
+                    if (Iterating != null)
+                        Iterating(elem.fullName, mutator.name);
 
 					try
 					{

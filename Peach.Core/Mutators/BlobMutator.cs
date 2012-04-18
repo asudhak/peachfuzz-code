@@ -130,7 +130,7 @@ namespace Peach.Core.Mutators
         //
         private void performMutation(DataElement obj)
         {
-            rand = new Random((int)context.random.Seed);
+            rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             obj.MutatedValue = new Variant(rand.Choice<changeFcn>(changeFcns)(obj));
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
