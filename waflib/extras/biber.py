@@ -25,12 +25,12 @@ class tex(texmodule.tex):
 		self.env.env = {}
 		self.env.env.update(os.environ)
 		self.env.env.update({'BIBINPUTS': self.TEXINPUTS, 'BSTINPUTS': self.TEXINPUTS})
-		self.env.SRCFILE = self.aux_node.name[:-4]
+		self.env.SRCFILE = self.aux_nodes[0].name[:-4]
 
 		if not self.env['PROMPT_LATEX']:
 			self.env.append_unique('BIBERFLAGS', '--quiet')
 
-		path = self.aux_node.abspath()[:-4] + '.bcf'
+		path = self.aux_nodes[0].abspath()[:-4] + '.bcf'
 		if os.path.isfile(path):
 			warn('calling biber')
 			self.check_status('error when calling biber, check %s.blg for errors' % (self.env.SRCFILE), self.biber_fun())
