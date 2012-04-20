@@ -64,13 +64,39 @@ namespace Peach.Core.Transformers.Compress
 
             //return new BitStream(sout.ToArray());
 
-            MemoryStream sin = new MemoryStream(data.Value);
-            MemoryStream sout = new MemoryStream();
-            GZipStream zs = new GZipStream(sout, CompressionMode.Compress);
+            //MemoryStream sin = new MemoryStream(data.Value);
 
-            zs.Write(data.Value, 0, data.Value.Length);
-            return new BitStream(sout.ToArray());
+            //MemoryStream sout = new MemoryStream();
+            //GZipStream zs = new GZipStream(sout, CompressionMode.Compress, true);
 
+            //zs.Write(data.Value, 0, data.Value.Length);
+
+            //byte[] ret;
+
+            string dataAsStrASCII = ASCIIEncoding.ASCII.GetString(data.Value);
+            byte[] dataAsStrUTF8Buff = Encoding.UTF8.GetBytes(dataAsStrASCII);
+
+            MemoryStream ms = new MemoryStream();
+            
+            using (GZipStream gzip = new GZipStream(ms, CompressionMode.Compress))
+            {
+                gzip.Write(data.Value, 0, data.Value.Length);
+            }
+
+            //ret = ms.ToArray();
+
+            //ms.Position = 0;
+            var compressedData = new byte[ms.Length];
+            ms.Read(compressedData, 0, compressedData.Length);
+
+            var gZipBuffer = new byte[compressedData.Length + 4];
+            Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
+            Buffer.BlockCopy(BitConverter.GetBytes(data.Value.Length), 0, gZipBuffer, 0, 4);
+            var x = Convert.ToString(gZipBuffer);
+            var xx = Convert.ToBase64String(gZipBuffer);
+
+            return new BitStream();
+            //return new BitStream(sout.ToArray());
 		}
 
 		protected override BitStream internalDecode(BitStream data)

@@ -31,9 +31,10 @@ namespace Peach.Core.Test.OutputTests
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <String name=\"str1\" value=\"Hello, World!\"/>" +
-                //"       <Number name=\"num1\" size=\"32\" value=\"100\" signed=\"true\">" +
-                //"           <Hint name=\"FiniteRandomNumbersMutator-N\" value=\"5\"/>" +
-                //"       </Number>" +
+                "       <String name=\"str2\" value=\"Hello, World!\"/>" +
+                "       <String name=\"str3\" value=\"Hello, World!\"/>" +
+                "       <String name=\"str4\" value=\"Hello, World!\"/>" +
+                "       <String name=\"str5\" value=\"Hello, World!\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -52,9 +53,9 @@ namespace Peach.Core.Test.OutputTests
 
                 "   <Test name=\"TheTest\">" +
                 "       <Agent ref=\"LocalAgent\"/>" +
-                //"       <Strategy class=\"Random\">" +
+                "       <Strategy class=\"Random\">" +
                 //"           <Param name=\"Seed\" value=\"10\"/>" +
-                //"       </Strategy>" +
+                "       </Strategy>" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
                 "   </Test>" +
@@ -69,22 +70,23 @@ namespace Peach.Core.Test.OutputTests
             Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("StringCaseMutator");
-            //dom.tests[0].includedMutators.Add("FiniteRandomNumbersMutator");
+            dom.tests[0].includedMutators.Add("StringMutator");
+            dom.tests[0].includedMutators.Add("UnicodeBomMutator");
 
             RunConfiguration config = new RunConfiguration();
-            config.skipToIteration = 4;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            //Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
             MutationStrategies.RandomStrategy.Iterating += new RandomStrategyIterationEventHandler(RandomStrategy_Iterating);
+
+            uint values = 0;
+            for (uint i = 1000; i >= 0; i--)
+                values += i;
 
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            //Assert.AreEqual(testResults[0], testResults[1]);
-            //Assert.AreEqual(testResults[2], testResults[3]);
-            //Assert.AreEqual(testResults[4], testResults[5]);
 
             // reset
             firstPass = true;
@@ -92,22 +94,22 @@ namespace Peach.Core.Test.OutputTests
             testResults.Clear();
         }
 
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                testString = (string)action.dataModel[0].InternalValue;
-                testResults.Add(names + testString);
-            }
-        }
+        //void Action_FinishedTest(Dom.Action action)
+        //{
+        //    if (firstPass)
+        //    {
+        //        firstPass = false;
+        //    }
+        //    else
+        //    {
+        //        testString = (string)action.dataModel[0].InternalValue;
+        //        testResults.Add(names + testString);
+        //    }
+        //}
 
         void RandomStrategy_Iterating(string elementName, string mutatorName)
         {
-            names = mutatorName + "|" + elementName + ": ";
+            testResults.Add(mutatorName + " | " + elementName);
         }
     }
 }
