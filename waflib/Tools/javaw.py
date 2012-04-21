@@ -451,7 +451,7 @@ def check_jni_headers(conf):
 
 	dir = conf.root.find_dir(conf.env.JAVA_HOME[0] + '/include')
 	if dir is None:
-		dir = conf.root.find_dir(conf.env.JAVA_HOME[0]) + '/../Headers') # think different?!
+		dir = conf.root.find_dir(conf.env.JAVA_HOME[0] + '/../Headers') # think different?!
 	if dir is None:
 		conf.fatal('JAVA_HOME does not seem to be set properly')
 
