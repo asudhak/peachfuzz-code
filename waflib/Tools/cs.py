@@ -72,7 +72,7 @@ def use_cs(self):
 		try:
 			y = get(x)
 		except Errors.WafError:
-			self.cs_task.env.append_value('CSFLAGS', '/reference:%s' % x)
+			self.env.append_value('CSFLAGS', '/reference:%s' % x)
 			continue
 		y.post()
 
@@ -81,7 +81,7 @@ def use_cs(self):
 			self.bld.fatal('cs task has no link task for use %r' % self)
 		self.cs_task.dep_nodes.extend(tsk.outputs) # dependency
 		self.cs_task.set_run_after(tsk) # order (redundant, the order is infered from the nodes inputs/outputs)
-		self.cs_task.env.append_value('CSFLAGS', '/reference:%s' % tsk.outputs[0].abspath())
+		self.env.append_value('CSFLAGS', '/reference:%s' % tsk.outputs[0].abspath())
 
 @feature('cs')
 @after_method('apply_cs', 'use_cs')
@@ -114,7 +114,7 @@ def debug_cs(self):
 		val = ['/debug+', '/debug:full']
 	else:
 		val = ['/debug-']
-	self.cs_task.env.append_value('CSFLAGS', val)
+	self.env.append_value('CSFLAGS', val)
 
 
 class mcs(Task.Task):
