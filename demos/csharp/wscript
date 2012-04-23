@@ -21,7 +21,7 @@ def configure(conf):
 		conf.check(features='cs', fragment=FRAG, compile_filename='test.cs', gen='test.exe',
 			csflags=['-pkg:gtk-sharp-2.0'], msg='Checking for Gtksharp support')
 		conf.env.HAS_GTKSHARP = True
-	except:
+	except conf.errors.ConfigurationError:
 		conf.env.HAS_GTKSHARP = False
 
 def build(bld):

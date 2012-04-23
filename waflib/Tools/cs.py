@@ -18,7 +18,7 @@ Note that the configuration may compile C# snippets::
 	}'''
 	def configure(conf):
 		conf.check(features='cs', fragment=FRAG, compile_filename='test.cs', gen='test.exe',
-			type='exe', csflags=['-pkg:gtk-sharp-2.0'], msg='Checking for Gtksharp support')
+			bintype='exe', csflags=['-pkg:gtk-sharp-2.0'], msg='Checking for Gtksharp support')
 """
 
 from waflib import Utils, Task, Options, Logs, Errors
@@ -44,11 +44,11 @@ def apply_cs(self):
 			no_nodes.append(x)
 	self.source = no_nodes
 
-	bintype = getattr(self, 'type', self.gen.endswith('.dll') and 'library' or 'exe')
+	bintype = getattr(self, 'bintype', self.gen.endswith('.dll') and 'library' or 'exe')
 	self.cs_task = tsk = self.create_task('mcs', cs_nodes, self.path.find_or_declare(self.gen))
 	tsk.env.CSTYPE = '/target:%s' % bintype
 	tsk.env.OUT    = '/out:%s' % tsk.outputs[0].abspath()
-        tsk.env.append_value('CSFLAGS', '/platform:%s' % getattr(self, 'platform', 'anycpu'))
+        self.env.append_value('CSFLAGS', '/platform:%s' % getattr(self, 'platform', 'anycpu'))
 
 	inst_to = getattr(self, 'install_path', bintype=='exe' and '${BINDIR}' or '${LIBDIR}')
 	if inst_to:
@@ -63,8 +63,8 @@ def use_cs(self):
 	C# applications honor the **use** keyword::
 
 		def build(bld):
-			bld(features='cs', source='My.cs', type='library', gen='my.dll', name='mylib')
-			bld(features='cs', source='Hi.cs', includes='.', type='exe', gen='hi.exe', use='mylib', name='hi')
+			bld(features='cs', source='My.cs', bintype='library', gen='my.dll', name='mylib')
+			bld(features='cs', source='Hi.cs', includes='.', bintype='exe', gen='hi.exe', use='mylib', name='hi')
 	"""
 	names = self.to_list(getattr(self, 'use', []))
 	get = self.bld.get_tgen_by_name
@@ -90,7 +90,7 @@ def debug_cs(self):
 	The C# targets may create .mdb or .pdb files::
 
 		def build(bld):
-			bld(features='cs', source='My.cs', type='library', gen='my.dll', csdebug='full')
+			bld(features='cs', source='My.cs', bintype='library', gen='my.dll', csdebug='full')
 			# csdebug is a value in [True, 'full', 'pdbonly']
 	"""
 	csdebug = getattr(self, 'csdebug', self.env.CSDEBUG)
@@ -166,7 +166,7 @@ def read_csshlib(self, name, paths=[]):
 
 		def build(bld):
 			bld.read_csshlib('ManagedLibrary.dll', paths=[bld.env.mylibrarypath])
-			bld(features='cs', source='Hi.cs', type='exe', gen='hi.exe', use='ManagedLibrary.dll')
+			bld(features='cs', source='Hi.cs', bintype='exe', gen='hi.exe', use='ManagedLibrary.dll')
 
 	:param name: Name of the library
 	:type name: string
