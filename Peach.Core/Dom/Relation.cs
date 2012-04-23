@@ -178,6 +178,13 @@ namespace Peach.Core.Dom
 						System.Diagnostics.Debugger.Break();
 
 					_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
+
+					if (_from != null)
+					{
+						// Verify _of and _from don't share Choice as common parent
+						if (FindCommonParent(_from, _of) is Choice)
+							throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+					}
 				}
 
 				return _of;
@@ -188,6 +195,13 @@ namespace Peach.Core.Dom
 				{
 					// Remove existing event
 					_of.Invalidated -= new InvalidatedEventHandler(OfInvalidated);
+				}
+
+				if (_from != null)
+				{
+					// Verify _of and _from don't share Choice as common parent
+					if (FindCommonParent(value, _from) is Choice)
+						throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + value.fullName);
 				}
 
 				_of = value;
@@ -218,6 +232,13 @@ namespace Peach.Core.Dom
 					{
 						_from = parent;
 					}
+
+					if (_of != null)
+					{
+						// Verify _of and _from don't share Choice as common parent
+						if (FindCommonParent(_from, _of) is Choice)
+							throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+					}
 				}
 
 				return _from;
@@ -225,6 +246,13 @@ namespace Peach.Core.Dom
 
 			set
 			{
+				if (_of != null)
+				{
+					// Verify _of and _from don't share Choice as common parent
+					if (FindCommonParent(value, _of) is Choice)
+						throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+				}
+
 				_from = value;
 				_fromName = _from.fullName;
 			}
@@ -271,6 +299,38 @@ namespace Peach.Core.Dom
 		/// </remarks>
 		/// <param name="value"></param>
 		public abstract void SetValue(Variant value);
+
+		/// <summary>
+		/// Find the first common parent between two DataElements
+		/// </summary>
+		/// <param name="elem1"></param>
+		/// <param name="elem2"></param>
+		/// <returns>Common parent of null</returns>
+		public DataElement FindCommonParent(DataElement elem1, DataElement elem2)
+		{
+			List<DataElement> elem1Parents = new List<DataElement>();
+			DataElementContainer parent = null;
+
+			parent = elem1.parent;
+			do
+			{
+				elem1Parents.Add(parent);
+				parent = parent.parent;
+			}
+			while (parent != null);
+
+			parent = elem2.parent;
+			do
+			{
+				if (elem1Parents.Contains(parent))
+					return parent;
+
+				parent = parent.parent;
+			}
+			while (parent != null);
+
+			return null;
+		}
 	}
 }
 

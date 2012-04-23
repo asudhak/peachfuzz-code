@@ -352,33 +352,36 @@ namespace Peach.Core.Cracker
 			while (currentElement != null)
 			{
 				currentElement = currentElement.nextSibling();
-				if (currentElement == null && currentElement.parent == null)
+
+				if (currentElement == null)
 					break;
-				else if (currentElement == null)
+
+				// Make sure we scape Choice's!
+				do
 				{
-					// Make sure we scape Choice's!
-					do
-					{
-						currentElement = currentElement.parent;
-					}
-					while (currentElement is Choice);
+					currentElement = currentElement.parent;
+				}
+				while (currentElement != null && currentElement is Choice);
+
+				if (currentElement == null)
+					break;
+
+				if (currentElement.isToken)
+				{
+					token = currentElement;
+					logger.Debug("isTokenNext(true): {0} {1}", element.fullName, size);
+					return true;
+				}
+
+				if (currentElement.hasLength)
+				{
+					size += currentElement.lengthAsBits;
 				}
 				else
 				{
-					if (currentElement.isToken)
-					{
-						token = currentElement;
-						logger.Debug("isTokenNext(true): {0} {1}", element.fullName, size);
-						return true;
-					}
-					if (currentElement.hasLength)
-						size += currentElement.lengthAsBits;
-					else
-					{
-						size = 0;
-						logger.Debug("isTokenNext(false): {0} {1}", element.fullName, size);
-						return false;
-					}
+					size = 0;
+					logger.Debug("isTokenNext(false): {0} {1}", element.fullName, size);
+					return false;
 				}
 			}
 
