@@ -388,9 +388,9 @@ def conf(f):
 
 		try:
 			return f(*k, **kw)
-		except Errors.ConfigurationError as e:
+		except Errors.ConfigurationError:
 			if mandatory:
-				raise e
+				raise
 
 	setattr(ConfigurationContext, f.__name__, fun)
 	setattr(Build.BuildContext, f.__name__, fun)
