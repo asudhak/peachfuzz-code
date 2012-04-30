@@ -674,9 +674,9 @@ def find_msvc(conf):
 def visual_studio_add_flags(self):
 	"""visual studio flags found in the system environment"""
 	v = self.env
-	try: v.prepend_value('INCLUDES', self.environ['INCLUDE'].split(';')) # notice the 'S'
+	try: v.prepend_value('INCLUDES', [x for x in self.environ['INCLUDE'].split(';') if x]) # notice the 'S'
 	except Exception: pass
-	try: v.prepend_value('LIBPATH', self.environ['LIB'].split(';'))
+	try: v.prepend_value('LIBPATH', [x for x in self.environ['LIB'].split(';') if x])
 	except Exception: pass
 
 @conf
