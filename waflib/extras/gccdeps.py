@@ -66,10 +66,6 @@ def post_run(self):
 
 		node = None
 		if os.path.isabs(x):
-
-			if not c_preproc.go_absolute:
-				continue
-
 			lock.acquire()
 			try:
 				node = bld.root.find_resource(x)
@@ -92,6 +88,10 @@ def post_run(self):
 		if not node:
 			raise ValueError('could not find %r for %r' % (x, self))
 		else:
+			if not c_preproc.go_absolute:
+				if not (node.is_child_of(bld.srcnode) or node.is_child_of(bld.bldnode)):
+					continue
+
 			if id(node) == id(self.inputs[0]):
 				# ignore the source file, it is already in the dependencies
 				# this way, successful config tests may be retrieved from the cache
