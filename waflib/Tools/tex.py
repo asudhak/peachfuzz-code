@@ -92,6 +92,21 @@ class tex(Task.Task):
 	Execute the program **makeindex**
 	"""
 
+	def exec_command(self, cmd, **kw):
+		"""
+		Override :py:meth:`waflib.Task.Task.exec_command` to execute the command without buffering (latex may prompt for inputs)
+
+		:return: the return code
+		:rtype: int
+		"""
+		bld = self.generator.bld
+		try:
+			if not kw.get('cwd', None):
+				kw['cwd'] = bld.cwd
+		except AttributeError:
+			bld.cwd = kw['cwd'] = bld.variant_dir
+		return Utils.subprocess.Popen(cmd, **kw).wait()
+
 	def scan_aux(self, node):
 		"""
 		A recursive regex-based scanner that finds included auxiliary files.
