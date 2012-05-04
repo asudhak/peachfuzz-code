@@ -37,6 +37,7 @@ def scan(self):
 	return (nodes, names)
 
 re_o = re.compile("\.o$")
+re_splitter = re.compile(r'(?<!\\)\s+') # split by space, except when spaces are escaped
 def post_run(self):
 	# The following code is executed by threads, it is not safe, so a lock is needed...
 
@@ -55,7 +56,7 @@ def post_run(self):
 
 	lst = txt.strip().split(':')
 	val = ":".join(lst[1:])
-	val = val.split()
+	val = [x.replace('\\ ', '') for x in re_splitter.split(val) if x]
 
 	nodes = []
 	bld = self.generator.bld
