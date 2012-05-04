@@ -56,7 +56,7 @@ def post_run(self):
 
 	lst = txt.strip().split(':')
 	val = ":".join(lst[1:])
-	val = [x.replace('\\ ', '') for x in re_splitter.split(val) if x]
+	val = [x.replace('\\ ', ' ') for x in re_splitter.split(val) if x]
 
 	nodes = []
 	bld = self.generator.bld
