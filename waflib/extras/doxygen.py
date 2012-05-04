@@ -52,7 +52,12 @@ class doxygen(Task.Task):
 				self.pars['INPUT'] = self.inputs[0].parent.abspath()
 
 		if not getattr(self, 'output_dir', None):
-			self.output_dir = self.generator.bld.root.find_dir(self.pars['OUTPUT_DIRECTORY'])
+			bld = self.generator.bld
+			# First try to find an absolute path, then find or declare a relative path
+			self.output_dir = bld.root.find_dir(self.pars['OUTPUT_DIRECTORY'])
+			if not self.output_dir:
+				self.output_dir = bld.path.find_or_declare(self.pars['OUTPUT_DIRECTORY'])
+
 
 		self.signature()
 		return Task.Task.runnable_status(self)
@@ -88,7 +93,7 @@ class doxygen(Task.Task):
 		#fmt = DOXY_STR % (self.inputs[0].parent.abspath())
 		cmd = Utils.subst_vars(DOXY_STR, self.env)
 		env = self.env.env or None
-		proc = Utils.subprocess.Popen(cmd, shell=True, stdin=Utils.subprocess.PIPE, env=env)
+		proc = Utils.subprocess.Popen(cmd, shell=True, stdin=Utils.subprocess.PIPE, env=env, cwd=self.generator.bld.path.get_bld().abspath())
 		proc.communicate(code)
 		return proc.returncode
 
