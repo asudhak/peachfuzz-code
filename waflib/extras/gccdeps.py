@@ -16,20 +16,22 @@ lock = threading.Lock()
 
 preprocessor_flag = '-MD'
 
-@feature('cc')
-@before_method('apply_core')
+@feature('c')
+@before_method('process_source')
 def add_mmd_cc(self):
-	if self.env.get_flat('CFLAGS').find(preprocessor_flag) < 0:
+	if self.env.CC_NAME in ('gcc', 'icc') and self.env.get_flat('CFLAGS').find(preprocessor_flag) < 0:
 		self.env.append_value('CFLAGS', [preprocessor_flag])
 
 @feature('cxx')
-@before_method('apply_core')
+@before_method('process_source')
 def add_mmd_cxx(self):
-	if self.env.get_flat('CXXFLAGS').find(preprocessor_flag) < 0:
+	if self.env.CC_NAME in ('gcc', 'icc') and self.env.get_flat('CXXFLAGS').find(preprocessor_flag) < 0:
 		self.env.append_value('CXXFLAGS', [preprocessor_flag])
 
 def scan(self):
 	"the scanner does not do anything initially"
+	if self.env.CC_NAME not in ('gcc', 'icc'):
+		return self.no_gccdeps_scan()
 	nodes = self.generator.bld.node_deps.get(self.uid(), [])
 	names = []
 	return (nodes, names)
@@ -37,6 +39,9 @@ def scan(self):
 re_o = re.compile("\.o$")
 def post_run(self):
 	# The following code is executed by threads, it is not safe, so a lock is needed...
+
+	if self.env.CC_NAME not in ('gcc', 'icc'):
+		return self.no_gccdeps_post_run()
 
 	if getattr(self, 'cached', None):
 		return Task.Task.post_run(self)
@@ -106,17 +111,23 @@ def post_run(self):
 	Task.Task.post_run(self)
 
 def sig_implicit_deps(self):
+	if self.env.CC_NAME not in ('gcc', 'icc'):
+		return self.no_gccdeps_sig_implicit_deps()
 	try:
 		return Task.Task.sig_implicit_deps(self)
 	except Errors.WafError:
 		return Utils.SIG_NIL
 
-for name in 'cc cxx'.split():
+for name in 'c cxx'.split():
 	try:
 		cls = Task.classes[name]
 	except KeyError:
 		pass
 	else:
+		cls.no_gccdeps_post_run = cls.post_run
+		cls.no_gccdeps_scan = cls.scan
+		cls.no_gccdeps_sig_implicit_deps = cls.sig_implicit_deps
+
 		cls.post_run = post_run
 		cls.scan = scan
 		cls.sig_implicit_deps = sig_implicit_deps
