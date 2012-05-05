@@ -1,1 +1,1 @@
-#define SOME_VALUE 0x1111
+#define SOME_VALUE 0x1a5
