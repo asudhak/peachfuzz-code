@@ -188,7 +188,7 @@ class Node(object):
 		os.chmod(self.abspath(), val)
 
 	def delete(self):
-		"""Delete the file/folder physically (but not the node)"""
+		"""Delete the file/folders, and remove this node from the tree. It becomes invalid after that"""
 		try:
 			if getattr(self, 'children', None):
 				shutil.rmtree(self.abspath())
@@ -196,11 +196,7 @@ class Node(object):
 				os.unlink(self.abspath())
 		except OSError:
 			pass
-
-		try:
-			delattr(self, 'children')
-		except AttributeError:
-			pass
+		self.evict()
 
 	def evict(self):
 		"""Internal - called when a node is removed"""
