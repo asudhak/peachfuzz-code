@@ -17,6 +17,7 @@ NEW IN WAF 1.7.0
 * Ported demos/asm to 64-bit, forcing gcc over as
 * Updated the gccdeps tool #1162
 * Improved the C# processing #1154, #1153
+* Removed the empty flags from LIB/INCLUDE in the msvc configuration #1159
 
 NEW IN WAF 1.6.11
 -----------------
