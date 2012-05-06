@@ -14,7 +14,9 @@ NEW IN WAF 1.7.0
 * Removed the default DLL_EXPORT define on gcc/g++ shared libraries
 * Calling ctx.root.ant_glob(abspath) will return results #1135
 * New case-insentive option for ant_glob #1148
-* Force gcc instead of as
+* Ported demos/asm to 64-bit, forcing gcc over as
+* Updated the gccdeps tool #1162
+* Improved the C# processing #1154, #1153
 
 NEW IN WAF 1.6.11
 -----------------
