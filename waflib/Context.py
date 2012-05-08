@@ -322,11 +322,19 @@ class Context(ctx):
 		if self.logger:
 			self.logger.info(cmd)
 
-		kw['stdout'] = kw['stderr'] = subprocess.PIPE
+		if 'stdout' not in kw:
+			kw['stdout'] = subprocess.PIPE
+		if 'stderr' not in kw:
+			kw['stderr'] = subprocess.PIPE
 
 		try:
-			p = subprocess.Popen(cmd, **kw)
-			(out, err) = p.communicate()
+			if kw['stdout'] or kw['stderr']:
+				p = subprocess.Popen(cmd, **kw)
+				(out, err) = p.communicate()
+				ret = p.returncode
+			else:
+				out, err = (None, None)
+				ret = subprocess.Popen(cmd, **kw).wait()
 		except Exception as e:
 			raise Errors.WafError('Execution failure: %s' % str(e), ex=e)
 
@@ -345,7 +353,7 @@ class Context(ctx):
 			else:
 				sys.stderr.write(err)
 
-		return p.returncode
+		return ret
 
 	def cmd_and_log(self, cmd, **kw):
 		"""
