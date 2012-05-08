@@ -45,7 +45,7 @@ def bibunitscan(self):
 	nodes = []
 	if not node: return nodes
 
-	code = Utils.readf(node.abspath())
+	code = node.read()
 
 	for match in re_bibunit.finditer(code):
 		path = match.group('file')
