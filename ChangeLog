@@ -18,6 +18,7 @@ NEW IN WAF 1.7.0
 * Updated the gccdeps tool #1162
 * Improved the C# processing #1154, #1153
 * Removed the empty flags from LIB/INCLUDE in the msvc configuration #1159
+* New 'encoding' parameter to bld.subst()
 
 NEW IN WAF 1.6.11
 -----------------

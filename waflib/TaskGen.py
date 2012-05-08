@@ -692,6 +692,7 @@ class subst_pc(Task.Task):
 				tmp = getattr(self.generator, x, '') or self.env.get_flat(x) or self.env.get_flat(x.upper())
 				d[x] = str(tmp)
 
+		code = code % d
 		try:
 			code = code.encode(getattr(self.generator, 'encoding', 'ISO8859-1'))
 		except AttributeError:
