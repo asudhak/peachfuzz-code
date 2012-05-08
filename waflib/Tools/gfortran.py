@@ -86,5 +86,6 @@ def configure(conf):
 	conf.find_gfortran()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.gfortran_flags()
 	conf.gfortran_modifier_platform()

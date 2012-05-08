@@ -55,5 +55,6 @@ def configure(conf):
 	conf.find_program('xiar', var='AR')
 	conf.env.ARFLAGS = 'rcs'
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.ifort_modifier_platform()
 

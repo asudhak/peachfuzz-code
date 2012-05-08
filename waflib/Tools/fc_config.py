@@ -46,6 +46,13 @@ def fc_flags(conf):
 
 	v['SONAME_ST']           = '-Wl,-h,%s'
 
+@conf
+def fc_add_flags(conf):
+	"""
+	FCFLAGS?
+	"""
+	conf.add_os_flags('FCFLAGS')
+	conf.add_os_flags('LDFLAGS', 'LINKFLAGS')
 
 @conf
 def check_fortran(self, *k, **kw):
