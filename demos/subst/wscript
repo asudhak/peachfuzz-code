@@ -18,6 +18,7 @@ def build(bld):
 		features     = 'subst', # the feature 'subst' overrides the source/target processing
 		source       = 'foo.in', # list of string or nodes
 		target       = 'foo.txt', # list of strings or nodes
+		encoding     = 'ascii', # file encoding for python3, default is ISO8859-1
 		install_path = '/tmp/uff/', # installation path, optional
 		chmod        = Utils.O755, # installation mode, optional
 		PREFIX       = bld.env.PREFIX, # variables to use in the substitution
