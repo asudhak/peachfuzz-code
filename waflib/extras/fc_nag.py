@@ -54,6 +54,7 @@ def configure(conf):
 	conf.find_nag()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.nag_flags()
 	conf.nag_modifier_platform()
 

@@ -46,5 +46,6 @@ def configure(conf):
 	conf.find_crayftn()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.crayftn_flags()
 

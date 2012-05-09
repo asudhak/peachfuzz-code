@@ -61,5 +61,6 @@ def configure(conf):
 	conf.find_pgfortran()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.pgfortran_flags()
 

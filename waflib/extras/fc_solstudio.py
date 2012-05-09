@@ -55,6 +55,7 @@ def configure(conf):
 	conf.find_solstudio()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.solstudio_flags()
 	conf.solstudio_modifier_platform()
 
