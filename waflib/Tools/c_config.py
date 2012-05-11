@@ -913,7 +913,7 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 	:type remove: bool
 	"""
 	if not configfile: configfile = WAF_CONFIG_H
-	waf_guard = guard or '_%s_WAF' % Utils.quote_define_name(configfile)
+	waf_guard = guard or 'W_%s_WAF' % Utils.quote_define_name(configfile)
 
 	node = top and self.bldnode or self.path.get_bld()
 	node = node.make_node(configfile)
