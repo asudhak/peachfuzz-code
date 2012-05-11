@@ -51,6 +51,7 @@ def configure(conf):
 	conf.find_openf95()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.openf95_flags()
 	conf.openf95_modifier_platform()
 

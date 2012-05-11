@@ -53,6 +53,7 @@ def configure(conf):
 	conf.find_xlf()
 	conf.find_ar()
 	conf.fc_flags()
+	conf.fc_add_flags()
 	conf.xlf_flags()
 	conf.xlf_modifier_platform()
 
