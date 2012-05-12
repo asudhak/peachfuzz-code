@@ -1,24 +1,23 @@
 NEW IN WAF 1.7.0
 ----------------
-* Do not load the compat15 tool by default
-* Minor API cleanup
-* Require Python >= 2.4
-* Utils.writef (similar to Utils.readf)
+* The compat15 tool is not loaded by default
+* Python >= 2.4 is now required
+* Added Utils.writef (similar to Utils.readf)
 * Added Node.evict() to provide more control over invalid references
 * Do not raise exception on --help when running on python 2.4
 * Node.search -> Node.search_node (consistent with make_node and find_node)
-* Report errors on configuration test failures with execute=True #1111
+* Errors are reported on configuration test failures with execute=True #1111
 * Added header prefixing (autoconf-like) #1117
 * Removed the warnings on "waf install" #1120
 * Extended bld.subst() to perform simple copies to the build directory
 * Removed the default DLL_EXPORT define on gcc/g++ shared libraries
-* Calling ctx.root.ant_glob(abspath) will return results #1135
+* Calling ctx.root.ant_glob(abspath) will now return results #1135
 * New case-insentive option for ant_glob #1148
 * Ported demos/asm to 64-bit, forcing gcc over as
 * Updated the gccdeps tool #1162
 * Improved the C# processing #1154, #1153
 * Removed the empty flags from LIB/INCLUDE in the msvc configuration #1159
-* New 'encoding' parameter to bld.subst()
+* Added an 'encoding' parameter to bld.subst()
 
 NEW IN WAF 1.6.11
 -----------------
