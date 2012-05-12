@@ -1,15 +1,24 @@
 #!/usr/bin/env python
 # encoding: utf-8
 # Thomas Nagy, 2006-2010 (ita)
+# Qt4 convenience tool
 
 """
-Support for the Qt4 libraries and tools::
+
+Tool Description
+================
+
+This tool helps with finding Qt4 tools and libraries,
+and also provides syntactic sugar for using Qt4 tools.
+
+The following snippet illustrates the tool usage::
 
 	def options(opt):
 		opt.load('compiler_cxx qt4')
+
 	def configure(conf):
 		conf.load('compiler_cxx qt4')
-		conf.env.append_value('CXXFLAGS', ['-g']) # test
+
 	def build(bld):
 		bld(
 			features = 'qt4 cxx cxxprogram',
@@ -18,23 +27,41 @@ Support for the Qt4 libraries and tools::
 			target   = 'window',
 		)
 
-The C++ files must include the .moc files, which is regarded as the
-best practice (much faster compilations). This also implies that the
-include paths have to be set properly. To have the include paths added
-automatically, use the following::
+Here, the UI description and resource files will be processed
+to generate code.
 
-	from waflib.TaskGen import feature, before_method, after_method
-	@feature('cxx')
-	@after_method('process_source')
-	@before_method('apply_incpaths')
-	def add_includes_paths(self):
-		incs = set(self.to_list(getattr(self, 'includes', '')))
-		for x in self.compiled_tasks:
-			incs.add(x.inputs[0].parent.path_from(self.path))
-		self.includes = list(incs)
+Usage
+=====
 
-Another tool provides a Qt processing that does not require the moc
-includes. See http://code.google.com/p/waf/source/browse/trunk/playground/slow_qt/
+Load the "qt4" tool.
+
+You also need to edit your sources accordingly:
+
+- the normal way of doing things is to have your C++ files
+  include the .moc file.
+  This is regarded as the best practice (and provides much faster
+  compilations).
+  It also implies that the include paths have beenset properly.
+
+- to have the include paths added automatically, use the following::
+
+     from waflib.TaskGen import feature, before_method, after_method
+     @feature('cxx')
+     @after_method('process_source')
+     @before_method('apply_incpaths')
+     def add_includes_paths(self):
+        incs = set(self.to_list(getattr(self, 'includes', '')))
+        for x in self.compiled_tasks:
+            incs.add(x.inputs[0].parent.path_from(self.path))
+        self.includes = list(incs)
+
+Note: another tool provides Qt processing that does not require
+.moc includes, see ``playground/slow_qt/``self.
+
+A few options (--qt{dir,bin,...}) and environment variables
+(QT4_{ROOT,DIR,MOC,UIC,XCOMPILE}) allow finer tuning of the tool,
+tool path selection, etc; please read the source for more info.
+
 """
 
 try:
@@ -414,7 +441,7 @@ def find_qt4_binaries(self):
 	# the qt directory has been given from QT4_ROOT - deduce the qt binary path
 	if not qtdir:
 		qtdir = self.environ.get('QT4_ROOT', '')
-		qtbin = os.path.join(qtdir, 'bin')
+		qtbin = self.environ.get('QT4_BIN', None) or os.path.join(qtdir, 'bin')
 
 	if qtbin:
 		paths = [qtbin]
@@ -465,6 +492,8 @@ def find_qt4_binaries(self):
 	qtbin = self.cmd_and_log([self.env.QMAKE, '-query', 'QT_INSTALL_BINS']).strip() + os.sep
 
 	def find_bin(lst, var):
+		if var in env:
+			return
 		for f in lst:
 			try:
 				ret = self.find_program(f, path_list=paths)
@@ -503,7 +532,7 @@ def find_qt4_binaries(self):
 
 @conf
 def find_qt4_libraries(self):
-	qtlibs = getattr(Options.options, 'qtlibs', '')
+	qtlibs = getattr(Options.options, 'qtlibs', None) or os.environ.get("QT4_LIBDIR", None)
 	if not qtlibs:
 		try:
 			qtlibs = self.cmd_and_log([self.env.QMAKE, '-query', 'QT_INSTALL_LIBS']).strip()
@@ -512,12 +541,14 @@ def find_qt4_libraries(self):
 			qtlibs = os.path.join(qtdir, 'lib')
 	self.msg('Found the Qt4 libraries in', qtlibs)
 
-	qtincludes = self.cmd_and_log([self.env.QMAKE, '-query', 'QT_INSTALL_HEADERS']).strip()
+	qtincludes =  os.environ.get("QT4_INCLUDES", None) or self.cmd_and_log([self.env.QMAKE, '-query', 'QT_INSTALL_HEADERS']).strip()
 	env = self.env
 	if not 'PKG_CONFIG_PATH' in os.environ:
 		os.environ['PKG_CONFIG_PATH'] = '%s:%s/pkgconfig:/usr/lib/qt4/lib/pkgconfig:/opt/qt4/lib/pkgconfig:/usr/lib/qt4/lib:/opt/qt4/lib' % (qtlibs, qtlibs)
 
 	try:
+		if os.environ.get("QT4_XCOMPILE", None):
+			raise self.errors.ConfigurationError()
 		self.check_cfg(atleast_pkgconfig_version='0.1')
 	except self.errors.ConfigurationError:
 		for i in self.qt4_vars:
@@ -532,7 +563,7 @@ def find_qt4_libraries(self):
 				else:
 					self.msg('Checking for %s' % i, False, 'YELLOW')
 				env.append_unique('INCLUDES_' + uselib, os.path.join(qtlibs, frameworkName, 'Headers'))
-			elif sys.platform != "win32":
+			elif env.DEST_OS != "win32":
 				qtDynamicLib = os.path.join(qtlibs, "lib" + i + ".so")
 				qtStaticLib = os.path.join(qtlibs, "lib" + i + ".a")
 				if os.path.exists(qtDynamicLib):
