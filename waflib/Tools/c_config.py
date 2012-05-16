@@ -899,8 +899,6 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 
 	:param configfile: relative path to the file to create
 	:type configfile: string
-	:param env: config set to read the definitions from (default is conf.env)
-	:type env: :py:class:`waflib.ConfigSet.ConfigSet`
 	:param top: write the configuration header from the build directory (default is from the current path)
 	:type top: bool
 	:param defines: add the defines (yes by default)
@@ -912,6 +910,10 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 	:param remove: remove the defines after they are added (yes by default)
 	:type remove: bool
 	"""
+	# TODO waf 1.8: the parameter env is not used
+	if env:
+		Logs.warn('Cannot pass env to write_config_header')
+
 	if not configfile: configfile = WAF_CONFIG_H
 	waf_guard = guard or 'W_%s_WAF' % Utils.quote_define_name(configfile)
 
@@ -926,10 +928,8 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 
 	node.write('\n'.join(lst))
 
-	env = env or self.env
-
 	# config files are not removed on "waf clean"
-	env.append_unique(Build.CFG_FILES, [node.abspath()])
+	self.env.append_unique(Build.CFG_FILES, [node.abspath()])
 
 	if remove:
 		for key in self.env[DEFKEYS]:
