@@ -193,7 +193,7 @@ class OptionsContext(Context.Context):
 				ctx.add_option('-u', '--use', dest='use', default=False, action='store_true',
 					help='a boolean option')
 		"""
-		self.parser.add_option(*k, **kw)
+		return self.parser.add_option(*k, **kw)
 
 	def add_option_group(self, *k, **kw):
 		"""
