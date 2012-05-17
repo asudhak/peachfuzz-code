@@ -170,11 +170,7 @@ class Node(object):
 		:type  flags: string
 		:param flags: Write mode
 		"""
-		f = open(self.abspath(), flags)
-		try:
-			f.write(data)
-		finally:
-			f.close()
+		Utils.writef(self.abspath(), data, flags)
 
 	def chmod(self, val):
 		"""
