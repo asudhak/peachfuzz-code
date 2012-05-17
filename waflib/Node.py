@@ -170,13 +170,11 @@ class Node(object):
 		:type  flags: string
 		:param flags: Write mode
 		"""
-		f = None
+		f = open(self.abspath(), flags)
 		try:
-			f = open(self.abspath(), flags)
 			f.write(data)
 		finally:
-			if f:
-				f.close()
+			f.close()
 
 	def chmod(self, val):
 		"""

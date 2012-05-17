@@ -153,7 +153,7 @@ def writef(fname, data, m='w'):
 	"""
 	f = open(fname, m)
 	try:
-		txt = f.write(data)
+		f.write(data)
 	finally:
 		f.close()
 
