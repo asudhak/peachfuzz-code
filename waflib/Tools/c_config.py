@@ -134,7 +134,7 @@ def parse_flags(self, line, uselib, env=None, force_static=False):
 			tmp = [x, lst.pop(0)]
 			app('CFLAGS', tmp)
 			app('CXXFLAGS', tmp)
-		elif st == '-D' or (self.env.CXX_NAME == 'msvc' and st == '/D'): # not perfect but..
+		elif st == '-D' or (env.CXX_NAME == 'msvc' and st == '/D'): # not perfect but..
 			if not ot: ot = lst.pop(0)
 			app('DEFINES_' + uselib, [ot])
 		elif st == '-l':
@@ -367,8 +367,6 @@ def validate_c(self, kw):
 	"""
 	pre-check the parameters that will be given to run_c_code
 
-	:param env: an optional environment (modified -> provide a copy)
-	:type env: :py:class:`waflib.ConfigSet.ConfigSet`
 	:param compiler: c or cxx (tries to guess what is best)
 	:type compiler: string
 	:param type: cprogram, cshlib, cstlib - not required if *features are given directly*
