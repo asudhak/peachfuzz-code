@@ -28,6 +28,13 @@ def add_cython_file(self, node):
 	if 'cxx' in self.features:
 		self.env.append_unique('CYTHONFLAGS', '--cplus')
 		ext = '.cc'
+
+	for x in getattr(self, 'cython_includes', []):
+		# TODO re-use these nodes in "scan" belose
+		d = self.path.find_dir(x)
+		if d:
+			self.env.append_unique('CYTHONFLAGS', '-I%s' % d.abspath())
+
 	tsk = self.create_task('cython', node, node.change_ext(ext))
 	self.source += tsk.outputs
 
