@@ -30,14 +30,18 @@ def modif(dir, name, fun):
 
 	filename = os.path.join(dir, name)
 	f = open(filename, 'r')
-	txt = f.read()
-	f.close()
+	try:
+		txt = f.read()
+	finally:
+		f.close()
 
 	txt = fun(txt)
 
 	f = open(filename, 'w')
-	f.write(txt)
-	f.close()
+	try:
+		f.write(txt)
+	finally:
+		f.close()
 
 def subst(*k):
 	"""register a substitution function"""

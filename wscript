@@ -36,16 +36,20 @@ Configure.autoconfig = 1
 def sub_file(fname, lst):
 
 	f = open(fname, 'rU')
-	txt = f.read()
-	f.close()
+	try:
+		txt = f.read()
+	finally:
+		f.close()
 
 	for (key, val) in lst:
 		re_pat = re.compile(key, re.M)
 		txt = re_pat.sub(val, txt)
 
 	f = open(fname, 'w')
-	f.write(txt)
-	f.close()
+	try:
+		f.write(txt)
+	finally:
+		f.close()
 
 print("------> Executing code from the top-level wscript <-----")
 def init(ctx):
@@ -198,17 +202,25 @@ def process_decorators(body):
 def sfilter(path):
 	if sys.version_info[0] >= 3 and Options.options.strip_comments:
 		f = open(path, "rb")
-		tk = tokenize.tokenize(f.readline)
-		next(tk) # the first one is always tokenize.ENCODING for Python 3, ignore it
-		cnt = process_tokens(tk)
+		try:
+			tk = tokenize.tokenize(f.readline)
+			next(tk) # the first one is always tokenize.ENCODING for Python 3, ignore it
+			cnt = process_tokens(tk)
+		finally:
+			f.close()
 	elif Options.options.strip_comments and path.endswith('.py'):
 		f = open(path, "r")
-		cnt = process_tokens(tokenize.generate_tokens(f.readline))
+		try:
+			cnt = process_tokens(tokenize.generate_tokens(f.readline))
+		finally:
+			f.close()
 	else:
 		f = open(path, "r")
-		cnt = f.read()
+		try:
+			cnt = f.read()
+		finally:
+			f.close()
 
-	f.close()
 	if path.endswith('.py') :
 		# WARNING: since we now require python 2.4, we do not process the decorators anymore
 		# if you need such a thing, uncomment the code below:
@@ -266,8 +278,10 @@ def create_waf(*k, **kw):
 	tar.close()
 
 	f = open('waf-light', 'rU')
-	code1 = f.read()
-	f.close()
+	try:
+		code1 = f.read()
+	finally:
+		f.close()
 
 	# now store the revision unique number in waf
 	#compute_revision()
@@ -286,8 +300,10 @@ def create_waf(*k, **kw):
 		code1 = code1.replace('bunzip2', 'gzip -d')
 
 	f = open('%s.tar.%s' % (mw, zipType), 'rb')
-	cnt = f.read()
-	f.close()
+	try:
+		cnt = f.read()
+	finally:
+		f.close()
 
 	# the REVISION value is the md5 sum of the binary blob (facilitate audits)
 	m = md5()
@@ -310,20 +326,23 @@ def create_waf(*k, **kw):
 	# The reverse order prevent collisions
 	(cnt, C2) = find_unused(cnt, '\r')
 	(cnt, C1) = find_unused(cnt, '\n')
-	f = open('waf', 'wb')
-
 	ccc = code1.replace("C1='x'", "C1='%s'" % C1).replace("C2='x'", "C2='%s'" % C2)
 
-	f.write(ccc.encode())
-	f.write(b'#==>\n#')
-	f.write(cnt)
-	f.write(b'\n#<==\n')
-	f.close()
+	f = open('waf', 'wb')
+	try:
+		f.write(ccc.encode())
+		f.write(b'#==>\n#')
+		f.write(cnt)
+		f.write(b'\n#<==\n')
+	finally:
+		f.close()
 
 	if sys.platform == 'win32' or Options.options.make_batch:
 		f = open('waf.bat', 'w')
-		f.write('@python -x "%~dp0waf" %* & exit /b\n')
-		f.close()
+		try:
+			f.write('@python -x "%~dp0waf" %* & exit /b\n')
+		finally:
+			f.close()
 
 	if sys.platform != 'win32':
 		os.chmod('waf', Utils.O755)
@@ -332,21 +351,16 @@ def create_waf(*k, **kw):
 def make_copy(inf, outf):
 	(a, b, cnt) = sfilter(inf)
 	f = open(outf, "wb")
-	f.write(cnt)
-	f.close()
+	try:
+		f.write(cnt)
+	finally:
+		f.close()
 
 def configure(conf):
 	conf.load('python')
 	conf.check_python_version((2,4))
 
-
 def build(bld):
 	waf = bld.path.make_node('waf') # create the node right here
 	bld(name='create_waf', rule=create_waf, target=waf, always=True, color='PINK', update_outputs=True)
-
-
-#def dist():
-#	import Scripting
-#	Scripting.g_dist_exts += ['Weak.py'] # shows how to exclude a file from dist
-#	Scripting.Dist(APPNAME, VERSION)
 
