@@ -112,8 +112,9 @@ if is_win32 and 'NOCOLOR' in os.environ:
 
 def readf(fname, m='r'):
 	"""
-	Read an entire file into a string, in practice the wrapper
-	node.read(..) should be used instead of this method::
+	Read an entire file into a string, use this function instead of os.open() whenever possible.
+
+	In practice the wrapper node.read(..) should be used instead of this method::
 
 		def build(ctx):
 			from waflib import Utils
@@ -136,8 +137,9 @@ def readf(fname, m='r'):
 
 def writef(fname, data, m='w'):
 	"""
-	Write an entire file from a string, in practice the wrapper
-	node.write(..) should be used instead of this method::
+	Write an entire file from a string, use this function instead of os.open() whenever possible.
+
+	In practice the wrapper node.write(..) should be used instead of this method::
 
 		def build(ctx):
 			from waflib import Utils
@@ -157,36 +159,82 @@ def writef(fname, data, m='w'):
 	finally:
 		f.close()
 
-def h_file(filename):
+def h_file(fname):
 	"""
 	Compute a hash value for a file by using md5. This method may be replaced by
 	a faster version if necessary. The following uses the file size and the timestamp value::
 
 		import stat
 		from waflib import Utils
-		def h_file(filename):
-			st = os.stat(filename)
+		def h_file(fname):
+			st = os.stat(fname)
 			if stat.S_ISDIR(st[stat.ST_MODE]): raise IOError('not a file')
 			m = Utils.md5()
 			m.update(str(st.st_mtime))
 			m.update(str(st.st_size))
-			m.update(filename)
+			m.update(fname)
 			return m.digest()
 		Utils.h_file = h_file
 
-	:type filename: string
-	:param filename: path to the file to hash
+	:type fname: string
+	:param fname: path to the file to hash
 	:return: hash of the file contents
 	"""
-	f = open(filename, 'rb')
+	f = open(fname, 'rb')
 	m = md5()
 	try:
-		while filename:
-			filename = f.read(100000)
-			m.update(filename)
+		while fname:
+			fname = f.read(200000)
+			m.update(fname)
 	finally:
 		f.close()
 	return m.digest()
+
+if hasattr(os, 'O_NOINHERIT'):
+	def readf_win32(f, m='r'):
+		mod = 'b' in m and os.O_BINARY or os.O_TEXT
+		fd = os.open(f, mod | os.O_RDONLY | os.O_NOINHERIT)
+		if fd == -1:
+			raise OSError('Cannot read from %r' % f)
+		f = os.fdopen(fd, flags)
+		try:
+			txt = f.read()
+		finally:
+			f.close()
+		return txt
+
+	def writef_win32(f, data, m='w'):
+		mod = 'b' in m and os.O_BINARY or os.O_TEXT
+		fd = os.open(f, mod | os.O_RDWR | os.O_NOINHERIT | os.O_CREAT)
+		if fd == -1:
+			raise OSError('Cannot write to %r' % f)
+		f = os.fdopen(fd, flags)
+		try:
+			f.write(data)
+		finally:
+			f.close()
+
+	def h_file_win32(fname):
+		fd = os.open(fname, os.O_BINARY | os.O_RDONLY | os.O_NOINHERIT)
+		if fd == -1:
+			raise OSError('Cannot read from %r' % fname)
+		f = os.fdopen(fd, 'rb')
+		m = md5()
+		try:
+			while fname:
+				fname = f.read(200000)
+				m.update(fname)
+		finally:
+			f.close()
+		return m.digest()
+
+	# replace the default functions
+	readf_old = readf
+	writef_old = writef
+	h_file_old = h_file
+	readf = readf_win32
+	writef = writef_win32
+	h_file = h_file_win32
 
 try:
 	x = ''.encode('hex')
