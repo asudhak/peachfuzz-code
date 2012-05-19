@@ -54,24 +54,17 @@ except AttributeError:
 		if filename in Build.hashes_md5_tstamp:
 			if Build.hashes_md5_tstamp[filename][0] == str(st.st_mtime):
 				return Build.hashes_md5_tstamp[filename][1]
-		m = Utils.md5()
-
 		if STRONGEST:
-			f = open(filename, 'rb')
-			read = 1
-			try:
-				while read:
-					read = f.read(100000)
-					m.update(read)
-			finally:
-				f.close()
+			ret = Utils.h_file_no_md5(filename)
+			Build.hashes_md5_tstamp[filename] = (str(st.st_mtime), ret)
+			return ret
 		else:
+			m = Utils.md5()
 			m.update(str(st.st_mtime))
 			m.update(str(st.st_size))
 			m.update(filename)
-
-		# ensure that the cache is overwritten
-		Build.hashes_md5_tstamp[filename] = (str(st.st_mtime), m.digest())
-		return m.digest()
+			Build.hashes_md5_tstamp[filename] = (str(st.st_mtime), m.digest())
+			return m.digest()
+	Utils.h_file_no_md5 = Utils.h_file
 	Utils.h_file = h_file
 
