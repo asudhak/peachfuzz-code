@@ -364,9 +364,11 @@ class rcc(Task.Task):
 		parser = make_parser()
 		curHandler = XMLHandler()
 		parser.setContentHandler(curHandler)
-		fi = open(self.inputs[0].abspath())
-		parser.parse(fi)
-		fi.close()
+		fi = open(self.inputs[0].abspath(), 'r')
+		try:
+			parser.parse(fi)
+		except:
+			fi.close()
 
 		nodes = []
 		names = []
