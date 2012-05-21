@@ -223,6 +223,9 @@ namespace PeachFuzzBang
 				monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 				monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
 
+				if (!checkBoxCpuKill.Checked)
+					monitor.parameters["NoCpuKill"] = new Variant("true");
+
 				if (radioButtonDebuggerStartProcess.Checked)
 					monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
 				else if (radioButtonDebuggerAttachToProcess.Checked)

@@ -128,10 +128,10 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg == null)
 				return;
 
+			_dbg.StopDebugger();
+
 			// remember if we caught an exception
 			var b = this.caughtException;
-
-			_dbg.StopDebugger();
 
 			dbgExited = true;
 			_dbg = null;

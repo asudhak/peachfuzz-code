@@ -92,10 +92,15 @@ namespace PeachFuzzBang
 				ctrl.Maximum = max;
 			}
 
+			uint currentIteration = 0;
 			protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 			{
-				_form.progressBarOuputFuzzing.Invoke(new DeligateIncrement(Increment),
-					new object[] { _form.progressBarOuputFuzzing });
+				// Don't increment if we are replaying the same iteration
+				if(this.currentIteration != currentIteration)
+					_form.progressBarOuputFuzzing.Invoke(new DeligateIncrement(Increment),
+						new object[] { _form.progressBarOuputFuzzing });
+				
+				this.currentIteration = currentIteration;
 				
 				if (totalIterations == null)
 				{

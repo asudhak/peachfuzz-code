@@ -11,11 +11,15 @@
 void Function2(FILE* fd)
 {
 	char buffer[20];
+	int len = 0;
 
-	int len = fread(buffer, 1, 1024, fd);
+	for(; !feof(fd); len++) buffer[len] = fgetc(fd);
 	buffer[len] = 0;
 
-	printf("Length of file is %d.\n", strlen(buffer));
+	printf("Length of file is %d.\n", len);
+
+	//if(rand() % 2 == 0)
+	//	memset(buffer, 'A', sizeof(buffer)*1000);
 }
 
 void Function1(FILE* fd)

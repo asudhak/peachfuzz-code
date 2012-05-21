@@ -8,6 +8,7 @@ using namespace System;
 void MainLoop();
 void ProcessDebugEvent(DEBUG_EVENT* DebugEv);
 
+HANDLE hMutexHandlingDebugEvent = NULL;
 int _attachToProcessId = 0;
 WCHAR* _command = NULL;
 DWORD _dwThreadId = 0;
@@ -81,6 +82,8 @@ DWORD WINAPI _AttachToProcess(LPVOID lpParam)
 void MainLoop()
 {
 	DEBUG_EVENT* debugEvent = new DEBUG_EVENT();
+	if(hMutexHandlingDebugEvent == NULL)
+		hMutexHandlingDebugEvent = CreateMutex(NULL, FALSE, NULL);
 
 	SetEvent(_ProcessStarted);
 
@@ -103,6 +106,7 @@ void MainLoop()
 void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 {
 	BOOL handle = FALSE;
+	WaitForSingleObject(hMutexHandlingDebugEvent, INFINITE);
 
 	switch (DebugEv->dwDebugEventCode)
 	{
@@ -110,6 +114,9 @@ void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 
 			switch (DebugEv->u.Exception.ExceptionRecord.ExceptionCode)
 			{
+				case EXCEPTION_BREAKPOINT:
+					break;
+
 				case EXCEPTION_ACCESS_VIOLATION:
 
 					if(DebugEv->u.Exception.dwFirstChance == 1)
@@ -140,6 +147,8 @@ void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 					}
 
 					_AccessViolation = TRUE;
+					_AccessViolation = TRUE;
+					_AccessViolation = TRUE;
 					_ExitDebugger = TRUE;
 
 					break;
@@ -162,6 +171,8 @@ void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 		default:
 			break;
 	}
+
+	ReleaseMutex(hMutexHandlingDebugEvent);
 }
 
 namespace PeachCoreDebuggersWindows {
@@ -249,8 +260,15 @@ namespace PeachCoreDebuggersWindows {
 		// Did we see an access violation?
 		bool HasAccessViolation()
 		{
+			WaitForSingleObject(hMutexHandlingDebugEvent, INFINITE);
+
 			if(_AccessViolation == TRUE)
+			{
+				ReleaseMutex(hMutexHandlingDebugEvent);
 				return true;
+			}
+
+			ReleaseMutex(hMutexHandlingDebugEvent);
 		}
 
 		// Stop our debugger

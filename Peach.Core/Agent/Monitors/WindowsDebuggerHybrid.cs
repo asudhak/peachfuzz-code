@@ -124,6 +124,14 @@ namespace Peach.Core.Agent.Monitors
 			//ChannelServices.RegisterChannel(_ipcChannel, false);
 		}
 
+		/// <summary>
+		/// Make sure we clean up debuggers
+		/// </summary>
+		~WindowsDebuggerHybrid()
+		{
+			_FinishDebugger();
+		}
+
 		protected string FindWinDbg()
 		{
 			// Lets try a few common places before failing.
@@ -287,7 +295,7 @@ namespace Peach.Core.Agent.Monitors
 
 				throw new ReplayTestException();
 			}
-			else if (_hybrid && _replay)
+			else if (_debugger != null && _hybrid)
 			{
 				_replay = false;
 
@@ -307,7 +315,10 @@ namespace Peach.Core.Agent.Monitors
 				}
 
 				if (_debugger != null && _hybrid && !fault)
+				{
 					_StopDebugger();
+					_FinishDebugger();
+				}
 			}
 			else if (_debugger != null && _debugger.caughtException)
 			{
@@ -327,7 +338,10 @@ namespace Peach.Core.Agent.Monitors
 			data.Add(_name + "WindowsDebuggerHybrid", _debugger.crashInfo);
 
 			if (_hybrid)
+			{
 				_StopDebugger();
+				_FinishDebugger();
+			}
 		}
 
 		public override bool MustStop()
@@ -551,7 +565,8 @@ namespace Peach.Core.Agent.Monitors
 			{
 				try
 				{
-					_debuggerProcess.Kill();
+					if(!_debuggerProcess.WaitForExit(2000))
+						_debuggerProcess.Kill();
 				}
 				catch
 				{
@@ -563,8 +578,6 @@ namespace Peach.Core.Agent.Monitors
 
 		protected void _StopDebugger()
 		{
-			_replay = false;
-
 			if (_systemDebugger != null)
 			{
 				try
@@ -584,6 +597,8 @@ namespace Peach.Core.Agent.Monitors
 
 			if (_debugger != null)
 			{
+				_replay = false;
+
 				try
 				{
 					_debugger.StopDebugger();
@@ -597,13 +612,6 @@ namespace Peach.Core.Agent.Monitors
 					_performanceCounter.Close();
 					_performanceCounter = null;
 				}
-			}
-
-			if (_hybrid && _debuggerProcess != null)
-			{
-				_debugger = null;
-				_debuggerProcess.Kill();
-				_debuggerProcess = null;
 			}
 		}
 	}
