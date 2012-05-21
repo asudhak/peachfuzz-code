@@ -94,10 +94,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Debug
-copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Debug
-copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Release
-copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Release
 copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x64\Debug
+copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Debug
+copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x64\Debug
+copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Release
+copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x64\Release
+copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Release
+copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x64\Release
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
