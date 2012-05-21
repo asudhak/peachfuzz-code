@@ -193,10 +193,11 @@ def h_file(fname):
 if hasattr(os, 'O_NOINHERIT'):
 	def readf_win32(f, m='r'):
 		mod = 'b' in m and os.O_BINARY or os.O_TEXT
-		fd = os.open(f, mod | os.O_RDONLY | os.O_NOINHERIT)
-		if fd == -1:
-			raise OSError('Cannot read from %r' % f)
-		f = os.fdopen(fd, flags)
+		try:
+			fd = os.open(f, mod | os.O_RDONLY | os.O_NOINHERIT)
+		except OSError:
+			raise IOError('Cannot read from %r' % f)
+		f = os.fdopen(fd, m)
 		try:
 			txt = f.read()
 		finally:
@@ -205,19 +206,26 @@ if hasattr(os, 'O_NOINHERIT'):
 
 	def writef_win32(f, data, m='w'):
 		mod = 'b' in m and os.O_BINARY or os.O_TEXT
-		fd = os.open(f, mod | os.O_RDWR | os.O_NOINHERIT | os.O_CREAT)
-		if fd == -1:
-			raise OSError('Cannot write to %r' % f)
-		f = os.fdopen(fd, flags)
+		if 'r' in m:
+			mod |= os.O_RDONLY
+		mod |= os.O_WRONLY
+		if '+' in m:
+			mod |= os.O_RDWR
+		try:
+			fd = os.open(f, mod | os.O_NOINHERIT | os.O_CREAT)
+		except OSError:
+			raise IOError('Cannot write to %r' % f)
+		f = os.fdopen(fd, m)
 		try:
 			f.write(data)
 		finally:
 			f.close()
 
 	def h_file_win32(fname):
-		fd = os.open(fname, os.O_BINARY | os.O_RDONLY | os.O_NOINHERIT)
-		if fd == -1:
-			raise OSError('Cannot read from %r' % fname)
+		try:
+			fd = os.open(fname, os.O_BINARY | os.O_RDONLY | os.O_NOINHERIT)
+		except OSError:
+			raise IOError('Cannot read from %r' % fname)
 		f = os.fdopen(fd, 'rb')
 		m = md5()
 		try:
@@ -283,7 +291,7 @@ if is_win32:
 			s += os.sep
 
 		if not os.path.isdir(s):
-			e = OSError()
+			e = OSError('%s is not a directory' % s)
 			e.errno = errno.ENOENT
 			raise e
 		return os.listdir(s)
