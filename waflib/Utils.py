@@ -192,9 +192,15 @@ def h_file(fname):
 
 if hasattr(os, 'O_NOINHERIT'):
 	def readf_win32(f, m='r'):
-		mod = 'b' in m and os.O_BINARY or os.O_TEXT
+		flags = os.O_NOINHERIT | os.O_RDONLY
+		if 'b' in m:
+			flags |= os.O_BINARY
+		else:
+			flags |= os.O_TEXT
+		if '+' in m:
+			flags |= os.O_RDWR
 		try:
-			fd = os.open(f, mod | os.O_RDONLY | os.O_NOINHERIT)
+			fd = os.open(f, flags)
 		except OSError:
 			raise IOError('Cannot read from %r' % f)
 		f = os.fdopen(fd, m)
@@ -205,14 +211,15 @@ if hasattr(os, 'O_NOINHERIT'):
 		return txt
 
 	def writef_win32(f, data, m='w'):
-		mod = 'b' in m and os.O_BINARY or os.O_TEXT
-		if 'r' in m:
-			mod |= os.O_RDONLY
-		mod |= os.O_WRONLY
+		flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY | os.O_NOINHERIT
+		if 'b' in m:
+			flags |= os.O_BINARY
+		else:
+			flags |= os.O_TEXT
 		if '+' in m:
-			mod |= os.O_RDWR
+			flags |= os.O_RDWR
 		try:
-			fd = os.open(f, mod | os.O_NOINHERIT | os.O_CREAT)
+			fd = os.open(f, flags)
 		except OSError:
 			raise IOError('Cannot write to %r' % f)
 		f = os.fdopen(fd, m)
