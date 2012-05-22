@@ -42,12 +42,12 @@ namespace Peach.Core.Agent.Monitors
 	{
 		delegate bool EnumDelegate(IntPtr hWnd, int lParam);
 
-		[DllImport("user32.dll", EntryPoint = "GetWindowText", ExactSpelling = false, CharSet = CharSet.Auto, SetLastError = true)]
-		static extern int GetWindowText(IntPtr hWnd, StringBuilder lpWindowText, int nMaxCount);
+		[DllImport("user32", CharSet = CharSet.Auto, SetLastError = true)]
+		static extern int GetWindowText(IntPtr hWnd, [Out, MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpString, int nLen);
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern bool EnumWindows(EnumDelegate lpEnumFunc, IntPtr lParam);
 		[DllImport("user32.dll", SetLastError = true)]
-		static extern bool EnumChildWindows(IntPtr hWndParent, EnumDelegate lpEnumFunc, IntPtr lParam);
+		static extern bool EnumChildWindows(IntPtr hWndParent, EnumDelegate lpEnumFunc, int lParam);
 		[DllImport("user32.Dll")]
 		static extern int PostMessage(IntPtr hWnd, UInt32 msg, int wParam, int lParam);
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
@@ -71,23 +71,38 @@ namespace Peach.Core.Agent.Monitors
 
 		bool EnumHandler(IntPtr hWnd, int lParam)
 		{
-			StringBuilder strbTitle = new StringBuilder(255);
-			int nLength = GetWindowText(hWnd, strbTitle, strbTitle.Capacity + 1);
-			string strTitle = strbTitle.ToString();
-
-			foreach (string windowName in _windowNames)
+			try
 			{
-				if (strTitle.IndexOf(windowName) > -1)
+				StringBuilder strbTitle = new StringBuilder(255);
+				int nLength = GetWindowText(hWnd, strbTitle, strbTitle.Capacity);
+				string strTitle = strbTitle.ToString();
+
+				foreach (string windowName in _windowNames)
 				{
-					PostMessage(hWnd, WM_CLOSE, 0, 0);
-					SendMessage(hWnd, WM_CLOSE, 0, 0);
+					if (windowName.IndexOf("Fuzz Bang") > -1)
+						continue;
 
-					return false;
+					if (strTitle.IndexOf(windowName) > -1)
+					{
+						PostMessage(hWnd, WM_CLOSE, 0, 0);
+						SendMessage(hWnd, WM_CLOSE, 0, 0);
+
+						return false;
+					}
 				}
-			}
 
-			// Recursively check child windows
-			return EnumChildWindows(hWnd, new EnumDelegate(EnumHandler), IntPtr.Zero);
+				//if (lParam == 0)
+				//{
+				//    // Recursively check child windows
+				//    EnumChildWindows(hWnd, new EnumDelegate(EnumHandler), 1);
+				//}
+
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public void Work()

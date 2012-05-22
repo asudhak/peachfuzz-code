@@ -56,6 +56,7 @@
 			this.textBoxTemplateFiles = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.tabPageDebugger = new System.Windows.Forms.TabPage();
+			this.checkBoxCpuKill = new System.Windows.Forms.CheckBox();
 			this.buttonDebuggerPathBrowse = new System.Windows.Forms.Button();
 			this.textBoxDebuggerPath = new System.Windows.Forms.TextBox();
 			this.label15 = new System.Windows.Forms.Label();
@@ -83,7 +84,7 @@
 			this.groupBox7 = new System.Windows.Forms.GroupBox();
 			this.label21 = new System.Windows.Forms.Label();
 			this.checkBoxEnableWmClose = new System.Windows.Forms.CheckBox();
-			this.textBoxWindowTitle = new System.Windows.Forms.TextBox();
+			this.textBoxWindowTitle1 = new System.Windows.Forms.TextBox();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.tabPageFuzzing = new System.Windows.Forms.TabPage();
 			this.textBox13 = new System.Windows.Forms.TextBox();
@@ -110,7 +111,12 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.checkBoxCpuKill = new System.Windows.Forms.CheckBox();
+			this.label22 = new System.Windows.Forms.Label();
+			this.textBoxWindowTitle2 = new System.Windows.Forms.TextBox();
+			this.label23 = new System.Windows.Forms.Label();
+			this.textBoxWindowTitle3 = new System.Windows.Forms.TextBox();
+			this.label24 = new System.Windows.Forms.Label();
+			this.textBoxWindowTitle4 = new System.Windows.Forms.TextBox();
 			this.tabControl.SuspendLayout();
 			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
@@ -152,7 +158,7 @@
 			this.tabPageIntroduction.Controls.Add(this.richTextBoxIntroduction);
 			this.tabPageIntroduction.Location = new System.Drawing.Point(4, 22);
 			this.tabPageIntroduction.Name = "tabPageIntroduction";
-			this.tabPageIntroduction.Size = new System.Drawing.Size(545, 407);
+			this.tabPageIntroduction.Size = new System.Drawing.Size(545, 433);
 			this.tabPageIntroduction.TabIndex = 6;
 			this.tabPageIntroduction.Text = "Introduction";
 			this.tabPageIntroduction.UseVisualStyleBackColor = true;
@@ -186,7 +192,7 @@
 			this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
 			this.tabPageGeneral.Name = "tabPageGeneral";
 			this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPageGeneral.Size = new System.Drawing.Size(545, 407);
+			this.tabPageGeneral.Size = new System.Drawing.Size(545, 433);
 			this.tabPageGeneral.TabIndex = 0;
 			this.tabPageGeneral.Text = "General";
 			this.tabPageGeneral.UseVisualStyleBackColor = true;
@@ -417,6 +423,18 @@
 			this.tabPageDebugger.TabIndex = 1;
 			this.tabPageDebugger.Text = "Debugger";
 			this.tabPageDebugger.UseVisualStyleBackColor = true;
+			// 
+			// checkBoxCpuKill
+			// 
+			this.checkBoxCpuKill.AutoSize = true;
+			this.checkBoxCpuKill.Checked = true;
+			this.checkBoxCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.checkBoxCpuKill.Location = new System.Drawing.Point(17, 87);
+			this.checkBoxCpuKill.Name = "checkBoxCpuKill";
+			this.checkBoxCpuKill.Size = new System.Drawing.Size(224, 17);
+			this.checkBoxCpuKill.TabIndex = 6;
+			this.checkBoxCpuKill.Text = "Kill Process when CPU Usage Nears Zero";
+			this.checkBoxCpuKill.UseVisualStyleBackColor = true;
 			// 
 			// buttonDebuggerPathBrowse
 			// 
@@ -650,48 +668,54 @@
 			this.tabPageGUI.Controls.Add(this.textBox1);
 			this.tabPageGUI.Location = new System.Drawing.Point(4, 22);
 			this.tabPageGUI.Name = "tabPageGUI";
-			this.tabPageGUI.Size = new System.Drawing.Size(545, 407);
+			this.tabPageGUI.Size = new System.Drawing.Size(545, 433);
 			this.tabPageGUI.TabIndex = 2;
 			this.tabPageGUI.Text = "GUI";
 			this.tabPageGUI.UseVisualStyleBackColor = true;
 			// 
 			// groupBox7
 			// 
+			this.groupBox7.Controls.Add(this.label24);
+			this.groupBox7.Controls.Add(this.textBoxWindowTitle4);
+			this.groupBox7.Controls.Add(this.label23);
+			this.groupBox7.Controls.Add(this.textBoxWindowTitle3);
+			this.groupBox7.Controls.Add(this.label22);
+			this.groupBox7.Controls.Add(this.textBoxWindowTitle2);
 			this.groupBox7.Controls.Add(this.label21);
 			this.groupBox7.Controls.Add(this.checkBoxEnableWmClose);
-			this.groupBox7.Controls.Add(this.textBoxWindowTitle);
+			this.groupBox7.Controls.Add(this.textBoxWindowTitle1);
 			this.groupBox7.Location = new System.Drawing.Point(9, 12);
 			this.groupBox7.Name = "groupBox7";
-			this.groupBox7.Size = new System.Drawing.Size(528, 78);
+			this.groupBox7.Size = new System.Drawing.Size(528, 160);
 			this.groupBox7.TabIndex = 2;
 			this.groupBox7.TabStop = false;
-			this.groupBox7.Text = "Configure WM_CLOSE";
+			this.groupBox7.Text = "Close Application Windows";
 			// 
 			// label21
 			// 
 			this.label21.AutoSize = true;
 			this.label21.Location = new System.Drawing.Point(6, 45);
 			this.label21.Name = "label21";
-			this.label21.Size = new System.Drawing.Size(72, 13);
+			this.label21.Size = new System.Drawing.Size(81, 13);
 			this.label21.TabIndex = 1;
-			this.label21.Text = "Window Title:";
+			this.label21.Text = "Window Title 1:";
 			// 
 			// checkBoxEnableWmClose
 			// 
 			this.checkBoxEnableWmClose.AutoSize = true;
 			this.checkBoxEnableWmClose.Location = new System.Drawing.Point(9, 19);
 			this.checkBoxEnableWmClose.Name = "checkBoxEnableWmClose";
-			this.checkBoxEnableWmClose.Size = new System.Drawing.Size(211, 17);
+			this.checkBoxEnableWmClose.Size = new System.Drawing.Size(185, 17);
 			this.checkBoxEnableWmClose.TabIndex = 1;
-			this.checkBoxEnableWmClose.Text = "Enable sending WM_CLOSE message.";
+			this.checkBoxEnableWmClose.Text = "Enable closing windows/pop-ups.";
 			this.checkBoxEnableWmClose.UseVisualStyleBackColor = true;
 			// 
-			// textBoxWindowTitle
+			// textBoxWindowTitle1
 			// 
-			this.textBoxWindowTitle.Location = new System.Drawing.Point(84, 42);
-			this.textBoxWindowTitle.Name = "textBoxWindowTitle";
-			this.textBoxWindowTitle.Size = new System.Drawing.Size(438, 20);
-			this.textBoxWindowTitle.TabIndex = 0;
+			this.textBoxWindowTitle1.Location = new System.Drawing.Point(84, 42);
+			this.textBoxWindowTitle1.Name = "textBoxWindowTitle1";
+			this.textBoxWindowTitle1.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle1.TabIndex = 0;
 			// 
 			// textBox1
 			// 
@@ -717,7 +741,7 @@
 			this.tabPageFuzzing.Controls.Add(this.label8);
 			this.tabPageFuzzing.Location = new System.Drawing.Point(4, 22);
 			this.tabPageFuzzing.Name = "tabPageFuzzing";
-			this.tabPageFuzzing.Size = new System.Drawing.Size(545, 407);
+			this.tabPageFuzzing.Size = new System.Drawing.Size(545, 433);
 			this.tabPageFuzzing.TabIndex = 3;
 			this.tabPageFuzzing.Text = "Fuzzing";
 			this.tabPageFuzzing.UseVisualStyleBackColor = true;
@@ -813,7 +837,7 @@
 			this.tabPageOutput.Location = new System.Drawing.Point(4, 22);
 			this.tabPageOutput.Name = "tabPageOutput";
 			this.tabPageOutput.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPageOutput.Size = new System.Drawing.Size(545, 407);
+			this.tabPageOutput.Size = new System.Drawing.Size(545, 433);
 			this.tabPageOutput.TabIndex = 4;
 			this.tabPageOutput.Text = "Output";
 			this.tabPageOutput.UseVisualStyleBackColor = true;
@@ -877,7 +901,7 @@
 			this.tabPageAbout.Controls.Add(this.pictureBox1);
 			this.tabPageAbout.Location = new System.Drawing.Point(4, 22);
 			this.tabPageAbout.Name = "tabPageAbout";
-			this.tabPageAbout.Size = new System.Drawing.Size(545, 407);
+			this.tabPageAbout.Size = new System.Drawing.Size(545, 433);
 			this.tabPageAbout.TabIndex = 5;
 			this.tabPageAbout.Text = "About";
 			this.tabPageAbout.UseVisualStyleBackColor = true;
@@ -943,17 +967,53 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
-			// checkBoxCpuKill
+			// label22
 			// 
-			this.checkBoxCpuKill.AutoSize = true;
-			this.checkBoxCpuKill.Checked = true;
-			this.checkBoxCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxCpuKill.Location = new System.Drawing.Point(17, 87);
-			this.checkBoxCpuKill.Name = "checkBoxCpuKill";
-			this.checkBoxCpuKill.Size = new System.Drawing.Size(224, 17);
-			this.checkBoxCpuKill.TabIndex = 6;
-			this.checkBoxCpuKill.Text = "Kill Process when CPU Usage Nears Zero";
-			this.checkBoxCpuKill.UseVisualStyleBackColor = true;
+			this.label22.AutoSize = true;
+			this.label22.Location = new System.Drawing.Point(6, 71);
+			this.label22.Name = "label22";
+			this.label22.Size = new System.Drawing.Size(81, 13);
+			this.label22.TabIndex = 3;
+			this.label22.Text = "Window Title 2:";
+			// 
+			// textBoxWindowTitle2
+			// 
+			this.textBoxWindowTitle2.Location = new System.Drawing.Point(84, 68);
+			this.textBoxWindowTitle2.Name = "textBoxWindowTitle2";
+			this.textBoxWindowTitle2.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle2.TabIndex = 2;
+			// 
+			// label23
+			// 
+			this.label23.AutoSize = true;
+			this.label23.Location = new System.Drawing.Point(6, 97);
+			this.label23.Name = "label23";
+			this.label23.Size = new System.Drawing.Size(81, 13);
+			this.label23.TabIndex = 5;
+			this.label23.Text = "Window Title 3:";
+			// 
+			// textBoxWindowTitle3
+			// 
+			this.textBoxWindowTitle3.Location = new System.Drawing.Point(84, 94);
+			this.textBoxWindowTitle3.Name = "textBoxWindowTitle3";
+			this.textBoxWindowTitle3.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle3.TabIndex = 4;
+			// 
+			// label24
+			// 
+			this.label24.AutoSize = true;
+			this.label24.Location = new System.Drawing.Point(6, 123);
+			this.label24.Name = "label24";
+			this.label24.Size = new System.Drawing.Size(81, 13);
+			this.label24.TabIndex = 7;
+			this.label24.Text = "Window Title 4:";
+			// 
+			// textBoxWindowTitle4
+			// 
+			this.textBoxWindowTitle4.Location = new System.Drawing.Point(84, 120);
+			this.textBoxWindowTitle4.Name = "textBoxWindowTitle4";
+			this.textBoxWindowTitle4.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle4.TabIndex = 6;
 			// 
 			// FormMain
 			// 
@@ -1080,9 +1140,15 @@
 		private System.Windows.Forms.GroupBox groupBox7;
 		private System.Windows.Forms.Label label21;
 		private System.Windows.Forms.CheckBox checkBoxEnableWmClose;
-		private System.Windows.Forms.TextBox textBoxWindowTitle;
+		private System.Windows.Forms.TextBox textBoxWindowTitle1;
 		private System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.CheckBox checkBoxCpuKill;
+		private System.Windows.Forms.Label label24;
+		private System.Windows.Forms.TextBox textBoxWindowTitle4;
+		private System.Windows.Forms.Label label23;
+		private System.Windows.Forms.TextBox textBoxWindowTitle3;
+		private System.Windows.Forms.Label label22;
+		private System.Windows.Forms.TextBox textBoxWindowTitle2;
 	}
 }
 

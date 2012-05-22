@@ -102,12 +102,25 @@ namespace PeachFuzzBang
 			buttonSaveConfiguration.Enabled = false;
 			buttonStopFuzzing.Enabled = false;
 
-			if (Directory.Exists(@"C:\Program Files (x86)\Debugging Tools for Windows (x86)"))
-				textBoxDebuggerPath.Text = @"C:\Program Files (x86)\Debugging Tools for Windows (x86)";
-			if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x86)"))
-				textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x86)";
-			if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows"))
-				textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows";
+			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+				MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
+
+			if (Environment.Is64BitOperatingSystem)
+			{
+				if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x64)"))
+					textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x64)";
+				else
+					textBoxDebuggerPath.Text = "Error, could not locate 64bit windbg!";
+			}
+			else
+			{
+				if (Directory.Exists(@"C:\Program Files (x86)\Debugging Tools for Windows (x86)"))
+					textBoxDebuggerPath.Text = @"C:\Program Files (x86)\Debugging Tools for Windows (x86)";
+				if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x86)"))
+					textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x86)";
+				if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows"))
+					textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows";
+			}
 
 			comboBoxPitDataModel.SelectedIndexChanged += new EventHandler(comboBoxPitDataModel_SelectedIndexChanged);
 
@@ -242,6 +255,42 @@ namespace PeachFuzzBang
 
 				agent.monitors.Add(monitor);
 				dom.agents.Add(agent.name, agent);
+
+				// Send WM_CLOSE messages?
+				if (checkBoxEnableWmClose.Checked)
+				{
+					string windowNames = "";
+					if (!string.IsNullOrWhiteSpace(textBoxWindowTitle1.Text))
+					{
+						if (windowNames.Length > 0)
+							windowNames += ";";
+						windowNames += textBoxWindowTitle1.Text;
+					}
+					if (!string.IsNullOrWhiteSpace(textBoxWindowTitle2.Text))
+					{
+						if (windowNames.Length > 0)
+							windowNames += ";";
+						windowNames += textBoxWindowTitle2.Text;
+					}
+					if (!string.IsNullOrWhiteSpace(textBoxWindowTitle3.Text))
+					{
+						if (windowNames.Length > 0)
+							windowNames += ";";
+						windowNames += textBoxWindowTitle3.Text;
+					}
+					if (!string.IsNullOrWhiteSpace(textBoxWindowTitle4.Text))
+					{
+						if (windowNames.Length > 0)
+							windowNames += ";";
+						windowNames += textBoxWindowTitle4.Text;
+					}
+
+					monitor = new Peach.Core.Dom.Monitor();
+					monitor.cls = "PopupWatcher";
+					monitor.parameters["WindowNames"] = new Variant(windowNames);
+
+					agent.monitors.Add(monitor);
+				}
 
 				// Mutation Strategy
 				MutationStrategy strat = new RandomStrategy(new Dictionary<string, Variant>());
