@@ -151,6 +151,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RelationCountTests.cs" />
     <Compile Include="RelationSizeTest.cs" />
+    <Compile Include="ReportedTests.cs" />
     <Compile Include="StateModel\ActionWhenTests.cs" />
     <Compile Include="StateModel\InputTests.cs" />
     <Compile Include="StateModel\OutputTests.cs" />

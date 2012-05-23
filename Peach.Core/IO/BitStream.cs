@@ -967,6 +967,9 @@ namespace Peach.Core.IO
 		/// <returns></returns>
 		public BitStream ReadBitsAsBitStream(long bits)
 		{
+			if (bits < 0)
+				throw new ArgumentOutOfRangeException("Should not be negative!");
+
 			if (bits % 8 == 0)
 				return RealReadBytesAsBitStream(bits / 8);
 
@@ -1026,6 +1029,9 @@ namespace Peach.Core.IO
 		/// <returns>Returns BitStream instance with our data.</returns>
 		protected BitStream RealReadBytesAsBitStream(long bytes)
 		{
+			if (bytes > (LengthBytes - TellBytes()))
+				return null;
+
 			MemoryStream sin = new MemoryStream();
 
 			long totalBytes = bytes;

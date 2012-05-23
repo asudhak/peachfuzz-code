@@ -607,6 +607,9 @@ namespace Peach.Core.Cracker
 						// update size based on what we have currently read
 						size -= data.TellBits() - startPosition;
 
+						if (size < 0)
+							throw new CrackingFailure("Relation of container too small.", child, data);
+
 						sizedData = data.ReadBitsAsBitStream(size);
 						sizeRelation = null;
 					}
