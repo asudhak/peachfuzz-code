@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
@@ -34,6 +35,10 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
+using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
@@ -41,6 +46,7 @@ namespace Peach.Core.Dom
 	/// Binary large object data element
 	/// </summary>
 	[DataElement("Blob")]
+	[PitParsable("Blob")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
 	[Serializable]
@@ -86,6 +92,34 @@ namespace Peach.Core.Dom
 		public Blob(Variant defaultValue)
 		{
 			_defaultValue = defaultValue;
+		}
+
+		public static DataElement PitParse(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "Blob")
+				return null;
+
+			var blob = new Blob();
+
+			if (context.hasXmlAttribute(node, "name"))
+				blob.name = context.getXmlAttribute(node, "name");
+
+			context.handleCommonDataElementAttributes(node, blob);
+			context.handleCommonDataElementChildren(node, blob);
+			context.handleCommonDataElementValue(node, blob);
+
+			if (blob.DefaultValue != null && blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
+			{
+				BitStream sout = new BitStream();
+				sout.BigEndian();
+
+				if (((string)blob.DefaultValue) != null)
+					sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
+				sout.SeekBytes(0, SeekOrigin.Begin);
+				blob.DefaultValue = new Variant(sout);
+			}
+
+			return blob;
 		}
 	}
 }

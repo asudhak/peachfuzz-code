@@ -34,6 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
 
 namespace Peach.Core.Dom
 {
@@ -43,6 +46,7 @@ namespace Peach.Core.Dom
 	/// zero or more elements.
 	/// </summary>
 	[DataElement("Array")]
+	[PitParsable("Array")]
 	[DataElementChildSupported(DataElementTypes.Any)]
 	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
@@ -68,6 +72,29 @@ namespace Peach.Core.Dom
 				if(this.Count > 0)
 					this[0].name = value;
 			}
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			var array = new Array();
+
+			// name
+			if (context.hasXmlAttribute(node, "name"))
+				array.name = context.getXmlAttribute(node, "name");
+
+			if (context.hasXmlAttribute(node, "minOccurs"))
+			{
+				array.minOccurs = int.Parse(context.getXmlAttribute(node, "minOccurs"));
+				array.maxOccurs = -1;
+			}
+
+			if (context.hasXmlAttribute(node, "maxOccurs"))
+				array.maxOccurs = int.Parse(context.getXmlAttribute(node, "maxOccurs"));
+
+			if (context.hasXmlAttribute(node, "occurs"))
+				array.occurs = int.Parse(context.getXmlAttribute(node, "occurs"));
+
+			return array;
 		}
 	}
 }

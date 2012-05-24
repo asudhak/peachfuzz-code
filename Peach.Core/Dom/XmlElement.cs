@@ -31,11 +31,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
+using Peach.Core.Analyzers;
 using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
 	[DataElement("XmlElement")]
+	[PitParsable("XmlElement")]
 	[DataElementChildSupported(DataElementTypes.Any)]
 	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("name", typeof(string), "Name of element", false)]
@@ -54,6 +56,29 @@ namespace Peach.Core.Dom
 		public XmlElement(string name) : base()
 		{
 			this.name = name;
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "XmlElement")
+				return null;
+
+			var xmlElement = new XmlElement();
+
+			if (context.hasXmlAttribute(node, "name"))
+				xmlElement.name = context.getXmlAttribute(node, "name");
+
+			if (!context.hasXmlAttribute(node, "elementName"))
+				throw new PeachException("Error, elementName is a required attribute for XmlElement: " + xmlElement.name);
+
+			xmlElement.elementName = context.getXmlAttribute(node, "elementName");
+			xmlElement.ns = context.getXmlAttribute(node, "ns");
+
+			context.handleCommonDataElementAttributes(node, xmlElement);
+			context.handleCommonDataElementChildren(node, xmlElement);
+			context.handleDataElementContainer(node, xmlElement);
+
+			return xmlElement;
 		}
 
 		/// <summary>

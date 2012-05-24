@@ -34,11 +34,15 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
 using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
 	[DataElement("Flags")]
+	[PitParsable("Flags")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[DataElementChildSupportedAttribute("Flag")]
 	[ParameterAttribute("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]", true)]
@@ -67,6 +71,107 @@ namespace Peach.Core.Dom
 		public Flags(int size)
 		{
 			this.size = size;
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "Flags")
+				return null;
+
+			var flags = new Flags();
+
+			if (context.hasXmlAttribute(node, "name"))
+				flags.name = context.getXmlAttribute(node, "name");
+
+			if (context.hasXmlAttribute(node, "size"))
+			{
+				int size;
+				try
+				{
+					size = int.Parse(context.getXmlAttribute(node, "size"));
+				}
+				catch
+				{
+					throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
+				}
+
+				if (size < 1 || size > 64)
+					throw new PeachException(string.Format(
+						"Error, unsupported size {0} for element {1}.", size, flags.name));
+
+				flags.size = size;
+			}
+			else if (context.hasDefaultAttribute(typeof(Flags), "size"))
+			{
+				int size;
+				try
+				{
+					size = int.Parse((string)context.getDefaultAttribute(typeof(Flags), "size"));
+				}
+				catch
+				{
+					throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
+				}
+
+				if (size < 1 || size > 64)
+					throw new PeachException(string.Format(
+						"Error, unsupported size {0} for element {1}.", size, flags.name));
+
+				flags.size = size;
+			}
+
+			if (context.hasXmlAttribute(node, "endian"))
+			{
+				string endian = context.getXmlAttribute(node, "endian").ToLower();
+				switch (endian)
+				{
+					case "little":
+						flags.LittleEndian = true;
+						break;
+					case "big":
+						flags.LittleEndian = false;
+						break;
+					case "network":
+						flags.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(string.Format(
+							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
+				}
+			}
+			else if (context.hasDefaultAttribute(typeof(Flags), "endian"))
+			{
+				string endian = ((string)context.getDefaultAttribute(typeof(Flags), "endian")).ToLower();
+				switch (endian)
+				{
+					case "little":
+						flags.LittleEndian = true;
+						break;
+					case "big":
+						flags.LittleEndian = false;
+						break;
+					case "network":
+						flags.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(string.Format(
+							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
+				}
+			}
+
+			context.handleCommonDataElementAttributes(node, flags);
+			context.handleCommonDataElementChildren(node, flags);
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				// Looking for "Flag" element
+				if (child.Name == "Flag")
+				{
+					flags.Add(Flag.PitParser(context, child, flags));
+				}
+			}
+
+			return flags;
 		}
 
 		public bool LittleEndian
@@ -140,6 +245,42 @@ namespace Peach.Core.Dom
 		{
 			this.size = size;
 			this.position = position;
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, Flags parent)
+		{
+			if(node.Name == "Flag")
+				return null;
+
+			var flag = new Flag();
+
+			if (context.hasXmlAttribute(node, "name"))
+				flag.name = context.getXmlAttribute(node, "name");
+
+			if (context.hasXmlAttribute(node, "position"))
+				flag.position = int.Parse(context.getXmlAttribute(node, "position"));
+			else
+				throw new PeachException("Error, Flag elements must have 'position' attribute!");
+
+			if (context.hasXmlAttribute(node, "size"))
+			{
+				try
+				{
+					flag.size = int.Parse(context.getXmlAttribute(node, "size"));
+				}
+				catch (Exception e)
+				{
+					throw new PeachException("Error parsing Flag size attribute: " + e.Message);
+				}
+			}
+			else
+				throw new PeachException("Error, Flag elements must have 'position' attribute!");
+
+			context.handleCommonDataElementAttributes(node, flag);
+			context.handleCommonDataElementChildren(node, flag);
+			context.handleCommonDataElementValue(node, flag);
+
+			return flag;
 		}
 
 		public int size

@@ -34,6 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
 using Peach.Core.IO;
 
 namespace Peach.Core.Dom
@@ -57,6 +60,7 @@ namespace Peach.Core.Dom
 	/// etc.
 	/// </summary>
 	[DataElement("String")]
+	[PitParsable("String")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
 	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
@@ -107,6 +111,89 @@ namespace Peach.Core.Dom
 			_nullTerminated = nullTerminated;
 			_length = length;
 			_lengthType = LengthType.Bytes;
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "String")
+				return null;
+
+			var str = new String();
+
+			if (context.hasXmlAttribute(node, "name"))
+				str.name = context.getXmlAttribute(node, "name");
+
+			if (context.hasXmlAttribute(node, "nullTerminated"))
+				str.nullTerminated = context.getXmlAttributeAsBool(node, "nullTerminated", false);
+			else if (context.hasDefaultAttribute(typeof(String), "nullTerminated"))
+				str.nullTerminated = context.getDefaultAttributeAsBool(typeof(String), "nullTerminated", false);
+
+			string type = null;
+			if (context.hasXmlAttribute(node, "type"))
+				type = context.getXmlAttribute(node, "type");
+			else if (context.hasDefaultAttribute(str.GetType(), "type"))
+				type = context.getDefaultAttribute(str.GetType(), "type");
+
+			if (type != null)
+			{
+				switch (type)
+				{
+					case "ascii":
+						str.stringType = StringType.Ascii;
+						break;
+					case "utf16":
+						str.stringType = StringType.Utf16;
+						break;
+					case "utf16be":
+						str.stringType = StringType.Utf16be;
+						break;
+					case "utf32":
+						str.stringType = StringType.Utf32;
+						break;
+					case "utf7":
+						str.stringType = StringType.Utf7;
+						break;
+					case "utf8":
+						str.stringType = StringType.Utf8;
+						break;
+					default:
+						throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
+				}
+			}
+
+			if (context.hasXmlAttribute(node, "padCharacter"))
+			{
+				str.padCharacter = context.getXmlAttribute(node, "padCharacter")[0];
+			}
+			else if (context.hasDefaultAttribute(str.GetType(), "padCharacter"))
+			{
+				str.padCharacter = context.getDefaultAttribute(str.GetType(), "padCharacter")[0];
+			}
+
+			if (context.hasXmlAttribute(node, "tokens")) // This item has a default!
+				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
+
+			if (context.hasXmlAttribute(node, "analyzer")) // this should be passed via a child element me things!
+				throw new NotSupportedException("Analyzer attribute is depricated in Peach 3.  Use a child element instead.");
+
+			context.handleCommonDataElementAttributes(node, str);
+			context.handleCommonDataElementValue(node, str);
+			context.handleCommonDataElementChildren(node, str);
+
+			// handle NumericalString hint properly
+			int test;
+			if (int.TryParse((string)str.DefaultValue, out test))
+			{
+				if (!str.Hints.ContainsKey("NumericalString"))
+					str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));
+			}
+			else
+			{
+				if (str.Hints.ContainsKey("NumericalString"))
+					str.Hints.Remove("NumericalString");
+			}
+
+			return str;
 		}
 
 		/// <summary>

@@ -34,7 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
 
+using Peach.Core.Analyzers;
 using Peach.Core.IO;
 
 namespace Peach.Core.Dom
@@ -43,6 +45,7 @@ namespace Peach.Core.Dom
 	/// Providing padding bytes to a DataElementContainer.
 	/// </summary>
 	[DataElement("Padding")]
+	[PitParsable("Padding")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("aligned", typeof(bool), "Align parent to 8 byte boundry", false)]
 	[ParameterAttribute("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", false)]
@@ -103,6 +106,34 @@ namespace Peach.Core.Dom
 		{
 			this.lengthCalc = lengthCalc;
 			_defaultValue = new Variant(new byte[] { });
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "Padding")
+				return null;
+
+			var padding = new Padding();
+
+			if (context.hasXmlAttribute(node, "name"))
+				padding.name = context.getXmlAttribute(node, "name");
+
+			padding.aligned = context.getXmlAttributeAsBool(node, "aligned", false);
+
+			if (context.hasXmlAttribute(node, "alignment"))
+				padding.alignment = int.Parse(context.getXmlAttribute(node, "alignment"));
+
+			if (context.hasXmlAttribute(node, "alignedTo"))
+			{
+				padding.alignedTo = parent.find(context.getXmlAttribute(node, "alignedTo"));
+				if (padding.alignedTo == null)
+					throw new PeachException("Error, unable to resolve alignedTo '" + context.getXmlAttribute(node, "alignedTo") + "'.");
+			}
+
+			context.handleCommonDataElementAttributes(node, padding);
+			context.handleCommonDataElementChildren(node, padding);
+
+			return padding;
 		}
 
 		/// <summary>

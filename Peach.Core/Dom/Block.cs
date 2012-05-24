@@ -34,6 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
 using Peach.Core.IO;
 
 namespace Peach.Core.Dom
@@ -42,6 +45,7 @@ namespace Peach.Core.Dom
 	/// Block element
 	/// </summary>
 	[DataElement("Block")]
+	[PitParsable("Block")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
 	[Serializable]
 	public class Block : DataElementContainer
@@ -53,6 +57,43 @@ namespace Peach.Core.Dom
 		public Block(string name) : base()
 		{
 			this.name = name;
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "Block")
+				return null;
+
+			var block = new Block();
+
+			if (context.hasXmlAttribute(node, "ref"))
+			{
+				Block refObj = context.getReference(context._dom, context.getXmlAttribute(node, "ref"), parent) as Block;
+				if (refObj != null)
+				{
+					string name = block.name;
+					block = ObjectCopier.Clone<Block>(refObj);
+					block.name = name;
+					block.isReference = true;
+				}
+				else
+				{
+					throw new PeachException("Unable to locate 'ref' [" + context.getXmlAttribute(node, "ref") + 
+						"] or found node did not match type. [" + node.OuterXml + "].");
+				}
+			}
+
+			// name
+			if (context.hasXmlAttribute(node, "name"))
+				block.name = context.getXmlAttribute(node, "name");
+
+			// alignment
+
+			context.handleCommonDataElementAttributes(node, block);
+			context.handleCommonDataElementChildren(node, block);
+			context.handleDataElementContainer(node, block);
+
+			return block;
 		}
 
 		public override Variant GenerateInternalValue()

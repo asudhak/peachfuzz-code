@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
+using Peach.Core.Analyzers;
 using Peach;
 
 namespace Peach.Core.Dom
@@ -45,6 +46,29 @@ namespace Peach.Core.Dom
 	{
 		string _attributeName = null;
 		string _ns = null;
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "XmlAttribute" || !(parent is XmlElement))
+				return null;
+
+			var xmlAttribute = new XmlAttribute();
+
+			if (context.hasXmlAttribute(node, "name"))
+				xmlAttribute.name = context.getXmlAttribute(node, "name");
+
+			if (!context.hasXmlAttribute(node, "attributeName"))
+				throw new PeachException("Error, attributeName is a required attribute for XmlAttribute: " + xmlAttribute.name);
+
+			xmlAttribute.attributeName = context.getXmlAttribute(node, "attributeName");
+			xmlAttribute.ns = context.getXmlAttribute(node, "ns");
+
+			context.handleCommonDataElementAttributes(node, xmlAttribute);
+			context.handleCommonDataElementChildren(node, xmlAttribute);
+			context.handleDataElementContainer(node, xmlAttribute);
+
+			return xmlAttribute;
+		}
 
 		/// <summary>
 		/// XML attribute name

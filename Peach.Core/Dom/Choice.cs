@@ -34,6 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
 
 namespace Peach.Core.Dom
 {
@@ -45,6 +48,7 @@ namespace Peach.Core.Dom
 	/// for mutation by the mutators.
 	/// </summary>
 	[DataElement("Choice")]
+	[PitParsable("Choice")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
 	[Serializable]
 	public class Choice : DataElementContainer
@@ -66,6 +70,33 @@ namespace Peach.Core.Dom
 			this.Clear();
 			this.Add(choiceElements[0]);
 			_selectedElement = this[0];
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "Choice")
+				return null;
+
+			var choice = new Choice();
+
+			// First name
+			if (context.hasXmlAttribute(node, "name"))
+				choice.name = context.getXmlAttribute(node, "name");
+
+			context.handleCommonDataElementAttributes(node, choice);
+			context.handleCommonDataElementChildren(node, choice);
+			context.handleDataElementContainer(node, choice);
+
+			// Move children to choiceElements collection
+			foreach (DataElement elem in choice)
+			{
+				choice.choiceElements.Add(elem.name, elem);
+				elem.parent = choice;
+			}
+
+			choice.Clear();
+
+			return choice;
 		}
 
 		public DataElement SelectedElement

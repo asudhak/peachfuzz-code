@@ -42,28 +42,6 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
-	public interface IPitParsable
-	{
-		// TODO: These should be static?  Need to look into it.
-
-		/// <summary>
-		/// Ask object if it can parse XmlNode.
-		/// </summary>
-		/// <param name="node">node to check</param>
-		/// <param name="parent">parent of this object</param>
-		/// <returns>Returns true if class can parse xml node.</returns>
-		bool pit_canParse(XmlNode node, object parent);
-
-		/// <summary>
-		/// Called by PitParser analyzer to parse 
-		/// current XML Node.
-		/// </summary>
-		/// <param name="node"></param>
-		/// <param name="parent"></param>
-		/// <returns></returns>
-		object pit_handleNode(XmlNode node, object parent);
-	}
-
 	/// <summary>
 	/// This is the default analyzer for Peach.  It will
 	/// parse a Peach PIT file (XML document) into a Peach DOM.
@@ -74,13 +52,18 @@ namespace Peach.Core.Analyzers
 
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";
-		Dom.Dom _dom = null;
+		public Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
 
 		/// <summary>
 		/// Contains default attributes for DataElements
 		/// </summary>
 		Dictionary<Type, Dictionary<string, string>> dataElementDefaults = new Dictionary<Type, Dictionary<string, string>>();
+
+		/// <summary>
+		/// Mapping of XML ELement names to type as provided by PitParsableAttribute
+		/// </summary>
+		Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
 
 		static PitParser()
 		{
@@ -94,6 +77,7 @@ namespace Peach.Core.Analyzers
 
 		public override Dom.Dom asParser(Dictionary<string, string> args, Stream data)
 		{
+			populateDataElementPitParsable();
 			validatePit(data);
 
 			data.Seek(0, SeekOrigin.Begin);
@@ -117,6 +101,24 @@ namespace Peach.Core.Analyzers
 		public override void asParserValidation(Dictionary<string, string> args, Stream data)
 		{
 			validatePit(data);
+		}
+
+		protected void populateDataElementPitParsable()
+		{
+			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				foreach (Type t in a.GetExportedTypes())
+				{
+					if (!t.IsClass)
+						continue;
+
+					foreach (object attrib in t.GetCustomAttributes(true))
+					{
+						if (attrib is PitParsableAttribute)
+							dataElementPitParsable[((PitParsableAttribute)attrib).xmlElementName] = t;
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -348,7 +350,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="node">XmlNode to get attribute from</param>
 		/// <param name="name">Name of attribute</param>
 		/// <returns>Returns innerText or null.</returns>
-		protected string getXmlAttribute(XmlNode node, string name)
+		public string getXmlAttribute(XmlNode node, string name)
 		{
 			try
 			{
@@ -367,7 +369,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="name">Name of attribute</param>
 		/// <param name="defaultValue">Default value if attribute is missing</param>
 		/// <returns>Returns true/false or default value</returns>
-		protected bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
+		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
 		{
 			try
 			{
@@ -396,7 +398,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="node">XmlNode to check</param>
 		/// <param name="name">Name of attribute</param>
 		/// <returns>Returns boolean true or false.</returns>
-		protected bool hasXmlAttribute(XmlNode node, string name)
+		public bool hasXmlAttribute(XmlNode node, string name)
 		{
 			try
 			{
@@ -416,7 +418,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="dom">DOM to use for resolving ref.</param>
 		/// <param name="name">Ref name to resolve.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
-		protected DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
+		public DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
 		{
 			if (name.IndexOf(':') > -1)
 			{
@@ -629,25 +631,7 @@ namespace Peach.Core.Analyzers
 
 		protected Dom.Array handleArray(XmlNode node, DataElementContainer parent)
 		{
-			var array = new Dom.Array();
-
-			// name
-			if (hasXmlAttribute(node, "name"))
-				array.name = getXmlAttribute(node, "name");
-
-			if (hasXmlAttribute(node, "minOccurs"))
-			{
-				array.minOccurs = int.Parse(getXmlAttribute(node, "minOccurs"));
-				array.maxOccurs = -1;
-			}
-
-			if (hasXmlAttribute(node, "maxOccurs"))
-				array.maxOccurs = int.Parse(getXmlAttribute(node, "maxOccurs"));
-
-			if (hasXmlAttribute(node, "occurs"))
-				array.occurs = int.Parse(getXmlAttribute(node, "occurs"));
-
-			return array;
+			return (Dom.Array) Dom.Array.PitParser(this, node, parent);
 		}
 
 		protected bool IsArray(XmlNode node)
@@ -660,35 +644,7 @@ namespace Peach.Core.Analyzers
 
 		protected Block handleBlock(XmlNode node, DataElementContainer parent)
 		{
-			var block = new Block();
-
-			if (hasXmlAttribute(node, "ref"))
-			{
-				Block refObj = getReference(_dom, getXmlAttribute(node, "ref"), parent) as Block;
-				if (refObj != null)
-				{
-					string name = block.name;
-					block = ObjectCopier.Clone<Block>(refObj);
-					block.name = name;
-					block.isReference = true;
-				}
-				else
-				{
-					throw new PeachException("Unable to locate 'ref' [" + getXmlAttribute(node, "ref") + "] or found node did not match type. [" + node.OuterXml + "].");
-				}
-			}
-
-			// name
-			if(hasXmlAttribute(node, "name"))
-				block.name = getXmlAttribute(node, "name");
-
-			// alignment
-
-			handleCommonDataElementAttributes(node, block);
-			handleCommonDataElementChildren(node, block);
-			handleDataElementContainer(node, block);
-
-			return block;
+			return (Block) Block.PitParser(this, node, parent);
 		}
 
 		/// <summary>
@@ -703,7 +659,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="node">XmlNode to read attributes from</param>
 		/// <param name="element">Element to set attributes on</param>
-		protected void handleCommonDataElementAttributes(XmlNode node, DataElement element)
+		public void handleCommonDataElementAttributes(XmlNode node, DataElement element)
 		{
 			if (hasXmlAttribute(node, "token"))
 				element.isToken = true;
@@ -775,7 +731,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="node">Node to read values from</param>
 		/// <param name="element">Element to set values on</param>
-		protected void handleCommonDataElementChildren(XmlNode node, DataElement element)
+		public void handleCommonDataElementChildren(XmlNode node, DataElement element)
 		{
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -838,65 +794,31 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="node">XmlNode tor read children elements from</param>
 		/// <param name="element">Element to add items to</param>
-		protected void handleDataElementContainer(XmlNode node, DataElementContainer element)
+		public void handleDataElementContainer(XmlNode node, DataElementContainer element)
 		{
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				DataElement elem = null;
-				switch (child.Name)
-				{
-					case "Block":
-						elem = handleBlock(child, element);
-						break;
 
-					case "Choice":
-						elem = handleChoice(child, element);
-						break;
+				if (child.Name == "#comment")
+					continue;
 
-					case "String":
-						elem = handleString(child, element);
-						break;
+				if (!dataElementPitParsable.ContainsKey(child.Name))
+					throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
 
-					case "Number":
-						elem = handleNumber(child, element);
-						break;
+				Type dataElementType = dataElementPitParsable[child.Name];
+				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParse");
+				if (pitParsableMethod == null)
+					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParse(...) method: " + dataElementType.FullName);
 
-					case "Blob":
-						elem = handleBlob(child, element);
-						break;
-
-					case "Flags":
-						elem = handleFlags(child, element);
-						break;
-
-					case "Padding":
-						elem = handlePadding(child, element);
-						break;
-
-					case "XmlElement":
-						elem = handleXmlElement(child, element);
-						break;
-
-					case "XmlAttribute":
-						elem = handleXmlAttribute(child, element);
-						break;
-
-					case "Custom":
-						throw new NotSupportedException("Implement custom types");
-
-					default:
-						if (child.Name == "#comment")
-							continue;
-
-						// NOTE: Don't exception here or will break Fixups, etc.
-
-						continue;
-				}
+				elem = (DataElement) pitParsableMethod.Invoke(null, new object[] { this, child, element });
+				if (elem == null)
+					throw new PeachException("Error, type failed to parse provided XML: " + dataElementType.FullName);
 
 				// Wrap elements that are arrays with an Array object
 				if (IsArray(child))
 				{
-					var array = handleArray(child, element);
+					var array = Dom.Array.PitParser(this, child, element) as Dom.Array;
 					array.Add(elem);
 					array.origionalElement = elem;
 
@@ -942,153 +864,9 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
-		protected DataElement handleXmlElement(XmlNode node, DataElementContainer parent)
-		{
-			var xmlElement = new Dom.XmlElement();
-
-			if (hasXmlAttribute(node, "name"))
-				xmlElement.name = getXmlAttribute(node, "name");
-
-			if (!hasXmlAttribute(node, "elementName"))
-				throw new PeachException("Error, elementName is a required attribute for XmlElement: " + xmlElement.name);
-
-			xmlElement.elementName = getXmlAttribute(node, "elementName");
-			xmlElement.ns = getXmlAttribute(node, "ns");
-
-			handleCommonDataElementAttributes(node, xmlElement);
-			handleCommonDataElementChildren(node, xmlElement);
-			handleDataElementContainer(node, xmlElement);
-
-			return xmlElement;
-		}
-
-		protected DataElement handleXmlAttribute(XmlNode node, DataElementContainer parent)
-		{
-			var xmlAttribute = new Dom.XmlAttribute();
-
-			if (hasXmlAttribute(node, "name"))
-				xmlAttribute.name = getXmlAttribute(node, "name");
-
-			if (!hasXmlAttribute(node, "attributeName"))
-				throw new PeachException("Error, attributeName is a required attribute for XmlAttribute: " + xmlAttribute.name);
-
-			xmlAttribute.attributeName = getXmlAttribute(node, "attributeName");
-			xmlAttribute.ns = getXmlAttribute(node, "ns");
-
-			handleCommonDataElementAttributes(node, xmlAttribute);
-			handleCommonDataElementChildren(node, xmlAttribute);
-			handleDataElementContainer(node, xmlAttribute);
-
-			return xmlAttribute;
-		}
-
-		protected DataElement handleChoice(XmlNode node, DataElementContainer parent)
-		{
-			var choice = new Choice();
-
-			// First name
-			if (hasXmlAttribute(node, "name"))
-				choice.name = getXmlAttribute(node, "name");
-			
-			handleCommonDataElementAttributes(node, choice);
-			handleCommonDataElementChildren(node, choice);
-			handleDataElementContainer(node, choice);
-
-			// Move children to choiceElements collection
-			foreach (DataElement elem in choice)
-			{
-				choice.choiceElements.Add(elem.name, elem);
-				elem.parent = choice;
-			}
-
-			choice.Clear();
-
-			return choice;
-		}
-
-		protected Dom.String handleString(XmlNode node, DataElementContainer parent)
-		{
-			var str = new Dom.String();
-
-			if (hasXmlAttribute(node, "name"))
-				str.name = getXmlAttribute(node, "name");
-
-			if (hasXmlAttribute(node, "nullTerminated"))
-				str.nullTerminated = getXmlAttributeAsBool(node, "nullTerminated", false);
-			else if (hasDefaultAttribute(typeof(Dom.String), "nullTerminated"))
-				str.nullTerminated = getDefaultAttributeAsBool(typeof(Dom.String), "nullTerminated", false);
-
-			string type = null;
-			if (hasXmlAttribute(node, "type"))
-				type = getXmlAttribute(node, "type");
-			else if (hasDefaultAttribute(str.GetType(), "type"))
-				type = getDefaultAttribute(str.GetType(), "type");
-
-			if (type != null)
-			{
-				switch (type)
-				{
-					case "ascii":
-						str.stringType = StringType.Ascii;
-						break;
-					case "utf16":
-						str.stringType = StringType.Utf16;
-						break;
-					case "utf16be":
-						str.stringType = StringType.Utf16be;
-						break;
-					case "utf32":
-						str.stringType = StringType.Utf32;
-						break;
-					case "utf7":
-						str.stringType = StringType.Utf7;
-						break;
-					case "utf8":
-						str.stringType = StringType.Utf8;
-						break;
-					default:
-						throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
-				}
-			}
-
-			if (hasXmlAttribute(node, "padCharacter"))
-			{
-				str.padCharacter = getXmlAttribute(node, "padCharacter")[0];
-			}
-			else if (hasDefaultAttribute(str.GetType(), "padCharacter"))
-			{
-				str.padCharacter = getDefaultAttribute(str.GetType(), "padCharacter")[0];
-			}
-
-			if (hasXmlAttribute(node, "tokens")) // This item has a default!
-				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
-
-			if (hasXmlAttribute(node, "analyzer")) // this should be passed via a child element me things!
-				throw new NotSupportedException("Analyzer attribute is depricated in Peach 3.  Use a child element instead.");
-
-			handleCommonDataElementAttributes(node, str);
-			handleCommonDataElementValue(node, str);
-			handleCommonDataElementChildren(node, str);
-
-            // handle NumericalString hint properly
-			int test;
-            if (int.TryParse((string)str.DefaultValue, out test))
-            {
-                if (!str.Hints.ContainsKey("NumericalString"))
-                    str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));
-            }
-            else
-            {
-                if (str.Hints.ContainsKey("NumericalString"))
-                    str.Hints.Remove("NumericalString");
-            }
-
-			return str;
-		}
-
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
 
-		protected void handleCommonDataElementValue(XmlNode node, DataElement elem)
+		public void handleCommonDataElementValue(XmlNode node, DataElement elem)
 		{
 			string value = null;
 
@@ -1188,95 +966,19 @@ namespace Peach.Core.Analyzers
 
 		}
 
-		protected Number handleNumber(XmlNode node, DataElementContainer parent)
-		{
-			var num = new Number();
-
-			if (hasXmlAttribute(node, "name"))
-				num.name = getXmlAttribute(node, "name");
-
-			if (hasXmlAttribute(node, "signed"))
-				num.Signed = getXmlAttributeAsBool(node, "signed", false);
-			else if(hasDefaultAttribute(typeof(Number), "signed"))
-				num.Signed = getDefaultAttributeAsBool(typeof(Number), "signed", false);
-
-			if (hasXmlAttribute(node, "size"))
-			{
-				int size;
-				try
-				{
-					size = int.Parse(getXmlAttribute(node, "size"));
-				}
-				catch
-				{
-					throw new PeachException("Error, " + num.name + " size attribute is not valid number.");
-				}
-
-				if (size < 1 || size > 64)
-					throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, num.name));
-
-				num.length = size;
-			}
-
-			if (hasXmlAttribute(node, "endian"))
-			{
-				string endian = getXmlAttribute(node, "endian").ToLower();
-				switch (endian)
-				{
-					case "little":
-						num.LittleEndian = true;
-						break;
-					case "big":
-						num.LittleEndian = false;
-						break;
-					case "network":
-						num.LittleEndian = false;
-						break;
-					default:
-						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
-				}
-			}
-			else if (hasDefaultAttribute(typeof(Number), "endian"))
-			{
-				string endian = ((string)getDefaultAttribute(typeof(Number), "endian")).ToLower();
-				switch (endian)
-				{
-					case "little":
-						num.LittleEndian = true;
-						break;
-					case "big":
-						num.LittleEndian = false;
-						break;
-					case "network":
-						num.LittleEndian = false;
-						break;
-					default:
-						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
-				}
-			}
-
-			handleCommonDataElementAttributes(node, num);
-			handleCommonDataElementChildren(node, num);
-			handleCommonDataElementValue(node, num);
-
-			return num;
-		}
-
-		protected bool hasDefaultAttribute(Type type, string key)
+		public bool hasDefaultAttribute(Type type, string key)
 		{
 			if(dataElementDefaults.ContainsKey(type))
 				return dataElementDefaults[type].ContainsKey(key);
 			return false;
 		}
 
-		protected string getDefaultAttribute(Type type, string key)
+		public string getDefaultAttribute(Type type, string key)
 		{
 			return dataElementDefaults[type][key];
 		}
 
-		protected bool getDefaultAttributeAsBool(Type type, string key, bool defaultValue)
+		public bool getDefaultAttributeAsBool(Type type, string key, bool defaultValue)
 		{
 			try
 			{
@@ -1297,187 +999,6 @@ namespace Peach.Core.Analyzers
 			{
 				return defaultValue;
 			}
-		}
-
-		protected Blob handleBlob(XmlNode node, DataElementContainer parent)
-		{
-			var blob = new Blob();
-
-			if (hasXmlAttribute(node, "name"))
-				blob.name = getXmlAttribute(node, "name");
-
-			handleCommonDataElementAttributes(node, blob);
-			handleCommonDataElementChildren(node, blob);
-			handleCommonDataElementValue(node, blob);
-
-			if (blob.DefaultValue != null && blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
-			{
-				BitStream sout = new BitStream();
-				sout.BigEndian();
-
-				if (((string)blob.DefaultValue) != null)
-					sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
-				sout.SeekBytes(0, SeekOrigin.Begin);
-				blob.DefaultValue = new Variant(sout);
-			}
-
-			return blob;
-		}
-
-		protected Padding handlePadding(XmlNode node, DataElementContainer parent)
-		{
-			var padding = new Padding();
-
-			if (hasXmlAttribute(node, "name"))
-				padding.name = getXmlAttribute(node, "name");
-
-			padding.aligned = getXmlAttributeAsBool(node, "aligned", false);
-
-			if (hasXmlAttribute(node, "alignment"))
-				padding.alignment = int.Parse(getXmlAttribute(node, "alignment"));
-
-			if (hasXmlAttribute(node, "alignedTo"))
-			{
-				padding.alignedTo = parent.find(getXmlAttribute(node, "alignedTo"));
-				if (padding.alignedTo == null)
-					throw new PeachException("Error, unable to resolve alignedTo '" + getXmlAttribute(node, "alignedTo") + "'.");
-			}
-
-			handleCommonDataElementAttributes(node, padding);
-			handleCommonDataElementChildren(node, padding);
-
-			return padding;
-		}
-
-		protected Flags handleFlags(XmlNode node, DataElementContainer parent)
-		{
-			var flags = new Flags();
-
-			if (hasXmlAttribute(node, "name"))
-				flags.name = getXmlAttribute(node, "name");
-
-			if (hasXmlAttribute(node, "size"))
-			{
-				int size;
-				try
-				{
-					size = int.Parse(getXmlAttribute(node, "size"));
-				}
-				catch
-				{
-					throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
-				}
-
-				if (size < 1 || size > 64)
-					throw new PeachException(string.Format(
-						"Error, unsupported size {0} for element {1}.", size, flags.name));
-
-				flags.size = size;
-			}
-			else if (hasDefaultAttribute(typeof(Flags), "size"))
-			{
-				int size;
-				try
-				{
-					size = int.Parse((string)getDefaultAttribute(typeof(Flags), "size"));
-				}
-				catch
-				{
-					throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
-				}
-
-				if (size < 1 || size > 64)
-					throw new PeachException(string.Format(
-						"Error, unsupported size {0} for element {1}.", size, flags.name));
-
-				flags.size = size;
-			}
-
-			if (hasXmlAttribute(node, "endian"))
-			{
-				string endian = getXmlAttribute(node, "endian").ToLower();
-				switch (endian)
-				{
-					case "little":
-						flags.LittleEndian = true;
-						break;
-					case "big":
-						flags.LittleEndian = false;
-						break;
-					case "network":
-						flags.LittleEndian = false;
-						break;
-					default:
-						throw new PeachException(string.Format(
-							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
-				}
-			}
-			else if (hasDefaultAttribute(typeof(Flags), "endian"))
-			{
-				string endian = ((string)getDefaultAttribute(typeof(Flags), "endian")).ToLower();
-				switch (endian)
-				{
-					case "little":
-						flags.LittleEndian = true;
-						break;
-					case "big":
-						flags.LittleEndian = false;
-						break;
-					case "network":
-						flags.LittleEndian = false;
-						break;
-					default:
-						throw new PeachException(string.Format(
-							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
-				}
-			}
-
-			handleCommonDataElementAttributes(node, flags);
-			handleCommonDataElementChildren(node, flags);
-
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				// Looking for "Flag" element
-				if (child.Name == "Flag")
-				{
-					flags.Add(handleFlag(child, flags));
-				}
-			}
-
-			return flags;
-		}
-
-		protected DataElement handleFlag(XmlNode node, DataElement parent)
-		{
-			var flag = new Flag();
-
-			if (hasXmlAttribute(node, "name"))
-				flag.name = getXmlAttribute(node, "name");
-
-			if (hasXmlAttribute(node, "position"))
-				flag.position = int.Parse(getXmlAttribute(node, "position"));
-			else
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-
-			if (hasXmlAttribute(node, "size"))
-			{
-				try
-				{
-					flag.size = int.Parse(getXmlAttribute(node, "size"));
-				}
-				catch (Exception e)
-				{
-					throw new PeachException("Error parsing Flag size attribute: " + e.Message);
-				}
-			}
-			else
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-			
-			handleCommonDataElementAttributes(node, flag);
-			handleCommonDataElementChildren(node, flag);
-			handleCommonDataElementValue(node, flag);
-
-			return flag;
 		}
 
 		protected void handleRelation(XmlNode node, DataElement parent)

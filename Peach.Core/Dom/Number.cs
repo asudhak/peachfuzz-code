@@ -34,6 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
+
+using Peach.Core.Analyzers;
 using Peach.Core.IO;
 
 namespace Peach.Core.Dom
@@ -42,6 +45,7 @@ namespace Peach.Core.Dom
 	/// A numerical data element.
 	/// </summary>
 	[DataElement("Number")]
+	[PitParsable("Number")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[ParameterAttribute("size", typeof(uint), "size in bits", true)]
 	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
@@ -86,6 +90,85 @@ namespace Peach.Core.Dom
 			_signed = signed;
 			_isLittleEndian = isLittleEndian;
 			DefaultValue = new Variant(value);
+		}
+
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		{
+			if (node.Name != "Number")
+				return null;
+
+			var num = new Number();
+
+			if (context.hasXmlAttribute(node, "name"))
+				num.name = context.getXmlAttribute(node, "name");
+
+			if (context.hasXmlAttribute(node, "signed"))
+				num.Signed = context.getXmlAttributeAsBool(node, "signed", false);
+			else if (context.hasDefaultAttribute(typeof(Number), "signed"))
+				num.Signed = context.getDefaultAttributeAsBool(typeof(Number), "signed", false);
+
+			if (context.hasXmlAttribute(node, "size"))
+			{
+				int size;
+				try
+				{
+					size = int.Parse(context.getXmlAttribute(node, "size"));
+				}
+				catch
+				{
+					throw new PeachException("Error, " + num.name + " size attribute is not valid number.");
+				}
+
+				if (size < 1 || size > 64)
+					throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, num.name));
+
+				num.length = size;
+			}
+
+			if (context.hasXmlAttribute(node, "endian"))
+			{
+				string endian = context.getXmlAttribute(node, "endian").ToLower();
+				switch (endian)
+				{
+					case "little":
+						num.LittleEndian = true;
+						break;
+					case "big":
+						num.LittleEndian = false;
+						break;
+					case "network":
+						num.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(
+							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
+				}
+			}
+			else if (context.hasDefaultAttribute(typeof(Number), "endian"))
+			{
+				string endian = ((string)context.getDefaultAttribute(typeof(Number), "endian")).ToLower();
+				switch (endian)
+				{
+					case "little":
+						num.LittleEndian = true;
+						break;
+					case "big":
+						num.LittleEndian = false;
+						break;
+					case "network":
+						num.LittleEndian = false;
+						break;
+					default:
+						throw new PeachException(
+							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
+				}
+			}
+
+			context.handleCommonDataElementAttributes(node, num);
+			context.handleCommonDataElementChildren(node, num);
+			context.handleCommonDataElementValue(node, num);
+
+			return num;
 		}
 
 		public override long length
