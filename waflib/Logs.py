@@ -74,7 +74,7 @@ colors_lst = {
 got_tty = not os.environ.get('TERM', 'dumb') in ['dumb', 'emacs']
 if got_tty:
 	try:
-		got_tty = sys.stderr.isatty()
+		got_tty = sys.stderr.isatty() and sys.stdout.isatty()
 	except AttributeError:
 		got_tty = False
 
