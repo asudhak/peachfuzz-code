@@ -3,8 +3,11 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NLog;
+
 using Peach.Core.Proxy.Web;
+using Peach.Core.Proxy.Net;
+
+using NLog;
 
 namespace Peach.Core.Proxy.Web.Tester
 {
@@ -18,12 +21,14 @@ namespace Peach.Core.Proxy.Web.Tester
 
 			File.WriteAllText("c:\\webproxy.txt", "");
 
-			Proxy proxy = new Proxy();
-			WebProxy webProxy = new WebProxy(proxy);
-			webProxy.NewHttpRequest += new HttpRequestEventHandler(webProxy_NewHttpRequest);
-			webProxy.NewHttpResponse += new HttpResponseEventHandler(webProxy_NewHttpResponse);
+			//Proxy proxy = new Proxy("0.0.0.0", 8080);
+			//WebProxy webProxy = new WebProxy(proxy);
+			//webProxy.NewHttpRequest += new HttpRequestEventHandler(webProxy_NewHttpRequest);
+			//webProxy.NewHttpResponse += new HttpResponseEventHandler(webProxy_NewHttpResponse);
+			//proxy.Run();
 
-			proxy.Run();
+			NetProxy netProxy = new NetProxy("0.0.0.0", 8080, "www.google.com", 443);
+			netProxy.Run();
 		}
 
 		static void webProxy_NewHttpRequest(HttpRequest request)

@@ -27,11 +27,13 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Sockets;
+
 using NLog;
 
 namespace Peach.Core.Proxy.Web
@@ -106,12 +108,48 @@ namespace Peach.Core.Proxy.Web
 		{
 			if (NewHttpRequest != null)
 				NewHttpRequest(request);
+			else
+			{
+				logger.Info(">> Request: " + request.Uri);
+				byte[] buff = request.ToByteArray();
+
+				try
+				{
+					logger.Info(">> Sending request along");
+					request.Connection.ServerStream.Write(buff, 0, buff.Length);
+					logger.Info(">> Sent request!");
+				}
+				catch (Exception e)
+				{
+					logger.Error(e.ToString());
+				}
+			}
 		}
 
 		void OnNewHttpResponse(HttpResponse response)
 		{
 			if (NewHttpResponse != null)
 				NewHttpResponse(response);
+			else
+			{
+				try
+				{
+					logger.Info("<< Response: " + response.Status);
+					byte[] buff = response.ToByteArray();
+					response.Connection.ClientStream.Write(buff, 0, buff.Length);
+					logger.Info("<< Sent Response!");
+
+					using (FileStream sout = File.Open("c:\\webproxy.txt", FileMode.Append))
+					{
+						sout.Seek(0, SeekOrigin.End);
+						sout.Write(buff, 0, buff.Length);
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e.ToString());
+				}
+			}
 		}
 	}
 }

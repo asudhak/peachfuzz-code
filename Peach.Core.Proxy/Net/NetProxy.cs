@@ -52,6 +52,9 @@ namespace Peach.Core.Proxy.Net
 
 		public NetProxy(string listenAddress, int listenPort, string remoteAddress, int remotePort)
 		{
+			_remoteAddress = remoteAddress;
+			_remotePort = remotePort;
+
 			this.proxy = new Proxy(listenAddress, listenPort);
 
 			Connection.ClientDataReceived += new DataReceivedEventHandler(Connection_ClientDataReceived);
@@ -77,7 +80,11 @@ namespace Peach.Core.Proxy.Net
 				TcpClient server = new TcpClient();
 				server.Connect(_remoteAddress, _remotePort);
 				if (!server.Connected)
+				{
 					logger.Error("Connection failed :(");
+					Stop();
+					return;
+				}
 
 				conn.ServerTcpClient = server;
 				proxy.connections.Add(server.GetStream(), conn);
@@ -95,12 +102,74 @@ namespace Peach.Core.Proxy.Net
 		{
 			if (ClientDataReceived != null)
 				ClientDataReceived(conn);
+			else
+			{
+				try
+				{
+					// Otherwise copy data across.
+
+					byte[] buff = new byte[1024];
+					int read = 0;
+
+					do
+					{
+						read = conn.ClientInputStream.Read(buff, 0, buff.Length);
+						if (read > 0)
+						{
+							logger.Debug("Writing {0} to server socket {1}",
+								read,
+								conn.ServerTcpClient.Client.RemoteEndPoint.ToString());
+							conn.ServerStream.Write(buff, 0, read);
+
+							using (FileStream sout = File.Open("c:\\server-" + conn.ServerTcpClient.Client.RemoteEndPoint.ToString().Replace(":","_") + ".txt", FileMode.Append))
+							{
+								sout.Write(buff, 0, read);
+							}
+						}
+					}
+					while (read > 0);
+				}
+				catch
+				{
+				}
+			}
 		}
 
 		void OnServerDataReceived(Connection conn)
 		{
 			if (ServerDataReceived != null)
 				ServerDataReceived(conn);
+			else
+			{
+				try
+				{
+					// Otherwise copy data across.
+
+					byte[] buff = new byte[1024];
+					int read = 0;
+
+					do
+					{
+						read = conn.ServerInputStream.Read(buff, 0, buff.Length);
+						if (read > 0)
+						{
+							logger.Debug("Writing {0} to client socket {1}", 
+								read, 
+								conn.ClientTcpClient.Client.RemoteEndPoint.ToString());
+							conn.ClientStream.Write(buff, 0, read);
+
+							using (FileStream sout = File.Open("c:\\client-" + conn.ServerTcpClient.Client.RemoteEndPoint.ToString().Replace(":", "_") + ".txt", FileMode.Append))
+							{
+								sout.Write(buff, 0, read);
+							}
+						}
+					}
+					while (read > 0);
+				}
+				catch
+				{
+				}
+			}
 		}
 	}
 }

@@ -113,6 +113,7 @@ namespace Peach.Core.Proxy
 			if (conn.ClientStream != null)
 			{
 				int len = 0;
+				int b;
 
 				try
 				{
@@ -122,7 +123,11 @@ namespace Peach.Core.Proxy
 					// Must read one byte at a time for non-blocking to work.
 					while (len < buff.Length)
 					{
-						buff[len] = (byte)conn.ClientStream.ReadByte();
+						b = conn.ClientStream.ReadByte();
+						if (b == -1)
+							break;
+
+						buff[len] = (byte)b;
 						len++;
 					}
 				}
@@ -175,6 +180,7 @@ namespace Peach.Core.Proxy
 			if (conn.ServerStream != null)
 			{
 				int len = 0;
+				int b;
 
 				try
 				{
@@ -184,7 +190,11 @@ namespace Peach.Core.Proxy
 					// Must read one byte at a time for non-blocking to work.
 					while (len < buff.Length)
 					{
-						buff[len] = (byte)conn.ServerStream.ReadByte();
+						b = conn.ServerStream.ReadByte();
+						if (b == -1)
+							break;
+
+						buff[len] = (byte)b;
 						len++;
 					}
 				}
@@ -241,3 +251,5 @@ namespace Peach.Core.Proxy
 		}
 	}
 }
+
+// end
