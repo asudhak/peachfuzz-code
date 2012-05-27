@@ -30,7 +30,7 @@ def add_cython_file(self, node):
 		ext = '.cc'
 
 	for x in getattr(self, 'cython_includes', []):
-		# TODO re-use these nodes in "scan" belose
+		# TODO re-use these nodes in "scan" below
 		d = self.path.find_dir(x)
 		if d:
 			self.env.append_unique('CYTHONFLAGS', '-I%s' % d.abspath())
