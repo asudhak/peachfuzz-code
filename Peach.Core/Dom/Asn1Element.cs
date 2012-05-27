@@ -32,7 +32,7 @@ using System.Text;
 
 namespace Peach.Core.Dom
 {
-	public class Asn1Element : DataElement
-	{
-	}
+	//public class Asn1Element : DataElement
+	//{
+	//}
 }

@@ -37,6 +37,10 @@ using System.Runtime.Serialization;
 using System.Xml;
 
 using Peach.Core.Analyzers;
+using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -53,6 +57,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Choice : DataElementContainer
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public OrderedDictionary<string, DataElement> choiceElements = new OrderedDictionary<string, DataElement>();
 		DataElement _selectedElement = null;
 
@@ -63,6 +68,70 @@ namespace Peach.Core.Dom
 		public Choice(string name)
 		{
 			this.name = name;
+		}
+
+		public override void Crack(DataCracker context, BitStream data)
+		{
+			Choice element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			BitStream sizedData = data;
+			SizeRelation sizeRelation = null;
+
+			// Do we have relations or a length?
+			if (element.relations.hasOfSizeRelation)
+			{
+				sizeRelation = element.relations.getOfSizeRelation();
+
+				if (!element.isParentOf(sizeRelation.From))
+				{
+					int size = (int)sizeRelation.GetValue();
+					context._sizedBlockStack.Add(element);
+					context._sizedBlockMap[element] = size;
+
+					sizedData = new BitStream(data.ReadBytes(size));
+					sizeRelation = null;
+				}
+			}
+			else if (element.hasLength)
+			{
+				long size = element.lengthAsBits;
+				context._sizedBlockStack.Add(element);
+				context._sizedBlockMap[element] = size;
+
+				sizedData = new BitStream(data.ReadBytes(size));
+			}
+
+			long startPosition = sizedData.TellBits();
+			bool foundElement = false;
+
+			foreach (DataElement child in element.choiceElements.Values)
+			{
+				try
+				{
+					logger.Debug("handleChoice: Trying next child: " + child.fullName);
+
+					child.parent = element;
+					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
+					context.handleNode(child, sizedData);
+					element.SelectedElement = child;
+					foundElement = true;
+					break;
+				}
+				catch (CrackingFailure)
+				{
+					logger.Debug("handleChoice: Child failed to crack: " + child.fullName);
+					foundElement = false;
+				}
+				catch (Exception ex)
+				{
+					logger.Debug("handleChoice: Child threw exception: " + child.fullName + ": " + ex.Message);
+				}
+			}
+
+			if (!foundElement)
+				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 		}
 
 		public void SelectDefault()

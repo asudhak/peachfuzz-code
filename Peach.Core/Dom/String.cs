@@ -37,7 +37,10 @@ using System.Runtime.Serialization;
 using System.Xml;
 
 using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
 using Peach.Core.IO;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -68,6 +71,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class String : DataElement
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected StringType _type = StringType.Ascii;
 		protected bool _nullTerminated = false;
 		protected char _padCharacter = '\0';
@@ -111,6 +115,95 @@ namespace Peach.Core.Dom
 			_nullTerminated = nullTerminated;
 			_length = length;
 			_lengthType = LengthType.Bytes;
+		}
+
+		public override void Crack(DataCracker context, BitStream data)
+		{
+			String element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			if (element.nullTerminated)
+			{
+				// Locate NULL character in stream
+				bool foundNull = false;
+				bool twoNulls = element.stringType == StringType.Utf16 || element.stringType == StringType.Utf16be;
+				long currentPos = data.TellBits();
+
+				for (long i = data.TellBytes(); i < data.LengthBytes; i++)
+				{
+					if (data.ReadByte() == 0)
+					{
+						if (twoNulls)
+						{
+							if (data.ReadByte() == 0)
+							{
+								foundNull = true;
+								break;
+							}
+							else
+							{
+								data.SeekBits(-8, System.IO.SeekOrigin.Current);
+								continue;
+							}
+						}
+						else
+						{
+							foundNull = true;
+							break;
+						}
+					}
+				}
+
+				if (!foundNull)
+					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.", element, data);
+
+				long endPos = data.TellBits();
+
+				// Do not include NULLs in our read.
+				long byteCount = ((endPos - currentPos) / 8) - 1;
+				if (twoNulls)
+					byteCount--;
+
+				data.SeekBits(currentPos, System.IO.SeekOrigin.Begin);
+				byte[] value = data.ReadBytes(byteCount);
+				string strValue = ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(value);
+				element.DefaultValue = new Variant(strValue);
+
+				// Now skip past nulls
+				if (twoNulls)
+					data.SeekBits(16, System.IO.SeekOrigin.Current);
+				else
+					data.SeekBits(8, System.IO.SeekOrigin.Current);
+
+				return;
+			}
+
+			// String length in bytes
+			long? stringLength = context.determineElementSize(element, data) / 8;
+
+			// TODO - Make both length and size for strings.  Length is always in chars.
+			if (stringLength == null && element.isToken)
+				stringLength = ((string)element.DefaultValue).Length;
+
+			if (stringLength == null)
+				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
+
+			if ((data.TellBytes() + stringLength) > data.LengthBytes)
+				throw new CrackingFailure("String '" + element.fullName +
+					"' has length of '" + stringLength + "' but buffer only has '" +
+					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
+
+			var defaultValue = new Variant(
+				ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
+				data.ReadBytes((int)stringLength)));
+
+			if (element.isToken)
+				if (defaultValue != element.DefaultValue)
+					throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
+
+			element.DefaultValue = defaultValue;
+
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

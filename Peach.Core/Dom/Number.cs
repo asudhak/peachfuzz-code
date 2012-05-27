@@ -38,6 +38,9 @@ using System.Xml;
 
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -53,6 +56,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Number : DataElement
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected ulong _max = (ulong)sbyte.MaxValue;
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = true;
@@ -90,6 +94,70 @@ namespace Peach.Core.Dom
 			_signed = signed;
 			_isLittleEndian = isLittleEndian;
 			DefaultValue = new Variant(value);
+		}
+
+		public override void Crack(DataCracker context, BitStream data)
+		{
+			Number element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
+				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
+
+			if (element.LittleEndian)
+				data.LittleEndian();
+			else
+				data.BigEndian();
+
+			Variant defaultValue;
+
+			if (element.Signed)
+			{
+				switch (element.lengthAsBits)
+				{
+					case 8:
+						defaultValue = new Variant(data.ReadInt8());
+						break;
+					case 16:
+						defaultValue = new Variant(data.ReadInt16());
+						break;
+					case 32:
+						defaultValue = new Variant(data.ReadInt32());
+						break;
+					case 64:
+						defaultValue = new Variant(data.ReadInt64());
+						break;
+					default:
+						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
+				}
+			}
+			else
+			{
+				switch (element.lengthAsBits)
+				{
+					case 8:
+						defaultValue = new Variant(data.ReadUInt8());
+						break;
+					case 16:
+						defaultValue = new Variant(data.ReadUInt16());
+						break;
+					case 32:
+						defaultValue = new Variant(data.ReadUInt32());
+						break;
+					case 64:
+						defaultValue = new Variant(data.ReadUInt64());
+						break;
+					default:
+						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
+				}
+			}
+
+			if (element.isToken)
+				if (defaultValue != element.DefaultValue)
+					throw new CrackingFailure("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
+
+			element.DefaultValue = defaultValue;
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

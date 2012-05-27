@@ -34,7 +34,11 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+
 using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -46,8 +50,91 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>, IList<DataElement>
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected List<DataElement> _childrenList = new List<DataElement>();
 		protected Dictionary<string, DataElement> _childrenDict = new Dictionary<string, DataElement>();
+
+		public override void Crack(DataCracker context, BitStream data)
+		{
+			DataElementContainer element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			BitStream sizedData = data;
+			SizeRelation sizeRelation = null;
+			long startPosition = data.TellBits();
+
+			// Do we have relations or a length?
+			if (element.relations.hasOfSizeRelation)
+			{
+				sizeRelation = element.relations.getOfSizeRelation();
+
+				if (!element.isParentOf(sizeRelation.From))
+				{
+					long size = sizeRelation.GetValue();
+					context._sizedBlockStack.Add(element);
+					context._sizedBlockMap[element] = size;
+
+					sizedData = data.ReadBitsAsBitStream(size);
+					sizeRelation = null;
+				}
+			}
+			else if (element.hasLength)
+			{
+				long size = element.lengthAsBits;
+				context._sizedBlockStack.Add(element);
+				context._sizedBlockMap[element] = size;
+
+				sizedData = data.ReadBitsAsBitStream(size);
+			}
+
+			// Handle children
+			foreach (DataElement child in element)
+			{
+				context.handleNode(child, sizedData);
+
+				// If we have an unused size relation, wait until we
+				// can use it then re-size our data.
+				if (sizeRelation != null)
+				{
+					if (child is DataElementContainer &&
+						((DataElementContainer)child).isParentOf(sizeRelation.From))
+					{
+						long size = (long)sizeRelation.GetValue();
+						context._sizedBlockStack.Add(element);
+						context._sizedBlockMap[element] = size;
+
+						// update size based on what we have currently read
+						size -= data.TellBits() - startPosition;
+
+						sizedData = data.ReadBitsAsBitStream(size);
+						sizeRelation = null;
+					}
+					else if (child == sizeRelation.From)
+					{
+						long size = (long)sizeRelation.GetValue();
+						context._sizedBlockStack.Add(element);
+						context._sizedBlockMap[element] = size;
+
+						// update size based on what we have currently read
+						size -= data.TellBits() - startPosition;
+
+						if (size < 0)
+							throw new CrackingFailure("Relation of container too small.", child, data);
+
+						sizedData = data.ReadBitsAsBitStream(size);
+						sizeRelation = null;
+					}
+				}
+			}
+
+			// Remove our element from the stack & map
+			if (sizedData != data)
+			{
+				context._sizedBlockStack.Remove(element);
+				context._sizedBlockMap.Remove(element);
+			}
+		}
 
 		public override bool isLeafNode
 		{

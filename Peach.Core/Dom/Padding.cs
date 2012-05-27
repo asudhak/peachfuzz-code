@@ -38,6 +38,9 @@ using System.Xml;
 
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -54,6 +57,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Padding : DataElement
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		bool _aligned = false;
 		int _alignment = 8;
 		DataElement _alignedTo = null;
@@ -106,6 +110,23 @@ namespace Peach.Core.Dom
 		{
 			this.lengthCalc = lengthCalc;
 			_defaultValue = new Variant(new byte[] { });
+		}
+
+		public override void Crack(DataCracker context, BitStream data)
+		{
+			Padding element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			// Length in bits
+			long paddingLength = element.Value.LengthBits;
+
+			if ((data.TellBits() + paddingLength) > data.LengthBits)
+				throw new CrackingFailure("Placement '" + element.fullName +
+					"' has length of '" + paddingLength + "' bits but buffer only has '" +
+					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
+
+			data.SeekBits(paddingLength, System.IO.SeekOrigin.Current);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

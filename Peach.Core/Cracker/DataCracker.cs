@@ -29,8 +29,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using Peach.Core.Dom;
 using Peach.Core.IO;
+
 using NLog;
 
 namespace Peach.Core.Cracker
@@ -54,12 +56,12 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// A stack of sized DataElement containers.
 		/// </summary>
-		List<DataElement> _sizedBlockStack = new List<DataElement>();
+		public List<DataElement> _sizedBlockStack = new List<DataElement>();
 		/// <summary>
 		/// Mapping of elements from _sizedBlockStack to there lengths.  All lengths are in
 		/// BITS!
 		/// </summary>
-		Dictionary<DataElement, long> _sizedBlockMap = new Dictionary<DataElement, long>();
+		public Dictionary<DataElement, long> _sizedBlockMap = new Dictionary<DataElement, long>();
 
 		/// <summary>
 		/// The full data stream.
@@ -397,7 +399,7 @@ namespace Peach.Core.Cracker
 		/// </summary>
 		/// <param name="element">DataElement to crack</param>
 		/// <param name="data">Input stream to use for data</param>
-		protected void handleNode(DataElement element, BitStream data)
+		public void handleNode(DataElement element, BitStream data)
 		{
 			try
 			{
@@ -438,43 +440,7 @@ namespace Peach.Core.Cracker
 
 				data.MarkStartOfElement(element);
 
-				// Do array handling
-				if (element is Dom.Array)
-				{
-					handleArray(element as Dom.Array, data);
-				}
-				else if (element is Choice)
-				{
-					handleChoice(element as Choice, data);
-				}
-				else if (element is Flags)
-				{
-					handleFlags(element as Flags, data);
-				}
-				else if (element is DataElementContainer) // Should also catch DataModel's
-				{
-					handleDataElementContainer(element as DataElementContainer, data);
-				}
-				else if (element is Dom.String)
-				{
-					handleString(element as Dom.String, data);
-				}
-				else if (element is Number)
-				{
-					handleNumber(element as Number, data);
-				}
-				else if (element is Blob)
-				{
-					handleBlob(element as Blob, data);
-				}
-				else if (element is Padding)
-				{
-					handlePadding(element as Padding, data);
-				}
-				else
-				{
-					throw new ApplicationException("Error, found unknown element in DOM tree! " + element.GetType().ToString());
-				}
+				element.Crack(this, data);
 
 				data.MarkEndOfElement(element);
 
@@ -498,287 +464,13 @@ namespace Peach.Core.Cracker
 			}
 		}
 
-		protected void handleArray(Dom.Array element, BitStream data)
-		{
-			logger.Trace("handleArray: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-			logger.Debug("handleArray: {0} type: {1}", element.fullName, element[0].GetType());
-
-			element.origionalElement = element[0];
-			element.Clear();
-
-			if (element.maxOccurs > 1)
-			{
-				for (int cnt = 0; true; cnt++)
-				{
-					logger.Debug("handleArray: Trying #{0}", cnt.ToString());
-
-					long pos = data.TellBits();
-					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
-					clone.name = clone.name + "_" + cnt.ToString();
-					clone.parent = element;
-					element.Add(clone);
-
-					try
-					{
-						handleNode(clone, data);
-					}
-					catch
-					{
-						logger.Debug("handleArray: Failed on #{0}", cnt.ToString());
-						element.Remove(clone);
-						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
-						break;
-					}
-
-					if (data.TellBits() == data.LengthBits)
-					{
-						logger.Debug("handleArray: Found EOF, all done!");
-						break;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Handle crack a Block element.
-		/// </summary>
-		/// <param name="element">Block to crack</param>
-		/// <param name="data">Data stream to use when cracking</param>
-		protected void handleDataElementContainer(DataElementContainer element, BitStream data)
-		{
-			logger.Trace("handleDataElementContainer: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			BitStream sizedData = data;
-			SizeRelation sizeRelation = null;
-			long startPosition = data.TellBits();
-
-			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation)
-			{
-				sizeRelation = element.relations.getOfSizeRelation();
-
-				if (!element.isParentOf(sizeRelation.From))
-				{
-					long size = sizeRelation.GetValue();
-					_sizedBlockStack.Add(element);
-					_sizedBlockMap[element] = size;
-
-					sizedData = data.ReadBitsAsBitStream(size);
-					sizeRelation = null;
-				}
-			}
-			else if (element.hasLength)
-			{
-				long size = element.lengthAsBits;
-				_sizedBlockStack.Add(element);
-				_sizedBlockMap[element] = size;
-
-				sizedData = data.ReadBitsAsBitStream(size);
-			}
-
-			// Handle children
-			foreach (DataElement child in element)
-			{
-				handleNode(child, sizedData);
-
-				// If we have an unused size relation, wait until we
-				// can use it then re-size our data.
-				if (sizeRelation != null)
-				{
-					if (child is DataElementContainer && 
-						((DataElementContainer)child).isParentOf(sizeRelation.From))
-					{
-						long size = (long)sizeRelation.GetValue();
-						_sizedBlockStack.Add(element);
-						_sizedBlockMap[element] = size;
-
-						// update size based on what we have currently read
-						size -= data.TellBits() - startPosition;
-
-						sizedData = data.ReadBitsAsBitStream(size);
-						sizeRelation = null;
-					}
-					else if(child == sizeRelation.From)
-					{
-						long size = (long)sizeRelation.GetValue();
-						_sizedBlockStack.Add(element);
-						_sizedBlockMap[element] = size;
-
-						// update size based on what we have currently read
-						size -= data.TellBits() - startPosition;
-
-						if (size < 0)
-							throw new CrackingFailure("Relation of container too small.", child, data);
-
-						sizedData = data.ReadBitsAsBitStream(size);
-						sizeRelation = null;
-					}
-				}
-			}
-
-			// Remove our element from the stack & map
-			if (sizedData != data)
-			{
-				_sizedBlockStack.Remove(element);
-				_sizedBlockMap.Remove(element);
-			}
-		}
-
-		protected void handleChoice(Choice element, BitStream data)
-		{
-			logger.Trace("handleChoice: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			BitStream sizedData = data;
-			SizeRelation sizeRelation = null;
-
-			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation)
-			{
-				sizeRelation = element.relations.getOfSizeRelation();
-
-				if (!element.isParentOf(sizeRelation.From))
-				{
-					int size = (int)sizeRelation.GetValue();
-					_sizedBlockStack.Add(element);
-					_sizedBlockMap[element] = size;
-
-					sizedData = new BitStream(data.ReadBytes(size));
-					sizeRelation = null;
-				}
-			}
-			else if (element.hasLength)
-			{
-				long size = element.lengthAsBits;
-				_sizedBlockStack.Add(element);
-				_sizedBlockMap[element] = size;
-
-				sizedData = new BitStream(data.ReadBytes(size));
-			}
-
-			long startPosition = sizedData.TellBits();
-			bool foundElement = false;
-
-			foreach (DataElement child in element.choiceElements.Values)
-			{
-				try
-				{
-					logger.Debug("handleChoice: Trying next child: " + child.fullName);
-
-					child.parent = element;
-					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
-					handleNode(child, sizedData);
-					element.SelectedElement = child;
-					foundElement = true;
-					break;
-				}
-				catch (CrackingFailure)
-				{
-					logger.Debug("handleChoice: Child failed to crack: " + child.fullName);
-					foundElement = false;
-				}
-				catch (Exception ex)
-				{
-					logger.Debug("handleChoice: Child threw exception: " + child.fullName + ": " + ex.Message);
-				}
-			}
-
-			if (!foundElement)
-				throw new CrackingFailure("Unable to crack '"+element.fullName+"'.", element, data);
-		}
-
-		protected void handleString(Dom.String element, BitStream data)
-		{
-			logger.Trace("handleString: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (element.nullTerminated)
-			{
-				// Locate NULL character in stream
-				bool foundNull = false;
-				bool twoNulls = element.stringType == StringType.Utf16 || element.stringType == StringType.Utf16be;
-				long currentPos = data.TellBits();
-
-				for (long i = data.TellBytes(); i < data.LengthBytes; i++)
-				{
-					if (data.ReadByte() == 0)
-					{
-						if (twoNulls)
-						{
-							if (data.ReadByte() == 0)
-							{
-								foundNull = true;
-								break;
-							}
-							else
-							{
-								data.SeekBits(-8, System.IO.SeekOrigin.Current);
-								continue;
-							}
-						}
-						else
-						{
-							foundNull = true;
-							break;
-						}
-					}
-				}
-
-				if (!foundNull)
-					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.", element, data);
-
-				long endPos = data.TellBits();
-
-				// Do not include NULLs in our read.
-				long byteCount = ((endPos - currentPos) / 8) - 1;
-				if (twoNulls)
-					byteCount--;
-
-				data.SeekBits(currentPos, System.IO.SeekOrigin.Begin);
-				byte [] value = data.ReadBytes(byteCount);
-				string strValue = ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(value);
-				element.DefaultValue = new Variant(strValue);
-
-				// Now skip past nulls
-				if (twoNulls)
-					data.SeekBits(16, System.IO.SeekOrigin.Current);
-				else
-					data.SeekBits(8, System.IO.SeekOrigin.Current);
-
-				return;
-			}
-
-			// String length in bytes
-			long? stringLength = determineElementSize(element, data) / 8 ;
-
-			// TODO - Make both length and size for strings.  Length is always in chars.
-			if (stringLength == null && element.isToken)
-				stringLength = ((string)element.DefaultValue).Length;
-
-			if (stringLength == null)
-				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
-
-			if ((data.TellBytes() + stringLength) > data.LengthBytes)
-				throw new CrackingFailure("String '" + element.fullName +
-					"' has length of '" + stringLength + "' but buffer only has '" +
-					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
-
-			var defaultValue = new Variant(
-				ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
-				data.ReadBytes((int)stringLength)));
-
-			if (element.isToken)
-				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-
-			element.DefaultValue = defaultValue;
-		}
-		
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="element"></param>
 		/// <param name="data"></param>
 		/// <returns>Returns size in bits</returns>
-		protected long? determineElementSize(DataElement element, BitStream data)
+		public long? determineElementSize(DataElement element, BitStream data)
 		{
 			logger.Trace("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
@@ -810,148 +502,6 @@ namespace Peach.Core.Cracker
 
 			logger.Trace("determineElementSize: Returning: "+size);
 			return size;
-		}
-
-		protected void handleNumber(Number element, BitStream data)
-		{
-			logger.Trace("handleNumber: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
-				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
-
-			if (element.LittleEndian)
-				data.LittleEndian();
-			else
-				data.BigEndian();
-
-			Variant defaultValue;
-
-			if (element.Signed)
-			{
-				switch (element.lengthAsBits)
-				{
-					case 8:
-						defaultValue = new Variant(data.ReadInt8());
-						break;
-					case 16:
-						defaultValue = new Variant(data.ReadInt16());
-						break;
-					case 32:
-						defaultValue = new Variant(data.ReadInt32());
-						break;
-					case 64:
-						defaultValue = new Variant(data.ReadInt64());
-						break;
-					default:
-						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
-				}
-			}
-			else
-			{
-				switch (element.lengthAsBits)
-				{
-					case 8:
-						defaultValue = new Variant(data.ReadUInt8());
-						break;
-					case 16:
-						defaultValue = new Variant(data.ReadUInt16());
-						break;
-					case 32:
-						defaultValue = new Variant(data.ReadUInt32());
-						break;
-					case 64:
-						defaultValue = new Variant(data.ReadUInt64());
-						break;
-					default:
-						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
-				}
-			}
-
-			if(element.isToken)
-				if(defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Number marked as token, values did not match '"+ ((string)defaultValue) +"' vs. '"+((string)element.DefaultValue)+"'.", element, data);
-
-			element.DefaultValue = defaultValue;
-		}
-
-		protected void handleFlags(Flags element, BitStream data)
-		{
-			logger.Trace("handleFlags: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits <= (data.TellBits() + element.size))
-				throw new CrackingFailure("Not enough data to crack '"+element.fullName+"'.", element, data);
-
-			long startPos = data.TellBits();
-
-			foreach (DataElement child in element)
-			{
-				data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
-				data.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Current);
-				handleFlag(child as Flag, data);
-			}
-
-			// Make sure we land at end of Flags
-			data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
-			data.SeekBits((int)element.size, System.IO.SeekOrigin.Current);
-		}
-
-		protected void handleFlag(Flag element, BitStream data)
-		{
-			logger.Trace("handleFlag: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			var defaultValue = new Variant(data.ReadBits(element.size));
-
-			if (element.isToken)
-			    if (defaultValue != element.DefaultValue)
-			        throw new CrackingFailure("Flag '" + element.name + "' marked as token, values did not match '" + (string)defaultValue + "' vs. '" + (string)element.DefaultValue + "'.", element, data);
-
-			element.DefaultValue = defaultValue;
-		}
-
-		protected void handleBlob(Blob element, BitStream data)
-		{
-			logger.Trace("handleBlob: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			// Length in bits
-			long? blobLength = determineElementSize(element, data);
-
-			if (blobLength == null && element.isToken)
-				blobLength = ((BitStream)element.DefaultValue).LengthBits;
-
-			if (blobLength == null)
-				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
-
-			if ((data.TellBits() + blobLength) > data.LengthBits)
-				throw new CrackingFailure("Blob '" + element.fullName +
-					"' has length of '" + blobLength + "' bits but buffer only has '" +
-					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
-
-			Variant defaultValue = new Variant(new byte[0]);
-
-			if (blobLength > 0)
-				defaultValue = new Variant(data.ReadBitsAsBitStream((long)blobLength));
-
-			if (element.isToken)
-				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Blob '" + element.name + "' marked as token, values did not match '" +
-						defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
-
-			element.DefaultValue = defaultValue;
-		}
-
-		protected void handlePadding(Padding element, BitStream data)
-		{
-			logger.Trace("handlePadding: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			// Length in bits
-			long paddingLength = element.Value.LengthBits;
-
-			if ((data.TellBits() + paddingLength) > data.LengthBits)
-				throw new CrackingFailure("Placement '" + element.fullName +
-					"' has length of '" + paddingLength + "' bits but buffer only has '" +
-					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
-
-			data.SeekBits(paddingLength, System.IO.SeekOrigin.Current);
 		}
 	}
 }

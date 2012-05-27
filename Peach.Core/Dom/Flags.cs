@@ -38,6 +38,9 @@ using System.Xml;
 
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -50,6 +53,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Flags : DataElementContainer
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected int _size = 0;
 		protected bool _littleEndian = true;
 
@@ -71,6 +75,29 @@ namespace Peach.Core.Dom
 		public Flags(int size)
 		{
 			this.size = size;
+		}
+
+		public override void Crack(DataCracker context, BitStream data)
+		{
+			Flags element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+
+			if (data.LengthBits <= (data.TellBits() + element.size))
+				throw new CrackingFailure("Not enough data to crack '" + element.fullName + "'.", element, data);
+
+			long startPos = data.TellBits();
+
+			foreach (DataElement child in element)
+			{
+				data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
+				data.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Current);
+				(child as Flag).Crack(context, data);
+			}
+
+			// Make sure we land at end of Flags
+			data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
+			data.SeekBits((int)element.size, System.IO.SeekOrigin.Current);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -213,111 +240,6 @@ namespace Peach.Core.Dom
 			return _internalValue;
 		}
 
-	}
-
-	[DataElement("Flag")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
-	[ParameterAttribute("size", typeof(int), "size in bits", true)]
-	[Serializable]
-	public class Flag : DataElement
-	{
-		protected int _size = 0;
-		protected int _position = 0;
-
-		public Flag()
-		{
-		}
-
-		public Flag(string name)
-		{
-			this.name = name;
-		}
-
-		public Flag(string name, int size, int position)
-		{
-			this.name = name;
-			this.size = size;
-			this.position = position;
-		}
-
-		public Flag(int size, int position)
-		{
-			this.size = size;
-			this.position = position;
-		}
-
-		public static DataElement PitParser(PitParser context, XmlNode node, Flags parent)
-		{
-			if(node.Name == "Flag")
-				return null;
-
-			var flag = new Flag();
-
-			if (context.hasXmlAttribute(node, "name"))
-				flag.name = context.getXmlAttribute(node, "name");
-
-			if (context.hasXmlAttribute(node, "position"))
-				flag.position = int.Parse(context.getXmlAttribute(node, "position"));
-			else
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-
-			if (context.hasXmlAttribute(node, "size"))
-			{
-				try
-				{
-					flag.size = int.Parse(context.getXmlAttribute(node, "size"));
-				}
-				catch (Exception e)
-				{
-					throw new PeachException("Error parsing Flag size attribute: " + e.Message);
-				}
-			}
-			else
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-
-			context.handleCommonDataElementAttributes(node, flag);
-			context.handleCommonDataElementChildren(node, flag);
-			context.handleCommonDataElementValue(node, flag);
-
-			return flag;
-		}
-
-		public int size
-		{
-			get { return _size; }
-			set
-			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("Should not be null");
-				_size = value;
-				Invalidate();
-			}
-		}
-
-		public int position
-		{
-			get { return _position; }
-			set
-			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("Should not be null");
-				_position = value;
-				Invalidate();
-			}
-		}
-
-		protected override BitStream InternalValueToBitStream(Variant v)
-		{
-			BitStream bits = new BitStream();
-
-			if (v == null)
-				bits.WriteBits((ulong)0, size);
-			else
-				bits.WriteBits((ulong)v, size);
-
-			return bits;
-		}
 	}
 }
 

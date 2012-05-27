@@ -38,6 +38,9 @@ using System.Xml;
 
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {

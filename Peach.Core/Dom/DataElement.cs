@@ -34,7 +34,9 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+
 using Peach.Core.IO;
+using Peach.Core.Cracker;
 
 namespace Peach.Core.Dom
 {
@@ -72,7 +74,7 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Optional name for element", false)]
 	[Parameter("value", typeof(string), "Optional default value", false)]
 	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
-	public abstract class DataElement : INamed
+	public abstract class DataElement : INamed, ICrackable
 	{
 		/// <summary>
 		/// Mutated vale override's fixupImpl
@@ -165,6 +167,8 @@ namespace Peach.Core.Dom
 		public event InvalidatedEventHandler Invalidated;
 		public event DefaultValueChangedEventHandler DefaultValueChanged;
 		public event MutatedValueChangedEventHandler MutatedValueChanged;
+
+		public abstract void Crack(DataCracker context, BitStream data);
 
 		protected virtual void OnInvalidated(EventArgs e)
 		{

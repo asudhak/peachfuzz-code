@@ -37,6 +37,10 @@ using System.Runtime.Serialization;
 using System.Xml;
 
 using Peach.Core.Analyzers;
+using Peach.Core.IO;
+using Peach.Core.Cracker;
+
+using NLog;
 
 namespace Peach.Core.Dom
 {
@@ -54,6 +58,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Array : Block
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public int minOccurs = 1;
 		public int maxOccurs = 1;
 		public int occurs = 1;
@@ -71,6 +76,49 @@ namespace Peach.Core.Dom
 
 				if(this.Count > 0)
 					this[0].name = value;
+			}
+		}
+
+		public void Crack(DataCracker context, BitStream data)
+		{
+			Array element = this;
+
+			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("Crack: {0} type: {1}", element.fullName, element[0].GetType());
+
+			element.origionalElement = element[0];
+			element.Clear();
+
+			if (element.maxOccurs > 1)
+			{
+				for (int cnt = 0; true; cnt++)
+				{
+					logger.Debug("Crack: Trying #{0}", cnt.ToString());
+
+					long pos = data.TellBits();
+					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
+					clone.name = clone.name + "_" + cnt.ToString();
+					clone.parent = element;
+					element.Add(clone);
+
+					try
+					{
+						context.handleNode(clone, data);
+					}
+					catch
+					{
+						logger.Debug("Crack: Failed on #{0}", cnt.ToString());
+						element.Remove(clone);
+						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
+						break;
+					}
+
+					if (data.TellBits() == data.LengthBits)
+					{
+						logger.Debug("Crack: Found EOF, all done!");
+						break;
+					}
+				}
 			}
 		}
 
