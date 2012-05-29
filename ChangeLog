@@ -18,6 +18,10 @@ NEW IN WAF 1.7.0
 * Improved the C# processing #1154, #1153
 * Removed the empty flags from LIB/INCLUDE in the msvc configuration #1159
 * Added an 'encoding' parameter to bld.subst()
+* Detect Visual Studio 2011 beta
+* Detect cython dependencies of the form "from module import x" #1044
+* Use the cython includes in the dependency scanner #1166
+* Improved the behaviour of Utils.readf/Utils.writef on Win32
 
 NEW IN WAF 1.6.11
 -----------------
