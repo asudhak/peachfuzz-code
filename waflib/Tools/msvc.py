@@ -47,9 +47,9 @@ Setting PYTHONUNBUFFERED gives the unbuffered output.
 """
 
 import os, sys, re, tempfile
-from waflib import Utils, TaskGen, Runner, Configure, Task, Options
-from waflib.Logs import debug, info, warn, error
-from waflib.TaskGen import after_method, before_method, feature
+from waflib import Utils, Task, Options
+from waflib.Logs import debug, info, warn
+from waflib.TaskGen import after_method, feature
 
 from waflib.Configure import conf
 from waflib.Tools import ccroot, c, cxx, ar, winres
@@ -136,15 +136,23 @@ echo LIB=%%LIB%%
 	sout = conf.cmd_and_log(['cmd', '/E:on', '/V:on', '/C', batfile.abspath()])
 	lines = sout.splitlines()
 
-	if not lines[0]: lines=lines[1:]
-	for x in ('Setting environment', 'Setting SDK environment', 'Intel(R) C++ Compiler', 'Intel Parallel Studio'):
-		if lines[0].find(x) != -1:
-			break
-	else:
-		debug('msvc: get_msvc_version: %r %r %r -> not found', compiler, version, target)
-		conf.fatal('msvc: Impossible to find a valid architecture for building (in get_msvc_version)')
+	if not lines[0]:
+		lines.pop(0)
 
-	for line in lines[1:]:
+	if version == '11.0':
+		if lines[0].startswith('Error'):
+			conf.fatal('msvc: Could not find a valid architecture for building (get_msvc_version_1)')
+	else:
+		for x in ('Setting environment', 'Setting SDK environment', 'Intel(R) C++ Compiler', 'Intel Parallel Studio'):
+			if lines[0].find(x) > -1:
+				lines.pop(0)
+				break
+		else:
+			debug('msvc: get_msvc_version: %r %r %r -> not found', compiler, version, target)
+			conf.fatal('msvc: Could not find a valid architecture for building (get_msvc_version_2)')
+
+	MSVC_PATH = MSVC_INCDIR = MSVC_LIBDIR = None
+	for line in lines:
 		if line.startswith('PATH='):
 			path = line[5:]
 			MSVC_PATH = path.split(';')
@@ -153,10 +161,12 @@ echo LIB=%%LIB%%
 		elif line.startswith('LIB='):
 			MSVC_LIBDIR = [i for i in line[4:].split(';') if i]
 
+	if None in (MSVC_PATH, MSVC_INCDIR, MSVC_LIBDIR):
+		conf.fatal('msvc: Could not find a valid architecture for building (get_msvc_version_3)')
+
 	# Check if the compiler is usable at all.
 	# The detection may return 64-bit versions even on 32-bit systems, and these would fail to run.
-	env = {}
-	env.update(os.environ)
+	env = dict(os.environ)
 	env.update(PATH = path)
 	compiler_name, linker_name, lib_name = _get_prog_names(conf, compiler)
 	cxx = conf.find_program(compiler_name, path_list=MSVC_PATH)
