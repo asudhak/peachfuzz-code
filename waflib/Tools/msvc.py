@@ -54,7 +54,6 @@ from waflib.TaskGen import after_method, feature
 from waflib.Configure import conf
 from waflib.Tools import ccroot, c, cxx, ar, winres
 
-
 g_msvc_systemlibs = '''
 aclui activeds ad1 adptif adsiid advapi32 asycfilt authz bhsupp bits bufferoverflowu cabinet
 cap certadm certidl ciuuid clusapi comctl32 comdlg32 comsupp comsuppd comsuppw comsuppwd comsvcs
@@ -672,7 +671,7 @@ def find_msvc(conf):
 
 	# manifest tool. Not required for VS 2003 and below. Must have for VS 2005 and later
 	if v.MSVC_MANIFEST:
-		mt = conf.find_program('MT', path_list=path, var='MT')
+		conf.find_program('MT', path_list=path, var='MT')
 		v['MTFLAGS'] = ['/NOLOGO']
 
 	conf.load('winres')
