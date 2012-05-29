@@ -79,7 +79,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data)
 		{
 			Array element = this;
 
@@ -122,7 +122,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
+		public new static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
 			var array = new Array();
 

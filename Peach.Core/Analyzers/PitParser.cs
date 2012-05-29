@@ -811,8 +811,7 @@ namespace Peach.Core.Analyzers
 				if (pitParsableMethod == null)
 					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + dataElementType.FullName);
 
-
-                PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
+				PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
                 elem = delegateAction(this, child, element);
                 

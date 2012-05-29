@@ -20,7 +20,7 @@ namespace Peach.Core
 	/// 
 	/// If unable to parse the current XML, just return null.
 	/// </remarks>
-	[AttributeUsage(AttributeTargets.Class,Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class PitParsableAttribute : Attribute
 	{
 		/// <summary>
