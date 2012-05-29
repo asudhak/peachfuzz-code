@@ -2,6 +2,8 @@
 # encoding: ISO8859-1
 # Thomas Nagy, 2010
 
+from waflib import Logs
+
 top = '.'
 out = 'build'
 
@@ -10,13 +12,17 @@ def options(ctx):
 	ctx.load('compiler_cxx')
 	ctx.load('python')
 	ctx.load('cython')
+	ctx.load('cython_cache', tooldir='.')
 
 def configure(ctx):
 	ctx.load('compiler_c')
 	ctx.load('compiler_cxx')
 	ctx.load('python')
 	ctx.check_python_headers()
-	ctx.load('cython')
+	try:
+		ctx.load('cython')
+	except ctx.errors.ConfigurationError:
+		Logs.warn('Cython was not found, using the cache')
 
 def build(ctx):
 	# a C library
