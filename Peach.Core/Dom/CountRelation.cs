@@ -84,7 +84,14 @@ namespace Peach.Core.Dom
 			{
 				_isRecursing = true;
 
-				int count = ((Array)Of).Count;
+                Array OfArray = Of as Array;
+
+                if (OfArray == null)
+                    throw new PeachException(
+                        string.Format("Count Relation requires '{0}' to be an array.  Set the minOccurs and maxOccurs properties.",
+                        OfName));
+
+				int count = OfArray.Count;
 
 				if (_expressionSet != null)
 				{
