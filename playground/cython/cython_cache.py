@@ -24,14 +24,14 @@ class cython(cython_base):
 		return ret
 
 	def run(self):	
-		if not self.env.CYTHON:
-			for (x, y) in zip(self.outputs, self.cython_cache_outputs):
-				x.write(y.read('rb'), 'wb')
-		else:
+		if self.env.CYTHON:
 			ret = cython_base.run(self)
 			if not ret:
 				for (x, y) in zip(self.outputs, self.cython_cache_outputs):
 					y.parent.mkdir()
 					y.write(x.read('rb'), 'wb')
 			return ret
+		else:
+			for (x, y) in zip(self.outputs, self.cython_cache_outputs):
+				x.write(y.read('rb'), 'wb')
 
