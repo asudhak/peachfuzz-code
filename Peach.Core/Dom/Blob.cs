@@ -131,7 +131,7 @@ namespace Peach.Core.Dom
 			element.DefaultValue = defaultValue;
 		}
 
-		public static DataElement PitParse(PitParser context, XmlNode node, DataElementContainer parent)
+		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
 			if (node.Name != "Blob")
 				return null;

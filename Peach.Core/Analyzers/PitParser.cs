@@ -807,9 +807,9 @@ namespace Peach.Core.Analyzers
 					throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
 
 				Type dataElementType = dataElementPitParsable[child.Name];
-				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParse");
+				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParser");
 				if (pitParsableMethod == null)
-					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParse(...) method: " + dataElementType.FullName);
+					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + dataElementType.FullName);
 
 				elem = (DataElement) pitParsableMethod.Invoke(null, new object[] { this, child, element });
 				if (elem == null)
