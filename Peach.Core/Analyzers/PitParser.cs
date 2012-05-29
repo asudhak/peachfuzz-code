@@ -811,8 +811,12 @@ namespace Peach.Core.Analyzers
 				if (pitParsableMethod == null)
 					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + dataElementType.FullName);
 
-				elem = (DataElement) pitParsableMethod.Invoke(null, new object[] { this, child, element });
-				if (elem == null)
+
+                PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
+
+                elem = delegateAction(this, child, element);
+                
+                if (elem == null)
 					throw new PeachException("Error, type failed to parse provided XML: " + dataElementType.FullName);
 
 				// Wrap elements that are arrays with an Array object
