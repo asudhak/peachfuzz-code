@@ -4,6 +4,9 @@
 
 from waflib import Logs
 
+APPNAME = 'wafcython'
+VERSION = '1.0'
+
 top = '.'
 out = 'build'
 
