@@ -63,22 +63,30 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// Mapping of XML ELement names to type as provided by PitParsableAttribute
 		/// </summary>
-		Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
+		static Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
+        static readonly string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
 
 		static PitParser()
 		{
 			PitParser.supportParser = true;
 			Analyzer.defaultParser = new PitParser();
+            populateDataElementPitParsable();
 		}
 
 		public PitParser()
 		{
+            
 		}
 
-		public override Dom.Dom asParser(Dictionary<string, string> args, Stream data)
+        public override Dom.Dom asParser(Dictionary<string, string> args, Stream data)
+        {
+            return asParser(args,data,true);
+        }
+        public Dom.Dom asParser(Dictionary<string, string> args, Stream data, bool doValidatePit)
 		{
-			populateDataElementPitParsable();
-			validatePit(data);
+			
+            if(doValidatePit)
+			    validatePit(data);
 
 			data.Seek(0, SeekOrigin.Begin);
 			XmlDocument xmldoc = new XmlDocument();
@@ -103,7 +111,7 @@ namespace Peach.Core.Analyzers
 			validatePit(data);
 		}
 
-		protected void populateDataElementPitParsable()
+		static protected void populateDataElementPitParsable()
 		{
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
@@ -804,7 +812,12 @@ namespace Peach.Core.Analyzers
 					continue;
 
 				if (!dataElementPitParsable.ContainsKey(child.Name))
-					throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
+                {
+                    if(((IList<string>)dataElementCommon).Contains(child.Name))
+                        continue;
+                    else
+					    throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
+                }
 
 				Type dataElementType = dataElementPitParsable[child.Name];
 				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParser");
