@@ -53,8 +53,8 @@ namespace Peach.Core.Dom
 	[PitParsable("Array")]
 	[DataElementChildSupported(DataElementTypes.Any)]
 	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("minOccurs", typeof(int), "Minimum number of occurances 0-N", false)]
-	[Parameter("maxOccurs", typeof(int), "Maximum number of occurances (-1 for unlimited)", false)]
+	[Parameter("minOccurs", typeof(int), "Minimum number of occurrences 0-N", false)]
+	[Parameter("maxOccurs", typeof(int), "Maximum number of occurrences (-1 for unlimited)", false)]
 	[Serializable]
 	public class Array : Block
 	{
@@ -89,11 +89,48 @@ namespace Peach.Core.Dom
 			element.origionalElement = element[0];
 			element.Clear();
 
-			if (element.maxOccurs > 1)
+            if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
+            {
+                long count = element.relations.hasOfCountRelation ? element.relations.getOfCountRelation().GetValue() : occurs;
+
+                logger.Debug("Crack: {0} found count relation/occurs. Count = {1}", element.fullName, count);
+
+                if (count < 0)
+                    throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count relation negative: " + count, element, data);
+                if (((count > maxOccurs && maxOccurs != -1) || count < minOccurs) && count != occurs)
+                    throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count outside of bounds of minOccurs='" +
+                        minOccurs + "' and maxOccurs='" + maxOccurs + "'. (Count = " + count + ")", element, data);
+
+
+                for (int i = 0; i < count; i++)
+                {
+                    logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
+
+                    
+                    DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
+                    clone.name = clone.name + "_" + i.ToString();
+                    clone.parent = element;
+                    element.Add(clone);
+
+                    try
+                    {
+                        context.handleNode(clone, data);
+                    }
+                    catch
+                    {
+                        logger.Debug("Crack: {0} Failed on #{1}", element.fullName, i.ToString());
+                        throw;
+                    }
+                }
+
+                logger.Debug("Crack: {0} Done!", element.fullName);
+            }
+
+			else if (maxOccurs > 1 || maxOccurs == -1)
 			{
-				for (int cnt = 0; true; cnt++)
+				for (int cnt = 0; maxOccurs == -1 || cnt < maxOccurs; cnt++)
 				{
-					logger.Debug("Crack: Trying #{0}", cnt.ToString());
+                    logger.Debug("Crack: {0} Trying #{1}", element.fullName, cnt.ToString());
 
 					long pos = data.TellBits();
 					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
@@ -107,7 +144,7 @@ namespace Peach.Core.Dom
 					}
 					catch
 					{
-						logger.Debug("Crack: Failed on #{0}", cnt.ToString());
+                        logger.Debug("Crack: {0} Failed on #{1}", element.fullName, cnt.ToString());
 						element.Remove(clone);
 						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
 						break;
@@ -115,7 +152,12 @@ namespace Peach.Core.Dom
 
 					if (data.TellBits() == data.LengthBits)
 					{
-						logger.Debug("Crack: Found EOF, all done!");
+                        if (cnt < minOccurs)
+                            throw new CrackingFailure(
+                                string.Format("Crack: {0} Failed on #{1}. Not enough data to meet minOccurs value of {2}", element.fullName, cnt.ToString(), minOccurs),
+                                element, data);
+
+                        logger.Debug("Crack: {0} Found EOF, all done!", element.fullName);
 						break;
 					}
 				}
