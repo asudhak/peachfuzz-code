@@ -31,8 +31,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
+
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
@@ -49,7 +51,9 @@ namespace Peach.Core.Test.Analyzers
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<String name=\"TheString\" analyzer=\"StringToken\" />" +
+				"		<String name=\"TheString\">"+
+				"			<Analyzer class=\"StringToken\" />" +
+				"		</String>"+
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -64,9 +68,8 @@ namespace Peach.Core.Test.Analyzers
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString((byte[])dom.dataModels[0][0].InternalValue));
 		}
-
 	}
 }
 

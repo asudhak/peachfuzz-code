@@ -995,12 +995,13 @@ namespace Peach.Core.IO
 			byte[] buff = new byte[1024];
 			long streamPosition = stream.Position;
 			long streamCount = 0;
+			int len;
 
 			while (bits / (8 * 1024) > 0)
 			{
-				bits -= (8 * 1024);
-				this.stream.Read(buff, 0, 1024);
-				newStream.WriteBytes(buff);
+				len = this.stream.Read(buff, 0, 1024);
+				newStream.WriteBytes(buff, 0, len);
+				bits -= (8 * len);
 			}
 
 			while (bits / 8 > 0)
@@ -1032,6 +1033,9 @@ namespace Peach.Core.IO
 			if (bytes > (LengthBytes - TellBytes()))
 				return null;
 
+			// Assume our internal state is correct
+			stream.Position = this.pos / 8;
+
 			MemoryStream sin = new MemoryStream();
 
 			long totalBytes = bytes;
@@ -1053,14 +1057,20 @@ namespace Peach.Core.IO
 			{
 				byte[] buff = new byte[32768];
 				long streamPosition = stream.Position;
+				int len;
 
 				while (bytes / 32768 > 0)
 				{
-					bytes -= this.stream.Read(buff, 0, 32768);
-					sin.Write(buff, 0, 32768);
+					len = this.stream.Read(buff, 0, 32768);
+					sin.Write(buff, 0, len);
+
+					bytes -= len;
 				}
 
-				stream.Read(buff, 0, (int)bytes);
+				len = stream.Read(buff, 0, (int)bytes);
+				if (len != bytes)
+					throw new ApplicationException("Read failed");
+
 				sin.Write(buff, 0, (int)bytes);
 
 				stream.Position = streamPosition;

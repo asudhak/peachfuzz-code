@@ -64,6 +64,11 @@ namespace Peach.Core.Cracker
 		public Dictionary<DataElement, long> _sizedBlockMap = new Dictionary<DataElement, long>();
 
 		/// <summary>
+		/// Elements that have analyzers attached.  We run them all post-crack.
+		/// </summary>
+		List<DataElement> _elementsWithAnalyzer = new List<DataElement>();
+
+		/// <summary>
 		/// The full data stream.
 		/// </summary>
 		BitStream _data = null;
@@ -112,6 +117,10 @@ namespace Peach.Core.Cracker
 
 			// Handle any Placement's
 			handlePlacement(model, data);
+
+			// Handle any analyzers
+			foreach (DataElement elem in _elementsWithAnalyzer)
+				elem.analyzer.asDataElement(elem, null);
 		}
 
 		protected void handlePlacement(DataModel model, BitStream data)
@@ -442,7 +451,8 @@ namespace Peach.Core.Cracker
 
 				element.Crack(this, data);
 
-				data.MarkEndOfElement(element);
+				if (element.analyzer != null)
+					_elementsWithAnalyzer.Add(element);
 
 				if (hasOffsetRelation)
 					data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);

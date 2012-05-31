@@ -57,9 +57,6 @@ namespace Peach.Core.Dom
 				_isRecursing = true;
 				long size = (long)From.DefaultValue;
 
-				if (_isByteRelation)
-					size = size * 8;
-
 				if (_expressionGet != null)
 				{
 					Dictionary<string, object> state = new Dictionary<string, object>();
@@ -70,6 +67,10 @@ namespace Peach.Core.Dom
 					object value = Scripting.EvalExpression(_expressionGet, state);
 					size = Convert.ToInt64(value);
 				}
+
+				if (_isByteRelation)
+					size = size * 8;
+
 
 				return size;
 			}
@@ -89,9 +90,6 @@ namespace Peach.Core.Dom
 				_isRecursing = true;
 				long size = Of.Value.LengthBits;
 
-				if (_isByteRelation)
-					size = size / 8;
-
 				if (_expressionSet != null)
 				{
 					Dictionary<string, object> state = new Dictionary<string, object>();
@@ -103,6 +101,9 @@ namespace Peach.Core.Dom
 					size = Convert.ToInt64(newValue);
 				}
 
+				if (_isByteRelation)
+					size = size / 8;
+				
 				return new Variant(size);
 			}
 			finally
