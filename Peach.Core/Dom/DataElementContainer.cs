@@ -78,6 +78,10 @@ namespace Peach.Core.Dom
 					sizedData = data.ReadBitsAsBitStream(size);
 					sizeRelation = null;
 				}
+                else
+                {
+                    throw new NotImplementedException("relations of elements from children is not implemented. ");
+                }
 			}
 			else if (element.hasLength)
 			{
