@@ -43,7 +43,7 @@ namespace Peach.Core.Test.CrackingTests
             Assert.AreEqual(5, (int)dom.dataModels[0][0].DefaultValue);
             Assert.IsInstanceOf<Dom.Array>(dom.dataModels[0][1]);
             Assert.AreEqual(5, ((Dom.Array)dom.dataModels[0][1]).Count);
-            Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][1].DefaultValue));
+			Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][1].InternalValue));
         }
 
         [Test]
@@ -69,7 +69,7 @@ namespace Peach.Core.Test.CrackingTests
 
             Assert.IsInstanceOf<Dom.Array>(dom.dataModels[0][0]);
             Assert.AreEqual(5, ((Dom.Array)dom.dataModels[0][0]).Count);
-            Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][0].DefaultValue));
+            Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][0].InternalValue));
         }
 
 
@@ -96,7 +96,7 @@ namespace Peach.Core.Test.CrackingTests
 
             Assert.IsInstanceOf<Dom.Array>(dom.dataModels[0][0]);
             Assert.AreEqual(5, ((Dom.Array)dom.dataModels[0][0]).Count);
-            Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][0].DefaultValue));
+			Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][0].InternalValue));
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace Peach.Core.Test.CrackingTests
             Assert.AreEqual(5, (int)dom.dataModels[0][0].InternalValue);
             Assert.IsInstanceOf<Dom.Array>(dom.dataModels[0][1]);
             Assert.AreEqual(5, ((Dom.Array)dom.dataModels[0][1]).Count);
-            Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][1].DefaultValue));
+			Assert.IsTrue(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 }.SequenceEqual((byte[])dom.dataModels[0][1].InternalValue));
         }
 	}
 }
