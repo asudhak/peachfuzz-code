@@ -174,8 +174,8 @@ namespace Peach.Core.Dom
 					_of = parent.find(_ofName);
 
 					// TODO - What if null?
-					if (_of == null)
-						System.Diagnostics.Debugger.Break();
+                    if (_of == null)
+                        throw new System.NotImplementedException();
 
 					_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
@@ -312,23 +312,21 @@ namespace Peach.Core.Dom
 			DataElementContainer parent = null;
 
 			parent = elem1.parent;
-			do
+			while(parent != null)
 			{
 				elem1Parents.Add(parent);
 				parent = parent.parent;
 			}
-			while (parent != null);
-
+			
 			parent = elem2.parent;
-			do
+			while(parent != null)
 			{
 				if (elem1Parents.Contains(parent))
 					return parent;
 
 				parent = parent.parent;
 			}
-			while (parent != null);
-
+			
 			return null;
 		}
 	}
