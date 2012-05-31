@@ -90,9 +90,12 @@ namespace Peach.Core.Dom
 
 			foreach (DataElement child in element)
 			{
+				if (!(child is Flag))
+					throw new CrackingFailure("Found non-Flag child!", this, data);
+
 				data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
 				data.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Current);
-				(child as Flag).Crack(context, data);
+				((Flag)child).Crack(context, data);
 			}
 
 			// Make sure we land at end of Flags

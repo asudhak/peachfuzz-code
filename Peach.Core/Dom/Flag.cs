@@ -94,7 +94,7 @@ namespace Peach.Core.Dom
 
 		public static DataElement PitParser(PitParser context, XmlNode node, Flags parent)
 		{
-			if (node.Name == "Flag")
+			if (node.Name == "Flags")
 				return null;
 
 			var flag = new Flag();
