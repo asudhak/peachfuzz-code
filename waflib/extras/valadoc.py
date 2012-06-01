@@ -7,9 +7,8 @@ ported from waf 1.5:
 TODO: tabs vs spaces
 """
 
-from waflib import Task, Utils, Node, Errors
+from waflib import Task, Utils, Node, Errors, Logs
 from waflib.TaskGen import feature, extension, after_method
-from waflib.Logs import debug, warn, error
 
 VALADOC_STR = '${VALADOC}'
 
@@ -107,7 +106,7 @@ def process_valadoc(self):
 			try:
 				task.vapi_dirs.append(self.path.find_dir(vapi_dir).abspath())
 			except AttributeError:
-				warn("Unable to locate Vala API directory: '%s'" % vapi_dir)
+				Logs.warn("Unable to locate Vala API directory: '%s'" % vapi_dir)
 	if getattr(self, 'files', None):
 		task.files = self.files
 	else:

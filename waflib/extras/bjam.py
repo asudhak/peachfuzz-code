@@ -1,11 +1,11 @@
 #! /usr/bin/env python
 # per rosengren 2011
 
-from waflib.Logs import error,warn,info,debug
-from waflib.TaskGen import feature, after_method
-from waflib.Task import Task, always_run
 from os import sep, readlink
 from os.path import abspath
+from waflib import Logs
+from waflib.TaskGen import feature, after_method
+from waflib.Task import Task, always_run
 
 def options(opt):
 	grp = opt.add_option_group('Bjam Options')
@@ -52,7 +52,7 @@ class bjam_creator(Task):
 		bld = gen.bld
 		bjam = gen.bld.root.find_dir(env.BJAM_SRC)
 		if not bjam:
-			error('Can not find bjam source')
+			Logs.error('Can not find bjam source')
 			return -1
 		bjam_exe_relpath = 'bin.' + env.BJAM_UNAME + '/bjam'
 		bjam_exe = bjam.find_resource(bjam_exe_relpath)
@@ -60,16 +60,16 @@ class bjam_creator(Task):
 			env.BJAM = bjam_exe.srcpath()
 			return 0
 		bjam_cmd = ['./build.sh']
-		debug('runner: ' + bjam.srcpath() + '> ' + str(bjam_cmd))
+		Logs.debug('runner: ' + bjam.srcpath() + '> ' + str(bjam_cmd))
 		result = self.exec_command(bjam_cmd, cwd=bjam.srcpath())
 		if not result == 0:
-			error('bjam failed')
+			Logs.error('bjam failed')
 			return -1
 		bjam_exe = bjam.find_resource(bjam_exe_relpath)
 		if bjam_exe:
 			env.BJAM = bjam_exe.srcpath()
 			return 0
-		error('bjam failed')
+		Logs.error('bjam failed')
 		return -1
 
 class bjam_build(Task):
@@ -87,14 +87,14 @@ class bjam_build(Task):
 			build_root = path
 		jam = bld.srcnode.find_resource(env.BJAM_CONFIG)
 		if jam:
-			debug('bjam: Using jam configuration from ' + jam.srcpath())
+			Logs.debug('bjam: Using jam configuration from ' + jam.srcpath())
 			jam_rel = jam.relpath_gen(build_root)
 		else:
-			warn('No build configuration in build_config/user-config.jam. Using default')
+			Logs.warn('No build configuration in build_config/user-config.jam. Using default')
 			jam_rel = None
 		bjam_exe = bld.srcnode.find_node(env.BJAM)
 		if not bjam_exe:
-			error('env.BJAM is not set')
+			Logs.error('env.BJAM is not set')
 			return -1
 		bjam_exe_rel = bjam_exe.relpath_gen(build_root)
 		cmd = ([bjam_exe_rel] +
@@ -106,7 +106,7 @@ class bjam_build(Task):
 			['link=' + 'shared'] +
 			['variant=' + 'release']
 		)
-		debug('runner: ' + build_root.srcpath() + '> ' + str(cmd))
+		Logs.debug('runner: ' + build_root.srcpath() + '> ' + str(cmd))
 		ret = self.exec_command(cmd, cwd=build_root.srcpath())
 		if ret != 0:
 			return ret

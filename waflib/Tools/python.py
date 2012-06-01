@@ -19,8 +19,7 @@ Support for Python, detect the headers and libraries and provide
 """
 
 import os, sys
-from waflib import Utils, Options, Errors
-from waflib.Logs import debug, warn, info, error
+from waflib import Utils, Options, Errors, Logs
 from waflib.TaskGen import extension, before_method, after_method, feature
 from waflib.Configure import conf
 
@@ -94,7 +93,7 @@ def install_pyfile(self, node, install_from=None):
 	path = tsk.get_install_path()
 
 	if self.bld.is_install < 0:
-		info("+ removing byte compiled python files")
+		Logs.info("+ removing byte compiled python files")
 		for x in 'co':
 			try:
 				os.remove(path + x)
@@ -105,7 +104,7 @@ def install_pyfile(self, node, install_from=None):
 		try:
 			st1 = os.stat(path)
 		except OSError:
-			error('The python file is missing, this should not happen')
+			Logs.error('The python file is missing, this should not happen')
 
 		for x in ['c', 'o']:
 			do_inst = self.env['PY' + x.upper()]
@@ -121,7 +120,7 @@ def install_pyfile(self, node, install_from=None):
 				lst = (x == 'o') and [self.env['PYFLAGS_OPT']] or []
 				(a, b, c) = (path, path + x, tsk.get_install_path(destdir=False) + x)
 				argv = self.env['PYTHON'] + lst + ['-c', INST, a, b, c]
-				info('+ byte compiling %r' % (path + x))
+				Logs.info('+ byte compiling %r' % (path + x))
 				env = self.env.env or None
 				ret = Utils.subprocess.Popen(argv, env=env).wait()
 				if ret:
@@ -378,7 +377,7 @@ def check_python_version(conf, minver=None):
 
 	# Get python version string
 	cmd = pybin + ['-c', 'import sys\nfor x in sys.version_info: print(str(x))']
-	debug('python: Running python command %r' % cmd)
+	Logs.debug('python: Running python command %r' % cmd)
 	lines = conf.cmd_and_log(cmd).split()
 	assert len(lines) == 5, "found %i lines, expected 5: %r" % (len(lines), lines)
 	pyver_tuple = (int(lines[0]), int(lines[1]), int(lines[2]), lines[3], int(lines[4]))
@@ -493,11 +492,11 @@ def configure(conf):
 	try:
 		conf.find_program('python', var='PYTHON')
 	except conf.errors.ConfigurationError:
-		warn("could not find a python executable, setting to sys.executable '%s'" % sys.executable)
+		Logs.warn("could not find a python executable, setting to sys.executable '%s'" % sys.executable)
 		conf.env.PYTHON = sys.executable
 
 	if conf.env.PYTHON != sys.executable:
-		warn("python executable '%s' different from sys.executable '%s'" % (conf.env.PYTHON, sys.executable))
+		Logs.warn("python executable '%s' different from sys.executable '%s'" % (conf.env.PYTHON, sys.executable))
 	conf.env.PYTHON = conf.cmd_to_list(conf.env.PYTHON)
 
 	v = conf.env

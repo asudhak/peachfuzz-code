@@ -47,8 +47,8 @@ Setting PYTHONUNBUFFERED gives the unbuffered output.
 """
 
 import os, sys, re, tempfile
-from waflib import Utils, Task, Options
-from waflib.Logs import debug, info, warn
+from waflib import Utils, Task, Logs, Options
+from waflib.Logs import debug, warn
 from waflib.TaskGen import after_method, feature
 
 from waflib.Configure import conf
@@ -451,9 +451,9 @@ def print_all_msvc_detected(conf):
 	Print the contents of *conf.env.MSVC_INSTALLED_VERSIONS*
 	"""
 	for version,targets in conf.env['MSVC_INSTALLED_VERSIONS']:
-		info(version)
+		Logs.info(version)
 		for target,l in targets:
-			info("\t"+target)
+			Logs.info("\t"+target)
 
 @conf
 def detect_msvc(conf):

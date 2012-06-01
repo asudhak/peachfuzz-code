@@ -77,9 +77,9 @@ def generate_header(self, filename):
 	:type filename: string
 	"""
 	try:
-		self.header_lst.append([filename, install_path])
+		self.header_lst.append([filename, self.install_path])
 	except AttributeError:
-		self.header_lst = [[filename, install_path]]
+		self.header_lst = [[filename, self.install_path]]
 
 @feature('d')
 def process_header(self):

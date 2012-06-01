@@ -5,9 +5,8 @@
 "SAS support"
 
 import os, re
-from waflib import Utils, Task, TaskGen, Runner, Build, Errors, Node
+from waflib import Utils, Task, TaskGen, Runner, Build, Errors, Node, Logs
 from waflib.TaskGen import feature, before_method
-from waflib.Logs import error, warn, debug
 
 sas_fun, _ = Task.compile_fun('sas -sysin ${SRCFILE} -log ${LOGFILE} -print ${LSTFILE}', shell=False)
 
@@ -26,7 +25,7 @@ class sas(Task.Task):
 
 		# set the cwd
 		task.cwd = task.inputs[0].parent.get_src().abspath()
-		debug('runner: %s on %s' % (command, node.abspath))
+		Logs.debug('runner: %s on %s' % (command, node.abspath))
 
 		SASINPUTS = node.parent.get_bld().abspath() + os.pathsep + node.parent.get_src().abspath() + os.pathsep
 		task.env.env = {'SASINPUTS': SASINPUTS}
@@ -36,10 +35,10 @@ class sas(Task.Task):
 		task.env.LSTFILE = lstfilenode.abspath()
 		ret = fun(task)
 		if ret:
-			error('Running %s on %r returned a non-zero exit' % (command, node))
-			error('SRCFILE = %r' % node)
-			error('LOGFILE = %r' % logfilenode)
-			error('LSTFILE = %r' % lstfilenode)
+			Logs.error('Running %s on %r returned a non-zero exit' % (command, node))
+			Logs.error('SRCFILE = %r' % node)
+			Logs.error('LOGFILE = %r' % logfilenode)
+			Logs.error('LSTFILE = %r' % lstfilenode)
 		return ret
 
 @feature('sas')

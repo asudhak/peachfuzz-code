@@ -7,8 +7,7 @@ Latex processing using "biber"
 """
 
 import os
-from waflib import Task
-from waflib.Logs import warn
+from waflib import Task, Logs
 
 from waflib.Tools import tex as texmodule
 
@@ -32,7 +31,7 @@ class tex(texmodule.tex):
 
 		path = self.aux_nodes[0].abspath()[:-4] + '.bcf'
 		if os.path.isfile(path):
-			warn('calling biber')
+			Logs.warn('calling biber')
 			self.check_status('error when calling biber, check %s.blg for errors' % (self.env.SRCFILE), self.biber_fun())
 		else:
 			super(tex, self).bibfile()

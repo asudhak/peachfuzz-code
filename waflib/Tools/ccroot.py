@@ -9,7 +9,6 @@ as C/C++/D/Assembly/Go (this support module is almost never used alone).
 
 import os, sys, re
 from waflib import TaskGen, Task, Utils, Logs, Build, Options, Node, Errors
-from waflib.Logs import error, debug, warn
 from waflib.TaskGen import after_method, before_method, feature, taskgen_method, extension
 from waflib.Tools import c_aliases, c_preproc, c_config, c_osx, c_tests
 from waflib.Configure import conf
