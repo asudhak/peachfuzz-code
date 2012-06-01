@@ -120,6 +120,7 @@ namespace Peach.Core.Proxy.Net
 								read,
 								conn.ServerTcpClient.Client.RemoteEndPoint.ToString());
 							conn.ServerStream.Write(buff, 0, read);
+							conn.ServerStream.Flush();
 
 							using (FileStream sout = File.Open("c:\\server-" + conn.ServerTcpClient.Client.RemoteEndPoint.ToString().Replace(":","_") + ".txt", FileMode.Append))
 							{
@@ -157,6 +158,7 @@ namespace Peach.Core.Proxy.Net
 								read, 
 								conn.ClientTcpClient.Client.RemoteEndPoint.ToString());
 							conn.ClientStream.Write(buff, 0, read);
+							conn.ClientStream.Flush();
 
 							using (FileStream sout = File.Open("c:\\client-" + conn.ServerTcpClient.Client.RemoteEndPoint.ToString().Replace(":", "_") + ".txt", FileMode.Append))
 							{

@@ -84,32 +84,41 @@ namespace Peach.Core.Proxy
 					listener.BeginAcceptTcpClient(new AsyncCallback(ProcessAcceptTcpClient), null);
 
 				List<Connection> connList = new List<Connection>();
-				foreach (Connection conn in connections.Values)
-					if (!connList.Contains(conn))
-						connList.Add(conn);
+				lock (connections)
+				{
+					foreach (Connection conn in connections.Values)
+						if (!connList.Contains(conn))
+							connList.Add(conn);
+				}
 
 				foreach (Connection conn in connList)
 					ProcessRead(conn);
 
-				if (WorkHandler != null)
-					if (!WorkHandler())
-						break;
+				//if (WorkHandler != null)
+				//    if (!WorkHandler())
+				//        break;
 
 				//Console.Error.Write(".");
 			}
 
-			foreach (Connection conn in connections.Values)
+			lock (connections)
 			{
-				conn.ClientTcpClient.Close();
-				conn.ServerTcpClient.Close();
+				foreach (Connection conn in connections.Values)
+				{
+					conn.ClientTcpClient.Close();
+					conn.ServerTcpClient.Close();
+				}
+
+				connections = new Dictionary<NetworkStream, Connection>();
 			}
 
-			connections = new Dictionary<NetworkStream, Connection>();
 			listener = null;
 		}
 
 		void ProcessRead(Connection conn)
 		{
+			logger.Info("ProcessRead");
+
 			if (conn.ClientStream != null)
 			{
 				int len = 0;
@@ -140,8 +149,11 @@ namespace Peach.Core.Proxy
 							conn.ServerTcpClient.Client.RemoteEndPoint.ToString(),
 							e.Message);
 
-						connections.Remove(conn.ClientStream);
-						connections.Remove(conn.ServerStream);
+						lock (connections)
+						{
+							connections.Remove(conn.ClientStream);
+							connections.Remove(conn.ServerStream);
+						}
 						conn.ServerTcpClient.Close();
 						conn.ClientTcpClient.Close();
 						return;
@@ -207,8 +219,12 @@ namespace Peach.Core.Proxy
 							conn.ServerTcpClient.Client.RemoteEndPoint.ToString(),
 							e.Message);
 
-						connections.Remove(conn.ClientStream);
-						connections.Remove(conn.ServerStream);
+						lock (connections)
+						{
+							connections.Remove(conn.ClientStream);
+							connections.Remove(conn.ServerStream);
+						}
+
 						conn.ServerTcpClient.Close();
 						conn.ClientTcpClient.Close();
 						return;
@@ -247,7 +263,11 @@ namespace Peach.Core.Proxy
 			logger.Info("Accepted new client: " + client.Client.RemoteEndPoint.ToString());
 
 			var conn = new Connection(client, null);
-			connections.Add(client.GetStream(), conn);
+
+			lock (connections)
+			{
+				connections.Add(client.GetStream(), conn);
+			}
 		}
 	}
 }

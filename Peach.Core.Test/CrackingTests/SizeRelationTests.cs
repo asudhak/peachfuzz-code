@@ -186,8 +186,6 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 
             Assert.Throws<CrackingFailure>(delegate { cracker.CrackData(dom.dataModels[0], data); });
-
-			    
         }
 	}
 }
