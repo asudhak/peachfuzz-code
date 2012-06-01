@@ -27,7 +27,7 @@ namespace Peach.Core.Proxy.Web.Tester
 			//webProxy.NewHttpResponse += new HttpResponseEventHandler(webProxy_NewHttpResponse);
 			//proxy.Run();
 
-			NetProxy netProxy = new NetProxy("0.0.0.0", 8080, "other.phed.org", 22);
+			NetProxy netProxy = new NetProxy("0.0.0.0", 8080, "127.0.0.1", 8081);
 			netProxy.Run();
 		}
 

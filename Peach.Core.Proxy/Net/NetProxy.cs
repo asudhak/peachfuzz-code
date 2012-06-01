@@ -116,7 +116,7 @@ namespace Peach.Core.Proxy.Net
 						read = conn.ClientInputStream.Read(buff, 0, buff.Length);
 						if (read > 0)
 						{
-							logger.Debug("Writing {0} to server socket {1}",
+							logger.Debug("S: {1}: Writing {0}",
 								read,
 								conn.ServerTcpClient.Client.RemoteEndPoint.ToString());
 							conn.ServerStream.Write(buff, 0, read);
@@ -154,7 +154,7 @@ namespace Peach.Core.Proxy.Net
 						read = conn.ServerInputStream.Read(buff, 0, buff.Length);
 						if (read > 0)
 						{
-							logger.Debug("Writing {0} to client socket {1}", 
+							logger.Debug("C: {1}: Writing {0}", 
 								read, 
 								conn.ClientTcpClient.Client.RemoteEndPoint.ToString());
 							conn.ClientStream.Write(buff, 0, read);

@@ -183,7 +183,7 @@ namespace Peach.Core.Proxy
 					//    sout.Write(buff, 0, len);
 					//}					
 
-					logger.Info(string.Format("Read {0} from client socket {1}", len, conn.ClientTcpClient.Client.RemoteEndPoint.ToString()));
+					logger.Info(string.Format("C: {1}: Read {0}", len, conn.ClientTcpClient.Client.RemoteEndPoint.ToString()));
 
 					conn.OnClientDataReceived();
 				}
@@ -249,7 +249,7 @@ namespace Peach.Core.Proxy
 					conn.ServerInputStream.Write(buff, 0, len);
 					conn.ServerInputStream.Position = pos;
 
-					logger.Info(string.Format("Read {0} from server socket {1}", len, conn.ServerTcpClient.Client.RemoteEndPoint.ToString()));
+					logger.Info(string.Format("S: {1}: Read {0}", len, conn.ServerTcpClient.Client.RemoteEndPoint.ToString()));
 
 					conn.OnServerDataReceived();
 				}
