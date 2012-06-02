@@ -16,7 +16,7 @@ def options(opt):
 	opt.load('package')
 
 def configure(conf):
-    conf.load_packages()
+	conf.load_packages()
 """
 
 from waflib import Logs
