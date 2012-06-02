@@ -1,3 +1,4 @@
+*.o
 .lock-w*
 .conf_check_*
 config.log
