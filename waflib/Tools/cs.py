@@ -47,8 +47,8 @@ def apply_cs(self):
 	bintype = getattr(self, 'bintype', self.gen.endswith('.dll') and 'library' or 'exe')
 	self.cs_task = tsk = self.create_task('mcs', cs_nodes, self.path.find_or_declare(self.gen))
 	tsk.env.CSTYPE = '/target:%s' % bintype
-	tsk.env.OUT    = '/out:%s' % tsk.outputs[0].abspath()
-        self.env.append_value('CSFLAGS', '/platform:%s' % getattr(self, 'platform', 'anycpu'))
+	tsk.env.OUT = '/out:%s' % tsk.outputs[0].abspath()
+	self.env.append_value('CSFLAGS', '/platform:%s' % getattr(self, 'platform', 'anycpu'))
 
 	inst_to = getattr(self, 'install_path', bintype=='exe' and '${BINDIR}' or '${LIBDIR}')
 	if inst_to:
