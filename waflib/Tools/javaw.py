@@ -16,19 +16,19 @@ Javac is one of the few compilers that behaves very badly:
 Remember that the compilation can be performed using Jython[1] rather than regular Python. Instead of
 running one of the following commands::
 
-    ./waf configure
-    python waf configure
+   ./waf configure
+   python waf configure
 
 You would have to run::
 
-    java -jar /path/to/jython.jar waf configure
+   java -jar /path/to/jython.jar waf configure
 
 [1] http://www.jython.org/
 """
 
 import os, re, tempfile, shutil
-from waflib.Configure import conf
 from waflib import TaskGen, Task, Utils, Options, Build, Errors, Node, Logs
+from waflib.Configure import conf
 from waflib.TaskGen import feature, before_method, after_method
 
 from waflib.Tools import ccroot
@@ -151,7 +151,7 @@ def jar_files(self):
 	"""
 	destfile = getattr(self, 'destfile', 'test.jar')
 	jaropts = getattr(self, 'jaropts', [])
-        manifest = getattr(self, 'manifest', None)
+	manifest = getattr(self, 'manifest', None)
 
 	basedir = getattr(self, 'basedir', None)
 	if basedir:
@@ -163,13 +163,13 @@ def jar_files(self):
 		self.bld.fatal('Could not find the basedir %r for %r' % (self.basedir, self))
 
 	self.jar_task = tsk = self.create_task('jar_create')
-        if manifest:
-            jarcreate = getattr(self, 'jarcreate', 'cfm')
-            node = self.path.find_node(manifest)
-            tsk.dep_nodes.append(node)
-            jaropts.insert(0, node.abspath())
-        else:
-            jarcreate = getattr(self, 'jarcreate', 'cf')
+	if manifest:
+		jarcreate = getattr(self, 'jarcreate', 'cfm')
+		node = self.path.find_node(manifest)
+		tsk.dep_nodes.append(node)
+		jaropts.insert(0, node.abspath())
+	else:
+		jarcreate = getattr(self, 'jarcreate', 'cf')
 	if not isinstance(destfile, Node.Node):
 		destfile = self.path.find_or_declare(destfile)
 	if not destfile:
@@ -241,7 +241,7 @@ class javac(Task.Task):
 	The .class files cannot be put into a cache at the moment
 	"""
 
-	vars    = ['CLASSPATH', 'JAVACFLAGS', 'JAVAC', 'OUTDIR']
+	vars = ['CLASSPATH', 'JAVACFLAGS', 'JAVAC', 'OUTDIR']
 	"""
 	The javac task will be executed again if the variables CLASSPATH, JAVACFLAGS, JAVAC or OUTDIR change.
 	"""
