@@ -107,10 +107,10 @@ include $(GOROOT)/src/Make.pkg
 		fout_node = bld_dir.find_or_declare(o.name)
 		fout = open(fout_node.abspath(), 'w')
 		rc = self.generator.bld.exec_command(
-		    cmd,
-		    stdout=fout,
-           stderr=fout,
-           cwd=bld_dir.abspath(),
+		 cmd,
+		 stdout=fout,
+		 stderr=fout,
+		 cwd=bld_dir.abspath(),
 		)
 		if rc != 0:
 			import waflib.Logs as msg
@@ -118,9 +118,9 @@ include $(GOROOT)/src/Make.pkg
 			msg.error(fout_node.read())
 			return rc
 		self.generator.bld.read_stlib(
-			target,
-			paths=[obj_dir.abspath(),],
-			)
+		 target,
+		 paths=[obj_dir.abspath(),],
+		)
 		tgt = self.outputs[0]
 		if tgt.parent != obj_dir:
 			install_dir = os.path.join('${LIBDIR}',
@@ -129,11 +129,11 @@ include $(GOROOT)/src/Make.pkg
 			install_dir = '${LIBDIR}'
 		#print('===> %s (%s)' % (tgt.abspath(), install_dir))
 		self.generator.bld.install_files(
-            install_dir,
-            tgt.abspath(),
-            relative_trick=False,
-            postpone=False,
-			)
+		 install_dir,
+		 tgt.abspath(),
+		 relative_trick=False,
+		 postpone=False,
+		)
 		return rc
 
 @extension('.go')
@@ -145,9 +145,7 @@ def compile_go(self, node):
 	bld_dir = node.parent.get_bld()
 	obj_dir = bld_dir.make_node('_obj')
 	target  = obj_dir.make_node(node.change_ext('.a').name)
-	return self.create_task('cgopackage',
-							node,
-							node.change_ext('.a'))
+	return self.create_task('cgopackage', node, node.change_ext('.a'))
 
 @feature('gopackage', 'goprogram', 'cgopackage')
 @before_method('process_source')
@@ -169,13 +167,10 @@ def go_compiler_is_foobar(self):
 		tsk.inputs.extend(go[1:])
 	else:
 		#print ('+++ [%s] +++' % self.target)
-		bld_dir = self.path.get_bld().make_node('cgopackage--%s' %
-												self.target.replace(os.sep,'_'))
+		bld_dir = self.path.get_bld().make_node('cgopackage--%s' % self.target.replace(os.sep,'_'))
 		obj_dir = bld_dir.make_node('_obj')
 		target  = obj_dir.make_node(self.target+'.a')
-		tsk = self.create_task('cgopackage',
-							   go,
-							   [target, bld_dir])
+		tsk = self.create_task('cgopackage', go, [target, bld_dir])
 		self.link_task = tsk
 
 @feature('gopackage', 'goprogram', 'cgopackage')
@@ -205,10 +200,10 @@ def go_local_libs(self):
 				path = cgo_obj_dir.abspath()
 			# recursively add parent GOCFLAGS...
 			self.env.append_unique('GOCFLAGS',
-                                   getattr(lnk_task.env, 'GOCFLAGS',[]))
+			 getattr(lnk_task.env, 'GOCFLAGS',[]))
 			# ditto for GOLFLAGS...
 			self.env.append_unique('GOLFLAGS',
-                                   getattr(lnk_task.env, 'GOLFLAGS',[]))
+			 getattr(lnk_task.env, 'GOLFLAGS',[]))
 			self.env.append_unique('GOCFLAGS', ['-I%s' % path])
 			self.env.append_unique('GOLFLAGS', ['-L%s' % path])
 		for n in getattr(tg, 'includes_nodes', []):
