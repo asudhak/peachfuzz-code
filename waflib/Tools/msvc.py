@@ -692,13 +692,6 @@ def visual_studio_add_flags(self):
 def msvc_common_flags(conf):
 	"""
 	Setup the flags required for executing the msvc compiler
-
-	The default is to allow a static and a shared library having the same name in the same directory, the static one being prefixed by 'lib'. If you feel that this
-	is incorrect, just change the extension (issue #824)::
-
-		bld.env.STLIB_ST = bld.env.SHLIB_ST = '%s.lib'
-		bld.stlib(..., name='libfoo')
-		bld.shlib(..., name='foo')
 	"""
 	v = conf.env
 
@@ -737,7 +730,7 @@ def msvc_common_flags(conf):
 	# linker
 	v['LIB_ST']            = '%s.lib' # template for adding shared libs
 	v['LIBPATH_ST']        = '/LIBPATH:%s' # template for adding libpaths
-	v['STLIB_ST']          = 'lib%s.lib'
+	v['STLIB_ST']          = '%s.lib'
 	v['STLIBPATH_ST']      = '/LIBPATH:%s'
 
 	v.append_value('LINKFLAGS', ['/NOLOGO'])
@@ -754,7 +747,7 @@ def msvc_common_flags(conf):
 
 	# static library
 	v['LINKFLAGS_cstlib']  = []
-	v['cstlib_PATTERN']    = v['cxxstlib_PATTERN'] = 'lib%s.lib'
+	v['cstlib_PATTERN']    = v['cxxstlib_PATTERN'] = '%s.lib'
 
 	# program
 	v['cprogram_PATTERN']  = v['cxxprogram_PATTERN']    = '%s.exe'
