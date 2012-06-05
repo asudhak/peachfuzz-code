@@ -3,7 +3,6 @@
 # waf example, builds a Xilinx FPGA bitstream
 
 __copyright__  = '(c) Jérôme Carretero <cJ-waf@zougloub.eu> 2012'
-__license__ = 'DWTFYWPL'
 
 """
 This script builds an FPGA bitstream in an automated fashion.
@@ -74,13 +73,10 @@ def build(bld):
 	ucf = xml.xpath('//pn:files/pn:file[@pn:type = "FILE_UCF"]/@pn:name', namespaces=nsmap)[0] or "src/pci_7seg.ucf"
 
 	def make_prj(self):
-		with open(self.outputs[0].abspath(), "w") as f:
-			f.write("\n".join(prj))
+		self.outputs[0].write("\n".join(prj))
 	
 	def make_xst(self):
-		with open(self.outputs[0].abspath(), "w") as f:
-			fn, device, speed, package
-			f.write("""
+		self.outputs[0].write("""
 set -tmpdir "xst/projnav.tmp"
 set -xsthdpdir "xst"
 run
@@ -142,9 +138,7 @@ run
 
 
 	def make_ut(self):
-		with open(self.outputs[0].abspath(), "w") as f:
-			fn, device, speed, package
-			f.write("""
+		self.outputs[0].write("""
 -w
 -g DebugBitstream:No
 -g Binary:no
