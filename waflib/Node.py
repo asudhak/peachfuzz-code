@@ -142,7 +142,7 @@ class Node(object):
 		"Implemented to prevent nodes from being copied (raises an exception)"
 		raise Errors.WafError('nodes are not supposed to be copied')
 
-	def read(self, flags='r'):
+	def read(self, flags='r', encoding='ISO8859-1'):
 		"""
 		Return the contents of the file represented by this node::
 
@@ -156,9 +156,9 @@ class Node(object):
 		:rtype: string
 		:return: File contents
 		"""
-		return Utils.readf(self.abspath(), flags)
+		return Utils.readf(self.abspath(), flags, encoding)
 
-	def write(self, data, flags='w'):
+	def write(self, data, flags='w', encoding='ISO8859-1'):
 		"""
 		Write some text to the physical file represented by this node::
 
@@ -170,7 +170,7 @@ class Node(object):
 		:type  flags: string
 		:param flags: Write mode
 		"""
-		Utils.writef(self.abspath(), data, flags)
+		Utils.writef(self.abspath(), data, flags, encoding)
 
 	def chmod(self, val):
 		"""

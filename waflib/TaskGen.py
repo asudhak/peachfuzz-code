@@ -665,11 +665,7 @@ class subst_pc(Task.Task):
 				os.chmod(self.outputs[0].abspath(), self.generator.chmod)
 			return
 
-		code = self.inputs[0].read('rb')
-		try:
-			code = code.decode(getattr(self.generator, 'encoding', 'ISO8859-1'))
-		except AttributeError:
-			pass
+		code = self.inputs[0].read(encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
 
 		# replace all % by %% to prevent errors by % signs
 		code = code.replace('%', '%%')
@@ -693,12 +689,7 @@ class subst_pc(Task.Task):
 				d[x] = str(tmp)
 
 		code = code % d
-		try:
-			code = code.encode(getattr(self.generator, 'encoding', 'ISO8859-1'))
-		except AttributeError:
-			pass
-
-		self.outputs[0].write(code, 'wb')
+		self.outputs[0].write(code, encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
 		self.generator.bld.raw_deps[self.uid()] = self.dep_vars = lst
 
 		# make sure the signature is updated

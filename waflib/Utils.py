@@ -110,11 +110,11 @@ indicator = '\x1b[K%s%s%s\r'
 if is_win32 and 'NOCOLOR' in os.environ:
 	indicator = '%s%s%s\r'
 
-def readf(fname, m='r'):
+def readf(fname, m='r', encoding='ISO8859-1'):
 	"""
 	Read an entire file into a string, use this function instead of os.open() whenever possible.
 
-	In practice the wrapper node.read(..) should be used instead of this method::
+	In practice the wrapper node.read(..) should be preferred to this function::
 
 		def build(ctx):
 			from waflib import Utils
@@ -125,21 +125,33 @@ def readf(fname, m='r'):
 	:param fname: Path to file
 	:type  m: string
 	:param m: Open mode
+	:type encoding: string
+	:param encoding: encoding value, only used for python 3
 	:rtype: string
 	:return: Content of the file
 	"""
-	f = open(fname, m)
-	try:
-		txt = f.read()
-	finally:
-		f.close()
+
+	if sys.hexversion > 0x3000000 and not 'b' in m:
+		m += 'b'
+		f = open(fname, m)
+		try:
+			txt = f.read()
+		finally:
+			f.close()
+		txt = txt.decode(encoding)
+	else:
+		f = open(fname, m)
+		try:
+			txt = f.read()
+		finally:
+			f.close()
 	return txt
 
-def writef(fname, data, m='w'):
+def writef(fname, data, m='w', encoding='ISO8859-1'):
 	"""
 	Write an entire file from a string, use this function instead of os.open() whenever possible.
 
-	In practice the wrapper node.write(..) should be used instead of this method::
+	In practice the wrapper node.write(..) should be preferred to this function::
 
 		def build(ctx):
 			from waflib import Utils
@@ -152,7 +164,12 @@ def writef(fname, data, m='w'):
 	:param  data: The contents to write to the file
 	:type  m: string
 	:param m: Open mode
+	:type encoding: string
+	:param encoding: encoding value, only used for python 3
 	"""
+	if sys.hexversion > 0x3000000 and not 'b' in m:
+		data = data.encode(encoding)
+		m += 'b'
 	f = open(fname, m)
 	try:
 		f.write(data)
@@ -191,31 +208,36 @@ def h_file(fname):
 	return m.digest()
 
 if hasattr(os, 'O_NOINHERIT'):
-	def readf_win32(f, m='r'):
-		flags = os.O_NOINHERIT | os.O_RDONLY
-		if 'b' in m:
-			flags |= os.O_BINARY
-		else:
-			flags |= os.O_TEXT
+	def readf_win32(f, m='r', encoding='ISO8859-1'):
+		flags = os.O_NOINHERIT | os.O_RDONLY | OS.O_BINARY
 		if '+' in m:
 			flags |= os.O_RDWR
 		try:
 			fd = os.open(f, flags)
 		except OSError:
 			raise IOError('Cannot read from %r' % f)
-		f = os.fdopen(fd, m)
-		try:
-			txt = f.read()
-		finally:
-			f.close()
-		return txt
 
-	def writef_win32(f, data, m='w'):
-		flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY | os.O_NOINHERIT
-		if 'b' in m:
-			flags |= os.O_BINARY
+		if sys.hexversion > 0x3000000 and not 'b' in m:
+			m += 'b'
+			f = open(fname, m)
+			try:
+				txt = f.read()
+			finally:
+				f.close()
+			txt = txt.decode(encoding)
 		else:
-			flags |= os.O_TEXT
+			f = os.fdopen(fd, m)
+			try:
+				txt = f.read()
+			finally:
+				f.close()
+			return txt
+
+	def writef_win32(f, data, m='w', encoding='ISO8859-1'):
+		if sys.hexversion > 0x3000000 and not 'b' in m:
+			data = data.encode(encoding)
+			m += 'b'
+		flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY | os.O_NOINHERIT | os.O_BINARY
 		if '+' in m:
 			flags |= os.O_RDWR
 		try:
