@@ -209,7 +209,7 @@ def h_file(fname):
 
 if hasattr(os, 'O_NOINHERIT'):
 	def readf_win32(f, m='r', encoding='ISO8859-1'):
-		flags = os.O_NOINHERIT | os.O_RDONLY | OS.O_BINARY
+		flags = os.O_NOINHERIT | os.O_RDONLY | os.O_BINARY
 		if '+' in m:
 			flags |= os.O_RDWR
 		try:
