@@ -69,7 +69,7 @@ def configure(conf):
 	if sys.platform == 'win32':
 		out = conf.cmd_and_log([conf.env.D, '--help'])
 		if out.find("D Compiler v2.") > -1:
-			conf.fatal('dmd2 on Windows is not supported, use gdc or ldc instead')
+			conf.fatal('dmd2 on Windows is not supported, use gdc or ldc2 instead')
 
 	conf.load('ar')
 	conf.load('d')
