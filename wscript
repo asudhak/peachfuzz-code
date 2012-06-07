@@ -229,7 +229,9 @@ def sfilter(path):
 		#	cnt = 'import sys\nif sys.hexversion < 0x020400f0: from sets import Set as set\n' + cnt
 		cnt = '#! /usr/bin/env python\n# encoding: utf-8\n# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file\n\n' + cnt
 
-	return (io.BytesIO(cnt.encode('utf-8')), len(cnt), cnt)
+	if sys.hexversion > 0x030000f0:
+		return (io.BytesIO(cnt.encode('utf-8')), len(cnt), cnt)
+	return (io.BytesIO(cnt), len(cnt), cnt)
 
 def create_waf(*k, **kw):
 	mw = 'tmp-waf-'+VERSION
