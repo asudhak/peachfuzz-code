@@ -18,7 +18,7 @@ def find_dmd(conf):
 	out = conf.cmd_and_log([conf.env.D, '--help'])
 	if out.find("D Compiler v") == -1:
 		out = conf.cmd_and_log([conf.env.D, '-version'])
-		if out.find("based on DMD v1." == -1:
+		if out.find("based on DMD v1.") == -1:
 			conf.fatal("detected compiler is not dmd/ldc")
 
 @conf
