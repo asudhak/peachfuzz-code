@@ -13,10 +13,11 @@ Try to detect a D compiler from the list of supported compilers::
 	def build(bld):
 		bld.program(source='main.d', target='app')
 
-Only two D compilers are really present at the moment:
+Only three D compilers are really present at the moment:
 
-* gdc, the ldc compiler having a very similar command-line interface
-* dmd
+* gdc
+* dmd, the ldc compiler having a very similar command-line interface
+* ldc2
 """
 
 import os, sys, imp, types
@@ -51,8 +52,8 @@ def options(opt):
 		$ waf configure --check-d-compiler=dmd
 	"""
 	d_compiler_opts = opt.add_option_group('D Compiler Options')
-	d_compiler_opts.add_option('--check-d-compiler', default='gdc,dmd', action='store',
-		help='check for the compiler [Default:gdc,dmd]', dest='dcheck')
-	for d_compiler in ['gdc', 'dmd']:
+	d_compiler_opts.add_option('--check-d-compiler', default='gdc,dmd,ldc2', action='store',
+		help='check for the compiler [Default:gdc,dmd,ldc2]', dest='dcheck')
+	for d_compiler in ['gdc', 'dmd', 'ldc2']:
 		opt.load('%s' % d_compiler)
 

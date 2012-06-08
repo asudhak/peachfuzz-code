@@ -12,7 +12,14 @@ def find_dmd(conf):
 	"""
 	Find the program *dmd* or *ldc* and set the variable *D*
 	"""
-	conf.find_program(['dmd', 'ldc', 'ldc2'], var='D')
+	conf.find_program(['dmd', 'ldc'], var='D')
+
+	# make sure that we're dealing with dmd1, dmd2, or ldc(1)
+	out = conf.cmd_and_log([conf.env.D, '--help'])
+	if out.find("D Compiler v") == -1:
+		out = conf.cmd_and_log([conf.env.D, '-version'])
+		if out.find("based on DMD v1." == -1:
+			conf.fatal("detected compiler is not dmd/ldc")
 
 @conf
 def common_flags_ldc(conf):
