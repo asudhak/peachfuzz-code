@@ -578,9 +578,12 @@ def load_tool(tool, tooldir=None):
 	:type  tooldir: list
 	:param tooldir: List of directories to search for the tool module
 	"""
-	tool = tool.replace('++', 'xx')
-	tool = tool.replace('java', 'javaw')
-	tool = tool.replace('compiler_cc', 'compiler_c')
+	if tool == 'java':
+		tool = 'javaw' # jython
+	elif tool == 'compiler_cc':
+		tool = 'compiler_c' # TODO remove in waf 1.8
+	else:
+		tool.replace('++', 'xx')
 
 	if tooldir:
 		assert isinstance(tooldir, list)

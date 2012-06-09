@@ -69,7 +69,7 @@ def process_valadoc(self):
 	"""
 	Generate API documentation from Vala source code with valadoc
 
-	doc = bld.new_task_gen (
+	doc = bld(
 		features = 'valadoc',
 		output_dir = '../doc/html',
 		package_name = 'vala-gtk-example',

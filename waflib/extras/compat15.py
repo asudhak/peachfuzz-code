@@ -3,7 +3,8 @@
 # Thomas Nagy, 2010 (ita)
 
 """
-This file is provided to enable compatibility with waf 1.5, it will be removed in waf 1.7
+This file is provided to enable compatibility with waf 1.5
+It was enabled by default in waf 1.6, but it is not used in waf 1.7
 """
 
 import sys
