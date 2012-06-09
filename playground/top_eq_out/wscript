@@ -5,29 +5,21 @@
 Example providing a clean context for when top==out.
 
 When top==out, waf will not do anything by default
-in the clean context, because it could be dangerous.
-You need to do something for your particular use case.
-This example will remove all the generated files that
-will appear under out.
-
-The distclean operation, which normally removes the build folder
-completely plus some files, is also modified to remove
-the rest of waf-generated files.
+in the clean or distclean operations, because it is dangerous.
+The example below illustrates project-specific cleaning operations.
 
 Notes:
 
-- this example won't work when using dynamic builds.
-  
-  This is because it uses the tasks output files, which 
-  are known in advance.
+- The clean operation below can only remove the generated file that
+  are created during the current build (intermediate .o files)
+  will not be removed
 
-  For it to work, you would need to store the outputs of
-  dynamic builds somewhere.
+- File outputs of dynamic builds cannot be removed
+  (output files are to be known in advance)
 
-  But top == out is a rare case, so why bother.
-
-
-
+- The distclean operation, which normally removes the build folder
+  completely plus some files, is also modified to remove
+  the rest of waf-generated files.
 """
 
 VERSION='0.0.1'
@@ -67,5 +59,4 @@ def distclean(ctx):
 				shutil.rmtree(fn)
 			else:
 				os.unlink(fn)
-
 
