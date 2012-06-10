@@ -101,6 +101,7 @@
     <Compile Include="Fixups\SequenceIncrementFixupTests.cs" />
     <Compile Include="Fixups\SequenceRandomFixupTests.cs" />
     <Compile Include="Fixups\SHA1FixupTests.cs" />
+    <Compile Include="Fixups\SHA224FixupTests.cs" />
     <Compile Include="Fixups\SHA256FixupTests.cs" />
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />

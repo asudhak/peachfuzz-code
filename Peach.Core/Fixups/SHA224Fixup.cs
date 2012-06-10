@@ -23,6 +23,7 @@
 
 // Authors:
 //   Michael Eddington (mike@dejavusecurity.com)
+//   Ross Salpino (rsal42@gmail.com)
 //   Mikhail Davidov (sirus@haxsys.net)
 
 // $Id$
@@ -30,37 +31,41 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Security.Cryptography;
 using Peach.Core.Dom;
-using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
-	[FixupAttribute("checksums.Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
-	public class Crc32Fixup : Fixup
-	{
-		public Crc32Fixup(Dictionary<string, Variant> args) : base(args)
-		{
-			if (!args.ContainsKey("ref"))
-				throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
-		}
 
-		protected override Variant fixupImpl(DataElement obj)
-		{
-			string objRef = (string)args["ref"];
-			DataElement from = obj.find(objRef);
+    
+    [FixupAttribute("SHA224Fixup", "Standard SHA256 checksum.")]
+    [FixupAttribute("checksums.SHA224Fixup", "Standard SHA256 checksum.")]
+    [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+    [Serializable]
+    public class SHA224Fixup : Fixup
+    {
+
+        public SHA224Fixup(Dictionary<string, Variant> args)
+            : base(args)
+        {
+            if (!args.ContainsKey("ref"))
+                throw new PeachException("Error, SHA224Fixup requires a 'ref' argument!");
+        }
+
+        protected override Variant fixupImpl(DataElement obj)
+        {
+            string objRef = (string)args["ref"];
+            DataElement from = obj.find(objRef);
 
             if (from == null)
-                throw new PeachException(string.Format("Crc32Fixup could not find ref element '{0}'", objRef));
+                throw new PeachException(string.Format("SHA224Fixup could not find ref element '{0}'", objRef));
 
             byte[] data = from.Value.Value;
-			CRCTool crcTool = new CRCTool();
-            crcTool.Init(CRCTool.CRCCode.CRC32);
-            return new Variant((uint)crcTool.crctablefast(data));
-		}
-	}
+            Libraries.SHA224Managed sha224Tool = new Libraries.SHA224Managed();
+         
+            return new Variant(sha224Tool.ComputeHash(data));
+        }
+    }
 }
 
 // end

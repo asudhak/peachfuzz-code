@@ -23,6 +23,7 @@
 
 // Authors:
 //   Michael Eddington (mike@dejavusecurity.com)
+//   Mikhail Davidov (sirus@haxsys.net)
 
 // $Id$
 
@@ -50,6 +51,10 @@ namespace Peach.Core.Fixups
 		{
 			string objRef = (string)args["ref"];
 			DataElement from = obj.find(objRef);
+
+            if (from == null)
+                throw new PeachException(string.Format("CopyValueFixup could not find ref element '{0}'", objRef));
+
 			return new Variant(from.Value);
 		}
 	}

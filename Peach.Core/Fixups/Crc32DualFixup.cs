@@ -23,6 +23,7 @@
 
 // Authors:
 //   Michael Eddington (mike@dejavusecurity.com)
+//   Mikhail Davidov (sirus@haxsys.net)
 
 // $Id$
 
@@ -34,8 +35,8 @@ using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
-    [FixupAttribute("checksums.Crc32DualFixup", "Standard CRC32 as defined by ISO 3309.")]
+	[FixupAttribute("Crc32DualFixup", "Standard CRC32 as defined by ISO 3309 applied to two elements.")]
+    [FixupAttribute("checksums.Crc32DualFixup", "Standard CRC32 as defined by ISO 3309 applied to two elements.")]
 	[ParameterAttribute("ref1", typeof(DataElement), "Reference to data element", true)]
 	[ParameterAttribute("ref2", typeof(DataElement), "Reference to data element", true)]
     [Serializable]
@@ -51,8 +52,16 @@ namespace Peach.Core.Fixups
 		{
 			string objRef1 = (string)args["ref1"];
 			string objRef2 = (string)args["ref2"];
-			byte[] data1 = obj.find(objRef1).Value.Value;
-			byte[] data2 = obj.find(objRef2).Value.Value;
+            var ref1 = obj.find(objRef1);
+            var ref2 = obj.find(objRef2);
+
+            if (ref1 == null)
+                throw new PeachException(string.Format("Crc32DualFixup could not find ref1 element '{0}'", objRef1));
+            if(ref2 == null)
+                throw new PeachException(string.Format("Crc32DualFixup could not find ref2 element '{0}'", objRef2));
+
+			byte[] data1 = ref1.Value.Value;
+			byte[] data2 = ref2.Value.Value;
             byte[] data3 = ArrayExtensions.Combine(data1, data2);
 
 			CRCTool crcTool = new CRCTool();
