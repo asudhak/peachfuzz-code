@@ -234,6 +234,7 @@
     <Compile Include="Fixups\CopyValueFixup.cs" />
     <Compile Include="Fixups\Crc32DualFixup.cs" />
     <Compile Include="Fixups\EthernetChecksumFixup.cs" />
+    <Compile Include="Fixups\ExpressionFixup.cs" />
     <Compile Include="Fixups\IcmpChecksumFixup.cs" />
     <Compile Include="Fixups\Libraries\CRC32.cs" />
     <Compile Include="Fixups\Libraries\SHA224.cs" />
