@@ -583,7 +583,7 @@ def load_tool(tool, tooldir=None):
 	elif tool == 'compiler_cc':
 		tool = 'compiler_c' # TODO remove in waf 1.8
 	else:
-		tool.replace('++', 'xx')
+		tool = tool.replace('++', 'xx')
 
 	if tooldir:
 		assert isinstance(tooldir, list)
