@@ -245,7 +245,8 @@ class task_gen(object):
 
 	def create_task(self, name, src=None, tgt=None):
 		"""
-		Wrapper for creating task objects easily
+		Wrapper for creating task instances. The classes are retrieved from the
+		context class if possible, then from the global dict Task.classes.
 
 		:param name: task class name
 		:type name: string
@@ -267,8 +268,8 @@ class task_gen(object):
 	def clone(self, env):
 		"""
 		Make a copy of a task generator. Once the copy is made, it is necessary to ensure that the
-		task generator does not create the same output files as the original, or the same files may
-		be compiled twice.
+		it does not create the same output files as the original, or the same files may
+		be compiled several times.
 
 		:param env: A configuration set
 		:type env: :py:class:`waflib.ConfigSet.ConfigSet`
