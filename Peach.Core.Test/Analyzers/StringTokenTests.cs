@@ -69,6 +69,7 @@ namespace Peach.Core.Test.Analyzers
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString((byte[])dom.dataModels[0][0].InternalValue));
+			Assert.AreEqual(3, ((DataElementContainer)((DataElementContainer)dom.dataModels[0][0])[0]).Count);
 		}
 	}
 }

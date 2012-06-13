@@ -69,8 +69,8 @@ namespace Peach.Core.Analyzers
 
 		public override void asCommandLine(Dictionary<string, string> args)
 		{
-			//_typeLibrary = (string)args["TypeLibrary"];
-			_typeLibrary = @"C:\Peach3\ComTest\Release\ComTest.dll";
+			_typeLibrary = (string)args["TypeLibrary"];
+			//_typeLibrary = @"C:\Peach3\ComTest\Release\ComTest.dll";
 
 			if (!File.Exists(_typeLibrary))
 				throw new PeachException("Error, the TypeLibrary was not found.");

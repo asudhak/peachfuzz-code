@@ -92,6 +92,21 @@ namespace Peach.Core.Agent
 		/// <param name="data">Message data</param>
 		/// <returns>Returns data or null.</returns>
 		public abstract Variant Message(string name, Variant data);
+
+		/// <summary>
+		/// Process query from another monitor.
+		/// </summary>
+		/// <remarks>
+		/// This method is used to respond to an information request
+		/// from another monitor.  Debugger monitors may expose specific
+		/// queryies such as "QueryPid" to get the running processes PID.
+		/// </remarks>
+		/// <param name="query">Query</param>
+		/// <returns>Non-null response indicates query was handled.</returns>
+		public virtual object ProcessQueryMonitors(string query)
+		{
+			return null;
+		}
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]

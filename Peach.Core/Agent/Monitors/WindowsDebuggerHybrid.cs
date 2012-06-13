@@ -196,6 +196,25 @@ namespace Peach.Core.Agent.Monitors
 			_FinishDebugger();
 		}
 
+		public override object ProcessQueryMonitors(string query)
+		{
+			switch (query)
+			{
+				case "QueryPid":
+					if (_kernelConnectionString != null)
+						return null;
+
+					if (_debugger != null)
+						return _debugger.ProcessId;
+					else if (_systemDebugger != null)
+						return _systemDebugger.ProcessId;
+					else
+						return null;
+			}
+
+			return null;
+		}
+
 		protected string FindWinDbg()
 		{
 			// Lets try a few common places before failing.

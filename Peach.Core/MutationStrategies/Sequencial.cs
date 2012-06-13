@@ -36,7 +36,6 @@ using NLog;
 
 namespace Peach.Core.MutationStrategies
 {
-	[DefaultMutationStrategy]
 	[MutationStrategy("Sequencial")]
 	public class Sequencial : MutationStrategy
 	{
@@ -45,8 +44,6 @@ namespace Peach.Core.MutationStrategies
 		Dictionary<DataElement, List<Mutator>> _stuffs = new Dictionary<DataElement, List<Mutator>>();
 		List<Type> _mutators = new List<Type>();
 		bool recording = true;
-		int elementPosition = 0;
-		int mutatorPosition = 0;
 		int? _count = null;
 		int _iterationCount = 0;
 

@@ -344,6 +344,32 @@ namespace Peach.Core.Agent
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Send an information request (query) to all local monitors.
+		/// </summary>
+		/// <remarks>
+		/// Monitors may expose information that other monitors can query.  For example a
+		/// debugger monitor may expose a "QueryPid" to get the current process id.  This
+		/// information could be useful to a window closing monitor that monitors windows created
+		/// by the process id and closes them if needed.
+		/// </remarks>
+		/// <param name="query">Query to send to each monitor</param>
+		/// <returns>Query response or null</returns>
+		public object QueryMonitors(string query)
+		{
+			logger.Trace("Message: {0}", query);
+			object ret = null;
+
+			foreach (Monitor monitor in monitors.Values)
+			{
+				ret = monitor.ProcessQueryMonitors(query);
+				if (ret != null)
+					return ret;
+			}
+
+			return null;
+		}
 	}
 
 	public interface IAgent
