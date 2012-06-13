@@ -102,7 +102,8 @@ classes = {}
 
 class store_task_type(type):
 	"""
-	Metaclass: store the task types into :py:const:`waflib.Task.classes`.
+	Metaclass: store the task classes into :py:const:`waflib.Task.classes`, or to the dict pointed
+	by the class attribute 'register'.
 	The attribute 'run_str' will be processed to compute a method 'run' on the task class
 	The decorator :py:func:`waflib.Task.cache_outputs` is also applied to the class
 	"""
@@ -130,7 +131,8 @@ class store_task_type(type):
 			if not getattr(cls, 'nocache', None):
 				cls = cache_outputs(cls)
 
-			classes[name] = cls
+			# be creative
+			getattr(cls, 'register', classes)[name] = cls
 
 evil = store_task_type('evil', (object,), {})
 "Base class provided to avoid writing a metaclass, so the code can run in python 2.6 and 3.x unmodified"
@@ -1132,8 +1134,8 @@ def compile_fun(line, shell=False):
 
 def task_factory(name, func=None, vars=None, color='GREEN', ext_in=[], ext_out=[], before=[], after=[], shell=False, scan=None):
 	"""
-	Return a new task subclass with the function ``run`` compiled from the line given.
-	Provided for compatibility with waf 1.4-1.5, when we did not have the metaclass to register new classes
+	Deprecated. Return a new task subclass with the function ``run`` compiled from the line given.
+	Provided for compatibility with waf 1.4-1.5, when we did not have the metaclass to register new classes (will be removed in Waf 1.8)
 
 	:param func: method run
 	:type func: string or function
