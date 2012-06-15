@@ -219,7 +219,7 @@ if hasattr(os, 'O_NOINHERIT'):
 
 		if sys.hexversion > 0x3000000 and not 'b' in m:
 			m += 'b'
-			f = open(fname, m)
+			f = open(f, m)
 			try:
 				txt = f.read()
 			finally:
@@ -231,7 +231,7 @@ if hasattr(os, 'O_NOINHERIT'):
 				txt = f.read()
 			finally:
 				f.close()
-			return txt
+		return txt
 
 	def writef_win32(f, data, m='w', encoding='ISO8859-1'):
 		if sys.hexversion > 0x3000000 and not 'b' in m:
