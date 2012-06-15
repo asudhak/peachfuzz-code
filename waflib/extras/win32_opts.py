@@ -12,6 +12,13 @@ try: import cPickle
 except: import pickle as cPickle
 from waflib import Utils, Build, Context, Node, Logs
 
+try:
+	TP = '%s\\*'.decode('ascii')
+except AttributeError:
+	TP = '%s\\*'
+
+print(type(TP))
+
 if Utils.is_win32:
 	from waflib.extras import md5_tstamp
 	import ctypes, ctypes.wintypes
@@ -41,7 +48,7 @@ if Utils.is_win32:
 		else:
 			# an opportunity to list the files and the timestamps at once
 			findData = ctypes.wintypes.WIN32_FIND_DATAW()
-			find     = FindFirstFile(u'%s\\*' % self.parent.abspath(), ctypes.byref(findData))
+			find     = FindFirstFile(TP % self.parent.abspath(), ctypes.byref(findData))
 
 			if find == INVALID_HANDLE_VALUE:
 				cache[id(self.parent)] = {}
@@ -58,27 +65,34 @@ if Utils.is_win32:
 							lst_files[str(findData.cFileName)] = d
 					if not FindNextFile(find, ctypes.byref(findData)):
 						break
-			except Exception, e:
+			except Exception as e:
 				cache[id(self.parent)] = {}
 				raise IOError('Not a file')
 			finally:
 				FindClose(find)
 			t = lst_files[self.name]
 
-		filename = self.abspath()
-		if filename in Build.hashes_md5_tstamp:
-			if Build.hashes_md5_tstamp[filename][0] == t:
-				return Build.hashes_md5_tstamp[filename][1]
-		m = Utils.md5()
+		fname = self.abspath()
+		if fname in Build.hashes_md5_tstamp:
+			if Build.hashes_md5_tstamp[fname][0] == t:
+				return Build.hashes_md5_tstamp[fname][1]
 
-		with open(filename, 'rb') as f:
-			read = 1
-			while read:
-				read = f.read(100000)
-				m.update(read)
+		try:
+			fd = os.open(fname, os.O_BINARY | os.O_RDONLY | os.O_NOINHERIT)
+		except OSError:
+			raise IOError('Cannot read from %r' % fname)
+		f = os.fdopen(fd, 'rb')
+		m = Utils.md5()
+		rb = 1
+		try:
+			while rb:
+				rb = f.read(200000)
+				m.update(rb)
+		finally:
+			f.close()
 
 		# ensure that the cache is overwritten
-		Build.hashes_md5_tstamp[filename] = (t, m.digest())
+		Build.hashes_md5_tstamp[fname] = (t, m.digest())
 		return m.digest()
 	Node.Node.cached_hash_file = cached_hash_file
 
@@ -113,7 +127,7 @@ if Utils.is_win32:
 
 			curpath = self.parent.abspath()
 			findData = ctypes.wintypes.WIN32_FIND_DATAW()
-			find     = FindFirstFile(u'%s\\*' % curpath, ctypes.byref(findData))
+			find     = FindFirstFile(TP % curpath, ctypes.byref(findData))
 
 			if find == INVALID_HANDLE_VALUE:
 				Logs.error("invalid win32 handle isfile_cached %r" % self.abspath())
@@ -127,7 +141,7 @@ if Utils.is_win32:
 							c1.append(str(findData.cFileName))
 					if not FindNextFile(find, ctypes.byref(findData)):
 						break
-			except Exception, e:
+			except Exception as e:
 				Logs.error('exception while listing a folder %r %r' % (self.abspath(), e))
 				return os.path.isfile(self.abspath())
 			finally:
