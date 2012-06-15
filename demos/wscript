@@ -20,8 +20,10 @@ from waflib import Logs
 # python 2.3 tends to hang for whatever reason :-/
 PYTHONS = "2.4 2.5 2.6 2.7 3.0 3.1 3.2".split()
 
+DIRS = 'c'
+
 def options(opt):
-	for d in opt.path.ant_glob('*', excl=['build', 'variants'], src=False, dir=True):
+	for d in opt.path.ant_glob(DIRS, excl=['build', 'variants'], src=False, dir=True):
 		if d.name[0] == '.' or d.name == 'variants' or d.name == 'build':
 			continue
 
@@ -50,7 +52,7 @@ def configure(conf):
 	conf.env.WAF = node.abspath()
 
 	conf.in_msg += 1
-	for d in conf.path.ant_glob('*', excl=['build', 'variants', 'precious'], src=False, dir=True):
+	for d in conf.path.ant_glob(DIRS, excl=['build', 'variants', 'precious'], src=False, dir=True):
 		if d.name[0] == '.':
 			continue
 
