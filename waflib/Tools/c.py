@@ -15,7 +15,7 @@ def c_hook(self, node):
 
 class c(Task.Task):
 	"Compile C files into object files"
-	run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CC_SRC_F}${SRC} ${CC_TGT_F}${TGT}'
+	run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${FRAMEWORK_ST:FRAMEWORK} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CC_SRC_F}${SRC} ${CC_TGT_F}${TGT}'
 	vars    = ['CCDEPS'] # unused variable to depend on, just in case
 	ext_in  = ['.h'] # set the build order easily by using ext_out=['.h']
 	scan    = c_preproc.scan
