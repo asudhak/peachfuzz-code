@@ -201,6 +201,7 @@ def get_python_variables(self, variables, imports=None):
 		out = self.cmd_and_log(self.env.PYTHON + ['-c', '\n'.join(program)], env=os_env)
 	except Errors.WafError:
 		self.fatal('The distutils module is unusable: install "python-devel"?')
+	self.to_log(out)
 	return_values = []
 	for s in out.split('\n'):
 		s = s.strip()
