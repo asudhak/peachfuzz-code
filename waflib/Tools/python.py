@@ -209,8 +209,8 @@ def get_python_variables(self, variables, imports=None):
 			continue
 		if s == 'None':
 			return_values.append(None)
-		elif s[0] == "'" and s[-1] == "'":
-			return_values.append(s[1:-1])
+		elif (s[0] == "'" and s[-1] == "'") or (s[0] == '"' and s[-1] == '"'):
+			return_values.append(eval(s))
 		elif s[0].isdigit():
 			return_values.append(int(s))
 		else: break
