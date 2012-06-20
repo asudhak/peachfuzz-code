@@ -55,7 +55,7 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.textBoxTemplateFiles = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
-			this.tabPageDebugger = new System.Windows.Forms.TabPage();
+			this.tabPageDebuggerWin = new System.Windows.Forms.TabPage();
 			this.checkBoxCpuKill = new System.Windows.Forms.CheckBox();
 			this.buttonDebuggerPathBrowse = new System.Windows.Forms.Button();
 			this.textBoxDebuggerPath = new System.Windows.Forms.TextBox();
@@ -82,6 +82,12 @@
 			this.radioButtonDebuggerStartProcess = new System.Windows.Forms.RadioButton();
 			this.tabPageGUI = new System.Windows.Forms.TabPage();
 			this.groupBox7 = new System.Windows.Forms.GroupBox();
+			this.label24 = new System.Windows.Forms.Label();
+			this.textBoxWindowTitle4 = new System.Windows.Forms.TextBox();
+			this.label23 = new System.Windows.Forms.Label();
+			this.textBoxWindowTitle3 = new System.Windows.Forms.TextBox();
+			this.label22 = new System.Windows.Forms.Label();
+			this.textBoxWindowTitle2 = new System.Windows.Forms.TextBox();
 			this.label21 = new System.Windows.Forms.Label();
 			this.checkBoxEnableWmClose = new System.Windows.Forms.CheckBox();
 			this.textBoxWindowTitle1 = new System.Windows.Forms.TextBox();
@@ -111,17 +117,13 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.label22 = new System.Windows.Forms.Label();
-			this.textBoxWindowTitle2 = new System.Windows.Forms.TextBox();
-			this.label23 = new System.Windows.Forms.Label();
-			this.textBoxWindowTitle3 = new System.Windows.Forms.TextBox();
-			this.label24 = new System.Windows.Forms.Label();
-			this.textBoxWindowTitle4 = new System.Windows.Forms.TextBox();
+			this.tabPageDebuggerOSX = new System.Windows.Forms.TabPage();
+			this.tabPageDebuggerLinux = new System.Windows.Forms.TabPage();
 			this.tabControl.SuspendLayout();
 			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
 			this.groupBox6.SuspendLayout();
-			this.tabPageDebugger.SuspendLayout();
+			this.tabPageDebuggerWin.SuspendLayout();
 			this.groupBox5.SuspendLayout();
 			this.groupBox4.SuspendLayout();
 			this.groupBox3.SuspendLayout();
@@ -141,7 +143,9 @@
 			// 
 			this.tabControl.Controls.Add(this.tabPageIntroduction);
 			this.tabControl.Controls.Add(this.tabPageGeneral);
-			this.tabControl.Controls.Add(this.tabPageDebugger);
+			this.tabControl.Controls.Add(this.tabPageDebuggerWin);
+			this.tabControl.Controls.Add(this.tabPageDebuggerOSX);
+			this.tabControl.Controls.Add(this.tabPageDebuggerLinux);
 			this.tabControl.Controls.Add(this.tabPageGUI);
 			this.tabControl.Controls.Add(this.tabPageFuzzing);
 			this.tabControl.Controls.Add(this.tabPageOutput);
@@ -405,24 +409,24 @@
 			this.label1.TabIndex = 0;
 			this.label1.Text = "Template File(s):";
 			// 
-			// tabPageDebugger
+			// tabPageDebuggerWin
 			// 
-			this.tabPageDebugger.Controls.Add(this.checkBoxCpuKill);
-			this.tabPageDebugger.Controls.Add(this.buttonDebuggerPathBrowse);
-			this.tabPageDebugger.Controls.Add(this.textBoxDebuggerPath);
-			this.tabPageDebugger.Controls.Add(this.label15);
-			this.tabPageDebugger.Controls.Add(this.groupBox5);
-			this.tabPageDebugger.Controls.Add(this.groupBox4);
-			this.tabPageDebugger.Controls.Add(this.groupBox3);
-			this.tabPageDebugger.Controls.Add(this.groupBox2);
-			this.tabPageDebugger.Controls.Add(this.groupBox1);
-			this.tabPageDebugger.Location = new System.Drawing.Point(4, 22);
-			this.tabPageDebugger.Name = "tabPageDebugger";
-			this.tabPageDebugger.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPageDebugger.Size = new System.Drawing.Size(545, 433);
-			this.tabPageDebugger.TabIndex = 1;
-			this.tabPageDebugger.Text = "Debugger";
-			this.tabPageDebugger.UseVisualStyleBackColor = true;
+			this.tabPageDebuggerWin.Controls.Add(this.checkBoxCpuKill);
+			this.tabPageDebuggerWin.Controls.Add(this.buttonDebuggerPathBrowse);
+			this.tabPageDebuggerWin.Controls.Add(this.textBoxDebuggerPath);
+			this.tabPageDebuggerWin.Controls.Add(this.label15);
+			this.tabPageDebuggerWin.Controls.Add(this.groupBox5);
+			this.tabPageDebuggerWin.Controls.Add(this.groupBox4);
+			this.tabPageDebuggerWin.Controls.Add(this.groupBox3);
+			this.tabPageDebuggerWin.Controls.Add(this.groupBox2);
+			this.tabPageDebuggerWin.Controls.Add(this.groupBox1);
+			this.tabPageDebuggerWin.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDebuggerWin.Name = "tabPageDebuggerWin";
+			this.tabPageDebuggerWin.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPageDebuggerWin.Size = new System.Drawing.Size(545, 433);
+			this.tabPageDebuggerWin.TabIndex = 1;
+			this.tabPageDebuggerWin.Text = "Debugger";
+			this.tabPageDebuggerWin.UseVisualStyleBackColor = true;
 			// 
 			// checkBoxCpuKill
 			// 
@@ -690,6 +694,54 @@
 			this.groupBox7.TabIndex = 2;
 			this.groupBox7.TabStop = false;
 			this.groupBox7.Text = "Close Application Windows";
+			// 
+			// label24
+			// 
+			this.label24.AutoSize = true;
+			this.label24.Location = new System.Drawing.Point(6, 123);
+			this.label24.Name = "label24";
+			this.label24.Size = new System.Drawing.Size(81, 13);
+			this.label24.TabIndex = 7;
+			this.label24.Text = "Window Title 4:";
+			// 
+			// textBoxWindowTitle4
+			// 
+			this.textBoxWindowTitle4.Location = new System.Drawing.Point(84, 120);
+			this.textBoxWindowTitle4.Name = "textBoxWindowTitle4";
+			this.textBoxWindowTitle4.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle4.TabIndex = 6;
+			// 
+			// label23
+			// 
+			this.label23.AutoSize = true;
+			this.label23.Location = new System.Drawing.Point(6, 97);
+			this.label23.Name = "label23";
+			this.label23.Size = new System.Drawing.Size(81, 13);
+			this.label23.TabIndex = 5;
+			this.label23.Text = "Window Title 3:";
+			// 
+			// textBoxWindowTitle3
+			// 
+			this.textBoxWindowTitle3.Location = new System.Drawing.Point(84, 94);
+			this.textBoxWindowTitle3.Name = "textBoxWindowTitle3";
+			this.textBoxWindowTitle3.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle3.TabIndex = 4;
+			// 
+			// label22
+			// 
+			this.label22.AutoSize = true;
+			this.label22.Location = new System.Drawing.Point(6, 71);
+			this.label22.Name = "label22";
+			this.label22.Size = new System.Drawing.Size(81, 13);
+			this.label22.TabIndex = 3;
+			this.label22.Text = "Window Title 2:";
+			// 
+			// textBoxWindowTitle2
+			// 
+			this.textBoxWindowTitle2.Location = new System.Drawing.Point(84, 68);
+			this.textBoxWindowTitle2.Name = "textBoxWindowTitle2";
+			this.textBoxWindowTitle2.Size = new System.Drawing.Size(438, 20);
+			this.textBoxWindowTitle2.TabIndex = 2;
 			// 
 			// label21
 			// 
@@ -967,53 +1019,23 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
-			// label22
+			// tabPageDebuggerOSX
 			// 
-			this.label22.AutoSize = true;
-			this.label22.Location = new System.Drawing.Point(6, 71);
-			this.label22.Name = "label22";
-			this.label22.Size = new System.Drawing.Size(81, 13);
-			this.label22.TabIndex = 3;
-			this.label22.Text = "Window Title 2:";
+			this.tabPageDebuggerOSX.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDebuggerOSX.Name = "tabPageDebuggerOSX";
+			this.tabPageDebuggerOSX.Size = new System.Drawing.Size(545, 433);
+			this.tabPageDebuggerOSX.TabIndex = 7;
+			this.tabPageDebuggerOSX.Text = "Debugger";
+			this.tabPageDebuggerOSX.UseVisualStyleBackColor = true;
 			// 
-			// textBoxWindowTitle2
+			// tabPageDebuggerLinux
 			// 
-			this.textBoxWindowTitle2.Location = new System.Drawing.Point(84, 68);
-			this.textBoxWindowTitle2.Name = "textBoxWindowTitle2";
-			this.textBoxWindowTitle2.Size = new System.Drawing.Size(438, 20);
-			this.textBoxWindowTitle2.TabIndex = 2;
-			// 
-			// label23
-			// 
-			this.label23.AutoSize = true;
-			this.label23.Location = new System.Drawing.Point(6, 97);
-			this.label23.Name = "label23";
-			this.label23.Size = new System.Drawing.Size(81, 13);
-			this.label23.TabIndex = 5;
-			this.label23.Text = "Window Title 3:";
-			// 
-			// textBoxWindowTitle3
-			// 
-			this.textBoxWindowTitle3.Location = new System.Drawing.Point(84, 94);
-			this.textBoxWindowTitle3.Name = "textBoxWindowTitle3";
-			this.textBoxWindowTitle3.Size = new System.Drawing.Size(438, 20);
-			this.textBoxWindowTitle3.TabIndex = 4;
-			// 
-			// label24
-			// 
-			this.label24.AutoSize = true;
-			this.label24.Location = new System.Drawing.Point(6, 123);
-			this.label24.Name = "label24";
-			this.label24.Size = new System.Drawing.Size(81, 13);
-			this.label24.TabIndex = 7;
-			this.label24.Text = "Window Title 4:";
-			// 
-			// textBoxWindowTitle4
-			// 
-			this.textBoxWindowTitle4.Location = new System.Drawing.Point(84, 120);
-			this.textBoxWindowTitle4.Name = "textBoxWindowTitle4";
-			this.textBoxWindowTitle4.Size = new System.Drawing.Size(438, 20);
-			this.textBoxWindowTitle4.TabIndex = 6;
+			this.tabPageDebuggerLinux.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDebuggerLinux.Name = "tabPageDebuggerLinux";
+			this.tabPageDebuggerLinux.Size = new System.Drawing.Size(545, 433);
+			this.tabPageDebuggerLinux.TabIndex = 8;
+			this.tabPageDebuggerLinux.Text = "Debugger";
+			this.tabPageDebuggerLinux.UseVisualStyleBackColor = true;
 			// 
 			// FormMain
 			// 
@@ -1031,8 +1053,8 @@
 			this.tabPageGeneral.PerformLayout();
 			this.groupBox6.ResumeLayout(false);
 			this.groupBox6.PerformLayout();
-			this.tabPageDebugger.ResumeLayout(false);
-			this.tabPageDebugger.PerformLayout();
+			this.tabPageDebuggerWin.ResumeLayout(false);
+			this.tabPageDebuggerWin.PerformLayout();
 			this.groupBox5.ResumeLayout(false);
 			this.groupBox5.PerformLayout();
 			this.groupBox4.ResumeLayout(false);
@@ -1069,7 +1091,7 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox textBoxTemplateFiles;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TabPage tabPageDebugger;
+		private System.Windows.Forms.TabPage tabPageDebuggerWin;
 		private System.Windows.Forms.TabPage tabPageGUI;
 		private System.Windows.Forms.GroupBox groupBox4;
 		private System.Windows.Forms.GroupBox groupBox3;
@@ -1149,6 +1171,8 @@
 		private System.Windows.Forms.TextBox textBoxWindowTitle3;
 		private System.Windows.Forms.Label label22;
 		private System.Windows.Forms.TextBox textBoxWindowTitle2;
+		private System.Windows.Forms.TabPage tabPageDebuggerOSX;
+		private System.Windows.Forms.TabPage tabPageDebuggerLinux;
 	}
 }
 

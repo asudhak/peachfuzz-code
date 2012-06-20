@@ -843,6 +843,8 @@
   <PropertyGroup>
     <PostBuildEvent>copy /y $(TargetDir)\*.dll $(SolutionDir)Peach\bin\$(PlatformName)\$(ConfigurationName)\.
 copy /y $(TargetDir)\*.pdb $(SolutionDir)Peach\bin\$(PlatformName)\$(ConfigurationName)\.
+copy /y $(TargetDir)\*.dll $(SolutionDir)PeachFuzzBang\bin\$(PlatformName)\$(ConfigurationName)\.
+copy /y $(TargetDir)\*.pdb $(SolutionDir)PeachFuzzBang\bin\$(PlatformName)\$(ConfigurationName)\.
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

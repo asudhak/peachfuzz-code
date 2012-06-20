@@ -98,29 +98,64 @@ namespace PeachFuzzBang
 			tabControl.TabPages.Remove(tabPageFuzzing);
 			//tabControl.TabPages.Remove(tabPageOutput);
 
+			// Check OS and load side assembly
+			string osAssembly = null;
+			switch (Environment.OSVersion.Platform)
+			{
+				case PlatformID.MacOSX:
+					osAssembly = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+						"Peach.Core.OS.OSX.dll");
+					Assembly.LoadFrom(osAssembly);
+					tabControl.TabPages.Remove(tabPageDebuggerLinux);
+					tabControl.TabPages.Remove(tabPageDebuggerWin);
+					break;
+				case PlatformID.Unix:
+					osAssembly = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+						"Peach.Core.OS.Linux.dll");
+					Assembly.LoadFrom(osAssembly);
+					tabControl.TabPages.Remove(tabPageDebuggerOSX);
+					tabControl.TabPages.Remove(tabPageDebuggerWin);
+					break;
+				case PlatformID.Win32NT:
+				case PlatformID.Win32S:
+				case PlatformID.Win32Windows:
+				case PlatformID.WinCE:
+				case PlatformID.Xbox:
+					{
+						osAssembly = System.IO.Path.Combine(
+							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+							"Peach.Core.OS.Windows.dll");
+						Assembly.LoadFrom(osAssembly);
+						tabControl.TabPages.Remove(tabPageDebuggerOSX);
+						tabControl.TabPages.Remove(tabPageDebuggerLinux);
+						if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+							MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
+
+						if (Environment.Is64BitOperatingSystem)
+						{
+							if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x64)"))
+								textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x64)";
+							else
+								textBoxDebuggerPath.Text = "Error, could not locate 64bit windbg!";
+						}
+						else
+						{
+							if (Directory.Exists(@"C:\Program Files (x86)\Debugging Tools for Windows (x86)"))
+								textBoxDebuggerPath.Text = @"C:\Program Files (x86)\Debugging Tools for Windows (x86)";
+							if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x86)"))
+								textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x86)";
+							if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows"))
+								textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows";
+						}
+					}
+					break;
+			}
+
 			buttonStartFuzzing.Enabled = true;
 			buttonSaveConfiguration.Enabled = false;
 			buttonStopFuzzing.Enabled = false;
-
-			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
-				MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
-
-			if (Environment.Is64BitOperatingSystem)
-			{
-				if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x64)"))
-					textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x64)";
-				else
-					textBoxDebuggerPath.Text = "Error, could not locate 64bit windbg!";
-			}
-			else
-			{
-				if (Directory.Exists(@"C:\Program Files (x86)\Debugging Tools for Windows (x86)"))
-					textBoxDebuggerPath.Text = @"C:\Program Files (x86)\Debugging Tools for Windows (x86)";
-				if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x86)"))
-					textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x86)";
-				if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows"))
-					textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows";
-			}
 
 			comboBoxPitDataModel.SelectedIndexChanged += new EventHandler(comboBoxPitDataModel_SelectedIndexChanged);
 
