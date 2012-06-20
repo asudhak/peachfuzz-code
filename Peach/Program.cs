@@ -114,6 +114,35 @@ namespace Peach
 				if (extra.Count == 0 && agent == null && analyzer == null)
 					syntax();
 
+				// Check OS and load side assembly
+				string osAssembly = null;
+				switch (Environment.OSVersion.Platform)
+				{
+					case PlatformID.MacOSX:
+						osAssembly = System.IO.Path.Combine(
+							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+							"Peach.Core.OS.OSX.dll");
+						Assembly.LoadFrom(osAssembly);
+						break;
+					case PlatformID.Unix:
+						osAssembly = System.IO.Path.Combine(
+							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+							"Peach.Core.OS.Linux.dll");
+						Assembly.LoadFrom(osAssembly);
+						break;
+					case PlatformID.Win32NT:
+					case PlatformID.Win32S:
+					case PlatformID.Win32Windows:
+					case PlatformID.WinCE:
+					case PlatformID.Xbox:
+						osAssembly = System.IO.Path.Combine(
+							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+							"Peach.Core.OS.Windows.dll");
+						Assembly.LoadFrom(osAssembly);
+						break;
+				}
+
+
 				if (agent != null)
 				{
 					Type agentType = null;
