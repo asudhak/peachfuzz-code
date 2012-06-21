@@ -4,6 +4,8 @@
 .wafpickle-*
 demos/out.txt
 waf
-build*
+build
+demos/*/build*
+playground/*/build*
 .waf-*
 *.log
