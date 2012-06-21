@@ -64,6 +64,8 @@ namespace Peach.Core.Agent.Monitors
 		bool _faultOnEarlyExit = false;
 		bool _cpuKill = false;
 		bool _firstIteration = true;
+		DateTime _processStarted = DateTime.MinValue;
+		bool _cpuKillProcessStarted = false;
 
 		public Process(string name, Dictionary<string, Variant> args)
 			: base(name, args)
@@ -98,6 +100,9 @@ namespace Peach.Core.Agent.Monitors
 
 				_process.Start();
 			}
+
+			_cpuKillProcessStarted = false;
+			_processStarted = DateTime.Now;
 		}
 
 		void _Stop()
@@ -212,7 +217,10 @@ namespace Peach.Core.Agent.Monitors
 
 						logger.Debug("Message: GetProcessCpuUsage: " + cpu);
 
-						if (cpu < 1.0)
+						if (cpu > 1.0 || (DateTime.Now - _processStarted).Seconds > 3)
+							_cpuKillProcessStarted = true;
+
+						if (_cpuKillProcessStarted && cpu < 1.0)
 						{
 							logger.Debug("Message: Stopping process.");
 							_Stop();
