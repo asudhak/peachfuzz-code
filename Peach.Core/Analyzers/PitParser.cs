@@ -1555,8 +1555,26 @@ namespace Peach.Core.Analyzers
 		{
 			Data data = new Data();
 			data.name = getXmlAttribute(node, "name");
-			data.FileName = getXmlAttribute(node, "fileName");
-			data.DataType = DataType.File;
+			string dataFileName = getXmlAttribute(node, "fileName");
+
+			if (Directory.Exists(dataFileName))
+			{
+				List<string> files = new List<string>();
+				foreach (string fileName in Directory.GetFiles(dataFileName))
+					files.Add(fileName);
+
+				data.DataType = DataType.Files;
+				data.Files = files;
+			}
+			else if (File.Exists(dataFileName))
+			{
+				data.DataType = DataType.File;
+				data.FileName = dataFileName;
+			}
+			else
+			{
+				throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+			}
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
