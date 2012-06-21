@@ -116,25 +116,21 @@ namespace Peach
 
 				// Check OS and load side assembly
 				string osAssembly = null;
-				switch (Environment.OSVersion.Platform)
+				switch (Platform.GetOS())
 				{
-					case PlatformID.MacOSX:
+					case Platform.OS.Mac:
 						osAssembly = System.IO.Path.Combine(
 							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 							"Peach.Core.OS.OSX.dll");
 						Assembly.LoadFrom(osAssembly);
 						break;
-					case PlatformID.Unix:
+					case Platform.OS.Linux:
 						osAssembly = System.IO.Path.Combine(
 							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 							"Peach.Core.OS.Linux.dll");
 						Assembly.LoadFrom(osAssembly);
 						break;
-					case PlatformID.Win32NT:
-					case PlatformID.Win32S:
-					case PlatformID.Win32Windows:
-					case PlatformID.WinCE:
-					case PlatformID.Xbox:
+					case Platform.OS.Windows:
 						osAssembly = System.IO.Path.Combine(
 							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 							"Peach.Core.OS.Windows.dll");

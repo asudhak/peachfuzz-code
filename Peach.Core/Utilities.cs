@@ -33,11 +33,56 @@ using System.Net.NetworkInformation;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Peach.Core
 {
+	/// <summary>
+	/// Helper class to determine the OS/Platform we are on.  The built in 
+	/// method returns incorrect results.
+	/// </summary>
+	public static class Platform
+	{
+		[DllImport("libc")]
+		static extern int uname(IntPtr buf);
+		static private bool mIsWindows;
+		static private bool mIsMac;
+		static private bool mIsX11;
+		
+		public enum OS { Windows, Mac, Linux, unknown };
+		
+		static public OS GetOS()
+		{
+			if (mIsWindows = (System.IO.Path.DirectorySeparatorChar == '\\')) return OS.Windows;
+			if (mIsMac = (!mIsWindows && IsRunningOnMac())) return OS.Mac;
+			if (!mIsMac && System.Environment.OSVersion.Platform == PlatformID.Unix) return OS.Linux;
+			return OS.unknown;
+		}
+		//From Managed.Windows.Forms/XplatUI
+		static bool IsRunningOnMac()
+		{
+			IntPtr buf = IntPtr.Zero;
+			try
+			{
+				buf = Marshal.AllocHGlobal(8192);
+				// This is a hacktastic way of getting sysname from uname ()
+				if (uname(buf) == 0)
+				{
+					string os = Marshal.PtrToStringAnsi(buf);
+					if (os == "Darwin") return true;
+				}
+			}
+			catch { }
+			finally
+			{
+				if (buf != IntPtr.Zero) Marshal.FreeHGlobal(buf);
+			}
+			return false;
+		}
+	} 
+	
 	/// <summary>
 	/// Provides a method for performing a deep copy of an object.
 	/// Binary Serialization is used to perform the copy.

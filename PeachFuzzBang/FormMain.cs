@@ -268,9 +268,9 @@ namespace PeachFuzzBang
 
 				Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
 
-				switch (Environment.OSVersion.Platform)
+				switch (Platform.GetOS())
 				{
-					case PlatformID.MacOSX:
+					case Platform.OS.Mac:
 						if (radioButtonOSXCrashReporter.Checked)
 						{
 							monitor.cls = "CrashReporter";
@@ -300,7 +300,7 @@ namespace PeachFuzzBang
 						}
 						break;
 
-					case PlatformID.Unix:	// Linux
+					case Platform.OS.Linux:	// Linux
 						monitor.cls = "WindowsDebugger";
 						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 						monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
@@ -312,11 +312,7 @@ namespace PeachFuzzBang
 							monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
 						break;
 
-					case PlatformID.Win32NT:
-					case PlatformID.Win32S:
-					case PlatformID.Win32Windows:
-					case PlatformID.WinCE:
-					case PlatformID.Xbox:
+					case Platform.OS.Windows:
 						monitor.cls = "WindowsDebugger";
 						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 						monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
