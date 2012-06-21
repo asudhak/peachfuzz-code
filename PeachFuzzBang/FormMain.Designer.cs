@@ -124,7 +124,7 @@
 			this.radioButtonOSXCrashReporter = new System.Windows.Forms.RadioButton();
 			this.groupBox9 = new System.Windows.Forms.GroupBox();
 			this.button1 = new System.Windows.Forms.Button();
-			this.textBoxOSXCommandLine = new System.Windows.Forms.TextBox();
+			this.textBoxOSXExecutable = new System.Windows.Forms.TextBox();
 			this.label25 = new System.Windows.Forms.Label();
 			this.groupBox11 = new System.Windows.Forms.GroupBox();
 			this.textBoxOSXCrashWrangler = new System.Windows.Forms.TextBox();
@@ -138,6 +138,8 @@
 			this.textBoxLinuxCommandLine = new System.Windows.Forms.TextBox();
 			this.label27 = new System.Windows.Forms.Label();
 			this.richTextBoxOSX = new System.Windows.Forms.RichTextBox();
+			this.textBoxOSXArguments = new System.Windows.Forms.TextBox();
+			this.label28 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
@@ -1103,13 +1105,15 @@
 			// 
 			// groupBox9
 			// 
+			this.groupBox9.Controls.Add(this.textBoxOSXArguments);
+			this.groupBox9.Controls.Add(this.label28);
 			this.groupBox9.Controls.Add(this.checkBoxOSXCpuKill);
 			this.groupBox9.Controls.Add(this.button1);
-			this.groupBox9.Controls.Add(this.textBoxOSXCommandLine);
+			this.groupBox9.Controls.Add(this.textBoxOSXExecutable);
 			this.groupBox9.Controls.Add(this.label25);
 			this.groupBox9.Location = new System.Drawing.Point(8, 67);
 			this.groupBox9.Name = "groupBox9";
-			this.groupBox9.Size = new System.Drawing.Size(529, 77);
+			this.groupBox9.Size = new System.Drawing.Size(529, 100);
 			this.groupBox9.TabIndex = 9;
 			this.groupBox9.TabStop = false;
 			this.groupBox9.Text = "Start Process";
@@ -1123,29 +1127,29 @@
 			this.button1.Text = "Browse";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
-			// textBoxOSXCommandLine
+			// textBoxOSXExecutable
 			// 
-			this.textBoxOSXCommandLine.Location = new System.Drawing.Point(92, 22);
-			this.textBoxOSXCommandLine.Name = "textBoxOSXCommandLine";
-			this.textBoxOSXCommandLine.Size = new System.Drawing.Size(356, 20);
-			this.textBoxOSXCommandLine.TabIndex = 1;
-			this.textBoxOSXCommandLine.Text = "mspaint.exe fuzzed.png";
+			this.textBoxOSXExecutable.Location = new System.Drawing.Point(92, 22);
+			this.textBoxOSXExecutable.Name = "textBoxOSXExecutable";
+			this.textBoxOSXExecutable.Size = new System.Drawing.Size(356, 20);
+			this.textBoxOSXExecutable.TabIndex = 1;
+			this.textBoxOSXExecutable.Text = "mspaint.exe";
 			// 
 			// label25
 			// 
 			this.label25.AutoSize = true;
-			this.label25.Location = new System.Drawing.Point(6, 25);
+			this.label25.Location = new System.Drawing.Point(23, 25);
 			this.label25.Name = "label25";
-			this.label25.Size = new System.Drawing.Size(80, 13);
+			this.label25.Size = new System.Drawing.Size(63, 13);
 			this.label25.TabIndex = 0;
-			this.label25.Text = "Command Line:";
+			this.label25.Text = "Executable:";
 			// 
 			// groupBox11
 			// 
 			this.groupBox11.Controls.Add(this.button2);
 			this.groupBox11.Controls.Add(this.label26);
 			this.groupBox11.Controls.Add(this.textBoxOSXCrashWrangler);
-			this.groupBox11.Location = new System.Drawing.Point(8, 150);
+			this.groupBox11.Location = new System.Drawing.Point(8, 173);
 			this.groupBox11.Name = "groupBox11";
 			this.groupBox11.Size = new System.Drawing.Size(529, 54);
 			this.groupBox11.TabIndex = 7;
@@ -1164,7 +1168,7 @@
 			this.checkBoxOSXCpuKill.AutoSize = true;
 			this.checkBoxOSXCpuKill.Checked = true;
 			this.checkBoxOSXCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxOSXCpuKill.Location = new System.Drawing.Point(92, 48);
+			this.checkBoxOSXCpuKill.Location = new System.Drawing.Point(91, 74);
 			this.checkBoxOSXCpuKill.Name = "checkBoxOSXCpuKill";
 			this.checkBoxOSXCpuKill.Size = new System.Drawing.Size(224, 17);
 			this.checkBoxOSXCpuKill.TabIndex = 11;
@@ -1251,12 +1255,29 @@
 			// 
 			// richTextBoxOSX
 			// 
-			this.richTextBoxOSX.Location = new System.Drawing.Point(3, 210);
+			this.richTextBoxOSX.Location = new System.Drawing.Point(3, 233);
 			this.richTextBoxOSX.Name = "richTextBoxOSX";
 			this.richTextBoxOSX.ReadOnly = true;
-			this.richTextBoxOSX.Size = new System.Drawing.Size(539, 189);
+			this.richTextBoxOSX.Size = new System.Drawing.Size(539, 166);
 			this.richTextBoxOSX.TabIndex = 10;
 			this.richTextBoxOSX.Text = "";
+			// 
+			// textBoxOSXArguments
+			// 
+			this.textBoxOSXArguments.Location = new System.Drawing.Point(91, 48);
+			this.textBoxOSXArguments.Name = "textBoxOSXArguments";
+			this.textBoxOSXArguments.Size = new System.Drawing.Size(356, 20);
+			this.textBoxOSXArguments.TabIndex = 13;
+			this.textBoxOSXArguments.Text = "fuzzed.png";
+			// 
+			// label28
+			// 
+			this.label28.AutoSize = true;
+			this.label28.Location = new System.Drawing.Point(26, 51);
+			this.label28.Name = "label28";
+			this.label28.Size = new System.Drawing.Size(60, 13);
+			this.label28.TabIndex = 12;
+			this.label28.Text = "Arguments:";
 			// 
 			// FormMain
 			// 
@@ -1407,7 +1428,7 @@
 		private System.Windows.Forms.GroupBox groupBox9;
 		private System.Windows.Forms.CheckBox checkBoxOSXCpuKill;
 		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.TextBox textBoxOSXCommandLine;
+		private System.Windows.Forms.TextBox textBoxOSXExecutable;
 		private System.Windows.Forms.Label label25;
 		private System.Windows.Forms.GroupBox groupBox11;
 		private System.Windows.Forms.Button button2;
@@ -1423,6 +1444,8 @@
 		private System.Windows.Forms.Label label27;
 		private System.Windows.Forms.RichTextBox richTextBoxLinux;
 		private System.Windows.Forms.RichTextBox richTextBoxOSX;
+		private System.Windows.Forms.TextBox textBoxOSXArguments;
+		private System.Windows.Forms.Label label28;
 	}
 }
 

@@ -283,7 +283,8 @@ namespace PeachFuzzBang
 							if (!this.checkBoxOSXCpuKill.Checked)
 								monitor.parameters["NoCpuKill"] = new Variant("true");
 
-							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXCommandLine.Text);
+							monitor.parameters["Executable"] = new Variant(this.textBoxOSXExecutable.Text);
+							monitor.parameters["Arguments"] = new Variant(this.textBoxOSXArguments.Text);
 						}
 						else // Crash Wrangler
 						{
@@ -293,7 +294,7 @@ namespace PeachFuzzBang
 							if (!this.checkBoxOSXCpuKill.Checked)
 								monitor.parameters["NoCpuKill"] = new Variant("true");
 
-							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXCommandLine.Text);
+							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXExecutable.Text);
 							monitor.parameters["CrashWrangler"] = new Variant(this.textBoxOSXCrashWrangler.Text);
 						}
 						break;
