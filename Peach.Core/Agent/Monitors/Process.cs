@@ -35,6 +35,8 @@ using System.Threading;
 
 using Peach.Core.Dom;
 
+using NLog;
+
 namespace Peach.Core.Agent.Monitors
 {
 	/// <summary>
@@ -46,10 +48,13 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", false)]
 	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation (defaults to false)", false)]
 	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", false)]
+	[Parameter("CpuKill", typeof(bool), "Terminate process when CPU usage nears zero (defaults to false)", false)]
 	[Parameter("StartOnCall", typeof(string), "Start command on state model call", false)]
 	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", false)]
 	public class Process : Monitor
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		System.Diagnostics.Process _process = null;
 		string _executable = null;
 		string _arguments = null;
@@ -57,6 +62,8 @@ namespace Peach.Core.Agent.Monitors
 		string _waitForExitOnCall = null;
 		bool _restartOnEachTest = false;
 		bool _faultOnEarlyExit = false;
+		bool _cpuKill = false;
+		bool _firstIteration = true;
 
 		public Process(string name, Dictionary<string, Variant> args)
 			: base(name, args)
@@ -69,6 +76,8 @@ namespace Peach.Core.Agent.Monitors
 				_faultOnEarlyExit = true;
 			if (args.ContainsKey("RestartOnEachTest") && ((string)args["RestartOnEachTest"]).ToLower() == "true")
 				_restartOnEachTest = true;
+			if (args.ContainsKey("CpuKill") && ((string)args["CpuKill"]).ToLower() == "true")
+				_cpuKill = true;
 			if (args.ContainsKey("StartOnCall"))
 				_startOnCall = (string)args["StartOnCall"];
 			if (args.ContainsKey("WaitForExitOnCall"))
@@ -143,6 +152,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
+			_firstIteration = true;
+
 			if (_startOnCall == null && !_restartOnEachTest)
 				_Start();
 		}
@@ -154,6 +165,9 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool IterationFinished()
 		{
+			if (_firstIteration)
+				_firstIteration = false;
+
 			if (_restartOnEachTest || _startOnCall != null)
 				_Stop();
 
@@ -180,15 +194,76 @@ namespace Peach.Core.Agent.Monitors
 				return null;
 			}
 
-			//if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && !_noCpuKill)
-			//{
-			//    if (_process != null && !_process.HasExited)
-			//        return new Variant(1);
+			else if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && _cpuKill)
+			{
+				try
+				{
+					if (_process == null || _process.HasExited)
+						return new Variant(0);
 
-			//    return new Variant(0);
-			//}
+					try
+					{
+						int pid = _process.Id;
+						var proc = System.Diagnostics.Process.GetProcessById(pid);
+						if (proc.HasExited)
+							return new Variant(0);
+
+						float cpu = GetProcessCpuUsage(proc);
+
+						logger.Debug("Message: GetProcessCpuUsage: " + cpu);
+
+						if (cpu < 1.0)
+						{
+							logger.Debug("Message: Stopping process.");
+							_Stop();
+							return new Variant(0);
+						}
+					}
+					catch
+					{
+					}
+
+					return new Variant(1);
+				}
+				catch (ArgumentException)
+				{
+					// Might get thrown if process has already died.
+				}
+			}
+			else
+			{
+				logger.Debug("Unknown msg: " + name + " data: " + (string)data);
+			}
 
 			return null;
+		}
+
+		PerformanceCounter _performanceCounter = null;
+		public float GetProcessCpuUsage(System.Diagnostics.Process proc)
+		{
+			try
+			{
+				if (_performanceCounter == null)
+				{
+					_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
+					_performanceCounter.NextValue();
+					if (_firstIteration)
+					{
+						_firstIteration = false;
+						System.Threading.Thread.Sleep(1000);
+					}
+					else
+					{
+						System.Threading.Thread.Sleep(100);
+					}
+				}
+
+				return _performanceCounter.NextValue();
+			}
+			catch
+			{
+				return 100;
+			}
 		}
 	}
 }

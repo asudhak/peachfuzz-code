@@ -280,8 +280,8 @@ namespace PeachFuzzBang
 							monitor.cls = "Process";
 							monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 
-							if (!this.checkBoxOSXCpuKill.Checked)
-								monitor.parameters["NoCpuKill"] = new Variant("true");
+							if (this.checkBoxOSXCpuKill.Checked)
+								monitor.parameters["CpuKill"] = new Variant("true");
 
 							monitor.parameters["Executable"] = new Variant(this.textBoxOSXExecutable.Text);
 							monitor.parameters["Arguments"] = new Variant(this.textBoxOSXArguments.Text);
@@ -291,8 +291,9 @@ namespace PeachFuzzBang
 							monitor.cls = "CrashWrangler";
 							monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 
-							if (!this.checkBoxOSXCpuKill.Checked)
-								monitor.parameters["NoCpuKill"] = new Variant("true");
+							// TODO - Support CPU Kill
+							//if (this.checkBoxOSXCpuKill.Checked)
+							//    monitor.parameters["CpuKill"] = new Variant("true");
 
 							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXExecutable.Text);
 							monitor.parameters["CrashWrangler"] = new Variant(this.textBoxOSXCrashWrangler.Text);
