@@ -109,6 +109,7 @@ namespace PeachFuzzBang
 					Assembly.LoadFrom(osAssembly);
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
+					richTextBoxOSX.LoadFile("OSXDebugging.rtf");
 					break;
 				case PlatformID.Unix:
 					osAssembly = System.IO.Path.Combine(
@@ -117,6 +118,8 @@ namespace PeachFuzzBang
 					Assembly.LoadFrom(osAssembly);
 					tabControl.TabPages.Remove(tabPageDebuggerOSX);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
+					tabControl.TabPages.Remove(tabPageGUI);
+					richTextBoxLinux.LoadFile("LinuxDebugging.rtf");
 					break;
 				case PlatformID.Win32NT:
 				case PlatformID.Win32S:
@@ -171,9 +174,6 @@ namespace PeachFuzzBang
 		{
 			try
 			{
-				//tabControl.TabPages.Remove(tabPageGeneral);
-				//tabControl.TabPages.Remove(tabPageDebugger);
-				//tabControl.TabPages.Insert(0, tabPageOutput);
 				tabControl.SelectedTab = tabPageOutput;
 				buttonStartFuzzing.Enabled = false;
 				buttonSaveConfiguration.Enabled = false;
@@ -267,26 +267,76 @@ namespace PeachFuzzBang
 				agent.url = "local://";
 
 				Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
-				monitor.cls = "WindowsDebugger";
-				monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
-				monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
 
-				if (!checkBoxCpuKill.Checked)
-					monitor.parameters["NoCpuKill"] = new Variant("true");
-
-				if (radioButtonDebuggerStartProcess.Checked)
-					monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
-				else if (radioButtonDebuggerAttachToProcess.Checked)
+				switch (Environment.OSVersion.Platform)
 				{
-					if (radioButtonAttachToProcessPID.Checked)
-						monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessPID.Text);
-					else if (radioButtonAttachToProcessProcessName.Checked)
-						monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessProcessName.Text);
+					case PlatformID.MacOSX:
+						if (radioButtonOSXCrashReporter.Checked)
+						{
+							monitor.cls = "CrashReporter";
+							agent.monitors.Add(monitor);
+
+							monitor = new Peach.Core.Dom.Monitor();
+							monitor.cls = "Process";
+							monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
+
+							if (!this.checkBoxOSXCpuKill.Checked)
+								monitor.parameters["NoCpuKill"] = new Variant("true");
+
+							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXCommandLine.Text);
+						}
+						else // Crash Wrangler
+						{
+							monitor.cls = "CrashWrangler";
+							monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
+
+							if (!this.checkBoxOSXCpuKill.Checked)
+								monitor.parameters["NoCpuKill"] = new Variant("true");
+
+							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXCommandLine.Text);
+							monitor.parameters["CrashWrangler"] = new Variant(this.textBoxOSXCrashWrangler.Text);
+						}
+						break;
+
+					case PlatformID.Unix:	// Linux
+						monitor.cls = "WindowsDebugger";
+						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
+						monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
+
+						if (!checkBoxCpuKill.Checked)
+							monitor.parameters["NoCpuKill"] = new Variant("true");
+
+						if (radioButtonDebuggerStartProcess.Checked)
+							monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
+						break;
+
+					case PlatformID.Win32NT:
+					case PlatformID.Win32S:
+					case PlatformID.Win32Windows:
+					case PlatformID.WinCE:
+					case PlatformID.Xbox:
+						monitor.cls = "WindowsDebugger";
+						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
+						monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
+
+						if (!checkBoxCpuKill.Checked)
+							monitor.parameters["NoCpuKill"] = new Variant("true");
+
+						if (radioButtonDebuggerStartProcess.Checked)
+							monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
+						else if (radioButtonDebuggerAttachToProcess.Checked)
+						{
+							if (radioButtonAttachToProcessPID.Checked)
+								monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessPID.Text);
+							else if (radioButtonAttachToProcessProcessName.Checked)
+								monitor.parameters["ProcessName"] = new Variant(textBoxAttachToProcessProcessName.Text);
+						}
+						else if (radioButtonDebuggerAttachToService.Checked)
+							monitor.parameters["Service"] = new Variant(comboBoxAttachToServiceServices.Text);
+						else if (radioButtonDebuggerKernelDebugger.Checked)
+							monitor.parameters["KernelConnectionString"] = new Variant(textBoxKernelConnectionString.Text);
+						break;
 				}
-				else if (radioButtonDebuggerAttachToService.Checked)
-					monitor.parameters["Service"] = new Variant(comboBoxAttachToServiceServices.Text);
-				else if (radioButtonDebuggerKernelDebugger.Checked)
-					monitor.parameters["KernelConnectionString"] = new Variant(textBoxKernelConnectionString.Text);
 
 				agent.monitors.Add(monitor);
 				dom.agents.Add(agent.name, agent);
