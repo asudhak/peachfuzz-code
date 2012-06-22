@@ -97,6 +97,7 @@ namespace PeachFuzzBang
 					Assembly.LoadFrom(osAssembly);
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
+					tabControl.TabPages.Remove(tabPageGUI);
 					richTextBoxOSX.LoadFile("OSXDebugging.rtf");
 					break;
 				case Platform.OS.Linux:

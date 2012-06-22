@@ -80,6 +80,29 @@
 			this.radioButtonDebuggerKernelDebugger = new System.Windows.Forms.RadioButton();
 			this.radioButtonDebuggerAttachToService = new System.Windows.Forms.RadioButton();
 			this.radioButtonDebuggerStartProcess = new System.Windows.Forms.RadioButton();
+			this.tabPageDebuggerOSX = new System.Windows.Forms.TabPage();
+			this.richTextBoxOSX = new System.Windows.Forms.RichTextBox();
+			this.groupBox9 = new System.Windows.Forms.GroupBox();
+			this.textBoxOSXArguments = new System.Windows.Forms.TextBox();
+			this.label28 = new System.Windows.Forms.Label();
+			this.checkBoxOSXCpuKill = new System.Windows.Forms.CheckBox();
+			this.button1 = new System.Windows.Forms.Button();
+			this.textBoxOSXExecutable = new System.Windows.Forms.TextBox();
+			this.label25 = new System.Windows.Forms.Label();
+			this.groupBox11 = new System.Windows.Forms.GroupBox();
+			this.button2 = new System.Windows.Forms.Button();
+			this.label26 = new System.Windows.Forms.Label();
+			this.textBoxOSXCrashWrangler = new System.Windows.Forms.TextBox();
+			this.groupBox8 = new System.Windows.Forms.GroupBox();
+			this.radioButtonOSXCrashWrangler = new System.Windows.Forms.RadioButton();
+			this.radioButtonOSXCrashReporter = new System.Windows.Forms.RadioButton();
+			this.tabPageDebuggerLinux = new System.Windows.Forms.TabPage();
+			this.groupBox10 = new System.Windows.Forms.GroupBox();
+			this.checkBoxLinuxCpuKill = new System.Windows.Forms.CheckBox();
+			this.button3 = new System.Windows.Forms.Button();
+			this.textBoxLinuxCommandLine = new System.Windows.Forms.TextBox();
+			this.label27 = new System.Windows.Forms.Label();
+			this.richTextBoxLinux = new System.Windows.Forms.RichTextBox();
 			this.tabPageGUI = new System.Windows.Forms.TabPage();
 			this.groupBox7 = new System.Windows.Forms.GroupBox();
 			this.label24 = new System.Windows.Forms.Label();
@@ -117,29 +140,6 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.tabPageDebuggerOSX = new System.Windows.Forms.TabPage();
-			this.tabPageDebuggerLinux = new System.Windows.Forms.TabPage();
-			this.groupBox8 = new System.Windows.Forms.GroupBox();
-			this.radioButtonOSXCrashWrangler = new System.Windows.Forms.RadioButton();
-			this.radioButtonOSXCrashReporter = new System.Windows.Forms.RadioButton();
-			this.groupBox9 = new System.Windows.Forms.GroupBox();
-			this.button1 = new System.Windows.Forms.Button();
-			this.textBoxOSXExecutable = new System.Windows.Forms.TextBox();
-			this.label25 = new System.Windows.Forms.Label();
-			this.groupBox11 = new System.Windows.Forms.GroupBox();
-			this.textBoxOSXCrashWrangler = new System.Windows.Forms.TextBox();
-			this.checkBoxOSXCpuKill = new System.Windows.Forms.CheckBox();
-			this.label26 = new System.Windows.Forms.Label();
-			this.button2 = new System.Windows.Forms.Button();
-			this.richTextBoxLinux = new System.Windows.Forms.RichTextBox();
-			this.groupBox10 = new System.Windows.Forms.GroupBox();
-			this.checkBoxLinuxCpuKill = new System.Windows.Forms.CheckBox();
-			this.button3 = new System.Windows.Forms.Button();
-			this.textBoxLinuxCommandLine = new System.Windows.Forms.TextBox();
-			this.label27 = new System.Windows.Forms.Label();
-			this.richTextBoxOSX = new System.Windows.Forms.RichTextBox();
-			this.textBoxOSXArguments = new System.Windows.Forms.TextBox();
-			this.label28 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
@@ -150,6 +150,12 @@
 			this.groupBox3.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.groupBox1.SuspendLayout();
+			this.tabPageDebuggerOSX.SuspendLayout();
+			this.groupBox9.SuspendLayout();
+			this.groupBox11.SuspendLayout();
+			this.groupBox8.SuspendLayout();
+			this.tabPageDebuggerLinux.SuspendLayout();
+			this.groupBox10.SuspendLayout();
 			this.tabPageGUI.SuspendLayout();
 			this.groupBox7.SuspendLayout();
 			this.tabPageFuzzing.SuspendLayout();
@@ -158,12 +164,6 @@
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.panel1.SuspendLayout();
-			this.tabPageDebuggerOSX.SuspendLayout();
-			this.tabPageDebuggerLinux.SuspendLayout();
-			this.groupBox8.SuspendLayout();
-			this.groupBox9.SuspendLayout();
-			this.groupBox11.SuspendLayout();
-			this.groupBox10.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl
@@ -693,6 +693,239 @@
 			this.radioButtonDebuggerStartProcess.Text = "Start Process";
 			this.radioButtonDebuggerStartProcess.UseVisualStyleBackColor = true;
 			// 
+			// tabPageDebuggerOSX
+			// 
+			this.tabPageDebuggerOSX.Controls.Add(this.richTextBoxOSX);
+			this.tabPageDebuggerOSX.Controls.Add(this.groupBox9);
+			this.tabPageDebuggerOSX.Controls.Add(this.groupBox11);
+			this.tabPageDebuggerOSX.Controls.Add(this.groupBox8);
+			this.tabPageDebuggerOSX.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDebuggerOSX.Name = "tabPageDebuggerOSX";
+			this.tabPageDebuggerOSX.Size = new System.Drawing.Size(545, 433);
+			this.tabPageDebuggerOSX.TabIndex = 7;
+			this.tabPageDebuggerOSX.Text = "Debugger";
+			this.tabPageDebuggerOSX.UseVisualStyleBackColor = true;
+			// 
+			// richTextBoxOSX
+			// 
+			this.richTextBoxOSX.Location = new System.Drawing.Point(3, 233);
+			this.richTextBoxOSX.Name = "richTextBoxOSX";
+			this.richTextBoxOSX.ReadOnly = true;
+			this.richTextBoxOSX.Size = new System.Drawing.Size(539, 166);
+			this.richTextBoxOSX.TabIndex = 10;
+			this.richTextBoxOSX.Text = "";
+			// 
+			// groupBox9
+			// 
+			this.groupBox9.Controls.Add(this.textBoxOSXArguments);
+			this.groupBox9.Controls.Add(this.label28);
+			this.groupBox9.Controls.Add(this.checkBoxOSXCpuKill);
+			this.groupBox9.Controls.Add(this.button1);
+			this.groupBox9.Controls.Add(this.textBoxOSXExecutable);
+			this.groupBox9.Controls.Add(this.label25);
+			this.groupBox9.Location = new System.Drawing.Point(8, 67);
+			this.groupBox9.Name = "groupBox9";
+			this.groupBox9.Size = new System.Drawing.Size(529, 100);
+			this.groupBox9.TabIndex = 9;
+			this.groupBox9.TabStop = false;
+			this.groupBox9.Text = "Start Process";
+			// 
+			// textBoxOSXArguments
+			// 
+			this.textBoxOSXArguments.Location = new System.Drawing.Point(91, 48);
+			this.textBoxOSXArguments.Name = "textBoxOSXArguments";
+			this.textBoxOSXArguments.Size = new System.Drawing.Size(356, 20);
+			this.textBoxOSXArguments.TabIndex = 13;
+			this.textBoxOSXArguments.Text = "fuzzed.png";
+			// 
+			// label28
+			// 
+			this.label28.AutoSize = true;
+			this.label28.Location = new System.Drawing.Point(26, 51);
+			this.label28.Name = "label28";
+			this.label28.Size = new System.Drawing.Size(60, 13);
+			this.label28.TabIndex = 12;
+			this.label28.Text = "Arguments:";
+			// 
+			// checkBoxOSXCpuKill
+			// 
+			this.checkBoxOSXCpuKill.AutoSize = true;
+			this.checkBoxOSXCpuKill.Checked = true;
+			this.checkBoxOSXCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.checkBoxOSXCpuKill.Location = new System.Drawing.Point(91, 74);
+			this.checkBoxOSXCpuKill.Name = "checkBoxOSXCpuKill";
+			this.checkBoxOSXCpuKill.Size = new System.Drawing.Size(224, 17);
+			this.checkBoxOSXCpuKill.TabIndex = 11;
+			this.checkBoxOSXCpuKill.Text = "Kill Process when CPU Usage Nears Zero";
+			this.checkBoxOSXCpuKill.UseVisualStyleBackColor = true;
+			// 
+			// button1
+			// 
+			this.button1.Location = new System.Drawing.Point(454, 19);
+			this.button1.Name = "button1";
+			this.button1.Size = new System.Drawing.Size(71, 23);
+			this.button1.TabIndex = 6;
+			this.button1.Text = "Browse";
+			this.button1.UseVisualStyleBackColor = true;
+			// 
+			// textBoxOSXExecutable
+			// 
+			this.textBoxOSXExecutable.Location = new System.Drawing.Point(92, 22);
+			this.textBoxOSXExecutable.Name = "textBoxOSXExecutable";
+			this.textBoxOSXExecutable.Size = new System.Drawing.Size(356, 20);
+			this.textBoxOSXExecutable.TabIndex = 1;
+			this.textBoxOSXExecutable.Text = "/Applications/Safari.app/Contents/MacOS/Safari";
+			// 
+			// label25
+			// 
+			this.label25.AutoSize = true;
+			this.label25.Location = new System.Drawing.Point(23, 25);
+			this.label25.Name = "label25";
+			this.label25.Size = new System.Drawing.Size(63, 13);
+			this.label25.TabIndex = 0;
+			this.label25.Text = "Executable:";
+			// 
+			// groupBox11
+			// 
+			this.groupBox11.Controls.Add(this.button2);
+			this.groupBox11.Controls.Add(this.label26);
+			this.groupBox11.Controls.Add(this.textBoxOSXCrashWrangler);
+			this.groupBox11.Location = new System.Drawing.Point(8, 173);
+			this.groupBox11.Name = "groupBox11";
+			this.groupBox11.Size = new System.Drawing.Size(529, 54);
+			this.groupBox11.TabIndex = 7;
+			this.groupBox11.TabStop = false;
+			this.groupBox11.Text = "Crash Wrangler";
+			// 
+			// button2
+			// 
+			this.button2.Location = new System.Drawing.Point(452, 16);
+			this.button2.Name = "button2";
+			this.button2.Size = new System.Drawing.Size(71, 23);
+			this.button2.TabIndex = 7;
+			this.button2.Text = "Browse";
+			this.button2.UseVisualStyleBackColor = true;
+			// 
+			// label26
+			// 
+			this.label26.AutoSize = true;
+			this.label26.Location = new System.Drawing.Point(5, 21);
+			this.label26.Name = "label26";
+			this.label26.Size = new System.Drawing.Size(83, 13);
+			this.label26.TabIndex = 3;
+			this.label26.Text = "Crash Wrangler:";
+			// 
+			// textBoxOSXCrashWrangler
+			// 
+			this.textBoxOSXCrashWrangler.Location = new System.Drawing.Point(91, 18);
+			this.textBoxOSXCrashWrangler.Name = "textBoxOSXCrashWrangler";
+			this.textBoxOSXCrashWrangler.Size = new System.Drawing.Size(356, 20);
+			this.textBoxOSXCrashWrangler.TabIndex = 2;
+			// 
+			// groupBox8
+			// 
+			this.groupBox8.Controls.Add(this.radioButtonOSXCrashWrangler);
+			this.groupBox8.Controls.Add(this.radioButtonOSXCrashReporter);
+			this.groupBox8.Location = new System.Drawing.Point(8, 12);
+			this.groupBox8.Name = "groupBox8";
+			this.groupBox8.Size = new System.Drawing.Size(529, 49);
+			this.groupBox8.TabIndex = 1;
+			this.groupBox8.TabStop = false;
+			this.groupBox8.Text = "Debugger Type";
+			// 
+			// radioButtonOSXCrashWrangler
+			// 
+			this.radioButtonOSXCrashWrangler.AutoSize = true;
+			this.radioButtonOSXCrashWrangler.Location = new System.Drawing.Point(128, 19);
+			this.radioButtonOSXCrashWrangler.Name = "radioButtonOSXCrashWrangler";
+			this.radioButtonOSXCrashWrangler.Size = new System.Drawing.Size(98, 17);
+			this.radioButtonOSXCrashWrangler.TabIndex = 3;
+			this.radioButtonOSXCrashWrangler.Text = "Crash Wrangler";
+			this.radioButtonOSXCrashWrangler.UseVisualStyleBackColor = true;
+			// 
+			// radioButtonOSXCrashReporter
+			// 
+			this.radioButtonOSXCrashReporter.AutoSize = true;
+			this.radioButtonOSXCrashReporter.Checked = true;
+			this.radioButtonOSXCrashReporter.Location = new System.Drawing.Point(6, 19);
+			this.radioButtonOSXCrashReporter.Name = "radioButtonOSXCrashReporter";
+			this.radioButtonOSXCrashReporter.Size = new System.Drawing.Size(96, 17);
+			this.radioButtonOSXCrashReporter.TabIndex = 0;
+			this.radioButtonOSXCrashReporter.TabStop = true;
+			this.radioButtonOSXCrashReporter.Text = "Crash Reporter";
+			this.radioButtonOSXCrashReporter.UseVisualStyleBackColor = true;
+			// 
+			// tabPageDebuggerLinux
+			// 
+			this.tabPageDebuggerLinux.Controls.Add(this.groupBox10);
+			this.tabPageDebuggerLinux.Controls.Add(this.richTextBoxLinux);
+			this.tabPageDebuggerLinux.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDebuggerLinux.Name = "tabPageDebuggerLinux";
+			this.tabPageDebuggerLinux.Size = new System.Drawing.Size(545, 433);
+			this.tabPageDebuggerLinux.TabIndex = 8;
+			this.tabPageDebuggerLinux.Text = "Debugger";
+			this.tabPageDebuggerLinux.UseVisualStyleBackColor = true;
+			// 
+			// groupBox10
+			// 
+			this.groupBox10.Controls.Add(this.checkBoxLinuxCpuKill);
+			this.groupBox10.Controls.Add(this.button3);
+			this.groupBox10.Controls.Add(this.textBoxLinuxCommandLine);
+			this.groupBox10.Controls.Add(this.label27);
+			this.groupBox10.Location = new System.Drawing.Point(8, 12);
+			this.groupBox10.Name = "groupBox10";
+			this.groupBox10.Size = new System.Drawing.Size(529, 77);
+			this.groupBox10.TabIndex = 10;
+			this.groupBox10.TabStop = false;
+			this.groupBox10.Text = "Start Process";
+			// 
+			// checkBoxLinuxCpuKill
+			// 
+			this.checkBoxLinuxCpuKill.AutoSize = true;
+			this.checkBoxLinuxCpuKill.Checked = true;
+			this.checkBoxLinuxCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.checkBoxLinuxCpuKill.Location = new System.Drawing.Point(92, 48);
+			this.checkBoxLinuxCpuKill.Name = "checkBoxLinuxCpuKill";
+			this.checkBoxLinuxCpuKill.Size = new System.Drawing.Size(224, 17);
+			this.checkBoxLinuxCpuKill.TabIndex = 11;
+			this.checkBoxLinuxCpuKill.Text = "Kill Process when CPU Usage Nears Zero";
+			this.checkBoxLinuxCpuKill.UseVisualStyleBackColor = true;
+			// 
+			// button3
+			// 
+			this.button3.Location = new System.Drawing.Point(454, 19);
+			this.button3.Name = "button3";
+			this.button3.Size = new System.Drawing.Size(71, 23);
+			this.button3.TabIndex = 6;
+			this.button3.Text = "Browse";
+			this.button3.UseVisualStyleBackColor = true;
+			// 
+			// textBoxLinuxCommandLine
+			// 
+			this.textBoxLinuxCommandLine.Location = new System.Drawing.Point(92, 22);
+			this.textBoxLinuxCommandLine.Name = "textBoxLinuxCommandLine";
+			this.textBoxLinuxCommandLine.Size = new System.Drawing.Size(356, 20);
+			this.textBoxLinuxCommandLine.TabIndex = 1;
+			this.textBoxLinuxCommandLine.Text = "mspaint.exe fuzzed.png";
+			// 
+			// label27
+			// 
+			this.label27.AutoSize = true;
+			this.label27.Location = new System.Drawing.Point(6, 25);
+			this.label27.Name = "label27";
+			this.label27.Size = new System.Drawing.Size(80, 13);
+			this.label27.TabIndex = 0;
+			this.label27.Text = "Command Line:";
+			// 
+			// richTextBoxLinux
+			// 
+			this.richTextBoxLinux.Location = new System.Drawing.Point(3, 95);
+			this.richTextBoxLinux.Name = "richTextBoxLinux";
+			this.richTextBoxLinux.ReadOnly = true;
+			this.richTextBoxLinux.Size = new System.Drawing.Size(539, 281);
+			this.richTextBoxLinux.TabIndex = 1;
+			this.richTextBoxLinux.Text = "";
+			// 
 			// tabPageGUI
 			// 
 			this.tabPageGUI.Controls.Add(this.groupBox7);
@@ -1046,239 +1279,6 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
-			// tabPageDebuggerOSX
-			// 
-			this.tabPageDebuggerOSX.Controls.Add(this.richTextBoxOSX);
-			this.tabPageDebuggerOSX.Controls.Add(this.groupBox9);
-			this.tabPageDebuggerOSX.Controls.Add(this.groupBox11);
-			this.tabPageDebuggerOSX.Controls.Add(this.groupBox8);
-			this.tabPageDebuggerOSX.Location = new System.Drawing.Point(4, 22);
-			this.tabPageDebuggerOSX.Name = "tabPageDebuggerOSX";
-			this.tabPageDebuggerOSX.Size = new System.Drawing.Size(545, 433);
-			this.tabPageDebuggerOSX.TabIndex = 7;
-			this.tabPageDebuggerOSX.Text = "Debugger";
-			this.tabPageDebuggerOSX.UseVisualStyleBackColor = true;
-			// 
-			// tabPageDebuggerLinux
-			// 
-			this.tabPageDebuggerLinux.Controls.Add(this.groupBox10);
-			this.tabPageDebuggerLinux.Controls.Add(this.richTextBoxLinux);
-			this.tabPageDebuggerLinux.Location = new System.Drawing.Point(4, 22);
-			this.tabPageDebuggerLinux.Name = "tabPageDebuggerLinux";
-			this.tabPageDebuggerLinux.Size = new System.Drawing.Size(545, 433);
-			this.tabPageDebuggerLinux.TabIndex = 8;
-			this.tabPageDebuggerLinux.Text = "Debugger";
-			this.tabPageDebuggerLinux.UseVisualStyleBackColor = true;
-			// 
-			// groupBox8
-			// 
-			this.groupBox8.Controls.Add(this.radioButtonOSXCrashWrangler);
-			this.groupBox8.Controls.Add(this.radioButtonOSXCrashReporter);
-			this.groupBox8.Location = new System.Drawing.Point(8, 12);
-			this.groupBox8.Name = "groupBox8";
-			this.groupBox8.Size = new System.Drawing.Size(529, 49);
-			this.groupBox8.TabIndex = 1;
-			this.groupBox8.TabStop = false;
-			this.groupBox8.Text = "Debugger Type";
-			// 
-			// radioButtonOSXCrashWrangler
-			// 
-			this.radioButtonOSXCrashWrangler.AutoSize = true;
-			this.radioButtonOSXCrashWrangler.Location = new System.Drawing.Point(128, 19);
-			this.radioButtonOSXCrashWrangler.Name = "radioButtonOSXCrashWrangler";
-			this.radioButtonOSXCrashWrangler.Size = new System.Drawing.Size(98, 17);
-			this.radioButtonOSXCrashWrangler.TabIndex = 3;
-			this.radioButtonOSXCrashWrangler.Text = "Crash Wrangler";
-			this.radioButtonOSXCrashWrangler.UseVisualStyleBackColor = true;
-			// 
-			// radioButtonOSXCrashReporter
-			// 
-			this.radioButtonOSXCrashReporter.AutoSize = true;
-			this.radioButtonOSXCrashReporter.Checked = true;
-			this.radioButtonOSXCrashReporter.Location = new System.Drawing.Point(6, 19);
-			this.radioButtonOSXCrashReporter.Name = "radioButtonOSXCrashReporter";
-			this.radioButtonOSXCrashReporter.Size = new System.Drawing.Size(96, 17);
-			this.radioButtonOSXCrashReporter.TabIndex = 0;
-			this.radioButtonOSXCrashReporter.TabStop = true;
-			this.radioButtonOSXCrashReporter.Text = "Crash Reporter";
-			this.radioButtonOSXCrashReporter.UseVisualStyleBackColor = true;
-			// 
-			// groupBox9
-			// 
-			this.groupBox9.Controls.Add(this.textBoxOSXArguments);
-			this.groupBox9.Controls.Add(this.label28);
-			this.groupBox9.Controls.Add(this.checkBoxOSXCpuKill);
-			this.groupBox9.Controls.Add(this.button1);
-			this.groupBox9.Controls.Add(this.textBoxOSXExecutable);
-			this.groupBox9.Controls.Add(this.label25);
-			this.groupBox9.Location = new System.Drawing.Point(8, 67);
-			this.groupBox9.Name = "groupBox9";
-			this.groupBox9.Size = new System.Drawing.Size(529, 100);
-			this.groupBox9.TabIndex = 9;
-			this.groupBox9.TabStop = false;
-			this.groupBox9.Text = "Start Process";
-			// 
-			// button1
-			// 
-			this.button1.Location = new System.Drawing.Point(454, 19);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(71, 23);
-			this.button1.TabIndex = 6;
-			this.button1.Text = "Browse";
-			this.button1.UseVisualStyleBackColor = true;
-			// 
-			// textBoxOSXExecutable
-			// 
-			this.textBoxOSXExecutable.Location = new System.Drawing.Point(92, 22);
-			this.textBoxOSXExecutable.Name = "textBoxOSXExecutable";
-			this.textBoxOSXExecutable.Size = new System.Drawing.Size(356, 20);
-			this.textBoxOSXExecutable.TabIndex = 1;
-			this.textBoxOSXExecutable.Text = "mspaint.exe";
-			// 
-			// label25
-			// 
-			this.label25.AutoSize = true;
-			this.label25.Location = new System.Drawing.Point(23, 25);
-			this.label25.Name = "label25";
-			this.label25.Size = new System.Drawing.Size(63, 13);
-			this.label25.TabIndex = 0;
-			this.label25.Text = "Executable:";
-			// 
-			// groupBox11
-			// 
-			this.groupBox11.Controls.Add(this.button2);
-			this.groupBox11.Controls.Add(this.label26);
-			this.groupBox11.Controls.Add(this.textBoxOSXCrashWrangler);
-			this.groupBox11.Location = new System.Drawing.Point(8, 173);
-			this.groupBox11.Name = "groupBox11";
-			this.groupBox11.Size = new System.Drawing.Size(529, 54);
-			this.groupBox11.TabIndex = 7;
-			this.groupBox11.TabStop = false;
-			this.groupBox11.Text = "Crash Wrangler";
-			// 
-			// textBoxOSXCrashWrangler
-			// 
-			this.textBoxOSXCrashWrangler.Location = new System.Drawing.Point(91, 18);
-			this.textBoxOSXCrashWrangler.Name = "textBoxOSXCrashWrangler";
-			this.textBoxOSXCrashWrangler.Size = new System.Drawing.Size(356, 20);
-			this.textBoxOSXCrashWrangler.TabIndex = 2;
-			// 
-			// checkBoxOSXCpuKill
-			// 
-			this.checkBoxOSXCpuKill.AutoSize = true;
-			this.checkBoxOSXCpuKill.Checked = true;
-			this.checkBoxOSXCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxOSXCpuKill.Location = new System.Drawing.Point(91, 74);
-			this.checkBoxOSXCpuKill.Name = "checkBoxOSXCpuKill";
-			this.checkBoxOSXCpuKill.Size = new System.Drawing.Size(224, 17);
-			this.checkBoxOSXCpuKill.TabIndex = 11;
-			this.checkBoxOSXCpuKill.Text = "Kill Process when CPU Usage Nears Zero";
-			this.checkBoxOSXCpuKill.UseVisualStyleBackColor = true;
-			// 
-			// label26
-			// 
-			this.label26.AutoSize = true;
-			this.label26.Location = new System.Drawing.Point(5, 21);
-			this.label26.Name = "label26";
-			this.label26.Size = new System.Drawing.Size(83, 13);
-			this.label26.TabIndex = 3;
-			this.label26.Text = "Crash Wrangler:";
-			// 
-			// button2
-			// 
-			this.button2.Location = new System.Drawing.Point(452, 16);
-			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(71, 23);
-			this.button2.TabIndex = 7;
-			this.button2.Text = "Browse";
-			this.button2.UseVisualStyleBackColor = true;
-			// 
-			// richTextBoxLinux
-			// 
-			this.richTextBoxLinux.Location = new System.Drawing.Point(3, 95);
-			this.richTextBoxLinux.Name = "richTextBoxLinux";
-			this.richTextBoxLinux.ReadOnly = true;
-			this.richTextBoxLinux.Size = new System.Drawing.Size(539, 281);
-			this.richTextBoxLinux.TabIndex = 1;
-			this.richTextBoxLinux.Text = "";
-			// 
-			// groupBox10
-			// 
-			this.groupBox10.Controls.Add(this.checkBoxLinuxCpuKill);
-			this.groupBox10.Controls.Add(this.button3);
-			this.groupBox10.Controls.Add(this.textBoxLinuxCommandLine);
-			this.groupBox10.Controls.Add(this.label27);
-			this.groupBox10.Location = new System.Drawing.Point(8, 12);
-			this.groupBox10.Name = "groupBox10";
-			this.groupBox10.Size = new System.Drawing.Size(529, 77);
-			this.groupBox10.TabIndex = 10;
-			this.groupBox10.TabStop = false;
-			this.groupBox10.Text = "Start Process";
-			// 
-			// checkBoxLinuxCpuKill
-			// 
-			this.checkBoxLinuxCpuKill.AutoSize = true;
-			this.checkBoxLinuxCpuKill.Checked = true;
-			this.checkBoxLinuxCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxLinuxCpuKill.Location = new System.Drawing.Point(92, 48);
-			this.checkBoxLinuxCpuKill.Name = "checkBoxLinuxCpuKill";
-			this.checkBoxLinuxCpuKill.Size = new System.Drawing.Size(224, 17);
-			this.checkBoxLinuxCpuKill.TabIndex = 11;
-			this.checkBoxLinuxCpuKill.Text = "Kill Process when CPU Usage Nears Zero";
-			this.checkBoxLinuxCpuKill.UseVisualStyleBackColor = true;
-			// 
-			// button3
-			// 
-			this.button3.Location = new System.Drawing.Point(454, 19);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(71, 23);
-			this.button3.TabIndex = 6;
-			this.button3.Text = "Browse";
-			this.button3.UseVisualStyleBackColor = true;
-			// 
-			// textBoxLinuxCommandLine
-			// 
-			this.textBoxLinuxCommandLine.Location = new System.Drawing.Point(92, 22);
-			this.textBoxLinuxCommandLine.Name = "textBoxLinuxCommandLine";
-			this.textBoxLinuxCommandLine.Size = new System.Drawing.Size(356, 20);
-			this.textBoxLinuxCommandLine.TabIndex = 1;
-			this.textBoxLinuxCommandLine.Text = "mspaint.exe fuzzed.png";
-			// 
-			// label27
-			// 
-			this.label27.AutoSize = true;
-			this.label27.Location = new System.Drawing.Point(6, 25);
-			this.label27.Name = "label27";
-			this.label27.Size = new System.Drawing.Size(80, 13);
-			this.label27.TabIndex = 0;
-			this.label27.Text = "Command Line:";
-			// 
-			// richTextBoxOSX
-			// 
-			this.richTextBoxOSX.Location = new System.Drawing.Point(3, 233);
-			this.richTextBoxOSX.Name = "richTextBoxOSX";
-			this.richTextBoxOSX.ReadOnly = true;
-			this.richTextBoxOSX.Size = new System.Drawing.Size(539, 166);
-			this.richTextBoxOSX.TabIndex = 10;
-			this.richTextBoxOSX.Text = "";
-			// 
-			// textBoxOSXArguments
-			// 
-			this.textBoxOSXArguments.Location = new System.Drawing.Point(91, 48);
-			this.textBoxOSXArguments.Name = "textBoxOSXArguments";
-			this.textBoxOSXArguments.Size = new System.Drawing.Size(356, 20);
-			this.textBoxOSXArguments.TabIndex = 13;
-			this.textBoxOSXArguments.Text = "fuzzed.png";
-			// 
-			// label28
-			// 
-			this.label28.AutoSize = true;
-			this.label28.Location = new System.Drawing.Point(26, 51);
-			this.label28.Name = "label28";
-			this.label28.Size = new System.Drawing.Size(60, 13);
-			this.label28.TabIndex = 12;
-			this.label28.Text = "Arguments:";
-			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1307,6 +1307,16 @@
 			this.groupBox2.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
+			this.tabPageDebuggerOSX.ResumeLayout(false);
+			this.groupBox9.ResumeLayout(false);
+			this.groupBox9.PerformLayout();
+			this.groupBox11.ResumeLayout(false);
+			this.groupBox11.PerformLayout();
+			this.groupBox8.ResumeLayout(false);
+			this.groupBox8.PerformLayout();
+			this.tabPageDebuggerLinux.ResumeLayout(false);
+			this.groupBox10.ResumeLayout(false);
+			this.groupBox10.PerformLayout();
 			this.tabPageGUI.ResumeLayout(false);
 			this.tabPageGUI.PerformLayout();
 			this.groupBox7.ResumeLayout(false);
@@ -1319,16 +1329,6 @@
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			this.panel1.ResumeLayout(false);
-			this.tabPageDebuggerOSX.ResumeLayout(false);
-			this.tabPageDebuggerLinux.ResumeLayout(false);
-			this.groupBox8.ResumeLayout(false);
-			this.groupBox8.PerformLayout();
-			this.groupBox9.ResumeLayout(false);
-			this.groupBox9.PerformLayout();
-			this.groupBox11.ResumeLayout(false);
-			this.groupBox11.PerformLayout();
-			this.groupBox10.ResumeLayout(false);
-			this.groupBox10.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
