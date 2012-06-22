@@ -82,27 +82,15 @@ namespace PeachFuzzBang
 				}
 			}
 
-			comboBoxAttachToServiceServices.Items.Clear();
-			foreach (ServiceController srv in ServiceController.GetServices())
-			{
-				comboBoxAttachToServiceServices.Items.Add(srv.ServiceName);
-			}
-
-			textBoxAttachToProcessProcessName.Items.Clear();
-			foreach (Process proc in Process.GetProcesses())
-			{
-				textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
-			}
-
 			//tabControl.TabPages.Remove(tabPageGUI);
 			tabControl.TabPages.Remove(tabPageFuzzing);
 			//tabControl.TabPages.Remove(tabPageOutput);
 
 			// Check OS and load side assembly
 			string osAssembly = null;
-			switch (Environment.OSVersion.Platform)
+			switch (Platform.GetOS())
 			{
-				case PlatformID.MacOSX:
+				case Platform.OS.Mac:
 					osAssembly = System.IO.Path.Combine(
 						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 						"Peach.Core.OS.OSX.dll");
@@ -111,7 +99,7 @@ namespace PeachFuzzBang
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					richTextBoxOSX.LoadFile("OSXDebugging.rtf");
 					break;
-				case PlatformID.Unix:
+				case Platform.OS.Linux:
 					osAssembly = System.IO.Path.Combine(
 						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 						"Peach.Core.OS.Linux.dll");
@@ -121,18 +109,28 @@ namespace PeachFuzzBang
 					tabControl.TabPages.Remove(tabPageGUI);
 					richTextBoxLinux.LoadFile("LinuxDebugging.rtf");
 					break;
-				case PlatformID.Win32NT:
-				case PlatformID.Win32S:
-				case PlatformID.Win32Windows:
-				case PlatformID.WinCE:
-				case PlatformID.Xbox:
+				case Platform.OS.Windows:
 					{
+						comboBoxAttachToServiceServices.Items.Clear();
+						foreach (ServiceController srv in ServiceController.GetServices())
+						{
+							comboBoxAttachToServiceServices.Items.Add(srv.ServiceName);
+						}
+
+						textBoxAttachToProcessProcessName.Items.Clear();
+						foreach (Process proc in Process.GetProcesses())
+						{
+							textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
+						}
+
 						osAssembly = System.IO.Path.Combine(
 							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 							"Peach.Core.OS.Windows.dll");
 						Assembly.LoadFrom(osAssembly);
+
 						tabControl.TabPages.Remove(tabPageDebuggerOSX);
 						tabControl.TabPages.Remove(tabPageDebuggerLinux);
+						
 						if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 							MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
 
