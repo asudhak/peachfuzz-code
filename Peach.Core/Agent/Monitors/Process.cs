@@ -208,12 +208,7 @@ namespace Peach.Core.Agent.Monitors
 
 					try
 					{
-						int pid = _process.Id;
-						var proc = System.Diagnostics.Process.GetProcessById(pid);
-						if (proc.HasExited)
-							return new Variant(0);
-
-						float cpu = GetProcessCpuUsage(proc);
+						float cpu = GetProcessCpuUsage(_process);
 
 						logger.Debug("Message: GetProcessCpuUsage: " + cpu);
 
@@ -251,6 +246,16 @@ namespace Peach.Core.Agent.Monitors
 		{
 			try
 			{
+				PerformanceCounter tmp = new PerformanceCounter("Process", "% User Time", proc.ProcessName);
+				tmp.NextValue();
+				System.Threading.Thread.Sleep(100);
+				logger.Debug("% User Time: " + tmp.NextValue());
+
+				tmp = new PerformanceCounter("Process", "% Privileged Time", proc.ProcessName);
+				tmp.NextValue();
+				System.Threading.Thread.Sleep(100);
+				logger.Debug("% Privileged Time: " + tmp.NextValue());
+
 				if (_performanceCounter == null)
 				{
 					_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
