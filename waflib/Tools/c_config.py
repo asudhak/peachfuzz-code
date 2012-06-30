@@ -779,7 +779,7 @@ def check_cc(self, *k, **kw):
 @conf
 def define(self, key, val, quote=True):
 	"""
-	Store a single define and its state into conf.env.DEFINES
+	Store a single define and its state into conf.env.DEFINES. If the value is True, False or None it is cast to 1 or 0.
 
 	:param key: define name
 	:type key: string
@@ -789,6 +789,11 @@ def define(self, key, val, quote=True):
 	:type quote: bool
 	"""
 	assert key and isinstance(key, str)
+
+	if val is True:
+		val = 1
+	elif val in (False, None):
+		val = 0
 
 	if isinstance(val, int) or isinstance(val, float):
 		s = '%s=%s'
