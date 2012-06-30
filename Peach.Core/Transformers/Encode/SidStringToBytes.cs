@@ -34,8 +34,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("SidStringToBytes", "Encode on output from a string reprisentation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
-    [TransformerAttribute("encode.SidStringToBytes", "Encode on output from a string reprisentation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
+    [TransformerAttribute("SidStringToBytes", "Encode on output from a string representation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
+    [TransformerAttribute("encode.SidStringToBytes", "Encode on output from a string representation of a SID to bytes. (Format: S-1-5-21-2127521184-1604012920-1887927527-1712781)")]
     [Serializable]
     public class SidStringToBytes : Transformer
     {
@@ -57,7 +57,8 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalDecode(BitStream data)
         {
-            throw new NotImplementedException();
+            var sid = new System.Security.Principal.SecurityIdentifier(data.Value, 0);
+            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sid.ToString()));
         }
     }
 }
