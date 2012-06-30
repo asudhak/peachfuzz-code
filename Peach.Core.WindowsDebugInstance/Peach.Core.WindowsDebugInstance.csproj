@@ -229,7 +229,16 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Debug
+    <PostBuildEvent>mkdir $(SolutionDir)\Peach\bin\x86\Debug
+mkdir $(SolutionDir)\Peach\bin\x64\Debug
+mkdir $(SolutionDir)\PeachFuzzBang\bin\x86\Debug
+mkdir $(SolutionDir)\PeachFuzzBang\bin\x64\Debug
+mkdir $(SolutionDir)\Peach\bin\x86\Release
+mkdir $(SolutionDir)\Peach\bin\x64\Release
+mkdir $(SolutionDir)\PeachFuzzBang\bin\x86\Release
+mkdir $(SolutionDir)\PeachFuzzBang\bin\x64\Release
+
+copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x86\Debug
 copy /y $(TargetPath) $(SolutionDir)\Peach\bin\x64\Debug
 copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x86\Debug
 copy /y $(TargetPath) $(SolutionDir)\PeachFuzzBang\bin\x64\Debug
