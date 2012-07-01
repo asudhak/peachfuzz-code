@@ -17,8 +17,6 @@ try:
 except AttributeError:
 	TP = '%s\\*'
 
-print(type(TP))
-
 if Utils.is_win32:
 	from waflib.extras import md5_tstamp
 	import ctypes, ctypes.wintypes
