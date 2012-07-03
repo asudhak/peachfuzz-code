@@ -414,6 +414,7 @@
     <Compile Include="Dom\Flag.cs" />
     <Compile Include="Dom\Hint.cs" />
     <Compile Include="Dom\INamed.cs" />
+    <Compile Include="IPitSerializable.cs" />
     <Compile Include="Dom\Monitor.cs" />
     <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />
