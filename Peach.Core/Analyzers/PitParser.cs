@@ -576,7 +576,7 @@ namespace Peach.Core.Analyzers
 			agent.name = getXmlAttribute(node, "name");
 			agent.url = getXmlAttribute(node, "location");
 			agent.password = getXmlAttribute(node, "password");
-
+			
 			if (agent.url == null)
 				agent.url = "local://";
 
@@ -1624,6 +1624,24 @@ namespace Peach.Core.Analyzers
 				{
 					string refName = getXmlAttribute(child, "ref");
 					test.agents.Add(refName, parent.agents[refName]);
+
+					var platform = getXmlAttribute(child, "platform");
+					if (platform != null)
+					{
+						switch (platform.ToLower())
+						{
+							case "windows":
+								parent.agents[refName].platform = Platform.OS.Windows;
+								break;
+							case "osx":
+								parent.agents[refName].platform = Platform.OS.Mac;
+								break;
+							case "linux":
+							case "unix":
+								parent.agents[refName].platform = Platform.OS.Linux;
+								break;
+						}
+					}
 				}
 
 				// StateModel
@@ -1685,11 +1703,11 @@ namespace Peach.Core.Analyzers
 							if (attrib is DefaultMutationStrategyAttribute)
 							{
 								Type[] argTypes = new Type[1];
-								argTypes[0] = typeof(Dictionary<string, string>);
+								argTypes[0] = typeof(Dictionary<string, Variant>);
 								ConstructorInfo strategyCo = t.GetConstructor(argTypes);
 
 								object[] args = new object[1];
-								args[0] = new Dictionary<string, string>();
+								args[0] = new Dictionary<string, Variant>();
 
 								test.strategy = strategyCo.Invoke(args) as MutationStrategy;
 							}

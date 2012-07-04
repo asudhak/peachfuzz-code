@@ -204,6 +204,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Agent\AgentPlatformAttributeTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="BitStreamTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />

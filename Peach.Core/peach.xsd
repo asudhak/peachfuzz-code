@@ -1326,11 +1326,68 @@
 					<xs:complexType>
 						<xs:attribute name="ref" type="xs:string" use="required">
 							<xs:annotation>
-								<xs:documentation>Reference an element to use for this test. Values are in
+								<xs:documentation>
+									Reference an element to use for this test. Values are in
 									"ns:parent.child.child" with the namespace being optional. Resolution always
-									starts at the document root.</xs:documentation>
+									starts at the document root.
+								</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
+						<xs:attribute name="platform" use="optional">
+							<xs:annotation>
+								<xs:documentation>
+									Specify which platform this Agent is used for (defaults to any).
+								</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:union>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:maxLength value="1024" />
+										</xs:restriction>
+									</xs:simpleType>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:enumeration value="Windows">
+												<xs:annotation>
+													<xs:documentation>
+														Windows OS
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="OSX">
+												<xs:annotation>
+													<xs:documentation>
+														Apple OS X
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Linux">
+												<xs:annotation>
+													<xs:documentation>
+														Linux
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Unix">
+												<xs:annotation>
+													<xs:documentation>
+														Generic Unix
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Any">
+												<xs:annotation>
+													<xs:documentation>
+														Any platform
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:union>
+							</xs:simpleType>						</xs:attribute>
 					</xs:complexType>
 				</xs:element>
 

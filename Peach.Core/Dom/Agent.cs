@@ -41,10 +41,30 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Agent
 	{
+		/// <summary>
+		/// Name for agent
+		/// </summary>
 		public string name;
+
+		/// <summary>
+		/// URL of agent
+		/// </summary>
 		public string url;
+
+		/// <summary>
+		/// Optional password for agent
+		/// </summary>
 		public string password;
 
+		/// <summary>
+		/// Limit Agent to specific platform.  Platform of unknown is 
+		/// any OS.
+		/// </summary>
+		public Platform.OS platform = Platform.OS.unknown;
+
+		/// <summary>
+		/// List of monitors Agent should spin up.
+		/// </summary>
 		public List<Monitor> monitors = new List<Monitor>();
 	}
 }

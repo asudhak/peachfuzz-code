@@ -285,8 +285,12 @@ namespace Peach.Core
 				OnTestStarting(context);
 
 				// Start agents
-				foreach(Dom.Agent agent in test.agents.Values)
-					context.agentManager.AgentConnect(agent);
+				foreach (Dom.Agent agent in test.agents.Values)
+				{
+					// Only use agent if on correct platform
+					if(agent.platform == Platform.OS.unknown || agent.platform == Platform.GetOS())
+						context.agentManager.AgentConnect(agent);
+				}
 
 				// Get mutation strategy
 				MutationStrategy mutationStrategy = test.strategy;
