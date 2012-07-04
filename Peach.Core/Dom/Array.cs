@@ -128,7 +128,8 @@ namespace Peach.Core.Dom
 
 			else if (maxOccurs > 1 || maxOccurs == -1)
 			{
-				for (int cnt = 0; maxOccurs == -1 || cnt < maxOccurs; cnt++)
+				int cnt = 0;
+				for (cnt = 0; maxOccurs == -1 || cnt < maxOccurs; cnt++)
 				{
                     logger.Debug("Crack: {0} Trying #{1}", element.fullName, cnt.ToString());
 
@@ -150,16 +151,30 @@ namespace Peach.Core.Dom
 						break;
 					}
 
+					if (cnt == 0 && minOccurs == 0 && !context.lookAhead(this, data))
+					{
+						// Broke our look ahead, must be only zero elements in this array.
+						logger.Debug("Crack: {0}, minOccurs = 0, our look ahead failed, must be zero elements in this array.", 
+							element.fullName, cnt.ToString());
+
+						element.Remove(clone);
+						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
+
+						break;
+					}
+
 					if (data.TellBits() == data.LengthBits)
 					{
-                        if (cnt < minOccurs)
-                            throw new CrackingFailure(
-                                string.Format("Crack: {0} Failed on #{1}. Not enough data to meet minOccurs value of {2}", element.fullName, cnt.ToString(), minOccurs),
-                                element, data);
-
                         logger.Debug("Crack: {0} Found EOF, all done!", element.fullName);
 						break;
 					}
+				}
+
+				if (cnt < minOccurs)
+				{
+					throw new CrackingFailure(
+						string.Format("Crack: {0} Failed on #{1}. Not enough data to meet minOccurs value of {2}", element.fullName, cnt.ToString(), minOccurs),
+						element, data);
 				}
 			}
 		}

@@ -54,7 +54,7 @@ namespace Peach.Core.MutationStrategies
 
 		Random _random = new Random("fnord".GetHashCode());
 
-		public RandomDeterministicStrategy(Dictionary<string, string> args)
+		public RandomDeterministicStrategy(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}

@@ -513,6 +513,39 @@ namespace Peach.Core.Cracker
 			logger.Trace("determineElementSize: Returning: "+size);
 			return size;
 		}
+
+		/// <summary>
+		/// Parse ahead and verify if things work out OKAY.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <param name="data"></param>
+		/// <returns></returns>
+		public bool lookAhead(DataElement element, BitStream data)
+		{
+			var root = ObjectCopier.Clone<DataElementContainer>(element.getRoot() as DataElementContainer);
+			var node = root.find(element.fullName);
+			var sibling = node.nextSibling();
+
+			if (sibling == null)
+				return true;
+
+			long position = data.TellBits();
+
+			try
+			{
+				handleNode(sibling, data);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+			finally
+			{
+				data.SeekBits(position, System.IO.SeekOrigin.Begin);
+			}
+
+			return true;
+		}
 	}
 }
 

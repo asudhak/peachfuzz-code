@@ -47,7 +47,7 @@ namespace Peach.Core.MutationStrategies
 		int? _count = null;
 		int _iterationCount = 0;
 
-		public Sequencial(Dictionary<string,string> args)
+		public Sequencial(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}

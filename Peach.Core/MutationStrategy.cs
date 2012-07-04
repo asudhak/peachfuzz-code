@@ -47,7 +47,7 @@ namespace Peach.Core
 		protected RunContext _context;
 		protected Engine _engine;
 
-		public MutationStrategy(Dictionary<string, string> args)
+		public MutationStrategy(Dictionary<string, Variant> args)
 		{
 		}
 

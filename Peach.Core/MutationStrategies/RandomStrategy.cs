@@ -109,7 +109,7 @@ namespace Peach.Core.MutationStrategies
 		static bool eventsRegistered = false;
 
 		public RandomStrategy(Dictionary<string, Variant> args)
-			: base(new Dictionary<string,string>())
+			: base(args)
 		{
 			if (args.ContainsKey("SwitchCount"))
 				switchCount = int.Parse((string)args["SwitchCount"]);
