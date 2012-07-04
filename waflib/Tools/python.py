@@ -352,15 +352,16 @@ def check_python_headers(conf):
 		   errmsg=':-(')
 	except conf.errors.ConfigurationError:
 		# python3.2, oh yeah
+		xx = conf.env.CXX_NAME and 'cxx' or 'c'
 		conf.check_cfg(msg='Asking python-config for the flags (pyembed)',
 			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=['--cflags', '--libs', '--ldflags'])
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyembed flags from python-config',
-			uselib='PYEMBED', fragment=FRAG, errmsg='Could not build a python embedded interpreter')
+			fragment=FRAG, errmsg='Could not build a python embedded interpreter',
+			features='%s %sshlib pyembed' % (xx, xx))
 		conf.check_cfg(msg='Asking python-config for the flags (pyext)',
 			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEXT', args=['--cflags', '--libs', '--ldflags'])
-		xx = conf.env.CXX_NAME and 'cxx' or 'c'
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyext flags from python-config',
-			uselib='PYEXT', features='%s %sshlib' % (xx, xx), fragment=FRAG, errmsg='Could not build python extensions')
+			features='%s %sshlib pyext' % (xx, xx), fragment=FRAG, errmsg='Could not build python extensions')
 
 @conf
 def check_python_version(conf, minver=None):
