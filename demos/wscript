@@ -86,6 +86,14 @@ def configure(conf):
 	Logs.info(conf.path.find_node('build/config.log').read())
 
 def build(bld):
+	print('Note: call "waf installcheck" (the default build does not do anything)')
+
+from waflib.Build import BuildContext
+class abc(BuildContext):
+	cmd = "installcheck"
+	fun = "installcheck"
+
+def installcheck(bld):
 	bld.jobs = 1
 	#if bld.cmd == 'build':
 	#	Logs.info('Running action build') # build farm
