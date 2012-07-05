@@ -357,7 +357,7 @@ def check_python_headers(conf):
 			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=['--cflags', '--libs', '--ldflags'])
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyembed flags from python-config',
 			fragment=FRAG, errmsg='Could not build a python embedded interpreter',
-			features='%s %sshlib pyembed' % (xx, xx))
+			features='%s %sprogram pyembed' % (xx, xx))
 		conf.check_cfg(msg='Asking python-config for the flags (pyext)',
 			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEXT', args=['--cflags', '--libs', '--ldflags'])
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyext flags from python-config',
