@@ -89,19 +89,19 @@ MACRO_TO_DEST_CPU = {
 }
 
 @conf
-def parse_flags(self, line, uselib, env=None, force_static=False):
+def parse_flags(self, line, uselib_store, env=None, force_static=False):
 	"""
 	Parse the flags from the input lines, and add them to the relevant use variables::
 
 		def configure(conf):
-			conf.parse_flags('-O3', uselib_store='FOO')
+			conf.parse_flags('-O3', 'FOO')
 			# conf.env.CXXFLAGS_FOO = ['-O3']
 			# conf.env.CFLAGS_FOO = ['-O3']
 
 	:param line: flags
 	:type line: string
-	:param uselib: where to add the flags
-	:type uselib: string
+	:param uselib_store: where to add the flags
+	:type uselib_store: string
 	:param env: config set or conf.env by default
 	:type env: :py:class:`waflib.ConfigSet.ConfigSet`
 	"""
@@ -122,6 +122,7 @@ def parse_flags(self, line, uselib, env=None, force_static=False):
 	lex.commenters = ''
 	lst = list(lex)
 
+	uselib = uselib_store
 	while lst:
 		x = lst.pop(0)
 		st = x[:2]
