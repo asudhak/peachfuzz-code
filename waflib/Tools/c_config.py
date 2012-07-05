@@ -1098,19 +1098,21 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 def get_xlc_version(conf, cc):
 	"""Get the compiler version"""
 
-	version_re = re.compile(r"IBM XL C/C\+\+.*, V(?P<major>\d*)\.(?P<minor>\d*)", re.I).search
 	cmd = cc + ['-qversion']
-
 	try:
 		out, err = conf.cmd_and_log(cmd, output=0)
 	except Errors.WafError:
 		conf.fatal('Could not find xlc %r' % cmd)
-	if out: match = version_re(out)
-	else: match = version_re(err)
-	if not match:
+
+	for v in (r"IBM XL C/C\+\+.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL C/C\+\+.*Version: V(?P<major>\d*)\.(?P<minor>\d*)"):
+		version_re = re.compile(v, re.I | re.M).search
+		match = version_re(out or err)
+		if match:
+			k = match.groupdict()
+			conf.env['CC_VERSION'] = (k['major'], k['minor'])
+			break
+	else:
 		conf.fatal('Could not determine the XLC version.')
-	k = match.groupdict()
-	conf.env['CC_VERSION'] = (k['major'], k['minor'])
 
 # ============ the --as-needed flag should added during the configuration, not at runtime =========
 
