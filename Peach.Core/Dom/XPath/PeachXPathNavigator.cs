@@ -27,6 +27,8 @@ namespace Peach.Core.Dom.XPath
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
+		protected List<object> moveToHistory = new List<object>();
+
 		/// <summary>
 		/// Attributes for each known type
 		/// </summary>
@@ -435,7 +437,7 @@ namespace Peach.Core.Dom.XPath
 
 		public override bool MoveToParent()
 		{
-			logger.Trace("MoveToParent(" + ((INamed)currentNode).name + ")");
+			logger.Trace("MoveToParent(" +currentNode.GetType() + ":" + ((INamed)currentNode).name + ")");
 
 			if (iteratingAttributes)
 			{

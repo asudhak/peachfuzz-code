@@ -30,8 +30,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using Peach.Core.Agent;
 using System.Runtime.Serialization;
+using System.Xml.XPath;
+
+using Peach.Core.Agent;
 
 namespace Peach.Core.Dom
 {
@@ -46,8 +48,30 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
+
+		/// <summary>
+		/// List of mutators to include in run
+		/// </summary>
+		/// <remarks>
+		/// If exclude is null, and this collection contains values, then remove all mutators and only
+		/// include these.
+		/// </remarks>
 		public List<string> includedMutators = null;
+
+		/// <summary>
+		/// List of mutators to exclude from run
+		/// </summary>
+		/// <remarks>
+		/// If include is null then use all mutators excluding those in this list.
+		/// </remarks>
 		public List<string> exludedMutators = null;
+
+		/// <summary>
+		/// Collection of xpaths to mark state model/data models as mutable true/false
+		/// at runtime.  This collection is set using Include and Exclude elements in a
+		/// Test definition.
+		/// </summary>
+		public List<Tuple<bool, string>> mutables = new List<Tuple<bool, string>>();
 
 		public Test()
 		{
@@ -79,6 +103,35 @@ namespace Peach.Core.Dom
 		{
 			get { return _name; }
 			set { _name = value; }
+		}
+
+		public void markMutableElements()
+		{
+			Dom dom;
+
+			if (parent is Dom)
+				dom = parent as Dom;
+			else if (parent is Run)
+				dom = (parent as Run).parent as Dom;
+			else
+				throw new PeachException("Parent is crazy type!");
+
+			var nav = new XPath.PeachXPathNavigator(dom);
+			XPathNodeIterator nodeIter = null;
+
+			foreach (Tuple<bool, string> item in mutables)
+			{
+				nodeIter = nav.Select(item.Item2);
+
+				while (nodeIter.MoveNext())
+				{
+					var dataElement = ((XPath.PeachXPathNavigator)nodeIter.Current).currentNode as DataElement;
+					if (dataElement != null)
+					{
+						dataElement.isMutable = item.Item1;
+					}
+				}
+			}
 		}
 	}
 }

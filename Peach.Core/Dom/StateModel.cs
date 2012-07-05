@@ -31,6 +31,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Xml;
 
 using Peach.Core;
 using Peach.Core.IO;

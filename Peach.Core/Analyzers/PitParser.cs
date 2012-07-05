@@ -347,6 +347,16 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			// Pass 8 - Mark mutated
+
+			foreach (Run run in dom.runs.Values)
+			{
+				foreach (Test test in run.tests.Values)
+				{
+					test.markMutableElements();
+				}
+			}
+
 			return dom;
 		}
 
@@ -1604,13 +1614,21 @@ namespace Peach.Core.Analyzers
 				// Include
 				if (child.Name == "Include")
 				{
-					throw new NotImplementedException("Test.Include TODO");
+					var xpath = getXmlAttribute(child, "xpath");
+					if(xpath == null)
+						xpath = "//*";
+
+					test.mutables.Add(new Tuple<bool, string>(true, xpath));
 				}
 
 				// Exclude
 				if (child.Name == "Exclude")
 				{
-					throw new NotImplementedException("Test.Exclude TODO");
+					var xpath = getXmlAttribute(child, "xpath");
+					if (xpath == null)
+						xpath = "//*";
+
+					test.mutables.Add(new Tuple<bool, string>(false, xpath));
 				}
 
 				// Strategy
@@ -1714,7 +1732,6 @@ namespace Peach.Core.Analyzers
 						}
 					}
 				}
-
 			}
 
 			return test;
