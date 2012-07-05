@@ -123,6 +123,7 @@ def gcc_modifier_aix(conf):
 def gcc_modifier_hpux(conf):
 	v = conf.env
 	v['SHLIB_MARKER']        = []
+	v['STLIB_MARKER']        = '-Bstatic'
 	v['CFLAGS_cshlib']       = ['-fPIC','-DPIC']
 	v['cshlib_PATTERN']      = 'lib%s.sl'
 

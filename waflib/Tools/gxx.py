@@ -124,6 +124,7 @@ def gxx_modifier_aix(conf):
 def gxx_modifier_hpux(conf):
 	v = conf.env
 	v['SHLIB_MARKER']        = []
+	v['STLIB_MARKER']        = '-Bstatic'
 	v['CFLAGS_cxxshlib']     = ['-fPIC','-DPIC']
 	v['cxxshlib_PATTERN']    = 'lib%s.sl'
 
