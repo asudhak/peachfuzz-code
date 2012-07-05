@@ -136,7 +136,7 @@ def gxx_modifier_platform(conf):
 	#   and if it's not recognised, it fallbacks to sys.platform.
 	gxx_modifier_func = getattr(conf, 'gxx_modifier_' + conf.env.DEST_OS, None)
 	if gxx_modifier_func:
-			gxx_modifier_func()
+		gxx_modifier_func()
 
 def configure(conf):
 	"""
