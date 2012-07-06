@@ -46,15 +46,14 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Device", typeof(string), "Device name for capturing on", true)]
 	[Parameter("Filter", typeof(string), "PCAP Style filter", true)]
 	public class PcapMonitor : Monitor
-    {
-		protected string _deviceName = null;
-		protected string _filter = null;
-		protected string _tmpFilename = null;
-		protected ICaptureDevice _device = null;
-
-		protected EventWaitHandle eventStartCapture = new EventWaitHandle(false, EventResetMode.ManualReset);
-		protected EventWaitHandle eventStopCapture = new EventWaitHandle(false, EventResetMode.ManualReset);
-		protected EventWaitHandle eventResetCapture = new EventWaitHandle(false, EventResetMode.ManualReset);
+	{
+		protected string _deviceName;
+		protected string _filter = "";
+		protected string _tempFileName = Path.GetTempFileName();
+		protected object _lock = new object();
+		protected int _numPackets = 0;
+		protected LibPcapLiveDevice _device = null;
+		protected CaptureFileWriterDevice _writer = null;
 
 		public PcapMonitor(string name, Dictionary<string, Variant> args)
 			: base(name, args)
@@ -63,40 +62,55 @@ namespace Peach.Core.Agent.Monitors
 				_deviceName = (string)args["Device"];
 			if (args.ContainsKey("Filter"))
 				_filter = (string)args["Filter"];
-
-			_device.OnPacketArrival += new PacketArrivalEventHandler(device_OnPacketArrival);
-
-			_tmpFilename = Path.GetTempFileName();
 		}
 
-		private static void device_OnPacketArrival(object sender, CaptureEventArgs packet)
+		private void _OnPacketArrival(object sender, CaptureEventArgs packet)
 		{
-			ICaptureDevice device = packet.Device;
-
-			// if device has a dump file opened
-			if (device.DumpOpened)
+			lock (_lock)
 			{
-				// dump the packet to the file
-				device.Dump(packet.Packet);
+				System.Diagnostics.Debug.Assert(_writer != null);
+				if (_writer.Opened)
+				{
+					_writer.Write(packet.Packet);
+					_numPackets += 1;
+				}
+			}
+		}
+
+		private CaptureDeviceList _GetDeviceList()
+		{
+			try
+			{
+				return CaptureDeviceList.New();
+			}
+			catch (System.DllNotFoundException)
+			{
+				throw new PeachException("Error, PcapMonitor was unable to get the device list.  Ensure libpcap is installed and try again.");
 			}
 		}
 
 		public override void StopMonitor()
 		{
-			_device.StopCapture();
-			_device.DumpClose();
-			_device.Close();
 		}
 
 		public override void SessionStarting()
 		{
+			if (_deviceName == null)
+			{
+				throw new PeachException("Error, PcapMonitor requires a device name.");
+			}
+
 			// Retrieve all capture devices
-			var devices = CaptureDeviceList.Instance;
+			// Don't use the singlton interface so we can support multiple
+			// captures on the same device with different filters
+			var devices = _GetDeviceList();
 
 			// differentiate based upon types
-			foreach(ICaptureDevice dev in devices)
+			foreach (var item in devices)
 			{
-				if (dev.Name == _deviceName)
+				var dev = item as LibPcapLiveDevice;
+				System.Diagnostics.Debug.Assert(dev != null);
+				if (dev.Interface.FriendlyName == _deviceName)
 				{
 					_device = dev;
 					break;
@@ -106,41 +120,59 @@ namespace Peach.Core.Agent.Monitors
 			if (_device == null)
 			{
 				Console.WriteLine("Found the following pcap devices: ");
-
-				foreach (ICaptureDevice dev in devices)
+				foreach (var item in devices)
 				{
-					Console.WriteLine(dev.Name);
+					var dev = item as LibPcapLiveDevice;
+					System.Diagnostics.Debug.Assert(dev != null);
+					Console.WriteLine(" " + dev.Interface.FriendlyName);
 				}
-
 				throw new PeachException("Error, PcapMonitor was unable to locate device '" + _deviceName + "'.");
 			}
 
+			_device.OnPacketArrival += new PacketArrivalEventHandler(_OnPacketArrival);
 			_device.Open();
-			_device.Filter = _filter;
+
+			try
+			{
+				_device.Filter = _filter;
+			}
+			catch (PcapException)
+			{
+				throw new PeachException("Error, PcapMonitor was unable to set the filter '" + _filter + "'.");
+			}
+
 			_device.StartCapture();
 		}
 
 		public override void SessionFinished()
 		{
-			_device.StopCapture();
-			_device.Close();
+			if (_device != null)
+			{
+				_device.StopCapture();
+				_device.Close();
+
+				IterationFinished();
+			}
 		}
 
 		public override void IterationStarting(int iterationCount, bool isReproduction)
 		{
-			// Clear old log
-			if (_device.DumpOpened)
-				_device.DumpClose();
-
-			_device.DumpOpen(_tmpFilename);
+			lock (_lock)
+			{
+				_writer = new CaptureFileWriterDevice(_device, Path.GetTempFileName());
+				_numPackets = 0;
+			}
 		}
 
 		public override bool IterationFinished()
 		{
-			// Save log
-			_device.DumpFlush();
-			_device.DumpClose();
-
+			lock (_lock)
+			{
+				if (_writer != null)
+				{
+					_writer.Close();
+				}
+			}
 			return false;
 		}
 
@@ -153,16 +185,21 @@ namespace Peach.Core.Agent.Monitors
 		{
 			// Return log
 			byte[] buff;
-			using (Stream sin = File.OpenRead(_tmpFilename))
+			using (Stream sin = File.OpenRead(_writer.Name))
 			{
 				buff = new byte[sin.Length];
 				sin.Read(buff, 0, buff.Length);
 			}
 
-			var ret = new Hashtable();
-			ret["NetworkCapture.pcap"] = buff;
+			if (!data.Contains("PcapMonitor"))
+				data["PcapMonitor"] = new Hashtable();
 
-			data[Name + "_NetworkCapture"] = ret;
+			Hashtable ret = data["PcapMonitor"] as Hashtable;
+
+			ret[this.Name + "_NetworkCapture.pcap"] = buff;
+			ret[this.Name + "_NumPackets"] = _numPackets;
+
+			data["PcapMonitor"] = ret;
 		}
 
 		public override bool MustStop()
