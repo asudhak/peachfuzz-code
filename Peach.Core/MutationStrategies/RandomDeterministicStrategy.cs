@@ -74,6 +74,13 @@ namespace Peach.Core.MutationStrategies
 			_mutators.AddRange(EnumerateValidMutators());
 		}
 
+		public override void Finalize(RunContext context, Engine engine)
+		{
+			StateModel.Starting -= StateModel_Starting;
+			StateModel.Finished -= StateModel_Finished;
+			Core.Dom.Action.Starting -= Action_Starting;
+		}
+
 		public override int IterationCount
 		{
 			get { return _iterationCount; }

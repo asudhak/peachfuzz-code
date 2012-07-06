@@ -286,14 +286,23 @@ namespace Peach.Core
 				switch (v._type)
 				{
 					case VariantType.Int:
-						return (long)v._valueInt;
+						unchecked
+						{
+							return (long)v._valueInt;
+						}
 					case VariantType.Long:
-						return (long)v._valueLong;
+						unchecked
+						{
+							return (long)v._valueLong;
+						}
 					case VariantType.ULong:
 						if (v._valueULong > long.MaxValue)
 							throw new ApplicationException("Converting this ulong to a long would cause loss of data");
 
-						return (long)v._valueULong;
+						unchecked
+						{
+							return (long)v._valueULong;
+						}
 					case VariantType.String:
 						if (v._valueString == string.Empty)
 							return 0;
