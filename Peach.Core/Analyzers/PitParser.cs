@@ -597,6 +597,7 @@ namespace Peach.Core.Analyzers
 					Dom.Monitor monitor = new Monitor();
 
 					monitor.cls = getXmlAttribute(child, "class");
+					monitor.name = getXmlAttribute(child, "name");
 					monitor.parameters = handleParams(child);
 
 					agent.monitors.Add(monitor);

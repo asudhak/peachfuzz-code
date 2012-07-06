@@ -42,6 +42,7 @@ namespace Peach.Core.Dom
 	public class Monitor
 	{
 		public string cls;
+		public string name;
 		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
 	}
 

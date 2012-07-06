@@ -76,8 +76,8 @@ namespace Peach.Core.Agent
 
 			foreach (Dom.Monitor mon in def.monitors)
 			{
-				agent.StartMonitor("Monitor_" + UniqueNames, mon.cls, mon.parameters);
-				UniqueNames++;
+				string monitorName = mon.name != null ? mon.name : "Monitor_" + UniqueNames++;
+				agent.StartMonitor(monitorName, mon.cls, mon.parameters);
 			}
 		}
 
