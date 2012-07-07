@@ -36,7 +36,7 @@
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}Microsoft.Dynamic.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}Microsoft.Scripting.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}Microsoft.Scripting.Metadata.dll" />
-				<include name="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" />
+				<include name="${references.nlog}" />
 				<include name="3rdParty${file.sep}SharpPcap-3.6.0${file.sep}SharpPcap.dll" />
 				
 				<include name="Microsoft.CSharp.dll" />
@@ -79,7 +79,7 @@
 				<references>
 					<include name="${build.dir}${file.sep}Peach.Core.dll" />
 					<include name="${build.dir}${file.sep}Peach.Core.Debuggers.Windows.dll" />
-					<include name="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" />
+					<include name="${references.nlog}" />
 				</references>
 			</csc>
 		</if>
@@ -94,7 +94,7 @@
 			</sources>
 			<references>
 				<include name="${build.dir}${file.sep}Peach.Core.dll" />
-				<include name="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" />
+				<include name="${references.nlog}" />
 			</references>
 		</csc>
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.OS.OSX.dll" debug="${debug}">
@@ -107,7 +107,7 @@
 			</sources>
 			<references>
 				<include name="${build.dir}${file.sep}Peach.Core.dll" />
-				<include name="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" />
+				<include name="${references.nlog}" />
 			</references>
 		</csc>
 		
@@ -122,7 +122,7 @@
 			<references>
 				<include name="${build.dir}${file.sep}Peach.Core.dll" />
 				<include name="3rdParty${file.sep}SharpPcap-3.6.0${file.sep}SharpPcap.dll" />
-				<include name="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" />
+				<include name="${references.nlog}" />
 				<include name="System.Data.dll" />
 				<include name="System.Xml.dll" />
 			</references>
@@ -147,8 +147,8 @@
 				<include name="${build.dir}${file.sep}Peach.Core.OS.Windows.dll" />
 				
 				<include name="3rdParty${file.sep}NUnit-2.6.0.12051${file.sep}bin${file.sep}nunit.framework.dll"/>
-				<include name="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" />
-				
+				<include name="${references.nlog}" />
+
 				<include name="System.Data.dll" />
 				<include name="System.Xml.dll" />
 			</references>
