@@ -8,6 +8,10 @@
 	<!--                                                                    -->
 	<!-- build\     Destination folder.  Will change in future.             -->
 	<!-- ================================================================== -->
+	
+	<!-- TODO: -->
+	<!--    - Need to build Windows 32 and 64 bit. -->
+	<!--    - bin, dist, doc ? -->
 
 	<!-- Setup build configuration.  Override via commandline if needed -->
 	<property name="build.dir" value="build"  overwrite="false" />
