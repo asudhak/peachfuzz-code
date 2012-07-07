@@ -7,6 +7,9 @@
 	<property name="file.sep" value="\" if="${build.platform == 'windows'}"/>
 	<property name="file.sep" value="/" if="${build.platform != 'windows'}"/>
 
+	<property name="references.nlog" value="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" if="${build.platform == 'windows'}" />
+	<property name="references.nlog" value="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}Mono 2.x${file.sep}NLog.dll" if="${build.platform != 'windows'}" />
+
 	<target name="build">
 
 		<mkdir dir="${build.dir}${file.sep}" />
