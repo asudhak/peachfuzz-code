@@ -19,6 +19,7 @@
 
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.dll" unsafe="true" define="PEACH" debug="${debug}">
 			<nowarn>
+				<warning number="0414" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -72,6 +73,7 @@
 			
 			<csc target="library" output="${build.dir}${file.sep}Peach.Core.OS.Windows.dll" unsafe="true" debug="${debug}">
 				<nowarn>
+					<warning number="0219" />
 					<warning number="0168" />
 					<!-- unused variables -->
 				</nowarn>
@@ -100,6 +102,7 @@
 		
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.OS.Linux.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -113,6 +116,7 @@
 		</csc>
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.OS.OSX.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -127,6 +131,7 @@
 
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Language.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -141,6 +146,7 @@
 
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Language.TestAssembly.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -154,6 +160,7 @@
 
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Proxy.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -168,6 +175,7 @@
 
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Xml.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -182,6 +190,7 @@
 
 		<csc target="exe" output="${build.dir}${file.sep}Peach.exe" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -201,6 +210,7 @@
 
 		<csc target="exe" output="${build.dir}${file.sep}PeachAssemblyFuzzer.exe" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -220,6 +230,7 @@
 
 		<csc target="exe" output="${build.dir}${file.sep}PeachXmlGenerator.exe" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -230,6 +241,7 @@
 
 			<references>
 				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${build.dir}${file.sep}Peach.Core.Xml.dll" />
 				<include name="${references.nlog}" />
 				<include name="System.Configuration.dll" />
 				<include name="System.Core.dll" />
@@ -244,6 +256,7 @@
 
 		<csc target="exe" output="${build.dir}${file.sep}PeachNetworkFuzzer.exe" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -254,6 +267,7 @@
 
 			<references>
 				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${build.dir}${file.sep}Peach.Core.Proxy.dll" />
 				<include name="3rdParty${file.sep}SharpPcap-4.1.0${file.sep}Release${file.sep}SharpPcap.dll" />
 				<include name="${references.nlog}" />
 				<include name="System.Configuration.dll" />
@@ -269,6 +283,7 @@
 
 		<csc target="exe" output="${build.dir}${file.sep}PeachFuzzBang.exe" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0168" />
 				<!-- unused variables -->
 			</nowarn>
@@ -291,13 +306,15 @@
 				<include name="System.Xml.dll" />
 			</references>
 		</csc>
-		
+
 		<copy todir="${build.dir}">
 			<fileset basedir="PeachFuzzBang">
 				<include name="Introduction.rtf" />
 				<include name="LinuxDebugging.rtf" />
 				<include name="OSXDebugging.rtf" />
 			</fileset>
+		</copy>
+		<copy todir="${build.dir}">
 			<fileset basedir="Peach">
 				<include name="samples" />
 				<include name="template.xml" />
@@ -310,6 +327,7 @@
 	<target name="test" depends="build">
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Test.dll" debug="${debug}">
 			<nowarn>
+				<warning number="0219" />
 				<warning number="0414" />
 				<warning number="0168" />
 				<!-- unused variables -->

@@ -299,7 +299,7 @@ namespace Peach.Core.Agent.Monitors
 		//System.Diagnostics.Process _debuggerProcess = null;
 		int _debuggerProcessUsage = 0;
 		int _debuggerProcessUsageMax = 100;
-		string _debuggerChannelName = null;
+		//string _debuggerChannelName = null;
 
         protected void _StartDebugger()
         {

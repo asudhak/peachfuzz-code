@@ -61,7 +61,7 @@ namespace Peach.Core.Language.DotNet.Generators
 
 		#region ITypeGenerator Members
 
-		public static bool SupportedType(Type type)
+		public static new bool SupportedType(Type type)
 		{
 			// TODO: Make this correct!
 
@@ -79,7 +79,7 @@ namespace Peach.Core.Language.DotNet.Generators
 			//return false;
 		}
 
-		public static ITypeGenerator CreateInstance(IContext context, IGroup group, Type type, object[] obj)
+		public static new ITypeGenerator CreateInstance(IContext context, IGroup group, Type type, object[] obj)
 		{
 			return new ObjectGenerator(context, group, type);
 		}

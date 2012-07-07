@@ -49,7 +49,6 @@ namespace Peach.Core
 		static extern int uname(IntPtr buf);
 		static private bool mIsWindows;
 		static private bool mIsMac;
-		static private bool mIsX11;
 		
 		public enum OS { Windows, Mac, Linux, unknown };
 		
