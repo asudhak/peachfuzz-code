@@ -129,7 +129,8 @@ namespace Peach.Core.Test.Mutators
                 "       <Publisher class=\"File\"/>" +
                 "           <Param name=\"FileName\" value=\"fuzzed.png\"/>" +
                 "       </Publisher>" +
-                "   </Test>" +
+				"		<Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +

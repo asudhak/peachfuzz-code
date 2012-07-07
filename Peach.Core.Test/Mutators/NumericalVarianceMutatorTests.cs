@@ -100,7 +100,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"TheTest\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
-                "   </Test>" +
+				"		<Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -156,7 +157,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"TheTest\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
-                "   </Test>" +
+				"		<Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -212,7 +214,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"TheTest\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
-                "   </Test>" +
+				"		<Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +

@@ -97,7 +97,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"TheTest\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
-                "   </Test>" +
+				"		<Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -119,7 +120,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values 
-            Assert.IsTrue(testResults.Count == 4);
+            Assert.AreEqual(4, testResults.Count);
             Assert.IsTrue((testResults[0][0] == 1) | (testResults[0][0] == 2) | (testResults[0][0] == 4) | (testResults[0][0] == 8) | (testResults[0][0] == 16) | (testResults[0][0] == 32) | (testResults[0][0] == 64) | (testResults[0][0] == 128));
             Assert.IsTrue((testResults[1][0] == 1) | (testResults[1][0] == 2) | (testResults[1][0] == 4) | (testResults[1][0] == 8) | (testResults[1][0] == 16) | (testResults[1][0] == 32) | (testResults[1][0] == 64) | (testResults[1][0] == 128));
             Assert.IsTrue((testResults[2][0] == 1) | (testResults[2][0] == 2) | (testResults[2][0] == 4) | (testResults[2][0] == 8) | (testResults[2][0] == 16) | (testResults[2][0] == 32) | (testResults[2][0] == 64) | (testResults[2][0] == 128));
