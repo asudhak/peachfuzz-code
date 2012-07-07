@@ -1,13 +1,25 @@
 <?xml version="1.0"?>
 <project name="Peach" default="build" basedir=".">
 
-	<!-- <property name="nant.settings.currentframework" value="net-4.0" /> -->
-	
-	<property name="build.dir" value="build" readonly="false"/>
-	<property name="build.platform" value="windows" readonly="false" /> <!-- osx, linux, windows -->
-	<property name="debug" value="true" readonly="false" />
+	<!-- ================================================================== -->
+	<!-- Peach 3 NAnt Build System                                          -->
+	<!--                                                                    -->
+	<!-- nant -D:build.platform=windows|osx|linux                           -->
+	<!--                                                                    -->
+	<!-- build\     Destination folder.  Will change in future.             -->
+	<!-- ================================================================== -->
 
+	<!-- Setup build configuration.  Override via commandline if needed -->
+	<property name="build.dir" value="build"  overwrite="false" />
+	<property name="build.platform" value="windows" overwrite="false" /> <!-- osx, linux, windows -->
+	<property name="debug" value="true" overwrite="false" />
+	
+	<property name="nant.settings.currentframework" value="net-4.0" if="${build.platform == 'windows'}" />
+	<property name="nant.settings.currentframework" value="mono-4.0" if="${build.platform != 'windows'}" />
+
+	<!-- Setup the correct file separater to use -->
 	<property name="file.sep" value="\" if="${build.platform == 'windows'}"/>
+	<property name="file.sep" value="/" if="${build.platform != 'windows'}"/>
 
 	<property name="references.nlog" value="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" if="${build.platform == 'windows'}" />
 	<property name="references.nlog" value="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}Mono 2.x${file.sep}NLog.dll" if="${build.platform != 'windows'}" />
