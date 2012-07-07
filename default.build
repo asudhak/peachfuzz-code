@@ -291,11 +291,17 @@
 				<include name="System.Xml.dll" />
 			</references>
 		</csc>
+		
 		<copy todir="${build.dir}">
 			<fileset basedir="PeachFuzzBang">
 				<include name="Introduction.rtf" />
 				<include name="LinuxDebugging.rtf" />
 				<include name="OSXDebugging.rtf" />
+			</fileset>
+			<fileset basedir="Peach">
+				<include name="samples" />
+				<include name="template.xml" />
+				<include name="NLog.config" />
 			</fileset>
 		</copy>
 		
