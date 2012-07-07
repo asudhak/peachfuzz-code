@@ -84,6 +84,18 @@
 					<include name="${references.nlog}" />
 				</references>
 			</csc>
+
+			<csc target="exe" output="${build.dir}${file.sep}Peach.Core.ComContainer.exe" debug="${debug}">
+				<sources>
+					<include name="Peach.Core.ComContainer\**.cs" />
+				</sources>
+				<references>
+					<include name="${build.dir}${file.sep}Peach.Core.dll" />
+					<include name="${build.dir}${file.sep}Peach.Core.OS.Windows.dll" />
+					<include name="${references.nlog}" />
+					<include name="System.Runtime.Remoting" />
+				</references>
+			</csc>
 		</if>
 		
 		<csc target="library" output="${build.dir}${file.sep}Peach.Core.OS.Linux.dll" debug="${debug}">
@@ -112,11 +124,68 @@
 				<include name="${references.nlog}" />
 			</references>
 		</csc>
-		
+
+		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Language.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.Language${file.sep}**.cs" />
+			</sources>
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${references.nlog}" />
+			</references>
+		</csc>
+
+		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Language.TestAssembly.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.Language.TestAssembly${file.sep}**.cs" />
+			</sources>
+			<references>
+				<include name="${references.nlog}" />
+			</references>
+		</csc>
+
+		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Proxy.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.Proxy${file.sep}**.cs" />
+			</sources>
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${references.nlog}" />
+			</references>
+		</csc>
+
+		<csc target="library" output="${build.dir}${file.sep}Peach.Core.Xml.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.Xml${file.sep}**.cs" />
+			</sources>
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${references.nlog}" />
+			</references>
+		</csc>
+
 		<csc target="exe" output="${build.dir}${file.sep}Peach.exe" debug="${debug}">
 			<nowarn>
-				<warning number="0168" /> <!-- unused variables -->
-			</nowarn>			
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+
 			<sources>
 				<include name="Peach${file.sep}**.cs"/>
 			</sources>
@@ -128,8 +197,108 @@
 				<include name="System.Data.dll" />
 				<include name="System.Xml.dll" />
 			</references>
-
 		</csc>
+
+		<csc target="exe" output="${build.dir}${file.sep}PeachAssemblyFuzzer.exe" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+
+			<sources>
+				<include name="PeachAssemblyFuzzer${file.sep}**.cs"/>
+			</sources>
+
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${build.dir}${file.sep}Peach.Core.Language.dll" />
+				<include name="${references.nlog}" />
+				<include name="System.Data.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+		</csc>
+
+		<csc target="exe" output="${build.dir}${file.sep}PeachXmlGenerator.exe" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+
+			<sources>
+				<include name="PeachXmlGenerator${file.sep}**.cs"/>
+			</sources>
+
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="${references.nlog}" />
+				<include name="System.Configuration.dll" />
+				<include name="System.Core.dll" />
+				<include name="System.Data.dll" />
+				<include name="System.Data.DataSetExtension.dll" />
+				<include name="System.Drawing.dll" />
+				<include name="System.ServiceProcess.dll" />
+				<include name="System.Windows.Forms.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+		</csc>
+
+		<csc target="exe" output="${build.dir}${file.sep}PeachNetworkFuzzer.exe" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+
+			<sources>
+				<include name="PeachNetworkFuzzer${file.sep}**.cs"/>
+			</sources>
+
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="3rdParty${file.sep}SharpPcap-4.1.0${file.sep}Release${file.sep}SharpPcap.dll" />
+				<include name="${references.nlog}" />
+				<include name="System.Configuration.dll" />
+				<include name="System.Core.dll" />
+				<include name="System.Data.dll" />
+				<include name="System.Data.DataSetExtension.dll" />
+				<include name="System.Drawing.dll" />
+				<include name="System.ServiceProcess.dll" />
+				<include name="System.Windows.Forms.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+		</csc>
+
+		<csc target="exe" output="${build.dir}${file.sep}PeachFuzzBang.exe" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+
+			<sources>
+				<include name="PeachFuzzBang${file.sep}**.cs"/>
+			</sources>
+
+			<references>
+				<include name="${build.dir}${file.sep}Peach.Core.dll" />
+				<include name="3rdParty${file.sep}SharpPcap-4.1.0${file.sep}Release${file.sep}SharpPcap.dll" />
+				<include name="${references.nlog}" />
+				<include name="System.Configuration.dll" />
+				<include name="System.Core.dll" />
+				<include name="System.Data.dll" />
+				<include name="System.Data.DataSetExtension.dll" />
+				<include name="System.Drawing.dll" />
+				<include name="System.ServiceProcess.dll" />
+				<include name="System.Windows.Forms.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+		</csc>
+		<copy todir="${build.dir}">
+			<fileset basedir="PeachFuzzBang">
+				<include name="Introduction.rtf" />
+				<include name="LinuxDebugging.rtf" />
+				<include name="OSXDebugging.rtf" />
+			</fileset>
+		</copy>
+		
 	</target>
 
 	<target name="test" depends="build">
