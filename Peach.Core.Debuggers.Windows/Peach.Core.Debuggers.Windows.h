@@ -269,6 +269,7 @@ namespace PeachCoreDebuggersWindows {
 			}
 
 			ReleaseMutex(hMutexHandlingDebugEvent);
+			return false;
 		}
 
 		// Stop our debugger

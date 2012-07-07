@@ -28,7 +28,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeachSpider", "PeachSpider\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{517FD253-BB2D-447C-BEAF-8EF4291D6615}"
 	ProjectSection(SolutionItems) = preProject
+		build.bat = build.bat
 		ChangeList.txt = ChangeList.txt
+		default.build = default.build
 		LICENSE.txt = LICENSE.txt
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
 		MonoCompatability.txt = MonoCompatability.txt

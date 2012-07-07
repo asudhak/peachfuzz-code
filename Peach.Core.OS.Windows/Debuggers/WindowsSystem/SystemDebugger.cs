@@ -149,8 +149,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			// CreateProcess
 			UnsafeMethods.STARTUPINFO startUpInfo = new UnsafeMethods.STARTUPINFO();
 			UnsafeMethods.PROCESS_INFORMATION processInformation = new UnsafeMethods.PROCESS_INFORMATION();
-			UnsafeMethods.SECURITY_ATTRIBUTES sa1 = new UnsafeMethods.SECURITY_ATTRIBUTES();
-			UnsafeMethods.SECURITY_ATTRIBUTES sa2 = new UnsafeMethods.SECURITY_ATTRIBUTES();
+			//UnsafeMethods.SECURITY_ATTRIBUTES sa1 = new UnsafeMethods.SECURITY_ATTRIBUTES();
+			//UnsafeMethods.SECURITY_ATTRIBUTES sa2 = new UnsafeMethods.SECURITY_ATTRIBUTES();
 
 			//if (!UnsafeMethods.CreateProcess(
 			//        null,			// lpApplicationName 

@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<project name="Peach" default="build" basedir=".">
+	<property name="build.dir" value="build" />
+	<property name="build.platform" value="windows" /> <!-- osx, linux, windows -->
+	<property name="debug" value="true" />
+
+	<target name="build">
+
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}\obj" />
+
+		<csc target="library" output="${build.dir}\Peach.Core.dll" unsafe="true" define="PEACH" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+
+			<sources>
+				<include name="Peach.Core\**.cs" />
+			</sources>
+
+			<references>
+				<include name="3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll" />
+				<include name="3rdParty\DotNetZipLib-v1.7\Release\Ionic.Zip.dll" />
+				<include name="3rdParty\IronPython-2.7.1\IronPython.dll" />
+				<include name="3rdParty\IronPython-2.7.1\IronPython.Modules.dll" />
+				<include name="3rdParty\IronRuby-1.1.3\bin\IronRuby.dll" />
+				<include name="3rdParty\IronRuby-1.1.3\bin\IronRuby.Libraries.dll" />
+				<include name="3rdParty\IronRuby-1.1.3\bin\IronRuby.Libraries.Yaml.dll" />
+				<include name="3rdParty\IronPython-2.7.1\Microsoft.Dynamic.dll" />
+				<include name="3rdParty\IronPython-2.7.1\Microsoft.Scripting.dll" />
+				<include name="3rdParty\IronPython-2.7.1\Microsoft.Scripting.Metadata.dll" />
+				<include name="3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll" />
+				<include name="3rdParty\SharpPcap-3.6.0\SharpPcap.dll" />
+				
+				<include name="Microsoft.CSharp.dll" />
+				<include name="System.Data.dll" />
+				<include name="System.Management.dll" />
+				<include name="System.Runtime.Remoting.dll" />
+				<include name="System.ServiceProcess.dll" />
+				<include name="System.Web.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+		</csc>
+
+		<if test="${build.platform == 'windows'}">
+			<mkdir dir="${build.dir}\obj\Peach.Core.Debuggers.Windows"/>
+			<cl	outputdir="${build.dir}\obj\Peach.Core.Debuggers.Windows" 
+				pchfile="Peach.Core.Debuggers.Windows.pch"
+				pchmode="AutoCreate"
+				characterset="MultiByte"
+				managedextensions="true"
+				options="/D&quot;_UNICODE&quot; /D&quot;UNICODE&quot; /FU&quot;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Core.dll&quot; /FU&quot;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Data.dll&quot; /FU&quot;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.dll&quot; /FU&quot;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Xml.dll&quot;">
+			
+				<sources>
+					<include name="Peach.Core.Debuggers.Windows\**.cpp" />
+				</sources>
+			</cl>
+			<link output="${build.dir}\Peach.Core.Debuggers.Windows.dll" options="/DLL">
+				<sources>
+					<include name="${build.dir}\obj\Peach.Core.Debuggers.Windows\*.obj" />
+				</sources>
+			</link>
+			
+			<csc target="library" output="${build.dir}\Peach.Core.OS.Windows.dll" unsafe="true" debug="${debug}">
+				<nowarn>
+					<warning number="0168" />
+					<!-- unused variables -->
+				</nowarn>
+				<sources>
+					<include name="Peach.Core.OS.Windows\**.cs" />
+				</sources>
+				<references>
+					<include name="${build.dir}\Peach.Core.dll" />
+					<include name="${build.dir}\Peach.Core.Debuggers.Windows.dll" />
+					<include name="3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll" />
+				</references>
+			</csc>
+		</if>
+		
+		<csc target="library" output="${build.dir}\Peach.Core.OS.Linux.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.OS.Linux\**.cs" />
+			</sources>
+			<references>
+				<include name="${build.dir}\Peach.Core.dll" />
+				<include name="3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll" />
+			</references>
+		</csc>
+		<csc target="library" output="${build.dir}\Peach.Core.OS.OSX.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.OS.OSX\**.cs" />
+			</sources>
+			<references>
+				<include name="${build.dir}\Peach.Core.dll" />
+				<include name="3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll" />
+			</references>
+		</csc>
+		
+		<csc target="exe" output="${build.dir}\Peach.exe" debug="${debug}">
+			<nowarn>
+				<warning number="0168" /> <!-- unused variables -->
+			</nowarn>			
+			<sources>
+				<include name="Peach\**.cs"/>
+			</sources>
+
+			<references>
+				<include name="${build.dir}\Peach.Core.dll" />
+				<include name="3rdParty\SharpPcap-3.6.0\SharpPcap.dll" />
+				<include name="3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll" />
+				<include name="System.Data.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+
+		</csc>
+	</target>
+
+	<target name="test" depends="build">
+		<csc target="library" output="${build.dir}\Peach.Core.Test.dll" debug="${debug}">
+			<nowarn>
+				<warning number="0414" />
+				<warning number="0168" />
+				<!-- unused variables -->
+			</nowarn>
+			<sources>
+				<include name="Peach.Core.Test\**.cs" />
+			</sources>
+			<references>
+				<include name="${build.dir}\Peach.Core.dll" />
+				<include name="${build.dir}\Peach.Core.OS.Linux.dll" />
+				<include name="${build.dir}\Peach.Core.OS.OSX.dll" />
+				<include name="${build.dir}\Peach.Core.OS.Windows.dll" />
+				
+				<include name="3rdParty\NUnit-2.6.0.12051\bin\nunit.framework.dll"/>
+				<include name="3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll" />
+				
+				<include name="System.Data.dll" />
+				<include name="System.Xml.dll" />
+			</references>
+		</csc>
+
+		<nunit2>
+			<formatter type="Xml" usefile="true" extension=".xml" outputdir="${build.dir}/results" />
+			<test assemblyname="${build.dir}\Peach.Core.Test.dll">
+				<references basedir="${build.dir}">
+					<include name="Peach.Core.dll" />
+					<include name="Peach.Core.OS.Linux.dll" />
+					<include name="Peach.Core.OS.OSX.dll" />
+					<include name="Peach.Core.OS.Windows.dll" />
+				</references>
+			</test>
+		</nunit2>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+</project>
