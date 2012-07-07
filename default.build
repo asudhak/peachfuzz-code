@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="Peach" default="build" basedir=".">
 
-	<property name="nant.settings.currentframework" value="net-4.0" />
+	<!-- <property name="nant.settings.currentframework" value="net-4.0" /> -->
 	
 	<property name="build.dir" value="build" readonly="false"/>
 	<property name="build.platform" value="windows" readonly="false" /> <!-- osx, linux, windows -->
