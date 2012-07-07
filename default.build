@@ -8,7 +8,6 @@
 	<property name="debug" value="true" readonly="false" />
 
 	<property name="file.sep" value="\" if="${build.platform == 'windows'}"/>
-	<property name="file.sep" value="/" if="${build.platform != 'windows'}"/>
 
 	<property name="references.nlog" value="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}.NET Framework 4.0${file.sep}NLog.dll" if="${build.platform == 'windows'}" />
 	<property name="references.nlog" value="3rdParty${file.sep}NLog-v2.0.0.2000${file.sep}Mono 2.x${file.sep}NLog.dll" if="${build.platform != 'windows'}" />
@@ -40,7 +39,7 @@
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}Microsoft.Scripting.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}Microsoft.Scripting.Metadata.dll" />
 				<include name="${references.nlog}" />
-				<include name="3rdParty${file.sep}SharpPcap-3.6.0${file.sep}SharpPcap.dll" />
+				<include name="3rdParty${file.sep}SharpPcap-4.1.0${file.sep}Release${file.sep}SharpPcap.dll" />
 				
 				<include name="Microsoft.CSharp.dll" />
 				<include name="System.Data.dll" />
@@ -124,7 +123,7 @@
 
 			<references>
 				<include name="${build.dir}${file.sep}Peach.Core.dll" />
-				<include name="3rdParty${file.sep}SharpPcap-3.6.0${file.sep}SharpPcap.dll" />
+				<include name="3rdParty${file.sep}SharpPcap-4.1.0${file.sep}Release${file.sep}SharpPcap.dll" />
 				<include name="${references.nlog}" />
 				<include name="System.Data.dll" />
 				<include name="System.Xml.dll" />

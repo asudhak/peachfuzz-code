@@ -361,6 +361,10 @@
       <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
+    <Reference Include="SharpPcap, Version=3.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\SharpPcap-4.1.0\Release\SharpPcap.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Management" />
@@ -370,9 +374,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpPcap, Version=3.6.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\3rdParty\SharpPcap-3.6.0\SharpPcap.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

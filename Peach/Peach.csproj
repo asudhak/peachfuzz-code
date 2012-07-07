@@ -317,8 +317,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
-    <Reference Include="SharpPcap">
-      <HintPath>..\3rdParty\SharpPcap-3.6.0\SharpPcap.dll</HintPath>
+    <Reference Include="SharpPcap, Version=3.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\SharpPcap-4.1.0\Release\SharpPcap.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
