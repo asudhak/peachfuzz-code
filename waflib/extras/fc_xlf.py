@@ -38,16 +38,21 @@ def xlf_modifier_platform(conf):
 def get_xlf_version(conf, fc):
 	"""Get the compiler version"""
 
-	version_re = re.compile(r"IBM XL Fortran.*, V(?P<major>\d*)\.(?P<minor>\d*)", re.I).search
 	cmd = fc + ['-qversion']
+	try:
+		out, err = conf.cmd_and_log(cmd, output=0)
+	except Errors.WafError:
+		conf.fatal('Could not find xlf %r' % cmd)
 
-	out, err = fc_config.getoutput(conf,cmd,stdin=False)
-	if out: match = version_re(out)
-	else: match = version_re(err)
-	if not match:
+	for v in (r"IBM XL Fortran.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL Fortran.*Version: V(?P<major>\d*)\.(?P<minor>\d*)"
+		version_re = re.compile(v, re.I | re.M).search
+		match = version_re(out or err)
+		if match:
+			k = match.groupdict()
+			conf.env['FC_VERSION'] = (k['major'], k['minor'])
+			break
+	else:
 		conf.fatal('Could not determine the XLF version.')
-	k = match.groupdict()
-	conf.env['FC_VERSION'] = (k['major'], k['minor'])
 
 def configure(conf):
 	conf.find_xlf()
