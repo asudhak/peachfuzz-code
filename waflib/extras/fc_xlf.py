@@ -44,7 +44,7 @@ def get_xlf_version(conf, fc):
 	except Errors.WafError:
 		conf.fatal('Could not find xlf %r' % cmd)
 
-	for v in (r"IBM XL Fortran.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL Fortran.*Version: V(?P<major>\d*)\.(?P<minor>\d*)"
+	for v in (r"IBM XL Fortran.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL Fortran.*Version: V(?P<major>\d*)\.(?P<minor>\d*)"):
 		version_re = re.compile(v, re.I | re.M).search
 		match = version_re(out or err)
 		if match:
