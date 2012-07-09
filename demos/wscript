@@ -43,7 +43,8 @@ def configure(conf):
 	except:
 		sub = ''
 
-	conf.exec_command('%s %s configure build --zip-type=gz --tools=doxygen,fluid,ocaml,swig,compiler_fc,fc_config,fc,fc_scan,g95,ifort,gfortran,batched_cc,%s --prelude='' && /bin/cp waf demos/' % (sys.executable, sys.argv[0], sub),
+	curwaf = os.path.abspath(sys.argv[0])
+	conf.exec_command('%s %s configure build --zip-type=gz --tools=doxygen,fluid,ocaml,swig,compiler_fc,fc_config,fc,fc_scan,g95,ifort,gfortran,batched_cc,%s --prelude='' && /bin/cp waf demos/' % (sys.executable, curwaf, sub),
 		cwd=conf.path.parent.abspath())
 
 	node = conf.path.find_resource('waf')
