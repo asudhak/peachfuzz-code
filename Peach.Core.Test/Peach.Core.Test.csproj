@@ -204,7 +204,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Agent\AgentPlatformAttributeTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="BitStreamTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />
@@ -265,8 +264,6 @@
     <Compile Include="OutputTests\RandomStrategyTests.cs" />
     <Compile Include="PeachXPathTests.cs" />
     <Compile Include="PitParserTests\ArrayTests.cs" />
-    <Compile Include="Debuggers\WinDbgTestscs.cs" />
-    <Compile Include="Debuggers\WinSystemTests.cs" />
     <Compile Include="Monitors\PcapMonitorTests.cs" />
     <Compile Include="OutputTests\SizeRelationTests.cs" />
     <Compile Include="PitParserTests\BlockTests.cs" />
@@ -350,7 +347,10 @@
       <Name>Peach.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Agent\" />
+    <Folder Include="Debuggers\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="NLog.config">
