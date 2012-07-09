@@ -1104,7 +1104,7 @@ def get_xlc_version(conf, cc):
 	except Errors.WafError:
 		conf.fatal('Could not find xlc %r' % cmd)
 
-	for v in (r"IBM XL C/C\+\+.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL C/C\+\+.*Version: V(?P<major>\d*)\.(?P<minor>\d*)"):
+	for v in (r"IBM XL C/C\+\+.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL C/C\+\+.*Version: (?P<major>\d*)\.(?P<minor>\d*)"):
 		version_re = re.compile(v, re.I | re.M).search
 		match = version_re(out or err)
 		if match:
