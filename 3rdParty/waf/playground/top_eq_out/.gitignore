@@ -1,0 +1,5 @@
+*.o
+.lock-w*
+.conf_check_*
+config.log
+c4che
