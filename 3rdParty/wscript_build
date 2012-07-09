@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-bld.read_csshlib('NLog.dll',                         paths=['NLog-v2.0.0.2000/Mono 2.x'])
+nlog = bld.env.CS_NAME == 'mono' and 'Mono 2.x' or '.NET Framework 4.0'
+
+bld.read_csshlib('NLog.dll',                         paths=['NLog-v2.0.0.2000/%s' % nlog])
 bld.read_csshlib('nunit.framework.dll',              paths=['NUnit-2.6.0.12051/bin/framework'])
 bld.read_csshlib('CookComputing.XmlRpcV2.dll',       paths=['xml-rpc.net-2.5.0/bin'])
 bld.read_csshlib('SharpPcap.dll',                    paths=['SharpPcap-4.1.0/Release'])

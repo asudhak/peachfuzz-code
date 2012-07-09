@@ -1,0 +1,3 @@
+
+def configure(conf):
+	pass

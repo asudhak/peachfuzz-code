@@ -3,7 +3,9 @@ from waflib import Task
 from waflib.TaskGen import extension
 
 def configure(conf):
-	conf.find_program(['resgen'], var='RESGEN')
+	path = conf.env['TOOLCHAIN_PATH']
+	conf.find_program(['resgen'], var='RESGEN', path_list=path)
+	conf.env.RESGENFLAGS = '/useSourcePath'
 
 @extension('.resx')
 def resx_file(self, node):
@@ -29,4 +31,4 @@ class resgen(Task.Task):
 	Compile C# resource files
 	"""
 	color   = 'YELLOW'
-	run_str = '${RESGEN} ${SRC} ${TGT}'
+	run_str = '${RESGEN} ${RESGENFLAGS} ${SRC} ${TGT}'

@@ -1,9 +1,7 @@
 from waflib import Utils
 
-archs = [ ]
+archs = [ 'x86', 'x86_64' ]
 tools = [
-#	'gcc',
-#	'gxx',
 	'mcs',
 	'resx',
 ]

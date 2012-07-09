@@ -23,6 +23,8 @@ def cs_helpers(self):
 	if not getattr(self, 'gen', None):
 		setattr(self, 'gen', self.name)
 	
+	setattr(self, 'platform', self.env.ARCH)
+
 	cfg = getattr(self, 'config', None)
 	if cfg:
 		try:

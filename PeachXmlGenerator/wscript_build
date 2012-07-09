@@ -10,9 +10,9 @@ deps = [
 ]
 
 bld(
-	features = 'cs',
-	use = deps,
-	source = bld.path.ant_glob('**/*.cs **/*.resx'),
-	name='PeachXmlGenerator.exe',
-	config='app.config',
+#	features = 'cs',
+#	use = deps,
+#	source = bld.path.ant_glob('**/*.cs **/*.resx'),
+#	name='PeachXmlGenerator.exe',
+#	config='app.config',
 )
