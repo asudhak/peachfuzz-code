@@ -76,7 +76,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public struct SECURITY_ATTRIBUTES
 		{
 			public int nLength;
-			public unsafe byte* lpSecurityDescriptor;
+			public IntPtr lpSecurityDescriptor;
 			public int bInheritHandle;
 		}
 

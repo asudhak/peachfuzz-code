@@ -39,7 +39,7 @@
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
@@ -50,14 +50,14 @@
     <DefineConstants>TRACE;PEACH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\PeachCore.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -76,7 +76,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -93,7 +93,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\PeachCore.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -111,7 +111,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -130,7 +130,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug - OS X\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\Peach.Core.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -147,7 +147,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug - OS X\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\PeachCore.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -165,7 +165,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug - OS X\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\PeachCore.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -181,7 +181,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OS X|AnyCPU'">
     <OutputPath>bin\Release - OS X\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -197,7 +197,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OS X|x86'">
     <OutputPath>bin\x86\Release - OS X\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -214,7 +214,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OS X|x64'">
     <OutputPath>bin\x64\Release - OS X\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -232,7 +232,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug - Linux\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\Peach.Core.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -250,7 +250,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug - Linux\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\PeachCore.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -266,7 +266,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug - Linux\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\PeachCore.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
@@ -282,7 +282,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Linux|AnyCPU'">
     <OutputPath>bin\Release - Linux\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -300,7 +300,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Linux|x86'">
     <OutputPath>bin\x86\Release - Linux\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -317,7 +317,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Linux|x64'">
     <OutputPath>bin\x64\Release - Linux\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -447,7 +447,6 @@
     <Compile Include="CommonAttributes.cs" />
     <Compile Include="Cracker\DataCracker.cs" />
     <Compile Include="Cracker\IncomingStream.cs" />
-    <Compile Include="DataConverter.cs" />
     <Compile Include="Dom\Array.cs" />
     <Compile Include="Dom\Asn1Element.cs" />
     <Compile Include="Dom\Blob.cs" />
