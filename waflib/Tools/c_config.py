@@ -1104,8 +1104,9 @@ def get_xlc_version(conf, cc):
 	except Errors.WafError:
 		conf.fatal('Could not find xlc %r' % cmd)
 
-	for v in (r"IBM XL C/C\+\+.*, V(?P<major>\d*)\.(?P<minor>\d*)", r"IBM XL C/C\+\+.*Version: (?P<major>\d*)\.(?P<minor>\d*)"):
-		version_re = re.compile(v, re.I | re.M).search
+	# the intention is to catch the 8.0 in "IBM XL C/C++ Enterprise Edition V8.0 for AIX..."
+	for v in (r"IBM XL C/C\+\+.* V(?P<major>\d*)\.(?P<minor>\d*)"):
+		version_re = re.compile(v, re.I).search
 		match = version_re(out or err)
 		if match:
 			k = match.groupdict()
