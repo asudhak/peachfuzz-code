@@ -43,10 +43,12 @@ def configure(conf):
 	except:
 		sub = ''
 
-	conf.exec_command('./waf-light configure build --zip-type=gz --tools=doxygen,fluid,ocaml,swig,compiler_fc,fc_config,fc,fc_scan,g95,ifort,gfortran,batched_cc,%s --prelude='' && /bin/cp waf demos/' % sub, cwd=conf.path.parent.abspath())
+	conf.exec_command('%s %s configure build --zip-type=gz --tools=doxygen,fluid,ocaml,swig,compiler_fc,fc_config,fc,fc_scan,g95,ifort,gfortran,batched_cc,%s --prelude='' && /bin/cp waf demos/' % (sys.executable, sys.argv[0], sub),
+		cwd=conf.path.parent.abspath())
+
 	node = conf.path.find_resource('waf')
 	if not node:
-		conf.fatal('could not find Waf')
+		conf.fatal('Could not find Waf')
 	#if conf.exec_command([node.abspath(), '--help'], shell=False, env={}, cwd=node.parent.abspath()):
 	#	conf.fatal('the waf file cannot be executed')
 	conf.env.WAF = node.abspath()

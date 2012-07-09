@@ -40,8 +40,8 @@ C2='x'
 cwd = os.getcwd()
 join = os.path.join
 
-if sys.hexversion<0x206000f:
-	raise ImportError('Python >= 2.6 is required to create the waf file')
+#if sys.hexversion<0x206000f:
+#	raise ImportError('Python >= 2.6 is required to create the waf file')
 
 WAF='waf'
 def b(x):
@@ -76,13 +76,13 @@ def unpack_wafdir(dir):
 		for x in ['Tools', 'extras']:
 			os.makedirs(join(dir, 'waflib', x))
 	except OSError:
-		err("Cannot unpack waf lib into %s\nMove waf into a writeable directory" % dir)
+		err("Cannot unpack waf lib into %s\nMove waf in a writable directory" % dir)
 
 	os.chdir(dir)
 	tmp = 't.bz2'
 	t = open(tmp,'wb')
-	t.write(txt)
-	t.close()
+	try: t.write(txt)
+	finally: t.close()
 
 	try:
 		t = tarfile.open(tmp)
@@ -97,8 +97,10 @@ def unpack_wafdir(dir):
 			except OSError: pass
 			err("Waf cannot be unpacked, check that bzip2 support is present")
 
-	for x in t: t.extract(x)
-	t.close()
+	try:
+		for x in t: t.extract(x)
+	finally:
+		t.close()
 
 	for x in ['Tools', 'extras']:
 		os.chmod(join('waflib',x), 493)
