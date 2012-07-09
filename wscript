@@ -48,7 +48,7 @@ def configure(ctx):
 			try:
 				ctx.setenv(name, env=base_env)
 				arch_env = ctx.get_env()
-				arch_env.ARCH = arch;
+				arch_env.SUBARCH = arch;
 				arch_env.BINDIR = os.path.join(base_env.BINDIR, name)
 				arch_env.LIBDIR = os.path.join(base_env.LIBDIR, name)
 				config.prepare(ctx)

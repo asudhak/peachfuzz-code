@@ -29,7 +29,7 @@ def prepare(conf):
                 'Microsoft SDKs\\Windows\\v7.1\\bin',
                 'Microsoft SDKs\\Windows\\v7.0A\\bin',
                 'Microsoft Visual Studio 10.0\\VC\\bin',
-                'Microsoft Visual Studio 10.0\\Common7\\bin',
+                'Microsoft Visual Studio 10.0\\Common7\\IDE',
         ]) + setup_windir([
                 'Microsoft.NET\\Framework\\v4.0.30319'
         ])
@@ -38,7 +38,7 @@ def prepare(conf):
                 'Microsoft SDKs\\Windows\\v7.1\\bin',
                 'Microsoft SDKs\\Windows\\v7.0A\\bin',
                 'Microsoft Visual Studio 10.0\\VC\\bin\\x86_amd64',
-                'Microsoft Visual Studio 10.0\\Common7\\bin',
+                'Microsoft Visual Studio 10.0\\Common7\\IDE',
         ]) + setup_windir([
                 'Microsoft.NET\\Framework64\\v4.0.30319'
         ])
@@ -61,8 +61,8 @@ def prepare(conf):
                 'Microsoft Visual Studio 10.0\\VC\\include',
         ])
 
-        env['TOOLCHAIN_PATH'] = env['TOOLCHAIN_PATH_%s' % env.ARCH]
-        env['TOOLCHAIN_LIBS'] = env['TOOLCHAIN_LIBS_%s' % env.ARCH]
+        env['TOOLCHAIN_PATH'] = env['TOOLCHAIN_PATH_%s' % env.SUBARCH]
+        env['TOOLCHAIN_LIBS'] = env['TOOLCHAIN_LIBS_%s' % env.SUBARCH]
 
 def configure(conf):
         env = conf.env
