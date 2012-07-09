@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+bld(
+	features = 'cs',
+	source = bld.path.ant_glob('**/*.cs'),
+	name='Peach.Core.Xml.dll',
+)
