@@ -366,7 +366,7 @@ class rcc(Task.Task):
 		fi = open(self.inputs[0].abspath(), 'r')
 		try:
 			parser.parse(fi)
-		except:
+		finally:
 			fi.close()
 
 		nodes = []
