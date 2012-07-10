@@ -48,40 +48,25 @@ namespace Peach.Core.Transformers.Compress
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-			byte[] buff = new byte[1024];
-			int ret;
-
 			MemoryStream sin = new MemoryStream(data.Value);
 			MemoryStream sout = new MemoryStream();
-
             BZip2OutputStream bzip2 = new BZip2OutputStream(sout);
 
-            do 
-            {
-                ret = sin.Read(buff, 0, buff.Length);
-                bzip2.Write(buff, 0, ret);
-            } 
-            while (ret != 0);
+			sin.CopyTo(bzip2);
+			bzip2.Flush();
+			bzip2.Dispose();
 
-            return new BitStream(bzip2);
+            return new BitStream(sout.ToArray());
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			byte[] buff = new byte[1024];
-			int ret;
-
 			MemoryStream sin = new MemoryStream(data.Value);
 			MemoryStream sout = new MemoryStream();
-
             BZip2InputStream bzip2 = new BZip2InputStream(sin);
 
-            do
-            {
-                ret = bzip2.Read(buff, 0, buff.Length);
-                sout.Write(buff, 0, ret);
-            }
-            while (ret != 0);
+			bzip2.CopyTo(sout);
+			bzip2.Dispose();
 
             return new BitStream(sout.ToArray());
 		}
