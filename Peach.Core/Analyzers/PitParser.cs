@@ -115,6 +115,11 @@ namespace Peach.Core.Analyzers
 		{
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
@@ -1109,6 +1114,11 @@ namespace Peach.Core.Analyzers
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
@@ -1175,6 +1185,11 @@ namespace Peach.Core.Analyzers
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
@@ -1239,6 +1254,11 @@ namespace Peach.Core.Analyzers
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
@@ -1304,6 +1324,11 @@ namespace Peach.Core.Analyzers
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
@@ -1712,6 +1737,11 @@ namespace Peach.Core.Analyzers
 				// Locate and load default strategy.
 				foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 				{
+					// Reflection of this type not supported on
+					// dynamic assemblies.
+					if (a.IsDynamic)
+						continue;
+
 					foreach (Type t in a.GetExportedTypes())
 					{
 						if (!t.IsClass)
@@ -1749,7 +1779,12 @@ namespace Peach.Core.Analyzers
 			// Locate PublisherAttribute classes and check name
 			foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
-				foreach(Type t in a.GetExportedTypes())
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
+				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
 						continue;
@@ -1898,6 +1933,11 @@ namespace Peach.Core.Analyzers
 			// Locate PublisherAttribute classes and check name
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)

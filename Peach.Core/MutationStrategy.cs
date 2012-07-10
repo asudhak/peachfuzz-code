@@ -129,6 +129,11 @@ namespace Peach.Core
 			// Locate all mutators
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				// Reflection of this type not supported on
+				// dynamic assemblies.
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)

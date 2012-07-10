@@ -126,7 +126,7 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"TheTest\">" +
                 "       <Agent ref=\"LocalAgent\"/>" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"File\"/>" +
+                "       <Publisher class=\"File\">" +
                 "           <Param name=\"FileName\" value=\"fuzzed.png\"/>" +
                 "       </Publisher>" +
 				"		<Strategy class=\"Sequencial\"/>" +
