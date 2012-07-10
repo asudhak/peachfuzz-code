@@ -18,7 +18,7 @@ namespace Peach.Core.Test.Monitors
     {
         bool firstPass = true;
         string testString = null;
-        List<string> testResults = new List<string>();
+        List<Variant> testResults = new List<Variant>();
 
         [Test]
         public void Test1()
@@ -89,8 +89,7 @@ namespace Peach.Core.Test.Monitors
             }
             else
             {
-                testString = (string)action.dataModel[0].InternalValue;
-                testResults.Add(testString);
+                testResults.Add(action.dataModel[0].InternalValue);
             }
         }
     }

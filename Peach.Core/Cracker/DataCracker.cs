@@ -451,6 +451,30 @@ namespace Peach.Core.Cracker
 
 				element.Crack(this, data);
 
+				if (element.constraint != null)
+				{
+					logger.Debug("Running constraint [" + element.constraint + "]");
+
+					Dictionary<string, object> scope = new Dictionary<string,object>();
+					scope["element"] = element;
+					
+					try
+					{
+						scope["value"] = (string)element.InternalValue;
+						logger.Debug("Constraint, value=[" + (string)element.InternalValue + "].");
+					}
+					catch
+					{
+						scope["value"] = (byte[])element.InternalValue;
+						logger.Debug("Constraint, value=byte array.");
+					}
+
+					object oReturn = Scripting.EvalExpression(element.constraint, scope);
+
+					if (!((bool)oReturn))
+						throw new CrackingFailure("Constraint failed.", element, data);
+				}
+
 				if (element.analyzer != null)
 					_elementsWithAnalyzer.Add(element);
 

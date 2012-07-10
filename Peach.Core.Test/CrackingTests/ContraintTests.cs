@@ -50,7 +50,7 @@ namespace Peach.Core.Test.CrackingTests
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Choice>" +
-				"			<Blob name=\"Blob10\" length=\"5\" constraint=\"value &lt; 10\" />" +
+				"			<Blob name=\"Blob10\" length=\"5\" constraint=\"len(value) &lt; 3\" />" +
 				"			<Blob name=\"Blob5\" length=\"5\" />" +
 				"		</Choice>" +
 				"	</DataModel>" +
@@ -78,7 +78,7 @@ namespace Peach.Core.Test.CrackingTests
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Choice>" +
-				"			<Blob name=\"Blob10\" length=\"5\" constraint=\"value &gt; 10\" />" +
+				"			<Blob name=\"Blob10\" length=\"5\" constraint=\"len(value) &gt; 3\" />" +
 				"			<Blob name=\"Blob5\" length=\"5\" />" +
 				"		</Choice>" +
 				"	</DataModel>" +
