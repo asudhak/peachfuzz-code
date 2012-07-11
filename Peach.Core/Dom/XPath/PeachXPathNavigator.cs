@@ -76,7 +76,6 @@ namespace Peach.Core.Dom.XPath
 			AttributeMatrix[typeof(State)] = new string[] { "name" };
 			AttributeMatrix[typeof(Action)] = new string[] { "name", "type", "method", "property" };
 			AttributeMatrix[typeof(Test)] = new string[] { "name" };
-			AttributeMatrix[typeof(Run)] = new string[] { "name" };
 
 			NodeTypeMap[typeof(Dom)] = PeachXPathNodeType.Root;
 			NodeTypeMap[typeof(DataElement)] = PeachXPathNodeType.DataModel;
@@ -84,7 +83,6 @@ namespace Peach.Core.Dom.XPath
 			NodeTypeMap[typeof(State)] = PeachXPathNodeType.StateModel;
 			NodeTypeMap[typeof(Action)] = PeachXPathNodeType.StateModel;
 			NodeTypeMap[typeof(Test)] = PeachXPathNodeType.Test;
-			NodeTypeMap[typeof(Run)] = PeachXPathNodeType.Run;
 		}
 
 		protected PeachXPathNodeType MapObjectToNodeType(object obj)
@@ -198,29 +196,10 @@ namespace Peach.Core.Dom.XPath
 			{
 				var dom = currentNode as Dom;
 
-				//if (dom.dataModels.Count > 0)
-				//{
-				//    currentNode = dom.dataModels[0];
-				//    currentNodeType = PeachXPathNodeType.DataModel;
-				//    return true;
-				//}
-				//else if (dom.stateModels.Count > 0)
-				//{
-				//    currentNode = dom.stateModels[0];
-				//    currentNodeType = PeachXPathNodeType.StateModel;
-				//    return true;
-				//}
-				//else if (dom.tests.Count > 0)
-				//{
-				//    currentNode = dom.tests[0];
-				//    currentNodeType = PeachXPathNodeType.Test;
-				//    return true;
-				//}
-
-				if (dom.runs.Count > 0)
+				if (dom.tests.Count > 0)
 				{
-					currentNode = dom.runs[0];
-					currentNodeType = PeachXPathNodeType.Run;
+					currentNode = dom.tests[0];
+					currentNodeType = PeachXPathNodeType.Test;
 					return true;
 				}
 
@@ -270,16 +249,6 @@ namespace Peach.Core.Dom.XPath
 
 				currentNode = test.stateModel;
 				currentNodeType = PeachXPathNodeType.StateModel;
-				return true;
-			}
-			else if (currentNode is Run)
-			{
-				var run = currentNode as Run;
-				if (run.tests.Count == 0)
-					return false;
-
-				currentNode = run.tests[0];
-				currentNodeType = PeachXPathNodeType.Test;
 				return true;
 			}
 
@@ -383,22 +352,12 @@ namespace Peach.Core.Dom.XPath
 			}
 			else if (currentNode is Test)
 			{
-				var run = parent as Run;
-				int index = run.tests.IndexOfKey(((INamed)currentNode).name);
-				if (run.tests.Count <= (index + 1))
-					return false;
-
-				currentNode = run.tests[index + 1];
-				return true;
-			}
-			else if (currentNode is Run)
-			{
 				var dom = parent as Dom;
-				int index = dom.runs.IndexOfKey(((INamed)currentNode).name);
-				if (dom.runs.Count <= (index + 1))
+				int index = dom.tests.IndexOfKey(((INamed)currentNode).name);
+				if (dom.tests.Count <= (index + 1))
 					return false;
 
-				currentNode = dom.runs[index + 1];
+				currentNode = dom.tests[index + 1];
 				return true;
 			}
 

@@ -421,7 +421,6 @@
     <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />
     <Compile Include="Dom\RelationContainer.cs" />
-    <Compile Include="Dom\Run.cs" />
     <Compile Include="Dom\State.cs" />
     <Compile Include="Dom\Test.cs" />
     <Compile Include="Dom\XmlAttribute.cs" />

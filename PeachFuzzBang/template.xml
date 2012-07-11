@@ -31,18 +31,13 @@
 
 	</StateModel>
 
-	<Test name="TheTest">
+	<Test name="Default">
 		<Agent ref="LocalAgent"/>
 		<StateModel ref="TheState"/>
 		<Publisher class="FileStream">
 			<Param name="FileName" value="%%FUZZEDFILE%%"/>
 		</Publisher>
 	</Test>
-
-	<!-- Configure a single run -->
-	<Run name="DefaultRun">
-		<Test ref="TheTest"/>
-	</Run>
 
 </Peach>
 <!-- end -->

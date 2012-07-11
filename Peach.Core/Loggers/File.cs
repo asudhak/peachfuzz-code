@@ -175,24 +175,9 @@ namespace Peach.Core.Loggers
 
 		protected override void Engine_TestFinished(RunContext context)
 		{
-			log.WriteLine(". Test finished: " + context.run.name + "." + context.test.name);
+			log.WriteLine(". Test finished: " + context.test.name);
 			log.Flush();
-		}
 
-		protected override void Engine_TestStarting(RunContext context)
-		{
-			log.WriteLine(". Test starting: " + context.run.name + "." + context.test.name);
-			log.Flush();
-		}
-
-		protected override void Engine_RunError(RunContext context, Exception e)
-		{
-			log.WriteLine("! Run error: " + e.ToString());
-			log.Flush();
-		}
-
-		protected override void Engine_RunFinished(RunContext context)
-		{
 			if (log != null)
 			{
 				log.Flush();
@@ -202,7 +187,7 @@ namespace Peach.Core.Loggers
 			}
 		}
 
-		protected override void Engine_RunStarting(RunContext context)
+		protected override void Engine_TestStarting(RunContext context)
 		{
 			if (log != null)
 			{
@@ -237,7 +222,7 @@ namespace Peach.Core.Loggers
 
 			log.WriteLine("Command line: " + context.config.commandLine);
 			log.WriteLine("Pit File: " + context.config.pitFile);
-			log.WriteLine("Run name: " + context.run.name);
+			log.WriteLine(". Test starting: " + context.test.name);
 			log.WriteLine("");
 
 			log.Flush();

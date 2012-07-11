@@ -47,9 +47,6 @@ namespace Peach.Core
 
 		public void Initialize(Engine engine, RunContext context)
 		{
-			engine.RunStarting += new Engine.RunStartingEventHandler(Engine_RunStarting);
-			engine.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
-			engine.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
 			engine.TestStarting += new Engine.TestStartingEventHandler(Engine_TestStarting);
 			engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
 			engine.TestError += new Engine.TestErrorEventHandler(Engine_TestError);

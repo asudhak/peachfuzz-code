@@ -340,8 +340,9 @@ namespace Peach.Core
 	public class PublisherAttribute : Attribute
 	{
 		public string invokeName;
+		public bool isDefault = false;
 
-		public PublisherAttribute(string invokeName)
+		public PublisherAttribute(string invokeName, bool isDefault = false)
 		{
 			this.invokeName = invokeName;
 		}

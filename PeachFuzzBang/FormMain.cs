@@ -381,18 +381,13 @@ namespace PeachFuzzBang
 
 				// Test
 				Test test = new Test();
-				test.name = "TheTest";
+				test.name = "Default";
 				test.stateModel = stateModel;
 				test.agents.Add(agent.name, agent);
 				test.publishers.Add("FileWriter", file);
 				test.strategy = strat;
 
 				dom.tests.Add(test.name, test);
-
-				// Run
-				Run run = new Run();
-				run.name = "DefaultRun";
-				run.tests.Add(test.name, test);
 
 				if (logger == null)
 				{
@@ -401,8 +396,7 @@ namespace PeachFuzzBang
 					logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
 				}
 
-				run.logger = logger;
-				dom.runs.Add(run.name, run);
+				test.logger = logger;
 
 				// START FUZZING!!!!!
 				thread = new Thread(new ParameterizedThreadStart(Run));

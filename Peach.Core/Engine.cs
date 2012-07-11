@@ -46,14 +46,10 @@ namespace Peach.Core
 		public RunContext context = null;
 		public RunConfiguration config = null;
 		public Dom.Dom dom = null;
-		public Run run = null;
 		public Test test = null;
 
 		#region Events
 
-		public delegate void RunStartingEventHandler(RunContext context);
-		public delegate void RunFinishedEventHandler(RunContext context);
-		public delegate void RunErrorEventHandler(RunContext context, Exception e);
 		public delegate void TestStartingEventHandler(RunContext context);
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
@@ -62,18 +58,6 @@ namespace Peach.Core
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
 
-		/// <summary>
-		/// Fired when a Run is starting
-		/// </summary>
-		public event RunStartingEventHandler RunStarting;
-		/// <summary>
-		/// Fired when a Run is finished
-		/// </summary>
-		public event RunFinishedEventHandler RunFinished;
-		/// <summary>
-		/// Fired when an error is detected during run.
-		/// </summary>
-		public event RunErrorEventHandler RunError;
 		/// <summary>
 		/// Fired when a Test is starting.  This could be fired
 		/// multiple times after the RunStarting event if the Run
@@ -106,21 +90,6 @@ namespace Peach.Core
 		/// </summary>
 		public event HaveCountEventHandler HaveCount;
 
-		public void OnRunStarting(RunContext context)
-		{
-			if (RunStarting != null)
-				RunStarting(context);
-		}
-		public void OnRunFinished(RunContext context)
-		{
-			if (RunFinished != null)
-				RunFinished(context);
-		}
-		public void OnRunError(RunContext context, Exception e)
-		{
-			if (RunError != null)
-				RunError(context, e);
-		}
 		public void OnTestStarting(RunContext context)
 		{
 			if (TestStarting != null)
@@ -175,44 +144,44 @@ namespace Peach.Core
 			if (config == null)
 				throw new ArgumentNullException("config paremeter is null");
 
-			Run run = null;
+			Test test = null;
 
 			try
 			{
-				run = dom.runs[config.runName];
+				test = dom.tests[config.runName];
 			}
 			catch
 			{
-				throw new PeachException("Unable to locate run named '" + config.runName + "'.");
+				throw new PeachException("Unable to locate test named '" + config.runName + "'.");
 			}
 
-			startFuzzing(dom, run, config);
+			startFuzzing(dom, test, config);
 		}
 
-		public void startFuzzing(Dom.Dom dom, Run run, RunConfiguration config)
+		public void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
 		{
 			try
 			{
 				if (dom == null)
 					throw new ArgumentNullException("dom parameter is null");
-				if (run == null)
-					throw new ArgumentNullException("run parameter is null");
+				if (test == null)
+					throw new ArgumentNullException("test parameter is null");
 				if (config == null)
 					throw new ArgumentNullException("config paremeter is null");
 
 				context = new RunContext();
 				context.config = config;
 				context.dom = dom;
-				context.run = run;
+				context.test = test;
 
 				// Initialize any watchers and loggers
                 if (watcher != null)
 				    watcher.Initialize(this, context);
 
-				if(context.run.logger != null)
-					context.run.logger.Initialize(this, context);
+				if(context.test.logger != null)
+					context.test.logger.Initialize(this, context);
 
-				runRun(context);
+				runTest(context.dom, context.test, context);
 			}
 			finally
 			{
@@ -232,42 +201,7 @@ namespace Peach.Core
 			if (context == null)
 				throw new ArgumentNullException("context parameter is null");
 
-			runRun(context);
-		}
-
-		protected void runRun(RunContext context)
-		{
-			if (context.run == null)
-				throw new ArgumentNullException("context.run is null");
-			if (context.dom == null)
-				throw new ArgumentNullException("context.dom is null");
-			if (context.config == null)
-				throw new ArgumentNullException("context.config is null");
-
-			try
-			{
-				Dom.Dom dom = context.dom;
-				Run run = context.run;
-				context.test = null;
-
-				OnRunStarting(context);
-
-				foreach (Test test in run.tests.Values)
-				{
-					context.test = test;
-					runTest(dom, test, context);
-				}
-			}
-			//catch (Exception e)
-			//{
-			//	OnRunError(context, e);
-			//}
-			finally
-			{
-				OnRunFinished(context);
-
-				context.run = null;
-			}
+			runTest(context.dom, context.test, context);
 		}
 
 		/// <summary>
@@ -533,7 +467,6 @@ namespace Peach.Core
 		public Random random = new Random();
 		public RunConfiguration config = null;
 		public Dom.Dom dom = null;
-		public Run run = null;
 		public Test test = null;
 		public AgentManager agentManager = null;
 

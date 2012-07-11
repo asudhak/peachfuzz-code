@@ -42,7 +42,7 @@ namespace Peach.Core.Dom
 	{
 		public string _name = null;
 		public object parent = null;
-		public Run run = null;
+		public Logger logger = null;
 		public StateModel stateModel = null;
 		public MutationStrategy strategy = null;
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
@@ -111,8 +111,8 @@ namespace Peach.Core.Dom
 
 			if (parent is Dom)
 				dom = parent as Dom;
-			else if (parent is Run)
-				dom = (parent as Run).parent as Dom;
+			else if (parent is Test)
+				dom = (parent as Test).parent as Dom;
 			else
 				throw new PeachException("Parent is crazy type!");
 

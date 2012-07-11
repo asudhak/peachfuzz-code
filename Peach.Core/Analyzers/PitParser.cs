@@ -341,25 +341,11 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
-			// Pass 7 - Handle Run
-
-			foreach (XmlNode child in node)
-			{
-				if (child.Name == "Run")
-				{
-					Run run = handleRun(child, dom);
-					dom.runs.Add(run.name, run);
-				}
-			}
-
 			// Pass 8 - Mark mutated
 
-			foreach (Run run in dom.runs.Values)
+			foreach (Test test in dom.tests.Values)
 			{
-				foreach (Test test in run.tests.Values)
-				{
-					test.markMutableElements();
-				}
+				test.markMutableElements();
 			}
 
 			return dom;
@@ -1637,6 +1623,9 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
+				if (child.Name == "Logger")
+					test.logger = handleLogger(child);
+
 				// Include
 				if (child.Name == "Include")
 				{
@@ -1900,27 +1889,6 @@ namespace Peach.Core.Analyzers
 			}
 
 			return ret;
-		}
-
-		protected Run handleRun(XmlNode node, Dom.Dom parent)
-		{
-			Run run = new Run();
-			run.name = getXmlAttribute(node, "name");
-			run.parent = parent;
-
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				if (child.Name == "Logger")
-					run.logger = handleLogger(child);
-
-				if (child.Name == "Test")
-				{
-					Test test = parent.tests[getXmlAttribute(child, "ref")];
-					run.tests.Add(test.name, test);
-				}
-			}
-
-			return run;
 		}
 
 		protected Logger handleLogger(XmlNode node)

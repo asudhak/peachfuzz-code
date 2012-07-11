@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("MemoryStream")]
+	[Publisher("MemoryStream", true)]
 	[Publisher("MemoryStreamPublisher")]
 	[ParameterAttribute("Stream", typeof(MemoryStream), "MemoryStream to receive or send data.", true)]
 	public class MemoryStreamPublisher : Publisher

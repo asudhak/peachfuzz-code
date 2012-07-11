@@ -49,7 +49,6 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
-		public OrderedDictionary<string, Run> runs = new OrderedDictionary<string, Run>();
 
 		public Dom()
 		{
@@ -58,7 +57,6 @@ namespace Peach.Core.Dom
 			stateModels.AddEvent += new AddEventHandler<string, StateModel>(stateModels_AddEvent);
 			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
 			tests.AddEvent += new AddEventHandler<string, Test>(tests_AddEvent);
-			runs.AddEvent += new AddEventHandler<string, Run>(runs_AddEvent);
 		}
 
 		void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
@@ -66,11 +64,6 @@ namespace Peach.Core.Dom
 		}
 
 		#region OrderedDictionary AddEvent Handlers
-
-		void runs_AddEvent(OrderedDictionary<string, Run> sender, string key, Run value)
-		{
-			value.parent = this;
-		}
 
 		void tests_AddEvent(OrderedDictionary<string, Test> sender, string key, Test value)
 		{
