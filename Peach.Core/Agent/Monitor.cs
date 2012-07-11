@@ -113,8 +113,10 @@ namespace Peach.Core.Agent
 	public class MonitorAttribute : Attribute
 	{
 		public string name;
-		public MonitorAttribute(string name)
+		public bool isDefault = false;
+		public MonitorAttribute(string name, bool isDefault = false)
 		{
+			this.isDefault = isDefault;
 			this.name = name;
 		}
 	}

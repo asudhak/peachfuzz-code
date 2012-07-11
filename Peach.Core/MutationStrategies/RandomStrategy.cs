@@ -278,21 +278,29 @@ namespace Peach.Core.MutationStrategies
 
 				foreach (DataElement elem in elementsToMutate)
 				{
-					Mutator mutator = random.Choice<Mutator>(dataElementMutators[elem.fullName]);
-
-					logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
-					logger.Info("Action_Starting: Mutator: " + mutator.name);
-
-                    if (Iterating != null)
-                        Iterating(elem.fullName, mutator.name);
-
 					try
 					{
-						mutator.randomMutation(elem);
+						Mutator mutator = random.Choice<Mutator>(dataElementMutators[elem.fullName]);
+
+						logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
+						logger.Info("Action_Starting: Mutator: " + mutator.name);
+
+						if (Iterating != null)
+							Iterating(elem.fullName, mutator.name);
+
+						try
+						{
+							mutator.randomMutation(elem);
+						}
+						catch (OutOfMemoryException)
+						{
+							logger.Debug("Mutator caused out of memory exception, Ignoring!");
+						}
 					}
-					catch (OutOfMemoryException)
+					catch (KeyNotFoundException)
 					{
-						logger.Debug("Mutator caused out of memory exception, Ignoring!");
+						logger.Info("Action_Starting: Skipping Fuzzing: " + elem.fullName);
+						logger.Debug("Action_Starting: Element was no longer found.  Likely moved by prior mutator");
 					}
 				}
 			}

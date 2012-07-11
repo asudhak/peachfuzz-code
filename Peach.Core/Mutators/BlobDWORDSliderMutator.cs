@@ -97,6 +97,12 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
+			if ((length - 1) == 0)
+			{
+				// TODO - Log that we are skipping
+				return;
+			}
+
             var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             performMutation(obj, rand.Next(length - 1));
         }

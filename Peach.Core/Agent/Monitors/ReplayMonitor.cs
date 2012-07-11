@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("ReplayMonitor")]
+    [Monitor("ReplayMonitor", true)]
     public class ReplayMonitor : Monitor
     {
         bool alreadyPaused = false;

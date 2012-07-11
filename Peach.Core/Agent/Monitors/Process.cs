@@ -42,7 +42,7 @@ namespace Peach.Core.Agent.Monitors
 	/// <summary>
 	/// Start a process
 	/// </summary>
-	[Monitor("Process")]
+	[Monitor("Process", true)]
 	[Monitor("process.Process")]
 	[Parameter("Executable", typeof(string), "Executable to launch", true)]
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", false)]
@@ -98,7 +98,12 @@ namespace Peach.Core.Agent.Monitors
 				if (!string.IsNullOrEmpty(_arguments))
 					_process.StartInfo.Arguments = _arguments;
 
+				logger.Debug("_Start(): Starting process");
 				_process.Start();
+			}
+			else
+			{
+				logger.Debug("_Start(): Process already running, ignore");
 			}
 
 			_cpuKillProcessStarted = false;
@@ -107,15 +112,25 @@ namespace Peach.Core.Agent.Monitors
 
 		void _Stop()
 		{
+			logger.Debug("_Stop()");
+
 			if (_process != null && !_process.HasExited)
 			{
+				logger.Debug("_Stop(): Killing process");
 				_process.Kill();
 				_process.WaitForExit();
-			}
-			if (_process != null)
-			{
 				_process.Dispose();
 				_process = null;
+			}
+			else if (_process != null)
+			{
+				logger.Debug("_Stop(): Process already exited");
+				_process.Dispose();
+				_process = null;
+			}
+			else
+			{
+				logger.Debug("_Stop(): _process == null, done!");
 			}
 		}
 
@@ -131,6 +146,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (_faultOnEarlyExit && (_process == null || _process.HasExited))
 			{
+				logger.Debug("DetectedFault(): Process exited early, saying true!");
 				return true;
 			}
 
@@ -165,6 +181,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionFinished()
 		{
+			logger.Debug("SessionFinished(): Calling stop");
 			_Stop();
 		}
 
@@ -174,13 +191,18 @@ namespace Peach.Core.Agent.Monitors
 				_firstIteration = false;
 
 			if (_restartOnEachTest || _startOnCall != null)
+			{
+				logger.Debug("IterationFinished(): Calling _Stop");
 				_Stop();
+			}
 
 			return true;
 		}
 
 		public override Variant Message(string name, Variant data)
 		{
+			logger.Debug("Message(" + name + ", " + (string)data + ")");
+
 			if (name == "Action.Call" && ((string)data) == _startOnCall)
 			{
 				_Stop();
@@ -199,34 +221,42 @@ namespace Peach.Core.Agent.Monitors
 				return null;
 			}
 
-			else if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && _cpuKill)
+			else if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall)
 			{
 				try
 				{
 					if (_process == null || _process.HasExited)
+					{
+						logger.Debug("Message(Action.Call.IsRunning): Process has exited!");
+						_Stop();
 						return new Variant(0);
+					}
 
-					try
+					if (_cpuKill)
 					{
-						float cpu = GetProcessCpuUsage(_process);
 
-						logger.Debug("Message: GetProcessCpuUsage: " + cpu);
-
-						if (cpu > 1.0 || (DateTime.Now - _processStarted).Seconds > 3)
-							_cpuKillProcessStarted = true;
-
-						if (_cpuKillProcessStarted && cpu < 1.0)
+						try
 						{
-							logger.Debug("Message: Stopping process.");
-							_Stop();
-							return new Variant(0);
-						}
-					}
-					catch
-					{
-					}
+							float cpu = GetProcessCpuUsage(_process);
 
-					return new Variant(1);
+							logger.Debug("Message(Action.Call.IsRunning): GetProcessCpuUsage: " + cpu);
+
+							if (cpu > 1.0 || (DateTime.Now - _processStarted).Seconds > 3)
+								_cpuKillProcessStarted = true;
+
+							if (_cpuKillProcessStarted && cpu < 1.0)
+							{
+								logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
+								_Stop();
+								return new Variant(0);
+							}
+						}
+						catch
+						{
+						}
+
+						return new Variant(1);
+					}
 				}
 				catch (ArgumentException)
 				{

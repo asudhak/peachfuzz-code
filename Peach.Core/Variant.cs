@@ -172,12 +172,12 @@ namespace Peach.Core
 						return (int)v._valueInt;
 					case VariantType.Long:
 						if (v._valueLong > int.MaxValue || v._valueLong < int.MinValue)
-							throw new ApplicationException("Converting this long to an int would cause loss of data");
+							throw new ApplicationException("Converting this long to an int would cause loss of data [" + v._valueLong+"]");
 
 						return (int)v._valueLong;
 					case VariantType.ULong:
 						if (v._valueULong > int.MaxValue)
-							throw new ApplicationException("Converting this ulong to an int would cause loss of data");
+							throw new ApplicationException("Converting this ulong to an int would cause loss of data ["+v._valueULong+"]");
 
 						return (int)v._valueULong;
 					case VariantType.String:

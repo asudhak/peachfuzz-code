@@ -45,7 +45,6 @@
 				<xs:element ref="DataModel" />
 				<xs:element ref="Data" />
 				<xs:element ref="Test" />
-				<xs:element ref="Run" />
 				<xs:element ref="Agent" />
 				<xs:element ref="StateModel" />
 				<xs:element ref="Mutators"/>
@@ -111,9 +110,11 @@
 	</xs:complexType>
 	<xs:complexType name="tTemplate">
 		<xs:annotation>
-			<xs:documentation>Templates are top level elements that contain other data elements. Templates
-				can be based on other Templates or Blocks using the ref attribute. Templates behave much
-				like Blocks. </xs:documentation>
+			<xs:documentation>
+				DataModels are top level elements that contain other data elements. DataModels
+				can be based on other DataModels or Blocks using the ref attribute. DataModels behave much
+				like Blocks.
+			</xs:documentation>
 		</xs:annotation>
 		<xs:choice minOccurs="0" maxOccurs="unbounded">
 			<xs:element ref="Relation" minOccurs="0" maxOccurs="unbounded" />
@@ -461,13 +462,14 @@
 			</xs:annotation>
 		</xs:attribute>
 	</xs:attributeGroup>
+	
 	<xs:group name="dataTypes">
 		<xs:choice>
 			<xs:element ref="Block" minOccurs="0" />
 			<xs:element ref="Number" minOccurs="0" />
 			<xs:element ref="String" minOccurs="0" />
-      <xs:element ref="Flags" minOccurs="0" />
-      <xs:element ref="Flag" minOccurs="0" />
+			<xs:element ref="Flags" minOccurs="0" />
+			<xs:element ref="Flag" minOccurs="0" />
 			<xs:element ref="Blob" minOccurs="0" />
 			<xs:element ref="Padding" minOccurs="0" />
 			<xs:element ref="Seek" minOccurs="0" />
@@ -477,14 +479,16 @@
 			<xs:element ref="XmlAttribute" minOccurs="0" />
 		</xs:choice>
 	</xs:group>
+	
 	<xs:attributeGroup name="peachCommonAttributes">
-		<xs:attribute name="name" type="xs:string">
+		<xs:attribute name="name" type="xs:string" use="optional">
 			<xs:annotation>
 				<xs:documentation>Unique (to context) name for element. Names must not contain periods (.)
 					or spaces ( ).</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:attributeGroup>
+	
 	<xs:element name="Relation">
 		<xs:annotation>
 			<xs:documentation>Describes relations between different data elements. Relations currently
@@ -1169,6 +1173,66 @@
 		</xs:annotation>
 		<xs:complexType>
 			<xs:choice minOccurs="1" maxOccurs="unbounded">
+				<xs:element name="Logger" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Specify a a logging mechanism for fuzzing Run.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element ref="Param" minOccurs="0" maxOccurs="unbounded" />
+						</xs:sequence>
+						<xs:attribute name="class" use="required">
+							<xs:annotation>
+								<xs:documentation>
+									Specify the python class name of a Peach Logger class. You can
+									implement your own loggers as needed.
+								</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:union>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:maxLength value="1024" />
+										</xs:restriction>
+									</xs:simpleType>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:enumeration value="logger.Filesystem">
+												<xs:annotation>
+													<xs:documentation>
+														Log to a path on the file system.  Requires a
+														single parameter named "path" with the fully qualified path
+														place logged information.  This will include any data reported
+														by Agents and Monitors along with a text file containing
+														the sent and received data for each logged test.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<!--								<xs:enumeration value="logger.SQL">
+												<xs:annotation>
+												<xs:documentation>Log to a SQL server (MySQL).  Requires a 
+												single parameter named "path" with the fully qualified path 
+												place logged information.  This will include any data reported
+												by Agents and Monitors along with a text file containing
+												the sent and received data for each logged test.</xs:documentation>
+												</xs:annotation>
+												</xs:enumeration> -->
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:union>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="faultsOnly" type="xs:boolean">
+							<xs:annotation>
+								<xs:documentation>
+									Should we only log faults or all tests performed?  Defaults to true.
+									Note: Setting this to false will cause large amounts of data to be logged and is
+									not recommended.
+								</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
 				<xs:element name="Include" type="tInclude"/>
 				<xs:element name="Exclude" type="tExclude"/>
 				<xs:element name="Strategy" minOccurs="0" maxOccurs="1">
@@ -1597,102 +1661,6 @@
 				<xs:annotation>
 					<xs:documentation>Value of parameter.  By default value attribute is a python string literal.  This means &quot;\n&quot; 
 						and &quot;\r&quot; will evaluate as in Python.  This also means backslashes (\) need to be escaped.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-		</xs:complexType>
-	</xs:element>
-	
-	<xs:element name="Run">
-		<xs:annotation>
-			<xs:documentation>A collection of tests to run at once. The run name
-				&quot;DefaultRun&quot; is special and will be run if no other run name is
-				provided.</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:choice minOccurs="1" maxOccurs="unbounded">
-				<xs:element name="Logger" minOccurs="0" maxOccurs="1">
-					<xs:annotation>
-						<xs:documentation>Specify a a logging mechanism for fuzzing Run.</xs:documentation>
-					</xs:annotation>
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element ref="Param" minOccurs="0" maxOccurs="unbounded" />
-						</xs:sequence>
-						<xs:attribute name="class" use="required">
-							<xs:annotation>
-								<xs:documentation>Specify the python class name of a Peach Logger class. You can
-									implement your own loggers as needed.</xs:documentation>
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:union>
-									<xs:simpleType>
-										<xs:restriction base="xs:string">
-											<xs:maxLength value="1024" />
-										</xs:restriction>
-									</xs:simpleType>
-									<xs:simpleType>
-										<xs:restriction base="xs:string">
-											<xs:enumeration value="logger.Filesystem">
-												<xs:annotation>
-													<xs:documentation>Log to a path on the file system.  Requires a 
-														single parameter named "path" with the fully qualified path 
-														place logged information.  This will include any data reported
-														by Agents and Monitors along with a text file containing
-														the sent and received data for each logged test.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<!--								<xs:enumeration value="logger.SQL">
-												<xs:annotation>
-												<xs:documentation>Log to a SQL server (MySQL).  Requires a 
-												single parameter named "path" with the fully qualified path 
-												place logged information.  This will include any data reported
-												by Agents and Monitors along with a text file containing
-												the sent and received data for each logged test.</xs:documentation>
-												</xs:annotation>
-												</xs:enumeration> -->
-										</xs:restriction>
-									</xs:simpleType>
-								</xs:union>
-							</xs:simpleType>
-						</xs:attribute>
-						<xs:attribute name="faultsOnly" type="xs:boolean">
-							<xs:annotation>
-								<xs:documentation>Should we only log faults or all tests performed?  Defaults to true.  
-									Note: Setting this to false will cause large amounts of data to be logged and is 
-									not recommended.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="Test" minOccurs="1" maxOccurs="unbounded">
-					<xs:annotation>
-						<xs:documentation>Includes a previosly defined test in this run.</xs:documentation>
-					</xs:annotation>
-					<xs:complexType>
-						<xs:attribute name="ref" type="xs:string" use="required">
-							<xs:annotation>
-								<xs:documentation>Reference a test to use for in this run. Values are in
-									"ns:parent.child.child" with the namespace being optional. Resolution always
-									starts at the document root.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-					</xs:complexType>
-				</xs:element>
-			</xs:choice>
-			<xs:attribute name="name" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Name of run. May not contian spaces or periods (.).</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="waitTime" type="xs:decimal">
-				<xs:annotation>
-					<xs:documentation>Time to wait in seconds between each test case. Value can be fractional
-						(0.25). Defaults to zero (0).</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="description" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Optional description of run.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
@@ -2215,8 +2183,8 @@
 								</xs:annotation>
 								<xs:complexType>
 									<xs:choice minOccurs="0" maxOccurs="unbounded">
-										<xs:element name="DataModel" maxOccurs="1">
-											<xs:complexType>
+										<xs:element ref="DataModel" maxOccurs="1"/>
+											<!--<xs:complexType>
 												<xs:attribute name="name" type="xs:string"/>
 												<xs:attribute name="ref" type="xs:string">
 													<xs:annotation>
@@ -2226,7 +2194,7 @@
 													</xs:annotation>
 												</xs:attribute>
 											</xs:complexType>
-										</xs:element>
+										</xs:element>-->
 										<xs:element ref="Data" maxOccurs="1" minOccurs="0" />
 										<xs:element name="Param" minOccurs="0" maxOccurs="unbounded">
 											<xs:annotation>
