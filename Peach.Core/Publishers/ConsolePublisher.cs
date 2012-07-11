@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("Console")]
+	[Publisher("Console", true)]
 	[Publisher("Stdout")]
 	[Publisher("stdout.Stdout")]
 	[NoParametersAttribute()]

@@ -8,7 +8,7 @@ using System.Net.Sockets;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("TcpListener")]
+	[Publisher("TcpListener", true)]
 	[Publisher("tcp.TcpListener")]
 	[ParameterAttribute("Interface", typeof(string), "Interface to bind to (0.0.0.0 for all)", true)]
 	[ParameterAttribute("Port", typeof(int), "Local port to listen on", true)]

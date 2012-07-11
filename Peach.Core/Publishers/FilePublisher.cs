@@ -37,7 +37,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("File")]
+	[Publisher("File", true)]
 	[Publisher("FileStream")]
 	[Publisher("file.FileWriter")]
 	[Publisher("file.FileReader")]

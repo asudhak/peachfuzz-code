@@ -38,7 +38,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("RawIPv6")]
+	[Publisher("RawIPv6", true)]
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
 	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]

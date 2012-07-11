@@ -40,7 +40,7 @@ using NLog;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("Tcp")]
+	[Publisher("Tcp", true)]
 	[Publisher("TcpClient")]
 	[Publisher("tcp.Tcp")]
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]

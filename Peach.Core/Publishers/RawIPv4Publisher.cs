@@ -39,7 +39,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("RawIPv4")]
+	[Publisher("RawIPv4", true)]
 	[Publisher("RawIP")]
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]

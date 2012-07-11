@@ -37,6 +37,7 @@ namespace Peach.Core.Publishers
 	[Publisher("MemoryStream", true)]
 	[Publisher("MemoryStreamPublisher")]
 	[ParameterAttribute("Stream", typeof(MemoryStream), "MemoryStream to receive or send data.", true)]
+  [NotPitParsable]
 	public class MemoryStreamPublisher : Publisher
 	{
 		protected Stream stream = null;
