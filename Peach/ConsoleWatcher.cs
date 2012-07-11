@@ -48,6 +48,7 @@ namespace Peach
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
 			Console.ForegroundColor = color;
+
 		}
 
 		protected override void Engine_HaveCount(RunContext context, uint totalIterations)
