@@ -62,15 +62,20 @@ def configure(conf):
 		try:
 			conf.recurse(d.name)
 		except Exception:
-			e = sys.exc_info()[1]
-			print(e)
 			try:
-				conf.to_log("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
+				Logs.info("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
+			except Exception:
+				pass
+			try:
+				e = sys.exc_info()[1]
+				print(e)
 				print(e.stdout, e.stderr)
-			except:
+			except Exception:
 				pass
 		else:
 			conf.env.append_value('CFG', [d.name])
+
+	print("The configurations enabled are %r" % conf.env.CFG)
 
 	# now remove the cache folders and re-create them
 	conf.cmd_and_log('rm -rf .waf*')
