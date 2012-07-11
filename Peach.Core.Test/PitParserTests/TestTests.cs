@@ -65,7 +65,7 @@ namespace Peach.Core.Test.PitParserTests
 				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
 				"		</Monitor>" +
 				"	</Agent>" +
-				"	<Test name=\"TheTest\">" +
+				"	<Test name=\"Default\">" +
 				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
 				"		<Publisher class=\"File\">" +
@@ -108,7 +108,7 @@ namespace Peach.Core.Test.PitParserTests
 				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
 				"		</Monitor>" +
 				"	</Agent>" +
-				"	<Test name=\"TheTest\">" +
+				"	<Test name=\"Default\">" +
 				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
 				"		<Publisher class=\"File\">" +
@@ -116,17 +116,14 @@ namespace Peach.Core.Test.PitParserTests
 				"		</Publisher>" +
 				"		<Exclude/>" +
 				"	</Test> " +
-				"	<Run name=\"Default\">" +
-				"		<Test ref=\"TheTest\" />" +
-				"	</Run> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			Assert.AreEqual(false, dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(false, dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(false, dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
 		}
 
 		[Test]
@@ -151,7 +148,7 @@ namespace Peach.Core.Test.PitParserTests
 				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
 				"		</Monitor>" +
 				"	</Agent>" +
-				"	<Test name=\"TheTest\">" +
+				"	<Test name=\"Default\">" +
 				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
 				"		<Publisher class=\"File\">" +
@@ -160,17 +157,14 @@ namespace Peach.Core.Test.PitParserTests
 				"		<Exclude/>" +
 				"		<Include xpath=\"//Blob2\"/>" +
 				"	</Test> " +
-				"	<Run name=\"Default\">" +
-				"		<Test ref=\"TheTest\" />" +
-				"	</Run> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			Assert.AreEqual(false, dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(true,  dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(false, dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(true,  dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
 		}
 
 		[Test]
@@ -195,7 +189,7 @@ namespace Peach.Core.Test.PitParserTests
 				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
 				"		</Monitor>" +
 				"	</Agent>" +
-				"	<Test name=\"TheTest\">" +
+				"	<Test name=\"Default\">" +
 				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
 				"		<Publisher class=\"File\">" +
@@ -203,17 +197,14 @@ namespace Peach.Core.Test.PitParserTests
 				"		</Publisher>" +
 				"		<Exclude xpath=\"//Blob2\"/>" +
 				"	</Test> " +
-				"	<Run name=\"Default\">" +
-				"		<Test ref=\"TheTest\" />" +
-				"	</Run> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			Assert.AreEqual(true,  dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(false, dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(true,  dom.runs[0].tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(true,  dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(true,  dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
 		}
 	}
 }

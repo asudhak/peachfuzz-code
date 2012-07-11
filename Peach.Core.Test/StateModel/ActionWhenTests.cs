@@ -80,7 +80,7 @@ namespace Peach.Core.Test.StateModel
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"TheTest\">" +
+				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheStateModel\"/>" +
 				"       <Publisher class=\"Stdout\"/>" +
 				"   </Test>" +

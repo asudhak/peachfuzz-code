@@ -82,14 +82,10 @@ namespace Peach.Core.Test.StateModel
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"TheTest\">" +
+				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheStateModel\"/>" +
 				"       <Publisher class=\"Stdout\"/>" +
 				"   </Test>" +
-
-				"   <Run name=\"DefaultRun\">" +
-				"       <Test ref=\"TheTest\"/>" +
-				"   </Run>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
@@ -102,7 +98,7 @@ namespace Peach.Core.Test.StateModel
 			e.config = config;
 			e.startFuzzing(dom, config);
 
-			var stateModel = dom.runs[0].tests[0].stateModel;
+			var stateModel = dom.tests[0].stateModel;
 			var state = stateModel.initialState;
 
 			Assert.AreEqual(state.actions[0].dataModel.Value.Value, state.actions[2].dataModel.Value.Value);

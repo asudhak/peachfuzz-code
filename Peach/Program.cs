@@ -260,7 +260,7 @@ namespace Peach
 					config.commandLine += arg + " ";
 
 				if (extra.Count > 1)
-					e.startFuzzing(dom, dom.runs[extra[1]], config);
+					e.startFuzzing(dom, dom.tests[extra[1]], config);
 				else
 					e.startFuzzing(dom, config);
 			}

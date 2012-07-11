@@ -45,7 +45,7 @@ namespace Peach.Core.Test.Monitors
                 "       </Monitor>" +
                 "   </Agent>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <Agent ref=\"LocalAgent\"/>" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +

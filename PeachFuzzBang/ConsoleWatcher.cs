@@ -136,20 +136,20 @@ namespace PeachFuzzBang
 					new object[] { _form.textBoxOutput, "[*] Test '" + context.test.name + "' starting.\r\n" });
 			}
 
-			protected override void Engine_RunError(RunContext context, Exception e)
-			{
-				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "\r\n[!] Run '" + context.run.name + "' error: " + e.Message + "\r\n" });
-			}
+			//protected override void Engine_RunError(RunContext context, Exception e)
+			//{
+			//    _form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
+			//        new object[] { _form.textBoxOutput, "\r\n[!] Run '" + context.run.name + "' error: " + e.Message + "\r\n" });
+			//}
 
-			protected override void Engine_RunFinished(RunContext context)
-			{
-				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' finished.\r\n" });
+			//protected override void Engine_RunFinished(RunContext context)
+			//{
+			//    _form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
+			//        new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' finished.\r\n" });
 
-				_form.textBoxOutput.Invoke(new DeligateStopFuzzing(StopFuzzing),
-					new object[] { });
-			}
+			//    _form.textBoxOutput.Invoke(new DeligateStopFuzzing(StopFuzzing),
+			//        new object[] { });
+			//}
 
 			public delegate void DeligateAppendToText(TextBox cltr, String text);
 			public void AppendToText(TextBox ctrl, string text)
@@ -160,10 +160,10 @@ namespace PeachFuzzBang
 				ctrl.Refresh();
 			}
 
-			protected override void Engine_RunStarting(RunContext context)
-			{
-				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText), 
-					new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' starting.\r\n"});
-			}
+			//protected override void Engine_RunStarting(RunContext context)
+			//{
+			//    _form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText), 
+			//        new object[] { _form.textBoxOutput, "[*] Run '" + context.run.name + "' starting.\r\n"});
+			//}
 		}
 }

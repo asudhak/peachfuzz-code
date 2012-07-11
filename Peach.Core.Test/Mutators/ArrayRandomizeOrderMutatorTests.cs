@@ -38,15 +38,11 @@ namespace Peach.Core.Test.Mutators
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -55,7 +51,7 @@ namespace Peach.Core.Test.Mutators
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("ArrayRandomizeOrderMutator");
 
-            var myArray = (Dom.Array)dom.runs[0].tests[0].stateModel.initialState.actions[0].dataModel[0];
+            var myArray = (Dom.Array)dom.tests[0].stateModel.initialState.actions[0].dataModel[0];
             myArray.origionalElement = myArray[0];
             myArray.hasExpanded = true;
             myArray.Add(new Dom.String("a1", "1"));
@@ -109,15 +105,11 @@ namespace Peach.Core.Test.Mutators
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -126,7 +118,7 @@ namespace Peach.Core.Test.Mutators
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("ArrayRandomizeOrderMutator");
 
-            var myArray = (Dom.Array)dom.runs[0].tests[0].stateModel.initialState.actions[0].dataModel[0];
+            var myArray = (Dom.Array)dom.tests[0].stateModel.initialState.actions[0].dataModel[0];
             myArray.origionalElement = myArray[0];
             myArray.hasExpanded = true;
             myArray.Add(new Dom.String("a1", "1"));

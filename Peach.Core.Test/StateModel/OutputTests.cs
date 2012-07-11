@@ -73,21 +73,17 @@ namespace Peach.Core.Test.StateModel
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"TheTest\">" +
+				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheStateModel\"/>" +
 				"       <Publisher class=\"Stdout\"/>" +
 				"   </Test>" +
-
-				"   <Run name=\"DefaultRun\">" +
-				"       <Test ref=\"TheTest\"/>" +
-				"   </Run>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			MemoryStream stream = new MemoryStream();
-			dom.runs[0].tests[0].publishers[0] = new MemoryStreamPublisher(stream);
+			dom.tests[0].publishers[0] = new MemoryStreamPublisher(stream);
 
 			RunConfiguration config = new RunConfiguration();
 			config.singleIteration = true;
@@ -96,7 +92,7 @@ namespace Peach.Core.Test.StateModel
 			e.config = config;
 			e.startFuzzing(dom, config);
 
-			var stateModel = dom.runs[0].tests[0].stateModel;
+			var stateModel = dom.tests[0].stateModel;
 			var state = stateModel.initialState;
 
 			byte [] buff = new byte[stream.Length];

@@ -55,7 +55,7 @@ namespace Peach.Core.Test.Mutators
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
@@ -119,7 +119,7 @@ namespace Peach.Core.Test.Mutators
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +

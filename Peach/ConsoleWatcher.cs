@@ -108,33 +108,14 @@ namespace Peach
 
 		protected override void Engine_TestStarting(RunContext context)
 		{
-			WriteInfoMark();
-			Console.WriteLine("Test '" + context.test.name + "' starting.");
-		}
-
-		protected override void Engine_RunError(RunContext context, Exception e)
-		{
-			Console.Write("\n");
-			WriteErrorMark();
-			Console.WriteLine("Run '" + context.run.name + "' error: " + e.Message);
-		}
-
-		protected override void Engine_RunFinished(RunContext context)
-		{
-			WriteInfoMark();
-			Console.WriteLine("Run '" + context.run.name + "' finished.");
-		}
-
-		protected override void Engine_RunStarting(RunContext context)
-		{
 			if (context.config.countOnly)
 			{
 				WriteInfoMark();
-				Console.WriteLine("Calculating total iterations by running one.");
+				Console.WriteLine("Calculating total iterations by running single iteration.");
 			}
 
 			WriteInfoMark();
-			Console.WriteLine("Run '" + context.run.name + "' starting.");
+			Console.WriteLine("Test '" + context.test.name + "' starting.");
 		}
 
 		public static void WriteInfoMark()

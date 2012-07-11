@@ -442,8 +442,8 @@ namespace PeachFuzzBang
 					}
 				}
 
-				e.RunFinished += new Engine.RunFinishedEventHandler(Engine_RunFinished);
-				e.RunError += new Engine.RunErrorEventHandler(Engine_RunError);
+				e.TestFinished += new Engine.TestFinishedEventHandler(Engine_RunFinished);
+				e.TestError += new Engine.TestErrorEventHandler(Engine_RunError);
 
 				e.startFuzzing(dom, config);
 			}

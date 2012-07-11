@@ -520,7 +520,7 @@ namespace Peach.Core
 		/// <summary>
 		/// Name of run to perform
 		/// </summary>
-		public string runName = "DefaultRun";
+		public string runName = "Default";
 
 		/// <summary>
 		/// Name of PIT file (used by logger)

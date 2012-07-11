@@ -51,7 +51,7 @@ namespace Peach.Core.Test.OutputTests
                 "       </Monitor>" +
                 "   </Agent>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <Agent ref=\"LocalAgent\"/>" +
                 "       <Strategy class=\"Random\">" +
                 //"           <Param name=\"Seed\" value=\"10\"/>" +
@@ -59,10 +59,6 @@ namespace Peach.Core.Test.OutputTests
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();

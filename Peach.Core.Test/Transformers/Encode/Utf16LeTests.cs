@@ -37,7 +37,7 @@ namespace Peach.Core.Test.Transformers.Encode
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
                 "   </Test>" +

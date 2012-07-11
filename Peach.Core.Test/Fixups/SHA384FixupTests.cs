@@ -39,7 +39,7 @@ namespace Peach.Core.Test.Fixups
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"TheTest\">" +
+                "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Stdout\"/>" +
                 "   </Test>" +
