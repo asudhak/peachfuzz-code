@@ -296,6 +296,10 @@ namespace Peach.Core.MutationStrategies
 						{
 							logger.Debug("Mutator caused out of memory exception, Ignoring!");
 						}
+						catch(Exception ex)
+						{
+							logger.Error("Mutator exception, ignoring: " + ex.ToString());
+						}
 					}
 					catch (KeyNotFoundException)
 					{

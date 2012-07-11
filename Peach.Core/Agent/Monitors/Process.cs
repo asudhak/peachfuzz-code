@@ -114,17 +114,23 @@ namespace Peach.Core.Agent.Monitors
 		{
 			logger.Debug("_Stop()");
 
-			if (_process != null && !_process.HasExited)
+			for(int i = 0; i < 100 && (_process != null && !_process.HasExited); i++)
 			{
 				logger.Debug("_Stop(): Killing process");
-				_process.Kill();
-				_process.WaitForExit();
-				_process.Dispose();
-				_process = null;
+				try
+				{
+					_process.Kill();
+					_process.WaitForExit();
+					_process.Dispose();
+					_process = null;
+				}
+				catch
+				{
+				}
 			}
-			else if (_process != null)
+			
+			if (_process != null)
 			{
-				logger.Debug("_Stop(): Process already exited");
 				_process.Dispose();
 				_process = null;
 			}
