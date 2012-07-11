@@ -65,7 +65,7 @@ def configure(conf):
 			e = sys.exc_info()[1]
 			print(e)
 			try:
-				print("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
+				conf.to_log("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
 				print(e.stdout, e.stderr)
 			except:
 				pass
