@@ -16,21 +16,24 @@ lock = threading.Lock()
 
 preprocessor_flag = '-MD'
 
+# Third-party tools are allowed to add extra names in here with append()
+supported_compilers = ['gcc', 'icc']
+
 @feature('c')
 @before_method('process_source')
 def add_mmd_cc(self):
-	if self.env.CC_NAME in ('gcc', 'icc') and self.env.get_flat('CFLAGS').find(preprocessor_flag) < 0:
+	if self.env.CC_NAME in supported_compilers and self.env.get_flat('CFLAGS').find(preprocessor_flag) < 0:
 		self.env.append_value('CFLAGS', [preprocessor_flag])
 
 @feature('cxx')
 @before_method('process_source')
 def add_mmd_cxx(self):
-	if self.env.CC_NAME in ('gcc', 'icc') and self.env.get_flat('CXXFLAGS').find(preprocessor_flag) < 0:
+	if self.env.CC_NAME in supported_compilers and self.env.get_flat('CXXFLAGS').find(preprocessor_flag) < 0:
 		self.env.append_value('CXXFLAGS', [preprocessor_flag])
 
 def scan(self):
 	"the scanner does not do anything initially"
-	if self.env.CC_NAME not in ('gcc', 'icc'):
+	if self.env.CC_NAME not in supported_compilers:
 		return self.no_gccdeps_scan()
 	nodes = self.generator.bld.node_deps.get(self.uid(), [])
 	names = []
@@ -41,7 +44,7 @@ re_splitter = re.compile(r'(?<!\\)\s+') # split by space, except when spaces are
 def post_run(self):
 	# The following code is executed by threads, it is not safe, so a lock is needed...
 
-	if self.env.CC_NAME not in ('gcc', 'icc'):
+	if self.env.CC_NAME not in supported_compilers:
 		return self.no_gccdeps_post_run()
 
 	if getattr(self, 'cached', None):
@@ -52,10 +55,44 @@ def post_run(self):
 	txt = Utils.readf(name)
 	#os.unlink(name)
 
+	def remove_makefile_rule_lhs(line):
+		# Splitting on a plain colon would accidentally match inside a
+		# Windows absolute-path filename, so we must search for a colon
+		# followed by whitespace to find the divider between LHS and RHS
+		# of the Makefile rule.
+		rulesep = ': '
+
+		sep_idx = line.find(rulesep)
+		if sep_idx >= 0:
+			return line[sep_idx + 2:]
+		else:
+			return line
+
+	# Compilers have the choice to either output the file's dependencies
+	# as one large Makefile rule:
+	#
+	#   /path/to/file.o: /path/to/dep1.h \
+	#                    /path/to/dep2.h \
+	#                    /path/to/dep3.h \
+	#                    ...
+	#
+	# or as many individual rules:
+	#
+	#   /path/to/file.o: /path/to/dep1.h
+	#   /path/to/file.o: /path/to/dep2.h
+	#   /path/to/file.o: /path/to/dep3.h
+	#   ...
+	#
+	# So the first step is to sanitize the input by stripping out the left-
+	# hand side of all these lines. After that, whatever remains are the
+	# implicit dependencies of task.outputs[0]
+	txt = '\n'.join([remove_makefile_rule_lhs(line) for line in txt.splitlines()])
+
+	# Now join all the lines together
 	txt = txt.replace('\\\n', '')
 
-	lst = txt.strip().split(':')
-	val = ":".join(lst[1:])
+	val = txt.strip()
+	lst = val.split(':')
 	val = [x.replace('\\ ', ' ') for x in re_splitter.split(val) if x]
 
 	nodes = []
@@ -112,7 +149,7 @@ def post_run(self):
 	Task.Task.post_run(self)
 
 def sig_implicit_deps(self):
-	if self.env.CC_NAME not in ('gcc', 'icc'):
+	if self.env.CC_NAME not in supported_compilers:
 		return self.no_gccdeps_sig_implicit_deps()
 	try:
 		return Task.Task.sig_implicit_deps(self)
