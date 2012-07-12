@@ -36,7 +36,7 @@ using System.ServiceProcess;
 using System.Management;
 
 //using Peach.Core.Debuggers.WindowsSystem;
-using PeachCoreDebuggersWindows;
+using Peach.Core.Debuggers.Windows;
 
 namespace Peach.Core.Agent.Monitors.WindowsDebug
 {

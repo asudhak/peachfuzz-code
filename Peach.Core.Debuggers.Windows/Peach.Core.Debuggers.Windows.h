@@ -175,7 +175,7 @@ void ProcessDebugEvent(DEBUG_EVENT* DebugEv)
 	ReleaseMutex(hMutexHandlingDebugEvent);
 }
 
-namespace PeachCoreDebuggersWindows {
+namespace Peach { namespace Core { namespace Debuggers { namespace Windows {
 
 	public ref class SystemDebugger
 	{
@@ -302,6 +302,6 @@ namespace PeachCoreDebuggersWindows {
 			_hThread = 0;
 		}
 	};
-}
+}}}}
 
 // END

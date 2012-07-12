@@ -14,9 +14,9 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyTitleAttribute("PeachCoreDebuggersWindows")];
 [assembly:AssemblyDescriptionAttribute("")];
 [assembly:AssemblyConfigurationAttribute("")];
-[assembly:AssemblyCompanyAttribute("")];
+[assembly:AssemblyCompanyAttribute("Deja vu Security")];
 [assembly:AssemblyProductAttribute("PeachCoreDebuggersWindows")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c)  2012")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) Michael Eddington")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 
@@ -31,7 +31,7 @@ using namespace System::Security::Permissions;
 // You can specify all the value or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("1.0.*")];
+[assembly:AssemblyVersionAttribute("3.0.*")];
 
 [assembly:ComVisible(false)];
 
