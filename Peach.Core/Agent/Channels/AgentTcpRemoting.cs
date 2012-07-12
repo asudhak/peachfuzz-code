@@ -42,7 +42,7 @@ using Peach.Core.Agent;
 
 namespace Peach.Core.Agent.Channels
 {
-	[Agent("tcp")]
+	[Agent("tcp", true)]
 	public class AgentClientTcpRemoting : AgentClient
 	{
 		AgentServiceTcpRemote proxy = null;

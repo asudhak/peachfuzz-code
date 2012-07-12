@@ -45,7 +45,7 @@ using Peach.Core.Agent;
 
 namespace Peach.Core.Agent.Channels
 {
-	[Agent("http")]
+	[Agent("http", true)]
 	[Agent("https")]
 	public class AgentClientXmlRpc : AgentClient
 	{

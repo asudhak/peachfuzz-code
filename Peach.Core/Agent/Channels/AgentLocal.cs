@@ -42,7 +42,7 @@ namespace Peach.Core.Agent.Channels
 	/// process, instead of a remote process.  This
 	/// is much faster for things like file fuzzing.
 	/// </summary>
-	[Agent("local")]
+	[Agent("local", true)]
 	public class AgentServerLocal : AgentClient
 	{
 		Agent agent = null;

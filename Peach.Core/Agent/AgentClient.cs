@@ -248,10 +248,15 @@ namespace Peach.Core.Agent
 	public class AgentAttribute : Attribute
 	{
 		public string protocol;
-		public AgentAttribute(string protocol)
+    public bool isDefault;
+    
+    public AgentAttribute(string protocol, bool isDefault = false)
 		{
 			this.protocol = protocol;
+      this.isDefault = isDefault;
 		}
+
+
 	}
 
 
