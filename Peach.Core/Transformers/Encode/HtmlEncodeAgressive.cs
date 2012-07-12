@@ -35,7 +35,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Transformer("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
+    [Transformer("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.", true)]
     [Transformer("encode.HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
     [Serializable]
     public class HtmlEncodeAgressive : Transformer

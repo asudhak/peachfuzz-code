@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("StringToFloat", "Transforms a string into an float.")]
+    [TransformerAttribute("StringToFloat", "Transforms a string into an float.", true)]
     [TransformerAttribute("encode.StringToFloat", "Transforms a string into an float.")]
     [Serializable]
     public class StringToFloat : Transformer

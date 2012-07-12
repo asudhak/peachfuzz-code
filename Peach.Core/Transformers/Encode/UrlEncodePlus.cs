@@ -34,7 +34,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("UrlEncodePlus", "Encode on output as a URL with spaces turned to pluses.")]
+    [TransformerAttribute("UrlEncodePlus", "Encode on output as a URL with spaces turned to pluses.", true)]
     [TransformerAttribute("encode.UrlEncodePlus", "Encode on output as a URL with spaces turned to pluses.")]
     [Serializable]
     public class UrlEncodePlus : Transformer

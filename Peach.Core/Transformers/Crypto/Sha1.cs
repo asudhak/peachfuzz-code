@@ -37,7 +37,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Sha1", "SHA-1 transform (hex & binary).")]
+    [TransformerAttribute("Sha1", "SHA-1 transform (hex & binary).", true)]
     [TransformerAttribute("crypto.Sha1", "SHA-1 transform (hex & binary).")]
     [Serializable]
     public class Sha1 : Transformer

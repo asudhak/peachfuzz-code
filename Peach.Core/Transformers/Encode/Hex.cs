@@ -35,7 +35,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Encode
 {
 	[Serializable]
-    [TransformerAttribute("Hex", "Encode on output as a hex string.")]
+    [TransformerAttribute("Hex", "Encode on output as a hex string.", true)]
     [TransformerAttribute("encode.Hex", "Encode on output as a hex string.")]
     public class Hex : Transformer
     {

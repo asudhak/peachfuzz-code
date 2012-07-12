@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("IntToHex", "Transforms an integer into hex.")]
+    [TransformerAttribute("IntToHex", "Transforms an integer into hex.", true)]
     [TransformerAttribute("type.IntToHex", "Transforms an integer into hex.")]
     [Serializable]
     public class IntToHex : Transformer

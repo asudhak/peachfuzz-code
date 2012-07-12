@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers
 {
-    [TransformerAttribute("Eval", "Evaluate a statement.")]
+    [TransformerAttribute("Eval", "Evaluate a statement.", true)]
     [TransformerAttribute("misc.Eval", "Evaluate a statement.")]
     [Parameter("eval", typeof(string), "Formatter for data.", true)]
     [Serializable]

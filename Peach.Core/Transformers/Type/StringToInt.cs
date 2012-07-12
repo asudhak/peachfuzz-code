@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("StringToInt", "Transforms a string into an integer.")]
+    [TransformerAttribute("StringToInt", "Transforms a string into an integer.", true)]
     [TransformerAttribute("encode.StringToInt", "Transforms a string into an integer.")]
     [Serializable]
     public class StringToInt : Transformer

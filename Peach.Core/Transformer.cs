@@ -99,11 +99,13 @@ namespace Peach.Core
 	{
 		public string elementName;
 		public string description;
-		
-		public TransformerAttribute(string elementName, string description)
+    public bool isDefault;
+
+		public TransformerAttribute(string elementName, string description, bool isDefault = false)
 		{
 			this.elementName = elementName;
 			this.description = description;
+      this.isDefault = isDefault;
 		}
 	}
 }

@@ -37,7 +37,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Hmac", "HMAC as described in RFC 2104.")]
+    [TransformerAttribute("Hmac", "HMAC as described in RFC 2104.", true)]
     [TransformerAttribute("crypto.Hmac", "HMAC as described in RFC 2104.")]
     [Serializable]
     public class Hmac : Transformer

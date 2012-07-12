@@ -34,7 +34,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [TransformerAttribute("Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.", true)]
     [TransformerAttribute("encode.Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
     [Serializable]
     public class Ipv4StringToOctet : Transformer

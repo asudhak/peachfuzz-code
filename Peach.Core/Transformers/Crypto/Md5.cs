@@ -37,7 +37,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Md5", "MD5 transform (hex & binary).")]
+    [TransformerAttribute("Md5", "MD5 transform (hex & binary).", true)]
     [TransformerAttribute("crypto.Md5", "MD5 transform (hex & binary).")]
     [Serializable]
     public class Md5 : Transformer

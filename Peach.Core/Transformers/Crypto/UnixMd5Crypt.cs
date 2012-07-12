@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("UnixMd5Crypt", "UNIX style MD5 crypt.")]
+    [TransformerAttribute("UnixMd5Crypt", "UNIX style MD5 crypt.", true)]
     [TransformerAttribute("crypto.UnixMd5Crypt", "UNIX style MD5 crypt.")]
     [Serializable]
     public class UnixMd5Crypt : Transformer

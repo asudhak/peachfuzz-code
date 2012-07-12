@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("AsInt8", "Changes the size of a number.")]
+    [TransformerAttribute("AsInt8", "Changes the size of a number.", true)]
     [TransformerAttribute("type.AsInt8", "Changes the size of a number.")]
     [ParameterAttribute("isSigned", typeof(int), "Signed/Unsigned", false)]
     [ParameterAttribute("isLittleEndian", typeof(int), "Big/Little Endian", false)]

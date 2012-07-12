@@ -34,7 +34,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Transformer("JsEncode", "Encode on output as Javascript string.")]
+    [Transformer("JsEncode", "Encode on output as Javascript string.", true)]
     [Transformer("encode.JsEncode", "Encode on output as Javascript string.")]
     [Serializable]
     class JsEncode : Transformer

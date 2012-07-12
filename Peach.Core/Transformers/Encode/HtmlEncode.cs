@@ -34,7 +34,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Transformer("HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
+    [Transformer("HtmlEncode", "Encode on output as HTML (encoding < > & and \")", true)]
     [Transformer("encode.HtmlEncode", "Encode on output as HTML (encoding < > & and \")")]
     [Serializable]
     public class HtmlEncode : Transformer

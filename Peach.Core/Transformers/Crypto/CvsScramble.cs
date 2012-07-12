@@ -36,7 +36,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("CvsScramble", "CVS pserver password scramble.")]
+    [TransformerAttribute("CvsScramble", "CVS pserver password scramble.", true)]
     [TransformerAttribute("crypto.CvsScramble", "CVS pserver password scramble.")]
     [Serializable]
     public class CvsScramble : Transformer

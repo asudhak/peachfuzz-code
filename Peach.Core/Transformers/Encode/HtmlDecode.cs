@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Transformer("HtmlDecode", "Decode on output from HTML encoding.")]
+    [Transformer("HtmlDecode", "Decode on output from HTML encoding.", true)]
     [Transformer("encode.HtmlDecode", "Decode on output from HTML encoding.")]
     [Serializable]
     public class HtmlDecode : Transformer
