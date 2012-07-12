@@ -301,6 +301,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Agent\Monitors\PageHeap.cs" />
     <Compile Include="Agent\Monitors\PopupWatcher.cs" />
     <Compile Include="Agent\Monitors\WindowsDebugEngine.cs" />
     <Compile Include="Agent\Monitors\WindowsDebugger.cs" />

@@ -44,9 +44,13 @@
 				<include name="Peach.Core${file.sep}**.cs" />
 			</sources>
 
+			<resources dynamicprefix="true">
+				<include name="Peach.Core${file.sep}peach.xsd" />
+			</resources>
+
 			<references>
 				<include name="3rdParty${file.sep}xml-rpc.net-2.5.0${file.sep}bin${file.sep}CookComputing.XmlRpcV2.dll" />
-				<include name="3rdParty${file.sep}DotNetZipLib-v1.7${file.sep}Release${file.sep}Ionic.Zip.dll" />
+				<include name="3rdParty${file.sep}DotNetZipLib-v1.9${file.sep}zip-v1.9${file.sep}Ionic.Zip.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}IronPython.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}IronPython.Modules.dll" />
 				<include name="3rdParty${file.sep}IronRuby-1.1.3${file.sep}bin${file.sep}IronRuby.dll" />
@@ -342,7 +346,7 @@
 		<copy todir="${build.dir}" flatten="true">
 			<fileset>
 				<include name="3rdParty${file.sep}xml-rpc.net-2.5.0${file.sep}bin${file.sep}CookComputing.XmlRpcV2.dll" />
-				<include name="3rdParty${file.sep}DotNetZipLib-v1.7${file.sep}Release${file.sep}Ionic.Zip.dll" />
+				<include name="3rdParty${file.sep}DotNetZipLib-v1.9${file.sep}zip-v1.9${file.sep}Ionic.Zip.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}IronPython.dll" />
 				<include name="3rdParty${file.sep}IronPython-2.7.1${file.sep}IronPython.Modules.dll" />
 				<include name="3rdParty${file.sep}IronRuby-1.1.3${file.sep}bin${file.sep}IronRuby.dll" />
