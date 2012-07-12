@@ -666,7 +666,16 @@ namespace Peach.Core.Dom
 		/// <returns></returns>
 		public BitStream GenerateValue()
 		{
-			BitStream value = InternalValueToBitStream(InternalValue);
+			BitStream value = null;
+
+			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			{
+				value = (BitStream) _mutatedValue;
+			}
+			else
+			{
+				value = InternalValueToBitStream(InternalValue);
+			}
 
             if (_mutatedValue == null || (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
                 if (_transformer != null)

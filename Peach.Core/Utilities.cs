@@ -348,7 +348,7 @@ namespace Peach.Core
             else if (size == 64)
                 return BadNumbers64(n);
             else
-                return null;
+                throw new ArgumentOutOfRangeException("size");
         }
 
         public static long[] GenerateBadPositiveNumbers(int size = 16, int n = 50)

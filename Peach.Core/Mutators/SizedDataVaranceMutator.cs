@@ -161,7 +161,9 @@ namespace Peach.Core.Mutators
             byte[] data = objOf.Value.Value;
             List<byte> newData = new List<byte>();
 
-            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+			objOf.mutationFlags = DataElement.MUTATE_DEFAULT;
+			objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
+			objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
             if (n < 0)
             {
@@ -203,8 +205,6 @@ namespace Peach.Core.Mutators
             }
 
             objOf.MutatedValue = new Variant(newData.ToArray());
-			objOf.mutationFlags = DataElement.MUTATE_DEFAULT;
-			objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
         }
 	}
 }

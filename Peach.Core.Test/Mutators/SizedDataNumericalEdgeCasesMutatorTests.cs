@@ -40,9 +40,9 @@ namespace Peach.Core.Test.Mutators
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"sizeRelation1\">" +
+                "       <Number name=\"sizeRelation1\" size=\"32\">" +
                 "           <Relation type=\"size\" of=\"string1\"/>" +
-                "       </String>" +
+                "       </Number>" +
                 "       <String name=\"string1\" value=\"AAAAA\"/>" +
                 "   </DataModel>" +
 
@@ -80,12 +80,8 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listResults.Count; ++i)
+            for (int i = 10; i < listResults.Count && i < 20; ++i)
             {
-                // 5th element will obviously have a length of 5
-                if (i == 4)
-                    continue;
-
                 Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
             }
 
@@ -103,7 +99,7 @@ namespace Peach.Core.Test.Mutators
             else
             {
                 TestResult tr;
-                tr.size = (long)action.dataModel[0].InternalValue;
+                tr.size = new BitStream((byte[])action.dataModel[0].InternalValue).ReadInt32();
                 tr.value = action.dataModel[1].Value.Value;
                 listResults.Add(tr);
             }

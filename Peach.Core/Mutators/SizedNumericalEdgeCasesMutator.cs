@@ -89,17 +89,9 @@ namespace Peach.Core.Mutators
             else
                 values = NumberGenerator.GenerateBadNumbers(16, n);
 
-            // convert bits to bytes
-            List<long> newVals = new List<long>();
-            for (int i = 0; i < values.Length; ++i)
-            {
-                var val = values[i] / 8;
-                if (!newVals.Contains(val))
-                    newVals.Add(val);
-            }
-
             // this will weed out invalid values that would cause the length to be less than 0
-            newVals.RemoveAll(RemoveInvalid);
+			List<long> newVals = new List<long>(values);
+			newVals.RemoveAll(RemoveInvalid);
             values = newVals.ToArray();
         }
 

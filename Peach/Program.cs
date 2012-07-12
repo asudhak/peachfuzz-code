@@ -30,14 +30,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+
 using Peach.Options;
 using Peach.Core.Dom;
 using Peach.Core;
 using Peach.Core.Agent;
 using Peach.Core.Analyzers;
-using SharpPcap;
 
+using SharpPcap;
 using NLog;
+using NLog.Targets;
+using NLog.Config;
 
 namespace Peach
 {
@@ -138,6 +141,19 @@ namespace Peach
 						break;
 				}
 
+				// Enable debugging if asked for
+				if (config.debug)
+				{
+					var nconfig = new LoggingConfiguration();
+					var consoleTarget = new ColoredConsoleTarget();
+					nconfig.AddTarget("console", consoleTarget);
+					consoleTarget.Layout = "${logger} ${message}";
+
+					var rule = new LoggingRule("*", LogLevel.Debug, consoleTarget);
+					nconfig.LoggingRules.Add(rule);
+
+					LogManager.Configuration = nconfig;
+				}
 
 				if (agent != null)
 				{

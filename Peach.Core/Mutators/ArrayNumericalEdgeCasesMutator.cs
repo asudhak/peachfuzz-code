@@ -29,7 +29,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using Peach.Core.Dom;
+
+using NLog;
 
 namespace Peach.Core.Mutators
 {
@@ -37,7 +40,9 @@ namespace Peach.Core.Mutators
     [Hint("ArrayNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class ArrayNumericalEdgeCasesMutator : Mutator
     {
-        // members
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		// members
         //
         long[] values;
         int currentCount;
@@ -53,7 +58,17 @@ namespace Peach.Core.Mutators
             arrayCount = ((Dom.Array)obj).Count;
             n = getN(obj, 50);
             values = NumberGenerator.GenerateBadPositiveNumbers(16, n);
-        }
+
+			// this will weed out invalid values that would cause the length to be less than 0
+			List<long> newVals = new List<long>(values);
+			newVals.RemoveAll(RemoveInvalid);
+			values = newVals.ToArray();
+		}
+
+		private bool RemoveInvalid(long n)
+		{
+			return n < 0;
+		}
 
         // GET N
         //
@@ -126,6 +141,8 @@ namespace Peach.Core.Mutators
         //
         public void performMutation(DataElement obj, int num)
         {
+			logger.Debug("performMutation(num=" + num + ")");
+
             Dom.Array objAsArray = (Dom.Array)obj;
 
             //if (num == 0)
@@ -146,11 +163,12 @@ namespace Peach.Core.Mutators
                 // add some items
                 try
                 {
-                    var newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
-                    var originalName = newElem.name;
+					DataElement newElem;
+
                     foreach (int i in ArrayExtensions.Range(objAsArray.Count, num, 1))
                     {
-                        newElem.name = originalName + "_" + (i + 1);
+						newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
+						newElem.name = newElem.name + "_" + (i + 1);
                         objAsArray.Add(newElem);
                     }
                 }
