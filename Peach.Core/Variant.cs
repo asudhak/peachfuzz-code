@@ -544,5 +544,26 @@ namespace Peach.Core
 					return base.GetHashCode();
 			}
 		}
+
+    public override string ToString()
+    {
+      switch (_type)
+      {
+        case VariantType.Int:
+          return this._valueInt.ToString();
+        case VariantType.Long:
+          return this._valueLong.ToString();
+        case VariantType.ULong:
+          return this._valueULong.ToString();
+        case VariantType.String:
+          return this._valueString.ToString();
+        case VariantType.ByteString:
+          return _valueByteArray.ToString();
+        case VariantType.BitStream:
+          return _valueBitStream.ToString();
+        default:
+          return base.ToString();
+      }
+    }
 	}
 }
