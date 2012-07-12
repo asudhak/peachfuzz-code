@@ -90,7 +90,8 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            performMutation(obj, position);
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			performMutation(obj, position);
         }
 
         // RANDOM_MUTAION
@@ -103,7 +104,8 @@ namespace Peach.Core.Mutators
 				return;
 			}
 
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             performMutation(obj, rand.Next(length - 1));
         }
 

@@ -232,7 +232,8 @@ namespace Peach.Core.Mutators
                 obj.MutatedValue = new Variant(ulongValues[currentCount]);
             else
                 obj.MutatedValue = new Variant(values[size][currentCount]);
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 
         // RANDOM_MUTAION
         //
@@ -245,7 +246,8 @@ namespace Peach.Core.Mutators
                 obj.MutatedValue = new Variant(rand.Choice(ulongValues));
             else
                 obj.MutatedValue = new Variant(rand.Choice(values[size]));
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 	}
 }
 

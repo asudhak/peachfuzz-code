@@ -87,14 +87,16 @@ namespace Peach.Core.Mutators
                 dataModel.Insert(idx1, copy2);
                 dataModel.Insert(idx2, copy1);
             }
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
             sequencialMutation(obj);
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 	}
 }
 

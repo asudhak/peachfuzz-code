@@ -106,7 +106,14 @@ def build(bld):
 
 def go(bld):
 	bld.fun = 'build'
-	bld.recurse(bld.subdirs)
+	#bld.recurse(bld.subdirs)
+	bld.recurse('3rdParty')
+	bld.recurse('Peach')
+	bld.recurse('Peach.Core')
+	#bld.recurse('Peach.Core.OS.Linux')
+	#bld.recurse('Peach.Core.OS.OSX')
+	bld.recurse('Peach.Core.OS.Windows')
+	bld.recurse('Peach.Core.Debuggers.Windows')
 
 #	bld(
 #		features = 'cs',

@@ -181,7 +181,8 @@ namespace Peach.Core.Mutators
                     obj.MutatedValue = new Variant(value);
                 }
             }
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 
         // RANDOM_MUTAION
         //
@@ -190,7 +191,8 @@ namespace Peach.Core.Mutators
 			// Random random :)
 			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
 			sequencialMutation(obj, rand);
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 	}
 }
 

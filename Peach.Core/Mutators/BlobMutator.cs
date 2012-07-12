@@ -116,14 +116,16 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            performMutation(obj);
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			performMutation(obj);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            performMutation(obj);
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			performMutation(obj);
         }
 
         // PERFORM_MUTATION

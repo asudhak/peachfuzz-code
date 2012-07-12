@@ -65,7 +65,7 @@ namespace Peach
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			if (totalIterations == null)
+			if (totalIterations == null || totalIterations == int.MaxValue)
 			{
 				var color = Console.ForegroundColor;
 				Console.ForegroundColor = ConsoleColor.DarkGray;

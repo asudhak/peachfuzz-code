@@ -180,6 +180,7 @@ namespace Peach.Core.Mutators
             byte[] data2 = new byte[s.Length];
             s.Read(data2, 0, data2.Length);
             obj.MutatedValue = new Variant(data2);
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
@@ -194,6 +195,7 @@ namespace Peach.Core.Mutators
             byte[] data2 = new byte[s.Length];
             s.Read(data2, 0, data2.Length);
             obj.MutatedValue = new Variant(data2);
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 	}

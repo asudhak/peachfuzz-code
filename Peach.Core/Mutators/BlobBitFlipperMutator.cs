@@ -135,7 +135,8 @@ namespace Peach.Core.Mutators
                 bs.WriteBit(0);
 
             obj.MutatedValue = new Variant(bs.Value);
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTAION
@@ -161,7 +162,8 @@ namespace Peach.Core.Mutators
                 bs.WriteBit(0);
 
             obj.MutatedValue = new Variant(bs.Value);
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 	}
 }

@@ -176,7 +176,8 @@ namespace Peach.Core.Mutators
                 obj.MutatedValue = new Variant(value.ToString());
             else
                 obj.MutatedValue = new Variant(value);
-        }
+			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+		}
 
         // RANDOM_MUTAION
         //
@@ -194,7 +195,8 @@ namespace Peach.Core.Mutators
                     obj.MutatedValue = new Variant(finalValue.ToString());
                 else
                     obj.MutatedValue = new Variant(finalValue);
-            }
+				obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			}
             catch
             {
                 // OK to skip, another mutator probably changes this value already - (such as datatree)
