@@ -74,7 +74,7 @@ namespace Peach.Core.Mutators
             var idx1 = obj.parent.IndexOf(obj);
             var copy1 = ObjectCopier.Clone<DataElement>(obj);
             var nextNode = obj.nextSibling();
-            var dataModel = (DataElementContainer)obj.getRoot();
+            var dataModel = (DataElementContainer)obj.parent;
 
             if (nextNode != null)
             {

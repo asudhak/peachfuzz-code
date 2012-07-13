@@ -108,6 +108,61 @@ namespace Peach.Core.Test.Mutators
             results.Clear();
         }
 
+		[Test]
+		public void TestBlock()
+		{
+			// standard test of swapping the data elements
+
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"     <Block name=\"blk\">" +
+				"       <Number name=\"num0\" size=\"32\" signed=\"true\" value=\"41\"/>" +
+				"       <Number name=\"num1\" size=\"32\" signed=\"true\" value=\"42\"/>" +
+				"       <Number name=\"num2\" size=\"32\" signed=\"true\" value=\"43\"/>" +
+				"       <Number name=\"num3\" size=\"32\" signed=\"true\" value=\"44\"/>" +
+				"       <Number name=\"num4\" size=\"32\" signed=\"true\" value=\"45\"/>" +
+				"     </Block>" +
+				"   </DataModel>" +
+
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
+
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Stdout\"/>" +
+				"		<Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
+
+				"   <Run name=\"DefaultRun\">" +
+				"       <Test ref=\"TheTest\"/>" +
+				"   </Run>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementSwapNearNodesMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.IsTrue(results.Count == 6);
+
+			firstPass = true;
+			results.Clear();
+		}
         void Action_FinishedTest(Dom.Action action)
         {
             if (firstPass)
