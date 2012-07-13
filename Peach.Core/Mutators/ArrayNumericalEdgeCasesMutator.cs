@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 using NLog;
 
@@ -160,17 +161,22 @@ namespace Peach.Core.Mutators
             }
             else if (num > objAsArray.Count)
             {
-                // add some items
                 try
                 {
-					DataElement newElem;
+					// We are not actually going to make this array thousands of items long.  Instead
+					// we are going to override the count and copy the last element many times simulating a 
+					// very long array.
 
-                    foreach (int i in ArrayExtensions.Range(objAsArray.Count, num, 1))
-                    {
-						newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
-						newElem.name = newElem.name + "_" + (i + 1);
-                        objAsArray.Add(newElem);
-                    }
+					objAsArray.overrideCount = num;
+
+					var elemValue = objAsArray[objAsArray.Count - 1].Value.Value;
+
+					var newValue = new BitStream(elemValue);
+					for (int i = objAsArray.Count; i < num; i++)
+						newValue.WriteBytes(elemValue);
+
+					objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
+					objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
                 }
                 catch
                 {

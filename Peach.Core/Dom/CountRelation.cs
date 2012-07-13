@@ -93,6 +93,10 @@ namespace Peach.Core.Dom
 
 				int count = OfArray.Count;
 
+				// Allow us to override the count of the array
+				if (OfArray.overrideCount.HasValue)
+					count = (int)OfArray.overrideCount;
+
 				if (_expressionSet != null)
 				{
 					Dictionary<string, object> state = new Dictionary<string, object>();

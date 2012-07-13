@@ -64,6 +64,7 @@ namespace Peach.Core.Dom
 		public int occurs = 1;
 
 		public bool hasExpanded = false;
+		public int? overrideCount = null;
 
 		public DataElement origionalElement = null;
 
