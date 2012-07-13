@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("ExpressionFixup", "XOR bytes of data.")]
+    [FixupAttribute("ExpressionFixup", "XOR bytes of data.", true)]
     //checksums.ExpressionFixup is for backwards compatibility with Peach2
     [FixupAttribute("checksums.ExpressionFixup", "XOR bytes of data.")]
     [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]

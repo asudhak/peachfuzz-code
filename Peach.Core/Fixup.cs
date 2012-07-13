@@ -79,11 +79,13 @@ namespace Peach.Core
 	{
 		public string className;
 		public string description;
+    public bool isDefault;
 
-		public FixupAttribute(string className, string description)
+		public FixupAttribute(string className, string description, bool isDefault = false)
 		{
 			this.className = className;
 			this.description = description;
+      this.isDefault = isDefault;
 		}
 	}
 }

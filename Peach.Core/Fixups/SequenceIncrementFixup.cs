@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("SequenceIncrementFixup", "Standard sequencial increment fixup.")]
+    [FixupAttribute("SequenceIncrementFixup", "Standard sequencial increment fixup.", true)]
     [FixupAttribute("sequence.SequenceIncrementFixup", "Standard sequencial increment fixup.")]
     [Serializable]
     public class SequenceIncrementFixup : Fixup

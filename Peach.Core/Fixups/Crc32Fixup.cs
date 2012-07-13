@@ -35,7 +35,7 @@ using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
+  [FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.", true)]
 	[FixupAttribute("checksums.Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
     [Serializable]
