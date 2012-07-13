@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
-	author="Michael Eddington">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 	
 	<!--
 		
@@ -81,7 +80,7 @@
 		</Monitor>
 	</Agent>
 	
-	<Test name="TheTest">
+	<Test name="Default">
 		<Agent ref="LocalAgent" />
 		<StateModel ref="State"/>
 		
@@ -89,17 +88,12 @@
 		<Publisher class="File">
 			<Param name="FileName" value="fuzzfile.bin" />
 		</Publisher>
-				
-	</Test>
-	
-	<Run name="DefaultRun">
-		<Test ref="TheTest" />
-		
+
 		<!-- Configure a logger to store collected information -->
 		<Logger class="logger.Filesystem">
 			<Param name="path" value="c:\peach\logtest" />
 		</Logger>
-	</Run>
+	</Test>
 	
 </Peach>
 <!-- end -->

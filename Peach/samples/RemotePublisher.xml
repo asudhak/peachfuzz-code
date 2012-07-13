@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
-	author="Michael Eddington">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 	
 	<!--
 		
@@ -29,9 +28,6 @@
 		
 	-->
 	
-	<!-- Import defaults for Peach instance -->
-	<Include ns="default" src="file:defaults.xml" />
-	
 	<DataModel name="TestTemplate">
 		<String name="TheString" value="Hello World!" />
 	</DataModel>
@@ -44,11 +40,11 @@
 		</State>
 	</StateModel>
 	
-	<Agent name="RemoteAgent" location="http://192.168.1.190:9000"> 
+	<Agent name="RemoteAgent" location="tcp://192.168.1.190:9000"> 
 		<!-- This agent will get our remote publisher -->
 		
 		<!-- Load up our target -->
-		<Monitor class="debugger.WindowsDebugEngine">
+		<Monitor class="WindowsDebugger">
 			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 192.168.1.190 4242" />
 		</Monitor>
 	</Agent>
@@ -58,22 +54,17 @@
 		<Agent ref="RemoteAgent" />
 		
 		<StateModel ref="State"/>
-		<Publisher class="remote.RemotePublisher">
-			<Param name="agent" value="RemoteAgent" />
-			<Param name="name" value="pub1" />
-			<Param name="class" value="tcp.Tcp"/>
-			<Param name="host" value="192.168.1.190" />
-			<Param name="port" value="4242" />
+		<Publisher class="RemotePublisher">
+			<Param name="Agent" value="RemoteAgent" />
+			<Param name="Name" value="pub1" />
+			<Param name="Class" value="tcp.Tcp"/>
+			<Param name="Host" value="192.168.1.190" />
+			<Param name="Port" value="4242" />
 		</Publisher>
-	</Test>
-	
-	<Run name="DefaultRun">
-		<Test ref="TheTest" />
-		
-		<Logger class="logger.Filesystem">
-			<Param name="path" value="c:\peach\logtest" />
+		<Logger class="Filesystem">
+			<Param name="Path" value="logtest" />
 		</Logger>
-	</Run>
-	
+	</Test>
+
 </Peach>
 <!-- end -->

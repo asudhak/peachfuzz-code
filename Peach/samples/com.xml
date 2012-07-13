@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach /peach/peach.xsd">
-
-	<!-- Import defaults for Peach instance -->
-	<Include ns="default" src="file:defaults.xml"/>
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 
 	<DataModel name="TheDataModel">
 		<String value="Hello World!" />
@@ -86,22 +83,18 @@
 		</Monitor>
 	</Agent>
 
-	<Test name="TheTest">
+	<Test name="Default">
 		<Agent ref="MyAgent"/>
 		<StateModel ref="TheState"/>
+		
 		<Publisher class="Com">
 			<Param name="clsid" value="{8FAEEEE1-AAA5-4B77-8CBA-BFDCE3E3C7E8}"/>
 		</Publisher>
-	</Test>
-
-	<!-- Configure a single run -->
-	<Run name="DefaultRun">
-		<Test ref="TheTest"/>
-
+		
 		<Logger class="Filesystem">
 			<Param name="Path" value="Logs" />
 		</Logger>
-	</Run>
+	</Test>
 
 </Peach>
 <!-- end -->

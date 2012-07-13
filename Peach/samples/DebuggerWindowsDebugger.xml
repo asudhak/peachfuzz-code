@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach /peach3/peach.core/peach.xsd">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 
 	<DataModel name="TestTemplate">
 		<String name="TheString" value="Hello World!" />
@@ -34,7 +34,7 @@
 		</Monitor>-->
 	</Agent>
 
-	<Test name="TheTest">
+	<Test name="Default">
 		<Agent ref="LocalAgent" />
 
 		<StateModel ref="State"/>
@@ -42,15 +42,10 @@
 			<Param name="Host" value="127.0.0.1" />
 			<Param name="Port" value="4244" />
 		</Publisher>
-	</Test>
-
-	<Run name="DefaultRun">
-		<Test ref="TheTest" />
-
 		<Logger class="Filesystem">
 			<Param name="Path" value="Logs" />
 		</Logger>
-	</Run>
+	</Test>
 
 </Peach>
 <!-- end -->

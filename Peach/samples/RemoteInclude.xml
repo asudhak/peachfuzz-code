@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
-	author="Michael Eddington">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 	
 	<!--
 		
@@ -22,9 +21,6 @@
 		
 	-->
 	
-	<!-- Import defaults for Peach instance -->
-	<Include ns="default" src="file:defaults.xml" />
-	
 	<!-- Include a file from a web-site -->
 	<Include ns="example" src="http://phed.org/Peach/Example.xml" />
 
@@ -36,16 +32,12 @@
 		</State>
 	</StateModel>
 	
-	<Test name="RemoteIncludeTest">
+	<Test name="Default">
 		<!-- Reference our remote template using a namespace prefix -->
 		<StateModel ref="State" />
 		
-		<Publisher class="stdout.Stdout" />
+		<Publisher class="Console" />
 	</Test>
-	
-	<Run name="DefaultRun" description="Stdout HelloWorld Run">
-		<Test ref="RemoteIncludeTest" />
-	</Run>
 	
 </Peach>
 <!-- end -->

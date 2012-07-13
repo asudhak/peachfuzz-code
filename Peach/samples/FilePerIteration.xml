@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
-	author="Michael Eddington" description="Hello World Example">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 
 	<!--
 
@@ -35,17 +34,12 @@
 		</State>
 	</StateModel>
 
-	<Test name="HelloWorldTest">
+	<Test name="Default">
 		<StateModel ref="State"/>
 		<Publisher class="FilePerIteration">
 			<Param name="fileName" value="FilePer-%d.txt"/>
 		</Publisher>
 	</Test>
-
-	<!-- Configure a single run -->
-	<Run name="DefaultRun">
-		<Test ref="HelloWorldTest" />
-	</Run>
 
 </Peach>
 <!-- end -->

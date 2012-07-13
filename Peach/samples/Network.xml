@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
-	author="Michael Eddington" description="Hello World Example">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 
 	<!--
 		
@@ -55,7 +54,7 @@
 		</Monitor>
 	</Agent>
 
-	<Test name="NetworkTest">
+	<Test name="Default">
 		<Agent ref="LocalAgent" />
 		<StateModel ref="TheStateModel"/>
 
@@ -63,15 +62,11 @@
 			<Param name="Host" value="127.0.0.1" />
 			<Param name="Port" value="4242" />
 		</Publisher>
-	</Test>
-
-	<Run name="DefaultRun">
-		<Test ref="NetworkTest" />
-
+		
 		<Logger class="Filesystem">
 			<Param name="Path" value="Logs" />
 		</Logger>
-	</Run>
+	</Test>
 
 </Peach>
 <!-- end -->

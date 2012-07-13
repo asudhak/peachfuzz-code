@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd" version="1.0"
-	author="Michael Eddington" description="Hello World Example">
+	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
 
 	<!--
 
@@ -24,7 +23,7 @@
 	-->
 
 	<!-- Create a simple data template containing a single string -->
-	<DataModel name="HelloWorldTemplate">
+	<DataModel name="TheDataModel">
 		<String value="Hello World!" />
 	</DataModel>
 	
@@ -38,13 +37,13 @@
 	<StateModel name="State" initialState="State1" >
 		<State name="State1"  >
 			<Action type="output" >
-				<DataModel ref="HelloWorldTemplate"/>
+				<DataModel ref="TheDataModel"/>
 			</Action>
 		</State>
 	</StateModel>
 
 	<!-- Our Test element will link together our state model and publisher -->
-	<Test name="HelloWorldTest">
+	<Test name="Default">
 		<StateModel ref="State"/>
 		
 		<!--
@@ -56,20 +55,6 @@
 		<Publisher class="Console" />
 
 	</Test>
-
-	<!--
-		Configure a single run.  The name "DefaultRun" is special.  When running
-		this example, if we do not specify a run name on the command line, this run will
-		be chosen automatically.
-	-->
-	<Run name="DefaultRun">
-		
-		<!-- For this example, no logging has been configured. -->
-		<!-- <Logger class="logger.Filesystem"><Param name="path" value="logs"/></Logger> -->
-
-		<Test ref="HelloWorldTest" />
-
-	</Run>
 
 </Peach>
 <!-- end -->
