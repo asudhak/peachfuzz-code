@@ -174,6 +174,9 @@ namespace Peach.Core.Mutators
             var objOf = sizeRelation.Of;
             n = (int)curr;
 
+			obj.MutatedValue = null;
+			objOf.MutatedValue = null;
+
             // make sure the data hasn't changed somewhere along the line
             //if (originalDataLength != size)
                 //PopulateValues(obj);

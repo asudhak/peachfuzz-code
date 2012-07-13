@@ -66,12 +66,27 @@ namespace Peach.Core
         public T[] Sample<T>(IEnumerable<T> items, int k)
         {
             List<T> ret = new List<T>();
+			List<int> usedIndexes = new List<int>();
+			int index;
 
 			if (items.Count() < k)
+			{
 				k = items.Count();
+				ret.AddRange(items);
+				return Shuffle<T>(ret.ToArray());
+			}
 
-            for (int i = 0; i < k; ++i)
-                ret.Add(items.ElementAt(_random.Next(0, items.Count())));
+			for (int i = 0; i < k; ++i)
+			{
+				do
+				{
+					index = _random.Next(0, items.Count());
+				}
+				while (usedIndexes.Contains(index));
+				usedIndexes.Add(index);
+
+				ret.Add(items.ElementAt(index));
+			}
 
             return ret.ToArray();
         }

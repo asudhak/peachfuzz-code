@@ -81,12 +81,11 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
 			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			var newElem = ObjectCopier.Clone<DataElement>(obj);
-            var originalName = newElem.name;
 
             for (int i = 0; i < currentCount - 1; ++i)
             {
-                newElem.name = originalName + "_" + i;
+				var newElem = ObjectCopier.Clone<DataElement>(obj);
+				newElem.name +=  "_" + i;
                 obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
             }
         }
@@ -96,14 +95,13 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
 			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			var newElem = ObjectCopier.Clone<DataElement>(obj);
-            var originalName = newElem.name;
             var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             int newCount = rand.Next(currentCount);
 
             for (int i = 0; i < newCount; ++i)
             {
-                newElem.name = originalName + "_" + i;
+				var newElem = ObjectCopier.Clone<DataElement>(obj);
+				newElem.name += "_" + i;
                 obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
             }
         }
