@@ -524,6 +524,7 @@
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
     <Compile Include="Publishers\TcpListenerPublisher.cs" />
+    <Compile Include="Publishers\UdpPublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="Transformer.cs" />
