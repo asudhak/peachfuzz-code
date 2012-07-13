@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NLog;
 
 namespace Peach.Core.Debuggers.WindowsSystem
 {
@@ -58,6 +59,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 	/// </remarks>
 	public class SystemDebugger
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		#region Constants
 
 		public const uint DEBUG_ONLY_THIS_PROCESS = 0x00000002;
@@ -180,6 +183,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 			UnsafeMethods.CloseHandle(processInformation.hProcess);
 			UnsafeMethods.CloseHandle(processInformation.hThread);
+			UnsafeMethods.DebugSetProcessKillOnExit(true);
 
 			return new SystemDebugger(startUpInfo, processInformation);
 		}
@@ -190,12 +194,16 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			if (!UnsafeMethods.DebugActiveProcess((uint)dwProcessId))
 				throw new Exception("Can't attach to process " + dwProcessId + ".");
 
+			UnsafeMethods.DebugSetProcessKillOnExit(true);
+
 			return new SystemDebugger(dwProcessId);
 		}
 
 		public int dwProcessId = 0;
 		public bool processExit = false;
 		public bool verbose = false;
+		UnsafeMethods.STARTUPINFO _startUpInfo;
+		UnsafeMethods.PROCESS_INFORMATION _processInformation;
 
 		protected SystemDebugger(int dwProcessId)
 		{
@@ -204,6 +212,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		protected SystemDebugger(UnsafeMethods.STARTUPINFO startUpInfo, UnsafeMethods.PROCESS_INFORMATION processInformation)
 		{
+			_startUpInfo = startUpInfo;
+			_processInformation = processInformation;
 			dwProcessId = processInformation.dwProcessId;
 		}
 
@@ -216,7 +226,6 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public void MainLoop()
 		{
 			UnsafeMethods.DEBUG_EVENT debug_event = new UnsafeMethods.DEBUG_EVENT();
-			UnsafeMethods.DebugSetProcessKillOnExit(true);
 
 			try
 			{
@@ -252,40 +261,45 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// status parameter (dwContinueStatus). This value 
 					// is used by the ContinueDebugEvent function. 
 
-					if (verbose)
-						Console.Error.WriteLine("EXCEPTION_DEBUG_EVENT");
+					logger.Debug("EXCEPTION_DEBUG_EVENT");
 					switch (DebugEv.u.Exception.ExceptionRecord.ExceptionCode)
 					{
 						case EXCEPTION_ACCESS_VIOLATION:
 							// First chance: Pass this on to the system. 
 							// Last chance: Display an appropriate error. 
 
+							logger.Debug("EXCEPTION_ACCESS_VIOLATION");
 							if(HandleAccessViolation != null)
 								HandleAccessViolation(DebugEv);
 
 							break;
 
 						case EXCEPTION_BREAKPOINT:
+							logger.Debug("EXCEPTION_BREAKPOINT");
 							// First chance: Display the current 
 							// instruction and register values. 
 							break;
 
 						case EXCEPTION_DATATYPE_MISALIGNMENT:
+							logger.Debug("EXCEPTION_DATATYPE_MISALIGNMENT");
 							// First chance: Pass this on to the system. 
 							// Last chance: Display an appropriate error. 
 							break;
 
 						case EXCEPTION_SINGLE_STEP:
+							logger.Debug("EXCEPTION_SINGLE_STEP");
 							// First chance: Update the display of the 
 							// current instruction and register values. 
 							break;
 
 						case DBG_CONTROL_C:
+							logger.Debug("DBG_CONTROL_C");
 							// First chance: Pass this on to the system. 
 							// Last chance: Display an appropriate error. 
 							break;
 
 						default:
+							logger.Debug("UNKNOWN");
 							// Handle other exceptions. 
 							break;
 					}
@@ -299,8 +313,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// SuspendThread and ResumeThread functions. 
 
 					//dwContinueStatus = OnCreateThreadDebugEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("CREATE_THREAD_DEBUG_EVENT");
+					logger.Debug("CREATE_THREAD_DEBUG_EVENT");
 					break;
 
 				case CREATE_PROCESS_DEBUG_EVENT:
@@ -314,24 +327,21 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// file with CloseHandle.
 
 					//dwContinueStatus = OnCreateProcessDebugEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("CREATE_PROCESS_DEBUG_EVENT");
+					logger.Debug("CREATE_PROCESS_DEBUG_EVENT");
 					break;
 
 				case EXIT_THREAD_DEBUG_EVENT:
 					// Display the thread's exit code. 
 
 					//dwContinueStatus = OnExitThreadDebugEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("EXIT_PROCESS_DEBUG_EVENT");
+					logger.Debug("EXIT_PROCESS_DEBUG_EVENT");
 					break;
 
 				case EXIT_PROCESS_DEBUG_EVENT:
 					// Display the process's exit code. 
 
 					//dwContinueStatus = OnExitProcessDebugEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("EXIT_PROCESS_DEBUG_EVENT");
+					logger.Debug("EXIT_PROCESS_DEBUG_EVENT");
 					if (dwProcessId == DebugEv.dwProcessId)
 					{
 						processExit = true;
@@ -344,8 +354,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// loaded DLL. Be sure to close the handle to the loaded DLL 
 					// with CloseHandle.
 
-					if (verbose)
-						Console.Error.WriteLine("LOAD_DLL_DEBUG_EVENT");
+					logger.Debug("LOAD_DLL_DEBUG_EVENT");
 					//dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
 					break;
 
@@ -353,27 +362,27 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// Display a message that the DLL has been unloaded. 
 
 					//dwContinueStatus = OnUnloadDllDebugEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("UNLOAD_DLL_DEBUG_EVENT");
+
+					logger.Debug("UNLOAD_DLL_DEBUG_EVENT");
 					break;
 
 				case OUTPUT_DEBUG_STRING_EVENT:
 					// Display the output debugging string. 
 
 					//dwContinueStatus = OnOutputDebugStringEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("OUTPUT_DEBUG_STRING_EVENT");
+
+					logger.Debug("OUTPUT_DEBUG_STRING_EVENT");
 					break;
 
 				case RIP_EVENT:
 					//dwContinueStatus = OnRipEvent(DebugEv);
-					if (verbose)
-						Console.Error.WriteLine("RIP_EVENT");
+
+					logger.Debug("RIP_EVENT");
 					break;
 
 				default:
-					if (verbose)
-						Console.Error.WriteLine("UNKNOWN DEBUG EVENT");
+
+					logger.Debug("UNKNOWN DEBUG EVENT");
 					break;
 			}
 		}

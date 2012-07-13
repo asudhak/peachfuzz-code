@@ -1024,10 +1024,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peach.Core.Debuggers.Windows\Peach.Core.Debuggers.Windows.vcxproj">
-      <Project>{2985336D-9F3A-4D03-B93E-E70DE1A20271}</Project>
-      <Name>Peach.Core.Debuggers.Windows</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>

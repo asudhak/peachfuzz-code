@@ -36,7 +36,8 @@ using System.ServiceProcess;
 using System.Management;
 
 //using Peach.Core.Debuggers.WindowsSystem;
-using Peach.Core.Debuggers.Windows;
+//using Peach.Core.Debuggers.Windows;
+using Peach.Core.Debuggers.WindowsSystem;
 
 namespace Peach.Core.Agent.Monitors.WindowsDebug
 {
@@ -44,6 +45,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 	{
 		public static bool ExitInstance = false;
 		SystemDebugger _dbg = null;
+		Thread _dbgThread = null;
 
 		public string commandLine = null;
 		public string processName = null;
@@ -65,7 +67,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public int ProcessId
 		{
-			get { return (int)_dbg.dwProcessId(); }
+			get { return (int)_dbg.dwProcessId; }
 		}
 
 		public bool caughtException
@@ -73,13 +75,12 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			get
 			{
 				if (_caughtException)
-					return true;
-
-				if (_dbg != null && _dbg.HasAccessViolation())
 				{
-					_caughtException = true;
-					crashInfo = new Dictionary<string, Variant>();
-					crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
+					if (crashInfo == null)
+					{
+						crashInfo = new Dictionary<string, Variant>();
+						crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
+					}
 
 					return true;
 				}
@@ -97,13 +98,12 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 				foreach(System.Diagnostics.Process process in System.Diagnostics.Process.GetProcesses())
 				{
-					if (process.Id == (int)_dbg.dwProcessId())
+					if (process.Id == (int)_dbg.dwProcessId)
 						return true;
 				}
 
-				if (_dbg.HasAccessViolation())
+				if (_caughtException && crashInfo == null)
 				{
-					_caughtException = true;
 					crashInfo = new Dictionary<string, Variant>();
 					crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
 				}
@@ -117,10 +117,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void StartDebugger()
 		{
-			if (_dbg != null)
+			if (_dbg != null || _dbgThread != null)
 				FinishDebugging();
 
-			Run();
+			_dbgThread = new Thread(new ThreadStart(Run));
+			_dbgThread.Start();
 		}
 
 		public void StopDebugger()
@@ -128,13 +129,17 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg == null)
 				return;
 
-			_dbg.StopDebugger();
+			_dbg.processExit = true;
+
+			if(_dbgThread.IsAlive)
+				_dbgThread.Join();
 
 			// remember if we caught an exception
 			var b = this.caughtException;
 
 			dbgExited = true;
 			_dbg = null;
+			_dbgThread = null;
 		}
 
 		public void FinishDebugging()
@@ -153,11 +158,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void Run()
 		{
-			_dbg = new SystemDebugger();
+			_dbg = null;
 
 			if (commandLine != null)
 			{
-				_dbg.CreateProcessW(commandLine);
+				_dbg = SystemDebugger.CreateProcess(commandLine);
 			}
 			else if (processName != null)
 			{
@@ -177,7 +182,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 				proc.Dispose();
 
-				_dbg.AttachToProcess(pid);
+				_dbg = SystemDebugger.AttachToProcess(pid);
 			}
 			else if (service != null)
 			{
@@ -195,8 +200,45 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					}
 				}
 
-				_dbg.AttachToProcess(processId);
+				_dbg = SystemDebugger.AttachToProcess(processId);
 			}
+
+			_dbg.HandleAccessViolation = new HandleAccessViolation(HandleAccessViolation);
+		}
+
+		public void HandleAccessViolation(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			bool handle = false;
+
+			if (DebugEv.u.Exception.dwFirstChance == 1)
+			{
+				// Only some first chance exceptions are interesting
+
+				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0x80000001 ||
+					DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC000001D)
+				{
+					handle = true;
+				}
+
+				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
+				{
+					// A/V on EIP || DEP
+					if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0] == 0)
+						handle = true;
+
+					// write a/v not near null
+					else if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 &&
+						DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[1] != 0)
+						handle = true;
+				}
+
+				// Skip uninteresting first chance
+				if (handle == false)
+					return;
+			}
+
+			_caughtException = true;
+			_dbg.processExit = true;
 		}
 	}
 }
