@@ -106,9 +106,9 @@ public static bool? UnmanagedDllIs64Bit(string dllPath)
 
 namespace Peach.Core.Agent.Monitors
 {
+	[Monitor("WindowsDebugger", true)]
 	[Monitor("WindowsDebuggerHybrid")]
 	[Monitor("WindowsDebugEngine")]
-	[Monitor("WindowsDebugger")]
 	[Monitor("debugger.WindowsDebugEngine")]
 	[Parameter("CommandLine", typeof(string), "Command line of program to start.", false)]
 	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", false)]
