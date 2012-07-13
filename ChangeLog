@@ -25,6 +25,7 @@ NEW IN WAF 1.7.0
 * Improved the behaviour of Utils.readf/Utils.writef on Win32
 * Made Task.__repr__ more robust #1174
 * Fixed the gcc builds on hp-ux
+* Let gccdeps work with other compilers #1179
 
 NEW IN WAF 1.6.11
 -----------------

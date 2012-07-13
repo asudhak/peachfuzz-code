@@ -10,7 +10,7 @@ and prepare the dependency calculation for the next run
 import os, re, threading
 from waflib import Task, Logs, Utils, Errors
 from waflib.Tools import c_preproc
-from waflib.TaskGen import before_method, after_method, feature
+from waflib.TaskGen import before_method, feature
 
 lock = threading.Lock()
 
@@ -41,6 +41,20 @@ def scan(self):
 
 re_o = re.compile("\.o$")
 re_splitter = re.compile(r'(?<!\\)\s+') # split by space, except when spaces are escaped
+
+def remove_makefile_rule_lhs(line):
+	# Splitting on a plain colon would accidentally match inside a
+	# Windows absolute-path filename, so we must search for a colon
+	# followed by whitespace to find the divider between LHS and RHS
+	# of the Makefile rule.
+	rulesep = ': '
+
+	sep_idx = line.find(rulesep)
+	if sep_idx >= 0:
+		return line[sep_idx + 2:]
+	else:
+		return line
+
 def post_run(self):
 	# The following code is executed by threads, it is not safe, so a lock is needed...
 
@@ -54,19 +68,6 @@ def post_run(self):
 	name = re_o.sub('.d', name)
 	txt = Utils.readf(name)
 	#os.unlink(name)
-
-	def remove_makefile_rule_lhs(line):
-		# Splitting on a plain colon would accidentally match inside a
-		# Windows absolute-path filename, so we must search for a colon
-		# followed by whitespace to find the divider between LHS and RHS
-		# of the Makefile rule.
-		rulesep = ': '
-
-		sep_idx = line.find(rulesep)
-		if sep_idx >= 0:
-			return line[sep_idx + 2:]
-		else:
-			return line
 
 	# Compilers have the choice to either output the file's dependencies
 	# as one large Makefile rule:
@@ -98,7 +99,6 @@ def post_run(self):
 	nodes = []
 	bld = self.generator.bld
 
-	f = re.compile("^(\.\.)[\\/](.*)$")
 	for x in val:
 
 		node = None
