@@ -100,7 +100,7 @@ namespace Peach.Core.Dom
 		{
 			Number element = this;
 
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
 			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
 				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
@@ -158,8 +158,13 @@ namespace Peach.Core.Dom
 			}
 
 			if (element.isToken)
+			{
 				if (defaultValue != element.DefaultValue)
+				{
+					logger.Debug("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.");
 					throw new CrackingFailure("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
+				}
+			}
 
 			element.DefaultValue = defaultValue;
 		}

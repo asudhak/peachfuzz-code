@@ -117,6 +117,8 @@ namespace Peach.Core.Dom
 					context.handleNode(child, sizedData);
 					element.SelectedElement = child;
 					foundElement = true;
+
+					logger.Debug("handleChoice: Keeping child!");
 					break;
 				}
 				catch (CrackingFailure)
