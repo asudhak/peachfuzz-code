@@ -361,11 +361,12 @@ namespace Peach.Core.Analyzers
 		/// <returns>Returns innerText or null.</returns>
 		public string getXmlAttribute(XmlNode node, string name)
 		{
-			try
+			System.Xml.XmlAttribute attr = node.Attributes.GetNamedItem(name) as System.Xml.XmlAttribute;
+			if (attr != null)
 			{
-				return node.Attributes[name].InnerText;
+				return attr.InnerText;
 			}
-			catch
+			else
 			{
 				return null;
 			}
@@ -380,24 +381,20 @@ namespace Peach.Core.Analyzers
 		/// <returns>Returns true/false or default value</returns>
 		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
 		{
-			try
-			{
-				string value = node.Attributes[name].InnerText.ToLower();
-				switch (value)
-				{
-					case "1":
-					case "true":
-						return true;
-					case "0":
-					case "false":
-						return false;
-					default:
-						throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
-				}
-			}
-			catch
-			{
+			string value = getXmlAttribute(node, name);
+			if (value == null)
 				return defaultValue;
+
+			switch (value.ToLower())
+			{
+				case "1":
+				case "true":
+					return true;
+				case "0":
+				case "false":
+					return false;
+				default:
+					throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
 			}
 		}
 
@@ -409,15 +406,8 @@ namespace Peach.Core.Analyzers
 		/// <returns>Returns boolean true or false.</returns>
 		public bool hasXmlAttribute(XmlNode node, string name)
 		{
-			try
-			{
-				object o = node.Attributes.GetNamedItem(name);
-				return o != null;
-			}
-			catch
-			{
-				return false;
-			}
+			object o = node.Attributes.GetNamedItem(name);
+			return o != null;
 		}
 
 		/// <summary>
