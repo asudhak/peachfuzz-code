@@ -30,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+
 using NLog;
 
 namespace Peach.Core.Debuggers.WindowsSystem
@@ -204,6 +206,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public bool verbose = false;
 		UnsafeMethods.STARTUPINFO _startUpInfo;
 		UnsafeMethods.PROCESS_INFORMATION _processInformation;
+		public ManualResetEvent processStarted = new ManualResetEvent(false);
 
 		protected SystemDebugger(int dwProcessId)
 		{
@@ -226,6 +229,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public void MainLoop()
 		{
 			UnsafeMethods.DEBUG_EVENT debug_event = new UnsafeMethods.DEBUG_EVENT();
+			processStarted.Set();
 
 			try
 			{

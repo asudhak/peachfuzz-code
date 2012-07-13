@@ -38,11 +38,13 @@ using System.Management;
 //using Peach.Core.Debuggers.WindowsSystem;
 //using Peach.Core.Debuggers.Windows;
 using Peach.Core.Debuggers.WindowsSystem;
+using NLog;
 
 namespace Peach.Core.Agent.Monitors.WindowsDebug
 {
 	public class SystemDebuggerInstance
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public static bool ExitInstance = false;
 		SystemDebugger _dbg = null;
 		Thread _dbgThread = null;
@@ -61,6 +63,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public bool _caughtException = false;
 		public Dictionary<string, Variant> crashInfo = null;
 
+		ManualResetEvent _dbgCreated = new ManualResetEvent(false);
+		
 		public SystemDebuggerInstance()
 		{
 		}
@@ -120,8 +124,14 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg != null || _dbgThread != null)
 				FinishDebugging();
 
+			_dbgCreated.Reset();
+
 			_dbgThread = new Thread(new ThreadStart(Run));
 			_dbgThread.Start();
+
+			// Wait for process to start up.
+			_dbgCreated.WaitOne();
+			_dbg.processStarted.WaitOne();
 		}
 
 		public void StopDebugger()
@@ -158,52 +168,65 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void Run()
 		{
-			_dbg = null;
-
-			if (commandLine != null)
+			try
 			{
-				_dbg = SystemDebugger.CreateProcess(commandLine);
-			}
-			else if (processName != null)
-			{
-				int pid = 0;
-				System.Diagnostics.Process proc = null;
-				var procs = System.Diagnostics.Process.GetProcessesByName(processName);
-				if (procs != null && procs.Length > 0)
-					proc = procs[0];
+				_dbg = null;
 
-				if (proc == null && int.TryParse(processName, out pid))
-					proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
-
-				if (proc == null)
-					throw new Exception("Unable to locate process by \"" + processName + "\".");
-
-				pid = proc.Id;
-
-				proc.Dispose();
-
-				_dbg = SystemDebugger.AttachToProcess(pid);
-			}
-			else if (service != null)
-			{
-				int processId = 0;
-
-				using (ServiceController srv = new ServiceController(service))
+				if (commandLine != null)
 				{
-					if (srv.Status == ServiceControllerStatus.Stopped)
-						srv.Start();
+					_dbg = SystemDebugger.CreateProcess(commandLine);
+				}
+				else if (processName != null)
+				{
+					int pid = 0;
+					System.Diagnostics.Process proc = null;
+					var procs = System.Diagnostics.Process.GetProcessesByName(processName);
+					if (procs != null && procs.Length > 0)
+						proc = procs[0];
 
-					using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
+					if (proc == null && int.TryParse(processName, out pid))
+						proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
+
+					if (proc == null)
+						throw new Exception("Unable to locate process by \"" + processName + "\".");
+
+					pid = proc.Id;
+
+					proc.Dispose();
+
+					_dbg = SystemDebugger.AttachToProcess(pid);
+				}
+				else if (service != null)
+				{
+					int processId = 0;
+
+					using (ServiceController srv = new ServiceController(service))
 					{
-						object o = manageService.GetPropertyValue("ProcessId");
-						processId = (int)((UInt32)o);
+						if (srv.Status == ServiceControllerStatus.Stopped)
+							srv.Start();
+
+						using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
+						{
+							object o = manageService.GetPropertyValue("ProcessId");
+							processId = (int)((UInt32)o);
+						}
 					}
+
+					_dbg = SystemDebugger.AttachToProcess(processId);
 				}
 
-				_dbg = SystemDebugger.AttachToProcess(processId);
+				_dbgCreated.Set();
+				_dbg.HandleAccessViolation = new HandleAccessViolation(HandleAccessViolation);
+				_dbg.MainLoop();
 			}
-
-			_dbg.HandleAccessViolation = new HandleAccessViolation(HandleAccessViolation);
+			catch (Exception ex)
+			{
+				logger.Error("Run(): Caught exception starting debugger: " + ex.ToString());
+			}
+			finally
+			{
+				_dbgCreated.Set();
+			}
 		}
 
 		public void HandleAccessViolation(UnsafeMethods.DEBUG_EVENT DebugEv)
