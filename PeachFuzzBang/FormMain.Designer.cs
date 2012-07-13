@@ -425,7 +425,7 @@
 			this.textBoxTemplateFiles.Name = "textBoxTemplateFiles";
 			this.textBoxTemplateFiles.Size = new System.Drawing.Size(293, 20);
 			this.textBoxTemplateFiles.TabIndex = 1;
-			this.textBoxTemplateFiles.Text = "samples";
+			this.textBoxTemplateFiles.Text = "samples_png";
 			// 
 			// label1
 			// 
