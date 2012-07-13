@@ -274,9 +274,9 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementChildren(node, str);
 
 			// handle NumericalString hint properly
-			string asStr = null;
 			if (str.DefaultValue.GetVariantType() == Variant.VariantType.BitStream || str.DefaultValue.GetVariantType() == Variant.VariantType.ByteString)
 			{
+				string asStr = null;
 				switch (type)
 				{
 					case "ascii":
@@ -301,14 +301,11 @@ namespace Peach.Core.Dom
 						asStr = Encoding.ASCII.GetString(((byte[])str.DefaultValue));
 						break;
 				}
-			}
-			else
-			{
-				asStr = (string)str.DefaultValue;
+				str.DefaultValue = new Variant(asStr);
 			}
 
 			int test;
-			if (int.TryParse(asStr, out test))
+			if (int.TryParse((string)str.DefaultValue, out test))
 			{
 				if (!str.Hints.ContainsKey("NumericalString"))
 					str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));

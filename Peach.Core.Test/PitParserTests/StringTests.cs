@@ -36,6 +36,7 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.PitParserTests
 {
@@ -44,24 +45,48 @@ namespace Peach.Core.Test.PitParserTests
 	{
 		// TODO - Unicode and everything 
 
-		//[Test]
-		//public void NumberDefaults()
-		//{
-		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-		//        "	<Defaults>" +
-		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
-		//        "	</Defaults>" +
-		//        "	<DataModel name=\"TheDataModel\">" +
-		//        "		<Number name=\"TheNumber\" size=\"8\"/>" +
-		//        "	</DataModel>" +
-		//        "</Peach>";
+		[Test]
+		public void SimpleStringTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
 
-		//    PitParser parser = new PitParser();
-		//    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		//    Number num = dom.dataModels[0][0] as Number;
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
-		//    Assert.IsTrue(num.Signed);
-		//    Assert.IsFalse(num.LittleEndian);
-		//}
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual("abc", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(3, value.LengthBytes);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("abc"), value.Value);
+		}
+
+		public void HexStringTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" valueType=\"hex\" value=\"0x0a\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
+			//Assert.AreEqual("\n", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(value.LengthBytes, 1);
+			Assert.AreEqual(new byte[] { 0x0a }, value.Value);
+		}
 	}
 }
