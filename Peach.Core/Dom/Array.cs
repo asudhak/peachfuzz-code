@@ -84,7 +84,7 @@ namespace Peach.Core.Dom
 		{
 			Array element = this;
 
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 			logger.Debug("Crack: {0} type: {1}", element.fullName, element[0].GetType());
 
 			element.origionalElement = element[0];
@@ -105,6 +105,7 @@ namespace Peach.Core.Dom
 
                 for (int i = 0; i < count; i++)
                 {
+					logger.Debug("Crack: ======================");
                     logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
 
                     
@@ -132,7 +133,8 @@ namespace Peach.Core.Dom
 				int cnt = 0;
 				for (cnt = 0; maxOccurs == -1 || cnt < maxOccurs; cnt++)
 				{
-                    logger.Debug("Crack: {0} Trying #{1}", element.fullName, cnt.ToString());
+					logger.Debug("Crack: ======================");
+					logger.Debug("Crack: {0} Trying #{1}", element.fullName, cnt.ToString());
 
 					long pos = data.TellBits();
 					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);

@@ -131,6 +131,8 @@ namespace Peach.Core.Dom
 					default:
 						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
 				}
+
+				logger.Debug("Number's value is: " + (long)defaultValue);
 			}
 			else
 			{
@@ -151,6 +153,8 @@ namespace Peach.Core.Dom
 					default:
 						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
 				}
+
+				logger.Debug("Number's value is: " + (ulong)defaultValue);
 			}
 
 			if (element.isToken)

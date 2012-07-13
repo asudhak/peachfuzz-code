@@ -204,6 +204,12 @@ namespace Peach.Core.Dom
 
 			element.DefaultValue = defaultValue;
 
+			string str = (string)defaultValue;
+			if(str.Length > 50)
+				str = str.Substring(0, 50);
+
+			logger.Debug("String's value is: " + str);
+
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

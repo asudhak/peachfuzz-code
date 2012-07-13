@@ -412,7 +412,8 @@ namespace Peach.Core.Cracker
 		{
 			try
 			{
-				logger.Trace("handleNode: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
+				logger.Debug("handleNode ------------------------------------");
+				logger.Debug("handleNode: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
 				OnEnterHandleNodeEvent(element, data);
 
 				long startingPosition = data.TellBits();
@@ -506,7 +507,7 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns size in bits</returns>
 		public long? determineElementSize(DataElement element, BitStream data)
 		{
-			logger.Trace("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
 			// Size in bits
 			long? size = null;
@@ -534,7 +535,7 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			logger.Trace("determineElementSize: Returning: "+size);
+			logger.Debug("determineElementSize: Returning: " + size);
 			return size;
 		}
 
