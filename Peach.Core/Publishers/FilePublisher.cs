@@ -147,9 +147,11 @@ namespace Peach.Core.Publishers
 				((BitStream)data).Stream.Position = 0;
 				((BitStream)data).Stream.CopyTo(stream);
 			}
-
-			byte [] buff = (byte[])data;
-			stream.Write(buff, 0, buff.Length);
+			else
+			{
+				byte[] buff = (byte[])data;
+				stream.Write(buff, 0, buff.Length);
+			}
 		}
 
 		#region Stream

@@ -58,6 +58,7 @@ namespace Peach.Core.Fixups
             byte[] data = from.Value.Value;
 			CRCTool crcTool = new CRCTool();
             crcTool.Init(CRCTool.CRCCode.CRC32);
+
             return new Variant((uint)crcTool.crctablefast(data));
 		}
 	}

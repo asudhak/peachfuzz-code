@@ -172,7 +172,6 @@ namespace Peach.Core.Mutators
 
             var sizeRelation = obj.relations.getFromSizeRelation();
             var objOf = sizeRelation.Of;
-            var size = obj.Value.LengthBytes;
             n = (int)curr;
 
             // make sure the data hasn't changed somewhere along the line
@@ -196,13 +195,13 @@ namespace Peach.Core.Mutators
                 objOf.MutatedValue = new Variant(new byte[0]);
                 return;
             }
-            else if (n < size)
+            else if (n < data.Length)
             {
                 // shorten the size
                 for (int i = 0; i < n; ++i)
                     newData.WriteByte(data[i]);
             }
-            else if (size == 0)
+            else if (data.Length == 0)
             {
                 // fill in with A's
                 for (int i = 0; i < n; ++i)
@@ -211,7 +210,7 @@ namespace Peach.Core.Mutators
             else
             {
                 // wrap the data to fill size
-				logger.Debug("Expanding data...");
+				logger.Debug("Expanding data from "+data.Length+" to "+n+" bytes");
                 while (newData.LengthBytes < n)
                 {
 					if ((newData.LengthBytes + data.Length) < n)

@@ -423,6 +423,7 @@ namespace Peach.Core.Dom
 						handleInput(publisher);
 						break;
 					case ActionType.Output:
+						logger.Debug("ActionType.Output");
 						publisher.output(this, new Variant(dataModel.Value));
 						break;
 

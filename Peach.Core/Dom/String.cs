@@ -364,6 +364,9 @@ namespace Peach.Core.Dom
             if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
                 return (BitStream)MutatedValue;
 
+			if (MutatedValue != null)
+				return new BitStream();
+
 			if (_type == StringType.Ascii)
 				value = Encoding.ASCII.GetBytes((string)v);
 
