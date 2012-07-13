@@ -274,8 +274,41 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementChildren(node, str);
 
 			// handle NumericalString hint properly
+			string asStr = null;
+			if (str.DefaultValue.GetVariantType() == Variant.VariantType.BitStream || str.DefaultValue.GetVariantType() == Variant.VariantType.ByteString)
+			{
+				switch (type)
+				{
+					case "ascii":
+						asStr = Encoding.ASCII.GetString(((byte[])str.DefaultValue));
+						break;
+					case "utf16":
+						asStr = Encoding.Unicode.GetString(((byte[])str.DefaultValue));
+						break;
+					case "utf16be":
+						asStr = Encoding.BigEndianUnicode.GetString(((byte[])str.DefaultValue));
+						break;
+					case "utf32":
+						asStr = Encoding.UTF32.GetString(((byte[])str.DefaultValue));
+						break;
+					case "utf7":
+						asStr = Encoding.UTF7.GetString(((byte[])str.DefaultValue));
+						break;
+					case "utf8":
+						asStr = Encoding.UTF8.GetString(((byte[])str.DefaultValue));
+						break;
+					default:
+						asStr = Encoding.ASCII.GetString(((byte[])str.DefaultValue));
+						break;
+				}
+			}
+			else
+			{
+				asStr = (string)str.DefaultValue;
+			}
+
 			int test;
-			if (int.TryParse((string)str.DefaultValue, out test))
+			if (int.TryParse(asStr, out test))
 			{
 				if (!str.Hints.ContainsKey("NumericalString"))
 					str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));
