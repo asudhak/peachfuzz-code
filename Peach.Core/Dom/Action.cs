@@ -455,8 +455,15 @@ namespace Peach.Core.Dom
 
 		protected void handleInput(Publisher publisher)
 		{
-			DataCracker cracker = new DataCracker();
-			cracker.CrackData(dataModel, new IO.BitStream(publisher));
+			try
+			{
+				DataCracker cracker = new DataCracker();
+				cracker.CrackData(dataModel, new IO.BitStream(publisher));
+			}
+			catch (CrackingFailure)
+			{
+				throw new SoftException();
+			}
 		}
 
 		protected void handleCall(Publisher publisher, RunContext context)
