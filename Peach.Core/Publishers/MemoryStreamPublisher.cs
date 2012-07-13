@@ -64,27 +64,6 @@ namespace Peach.Core.Publishers
 			OnClose(action);
 		}
 
-		public override Variant input(Core.Dom.Action action)
-		{
-			OnInput(action);
-
-			byte[] buff = new byte[stream.Length - stream.Position];
-			stream.Read(buff, 0, buff.Length);
-			return new Variant(buff);
-		}
-
-		public override Variant input(Core.Dom.Action action, int size)
-		{
-			OnInput(action, size);
-
-			if (stream.Length - stream.Position < size)
-				return null;
-
-			byte[] buff = new byte[size];
-			stream.Read(buff, 0, buff.Length);
-			return new Variant(buff);
-		}
-
 		public override void output(Core.Dom.Action action, Variant data)
 		{
 			if (stream == null)

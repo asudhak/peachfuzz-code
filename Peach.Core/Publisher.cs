@@ -233,29 +233,6 @@ namespace Peach.Core
 		}
 
 		/// <summary>
-		/// Receive data
-		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		/// <returns>Returns received data</returns>
-		public virtual Variant input(Core.Dom.Action action)
-		{
-			OnInput(action);
-			throw new PeachException("Error, action 'input' not supported by publisher");
-		}
-
-		/// <summary>
-		/// Receive data
-		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		/// <param name="size">Size of data to read</param>
-		/// <returns>Returns Data received</returns>
-		public virtual Variant input(Core.Dom.Action action, int size)
-		{
-			OnInput(action, size);
-			throw new PeachException("Error, action 'input' not supported by publisher");
-		}
-
-		/// <summary>
 		/// Send data
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>

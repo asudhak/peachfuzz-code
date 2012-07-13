@@ -135,50 +135,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override Variant input(Core.Dom.Action action)
-		{
-			// TODO: Improve speed for large reads
-			OnInput(action);
-
-			List<byte> listBuffer = new List<byte>();
-			byte [] buffer = new byte[1024];
-			int readBytes = 0;
-
-			do
-			{
-				readBytes = stream.Read(buffer, 0, buffer.Length);
-				if (readBytes == buffer.Length)
-					listBuffer.AddRange(buffer);
-				else
-				{
-					for (int i = 0; i < readBytes; i++)
-						listBuffer.Add(buffer[i]);
-				}
-			}
-			while (readBytes > 0);
-
-			return new Variant(listBuffer.ToArray());
-		}
-
-		public override Variant input(Core.Dom.Action action, int size)
-		{
-			OnInput(action, size);
-
-			byte[] buffer = new byte[size];
-			int readBytes = stream.Read(buffer, 0, size);
-
-			if (readBytes < size)
-			{
-				byte[] retBuffer = new byte[readBytes];
-				for (int i = 0; i < readBytes; i++)
-					retBuffer[i] = buffer[i];
-
-				Variant ret = new Variant(retBuffer);
-			}
-
-			return new Variant(buffer);
-		}
-
 		public override void output(Core.Dom.Action action, Variant data)
 		{
 			if (stream == null)
