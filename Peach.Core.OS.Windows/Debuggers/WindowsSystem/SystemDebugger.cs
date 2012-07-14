@@ -245,9 +245,6 @@ namespace Peach.Core.Debuggers.WindowsSystem
 									debug_event.dwThreadId, DBG_EXCEPTION_NOT_HANDLED))
 					throw new Exception("ContinueDebugEvent failed");
 			}
-
-			UnsafeMethods.CloseHandle(_processInformation.hProcess);
-			UnsafeMethods.CloseHandle(_processInformation.hThread);
 		}
 
 		/// <summary>
@@ -260,58 +257,58 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			if (_breakpointOrigionalInstructions.ContainsKey(addr))
 				return;
 
-			byte [] instruction = new byte[1];
-			byte [] newInstruction = new byte[1];
-			uint dwReadBytes;
+//            byte [] instruction = new byte[1];
+//            byte [] newInstruction = new byte[1];
+//            uint dwReadBytes;
 
-			newInstruction[0] = 0xcc;
+//            newInstruction[0] = 0xcc;
 
-//				IntPtr.Add(_moduleBaseAddresses[module], (int)addr), 
-			UnsafeMethods.ReadProcessMemory(
-				_processInformation.hProcess, 
-				IntPtr.Add(IntPtr.Zero, (int)addr),
-				instruction, 
-				1, 
-				out dwReadBytes);
+////				IntPtr.Add(_moduleBaseAddresses[module], (int)addr), 
+//            UnsafeMethods.ReadProcessMemory(
+//                _processInformation.hProcess, 
+//                IntPtr.Add(IntPtr.Zero, (int)addr),
+//                instruction, 
+//                1, 
+//                out dwReadBytes);
 
-			UnsafeMethods.WriteProcessMemory(_processInformation.hProcess,
-				IntPtr.Add(IntPtr.Zero, (int)addr),
-				newInstruction,
-				1,
-				out dwReadBytes);
+//            UnsafeMethods.WriteProcessMemory(_processInformation.hProcess,
+//                IntPtr.Add(IntPtr.Zero, (int)addr),
+//                newInstruction,
+//                1,
+//                out dwReadBytes);
 
-			UnsafeMethods.FlushInstructionCache(
-				_processInformation.hProcess,
-				IntPtr.Add(IntPtr.Zero, (int)addr),
-				1);
+//            UnsafeMethods.FlushInstructionCache(
+//                _processInformation.hProcess,
+//                IntPtr.Add(IntPtr.Zero, (int)addr),
+//                1);
 
-			_breakpointOrigionalInstructions[addr] = instruction[0];
+//            _breakpointOrigionalInstructions[addr] = instruction[0];
 		}
 
-		/* Source: http://bytes.com/topic/c-sharp/answers/249770-byte-structure */
-		public static object RawDeserialize(byte[] rawData, int position, Type anyType)
-		{
-			int rawsize = Marshal.SizeOf(anyType);
-			if (rawsize > rawData.Length)
-				return null;
-			IntPtr buffer = Marshal.AllocHGlobal(rawsize);
-			Marshal.Copy(rawData, position, buffer, rawsize);
-			object retobj = Marshal.PtrToStructure(buffer, anyType);
-			Marshal.FreeHGlobal(buffer);
-			return retobj;
-		}
+		///* Source: http://bytes.com/topic/c-sharp/answers/249770-byte-structure */
+		//public static object RawDeserialize(byte[] rawData, int position, Type anyType)
+		//{
+		//    int rawsize = Marshal.SizeOf(anyType);
+		//    if (rawsize > rawData.Length)
+		//        return null;
+		//    IntPtr buffer = Marshal.AllocHGlobal(rawsize);
+		//    Marshal.Copy(rawData, position, buffer, rawsize);
+		//    object retobj = Marshal.PtrToStructure(buffer, anyType);
+		//    Marshal.FreeHGlobal(buffer);
+		//    return retobj;
+		//}
 
-		/* Source: http://bytes.com/topic/c-sharp/answers/249770-byte-structure */
-		public static byte[] RawSerialize(object anything)
-		{
-			int rawSize = Marshal.SizeOf(anything);
-			IntPtr buffer = Marshal.AllocHGlobal(rawSize);
-			Marshal.StructureToPtr(anything, buffer, false);
-			byte[] rawDatas = new byte[rawSize];
-			Marshal.Copy(buffer, rawDatas, 0, rawSize);
-			Marshal.FreeHGlobal(buffer);
-			return rawDatas;
-		}
+		///* Source: http://bytes.com/topic/c-sharp/answers/249770-byte-structure */
+		//public static byte[] RawSerialize(object anything)
+		//{
+		//    int rawSize = Marshal.SizeOf(anything);
+		//    IntPtr buffer = Marshal.AllocHGlobal(rawSize);
+		//    Marshal.StructureToPtr(anything, buffer, false);
+		//    byte[] rawDatas = new byte[rawSize];
+		//    Marshal.Copy(buffer, rawDatas, 0, rawSize);
+		//    Marshal.FreeHGlobal(buffer);
+		//    return rawDatas;
+		//}
 
 
 		protected void ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
@@ -340,36 +337,36 @@ namespace Peach.Core.Debuggers.WindowsSystem
 						case EXCEPTION_BREAKPOINT:
 							logger.Debug("EXCEPTION_BREAKPOINT");
 
-							if (!_breakpointOrigionalInstructions.ContainsKey((ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()))
-								break;
+							//if (!_breakpointOrigionalInstructions.ContainsKey((ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()))
+							//    break;
 
-							// 1. GetThreadContext, reduce EIP by one, SetThreadContext
-							UnsafeMethods.CONTEXT lcContext = new UnsafeMethods.CONTEXT();
-							lcContext.ContextFlags = (uint)UnsafeMethods.CONTEXT_FLAGS.CONTEXT_ALL;
-							UnsafeMethods.GetThreadContext(_processInformation.hThread, ref lcContext);
+							//// 1. GetThreadContext, reduce EIP by one, SetThreadContext
+							//UnsafeMethods.CONTEXT lcContext = new UnsafeMethods.CONTEXT();
+							//lcContext.ContextFlags = (uint)UnsafeMethods.CONTEXT_FLAGS.CONTEXT_ALL;
+							//UnsafeMethods.GetThreadContext(_processInformation.hThread, ref lcContext);
 
-							lcContext.Eip --; // Move back one byte
-							UnsafeMethods.SetThreadContext(_processInformation.hThread, ref lcContext);
+							//lcContext.Eip --; // Move back one byte
+							//UnsafeMethods.SetThreadContext(_processInformation.hThread, ref lcContext);
 
-							// 2. Revert the original instruction
-							uint dwWriteSize;
-							byte[] instruction = new byte[1];
-							instruction[0] = _breakpointOrigionalInstructions[(ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()];
+							//// 2. Revert the original instruction
+							//uint dwWriteSize;
+							//byte[] instruction = new byte[1];
+							//instruction[0] = _breakpointOrigionalInstructions[(ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()];
 
-							UnsafeMethods.WriteProcessMemory(
-								_processInformation.hProcess,
-								DebugEv.u.Exception.ExceptionRecord.ExceptionAddress,
-								instruction, 
-								1, 
-								out dwWriteSize);
+							//UnsafeMethods.WriteProcessMemory(
+							//    _processInformation.hProcess,
+							//    DebugEv.u.Exception.ExceptionRecord.ExceptionAddress,
+							//    instruction, 
+							//    1, 
+							//    out dwWriteSize);
 
-							UnsafeMethods.FlushInstructionCache(
-								_processInformation.hProcess, 
-								DebugEv.u.Exception.ExceptionRecord.ExceptionAddress, 
-								1);
+							//UnsafeMethods.FlushInstructionCache(
+							//    _processInformation.hProcess, 
+							//    DebugEv.u.Exception.ExceptionRecord.ExceptionAddress, 
+							//    1);
 
-							if (HandleBreakPoint != null)
-								HandleBreakPoint(DebugEv);
+							//if (HandleBreakPoint != null)
+							//    HandleBreakPoint(DebugEv);
 							break;
 
 						case EXCEPTION_DATATYPE_MISALIGNMENT:
@@ -449,23 +446,23 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					logger.Debug("LOAD_DLL_DEBUG_EVENT");
 					//dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
 
-					string name = null;
-					IntPtr baseAddr = IntPtr.Zero;
-					IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(DebugEv));
-					UnsafeMethods.UnionLoadDll2 unionLoadDll = new UnsafeMethods.UnionLoadDll2();
+					//string name = null;
+					//IntPtr baseAddr = IntPtr.Zero;
+					//IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(DebugEv));
+					//UnsafeMethods.UnionLoadDll2 unionLoadDll = new UnsafeMethods.UnionLoadDll2();
 
-					Marshal.StructureToPtr(DebugEv, ptr, false);
-					unionLoadDll = (UnsafeMethods.UnionLoadDll2)Marshal.PtrToStructure(ptr, typeof(UnsafeMethods.UnionLoadDll2));
+					//Marshal.StructureToPtr(DebugEv, ptr, false);
+					//unionLoadDll = (UnsafeMethods.UnionLoadDll2)Marshal.PtrToStructure(ptr, typeof(UnsafeMethods.UnionLoadDll2));
 
-					if (unionLoadDll.LoadDll.lpImageName != IntPtr.Zero)
-						name = Marshal.PtrToStringAnsi(unionLoadDll.LoadDll.lpImageName);
+					//if (unionLoadDll.LoadDll.lpImageName != IntPtr.Zero)
+					//    name = Marshal.PtrToStringAnsi(unionLoadDll.LoadDll.lpImageName);
 
-					if(name == null || name == "")
-						name = GetFileNameFromHandle(unionLoadDll.LoadDll.hFile);
-					if (name == null)
-						break;
+					//if(name == null || name == "")
+					//    name = GetFileNameFromHandle(unionLoadDll.LoadDll.hFile);
+					//if (name == null)
+					//    break;
 
-					_moduleBaseAddresses[name.ToLower()] = unionLoadDll.LoadDll.lpBaseOfDll;
+					//_moduleBaseAddresses[name.ToLower()] = unionLoadDll.LoadDll.lpBaseOfDll;
 
 					//if (HandleLoadDll != null)
 					//    HandleLoadDll(DebugEv, name.ToLower());
