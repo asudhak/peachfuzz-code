@@ -321,21 +321,21 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// status parameter (dwContinueStatus). This value 
 					// is used by the ContinueDebugEvent function. 
 
-					logger.Debug("EXCEPTION_DEBUG_EVENT");
+					logger.Trace("EXCEPTION_DEBUG_EVENT");
 					switch (DebugEv.u.Exception.ExceptionRecord.ExceptionCode)
 					{
 						case EXCEPTION_ACCESS_VIOLATION:
 							// First chance: Pass this on to the system. 
 							// Last chance: Display an appropriate error. 
 
-							logger.Debug("EXCEPTION_ACCESS_VIOLATION");
+							logger.Trace("EXCEPTION_ACCESS_VIOLATION");
 							if(HandleAccessViolation != null)
 								HandleAccessViolation(DebugEv);
 
 							break;
 
 						case EXCEPTION_BREAKPOINT:
-							logger.Debug("EXCEPTION_BREAKPOINT");
+							logger.Trace("EXCEPTION_BREAKPOINT");
 
 							//if (!_breakpointOrigionalInstructions.ContainsKey((ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()))
 							//    break;
@@ -370,25 +370,25 @@ namespace Peach.Core.Debuggers.WindowsSystem
 							break;
 
 						case EXCEPTION_DATATYPE_MISALIGNMENT:
-							logger.Debug("EXCEPTION_DATATYPE_MISALIGNMENT");
+							logger.Trace("EXCEPTION_DATATYPE_MISALIGNMENT");
 							// First chance: Pass this on to the system. 
 							// Last chance: Display an appropriate error. 
 							break;
 
 						case EXCEPTION_SINGLE_STEP:
-							logger.Debug("EXCEPTION_SINGLE_STEP");
+							logger.Trace("EXCEPTION_SINGLE_STEP");
 							// First chance: Update the display of the 
 							// current instruction and register values. 
 							break;
 
 						case DBG_CONTROL_C:
-							logger.Debug("DBG_CONTROL_C");
+							logger.Trace("DBG_CONTROL_C");
 							// First chance: Pass this on to the system. 
 							// Last chance: Display an appropriate error. 
 							break;
 
 						default:
-							logger.Debug("UNKNOWN");
+							logger.Trace("UNKNOWN");
 							// Handle other exceptions. 
 							break;
 					}
@@ -402,7 +402,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// SuspendThread and ResumeThread functions. 
 
 					//dwContinueStatus = OnCreateThreadDebugEvent(DebugEv);
-					logger.Debug("CREATE_THREAD_DEBUG_EVENT");
+					logger.Trace("CREATE_THREAD_DEBUG_EVENT");
 					break;
 
 				case CREATE_PROCESS_DEBUG_EVENT:
@@ -416,21 +416,21 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// file with CloseHandle.
 
 					//dwContinueStatus = OnCreateProcessDebugEvent(DebugEv);
-					logger.Debug("CREATE_PROCESS_DEBUG_EVENT");
+					logger.Trace("CREATE_PROCESS_DEBUG_EVENT");
 					break;
 
 				case EXIT_THREAD_DEBUG_EVENT:
 					// Display the thread's exit code. 
 
 					//dwContinueStatus = OnExitThreadDebugEvent(DebugEv);
-					logger.Debug("EXIT_PROCESS_DEBUG_EVENT");
+					logger.Trace("EXIT_PROCESS_DEBUG_EVENT");
 					break;
 
 				case EXIT_PROCESS_DEBUG_EVENT:
 					// Display the process's exit code. 
 
 					//dwContinueStatus = OnExitProcessDebugEvent(DebugEv);
-					logger.Debug("EXIT_PROCESS_DEBUG_EVENT");
+					logger.Trace("EXIT_PROCESS_DEBUG_EVENT");
 					if (dwProcessId == DebugEv.dwProcessId)
 					{
 						processExit = true;
@@ -443,7 +443,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// loaded DLL. Be sure to close the handle to the loaded DLL 
 					// with CloseHandle.
 
-					logger.Debug("LOAD_DLL_DEBUG_EVENT");
+					logger.Trace("LOAD_DLL_DEBUG_EVENT");
 					//dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
 
 					//string name = null;
@@ -474,7 +474,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 					//dwContinueStatus = OnUnloadDllDebugEvent(DebugEv);
 
-					logger.Debug("UNLOAD_DLL_DEBUG_EVENT");
+					logger.Trace("UNLOAD_DLL_DEBUG_EVENT");
 					break;
 
 				case OUTPUT_DEBUG_STRING_EVENT:
@@ -482,18 +482,18 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 					//dwContinueStatus = OnOutputDebugStringEvent(DebugEv);
 
-					logger.Debug("OUTPUT_DEBUG_STRING_EVENT");
+					logger.Trace("OUTPUT_DEBUG_STRING_EVENT");
 					break;
 
 				case RIP_EVENT:
 					//dwContinueStatus = OnRipEvent(DebugEv);
 
-					logger.Debug("RIP_EVENT");
+					logger.Trace("RIP_EVENT");
 					break;
 
 				default:
 
-					logger.Debug("UNKNOWN DEBUG EVENT");
+					logger.Trace("UNKNOWN DEBUG EVENT");
 					break;
 			}
 		}

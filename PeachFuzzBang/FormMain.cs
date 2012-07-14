@@ -212,7 +212,7 @@ namespace PeachFuzzBang
 				// DataModel
 				if (userSelectedDataModel != null)
 				{
-					dataModel = ObjectCopier.Clone<DataModel>(dataModel);
+					dataModel = ObjectCopier.Clone<DataModel>(userSelectedDataModel);
 					dataModel.dom = dom;
 					dataModel.name = "TheDataModel";
 
