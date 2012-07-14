@@ -22,7 +22,7 @@ namespace Peach.Core.Analysis
 			List<ulong> addr = new List<ulong>();
 
 			ProcessStartInfo startInfo = new ProcessStartInfo();
-			startInfo.FileName = Path.Combine(Assembly.GetExecutingAssembly().Location, "basicblocks.exe");
+			startInfo.FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "basicblocks.exe");
 			startInfo.Arguments = executable;
 			startInfo.UseShellExecute = false;
 			startInfo.CreateNoWindow = true;
@@ -63,7 +63,7 @@ namespace Peach.Core.Analysis
 		List<ulong> _basicBlocks;
 		public List<ulong> coverage = new List<ulong>();
 
-		protected CoverageImpl(string executable, string arguments, List<ulong> basicBlocks)
+		public CoverageImpl()
 		{
 		}
 
@@ -90,8 +90,10 @@ namespace Peach.Core.Analysis
 			if (_breakpointsSet)
 				return;
 
+			IntPtr baseAddr = UnsafeMethods.GetModuleHandle(_executable);
+
 			foreach(ulong addr in _basicBlocks)
-				_dbg.SetBreakpoint(_executable, addr);
+				_dbg.SetBreakpoint(_executable, (ulong)baseAddr.ToInt64() + addr);
 		}
 	}
 }

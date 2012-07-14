@@ -118,6 +118,14 @@ namespace PeachMinset
 					break;
 			}
 
+			var bb = Coverage.CreateInstance().BasicBlocksForExecutable(@"C:\Peach3\Labs\Png\bin\pngcheck.exe");
+			var coverage = Coverage.CreateInstance().CodeCoverageForExecutable(
+				@"C:\Peach3\Labs\Png\bin\pngcheck.exe",
+				@"C:\Peach3\Labs\Png\sample.png",
+				bb);
+
+			return;
+
 			var ms = new Minset();
 			ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
 			ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);

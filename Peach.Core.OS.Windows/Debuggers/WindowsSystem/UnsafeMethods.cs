@@ -167,6 +167,9 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool UnmapViewOfFile(IntPtr lpBaseAddress);
 
+		[DllImport("kernel32.dll")]
+		public static extern IntPtr GetModuleHandle(string moduleName);
+
 		[DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		public static extern IntPtr CreateFileMapping(
 			IntPtr hFile,
@@ -279,7 +282,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			FileMapAllAccess = 0x001f,
 			FileMapExecute = 0x0020,
 		}
-		[StructLayout(LayoutKind.Explicit, Size=84)]
+
+		[StructLayout(LayoutKind.Explicit, Size = 84)]
 		public struct Union
 		{
 			[FieldOffset(0)]
@@ -291,8 +295,52 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			//public EXIT_THREAD_DEBUG_INFO ExitThread;
 			//[FieldOffset(0)]
 			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
+			//[FieldOffset(0)]
+			//public LOAD_DLL_DEBUG_INFO LoadDll;
+			//[FieldOffset(0)]
+			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
+			//[FieldOffset(0)]
+			//public OUTPUT_DEBUG_STRING_INFO DebugString;
+			//[FieldOffset(0)]
+			//public RIP_INFO RipInfo;
+		}
+
+		[StructLayout(LayoutKind.Explicit, Size = 84)]
+		public struct UnionLoadDll
+		{
+			//[FieldOffset(0)]
+			//public EXCEPTION_DEBUG_INFO Exception;
+			//public CREATE_THREAD_DEBUG_INFO CreateThread;
+			//[FieldOffset(0)]
+			//public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
+			//[FieldOffset(0)]
+			//public EXIT_THREAD_DEBUG_INFO ExitThread;
+			//[FieldOffset(0)]
+			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
 			[FieldOffset(0)]
 			public LOAD_DLL_DEBUG_INFO LoadDll;
+			//[FieldOffset(0)]
+			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
+			//[FieldOffset(0)]
+			//public OUTPUT_DEBUG_STRING_INFO DebugString;
+			//[FieldOffset(0)]
+			//public RIP_INFO RipInfo;
+		}
+
+		[StructLayout(LayoutKind.Explicit, Size = 84)]
+		public struct UnionLoadDll2
+		{
+			//[FieldOffset(0)]
+			//public EXCEPTION_DEBUG_INFO Exception;
+			//public CREATE_THREAD_DEBUG_INFO CreateThread;
+			//[FieldOffset(0)]
+			//public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
+			//[FieldOffset(0)]
+			//public EXIT_THREAD_DEBUG_INFO ExitThread;
+			//[FieldOffset(0)]
+			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
+			[FieldOffset(0)]
+			public LOAD_DLL_DEBUG_INFO_2 LoadDll;
 			//[FieldOffset(0)]
 			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
 			//[FieldOffset(0)]
@@ -367,6 +415,17 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		}
 		[StructLayout(LayoutKind.Sequential)]
 		public struct LOAD_DLL_DEBUG_INFO
+		{
+			public IntPtr hFile;
+			public IntPtr lpBaseOfDll;
+			public uint dwDebugInfoFileOffset;
+			public uint nDebugInfoSize;
+			[MarshalAs(UnmanagedType.LPStr)]
+			public string lpImageName;
+			public ushort fUnicode;
+		}
+		[StructLayout(LayoutKind.Sequential)]
+		public struct LOAD_DLL_DEBUG_INFO_2
 		{
 			public IntPtr hFile;
 			public IntPtr lpBaseOfDll;

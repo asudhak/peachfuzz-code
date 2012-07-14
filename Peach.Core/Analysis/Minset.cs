@@ -39,7 +39,11 @@ namespace Peach.Core.Analysis
 {
 	public delegate void TraceStartingEventHandler(Minset sender, string fileName, int count, int totalCount);
 	public delegate void TraceCompletedEventHandler(Minset sender, string fileName, int count, int totalCount);
-	
+
+	/// <summary>
+	/// Perform analysis on sample sets to identify the smallest sample set
+	/// that provides the largest code coverage.
+	/// </summary>
 	public class Minset
 	{
 		public event TraceStartingEventHandler TraceStarting;

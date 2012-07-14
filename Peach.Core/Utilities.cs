@@ -131,7 +131,7 @@ namespace Peach.Core
 
 		static ClassLoader()
 		{
-			SearchPaths.Add(Assembly.GetExecutingAssembly().Location);
+			SearchPaths.Add(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 			SearchPaths.Add(Directory.GetCurrentDirectory());
 		}
 
@@ -214,7 +214,13 @@ namespace Peach.Core
 
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
-				Type found = a.GetType(name, false, false);
+				if (a.IsDynamic)
+					continue;
+
+				Type found = a.GetType(name);
+				if (found == null)
+					continue;
+
 				if (!found.IsClass)
 					continue;
 
