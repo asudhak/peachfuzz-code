@@ -396,6 +396,8 @@
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
+    <Compile Include="Analysis\Coverage.cs" />
+    <Compile Include="Analysis\Minset.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="Analyzers\Asn1.cs" />
     <Compile Include="Analyzers\Binary.cs" />

@@ -207,10 +207,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peach.Core.Analysis\Peach.Core.Analysis.csproj">
-      <Project>{804677AE-9B84-473F-94FF-E0DB5F48F753}</Project>
-      <Name>Peach.Core.Analysis</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>
