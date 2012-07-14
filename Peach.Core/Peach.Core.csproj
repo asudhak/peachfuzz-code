@@ -576,6 +576,12 @@
     <Compile Include="Utilities.cs" />
     <Compile Include="Variant.cs" />
     <Compile Include="Watcher.cs" />
+    <Compile Include="Xml\Defaults.cs" />
+    <Compile Include="Xml\Dom.cs" />
+    <Compile Include="Xml\Generator.cs" />
+    <Compile Include="Xml\Parser.cs" />
+    <Compile Include="Xml\ParserDtd.cs" />
+    <Compile Include="Xml\ParserRelaxed.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="defaults.xml">
