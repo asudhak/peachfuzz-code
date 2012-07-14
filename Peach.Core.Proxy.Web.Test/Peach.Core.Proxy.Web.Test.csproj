@@ -208,9 +208,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peach.Core.Proxy\Peach.Core.Proxy.csproj">
-      <Project>{4E4B395D-1A06-45B3-9D81-8655270294AC}</Project>
-      <Name>Peach.Core.Proxy</Name>
+    <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
+      <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
+      <Name>Peach.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

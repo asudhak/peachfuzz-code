@@ -235,13 +235,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Peach.Core.Xml\Peach.Core.Xml.csproj">
-      <Project>{E910D9AB-C56A-4452-8370-57E0F946CB34}</Project>
-      <Name>Peach.Core.Xml</Name>
-    </ProjectReference>
+    <Content Include="peach20x20.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="peach20x20.ico" />
+    <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
+      <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
+      <Name>Peach.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
