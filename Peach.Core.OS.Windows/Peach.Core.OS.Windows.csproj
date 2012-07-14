@@ -306,6 +306,7 @@
     <Compile Include="Agent\Monitors\WindowsDebuggerHybrid.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\DebuggerInstance.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\SystemDebuggerInterface.cs" />
+    <Compile Include="Analysis\CoverageImpl.cs" />
     <Compile Include="Debuggers\DebugEngine\Const.cs" />
     <Compile Include="Debuggers\DebugEngine\Tlb\IDebugAdvanced.cs" />
     <Compile Include="Debuggers\DebugEngine\Tlb\IDebugAdvanced2.cs" />
@@ -1022,6 +1023,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Peach.Core.Analysis\Peach.Core.Analysis.csproj">
+      <Project>{804677AE-9B84-473F-94FF-E0DB5F48F753}</Project>
+      <Name>Peach.Core.Analysis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>

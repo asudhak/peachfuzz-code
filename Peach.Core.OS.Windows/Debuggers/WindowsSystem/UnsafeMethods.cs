@@ -130,6 +130,15 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			[In] ref STARTUPINFO lpStartupInfo,
 			out PROCESS_INFORMATION lpProcessInformation);
 
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] buffer, UInt32 size, out uint lpNumberOfBytesRead);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out uint lpNumberOfBytesWritten);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool FlushInstructionCache(IntPtr hProcess, IntPtr lpBaseAddress, uint dwSize);
+
 		[DllImport("kernel32.dll")]
 		public static extern bool ContinueDebugEvent(uint dwProcessId, uint dwThreadId,
 		   uint dwContinueStatus);
@@ -146,6 +155,130 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		[DllImport("kernel32.dll")]
 		public static extern bool DebugSetProcessKillOnExit(bool KillOnExit);
 
+		[DllImport("kernel32.dll")]
+		public static extern uint GetFileSize(IntPtr hFile, ref uint lpFileSizeHigh);
+		
+		[DllImport("kernel32.dll")]
+		public static extern uint GetMappedFileName(IntPtr hProcess, IntPtr lpv, ref StringBuilder lpFilename, uint nSize);
+
+		[DllImport("kernel32.dll")]
+		public static extern IntPtr GetCurrentProcess();
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool UnmapViewOfFile(IntPtr lpBaseAddress);
+
+		[DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern IntPtr CreateFileMapping(
+			IntPtr hFile,
+			IntPtr lpFileMappingAttributes,
+			FileMapProtection flProtect,
+			uint dwMaximumSizeHigh,
+			uint dwMaximumSizeLow,
+			[MarshalAs(UnmanagedType.LPTStr)] string lpName);
+
+		[DllImport("kernel32.dll")]
+		public static extern bool GetThreadContext(IntPtr hThread, ref CONTEXT lpContext);
+
+		[DllImport("kernel32.dll")]
+		public static extern bool SetThreadContext(IntPtr hThread, [In] ref CONTEXT lpContext);
+
+		public enum CONTEXT_FLAGS : uint
+		{
+			CONTEXT_i386 = 0x10000,
+			CONTEXT_i486 = 0x10000,   //  same as i386
+			CONTEXT_CONTROL = CONTEXT_i386 | 0x01, // SS:SP, CS:IP, FLAGS, BP
+			CONTEXT_INTEGER = CONTEXT_i386 | 0x02, // AX, BX, CX, DX, SI, DI
+			CONTEXT_SEGMENTS = CONTEXT_i386 | 0x04, // DS, ES, FS, GS
+			CONTEXT_FLOATING_POINT = CONTEXT_i386 | 0x08, // 387 state
+			CONTEXT_DEBUG_REGISTERS = CONTEXT_i386 | 0x10, // DB 0-3,6,7
+			CONTEXT_EXTENDED_REGISTERS = CONTEXT_i386 | 0x20, // cpu specific extensions
+			CONTEXT_FULL = CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_SEGMENTS,
+			CONTEXT_ALL = CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_SEGMENTS | CONTEXT_FLOATING_POINT | CONTEXT_DEBUG_REGISTERS | CONTEXT_EXTENDED_REGISTERS
+		}
+
+		public struct FLOATING_SAVE_AREA
+		{
+			public uint ControlWord;
+			public uint StatusWord;
+			public uint TagWord;
+			public uint ErrorOffset;
+			public uint ErrorSelector;
+			public uint DataOffset;
+			public uint DataSelector;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 80)]
+			public byte[] RegisterArea;
+			public uint Cr0NpxState;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct CONTEXT
+		{
+
+			public uint ContextFlags; //set this to an appropriate value
+			// Retrieved by CONTEXT_DEBUG_REGISTERS
+			public uint Dr0;
+			public uint Dr1;
+			public uint Dr2;
+			public uint Dr3;
+			public uint Dr6;
+			public uint Dr7;
+			// Retrieved by CONTEXT_FLOATING_POINT
+			public FLOATING_SAVE_AREA FloatSave;
+			// Retrieved by CONTEXT_SEGMENTS
+			public uint SegGs;
+			public uint SegFs;
+			public uint SegEs;
+			public uint SegDs;
+			// Retrieved by CONTEXT_INTEGER
+			public uint Edi;
+			public uint Esi;
+			public uint Ebx;
+			public uint Edx;
+			public uint Ecx;
+			public uint Eax;
+			// Retrieved by CONTEXT_CONTROL
+			public uint Ebp;
+			public uint Eip;
+			public uint SegCs;
+			public uint EFlags;
+			public uint Esp;
+			public uint SegSs;
+			// Retrieved by CONTEXT_EXTENDED_REGISTERS
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 512)]
+			public byte[] ExtendedRegisters;
+
+		} 
+
+		[Flags]
+		public enum FileMapProtection : uint
+		{
+			PageReadonly = 0x02,
+			PageReadWrite = 0x04,
+			PageWriteCopy = 0x08,
+			PageExecuteRead = 0x20,
+			PageExecuteReadWrite = 0x40,
+			SectionCommit = 0x8000000,
+			SectionImage = 0x1000000,
+			SectionNoCache = 0x10000000,
+			SectionReserve = 0x4000000,
+		}
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern IntPtr MapViewOfFile(
+			IntPtr hFileMappingObject,
+			FileMapAccess dwDesiredAccess,
+			uint dwFileOffsetHigh,
+			uint dwFileOffsetLow,
+			uint dwNumberOfBytesToMap);
+
+		[Flags]
+		public enum FileMapAccess : uint
+		{
+			FileMapCopy = 0x0001,
+			FileMapWrite = 0x0002,
+			FileMapRead = 0x0004,
+			FileMapAllAccess = 0x001f,
+			FileMapExecute = 0x0020,
+		}
 		[StructLayout(LayoutKind.Explicit, Size=84)]
 		public struct Union
 		{
@@ -158,8 +291,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			//public EXIT_THREAD_DEBUG_INFO ExitThread;
 			//[FieldOffset(0)]
 			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
-			//[FieldOffset(0)]
-			//public LOAD_DLL_DEBUG_INFO LoadDll;
+			[FieldOffset(0)]
+			public LOAD_DLL_DEBUG_INFO LoadDll;
 			//[FieldOffset(0)]
 			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
 			//[FieldOffset(0)]

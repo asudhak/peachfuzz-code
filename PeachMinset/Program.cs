@@ -31,8 +31,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
-using Peach.Core.Analysis.Minset;
+using Peach.Core;
+using Peach.Core.Analysis;
 using Peach.Options;
 
 namespace PeachMinset
@@ -53,7 +55,8 @@ namespace PeachMinset
 			string samples = null;
 			string traces = null;
 			bool kill = false;
-			string command = null;
+			string executable = null;
+			string arguments = "";
 			string minset = null;
 
 			var p = new OptionSet()
@@ -76,16 +79,43 @@ namespace PeachMinset
 			// Build command line
 			if (extra.Count > 0)
 			{
-				command = "";
-
 				foreach (string e in extra)
-					command += e + " ";
+				{
+					if (executable == null)
+						executable = e;
+					else
+						arguments += e + " ";
+				}
 
-				if (command.IndexOf("%s") == -1)
+				if (arguments.IndexOf("%s") == -1)
 				{
 					Console.WriteLine("Error, command missing '%s'.\n");
 					return;
 				}
+			}
+
+			// Check OS and load side assembly
+			string osAssembly = null;
+			switch (Platform.GetOS())
+			{
+				case Platform.OS.Mac:
+					osAssembly = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+						"Peach.Core.OS.OSX.dll");
+					Assembly.LoadFrom(osAssembly);
+					break;
+				case Platform.OS.Linux:
+					osAssembly = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+						"Peach.Core.OS.Linux.dll");
+					Assembly.LoadFrom(osAssembly);
+					break;
+				case Platform.OS.Windows:
+					osAssembly = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+						"Peach.Core.OS.Windows.dll");
+					Assembly.LoadFrom(osAssembly);
+					break;
 			}
 
 			var ms = new Minset();
@@ -99,12 +129,12 @@ namespace PeachMinset
 				Console.WriteLine("[*] Running both trace and coverage analysis");
 			}
 
-			if (both || (command != null && minset == null))
+			if (both || (executable != null && minset == null))
 			{
 				var sampleFiles = GetFiles(samples);
 
 				Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
-				var traceFiles = ms.RunTraces(command, sampleFiles, kill);
+				var traceFiles = ms.RunTraces(executable, arguments, sampleFiles, kill);
 
 				Console.WriteLine("[*] Moving trace files to trace folder...");
 
@@ -143,7 +173,6 @@ namespace PeachMinset
 
 				return;
 			}
-
 		}
 
 		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)

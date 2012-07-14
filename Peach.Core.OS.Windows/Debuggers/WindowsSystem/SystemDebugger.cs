@@ -43,6 +43,18 @@ namespace Peach.Core.Debuggers.WindowsSystem
 	public delegate void HandleAccessViolation(UnsafeMethods.DEBUG_EVENT e);
 
 	/// <summary>
+	/// Callback to handle a breakpoint
+	/// </summary>
+	/// <param name="?"></param>
+	public delegate void HandleBreakpoint(UnsafeMethods.DEBUG_EVENT e);
+
+	/// <summary>
+	/// Callback to handle a breakpoint
+	/// </summary>
+	/// <param name="?"></param>
+	public delegate void HandleLoadDll(UnsafeMethods.DEBUG_EVENT e, string moduleName);
+
+	/// <summary>
 	/// Called every second to check if we should continue debugging
 	/// process.
 	/// </summary>
@@ -147,6 +159,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		#endregion
 
 		public HandleAccessViolation HandleAccessViolation = null;
+		public HandleBreakpoint HandleBreakPoint = null;
+		public HandleLoadDll HandleLoadDll = null;
 		public ContinueDebugging ContinueDebugging = () => { return true; };
 
 		public static SystemDebugger CreateProcess(string command)
@@ -193,6 +207,9 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		UnsafeMethods.PROCESS_INFORMATION _processInformation;
 		public ManualResetEvent processStarted = new ManualResetEvent(false);
 
+		public Dictionary<ulong, byte> _breakpointOrigionalInstructions = new Dictionary<ulong, byte>();
+		public Dictionary<string, IntPtr> _moduleBaseAddresses = new Dictionary<string, IntPtr>();
+
 		protected SystemDebugger(int dwProcessId)
 		{
 			this.dwProcessId = dwProcessId;
@@ -230,6 +247,44 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			}
 		}
 
+		/// <summary>
+		/// Set a breakpoint at a specific address
+		/// </summary>
+		/// <param name="module"></para>m
+		/// <param name="addr"></param>
+		public void SetBreakpoint(string module, ulong addr)
+		{
+			if (_breakpointOrigionalInstructions.ContainsKey(addr))
+				return;
+
+			byte [] instruction = new byte[1];
+			byte [] newInstruction = new byte[1];
+			uint dwReadBytes;
+
+			newInstruction[0] = 0xcc;
+
+			UnsafeMethods.ReadProcessMemory(
+				_processInformation.hProcess, 
+				IntPtr.Add(_moduleBaseAddresses[module], (int)addr), 
+				instruction, 
+				1, 
+				out dwReadBytes);
+
+			UnsafeMethods.WriteProcessMemory(_processInformation.hProcess,
+				IntPtr.Add(_moduleBaseAddresses[module], (int)addr),
+				newInstruction,
+				1,
+				out dwReadBytes);
+
+			UnsafeMethods.FlushInstructionCache(
+				_processInformation.hProcess, 
+				IntPtr.Add(_moduleBaseAddresses[module], 
+				(int)addr), 
+				1);
+
+			_breakpointOrigionalInstructions[addr] = instruction[0];
+		}
+
 		protected void ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
 			switch (DebugEv.dwDebugEventCode)
@@ -255,8 +310,34 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 						case EXCEPTION_BREAKPOINT:
 							logger.Debug("EXCEPTION_BREAKPOINT");
-							// First chance: Display the current 
-							// instruction and register values. 
+
+							// 1. GetThreadContext, reduce EIP by one, SetThreadContext
+							UnsafeMethods.CONTEXT lcContext = new UnsafeMethods.CONTEXT();
+							lcContext.ContextFlags = (uint)UnsafeMethods.CONTEXT_FLAGS.CONTEXT_ALL;
+							UnsafeMethods.GetThreadContext(_processInformation.hThread, ref lcContext);
+
+							lcContext.Eip --; // Move back one byte
+							UnsafeMethods.SetThreadContext(_processInformation.hThread, ref lcContext);
+
+							// 2. Revert the original instruction
+							uint dwWriteSize;
+							byte[] instruction = new byte[1];
+							instruction[0] = _breakpointOrigionalInstructions[(ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()];
+
+							UnsafeMethods.WriteProcessMemory(
+								_processInformation.hProcess,
+								DebugEv.u.Exception.ExceptionRecord.ExceptionAddress,
+								instruction, 
+								1, 
+								out dwWriteSize);
+
+							UnsafeMethods.FlushInstructionCache(
+								_processInformation.hProcess, 
+								DebugEv.u.Exception.ExceptionRecord.ExceptionAddress, 
+								1);
+
+							if (HandleBreakPoint != null)
+								HandleBreakPoint(DebugEv);
 							break;
 
 						case EXCEPTION_DATATYPE_MISALIGNMENT:
@@ -335,6 +416,15 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 					logger.Debug("LOAD_DLL_DEBUG_EVENT");
 					//dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
+					var name = GetFileNameFromHandle(DebugEv.u.LoadDll.hFile);
+					if(name == null)
+						break;
+
+					_moduleBaseAddresses[name.ToLower()] = DebugEv.u.LoadDll.lpBaseOfDll;
+
+					if (HandleLoadDll != null)
+						HandleLoadDll(DebugEv, name.ToLower());
+
 					break;
 
 				case UNLOAD_DLL_DEBUG_EVENT:
@@ -365,6 +455,50 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					break;
 			}
 		}
+
+		string GetFileNameFromHandle(IntPtr hFile)
+		{
+			StringBuilder pszFilename = new StringBuilder(256);
+			IntPtr hFileMap;
+
+			// Get the file size.
+			uint dwFileSizeHi = 0;
+			uint dwFileSizeLo = UnsafeMethods.GetFileSize(hFile, ref dwFileSizeHi);
+
+			if (dwFileSizeLo == 0 && dwFileSizeHi == 0)
+			{
+				return null;
+			}
+
+			// Create a file mapping object.
+			hFileMap = UnsafeMethods.CreateFileMapping(hFile,
+				IntPtr.Zero,
+				UnsafeMethods.FileMapProtection.PageReadonly,
+				0,
+				1,
+				null);
+
+			if (hFileMap != IntPtr.Zero)
+			{
+				// Create a file mapping to get the file name.
+				IntPtr pMem = UnsafeMethods.MapViewOfFile(hFileMap, UnsafeMethods.FileMapAccess.FileMapRead, 0, 0, 1);
+
+				if (pMem != IntPtr.Zero)
+				{
+					uint maxSize = 256;
+					uint size = UnsafeMethods.GetMappedFileName(
+						UnsafeMethods.GetCurrentProcess(),
+						pMem, ref pszFilename, maxSize);
+
+					UnsafeMethods.UnmapViewOfFile(pMem);
+				}
+
+				UnsafeMethods.CloseHandle(hFileMap);
+			}
+
+			return pszFilename.ToString();
+		}
+
 	}
 }
 
