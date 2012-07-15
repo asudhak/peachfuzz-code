@@ -3,6 +3,7 @@
 import os.path
 from waflib.TaskGen import feature, after_method, before_method
 from waflib import Utils, Logs, Configure, Context, Options, Errors
+import tools.hooks
 
 out = 'slag'
 inst = 'output'
@@ -30,6 +31,11 @@ def configure(ctx):
 	base_env = ctx.env;
 	base_env.BINDIR = base_env.LIBDIR = 'output'
 
+	tool_dir =  [
+		os.path.join(ctx.path.abspath(), 'build', 'tools'),
+		os.path.join(Context.waf_dir, 'waflib', 'Tools'),
+	]
+
 	for host in hosts:
 		try:
 			config = Context.load_tool(host, ['build/config'])
@@ -54,7 +60,7 @@ def configure(ctx):
 				config.prepare(ctx)
 				
 				for tool in getattr(config, 'tools', []):
-					ctx.load(tool, ['build/tools'])
+					ctx.load(tool, tool_dir)
 				
 				cfgs = config.configure(ctx)
 				
@@ -66,7 +72,7 @@ def configure(ctx):
 					ctx.setenv(variant, env=arch_env)
 					cfg_env = ctx.get_env()
 					cfg_env.BINDIR = os.path.join(base_env.BINDIR, variant, 'bin')
-					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'bin')
+					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'lib')
 					cfg_func = getattr(config, cfg)
 					cfg_func(cfg_env)
 					base_env.append_value('variants', variant)
@@ -78,6 +84,9 @@ def configure(ctx):
 				if Logs.verbose == 0:
 					Logs.pprint('YELLOW', 'Not Available')
 				else:
+					if Logs.verbose > 1:
+						import traceback
+						traceback.print_exc()
 					Logs.warn('%s is not available: %s' % (name, e))
 
 def build(bld):
@@ -91,7 +100,6 @@ def build(bld):
 			if opt not in variant:
 				continue
 
-			print 'Running: %s' % variant
 			ctx = Context.create_context(bld.cmd)
 			ctx.cmd = bld.cmd
 			ctx.fun = 'go'
@@ -106,39 +114,4 @@ def build(bld):
 
 def go(bld):
 	bld.fun = 'build'
-	#bld.recurse(bld.subdirs)
-	bld.recurse('3rdParty')
-	bld.recurse('Peach')
-	bld.recurse('Peach.Core')
-	#bld.recurse('Peach.Core.OS.Linux')
-	#bld.recurse('Peach.Core.OS.OSX')
-	bld.recurse('Peach.Core.OS.Windows')
-	bld.recurse('Peach.Core.Debuggers.Windows')
-
-#	bld(
-#		features = 'cs',
-#		#use = 'Peach.Core.Debuggers.Windows.dll',
-#		source = bld.path.ant_glob('Peach.Core.Debuggers.Windows/**/*.cs'),
-#		name='Peach.Core.Debuggers.Windows.dll',
-#	)
-
-#	bld(
-#		features = 'cs',
-#		use = 'Peach.Core.dll Peach.Core.Debuggers.Windows.dll System.Drawing.dll NLog.dll System.Runtime.Remoting.dll System.Management.dll System.ServiceProcess.dll',
-#		source = bld.path.ant_glob('Peach.Core.OS.Windows/**/*.cs'),
-#		name='Peach.Core.OS.Windows.dll',
-#	)
-
-#	bld(
-#		features = 'cs',
-#		use = 'NLog.dll nunit.framework.dll Peach.Core.dll Peach.Core.OS.OSX.dll Peach.Core.OS.Windows.dll Peach.Core.OS.Linux.dll',
-#		source = bld.path.ant_glob('Peach.Core.Test/**/*.cs'),
-#		name='Peach.Core.Test.dll',
-#	)
-
-#	bld(
-#		features = 'cs',
-#		use = 'Peach.Core.dll System.Windows.Forms.dll System.Data.dll System.Drawing.dll System.ServiceProcess.dll System.Xml.dll',
-#		source = bld.path.ant_glob('PeachFuzzBang/**/*.cs'),
-#		name='PeachFuzzBang.exe',
-#	)
+	bld.recurse(bld.subdirs)

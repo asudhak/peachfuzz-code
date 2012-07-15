@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 deps = [
-	'Peach.Core.dll',
 ]
 
 bld(
 	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
-	name='Peach.Core.OS.OSX.dll',
+	name = 'Peach.Core.Controls.dll',
 )

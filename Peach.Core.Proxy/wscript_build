@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+deps = [
+	'NLog.dll',
+	'Peach.Core.dll',
+	'System.dll',
+]
+
+bld(
+#	features = 'cs',
+#	use = deps,
+#	source = bld.path.ant_glob('**/*.cs'),
+#	name = 'Peach.Core.Proxy.dll',
+)

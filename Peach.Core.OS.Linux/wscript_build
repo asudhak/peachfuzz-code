@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+deps = [
+]
+
 bld(
 	features = 'cs',
-	use = 'Peach.Core.dll',
+	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.OS.Linux.dll',
 )

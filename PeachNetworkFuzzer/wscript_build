@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+deps = [
+	'System.dll',
+	'System.Windows.Forms.dll',
+	'System.Data.dll',
+	'System.Drawing.dll',
+	'Peach.Core.dll',
+	
+]
+
+bld(
+	features = 'cs csprogram',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs'),
+	name='PeachNetworkFuzzer.exe',
+)
+
+
+

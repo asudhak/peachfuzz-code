@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+deps = [
+	'nunit.framework.dll',
+	'System.dll',
+	'Microsoft.CSharp.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.Windows.dll',
+]
+
+bld(
+#	features = 'cs',
+	use = deps,
+#	source = bld.path.ant_glob('**/*.cs'),
+	name = 'Peach.Core.Test.OS.Windows.dll',
+)

@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+deps = [
+	'System.dll',
+	'EasyHook.dll',
+	'PeachHooker.Network.dll',
+	'PeachHooker.File.dll',
+]
+
+bld(
+	features = 'cs csprogram',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs'),
+	name='PeachHooker.exe',
+	install='run.bat'
+)
+
+
+

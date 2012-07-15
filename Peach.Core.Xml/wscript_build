@@ -2,6 +2,7 @@
 
 bld(
 	features = 'cs',
+	use = 'System.dll System.Core.dll System.Data.dll System.Xml.dll',
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.Xml.dll',
 )

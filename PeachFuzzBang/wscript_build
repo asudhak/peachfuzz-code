@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
 deps = [
+	'System.Drawing.dll',
+	'System.Windows.Forms.dll',
+	'System.ServiceProcess.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.Windows.dll',
+	'Peach.Core.OS.OSX.dll',
+	'Peach.Core.OS.Linux.dll',
 	'NLog.dll',
 	'CookComputing.XmlRpcV2.dll',
 	'SharpPcap.dll',
@@ -24,8 +31,10 @@ deps = [
 ]
 
 bld(
-	features = 'cs',
+	features = 'cs csprogram',
 	use = deps,
-	source = bld.path.ant_glob('**/*.cs'),
-	name = 'Peach.Core.dll',
+	source = bld.path.ant_glob('**/*.cs **/*.resx'),
+	name='PeachFuzzBang.exe',
+	install= bld.path.ant_glob('samples_png/* *.xml *.rtf template.xml')
 )
+

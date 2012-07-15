@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+deps = [
+	'NLog.dll',
+	'System.dll',
+	'System.Web.dll',
+	'System.Web.Services.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.Windows.dll',
+]
+
+bld(
+	features = 'cs csprogram',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs'),
+	name='TestThings.exe',
+	install= 'NLog.config',
+)
+
+
+

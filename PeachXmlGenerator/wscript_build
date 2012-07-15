@@ -3,6 +3,7 @@
 deps = [
 	'Peach.Core.Xml.dll',
 	'System.dll',
+	'System.Core.dll',
 	'System.Data.dll',
 	'System.Drawing.dll',
 	'System.Windows.Forms.dll',
@@ -10,9 +11,8 @@ deps = [
 ]
 
 bld(
-#	features = 'cs',
-#	use = deps,
-#	source = bld.path.ant_glob('**/*.cs **/*.resx'),
-#	name='PeachXmlGenerator.exe',
-#	config='app.config',
+	features = 'cs csprogram',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs **/*.resx'),
+	name='PeachXmlGenerator.exe',
 )

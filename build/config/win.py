@@ -26,7 +26,9 @@ def prepare(conf):
         env = conf.env
 
         env['TOOLCHAIN_PATH_x86'] = setup_pfiles([
+                'Microsoft SDKs\\Windows\\v7.1\\bin\\NETFX 4.0 Tools',
                 'Microsoft SDKs\\Windows\\v7.1\\bin',
+                'Microsoft SDKs\\Windows\\v7.0A\\bin\\NETFX 4.0 Tools',
                 'Microsoft SDKs\\Windows\\v7.0A\\bin',
                 'Microsoft Visual Studio 10.0\\VC\\bin',
                 'Microsoft Visual Studio 10.0\\Common7\\IDE',
@@ -35,7 +37,9 @@ def prepare(conf):
         ])
 
         env['TOOLCHAIN_PATH_x64'] = setup_pfiles([
+                'Microsoft SDKs\\Windows\\v7.1\\bin\\NETFX 4.0 Tools',
                 'Microsoft SDKs\\Windows\\v7.1\\bin',
+                'Microsoft SDKs\\Windows\\v7.0A\\bin\\NETFX 4.0 Tools',
                 'Microsoft SDKs\\Windows\\v7.0A\\bin',
                 'Microsoft Visual Studio 10.0\\VC\\bin\\x86_amd64',
                 'Microsoft Visual Studio 10.0\\Common7\\IDE',
@@ -64,13 +68,28 @@ def prepare(conf):
         env['TOOLCHAIN_PATH'] = env['TOOLCHAIN_PATH_%s' % env.SUBARCH]
         env['TOOLCHAIN_LIBS'] = env['TOOLCHAIN_LIBS_%s' % env.SUBARCH]
 
+        env['REF_ASSEMBLIES'] = setup_pfiles([
+                'Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0',
+        ])[-1]
+
 def configure(conf):
         env = conf.env
  
         env.append_value('CSFLAGS', [
+                '/noconfig',
+                '/nologo',
+                '/nostdlib+',
                 '/warn:4',
                 '/define:PEACH',
+                '/errorreport:prompt',
+                '/lib:%s' % env['REF_ASSEMBLIES'],
         ])
+
+        env.append_value('ASSEMBLIES', [
+                'mscorlib.dll',
+        ])
+
+	env['CSPLATFORM'] = env.SUBARCH
 
         return [ 'debug', 'release' ]
 
@@ -81,3 +100,5 @@ def debug(env):
 
 def release(env):
         env.CSDEBUG = 'pdbonly'
+
+        env.append_value('CSFLAGS', ['/define:TRACE', '/optimize+'])

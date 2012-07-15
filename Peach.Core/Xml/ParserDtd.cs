@@ -89,7 +89,6 @@ namespace Peach.Core.Xml
 		protected void finishAttribute(string name, string attribName, string attribType,
 			string attribValue, string attribModifier)
 		{
-			bool isFixed = false;
 			bool isImplied = false;
 			bool isRequired = false;
 
@@ -98,7 +97,6 @@ namespace Peach.Core.Xml
 				switch (attribModifier.ToLower())
 				{
 					case "fixed":
-						isFixed = true;
 						break;
 					case "implied":
 						isImplied = true;

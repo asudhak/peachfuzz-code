@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+deps = [
+	'NLog.dll',
+	'System.dll',
+	'Peach.Core.dll',
+]
+
+bld(
+	features = 'cs csprogram',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs'),
+	name='Peach.Core.Proxy.Web.Tester.exe',
+	install= 'NLog.config'
+)
+

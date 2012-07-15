@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+
+bld(
+	features = 'cxx cxxprogram',
+	source = 'CrashingFileConsumer.cpp',
+	target = 'CrashingFileConsumer',
+)
+

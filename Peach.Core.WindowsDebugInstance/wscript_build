@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+deps = [
+	'System.dll',
+	'System.Runtime.Remoting.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.Windows.dll',
+]
+bld(
+	features = 'cs csprogram',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs'),
+	name='Peach.Core.WindowsDebugInstance.exe',
+)
+

@@ -2,16 +2,12 @@
 
 deps = [
 	'NLog.dll',
-	'CookComputing.XmlRpcV2.dll',
-	'SharpPcap.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',
 	'System.Xml.dll',
 	'System.Core.dll',
 	'System.Data.dll',
-	'System.Web.dll',
-	'Ionic.Zip.dll',
 	'IronPython.dll',
 	'IronPython.Modules.dll',
 	'IronRuby.dll',
@@ -21,11 +17,14 @@ deps = [
 	'Microsoft.CSharp.dll',
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.Windows.dll',
 ]
 
 bld(
-	features = 'cs',
+	features = 'cs csprogram',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
-	name = 'Peach.Core.dll',
+	name='Peach.Core.ComContainer.exe',
 )
+

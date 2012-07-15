@@ -11,7 +11,7 @@ if sys.platform == "cygwin":
 cwd = os.getcwd()
 build = os.path.join(cwd, 'build')
 wafdir = os.path.join(cwd, '3rdParty', 'waf')
-sys.path = [ wafdir, build ] + sys.path
+sys.path = [ build, wafdir ] + sys.path
 
 if __name__ == '__main__':
 	from waflib import Scripting
