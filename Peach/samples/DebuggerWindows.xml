@@ -10,15 +10,12 @@
 		
 		Syntax:
 		
-		  python peach.py -a
-		  
-		  python peach.py samples\Debugger.xml
+		  peach.exe samples\Debugger.xml
 		
 		Output:
 		
 		  You will see the tests scroll along.  Once test 47 has occured you can check
-		  the c:\peach\logfiles folder for a log of this test that will include a Debugger.txt
-		  faul output.
+		  the Logs folder for a log of this test.
 		
 		Authors:
 		
@@ -47,12 +44,13 @@
 	</StateModel>
 
 	<Agent name="LocalAgent">
-		<Monitor class="WindowsDebugEngine">
+		<Monitor class="WindowsDebugger">
 			<Param name="CommandLine" value="C:\Peach3\Release\CrashableServer.exe 127.0.0.1 4244" />
-			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />
+			<!--<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />-->
 		</Monitor>
  		<!--<Monitor class="PageHeap">
 			<Param name="Executable" value="CrashableServer.exe"/>
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />
 		</Monitor>-->
 	</Agent>
 
@@ -68,7 +66,5 @@
 			<Param name="Path" value="Logs" />
 		</Logger>
 	</Test>
-
-
 </Peach>
 <!-- end -->
