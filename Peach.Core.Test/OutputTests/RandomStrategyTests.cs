@@ -74,10 +74,6 @@ namespace Peach.Core.Test.OutputTests
             //Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
             MutationStrategies.RandomStrategy.Iterating += new RandomStrategyIterationEventHandler(RandomStrategy_Iterating);
 
-            uint values = 0;
-            for (uint i = 1000; i >= 0; i--)
-                values += i;
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
