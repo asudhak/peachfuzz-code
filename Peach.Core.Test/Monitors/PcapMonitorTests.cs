@@ -143,8 +143,7 @@ namespace Peach.Core.Test.Monitors
 
 		private static string pre_xml = 
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-			"<Peach xmlns=\"http://phed.org/2008/Peach\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
-			"	xsi:schemaLocation=\"http://phed.org/2008/Peach /peach3.0/peachcore/peach.xsd\">" +
+			"<Peach>" +
 			"			" +
 			"	<Include ns=\"default\" src=\"file:defaults.xml\"/>" +
 			"			" +
