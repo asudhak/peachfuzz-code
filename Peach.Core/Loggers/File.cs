@@ -55,7 +55,7 @@ namespace Peach.Core.Loggers
 			logpath = (string)args["Path"];
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, 
+		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, 
 			Dictionary<AgentClient, Hashtable> faultData)
 		{
 			string bucketData = null;
@@ -97,31 +97,31 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-			// TODO - Store action values!
+			int cnt = 0;
+			foreach(Dom.Action action in stateModel.dataActions)
+			{
+				cnt++;
+				if (action.dataModel != null)
+				{
+					string fileName = Path.Combine(faultPath, string.Format("action_{0}_{1}_{2}.txt",
+						cnt, action.type.ToString(), action.name));
 
-		//# Expand actionValues
-		
-		//for i in range(len(actionValues)):
-		//    fileName = os.path.join(path, "data_%d_%s_%s.txt" % (i, actionValues[i][1], actionValues[i][0]))
-			
-		//    if len(actionValues[i]) > 2:
-		//        fout = open(fileName, "w+b")
-		//        fout.write(actionValues[i][2])
-				
-		//        if len(actionValues[i]) > 3 and actionValues[i][1] != 'output':
-		//            fout.write(repr(actionValues[i][3]))
-				
-		//        fout.close()
-				
-		//        # Output filename from data set if we have it.
-		//        if len(actionValues[i]) > 3 and actionValues[i][1] == 'output':
-		//            self._writeMsg("Origional file name: "+actionValues[i][3])
-					
-		//            fileName = os.path.join(path, "data_%d_%s_%s_fileName.txt" % (i, actionValues[i][1], actionValues[i][0]))
-		//            fout = open(fileName, "w+b")
-		//            fout.write(actionValues[i][3])
-		//            fout.close()
-		
+					File.WriteAllBytes(fileName, action.dataModel.Value.Value);
+				}
+				else if (action.parameters.Count > 0)
+				{
+					int pcnt = 0;
+					foreach (Dom.ActionParameter param in action.parameters)
+					{
+						pcnt++;
+						string fileName = Path.Combine(faultPath, string.Format("action_{0}-{1}_{2}_{3}.txt",
+							cnt, pcnt, action.type.ToString(), action.name));
+
+						File.WriteAllBytes(fileName, param.dataModel.Value.Value);
+					}
+				}
+			}
+
 			foreach (AgentClient agent in faultData.Keys)
 			{
 				Hashtable data = faultData[agent];

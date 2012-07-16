@@ -297,7 +297,7 @@ namespace Peach.Core.Test.Monitors
 			RunTest(agent_xml, 1, new Engine.FaultEventHandler(_Fault));
 		}
 
-		void _Fault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
+		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
 		{
 			foreach (var item in faultData)
 			{

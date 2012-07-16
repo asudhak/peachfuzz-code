@@ -53,7 +53,7 @@ namespace Peach.Core
 		public delegate void TestStartingEventHandler(RunContext context);
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
-		public delegate void FaultEventHandler(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData);
+		public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
@@ -105,10 +105,10 @@ namespace Peach.Core
 			if (IterationFinished != null)
 				IterationFinished(context, currentIteration);
 		}
-		public void OnFault(RunContext context, uint currentIteration, Dictionary<string, Variant> stateModelData, Dictionary<AgentClient, Hashtable> faultData)
+		public void OnFault(RunContext context, uint currentIteration, StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
 		{
 			if (Fault != null)
-				Fault(context, currentIteration, stateModelData, faultData);
+				Fault(context, currentIteration, stateModel, faultData);
 		}
 		public void OnTestFinished(RunContext context)
 		{
@@ -356,7 +356,7 @@ namespace Peach.Core
 							
 							// TODO get state model data
 
-							OnFault(context, iterationCount, null, monitorData);
+							OnFault(context, iterationCount, test.stateModel, monitorData);
 						}
 
 						// TODO: Check for agent stop signal

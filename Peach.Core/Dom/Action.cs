@@ -420,27 +420,35 @@ namespace Peach.Core.Dom
 						break;
 
 					case ActionType.Input:
+						logger.Debug("ActionType.Input");
 						handleInput(publisher);
+						parent.parent.dataActions.Add(this);
 						break;
 					case ActionType.Output:
 						logger.Debug("ActionType.Output");
 						publisher.output(this, new Variant(dataModel.Value));
+						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.Call:
 						handleCall(publisher, context);
+						parent.parent.dataActions.Add(this);
 						break;
 					case ActionType.GetProperty:
 						handleGetProperty(publisher);
+						parent.parent.dataActions.Add(this);
 						break;
 					case ActionType.SetProperty:
 						handleSetProperty(publisher);
+						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.ChangeState:
+						logger.Debug("ActionType.ChangeState");
 						handleChangeState();
 						break;
 					case ActionType.Slurp:
+						logger.Debug("ActionType.Slurp");
 						handleSlurp(context);
 						break;
 

@@ -51,6 +51,7 @@ namespace Peach.Core.Dom
 		public string _name = null;
 		public object parent;
 		protected State _initialState = null;
+		public List<Action> dataActions = new List<Action>();
 
 		/// <summary>
 		/// All states in state model.
@@ -112,6 +113,8 @@ namespace Peach.Core.Dom
 			try
 			{
 				OnStarting();
+
+				dataActions.Clear();
 
 				// Prior to starting our state model, on iteration #1 lets
 				// locate all data sets and load our initial data.
