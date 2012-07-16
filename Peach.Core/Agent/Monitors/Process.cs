@@ -164,7 +164,7 @@ namespace Peach.Core.Agent.Monitors
 			if (!DetectedFault())
 				return;
 
-			data.Add("Process", "Process exited early: " + _executable + " " + _arguments);
+			data.Add(this.Name + "_Process", "Process exited early: " + _executable + " " + _arguments);
 		}
 
 		public override bool MustStop()
