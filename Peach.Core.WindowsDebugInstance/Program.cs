@@ -54,6 +54,7 @@ namespace Peach.Core.WindowsDebugInstance
 
 			IpcChannel ipcChannel = new IpcChannel(args[0]);
 			ChannelServices.RegisterChannel(ipcChannel, false);
+			Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.LastHeartBeat = DateTime.Now;
 
 			try
 			{
@@ -66,6 +67,10 @@ namespace Peach.Core.WindowsDebugInstance
 				{
 					Thread.Sleep(200);
 					if (Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.ExitInstance)
+						return;
+
+					// Timebomb!
+					if ((DateTime.Now - Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.LastHeartBeat).TotalSeconds > 30)
 						return;
 				}
 			}
