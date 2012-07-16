@@ -51,6 +51,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 	public class DebuggerInstance : MarshalByRefObject
 	{
 		public static bool ExitInstance = false;
+		public static DateTime LastHeartBeat = DateTime.MaxValue;
 		public static DebuggerInstance Instance = null;
 		Thread _thread = null;
 		Debuggers.DebugEngine.WindowsDebugEngine _dbg = null;
@@ -75,6 +76,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public DebuggerInstance()
 		{
 			Instance = this;
+			LastHeartBeat = DateTime.Now;
 		}
 
 		public int ProcessId
@@ -84,11 +86,16 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public bool IsRunning
 		{
-			get { return _thread != null && _thread.IsAlive; }
+			get
+			{
+				LastHeartBeat = DateTime.Now;
+				return _thread != null && _thread.IsAlive;
+			}
 		}
 
 		public void StartDebugger()
 		{
+			LastHeartBeat = DateTime.Now;
 			_thread = new Thread(new ThreadStart(Run));
 			_thread.Start();
 
@@ -101,6 +108,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void StopDebugger()
 		{
+			LastHeartBeat = DateTime.Now;
 			_dbg.exitDebugger.Set();
 
 			for (int cnt = 0; _thread.IsAlive && cnt < 100; cnt++)
@@ -113,7 +121,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void FinishDebugging()
 		{
-			if(_thread.IsAlive)
+			LastHeartBeat = DateTime.Now;
+			if (_thread.IsAlive)
 				StopDebugger();
 
 			ExitInstance = true;
