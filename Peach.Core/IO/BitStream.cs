@@ -61,7 +61,6 @@ namespace Peach.Core.IO
 		protected Stream stream;
 		protected long pos = 0;
 		protected long len = 0;
-		protected bool _isLittleEndian = true;
 		public EndianBitConverter bitConverter = null;
 		protected bool isDisposed = false;
 
@@ -111,14 +110,6 @@ namespace Peach.Core.IO
 		}
 
 		/// <summary>
-		/// Is the current endianess set to little?
-		/// </summary>
-		public bool IsLittleEndian
-		{
-			get { return _isLittleEndian; }
-		}
-
-		/// <summary>
 		/// Clear contents of stream.  After calling
 		/// position will be 0 and length is also 0.
 		/// </summary>
@@ -138,13 +129,13 @@ namespace Peach.Core.IO
 		}
 
 		protected BitStream(Stream stream, long pos, long len,
-			bool isLittleEndian, Dictionary<string, long[]> _elementPositions)
+			EndianBitConverter bitConverter, Dictionary<string, long[]> _elementPositions)
 		{
 			this.stream = stream;
 			this.pos = pos;
 			this.len = len;
-			this._isLittleEndian = isLittleEndian;
 			this._elementPositions = _elementPositions;
+			this.bitConverter = bitConverter;
 
 			this.stream.Seek(pos / 8, SeekOrigin.Begin);
 		}
@@ -161,7 +152,7 @@ namespace Peach.Core.IO
 			if (stream is MemoryStream)
 			{
 				Dictionary<string, long[]> copyOfElementPositions = new Dictionary<string, long[]>(_elementPositions);
-				return new BitStream(new MemoryStream(((MemoryStream)stream).ToArray()), pos, len, _isLittleEndian,
+				return new BitStream(new MemoryStream(((MemoryStream)stream).ToArray()), pos, len, bitConverter,
 					copyOfElementPositions);
 			}
 
@@ -282,7 +273,6 @@ namespace Peach.Core.IO
 			if (isDisposed)
 				throw new ObjectDisposedException("BitStream already disposed");
 
-			_isLittleEndian = false;
 			bitConverter = new BigEndianBitConverter();
 		}
 
@@ -294,7 +284,6 @@ namespace Peach.Core.IO
 			if (isDisposed)
 				throw new ObjectDisposedException("BitStream already disposed");
 
-			_isLittleEndian = true;
 			bitConverter = new LittleEndianBitConverter();
 		}
 
@@ -594,7 +583,7 @@ namespace Peach.Core.IO
 
 		#endregion
 
-		public void CopyTo(Stream sin, Stream sout)
+		public static void CopyTo(Stream sin, Stream sout)
 		{
 			byte[] buff = new byte[1024 * 3];
 			int ret;
@@ -718,24 +707,12 @@ namespace Peach.Core.IO
 			stream.Seek(byteIndex, SeekOrigin.Begin);
 			byte value = (byte)stream.ReadByte();
 
-			//if (_isLittleEndian)
-			//{
-			//    if (bit == 0)
-			//        // clear bit
-			//        buff[byteIndex] = (byte)(buff[byteIndex] & ClearingMasks[7 - bitIndex]);
-			//    else
-			//        // Set bit
-			//        buff[byteIndex] = (byte)(buff[byteIndex] | (bit << bitIndex));
-			//}
-			//else
-			//{
-				if (bit == 0)
+			if (bit == 0)
 					// clear bit
 				value = (byte)(value & ClearingMasks[bitIndex]);
-				else
+			else
 					// Set bit
 				value = (byte)(value | (bit << (7 - bitIndex)));
-			//}
 
 			stream.Seek(byteIndex, SeekOrigin.Begin);
 			stream.WriteByte(value);
@@ -886,59 +863,18 @@ namespace Peach.Core.IO
 
 		#endregion
 
-		// Used by ReadBit
-		byte[] currentBytes = new byte[1024];
-		long currentByteStartPosition = -1;
-		long currentByteStopPosition = -1;
-
-		/// <summary>
-		/// Read a single bit from our bitstream
-		/// </summary>
-		/// <returns>Return a byte containing 0/1</returns>
 		public byte ReadBit()
 		{
 			if (isDisposed)
 				throw new ObjectDisposedException("BitStream already disposed");
 
-			try
-			{
-				long byteIndex = pos / 8;
-				int bitIndex = (int) (pos - (byteIndex * 8));
+			byte b = (byte)stream.ReadByte();
+			byte bitIndex = (byte)(pos++ % 8);
 
-				// Performance testing shows reading in blocks of 1024 to be a massive improvement
+			if (bitIndex != 7)
+				stream.Seek(-1, SeekOrigin.Current);
 
-				if (currentByteStartPosition > byteIndex || currentByteStopPosition < byteIndex)
-				{
-					currentByteStartPosition = byteIndex;
-					if (stream.Position != byteIndex)
-						stream.Seek(byteIndex, SeekOrigin.Begin);
-
-					int length = (byte)stream.Read(currentBytes, 0, currentBytes.Length);
-					currentByteStopPosition = stream.Position - 1;
-				}
-
-				return (byte)((currentBytes[byteIndex - currentByteStartPosition] >> (byte)(7 - bitIndex)) & 1);
-			}
-			finally
-			{
-				pos++;
-			}
-		}
-
-		protected byte ReadBit(byte b, int pos)
-		{
-			if (isDisposed)
-				throw new ObjectDisposedException("BitStream already disposed");
-
-			// Index into byte from buff[] array
-			int bitIndex = pos;
-
-			if (_isLittleEndian)
-				// Shift and mask off 1 byte
-				return (byte)((b >> (byte)bitIndex) & 1);
-			else
-				// Shift and mask off 1 byte
-				return (byte)((b >> (byte)(7 - bitIndex)) & 1);
+			return (byte)((b >> (byte)(7 - bitIndex)) & 1);
 		}
 
 		public ulong ReadBits(int bits)
@@ -1109,37 +1045,6 @@ namespace Peach.Core.IO
 			for (int i = 0; i < count; i++)
 			{
 				ret[i] = ReadByte();
-			}
-
-			return ret;
-		}
-
-		public byte[] FixEndian(byte[] b)
-		{
-			byte tmp;
-			if (_isLittleEndian)
-			{
-				// Reverse array
-				for (int cnt = 0; cnt < (b.Length/2); cnt++)
-				{
-					tmp = b[cnt];
-					b[cnt] = b[(b.Length-1) - cnt];
-					b[(b.Length-1) - cnt] = tmp;
-				}
-			}
-
-			return b;
-		}
-
-		public ulong ByteArrayToLong(byte[] b)
-		{
-			FixEndian(b);
-
-			ulong ret = 0;
-			for (int cnt = 0; cnt < b.Length; cnt++)
-			{
-				//ret = ret << 7;
-				ret |= ((ulong)b[cnt]) << (8*cnt);
 			}
 
 			return ret;
