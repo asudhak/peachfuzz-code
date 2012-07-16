@@ -39,10 +39,10 @@ namespace Peach.Core.Dom
 	/// A dom element to hold Monitor config information
 	/// </summary>
 	[Serializable]
-	public class Monitor
+	public class Monitor : INamed
 	{
 		public string cls;
-		public string name;
+		public string name { get; set; }
 		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
 	}
 
