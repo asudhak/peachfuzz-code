@@ -1,0 +1,7 @@
+.git/
+.svn/
+slag
+output
+.lock*
+.metadata/
+*.pyc
