@@ -51,7 +51,8 @@ namespace Peach.Core.Dom
 	[DataElement("Blob")]
 	[PitParsable("Blob")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
+  [ParameterAttribute("name", typeof(string), "", true)]
+  [ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
 	[Serializable]
 	public class Blob : DataElement
 	{
@@ -158,6 +159,34 @@ namespace Peach.Core.Dom
 
 			return blob;
 		}
+
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "length":
+          return this.length;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "length":
+          this.length = (long)value;
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
+      }
+    }
 	}
 }
 

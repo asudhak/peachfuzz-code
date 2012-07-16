@@ -46,7 +46,8 @@ namespace Peach.Core.Dom
 {
 	[DataElement("Flag")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
+  [ParameterAttribute("name", typeof(string), "", true)]
+  [ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
 	[ParameterAttribute("size", typeof(int), "size in bits", true)]
 	[Serializable]
 	public class Flag : DataElement
@@ -163,6 +164,39 @@ namespace Peach.Core.Dom
 
 			return bits;
 		}
+
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "position":
+          return this.position;
+        case "size":
+          return this.size;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flag", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "position":
+          this.position = (int)value;
+          break;
+        case "size":
+          this.size = (int)size;
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flag", parameterName));
+      }
+    }
 	}
 }
 

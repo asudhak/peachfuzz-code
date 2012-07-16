@@ -109,6 +109,39 @@ namespace Peach.Core.Dom
 			xmlAttrib.Value = (string)this[0].InternalValue;
 			return xmlAttrib;
 		}
+
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "attributeName":
+          return this.attributeName;
+        case "ns":
+          return this.ns;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "attributeName":
+          this.attributeName = (string)value;
+          break;
+        case "ns":
+          this.ns = (string)ns;
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
+      }
+    }
 	}
 }
 

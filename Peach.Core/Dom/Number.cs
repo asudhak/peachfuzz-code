@@ -50,7 +50,8 @@ namespace Peach.Core.Dom
 	[DataElement("Number")]
 	[PitParsable("Number")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("size", typeof(uint), "size in bits", true)]
+  [ParameterAttribute("name", typeof(string), "", true)]
+  [ParameterAttribute("size", typeof(uint), "size in bits", true)]
 	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	[Serializable]
@@ -429,6 +430,50 @@ namespace Peach.Core.Dom
 
 			return bits;
 		}
+
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "size":
+          return this.length;
+        case "signed":
+          return Signed;
+        case "endian":
+          switch (this.LittleEndian)
+          {
+            case true:
+              return "little";
+            default:
+              return "big";
+          }
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "size":
+          this.length = (long)value;
+          break;
+        case "signed":
+          this.Signed = (bool)value;
+          break;
+        case "endian":
+          this.LittleEndian = ((string)value == "little");
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
+      }
+    }
 	}
 }
 

@@ -58,10 +58,12 @@ namespace Peach.Core
 			ULong,
 			String,
 			ByteString,
-			BitStream
+			BitStream,
+      Boolean
 		}
 
 		VariantType _type = VariantType.Unknown;
+    bool? _valueBool;
 		int? _valueInt;
 		long? _valueLong;
 		ulong? _valueULong;
@@ -88,6 +90,24 @@ namespace Peach.Core
 		{
 			SetValue(v);
 		}
+
+    public Variant(string v, string type)
+    {
+      switch (type.ToLower())
+      {
+        case "system.int32":
+          SetValue(Int32.Parse(v));
+          break;
+        case "system.string":
+          SetValue(v);
+          break;
+        case "system.boolean":
+          SetValue(bool.Parse(v));
+          break;
+        default:
+          throw new NotImplementedException("Value Type not implemented: " + type);
+      }
+    }
 
 		public Variant(byte[] v)
 		{
@@ -154,6 +174,14 @@ namespace Peach.Core
 			_valueString = null;
 			_valueByteArray = null;
 		}
+
+    public void SetValue(bool v)
+    {
+      _type = VariantType.Boolean;
+      _valueBool = v;
+      _valueString = null;
+      _valueByteArray = null;
+    }
 
 		/// <summary>
 		/// Access variant as an int value.
@@ -385,7 +413,9 @@ namespace Peach.Core
 					return Convert.ToString(v._valueULong);
 				case VariantType.String:
 					return v._valueString;
-				case VariantType.ByteString:
+        case VariantType.Boolean:
+          return Convert.ToString(v._valueBool);
+        case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to string type.");
 				case VariantType.BitStream:
 					throw new NotSupportedException("Unable to convert BitStream to string type.");

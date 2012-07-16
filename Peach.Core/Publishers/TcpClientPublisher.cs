@@ -85,6 +85,16 @@ namespace Peach.Core.Publishers
 			set { _throttle = value; }
 		}
 
+    public string Host
+    {
+      get { return _host; }
+    }
+
+    public int Port
+    {
+      get { return _port; }
+    }
+
 		protected TcpClient TcpClient
 		{
 			get { return _tcpClient; }

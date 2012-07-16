@@ -41,7 +41,7 @@ namespace Peach.Core.Loggers
 	/// Standard file system logger.
 	/// </summary>
 	[Logger("File")]
-	[Logger("Filesystem")]
+	[Logger("Filesystem", true)]
 	[Logger("logger.Filesystem")]
 	[Parameter("Path", typeof(string), "Log folder", true)]
 	public class FileLogger : Logger
@@ -54,6 +54,11 @@ namespace Peach.Core.Loggers
 		{
 			logpath = (string)args["Path"];
 		}
+
+    public string Path
+    {
+      get { return logpath; }
+    }
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, 
 			Dictionary<AgentClient, Hashtable> faultData)
@@ -77,23 +82,23 @@ namespace Peach.Core.Loggers
 					break;
 			}
 
-			string faultPath = Path.Combine(ourpath, "Faults");
+			string faultPath = System.IO.Path.Combine(ourpath, "Faults");
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
 			if (bucketData != null)
 			{
-				faultPath = Path.Combine(faultPath, bucketData);
+        faultPath = System.IO.Path.Combine(faultPath, bucketData);
 			}
 			else
 			{
-				faultPath = Path.Combine(faultPath, "Unknown");
+        faultPath = System.IO.Path.Combine(faultPath, "Unknown");
 			}
 
 			if(!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-			faultPath = Path.Combine(faultPath, currentIteration.ToString());
+      faultPath = System.IO.Path.Combine(faultPath, currentIteration.ToString());
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
@@ -103,7 +108,7 @@ namespace Peach.Core.Loggers
 				cnt++;
 				if (action.dataModel != null)
 				{
-					string fileName = Path.Combine(faultPath, string.Format("action_{0}_{1}_{2}.txt",
+          string fileName = System.IO.Path.Combine(faultPath, string.Format("action_{0}_{1}_{2}.txt",
 						cnt, action.type.ToString(), action.name));
 
 					File.WriteAllBytes(fileName, action.dataModel.Value.Value);
@@ -114,7 +119,7 @@ namespace Peach.Core.Loggers
 					foreach (Dom.ActionParameter param in action.parameters)
 					{
 						pcnt++;
-						string fileName = Path.Combine(faultPath, string.Format("action_{0}-{1}_{2}_{3}.txt",
+            string fileName = System.IO.Path.Combine(faultPath, string.Format("action_{0}-{1}_{2}_{3}.txt",
 							cnt, pcnt, action.type.ToString(), action.name));
 
 						File.WriteAllBytes(fileName, param.dataModel.Value.Value);
@@ -128,7 +133,7 @@ namespace Peach.Core.Loggers
 
 				foreach (string key in data.Keys)
 				{
-					string path = Path.Combine(faultPath, key);
+          string path = System.IO.Path.Combine(faultPath, key);
 					Directory.CreateDirectory(path);
 
 					object subdata = data[key];
@@ -137,7 +142,7 @@ namespace Peach.Core.Loggers
 						var dict = subdata as Dictionary<string, Variant>;
 						foreach (string dictKey in dict.Keys)
 						{
-							string fileName = Path.Combine(path, dictKey);
+              string fileName = System.IO.Path.Combine(path, dictKey);
 							Variant value = dict[dictKey];
 
 							if (value.GetVariantType() == Variant.VariantType.String)
@@ -200,7 +205,7 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(logpath))
 				Directory.CreateDirectory(logpath);
 
-			ourpath = Path.Combine(logpath, context.config.pitFile.Replace(Path.DirectorySeparatorChar, '_'));
+      ourpath = System.IO.Path.Combine(logpath, context.config.pitFile.Replace(System.IO.Path.DirectorySeparatorChar, '_'));
 
 			if (context.config.runName == "DefaultRun")
 				ourpath += "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
@@ -209,7 +214,7 @@ namespace Peach.Core.Loggers
 
 			Directory.CreateDirectory(ourpath);
 
-			log = File.CreateText(Path.Combine(ourpath, "status.txt"));
+      log = File.CreateText(System.IO.Path.Combine(ourpath, "status.txt"));
 
 			log.WriteLine("Peach Fuzzing Run");
 			log.WriteLine("=================");

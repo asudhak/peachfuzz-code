@@ -32,11 +32,12 @@ using System.Collections;
 using System.Text;
 using Peach.Core.Agent;
 using System.Runtime.Serialization;
+using System.Xml;
 
 namespace Peach.Core.Dom
 {
 	[Serializable]
-	public class Dom : INamed
+  public class Dom : INamed
     {
 		public string fileName;
 		public string version;
@@ -123,7 +124,39 @@ namespace Peach.Core.Dom
 		}
 
 		#endregion
-	}
+
+    public XmlDocument pitSerialize()
+    {
+      
+      XmlDocument doc = new XmlDocument();
+      
+      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Peach", "");
+
+      foreach (DataModel dataModel in dataModels.Values)
+      {
+        node.AppendChild(dataModel.pitSerialize(doc, node));
+      }
+
+      foreach (StateModel stateModel in stateModels.Values)
+      {
+        node.AppendChild(stateModel.pitSerialize(doc, node));
+      }
+
+      foreach (Agent agent in agents.Values)
+      {
+        node.AppendChild(agent.pitSerialize(doc, node));
+      }
+
+      foreach (Test test in tests.Values)
+      {
+        node.AppendChild(test.pitSerialize(doc, node));
+      }
+
+      doc.AppendChild(node);
+
+      return doc;
+    }
+  }
 }
 
 

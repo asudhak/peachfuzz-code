@@ -50,7 +50,8 @@ namespace Peach.Core.Dom
 	[DataElement("Block")]
 	[PitParsable("Block")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	[Serializable]
+  [ParameterAttribute("name", typeof(string), "", true)]
+  [Serializable]
 	public class Block : DataElementContainer
 	{
 		public Block()
@@ -153,6 +154,29 @@ namespace Peach.Core.Dom
 			_internalValue = value;
 			return value;
 		}
+
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
+      }
+    }
 	}
 }
 

@@ -322,6 +322,7 @@ namespace Peach.Core
 		public PublisherAttribute(string invokeName, bool isDefault = false)
 		{
 			this.invokeName = invokeName;
+      this.isDefault = isDefault;
 		}
 	}
 }

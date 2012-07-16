@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml;
 
 namespace Peach.Core.Dom
 {
@@ -41,7 +42,7 @@ namespace Peach.Core.Dom
 	/// Base class for all data element relations
 	/// </summary>
 	[Serializable]
-	public abstract class Relation
+	public abstract class Relation : IPitSerializable
 	{
 		protected DataElement _parent = null;
 		protected string _ofName = null;
@@ -329,7 +330,23 @@ namespace Peach.Core.Dom
 			
 			return null;
 		}
-	}
+
+    public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
+    {
+      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
+      //type, of, from, when, expressionGet, expressionSet, relative, relativeTo
+
+      node.AppendAttribute("type", this.GetType().ToString());
+      node.AppendAttribute("of", this.OfName);
+      node.AppendAttribute("from", this.FromName);
+      //node.AppendAttribute("when", this.when);
+      node.AppendAttribute("expressionGet", this.ExpressionGet);
+      node.AppendAttribute("expressionSet", this.ExpressionSet);
+      //node.AppendAttribute("relative", this.relative);
+      //node.AppendAttribute("relativeTo", this.relativeTo);
+      return node;
+    }
+  }
 }
 
 // end

@@ -37,6 +37,8 @@ using NLog;
 using Peach.Core;
 using Peach.Core.Cracker;
 using Peach.Core.Dom.XPath;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace Peach.Core.Dom
 {
@@ -74,7 +76,7 @@ namespace Peach.Core.Dom
 	/// calling a method, etc.
 	/// </summary>
 	[Serializable]
-	public class Action : INamed
+	public class Action : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public string _name = "Unknown Action";
@@ -557,7 +559,54 @@ namespace Peach.Core.Dom
 			}
 			while (iter.MoveNext());
 		}
-	}
+
+    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
+    {
+      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Action", null);
+
+      node.AppendAttribute("name", this.name);
+      node.AppendAttribute("ref", this.reference);
+      node.AppendAttribute("method", this.method);
+      node.AppendAttribute("property", this.property);
+      node.AppendAttribute("setXpath", this.setXpath);
+      node.AppendAttribute("valueXpath", this.valueXpath);
+      node.AppendAttribute("type", this.type.ToString());
+      node.AppendAttribute("when", this.when);
+      node.AppendAttribute("publisher", this.publisher);
+      node.AppendAttribute("onStart", this.onStart);
+      node.AppendAttribute("onComplete", this.onComplete);
+
+      XmlSerializer xs;
+
+      if (this.dataModel != null)
+      {
+        XmlNode eDataModel = doc.CreateElement("DataModel");
+        eDataModel.AppendAttribute("ref", this.dataModel.name);
+        node.AppendChild(eDataModel);
+      }
+      
+      if (this.dataSet != null)
+      {
+        StringBuilder sb = new StringBuilder();
+        StringWriter writer = new StringWriter(sb);
+        xs = new XmlSerializer(typeof(DataSet));
+        xs.Serialize(writer, this.dataSet);
+
+        node.InnerXml = sb.ToString();
+      }
+      
+      if (this.parameters != null)
+      {
+        foreach (ActionParameter ap in this.parameters)
+        {
+          node.AppendChild(ap.pitSerialize(doc, node));
+        }
+      }
+      
+
+      return node;
+    }
+  }
 
 	public enum ActionParameterType
 	{
@@ -566,7 +615,7 @@ namespace Peach.Core.Dom
 		InOut
 	}
 
-	public class ActionParameter
+	public class ActionParameter : IPitSerializable
 	{
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
@@ -596,7 +645,12 @@ namespace Peach.Core.Dom
 				}
 			}
 		}
-	}
+
+    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
+    {
+      throw new NotImplementedException();
+    }
+  }
 
 	public class ActionResult
 	{

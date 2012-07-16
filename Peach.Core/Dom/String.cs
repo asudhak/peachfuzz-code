@@ -65,6 +65,7 @@ namespace Peach.Core.Dom
 	[DataElement("String")]
 	[PitParsable("String")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
+  [ParameterAttribute("name", typeof(string), "", true)]
 	[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
 	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
 	[ParameterAttribute("type", typeof(StringType), "Type of string (encoding)", true)]
@@ -235,7 +236,7 @@ namespace Peach.Core.Dom
 
 			if (type != null)
 			{
-				switch (type)
+				switch (type.ToLower())
 				{
 					case "ascii":
 						str.stringType = StringType.Ascii;
@@ -485,6 +486,47 @@ namespace Peach.Core.Dom
 				}
 			}
 		}
+
+    //[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
+    //[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
+    //[ParameterAttribute("type", typeof(StringType), "Type of string (encoding)", true)]
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "length":
+          return this.length;
+        case "nullTerminated":
+          return this.nullTerminated;
+        case "type":
+          return this.stringType;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.String", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "length":
+          this.length = (long)value;
+          break;
+        case "nullTerminated":
+          this.nullTerminated = (bool)value;
+          break;
+        case "type":
+          this.stringType = (StringType)Enum.Parse(typeof(StringType), (string)value);
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.String", parameterName));
+      }
+    }
 	}
 
 }

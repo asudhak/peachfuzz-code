@@ -32,6 +32,7 @@ using System.Collections;
 using System.Text;
 using Peach.Core.Agent;
 using System.Runtime.Serialization;
+using System.Xml;
 
 namespace Peach.Core.Dom
 {
@@ -39,11 +40,29 @@ namespace Peach.Core.Dom
 	/// A dom element to hold Monitor config information
 	/// </summary>
 	[Serializable]
-	public class Monitor : INamed
+	public class Monitor : INamed, IPitSerializable
 	{
 		public string cls;
 		public string name { get; set; }
 		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
+
+    public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
+    {
+      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Monitor", null);
+
+      node.AppendAttribute("name", this.name);
+      node.AppendAttribute("class", this.cls);
+
+      foreach (KeyValuePair<string, Variant> pair in parameters)
+      {
+        XmlNode eParam = doc.CreateElement("Param");
+        eParam.AppendAttribute("name", pair.Key);
+        eParam.AppendAttribute("value", pair.Value.ToString());
+        node.AppendChild(eParam);
+      }
+
+      return node;
+    }
 	}
 
 }

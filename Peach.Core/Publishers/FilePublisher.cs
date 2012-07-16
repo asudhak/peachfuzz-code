@@ -88,6 +88,21 @@ namespace Peach.Core.Publishers
 			}
 		}
 
+    public string FileName
+    {
+      get { return fileName; }
+    }
+
+    public bool Overwrite
+    {
+      get { return overwrite; }
+    }
+
+    public bool Append
+    {
+      get { return append; }
+    }
+
 		public override void open(Core.Dom.Action action)
 		{
 			close(action);

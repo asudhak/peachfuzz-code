@@ -1872,10 +1872,16 @@ namespace Peach.Core.Analyzers
 				string name = getXmlAttribute(child, "name");
 				string value = getXmlAttribute(child, "value");
 
-				if (hasXmlAttribute(child, "valueType"))
-					throw new NotImplementedException("TODO Handle ValueType");
+        if (hasXmlAttribute(child, "valueType"))
+        {
+          ret.Add(name, new Variant(value, getXmlAttribute(child, "valueType")));
+        }
+        else
+        {
+          ret.Add(name, new Variant(value));
+        }
+					//throw new NotImplementedException("TODO Handle ValueType");
 
-				ret.Add(name, new Variant(value));
 			}
 
 			return ret;

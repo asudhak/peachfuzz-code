@@ -44,29 +44,7 @@ namespace Peach.Core.Dom
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Class)]
-	public class FixupAttribute : Attribute
-	{
-		public string elementName;
-
-		public FixupAttribute(string elementName)
-		{
-			this.elementName = elementName;
-		}
-	}
-
-	[AttributeUsage(AttributeTargets.Class)]
-	public class TransformerAttribute : Attribute
-	{
-		public string elementName;
-
-		public TransformerAttribute(string elementName)
-		{
-			this.elementName = elementName;
-		}
-	}
-
-	public enum DataElementTypes
+  public enum DataElementTypes
 	{
 		Any,
 		Containers,

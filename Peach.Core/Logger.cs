@@ -48,10 +48,12 @@ namespace Peach.Core
 	public class LoggerAttribute : Attribute
 	{
 		public string invokeName;
+    public bool isDefault;
 
-		public LoggerAttribute(string invokeName)
+		public LoggerAttribute(string invokeName, bool isDefault = false)
 		{
 			this.invokeName = invokeName;
+      this.isDefault = isDefault;
 		}
 	}
 

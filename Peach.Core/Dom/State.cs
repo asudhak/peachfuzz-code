@@ -42,7 +42,7 @@ namespace Peach.Core.Dom
 	public delegate void StateFinishedEventHandler(State state);
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
-	public class State : INamed
+	public class State : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public string _name = "Unknown State";
@@ -106,7 +106,22 @@ namespace Peach.Core.Dom
 				OnFinished();
 			}
 		}
-	}
+
+    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
+    {
+      XmlNode node = doc.CreateNode(XmlNodeType.Element, "State", null);
+
+      node.AppendAttribute("name", this.name);
+
+      foreach (Action action in actions)
+      {
+        node.AppendChild(action.pitSerialize(doc, node));
+      }
+
+
+      return node;
+    }
+  }
 }
 
 // END

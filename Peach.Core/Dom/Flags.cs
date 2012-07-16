@@ -48,7 +48,8 @@ namespace Peach.Core.Dom
 	[PitParsable("Flags")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
 	[DataElementChildSupportedAttribute("Flag")]
-	[ParameterAttribute("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]", true)]
+  [ParameterAttribute("name", typeof(string), "", true)]
+  [ParameterAttribute("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]", true)]
 	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	[Serializable]
 	public class Flags : DataElementContainer
@@ -243,6 +244,45 @@ namespace Peach.Core.Dom
 			return _internalValue;
 		}
 
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "size":
+          return this.size;
+        case "endian":
+          switch (this.LittleEndian)
+          {
+            case true:
+              return "little";
+            default:
+              return "big";
+          }
+
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flags", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "size":
+          this.size = (int)value;
+          break;
+        case "endian":
+          this.LittleEndian = (((string)value) == "little");
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flags", parameterName));
+      }
+    }
 	}
 }
 

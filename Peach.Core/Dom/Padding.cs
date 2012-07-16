@@ -50,7 +50,8 @@ namespace Peach.Core.Dom
 	[DataElement("Padding")]
 	[PitParsable("Padding")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("aligned", typeof(bool), "Align parent to 8 byte boundry", false)]
+  [ParameterAttribute("name", typeof(string), "", true)]
+  [ParameterAttribute("aligned", typeof(bool), "Align parent to 8 byte boundry", false)]
 	[ParameterAttribute("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", false)]
 	[ParameterAttribute("alignedTo", typeof(DataElement), "Name of element to base our padding on (default is parent)", false)]
 	[ParameterAttribute("lengthCalc", typeof(string), "Length calculation", false)]
@@ -270,6 +271,50 @@ namespace Peach.Core.Dom
 				throw new InvalidOperationException("DefaultValue cannot be set on Padding element!");
 			}
 		}
+
+
+    public override object GetParameter(string parameterName)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          return this.name;
+        case "aligned":
+          return this.aligned;
+        case "alignment":
+          return this.alignment;
+        case "alignedTo":
+          return this.alignedTo.name;
+        case "lengthCalc":
+          return this.lengthCalc;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Padding", parameterName));
+      }
+    }
+
+    public override void SetParameter(string parameterName, object value)
+    {
+      switch (parameterName)
+      {
+        case "name":
+          this.name = (string)value;
+          break;
+        case "aligned":
+          this.aligned = (bool)value;
+          break;
+        case "alignment":
+          this.alignment = (int)value;
+          break;
+        case "alignedTo":
+          this.alignedTo = (DataElement)value;
+          break;
+        case "lengthCalc":
+          this.lengthCalc = (string)value;
+          break;
+        default:
+          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Padding", parameterName));
+      }
+    }
 	}
 }
 
