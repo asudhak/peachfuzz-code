@@ -40,7 +40,7 @@ namespace Peach.Core.Publishers
 	[NoParametersAttribute()]
 	public class ConsolePublisher : Publisher
 	{
-		Stream stream = null;
+		protected Stream stream = null;
 
 		public ConsolePublisher(Dictionary<string, Variant> args)
 			: base(args)

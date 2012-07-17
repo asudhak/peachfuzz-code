@@ -545,6 +545,7 @@
     <Compile Include="Publishers\MemoryStreamPublisher.cs" />
     <Compile Include="Publishers\RawIPv4Publisher.cs" />
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
+    <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
     <Compile Include="Publishers\TcpListenerPublisher.cs" />
     <Compile Include="Publishers\UdpPublisher.cs" />
