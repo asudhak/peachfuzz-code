@@ -41,6 +41,9 @@ void Bar()
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	argc;
+	argv;
+
 	fprintf(stderr, "Crashing Program v0.1\n");
 	Bar();
 

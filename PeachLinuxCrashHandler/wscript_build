@@ -2,7 +2,9 @@
 
 deps = [
 	'System.dll',
+	'System.Core.dll',
 ]
+
 
 bld(
 	features = 'cs csprogram',

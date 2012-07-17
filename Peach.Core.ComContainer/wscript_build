@@ -27,4 +27,3 @@ bld(
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.ComContainer.exe',
 )
-

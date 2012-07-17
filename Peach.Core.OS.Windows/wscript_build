@@ -17,6 +17,6 @@ bld(
 	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
-	name='Peach.Core.OS.Windows.dll',
+	name = 'Peach.Core.OS.Windows.dll',
+	install = 'Debuggers/DebugEngine/MSEC86.dll Debuggers/DebugEngine/MSEC64.dll',
 )
-

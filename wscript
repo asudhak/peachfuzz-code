@@ -28,8 +28,9 @@ def configure(ctx):
 			raise self.errors.ConfigurationError(msg, ex)
 		setattr(Configure.ConfigurationContext, 'fatal', null_fatal)
 
+	ctx.env.FILTER_STDOUT = True
 	base_env = ctx.env;
-	base_env.BINDIR = base_env.LIBDIR = 'output'
+	base_env.OUTDIR = base_env.BINDIR = base_env.LIBDIR = 'output'
 
 	tool_dir =  [
 		os.path.join(ctx.path.abspath(), 'build', 'tools'),
@@ -55,6 +56,7 @@ def configure(ctx):
 				ctx.setenv(name, env=base_env)
 				arch_env = ctx.get_env()
 				arch_env.SUBARCH = arch;
+				arch_env.OUTDIR = os.path.join(base_env.OUTDIR, name)
 				arch_env.BINDIR = os.path.join(base_env.BINDIR, name)
 				arch_env.LIBDIR = os.path.join(base_env.LIBDIR, name)
 				config.prepare(ctx)
@@ -71,6 +73,7 @@ def configure(ctx):
 					variant = '%s_%s' % (name, cfg)
 					ctx.setenv(variant, env=arch_env)
 					cfg_env = ctx.get_env()
+					cfg_env.OUTDIR = os.path.join(base_env.BINDIR, variant)
 					cfg_env.BINDIR = os.path.join(base_env.BINDIR, variant, 'bin')
 					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'lib')
 					cfg_func = getattr(config, cfg)

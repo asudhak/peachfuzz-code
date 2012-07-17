@@ -572,7 +572,6 @@ namespace Peach.Core
 		private Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey,TValue>();
 		private List<KeyValuePair<TKey, TValue>> _list = new List<KeyValuePair<TKey,TValue>>();
 		private IEqualityComparer<TKey> _comparer = null;
-		//private object _syncRoot = null;
 
 		public event AddEventHandler<TKey, TValue> AddEvent;
 		protected void OnAdd(TKey key, TValue value)

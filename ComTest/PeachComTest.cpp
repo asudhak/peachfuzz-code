@@ -59,6 +59,7 @@ BSTR property1;
 STDMETHODIMP CPeachComTest::get_Property1(BSTR* pVal)
 {
 	// TODO: Add your implementation code here
+	pVal;
 
 	//pVal = &property1;
 

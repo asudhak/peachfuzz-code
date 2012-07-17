@@ -5,8 +5,10 @@ archs = [ 'x86', 'x64' ]
 
 tools = [
 	'msvc',
-	'csc',
+	'cs',
+	'csprogram',
 	'resx',
+	'midl',
 	'utils',
 ]
 
@@ -51,18 +53,21 @@ def prepare(conf):
                 'Microsoft SDKs\\Windows\\v7.1\\Lib',
                 'Microsoft SDKs\\Windows\\v7.0A\\Lib',
                 'Microsoft Visual Studio 10.0\\VC\\lib',
+                'Microsoft Visual Studio 10.0\\VC\\atlmfc\\lib',
         ])
 
         env['TOOLCHAIN_LIBS_x64'] = setup_pfiles([
                 'Microsoft SDKs\\Windows\\v7.1\\Lib\\x64',
                 'Microsoft SDKs\\Windows\\v7.0A\\Lib\\x64',
-                'Microsoft Visual Studio 10.0\\VC\\lib\\x64',
+                'Microsoft Visual Studio 10.0\\VC\\lib\\amd64',
+                'Microsoft Visual Studio 10.0\\VC\\atlmfc\\lib\\amd64',
         ])
 
         env['TOOLCHAIN_INCS'] = setup_pfiles([
                 'Microsoft SDKs\\Windows\\v7.1\\Include',
                 'Microsoft SDKs\\Windows\\v7.0A\\Include',
                 'Microsoft Visual Studio 10.0\\VC\\include',
+                'Microsoft Visual Studio 10.0\\VC\\atlmfc\\include',
         ])
 
         env['TOOLCHAIN_PATH'] = env['TOOLCHAIN_PATH_%s' % env.SUBARCH]
@@ -75,6 +80,20 @@ def prepare(conf):
 def configure(conf):
         env = conf.env
  
+        cflags = [
+                '/nologo',
+                '/W4',
+                '/WX',
+        ]
+
+        env.append_value('CFLAGS', cflags)
+        env.append_value('CXXFLAGS', cflags)
+
+        env.append_value('DEFINES', [
+                'WIN32',
+                '_CRT_SECURE_NO_WARNINGS',
+        ])
+
         env.append_value('CSFLAGS', [
                 '/noconfig',
                 '/nologo',
@@ -89,16 +108,39 @@ def configure(conf):
                 'mscorlib.dll',
         ])
 
+        env.append_value('LINKFLAGS', [
+                '/NOLOGO',
+                '/DEBUG',
+                '/INCREMENTAL:NO',
+                '/WX',
+                '/MACHINE:%s' % env.SUBARCH,
+        ])
+
 	env['CSPLATFORM'] = env.SUBARCH
 
         return [ 'debug', 'release' ]
 
 def debug(env):
         env.CSDEBUG = 'full'
+
+        cflags = [
+                '/MDd',
+                '/Od',
+        ]
+
+        env.append_value('CFLAGS', cflags)
+        env.append_value('CXXFLAGS', cflags)
         env.append_value('CSFLAGS', ['/define:DEBUG,TRACE'])
-        env.append_value('DEFINES', ['DEBUG'])
+        env.append_value('DEFINES', ['DEBUG', '_DEBUG'])
 
 def release(env):
         env.CSDEBUG = 'pdbonly'
 
+        cflags = [
+                '/MD',
+                '/Ox',
+        ]
+
+        env.append_value('CFLAGS', cflags)
+        env.append_value('CXXFLAGS', cflags)
         env.append_value('CSFLAGS', ['/define:TRACE', '/optimize+'])

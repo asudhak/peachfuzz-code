@@ -4,7 +4,7 @@ bld(
 	features = 'cs csprogram',
 	use = 'NLog.dll SharpPcap.dll Peach.Core.dll System.dll',
 	source = bld.path.ant_glob('**/*.cs'),
-	name='Peach.exe',
-	install= bld.path.ant_glob('samples/* *.xml NLog.config')
+	name = 'Peach.exe',
+	install = bld.path.ant_glob('samples/* *.xml NLog.config')
 )
 

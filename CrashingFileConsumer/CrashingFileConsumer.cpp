@@ -19,7 +19,7 @@ void Function2(FILE* fd)
 	char buffer[20];
 	int len = 0;
 
-	for(; !feof(fd); len++) buffer[len] = fgetc(fd);
+	for(; !feof(fd); len++) buffer[len] = (char)fgetc(fd);
 	buffer[len] = 0;
 
 	printf("Length of file is %d.\n", len);

@@ -125,7 +125,6 @@ namespace Peach.Core.Transformers.Crypto
   
   
             // Add as many characters of ctx1 to ctx
-            byte[] hashM;   // = new byte[15];
             for (len = password.Length; len > 0; len -= 16)
             {
                 if (len > 16)

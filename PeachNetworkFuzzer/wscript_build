@@ -2,6 +2,7 @@
 
 deps = [
 	'System.dll',
+	'System.Core.dll',
 	'System.Windows.Forms.dll',
 	'System.Data.dll',
 	'System.Drawing.dll',

@@ -4,6 +4,8 @@ deps = [
 	'NLog.dll',
 	'nunit.framework.dll',
 	'System.dll',
+	'System.Core.dll',
+	'System.Xml.dll',
 	'Peach.Core.dll',
 ]
 

@@ -106,8 +106,6 @@ namespace Peach.Core.MutationStrategies
 			get { return iterationCount; }
 		}
 
-		static bool eventsRegistered = false;
-
 		public RandomStrategy(Dictionary<string, Variant> args)
 			: base(args)
 		{
@@ -131,7 +129,6 @@ namespace Peach.Core.MutationStrategies
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			_context = context;
 
-			eventsRegistered = true;
 			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 

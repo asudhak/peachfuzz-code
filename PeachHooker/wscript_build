@@ -2,6 +2,8 @@
 
 deps = [
 	'System.dll',
+	'System.Core.dll',
+	'System.Runtime.Remoting.dll',
 	'EasyHook.dll',
 	'PeachHooker.Network.dll',
 	'PeachHooker.File.dll',

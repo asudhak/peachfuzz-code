@@ -3,6 +3,7 @@
 deps = [
 	'NLog.dll',
 	'System.dll',
+	'System.Core.dll',
 	'Peach.Core.dll',
 ]
 

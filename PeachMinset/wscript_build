@@ -2,6 +2,7 @@
 
 deps = [
 	'System.dll',
+	'System.Core.dll',
 	'Peach.Core.dll',
 ]
 

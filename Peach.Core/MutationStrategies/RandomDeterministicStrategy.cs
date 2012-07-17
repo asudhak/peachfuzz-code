@@ -47,7 +47,6 @@ namespace Peach.Core.MutationStrategies
 		bool recording = true;
 		int? _count = null;
 		int _iterationCount = 0;
-		bool enumeratorsInitialized = false;
 
 		DataElement _currentElement = null;
 		Mutator _currentMutator = null;

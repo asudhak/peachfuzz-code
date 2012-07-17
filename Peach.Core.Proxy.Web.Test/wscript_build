@@ -3,6 +3,7 @@
 deps = [
 	'nunit.framework.dll',
 	'System.dll',
+	'System.Core.dll',
 	'Peach.Core.dll',
 ]
 

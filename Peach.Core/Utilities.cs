@@ -80,8 +80,8 @@ namespace Peach.Core
 			}
 			return false;
 		}
-	} 
-	
+	}
+
 	/// <summary>
 	/// Provides a method for performing a deep copy of an object.
 	/// Binary Serialization is used to perform the copy.
