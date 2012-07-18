@@ -917,6 +917,9 @@ namespace Peach.Core.Analyzers
 								sout.BigEndian();
 						}
 
+						for (int cnt = value.Length / 2; cnt < elem.length / 8; cnt++)
+							sout.WriteByte(0);
+
 						for (int cnt = 0; cnt < value.Length; cnt += 2)
 							sout.WriteByte(Convert.ToByte(value.Substring(cnt, 2), 16));
 

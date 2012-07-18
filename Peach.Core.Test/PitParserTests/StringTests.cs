@@ -67,6 +67,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Encoding.ASCII.GetBytes("abc"), value.Value);
 		}
 
+		[Test]
 		public void HexStringTest()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -82,11 +83,49 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreNotEqual(null, str);
 			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
-			//Assert.AreEqual("\n", (string)str.DefaultValue);
+			Assert.AreEqual("\n", (string)str.DefaultValue);
+		}
+
+		[Test]
+		public void Utf32StringTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf32\" value=\"Hello\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
-			Assert.AreEqual(value.LengthBytes, 1);
-			Assert.AreEqual(new byte[] { 0x0a }, value.Value);
+			Assert.AreEqual(20, value.LengthBytes);
+			Assert.AreEqual(Encoding.UTF32.GetBytes("Hello"), value.Value);
+		}
+
+		[Test]
+		public void HexStringUtf32Test()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf32\" valueType=\"hex\" value=\"48 00 00 00 65 00 00 00 6c 00 00 00 6c 00 00 00 6f 00 00 00\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
+			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+
 		}
 	}
 }

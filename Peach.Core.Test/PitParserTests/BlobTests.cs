@@ -55,6 +55,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
+			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])blob.DefaultValue);
 		}
 
@@ -71,7 +72,25 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
+			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
 			Assert.AreEqual(new byte[] { 0x41, 0x42, 0x43, 0x44 }, (byte[])blob.DefaultValue);
+		}
+
+		[Test]
+		public void BlobTest3()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob value=\"1234\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Blob blob = dom.dataModels[0][0] as Blob;
+
+			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), (byte[])blob.DefaultValue);
 		}
 	}
 }
