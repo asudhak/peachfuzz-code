@@ -241,6 +241,112 @@ namespace Peach.Core.Test.CrackingTests
 				Assert.AreEqual("Foo Bar", (string)dom.dataModels[0][1].DefaultValue);
 			}
 		}
+
+		[Test]
+		public void CrackCompilcatedToken()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"m\">" +
+				"		<Number name=\"n0\" size=\"16\"/>" +
+				"		<Block name=\"b0\">" +
+				"			<String name=\"s1\"/>" +
+				"			<Number name=\"n1\" size=\"16\"/>" +
+				"			<Block name=\"b1\">" +
+				"				<Number name=\"n2\" size=\"16\"/>" +
+				"				<Block name=\"b2\">" +
+				"					<Block name=\"b3\">" +
+				"						<Number name=\"n3\" size=\"16\"/>" +
+				"					</Block>" +
+				"					<Number name=\"n4\" size=\"16\"/>" +
+				"				</Block>" +
+				"			</Block>" +
+					"		<Number name=\"n5\" size=\"16\"/>" +
+				"		</Block>" +
+				"		<Block name=\"b4\"/>" +
+				"		<Number name=\"n6\" size=\"16\"/>" +
+				"		<String name=\"s2\" valueType=\"hex\" value=\"0x0d 0x0a\" token=\"true\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+				// Positive test
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteInt16(1);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.WriteInt16(2);
+			data.WriteInt16(3);
+			data.WriteInt16(4);
+			data.WriteInt16(5);
+			data.WriteInt16(6);
+			data.WriteInt16(7);
+			data.WriteByte(0x0d);
+			data.WriteByte(0x0a);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, (int)dom.dataModels[0].find("m.n0").DefaultValue);
+			Assert.AreEqual(2, (int)dom.dataModels[0].find("m.b0.n1").DefaultValue);
+			Assert.AreEqual(3, (int)dom.dataModels[0].find("m.b0.b1.n2").DefaultValue);
+			Assert.AreEqual(4, (int)dom.dataModels[0].find("m.b0.b1.b2.b3.n3").DefaultValue);
+			Assert.AreEqual(5, (int)dom.dataModels[0].find("m.b0.b1.b2.n4").DefaultValue);
+			Assert.AreEqual(6, (int)dom.dataModels[0].find("m.b0.n5").DefaultValue);
+			Assert.AreEqual(7, (int)dom.dataModels[0].find("m.n6").DefaultValue);
+
+			Assert.AreEqual("\r\n", (string)dom.dataModels[0].find("m.s2").DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0].find("m.b0.s1").DefaultValue);
+		}
+
+		[Test]
+		public void CrackTokenEmptyString()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"Element0\"/>" +
+				"		<String value=\"QQ\" token=\"true\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.WriteByte((byte)'Q');
+			data.WriteByte((byte)'Q');
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("QQ", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		[ExpectedException("Peach.Core.Cracker.CrackingFailure")]
+		public void CrackMissingToken()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"Element0\"/>" +
+				"		<String value=\"QQ\" token=\"true\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
 	}
 }
 

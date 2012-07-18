@@ -345,6 +345,66 @@ namespace Peach.Core.Cracker
 		}
 
 		/// <summary>
+		/// Keep walking the data model looking for a token.
+		/// Walking stops when either a token is found or an unsized element is found.
+		/// </summary>
+		/// <param name="element">Element to check</param>
+		/// <param name="size">Set to the number of bits from element to token.</param>
+		/// <param name="token">Set to token element if found</param>
+		/// <returns>Returns true if should keep going, else false.</returns>
+		protected bool _isTokenNextRecursive(DataElement element, ref long size, ref DataElement token)
+		{
+			System.Diagnostics.Debug.Assert(element != null);
+			System.Diagnostics.Debug.Assert(token == null);
+
+			DataElement next = element;
+
+			while (next != null)
+			{
+				if (next is DataElementContainer)
+				{
+					DataElementContainer cont = (DataElementContainer)next;
+
+					if (!cont.isLeafNode)
+					{
+						logger.Trace("_isTokenNextRecursive: Descending into {0}", cont.fullName);
+
+						if (!_isTokenNextRecursive(cont[0], ref size, ref token))
+							return false;
+					}
+					else
+					{
+						logger.Trace("_isTokenNextRecursive: Skipping leaf {0}", element.fullName);
+					}
+				}
+				else if (next.length == 0)
+				{
+					// Found an unsised element before finding token, so bail
+					logger.Trace("_isTokenNextRecursive: Unsized {0}", next.fullName);
+					return false;
+				}
+				else
+				{
+					if (next.isToken)
+					{
+						// Found a token, so bail
+						logger.Trace("_isTokenNextRecursive: Found Token {0} {1}", element.fullName, size);
+						token = next;
+						return false;
+					}
+
+					size += next.lengthAsBits;
+					logger.Trace("_isTokenNextRecursive: Adding {0} {1}", element.fullName, size);
+				}
+
+				next = next.nextSibling();
+			}
+
+			// Keep going
+			return true;
+		}
+
+		/// <summary>
 		/// Is there a token next in the list of elements to parse, or
 		/// can we calculate our distance to the next token?
 		/// </summary>
@@ -354,50 +414,24 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns true if found token, else false.</returns>
 		protected bool isTokenNext(DataElement element, ref long size, ref DataElement token)
 		{
-			logger.Trace("isTokenNext: {0} {1}", element.fullName, size);
+			System.Diagnostics.Debug.Assert(element != null);
+			System.Diagnostics.Debug.Assert(token == null);
 
-			DataElement currentElement = element;
-			token = null;
-			size = 0;
+			DataElement next = element;
 
-			while (currentElement != null)
+			while (next != null)
 			{
-				currentElement = currentElement.nextSibling();
-
-				if (currentElement == null)
-					break;
-
-				// Make sure we scape Choice's!
-				do
-				{
-					currentElement = currentElement.parent;
-				}
-				while (currentElement != null && currentElement is Choice);
-
-				if (currentElement == null)
-					break;
-
-				if (currentElement.isToken)
-				{
-					token = currentElement;
-					logger.Debug("isTokenNext(true): {0} {1}", element.fullName, size);
-					return true;
-				}
-
-				if (currentElement.hasLength)
-				{
-					size += currentElement.lengthAsBits;
-				}
-				else
-				{
-					size = 0;
-					logger.Debug("isTokenNext(false): {0} {1}", element.fullName, size);
+				next = next.nextSibling();
+				
+				if (next == null)
 					return false;
-				}
+
+				if (!_isTokenNextRecursive(next, ref size, ref token))
+					return token != null;
+
+				next = element.parent;
 			}
 
-			size = 0;
-			logger.Debug("isTokenNext(false): {0} {1}", element.fullName, size);
 			return false;
 		}
 
@@ -527,11 +561,15 @@ namespace Peach.Core.Cracker
 				DataElement token = null;
 
 				if (isLastUnsizedElement(element, ref nextSize))
+				{
 					size = data.LengthBits - (data.TellBits() + nextSize);
-				
+				}
 				else if (isTokenNext(element, ref nextSize, ref token))
 				{
-					throw new NotImplementedException("Need to implement this!");
+					long start = data.TellBits();
+					long end = data.IndexOf(token.Value, start);
+					if (end >= 0)
+						size = end - start - nextSize;
 				}
 			}
 

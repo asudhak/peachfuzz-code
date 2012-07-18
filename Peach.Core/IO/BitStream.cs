@@ -235,6 +235,39 @@ namespace Peach.Core.IO
 			SeekBits(offset * 8, origin);
 		}
 
+		public long IndexOf(BitStream bits, long offsetBits)
+		{
+			if (offsetBits % 8 != 0)
+				throw new NotImplementedException("Need to implement this!");
+			if (this.LengthBits % 8 != 0)
+				throw new NotImplementedException("Need to implement this!");
+			if (bits.LengthBits % 8 != 0)
+				throw new NotImplementedException("Need to implement this!");
+
+
+			long tgtLen = bits.LengthBytes;
+			long start = offsetBits / 8;
+			long end = this.LengthBytes - tgtLen;
+
+			for (long i = start; i <= end; ++i)
+			{
+				int j = 0;
+				for (j = 0; j < tgtLen; ++j)
+				{
+					if (this.Value[i + j] != bits.Value[j])
+						break;
+				}
+				if (j == tgtLen)
+					return i * 8;
+			}
+			return -1;
+		}
+
+		public long IndexOf(BitStream bits)
+		{
+			return IndexOf(bits, 0);
+		}
+
 #if PEACH
 		public void SeekToDataElement(DataElement elem)
 		{
