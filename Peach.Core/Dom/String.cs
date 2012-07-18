@@ -291,31 +291,34 @@ namespace Peach.Core.Dom
 			// handle NumericalString hint properly
 			if (str.DefaultValue.GetVariantType() == Variant.VariantType.BitStream || str.DefaultValue.GetVariantType() == Variant.VariantType.ByteString)
 			{
-				string asStr = null;
+				Encoding enc = null;
 				switch (type)
 				{
 					case "ascii":
-						asStr = Encoding.ASCII.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.ASCII.Clone();
 						break;
 					case "utf16":
-						asStr = Encoding.Unicode.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.Unicode.Clone();
 						break;
 					case "utf16be":
-						asStr = Encoding.BigEndianUnicode.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.BigEndianUnicode.Clone();
 						break;
 					case "utf32":
-						asStr = Encoding.UTF32.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.UTF32.Clone();
 						break;
 					case "utf7":
-						asStr = Encoding.UTF7.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.UTF7.Clone();
 						break;
 					case "utf8":
-						asStr = Encoding.UTF8.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.UTF8.Clone();
 						break;
 					default:
-						asStr = Encoding.ASCII.GetString(((byte[])str.DefaultValue));
+						enc = (Encoding)Encoding.ASCII.Clone();
 						break;
 				}
+				enc.EncoderFallback = new EncoderExceptionFallback();
+				enc.DecoderFallback = new DecoderExceptionFallback();
+				string asStr = enc.GetString(((byte[])str.DefaultValue));
 				str.DefaultValue = new Variant(asStr);
 			}
 

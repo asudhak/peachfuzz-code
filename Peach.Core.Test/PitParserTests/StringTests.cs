@@ -87,6 +87,26 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
+		[ExpectedException("System.Text.DecoderFallbackException")]
+		public void HexStringTest2()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" valueType=\"hex\" value=\"0xaa 0xbb\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
+			Assert.AreEqual("\xaa\xbb", (string)str.DefaultValue);
+		}
+
+		[Test]
 		public void Utf32StringTest()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
