@@ -139,9 +139,16 @@ namespace Peach.Core.Dom
 								else
 									throw new PeachException("Error, don't support fields yet!");
 
-								Cracker.DataCracker cracker = new Cracker.DataCracker();
-								cracker.CrackData(action.dataModel,
-									new BitStream(File.OpenRead(fileName)));
+								try
+								{
+									Cracker.DataCracker cracker = new Cracker.DataCracker();
+									cracker.CrackData(action.dataModel,
+										new BitStream(File.OpenRead(fileName)));
+								}
+								catch (Cracker.CrackingFailure ex)
+								{
+									throw new PeachException("Error, failed to crack \"" + fileName + "\" into \"" + action.dataModel.fullName + "\": " + ex.ToString());
+								}
 
 								var value = action.dataModel.Value;
 
