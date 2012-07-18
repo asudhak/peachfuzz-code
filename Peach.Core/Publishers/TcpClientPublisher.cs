@@ -196,7 +196,7 @@ namespace Peach.Core.Publishers
 				}
 
 				_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-					new AsyncCallback(ReceiveData), null);
+					new AsyncCallback(ReceiveData), remote);
 			}
 			catch (Exception ex)
 			{

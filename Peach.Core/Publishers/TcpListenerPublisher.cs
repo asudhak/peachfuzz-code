@@ -43,13 +43,17 @@ namespace Peach.Core.Publishers
 			}
 
 			TcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-				new AsyncCallback(ReceiveData), null);
+				new AsyncCallback(ReceiveData), TcpClient.Client);
 
 		}
 
 		public override void close(Dom.Action action)
 		{
-			TcpClient.Close();
+			if (TcpClient != null)
+			{
+				TcpClient.Close();
+				TcpClient = null;
+			}
 			base.close(action);
 		}
 
@@ -59,8 +63,11 @@ namespace Peach.Core.Publishers
 
 			try
 			{
-				_listener = new TcpListener(IPAddress.Parse(_interface), _port);
-				_listener.Start();
+				if (_listener == null)
+				{
+					_listener = new TcpListener(IPAddress.Parse(_interface), _port);
+					_listener.Start();
+				}
 			}
 			catch (SocketException e)
 			{
@@ -73,8 +80,11 @@ namespace Peach.Core.Publishers
 		{
 			base.stop(action);
 
-			_listener.Stop();
-			_listener = null;
+			if (_listener != null)
+			{
+				_listener.Stop();
+				_listener = null;
+			}
 		}
 
 		public override void open(Dom.Action action)
