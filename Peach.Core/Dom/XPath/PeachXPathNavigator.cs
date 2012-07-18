@@ -293,7 +293,8 @@ namespace Peach.Core.Dom.XPath
 					throw new Exception("Error, parent was unexpectedly null for object '" +
 						obj.name + "' of type " + currentNode.GetType().ToString() + ".");
 			}
-			if (currentNode is DataModel)
+			// DataModel drives from Block, so if our parent is a DataElementContainer we are all good
+			if (currentNode is DataModel && !(parent is DataElementContainer))
 			{
 				if(parent is Action)
 				{
@@ -409,7 +410,8 @@ namespace Peach.Core.Dom.XPath
 
 			dynamic obj = currentNode;
 
-			if (obj is DataModel)
+			// DataModel drives from Block, so if our parent is a DataElementContainer we are all good
+			if (obj is DataModel && !(obj.parent is DataElementContainer))
 			{
 				if (obj.dom != null)
 					currentNode = obj.dom;
