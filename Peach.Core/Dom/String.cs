@@ -181,11 +181,19 @@ namespace Peach.Core.Dom
 			}
 
 			// String length in bytes
-			long? stringLength = context.determineElementSize(element, data) / 8;
+			long? stringLength = null;
 
 			// TODO - Make both length and size for strings.  Length is always in chars.
 			if (stringLength == null && element.isToken)
+			{
+				if (element.DefaultValue == null)
+					throw new PeachException("Error, element \"" + element.fullName + "\" is a token but has no default value.");
+
 				stringLength = ((string)element.DefaultValue).Length;
+			}
+
+			if(stringLength == null)
+				stringLength = context.determineElementSize(element, data) / 8;
 
 			if (stringLength == null)
 				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
