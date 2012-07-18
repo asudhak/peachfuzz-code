@@ -423,7 +423,13 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public virtual bool hasLength
 		{
-			get { return _hasLength; }
+			get
+			{
+				if (isToken && DefaultValue != null)
+					return true;
+
+				return _hasLength;
+			}
 			set { _hasLength = value; }
 		}
 
@@ -459,6 +465,10 @@ namespace Peach.Core.Dom
 							throw new NotSupportedException("Error calculating length.");
 					}
 				}
+				else if (isToken && DefaultValue != null)
+				{
+					return Value.Value.Length;
+				}
 				else
 				{
 					switch (_lengthType)
@@ -472,7 +482,7 @@ namespace Peach.Core.Dom
 						default:
 							throw new NotSupportedException("Error calculating length.");
 					}
-					
+
 				}
 			}
 
