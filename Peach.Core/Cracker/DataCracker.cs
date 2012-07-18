@@ -541,7 +541,7 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns size in bits</returns>
 		public long? determineElementSize(DataElement element, BitStream data)
 		{
-			logger.Debug("determineElementSize: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("determineElementSize: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
 
 			// Size in bits
 			long? size = null;
@@ -573,7 +573,11 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			logger.Debug("determineElementSize: Returning: " + size);
+			if(size == null)
+				logger.Debug("determineElementSize: Returning: null (could not determine size)");
+			else
+				logger.Debug("determineElementSize: Returning: " + size);
+
 			return size;
 		}
 
