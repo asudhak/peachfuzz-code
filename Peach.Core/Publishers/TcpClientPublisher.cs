@@ -198,6 +198,9 @@ namespace Peach.Core.Publishers
 				_tcpClient.Client.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
 					new AsyncCallback(ReceiveData), remote);
 			}
+			catch (ObjectDisposedException)
+			{
+			}
 			catch (Exception ex)
 			{
 				logger.Error("ReceiveData: Ignoring error: " + ex.ToString());
