@@ -193,7 +193,7 @@ namespace Peach.Core.Dom
 			}
 
 			if(stringLength == null)
-				stringLength = context.determineElementSize(element, data) / 8;
+				stringLength = (context.determineElementSize(element, data) / 8);
 
 			if (stringLength == null)
 				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);

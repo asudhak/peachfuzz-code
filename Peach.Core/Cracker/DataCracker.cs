@@ -426,6 +426,12 @@ namespace Peach.Core.Cracker
 				if (next == null)
 					return false;
 
+				if (next.isToken)
+				{
+					token = next;
+					return true;
+				}
+
 				if (!_isTokenNextRecursive(next, ref size, ref token))
 					return token != null;
 
@@ -560,16 +566,23 @@ namespace Peach.Core.Cracker
 				long nextSize = 0;
 				DataElement token = null;
 
-				if (isLastUnsizedElement(element, ref nextSize))
-				{
-					size = data.LengthBits - (data.TellBits() + nextSize);
-				}
-				else if (isTokenNext(element, ref nextSize, ref token))
+				if (isTokenNext(element, ref nextSize, ref token))
 				{
 					long start = data.TellBits();
 					long end = data.IndexOf(token.Value, start + (nextSize * 8));
 					if (end >= 0)
+					{
+						logger.Debug("determineElementSize: Token was found in data stream, able to determine element size.");
 						size = end - start - nextSize;
+					}
+					else
+					{
+						logger.Debug("determineElementSize: Token was not found in data stream.");
+					}
+				}
+				else if (isLastUnsizedElement(element, ref nextSize))
+				{
+					size = data.LengthBits - (data.TellBits() + nextSize);
 				}
 			}
 
