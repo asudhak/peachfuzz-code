@@ -1069,9 +1069,11 @@ namespace Peach.Core.IO
 		public byte[] ReadBytes(long count)
 		{
 			if (count == 0)
-				throw new ApplicationException("Asking for zero bytes");
+				return new byte[0];
 			if (((pos/8) + count) > stream.Length)
 				throw new ApplicationException("Count overruns buffer");
+			if (count < 0)
+				throw new ArgumentOutOfRangeException("negative count");
 
 			byte[] ret = new byte[count];
 
