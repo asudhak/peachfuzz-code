@@ -567,7 +567,7 @@ namespace Peach.Core.Cracker
 				else if (isTokenNext(element, ref nextSize, ref token))
 				{
 					long start = data.TellBits();
-					long end = data.IndexOf(token.Value, start);
+					long end = data.IndexOf(token.Value, start + (nextSize * 8));
 					if (end >= 0)
 						size = end - start - nextSize;
 				}
