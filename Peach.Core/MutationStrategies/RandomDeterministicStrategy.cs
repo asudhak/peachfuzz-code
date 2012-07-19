@@ -238,18 +238,26 @@ namespace Peach.Core.MutationStrategies
 				}
 			}
 
-			_currentElement = random.Choice<DataElement>(_stuffs.Keys);
-
-			if (_stuffs[_currentElement].Count == 0)
+			do
 			{
-				logger.Debug("No mutators attached to \"" + _currentElement.fullName + "\".  Removing from list.");
-				_stuffs.Remove(_currentElement);
-				if (_stuffs.Count == 0)
+				_currentElement = random.Choice<DataElement>(_stuffs.Keys);
+
+				if (_stuffs[_currentElement].Count == 0)
 				{
-					logger.Debug("No more elements to mutate.  Exitting.");
-					throw new MutatorCompleted();
+					logger.Debug("No mutators attached to \"" + _currentElement.fullName + "\".  Removing from list.");
+					_stuffs.Remove(_currentElement);
+					if (_stuffs.Count == 0)
+					{
+						logger.Debug("No more elements to mutate.  Exitting.");
+						throw new MutatorCompleted();
+					}
+				}
+				else
+				{
+					break;
 				}
 			}
+			while (true);
 
 			_currentMutator = random.Choice<Mutator>(_stuffs[_currentElement]);
 

@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Peach.Core.Publishers
 {
+	[Publisher("ConsoleHex", true)]
 	[Publisher("StdoutHex")]
 	[Publisher("stdout.StdoutHex")]
 	[Parameter("length", typeof(int), "How many columns per row", false)]
