@@ -80,6 +80,7 @@ namespace Peach.Core.IO
 		public BitStream(Stream stream)
 		{
 			this.stream = stream;
+			pos = stream.Position * 8;
 			len = stream.Length * 8;
 			LittleEndian();
 		}
