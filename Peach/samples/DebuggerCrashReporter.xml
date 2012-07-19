@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
 
 	<!--
 		
@@ -9,9 +9,7 @@
 		
 		Syntax:
 		
-		  python peach.py -a
-		  
-		  python peach.py samples\DebuggerCrashReporter.xml
+		  peach samples\DebuggerCrashReporter.xml
 				
 		Authors:
 		
@@ -20,9 +18,6 @@
 		$Id: Debugger.xml 807 2008-03-25 08:34:38Z meddingt $
 		
 	-->
-
-	<!-- Import defaults for Peach instance -->
-	<Include ns="default" src="file:defaults.xml" />
 
 	<DataModel name="TestTemplate">
 		<String name="TheString" value="Hello World!" />
@@ -36,30 +31,22 @@
 		</State>
 	</StateModel>
 
-	<Agent name="LocalAgent" location="http://127.0.0.1:9000">
-		<Monitor class="process.Process">
+	<Agent name="LocalAgent">
+		<Monitor class="Process">
 			<Param name="Command" value="samples/UnixCrashServer/unixcrash" />
 		</Monitor>
-		<Monitor class="osx.CrashReporter" />
+		<Monitor class="CrashReporter" />
 	</Agent>
 
-	<Test name="TheTest">
+	<Test name="Default">
 		<Agent ref="LocalAgent" />
 
 		<StateModel ref="State"/>
-		<Publisher class="tcp.Tcp">
-			<Param name="host" value="127.0.0.1" />
-			<Param name="port" value="4242" />
+		<Publisher class="Tcp">
+			<Param name="Host" value="127.0.0.1" />
+			<Param name="Port" value="4242" />
 		</Publisher>
 	</Test>
-
-	<Run name="DefaultRun">
-		<Test ref="TheTest" />
-	
-		<Logger class="logger.Filesystem">
-			<Param name="path" value="logs" />
-		</Logger>
-	</Run>
 
 </Peach>
 <!-- end -->

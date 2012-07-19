@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
 
 	<DataModel name="TheDataModel">
 		<String value="Hello World!" />
@@ -77,7 +77,7 @@
 	</StateModel>
 
 	<Agent name="MyAgent">
-		<Monitor class="WindowsDebugEngine">
+		<Monitor class="WindowsDebugger">
 			<Param name="CommandLine" value="C:\Peach3\Peach.Core.ComContainer\bin\debug\Peach.Core.ComContainer.exe" />
 			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)"/>
 		</Monitor>

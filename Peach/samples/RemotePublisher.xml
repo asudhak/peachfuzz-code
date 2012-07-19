@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
 	
 	<!--
 		
@@ -10,9 +10,9 @@
 		
 		Syntax:
 		
-		python peach.py -a
+		python peach -a
 		
-		python peach.py samples\Debugger.xml
+		python peach samples\Debugger.xml
 		
 		Output:
 		
@@ -49,7 +49,7 @@
 		</Monitor>
 	</Agent>
 	
-	<Test name="TheTest">
+	<Test name="Default">
  	<Agent ref="LocalAgent" />
 		<Agent ref="RemoteAgent" />
 		

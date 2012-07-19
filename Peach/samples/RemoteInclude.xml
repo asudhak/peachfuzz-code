@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
 	
 	<!--
 		
@@ -8,7 +8,7 @@
 		
 		Syntax:
 		
-		python peach.py samples\RemoteInclude.xml
+		peach samples\RemoteInclude.xml
 		
 		Output:
 		
@@ -21,9 +21,6 @@
 		
 	-->
 	
-	<!-- Include a file from a web-site -->
-	<Include ns="example" src="http://phed.org/Peach/Example.xml" />
-
 	<StateModel name="State" initialState="Initial">
 		<State name="Initial">
 			<Action type="output">

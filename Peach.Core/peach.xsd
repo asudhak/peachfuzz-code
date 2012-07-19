@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://phed.org/2008/Peach" elementFormDefault="qualified"
-	xmlns="http://phed.org/2008/Peach" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+<xs:schema targetNamespace="http://phed.org/2012/Peach" elementFormDefault="qualified"
+	xmlns="http://phed.org/2012/Peach" xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns:h="http://www.w3.org/1999/xhtml">
 
 	<!--

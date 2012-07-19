@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
 	
 	<!--
 		
@@ -9,8 +9,6 @@
 		included example program will fault on test 47.
 		
 		Syntax:
-		
-			peach -a
 		
 			peach samples\Debugger.xml
 		
@@ -57,7 +55,7 @@
 	
 	<!-- Setup a local agent that will monitor for faults -->
 	<Agent name="LocalAgent">
-		<Monitor class="WindowsDebugEngine">
+		<Monitor class="WindowsDebugger">
 			
 			<!-- The command line to run.  Notice the filename provided matched up 
 				to what is provided below in the Publisher configuration -->
@@ -90,8 +88,8 @@
 		</Publisher>
 
 		<!-- Configure a logger to store collected information -->
-		<Logger class="logger.Filesystem">
-			<Param name="path" value="c:\peach\logtest" />
+		<Logger class="Filesystem">
+			<Param name="Path" value="logtest" />
 		</Logger>
 	</Test>
 	

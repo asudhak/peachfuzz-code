@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2008/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2008/Peach ../peach.xsd">
+<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
 	
 	<!-- 
 		
@@ -12,9 +12,7 @@
 		
 		Syntax:
 		
-			python peach.py -a
-		
-			python peach.py samples\DebuggerCrashWrangler.xml
+			peach samples\DebuggerCrashWrangler.xml
 		
 		Output:
 		
@@ -41,16 +39,16 @@
 			
 			<!-- First we will write the file out and close it -->
 			
-			<Action type="output" publisher="file">
+			<Action type="output">
 				<DataModel ref="TheDataModel"/>
 				<Data fileName="samples" />
 			</Action>
 			
-			<Action type="close" publisher="file" />
+			<Action type="close" />
 			
 			<!-- Next we will launch the target process -->
-			
-			<Action type="call" method="ScoobySnacks" publisher="launch"/>			
+
+			<Action type="call" method="ScoobySnacks" publisher="Peach.Agent"/>
 		</State>
 	</StateModel>
 
@@ -58,7 +56,7 @@
 		Agents on OS X must always specify the location attribute.  Additionally
 		you will need to start up an agent process by running "peach -a".
 	-->
-	<Agent name="LocalAgent" location="http://127.0.0.1:9000">
+	<Agent name="LocalAgent">
 		
 		<!--
 			CrashWrangler will open the program for us while monitoring it for crashes.
@@ -68,7 +66,7 @@
 			network service then you would not use the "StartOnCall"
 			parameter.
 		-->
-		<Monitor class="osx.CrashWrangler">
+		<Monitor class="CrashWrangler">
 			<Param name="Command" value="/Applications/Safari.app/Contents/MacOS/Safari" />
 			<Param name="Arguments" value="fuzzed.bin" />
 			
@@ -91,16 +89,13 @@
 		-->
 		
 		<!-- This publisher will write our file. -->
-		<Publisher name="file" class="file.FileWriter">
-			<Param name="filename" value="fuzzed.bin"/>
+		<Publisher class="File">
+			<Param value="fuzzed.bin"/>
 		</Publisher>
 		
-		<!-- And this publisher will cause our target to be launched -->
-		<Publisher name="launch" class="process.DebuggerLauncher"/>
-
 		<!-- To enable logging we must include this -->
-		<Logger class="logger.Filesystem">
-			<Param name="path" value="logs"/>
+		<Logger class="Filesystem">
+			<Param name="Path" value="logs"/>
 		</Logger>
 	</Test>
 
