@@ -113,17 +113,18 @@ namespace Peach.Core
 			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
 			foreach(string path in Paths)
 				enginePaths.Add(path);
+			scope.Engine.SetSearchPaths(enginePaths);
 
 			// Import any modules
-			foreach(string import in Imports)
-				scope.Engine.ImportModule(import);
-
+			foreach (string import in Imports)
+				scope.SetVariable(import, scope.Engine.ImportModule(import));
+			
 			try
 			{
 				ScriptSource source = engine.CreateScriptSourceFromString(code, SourceCodeKind.Expression);
 				object obj = source.Execute(scope);
 
-				if (obj.GetType() == typeof(BigInteger))
+				if (obj != null && obj.GetType() == typeof(BigInteger))
 				{
 					BigInteger bint = (BigInteger)obj;
 
