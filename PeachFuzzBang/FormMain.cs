@@ -236,20 +236,24 @@ namespace PeachFuzzBang
 
 				State state = new State();
 				state.name = "TheState";
+				state.parent = stateModel;
 
 				Peach.Core.Dom.Action actionOutput = new Peach.Core.Dom.Action();
 				actionOutput.type = ActionType.Output;
 				actionOutput.dataModel = dataModel;
 				actionOutput.dataSet = new Peach.Core.Dom.DataSet();
 				actionOutput.dataSet.Datas.Add(fileData);
+				actionOutput.parent = state;
 
 				Peach.Core.Dom.Action actionClose = new Peach.Core.Dom.Action();
 				actionClose.type = ActionType.Close;
+				actionClose.parent = state;
 
 				Peach.Core.Dom.Action actionCall = new Peach.Core.Dom.Action();
 				actionCall.type = ActionType.Call;
 				actionCall.publisher = "Peach.Agent";
 				actionCall.method = "ScoobySnacks";
+				actionCall.parent = state;
 
 				state.actions.Add(actionOutput);
 				state.actions.Add(actionClose);
@@ -386,6 +390,7 @@ namespace PeachFuzzBang
 				test.agents.Add(agent.name, agent);
 				test.publishers.Add("FileWriter", file);
 				test.strategy = strat;
+				stateModel.parent = test;
 
 				dom.tests.Add(test.name, test);
 
