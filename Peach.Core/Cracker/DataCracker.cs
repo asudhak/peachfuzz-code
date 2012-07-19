@@ -490,6 +490,10 @@ namespace Peach.Core.Cracker
 
 				data.MarkStartOfElement(element);
 
+				if (data.TellBytes() == data.LengthBytes)
+					throw new CrackingFailure("'" + element.fullName +
+						"' could not be cracked sinze buffer has zero bytes left.", element, data);
+
 				element.Crack(this, data);
 
 				if (element.constraint != null)
