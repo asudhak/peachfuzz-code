@@ -148,7 +148,6 @@ namespace Peach.Core.Language.DotNet.Generators
 			}
 			catch
 			{
-				string s = "a";
 			}
 
 			_stack.Remove(_name);

@@ -364,7 +364,11 @@ namespace Peach.Core.Dom
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["action"] = this;
+				state["Action"] = this;
 				state["state"] = this.parent;
+				state["State"] = this.parent;
+				state["StateModel"] = this.parent.parent;
+				state["Test"] = this.parent.parent.parent;
 				state["self"] = this;
 
 				object value = Scripting.EvalExpression(when, state);
@@ -411,36 +415,80 @@ namespace Peach.Core.Dom
 						break;
 					case ActionType.Open:
 					case ActionType.Connect:
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+
 						publisher.open(this);
 						break;
 					case ActionType.Close:
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+
 						publisher.close(this);
 						break;
 
 					case ActionType.Accept:
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+						if (!publisher.IsOpen)
+							publisher.open(this);
+
 						publisher.accept(this);
 						break;
 
 					case ActionType.Input:
 						logger.Debug("ActionType.Input");
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+						if (!publisher.IsOpen)
+							publisher.open(this);
+
 						handleInput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 					case ActionType.Output:
 						logger.Debug("ActionType.Output");
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+						if (!publisher.IsOpen)
+							publisher.open(this);
+
 						publisher.output(this, new Variant(dataModel.Value));
 						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.Call:
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+						if (!publisher.IsOpen)
+							publisher.open(this);
+
 						handleCall(publisher, context);
 						parent.parent.dataActions.Add(this);
 						break;
 					case ActionType.GetProperty:
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+						if (!publisher.IsOpen)
+							publisher.open(this);
+
 						handleGetProperty(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 					case ActionType.SetProperty:
+
+						if (!publisher.HasStarted)
+							publisher.start(this);
+						if (!publisher.IsOpen)
+							publisher.open(this);
+
 						handleSetProperty(publisher);
 						parent.parent.dataActions.Add(this);
 						break;

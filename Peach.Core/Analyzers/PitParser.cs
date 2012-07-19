@@ -1420,7 +1420,7 @@ namespace Peach.Core.Analyzers
 					case "call":
 						action.type = ActionType.Call;
 						break;
-					case "changeState":
+					case "changestate":
 						action.type = ActionType.ChangeState;
 						break;
 					case "close":
@@ -1467,7 +1467,7 @@ namespace Peach.Core.Analyzers
 			if (hasXmlAttribute(node, "ref"))
 			{
 				if (action.type == ActionType.ChangeState)
-					action.name = getXmlAttribute(node, "ref");
+					action.reference = getXmlAttribute(node, "ref");
 				else
 					throw new PeachException("Error, only Actions of type ChangeState are allowed to use the 'ref' attribute");
 			}
@@ -1572,23 +1572,26 @@ namespace Peach.Core.Analyzers
 			data.name = getXmlAttribute(node, "name");
 			string dataFileName = getXmlAttribute(node, "fileName");
 
-			if (Directory.Exists(dataFileName))
+			if (dataFileName != null)
 			{
-				List<string> files = new List<string>();
-				foreach (string fileName in Directory.GetFiles(dataFileName))
-					files.Add(fileName);
+				if (Directory.Exists(dataFileName))
+				{
+					List<string> files = new List<string>();
+					foreach (string fileName in Directory.GetFiles(dataFileName))
+						files.Add(fileName);
 
-				data.DataType = DataType.Files;
-				data.Files = files;
-			}
-			else if (File.Exists(dataFileName))
-			{
-				data.DataType = DataType.File;
-				data.FileName = dataFileName;
-			}
-			else
-			{
-				throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+					data.DataType = DataType.Files;
+					data.Files = files;
+				}
+				else if (File.Exists(dataFileName))
+				{
+					data.DataType = DataType.File;
+					data.FileName = dataFileName;
+				}
+				else
+				{
+					throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+				}
 			}
 
 			foreach (XmlNode child in node.ChildNodes)

@@ -198,6 +198,8 @@ namespace Peach.Core.Dom
 			if (stringLength == null)
 				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 
+			data.WantBytes((long)stringLength);
+
 			if ((data.TellBytes() + stringLength) > data.LengthBytes)
 				throw new CrackingFailure("String '" + element.fullName +
 					"' has length of '" + stringLength + "' but buffer only has '" +

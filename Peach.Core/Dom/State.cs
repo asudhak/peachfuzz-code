@@ -100,6 +100,7 @@ namespace Peach.Core.Dom
 			catch (ActionChangeStateException e)
 			{
 				OnChanging(e.changeToState);
+				throw e;
 			}
 			finally
 			{
@@ -107,21 +108,35 @@ namespace Peach.Core.Dom
 			}
 		}
 
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "State", null);
+		public Action this[string key]
+		{
+			get
+			{
+				foreach (Action action in actions)
+				{
+					if (action.name == key)
+						return action;
+				}
 
-      node.AppendAttribute("name", this.name);
+				return null;
+			}
+		}
 
-      foreach (Action action in actions)
-      {
-        node.AppendChild(action.pitSerialize(doc, node));
-      }
+		public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
+		{
+			XmlNode node = doc.CreateNode(XmlNodeType.Element, "State", null);
+
+			node.AppendAttribute("name", this.name);
+
+			foreach (Action action in actions)
+			{
+				node.AppendChild(action.pitSerialize(doc, node));
+			}
 
 
-      return node;
-    }
-  }
+			return node;
+		}
+	}
 }
 
 // END

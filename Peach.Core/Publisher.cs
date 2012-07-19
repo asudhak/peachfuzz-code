@@ -60,6 +60,8 @@ namespace Peach.Core
 	public abstract class Publisher : Stream
 	{
 		public object parent;
+		public bool HasStarted { get; set; }
+		public bool IsOpen { get; set; }
 
 		#region Events
 
@@ -147,21 +149,25 @@ namespace Peach.Core
 
 		/// <summary>
 		/// Called to Start publisher.  This action is always performed
-		/// even if not specifically called.
+		/// even if not specifically called.  THis method will be called
+		/// once per fuzzing "Session", not on every iteration.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
 		public virtual void start(Core.Dom.Action action)
 		{
 			OnStart(action);
+			HasStarted = true;
 		}
 		/// <summary>
 		/// Called to Stop publisher.  This action is always performed
-		/// even if not specifically called.
+		/// even if not specifically called.  THis method will be called
+		/// once per fuzzing "Session", not on every iteration.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
 		public virtual void stop(Core.Dom.Action action)
 		{
 			OnStop(action);
+			HasStarted = false;
 		}
 
 		/// <summary>
@@ -241,6 +247,15 @@ namespace Peach.Core
 		{
 			OnOutput(action, data);
 			throw new PeachException("Error, action 'output' not supported by publisher");
+		}
+
+		/// <summary>
+		/// Called from cracker when we need data.  This allows
+		/// us to block until we have enough data.
+		/// </summary>
+		/// <param name="bytes"></param>
+		public virtual void WantBytes(long bytes)
+		{
 		}
 
 		#region Stream

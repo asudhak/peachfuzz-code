@@ -45,7 +45,7 @@ namespace Peach.Core.Publishers
 	[Publisher("tcp.Tcp")]
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
+	[ParameterAttribute("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3 seconds)", false)]
 	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
 	public class TcpClientPublisher : Publisher
 	{
@@ -236,6 +236,18 @@ namespace Peach.Core.Publishers
 			}
 		}
 
+		public override void WantBytes(long count)
+		{
+			DateTime start = DateTime.Now;
+
+			do
+			{
+				if ((_buffer.Length - _buffer.Position) < count)
+					Thread.Sleep(100);
+			}
+			while ((DateTime.Now - start).TotalMilliseconds < _timeout);
+		}
+
 		#region Stream
 
 		public override bool CanRead
@@ -301,8 +313,21 @@ namespace Peach.Core.Publishers
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			OnInput(currentAction, count);
+
 			lock (_buffer)
 			{
+				DateTime start = DateTime.Now;
+
+				do
+				{
+					if (_buffer.Length - _buffer.Position < count)
+					{
+						Thread.Sleep(100);
+					}
+				}
+				while( (DateTime.Now - start).TotalMilliseconds < this.Timeout);
+
 				return _buffer.Read(buffer, offset, count);
 			}
 		}

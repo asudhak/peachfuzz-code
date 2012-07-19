@@ -114,6 +114,8 @@ namespace Peach.Core.Dom
 			if (blobLength == null)
 				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
 
+			data.WantBytes((long)blobLength);
+
 			if ((data.TellBits() + blobLength) > data.LengthBits)
 				throw new CrackingFailure("Blob '" + element.fullName +
 					"' has length of '" + blobLength + "' bits but buffer only has '" +

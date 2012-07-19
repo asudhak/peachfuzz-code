@@ -164,7 +164,19 @@ namespace Peach.Core.IO
 		/// </summary>
 		public long LengthBits
 		{
-			get { return len; }
+			get
+			{
+				if (stream is Publisher)
+				{
+					long l = len / 8 + (len % 8 == 0 ? 0 : 1);
+					if (stream.Length > 1)
+					{
+						len = stream.Length * 8;
+					}
+				}
+
+				return len;
+			}
 		}
 
 		/// <summary>
@@ -175,7 +187,16 @@ namespace Peach.Core.IO
 		{
 			get
 			{
-				return (len/8) + (len % 8 == 0 ? 0 : 1);
+				if (stream is Publisher)
+				{
+					long l = len / 8 + (len % 8 == 0 ? 0 : 1);
+					if (stream.Length > 1)
+					{
+						len = stream.Length * 8;
+					}
+				}
+
+				return (len / 8) + (len % 8 == 0 ? 0 : 1);
 			}
 		}
 
@@ -1294,6 +1315,14 @@ namespace Peach.Core.IO
 		public Stream Stream
 		{
 			get { return stream; }
+		}
+
+		public void WantBytes(long bytes)
+		{
+			if (stream is Publisher)
+			{
+				((Publisher)stream).WantBytes(bytes);
+			}
 		}
 
 		#region IDisposable Members

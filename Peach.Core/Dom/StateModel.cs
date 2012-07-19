@@ -136,18 +136,23 @@ namespace Peach.Core.Dom
 									fileName = data.FileName;
 								else if (data.DataType == DataType.Files)
 									fileName = data.Files[0];
-								else
-									throw new PeachException("Error, don't support fields yet!");
-
-								try
+								else if (data.fields.Count > 0)
 								{
-									Cracker.DataCracker cracker = new Cracker.DataCracker();
-									cracker.CrackData(action.dataModel,
-										new BitStream(File.OpenRead(fileName)));
+									data.ApplyFields(action.dataModel);
 								}
-								catch (Cracker.CrackingFailure ex)
+
+								if (fileName != null)
 								{
-									throw new PeachException("Error, failed to crack \"" + fileName + "\" into \"" + action.dataModel.fullName + "\": " + ex.ToString());
+									try
+									{
+										Cracker.DataCracker cracker = new Cracker.DataCracker();
+										cracker.CrackData(action.dataModel,
+											new BitStream(File.OpenRead(fileName)));
+									}
+									catch (Cracker.CrackingFailure ex)
+									{
+										throw new PeachException("Error, failed to crack \"" + fileName + "\" into \"" + action.dataModel.fullName + "\": " + ex.ToString());
+									}
 								}
 
 								var value = action.dataModel.Value;
@@ -176,11 +181,21 @@ namespace Peach.Core.Dom
 										else if (data.DataType == DataType.Files)
 											fileName = data.Files[0];
 										else
-											throw new PeachException("Error, don't support fields yet!");
+											data.ApplyFields(param.dataModel);
 
-										Cracker.DataCracker cracker = new Cracker.DataCracker();
-										cracker.CrackData(action.dataModel,
-											new BitStream(File.OpenRead(fileName)));
+										if (fileName != null)
+										{
+											try
+											{
+												Cracker.DataCracker cracker = new Cracker.DataCracker();
+												cracker.CrackData(param.dataModel,
+													new BitStream(File.OpenRead(fileName)));
+											}
+											catch (Cracker.CrackingFailure ex)
+											{
+												throw new PeachException("Error, failed to crack \"" + fileName + "\" into \"" + action.dataModel.fullName + "\": " + ex.ToString());
+											}
+										}
 									}
 
 									// Invalidate model and produce value
@@ -202,7 +217,20 @@ namespace Peach.Core.Dom
 						action.UpdateToOrigionalDataModel();
 				}
 
-				_initialState.Run(context);
+				State currentState = _initialState;
+
+				while (true)
+				{
+					try
+					{
+						currentState.Run(context);
+						break;
+					}
+					catch (ActionChangeStateException ase)
+					{
+						currentState = ase.changeToState;
+					}
+				}
 			}
 			catch (ActionException)
 			{

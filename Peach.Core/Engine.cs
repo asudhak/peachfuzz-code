@@ -412,6 +412,17 @@ namespace Peach.Core
 			//}
 			finally
 			{
+				foreach (Publisher publisher in context.test.publishers.Values)
+				{
+					try
+					{
+						publisher.stop(null);
+					}
+					catch
+					{
+					}
+				}
+
 				context.agentManager.SessionFinished();
 				context.agentManager.StopAllMonitors();
 				OnTestFinished(context);
