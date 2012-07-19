@@ -43,6 +43,15 @@ namespace Peach.Core.Publishers
 			base.Dispose(disposing);
 		}
 
+		public override void open(Dom.Action action)
+		{
+			System.Diagnostics.Debug.Assert(_udp == null);
+			OnOpen(action);
+
+			_udp = new UdpClient(_host, _port);
+			IsOpen = true;
+		}
+
 		void Action_Starting(Dom.Action action)
 		{
 			if (action.type != Dom.ActionType.Input)
@@ -50,8 +59,7 @@ namespace Peach.Core.Publishers
 
 			OnInput(action);
 
-			if (_udp == null)
-				OpenSocket();
+			System.Diagnostics.Debug.Assert(_udp != null);
 
 			try
 			{
@@ -83,11 +91,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected void OpenSocket()
-		{
-			_udp = new UdpClient(_host, _port);
-		}
-
 		/// <summary>
 		/// Send data
 		/// </summary>
@@ -97,8 +100,7 @@ namespace Peach.Core.Publishers
 		{
 			OnOutput(action, data);
 
-			if (_udp == null)
-				OpenSocket();
+			System.Diagnostics.Debug.Assert(_udp != null);
 
 			try
 			{
@@ -144,6 +146,8 @@ namespace Peach.Core.Publishers
 				_udp.Close();
 				_udp = null;
 			}
+
+			IsOpen = false;
 		}
 
 		public override long Length
@@ -164,6 +168,11 @@ namespace Peach.Core.Publishers
 			{
 				_buffer.Position = value;
 			}
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			return _buffer.Seek(offset, origin);
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
