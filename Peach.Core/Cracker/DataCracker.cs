@@ -452,6 +452,9 @@ namespace Peach.Core.Cracker
 		{
 			try
 			{
+				if(element == null || data == null)
+					throw new CrackingFailure(element, data);
+
 				logger.Debug("handleNode ------------------------------------");
 				logger.Debug("handleNode: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
 				OnEnterHandleNodeEvent(element, data);
