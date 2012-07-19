@@ -576,16 +576,25 @@ namespace Peach.Core.Cracker
 
 				if (isTokenNext(element, ref nextSize, ref token))
 				{
-					long start = data.TellBits();
-					long end = data.IndexOf(token.Value, start + (nextSize * 8));
-					if (end >= 0)
+					while (true)
 					{
-						logger.Debug("determineElementSize: Token was found in data stream, able to determine element size.");
-						size = end - start - nextSize;
-					}
-					else
-					{
-						logger.Debug("determineElementSize: Token was not found in data stream.");
+						long start = data.TellBits();
+						long end = data.IndexOf(token.Value, start + (nextSize * 8));
+						if (end >= 0)
+						{
+							logger.Debug("determineElementSize: Token was found in data stream, able to determine element size.");
+							size = end - start - nextSize;
+							break;
+						}
+
+						long dataLen = data.LengthBytes;
+						data.WantBytes(token.Value.Value.Length);
+						if (dataLen == data.LengthBytes)
+						{
+							logger.Debug("determineElementSize: Token was not found in data stream.");
+							break;
+						}
+
 					}
 				}
 				else if (isLastUnsizedElement(element, ref nextSize))
