@@ -47,7 +47,7 @@
 				<xs:element ref="Test" />
 				<xs:element ref="Agent" />
 				<xs:element ref="StateModel" />
-				<xs:element ref="Mutators"/>
+				<!--<xs:element ref="Mutators"/>-->
 				<xs:element ref="Python" />
 				<xs:element ref="Analyzer" />
 			</xs:choice>

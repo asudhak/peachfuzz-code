@@ -119,6 +119,7 @@ namespace Peach.Core.Publishers
 					close(action);
 
 				OnOpen(action);
+				IsOpen = true;
 
 				for (int cnt = 0; cnt < 10 && _tcpClient == null; cnt++)
 				{

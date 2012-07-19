@@ -185,7 +185,6 @@ namespace Peach.Core.Publishers
 		public override void close(Dom.Action action)
 		{
 			OnClose(action);
-			IsOpen = false;
 
 			try
 			{

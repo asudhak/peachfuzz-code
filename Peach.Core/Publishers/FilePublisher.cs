@@ -35,6 +35,8 @@ using System.Threading;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
+using NLog;
+
 namespace Peach.Core.Publishers
 {
 	[Publisher("File", true)]
@@ -46,6 +48,7 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
 	public class FilePublisher : Publisher
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 		public string fileName;
 		public bool overwrite = true;
 		public bool append = false;
@@ -108,6 +111,8 @@ namespace Peach.Core.Publishers
 			close(action);
 
 			OnOpen(action);
+			IsOpen = true;
+			logger.Debug("open()");
 
 			for (int i = 0; i < 10; i++)
 			{
@@ -127,7 +132,10 @@ namespace Peach.Core.Publishers
 					if (i < 9)
 						Thread.Sleep(200);
 					else
+					{
+						logger.Error(ex.Message);
 						throw ex;
+					}
 				}
 			}
 		}
@@ -137,13 +145,16 @@ namespace Peach.Core.Publishers
 			if (stream != null)
 			{
 				OnClose(action);
+				logger.Debug("close()");
 
 				try
 				{
 					stream.Close();
+					stream.Dispose();
 				}
-				catch
+				catch(Exception ex)
 				{
+					logger.Error(ex.Message);
 				}
 
 				stream = null;
@@ -156,16 +167,25 @@ namespace Peach.Core.Publishers
 				open(action);
 
 			OnOutput(action, data);
+			logger.Debug("output()");
 
-			if (data.GetVariantType() == Variant.VariantType.BitStream)
+			try
 			{
-				((BitStream)data).Stream.Position = 0;
-				((BitStream)data).Stream.CopyTo(stream);
+				if (data.GetVariantType() == Variant.VariantType.BitStream)
+				{
+					((BitStream)data).Stream.Position = 0;
+					((BitStream)data).Stream.CopyTo(stream);
+				}
+				else
+				{
+					byte[] buff = (byte[])data;
+					stream.Write(buff, 0, buff.Length);
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				byte[] buff = (byte[])data;
-				stream.Write(buff, 0, buff.Length);
+				logger.Error(ex.Message);
+				throw ex;
 			}
 		}
 
