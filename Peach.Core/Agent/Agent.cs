@@ -224,9 +224,16 @@ namespace Peach.Core.Agent
 				throw new PeachException("Error, unable to locate Monitor '" + cls + "'");
 
 			ConstructorInfo co = tMonitor.GetConstructor(new Type[] { typeof(string), typeof(Dictionary<string, Variant>) });
-			Monitor monitor = (Monitor)co.Invoke(new object[] { name, args });
+			try
+			{
+				Monitor monitor = (Monitor)co.Invoke(new object[] { name, args });
+				this.monitors.Add(name, monitor);
+			}
+			catch (TargetInvocationException ex)
+			{
+				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message);
+			}
 
-			this.monitors.Add(name, monitor);
 		}
 
 		public void StopMonitor(string name)
