@@ -442,7 +442,13 @@ class Task(TaskBase):
 
 	def __repr__(self):
 		"for debugging purposes"
-		return "".join(['\n\t{task %r: ' % id(self), self.__class__.__name__, " ", ",".join([x.name for x in self.inputs]), " -> ", ",".join([x.name for x in self.outputs]), '}'])
+		try:
+			ins = ",".join([x.name for x in self.inputs])
+			outs = ",".join([x.name for x in self.outputs])
+		except AttributeError:
+			ins = ",".join([str(x) for x in self.inputs])
+			outs = ",".join([str(x) for x in self.outputs])
+		return "".join(['\n\t{task %r: ' % id(self), self.__class__.__name__, " ", ins, " -> ", outs, '}'])
 
 	def uid(self):
 		"""

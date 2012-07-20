@@ -10,9 +10,9 @@ from waflib.Configure import conf
 @conf
 def find_dmd(conf):
 	"""
-	Find the program *dmd* or *ldc* and set the variable *D*
+	Find the program *dmd*, *dmd2*, or *ldc* and set the variable *D*
 	"""
-	conf.find_program(['dmd', 'ldc'], var='D')
+	conf.find_program(['dmd', 'dmd2', 'ldc'], var='D')
 
 	# make sure that we're dealing with dmd1, dmd2, or ldc(1)
 	out = conf.cmd_and_log([conf.env.D, '--help'])
@@ -34,7 +34,7 @@ def common_flags_ldc(conf):
 @conf
 def common_flags_dmd(conf):
 	"""
-	Set the flags required by *dmd*
+	Set the flags required by *dmd* or *dmd2*
 	"""
 
 	v = conf.env
@@ -69,7 +69,7 @@ def common_flags_dmd(conf):
 
 def configure(conf):
 	"""
-	Configuration for dmd/ldc
+	Configuration for *dmd*, *dmd2*, and *ldc*
 	"""
 	conf.find_dmd()
 

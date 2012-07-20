@@ -43,10 +43,13 @@ def configure(conf):
 	except:
 		sub = ''
 
-	conf.exec_command('./waf-light configure build --zip-type=gz --tools=doxygen,fluid,ocaml,swig,compiler_fc,fc_config,fc,fc_scan,g95,ifort,gfortran,batched_cc,%s --prelude='' && /bin/cp waf demos/' % sub, cwd=conf.path.parent.abspath())
+	curwaf = os.path.abspath(sys.argv[0])
+	conf.exec_command('%s %s configure build --zip-type=gz --tools=doxygen,fluid,ocaml,swig,compiler_fc,fc_config,fc,fc_scan,g95,ifort,gfortran,batched_cc,%s --prelude='' && /bin/cp waf demos/' % (sys.executable, curwaf, sub),
+		cwd=conf.path.parent.abspath())
+
 	node = conf.path.find_resource('waf')
 	if not node:
-		conf.fatal('could not find Waf')
+		conf.fatal('Could not find Waf')
 	#if conf.exec_command([node.abspath(), '--help'], shell=False, env={}, cwd=node.parent.abspath()):
 	#	conf.fatal('the waf file cannot be executed')
 	conf.env.WAF = node.abspath()
@@ -59,15 +62,20 @@ def configure(conf):
 		try:
 			conf.recurse(d.name)
 		except Exception:
-			e = sys.exc_info()[1]
-			print(e)
 			try:
-				#print("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
+				Logs.info("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
+			except Exception:
+				pass
+			try:
+				e = sys.exc_info()[1]
+				print(e)
 				print(e.stdout, e.stderr)
-			except:
+			except Exception:
 				pass
 		else:
 			conf.env.append_value('CFG', [d.name])
+
+	print("The configurations enabled are %r" % conf.env.CFG)
 
 	# now remove the cache folders and re-create them
 	conf.cmd_and_log('rm -rf .waf*')
@@ -94,7 +102,7 @@ class abc(BuildContext):
 	fun = "installcheck"
 
 def installcheck(bld):
-	bld.jobs = 2
+	bld.jobs = 1
 	#if bld.cmd == 'build':
 	#	Logs.info('Running action build') # build farm
 

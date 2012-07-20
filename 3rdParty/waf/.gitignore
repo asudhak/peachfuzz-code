@@ -1,8 +1,11 @@
 *.pyc
 *~
-.lock-w*
+.lock*
 .wafpickle-*
-demos/*/build*
 demos/out.txt
-playground/*/build*
 waf
+build
+demos/*/build*
+playground/*/build*
+.waf-*
+*.log

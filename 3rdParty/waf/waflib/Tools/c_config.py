@@ -89,19 +89,19 @@ MACRO_TO_DEST_CPU = {
 }
 
 @conf
-def parse_flags(self, line, uselib, env=None, force_static=False):
+def parse_flags(self, line, uselib_store, env=None, force_static=False):
 	"""
 	Parse the flags from the input lines, and add them to the relevant use variables::
 
 		def configure(conf):
-			conf.parse_flags('-O3', uselib_store='FOO')
+			conf.parse_flags('-O3', 'FOO')
 			# conf.env.CXXFLAGS_FOO = ['-O3']
 			# conf.env.CFLAGS_FOO = ['-O3']
 
 	:param line: flags
 	:type line: string
-	:param uselib: where to add the flags
-	:type uselib: string
+	:param uselib_store: where to add the flags
+	:type uselib_store: string
 	:param env: config set or conf.env by default
 	:type env: :py:class:`waflib.ConfigSet.ConfigSet`
 	"""
@@ -122,6 +122,7 @@ def parse_flags(self, line, uselib, env=None, force_static=False):
 	lex.commenters = ''
 	lst = list(lex)
 
+	uselib = uselib_store
 	while lst:
 		x = lst.pop(0)
 		st = x[:2]
@@ -779,7 +780,7 @@ def check_cc(self, *k, **kw):
 @conf
 def define(self, key, val, quote=True):
 	"""
-	Store a single define and its state into conf.env.DEFINES
+	Store a single define and its state into conf.env.DEFINES. If the value is True, False or None it is cast to 1 or 0.
 
 	:param key: define name
 	:type key: string
@@ -789,6 +790,11 @@ def define(self, key, val, quote=True):
 	:type quote: bool
 	"""
 	assert key and isinstance(key, str)
+
+	if val is True:
+		val = 1
+	elif val in (False, None):
+		val = 0
 
 	if isinstance(val, int) or isinstance(val, float):
 		s = '%s=%s'
@@ -1013,8 +1019,6 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 	The variables CC_VERSION, DEST_OS, DEST_BINFMT and DEST_CPU will be set in *conf.env*
 	"""
 	cmd = cc + ['-dM', '-E', '-']
-	arch = getattr(conf.env, 'ARCH', None)
-	if arch: cmd.insert(1, '%s' % (arch[0]))
 	env = conf.env.env or None
 	try:
 		p = Utils.subprocess.Popen(cmd, stdin=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE, env=env)
@@ -1094,19 +1098,22 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 def get_xlc_version(conf, cc):
 	"""Get the compiler version"""
 
-	version_re = re.compile(r"IBM XL C/C\+\+.*, V(?P<major>\d*)\.(?P<minor>\d*)", re.I).search
 	cmd = cc + ['-qversion']
-
 	try:
 		out, err = conf.cmd_and_log(cmd, output=0)
 	except Errors.WafError:
 		conf.fatal('Could not find xlc %r' % cmd)
-	if out: match = version_re(out)
-	else: match = version_re(err)
-	if not match:
+
+	# the intention is to catch the 8.0 in "IBM XL C/C++ Enterprise Edition V8.0 for AIX..."
+	for v in (r"IBM XL C/C\+\+.* V(?P<major>\d*)\.(?P<minor>\d*)"):
+		version_re = re.compile(v, re.I).search
+		match = version_re(out or err)
+		if match:
+			k = match.groupdict()
+			conf.env['CC_VERSION'] = (k['major'], k['minor'])
+			break
+	else:
 		conf.fatal('Could not determine the XLC version.')
-	k = match.groupdict()
-	conf.env['CC_VERSION'] = (k['major'], k['minor'])
 
 # ============ the --as-needed flag should added during the configuration, not at runtime =========
 

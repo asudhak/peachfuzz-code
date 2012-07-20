@@ -123,6 +123,7 @@ def gcc_modifier_aix(conf):
 def gcc_modifier_hpux(conf):
 	v = conf.env
 	v['SHLIB_MARKER']        = []
+	v['STLIB_MARKER']        = '-Bstatic'
 	v['CFLAGS_cshlib']       = ['-fPIC','-DPIC']
 	v['cshlib_PATTERN']      = 'lib%s.sl'
 
@@ -134,7 +135,7 @@ def gcc_modifier_platform(conf):
 	#   and if it's not recognised, it fallbacks to sys.platform.
 	gcc_modifier_func = getattr(conf, 'gcc_modifier_' + conf.env.DEST_OS, None)
 	if gcc_modifier_func:
-			gcc_modifier_func()
+		gcc_modifier_func()
 
 def configure(conf):
 	"""

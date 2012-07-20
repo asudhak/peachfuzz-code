@@ -209,8 +209,8 @@ def get_python_variables(self, variables, imports=None):
 			continue
 		if s == 'None':
 			return_values.append(None)
-		elif s[0] == "'" and s[-1] == "'":
-			return_values.append(s[1:-1])
+		elif (s[0] == "'" and s[-1] == "'") or (s[0] == '"' and s[-1] == '"'):
+			return_values.append(eval(s))
 		elif s[0].isdigit():
 			return_values.append(int(s))
 		else: break
@@ -228,16 +228,16 @@ def check_python_headers(conf):
 
 	# FIXME rewrite
 
-	if not conf.env['CC_NAME'] and not conf.env['CXX_NAME']:
+	env = conf.env
+	if not env['CC_NAME'] and not env['CXX_NAME']:
 		conf.fatal('load a compiler first (gcc, g++, ..)')
 
-	if not conf.env['PYTHON_VERSION']:
+	if not env['PYTHON_VERSION']:
 		conf.check_python_version()
 
-	env = conf.env
 	pybin = conf.env.PYTHON
 	if not pybin:
-		conf.fatal('could not find the python executable')
+		conf.fatal('Could not find the python executable')
 
 	v = 'prefix SO LDFLAGS LIBDIR LIBPL INCLUDEPY Py_ENABLE_SHARED MACOSX_DEPLOYMENT_TARGET LDSHARED CFLAGS'.split()
 	try:
@@ -309,7 +309,7 @@ def check_python_headers(conf):
 	# We check that pythonX.Y-config exists, and if it exists we
 	# use it to get only the includes, else fall back to distutils.
 	num = '.'.join(env['PYTHON_VERSION'].split('.')[:2])
-	conf.find_program(['python%s-config' % num, 'python-config-%s' % num, 'python%sm-config' % num], var='PYTHON_CONFIG', mandatory=False)
+	conf.find_program([''.join(pybin) + '-config', 'python%s-config' % num, 'python-config-%s' % num, 'python%sm-config' % num], var='PYTHON_CONFIG', mandatory=False)
 
 	includes = []
 	if conf.env.PYTHON_CONFIG:
@@ -349,12 +349,19 @@ def check_python_headers(conf):
 	try:
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H',
 		   uselib='PYEMBED', fragment=FRAG,
-		   errmsg='Could not find the python development headers')
+		   errmsg=':-(')
 	except conf.errors.ConfigurationError:
 		# python3.2, oh yeah
-		conf.check_cfg(path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=['--cflags', '--libs'])
-		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting the python flags from python-config',
-			uselib='PYEMBED', fragment=FRAG, errmsg='Could not find the python development headers elsewhere')
+		xx = conf.env.CXX_NAME and 'cxx' or 'c'
+		conf.check_cfg(msg='Asking python-config for the flags (pyembed)',
+			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=['--cflags', '--libs', '--ldflags'])
+		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyembed flags from python-config',
+			fragment=FRAG, errmsg='Could not build a python embedded interpreter',
+			features='%s %sprogram pyembed' % (xx, xx))
+		conf.check_cfg(msg='Asking python-config for the flags (pyext)',
+			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEXT', args=['--cflags', '--libs', '--ldflags'])
+		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyext flags from python-config',
+			features='%s %sshlib pyext' % (xx, xx), fragment=FRAG, errmsg='Could not build python extensions')
 
 @conf
 def check_python_version(conf, minver=None):
@@ -497,7 +504,7 @@ def configure(conf):
 		conf.env.PYTHON = sys.executable
 
 	if conf.env.PYTHON != sys.executable:
-		Logs.warn("python executable '%s' different from sys.executable '%s'" % (conf.env.PYTHON, sys.executable))
+		Logs.warn("python executable %r differs from system %r" % (conf.env.PYTHON, sys.executable))
 	conf.env.PYTHON = conf.cmd_to_list(conf.env.PYTHON)
 
 	v = conf.env

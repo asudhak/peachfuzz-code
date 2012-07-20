@@ -338,7 +338,7 @@ class Context(ctx):
 		except Exception as e:
 			raise Errors.WafError('Execution failure: %s' % str(e), ex=e)
 
-		if out and (ret or not self.env.FILTER_STDOUT):
+		if out:
 			if not isinstance(out, str):
 				out = out.decode(sys.stdout.encoding or 'iso8859-1')
 			if self.logger:

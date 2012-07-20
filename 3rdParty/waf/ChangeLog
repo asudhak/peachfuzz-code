@@ -1,7 +1,8 @@
 NEW IN WAF 1.7.0
 ----------------
-* The compat15 tool is not loaded by default
+* The compat15 tool is disabled by default (the README file explains how to enable it)
 * Python >= 2.4 is now required
+* Python >= 2.6 is required for creating the Waf file in the source tree
 * Added Utils.writef (similar to Utils.readf)
 * Added Node.evict() to provide more control over invalid references
 * Do not raise exception on --help when running on python 2.4
@@ -22,6 +23,9 @@ NEW IN WAF 1.7.0
 * Detect cython dependencies of the form "from module import x" #1044
 * Use the cython includes in the dependency scanner #1166
 * Improved the behaviour of Utils.readf/Utils.writef on Win32
+* Made Task.__repr__ more robust #1174
+* Fixed the gcc builds on hp-ux
+* Let gccdeps work with other compilers #1179
 
 NEW IN WAF 1.6.11
 -----------------

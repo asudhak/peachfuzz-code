@@ -7,7 +7,7 @@ The current Waf version requires an interpreter for the Python programming langu
 
 ==== Downloading and using the Waf binary
 
-The Waf binary is a python script which does not require any installation whatsoever. It may be executed directly from a writeable folder. Just rename it as +waf+ if necessary:
+The Waf binary is a python script which does not require any installation whatsoever. It may be executed directly from a writable folder. Just rename it as +waf+ if necessary:
 
 [source,shishell]
 ---------------
