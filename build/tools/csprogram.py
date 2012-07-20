@@ -43,7 +43,6 @@ def use_cprogram(self):
 		try:
 			y = get(x)
 		except Errors.WafError:
-			self.env.append_value('CSFLAGS', '/reference:%s' % x)
 			continue
 
 		tsk = getattr(y, 'cs_task', None) or getattr(y, 'link_task', None)
@@ -54,7 +53,8 @@ def use_cprogram(self):
 
 		# if a use task has 'install' attribute, install those deps as well
 		extra_inst = y.to_nodes(getattr(y, 'install', []))
-		self.bld.install_files(self.install_path, extra_inst)
+		if (extra_inst):
+			self.bld.install_files(self.install_path, extra_inst)
 
 	icon = getattr(self, 'icon', None)
 	if icon:

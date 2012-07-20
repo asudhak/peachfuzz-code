@@ -34,7 +34,8 @@ bld(
 	features = 'cs csprogram',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs **/*.resx'),
-	name='PeachFuzzBang.exe',
-	install= bld.path.ant_glob('samples_png/* *.xml *.rtf template.xml')
+	name = 'PeachFuzzBang.exe',
+	icon = 'peach-line.ico',
+	install = bld.path.ant_glob('samples_png/* *.xml *.rtf'),
 )
 

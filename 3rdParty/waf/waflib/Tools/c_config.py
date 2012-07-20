@@ -1013,6 +1013,8 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 	The variables CC_VERSION, DEST_OS, DEST_BINFMT and DEST_CPU will be set in *conf.env*
 	"""
 	cmd = cc + ['-dM', '-E', '-']
+	arch = getattr(conf.env, 'ARCH', None)
+	if arch: cmd.insert(1, '%s' % (arch[0]))
 	env = conf.env.env or None
 	try:
 		p = Utils.subprocess.Popen(cmd, stdin=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE, stderr=Utils.subprocess.PIPE, env=env)

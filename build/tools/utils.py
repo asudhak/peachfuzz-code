@@ -2,7 +2,7 @@ import os.path
 from waflib.TaskGen import feature, before_method, after_method
 from waflib import Utils
 
-@feature('cprogram', 'cxxprogram', 'csprogram')
+@feature('*')
 @after_method('process_source')
 def install_extras(self):
 	try:
@@ -17,3 +17,7 @@ def install_extras(self):
 	for x in extras:
 		rel_path = x.path_from(self.path)
 		self.bld.install_as(os.path.join(inst_to, rel_path), x, env=self.env, chmod=Utils.O644)
+
+@feature('win', 'linux', 'osx')
+def dummy_platform(self):
+	pass

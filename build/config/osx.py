@@ -1,4 +1,5 @@
 from waflib import Utils
+from waflib.TaskGen import feature
 
 archs = [ ]
 tools = [
@@ -12,20 +13,30 @@ tools = [
 def prepare(conf):
 	env = conf.env
 
-	env['TOOLCHAIN_PATH'] = [
+	env['PATH'] = [
 		'/Library/Frameworks/Mono.framework/Commands',
 		'/Developer/usr/bin',
 	]
 
-	env['TOOLCHAIN_LIBS'] = None
-	env['TOOLCHAIN_INCS'] = None
-
-	env['TOOLCHAIN_MCS']  = 'dmcs'
-	env['TOOLCHAIN_CC']   = 'llvm-gcc-4.2'
-	env['TOOLCHAIN_CXX']  = 'llvm-g++-4.2'
+	env['MCS']  = 'dmcs'
+	env['CC']   = 'llvm-gcc-4.2'
+	env['CXX']  = 'llvm-g++-4.2'
 
 def configure(conf):
 	env = conf.env
+
+	env.supported_features = [
+		'osx',
+		'c',
+		'cxx',
+		'cstlib',
+		'cshlib',
+		'fake_lib',
+		'cs',
+		'csprogram',
+		'cprogram',
+		'cxxprogram',
+	]
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',

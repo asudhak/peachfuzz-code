@@ -27,16 +27,29 @@ def hook(f):
 def find_program(self, filename, **kw):
 	path_list = kw.get('path_list', None)
 	if not path_list:
-		kw['path_list'] = self.env['TOOLCHAIN_PATH']
-
+		path_list = self.env['PATH']
+	kw['path_list'] = path_list
+	
 	var = kw.get('var', '')
-	filename = self.env['TOOLCHAIN_%s' % var] or filename
+	filename = self.env[var] or filename
+	self.env[var] = None
 
 	return self.base_find_program(filename, **kw)
 
 @hook
 def add_to_group(self, tgen, group=None):
-	return self.base_add_to_group(tgen, group)
+	features = set(Utils.to_list(getattr(tgen, 'features', [])))
+	available = set(Utils.to_list(tgen.env.supported_features))
+	intersect = features & available
+	
+	if intersect == features:
+		self.base_add_to_group(tgen, group)
+	elif Logs.verbose > 0:
+		missing = [ x for x in (features - intersect)]
+		Logs.warn('Skipping %r due to missing features: %s' % (tgen.name, missing))
+
+def colorize(value, color):
+	return color + Logs.colors.BOLD + value + Logs.colors.NORMAL
 
 @hook
 def display(self):
@@ -54,34 +67,25 @@ def display(self):
 		return self.base_display()
 
 	total = master.total
+	n = len(str(total))
+	fs = '[%%%dd/%%%dd]' % (n, n)
+	pct_str = fs % (cur(), total)
+	var_str = self.generator.bld.variant
 	bld_str = getattr(self.generator, 'name', self.generator.__class__.__name__)
 	tsk_str = self.__class__.__name__
 	src_str = str([ x.name for x in self.inputs] )
 	tgt_str = str([ x.name for x in self.outputs ])
-	n = len(str(total))
-	fs = '[%%%dd/%%%dd]' % (n, n)
 
 	if isinstance(self.generator, Build.inst):
 		return None
 
-	return str(fs % (cur(), total)) + \
-		sep + \
-		Logs.colors.YELLOW + Logs.colors.BOLD + \
-		self.generator.bld.variant + \
-		sep + \
-		Logs.colors.RED + Logs.colors.BOLD + \
-		bld_str + \
-		sep + \
-		Logs.colors.BOLD + \
-		tsk_str + \
-		sep + \
-		Logs.colors.CYAN + Logs.colors.BOLD + \
-		src_str + \
-		Logs.colors.NORMAL + \
-		' -> ' + \
-		Logs.colors.GREEN + Logs.colors.BOLD + \
-		tgt_str + \
-		Logs.colors.NORMAL + '\n'
+	return "%s | %s | %s | %s | %s | %s\n" % (
+		colorize(pct_str, Logs.colors.NORMAL),
+		colorize(var_str, Logs.colors.YELLOW),
+		colorize(bld_str, Logs.colors.RED),
+		colorize(tsk_str, Logs.colors.NORMAL),
+		colorize(src_str, Logs.colors.CYAN),
+		colorize(tgt_str, Logs.colors.GREEN))
 
 @hook
 def do_install(self, src, tgt, chmod=Utils.O644):
@@ -93,24 +97,14 @@ def do_install(self, src, tgt, chmod=Utils.O644):
 	if self.progress_bar != -1 or str(ret) == 'False':
 		return
 
-	sep = Logs.colors.NORMAL + ' | '
 	dest = os.path.split(tgt)[1]
 	filename = os.path.split(src)[1]
-	target = str(os.path.relpath(tgt, os.path.join(self.srcnode.abspath(), self.env.OUTDIR)))
+	target = str(os.path.relpath(tgt, os.path.join(self.srcnode.abspath(), self.env.PREFIX)))
 
-	msg = \
-		Logs.colors.YELLOW + Logs.colors.BOLD + \
-		self.variant + \
-		sep + \
-		Logs.colors.BOLD + Logs.colors.BOLD + \
-		'Install' + \
-		sep + \
-		Logs.colors.CYAN + Logs.colors.BOLD + \
-		filename + \
-		Logs.colors.NORMAL + \
-		' -> ' + \
-		Logs.colors.GREEN + Logs.colors.BOLD + \
-		target + \
-		Logs.colors.NORMAL + '\n'
+	msg = "%s | %s | %s | %s\n" % (
+		colorize(self.variant, Logs.colors.YELLOW),
+		colorize('Install', Logs.colors.NORMAL),
+		colorize(filename, Logs.colors.CYAN),
+		colorize(target, Logs.colors.GREEN))
 
 	self.to_log(msg)

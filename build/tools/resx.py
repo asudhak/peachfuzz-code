@@ -3,8 +3,7 @@ from waflib import Task
 from waflib.TaskGen import extension
 
 def configure(conf):
-	path = conf.env['TOOLCHAIN_PATH']
-	conf.find_program(['resgen'], var='RESGEN', path_list=path)
+	conf.find_program(['resgen'], var='RESGEN')
 	conf.env.RESGENFLAGS = '/useSourcePath'
 
 @extension('.resx')

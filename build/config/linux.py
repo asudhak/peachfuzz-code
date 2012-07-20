@@ -1,4 +1,5 @@
 from waflib import Utils
+from waflib.TaskGen import feature
 
 archs = [ 'x86', 'x86_64' ]
 tools = [
@@ -7,19 +8,35 @@ tools = [
 	'cs',
 	'resx',
 	'csprogram',
+	'utils',
 ]
 
 def prepare(conf):
 	env = conf.env
 
-	env['TOOLCHAIN_PATH'] = None
-	env['TOOLCHAIN_LIBS'] = None
-	env['TOOLCHAIN_INCS'] = None
+	env['MCS']  = 'dmcs'
+	env['CC']   = 'gcc-4.6'
+	env['CXX']  = 'g++-4.6'
 
-	env['TOOLCHAIN_MCS']  = 'dmcs'
+	env['ARCH']    = ['-m%s' % ('64' in env.SUBARCH and '64' or '32')]
 
 def configure(conf):
 	env = conf.env
+
+	env.supported_features = [
+		'linux',
+		'c',
+		'cxx',
+		'cstlib',
+		'cshlib',
+		'fake_lib',
+		'cs',
+		'csprogram',
+		'cprogram',
+		'cxxprogram',
+	]
+
+	env['ARCH_ST'] = []
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',
@@ -28,19 +45,14 @@ def configure(conf):
 
 	env['CSPLATFORM'] = 'anycpu'
 
-	arch_flags = [
-		'-m%s' % ('64' in env.SUBARCH and '64' or '32'),
-	]
-
 	cflags = [
 		'-pipe',
 		'-Werror',
 		'-Wno-unused',
 	]
 	
-	env.append_value('CFLAGS', arch_flags + cflags)
-	env.append_value('CXXFLAGS', arch_flags + cflags)
-	env.append_value('LINKFLAGS', arch_flags)
+	env.append_value('CFLAGS', cflags)
+	env.append_value('CXXFLAGS', cflags)
 	
 	return [ 'debug', 'release' ]
 

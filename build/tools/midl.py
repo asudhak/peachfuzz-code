@@ -5,15 +5,13 @@ import os
 def configure(conf):
 	conf.find_program(['midl'], var='MIDL')
 
-	conf.env.MIDL_FLAGS = [
+	conf.env.MIDLFLAGS = [
 		'/nologo',
 		'/D',
 		'_DEBUG',
 		'/W1',
 		'/char',
 		'signed',
-		'/env',
-		'win32',
 		'/Oicf',
 	]
 
@@ -29,14 +27,11 @@ def idl_file(self):
 			src_nodes.append(x)
 
 	for x in idl_nodes:
-		tsk = self.create_task('midl', x, x.change_ext('.tlb'))
-		tlb = tsk.outputs[0]
-		base = os.path.splitext(tlb.name)[0]
-		for ext in ['_i.c', '_i.h', '_p.c', '_dlldata.c']:
-			f = tlb.parent.find_or_declare(base + ext)
-			tsk.outputs.append(f)
-			if ext.endswith('.c'):
-				src_nodes.append(f)
+		base = x.name[0:-4]
+		h = self.path.find_or_declare(base + '_i.h')
+		c = self.path.find_or_declare(base + '_i.c')
+		tsk = self.create_task('midl', x, [c, h])
+		src_nodes.append(c)
 
 	self.source = src_nodes
 
@@ -45,7 +40,7 @@ class midl(Task.Task):
 	Compile idl files
 	"""
 	color   = 'YELLOW'
-	run_str = '${MIDL} ${MIDL_FLAGS} ${CPPPATH_ST:INCLUDES} /proxy ${TGT[3].abspath()} /dlldata ${TGT[4].abspath()} /h ${TGT[2].abspath()} /iid ${TGT[1].abspath()} /tlb ${TGT[0].abspath()} ${SRC}'
+	run_str = '${MIDL} ${MIDLFLAGS} ${CPPPATH_ST:INCLUDES} /h ${TGT[1].abspath()} /iid ${TGT[0].abspath()} ${SRC}'
 
 def exec_command_midl(self, *k, **kw):
 	if self.env['PATH']:
