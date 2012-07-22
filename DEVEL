@@ -20,8 +20,9 @@ Documentation repository on http://docs.waf.googlecode.com/git/
 ---------------------------------------------------------------
 
 Contains the documentation:
-API documentation                      http://docs.waf.googlecode.com/git/apidocs_16/index.html
-The Waf Book                           http://docs.waf.googlecode.com/git/book_16/single.html
+API documentation                      http://docs.waf.googlecode.com/git/apidocs_17/index.html
+The Waf Book                           http://docs.waf.googlecode.com/git/book_17/single.html
+The Waf Book for Waf 1.6 (deprecated)  http://docs.waf.googlecode.com/git/book_16/single.html
 The Waf Book for Waf 1.5 (deprecated)  http://docs.waf.googlecode.com/git/book_15/single.html
 
 Programming details
