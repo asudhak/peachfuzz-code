@@ -305,11 +305,7 @@ def distclean(ctx):
 			shutil.rmtree(f, ignore_errors=True)
 
 class Dist(Context.Context):
-	"""
-	Create an archive containing the project source code::
-
-		$ waf dist
-	"""
+	'''creates an archive containing the project source code'''
 	cmd = 'dist'
 	fun = 'dist'
 	algo = 'tar.bz2'
