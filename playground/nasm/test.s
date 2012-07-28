@@ -1,3 +1,5 @@
+%include "header.s"
+
 section .text
 	global _start
 
