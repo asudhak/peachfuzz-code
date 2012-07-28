@@ -378,7 +378,7 @@ def get_uselib_vars(self):
 			_vars |= USELIB_VARS[x]
 	return _vars
 
-@feature('c', 'cxx', 'd', 'fc', 'javac', 'cs', 'uselib')
+@feature('c', 'cxx', 'd', 'fc', 'javac', 'cs', 'uselib', 'asm')
 @after_method('process_use')
 def propagate_uselib_vars(self):
 	"""
