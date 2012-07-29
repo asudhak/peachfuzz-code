@@ -1,3 +1,8 @@
+NEW IN WAF 1.7.1
+----------------
+* Updated the exclusion regexps for "waf dist"
+* Added an example in playground/nasm
+
 NEW IN WAF 1.7.0
 ----------------
 * The compat15 tool is disabled by default (the README file explains how to enable it)
