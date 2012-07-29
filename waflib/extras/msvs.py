@@ -615,10 +615,10 @@ class vsnode_project_view(vsnode_alias):
 		vsnode_alias.__init__(self, ctx, node, name)
 		self.tg = self.ctx() # fake one, cannot remove
 		self.exclude_files = Node.exclude_regs + '''
-waf-1.6.*
-waf3-1.6.*/**
-.waf-1.6.*
-.waf3-1.6.*/**
+waf-1.7.*
+waf3-1.7.*/**
+.waf-1.7.*
+.waf3-1.7.*/**
 **/*.sdf
 **/*.suo
 **/*.ncb
