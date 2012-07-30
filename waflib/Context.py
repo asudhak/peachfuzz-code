@@ -23,7 +23,7 @@ WAFREVISION="a7e69d6b81b04729804754c4d5214da063779a65"
 ABI = 98
 """Version of the build data cache file format (used in :py:const:`waflib.Context.DBFILE`)"""
 
-DBFILE = '.wafpickle-%d' % ABI
+DBFILE = '.wafpickle-%s-%d-%d' % (sys.platform, sys.hexversion, ABI)
 """Name of the pickle file for storing the build data"""
 
 APPNAME = 'APPNAME'

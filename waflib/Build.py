@@ -311,7 +311,7 @@ class BuildContext(Context.Context):
 			f = None
 			try:
 				f = open(db + '.tmp', 'wb')
-				cPickle.dump(data, f)
+				cPickle.dump(data, f, -1)
 			finally:
 				if f:
 					f.close()
