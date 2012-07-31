@@ -990,8 +990,10 @@ def set_precedence_constraints(tasks):
 				b = i
 			else:
 				continue
+
+			aval = set(cstr_groups[keys[a]])
 			for x in cstr_groups[keys[b]]:
-				x.run_after.update(cstr_groups[keys[a]])
+				x.run_after.update(aval)
 
 def funex(c):
 	"""
