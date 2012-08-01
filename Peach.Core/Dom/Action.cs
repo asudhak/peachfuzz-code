@@ -603,7 +603,8 @@ namespace Peach.Core.Dom
 				if (setElement == null)
 					throw new PeachException("Error, slurp setXpath did not return a Data Element. [" + valueXpath + "]");
 
-				setElement.Value = valueElement.Value;
+				logger.Debug("Slurp, setting " + setElement.fullName + " from " + valueElement.fullName);
+				setElement.DefaultValue = valueElement.DefaultValue;
 			}
 			while (iter.MoveNext());
 		}
