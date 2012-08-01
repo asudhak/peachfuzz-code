@@ -1268,16 +1268,18 @@ namespace Peach.Core.Analyzers
 
 			validateParameterAttributes("Fixup", cls, parameters, arg);
 
-			Type[] targs = new Type[1];
-			targs[0] = typeof(Dictionary<string, Variant>);
+			Type[] targs = new Type[2];
+			targs[0] = typeof(DataElement);
+			targs[1] = typeof(Dictionary<string, Variant>);
 
 			ConstructorInfo co = tFixup.GetConstructor(targs);
 
 			if (co == null)
 				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
 
-			object[] args = new object[1];
-			args[0] = arg;
+			object[] args = new object[2];
+			args[0] = parent;
+			args[1] = arg;
 
 			try
 			{
@@ -1289,8 +1291,6 @@ namespace Peach.Core.Analyzers
 			}
 
 			return parent.fixup;
-
-
 		}
 
 		protected Transformer handleTransformer(XmlNode node, DataElement parent)

@@ -44,6 +44,89 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	public class ArrayTests
 	{
+
+		[Test]
+		public void CrackUrl()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String />" +
+				"		<String value=\"://\" token=\"true\" />" +
+				"		<String />" +
+				"		<String value=\"/\" token=\"true\" />" +
+				"		<String />" +
+				"		<String value=\"?\" token=\"true\" />" +
+
+				"		<Block name=\"TheArray\" minOccurs=\"0\" maxOccurs=\"100\">" +
+				"		  <String name=\"key1\" />" +
+				"		  <String value=\"=\" token=\"true\" />" +
+				"		  <String name=\"value1\" />" +
+				"			<String value=\"&amp;\" token=\"true\" />" +
+				"		</Block>" +
+
+				"		<Block name=\"EndBlock\">" +
+				"		  <String name=\"key2\" />" +
+				"		  <String value=\"=\" token=\"true\" />" +
+				"		  <String name=\"value2\" />" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			// Positive test
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("http://www.foo.com/crazy/path.cgi?k1=v1&k2=v2&k3=v3"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, ((Dom.Array)dom.dataModels[0]["TheArray"]).Count);
+			Assert.AreEqual("k3", (string)((Dom.Block)dom.dataModels[0]["EndBlock"])["key2"].InternalValue);
+			Assert.AreEqual("v3", (string)((Dom.Block)dom.dataModels[0]["EndBlock"])["value2"].InternalValue);
+		}
+
+		[Test]
+		public void CrackUrl2()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"?\" token=\"true\" />" +
+
+				"		<Block name=\"TheArray\" minOccurs=\"0\" maxOccurs=\"100\">" +
+				"		  <String name=\"key1\" />" +
+				"		  <String value=\"=\" token=\"true\" />" +
+				"		  <String name=\"value1\" />" +
+				"			<String value=\"&amp;\" token=\"true\" />" +
+				"		</Block>" +
+				"		<String name=\"key2\" />" +
+				"		<String value=\"=\" token=\"true\" />" +
+				"		<String name=\"value2\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			// Positive test
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("?k1=v1&k2=v2&k3=v3"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, ((Dom.Array)dom.dataModels[0]["TheArray"]).Count);
+			Assert.AreEqual("k3", (string)dom.dataModels[0]["key2"].InternalValue);
+			Assert.AreEqual("v3", (string)dom.dataModels[0]["value2"].InternalValue);
+		}
+
 		[Test]
 		public void CrackArrayBlob1()
 		{

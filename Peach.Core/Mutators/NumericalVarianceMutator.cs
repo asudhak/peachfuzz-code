@@ -42,7 +42,7 @@ namespace Peach.Core.Mutators
         int n;
         int currentCount;
         int valuesLength;
-        long defaultValue;
+        ulong defaultValue;
         long minValue;
         ulong maxValue;
         long[] values;
@@ -54,7 +54,7 @@ namespace Peach.Core.Mutators
         {
             name = "NumericalVarianceMutator";
             currentCount = 0;
-            defaultValue = (long)obj.DefaultValue;
+            defaultValue = (ulong)obj.DefaultValue;
             n = getN(obj, 50);
 
             if (obj is Dom.String)
@@ -81,7 +81,7 @@ namespace Peach.Core.Mutators
 
         // POPULATE_VALUES
         //
-        private void PopulateValues(long val)
+        private void PopulateValues(ulong val)
         {
             // catch n == 0
             if (n == 0)
@@ -94,8 +94,26 @@ namespace Peach.Core.Mutators
             List<long> temp = new List<long>();
             for (int i = -n; i <= n; ++i)
             {
-                if ((val + i) >= minValue && (val + i) <= (long)maxValue)
-                    temp.Add(i);
+				if (signed)
+				{
+					long num = (long)val + i;
+					if (num >= minValue && num <= (long)maxValue)
+						temp.Add(i);
+				}
+				else
+				{
+					if (i < 0)
+					{
+						ulong num = val - (ulong)-i;
+						if (num <= maxValue)
+							temp.Add(i);
+					}
+					else
+					{
+						if ((val + (ulong)i) <= (ulong)maxValue)
+							temp.Add(i);
+					}
+				}
             }
 
             // setup values
@@ -170,13 +188,33 @@ namespace Peach.Core.Mutators
             if (currentCount >= count)
                 return;
 
-            long value = (long)obj.DefaultValue + values[currentCount];
+			if (signed)
+			{
+				long value = (long)obj.DefaultValue + values[currentCount];
+				if (obj is Dom.String)
+					obj.MutatedValue = new Variant(value.ToString());
+				else
+					obj.MutatedValue = new Variant(value);
+				obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			}
+			else
+			{
+				ulong value = (ulong)obj.DefaultValue;
+				if (values[currentCount] < 0)
+				{
+					value -= (ulong) -(values[currentCount]);
+				}
+				else
+				{
+					value += (ulong)values[currentCount];
+				}
 
-            if (obj is Dom.String)
-                obj.MutatedValue = new Variant(value.ToString());
-            else
-                obj.MutatedValue = new Variant(value);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+				if (obj is Dom.String)
+					obj.MutatedValue = new Variant(value.ToString());
+				else
+					obj.MutatedValue = new Variant(value);
+				obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			}
 		}
 
         // RANDOM_MUTAION
@@ -188,14 +226,40 @@ namespace Peach.Core.Mutators
 
             try
             {
-                var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-                long value = rand.Choice(values);
-                long finalValue = (long)obj.DefaultValue + value;
-                if (obj is Dom.String)
-                    obj.MutatedValue = new Variant(finalValue.ToString());
-                else
-                    obj.MutatedValue = new Variant(finalValue);
-				obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+				if (signed)
+				{
+					var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+					long value = rand.Choice(values);
+					long finalValue = (long)obj.DefaultValue + value;
+					if (obj is Dom.String)
+						obj.MutatedValue = new Variant(finalValue.ToString());
+					else
+						obj.MutatedValue = new Variant(finalValue);
+					obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+				}
+				else
+				{
+					var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+					long value = rand.Choice<long>(values);
+					if (value < 0)
+					{
+						ulong finalValue = (ulong)obj.DefaultValue - (ulong) -value;
+						if (obj is Dom.String)
+							obj.MutatedValue = new Variant(finalValue.ToString());
+						else
+							obj.MutatedValue = new Variant(finalValue);
+						obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+					}
+					else
+					{
+						ulong finalValue = (ulong)obj.DefaultValue + (ulong)value;
+						if (obj is Dom.String)
+							obj.MutatedValue = new Variant(finalValue.ToString());
+						else
+							obj.MutatedValue = new Variant(finalValue);
+						obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+					}
+				}
 			}
             catch
             {

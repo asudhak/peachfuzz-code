@@ -46,6 +46,51 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	public class TokenTests
 	{
+
+		[Test]
+		public void CrackUrl()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"?\" token=\"true\" />"+
+
+				"		<Block>" +
+				"		  <String name=\"key1\" />" +
+				"		  <String value=\"=\" token=\"true\" />" +
+				"		  <String name=\"value1\" />" +
+				"		</Block>" +
+				"		<String value=\"&amp;\" token=\"true\" />" +
+				"		<Block>" +
+				"		  <String name=\"key2\" />" +
+				"		  <String value=\"=\" token=\"true\" />" +
+				"		  <String name=\"value2\" />" +
+				"		</Block>" +
+				"		<String value=\"&amp;\" token=\"true\" />" +
+				"		<Block name=\"LastKV\">" +
+				"		  <String name=\"key3\" />" +
+				"		  <String value=\"=\" token=\"true\" />" +
+				"		  <String name=\"value3\" />" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			// Positive test
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("?k1=v1&k2=v2&k3=v3"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("k3", ((string)((DataElementContainer)dom.dataModels[0]["LastKV"])[0].DefaultValue));
+			Assert.AreEqual("v3", ((string)((DataElementContainer)dom.dataModels[0]["LastKV"])[2].DefaultValue));
+		}
+
 		[Test]
 		public void CrackTokenNumber()
 		{

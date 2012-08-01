@@ -77,7 +77,14 @@ namespace Peach.Core.Publishers
 			//_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
 			//    string.Format("tcp://{0}:{1}/PeachComContainer", _host, _port));
 
-			ChannelServices.RegisterChannel(new IpcChannel(), false);
+			try
+			{
+				ChannelServices.RegisterChannel(new IpcChannel(), false);
+			}
+			catch
+			{
+			}
+
 			_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
 				"ipc://Peach_Com_Container/PeachComContainer");
 			
@@ -91,13 +98,9 @@ namespace Peach.Core.Publishers
 			_initialized = false;
 		}
 
-		public override void open(Core.Dom.Action action)
+		public override void start(Dom.Action action)
 		{
-			if (_initialized)
-				return;
-
-			OnOpen(action);
-
+			base.stop(action);
 			if (_proxy == null)
 				startTcpRemoting();
 
@@ -107,11 +110,25 @@ namespace Peach.Core.Publishers
 			_initialized = true;
 		}
 
+		public override void stop(Dom.Action action)
+		{
+			base.stop(action);
+			stopTcpRemoting();
+		}
+
+		public override void open(Core.Dom.Action action)
+		{
+			if (_initialized)
+				return;
+
+			OnOpen(action);
+
+		}
+
 		public override void close(Core.Dom.Action action)
 		{
 			OnClose(action);
 
-			stopTcpRemoting();
 		}
 
 		public override Variant call(Core.Dom.Action action, string method, List<ActionParameter> args)

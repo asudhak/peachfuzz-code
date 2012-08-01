@@ -32,6 +32,7 @@ using System.Text;
 using System.IO;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using NLog;
 
 namespace Peach.Core.Mutators
 {
@@ -39,7 +40,9 @@ namespace Peach.Core.Mutators
     [Hint("BlobBitFlipperMutator-N", "Gets N by checking node for hint, or returns default (20).")]
 	public class BlobBitFlipperMutator : Mutator
 	{
-        // members
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		
+		// members
         //
         int n;
         int countMax;
@@ -116,13 +119,20 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
+			logger.Debug("sequencialMutation(" + obj.fullName + ")");
             byte[] data = obj.Value.Value;
+			logger.Debug("data.Len:" + data.Length);
+
+			if (data.Length == 0)
+				return;
+
             BitStream bs = new BitStream(data);
 
             // pick a random bit
             rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
+			logger.Debug("bs.lengthbits: " + bs.LengthBits.ToString());
             int bit = rand.Next((int)bs.LengthBits);
-
+			logger.Debug("rand.Next returned: " + bit);
             // seek, read, rewind
             bs.SeekBits(bit, SeekOrigin.Begin);
             var value = bs.ReadBit();

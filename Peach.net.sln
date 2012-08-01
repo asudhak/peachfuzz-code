@@ -2047,6 +2047,7 @@ Global
 		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug - Windows|Mixed Platforms.Build.0 = Debug|Any CPU
 		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug - Windows|Win32.ActiveCfg = Debug|Any CPU
 		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug - Windows|x64.ActiveCfg = Debug|Any CPU
+		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug - Windows|x64.Build.0 = Debug|Any CPU
 		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug - Windows|x86.ActiveCfg = Debug|Any CPU
 		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug - Windows|x86.Build.0 = Debug|Any CPU
 		{50F5BD97-6534-458D-A9C5-A00904B95DBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
