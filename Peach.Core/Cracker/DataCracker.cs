@@ -54,6 +54,11 @@ namespace Peach.Core.Cracker
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		/// <summary>
+		/// Are we looking ahead to see what will happen?
+		/// </summary>
+		public bool IsLookAhead { get; set; }
+
+		/// <summary>
 		/// A stack of sized DataElement containers.
 		/// </summary>
 		public List<DataElement> _sizedBlockStack = new List<DataElement>();
@@ -78,6 +83,9 @@ namespace Peach.Core.Cracker
 		public event EnterHandleNodeEventHandler EnterHandleNodeEvent;
 		protected void OnEnterHandleNodeEvent(DataElement element, BitStream data)
 		{
+			if (IsLookAhead)
+				return;
+
 			if(EnterHandleNodeEvent != null)
 				EnterHandleNodeEvent(element, data);
 		}
@@ -85,14 +93,20 @@ namespace Peach.Core.Cracker
 		public event ExitHandleNodeEventHandler ExitHandleNodeEvent;
 		protected void OnExitHandleNodeEvent(DataElement element, BitStream data)
 		{
-			if(ExitHandleNodeEvent != null)
+			if (IsLookAhead)
+				return;
+
+			if (ExitHandleNodeEvent != null)
 				ExitHandleNodeEvent(element, data);
 		}
 
 		public event ExceptionHandleNodeEventHandler ExceptionHandleNodeEvent;
 		protected void OnExceptionHandleNodeEvent(DataElement element, BitStream data, Exception e)
 		{
-			if(ExceptionHandleNodeEvent != null)
+			if (IsLookAhead)
+				return;
+
+			if (ExceptionHandleNodeEvent != null)
 				ExceptionHandleNodeEvent(element, data, e);
 		}
 
@@ -112,6 +126,8 @@ namespace Peach.Core.Cracker
 			_sizedBlockStack = new List<DataElement>();
 			_sizedBlockMap = new Dictionary<DataElement, long>();
 			_data = data;
+
+			IsLookAhead = false;
 
 			handleNode(model, data);
 
@@ -414,31 +430,44 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns true if found token, else false.</returns>
 		protected bool isTokenNext(DataElement element, ref long size, ref DataElement token)
 		{
-			System.Diagnostics.Debug.Assert(element != null);
-			System.Diagnostics.Debug.Assert(token == null);
+				System.Diagnostics.Debug.Assert(element != null);
+				System.Diagnostics.Debug.Assert(token == null);
 
-			DataElement next = element;
+				DataElement next = element;
 
-			while (next != null)
-			{
-				next = next.nextSibling();
-				
-				if (next == null)
-					return false;
-
-				if (next.isToken)
+				while (next != null)
 				{
-					token = next;
-					return true;
+					next = next.nextSibling();
+
+					if (next == null)
+					{
+						var parent = element.parent;
+						while (next == null && parent != null)
+						{
+							next = parent.nextSibling();
+							parent = parent.parent;
+						}
+
+						if (next == null)
+							return false;
+
+						while (next is DataElementContainer)
+							next = ((DataElementContainer)next)[0];
+					}
+
+					if (next.isToken)
+					{
+						token = next;
+						return true;
+					}
+
+					if (!_isTokenNextRecursive(next, ref size, ref token))
+						return token != null;
+
+					next = element.parent;
 				}
 
-				if (!_isTokenNextRecursive(next, ref size, ref token))
-					return token != null;
-
-				next = element.parent;
-			}
-
-			return false;
+				return false;
 		}
 
 		/// <summary>
@@ -619,29 +648,39 @@ namespace Peach.Core.Cracker
 		/// <returns></returns>
 		public bool lookAhead(DataElement element, BitStream data)
 		{
-			var root = ObjectCopier.Clone<DataElementContainer>(element.getRoot() as DataElementContainer);
-			var node = root.find(element.fullName);
-			var sibling = node.nextSibling();
-
-			if (sibling == null)
-				return true;
-
-			long position = data.TellBits();
-
 			try
 			{
-				handleNode(sibling, data);
-			}
-			catch (Exception)
-			{
-				return false;
+				IsLookAhead = true;
+
+
+				var root = ObjectCopier.Clone<DataElementContainer>(element.getRoot() as DataElementContainer);
+				var node = root.find(element.fullName);
+				var sibling = node.nextSibling();
+
+				if (sibling == null)
+					return true;
+
+				long position = data.TellBits();
+
+				try
+				{
+					handleNode(sibling, data);
+				}
+				catch (Exception)
+				{
+					return false;
+				}
+				finally
+				{
+					data.SeekBits(position, System.IO.SeekOrigin.Begin);
+				}
+
+				return true;
 			}
 			finally
 			{
-				data.SeekBits(position, System.IO.SeekOrigin.Begin);
+				IsLookAhead = false;
 			}
-
-			return true;
 		}
 	}
 }
