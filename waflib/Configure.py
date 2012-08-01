@@ -67,7 +67,7 @@ def download_tool(tool, force=False, ctx=None):
 				continue
 			else:
 				tmp = ctx.root.make_node(os.sep.join((Context.waf_dir, 'waflib', 'extras', tool + '.py')))
-				tmp.write(web.read())
+				tmp.write(web.read(), 'wb')
 				Logs.warn('Downloaded %s from %s' % (tool, url))
 				download_check(tmp)
 				try:
