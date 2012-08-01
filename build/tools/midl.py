@@ -1,9 +1,29 @@
-from waflib import Task
-from waflib.TaskGen import extension, feature, before_method
+#!/usr/bin/env python
+
+"""
+Microsoft Interface Definition Language support.  Given ComObject.idl, this tool
+will generate ComObject.tlb ComObject_i.h ComObject_i.c ComObject_p.c and dlldata.c
+
+To declare targets using midl::
+
+	def configure(conf):
+		conf.load('msvc')
+		conf.load('midl')
+
+	def build(bld):
+		bld(
+			features='c cshlib',
+			# Note: ComObject_i.c is generated from ComObject.idl
+			source = 'main.c ComObject.idl ComObject_i.c',
+			target = 'ComObject.dll')
+"""
+
+from waflib import Task, Utils
+from waflib.TaskGen import feature, before_method
 import os
 
 def configure(conf):
-	conf.find_program(['midl'], var='MIDL')
+	conf.find_program(['midl'], var='MIDL', path_list=conf.env['PATH'])
 
 	conf.env.MIDLFLAGS = [
 		'/nologo',
@@ -15,23 +35,26 @@ def configure(conf):
 		'/Oicf',
 	]
 
-@feature('c', 'cxx', 'cstlib', 'cshlib')
+@feature('c', 'cxx')
 @before_method('process_source')
 def idl_file(self):
+	# Do this before process_source so that the generated header can be resolved
+	# when scanning source dependencies.
 	idl_nodes = []
 	src_nodes = []
-	for x in self.to_nodes(self.source):
-		if x.name.endswith('.idl'):
-			idl_nodes.append(x)
+	for node in Utils.to_list(self.source):
+		if str(node).endswith('.idl'):
+			idl_nodes.append(node)
 		else:
-			src_nodes.append(x)
+			src_nodes.append(node)
 
-	for x in idl_nodes:
-		base = x.name[0:-4]
-		h = self.path.find_or_declare(base + '_i.h')
-		c = self.path.find_or_declare(base + '_i.c')
-		tsk = self.create_task('midl', x, [c, h])
-		src_nodes.append(c)
+	for node in self.to_nodes(idl_nodes):
+		t = node.change_ext('.tlb')
+		h = node.change_ext('_i.h')
+		c = node.change_ext('_i.c')
+		p = node.change_ext('_p.c')
+		d = node.parent.find_or_declare('dlldata.c')
+		tsk = self.create_task('midl', node, [t, h, c, p, d])
 
 	self.source = src_nodes
 
@@ -40,23 +63,20 @@ class midl(Task.Task):
 	Compile idl files
 	"""
 	color   = 'YELLOW'
-	run_str = '${MIDL} ${MIDLFLAGS} ${CPPPATH_ST:INCLUDES} /h ${TGT[1].abspath()} /iid ${TGT[0].abspath()} ${SRC}'
+	run_str = '${MIDL} ${MIDLFLAGS} ${CPPPATH_ST:INCLUDES} /tlb ${TGT[0].bldpath()} /header ${TGT[1].bldpath()} /iid ${TGT[2].bldpath()} /proxy ${TGT[3].bldpath()} /dlldata ${TGT[4].bldpath()} ${SRC}'
 
-def exec_command_midl(self, *k, **kw):
-	if self.env['PATH']:
-		env = self.env.env or dict(os.environ)
-		env.update(PATH = ';'.join(self.env['PATH']))
-		kw['env'] = env
-
-	bld = self.generator.bld
-
-	try:
-		if not kw.get('cwd', None):
-			kw['cwd'] = bld.cwd
-	except AttributeError:
-		bld.cwd = kw['cwd'] = bld.variant_dir
-
-	return bld.exec_command(k[0], **kw)
-
-cls = Task.classes.get('midl', None)
-cls.exec_command = exec_command_midl
+	def exec_command(self, *k, **kw):
+		if self.env['PATH']:
+			env = self.env.env or dict(os.environ)
+			env.update(PATH = ';'.join(self.env['PATH']))
+			kw['env'] = env
+	
+		bld = self.generator.bld
+	
+		try:
+			if not kw.get('cwd', None):
+				kw['cwd'] = bld.cwd
+		except AttributeError:
+			bld.cwd = kw['cwd'] = bld.variant_dir
+	
+		return bld.exec_command(k[0], **kw)

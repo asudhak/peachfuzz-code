@@ -11,6 +11,20 @@ def cs_helpers(self):
 	
 	setattr(self, 'platform', self.env.CSPLATFORM)
 
+@feature('cs')
+@after_method('apply_cs')
+def cs_resource(self):
+	base = os.path.splitext(self.gen)[0]
+
+	resources = self.to_nodes(getattr(self, 'resource', []))
+	self.cs_task.dep_nodes.extend(resources)
+
+	for x in resources:
+		rel_path = x.path_from(self.path)
+		name = rel_path.replace('\\', '.').replace('/', '.')
+		final = base + '.' + name
+		self.env.append_value('CSFLAGS', '/resource:%s,%s' % (x.abspath(), final))
+
 @feature('csprogram')
 @before_method('apply_cs')
 @after_method('cs_helpers')
@@ -69,7 +83,7 @@ def quote_response_command(self, flag):
 		return ''
 
 	if flag.find(' ') > -1:
-		for x in ('/r:', '/reference:', '/resource:', '/lib:'):
+		for x in ('/r:', '/reference:', '/resource:', '/lib:', '/out:'):
 			if flag.startswith(x):
 				flag = '%s"%s"' % (x, flag[len(x):])
 				break

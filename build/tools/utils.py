@@ -21,3 +21,12 @@ def install_extras(self):
 @feature('win', 'linux', 'osx')
 def dummy_platform(self):
 	pass
+
+@feature('fake_lib')
+@after_method('process_lib')
+def install_csshlib(self):
+	if self.link_task.__class__.__name__ != 'fake_csshlib':
+		return
+		print self.target
+
+	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)

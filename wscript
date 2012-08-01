@@ -39,7 +39,7 @@ def configure(ctx):
 
 	for host in hosts:
 		try:
-			config = Context.load_tool(host, ['build/config'])
+			config = Context.load_tool(host, [os.path.join('build', 'config')])
 			ctx.msg("Loading '%s' config" % host, config.__file__)
 		except:
 			ctx.msg("Loading '%s' config" % host, 'not found', color='YELLOW')

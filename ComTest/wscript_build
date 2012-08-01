@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 bld(
-	features = 'cxx cshlib win',
-	source = bld.path.ant_glob('*.cpp *.idl'),
+	features = 'cxx cxxshlib win',
+	source = bld.path.ant_glob('*.cpp *.idl *.rc') + [ 'ComTest_i.c' ],
 	target = 'ComTest',
 	defs = 'ComTest.def',
 	includes = '.',

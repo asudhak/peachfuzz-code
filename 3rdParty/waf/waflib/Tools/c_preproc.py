@@ -143,22 +143,6 @@ def repl(m):
 		return ' '
 	return m.group(3) or ''
 
-def filter_comments(filename):
-	"""
-	Filter the comments from a c/h file, and return the preprocessor lines.
-	The regexps :py:attr:`waflib.Tools.c_preproc.re_cpp`, :py:attr:`waflib.Tools.c_preproc.re_nl` and :py:attr:`waflib.Tools.c_preproc.re_lines` are used internally.
-
-	:return: the preprocessor directives as a list of (keyword, line)
-	:rtype: a list of string pairs
-	"""
-	# return a list of tuples : keyword, line
-	code = Utils.readf(filename)
-	if use_trigraphs:
-		for (a, b) in trig_def: code = code.split(a).join(b)
-	code = re_nl.sub('', code)
-	code = re_cpp.sub(repl, code)
-	return [(m.group(2), m.group(3)) for m in re.finditer(re_lines, code)]
-
 prec = {}
 """
 Operator precendence rules required for parsing expressions of the form::
@@ -863,6 +847,22 @@ class c_parser(object):
 				self.names.append(filename)
 		return found
 
+	def filter_comments(self, filename):
+		"""
+		Filter the comments from a c/h file, and return the preprocessor lines.
+		The regexps :py:attr:`waflib.Tools.c_preproc.re_cpp`, :py:attr:`waflib.Tools.c_preproc.re_nl` and :py:attr:`waflib.Tools.c_preproc.re_lines` are used internally.
+
+		:return: the preprocessor directives as a list of (keyword, line)
+		:rtype: a list of string pairs
+		"""
+		# return a list of tuples : keyword, line
+		code = Utils.readf(filename)
+		if use_trigraphs:
+			for (a, b) in trig_def: code = code.split(a).join(b)
+		code = re_nl.sub('', code)
+		code = re_cpp.sub(repl, code)
+		return [(m.group(2), m.group(3)) for m in re.finditer(re_lines, code)]
+
 	def addlines(self, node):
 		"""
 		Add the lines from a header in the list of preprocessor lines to parse
@@ -889,7 +889,7 @@ class c_parser(object):
 			return
 
 		try:
-			lines = filter_comments(filepath)
+			lines = self.filter_comments(filepath)
 			lines.append((POPFILE, ''))
 			lines.reverse()
 			pc[filepath] = lines # cache the lines filtered

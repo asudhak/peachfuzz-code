@@ -25,14 +25,16 @@ def configure(conf):
         env.supported_features = [
                 'win',
                 'c',
-                'cxx',
                 'cstlib',
                 'cshlib',
+                'cprogram',
+                'cxx',
+                'cxxstlib',
+                'cxxshlib',
+                'cxxprogram',
                 'fake_lib',
                 'cs',
                 'csprogram',
-                'cprogram',
-                'cxxprogram',
         ]
 
         cflags = [
