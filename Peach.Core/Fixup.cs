@@ -38,9 +38,11 @@ namespace Peach.Core
 	{
 		protected Dictionary<string, Variant> args;
 		protected bool isRecursing = false;
+		protected DataElement parent = null;
 
-		public Fixup(Dictionary<string, Variant> args)
+		public Fixup(DataElement parent, Dictionary<string, Variant> args)
 		{
+			this.parent = parent;
 			this.args = args;
 		}
 
