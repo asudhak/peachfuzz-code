@@ -339,6 +339,11 @@ namespace Peach.Core
 							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 								"PathException, skipping to next iteration");
 						}
+						catch (System.OutOfMemoryException)
+						{
+							context.DebugMessage(DebugLevel.Warning, "Engine::runTest", 
+								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
+						}
 						finally
 						{
 							if (IterationFinished != null)
