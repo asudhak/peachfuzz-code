@@ -41,7 +41,8 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class IcmpChecksumFixup : Fixup
     {
-        public IcmpChecksumFixup(Dictionary<string, Variant> args) : base(args)
+		bool invalidatedEvent = false;
+        public IcmpChecksumFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, IcmpChecksumFixup requires a 'ref' argument!");
@@ -51,6 +52,11 @@ namespace Peach.Core.Fixups
         {
             string objRef = (string)args["ref"];
             DataElement from = obj.find(objRef);
+			if (!invalidatedEvent)
+			{
+				invalidatedEvent = true;
+				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
+			}
 
             if (from == null)
                 throw new PeachException(string.Format("IcmpChecksumFixup could not find ref element '{0}'", objRef));
@@ -75,6 +81,11 @@ namespace Peach.Core.Fixups
 
             return new Variant((ushort)(~chcksm));
         }
+
+		void from_Invalidated(object sender, EventArgs e)
+		{
+			parent.Invalidate();
+		}
     }
 }
 

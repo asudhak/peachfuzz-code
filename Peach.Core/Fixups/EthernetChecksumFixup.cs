@@ -42,7 +42,9 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class EthernetChecksumFixup : Fixup
     {
-        public EthernetChecksumFixup(Dictionary<string, Variant> args) : base(args)
+		bool invalidateEvent = false;
+
+        public EthernetChecksumFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
@@ -52,7 +54,11 @@ namespace Peach.Core.Fixups
         {
             string objRef = (string)args["ref"];
             DataElement from = obj.find(objRef);
-
+			if (!invalidateEvent)
+			{
+				invalidateEvent = true;
+				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
+			}
             if (from == null)
                 throw new PeachException(string.Format("EthernetChecksumFixup could not find ref element '{0}'", objRef));
 
@@ -62,6 +68,11 @@ namespace Peach.Core.Fixups
             uint checksum = BitConverter.ToUInt32(crc.ComputeHash(data), 0);
             return new Variant(checksum);
         }
+
+		void from_Invalidated(object sender, EventArgs e)
+		{
+			parent.Invalidate();
+		}
     }
 }
 

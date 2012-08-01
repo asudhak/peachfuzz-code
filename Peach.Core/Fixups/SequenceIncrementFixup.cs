@@ -41,7 +41,7 @@ namespace Peach.Core.Fixups
     {
         int num = 1;
 
-        public SequenceIncrementFixup(Dictionary<string, Variant> args) : base(args)
+        public SequenceIncrementFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
         {
         }
 

@@ -42,7 +42,8 @@ namespace Peach.Core.Fixups
     [Serializable]
     public class SHA384Fixup : Fixup
     {
-        public SHA384Fixup(Dictionary<string, Variant> args) : base(args)
+		bool invalidateEvent = false;
+        public SHA384Fixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
         {
             if (!args.ContainsKey("ref"))
                 throw new PeachException("Error, SHA384Fixup requires a 'ref' argument!");
@@ -52,6 +53,11 @@ namespace Peach.Core.Fixups
         {
             string objRef = (string)args["ref"];
             DataElement from = obj.find(objRef);
+			if (!invalidateEvent)
+			{
+				invalidateEvent = true;
+				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
+			}
 
             if (from == null)
                 throw new PeachException(string.Format("SHA384Fixup could not find ref element '{0}'", objRef));
@@ -61,6 +67,11 @@ namespace Peach.Core.Fixups
 
             return new Variant(sha384Tool.ComputeHash(data));
         }
+
+		void from_Invalidated(object sender, EventArgs e)
+		{
+			parent.Invalidate();
+		}
     }
 }
 

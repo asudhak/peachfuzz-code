@@ -41,7 +41,7 @@ namespace Peach.Core.Fixups
     {
         System.Random rand = new System.Random();
 
-        public SequenceRandomFixup(Dictionary<string, Variant> args) : base(args)
+        public SequenceRandomFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
         {
             //TODO: reseed fixup based on iteration number for deterministic operation
         }
