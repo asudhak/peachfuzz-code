@@ -572,7 +572,7 @@ def read_stlib(self, name, paths=[]):
 	return self(name=name, features='fake_lib', lib_paths=paths, lib_type='stlib')
 
 lib_patterns = {
-	'shlib' : ['lib%s.so', '%s.so', 'lib%s.dll', '%s.dll'],
+	'shlib' : ['lib%s.so', '%s.so', 'lib%s.dylib', 'lib%s.dll', '%s.dll'],
 	'stlib' : ['lib%s.a', '%s.a', 'lib%s.dll', '%s.dll', 'lib%s.lib', '%s.lib'],
 }
 
