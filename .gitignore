@@ -1,17 +1,25 @@
 # See https://github.com/github/gitignore/blob/master/CSharp.gitignore
 
 # Build folders
-[Bb]in/
-[Oo]bj/
+# Ignore top level directories and one level deep
+# This allows bin/obj folders to not be ignored in 3rdParty
+/*/[Bb]in/
+/*/[Oo]bj/
 
 # User-specific files
-*.suo
 *.user
 
 # Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
+# Ignore top level directories and one level deep
+# This allows debug/release folders to not be ignored in 3rdParty
+/[Dd]ebug/
+/*/[Dd]ebug/
+/[Rr]elease/
+/*/[Rr]elease/
+/x64/
+/*/x64/
+
+# Visual Studio generated files
 *_i.h
 *_i.c
 *_p.c
@@ -19,9 +27,10 @@ x64/
 dlldata.c
 
 # Visual C++ cache files
-ipch/
-.aps
-*.ncb
-*.opensdf
-*.sdf
+/ipch/
+/*.aps
+/*.ncb
+/*.opensdf
+/*.sdf
+/*.suo
 
