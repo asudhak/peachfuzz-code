@@ -31,3 +31,10 @@ def install_csshlib(self):
 		return
 
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
+
+@feature('pin')
+def pin_disable_debug(self):
+        e = self.env
+        e['CFLAGS']   = filter(lambda x: '/MD'   not in x, e['CFLAGS'])
+        e['CXXFLAGS'] = filter(lambda x: '/MD'   not in x, e['CXXFLAGS'])
+        e['DEFINES']  = filter(lambda x: 'DEBUG' not in x, e['DEFINES'])

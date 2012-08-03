@@ -16,10 +16,58 @@ tools = [
 ]
 
 def prepare(conf):
+        root = conf.path.abspath()
         env = conf.env
+        j = os.path.join
 
         env['MSVC_VERSIONS'] = ['msvc 10.0']
         env['MSVC_TARGETS']  = [ env.SUBARCH ]
+
+        pin = j(root, '3rdParty', 'pin-msvc10-ia32_intel64-windows')
+
+        env['EXTERNALS_x86'] = {
+                'pin' : {
+                        'INCLUDES'  : [
+                                j(pin, 'source', 'include'),
+                                j(pin, 'source', 'include', 'gen'),
+                                j(pin, 'extras', 'components', 'include'),
+                                j(pin, 'extras', 'xed2-ia32', 'include'),
+                        ],
+                        'STLIBPATH'   : [
+                                j(pin, 'ia32', 'lib'),
+                                j(pin, 'ia32', 'lib-ext'),
+                                j(pin, 'extras', 'xed2-ia32', 'lib'),
+                        ],
+                        'STLIB'       : [ 'pin', 'ntdll-32', 'pinvm', 'libxed' ],
+                        'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', '_SECURE_SCL=0', 'TARGET_WINDOWS', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
+                        'CFLAGS'    : [ '/MT' ],
+                        'CXXFLAGS'  : [ '/MT' ],
+                        'LINKFLAGS' : [ '/EXPORT:main', '/ENTRY:Ptrace_DllMainCRTStartup@12', '/BASE:0x55000000' ],
+                },
+        }
+
+        env['EXTERNALS_x64'] = {
+                'pin' : {
+                        'INCLUDES'  : [
+                                j(pin, 'source', 'include'),
+                                j(pin, 'source', 'include', 'gen'),
+                                j(pin, 'extras', 'components', 'include'),
+                                j(pin, 'extras', 'xed2-intel64', 'include'),
+                        ],
+                        'STLIBPATH'   : [
+                                j(pin, 'intel64', 'lib'),
+                                j(pin, 'intel64', 'lib-ext'),
+                                j(pin, 'extras', 'xed2-intel64', 'lib'),
+                        ],
+                        'STLIB'       : [ 'pin', 'ntdll-64', 'pinvm', 'libxed' ],
+                        'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', '_SECURE_SCL=0', 'TARGET_WINDOWS', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
+                        'CFLAGS'    : [ '/MT' ],
+                        'CXXFLAGS'  : [ '/MT' ],
+                        'LINKFLAGS' : [ '/EXPORT:main', '/ENTRY:Ptrace_DllMainCRTStartup', '/BASE:0xC5000000' ],
+                },
+        }
+
+        env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
 
 def configure(conf):
         env = conf.env

@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+
+bld(
+	features = 'cxx cxxshlib pin',
+	source = 'cedge.cpp',
+	target='Peach.Core.Analysis.Pin.CoveredEdge',
+)
+
