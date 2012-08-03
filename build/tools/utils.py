@@ -1,6 +1,6 @@
 import os.path
 from waflib.TaskGen import feature, before_method, after_method
-from waflib import Utils
+from waflib import Utils, Logs, Task
 
 @feature('*')
 @after_method('process_source')
@@ -8,9 +8,11 @@ def install_extras(self):
 	try:
 		inst_to = self.install_path
 	except AttributeError:
-		inst_to = hasattr(self, 'link_task') and self.link_task.__class__.inst_to or None
+		inst_to = hasattr(self, 'link_task') and getattr(self.link_task.__class__, 'inst_to', None)
 
 	if not inst_to:
+		if getattr(self, 'install', []):
+			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, self.install))
 		return
 
 	extras = self.to_nodes(getattr(self, 'install', []))
@@ -27,6 +29,5 @@ def dummy_platform(self):
 def install_csshlib(self):
 	if self.link_task.__class__.__name__ != 'fake_csshlib':
 		return
-		print self.target
 
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
