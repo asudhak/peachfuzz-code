@@ -68,6 +68,7 @@ int haveExisting = FALSE;
 
 VOID handleInsertCall( ADDRINT src, ADDRINT dst, INT32 taken )
 {
+	src;
 	taken;
 
 	if(!taken)
