@@ -34,3 +34,11 @@ dlldata.c
 /*.sdf
 /*.suo
 
+# python generated files
+*.pyc
+
+# waf build artifacts
+/.lock-waf*
+/slag/
+/output/
+
