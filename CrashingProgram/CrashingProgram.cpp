@@ -1,8 +1,8 @@
 // CrashingProgram.cpp : Defines the entry point for the console application.
 //
 
-#ifdef WIN32
 #include "stdafx.h"
+#ifdef WIN32
 #include <Windows.h>
 #else
 #define _tmain main

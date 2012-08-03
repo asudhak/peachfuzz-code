@@ -5,11 +5,15 @@
 
 #pragma once
 
+#ifdef WIN32
 #include "targetver.h"
 
 #include <stdio.h>
 #include <tchar.h>
-
+#include <windows.h>
+#else
+#define _tmain main
+#endif
 
 
 // TODO: reference additional headers your program requires here
