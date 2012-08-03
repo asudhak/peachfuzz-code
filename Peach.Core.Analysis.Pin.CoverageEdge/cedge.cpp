@@ -33,9 +33,22 @@
 
 #include <iostream>
 #include <fstream>
-#include <pin.H>
 #include <stdio.h>
 #include <set>
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4100) // Unreferenced formal parameter
+#pragma warning(disable: 4127) // Conditional expression is constant
+#pragma warning(disable: 4245) // Signed/unsigned mismatch
+#pragma warning(disable: 4512) // Assignment operator could not be generated
+#endif
+
+#include <pin.H>
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 using namespace std;
 
@@ -55,7 +68,9 @@ int haveExisting = FALSE;
 
 VOID handleInsertCall( ADDRINT src, ADDRINT dst, INT32 taken )
 {
-    if(!taken)
+	taken;
+
+	if(!taken)
 	{
 		// Lookup and see if we have already seen this one
 		if(setKnownBlocks.find(dst) == setKnownBlocks.end())
@@ -76,6 +91,8 @@ VOID handleInsertCall( ADDRINT src, ADDRINT dst, INT32 taken )
 
 VOID Instruction(INS ins, void *v)
 {
+	v;
+
 	if (INS_IsBranchOrCall(ins)) 
 	{
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR) handleInsertCall,
@@ -89,12 +106,15 @@ VOID Instruction(INS ins, void *v)
 // Called at end of run
 VOID Fini(INT32 code, VOID *v)
 {
+	code;
+	v;
+
 	existing = fopen("cedge.known", "wb+");
 	if(existing != NULL)
 	{
 		for (set<ADDRINT>::iterator i = setKnownBlocks.begin(); i!=setKnownBlocks.end(); ++i)
 		{
-			fprintf(existing, "%p\n", *i);
+			fprintf(existing, "%16.16zx\n", *i);
 		}
 
 		fclose(existing);
@@ -106,7 +126,7 @@ VOID Fini(INT32 code, VOID *v)
 	{
 		for (set<ADDRINT>::iterator i = setUnknownBlocks.begin(); i != setUnknownBlocks.end(); ++i)
 		{
-			fprintf(existing, "%p\n", *i);
+			fprintf(existing, "%16.16zx\n", *i);
 		}
 
 		fclose(existing);
@@ -125,7 +145,7 @@ int main(int argc, char * argv[])
 	{
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%x\n", &block) < 4)
+			if(fscanf(existing, "%zx\n", &block) < 4)
 				setKnownBlocks.insert(block);
 		}
 		
@@ -139,7 +159,7 @@ int main(int argc, char * argv[])
 	{
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%x\n", &block) < 4)
+			if(fscanf(existing, "%zx\n", &block) < 4)
 				setUnknownBlocks.insert(block);
 		}
 

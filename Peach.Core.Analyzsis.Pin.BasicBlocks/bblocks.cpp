@@ -33,9 +33,22 @@
 
 #include <iostream>
 #include <fstream>
-#include <pin.H>
 #include <stdio.h>
 #include <set>
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4100) // Unreferenced formal parameter
+#pragma warning(disable: 4127) // Conditional expression is constant
+#pragma warning(disable: 4245) // Signed/unsigned mismatch
+#pragma warning(disable: 4512) // Assignment operator could not be generated
+#endif
+
+#include <pin.H>
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 using namespace std;
 
@@ -62,12 +75,12 @@ VOID PIN_FAST_ANALYSIS_CALL rememberBlock(ADDRINT bbl)
 	ret = setKnownBlocks.insert(bbl);
 	if(ret.second == true)
 	{
-		fprintf(trace, "%p\n", bbl);
+		fprintf(trace, "%16.16zx\n", bbl);
 		fflush(trace);
 
 		if(haveExisting)
 		{
-			fprintf(existing, "%p\n", bbl);
+			fprintf(existing, "%16.16zx\n", bbl);
 			fflush(existing);
 		}
 	}
@@ -76,6 +89,8 @@ VOID PIN_FAST_ANALYSIS_CALL rememberBlock(ADDRINT bbl)
 // Called when new code segment loaded containing bblocks
 VOID Trace(TRACE trace, VOID *v)
 {
+	v;
+
 	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
 	{
 		if(!haveExisting || setExistingBlocks.find(BBL_Address(bbl)) == setExistingBlocks.end())
@@ -86,6 +101,9 @@ VOID Trace(TRACE trace, VOID *v)
 // Called at end of run
 VOID Fini(INT32 code, VOID *v)
 {
+	code;
+	v;
+
 	fclose(trace);
 
 	if(haveExisting)
@@ -102,7 +120,7 @@ int main(int argc, char * argv[])
 		haveExisting = TRUE;
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%x\n", &block) < 4)
+			if(fscanf(existing, "%zx\n", &block) < 4)
 				setExistingBlocks.insert(block);
 		}
 

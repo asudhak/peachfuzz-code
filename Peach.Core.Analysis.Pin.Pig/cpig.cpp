@@ -33,9 +33,28 @@
 
 #include <iostream>
 #include <fstream>
-#include <pin.H>
 #include <stdio.h>
 #include <set>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4100) // Unreferenced formal parameter
+#pragma warning(disable: 4127) // Conditional expression is constant
+#pragma warning(disable: 4245) // Signed/unsigned mismatch
+#pragma warning(disable: 4512) // Assignment operator could not be generated
+#endif
+
+#include <pin.H>
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 using namespace std;
 
+int main(int argc, char * argv[])
+{
+	argc;
+	argv;
+	return 0;
+}
