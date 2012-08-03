@@ -17,6 +17,7 @@ typos = {
 'define':'defines',
 'importpath':'includes',
 'installpath':'install_path',
+'iscopy':'is_copy',
 }
 
 meths_typos = ['__call__', 'program', 'shlib', 'stlib', 'objects']
@@ -100,6 +101,8 @@ def replace(m):
 		ret = oldcall(self, *k, **kw)
 		for x in typos:
 			if x in kw:
+				if x == 'iscopy' and 'subst' in getattr(self, 'features', ''):
+					continue
 				err = True
 				Logs.error('Fix the typo %r -> %r on %r' % (x, typos[x], ret))
 		return ret
