@@ -39,7 +39,7 @@ def find_program(self, filename, **kw):
 @hook
 def add_to_group(self, tgen, group=None):
 	features = set(Utils.to_list(getattr(tgen, 'features', [])))
-	available = set(Utils.to_list(tgen.env.supported_features))
+	available = set(Utils.to_list(tgen.env['supported_features']))
 	intersect = features & available
 	
 	if intersect == features:

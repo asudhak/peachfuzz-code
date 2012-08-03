@@ -13,7 +13,7 @@ deps = [
 # so noly build on windows fore the time being...
 
 bld(
-	features = 'cs win',
+	features = 'cs win test',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.Core.Test.OS.Windows.dll',

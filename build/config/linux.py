@@ -2,6 +2,7 @@ from waflib import Utils
 from waflib.TaskGen import feature
 
 archs = [ 'x86', 'x86_64' ]
+
 tools = [
 	'gcc',
 	'gxx',
@@ -9,6 +10,7 @@ tools = [
 	'resx',
 	'csprogram',
 	'utils',
+	'test',
 ]
 
 def prepare(conf):
@@ -23,7 +25,7 @@ def prepare(conf):
 def configure(conf):
 	env = conf.env
 
-	env.supported_features = [
+	env.append_value('supported_features', [
 		'linux',
 		'c',
 		'cstlib',
@@ -36,9 +38,10 @@ def configure(conf):
 		'fake_lib',
 		'cs',
 		'csprogram',
-	]
+		'test',
+	])
 
-	env['ARCH_ST'] = []
+	env['ARCH_ST'] = env['ARCH']
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',
@@ -55,7 +58,9 @@ def configure(conf):
 	
 	env.append_value('CFLAGS', cflags)
 	env.append_value('CXXFLAGS', cflags)
-	
+
+	env.append_value('LIB', [ 'dl' ])
+
 	return [ 'debug', 'release' ]
 
 def debug(env):

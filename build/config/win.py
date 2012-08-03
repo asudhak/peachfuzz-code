@@ -11,18 +11,20 @@ tools = [
 	'resx',
 	'midl',
 	'utils',
+	'externals',
+	'test',
 ]
 
 def prepare(conf):
         env = conf.env
 
         env['MSVC_VERSIONS'] = ['msvc 10.0']
-        env['MSVC_TARGETS']  = [ ('x86' in env.SUBARCH and 'x86' or 'x86_amd64') ]
+        env['MSVC_TARGETS']  = [ env.SUBARCH ]
 
 def configure(conf):
         env = conf.env
  
-        env.supported_features = [
+        env.append_value('supported_features', [
                 'win',
                 'c',
                 'cstlib',
@@ -35,7 +37,8 @@ def configure(conf):
                 'fake_lib',
                 'cs',
                 'csprogram',
-        ]
+                'test',
+        ])
 
         cflags = [
                 '/nologo',
@@ -44,7 +47,7 @@ def configure(conf):
         ]
 
         env.append_value('CFLAGS', cflags)
-        env.append_value('CXXFLAGS', cflags)
+        env.append_value('CXXFLAGS', cflags + [ '/EHsc' ])
 
         env.append_value('DEFINES', [
                 'WIN32',
