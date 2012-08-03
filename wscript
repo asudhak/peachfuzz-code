@@ -118,3 +118,4 @@ def build(bld):
 def go(bld):
 	bld.fun = 'build'
 	bld.recurse(bld.subdirs)
+
