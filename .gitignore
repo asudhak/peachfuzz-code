@@ -1,0 +1,27 @@
+# See https://github.com/github/gitignore/blob/master/CSharp.gitignore
+
+# Build folders
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.suo
+*.user
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+*_i.h
+*_i.c
+*_p.c
+*.tlb
+dlldata.c
+
+# Visual C++ cache files
+ipch/
+.aps
+*.ncb
+*.opensdf
+*.sdf
+
