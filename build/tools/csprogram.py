@@ -14,6 +14,10 @@ def cs_helpers(self):
 @feature('cs')
 @after_method('apply_cs')
 def cs_resource(self):
+	inst_to = getattr(self, 'install_path', self.gen.endswith('.dll') and '${LIBDIR}' or None)
+	if inst_to:
+		self.install_path = inst_to
+
 	base = os.path.splitext(self.gen)[0]
 
 	resources = self.to_nodes(getattr(self, 'resource', []))
