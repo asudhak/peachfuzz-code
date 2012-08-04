@@ -62,10 +62,9 @@ def configure(conf):
 		try:
 			conf.recurse(d.name)
 		except Exception:
-			try:
-				Logs.info("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, conf.path.find_node('%s/build/config.log' % d.name).read(), d.name))
-			except Exception:
-				pass
+			node = conf.path.find_node('%s/build/config.log' % d.name)
+			if node:
+				Logs.info("-- BEGIN %s config.log --\n%s-- END %s config.log --" % (d.name, node.read(), d.name))
 			try:
 				e = sys.exc_info()[1]
 				print(e)
