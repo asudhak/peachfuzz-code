@@ -40,8 +40,8 @@ C2='x'
 cwd = os.getcwd()
 join = os.path.join
 
-#if sys.hexversion<0x206000f:
-#	raise ImportError('Python >= 2.6 is required to create the waf file')
+if sys.hexversion<0x206000f:
+	raise ImportError('Python >= 2.6 is required to create the waf file')
 
 WAF='waf'
 def b(x):
