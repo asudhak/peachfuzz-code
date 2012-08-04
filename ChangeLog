@@ -3,9 +3,10 @@ NEW IN WAF 1.7.1
 * Updated the exclusion regexps for "waf dist"
 * Added an example in playground/nasm
 * Enabled compatibility with pkgconf
-* New midl tool (waflib/extras) #1185
+* Response files for c# #1182
 * Minor docstring updates #1188
-*
+* New tool for compiling .net resource files (waflib/extras/resx.py) #1183
+* New tool for compiling .midl files (waflib/extras/midl.py) #1185
 
 NEW IN WAF 1.7.0
 ----------------
