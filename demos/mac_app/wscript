@@ -18,6 +18,8 @@ def options(opt):
 
 def configure(conf):
 	conf.load('compiler_c')
+	if not conf.env.ARCH_ST:
+		conf.fatal('This example is for macs only')
 	conf.env.FRAMEWORK_COCOA = 'Cocoa'
 	conf.env.ARCH_COCOA = ['i386', 'x86_64']
 
