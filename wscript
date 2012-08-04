@@ -348,7 +348,7 @@ def create_waf(*k, **kw):
 
 	if sys.platform != 'win32':
 		os.chmod('waf', Utils.O755)
-	#os.unlink('%s.tar.%s' % (mw, zipType))
+	os.unlink('%s.tar.%s' % (mw, zipType))
 
 def make_copy(inf, outf):
 	(a, b, cnt) = sfilter(inf)
