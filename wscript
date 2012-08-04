@@ -2,7 +2,7 @@
 
 import os.path
 from waflib.TaskGen import feature, after_method, before_method
-from waflib.Build import BuildContext
+from waflib.Build import InstallContext
 from waflib import Utils, Logs, Configure, Context, Options, Errors
 import tools.hooks
 
@@ -11,13 +11,15 @@ inst = 'output'
 
 hosts = [ 'win', 'linux', 'osx', 'foo' ]
 
-class TestContext(BuildContext):
+class TestContext(InstallContext):
 	cmd = 'test'
-	is_test = True
+
+	def __init__(self, **kw):
+		super(TestContext, self).__init__(**kw)
+		self.is_install = False
+		self.is_test = True
 
 def options(opt):
-	opt.load('waf_unit_test')
-
 	opt.add_option('--variant',
 	               action = 'store',
 	               default = None,
