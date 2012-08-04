@@ -26,8 +26,8 @@ A dumb preprocessor is also available in the tool *c_dumbpreproc*
 """
 # TODO: more varargs, pragma once
 
-import re, sys, os, string, traceback
-from waflib import Logs, Build, Utils, Errors
+import re, string, traceback
+from waflib import Logs, Utils, Errors
 from waflib.Logs import debug, error
 
 class PreprocError(Errors.WafError):
