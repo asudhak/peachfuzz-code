@@ -209,7 +209,7 @@ def build(bld):
 from waflib import TaskGen
 TaskGen.declare_chain(
 	name      = 'a',
-	action    = 'cp ${SRC} ${TGT}',
+	rule      = 'cp ${SRC} ${TGT}',
 	ext_in    = '.in',
 	ext_out   = ['.a1', '.a2'],
 	reentrant = True,
@@ -217,7 +217,7 @@ TaskGen.declare_chain(
 
 TaskGen.declare_chain(
 	name      = 'b',
-	action    = 'cp ${SRC} ${TGT}',
+	rule      = 'cp ${SRC} ${TGT}',
 	ext_in    = '.a1',
 	ext_out   = '.b',
 	reentrant = False,
