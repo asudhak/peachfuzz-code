@@ -286,10 +286,11 @@ namespace Peach.Core.Cracker
 		/// <param name="element">Element to check</param>
 		/// <param name="size">Set to the number of BITS from element to end of the data.</param>
 		/// <returns>Returns true if last unsigned element, else false.</returns>
-		protected bool isLastUnsizedElement(DataElement element, ref long size)
+		protected bool isLastUnsizedElement(DataElement element, ref long outSize)
 		{
-			logger.Trace("isLastUnsizedElement: {0} {1}", element.fullName, size);
+			logger.Trace("isLastUnsizedElement: {0}", element.fullName);
 
+			long size = 0;
 			DataElement oldElement = element;
 			DataElement currentElement = element;
 
@@ -318,7 +319,6 @@ namespace Peach.Core.Cracker
 					}
 					else
 					{
-						size = 0;
 						logger.Debug("isLastUnsizedElement(false): {0} {1}", element.fullName, size);
 						return false;
 					}
@@ -328,6 +328,7 @@ namespace Peach.Core.Cracker
 			}
 
 			logger.Debug("isLastUnsizedElement(true): {0} {1}", element.fullName, size);
+			outSize = size;
 			return true;
 		}
 
@@ -428,11 +429,12 @@ namespace Peach.Core.Cracker
 		/// <param name="size">Set to the number of bits from element to token.</param>
 		/// <param name="token">Set to token element if found</param>
 		/// <returns>Returns true if found token, else false.</returns>
-		protected bool isTokenNext(DataElement element, ref long size, ref DataElement token)
+		protected bool isTokenNext(DataElement element, ref long outSize, ref DataElement token)
 		{
 				System.Diagnostics.Debug.Assert(element != null);
 				System.Diagnostics.Debug.Assert(token == null);
 
+				long size = 0;
 				DataElement next = element;
 
 				while (next != null)
@@ -458,11 +460,19 @@ namespace Peach.Core.Cracker
 					if (next.isToken)
 					{
 						token = next;
+						outSize = size;
 						return true;
 					}
 
 					if (!_isTokenNextRecursive(next, ref size, ref token))
-						return token != null;
+					{
+						if (token != null)
+						{
+							outSize = size;
+							return true;
+						}
+						return false;
+					}
 
 					next = element.parent;
 				}
