@@ -65,6 +65,7 @@ class midl(Task.Task):
 	"""
 	color   = 'YELLOW'
 	run_str = '${MIDL} ${MIDLFLAGS} ${CPPPATH_ST:INCLUDES} /tlb ${TGT[0].bldpath()} /header ${TGT[1].bldpath()} /iid ${TGT[2].bldpath()} /proxy ${TGT[3].bldpath()} /dlldata ${TGT[4].bldpath()} ${SRC}'
+	before  = ['winrc']
 
 	def exec_command(self, *k, **kw):
 		if self.env['PATH']:
