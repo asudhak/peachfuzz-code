@@ -2,6 +2,10 @@ NEW IN WAF 1.7.1
 ----------------
 * Updated the exclusion regexps for "waf dist"
 * Added an example in playground/nasm
+* Enabled compatibility with pkgconf
+* New midl tool (waflib/extras) #1185
+* Minor docstring updates #1188
+*
 
 NEW IN WAF 1.7.0
 ----------------

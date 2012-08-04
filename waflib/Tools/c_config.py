@@ -904,16 +904,18 @@ def write_config_header(self, configfile='', guard='', top=False, env=None, defi
 
 	:param configfile: relative path to the file to create
 	:type configfile: string
+	:param guard: include guard name to add, by default it is computed from the file name
+	:type guard: string
 	:param top: write the configuration header from the build directory (default is from the current path)
 	:type top: bool
 	:param defines: add the defines (yes by default)
 	:type defines: bool
 	:param headers: add #include in the file
 	:type headers: bool
+	:param remove: remove the defines after they are added (yes by default, works like in autoconf)
+	:type remove: bool
 	:type define_prefix: string
 	:param define_prefix: prefix all the defines in the file with a particular prefix
-	:param remove: remove the defines after they are added (yes by default)
-	:type remove: bool
 	"""
 	# TODO waf 1.8: the parameter env is not used
 	if env:
