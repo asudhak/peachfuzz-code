@@ -441,8 +441,8 @@ def find_qt4_binaries(self):
 
 	# the qt directory has been given from QT4_ROOT - deduce the qt binary path
 	if not qtdir:
-		qtdir = self.environ.get('QT4_ROOT', '')
-		qtbin = self.environ.get('QT4_BIN', None) or os.path.join(qtdir, 'bin')
+		qtdir = os.environ.get('QT4_ROOT', '')
+		qtbin = os.environ.get('QT4_BIN', None) or os.path.join(qtdir, 'bin')
 
 	if qtbin:
 		paths = [qtbin]
