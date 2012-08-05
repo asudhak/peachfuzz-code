@@ -1,3 +1,7 @@
+NEW IN WAF 1.7.2
+----------------
+* Install bld.subst() targets
+
 NEW IN WAF 1.7.1
 ----------------
 * Updated the exclusion regexps for "waf dist"
