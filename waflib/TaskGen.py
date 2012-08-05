@@ -800,9 +800,9 @@ def process_subst(self):
 		if not has_constraints and b.name.endswith('.h'):
 			tsk.before = [k for k in ('c', 'cxx') if k in Task.classes]
 
-	inst_to = getattr(self, 'install_path', None)
-	if inst_to:
-		self.bld.install_files(inst_to, tgt, chmod=getattr(self, 'chmod', Utils.O644))
+		inst_to = getattr(self, 'install_path', None)
+		if inst_to:
+			self.bld.install_files(inst_to, b, chmod=getattr(self, 'chmod', Utils.O644))
 
 	self.source = []
 
