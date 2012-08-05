@@ -1,6 +1,7 @@
 NEW IN WAF 1.7.2
 ----------------
 * Install bld.subst() targets
+* New scanner for winrc processing #1186
 
 NEW IN WAF 1.7.1
 ----------------
