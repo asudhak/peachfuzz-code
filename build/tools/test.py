@@ -1,7 +1,30 @@
 import os, os.path, sys
 from waflib.TaskGen import feature, after_method
 from waflib import Utils, Task, Logs, Options, Errors
+import xml.sax.handler
 testlock = Utils.threading.Lock()
+
+class NunitCounter(xml.sax.handler.ContentHandler):
+	def __init__(self):
+		self.num_passed = 0;
+		self.num_failed = 0;
+
+	def startElement(self, name, attrs):
+		if name == 'test-case':
+			if attrs['success'] == 'True':
+				self.num_passed += 1
+			else:
+				self.num_failed += 1
+
+def get_nunit_stats(filename):
+	if not filename:
+		return ''
+
+	handler = NunitCounter()
+	parser = xml.sax.make_parser()
+	parser.setContentHandler(handler)
+	parser.parse(filename)
+	return '     |   Passed: %s, Failed: %s' % (handler.num_passed, handler.num_failed)
 
 def summary(bld):
 	lst = getattr(bld, 'utest_results', [])
@@ -12,14 +35,14 @@ def summary(bld):
 		tfail = len([x for x in lst if x[1]])
 
 		Logs.pprint('CYAN', '  tests that pass %d/%d' % (total-tfail, total))
-		for (f, code) in lst:
+		for (f, code, xml) in lst:
 			if not code:
-				Logs.pprint('CYAN', '    %s' % f)
+				Logs.pprint('CYAN', '    %s%s' % (f.ljust(30), get_nunit_stats(xml)))
 
 		Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
-		for (f, code) in lst:
+		for (f, code, xml) in lst:
 			if code:
-				Logs.pprint('CYAN', '    %s' % f)
+				Logs.pprint('CYAN', '    %-20s%s' % (f.ljust(30), get_nunit_stats(xml)))
 
 def prepare_nunit_test(self):
 	self.ut_exec = [ self.generator.bld.env.NUNIT, '/xml:%s' % self.outputs[0].abspath(), self.inputs[0].abspath() ]
@@ -27,7 +50,8 @@ def prepare_nunit_test(self):
 @feature('test')
 @after_method('apply_link')
 def make_test(self):
-	self.bld.add_post_fun(summary)	
+	if summary not in getattr(self.bld, 'post_funs', []):
+		self.bld.add_post_fun(summary)
 
 	inputs = []
 	outputs = []
@@ -38,14 +62,14 @@ def make_test(self):
 	if getattr(self, 'cs_task', None):
 		inputs = [ self.cs_task.outputs[0] ]
 		if self.gen.endswith('.dll'):
+			self.ut_nunit = True
 			self.ut_fun = prepare_nunit_test
 			outputs = [ inputs[0].change_ext('.xml') ]
 
 	if not inputs:
 		raise Errors.WafError('No test to run at: %r' % self)
 
-	if Logs.verbose == 0:
-		outputs.append( inputs[0].change_ext('.log') )
+	outputs.append( inputs[0].change_ext('.log') )
 
 	test = self.create_task('utest', inputs, outputs)
 	self.bld.install_files('${PREFIX}/utest', test.outputs)
@@ -100,15 +124,13 @@ class utest(Task.Task):
 		Logs.debug('runner: %r' % self.ut_exec)
 		cwd = getattr(self.generator, 'ut_cwd', '') or self.inputs[0].parent.abspath()
 
-		if Logs.verbose > 0:
-			proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=None, stdout=None)
+		with open(self.outputs[-1].abspath(), "wb") as out:
+			proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=Utils.subprocess.STDOUT, stdout=out)
 			ret = proc.wait()
-		else:
-			with open(self.outputs[-1].abspath(), "wb") as out:
-				proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=Utils.subprocess.STDOUT, stdout=out)
-				ret = proc.wait()
 
-		tup = (self.inputs[0].name, ret)
+		xml = getattr(self.generator, 'ut_nunit', False) and self.outputs[0].abspath() or None
+
+		tup = (self.inputs[0].name, ret, xml)
 		self.generator.utest_result = tup
 
 		testlock.acquire()
