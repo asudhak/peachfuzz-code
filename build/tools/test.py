@@ -72,7 +72,8 @@ def make_test(self):
 	outputs.append( inputs[0].change_ext('.log') )
 
 	test = self.create_task('utest', inputs, outputs)
-	self.bld.install_files('${PREFIX}/utest', test.outputs)
+	if getattr(self.bld, 'is_test', None):
+		self.bld.install_files('${PREFIX}/utest', test.outputs)
 
 class utest(Task.Task):
 	color = 'PINK'
