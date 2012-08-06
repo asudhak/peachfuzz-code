@@ -45,7 +45,7 @@ def summary(bld):
 				Logs.pprint('CYAN', '    %-20s%s' % (f.ljust(30), get_nunit_stats(xml)))
 
 def prepare_nunit_test(self):
-	self.ut_exec = [ self.generator.bld.env.NUNIT, '/xml:%s' % self.outputs[0].abspath(), self.inputs[0].abspath() ]
+	self.ut_exec = [ self.generator.bld.env.NUNIT, self.inputs[0].abspath(), '-xml:%s' % self.outputs[0].abspath() ]
 
 @feature('test')
 @after_method('apply_link')
