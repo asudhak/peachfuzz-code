@@ -44,6 +44,9 @@ def summary(bld):
 			if code:
 				Logs.pprint('CYAN', '    %-20s%s' % (f.ljust(30), get_nunit_stats(xml)))
 
+		if tfail:
+			raise Errors.WafError(msg='%d out of %d test suites failed' % (tfail, total))
+
 def prepare_nunit_test(self):
 	self.ut_exec = [ self.generator.bld.env.NUNIT, self.inputs[0].abspath(), '-xml:%s' % self.outputs[0].abspath() ]
 
