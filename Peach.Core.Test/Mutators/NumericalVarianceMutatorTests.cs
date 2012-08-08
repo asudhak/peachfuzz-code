@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class NumericalVarianceMutatorTests
+    class NumericalVarianceMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-		long? testValue = null;
-        List<long?> listVals = new List<long?>();
-
         [Test]
         public void Test1()
         {
@@ -41,8 +37,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -57,23 +53,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-            //Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
-
-			Engine e = new Engine(null);
+            Engine e = new Engine(null);
             e.config = config;
-			e.startFuzzing(dom, config);
+            e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 101);
-            Assert.AreEqual(listVals[0], 50);
-            Assert.AreEqual(listVals[listVals.Count - 1], 150);
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(101, mutations.Count);
+            for (int i = 0; i <= 100; ++i)
+            {
+                Assert.AreEqual(Variant.VariantType.ULong, mutations[i].GetVariantType());
+                Assert.AreEqual(50 + i, (ulong)mutations[i]);
+            }
         }
 
         [Test]
@@ -101,8 +91,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -117,22 +107,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 11);
-            Assert.AreEqual(listVals[0], 95);
-            Assert.AreEqual(listVals[listVals.Count - 1], 105);
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(11, mutations.Count);
+            for (int i = 0; i <= 10; ++i)
+            {
+                Assert.AreEqual(Variant.VariantType.ULong, mutations[i].GetVariantType());
+                Assert.AreEqual(95 + i, (ulong)mutations[i]);
+            }
         }
 
         [Test]
@@ -159,8 +144,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -175,22 +160,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 101);
-            Assert.AreEqual(listVals[0], 50);
-            Assert.AreEqual(listVals[listVals.Count - 1], 150);
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(101, mutations.Count);
+            for (int i = 0; i <= 100; ++i)
+            {
+                Assert.AreEqual(Variant.VariantType.String, mutations[i].GetVariantType());
+                Assert.AreEqual((50 + i).ToString(), (string)mutations[i]);
+            }
         }
 
         [Test]
@@ -217,8 +197,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -233,51 +213,13 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // listVals should be empty!!
-            Assert.IsEmpty(listVals);
-
-            // reset
-            firstPass = true;
-			Dom.Action.Finished -= Action_FinishedTest;
+            // mutations should be empty!!
+            Assert.IsEmpty(mutations);
         }
-
-        void Action_Starting(Dom.Action action)
-        {
-            System.Diagnostics.Debugger.Break();
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-		{
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                // handle numbers
-                if (action.dataModel[0] is Number)
-                {
-                    testValue = (long)action.dataModel[0].InternalValue;
-                    listVals.Add(testValue);
-                }
-                // handle numerical strings
-                else if (action.dataModel[0] is Dom.String)
-                {
-                    long test = 0;
-                    if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
-                    {
-                        testValue = test;
-                        listVals.Add(testValue);
-                    }
-                }
-            }
-		}
     }
 }
 

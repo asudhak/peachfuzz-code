@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class ValidValuesMutatorTests
+    class ValidValuesMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        string testString = null;
-        List<string> testResults = new List<string>();
-
         [Test]
         public void Test1()
         {
@@ -42,8 +38,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -58,38 +54,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(testResults[0] == "one");
-            Assert.IsTrue(testResults[1] == "two");
-            Assert.IsTrue(testResults[2] == "three");
-            Assert.IsTrue(testResults[3] == "four");
-            Assert.IsTrue(testResults[4] == "five");
-            Assert.IsTrue(testResults[5] == "abc");
-            Assert.IsTrue(testResults[6] == "123");
-
-            // reset
-            firstPass = true;
-            testString = null;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
+            string[] expected = new string[] { "one", "two", "three", "four", "five", "abc", "123" };
+            Assert.AreEqual(expected.Length, mutations.Count);
+            for (int i = 0; i < mutations.Count; ++i)
             {
-                firstPass = false;
-            }
-            else
-            {
-                testString = (string)action.dataModel[0].InternalValue;
-                testResults.Add(testString);
+                Assert.AreEqual(Variant.VariantType.String, mutations[i].GetVariantType());
+                Assert.AreEqual(expected[i], (string)mutations[i]);
             }
         }
     }

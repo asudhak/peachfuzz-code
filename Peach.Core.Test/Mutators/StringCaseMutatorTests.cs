@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class StringCaseMutatorTests
+    class StringCaseMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        string testString = null;
-        List<string> testResults = new List<string>();
-
         [Test]
         public void Test1()
         {
@@ -40,8 +36,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -56,36 +52,23 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(testResults[0] == "hello, world!");
-            Assert.IsTrue(testResults[1] == "HELLO, WORLD!");
-            Assert.IsFalse(testResults[2] == "hello, world!");
-            Assert.IsFalse(testResults[2] == "HELLO, WORLD!");
+            Assert.AreEqual(3, mutations.Count);
 
-            // reset
-            firstPass = true;
-            testString = null;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
+            Assert.AreEqual(Variant.VariantType.String, mutations[0].GetVariantType());
+            Assert.AreEqual("hello, world!", (string)mutations[0]);
 
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                testString = (string)action.dataModel[0].InternalValue;
-                testResults.Add(testString);
-            }
+            Assert.AreEqual(Variant.VariantType.String, mutations[1].GetVariantType());
+            Assert.AreEqual("HELLO, WORLD!", (string)mutations[1]);
+
+            Assert.AreEqual(Variant.VariantType.String, mutations[2].GetVariantType());
+            Assert.AreNotEqual("Hello, World!", (string)mutations[2]);
+            Assert.AreNotEqual("hello, world!", (string)mutations[2]);
+            Assert.AreNotEqual("HELLO, WORLD!", (string)mutations[2]);
         }
     }
 }

@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class StringMutatorTests
+    class StringMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        string testString = null;
-        List<string> testResults = new List<string>();
-
         [Test]
         public void Test1()
         {
@@ -40,8 +36,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -56,8 +52,6 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -68,30 +62,11 @@ namespace Peach.Core.Test.Mutators
             string val3 = "18446744073709551664";
             string val4 = "10";
 
-            Assert.AreEqual(2379, testResults.Count);
-            Assert.AreEqual(val1, testResults[0]);
-            Assert.AreEqual(val2, testResults[1]);
-            Assert.AreEqual(val3, testResults[testResults.Count - 2]);
-            Assert.AreEqual(val4, testResults[testResults.Count - 1]);
-
-            // reset
-            firstPass = true;
-            testString = null;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                testString = (string)action.dataModel[0].InternalValue;
-                testResults.Add(testString);
-            }
+            Assert.AreEqual(2379, mutations.Count);
+            Assert.AreEqual(val1, (string)mutations[0]);
+            Assert.AreEqual(val2, (string)mutations[1]);
+            Assert.AreEqual(val3, (string)mutations[mutations.Count - 2]);
+            Assert.AreEqual(val4, (string)mutations[mutations.Count - 1]);
         }
     }
 }

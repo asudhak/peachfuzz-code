@@ -12,24 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class SizedDataVaranceMutatorTests
+    class SizedDataVaranceMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-
-        public struct TestResult
-        {
-            public long size;
-            public byte[] value;
-
-            public TestResult(long sz, byte[] vals)
-            {
-                size = sz;
-                value = vals;
-            }
-        }
-
-        List<TestResult> listResults = new List<TestResult>();
-
         [Test]
         public void Test1()
         {
@@ -58,8 +42,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -74,27 +58,22 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listResults.Count == 55);
-            for (int i = 0; i < 55; ++i)
+            Assert.AreEqual(56, dataModels.Count);
+            Assert.AreEqual(Variant.VariantType.Long, dataModels[0][0].InternalValue.GetVariantType());
+            Assert.AreEqual(5, (long)dataModels[0][0].InternalValue);
+            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.Value);
+
+            for (int i = 1; i < 56; ++i)
             {
-                // 5th element will obviously have a length of 5
-                if (i == 4)
-                    continue;
-
-                Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
+                Assert.AreEqual(Variant.VariantType.Long, dataModels[i][0].InternalValue.GetVariantType());
+                Assert.AreEqual(5, (long)dataModels[i][0].InternalValue);
+                Assert.AreEqual(i, dataModels[i][1].Value.Value.Length);
             }
-
-            // reset
-            firstPass = true;
-            listResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -126,8 +105,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -142,41 +121,21 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listResults.Count == 10);
-            for (int i = 0; i < 10; ++i)
-            {
-                // 5th element will obviously have a length of 5
-                if (i == 4)
-                    continue;
+            Assert.AreEqual(11, dataModels.Count);
+            Assert.AreEqual(Variant.VariantType.Long, dataModels[0][0].InternalValue.GetVariantType());
+            Assert.AreEqual(5, (long)dataModels[0][0].InternalValue);
+            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.Value);
 
-                Assert.AreNotEqual(listResults[i].size, listResults[i].value.Length);
-            }
-
-            // reset
-            firstPass = true;
-            listResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
+            for (int i = 1; i < 11; ++i)
             {
-                firstPass = false;
-            }
-            else
-            {
-                TestResult tr;
-                tr.size = (long)action.dataModel[0].InternalValue;
-                tr.value = action.dataModel[1].Value.Value;
-                listResults.Add(tr);
+                Assert.AreEqual(Variant.VariantType.Long, dataModels[i][0].InternalValue.GetVariantType());
+                Assert.AreEqual(5, (long)dataModels[i][0].InternalValue);
+                Assert.AreEqual(i, dataModels[i][1].Value.Value.Length);
             }
         }
     }

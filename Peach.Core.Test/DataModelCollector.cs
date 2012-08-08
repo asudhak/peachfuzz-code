@@ -12,6 +12,7 @@ namespace Peach.Core.Test
 		protected bool firstRun = false;
 		protected List<Variant> mutations = null;
 		protected List<BitStream> values = null;
+		protected List<Dom.DataModel> dataModels = null;
 		protected List<Dom.Action> actions = null;
 
 		[SetUp]
@@ -21,6 +22,7 @@ namespace Peach.Core.Test
 			values = new List<BitStream>();
 			mutations = new List<Variant>();
 			actions = new List<Dom.Action>();
+			dataModels = new List<Dom.DataModel>();
 			Dom.Action.Finished += new Dom.ActionFinishedEventHandler(Action_Finished);
 		}
 
@@ -38,11 +40,10 @@ namespace Peach.Core.Test
 			else
 				firstRun = true;
 
-			// Collect transformed values always
+			// Collect transformed values, actions and dataModels always
 			values.Add(action.dataModel[0].Value);
-
-			// Collect actions always
 			actions.Add(action);
+			dataModels.Add(action.dataModel);
 		}
 	}
 }

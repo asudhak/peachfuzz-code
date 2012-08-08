@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class ArrayVarianceMutatorTests
+    class ArrayVarianceMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        byte[] testValue;
-        List<byte[]> listVals = new List<byte[]>();
-
         [Test]
         public void Test1()
         {
@@ -41,8 +37,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -61,20 +57,12 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 56);
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(56, mutations.Count);
         }
 
         [Test]
@@ -102,8 +90,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -122,43 +110,30 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 11);
-            Assert.AreEqual(listVals[0], new byte[0]);
-            Assert.AreEqual(listVals[1], new byte[] { (byte)('0') });
-            Assert.AreEqual(listVals[2], new byte[] { (byte)('0'), (byte)('1') });
-            Assert.AreEqual(listVals[3], new byte[] { (byte)('0'), (byte)('1'), (byte)('2') });
-            Assert.AreEqual(listVals[4], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3') });
-            Assert.AreEqual(listVals[5], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') });
-            Assert.AreEqual(listVals[6], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[7], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[8], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[9], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-            Assert.AreEqual(listVals[10], new byte[] { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4'), (byte)('4') });
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
+            byte[][] expected = new byte[][] {
+                new byte[0],
+                Encoding.ASCII.GetBytes("0"),
+                Encoding.ASCII.GetBytes("01"),
+                Encoding.ASCII.GetBytes("012"),
+                Encoding.ASCII.GetBytes("0123"),
+                Encoding.ASCII.GetBytes("01234"),
+                Encoding.ASCII.GetBytes("012344"),
+                Encoding.ASCII.GetBytes("0123444"),
+                Encoding.ASCII.GetBytes("01234444"),
+                Encoding.ASCII.GetBytes("012344444"),
+                Encoding.ASCII.GetBytes("0123444444"),
+            };
+            Assert.AreEqual(expected.Length, mutations.Count);
+            for (int i = 0; i < expected.Length; ++i)
             {
-                firstPass = false;
-            }
-            else
-            {
-                testValue = action.dataModel[0].Value.Value;
-                listVals.Add(testValue);
+                var item = mutations[i];
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                Assert.AreEqual(expected[i], (byte[])item);
             }
         }
     }

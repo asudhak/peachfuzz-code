@@ -12,24 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class SizedNumericalEdgeCasesMutatorTests
+    class SizedNumericalEdgeCasesMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-
-        public struct TestResult
-        {
-            public long size;
-            public byte[] value;
-
-            public TestResult(long sz, byte[] vals)
-            {
-                size = sz;
-                value = vals;
-            }
-        }
-
-        List<TestResult> listResults = new List<TestResult>();
-
         [Test]
         public void Test1()
         {
@@ -57,8 +41,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -73,34 +57,16 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listResults.Count; ++i)
-                Assert.AreEqual(listResults[i].size, listResults[i].value.Length);
-
-            // reset
-            firstPass = true;
-            listResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
+            Assert.Greater(dataModels.Count, 1);
+            foreach (var item in dataModels)
             {
-                firstPass = false;
-            }
-            else
-            {
-                TestResult tr;
-                tr.size = (long)action.dataModel[0].InternalValue;
-                tr.value = action.dataModel[1].Value.Value;
-                listResults.Add(tr);
+                Assert.AreEqual(Variant.VariantType.Long, item[0].InternalValue.GetVariantType());
+                Assert.AreEqual((long)item[0].InternalValue, item[1].Value.Value.Length);
             }
         }
     }

@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class BlobDWORDSliderMutatorTests
+    class BlobDWORDSliderMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        byte[] result;
-        List<byte[]> testResults = new List<byte[]>();
-
         [Test]
         public void Test1()
         {
@@ -42,8 +38,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -58,28 +54,28 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(testResults.Count == 8);
-            Assert.AreEqual(testResults[0], new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0x04, 0x05, 0x06, 0x07 });
-            Assert.AreEqual(testResults[1], new byte[] { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x05, 0x06, 0x07 });
-            Assert.AreEqual(testResults[2], new byte[] { 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x06, 0x07 });
-            Assert.AreEqual(testResults[3], new byte[] { 0x00, 0x01, 0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0x07 });
-            Assert.AreEqual(testResults[4], new byte[] { 0x00, 0x01, 0x02, 0x03, 0xFF, 0xFF, 0xFF, 0xFF });
-            Assert.AreEqual(testResults[5], new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0xFF, 0xFF, 0xFF });
-            Assert.AreEqual(testResults[6], new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xFF, 0xFF });
-            Assert.AreEqual(testResults[7], new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0xFF });
+            byte[][] expected = new byte[][]{
+                new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0x04, 0x05, 0x06, 0x07 },
+                new byte[] { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x05, 0x06, 0x07 },
+                new byte[] { 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x06, 0x07 },
+                new byte[] { 0x00, 0x01, 0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0x07 },
+                new byte[] { 0x00, 0x01, 0x02, 0x03, 0xFF, 0xFF, 0xFF, 0xFF },
+                new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0xFF, 0xFF, 0xFF },
+                new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xFF, 0xFF },
+                new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0xFF }
+            };
 
-            // reset
-            firstPass = true;
-            result = null;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(expected.Length, mutations.Count);
+            for (int i = 0; i < expected.Length; ++i)
+            {
+                Assert.AreEqual(Variant.VariantType.ByteString, mutations[i].GetVariantType());
+                Assert.AreEqual(expected[i], (byte[])mutations[i]);
+            }
         }
 
         [Test]
@@ -106,8 +102,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -122,34 +118,12 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            // - list should be empty!
-            Assert.IsEmpty(testResults);
-
-            // reset
-            firstPass = true;
-            result = null;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                result = action.dataModel[0].Value.Value;
-                testResults.Add(result);
-            }
+            Assert.IsEmpty(mutations);
         }
     }
 }

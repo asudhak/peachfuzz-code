@@ -12,16 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class NumericalEdgeCaseMutatorTests
+    class NumericalEdgeCaseMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-
-        long? testValue = null;
-        List<long?> listVals = new List<long?>();
-
-        ulong? ulongTestValue = null;
-        List<ulong?> ulongListVals = new List<ulong?>();
-
         [Test]
         public void Test1()
         {
@@ -46,8 +38,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -62,24 +54,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= sbyte.MinValue);
-                Assert.IsTrue(listVals[i] <= sbyte.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToSByte((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -109,8 +94,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -125,24 +110,16 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= sbyte.MinValue);
-                Assert.IsTrue(listVals[i] <= sbyte.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToSByte((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -172,8 +149,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -188,24 +165,16 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= byte.MinValue);
-                Assert.IsTrue(listVals[i] <= byte.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToByte((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -231,8 +200,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -247,24 +216,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= short.MinValue);
-                Assert.IsTrue(listVals[i] <= short.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToInt16((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -290,8 +252,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -306,24 +268,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= ushort.MinValue);
-                Assert.IsTrue(listVals[i] <= ushort.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToUInt16((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -349,8 +304,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -365,24 +320,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= int.MinValue);
-                Assert.IsTrue(listVals[i] <= int.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToInt32((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -408,8 +356,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -424,24 +372,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= uint.MinValue);
-                Assert.IsTrue(listVals[i] <= uint.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToUInt32((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -467,8 +408,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -483,24 +424,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < listVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i] >= long.MinValue);
-                Assert.IsTrue(listVals[i] <= long.MaxValue);
+                Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
+                Assert.NotNull(Convert.ToInt64((long)item));
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -526,8 +460,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -542,63 +476,16 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTestULong);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < ulongListVals.Count; ++i)
+            Assert.Greater(mutations.Count, 0);
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(ulongListVals[i] >= ulong.MinValue);
-                Assert.IsTrue(ulongListVals[i] <= ulong.MaxValue);
-            }
-
-            // reset
-            firstPass = true;
-            ulongTestValue = null;
-            ulongListVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTestULong;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                // handle numbers
-                if (action.dataModel[0] is Number)
-                {
-                    testValue = (long)action.dataModel[0].InternalValue;
-                    listVals.Add(testValue);
-                }
-                // handle numerical strings
-                else if (action.dataModel[0] is Dom.String)
-                {
-                    long test = 0;
-                    if (Int64.TryParse((string)action.dataModel[0].InternalValue, out test))
-                    {
-                        testValue = test;
-                        listVals.Add(testValue);
-                    }
-                }
-            }
-        }
-
-        void Action_FinishedTestULong(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                ulongTestValue = (ulong)action.dataModel[0].InternalValue;
-                ulongListVals.Add(ulongTestValue);
+                Assert.AreEqual(Variant.VariantType.ULong, item.GetVariantType());
+                Assert.NotNull(Convert.ToUInt64((ulong)item));
             }
         }
     }

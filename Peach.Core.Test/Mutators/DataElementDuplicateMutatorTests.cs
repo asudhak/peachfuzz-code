@@ -12,7 +12,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class DataElementDuplicateMutatorTests
+    class DataElementDuplicateMutatorTests : DataModelCollector
     {
         bool firstPass = true;
         List<DataModel> results = new List<DataModel>();
@@ -39,8 +39,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -55,20 +55,14 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            for (int i = 0; i < 49; ++i)
-                Assert.AreEqual(i + 2, results[i].Count);
-
-            // reset
-            firstPass = true;
-            results.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(50, dataModels.Count);
+            for (int i = 0; i < 50; ++i)
+                Assert.AreEqual(i + 1, dataModels[i].Count);
         }
 
 		//[Test]
@@ -146,31 +140,13 @@ namespace Peach.Core.Test.Mutators
 
 		//    RunConfiguration config = new RunConfiguration();
 
-		//    Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
 		//    Engine e = new Engine(null);
 		//    e.config = config;
 		//    e.startFuzzing(dom, config);
 
 		//    // verify values
 
-		//    // reset
-		//    firstPass = true;
-		//    results.Clear();
-		//	Dom.Action.Finished -= Action_FinishedTest;
 		//}
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                results.Add(action.dataModel);
-            }
-        }
     }
 }
 

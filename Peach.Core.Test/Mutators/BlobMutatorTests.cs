@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class BlobMutatorTests
+    class BlobMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        byte[] result;
-        List<byte[]> testResults = new List<byte[]>();
-
         // NOTE:    The BlobMutator selects its options on how to change/expand the buffer randomly from a list of functions
         //          in the mutator. These tests were pre-calibrated to use the specific functionality they were testing.
         //          Therefore, the results of these tests will be inaccurate unless the mutator is specifically set up before running them.
@@ -44,8 +40,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -60,19 +56,15 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(testResults[0].Length == 10);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(10, item.Length);
         }
 
         [Test]
@@ -97,8 +89,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -113,24 +105,22 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(testResults[0].Length == 2);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            byte[] expected = new byte[] { 0x00, 0x03 };
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(expected, item);
         }
 
         [Test]
         public void Test3()
         {
-            // testing changing a range of the buffer, change the 2nd and 3rd bytes from 02 / 03 to something else.
+            // testing changing a range of the buffer, change the 2nd and 3rd bytes from 01 / 02 to something else.
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -149,8 +139,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -165,26 +155,25 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreNotEqual(testResults[0][1], 2);
-            Assert.AreNotEqual(testResults[0][2], 3);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            byte[] expected = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(expected.Length, item.Length);
+            Assert.AreNotEqual(expected, item);
+            Assert.AreNotEqual(expected[1], item[1]);
+            Assert.AreNotEqual(expected[2], item[2]);
         }
 
         [Test]
         public void Test4()
         {
-            // testing changing a range of the buffer, change the 2nd and 3rd bytes from 02 / 03 to a special char 0xFF.
+            // testing changing a range of the buffer, change the 2nd and 3rd bytes from 01 / 02 to a special char 0xFF.
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -203,8 +192,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -219,26 +208,22 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreEqual(testResults[0][1], 0xFF);
-            Assert.AreEqual(testResults[0][2], 0xFF);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            byte[] expected = new byte[] { 0x00, 0xff, 0xff, 0x03 };
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(expected, item);
         }
 
         [Test]
         public void Test5()
         {
-            // testing changing a range of the buffer, change the 2nd and 3rd bytes from 02 / 03 to NULL.
+            // testing changing a range of the buffer, change the 2nd and 3rd bytes from 01 / 02 to NULL.
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -257,8 +242,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -273,20 +258,16 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreEqual(testResults[0][1], 0);
-            Assert.AreEqual(testResults[0][2], 0);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            byte[] expected = new byte[] { 0x00, 0x00, 0x00, 0x03 };
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(expected, item);
         }
 
         [Test]
@@ -311,8 +292,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -327,22 +308,19 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreNotEqual(testResults[0][0], 0);
-            Assert.AreNotEqual(testResults[0][1], 0);
-            Assert.AreNotEqual(testResults[0][2], 0);
-            Assert.AreNotEqual(testResults[0][3], 0);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            byte[] expected = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(expected.Length, item.Length);
+            Assert.AreNotEqual(expected, item);
+            for (int i = 0; i < expected.Length; ++i)
+                Assert.AreNotEqual(expected[i], item[i]);
         }
 
         [Test]
@@ -367,8 +345,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -383,20 +361,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(10, item.Length);
             for (int i = 0; i < 10; ++i)
-                Assert.AreEqual(testResults[0][i], i);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+                Assert.AreEqual(item[i], i);
         }
 
         [Test]
@@ -421,8 +396,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -437,20 +412,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(10, item.Length);
             for (int i = 0; i < 10; ++i)
-                Assert.AreEqual(testResults[0][i], 0);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+                Assert.AreEqual(item[i], 0);
         }
 
         [Test]
@@ -475,8 +447,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -491,33 +463,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(10, item.Length);
             for (int i = 0; i < 10; ++i)
-                Assert.AreNotEqual(testResults[0][i], 0);
-
-            // reset
-            firstPass = true;
-            testResults.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                result = action.dataModel[0].Value.Value;
-                testResults.Add(result);
-            }
+                Assert.AreNotEqual(item[i], 0);
         }
     }
 }

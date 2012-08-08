@@ -12,11 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class DataElementSwapNearNodesMutatorTests
+    class DataElementSwapNearNodesMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        List<DataModel> results = new List<DataModel>();
-
         [Test]
         public void Test1()
         {
@@ -43,8 +40,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
                 "       <Test ref=\"TheTest\"/>" +
@@ -59,122 +56,185 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(results.Count == 5);
+            Assert.AreEqual(6, dataModels.Count);
 
-            Assert.IsTrue(results[0].Count == 5);
-            Assert.AreEqual(results[0][0].name, "num1");
-            Assert.AreEqual(results[0][1].name, "num0");
-            Assert.AreEqual(results[0][2].name, "num2");
-            Assert.AreEqual(results[0][3].name, "num3");
-            Assert.AreEqual(results[0][4].name, "num4");
+            Assert.AreEqual(5, dataModels[0].Count);
+            Assert.AreEqual("num0", dataModels[0][0].name);
+            Assert.AreEqual("num1", dataModels[0][1].name);
+            Assert.AreEqual("num2", dataModels[0][2].name);
+            Assert.AreEqual("num3", dataModels[0][3].name);
+            Assert.AreEqual("num4", dataModels[0][4].name);
 
-            Assert.IsTrue(results[1].Count == 5);
-            Assert.AreEqual(results[1][0].name, "num0");
-            Assert.AreEqual(results[1][1].name, "num2");
-            Assert.AreEqual(results[1][2].name, "num1");
-            Assert.AreEqual(results[1][3].name, "num3");
-            Assert.AreEqual(results[1][4].name, "num4");
+            Assert.AreEqual(5, dataModels[1].Count);
+            Assert.AreEqual("num1", dataModels[1][0].name);
+            Assert.AreEqual("num0", dataModels[1][1].name);
+            Assert.AreEqual("num2", dataModels[1][2].name);
+            Assert.AreEqual("num3", dataModels[1][3].name);
+            Assert.AreEqual("num4", dataModels[1][4].name);
 
-            Assert.IsTrue(results[2].Count == 5);
-            Assert.AreEqual(results[2][0].name, "num0");
-            Assert.AreEqual(results[2][1].name, "num1");
-            Assert.AreEqual(results[2][2].name, "num3");
-            Assert.AreEqual(results[2][3].name, "num2");
-            Assert.AreEqual(results[2][4].name, "num4");
+            Assert.AreEqual(5, dataModels[2].Count);
+            Assert.AreEqual("num0", dataModels[2][0].name);
+            Assert.AreEqual("num2", dataModels[2][1].name);
+            Assert.AreEqual("num1", dataModels[2][2].name);
+            Assert.AreEqual("num3", dataModels[2][3].name);
+            Assert.AreEqual("num4", dataModels[2][4].name);
 
-            Assert.IsTrue(results[3].Count == 5);
-            Assert.AreEqual(results[3][0].name, "num0");
-            Assert.AreEqual(results[3][1].name, "num1");
-            Assert.AreEqual(results[3][2].name, "num2");
-            Assert.AreEqual(results[3][3].name, "num4");
-            Assert.AreEqual(results[3][4].name, "num3");
+            Assert.AreEqual(5, dataModels[3].Count);
+            Assert.AreEqual("num0", dataModels[3][0].name);
+            Assert.AreEqual("num1", dataModels[3][1].name);
+            Assert.AreEqual("num3", dataModels[3][2].name);
+            Assert.AreEqual("num2", dataModels[3][3].name);
+            Assert.AreEqual("num4", dataModels[3][4].name);
 
-            Assert.IsTrue(results[4].Count == 5);
-            Assert.AreEqual(results[4][0].name, "num0");
-            Assert.AreEqual(results[4][1].name, "num1");
-            Assert.AreEqual(results[4][2].name, "num2");
-            Assert.AreEqual(results[4][3].name, "num3");
-            Assert.AreEqual(results[4][4].name, "num4");
+            Assert.AreEqual(5, dataModels[4].Count);
+            Assert.AreEqual("num0", dataModels[4][0].name);
+            Assert.AreEqual("num1", dataModels[4][1].name);
+            Assert.AreEqual("num2", dataModels[4][2].name);
+            Assert.AreEqual("num4", dataModels[4][3].name);
+            Assert.AreEqual("num3", dataModels[4][4].name);
 
-            // reset
-            firstPass = true;
-            results.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(5, dataModels[5].Count);
+            Assert.AreEqual("num0", dataModels[5][0].name);
+            Assert.AreEqual("num1", dataModels[5][1].name);
+            Assert.AreEqual("num2", dataModels[5][2].name);
+            Assert.AreEqual("num3", dataModels[5][3].name);
+            Assert.AreEqual("num4", dataModels[5][4].name);
         }
 
-		[Test]
-		public void TestBlock()
-		{
-			// standard test of swapping the data elements
-
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-				"<Peach>" +
-				"   <DataModel name=\"TheDataModel\">" +
-				"     <Block name=\"blk\">" +
-				"       <Number name=\"num0\" size=\"32\" signed=\"true\" value=\"41\"/>" +
-				"       <Number name=\"num1\" size=\"32\" signed=\"true\" value=\"42\"/>" +
-				"       <Number name=\"num2\" size=\"32\" signed=\"true\" value=\"43\"/>" +
-				"       <Number name=\"num3\" size=\"32\" signed=\"true\" value=\"44\"/>" +
-				"       <Number name=\"num4\" size=\"32\" signed=\"true\" value=\"45\"/>" +
-				"     </Block>" +
-				"   </DataModel>" +
-
-				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-				"       <State name=\"Initial\">" +
-				"           <Action type=\"output\">" +
-				"               <DataModel ref=\"TheDataModel\"/>" +
-				"           </Action>" +
-				"       </State>" +
-				"   </StateModel>" +
-
-				"   <Test name=\"Default\">" +
-				"       <StateModel ref=\"TheState\"/>" +
-				"       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
-
-				"   <Run name=\"DefaultRun\">" +
-				"       <Test ref=\"TheTest\"/>" +
-				"   </Run>" +
-				"</Peach>";
-
-			PitParser parser = new PitParser();
-
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			dom.tests[0].includedMutators = new List<string>();
-			dom.tests[0].includedMutators.Add("DataElementSwapNearNodesMutator");
-
-			RunConfiguration config = new RunConfiguration();
-
-			Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
-			Engine e = new Engine(null);
-			e.config = config;
-			e.startFuzzing(dom, config);
-
-			Assert.IsTrue(results.Count == 6);
-
-			firstPass = true;
-			results.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-		}
-        void Action_FinishedTest(Dom.Action action)
+        [Test]
+        public void TestBlock()
         {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                results.Add(action.dataModel);
-            }
+            // standard test of swapping the data elements
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "     <Block name=\"blk\">" +
+                "       <Number name=\"num0\" size=\"32\" signed=\"true\" value=\"41\"/>" +
+                "       <Number name=\"num1\" size=\"32\" signed=\"true\" value=\"42\"/>" +
+                "       <Number name=\"num2\" size=\"32\" signed=\"true\" value=\"43\"/>" +
+                "       <Number name=\"num3\" size=\"32\" signed=\"true\" value=\"44\"/>" +
+                "       <Number name=\"num4\" size=\"32\" signed=\"true\" value=\"45\"/>" +
+                "     </Block>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"Default\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Null\"/>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
+
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("DataElementSwapNearNodesMutator");
+
+            RunConfiguration config = new RunConfiguration();
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            DataElementContainer blk = null;
+
+            Assert.AreEqual(7, dataModels.Count);
+
+            Assert.AreEqual(1, dataModels[0].Count);
+            blk = dataModels[0][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num0", blk[0].name);
+            Assert.AreEqual("num1", blk[1].name);
+            Assert.AreEqual("num2", blk[2].name);
+            Assert.AreEqual("num3", blk[3].name);
+            Assert.AreEqual("num4", blk[4].name);
+
+            Assert.AreEqual(1, dataModels[1].Count);
+            blk = dataModels[1][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num0", blk[0].name);
+            Assert.AreEqual("num1", blk[1].name);
+            Assert.AreEqual("num2", blk[2].name);
+            Assert.AreEqual("num3", blk[3].name);
+            Assert.AreEqual("num4", blk[4].name);
+
+            Assert.AreEqual(1, dataModels[2].Count);
+            blk = dataModels[2][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num1", blk[0].name);
+            Assert.AreEqual("num0", blk[1].name);
+            Assert.AreEqual("num2", blk[2].name);
+            Assert.AreEqual("num3", blk[3].name);
+            Assert.AreEqual("num4", blk[4].name);
+
+            Assert.AreEqual(1, dataModels[3].Count);
+            blk = dataModels[3][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num0", blk[0].name);
+            Assert.AreEqual("num2", blk[1].name);
+            Assert.AreEqual("num1", blk[2].name);
+            Assert.AreEqual("num3", blk[3].name);
+            Assert.AreEqual("num4", blk[4].name);
+
+            Assert.AreEqual(1, dataModels[4].Count);
+            blk = dataModels[4][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num0", blk[0].name);
+            Assert.AreEqual("num1", blk[1].name);
+            Assert.AreEqual("num3", blk[2].name);
+            Assert.AreEqual("num2", blk[3].name);
+            Assert.AreEqual("num4", blk[4].name);
+
+            Assert.AreEqual(1, dataModels[5].Count);
+            blk = dataModels[5][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num0", blk[0].name);
+            Assert.AreEqual("num1", blk[1].name);
+            Assert.AreEqual("num2", blk[2].name);
+            Assert.AreEqual("num4", blk[3].name);
+            Assert.AreEqual("num3", blk[4].name);
+
+            Assert.AreEqual(1, dataModels[6].Count);
+            blk = dataModels[6][0] as DataElementContainer;
+            Assert.NotNull(blk);
+            Assert.AreEqual("blk", blk.name);
+            Assert.AreEqual(5, blk.Count);
+            Assert.AreEqual("num0", blk[0].name);
+            Assert.AreEqual("num1", blk[1].name);
+            Assert.AreEqual("num2", blk[2].name);
+            Assert.AreEqual("num3", blk[3].name);
+            Assert.AreEqual("num4", blk[4].name);
+
         }
     }
 }

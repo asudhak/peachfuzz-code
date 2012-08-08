@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core;
@@ -12,12 +13,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class ArrayRandomizeOrderMutatorTests
+    class ArrayRandomizeOrderMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        byte[] testValue;
-        List<byte[]> listVals = new List<byte[]>();
-
         [Test]
         public void Test1()
         {
@@ -41,8 +38,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -61,27 +58,25 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
+            int numSame = 0;
             byte[] ogArray = { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') };
-            Assert.IsTrue(listVals.Count == 50);
+            Assert.AreEqual(50, mutations.Count);
 
-            for (int i = 0; i < listVals.Count - 1; ++i)
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i].Length == 5);
-                //Assert.AreNotEqual(listVals[i], ogArray);
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                byte[] val = (byte[])item;
+                Assert.NotNull(val);
+                Assert.AreEqual(ogArray.Length, val.Length);
+                if (ogArray.SequenceEqual(val))
+                    ++numSame;
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.LessOrEqual(numSame, 1);
         }
 
         [Test]
@@ -109,8 +104,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -129,40 +124,25 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
+            int numSame = 0;
             byte[] ogArray = { (byte)('0'), (byte)('1'), (byte)('2'), (byte)('3'), (byte)('4') };
-            Assert.IsTrue(listVals.Count == 5);
+            Assert.AreEqual(5, mutations.Count);
 
-            for (int i = 0; i < listVals.Count - 1; ++i)
+            foreach (var item in mutations)
             {
-                Assert.IsTrue(listVals[i].Length == 5);
-                //Assert.AreNotEqual(listVals[i], ogArray);
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                byte[] val = (byte[])item;
+                Assert.NotNull(val);
+                Assert.AreEqual(ogArray.Length, val.Length);
+                if (ogArray.SequenceEqual(val))
+                    ++numSame;
             }
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                testValue = action.dataModel[0].Value.Value;
-                listVals.Add(testValue);
-            }
+            Assert.LessOrEqual(numSame, 1);
         }
     }
 }

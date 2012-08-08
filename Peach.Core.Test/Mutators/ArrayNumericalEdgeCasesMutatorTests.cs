@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class ArrayNumericalEdgeCasesMutatorTests
+    class ArrayNumericalEdgeCasesMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        byte[] testValue;
-        List<byte[]> listVals = new List<byte[]>();
-
         [Test]
         public void Test1()
         {
@@ -41,7 +37,7 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
+                "       <Strategy class=\"Sequencial\"/>" +
                 "   </Test>" +
                 "</Peach>";
 
@@ -61,20 +57,17 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 505);
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
+            Assert.AreEqual(505, mutations.Count);
+            foreach (var item in mutations)
+            {
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                Assert.NotNull((byte[])item);
+            }
         }
 
         [Test]
@@ -103,8 +96,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -123,32 +116,16 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 55);
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
+            Assert.AreEqual(55, mutations.Count);
+            foreach (var item in mutations)
             {
-                firstPass = false;
-            }
-            else
-            {
-                testValue = action.dataModel[0].Value.Value;
-                listVals.Add(testValue);
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                Assert.NotNull((byte[])item);
             }
         }
     }

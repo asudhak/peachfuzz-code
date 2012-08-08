@@ -12,12 +12,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Mutators
 {
     [TestFixture]
-    class ArrayReverseOrderMutatorTests
+    class ArrayReverseOrderMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        byte[] testValue;
-        List<byte[]> listVals = new List<byte[]>();
-
         [Test]
         public void Test1()
         {
@@ -41,8 +37,8 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-				"		<Strategy class=\"Sequencial\"/>" +
-				"   </Test>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -61,38 +57,21 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals[0].Length == 5);
-            Assert.AreEqual(listVals[0][0], (byte)('4'));
-            Assert.AreEqual(listVals[0][1], (byte)('3'));
-            Assert.AreEqual(listVals[0][2], (byte)('2'));
-            Assert.AreEqual(listVals[0][3], (byte)('1'));
-            Assert.AreEqual(listVals[0][4], (byte)('0'));
-
-            // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
-			Dom.Action.Finished -= Action_FinishedTest;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                testValue = action.dataModel[0].Value.Value;
-                listVals.Add(testValue);
-            }
+            Assert.AreEqual(1, mutations.Count);
+            Assert.AreEqual(Variant.VariantType.BitStream, mutations[0].GetVariantType());
+            byte[] item = (byte[])mutations[0];
+            Assert.NotNull(item);
+            Assert.AreEqual(5, item.Length);
+            Assert.AreEqual((byte)('4'), item[0]);
+            Assert.AreEqual((byte)('3'), item[1]);
+            Assert.AreEqual((byte)('2'), item[2]);
+            Assert.AreEqual((byte)('1'), item[3]);
+            Assert.AreEqual((byte)('0'), item[4]);
         }
     }
 }
