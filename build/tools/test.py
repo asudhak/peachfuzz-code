@@ -138,11 +138,11 @@ class utest(Task.Task):
 			stderr = stdout = Utils.subprocess.PIPE
 
 		proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=stderr, stdout=stdout)
-		ret = proc.wait()
+		(stdout, stderr) = proc.communicate()
 
 		xml = getattr(self.generator, 'ut_nunit', False) and self.outputs[0].abspath() or None
 
-		tup = (self.inputs[0].name, ret, xml)
+		tup = (self.inputs[0].name, proc.returncode, xml)
 		self.generator.utest_result = tup
 
 		testlock.acquire()
