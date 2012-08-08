@@ -28,6 +28,26 @@ namespace Peach.Core.Test.Mutators
         ulong? testValueULong = null;
         List<ulong?> listValsULong = new List<ulong?>();
 
+		List<Variant> results = null;
+
+		[SetUp]
+		public void SetUp()
+		{
+			results = new List<Variant>();
+			Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Dom.Action.Finished -= Action_Finished;
+		}
+
+		void Action_Finished(Dom.Action action)
+		{
+			results.Add(action.dataModel[0].InternalValue);
+		}
+
         [Test]
         public void Test1()
         {
@@ -49,7 +69,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -66,19 +86,24 @@ namespace Peach.Core.Test.Mutators
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
+            //Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
 
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.IsTrue(listVals.Count == 5000);
+            Assert.IsTrue(results.Count == 5000);
+			foreach (var item in results)
+			{
+				int val = (int)item;
+			}
 
             // reset
-            firstPass = true;
-            testValue = null;
-            listVals.Clear();
+//            firstPass = true;
+//            testValue = null;
+//            listVals.Clear();
+			//Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -105,7 +130,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -135,6 +160,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -162,7 +188,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -192,6 +218,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValueUInt = null;
             listValsUInt.Clear();
+			Dom.Action.Finished -= Action_FinishedTestUInt;
         }
 
         [Test]
@@ -217,7 +244,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -252,6 +279,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -277,7 +305,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -312,6 +340,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValueUInt = null;
             listValsUInt.Clear();
+			Dom.Action.Finished -= Action_FinishedTestUInt;
         }
 
         [Test]
@@ -337,7 +366,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -372,6 +401,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValueLong = null;
             listValsLong.Clear();
+			Dom.Action.Finished -= Action_FinishedTestLong;
         }
 
         [Test]
@@ -397,7 +427,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -432,6 +462,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValueULong = null;
             listValsULong.Clear();
+			Dom.Action.Finished -= Action_FinishedTestULong;
         }
 
         void Action_FinishedTest(Dom.Action action)

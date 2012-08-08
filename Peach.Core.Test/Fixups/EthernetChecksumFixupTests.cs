@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Fixups
 {
     [TestFixture]
-    class EthernetChecksumFixupTests
+    class EthernetChecksumFixupTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -41,7 +39,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -56,25 +54,15 @@ namespace Peach.Core.Test.Fixups
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
-            //byte[] precalcChecksum = new byte[] { 0xB7, 0xEB, 0x44, 0x03 };
             byte[] precalcChecksum = new byte[] { 0xFD, 0x38, 0x76, 0xBE };     // magic checksum...
-            Assert.AreEqual(testValue, precalcChecksum);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(precalcChecksum, values[0].Value);
         }
     }
 }

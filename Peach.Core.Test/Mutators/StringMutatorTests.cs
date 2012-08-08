@@ -39,7 +39,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -78,6 +78,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testString = null;
             testResults.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         void Action_FinishedTest(Dom.Action action)

@@ -11,15 +11,11 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Fixups
 {
     [TestFixture]
-    class ExpressionFixupTests
+    class ExpressionFixupTests : DataModelCollector
     {
-       
-
         [Test]
         public void IntTest()
         {
-            
-
             // standard test
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
@@ -44,7 +40,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -58,26 +54,20 @@ namespace Peach.Core.Test.Fixups
 
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
-            
-            byte[] testValue = null;
-            Dom.Action.Finished += delegate(Dom.Action action) { testValue = action.dataModel[0].Value.Value; };
 
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            
-            Assert.AreEqual(testValue, new byte[] { 42, 0x00, 0x00, 0x00 });
-
-            
+            byte[] expected = new byte[] { 42, 0x00, 0x00, 0x00 };
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(expected, values[0].Value);
         }
 
         [Test]
         public void StringTest()
         {
-
-
             // standard test
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
@@ -102,7 +92,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -117,26 +107,19 @@ namespace Peach.Core.Test.Fixups
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            byte[] testValue = null;
-            Dom.Action.Finished += delegate(Dom.Action action) { testValue = action.dataModel[0].Value.Value; };
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-
-            Assert.AreEqual(new byte[] { 0x41, 0x41, 0x42, 0x42 }, testValue);
-
-
+            byte[] expected = new byte[] { 0x41, 0x41, 0x42, 0x42 };
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(expected, values[0].Value);
         }
-
 
         [Test]
         public void ByteTest()
         {
-
-
             // standard test
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
@@ -161,7 +144,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -176,20 +159,15 @@ namespace Peach.Core.Test.Fixups
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            byte[] testValue = null;
-            Dom.Action.Finished += delegate(Dom.Action action) { testValue = action.dataModel[0].Value.Value; };
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-
-            Assert.AreEqual(new byte[] { 0x00, 0x01, 0xff, 0x00 },testValue);
-
-
+            byte[] expected = new byte[] { 0x00, 0x01, 0xff, 0x00 };
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(expected, values[0].Value);
         }
-
     }
 }
 

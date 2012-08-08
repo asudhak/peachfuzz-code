@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Transformers.Encode
 {
     [TestFixture]
-    class NetBiosEncodeTests
+    class NetBiosEncodeTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -39,7 +37,7 @@ namespace Peach.Core.Test.Transformers.Encode
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -54,8 +52,6 @@ namespace Peach.Core.Test.Transformers.Encode
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -63,15 +59,8 @@ namespace Peach.Core.Test.Transformers.Encode
             // verify values
             // -- this is the pre-calculated result from Peach2.3 on the blob: "abcdef" (this becomes "GBGCGDGEGFGG")
             byte[] precalcResult = new byte[] { 0x47, 0x42, 0x47, 0x43, 0x47, 0x44, 0x47, 0x45, 0x47, 0x46, 0x47, 0x47 };
-            //Assert.AreEqual(testValue, precalcResult);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(precalcResult, values[0].Value);
         }
     }
 }

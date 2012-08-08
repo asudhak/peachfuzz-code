@@ -48,7 +48,14 @@ def summary(bld):
 			raise Errors.WafError(msg='%d out of %d test suites failed' % (tfail, total))
 
 def prepare_nunit_test(self):
-	self.ut_exec = [ self.generator.bld.env.NUNIT, self.inputs[0].abspath(), '-xml:%s' % self.outputs[0].abspath() ]
+	self.ut_exec = [
+		self.generator.bld.env.NUNIT,
+		self.inputs[0].abspath(),
+		'-labels',
+		'-nologo',
+		'-out:%s' % self.outputs[1].abspath(),
+		'-xml:%s' % self.outputs[0].abspath(),
+	]
 
 @feature('test')
 @after_method('apply_link')
@@ -67,15 +74,13 @@ def make_test(self):
 		if self.gen.endswith('.dll'):
 			self.ut_nunit = True
 			self.ut_fun = prepare_nunit_test
-			outputs = [ inputs[0].change_ext('.xml') ]
+			outputs = [ inputs[0].change_ext('.xml'), inputs[0].change_ext('.log') ]
 
 	if not inputs:
 		raise Errors.WafError('No test to run at: %r' % self)
 
-	outputs.append( inputs[0].change_ext('.log') )
-
 	test = self.create_task('utest', inputs, outputs)
-	if getattr(self.bld, 'is_test', None):
+	if outputs and getattr(self.bld, 'is_test', None):
 		self.bld.install_files('${PREFIX}/utest', test.outputs)
 
 class utest(Task.Task):
@@ -128,9 +133,12 @@ class utest(Task.Task):
 		Logs.debug('runner: %r' % self.ut_exec)
 		cwd = getattr(self.generator, 'ut_cwd', '') or self.inputs[0].parent.abspath()
 
-		with open(self.outputs[-1].abspath(), "wb") as out:
-			proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=Utils.subprocess.STDOUT, stdout=out)
-			ret = proc.wait()
+		stderr = stdout = None
+		if Logs.verbose == 0:
+			stderr = stdout = Utils.subprocess.PIPE
+
+		proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=stderr, stdout=stdout)
+		ret = proc.wait()
 
 		xml = getattr(self.generator, 'ut_nunit', False) and self.outputs[0].abspath() or None
 

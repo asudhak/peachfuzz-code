@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Transformers.Crypto
 {
     [TestFixture]
-    class Md5Tests
+    class Md5Tests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -39,7 +37,7 @@ namespace Peach.Core.Test.Transformers.Crypto
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -54,8 +52,6 @@ namespace Peach.Core.Test.Transformers.Crypto
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -63,15 +59,8 @@ namespace Peach.Core.Test.Transformers.Crypto
             // verify values
             // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
             byte[] precalcResult = new byte[] { 0x8B, 0x1A, 0x99, 0x53, 0xC4, 0x61, 0x12, 0x96, 0xA8, 0x27, 0xAB, 0xF8, 0xC4, 0x78, 0x04, 0xD7 };
-            Assert.AreEqual(testValue, precalcResult);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(precalcResult, values[0].Value);
         }
     }
 }

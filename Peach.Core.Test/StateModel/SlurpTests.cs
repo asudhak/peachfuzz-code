@@ -20,41 +20,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.StateModel
 {
 	[TestFixture]
-	class SlurpTests : TestBase
+	class SlurpTests
 	{
-		//NLog.Logger logger = LogManager.GetLogger("Peach.Core.Test.StateModel.SlurpTests");
-
-		//[SetUp]
-		//public void Initialize()
-		//{
-		//    // Step 1. Create configuration object 
-		//    LoggingConfiguration config = new LoggingConfiguration();
-
-		//    // Step 2. Create targets and add them to the configuration 
-		//    ColoredConsoleTarget consoleTarget = new ColoredConsoleTarget();
-		//    config.AddTarget("console", consoleTarget);
-
-		//    OutputDebugStringTarget fileTarget = new OutputDebugStringTarget();
-		//    config.AddTarget("DbWin", fileTarget);
-
-		//    // Step 3. Set target properties 
-		//    consoleTarget.Layout = "${date:format=HH\\:MM\\:ss} ${logger} ${message}";
-		//    fileTarget.Layout = "Log4JXmlEventLayout";
-
-		//    // Step 4. Define rules
-		//    LoggingRule rule1 = new LoggingRule("*", LogLevel.Trace, consoleTarget);
-		//    config.LoggingRules.Add(rule1);
-
-		//    //LoggingRule rule2 = new LoggingRule("*", LogLevel.Debug, fileTarget);
-		//    //config.LoggingRules.Add(rule2);
-
-		//    // Step 5. Activate the configuration
-		//    LogManager.Configuration = config;
-		//    //LogManager.EnableLogging();
-
-		//    logger.Info("Logs Initialized! -- Hello world!");
-		//}
-
 		[Test]
 		public void Test1()
 		{
@@ -84,7 +51,7 @@ namespace Peach.Core.Test.StateModel
 
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheStateModel\"/>" +
-				"       <Publisher class=\"Stdout\"/>" +
+				"       <Publisher class=\"Null\"/>" +
 				"   </Test>" +
 				"</Peach>";
 

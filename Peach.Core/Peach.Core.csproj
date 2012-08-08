@@ -549,6 +549,7 @@
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
     <Compile Include="Publishers\TcpListenerPublisher.cs" />
+    <Compile Include="Publishers\NullPublisher.cs" />
     <Compile Include="Publishers\UdpPublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="Scripting.cs" />

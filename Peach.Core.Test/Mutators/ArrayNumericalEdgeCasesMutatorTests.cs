@@ -40,7 +40,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
                 "   </Test>" +
                 "</Peach>";
@@ -74,6 +74,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -101,7 +102,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
                 "</Peach>";
@@ -135,6 +136,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         void Action_FinishedTest(Dom.Action action)

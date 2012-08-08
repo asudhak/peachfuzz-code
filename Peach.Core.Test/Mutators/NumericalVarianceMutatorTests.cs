@@ -40,7 +40,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -73,6 +73,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -99,7 +100,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -131,6 +132,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -156,7 +158,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -188,6 +190,7 @@ namespace Peach.Core.Test.Mutators
             firstPass = true;
             testValue = null;
             listVals.Clear();
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         [Test]
@@ -213,7 +216,7 @@ namespace Peach.Core.Test.Mutators
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
 				"		<Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
@@ -241,6 +244,7 @@ namespace Peach.Core.Test.Mutators
 
             // reset
             firstPass = true;
+			Dom.Action.Finished -= Action_FinishedTest;
         }
 
         void Action_Starting(Dom.Action action)

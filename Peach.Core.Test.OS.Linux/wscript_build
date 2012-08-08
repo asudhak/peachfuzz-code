@@ -3,6 +3,8 @@
 deps = [
 	'System.dll',
 	'System.Core.dll',
+	'nunit.framework.dll',
+	'NLog.dll',
 ]
 
 bld(

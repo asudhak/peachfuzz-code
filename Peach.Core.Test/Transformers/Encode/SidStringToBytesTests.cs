@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Transformers.Encode
 {
     [TestFixture]
-    class SidStringToBytesTests
+    class SidStringToBytesTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -39,7 +37,7 @@ namespace Peach.Core.Test.Transformers.Encode
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -54,8 +52,6 @@ namespace Peach.Core.Test.Transformers.Encode
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -63,15 +59,8 @@ namespace Peach.Core.Test.Transformers.Encode
             // verify values
             // -- this is the pre-calculated result from Peach2.3 on the blob: "S-1-5-21-2127521184-1604012920-1887927527-1712781"
             byte[] precalcResult = new byte[] { 0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x15, 0x00, 0x00, 0x00, 0xA0, 0x65, 0xCF, 0x7E, 0x78, 0x4B, 0x9B, 0x5F, 0xE7, 0x7C, 0x87, 0x70, 0x8D, 0x22, 0x1A, 0x00 };
-            Assert.AreEqual(testValue, precalcResult);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(precalcResult, values[0].Value);
         }
     }
 }

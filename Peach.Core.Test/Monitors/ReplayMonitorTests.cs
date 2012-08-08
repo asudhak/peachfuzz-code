@@ -9,17 +9,12 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
-//using Peach.Core.MutationStrategies;
 
 namespace Peach.Core.Test.Monitors
 {
     [TestFixture]
-    class ReplayMonitorTests
+    class ReplayMonitorTests : DataModelCollector
     {
-        bool firstPass = true;
-        string testString = null;
-        List<Variant> testResults = new List<Variant>();
-
         [Test]
         public void Test1()
         {
@@ -48,7 +43,7 @@ namespace Peach.Core.Test.Monitors
                 "   <Test name=\"Default\">" +
                 "       <Agent ref=\"LocalAgent\"/>" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -64,33 +59,15 @@ namespace Peach.Core.Test.Monitors
 
             RunConfiguration config = new RunConfiguration();
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreEqual(testResults[0], testResults[1]);
-            Assert.AreEqual(testResults[2], testResults[3]);
-            Assert.AreEqual(testResults[4], testResults[5]);
-
-            // reset
-            firstPass = true;
-            testString = null;
-            testResults.Clear();
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            if (firstPass)
-            {
-                firstPass = false;
-            }
-            else
-            {
-                testResults.Add(action.dataModel[0].InternalValue);
-            }
+            Assert.AreEqual(6, mutations.Count);
+            Assert.AreEqual((string)mutations[0], (string)mutations[1]);
+            Assert.AreEqual((string)mutations[2], (string)mutations[3]);
+            Assert.AreEqual((string)mutations[4], (string)mutations[5]);
         }
     }
 }

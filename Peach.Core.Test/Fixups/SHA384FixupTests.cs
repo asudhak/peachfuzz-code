@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Fixups
 {
     [TestFixture]
-    class SHA384FixupTests
+    class SHA384FixupTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -41,7 +39,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -56,8 +54,6 @@ namespace Peach.Core.Test.Fixups
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -71,15 +67,8 @@ namespace Peach.Core.Test.Fixups
                 0x66, 0x1D, 0x62, 0xE9, 0x56, 0x8A, 0x5A, 0x03, 0x2B, 0xA8, 0x19, 0x60, 0xF3, 0xE5, 0x5D, 0x4A
             };
 
-            Assert.AreEqual(testValue, precalcChecksum);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(precalcChecksum, values[0].Value);
         }
     }
 }

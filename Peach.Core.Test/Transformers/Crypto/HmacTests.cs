@@ -11,7 +11,7 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Transformers.Crypto
 {
     [TestFixture]
-    class HmacTests
+    class HmacTests : DataModelCollector
     {
         [Test]
         public void Test1()
@@ -35,7 +35,7 @@ namespace Peach.Core.Test.Transformers.Crypto
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -50,20 +50,12 @@ namespace Peach.Core.Test.Transformers.Crypto
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-
-            // reset
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-
+            Assert.Null("TODO: Implement me!");
         }
     }
 }

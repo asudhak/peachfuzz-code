@@ -43,7 +43,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Test
 {
 	[TestFixture]
-	class PeachXPathTests : TestBase
+	class PeachXPathTests
 	{
 		[Test]
 		public void BasicTest()

@@ -25,6 +25,8 @@ namespace Peach.Core.Test.OutputTests
         [Test]
         public void Test1()
         {
+            Assert.Null("TODO: Fix me!");
+
             // Test that the repeated iterations are producing the same values.
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
@@ -57,7 +59,7 @@ namespace Peach.Core.Test.OutputTests
                 //"           <Param name=\"Seed\" value=\"10\"/>" +
                 "       </Strategy>" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
                 "</Peach>";
 
@@ -71,12 +73,13 @@ namespace Peach.Core.Test.OutputTests
 
             RunConfiguration config = new RunConfiguration();
 
-            //Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
             MutationStrategies.RandomStrategy.Iterating += new RandomStrategyIterationEventHandler(RandomStrategy_Iterating);
 
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
+
+            MutationStrategies.RandomStrategy.Iterating -= RandomStrategy_Iterating;
 
             // verify values
 
@@ -85,19 +88,6 @@ namespace Peach.Core.Test.OutputTests
             testString = null;
             testResults.Clear();
         }
-
-        //void Action_FinishedTest(Dom.Action action)
-        //{
-        //    if (firstPass)
-        //    {
-        //        firstPass = false;
-        //    }
-        //    else
-        //    {
-        //        testString = (string)action.dataModel[0].InternalValue;
-        //        testResults.Add(names + testString);
-        //    }
-        //}
 
         void RandomStrategy_Iterating(string elementName, string mutatorName)
         {

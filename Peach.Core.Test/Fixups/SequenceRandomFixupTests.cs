@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Fixups
 {
     [TestFixture]
-    class SequenceRandomFixupTests
+    class SequenceRandomFixupTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -38,7 +36,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -53,24 +51,15 @@ namespace Peach.Core.Test.Fixups
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            uint val = BitConverter.ToUInt32(testValue, 0);
-            Assert.GreaterOrEqual(val, 0);
+            Assert.AreEqual(1, values.Count);
+            uint val = BitConverter.ToUInt32(values[0].Value, 0);
+            Assert.GreaterOrEqual(val, UInt32.MinValue);
             Assert.LessOrEqual(val, UInt32.MaxValue);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
         }
     }
 }

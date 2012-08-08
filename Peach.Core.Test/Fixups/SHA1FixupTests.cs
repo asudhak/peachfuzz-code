@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Fixups
 {
     [TestFixture]
-    class SHA1FixupTests
+    class SHA1FixupTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -41,7 +39,7 @@ namespace Peach.Core.Test.Fixups
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -56,8 +54,6 @@ namespace Peach.Core.Test.Fixups
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -65,15 +61,8 @@ namespace Peach.Core.Test.Fixups
             // verify values
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: { 1, 2, 3, 4, 5 }
             byte[] precalcChecksum = new byte[] { 0x8C, 0xB2, 0x23, 0x7D, 0x06, 0x79, 0xCA, 0x88, 0xDB, 0x64, 0x64, 0xEA, 0xC6, 0x0D, 0xA9, 0x63, 0x45, 0x51, 0x39, 0x64 };
-            Assert.AreEqual(testValue, precalcChecksum);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            Assert.AreEqual(1, values.Count);
+            Assert.AreEqual(precalcChecksum, values[0].Value);
         }
     }
 }

@@ -11,10 +11,8 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Transformers.Compress
 {
     [TestFixture]
-    class GzipCompressTests
+    class GzipCompressTests : DataModelCollector
     {
-        byte[] testValue = null;
-
         [Test]
         public void Test1()
         {
@@ -39,7 +37,7 @@ namespace Peach.Core.Test.Transformers.Compress
 
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Stdout\"/>" +
+                "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
 
                 "   <Run name=\"DefaultRun\">" +
@@ -54,8 +52,6 @@ namespace Peach.Core.Test.Transformers.Compress
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
 
-            Dom.Action.Finished += new ActionFinishedEventHandler(Action_FinishedTest);
-
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
@@ -64,15 +60,9 @@ namespace Peach.Core.Test.Transformers.Compress
             // -- this is the pre-calculated result from Peach2.3 on the blob: ""
             //byte[] precalcResult = new byte[] { 78 9C 03 00 00 00 00 01 };    // on ""
             //byte[] precalcResult = new byte[] { 78 9C 4B 4C 4A 06 00 02 4D 01 27 };    // on "abc"
-            //Assert.AreEqual(testValue, precalcResult);
-
-            // reset
-            testValue = null;
-        }
-
-        void Action_FinishedTest(Dom.Action action)
-        {
-            testValue = action.dataModel[0].Value.Value;
+            //Assert.AreEqual(1, values.Count);
+            //Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.Null("TODO: Implement me!");
         }
     }
 }
