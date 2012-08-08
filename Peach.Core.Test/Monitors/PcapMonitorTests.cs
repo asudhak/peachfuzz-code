@@ -144,9 +144,6 @@ namespace Peach.Core.Test.Monitors
 		private static string pre_xml = 
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
 			"<Peach>" +
-			"			" +
-			"	<Include ns=\"default\" src=\"file:defaults.xml\"/>" +
-			"			" +
 			"	<DataModel name=\"TheDataModel\">" +
 			"		<String value=\"Hello World\" />" +
 			"	</DataModel>";
