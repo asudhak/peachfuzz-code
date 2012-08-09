@@ -31,6 +31,9 @@ def install_csshlib(self):
 		return
 
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
+	config = self.link_task.outputs[0].parent.find_resource(self.link_task.outputs[0].name + '.config')
+	if config:
+		self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
 
 @feature('pin')
 def pin_disable_debug(self):
