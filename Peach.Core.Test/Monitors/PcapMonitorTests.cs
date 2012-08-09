@@ -70,7 +70,8 @@ namespace Peach.Core.Test.Monitors
 
 		public override void SessionFinished()
 		{
-			_socket.Close();
+			if (_socket != null)
+				_socket.Close();
 		}
 
 		public override void IterationStarting(int iterationCount, bool isReproduction)
@@ -115,6 +116,9 @@ namespace Peach.Core.Test.Monitors
 		// interface that is up and has a valid IPv4 address.
 		private static Tuple<string, IPAddress> GetInterface()
 		{
+			if (Platform.GetOS() != Platform.OS.Windows)
+				return new Tuple<string, IPAddress>("lo", IPAddress.Loopback);
+
 			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
 			foreach (NetworkInterface adapter in nics)
 			{
@@ -151,7 +155,7 @@ namespace Peach.Core.Test.Monitors
 		private static string post_xml = 
 			"	<StateModel name=\"TheState\" initialState=\"Initial\">" +
 			"		<State name=\"Initial\">" +
-			"			<Action type=\"output\" publisher=\"Stdout\">" +
+			"			<Action type=\"output\">" +
 			"				<DataModel ref=\"TheDataModel\"/>" +
 			"			</Action>" +
 			"		</State>" +
@@ -160,7 +164,7 @@ namespace Peach.Core.Test.Monitors
 			"	<Test name=\"Default\">" +
 			"		<Agent ref=\"LocalAgent\"/>" +
 			"		<StateModel ref=\"TheState\"/>" +
-			"		<Publisher class=\"Console\" name=\"Stdout\" />" +
+			"		<Publisher class=\"Null\" />" +
 			"	</Test>" +
 			"		" +
 			"	<Run name=\"DefaultRun\">" +
