@@ -93,6 +93,9 @@ namespace Peach.Core.Agent
 		{
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
 			{
+				if (a.IsDynamic)
+					continue;
+
 				foreach (Type t in a.GetExportedTypes())
 				{
 					if (!t.IsClass)
