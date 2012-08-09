@@ -37,7 +37,7 @@ def configure(ctx):
 			raise self.errors.ConfigurationError(msg, ex)
 		setattr(Configure.ConfigurationContext, 'fatal', null_fatal)
 
-	ctx.env.FILTER_STDOUT = True
+	ctx.env.FILTER_STDOUT = Logs.verbose == 0
 	base_env = ctx.env;
 	base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = 'output'
 
