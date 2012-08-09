@@ -50,7 +50,7 @@ def summary(bld):
 def prepare_nunit_test(self):
 	self.ut_exec = []
 
-	if (Utils.unversioned_sys_platform != 'win32'):
+	if (Utils.unversioned_sys_platform() != 'win32'):
 		self.ut_exec = [ 'mono', '--debug' ]
 
 	self.ut_exec.extend([
