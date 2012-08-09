@@ -96,5 +96,7 @@ set PATH=%PYTHON_DIR%;%PYTHON_DIR%Scripts;%PYTHON_DIR%Tools\Scripts;%PATH%
 
 @echo Using %PYTHON%
 
-"%PYTHON%" -x "%~dp0waf" %*  & Endlocal & exit /b
+"%PYTHON%" -x "%~dp0waf" %*
+set WAFERROR=%ERRORLEVEL%
+Endlocal & exit /b %WAFERROR%
 
