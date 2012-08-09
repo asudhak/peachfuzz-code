@@ -48,14 +48,19 @@ def summary(bld):
 			raise Errors.WafError(msg='%d out of %d test suites failed' % (tfail, total))
 
 def prepare_nunit_test(self):
-	self.ut_exec = [
+	self.ut_exec = []
+
+	if (Utils.unversioned_sys_platform != 'win32'):
+		self.ut_exec = [ 'mono', '--debug' ]
+
+	self.ut_exec.extend([
 		self.generator.bld.env.NUNIT,
 		self.inputs[0].abspath(),
 		'-labels',
 		'-nologo',
 		'-out:%s' % self.outputs[1].abspath(),
 		'-xml:%s' % self.outputs[0].abspath(),
-	]
+	])
 
 @feature('test')
 @after_method('apply_link')
