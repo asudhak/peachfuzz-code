@@ -105,6 +105,9 @@ namespace Peach.Core.Agent.Monitors
 			// captures on the same device with different filters
 			var devices = _GetDeviceList();
 
+			if (devices.Count == 0)
+				throw new PeachException("No pcap devices found. Ensure appropriate permissions for using libpcap.");
+
 			// differentiate based upon types
 			foreach (var item in devices)
 			{
@@ -124,7 +127,8 @@ namespace Peach.Core.Agent.Monitors
 				{
 					var dev = item as LibPcapLiveDevice;
 					System.Diagnostics.Debug.Assert(dev != null);
-					Console.WriteLine(" " + dev.Interface.FriendlyName);
+					if (dev.Interface.FriendlyName != null && dev.Interface.FriendlyName.Length > 0)
+						Console.WriteLine(" " + dev.Interface.FriendlyName);
 				}
 				throw new PeachException("Error, PcapMonitor was unable to locate device '" + _deviceName + "'.");
 			}
