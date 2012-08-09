@@ -902,7 +902,7 @@ def exec_command_msvc(self, *k, **kw):
 			k = [lst]
 
 		if self.env['PATH']:
-			env = self.env.env or dict(os.environ)
+			env = dict(self.env.env or os.environ)
 			env.update(PATH = ';'.join(self.env['PATH']))
 			kw['env'] = env
 
