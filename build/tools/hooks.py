@@ -34,6 +34,12 @@ def find_program(self, filename, **kw):
 	filename = self.env[var] or filename
 	self.env[var] = None
 
+	if not isinstance(filename, list) and os.path.isabs(filename):
+		parts = os.path.split(filename)
+		kw['exts'] = ''
+		kw['path_list'] = [ parts[0] ]
+		filename = parts[1]
+
 	return self.base_find_program(filename, **kw)
 
 @hook
