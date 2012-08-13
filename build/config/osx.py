@@ -1,5 +1,6 @@
-from waflib import Utils
+from waflib import Utils, Errors
 from waflib.TaskGen import feature
+import os.path
 
 archs = [ ]
 tools = [
@@ -8,19 +9,34 @@ tools = [
 	'cs',
 	'resx',
 	'csprogram',
+	'utils',
+	'externals',
+	'test',
 ]
+
+def find_directory(dirname, paths):
+	for path in paths:
+		candidate = os.path.join(path, dirname)
+		if os.path.exists(candidate):
+			return candidate
+	raise Errors.WafError('Could not find directory \'%s\'' % dirname)
 
 def prepare(conf):
 	env = conf.env
 
 	env['PATH'] = [
 		'/Library/Frameworks/Mono.framework/Commands',
-		'/Developer/usr/bin',
+		'/usr/bin',
 	]
 
 	env['MCS']  = 'dmcs'
 	env['CC']   = 'llvm-gcc-4.2'
 	env['CXX']  = 'llvm-g++-4.2'
+
+	env['SYSROOT'] = find_directory('MacOSX10.6.sdk', [
+		'/Developer/SDKs',
+		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
+	])
 
 def configure(conf):
 	env = conf.env
@@ -38,6 +54,7 @@ def configure(conf):
 		'fake_lib',
 		'cs',
 		'csprogram',
+		'test',
 	]
 
 	env.append_value('CSFLAGS', [
@@ -50,7 +67,7 @@ def configure(conf):
 	arch_flags = [
 		'-mmacosx-version-min=10.6',
 		'-isysroot',
-		'/Developer/SDKs/MacOSX10.6.sdk',
+		env.SYSROOT,
 		'-arch',
 		'i386',
 		'-arch',
