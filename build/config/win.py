@@ -69,6 +69,11 @@ def prepare(conf):
 
         env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
 
+	# This is lame, the resgen that vcvars for x64 finds is the .net framework 3.5 version.
+	# The .net 4 version is in the x86 search path.
+	if env.SUBARCH == 'x64':
+		env['RESGEN'] = 'c:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v7.0A\\bin\\NETFX 4.0 Tools\\resgen.exe'
+
 def configure(conf):
         env = conf.env
  
