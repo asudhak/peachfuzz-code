@@ -9,7 +9,7 @@ import tools.hooks
 out = 'slag'
 inst = 'output'
 
-hosts = [ 'win', 'linux', 'osx', 'foo' ]
+targets = [ 'win', 'linux', 'osx', 'foo' ]
 
 class TestContext(InstallContext):
 	cmd = 'test'
@@ -37,25 +37,25 @@ def configure(ctx):
 			raise self.errors.ConfigurationError(msg, ex)
 		setattr(Configure.ConfigurationContext, 'fatal', null_fatal)
 
-	ctx.env.FILTER_STDOUT = Logs.verbose == 0
 	base_env = ctx.env;
 	base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = 'output'
 
 	tool_dir =  [
 		os.path.join(ctx.path.abspath(), 'build', 'tools'),
 		os.path.join(Context.waf_dir, 'waflib', 'Tools'),
+		os.path.join(Context.waf_dir, 'waflib', 'extras'),
 	]
 
-	for host in hosts:
+	for tgt in targets:
 		try:
-			config = Context.load_tool(host, [os.path.join('build', 'config')])
-			ctx.msg("Loading '%s' config" % host, config.__file__)
+			config = Context.load_tool(tgt, [os.path.join('build', 'config')])
+			ctx.msg("Loading '%s' config" % tgt, config.__file__)
 		except:
-			ctx.msg("Loading '%s' config" % host, 'not found', color='YELLOW')
+			ctx.msg("Loading '%s' config" % tgt, 'not found', color='YELLOW')
 			continue
 			
 		archs = getattr(config, 'archs', None)
-		options = [ ('%s_%s' % (host, arch), arch) for arch in archs ] or [ (host, None) ]
+		options = [ ('%s_%s' % (tgt, arch), arch) for arch in archs ] or [ (tgt, None) ]
 
 		for (name, arch) in options:
 			if Logs.verbose == 0:

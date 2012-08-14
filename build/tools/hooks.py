@@ -1,29 +1,12 @@
-from waflib import Build, Utils, Logs, Task
+from waflib.Build import BuildContext, InstallContext
 from waflib.Configure import ConfigurationContext
+from waflib.Context import Context
+from waflib.Task import TaskBase
+from waflib import Build, Utils, Logs
 import os.path
+import sys
 
-def apply_hook(cls, name, fun):
-	# Ensure we haven't already hooked an object cls inherits from
-	if getattr(cls, 'base_%s' % name, None):
-		return
-
-	old = getattr(cls, name, None)
-	if old:
-		setattr(cls, 'base_%s' % name, old)
-		setattr(cls, name, fun)
-
-def hook(f):
-	def fun(*k, **kw):
-		return f(*k, **kw)
-
-	apply_hook(Task.TaskBase, f.__name__, fun)
-	apply_hook(ConfigurationContext, f.__name__, fun)
-	apply_hook(Build.BuildContext, f.__name__, fun)
-	apply_hook(Build.InstallContext, f.__name__, fun)
-
-	return f
-
-@hook
+# ConfigurationContext
 def find_program(self, filename, **kw):
 	path_list = kw.get('path_list', None)
 	if not path_list:
@@ -42,7 +25,7 @@ def find_program(self, filename, **kw):
 
 	return self.base_find_program(filename, **kw)
 
-@hook
+# Context
 def add_to_group(self, tgen, group=None):
 	features = set(Utils.to_list(getattr(tgen, 'features', [])))
 	available = set(Utils.to_list(tgen.env['supported_features']))
@@ -54,10 +37,37 @@ def add_to_group(self, tgen, group=None):
 		missing = [ x for x in (features - intersect)]
 		Logs.warn('Skipping %r due to missing features: %s' % (tgen.name, missing))
 
+# BuildContext
+def exec_command(self, cmd, **kw):
+	subprocess = Utils.subprocess
+	kw['shell'] = isinstance(cmd, str)
+	Logs.debug('runner: %r' % cmd)
+	Logs.debug('runner_env: kw=%s' % kw)
+
+	kw['stderr'] = kw['stdout'] = subprocess.PIPE
+
+	try:
+		p = subprocess.Popen(cmd, **kw)
+		(out, err) = p.communicate()
+		ret = p.returncode
+	except Exception as e:
+		raise Errors.WafError('Execution failure: %s' % str(e), ex=e)
+
+	if not isinstance(out, str):
+		out = out.decode(sys.stdout.encoding or 'iso8859-1')
+	if ret or Logs.verbose > 0:
+		sys.stdout.write(out)
+
+	if not isinstance(err, str):
+		err = err.decode(sys.stdout.encoding or 'iso8859-1')
+	sys.stderr.write(err)
+
+	return ret
+
 def colorize(value, color):
 	return color + Logs.colors.BOLD + value + Logs.colors.NORMAL
 
-@hook
+# TaskBase
 def display(self):
 	sep = Logs.colors.NORMAL + ' | '
 	master = self.master
@@ -93,7 +103,7 @@ def display(self):
 		colorize(src_str, Logs.colors.CYAN),
 		colorize(tgt_str, Logs.colors.GREEN))
 
-@hook
+# InstallContext
 def do_install(self, src, tgt, chmod=Utils.O644):
 	if self.progress_bar == 0:
 		self.progress_bar = -1;
@@ -114,3 +124,19 @@ def do_install(self, src, tgt, chmod=Utils.O644):
 		colorize(target, Logs.colors.GREEN))
 
 	self.to_log(msg)
+
+TaskBase.base_display = TaskBase.display
+TaskBase.display = display
+
+Context.base_exec_command = Context.exec_command
+Context.exec_command = exec_command
+
+ConfigurationContext.base_find_program = ConfigurationContext.find_program
+ConfigurationContext.find_program = find_program
+
+BuildContext.base_add_to_group = BuildContext.add_to_group
+BuildContext.add_to_group = add_to_group
+
+InstallContext.base_do_install = InstallContext.do_install
+InstallContext.do_install = do_install
+
