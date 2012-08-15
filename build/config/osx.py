@@ -3,6 +3,7 @@ from waflib.TaskGen import feature
 import os.path
 
 archs = [ ]
+
 tools = [
 	'gcc',
 	'gxx',
@@ -12,6 +13,7 @@ tools = [
 	'utils',
 	'externals',
 	'test',
+	'version',
 ]
 
 def find_directory(dirname, paths):

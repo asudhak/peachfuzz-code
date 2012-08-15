@@ -24,6 +24,11 @@ def options(opt):
 	               action = 'store',
 	               default = None,
 	               help = 'Specifies the variant to build against')
+	opt.add_option('--buildtag',
+	               action = 'store',
+	               type = 'int',
+	               default = 0,
+	               help = 'Specifies the buildtag to embed in the binaries')
 
 def init(ctx):
 	if Logs.verbose == 0:
@@ -37,8 +42,9 @@ def configure(ctx):
 			raise self.errors.ConfigurationError(msg, ex)
 		setattr(Configure.ConfigurationContext, 'fatal', null_fatal)
 
-	base_env = ctx.env;
+	base_env = ctx.env
 	base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = 'output'
+	base_env.BUILDTAG = Options.options.buildtag
 
 	tool_dir =  [
 		os.path.join(ctx.path.abspath(), 'build', 'tools'),

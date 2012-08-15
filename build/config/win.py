@@ -13,6 +13,7 @@ tools = [
 	'utils',
 	'externals',
 	'test',
+	'version',
 ]
 
 def prepare(conf):
