@@ -7,8 +7,8 @@ Classes and methods shared by tools providing support for C-like language such
 as C/C++/D/Assembly/Go (this support module is almost never used alone).
 """
 
-import os, sys, re
-from waflib import TaskGen, Task, Utils, Logs, Build, Options, Node, Errors
+import os
+from waflib import Task, Utils, Node, Errors
 from waflib.TaskGen import after_method, before_method, feature, taskgen_method, extension
 from waflib.Tools import c_aliases, c_preproc, c_config, c_osx, c_tests
 from waflib.Configure import conf
@@ -20,9 +20,10 @@ USELIB_VARS = Utils.defaultdict(set)
 Mapping for features to :py:class:`waflib.ConfigSet.ConfigSet` variables. See :py:func:`waflib.Tools.ccroot.propagate_uselib_vars`.
 """
 
-USELIB_VARS['c']   = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CCDEPS', 'CFLAGS', 'ARCH'])
-USELIB_VARS['cxx'] = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CXXDEPS', 'CXXFLAGS', 'ARCH'])
-USELIB_VARS['d']   = set(['INCLUDES', 'DFLAGS'])
+USELIB_VARS['c']        = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CCDEPS', 'CFLAGS', 'ARCH'])
+USELIB_VARS['cxx']      = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CXXDEPS', 'CXXFLAGS', 'ARCH'])
+USELIB_VARS['d']        = set(['INCLUDES', 'DFLAGS'])
+USELIB_VARS['includes'] = set(['INCLUDES', 'FRAMEWORKPATH', 'ARCH'])
 
 USELIB_VARS['cprogram'] = USELIB_VARS['cxxprogram'] = set(['LIB', 'STLIB', 'LIBPATH', 'STLIBPATH', 'LINKFLAGS', 'RPATH', 'LINKDEPS', 'FRAMEWORK', 'FRAMEWORKPATH', 'ARCH'])
 USELIB_VARS['cshlib']   = USELIB_VARS['cxxshlib']   = set(['LIB', 'STLIB', 'LIBPATH', 'STLIBPATH', 'LINKFLAGS', 'RPATH', 'LINKDEPS', 'FRAMEWORK', 'FRAMEWORKPATH', 'ARCH'])
@@ -240,7 +241,7 @@ def use_rec(self, name, **kw):
 		y.tmp_use_var = ''
 	else:
 		objects = False
-		if not isinstance(y.link_task, stlink_task):
+		if not isinstance(link_task, stlink_task):
 			stlib = False
 			y.tmp_use_var = 'LIB'
 		else:
@@ -269,7 +270,7 @@ def process_use(self):
 	"""
 
 	use_not = self.tmp_use_not = set([])
-	use_seen = self.tmp_use_seen = [] # we would like an ordered set
+	self.tmp_use_seen = [] # we would like an ordered set
 	use_prec = self.tmp_use_prec = {}
 	self.uselib = self.to_list(getattr(self, 'uselib', []))
 	self.includes = self.to_list(getattr(self, 'includes', []))
@@ -492,7 +493,7 @@ def apply_vnum(self):
 		self.env.append_value('LINKFLAGS', v.split())
 
 	# the following task is just to enable execution from the build dir :-/
-	tsk = self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
+	self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
 
 	if getattr(self.bld, 'is_install', None):
 		self.install_task.hasrun = Task.SKIP_ME
