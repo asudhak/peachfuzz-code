@@ -14,6 +14,7 @@ namespace Peach.Core.Test
 		protected List<BitStream> values = null;
 		protected List<Dom.DataModel> dataModels = null;
 		protected List<Dom.Action> actions = null;
+		protected List<string> strategies = null;
 
 		[SetUp]
 		public void SetUp()
@@ -23,13 +24,16 @@ namespace Peach.Core.Test
 			mutations = new List<Variant>();
 			actions = new List<Dom.Action>();
 			dataModels = new List<Dom.DataModel>();
+			strategies = new List<string>();
 			Dom.Action.Finished += new Dom.ActionFinishedEventHandler(Action_Finished);
+			Peach.Core.MutationStrategy.Iterating += new MutationStrategy.IterationEventHandler(MutationStrategy_Iterating);
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
 			Dom.Action.Finished -= Action_Finished;
+			Peach.Core.MutationStrategy.Iterating -= MutationStrategy_Iterating;
 		}
 
 		protected void Action_Finished(Dom.Action action)
@@ -44,6 +48,14 @@ namespace Peach.Core.Test
 			values.Add(action.dataModel[0].Value);
 			actions.Add(action);
 			dataModels.Add(action.dataModel);
+		}
+
+		void MutationStrategy_Iterating(string elementName, string mutatorName)
+		{
+			int len = strategies.Count;
+			string item = mutatorName + " | " + elementName;
+			if (len == 0 || strategies[len - 1] != item)
+				strategies.Add(item);
 		}
 	}
 }

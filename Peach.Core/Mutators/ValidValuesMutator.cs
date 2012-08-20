@@ -35,11 +35,11 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Allows different valid values to be specified")]
     [Hint("ValidValues", "Provide additional values for element separeted with ;.")]
-	public class ValidValuesMutator : Mutator
-	{
+    public class ValidValuesMutator : Mutator
+    {
         // members
         //
-        int pos = 0;
+        uint pos = 0;
         string[] values = new string[] { };
 
         // CTOR
@@ -69,16 +69,10 @@ namespace Peach.Core.Mutators
             }
         }
 
-        // NEXT
-        //
-        public override void next()
+        public override uint mutation
         {
-            pos++;
-            if (pos >= values.Length)
-            {
-                pos = values.Length - 1;
-                throw new MutatorCompleted();
-            }
+            get { return pos; }
+            set { pos = value; }
         }
 
         // COUNT
@@ -106,18 +100,18 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+            var rand = context.Randomize(obj.fullName);
             obj.MutatedValue = new Variant(rand.Choice<string>(values));
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
-	}
+    }
 }
 
 // end

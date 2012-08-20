@@ -38,17 +38,16 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Flip a % of total bits in a blob. Default is 20%.")]
     [Hint("BlobBitFlipperMutator-N", "Gets N by checking node for hint, or returns default (20).")]
-	public class BlobBitFlipperMutator : Mutator
-	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		
-		// members
+    public class BlobBitFlipperMutator : Mutator
+    {
+        static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+        // members
         //
         int n;
         int countMax;
-        int current;
+        uint current;
         long length;
-        Random rand = null;
 
         // CTOR
         //
@@ -89,13 +88,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            current++;
-            if (current >= count)
-                throw new MutatorCompleted();
+            get { return current; }
+            set { current = value; }
         }
 
         // COUNT
@@ -119,34 +117,10 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			logger.Debug("sequencialMutation(" + obj.fullName + ")");
-            byte[] data = obj.Value.Value;
-			logger.Debug("data.Len:" + data.Length);
+            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
+            System.Diagnostics.Debug.Assert(context.Seed == 0);
 
-			if (data.Length == 0)
-				return;
-
-            BitStream bs = new BitStream(data);
-
-            // pick a random bit
-            rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
-			logger.Debug("bs.lengthbits: " + bs.LengthBits.ToString());
-            int bit = rand.Next((int)bs.LengthBits);
-			logger.Debug("rand.Next returned: " + bit);
-            // seek, read, rewind
-            bs.SeekBits(bit, SeekOrigin.Begin);
-            var value = bs.ReadBit();
-            bs.SeekBits(bit, SeekOrigin.Begin);
-
-            // flip
-            if (value == 0)
-                bs.WriteBit(1);
-            else
-                bs.WriteBit(0);
-
-            obj.MutatedValue = new Variant(bs.Value);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            randomMutation(obj);
         }
 
         // RANDOM_MUTAION
@@ -154,10 +128,14 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             byte[] data = obj.Value.Value;
+
+            if (data.Length == 0)
+                return;
+
             BitStream bs = new BitStream(data);
 
             // pick a random bit
-            rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+            var rand = context.Randomize(obj.fullName);
             int bit = rand.Next((int)bs.LengthBits);
 
             // seek, read, rewind
@@ -172,10 +150,10 @@ namespace Peach.Core.Mutators
                 bs.WriteBit(0);
 
             obj.MutatedValue = new Variant(bs.Value);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
-	}
+    }
 }
 
 // end

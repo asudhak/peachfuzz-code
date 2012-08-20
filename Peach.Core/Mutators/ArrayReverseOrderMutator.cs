@@ -36,7 +36,7 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Reverse the order of the array")]
     public class ArrayReverseOrderMutator : Mutator
-	{
+    {
         // CTOR
         //
         public ArrayReverseOrderMutator(DataElement obj)
@@ -44,11 +44,12 @@ namespace Peach.Core.Mutators
             name = "ArrayReverseOrderMutator";
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            throw new MutatorCompleted();
+            get { return 0; }
+            set { }
         }
 
         // COUNT
@@ -73,16 +74,16 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             performMutation(obj);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
             performMutation(obj);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // PERFORM_MUTATION
         //
@@ -100,7 +101,7 @@ namespace Peach.Core.Mutators
             for (int i = 0; i < items.Count; ++i)
                 objAsArray.Add(items[i]);
         }
-	}
+    }
 }
 
 // end

@@ -105,7 +105,7 @@ namespace Peach.Core.Agent.Channels
 			proxy.SessionFinished();
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			proxy.IterationStarting(iterationCount, isReproduction);
 		}
@@ -186,7 +186,7 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[XmlRpcMethod("IterationStarting")]
-		public void IterationStarting(int iterationCount, bool isReproduction)
+		public void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			agent.IterationStarting(iterationCount, isReproduction);
 		}
@@ -241,7 +241,7 @@ namespace Peach.Core.Agent.Channels
 		[XmlRpcMethod("SessionFinished")]
 		void SessionFinished();
 		[XmlRpcMethod("IterationStarting")]
-		void IterationStarting(int iterationCount, bool isReproduction);
+		void IterationStarting(uint iterationCount, bool isReproduction);
 		[XmlRpcMethod("IterationFinished")]
 		bool IterationFinished();
 		[XmlRpcMethod("DetectedFault")]

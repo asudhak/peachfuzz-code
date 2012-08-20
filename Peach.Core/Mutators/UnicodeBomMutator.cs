@@ -45,19 +45,7 @@ namespace Peach.Core.Mutators
         public UnicodeBomMutator(DataElement obj)
         {
             pos = 0;
-			name = "UnicodeBomMutator";
-        }
-
-        // NEXT
-        //
-        public override void next()
-        {
-            pos++;
-            if (pos >= values.Length)
-            {
-                pos = (uint)values.Length - 1;
-                throw new MutatorCompleted();
-            }
+            name = "UnicodeBomMutator";
         }
 
         // COUNT
@@ -65,6 +53,12 @@ namespace Peach.Core.Mutators
         public override int count
         {
             get { return values.Length; }
+        }
+
+        public override uint mutation
+        {
+            get { return pos; }
+	    set { pos = value; }
         }
 
         // SUPPORTED
@@ -82,20 +76,20 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
-			
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+            var rand = context.Randomize(obj.fullName);
             obj.MutatedValue = new Variant(rand.Choice<byte[]>(values));
-			
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
     }
 }

@@ -59,9 +59,6 @@ namespace Peach.Core.Test.StateModel
 			e.config = config;
 			e.startFuzzing(dom, config);
 
-			var stateModel = dom.tests[0].stateModel;
-			var state = stateModel.initialState;
-
 			byte [] buff = new byte[stream.Length];
 
 			stream.Position = 0;

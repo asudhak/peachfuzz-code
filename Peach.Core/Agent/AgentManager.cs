@@ -137,7 +137,7 @@ namespace Peach.Core.Agent
 				agent.SessionFinished();
 		}
 
-		public virtual void IterationStarting(int iterationCount, bool isReproduction)
+		public virtual void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			logger.Trace("IterationStarting");
 			foreach (AgentClient agent in _agents.Values)

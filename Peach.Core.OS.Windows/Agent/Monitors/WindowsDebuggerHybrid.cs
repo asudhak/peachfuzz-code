@@ -312,7 +312,7 @@ namespace Peach.Core.Agent.Monitors
 			_FinishDebugger();
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			if (!_IsDebuggerRunning() && _startOnCall == null)
 				_StartDebugger();

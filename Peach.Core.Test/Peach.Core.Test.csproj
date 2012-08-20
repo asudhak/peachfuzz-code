@@ -237,6 +237,8 @@
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
+    <Compile Include="MutationStrategies\SequencialTest.cs" />
+    <Compile Include="MutationStrategies\RandomDeterministicTest.cs" />
     <Compile Include="Mutators\ArrayNumericalEdgeCasesMutatorTests.cs" />
     <Compile Include="Mutators\ArrayRandomizeOrderMutatorTests.cs" />
     <Compile Include="Mutators\ArrayReverseOrderMutatorTests.cs" />
@@ -281,6 +283,7 @@
     <Compile Include="PitParserTests\XmlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
+    <Compile Include="RandomTest.cs" />
     <Compile Include="RelationCountTests.cs" />
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="ReportedTests.cs" />

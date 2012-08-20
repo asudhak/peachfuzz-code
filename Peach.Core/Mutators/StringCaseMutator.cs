@@ -34,14 +34,14 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Changes the case of a string")]
-	public class StringCaseMutator : Mutator
-	{
+    public class StringCaseMutator : Mutator
+    {
         // members
         //
         public delegate void mutationType(DataElement obj);
         mutationType[] mutations = new mutationType[3];
         uint index;
-		Random rand = null;
+        Random rand = null;
 
         // CTOR
         //
@@ -54,20 +54,17 @@ namespace Peach.Core.Mutators
             mutations[2] = new mutationType(mutationRandomCase);
         }
 
-        // NEXT
-        //
-        public override void next()
-        {
-            index++;
-            if (index >= mutations.Length)
-                throw new MutatorCompleted();
-        }
-
         // COUNT
         //
         public override int count
         {
             get { return mutations.Length; }
+        }
+
+        public override uint mutation
+        {
+            get { return index; }
+            set { index = value; }
         }
 
         // SUPPORTED
@@ -84,20 +81,23 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			//rand = new Random((int)(context.random.Seed + index));
-            rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
-			mutations[index](obj);
+            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
+            System.Diagnostics.Debug.Assert(context.Seed == 0);
+
+            // Need to always regenerate rand so subsequent runs of the same iteration are the same
+            rand = context.Randomize(obj.fullName);
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            mutations[index](obj);
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			//rand = new Random((int)(context.random.Seed + index));
-            rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-			rand.Choice<mutationType>(mutations)(obj);
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            rand = context.Randomize(obj.fullName);
+            rand.Choice<mutationType>(mutations)(obj);
         }
 
         // MUTATION_LOWER_CASE
@@ -120,63 +120,63 @@ namespace Peach.Core.Mutators
         //
         public void mutationRandomCase(DataElement obj)
         {
-			StringBuilder builder = new StringBuilder((string)obj.InternalValue);
+            StringBuilder builder = new StringBuilder((string)obj.InternalValue);
             char[] cases = new char[2];
-			char c;
+            char c;
 
-			foreach (int i in Sample(builder.Length))
+            foreach (int i in Sample(builder.Length))
             {
                 c = builder[i];
                 cases[0] = Char.ToLower(c);
                 cases[1] = Char.ToUpper(c);
 
-				builder[i] = rand.Choice<char>(cases);
+                builder[i] = rand.Choice<char>(cases);
             }
 
             obj.MutatedValue = new Variant(builder.ToString());
             return;
         }
 
-		/// <summary>
-		/// Return a sampling of indexes based on max index.
-		/// </summary>
-		/// <remarks>
-		/// For indexes &lt; 20 we return all indexes.  When
-		/// over 20 we return a max of 20 samples.
-		/// </remarks>
-		/// <param name="max">Max index</param>
-		/// <returns></returns>
+        /// <summary>
+        /// Return a sampling of indexes based on max index.
+        /// </summary>
+        /// <remarks>
+        /// For indexes &lt; 20 we return all indexes.  When
+        /// over 20 we return a max of 20 samples.
+        /// </remarks>
+        /// <param name="max">Max index</param>
+        /// <returns></returns>
         private int[] Sample(int max)
         {
-			if (max < 20)
-			{
-				int[] ret = new int[max];
+            if (max < 20)
+            {
+                int[] ret = new int[max];
 
-				for (int i = 0; i < ret.Length; i++)
-					ret[i] = i;
+                for (int i = 0; i < ret.Length; i++)
+                    ret[i] = i;
 
-				return ret;
-			}
-			else
-			{
-				List<int> ret = new List<int>();
-				int index;
+                return ret;
+            }
+            else
+            {
+                List<int> ret = new List<int>();
+                int index;
 
-				for (int i = 0; i < 20; ++i)
-				{
-					do
-					{
-						index = rand.Next(max);
-					}
-					while(ret.Contains(index));
+                for (int i = 0; i < 20; ++i)
+                {
+                    do
+                    {
+                        index = rand.Next(max);
+                    }
+                    while (ret.Contains(index));
 
-					ret.Add(index);
-				}
+                    ret.Add(index);
+                }
 
-				return ret.ToArray();
-			}
+                return ret.ToArray();
+            }
         }
-	}
+    }
 }
 
 // end

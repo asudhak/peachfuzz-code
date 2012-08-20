@@ -35,11 +35,11 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Slides a DWORD through the blob")]
     [Hint("BlobDWORDSliderMutator", "Ability to disable this mutator.")]
-	public class BlobDWORDSliderMutator : Mutator
-	{
+    public class BlobDWORDSliderMutator : Mutator
+    {
         // members
         //
-        int position;
+        uint position;
         int length;
         UInt32 DWORD;
 
@@ -53,13 +53,12 @@ namespace Peach.Core.Mutators
             name = "BlobDWORDSliderMutator";
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            position++;
-            if (position >= length)
-                throw new MutatorCompleted();
+            get { return position; }
+            set { position = value; }
         }
 
         // COUNT
@@ -90,22 +89,22 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			performMutation(obj, position);
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            performMutation(obj, (int)position);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-			if ((length - 1) == 0)
-			{
-				// TODO - Log that we are skipping
-				return;
-			}
+            if ((length - 1) == 0)
+            {
+                // TODO - Log that we are skipping
+                return;
+            }
 
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            var rand = context.Randomize(obj.fullName);
             performMutation(obj, rand.Next(length - 1));
         }
 
@@ -145,7 +144,7 @@ namespace Peach.Core.Mutators
             obj.MutatedValue = new Variant(ArrayExtensions.Combine(pt1, inject, pt2));
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
-	}
+    }
 }
 
 // end

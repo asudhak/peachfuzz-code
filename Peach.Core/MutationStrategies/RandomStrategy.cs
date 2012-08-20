@@ -50,7 +50,7 @@ namespace Peach.Core.MutationStrategies
 	public class RandomStrategy : MutationStrategy
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-        public static event RandomStrategyIterationEventHandler Iterating;
+        public static event RandomStrategyIterationEventHandler RandomIterating;
 
 		/// <summary>
 		/// DataElement's fullname to list of mutators
@@ -70,16 +70,11 @@ namespace Peach.Core.MutationStrategies
 		int switchCount = 200;
 
 		/// <summary>
-		/// Random SEED
-		/// </summary>
-		int randomSeed = 0;
-
-		/// <summary>
 		/// Maximum number of fields to mutate at once.
 		/// </summary>
 		int maxFieldsToMutate = 7;
 
-		int iterationCount = 0;
+		uint iterationCount = 0;
 
 		/// <summary>
 		/// Collection of data models.  Fullname is key.
@@ -91,19 +86,24 @@ namespace Peach.Core.MutationStrategies
 		/// </summary>
 		string dataModelToChange = null;
 
-		/// <summary>
-		/// Random number generator.
-		/// </summary>
-		Random _random = null;
-
-		public override Random random
+        Random _random;
+		public override uint Iteration
 		{
-			get { return _random; }
-		}
+			get
+			{
+				return iterationCount;
+			}
+			set
+			{
+				iterationCount = value;
 
-		public override int IterationCount
-		{
-			get { return iterationCount; }
+				var random = Randomize("RandomStrategy");
+
+				if (value == 0)
+					dataModelToChange = null;
+				else
+					dataModelToChange = random.Choice<DataModel>(dataModels.Values).fullName;
+			}
 		}
 
 		public RandomStrategy(Dictionary<string, Variant> args)
@@ -112,14 +112,14 @@ namespace Peach.Core.MutationStrategies
 			if (args.ContainsKey("SwitchCount"))
 				switchCount = int.Parse((string)args["SwitchCount"]);
 			if (args.ContainsKey("Seed"))
-				randomSeed = int.Parse((string)args["Seed"]);
+				_seed = int.Parse((string)args["Seed"]);
 			if (args.ContainsKey("MaxFieldsToMutate"))
 				maxFieldsToMutate = int.Parse((string)args["MaxFieldsToMutate"]);
 
-			if (randomSeed == 0)
-				randomSeed = DateTime.Now.GetHashCode();
+			if (_seed == 0)
+				_seed = DateTime.Now.GetHashCode();
 
-			_random = new Random(randomSeed + iterationCount);
+			_random = Randomize("RandomStrategy");
 		}
 
 		public override void Initialize(RunContext context, Engine engine)
@@ -129,8 +129,8 @@ namespace Peach.Core.MutationStrategies
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			_context = context;
 
-			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
-			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
+			//engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
+			//engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 
 			_mutators.AddRange(EnumerateValidMutators());
 		}
@@ -140,23 +140,8 @@ namespace Peach.Core.MutationStrategies
 			base.Finalize(context, engine);
 
 			Core.Dom.Action.Starting -= Action_Starting;
-			engine.IterationStarting -= Engine_IterationStarting;
-			engine.IterationFinished -= Engine_IterationFinished;
-		}
-
-		void Engine_IterationFinished(RunContext context, uint currentIteration)
-		{
-			isFirstIteration = false;
-			dataModelToChange = null;
-		}
-
-		void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
-		{
-			if (!isFirstIteration)
-			{
-				// Select the data model to change
-				dataModelToChange = random.Choice<DataModel>(dataModels.Values).fullName;
-			}
+			//engine.IterationStarting -= Engine_IterationStarting;
+			//engine.IterationFinished -= Engine_IterationFinished;
 		}
 
 		void Action_Starting(Core.Dom.Action action)
@@ -172,11 +157,11 @@ namespace Peach.Core.MutationStrategies
 				{
 					try
 					{
-						Data data = random.Choice<Data>(action.dataSet.Datas);
+						Data data = _random.Choice<Data>(action.dataSet.Datas);
 						string fileName = null;
 
 						if (data.DataType == DataType.Files)
-							fileName = random.Choice<string>(data.Files);
+							fileName = _random.Choice<string>(data.Files);
 
 						else if (data.DataType == DataType.File)
 							fileName = data.FileName;
@@ -269,7 +254,7 @@ namespace Peach.Core.MutationStrategies
 						elements.Add(elem);
 				}
 
-				DataElement[] elementsToMutate = random.Sample<DataElement>(elements, random.Next(1, maxFieldsToMutate));
+				DataElement[] elementsToMutate = _random.Sample<DataElement>(elements, _random.Next(1, maxFieldsToMutate));
 
 				// TODO - Report which elements are mutating!
 
@@ -277,13 +262,13 @@ namespace Peach.Core.MutationStrategies
 				{
 					try
 					{
-						Mutator mutator = random.Choice<Mutator>(dataElementMutators[elem.fullName]);
+						Mutator mutator = _random.Choice<Mutator>(dataElementMutators[elem.fullName]);
 
 						logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
 						logger.Info("Action_Starting: Mutator: " + mutator.name);
 
-						if (Iterating != null)
-							Iterating(elem.fullName, mutator.name);
+						if (RandomIterating != null)
+							RandomIterating(elem.fullName, mutator.name);
 
 						try
 						{
@@ -307,23 +292,9 @@ namespace Peach.Core.MutationStrategies
 			}
 		}
 
-		public override uint count
+		public override uint Count
 		{
-			get
-			{
-				return Int32.MaxValue;
-			}
-		}
-
-		public override Mutator currentMutator()
-		{
-			return null;
-		}
-
-		public override void next()
-		{
-			iterationCount++;
-			_random = new Random(randomSeed + iterationCount);
+			get { return UInt32.MaxValue; }
 		}
 	}
 }

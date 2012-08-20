@@ -52,16 +52,14 @@ namespace Peach.Core
 		/// Name of this mutator
 		/// </summary>
 		public string name = "Unknown";
-        
-        public Mutator()
-        {
-            
-        }
 
-        public Mutator(DataElement obj)
-        {
-            
-        }
+		public Mutator()
+		{
+		}
+
+		public Mutator(DataElement obj)
+		{
+		}
 
 		/// <summary>
 		/// Check to see if DataElement is supported by this 
@@ -75,12 +73,6 @@ namespace Peach.Core
 		}
 
 		/// <summary>
-		/// Move to next mutation.  Throws MutatorCompleted
-		/// when no more mutations are available.
-		/// </summary>
-		public abstract void next();
-
-		/// <summary>
 		/// Returns the total number of mutations this
 		/// mutator is able to perform.
 		/// </summary>
@@ -88,6 +80,12 @@ namespace Peach.Core
 		public abstract int count
 		{
 			get;
+		}
+
+		public abstract uint mutation
+		{
+			get;
+			set;
 		}
 
 		/// <summary>

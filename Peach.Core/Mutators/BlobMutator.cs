@@ -34,8 +34,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
-	public class BlobMutator : BlobBitFlipperMutator
-	{
+    public class BlobMutator : BlobBitFlipperMutator
+    {
         // members
         //
         public delegate byte[] changeFcn(DataElement obj);
@@ -45,12 +45,15 @@ namespace Peach.Core.Mutators
         generateFcn[] generateFcns = new generateFcn[5];
 
         Random rand = null;
+        uint pos;
 
         // CTOR
         //
-        public BlobMutator(DataElement obj) : base(obj)
+        public BlobMutator(DataElement obj)
+            : base(obj)
         {
             name = "BlobMutator";
+            pos = 0;
 
             changeFcns[0] = new changeFcn(changeExpandBuffer);
             changeFcns[1] = new changeFcn(changeReduceBuffer);
@@ -66,18 +69,19 @@ namespace Peach.Core.Mutators
             generateFcns[4] = new generateFcn(generateNewBytesAllRandom);
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            throw new MutatorCompleted();
+            get { return pos; }
+            set { pos = value;  }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return 1; }
+            get { return changeFcns.Length; }
         }
 
         // SUPPORTED
@@ -116,24 +120,27 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			performMutation(obj);
+            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
+            System.Diagnostics.Debug.Assert(context.Seed == 0);
+
+            // Need to reset rand so it is the same for subsequent runs of the same iteration
+            rand = context.Randomize(obj.fullName);
+
+            obj.MutatedValue = new Variant(changeFcns[pos](obj));
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			performMutation(obj);
-        }
+            rand = context.Randomize(obj.fullName);
 
-        // PERFORM_MUTATION
-        //
-        private void performMutation(DataElement obj)
-        {
-            rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             obj.MutatedValue = new Variant(rand.Choice<changeFcn>(changeFcns)(obj));
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
@@ -352,7 +359,7 @@ namespace Peach.Core.Mutators
 
             return newData.ToArray();
         }
-	}
+    }
 }
 
 // end

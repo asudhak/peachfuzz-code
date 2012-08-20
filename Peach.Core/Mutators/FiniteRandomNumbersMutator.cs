@@ -35,14 +35,14 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Produce a finite number of random numbers for each <Number> element")]
     [Hint("FiniteRandomNumbersMutator-N", "Gets N by checking node for hint, or returns default (5000).")]
-	public class FiniteRandomNumbersMutator : Mutator
-	{
+    public class FiniteRandomNumbersMutator : Mutator
+    {
         // members
         //
         int n;
         int size;
         bool signed;
-        int currentCount;
+        uint currentCount;
         long minValue;
         ulong maxValue;
 
@@ -64,13 +64,13 @@ namespace Peach.Core.Mutators
             else if (obj is Number)
             {
                 signed = ((Number)obj).Signed;
-                size = (int) ((Number)obj).lengthAsBits;
+                size = (int)((Number)obj).lengthAsBits;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
             }
             else if (obj is Flag)
             {
-                signed = false; 
+                signed = false;
                 size = ((Flag)obj).size;
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
@@ -101,13 +101,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= n)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
@@ -140,17 +139,22 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			// Sequencial random number generator
-			var rand = new Random(context.IterationCount + obj.fullName.GetHashCode());
-			sequencialMutation(obj, rand);
-		}
+            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
+            System.Diagnostics.Debug.Assert(context.Seed == 0);
 
-		public void sequencialMutation(DataElement obj, Random rand)
-		{
+            randomMutation(obj);
+        }
+
+        // RANDOM_MUTAION
+        //
+        public override void randomMutation(DataElement obj)
+        {
+            var rand = context.Randomize(obj.fullName);
+
             // handle strings
             if (obj is Dom.String)
             {
-				UInt32 value = rand.NextUInt32();
+                UInt32 value = rand.NextUInt32();
                 obj.MutatedValue = new Variant(value.ToString());
                 return;
             }
@@ -159,12 +163,12 @@ namespace Peach.Core.Mutators
             {
                 if (size <= 32)
                 {
-					Int32 value = rand.Next((int)minValue, (int)maxValue);
+                    Int32 value = rand.Next((int)minValue, (int)maxValue);
                     obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-					Int64 value = rand.NextInt64();
+                    Int64 value = rand.NextInt64();
                     obj.MutatedValue = new Variant(value);
                 }
             }
@@ -172,28 +176,19 @@ namespace Peach.Core.Mutators
             {
                 if (size <= 32)
                 {
-					UInt32 value = rand.NextUInt32();
+                    UInt32 value = rand.NextUInt32();
                     obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-					UInt64 value = rand.NextUInt64();
+                    UInt64 value = rand.NextUInt64();
                     obj.MutatedValue = new Variant(value);
                 }
             }
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
 
-        // RANDOM_MUTAION
-        //
-        public override void randomMutation(DataElement obj)
-        {
-			// Random random :)
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-			sequencialMutation(obj, rand);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
-	}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
+    }
 }
 
 // end

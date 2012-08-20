@@ -39,7 +39,7 @@ namespace Peach.Core.Test.StateModel
 				"           <Action name=\"Action1\" type=\"output\">" +
 				"               <DataModel ref=\"TheDataModel1\"/>" +
 				"           </Action>" +
-				"			<Action name=\"Action2\" type=\"slurp\" valueXpath=\"//InitialState//TheDataModel1\" setXpath=\"//TheDataModel2\"/>" +
+				"           <Action name=\"Action2\" type=\"slurp\" valueXpath=\"//InitialState//TheDataModel1\" setXpath=\"//TheDataModel2\"/>" +
 				"           <Action name=\"Action3\" type=\"output\">" +
 				"               <DataModel ref=\"TheDataModel2\"/>" +
 				"           </Action>" +

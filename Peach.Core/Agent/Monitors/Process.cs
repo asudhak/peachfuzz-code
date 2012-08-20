@@ -140,7 +140,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			if (_restartOnEachTest)
 				_Stop();

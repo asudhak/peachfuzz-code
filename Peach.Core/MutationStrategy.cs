@@ -44,8 +44,13 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class MutationStrategy
 	{
+		public delegate void IterationEventHandler(string elementName, string mutatorName);
+
+		public static event IterationEventHandler Iterating;
+
 		protected RunContext _context;
 		protected Engine _engine;
+		protected int _seed;
 
 		public MutationStrategy(Dictionary<string, Variant> args)
 		{
@@ -63,32 +68,32 @@ namespace Peach.Core
 			_engine = null;
 		}
 
-		public bool isFinite
-		{
-			get { return false; }
-		}
-
-		public abstract uint count
-		{
-            get;
-		}
-
-		public virtual Random random
-		{
-			get { return _context.random; }
-		}
-
-		/// <summary>
-		/// Current iteration count
-		/// </summary>
-		public abstract int IterationCount
+		public abstract uint Count
 		{
 			get;
 		}
 
-		public abstract Mutator currentMutator();
+		public abstract uint Iteration
+		{
+			get;
+			set;
+		}
 
-		public abstract void next();
+		public int Seed
+		{
+			get { return _seed; }
+		}
+
+		public Random Randomize(string name)
+		{
+			return new Random(Seed + (int)Iteration + name.GetHashCode());
+		}
+
+		protected void OnIterating(string elementName, string mutatorName)
+		{
+			if (Iterating != null)
+				Iterating(elementName, mutatorName);
+		}
 
 		/// <summary>
 		/// Call supportedDataElement method on Mutator type.
@@ -108,10 +113,14 @@ namespace Peach.Core
 
 		protected Mutator GetMutatorInstance(Type t, DataElement obj)
 		{
-            Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(DataElement) }).Invoke(new object[] { obj });
-            mutator.context = this;
+			Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(DataElement) }).Invoke(new object[] { obj });
+			mutator.context = this;
+			return mutator;
+		}
 
-            return mutator;
+		private static int CompareMutator(Type lhs, Type rhs)
+		{
+			return string.Compare(lhs.Name, rhs.Name, StringComparison.Ordinal);
 		}
 
 		/// <summary>
@@ -125,6 +134,8 @@ namespace Peach.Core
 		{
 			if (_context.test == null)
 				throw new ArgumentException("Error, _context.test == null");
+
+			List<Type> ret = new List<Type>();
 
 			// Locate all mutators
 			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -149,11 +160,17 @@ namespace Peach.Core
 							if (_context.test.exludedMutators != null && _context.test.exludedMutators.Contains(t.Name))
 								continue;
 
-							yield return t;
+							ret.Add(t);
 						}
 					}
 				}
 			}
+
+			// Different environments enumerate the mutators in different orders.
+			// To ensure mutation strategies run mutators in the same order everywhere
+			// we have to have a well defined order.
+			ret.Sort(new Comparison<Type>(CompareMutator));
+			return ret;
 		}
 
 		protected void RecursevlyGetElements(DataElementContainer d, List<DataElement> all)
@@ -168,15 +185,14 @@ namespace Peach.Core
 				}
 			}
 		}
-
 	}
 
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, Inherited=false)]
 	public class DefaultMutationStrategyAttribute : Attribute
 	{
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple=true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
 	public class MutationStrategyAttribute : Attribute
 	{
 		public string name = null;

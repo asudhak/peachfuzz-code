@@ -35,12 +35,12 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Produce numbers that are defaultValue - N to defaultValue + N")]
     [Hint("NumericalVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-	public class NumericalVarianceMutator : Mutator
-	{
+    public class NumericalVarianceMutator : Mutator
+    {
         // members
         //
         int n;
-        int currentCount;
+        uint currentCount;
         int valuesLength;
         ulong defaultValue;
         long minValue;
@@ -94,26 +94,26 @@ namespace Peach.Core.Mutators
             List<long> temp = new List<long>();
             for (int i = -n; i <= n; ++i)
             {
-				if (signed)
-				{
-					long num = (long)val + i;
-					if (num >= minValue && num <= (long)maxValue)
-						temp.Add(i);
-				}
-				else
-				{
-					if (i < 0)
-					{
-						ulong num = val - (ulong)-i;
-						if (num <= maxValue)
-							temp.Add(i);
-					}
-					else
-					{
-						if ((val + (ulong)i) <= (ulong)maxValue)
-							temp.Add(i);
-					}
-				}
+                if (signed)
+                {
+                    long num = (long)val + i;
+                    if (num >= minValue && num <= (long)maxValue)
+                        temp.Add(i);
+                }
+                else
+                {
+                    if (i < 0)
+                    {
+                        ulong num = val - (ulong)-i;
+                        if (num <= maxValue)
+                            temp.Add(i);
+                    }
+                    else
+                    {
+                        if ((val + (ulong)i) <= (ulong)maxValue)
+                            temp.Add(i);
+                    }
+                }
             }
 
             // setup values
@@ -145,13 +145,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= count)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
@@ -184,90 +183,82 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            // value should be valid by this point
-            if (currentCount >= count)
-                return;
+            if (signed)
+            {
+                long value = (long)obj.DefaultValue + values[currentCount];
+                if (obj is Dom.String)
+                    obj.MutatedValue = new Variant(value.ToString());
+                else
+                    obj.MutatedValue = new Variant(value);
+                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            }
+            else
+            {
+                ulong value = (ulong)obj.DefaultValue;
+                if (values[currentCount] < 0)
+                {
+                    value -= (ulong)-(values[currentCount]);
+                }
+                else
+                {
+                    value += (ulong)values[currentCount];
+                }
 
-			if (signed)
-			{
-				long value = (long)obj.DefaultValue + values[currentCount];
-				if (obj is Dom.String)
-					obj.MutatedValue = new Variant(value.ToString());
-				else
-					obj.MutatedValue = new Variant(value);
-				obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			}
-			else
-			{
-				ulong value = (ulong)obj.DefaultValue;
-				if (values[currentCount] < 0)
-				{
-					value -= (ulong) -(values[currentCount]);
-				}
-				else
-				{
-					value += (ulong)values[currentCount];
-				}
-
-				if (obj is Dom.String)
-					obj.MutatedValue = new Variant(value.ToString());
-				else
-					obj.MutatedValue = new Variant(value);
-				obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			}
-		}
+                if (obj is Dom.String)
+                    obj.MutatedValue = new Variant(value.ToString());
+                else
+                    obj.MutatedValue = new Variant(value);
+                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            }
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            if (currentCount >= count)
-                return;
-
             try
             {
-				if (signed)
-				{
-					var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-					long value = rand.Choice(values);
-					long finalValue = (long)obj.DefaultValue + value;
-					if (obj is Dom.String)
-						obj.MutatedValue = new Variant(finalValue.ToString());
-					else
-						obj.MutatedValue = new Variant(finalValue);
-					obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-				}
-				else
-				{
-					var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-					long value = rand.Choice<long>(values);
-					if (value < 0)
-					{
-						ulong finalValue = (ulong)obj.DefaultValue - (ulong) -value;
-						if (obj is Dom.String)
-							obj.MutatedValue = new Variant(finalValue.ToString());
-						else
-							obj.MutatedValue = new Variant(finalValue);
-						obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-					}
-					else
-					{
-						ulong finalValue = (ulong)obj.DefaultValue + (ulong)value;
-						if (obj is Dom.String)
-							obj.MutatedValue = new Variant(finalValue.ToString());
-						else
-							obj.MutatedValue = new Variant(finalValue);
-						obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-					}
-				}
-			}
+                var rand = context.Randomize(obj.fullName);
+                long value = rand.Choice(values);
+
+                if (signed)
+                {
+                    long finalValue = (long)obj.DefaultValue + value;
+                    if (obj is Dom.String)
+                        obj.MutatedValue = new Variant(finalValue.ToString());
+                    else
+                        obj.MutatedValue = new Variant(finalValue);
+                    obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                }
+                else
+                {
+                    if (value < 0)
+                    {
+                        ulong finalValue = (ulong)obj.DefaultValue - (ulong)-value;
+                        if (obj is Dom.String)
+                            obj.MutatedValue = new Variant(finalValue.ToString());
+                        else
+                            obj.MutatedValue = new Variant(finalValue);
+                        obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                    }
+                    else
+                    {
+                        ulong finalValue = (ulong)obj.DefaultValue + (ulong)value;
+                        if (obj is Dom.String)
+                            obj.MutatedValue = new Variant(finalValue.ToString());
+                        else
+                            obj.MutatedValue = new Variant(finalValue);
+                        obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                    }
+                }
+            }
             catch
             {
                 // OK to skip, another mutator probably changes this value already - (such as datatree)
                 return;
             }
         }
-	}
+    }
 }
 
 // end

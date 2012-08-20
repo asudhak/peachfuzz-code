@@ -14,13 +14,10 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class DataElementDuplicateMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        List<DataModel> results = new List<DataModel>();
-
         [Test]
         public void Test1()
         {
-            // standard test of duplicating elements from the data model (2x - 50x)
+            // standard test of duplicating elements from the data model (1x - 50x)
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +

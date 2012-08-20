@@ -222,8 +222,7 @@ namespace Peach.Core.Loggers
 			log.WriteLine("Date of run: " + context.config.runDateTime.ToString());
 			log.WriteLine("Peach Version: " + context.config.version);
 
-			// TODO - Random seed!
-			log.WriteLine("Seed: ");
+			log.WriteLine("Seed: " + context.test.strategy.Seed);
 
 			log.WriteLine("Command line: " + context.config.commandLine);
 			log.WriteLine("Pit File: " + context.config.pitFile);

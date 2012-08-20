@@ -34,8 +34,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Perform common unicode string mutations")]
-	public partial class UnicodeStringsMutator : Mutator
-	{
+    public partial class UnicodeStringsMutator : Mutator
+    {
         // members
         //
         uint pos = 0;
@@ -45,19 +45,15 @@ namespace Peach.Core.Mutators
         public UnicodeStringsMutator(DataElement obj)
         {
             pos = 0;
-			name = "UnicodeStringsMutator";
+            name = "UnicodeStringsMutator";
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            pos++;
-            if (pos >= values.Length)
-            {
-                pos = (uint)values.Length - 1;
-                throw new MutatorCompleted();
-            }
+            get { return pos; }
+            set { pos = value; }
         }
 
         // COUNT
@@ -82,18 +78,18 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+            var rand = context.Randomize(obj.fullName);
             obj.MutatedValue = new Variant(rand.Choice<string>(values));
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
-	}
+    }
 }
 
 // end

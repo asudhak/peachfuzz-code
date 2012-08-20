@@ -39,15 +39,15 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Change the length of sized data to numerical edge cases")]
     [Hint("SizedDataNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-	public class SizedDataNumericalEdgeCasesMutator : Mutator
-	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+    public class SizedDataNumericalEdgeCasesMutator : Mutator
+    {
+        static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
         // members
         //
         int n;
         long[] values;
-        int currentCount;
+        uint currentCount;
         long originalDataLength;
 
         // CTOR
@@ -69,7 +69,7 @@ namespace Peach.Core.Mutators
 
             if (obj is Number)
             {
-                size = (int) ((Number)obj).lengthAsBits;
+                size = (int)((Number)obj).lengthAsBits;
             }
             else if (obj is Flag)
             {
@@ -85,8 +85,8 @@ namespace Peach.Core.Mutators
             else
                 values = NumberGenerator.GenerateBadNumbers(16, n);
 
-			// this will weed out invalid values that would cause the length to be less than 0
-			List<long> newVals = new List<long>(values);
+            // this will weed out invalid values that would cause the length to be less than 0
+            List<long> newVals = new List<long>(values);
             newVals.RemoveAll(RemoveInvalid);
             values = newVals.ToArray();
         }
@@ -120,13 +120,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= count)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
@@ -151,47 +150,47 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			performMutation(obj, values[currentCount]);
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            performMutation(obj, values[currentCount]);
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            var rand = context.Randomize(obj.fullName);
             performMutation(obj, rand.Choice(values));
-		}
+        }
 
         // PERFORM_MUTATION
         //
         private void performMutation(DataElement obj, long curr)
         {
-			logger.Debug("performMutation(curr=" + curr + ")");
+            logger.Debug("performMutation(curr=" + curr + ")");
 
             var sizeRelation = obj.relations.getFromSizeRelation();
             var objOf = sizeRelation.Of;
             n = (int)curr;
 
-			obj.MutatedValue = null;
-			objOf.MutatedValue = null;
+            obj.MutatedValue = null;
+            objOf.MutatedValue = null;
 
             // make sure the data hasn't changed somewhere along the line
             //if (originalDataLength != size)
-                //PopulateValues(obj);
+            //PopulateValues(obj);
 
-			// Set all mutation flags up front
-			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
-			obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
-			objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
-			objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            // Set all mutation flags up front
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
+            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
+            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
             // keep size indicator the same
             obj.MutatedValue = new Variant(obj.Value);
 
             byte[] data = objOf.Value.Value;
-			BitStream newData = new BitStream(); 
+            BitStream newData = new BitStream();
 
             if (n <= 0)
             {
@@ -213,25 +212,25 @@ namespace Peach.Core.Mutators
             else
             {
                 // wrap the data to fill size
-				logger.Debug("Expanding data from "+data.Length+" to "+n+" bytes");
+                logger.Debug("Expanding data from " + data.Length + " to " + n + " bytes");
                 while (newData.LengthBytes < n)
                 {
-					if ((newData.LengthBytes + data.Length) < n)
-					{
-						newData.WriteBytes(data);
-					}
-					else
-					{
-						for (int i = 0; i < data.Length && newData.LengthBytes < n; ++i)
-							newData.WriteByte(data[i]);
-					}
+                    if ((newData.LengthBytes + data.Length) < n)
+                    {
+                        newData.WriteBytes(data);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < data.Length && newData.LengthBytes < n; ++i)
+                            newData.WriteByte(data[i]);
+                    }
                 }
             }
 
-			logger.Debug("Setting MutatedValue");
-			objOf.MutatedValue = new Variant(newData);
-		}
-	}
+            logger.Debug("Setting MutatedValue");
+            objOf.MutatedValue = new Variant(newData);
+        }
+    }
 }
 
 // end

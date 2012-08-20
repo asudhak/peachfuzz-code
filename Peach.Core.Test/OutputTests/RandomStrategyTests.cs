@@ -73,13 +73,13 @@ namespace Peach.Core.Test.OutputTests
 
             RunConfiguration config = new RunConfiguration();
 
-            MutationStrategies.RandomStrategy.Iterating += new RandomStrategyIterationEventHandler(RandomStrategy_Iterating);
+			Peach.Core.MutationStrategies.RandomStrategy.RandomIterating += new RandomStrategyIterationEventHandler(RandomStrategy_Iterating);
 
             Engine e = new Engine(null);
             e.config = config;
             e.startFuzzing(dom, config);
 
-            MutationStrategies.RandomStrategy.Iterating -= RandomStrategy_Iterating;
+			Peach.Core.MutationStrategies.RandomStrategy.RandomIterating -= RandomStrategy_Iterating;
 
             // verify values
 

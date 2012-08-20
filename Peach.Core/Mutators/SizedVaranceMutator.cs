@@ -36,13 +36,13 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Change the length of sizes to count - N to count + N")]
     [Hint("SizedVaranceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-	public class SizedVaranceMutator : Mutator
-	{
+    public class SizedVaranceMutator : Mutator
+    {
         // members
         //
         int n;
         int[] values;
-        int currentCount;
+        uint currentCount;
         long originalDataLength;
 
         // CTOR
@@ -98,13 +98,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= count)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
@@ -129,17 +128,17 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			performMutation(obj, values[currentCount]);
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            performMutation(obj, values[currentCount]);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			performMutation(obj, rand.Choice(values));
+            var rand = context.Randomize(obj.fullName);
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            performMutation(obj, rand.Choice(values));
         }
 
         // PERFORM_MUTATION
@@ -152,10 +151,6 @@ namespace Peach.Core.Mutators
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
             n = (int)size + curr;
-
-            // make sure the data hasn't changed somewhere along the line
-            //if (originalDataLength != realSize)
-                //PopulateValues(realSize);
 
             objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
@@ -215,7 +210,7 @@ namespace Peach.Core.Mutators
                 }
             }
         }
-	}
+    }
 }
 
 // end

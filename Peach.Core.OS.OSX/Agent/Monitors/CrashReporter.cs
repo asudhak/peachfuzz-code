@@ -67,7 +67,7 @@ namespace Peach.Core.Agent.Monitors
 				logFolder = Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), "Library", "Logs", "CrashReporter");
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			alreadyPaused = false;
 
