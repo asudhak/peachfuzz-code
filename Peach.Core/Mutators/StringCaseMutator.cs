@@ -125,7 +125,7 @@ namespace Peach.Core.Mutators
                 cases[0] = Char.ToLower(c);
                 cases[1] = Char.ToUpper(c);
 
-                builder[i] = context.Random.Choice<char>(cases);
+                builder[i] = context.Random.Choice(cases);
             }
 
             obj.MutatedValue = new Variant(builder.ToString());

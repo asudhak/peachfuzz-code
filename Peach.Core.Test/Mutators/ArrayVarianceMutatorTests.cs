@@ -136,6 +136,75 @@ namespace Peach.Core.Test.Mutators
                 Assert.AreEqual(expected[i], (byte[])item);
             }
         }
+
+        [Test]
+        public void Test3()
+        {
+            // Test that random mutations honor the correct +/- N
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <String name=\"a0\" value=\"0\" maxOccurs=\"100\">" +
+                "           <Hint name=\"ArrayVarianceMutator-N\" value=\"5\"/>" +
+                "       </String>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"Default\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Null\"/>" +
+                "       <Strategy class=\"RandomStrategy\"/>" +
+                "   </Test>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("ArrayVarianceMutator");
+
+            var myArray = (Dom.Array)dom.tests[0].stateModel.initialState.actions[0].dataModel[0];
+            myArray.origionalElement = myArray[0];
+            myArray.hasExpanded = true;
+            myArray.Add(new Dom.String("a1", "1"));
+            myArray.Add(new Dom.String("a2", "2"));
+            myArray.Add(new Dom.String("a3", "3"));
+            myArray.Add(new Dom.String("a4", "4"));
+
+            RunConfiguration config = new RunConfiguration();
+            config.range = true;
+            config.rangeStart = 0;
+            config.rangeStop = 1000;
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            // verify values
+            Assert.AreEqual(1000, actions.Count);
+            int min = int.MaxValue;
+            int max = int.MinValue;
+            for (int i = 0; i < 999; ++i)
+            {
+                var item = (byte[])mutations[i];
+                if (item.Length == 0)
+                    continue;
+
+                if (item.Length > max)
+                    max = item.Length;
+                if (item.Length < min)
+                    min = item.Length;
+            }
+            Assert.AreEqual(1, min);
+            Assert.AreEqual(10, max);
+        }
     }
 }
 

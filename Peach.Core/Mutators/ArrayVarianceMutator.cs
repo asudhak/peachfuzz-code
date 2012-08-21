@@ -122,7 +122,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            performMutation(obj, context.Random.Next(minCount, maxCount));
+            performMutation(obj, context.Random.Next(minCount, maxCount + 1));
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
 

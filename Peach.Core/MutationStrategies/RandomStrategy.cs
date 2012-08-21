@@ -209,7 +209,8 @@ namespace Peach.Core.MutationStrategies
 					}
 				}
 
-				_iterations[elementName] = mutators;
+				if (mutators.Count > 0)
+					_iterations[elementName] = mutators;
 			}
 		}
 
@@ -247,11 +248,18 @@ namespace Peach.Core.MutationStrategies
 			DataElement[] toMutate = Random.Sample(allElements, Random.Next(1, maxFieldsToMutate + 1));
 			foreach (var item in toMutate)
 			{
-				Mutator mutator = Random.Choice(_iterations[item.fullName]);
-				OnMutating(item.fullName, mutator.name);
-				logger.Debug("Action_Starting: Fuzzing: " + item.fullName);
-				logger.Debug("Action_Starting: Mutator: " + mutator.name);
-				mutator.randomMutation(item);
+				if (_iterations.ContainsKey(item.fullName))
+				{
+					Mutator mutator = Random.Choice(_iterations[item.fullName]);
+					OnMutating(item.fullName, mutator.name);
+					logger.Debug("Action_Starting: Fuzzing: " + item.fullName);
+					logger.Debug("Action_Starting: Mutator: " + mutator.name);
+					mutator.randomMutation(item);
+				}
+				else
+				{
+					logger.Debug("Action_Starting: Skipping Fuzzing: " + item.fullName);
+				}
 			}
 		}
 
