@@ -44,13 +44,14 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class MutationStrategy
 	{
-		public delegate void IterationEventHandler(string elementName, string mutatorName);
+		public delegate void MutationEventHandler(string elementName, string mutatorName);
 
-		public static event IterationEventHandler Iterating;
+		public static event MutationEventHandler Mutating;
 
 		protected RunContext _context;
 		protected Engine _engine;
 		protected int _seed;
+		protected Random _random;
 
 		public MutationStrategy(Dictionary<string, Variant> args)
 		{
@@ -79,20 +80,25 @@ namespace Peach.Core
 			set;
 		}
 
+		public Random Random
+		{
+			get { return _random; }
+		}
+
 		public int Seed
 		{
 			get { return _seed; }
 		}
 
-		public Random Randomize(string name)
+		protected void SeedRandom()
 		{
-			return new Random(Seed + (int)Iteration + name.GetHashCode());
+			_random = new Random(Seed + (int)Iteration);
 		}
 
-		protected void OnIterating(string elementName, string mutatorName)
+		protected void OnMutating(string elementName, string mutatorName)
 		{
-			if (Iterating != null)
-				Iterating(elementName, mutatorName);
+			if (Mutating != null)
+				Mutating(elementName, mutatorName);
 		}
 
 		/// <summary>

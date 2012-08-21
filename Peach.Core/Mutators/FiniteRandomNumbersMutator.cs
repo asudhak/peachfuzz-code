@@ -149,12 +149,10 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = context.Randomize(obj.fullName);
-
             // handle strings
             if (obj is Dom.String)
             {
-                UInt32 value = rand.NextUInt32();
+                UInt32 value = context.Random.NextUInt32();
                 obj.MutatedValue = new Variant(value.ToString());
                 return;
             }
@@ -163,12 +161,12 @@ namespace Peach.Core.Mutators
             {
                 if (size <= 32)
                 {
-                    Int32 value = rand.Next((int)minValue, (int)maxValue);
+                    Int32 value = context.Random.Next((int)minValue, (int)maxValue);
                     obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-                    Int64 value = rand.NextInt64();
+                    Int64 value = context.Random.NextInt64();
                     obj.MutatedValue = new Variant(value);
                 }
             }
@@ -176,12 +174,12 @@ namespace Peach.Core.Mutators
             {
                 if (size <= 32)
                 {
-                    UInt32 value = rand.NextUInt32();
+                    UInt32 value = context.Random.NextUInt32();
                     obj.MutatedValue = new Variant(value);
                 }
                 else
                 {
-                    UInt64 value = rand.NextUInt64();
+                    UInt64 value = context.Random.NextUInt64();
                     obj.MutatedValue = new Variant(value);
                 }
             }

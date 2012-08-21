@@ -44,7 +44,6 @@ namespace Peach.Core.Mutators
         public delegate byte[] generateFcn(int size);
         generateFcn[] generateFcns = new generateFcn[5];
 
-        Random rand = null;
         uint pos;
 
         // CTOR
@@ -98,8 +97,8 @@ namespace Peach.Core.Mutators
         //
         private void getRange(int size, out int start, out int end)
         {
-            start = rand.Next(size);
-            end = rand.Next(size);
+            start = context.Random.Next(size);
+            end = context.Random.Next(size);
 
             if (start > end)
             {
@@ -113,7 +112,7 @@ namespace Peach.Core.Mutators
         //
         private int getPosition(int size, int len = 0)
         {
-            return rand.Next(size - len);
+            return context.Random.Next(size - len);
         }
 
         // SEQUENCIAL_MUTATION
@@ -122,9 +121,6 @@ namespace Peach.Core.Mutators
         {
             // Only called via the Sequencial mutation strategy, which should always have a consistent seed
             System.Diagnostics.Debug.Assert(context.Seed == 0);
-
-            // Need to reset rand so it is the same for subsequent runs of the same iteration
-            rand = context.Randomize(obj.fullName);
 
             obj.MutatedValue = new Variant(changeFcns[pos](obj));
 
@@ -136,9 +132,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            rand = context.Randomize(obj.fullName);
-
-            obj.MutatedValue = new Variant(rand.Choice<changeFcn>(changeFcns)(obj));
+            obj.MutatedValue = new Variant(context.Random.Choice(changeFcns)(obj));
 
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
@@ -152,7 +146,7 @@ namespace Peach.Core.Mutators
 
             List<byte> listData = new List<byte>();
             var data = obj.Value.Value;
-            int size = rand.Next(255);
+            int size = context.Random.Next(255);
             int pos = getPosition(size);
 
             var pt1 = ArrayExtensions.Slice(data, 0, pos);
@@ -198,7 +192,7 @@ namespace Peach.Core.Mutators
             foreach (int i in ArrayExtensions.Range(start, end, 1))
             {
                 var pt1 = ArrayExtensions.Slice(data, 0, i);
-                byte[] pt2 = { (byte)(rand.Next(255)) };
+                byte[] pt2 = { (byte)(context.Random.Next(255)) };
                 var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
                 data = ArrayExtensions.Combine(pt1, pt2, pt3);
             }
@@ -225,7 +219,7 @@ namespace Peach.Core.Mutators
             foreach (int i in ArrayExtensions.Range(start, end, 1))
             {
                 var pt1 = ArrayExtensions.Slice(data, 0, i);
-                byte[] pt2 = { rand.Choice(special) };
+                byte[] pt2 = { context.Random.Choice(special) };
                 var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
                 data = ArrayExtensions.Combine(pt1, pt2, pt3);
             }
@@ -279,7 +273,7 @@ namespace Peach.Core.Mutators
                 if (data[i] == 0)
                 {
                     var pt1 = ArrayExtensions.Slice(data, 0, i);
-                    byte[] pt2 = { (byte)(rand.Next(1, 255)) };
+                    byte[] pt2 = { (byte)(context.Random.Next(1, 255)) };
                     var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
                     data = ArrayExtensions.Combine(pt1, pt2, pt3);
                 }
@@ -294,7 +288,7 @@ namespace Peach.Core.Mutators
         {
             // generate new bytes to inject into Blob
 
-            return rand.Choice<generateFcn>(generateFcns)(size);
+            return context.Random.Choice(generateFcns)(size);
         }
 
         // NEW_BYTES_SINGLE_RANDOM
@@ -304,7 +298,7 @@ namespace Peach.Core.Mutators
             // generate a buffer of size bytes, each byte is the same random number
 
             List<byte> newData = new List<byte>();
-            byte num = (byte)(rand.Next(255));
+            byte num = (byte)(context.Random.Next(255));
 
             for (int i = 0; i < size; ++i)
                 newData.Add(num);
@@ -319,7 +313,7 @@ namespace Peach.Core.Mutators
             // generate a buffer of size bytes, each byte is incrementing from a random start
 
             List<byte> newData = new List<byte>();
-            int x = rand.Next(size);
+            int x = context.Random.Next(size);
 
             foreach (int i in ArrayExtensions.Range(0, size, 1))
             {
@@ -355,7 +349,7 @@ namespace Peach.Core.Mutators
             List<byte> newData = new List<byte>();
 
             for (int i = 0; i < size; ++i)
-                newData.Add((byte)(rand.Next(255)));
+                newData.Add((byte)(context.Random.Next(255)));
 
             return newData.ToArray();
         }

@@ -96,8 +96,7 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            var rand = context.Randomize(obj.fullName);
-            int newCount = rand.Next((int)currentCount);
+            int newCount = context.Random.Next((int)currentCount);
 
             for (uint i = 0; i < newCount; ++i)
             {

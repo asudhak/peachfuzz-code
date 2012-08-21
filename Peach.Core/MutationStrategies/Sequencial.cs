@@ -83,50 +83,56 @@ namespace Peach.Core.MutationStrategies
 			}
 			set
 			{
-				if (value == 0)
+				SetIteration(value);
+				SeedRandom();
+			}
+		}
+
+		private void SetIteration(uint value)
+		{
+			if (value == 0)
+			{
+				_iterations = new Iterations();
+				_count = 1;
+				_iteration = 0;
+				return;
+			}
+
+			System.Diagnostics.Debug.Assert(value > 0);
+			System.Diagnostics.Debug.Assert(value < Count);
+
+			// When we transition out of iteration 0, signal the data model has been recorded
+			if (_iteration == 0 && value > 0)
+				OnDataModelRecorded();
+
+			if (_iteration == 0 || value < _iteration)
+			{
+				_iteration = 1;
+				_enumerator = _iterations.GetEnumerator();
+				_enumerator.MoveNext();
+				_enumerator.Current.Item2.mutation = 0;
+			}
+
+			uint needed = value - _iteration;
+
+			if (needed == 0)
+				return;
+
+			while (true)
+			{
+				var mutator = _enumerator.Current.Item2;
+				uint remain = (uint)mutator.count - mutator.mutation;
+
+				if (remain > needed)
 				{
-					_iterations = new Iterations();
-					_count = 1;
-					_iteration = 0;
+					mutator.mutation += needed;
+					_iteration = value;
 					return;
 				}
 
-				System.Diagnostics.Debug.Assert(value > 0);
-				System.Diagnostics.Debug.Assert(value < Count);
-
-				// When we transition out of iteration 0, signal the data model has been recorded
-				if (_iteration == 0 && value > 0)
-					OnDataModelRecorded();
-
-				if (_iteration == 0 || value < _iteration)
-				{
-					_iteration = 1;
-					_enumerator = _iterations.GetEnumerator();
-					_enumerator.MoveNext();
-					_enumerator.Current.Item2.mutation = 0;
-				}
-
-				uint needed = value - _iteration;
-
-				if (needed == 0)
-					return;
-
-				while (true)
-				{
-					var mutator = _enumerator.Current.Item2;
-					uint remain = (uint)mutator.count - mutator.mutation;
-
-					if (remain > needed)
-					{
-						mutator.mutation += needed;
-						_iteration = value;
-						return;
-					}
-
-					needed -= remain;
-					_enumerator.MoveNext();
-					_enumerator.Current.Item2.mutation = 0;
-				}
+				needed -= remain;
+				_enumerator.MoveNext();
+				_enumerator.Current.Item2.mutation = 0;
 			}
 		}
 
@@ -188,7 +194,7 @@ namespace Peach.Core.MutationStrategies
 			if (dataElement != null)
 			{
 				var mutator = _enumerator.Current.Item2;
-				OnIterating(fullName, mutator.name);
+				OnMutating(fullName, mutator.name);
 				logger.Debug("Action_Starting: Fuzzing: " + fullName);
 				logger.Debug("Action_Starting: Mutator: " + mutator.name);
 				mutator.sequencialMutation(dataElement);

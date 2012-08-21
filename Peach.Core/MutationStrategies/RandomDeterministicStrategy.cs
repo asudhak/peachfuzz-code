@@ -48,9 +48,8 @@ namespace Peach.Core.MutationStrategies
 			// This strategy should randomize the iterations but always do it the same way
 			System.Diagnostics.Debug.Assert(Seed == 0);
 			System.Diagnostics.Debug.Assert(Iteration == 0);
-			Random rand = Randomize("RandomDeterministicStrategy");
 
-			var elements = rand.Shuffle(_iterations.ToArray());
+			var elements = Random.Shuffle(_iterations.ToArray());
 			_iterations.Clear();
 			_iterations.AddRange(elements);
 		}

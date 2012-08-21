@@ -68,21 +68,21 @@ namespace Peach.Core.Test.MutationStrategies
 
 			// this strategy fuzzes elements in a consistently random order
 			string[] expected = {
-									"UnicodeBomMutator | TheDataModel.str2",
-									"StringCaseMutator | TheDataModel.str1",
-									"StringCaseMutator | TheDataModel.str5",
-									"StringMutator | TheDataModel.str4",
-									"StringCaseMutator | TheDataModel.str3",
-									"UnicodeBomMutator | TheDataModel.str1",
-									"UnicodeBomMutator | TheDataModel.str4",
-									"UnicodeBomMutator | TheDataModel.str3",
 									"UnicodeBomMutator | TheDataModel.str5",
-									"StringCaseMutator | TheDataModel.str4",
+									"StringCaseMutator | TheDataModel.str1",
 									"StringMutator | TheDataModel.str3",
-									"StringMutator | TheDataModel.str5",
 									"StringMutator | TheDataModel.str2",
+									"StringCaseMutator | TheDataModel.str5",
 									"StringMutator | TheDataModel.str1",
+									"StringMutator | TheDataModel.str5",
 									"StringCaseMutator | TheDataModel.str2",
+									"UnicodeBomMutator | TheDataModel.str3",
+									"UnicodeBomMutator | TheDataModel.str2",
+									"UnicodeBomMutator | TheDataModel.str1",
+									"StringCaseMutator | TheDataModel.str3",
+									"StringCaseMutator | TheDataModel.str4",
+									"UnicodeBomMutator | TheDataModel.str4",
+									"StringMutator | TheDataModel.str4",
 								};
 
 			for (int i = 0; i < expected.Length; ++i)

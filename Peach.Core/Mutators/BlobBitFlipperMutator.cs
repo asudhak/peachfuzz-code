@@ -135,8 +135,7 @@ namespace Peach.Core.Mutators
             BitStream bs = new BitStream(data);
 
             // pick a random bit
-            var rand = context.Randomize(obj.fullName);
-            int bit = rand.Next((int)bs.LengthBits);
+            int bit = context.Random.Next((int)bs.LengthBits);
 
             // seek, read, rewind
             bs.SeekBits(bit, SeekOrigin.Begin);

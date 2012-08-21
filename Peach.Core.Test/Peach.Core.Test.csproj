@@ -264,7 +264,7 @@
     <Compile Include="Mutators\UnicodeUtf8ThreeCharMutatorTests.cs" />
     <Compile Include="Mutators\ValidValuesMutatorTests.cs" />
     <Compile Include="Mutators\XmlW3CMutatorTests.cs" />
-    <Compile Include="OutputTests\RandomStrategyTests.cs" />
+    <Compile Include="MutationStrategies\RandomStrategyTests.cs" />
     <Compile Include="PeachXPathTests.cs" />
     <Compile Include="PitParserTests\ArrayTests.cs" />
     <Compile Include="Monitors\PcapMonitorTests.cs" />

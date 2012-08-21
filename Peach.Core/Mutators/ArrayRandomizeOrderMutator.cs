@@ -130,8 +130,7 @@ namespace Peach.Core.Mutators
             for (int i = 0; i < objAsArray.Count; ++i)
                 items.Add(objAsArray[i]);
 
-            var rand = context.Randomize(obj.fullName);
-            var shuffledItems = rand.Shuffle(items.ToArray());
+            var shuffledItems = context.Random.Shuffle(items.ToArray());
             objAsArray.Clear();
 
             for (int i = 0; i < shuffledItems.Length; ++i)

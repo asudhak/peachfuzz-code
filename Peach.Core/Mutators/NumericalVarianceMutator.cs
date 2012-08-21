@@ -218,8 +218,7 @@ namespace Peach.Core.Mutators
         {
             try
             {
-                var rand = context.Randomize(obj.fullName);
-                long value = rand.Choice(values);
+                long value = context.Random.Choice(values);
 
                 if (signed)
                 {

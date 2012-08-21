@@ -41,7 +41,6 @@ namespace Peach.Core.Mutators
         public delegate void mutationType(DataElement obj);
         mutationType[] mutations = new mutationType[3];
         uint index;
-        Random rand = null;
 
         // CTOR
         //
@@ -84,9 +83,6 @@ namespace Peach.Core.Mutators
             // Only called via the Sequencial mutation strategy, which should always have a consistent seed
             System.Diagnostics.Debug.Assert(context.Seed == 0);
 
-            // Need to always regenerate rand so subsequent runs of the same iteration are the same
-            rand = context.Randomize(obj.fullName);
-
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             mutations[index](obj);
         }
@@ -96,8 +92,7 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            rand = context.Randomize(obj.fullName);
-            rand.Choice<mutationType>(mutations)(obj);
+            context.Random.Choice(mutations)(obj);
         }
 
         // MUTATION_LOWER_CASE
@@ -130,7 +125,7 @@ namespace Peach.Core.Mutators
                 cases[0] = Char.ToLower(c);
                 cases[1] = Char.ToUpper(c);
 
-                builder[i] = rand.Choice<char>(cases);
+                builder[i] = context.Random.Choice<char>(cases);
             }
 
             obj.MutatedValue = new Variant(builder.ToString());
@@ -166,7 +161,7 @@ namespace Peach.Core.Mutators
                 {
                     do
                     {
-                        index = rand.Next(max);
+                        index = context.Random.Next(max);
                     }
                     while (ret.Contains(index));
 
