@@ -169,6 +169,8 @@ namespace Peach.Core.Dom
 					if (data.TellBits() == data.LengthBits)
 					{
                         logger.Debug("Crack: {0} Found EOF, all done!", element.fullName);
+						// Include this successful crack in the count
+						cnt++;
 						break;
 					}
 				}
