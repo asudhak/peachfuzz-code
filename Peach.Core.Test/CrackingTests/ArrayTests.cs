@@ -278,6 +278,34 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(new byte[] { 3 }, (byte[])array[2].InternalValue);
 			Assert.AreEqual(new byte[] { 4, 5, 6 }, (byte[])blob.InternalValue);
 		}
+
+		[Test]
+		public void CrackArrayOfOne()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str1\" nullTerminated=\"true\" minOccurs=\"1\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(Encoding.ASCII.GetBytes("Hello\x00"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+			Assert.AreEqual(1, array.Count);
+			string str = (string)array[0].InternalValue;
+
+			Assert.AreEqual("Hello", str);
+		}
 	}
 }
 
