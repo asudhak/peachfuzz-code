@@ -51,14 +51,22 @@ namespace Peach.Core.MutationStrategies
 	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once (default is 7).", false)]
 	public class RandomStrategy : MutationStrategy
 	{
+		class DataSetTracker
+		{
+			public List<string> fileNames = new List<string>();
+			public uint iteration = 0;
+		};
+
 		protected class Iterations : Dictionary<string, List<Mutator>> { }
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
+		Dictionary<string, DataSetTracker> _dataSets;
 		List<Type> _mutators;
 		Iterations _iterations;
 		SortedSet<string> _dataModels;
 		string _targetDataModel;
 		uint _iteration;
+		Random _randomDataSet;
 
 		/// <summary>
 		/// How often to switch files.
@@ -103,6 +111,14 @@ namespace Peach.Core.MutationStrategies
 			Core.Dom.Action.Starting -= Action_Starting;
 		}
 
+		private uint GetSwitchIteration()
+		{
+			// Returns the iteration we should switch our dataSet based off our
+			// current iteration. For example, if switchCount is 10, this function
+			// will return 1, 11, 21, 31, 41, 51, etc.
+			return _iteration - ((_iteration - 1) % (uint)switchCount);
+		}
+
 		public override uint Iteration
 		{
 			get
@@ -115,50 +131,56 @@ namespace Peach.Core.MutationStrategies
 				_targetDataModel = null;
 				SeedRandom();
 
+				if (_iteration == GetSwitchIteration())
+					_randomDataSet = null;
+
 				if (_iteration == 0)
 				{
 					_iterations = new Iterations();
 					_dataModels = new SortedSet<string>();
+					_dataSets = new Dictionary<string, DataSetTracker>();
+				}
+				else if (_randomDataSet == null)
+				{
+					_randomDataSet = new Random(this.Seed + (int)GetSwitchIteration());
 				}
 			}
 		}
 
 		void Action_Starting(Core.Dom.Action action)
 		{
-			if (((int)(_iteration + 1) & switchCount) == 0)
-				SwitchDataSet(action);
-
-			if (_iteration > 0)
-				MutateDataModel(action);
-			else
+			if (_iteration == 0)
+			{
+				RecordDataSet(action);
 				RecordDataModel(action);
+			}
+			else
+			{
+				SyncDataSet(action);
+				MutateDataModel(action);
+			}
 		}
 
-		private void SwitchDataSet(Dom.Action action)
+		private void SyncDataSet(Dom.Action action)
 		{
-			if (action.dataSet == null)
+			System.Diagnostics.Debug.Assert(_iteration != 0);
+
+			string key = action.name + " " + action.GetHashCode();
+			DataSetTracker val = null;
+			if (!_dataSets.TryGetValue(key, out val))
 				return;
 
-			if (action.dataSet.Datas.Count <= 1 && action.dataSet.Datas[0].Files.Count <= 1)
+			// If the last switch was within the current iteration range then we don't have to switch.
+			uint switchIteration = GetSwitchIteration();
+			if (switchIteration == val.iteration)
 				return;
+
+			// Only pick the file name once so any given iteration is guranteed to be deterministic
+			string fileName = _randomDataSet.Choice(val.fileNames);
+			byte[] fileBytes = null;
 
 			for (int i = 0; i < 5; ++i)
 			{
-				Data data = Random.Choice(action.dataSet.Datas);
-				string fileName = null;
-
-				if (data.DataType == DataType.Files)
-					fileName = Random.Choice(data.Files);
-				else if (data.DataType == DataType.File)
-					fileName = data.FileName;
-				else if (data.DataType == DataType.Fields)
-					throw new NotImplementedException();
-
-				if (fileName == null)
-					throw new PeachException("No filename specified in data set.");
-
-				byte[] fileBytes = null;
-
 				try
 				{
 					fileBytes = File.ReadAllBytes(fileName);
@@ -168,6 +190,7 @@ namespace Peach.Core.MutationStrategies
 					continue;
 				}
 
+				// Crack the file
 				DataCracker cracker = new DataCracker();
 				cracker.CrackData(action.dataModel, new BitStream(fileBytes));
 
@@ -175,13 +198,21 @@ namespace Peach.Core.MutationStrategies
 				var ret = action.dataModel.Value;
 				System.Diagnostics.Debug.Assert(ret != null);
 
+				// Remove our old mutators
+				_dataModels.Remove(action.origionalDataModel.fullName);
+				List<DataElement> oldElements = new List<DataElement>();
+				RecursevlyGetElements(action.origionalDataModel, oldElements);
+				foreach (var item in oldElements)
+					_iterations.Remove(item.fullName);
+
 				// Store copy of new origional data model
 				action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
 
 				// Refresh the mutators
-				// TODO: Why are we doing this? Does cracking a data model change the number & names of elements?
-				_dataModels.Remove(action.dataModel.fullName);
 				RecordDataModel(action);
+
+				// Save our current state
+				val.iteration = switchIteration;
 
 				return;
 			}
@@ -216,9 +247,6 @@ namespace Peach.Core.MutationStrategies
 
 		private void RecordDataModel(Core.Dom.Action action)
 		{
-			// ParseDataModel should only be called during iteration 0
-			System.Diagnostics.Debug.Assert(_iteration == 0);
-
 			if (action.dataModel != null)
 			{
 				if (_dataModels.Add(action.dataModel.fullName))
@@ -233,6 +261,39 @@ namespace Peach.Core.MutationStrategies
 							GatherMutators(param.dataModel as DataElementContainer);
 				}
 			}
+		}
+
+		private void RecordDataSet(Core.Dom.Action action)
+		{
+			if (action.dataSet != null)
+			{
+				DataSetTracker val = new DataSetTracker();
+				foreach (var item in action.dataSet.Datas)
+				{
+					switch (item.DataType)
+					{
+						case DataType.File:
+							val.fileNames.Add(item.FileName);
+							break;
+						case DataType.Files:
+							val.fileNames.AddRange(item.Files);
+							break;
+						case DataType.Fields:
+							throw new NotImplementedException();
+						default:
+							throw new PeachException("Unexpected DataType: " + item.DataType.ToString());
+					}
+				}
+
+				if (val.fileNames.Count > 0)
+				{
+					// Need to properly support more than one action that are unnamed
+					string key = action.name + " " + action.GetHashCode();
+					System.Diagnostics.Debug.Assert(!_dataSets.ContainsKey(key));
+					_dataSets.Add(key, val);
+				}
+			}
+
 		}
 
 		private void ApplyMutation(DataModel dataModel)

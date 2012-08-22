@@ -295,6 +295,194 @@ namespace Peach.Core.Test.MutationStrategies
 			VerifySameResults(oldStrategies, oldActions);
 		}
 
+		[Test]
+		public void Test6()
+		{
+			// Test that the random strategy properly cycles through data models on the specified switch count
+			string temp1 = Path.GetTempFileName();
+			string temp2 = Path.GetTempFileName();
+
+			File.WriteAllBytes(temp1, Encoding.ASCII.GetBytes("Hello\x00World\x00"));
+			File.WriteAllBytes(temp2, Encoding.ASCII.GetBytes("Foo\x00"));
+
+			// Test loading a dataset from a file
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"       <String name=\"str1\" value=\"Initial\" maxOccurs=\"100\" nullTerminated=\"true\"/>" +
+				"   </DataModel>" +
+
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel\"/>" +
+				"               <Data fileName=\"" + temp1 + "\"/>" +
+				"               <Data fileName=\"" + temp2 + "\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
+
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Null\"/>" +
+				"       <Strategy class=\"RandomStrategy\">" +
+				"           <Param name=\"Seed\" value=\"12345\"/>" +
+				"           <Param name=\"SwitchCount\" value=\"10\"/>" +
+				
+				"       </Strategy>" +
+				"   </Test>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("StringCaseMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			config.rangeStart = 0;
+			config.rangeStop = 50;
+			config.range = true;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(49, mutations.Count);
+			Assert.AreEqual(50, dataModels.Count);
+
+			int lastSize = 0;
+
+			// Skip data model 0, its the magical 1st pass w/o mutations
+			for (int i = 1; i < 50; ++i)
+			{
+				Assert.AreEqual(1, dataModels[i].Count);
+				Dom.Array item = dataModels[i][0] as Dom.Array;
+
+				// Its either an array of 1 or an array of 2
+				Assert.GreaterOrEqual(item.Count, 1);
+				Assert.LessOrEqual(item.Count, 2);
+
+				if (lastSize != item.Count)
+				{
+					// Change of data model should only occur at iteration 1, 11, 21, 31, 41
+					Assert.AreEqual(1, i % 10);
+					lastSize = item.Count;
+				}
+
+			}
+		}
+
+		[Test]
+		public void Test7()
+		{
+			// Test that the random strategy is reproducable when starting at an
+			// arbitrary iteration when configured to cycles through data models
+			// with multiple actions
+			string temp1 = Path.GetTempFileName();
+			string temp2 = Path.GetTempFileName();
+			string temp3 = Path.GetTempFileName();
+			string temp4 = Path.GetTempFileName();
+
+			File.WriteAllBytes(temp1, Encoding.ASCII.GetBytes("Foo\u0000"));
+			File.WriteAllBytes(temp2, Encoding.ASCII.GetBytes("Foo\u0000Bar\u0000"));
+			File.WriteAllBytes(temp3, Encoding.ASCII.GetBytes("Foo\u0000Bar\u0000Baz\u0000"));
+			File.WriteAllBytes(temp4, Encoding.ASCII.GetBytes("Foo\u0000Bar\u0000Baz\u0000Qux\u0000"));
+
+			// Test loading a dataset from a file
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel1\">" +
+				"       <String name=\"str1\" value=\"Initial\" maxOccurs=\"100\" nullTerminated=\"true\"/>" +
+				"   </DataModel>" +
+
+				"   <DataModel name=\"TheDataModel2\">" +
+				"       <String name=\"str1\" value=\"Initial\" maxOccurs=\"100\" nullTerminated=\"true\"/>" +
+				"   </DataModel>" +
+
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel1\"/>" +
+				"               <Data fileName=\"" + temp1 + "\"/>" +
+				"               <Data fileName=\"" + temp2 + "\"/>" +
+				"           </Action>" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel2\"/>" +
+				"               <Data fileName=\"" + temp3 + "\"/>" +
+				"               <Data fileName=\"" + temp4 + "\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
+
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Null\"/>" +
+				"       <Strategy class=\"RandomStrategy\">" +
+				"           <Param name=\"Seed\" value=\"12345\"/>" +
+				"           <Param name=\"SwitchCount\" value=\"10\"/>" +
+
+				"       </Strategy>" +
+				"   </Test>" +
+				"</Peach>";
+
+			RunSwitchTest(xml, 0, 100);
+			Assert.AreEqual(200, dataModels.Count);
+			var oldDataModels = dataModels;
+
+			ResetContainers();
+			Assert.AreEqual(0, dataModels.Count);
+
+			RunSwitchTest(xml, 47, 100);
+			Assert.AreEqual(108, dataModels.Count);
+
+			oldDataModels.RemoveRange(0, oldDataModels.Count - dataModels.Count);
+			Assert.AreEqual(dataModels.Count, oldDataModels.Count);
+
+			// Because there are two actions, the first two entries in dataModels are the 0th iteration
+			for (int i = 2; i < dataModels.Count; ++i)
+			{
+				Assert.AreEqual(1, dataModels[i].Count);
+				Assert.AreEqual(1, oldDataModels[i].Count);
+
+				Dom.Array item = dataModels[i][0] as Dom.Array;
+				Dom.Array oldItem = oldDataModels[i][0] as Dom.Array;
+
+				Assert.AreNotEqual(null, item);
+				Assert.AreNotEqual(null, oldItem);
+
+				Assert.AreEqual(item.Count, oldItem.Count);
+
+				for (int j = 0; j < item.Count; ++j)
+				{
+					Dom.String str = item[j] as Dom.String;
+					Dom.String oldStr = oldItem[j] as Dom.String;
+
+					Assert.AreNotEqual(null, str);
+					Assert.AreNotEqual(null, oldStr);
+					Assert.AreEqual(str.InternalValue, oldStr.InternalValue);
+				}
+			}
+		}
+
+		private static void RunSwitchTest(string xml, uint start, uint stop)
+		{
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("StringCaseMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			config.rangeStart = start;
+			config.rangeStop = stop;
+			config.range = true;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+		}
+
 		private void VerifySameResults(List<string> oldStrategies, List<Dom.Action> oldActions)
 		{
 			Assert.AreEqual(allStrategies.Count, oldStrategies.Count);

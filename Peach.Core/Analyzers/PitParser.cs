@@ -1525,26 +1525,10 @@ namespace Peach.Core.Analyzers
 
 				if (child.Name == "Data")
 				{
-					// TODO - Expand support
-					action.dataSet = new DataSet();
+					if (action.dataSet == null)
+						action.dataSet = new DataSet();
 					action.dataSet.Datas.Add(handleData(child));
 				}
-			}
-
-			// Still old way todo things.
-			if (action.dataModel != null && action.dataSet != null &&
-				action.dataSet.Datas.Count > 0 &&
-				(action.dataSet.Datas[0].FileName != null || action.dataSet.Datas[0].Files.Count>0))
-			{
-				string fileName = null;
-				if(action.dataSet.Datas[0].FileName != null)
-					fileName = action.dataSet.Datas[0].FileName;
-				else
-					fileName = action.dataSet.Datas[0].Files[0];
-
-				// update origionalDataModel
-				if (action.origionalDataModel != null)
-					action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
 			}
 
 			return action;
@@ -1579,6 +1563,9 @@ namespace Peach.Core.Analyzers
 					List<string> files = new List<string>();
 					foreach (string fileName in Directory.GetFiles(dataFileName))
 						files.Add(fileName);
+
+					if (files.Count == 0)
+						throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
 
 					data.DataType = DataType.Files;
 					data.Files = files;
