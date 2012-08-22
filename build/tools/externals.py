@@ -57,7 +57,8 @@ def configure(conf):
 			config_external(conf, k, exts[k])
 			conf.env.append_value('supported_features', [ k ])
 		except Exception, e:
-			Logs.warn('External library \'%s\' is not available: %s' % (k, e))
+			if Logs.verbose:
+				Logs.warn('External library \'%s\' is not available: %s' % (k, e))
 
 @feature('*')
 @before_method('propagate_uselib_vars')
