@@ -377,6 +377,43 @@ namespace Peach.Core.Test.Mutators
                 Assert.NotNull((ulong)item);
             }
         }
+
+        [Test]
+        public void Test8()
+        {
+            // Using the sequential strategy:
+            // Test that mutator produces consistent results for each run
+            // but different results across each iteration
+
+            Test1();
+            Assert.AreEqual(5000, mutations.Count);
+
+            var pass1 = mutations;
+
+            ResetContainers();
+
+            Test1();
+            Assert.AreEqual(5000, mutations.Count);
+
+            var pass2 = mutations;
+
+            int numSame = 0;
+            for (int i = 0; i < pass1.Count; ++i)
+            {
+                var val1 = (int)pass1[i];
+                var val2 = (int)pass2[i];
+
+                Assert.AreEqual(val1, val2);
+
+                for (int j = (i + 1); j < pass2.Count; ++j)
+                {
+                    if (val1 == (int)pass2[j])
+                        ++numSame;
+                }
+            }
+
+            Assert.AreEqual(0, numSame);
+        }
     }
 }
 

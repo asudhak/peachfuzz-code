@@ -96,7 +96,13 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            int newCount = context.Random.Next((int)currentCount);
+
+            // TODO: Since 'this.mutation = X' is only called by the
+            // sequencial mutation strategy, the random strategy
+            // will wither duplicate the element once or not
+            // duplicate at all.  Is this right? Should this really be:
+            //int newCount = context.Random.Next(minCount, maxCount + 1);
+            int newCount = context.Random.Next((int)currentCount + 1);
 
             for (uint i = 0; i < newCount; ++i)
             {
