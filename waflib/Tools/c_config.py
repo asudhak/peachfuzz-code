@@ -1094,7 +1094,10 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 			ver = k['__INTEL_COMPILER']
 			conf.env['CC_VERSION'] = (ver[:-2], ver[-2], ver[-1])
 		else:
-			conf.env['CC_VERSION'] = (k['__GNUC__'], k['__GNUC_MINOR__'], k['__GNUC_PATCHLEVEL__'])
+			if isD('__clang__'):
+				conf.env['CC_VERSION'] = (k['__clang_major__'], k['__clang_minor__'], k['__clang_patchlevel__'])
+			else:
+				conf.env['CC_VERSION'] = (k['__GNUC__'], k['__GNUC_MINOR__'], k['__GNUC_PATCHLEVEL__'])
 	return k
 
 @conf
