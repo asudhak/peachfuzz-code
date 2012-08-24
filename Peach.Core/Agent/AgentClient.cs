@@ -46,7 +46,7 @@ namespace Peach.Core.Agent
 	public delegate void StopAllMonitorsClientEventHandler(AgentClient agent);
 	public delegate void SessionStartingClientEventHandler(AgentClient agent);
 	public delegate void SessionFinishedClientEventHandler(AgentClient agent);
-	public delegate void IterationStartingClientEventHandler(AgentClient agent, int iterationCount, bool isReproduction);
+	public delegate void IterationStartingClientEventHandler(AgentClient agent, uint iterationCount, bool isReproduction);
 	public delegate void IterationFinishedClientEventHandler(AgentClient agent);
 	public delegate void DetectedFaultClientEventHandler(AgentClient agent);
 	public delegate void GetMonitorDataClientEventHandler(AgentClient agent);
@@ -121,7 +121,7 @@ namespace Peach.Core.Agent
 		}
 
 		public event IterationStartingClientEventHandler IterationStartingEvent;
-		protected void OnIterationStartingEvent(int iterationCount, bool isReproduction)
+		protected void OnIterationStartingEvent(uint iterationCount, bool isReproduction)
 		{
 			if (IterationStartingEvent != null)
 				IterationStartingEvent(this, iterationCount, isReproduction);
@@ -216,7 +216,7 @@ namespace Peach.Core.Agent
 		/// </summary>
 		/// <param name="iterationCount">Iteration count</param>
 		/// <param name="isReproduction">Are we re-running an iteration</param>
-		public abstract void IterationStarting(int iterationCount, bool isReproduction);
+		public abstract void IterationStarting(uint iterationCount, bool isReproduction);
 		/// <summary>
 		/// Iteration has completed.
 		/// </summary>

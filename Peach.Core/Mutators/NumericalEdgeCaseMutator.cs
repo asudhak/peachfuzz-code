@@ -35,8 +35,8 @@ namespace Peach.Core.Mutators
 {
     [Mutator("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
     [Hint("NumericalEdgeCaseMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-	public class NumericalEdgeCaseMutator : Mutator
-	{
+    public class NumericalEdgeCaseMutator : Mutator
+    {
         // members
         //
         Dictionary<int, long[]> values;
@@ -44,7 +44,7 @@ namespace Peach.Core.Mutators
         ulong[] ulongValues;
         int n;
         int size;
-        int currentCount;
+        uint currentCount;
         long minValue;
         ulong maxValue;
         bool signed;
@@ -180,20 +180,19 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= count)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
         //
         public override int count
         {
-            get 
+            get
             {
                 if (isULong)
                     return ulongValues.Length;
@@ -222,33 +221,30 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            // value should be valid by this point
-            if (currentCount >= count)
-                return;
-
             if (obj is Dom.String)
                 obj.MutatedValue = new Variant(values[size][currentCount].ToString());
             else if (isULong)
                 obj.MutatedValue = new Variant(ulongValues[currentCount]);
             else
                 obj.MutatedValue = new Variant(values[size][currentCount]);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
             if (obj is Dom.String)
-                obj.MutatedValue = new Variant(rand.Choice(values[size]).ToString());
+                obj.MutatedValue = new Variant(context.Random.Choice(values[size]).ToString());
             else if (isULong)
-                obj.MutatedValue = new Variant(rand.Choice(ulongValues));
+                obj.MutatedValue = new Variant(context.Random.Choice(ulongValues));
             else
-                obj.MutatedValue = new Variant(rand.Choice(values[size]));
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
-	}
+                obj.MutatedValue = new Variant(context.Random.Choice(values[size]));
+
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
+    }
 }
 
 // end

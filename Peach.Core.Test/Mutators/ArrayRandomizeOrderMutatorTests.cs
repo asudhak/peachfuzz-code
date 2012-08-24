@@ -144,6 +144,38 @@ namespace Peach.Core.Test.Mutators
             }
             Assert.LessOrEqual(numSame, 1);
         }
+
+        [Test]
+        public void Test3()
+        {
+            // Using the sequential strategy:
+            // Test that mutator produces consistent results for each run
+            // but different results across each iteration
+
+            Test1();
+            Assert.AreEqual(50, mutations.Count);
+
+            var oldMutations = mutations;
+
+            ResetContainers();
+            Assert.AreEqual(0, mutations.Count);
+
+            Test1();
+            Assert.AreEqual(50, mutations.Count);
+
+            int numSame = 0;
+            for (int i = 0; i < 50; ++i)
+            {
+                Assert.AreEqual(mutations[i].ToHex(), oldMutations[i].ToHex());
+                for (int j = (i+1); j < 50; ++j)
+                {
+                    if (((byte[])mutations[i]).SequenceEqual((byte[])mutations[j]))
+                        ++numSame;
+                }
+            }
+
+            Assert.Less(numSame, 10);
+        }
     }
 }
 

@@ -41,43 +41,38 @@ namespace Peach.Core.Mutators
 		public StringMutator(DataElement obj)
 		{
 			pos = 0;
-            name = "StringMutator";
+			name = "StringMutator";
 		}
 
-        public new static bool supportedDataElement(DataElement obj)
-        {
-            if (obj is Dom.String)
-                return true;
+		public new static bool supportedDataElement(DataElement obj)
+		{
+			if (obj is Dom.String)
+				return true;
 
-            return false;
-        }
+			return false;
+		}
 
-        public override void next()
-        {
-            pos++;
-            if (pos >= values.Length)
-            {
-                pos = (uint)values.Length - 1;
-                throw new MutatorCompleted();
-            }
-        }
+		public override int count
+		{
+			get { return values.Length; }
+		}
 
-        public override int count
-        {
-            get { return values.Length; }
-        }
+		public override uint mutation
+		{
+			get { return pos; }
+			set { pos = value; }
+		}
 
-        public override void sequencialMutation(DataElement obj)
-        {
+		public override void sequencialMutation(DataElement obj)
+		{
 			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
 			obj.MutatedValue = new Variant(values[pos]);
-        }
+		}
 
 		public override void randomMutation(DataElement obj)
 		{
 			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-			obj.MutatedValue = new Variant(rand.Choice<string>(values));
+			obj.MutatedValue = new Variant(context.Random.Choice<string>(values));
 		}
 	}
 }

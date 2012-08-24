@@ -95,7 +95,7 @@ namespace Peach.Core.Agent.Channels
 			agent.SessionFinished();
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			agent.IterationStarting(iterationCount, isReproduction);
 		}

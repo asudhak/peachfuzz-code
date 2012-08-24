@@ -35,16 +35,17 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Randomize the order of the array")]
     [Hint("ArrayRandomizeOrderMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-	public class ArrayRandomizeOrderMutator : Mutator
-	{
+    public class ArrayRandomizeOrderMutator : Mutator
+    {
         // members
         //
-        int currentCount;
+        uint currentCount;
         int n;
 
         // CTOR
         //
-        public ArrayRandomizeOrderMutator(DataElement obj) : base(obj)
+        public ArrayRandomizeOrderMutator(DataElement obj)
+            : base(obj)
         {
             name = "ArrayRandomizeOrderMutator";
             currentCount = 0;
@@ -75,13 +76,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= n)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
@@ -105,17 +105,20 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
+            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
+            System.Diagnostics.Debug.Assert(context.Seed == 0);
+
             performMutation(obj);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
             performMutation(obj);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // PERFORM_MUTATION
         //
@@ -127,14 +130,13 @@ namespace Peach.Core.Mutators
             for (int i = 0; i < objAsArray.Count; ++i)
                 items.Add(objAsArray[i]);
 
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-            var shuffledItems = rand.Shuffle(items.ToArray());
+            var shuffledItems = context.Random.Shuffle(items.ToArray());
             objAsArray.Clear();
 
             for (int i = 0; i < shuffledItems.Length; ++i)
                 objAsArray.Add(shuffledItems[i]);
         }
-	}
+    }
 }
 
 // end

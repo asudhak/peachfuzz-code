@@ -64,7 +64,7 @@ namespace Peach.Core.Agent
         /// </summary>
         /// <param name="iterationCount">Iteration count</param>
         /// <param name="isReproduction">Are we re-running an iteration</param>
-        public abstract void IterationStarting(int iterationCount, bool isReproduction);
+        public abstract void IterationStarting(uint iterationCount, bool isReproduction);
         /// <summary>
         /// Iteration has completed.
         /// </summary>

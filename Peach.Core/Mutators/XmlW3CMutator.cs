@@ -37,11 +37,11 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
     [Hint("type", "Allows string to be mutated by the XmlW3CMutator.")]
-	public class XmlW3CParserTestsMutator : Mutator
-	{
+    public class XmlW3CParserTestsMutator : Mutator
+    {
         // members
         //
-        int pos;
+        uint pos;
         byte[] zipFileData;
         string[] values = new string[] { };
         MemoryStream ms;
@@ -134,16 +134,12 @@ namespace Peach.Core.Mutators
             s.Close();
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            pos++;
-            if (pos >= values.Length)
-            {
-                pos = values.Length - 1;
-                throw new MutatorCompleted();
-            }
+            get { return pos; }
+            set { pos = value; }
         }
 
         // COUNT
@@ -180,7 +176,7 @@ namespace Peach.Core.Mutators
             byte[] data2 = new byte[s.Length];
             s.Read(data2, 0, data2.Length);
             obj.MutatedValue = new Variant(data2);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
@@ -188,17 +184,16 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-            string filePath = "xmltests/" + rand.Choice<string>(values);
+            string filePath = "xmltests/" + context.Random.Choice(values);
             entry = zip[filePath];
             s = entry.OpenReader();
             byte[] data2 = new byte[s.Length];
             s.Read(data2, 0, data2.Length);
             obj.MutatedValue = new Variant(data2);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
-	}
+    }
 }
 
 // end

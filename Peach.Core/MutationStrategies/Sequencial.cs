@@ -39,13 +39,16 @@ namespace Peach.Core.MutationStrategies
 	[MutationStrategy("Sequencial")]
 	public class Sequencial : MutationStrategy
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected class Iterations : List<Tuple<string, Mutator>> { }
 
-		Dictionary<DataElement, List<Mutator>> _stuffs = new Dictionary<DataElement, List<Mutator>>();
-		List<Type> _mutators = new List<Type>();
-		bool recording = true;
-		int? _count = null;
-		int _iterationCount = 0;
+		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		protected Iterations.Enumerator _enumerator;
+		protected Iterations _iterations = new Iterations();
+
+		private List<Type> _mutators = null;
+		private uint _count = 1;
+		private uint _iteration = 0;
 
 		public Sequencial(Dictionary<string, Variant> args)
 			: base(args)
@@ -56,202 +59,173 @@ namespace Peach.Core.MutationStrategies
 		{
 			base.Initialize(context, engine);
 
-			// Setup our handlers to record first iteration
-			recording = true;
-			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
-			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
-
-			_iterationCount = 0;
-
+			_mutators = new List<Type>();
 			_mutators.AddRange(EnumerateValidMutators());
 		}
 
 		public override void Finalize(RunContext context, Engine engine)
 		{
-			StateModel.Starting -= StateModel_Starting;
-			StateModel.Finished -= StateModel_Finished;
+			base.Finalize(context, engine);
+
 			Core.Dom.Action.Starting -= Action_Starting;
 		}
 
-		public override int IterationCount
+		protected virtual void OnDataModelRecorded()
 		{
-			get { return _iterationCount; }
 		}
 
-		void Action_Starting(Core.Dom.Action action)
+		public override uint Iteration
 		{
-			if (!recording && enumeratorsInitialized)
+			get
 			{
-				string fullName = _dataElementEnumerator.Current.fullName;
-				if (action.dataModel != null)
-				{
-					DataElement elem = action.dataModel.find(fullName);
-					if (elem != null)
-					{
-						logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
-						logger.Info("Action_Starting: Mutator: " + _mutatorEnumerator.Current.name);
+				return _iteration;
+			}
+			set
+			{
+				SetIteration(value);
+				SeedRandom();
+			}
+		}
 
-						try
-						{
-							_mutatorEnumerator.Current.sequencialMutation(elem);
-                            //_mutatorEnumerator.Current.randomMutation(elem);
-						}
-						catch (OutOfMemoryException)
-						{
-							logger.Debug("Mutator caused out of memory exception, Ignoring!");
-						}
-					}
-				}
-				else if(action.parameters != null && action.parameters.Count > 0)
-				{
-					foreach (ActionParameter param in action.parameters)
-					{
-						if (param.dataModel == null)
-							continue;
-
-						DataElement elem = param.dataModel.find(fullName);
-						if (elem != null)
-						{
-							logger.Info("Action_Starting: Fuzzing: " + elem.fullName);
-							logger.Info("Action_Starting: Mutator: " + _mutatorEnumerator.Current.name);
-
-							try
-							{
-								_mutatorEnumerator.Current.sequencialMutation(elem);
-							}
-							catch (OutOfMemoryException)
-							{
-								logger.Debug("Mutator caused out of memory exception, Ignoring!");
-							}
-						}
-					}
-				}
-
+		private void SetIteration(uint value)
+		{
+			if (value == 0)
+			{
+				_iterations = new Iterations();
+				_count = 1;
+				_iteration = 0;
 				return;
 			}
 
+			System.Diagnostics.Debug.Assert(value > 0);
+			System.Diagnostics.Debug.Assert(value < Count);
+
+			// When we transition out of iteration 0, signal the data model has been recorded
+			if (_iteration == 0 && value > 0)
+				OnDataModelRecorded();
+
+			if (_iteration == 0 || value < _iteration)
+			{
+				_iteration = 1;
+				_enumerator = _iterations.GetEnumerator();
+				_enumerator.MoveNext();
+				_enumerator.Current.Item2.mutation = 0;
+			}
+
+			uint needed = value - _iteration;
+
+			if (needed == 0)
+				return;
+
+			while (true)
+			{
+				var mutator = _enumerator.Current.Item2;
+				uint remain = (uint)mutator.count - mutator.mutation;
+
+				if (remain > needed)
+				{
+					mutator.mutation += needed;
+					_iteration = value;
+					return;
+				}
+
+				needed -= remain;
+				_enumerator.MoveNext();
+				_enumerator.Current.Item2.mutation = 0;
+			}
+		}
+
+		private void Action_Starting(Core.Dom.Action action)
+		{
+			if (_iteration > 0)
+				MutateDataModel(action);
+			else
+				RecordDataModel(action);
+		}
+
+		// Recursivly walk all DataElements in a container.
+		// Add the element and accumulate any supported mutators.
+		private void GatherMutators(DataElementContainer cont)
+		{
+			List<DataElement> allElements = new List<DataElement>();
+			RecursevlyGetElements(cont, allElements);
+			foreach (DataElement elem in allElements)
+			{
+				var elementName = elem.fullName;
+
+				foreach (Type t in _mutators)
+				{
+					// can add specific mutators here
+					if (SupportedDataElement(t, elem))
+					{
+						var mutator = GetMutatorInstance(t, elem);
+						_iterations.Add(new Tuple<string,Mutator>(elementName, mutator));
+						_count += (uint)mutator.count;
+					}
+				}
+			}
+		}
+
+		private void RecordDataModel(Core.Dom.Action action)
+		{
+			// ParseDataModel should only be called during iteration 0
+			System.Diagnostics.Debug.Assert(_iteration == 0);
+
 			if (action.dataModel != null)
 			{
-				List<DataElement> allElements = new List<DataElement>();
-				RecursevlyGetElements(action.dataModel as DataElementContainer, allElements);
-				foreach (DataElement elem in allElements)
-				{
-					List<Mutator> elemMutators = new List<Mutator>();
-
-					foreach (Type t in _mutators)
-					{
-                        // can add specific mutators here
-						if (SupportedDataElement(t, elem))
-							elemMutators.Add(GetMutatorInstance(t, elem));
-					}
-
-					_stuffs[elem] = elemMutators;
-				}
+				GatherMutators(action.dataModel as DataElementContainer);
 			}
 			else if (action.parameters != null && action.parameters.Count > 0)
 			{
 				foreach (ActionParameter param in action.parameters)
 				{
-					if (param.dataModel == null)
-						continue;
-
-					List<DataElement> allElements = new List<DataElement>();
-					RecursevlyGetElements(param.dataModel as DataElementContainer, allElements);
-					foreach (DataElement elem in allElements)
-					{
-						List<Mutator> elemMutators = new List<Mutator>();
-
-						foreach (Type t in _mutators)
-						{
-							if (SupportedDataElement(t, elem))
-								elemMutators.Add(GetMutatorInstance(t, elem));
-						}
-
-						_stuffs[elem] = elemMutators;
-					}
+					if (param.dataModel != null)
+						GatherMutators(param.dataModel as DataElementContainer);
 				}
 			}
 		}
 
-		void StateModel_Finished(StateModel model)
+		private void ApplyMutation(DataModel dataModel)
 		{
-			recording = false;
-		}
+			var fullName = _enumerator.Current.Item1;
+			var dataElement = dataModel.find(fullName);
 
-		void StateModel_Starting(StateModel model)
-		{
-			if (recording)
+			if (dataElement != null)
 			{
-				_stuffs.Clear();
+				var mutator = _enumerator.Current.Item2;
+				OnMutating(fullName, mutator.name);
+				logger.Debug("Action_Starting: Fuzzing: " + fullName);
+				logger.Debug("Action_Starting: Mutator: " + mutator.name);
+				mutator.sequencialMutation(dataElement);
 			}
 		}
 
-		public override uint count
+		private void MutateDataModel(Core.Dom.Action action)
+		{
+			// MutateDataModel should only be called after ParseDataModel
+			System.Diagnostics.Debug.Assert(_count > 1);
+			System.Diagnostics.Debug.Assert(_iteration > 0);
+
+			if (action.dataModel != null)
+			{
+				ApplyMutation(action.dataModel);
+			}
+			else if (action.parameters != null && action.parameters.Count > 0)
+			{
+				foreach (ActionParameter param in action.parameters)
+				{
+					if (param.dataModel != null)
+						ApplyMutation(param.dataModel);
+				}
+			}
+		}
+
+		public override uint Count
 		{
 			get
 			{
-				if (_count != null)
-					return (uint)_count;
-
-				_count = 1; // Always one iteration before us!
-				foreach (List<Mutator> l in _stuffs.Values)
-				{
-					foreach (Mutator m in l)
-					{
-						_count += m.count;
-					}
-				}
-
-				return (uint)_count;
-			}
-		}
-
-		public override Mutator currentMutator()
-		{
-			throw new NotImplementedException();
-		}
-
-		bool enumeratorsInitialized = false;
-		Dictionary<DataElement, List<Mutator>>.KeyCollection.Enumerator _dataElementEnumerator;
-		List<Mutator>.Enumerator _mutatorEnumerator;
-
-		public override void next()
-		{
-			_iterationCount++;
-
-			if (enumeratorsInitialized)
-			{
-				try
-				{
-					_mutatorEnumerator.Current.next();
-				}
-				catch
-				{
-					while (!_mutatorEnumerator.MoveNext())
-					{
-						if (!_dataElementEnumerator.MoveNext())
-							throw new MutatorCompleted();
-
-						_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
-					}
-				}
-			}
-			else
-			{
-				enumeratorsInitialized = true;
-				_dataElementEnumerator = _stuffs.Keys.GetEnumerator();
-				if (!_dataElementEnumerator.MoveNext())
-					throw new MutatorCompleted();
-
-				_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
-				while (!_mutatorEnumerator.MoveNext())
-				{
-					if (!_dataElementEnumerator.MoveNext())
-						throw new MutatorCompleted();
-
-					_mutatorEnumerator = _stuffs[_dataElementEnumerator.Current].GetEnumerator();
-				}
+				return _count;
 			}
 		}
 	}

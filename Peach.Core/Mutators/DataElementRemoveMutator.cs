@@ -34,8 +34,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Remove nodes from a data tree")]
-	public class DataElementRemoveMutator : Mutator
-	{
+    public class DataElementRemoveMutator : Mutator
+    {
         // CTOR
         //
         public DataElementRemoveMutator(DataElement obj)
@@ -43,11 +43,12 @@ namespace Peach.Core.Mutators
             name = "DataElementRemoveMutator";
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            throw new MutatorCompleted();
+            get { return 0; }
+            set { }
         }
 
         // COUNT
@@ -73,17 +74,17 @@ namespace Peach.Core.Mutators
         {
             // remove the element from the data model
             obj.parent.Remove(obj);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
             obj.parent.Remove(obj);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
-	}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
+    }
 }
 
 // end

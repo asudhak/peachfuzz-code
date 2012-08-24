@@ -74,7 +74,7 @@ namespace Peach.Core.Test.Monitors
 				_socket.Close();
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, 8888));
 			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, 9999));

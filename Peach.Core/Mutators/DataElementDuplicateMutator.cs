@@ -33,37 +33,38 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Duplicate a node's value starting from 2x - 50x")]
-	public class DataElementDuplicateMutator : Mutator
-	{
+    [Mutator("Duplicate a node's value starting from 1x - 50x")]
+    public class DataElementDuplicateMutator : Mutator
+    {
         // members
         //
-        int currentCount;
+        uint currentCount;
+        int minCount;
         int maxCount;
 
         // CTOR
         //
         public DataElementDuplicateMutator(DataElement obj)
         {
-            currentCount = 2;
+            minCount = 1;
             maxCount = 50;
+            currentCount = (uint)minCount;
             name = "DataElementDuplicateMutator";
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount > maxCount)
-                throw new MutatorCompleted();
+            get { return currentCount - (uint)minCount; }
+            set { currentCount = value + (uint)minCount; }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return maxCount; }
+            get { return maxCount - minCount; }
         }
 
         // SUPPORTED
@@ -80,12 +81,12 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
 
-            for (int i = 0; i < currentCount - 1; ++i)
+            for (int i = 0; i < currentCount; ++i)
             {
-				var newElem = ObjectCopier.Clone<DataElement>(obj);
-				newElem.name +=  "_" + i;
+                var newElem = ObjectCopier.Clone<DataElement>(obj);
+                newElem.name += "_" + i;
                 obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
             }
         }
@@ -94,18 +95,23 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-            int newCount = rand.Next(currentCount);
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
 
-            for (int i = 0; i < newCount; ++i)
+            // TODO: Since 'this.mutation = X' is only called by the
+            // sequencial mutation strategy, the random strategy
+            // will wither duplicate the element once or not
+            // duplicate at all.  Is this right? Should this really be:
+            //int newCount = context.Random.Next(minCount, maxCount + 1);
+            int newCount = context.Random.Next((int)currentCount + 1);
+
+            for (uint i = 0; i < newCount; ++i)
             {
-				var newElem = ObjectCopier.Clone<DataElement>(obj);
-				newElem.name += "_" + i;
+                var newElem = ObjectCopier.Clone<DataElement>(obj);
+                newElem.name += "_" + i;
                 obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
             }
         }
-	}
+    }
 }
 
 // end

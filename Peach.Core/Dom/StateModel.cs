@@ -121,8 +121,10 @@ namespace Peach.Core.Dom
 				//
 				// Additionally this is were we setup origionalDataModel.
 				//
-				if (context.currentIteration == 1)
+				if (context.needDataModel)
 				{
+					context.needDataModel = false;
+
 					foreach (State state in states.Values)
 					{
 						foreach (Action action in state.actions)

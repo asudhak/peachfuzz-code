@@ -231,10 +231,9 @@ namespace Peach.Core
 				mutationStrategy.Initialize(context, this);
 
 				uint iterationCount = 0;
-				uint? totalIterationCount = null;
-
-				uint? iterationRangeStart = null;
-				uint? iterationRangeStop = null;
+				uint iterationStart = 0;
+				uint iterationStop = Int32.MaxValue;
+				uint? iterationTotal = null;
 
 				uint redoCount = 0;
 
@@ -246,70 +245,40 @@ namespace Peach.Core
 						", stop: " +
 						context.config.rangeStop);
 
-					iterationRangeStart = context.config.rangeStart;
-					iterationRangeStop = context.config.rangeStop;
+					iterationStart = context.config.rangeStart;
+					iterationStop = context.config.rangeStop;
 				}
 				else if (context.config.singleIteration)
 				{
 					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 						"context.config.singleIteration == true");
-					
-					iterationRangeStop = 1;
+
+					iterationStop = 1;
 				}
-				else if (context.config.skipToIteration != null)
+				else if (context.config.skipToIteration > 0)
 				{
 					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 						"context.config.skipToIteration == " + 
 						context.config.skipToIteration);
-					
-					iterationRangeStart = context.config.skipToIteration;
+
+					iterationStart = context.config.skipToIteration;
 				}
 
 				context.agentManager.SessionStarting();
 
-				while (context.continueFuzzing)
+				while (iterationCount < iterationStop && context.continueFuzzing)
 				{
 					try
 					{
-						iterationCount++;
-						context.currentIteration = iterationCount;
-
-						// - Did we finish our test range?
-						if (iterationRangeStop != null && iterationCount >= (iterationRangeStop+1))
-							break;
-
-						// - Get total count?
-						if (iterationCount == 2 && totalIterationCount == null)
-						{
-							totalIterationCount = mutationStrategy.count;
-
-							if (iterationRangeStop != null && iterationRangeStop < totalIterationCount)
-								totalIterationCount = iterationRangeStop;
-						}
-
-						// - Just getting count?
-						if (context.config.countOnly && iterationCount > 1 && totalIterationCount != null)
-						{
-							OnHaveCount(context, (uint)totalIterationCount);
-							break;
-						}
-
-						// - Should we skip ahead?
-						if (iterationCount == 2 && iterationRangeStart != null &&
-							iterationCount < iterationRangeStart)
-						{
-							// TODO - We need an event for this!
-							for (; iterationCount < iterationRangeStart; iterationCount++)
-								mutationStrategy.next();
-						}
+						mutationStrategy.Iteration = iterationCount;
 
 						try
 						{
 							if (IterationStarting != null)
-								IterationStarting(context, iterationCount, totalIterationCount);
+								IterationStarting(context, iterationCount, iterationTotal);
 
 							// TODO - Handle bool for is reproduction
-							context.agentManager.IterationStarting((int)iterationCount, false);
+							context.agentManager.IterationStarting(iterationCount, false);
 
 							test.stateModel.Run(context);
 
@@ -373,8 +342,25 @@ namespace Peach.Core
 							throw new PeachException("Error, agent monitor stopped run!");
 						}
 
-						// Increment to next test
-						mutationStrategy.next();
+						// The 0th iteration is magical and needs to always run once so we can
+						// figure out how many iterations are actually available
+						if (iterationCount == 0)
+						{
+							if (context.config.countOnly)
+							{
+								OnHaveCount(context, mutationStrategy.Count);
+								break;
+							}
+
+							iterationTotal = mutationStrategy.Count;
+							if (iterationTotal < iterationStop)
+								iterationStop = iterationTotal.Value;
+
+							if (iterationStart > 0)
+								iterationCount = (iterationStart - 1);
+						}
+
+						++iterationCount;
 
 						redoCount = 0;
 					}
@@ -382,8 +368,6 @@ namespace Peach.Core
 					{
 						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 							"replaying iteration " + iterationCount);
-
-						iterationCount--;
 					}
 					catch (RedoIterationException rte)
 					{
@@ -397,11 +381,8 @@ namespace Peach.Core
 							throw new PeachException(rte.Message);
 
 						redoCount++;
-						iterationCount--;
 					}
 				}
-
-				//   - 
 			}
 			catch (MutatorCompleted)
 			{
@@ -486,7 +467,7 @@ namespace Peach.Core
 		public Test test = null;
 		public AgentManager agentManager = null;
 
-		public long currentIteration = 0;
+		public bool needDataModel = true;
 
 		/// <summary>
 		/// Controls if we continue fuzzing or exit
@@ -521,7 +502,7 @@ namespace Peach.Core
 		/// <summary>
 		/// Skip to a specific iteration
 		/// </summary>
-		public uint? skipToIteration;
+		public uint skipToIteration;
 
 		/// <summary>
 		/// Enable or disable debugging output

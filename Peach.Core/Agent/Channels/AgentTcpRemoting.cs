@@ -128,7 +128,7 @@ namespace Peach.Core.Agent.Channels
 			proxy.SessionFinished();
 		}
 
-		public override void IterationStarting(int iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			logger.Trace("IterationStarting: {0}, {1}", iterationCount, isReproduction);
 			OnIterationStartingEvent(iterationCount, isReproduction);
@@ -226,7 +226,7 @@ namespace Peach.Core.Agent.Channels
 			agent.SessionFinished();
 		}
 
-		public void IterationStarting(int iterationCount, bool isReproduction)
+		public void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			logger.Trace("IterationStarting: {0}, {1}", iterationCount, isReproduction);
 			agent.IterationStarting(iterationCount, isReproduction);

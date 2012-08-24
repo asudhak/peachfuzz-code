@@ -14,13 +14,10 @@ namespace Peach.Core.Test.Mutators
     [TestFixture]
     class DataElementDuplicateMutatorTests : DataModelCollector
     {
-        bool firstPass = true;
-        List<DataModel> results = new List<DataModel>();
-
         [Test]
         public void Test1()
         {
-            // standard test of duplicating elements from the data model (2x - 50x)
+            // standard test of duplicating elements from the data model (1x - 50x)
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
@@ -65,88 +62,75 @@ namespace Peach.Core.Test.Mutators
                 Assert.AreEqual(i + 1, dataModels[i].Count);
         }
 
-		//[Test]
-		//public void Test2()
-		//{
-		//    //string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-		//    //    "<Peach>" +
-		//    //    "   <DataModel name=\"TheDataModel\">" +
-		//    //    "       <Number name=\"num0\" size=\"16\" signed=\"false\"/>" +
-		//    //    "       <Number name=\"num1\" size=\"16\" signed=\"false\"/>" +
-		//    //    "   </DataModel>" +
 
-		//    //    "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-		//    //    "       <State name=\"Initial\">" +
-		//    //    "           <Action type=\"output\">" +
-		//    //    "               <DataModel ref=\"TheDataModel\"/>" +
-		//    //    "           </Action>" +
-		//    //    "       </State>" +
-		//    //    "   </StateModel>" +
+        [Test]
+        public void Test3()
+        {
+            // Test that random mutations stay within the correct bounds of 1x - 50x
 
-		//    //    "   <Test name=\"Default\">" +
-		//    //    "       <StateModel ref=\"TheState\"/>" +
-		//    //    "       <Publisher class=\"Null\"/>" +
-		//    //    "   </Test>" +
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num0\" size=\"16\" signed=\"false\"/>" +
+                "   </DataModel>" +
 
-		//    //    "   <Run name=\"DefaultRun\">" +
-		//    //    "       <Test ref=\"TheTest\"/>" +
-		//    //    "   </Run>" +
-		//    //    "</Peach>";
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
 
-		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-		//        "<Peach>" +
-		//        "   <DataModel name=\"Png\">" +
-		//        "       <Blob/>" +
-		//        "   </DataModel>" +
+                "   <Test name=\"Default\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Null\"/>" +
+                "       <Strategy class=\"Random\">" +
+                "           <Param name=\"Seed\" value=\"100\"/>" +
+                "       </Strategy>" +
+                "   </Test>" +
 
-		//        "   <Agent name=\"LocalAgent\">" +
-		//        "       <Monitor class=\"WindowsDebugEngine\">" +
-		//        "           <Param name=\"CommandLine\" value=\"C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe fuzzed.png\"/>" +
-		//        "           <Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\"/>" +
-		//        "           <Param name=\"StartOnCall\" value=\"ScoobySnacks\"/>" +
-		//        "       </Monitor>" +
-		//        "   </Agent>" +
+                "   <Run name=\"DefaultRun\">" +
+                "       <Test ref=\"TheTest\"/>" +
+                "   </Run>" +
+                "</Peach>";
 
-		//        "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-		//        "       <State name=\"Initial\">" +
-		//        "           <Action type=\"output\">" +
-		//        "               <DataModel ref=\"Png\"/>" +
-		//        "               <Data fileName=\"c:\\sample.png\"/>" +
-		//        "           </Action>" +
-		//        "           <Action type=\"close\"/>" +
-		//        "           <Action type=\"call\" method=\"ScoobySnacks\" publisher=\"Peach.Agent\"/>" +
-		//        "       </State>" +
-		//        "   </StateModel>" +
+            PitParser parser = new PitParser();
 
-		//        "   <Test name=\"Default\">" +
-		//        "       <Agent ref=\"LocalAgent\"/>" +
-		//        "       <StateModel ref=\"TheState\"/>" +
-		//        "       <Publisher class=\"File\">" +
-		//        "           <Param name=\"FileName\" value=\"fuzzed.png\"/>" +
-		//        "       </Publisher>" +
-		//        "		<Strategy class=\"Sequencial\"/>" +
-		//        "   </Test>" +
+            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("DataElementDuplicateMutator");
 
-		//        "   <Run name=\"DefaultRun\">" +
-		//        "       <Test ref=\"TheTest\"/>" +
-		//        "   </Run>" +
-		//        "</Peach>";
-            
-		//    PitParser parser = new PitParser();
+            RunConfiguration config = new RunConfiguration();
+            config.range = true;
+            config.rangeStart = 0;
+            config.rangeStop = 1000;
 
-		//    Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		//    dom.tests[0].includedMutators = new List<string>();
-		//    dom.tests[0].includedMutators.Add("DataElementDuplicateMutator");
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
 
-		//    RunConfiguration config = new RunConfiguration();
+            // verify values
+            Assert.AreEqual(1000, dataModels.Count);
 
-		//    Engine e = new Engine(null);
-		//    e.config = config;
-		//    e.startFuzzing(dom, config);
+            // No mutation on the 0th iteration
+            Assert.AreEqual(1, dataModels[0].Count);
 
-		//    // verify values
+            int min = int.MaxValue;
+            int max = int.MinValue;
 
-		//}
+            for (int i = 1; i < dataModels.Count; ++i)
+            {
+                if (dataModels[i].Count > max)
+                    max = dataModels[i].Count;
+                if (dataModels[i].Count < min)
+                    min = dataModels[i].Count;
+            }
+
+            // Either duplicates or it doesn't.  This is what Peach 2.3 does, but is it right?
+            Assert.AreEqual(1, min);
+            Assert.AreEqual(2, max);
+        }
     }
 }
 

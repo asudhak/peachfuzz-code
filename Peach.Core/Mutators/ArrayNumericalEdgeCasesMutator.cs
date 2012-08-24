@@ -41,12 +41,12 @@ namespace Peach.Core.Mutators
     [Hint("ArrayNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class ArrayNumericalEdgeCasesMutator : Mutator
     {
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+        static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		// members
+        // members
         //
         long[] values;
-        int currentCount;
+        uint currentCount;
         int arrayCount;
         int n;
 
@@ -60,16 +60,16 @@ namespace Peach.Core.Mutators
             n = getN(obj, 50);
             values = NumberGenerator.GenerateBadPositiveNumbers(16, n);
 
-			// this will weed out invalid values that would cause the length to be less than 0
-			List<long> newVals = new List<long>(values);
-			newVals.RemoveAll(RemoveInvalid);
-			values = newVals.ToArray();
-		}
+            // this will weed out invalid values that would cause the length to be less than 0
+            List<long> newVals = new List<long>(values);
+            newVals.RemoveAll(RemoveInvalid);
+            values = newVals.ToArray();
+        }
 
-		private bool RemoveInvalid(long n)
-		{
-			return n < 0;
-		}
+        private bool RemoveInvalid(long n)
+        {
+            return n < 0;
+        }
 
         // GET N
         //
@@ -95,13 +95,12 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount >= count)
-                throw new MutatorCompleted();
+            get { return currentCount; }
+            set { currentCount = value; }
         }
 
         // COUNT
@@ -126,28 +125,27 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             performMutation(obj, (int)values[currentCount]);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-            performMutation(obj, (int)rand.Choice(values));
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            performMutation(obj, (int)context.Random.Choice(values));
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // PERFORM_MUTATION
         //
         public void performMutation(DataElement obj, int num)
         {
-			logger.Debug("performMutation(num=" + num + ")");
+            logger.Debug("performMutation(num=" + num + ")");
 
             Dom.Array objAsArray = (Dom.Array)obj;
 
             //if (num == 0)
-              //  return;
+            //  return;
             if (num < objAsArray.Count)
             {
                 // remove some items
@@ -163,20 +161,20 @@ namespace Peach.Core.Mutators
             {
                 try
                 {
-					// We are not actually going to make this array thousands of items long.  Instead
-					// we are going to override the count and copy the last element many times simulating a 
-					// very long array.
+                    // We are not actually going to make this array thousands of items long.  Instead
+                    // we are going to override the count and copy the last element many times simulating a 
+                    // very long array.
 
-					objAsArray.overrideCount = num;
+                    objAsArray.overrideCount = num;
 
-					var elemValue = objAsArray[objAsArray.Count - 1].Value.Value;
+                    var elemValue = objAsArray[objAsArray.Count - 1].Value.Value;
 
-					var newValue = new BitStream(elemValue);
-					for (int i = objAsArray.Count; i < num; i++)
-						newValue.WriteBytes(elemValue);
+                    var newValue = new BitStream(elemValue);
+                    for (int i = objAsArray.Count; i < num; i++)
+                        newValue.WriteBytes(elemValue);
 
-					objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
-					objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+                    objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
+                    objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
                 }
                 catch
                 {

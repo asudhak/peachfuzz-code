@@ -35,8 +35,8 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Change the length of arrays to count - N to count + N")]
     [Hint("ArrayVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-	public class ArrayVarianceMutator : Mutator
-	{
+    public class ArrayVarianceMutator : Mutator
+    {
         // members
         //
         int n;
@@ -85,20 +85,19 @@ namespace Peach.Core.Mutators
             return n;
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            currentCount++;
-            if (currentCount > maxCount)
-                throw new MutatorCompleted();
+            get { return (uint)(currentCount - minCount); }
+            set { currentCount = (int)value + minCount; }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return maxCount - minCount; }
+            get { return maxCount - minCount + 1; }
         }
 
         // SUPPORTED
@@ -116,17 +115,16 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             performMutation(obj, currentCount);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-            performMutation(obj, rand.Next(minCount, maxCount));
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-		}
+            performMutation(obj, context.Random.Next(minCount, maxCount + 1));
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+        }
 
         // PERFORM_MUTATION
         //
@@ -135,7 +133,7 @@ namespace Peach.Core.Mutators
             Dom.Array objAsArray = (Dom.Array)obj;
 
             //if (num == 0)
-              //  next();
+            //  next();
             if (num < objAsArray.Count)
             {
                 // remove some items
@@ -166,7 +164,7 @@ namespace Peach.Core.Mutators
                 }
             }
         }
-	}
+    }
 }
 
 // end

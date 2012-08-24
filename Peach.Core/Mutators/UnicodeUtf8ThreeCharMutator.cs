@@ -34,8 +34,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Generates bad long UTF-8 three byte strings")]
-	public partial class UnicodeUtf8ThreeCharMutator : Mutator
-	{
+    public partial class UnicodeUtf8ThreeCharMutator : Mutator
+    {
         // members
         //
         uint pos = 0;
@@ -45,19 +45,15 @@ namespace Peach.Core.Mutators
         public UnicodeUtf8ThreeCharMutator(DataElement obj)
         {
             pos = 0;
-			name = "UnicodeUtf8ThreeCharMutator";
+            name = "UnicodeUtf8ThreeCharMutator";
         }
 
-        // NEXT
+        // MUTATION
         //
-        public override void next()
+        public override uint mutation
         {
-            pos++;
-            if (pos >= values.Length)
-            {
-                pos = (uint)values.Length - 1;
-                throw new MutatorCompleted();
-            }
+            get { return pos; }
+            set { pos = value; }
         }
 
         // COUNT
@@ -82,7 +78,7 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
 
@@ -90,12 +86,11 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-			var rand = new Random(context.random.Seed + context.IterationCount + obj.fullName.GetHashCode());
-            obj.MutatedValue = new Variant(rand.Choice<byte[]>(values));
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.MutatedValue = new Variant(context.Random.Choice(values));
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
-	}
+    }
 }
 
 // end

@@ -475,6 +475,15 @@ namespace Peach.Core.Test.Mutators
             for (int i = 0; i < 10; ++i)
                 Assert.AreNotEqual(item[i], 0);
         }
+
+        [Test]
+        public void Test10()
+        {
+            // Using the sequential strategy:
+            // Test that mutator produces consistent results for each run
+            // but different results across each iteration
+            Assert.Null("TODO: Implement me!");
+        }
     }
 }
 
