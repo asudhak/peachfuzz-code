@@ -33,7 +33,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-int main()
+int main(int argc, char **argv)
 {
    Py_Initialize();
    Py_Finalize();

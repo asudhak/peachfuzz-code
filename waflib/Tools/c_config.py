@@ -24,7 +24,7 @@ cfg_ver = {
 }
 
 SNIP_FUNCTION = '''
-	int main() {
+	int main(int argc, char **argv) {
 	void *p;
 	p=(void*)(%s);
 	return 0;
@@ -33,21 +33,22 @@ SNIP_FUNCTION = '''
 """Code template for checking for functions"""
 
 SNIP_TYPE = '''
-int main() {
+int main(int argc, char **argv) {
 	if ((%(type_name)s *) 0) return 0;
 	if (sizeof (%(type_name)s)) return 0;
+	return 1;
 }
 '''
 """Code template for checking for types"""
 
 SNIP_EMPTY_PROGRAM = '''
-int main() {
+int main(int argc, char **argv) {
 	return 0;
 }
 '''
 
 SNIP_FIELD = '''
-int main() {
+int main(int argc, char **argv) {
 	char *off;
 	off = (char*) &((%(type_name)s*)0)->%(field_name)s;
 	return (size_t) off < sizeof(%(type_name)s);
