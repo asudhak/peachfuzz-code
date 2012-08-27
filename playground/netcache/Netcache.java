@@ -252,6 +252,7 @@ public class Netcache implements Runnable, Comparator<Object[]> {
 			init_flist();
 			System.out.println("ready (" + flist.keySet().size() + " dirs)");
 			ServerSocket sock = new ServerSocket(PORT);
+			sock.setReuseAddress(true);
 			while (true)
 			{
 				Netcache tmp = new Netcache(sock.accept());
