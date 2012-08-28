@@ -16,54 +16,68 @@ import java.net.*;
 import java.security.*;
 
 public class Netcache implements Runnable, Comparator<Object[]> {
-	private static int PORT = 51200;
+	private static int PORT_UPLOAD   = 51200; //11001;
+	private static int PORT_DOWNLOAD = 51200; //12001;
 	private static String CACHEDIR = "/tmp/wafcache/";
 	private static long MAX = 10l * 1024l * 1024l * 1024l;
 	private static double CLEANRATIO = 0.8;
 	private static int BUF = 16 * 8192;
 
 	private static HashMap<String, Object[]> flist = null;
-	private Socket server = null;
+	private Socket sock = null;
+	private int port = 0;
 
-	public Netcache(Socket server) {
-		this.server = server;
+	public Netcache(Socket sock, int port) {
+		this.sock = sock;
+		this.port = port;
 	}
 
 	public void run () {
 		try {
+			if (sock != null)
+			{
+				while (true) {
+					InputStream in = sock.getInputStream();
+					OutputStream out = sock.getOutputStream();
 
-			while (true) {
-				InputStream in = server.getInputStream();
-				OutputStream out = server.getOutputStream();
+					byte b[] = new byte[128];
+					int off = 0;
+					while (off < b.length) {
+						off += in.read(b, off, b.length - off);
+					}
 
-				byte b[] = new byte[128];
-				int off = 0;
-				while (off < b.length) {
-					off += in.read(b, off, b.length - off);
+					//System.out.println(new String(b));
+					String[] args = new String(b).split(",");
+					if (args[0].equals("LST")) {
+						lst(args, in, out);
+					}
+					else if (args[0].equals("PUT") && port == PORT_UPLOAD) {
+						put(args, in, out);
+					}
+					else if (args[0].equals("GET") && port == PORT_DOWNLOAD) {
+						get(args, in, out);
+					}
+					else if (args[0].equals("CLEAN") && port == PORT_UPLOAD) {
+						clean(args, in, out);
+					}
+					else if (args[0].equals("BYE")) {
+						sock.close();
+						break;
+					}
+					else {
+						System.out.println("Invalid command " + new String(b) + " on port " + this.port);
+						sock.close();
+						break;
+					}
 				}
-
-				//System.out.println(new String(b));
-				String[] args = new String(b).split(",");
-				if (args[0].equals("LST")) {
-					lst(args, in, out);
-				}
-				else if (args[0].equals("PUT")) {
-					put(args, in, out);
-				}
-				else if (args[0].equals("GET")) {
-					get(args, in, out);
-				}
-				else if (args[0].equals("CLEAN")) {
-					clean(args, in, out);
-				}
-				else if (args[0].equals("BYE")) {
-					server.close();
-					break;
-				}
-				else {
-					System.out.println("Invalid command " + new String(b));
-					server.close();
-					break;
+			} else {
+				// magic trick to avoid creating a new inner class
+				ServerSocket server = new ServerSocket(port);
+				server.setReuseAddress(true);
+				while(true) {
+					Netcache tmp = new Netcache(server.accept(), PORT_UPLOAD);
+					Thread t = new Thread(tmp);
+					t.start();
 				}
 			}
 		} catch (IOException e) {
@@ -127,7 +141,7 @@ public class Netcache implements Runnable, Comparator<Object[]> {
 		}
 
 		if (!temp.renameTo(dest)) {
-			throw new RuntimeException("Could not reanae the filee");
+			throw new RuntimeException("Could not rename the file");
 		}
 
 		long total = 0;
@@ -247,21 +261,19 @@ public class Netcache implements Runnable, Comparator<Object[]> {
 	}
 
 	public static void main(String[] args) {
-		try
-		{
-			init_flist();
-			System.out.println("ready (" + flist.keySet().size() + " dirs)");
-			ServerSocket sock = new ServerSocket(PORT);
-			sock.setReuseAddress(true);
-			while (true)
-			{
-				Netcache tmp = new Netcache(sock.accept());
-				Thread t = new Thread(tmp);
-				t.start();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		init_flist();
+		System.out.println("ready (" + flist.keySet().size() + " dirs)");
+
+		// different ports for upload and download, another port could be added for the clean command
+		Thread upload = null;
+		if (PORT_UPLOAD != PORT_DOWNLOAD) {
+			Netcache tmp = new Netcache(null, PORT_UPLOAD);
+			upload = new Thread(tmp);
+			upload.start();
 		}
+
+		Netcache tmp = new Netcache(null, PORT_DOWNLOAD);
+		tmp.run();
 	}
 }
 
