@@ -16,8 +16,8 @@ import java.net.*;
 import java.security.*;
 
 public class Netcache implements Runnable, Comparator<Object[]> {
-	private static int PORT_UPLOAD   = 51200; //11001;
-	private static int PORT_DOWNLOAD = 51200; //12001;
+	private static int PORT_UPLOAD   = 11001;
+	private static int PORT_DOWNLOAD = 12001;
 	private static String CACHEDIR = "/tmp/wafcache/";
 	private static long MAX = 10l * 1024l * 1024l * 1024l;
 	private static double CLEANRATIO = 0.8;
@@ -75,7 +75,7 @@ public class Netcache implements Runnable, Comparator<Object[]> {
 				ServerSocket server = new ServerSocket(port);
 				server.setReuseAddress(true);
 				while(true) {
-					Netcache tmp = new Netcache(server.accept(), PORT_UPLOAD);
+					Netcache tmp = new Netcache(server.accept(), port);
 					Thread t = new Thread(tmp);
 					t.start();
 				}
