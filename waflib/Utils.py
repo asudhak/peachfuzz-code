@@ -209,7 +209,9 @@ def h_file(fname):
 
 if hasattr(os, 'O_NOINHERIT'):
 	def readf_win32(f, m='r', encoding='ISO8859-1'):
-		flags = os.O_NOINHERIT | os.O_RDONLY | os.O_BINARY
+		flags = os.O_NOINHERIT | os.O_RDONLY
+		if 'b' in m:
+			flags |= os.O_BINARY
 		if '+' in m:
 			flags |= os.O_RDWR
 		try:
@@ -237,7 +239,9 @@ if hasattr(os, 'O_NOINHERIT'):
 		if sys.hexversion > 0x3000000 and not 'b' in m:
 			data = data.encode(encoding)
 			m += 'b'
-		flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY | os.O_NOINHERIT | os.O_BINARY
+		flags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY | os.O_NOINHERIT
+		if 'b' in m:
+			flags |= os.O_BINARY
 		if '+' in m:
 			flags |= os.O_RDWR
 		try:
