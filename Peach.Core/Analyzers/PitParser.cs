@@ -185,8 +185,12 @@ namespace Peach.Core.Analyzers
 		/// <returns>Returns the parsed Dom object.</returns>
 		protected Dom.Dom handlePeach(XmlNode node, Dom.Dom dom)
 		{
-			// Pass 1 - Handle imports, includes, python path
 
+            // Pass 0 - Basic check if Peach 2.3 ns  
+            if(node.NamespaceURI.Contains("2008"))
+               throw new PeachException("Error, Peach 2.3 namespace detected please upgrade the pit");
+ 
+			// Pass 1 - Handle imports, includes, python path
 			foreach (XmlNode child in node)
 			{
 				switch (child.Name)
@@ -206,7 +210,7 @@ namespace Peach.Core.Analyzers
 							if (!File.Exists(newFileName))
 							{
 								Console.WriteLine(newFileName);
-								throw new PeachException("Error: Unable to locate Pit file [" + fileName + "].\n");
+								throw new PeachException("Error, Unable to locate Pit file [" + fileName + "].\n");
 							}
 
 							fileName = newFileName;
@@ -888,7 +892,7 @@ namespace Peach.Core.Analyzers
 				value = value.Replace("\\t", "\t");
 			}
 
-			if (hasXmlAttribute(node, "valueType"))
+			if (hasXmlAttribute(node, "valueType") && value != null)
 			{
 				switch (getXmlAttribute(node, "valueType").ToLower())
 				{
@@ -1639,7 +1643,14 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Agent")
 				{
 					string refName = getXmlAttribute(child, "ref");
-					test.agents.Add(refName, parent.agents[refName]);
+				    try
+				    {
+					    test.agents.Add(refName, parent.agents[refName]);
+				    }
+				    catch 
+				    {
+                        throw new PeachException("Error, Test::" + test.name +  " Agent name in ref attribute not found");
+				    }
 
 					var platform = getXmlAttribute(child, "platform");
 					if (platform != null)

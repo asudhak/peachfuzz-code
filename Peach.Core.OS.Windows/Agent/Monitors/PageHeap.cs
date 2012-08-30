@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -115,7 +116,15 @@ namespace Peach.Core.Agent.Monitors
 			startInfo.Arguments = string.Format(_gflagsArgsEnable, _executable);
 			startInfo.CreateNoWindow = true;
 			startInfo.UseShellExecute = false;
-			System.Diagnostics.Process.Start(startInfo).WaitForExit();
+
+		    try
+		    {
+                System.Diagnostics.Process.Start(startInfo).WaitForExit();
+		    }
+		    catch ( Win32Exception exception)
+		    {
+                throw new PeachException("Error, Enable PageHeap: " + exception.Message );
+		    }
 		}
 
 		protected void Disable()
@@ -125,7 +134,16 @@ namespace Peach.Core.Agent.Monitors
 			startInfo.Arguments = string.Format(_gflagsArgsDisable, _executable);
 			startInfo.CreateNoWindow = true;
 			startInfo.UseShellExecute = false;
-			System.Diagnostics.Process.Start(startInfo).WaitForExit();
+
+		    try
+		    {
+
+			    System.Diagnostics.Process.Start(startInfo).WaitForExit();
+		    }
+		    catch ( Win32Exception exception )
+		    {
+                throw new PeachException("Error, Disable PageHeap: " + exception.Message );
+		    }
 		}
 
 		public override void StopMonitor()
