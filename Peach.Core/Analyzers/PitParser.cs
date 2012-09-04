@@ -1809,9 +1809,18 @@ namespace Peach.Core.Analyzers
 			object [] args = new object[1];
 			args[0] = xmlParams;
 
-			Publisher pub = pubCo.Invoke(args) as Publisher;
-
-			return pub;
+			try
+			{
+				Publisher pub = pubCo.Invoke(args) as Publisher;
+				return pub;
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+					throw ex.InnerException;
+				else
+					throw;
+			}
 		}
 
 		protected void validateParameterAttributes(string type, string name, List<ParameterAttribute> publisherParameters,
