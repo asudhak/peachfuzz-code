@@ -174,6 +174,8 @@ namespace Peach.Core
 				context.dom = dom;
 				context.test = test;
 
+				dom.context = context;
+
 				// Initialize any watchers and loggers
                 if (watcher != null)
 				    watcher.Initialize(this, context);

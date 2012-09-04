@@ -114,6 +114,9 @@ namespace Peach.Core.Dom
 			{
 				OnStarting();
 
+				foreach (Publisher publisher in context.test.publishers.Values)
+					publisher.Iteration = context.test.strategy.Iteration;
+
 				dataActions.Clear();
 
 				// Prior to starting our state model, on iteration #1 lets

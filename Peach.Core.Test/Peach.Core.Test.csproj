@@ -283,6 +283,8 @@
     <Compile Include="PitParserTests\XmlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
+    <Compile Include="Publishers\FilePerIterationTests.cs" />
+    <Compile Include="Publishers\FilePublisherTests.cs" />
     <Compile Include="RandomTest.cs" />
     <Compile Include="RelationCountTests.cs" />
     <Compile Include="RelationSizeTest.cs" />

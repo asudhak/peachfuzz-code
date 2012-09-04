@@ -60,6 +60,7 @@ namespace Peach.Core
 	public abstract class Publisher : Stream
 	{
 		public object parent;
+		public uint Iteration { get; set; }
 		public bool HasStarted { get; protected set; }
 		public bool IsOpen { get; protected set; }
 

@@ -541,6 +541,7 @@
     <Compile Include="Proxy\Web\WebProxy.cs" />
     <Compile Include="Publisher.cs" />
     <Compile Include="Publishers\ConsolePublisher.cs" />
+    <Compile Include="Publishers\FilePerIterationPublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
     <Compile Include="Dom\StateModel.cs" />
     <Compile Include="Publishers\MemoryStreamPublisher.cs" />

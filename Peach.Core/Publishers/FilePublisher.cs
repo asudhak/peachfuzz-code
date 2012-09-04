@@ -48,10 +48,10 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
 	public class FilePublisher : Publisher
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
-		public string fileName;
-		public bool overwrite = true;
-		public bool append = false;
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected string fileName;
+		protected bool overwrite = true;
+		protected bool append = false;
 		protected FileStream stream = null;
 
 		public FilePublisher(Dictionary<string, Variant> args) : base(args)
@@ -91,21 +91,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-    public string FileName
-    {
-      get { return fileName; }
-    }
-
-    public bool Overwrite
-    {
-      get { return overwrite; }
-    }
-
-    public bool Append
-    {
-      get { return append; }
-    }
-
 		public override void open(Core.Dom.Action action)
 		{
 			close(action);
@@ -144,6 +129,7 @@ namespace Peach.Core.Publishers
 		{
 			if (stream != null)
 			{
+				IsOpen = false;
 				OnClose(action);
 				logger.Debug("close()");
 
