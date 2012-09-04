@@ -632,7 +632,15 @@ namespace Peach.Core.Dom
 
 			value = DefaultValue;
 
-			// 2. Relations
+			// 2. Check for type transformations
+
+			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			{
+				_internalValue = MutatedValue;
+				return MutatedValue;
+			}
+
+			// 3. Relations
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
 			{
@@ -646,7 +654,7 @@ namespace Peach.Core.Dom
 					value = r.CalculateFromValue();
 			}
 
-			// 3. Fixup
+			// 4. Fixup
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
 			{
@@ -657,17 +665,17 @@ namespace Peach.Core.Dom
 			if (_fixup != null)
 				value = _fixup.fixup(this);
 
-			// 4. Set _internalValue
+			// 5. Set _internalValue
 
 			_internalValue = value;
 			return value;
 		}
 
-		protected virtual BitStream InternalValueToBitStream(Variant b)
+		protected virtual BitStream InternalValueToBitStream()
 		{
-			if (b == null)
+			if (InternalValue == null)
 				return new BitStream();
-			return (BitStream)b;
+			return (BitStream)InternalValue;
 		}
 
 		/// <summary>
@@ -680,11 +688,11 @@ namespace Peach.Core.Dom
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
 			{
-				value = (BitStream) _mutatedValue;
+				value = (BitStream)_mutatedValue;
 			}
 			else
 			{
-				value = InternalValueToBitStream(InternalValue);
+				value = InternalValueToBitStream();
 			}
 
             if (_mutatedValue == null || (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)

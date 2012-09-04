@@ -153,9 +153,10 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		protected override BitStream InternalValueToBitStream(Variant v)
+		protected override BitStream InternalValueToBitStream()
 		{
 			BitStream bits = new BitStream();
+			Variant v = InternalValue;
 
 			if (v == null)
 				bits.WriteBits((ulong)0, size);

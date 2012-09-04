@@ -377,15 +377,14 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		protected override BitStream InternalValueToBitStream(Variant v)
+		protected override BitStream InternalValueToBitStream()
 		{
 			byte[] value = null;
 
-            if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
-                return (BitStream)MutatedValue;
+			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
+				return (BitStream)MutatedValue;
 
-			if (MutatedValue != null)
-				return new BitStream();
+			Variant v = InternalValue;
 
 			if (_type == StringType.Ascii)
 				value = Encoding.ASCII.GetBytes((string)v);
@@ -452,7 +451,15 @@ namespace Peach.Core.Dom
 						case LengthType.Bits:
 							return Value.LengthBits;
 						case LengthType.Chars:
-							return ((string)InternalValue).Length;
+							if (InternalValue.GetVariantType() == Variant.VariantType.String)
+							{
+								return ((string)InternalValue).Length;
+							}
+							else
+							{
+								// Assume byte length is greater or equal to string char count
+								return Value.LengthBytes;
+							}
 						default:
 							throw new NotSupportedException("Error calculating length.");
 					}

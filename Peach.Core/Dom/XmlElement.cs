@@ -143,12 +143,12 @@ namespace Peach.Core.Dom
 			return _internalValue;
 		}
 
-		protected override BitStream InternalValueToBitStream(Variant v)
+		protected override BitStream InternalValueToBitStream()
 		{
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			return new BitStream(Encoding.UTF8.GetBytes((string)v));
+			return new BitStream(Encoding.UTF8.GetBytes((string)InternalValue));
 		}
 
     public override object GetParameter(string parameterName)

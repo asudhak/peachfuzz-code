@@ -354,7 +354,7 @@ namespace Peach.Core.Dom
 			get { return _min; }
 		}
 
-		protected override BitStream InternalValueToBitStream(Variant b)
+		protected override BitStream InternalValueToBitStream()
 		{
 			BitStream bits = new BitStream();
 
