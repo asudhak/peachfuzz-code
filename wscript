@@ -16,7 +16,6 @@ class TestContext(InstallContext):
 
 	def __init__(self, **kw):
 		super(TestContext, self).__init__(**kw)
-		self.is_install = False
 		self.is_test = True
 
 def options(opt):
@@ -90,7 +89,7 @@ def configure(ctx):
 					cfg_env = ctx.get_env()
 					cfg_env.PREFIX = os.path.join(base_env.BINDIR, variant)
 					cfg_env.BINDIR = os.path.join(base_env.BINDIR, variant, 'bin')
-					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'lib')
+					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'bin')
 					cfg_func = getattr(config, cfg)
 					cfg_func(cfg_env)
 					base_env.append_value('variants', variant)
