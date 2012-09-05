@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 bld(
-	features = 'cs csprogram',
+	features = 'cs',
 	use = 'NLog.dll SharpPcap.dll Peach.Core.dll System.dll',
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.exe',
 	ver_product = 'Peach Fuzzing Platfom',
-	install = bld.path.ant_glob('samples/* *.xml NLog.config')
+	install = bld.path.ant_glob('samples/* *.xml')
 )
 

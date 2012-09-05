@@ -55,7 +55,6 @@ def configure(conf):
 		'cxxprogram',
 		'fake_lib',
 		'cs',
-		'csprogram',
 		'test',
 	]
 

@@ -12,11 +12,10 @@ deps = [
 ]
 
 bld(
-	features = 'cs csprogram',
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='TestThings.exe',
-	install= 'NLog.config',
 )
 
 

@@ -8,10 +8,9 @@ deps = [
 ]
 
 bld(
-	features = 'cs csprogram',
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.Proxy.Web.Tester.exe',
-	install= 'NLog.config'
 )
 

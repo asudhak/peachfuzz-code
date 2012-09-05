@@ -31,11 +31,11 @@ deps = [
 ]
 
 bld(
-	features = 'cs csprogram',
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs **/*.resx'),
 	name = 'PeachFuzzBang.exe',
 	icon = 'peach-line.ico',
-	install = bld.path.ant_glob('samples_png/* *.xml *.rtf'),
+	install = bld.path.ant_glob('samples_png/* *.rtf'),
 )
 
