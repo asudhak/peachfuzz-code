@@ -89,14 +89,17 @@ def make_test(self):
 		self.bld.install_files('${PREFIX}/utest', test.outputs)
 
 class utest(Task.Task):
-	color = 'PINK'
-	after = ['vnum', 'inst']
 	vars = []
 
 	def runnable_status(self):
+		ret = Task.SKIP_ME
+
 		if getattr(self.generator.bld, 'is_test', None):
-			return Task.RUN_ME
-		return Task.SKIP_ME
+			ret = super(utest, self).runnable_status()
+			if ret == Task.SKIP_ME:
+				ret = Task.RUN_ME
+
+		return ret
 
 	def run(self):
 		self.ut_exec = getattr(self, 'ut_exec', [ self.inputs[0].abspath() ])
