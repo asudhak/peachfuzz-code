@@ -672,7 +672,7 @@ namespace Peach.Core.Transformers.Crypto
         /// <returns>The encrypted text.</returns>
         public static string Crypt(string textToEncrypt)
         {
-            Random randomGenerator = new Random();
+            Random randomGenerator = new Random((uint)Environment.TickCount);
 
             int maxGeneratedNumber = m_encryptionSaltCharacters.Length;
             int randomIndex;

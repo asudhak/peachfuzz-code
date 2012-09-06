@@ -44,7 +44,7 @@ namespace Peach.Core.Xml
 	{
 		public Dictionary<string, Element> elements;
 		public Element rootElement;
-		public Random random = new Random();
+		public Random random = new Random((uint)Environment.TickCount);
 		public XmlDocument doc;
 
 		/// <summary>
@@ -58,7 +58,7 @@ namespace Peach.Core.Xml
 			this.elements = elements;
 		}
 
-		public Generator(Element rootElement, Dictionary<string, Element> elements, int randomSeed)
+		public Generator(Element rootElement, Dictionary<string, Element> elements, uint randomSeed)
 		{
 			this.rootElement = rootElement;
 			this.elements = elements;

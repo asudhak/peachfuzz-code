@@ -146,7 +146,7 @@ namespace Peach.Core.Test.Mutators
 
             // For 1000 iterations, about 1/3 of the time the random case will be picked
             Assert.Greater(run1.Count, 330);
-            Assert.Less(run1.Count, 340);
+            Assert.Less(run1.Count, 345);
 
             int numSame = 0;
 

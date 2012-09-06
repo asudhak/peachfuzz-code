@@ -84,12 +84,12 @@ namespace Peach.Core.MutationStrategies
 			if (args.ContainsKey("SwitchCount"))
 				switchCount = int.Parse((string)args["SwitchCount"]);
 			if (args.ContainsKey("Seed"))
-				_seed = int.Parse((string)args["Seed"]);
+				_seed = uint.Parse((string)args["Seed"]);
 			if (args.ContainsKey("MaxFieldsToMutate"))
 				maxFieldsToMutate = int.Parse((string)args["MaxFieldsToMutate"]);
 
 			if (_seed == 0)
-				_seed = DateTime.Now.GetHashCode();
+				_seed = (uint)Environment.TickCount;
 
 			// Initalize our state by entering iteration 0
 			Iteration = 0;
@@ -142,7 +142,7 @@ namespace Peach.Core.MutationStrategies
 				}
 				else if (_randomDataSet == null)
 				{
-					_randomDataSet = new Random(this.Seed + (int)GetSwitchIteration());
+					_randomDataSet = new Random(this.Seed + GetSwitchIteration());
 				}
 			}
 		}

@@ -7,65 +7,76 @@ namespace Peach.Core
 {
 	public class Random
 	{
-		System.Random _random;
-		protected int _seed;
+		TinyMT32 _prng;
+		protected uint _seed;
 
-		public Random()
-		{
-			_seed = (int)DateTime.Now.Ticks;
-			_random = new System.Random(_seed);
-		}
-
-		public Random(int seed)
+		public Random(uint seed)
 		{
 			_seed = seed;
-			_random = new System.Random(seed);
+			_prng = new TinyMT32(seed);
 		}
 
-		public int Seed
+		public uint Seed
 		{
 			get { return _seed; }
-			set { _seed = value; }
 		}
 
-		public int Next()
-		{
-			return _random.Next();
-		}
-
+		// 0 <= X < max
 		public int Next(int max)
 		{
-			return _random.Next(max);
+			return Next(0, max);
 		}
 
+		// min <= X < max
 		public int Next(int min, int max)
 		{
-			return _random.Next(min, max);
+			return (int)(_prng.GenerateFloat() * (max - min) + min);
 		}
 
-        public UInt32 NextUInt32(UInt32 min = 0, UInt32 max = UInt32.MaxValue)
-        {
-            return (UInt32)(min + (UInt32)(_random.NextDouble() * (max - min)));
-        }
+		// 0 <= X < max
+		public uint Next(uint max)
+		{
+			return Next(0, max);
+		}
 
-        public Int64 NextInt64(Int64 min = Int64.MinValue, Int64 max = Int64.MaxValue)
-        {
-            return (Int64)(min + (Int64)(_random.NextDouble() * (max - min)));
-        }
+		// min <= X < max
+		public uint Next(uint min, uint max)
+		{
+			return (uint)(_prng.GenerateFloat() * (max - min) + min);
+		}
 
-        public UInt64 NextUInt64(UInt64 min = 0, UInt64 max = UInt64.MaxValue)
-        {
-            return (UInt64)(min + (UInt64)(_random.NextDouble() * (max - min)));
-        }
+		// int.MinValue <= X <= int.MaxValue
+		public int NextInt32()
+		{
+			return (int)NextUInt32();
+		}
+
+		// 0 <= X <= int.MaxValue
+		public uint NextUInt32()
+		{
+			return _prng.GenerateUInt();
+		}
+
+		// long.MinValue <= X <= long.MaxValue
+		public long NextInt64()
+		{
+			return (long)NextUInt64();
+		}
+
+		// 0 <= X <= ulong.MaxValue
+		public ulong NextUInt64()
+		{
+			return ((ulong)_prng.GenerateUInt() << 32 | _prng.GenerateUInt());
+		}
 
 		public T Choice<T>(IEnumerable<T> list)
 		{
-			return ElementAt<T>(list, _random.Next(0, list.Count()));
+			return ElementAt<T>(list, Next(0, list.Count()));
 		}
 
-        public T[] Sample<T>(IEnumerable<T> items, int k)
-        {
-            List<T> ret = new List<T>();
+		public T[] Sample<T>(IEnumerable<T> items, int k)
+		{
+			List<T> ret = new List<T>();
 			List<int> usedIndexes = new List<int>();
 			int index;
 
@@ -80,7 +91,7 @@ namespace Peach.Core
 			{
 				do
 				{
-					index = _random.Next(0, items.Count());
+					index = Next(0, items.Count());
 				}
 				while (usedIndexes.Contains(index));
 				usedIndexes.Add(index);
@@ -88,33 +99,33 @@ namespace Peach.Core
 				ret.Add(items.ElementAt(index));
 			}
 
-            return ret.ToArray();
-        }
+			return ret.ToArray();
+		}
 
-        /// <summary>
-        /// Fisher-Yates array shuffling algorithm.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <returns></returns>
-        public T[] Shuffle<T>(T[] items)
-        {
-            T[] ret = items;
-            T temp;
-            int n = items.Length;
-            int k = 0;
+		/// <summary>
+		/// Fisher-Yates array shuffling algorithm.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="items"></param>
+		/// <returns></returns>
+		public T[] Shuffle<T>(T[] items)
+		{
+			T[] ret = items;
+			T temp;
+			int n = items.Length;
+			int k = 0;
 
-            while (n > 1)
-            {
-                k = Next(n);
-                n--;
-                temp = items[n];
-                items[n] = items[k];
-                items[k] = temp;
-            }
+			while (n > 1)
+			{
+				k = Next(0, n);
+				n--;
+				temp = items[n];
+				items[n] = items[k];
+				items[k] = temp;
+			}
 
-            return items;
-        }
+			return items;
+		}
 
 		/// <summary>
 		/// Work around for missing method in Mono
@@ -127,8 +138,8 @@ namespace Peach.Core
 		{
 			var enumerator = list.GetEnumerator();
 
-                        // <= because Current is set before the first element and must be called once to get first element.
-			for (int cnt = 0; cnt <= index; cnt++) 
+			// <= because Current is set before the first element and must be called once to get first element.
+			for (int cnt = 0; cnt <= index; cnt++)
 				enumerator.MoveNext();
 
 			return enumerator.Current;

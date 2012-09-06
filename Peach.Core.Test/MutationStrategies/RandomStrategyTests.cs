@@ -208,7 +208,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Sanity check
 			Assert.AreEqual(3000, actions.Count);
 
-			var oldStrategies = strategies;
+			var oldStrategies = allStrategies;
 			var oldActions = actions;
 
 			// Reset the DataModelCollector
@@ -288,7 +288,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Sanity check
 			Assert.AreEqual(1500, actions.Count);
 
-			oldStrategies.RemoveRange(0, oldStrategies.Count - strategies.Count);
+			oldStrategies.RemoveRange(0, oldStrategies.Count - allStrategies.Count);
 			oldActions.RemoveRange(0, oldActions.Count - actions.Count);
 
 			// Verify

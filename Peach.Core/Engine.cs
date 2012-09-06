@@ -463,7 +463,6 @@ namespace Peach.Core
 				Debug(level, this, from, msg);
 		}
 
-		public Random random = new Random();
 		public RunConfiguration config = null;
 		public Dom.Dom dom = null;
 		public Test test = null;

@@ -534,7 +534,7 @@ namespace Peach.Core.Agent.Monitors
 
 			if (_debuggerProcess == null || _debuggerProcess.HasExited)
 			{
-				_debuggerChannelName = "PeachCore_" + (new Random().Next().ToString());
+				_debuggerChannelName = "PeachCore_" + (new Random((uint)Environment.TickCount).NextUInt32().ToString());
 
 				// Launch the server process
 				_debuggerProcess = new System.Diagnostics.Process();

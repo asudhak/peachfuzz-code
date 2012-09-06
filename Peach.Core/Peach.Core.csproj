@@ -554,6 +554,7 @@
     <Compile Include="Publishers\UdpPublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="Scripting.cs" />
+    <Compile Include="TinyMT32.cs" />
     <Compile Include="Transformer.cs" />
     <Compile Include="Transformers\Compress\Bz2Compress.cs" />
     <Compile Include="Transformers\Compress\Bz2Decompress.cs" />
