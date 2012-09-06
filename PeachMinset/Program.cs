@@ -119,10 +119,20 @@ namespace PeachMinset
 			}
 
 			var bb = Coverage.CreateInstance().BasicBlocksForExecutable(@"C:\Peach3\Labs\Png\bin\pngcheck.exe");
+
+			Console.WriteLine("Found " + bb.Count + " basic blocks.");
+
 			var coverage = Coverage.CreateInstance().CodeCoverageForExecutable(
 				@"C:\Peach3\Labs\Png\bin\pngcheck.exe",
 				@"C:\Peach3\Labs\Png\sample.png",
 				bb);
+
+			Console.WriteLine("Coverage: ");
+
+			foreach (long i in coverage)
+			{
+				Console.WriteLine(i.ToString());
+			}
 
 			return;
 
