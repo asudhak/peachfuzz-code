@@ -616,12 +616,13 @@ namespace Peach.Core.Cracker
 				long nextSize = 0;
 				DataElement token = null;
 
+				// Note: nextSize is in bits
 				if (isTokenNext(element, ref nextSize, ref token))
 				{
 					while (true)
 					{
 						long start = data.TellBits();
-						long end = data.IndexOf(token.Value, start + (nextSize * 8));
+						long end = data.IndexOf(token.Value, start + nextSize);
 						if (end >= 0)
 						{
 							logger.Debug("determineElementSize: Token was found in data stream, able to determine element size.");
