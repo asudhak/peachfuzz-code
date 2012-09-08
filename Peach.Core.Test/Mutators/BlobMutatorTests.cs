@@ -37,7 +37,7 @@ namespace Peach.Core.Test.Mutators
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"Default\">" +
+                "   <Test name=\"Default\" waitTime=\"5\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
                 "       <Strategy class=\"Sequencial\"/>" +
@@ -50,7 +50,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -99,7 +99,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -149,7 +149,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -202,7 +202,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -252,7 +252,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -302,7 +302,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -355,7 +355,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -406,7 +406,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 
@@ -457,7 +457,7 @@ namespace Peach.Core.Test.Mutators
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
             dom.tests[0].includedMutators = new List<string>();
             dom.tests[0].includedMutators.Add("BlobMutator");
 

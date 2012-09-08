@@ -56,7 +56,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Number num = dom.dataModels[0][0] as Number;
 
@@ -86,7 +86,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Number num = dom.dataModels[0][0] as Number;
 

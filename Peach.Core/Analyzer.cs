@@ -63,12 +63,12 @@ namespace Peach.Core
 		/// Replaces the parser for fuzzer definition.
 		/// </summary>
 		/// <param name="args">Command line arguments</param>
-		public virtual Dom.Dom asParser(Dictionary<string, string> args, string fileName)
+		public virtual Dom.Dom asParser(Dictionary<string, object> args, string fileName)
 		{
 			return asParser(args, File.OpenRead(fileName));
 		}
 
-		public virtual Dom.Dom asParser(Dictionary<string, string> args, Stream data)
+		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data)
 		{
 			throw new NotImplementedException("");
 		}

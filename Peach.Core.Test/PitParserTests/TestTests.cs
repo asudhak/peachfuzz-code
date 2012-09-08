@@ -79,7 +79,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(true, dom.dataModels[0][0].isMutable);
 			Assert.AreEqual(true, dom.dataModels[0][1].isMutable);
@@ -119,7 +119,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -160,7 +160,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(true,  dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -200,7 +200,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -232,7 +232,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(10.5, dom.tests[0].waitTime);
 		}

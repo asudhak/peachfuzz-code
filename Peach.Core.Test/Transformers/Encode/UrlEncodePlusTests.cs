@@ -46,7 +46,7 @@ namespace Peach.Core.Test.Transformers.Encode
 
             PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;

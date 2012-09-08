@@ -58,7 +58,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
 			XPathNodeIterator iter = navi.Select("//TheNumber");
 
@@ -88,7 +88,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
 			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
@@ -124,7 +124,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
 			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
@@ -158,7 +158,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
 			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
@@ -192,7 +192,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
 			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];
@@ -233,7 +233,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dom.dataModels[0][1])[0])[0];
 			DataElement findMe2 = ((DataElementContainer)dom.dataModels[0][3])[0];

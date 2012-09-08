@@ -30,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.IO;
+using System.Xml;
 
 using Peach.Options;
 using Peach.Core.Dom;
@@ -48,7 +50,7 @@ namespace Peach
 	/// Command line interface for Peach 3.  Mostly backwards compatable with
 	/// Peach 2.3.
 	/// </summary>
-	class Program
+	public class Program
 	{
 		static void Main(string[] args)
 		{
@@ -57,6 +59,9 @@ namespace Peach
 
 		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
 		static ConsoleColor DefaultBackground = ConsoleColor.DarkRed;
+
+		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
+		public Dom dom;
 
 		public Program(string[] args)
 		{
@@ -74,6 +79,8 @@ namespace Peach
 				string parallel = null;
 				bool test = false;
 				string agent = null;
+				string definedValuesFile = null;
+				bool parseOnly = false;
 
 				var color = Console.ForegroundColor;
 				Console.Write("\n");
@@ -114,7 +121,7 @@ namespace Peach
 					{ "analyzer=", v => analyzer = v },
 					{ "parser=", v => parser = v },
 					{ "strategy=", v => strategy = v},
-					{ "d|debug", v => config.debug = true },
+					{ "debug", v => config.debug = true },
 					{ "1", v => config.singleIteration = true},
 					{ "range=", v => range = v},
 					{ "t|test", v => test = true},
@@ -122,6 +129,9 @@ namespace Peach
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
 					{ "p|parallel=", v => parallel = v},
 					{ "a|agent=", v => agent = v},
+					{ "D|define=", v => AddNewDefine(v) },
+					{ "definedvalues=", v => definedValuesFile = v },
+					{ "parseonly", v => parseOnly = true },
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
 					{ "showdevices", var => ShowDevices() },
@@ -154,6 +164,60 @@ namespace Peach
 							"Peach.Core.OS.Windows.dll");
 						Assembly.LoadFrom(osAssembly);
 						break;
+				}
+
+				if (definedValuesFile != null)
+				{
+					if (!File.Exists(definedValuesFile))
+						throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
+
+					XmlDocument xmlDoc = new XmlDocument();
+					xmlDoc.Load(definedValuesFile);
+
+					var root = xmlDoc.FirstChild;
+					if (root.Name != "PitDefines")
+					{
+						root = xmlDoc.FirstChild.NextSibling;
+						if (root.Name != "PitDefines")
+							throw new PeachException("Error, definition file root element must be PitDefines.");
+					}
+
+					foreach (XmlNode node in root.ChildNodes)
+					{
+						if (hasXmlAttribute(node, "platform"))
+						{
+							switch (getXmlAttribute(node, "platform").ToLower())
+							{
+								case "osx":
+									if (Platform.GetOS() != Platform.OS.Mac)
+										continue;
+									break;
+								case "linux":
+									if (Platform.GetOS() != Platform.OS.Linux)
+										continue;
+									break;
+								case "windows":
+									if (Platform.GetOS() != Platform.OS.Windows)
+										continue;
+									break;
+								default:
+									throw new PeachException("Error, unknown platform name \""+ getXmlAttribute(node, "platform") + "\" in definition file.");
+							}
+						}
+
+						foreach (XmlNode defNode in node.ChildNodes)
+						{
+							if (!hasXmlAttribute(defNode, "key") || !hasXmlAttribute(defNode, "value"))
+								throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
+
+							// Allow command line to override values in XML file.
+							if (!DefinedValues.ContainsKey(getXmlAttribute(defNode, "key")))
+							{
+								DefinedValues[getXmlAttribute(defNode, "key")] =
+									getXmlAttribute(defNode, "value");
+							}
+						}
+					}
 				}
 
 				// Enable debugging if asked for
@@ -279,13 +343,17 @@ namespace Peach
 					return;
 				}
 
+				Dictionary<string, object> parserArgs = new Dictionary<string, object>();
+				parserArgs["DefinedValues"] = this.DefinedValues;
+
 				Engine e = new Engine(new ConsoleWatcher());
-				Dom dom = Analyzer.defaultParser.asParser(null, extra[0]);
+				dom = Analyzer.defaultParser.asParser(parserArgs, extra[0]);
 				config.pitFile = extra[0];
 				dom.evaulateDataModelAnalyzers();
 
-				//foreach (DataModel model in dom.dataModels.Values)
-				//    Console.WriteLine(model.prettyPrint());
+				// Used for unittests
+				if (parseOnly)
+					return;
 
 				foreach (string arg in args)
 					config.commandLine += arg + " ";
@@ -333,6 +401,72 @@ namespace Peach
 			Console.SetOut(new System.IO.StringWriter());
 		}
 
+		public void AddNewDefine(string value)
+		{
+			if(value.IndexOf("=") < 0)
+				throw new PeachException("Error, defined values supplied via -D/--define must have an equals sign providing a key-pair set.");
+
+			var kv = value.Split('=');
+			DefinedValues[kv[0]] = kv[1];
+		}
+
+		/// <summary>
+		/// Get attribute from XmlNode object.
+		/// </summary>
+		/// <param name="node">XmlNode to get attribute from</param>
+		/// <param name="name">Name of attribute</param>
+		/// <returns>Returns innerText or null.</returns>
+		public string getXmlAttribute(XmlNode node, string name)
+		{
+			System.Xml.XmlAttribute attr = node.Attributes.GetNamedItem(name) as System.Xml.XmlAttribute;
+			if (attr != null)
+			{
+				return attr.InnerText;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Get attribute from XmlNode object.
+		/// </summary>
+		/// <param name="node">XmlNode to get attribute from</param>
+		/// <param name="name">Name of attribute</param>
+		/// <param name="defaultValue">Default value if attribute is missing</param>
+		/// <returns>Returns true/false or default value</returns>
+		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
+		{
+			string value = getXmlAttribute(node, name);
+			if (value == null)
+				return defaultValue;
+
+			switch (value.ToLower())
+			{
+				case "1":
+				case "true":
+					return true;
+				case "0":
+				case "false":
+					return false;
+				default:
+					throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
+			}
+		}
+
+		/// <summary>
+		/// Check to see if XmlNode has specific attribute.
+		/// </summary>
+		/// <param name="node">XmlNode to check</param>
+		/// <param name="name">Name of attribute</param>
+		/// <returns>Returns boolean true or false.</returns>
+		public bool hasXmlAttribute(XmlNode node, string name)
+		{
+			object o = node.Attributes.GetNamedItem(name);
+			return o != null;
+		}
+
 		public void syntax()
 		{
 			string syntax = @"This is the Peach Runtime.  The Peach Runtime is one of the many ways
@@ -365,6 +499,9 @@ Syntax:
   --skipto N                 Skip to a specific test #.  This replaced -r
                              for restarting a Peach run.
   --range N,M                Provide a range of test #'s to be run.
+  -D/define=KEY=VALUE        Define a substitution value.  In your PIT you can
+                             ##KEY## and it will be replaced for VALUE.
+  --definedvalues=FILENAME   XML file containing defined values
 
 Peach Agent
 

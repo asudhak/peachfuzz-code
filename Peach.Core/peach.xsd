@@ -1563,6 +1563,14 @@
 					<xs:documentation>Optional description of data.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="waitTime" type="xs:decimal">
+				<xs:annotation>
+					<xs:documentation>
+						Time to wait in seconds between each iteration. Value can be fractional
+						(0.25). Defaults to zero (0).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 

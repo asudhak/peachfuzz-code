@@ -53,7 +53,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Padding padding = dom.dataModels[0][0] as Padding;
 
 			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
@@ -70,7 +70,7 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Padding padding = dom.dataModels[0][1] as Padding;
 
 			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
