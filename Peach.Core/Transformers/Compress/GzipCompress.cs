@@ -47,76 +47,28 @@ namespace Peach.Core.Transformers.Compress
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            //byte[] buff = new byte[1024];
-            //int ret;
+			var compressedData = new MemoryStream();
+			data.SeekBits(0, SeekOrigin.Begin);
 
-            //MemoryStream sin = new MemoryStream(data.Value);
-            //MemoryStream sout = new MemoryStream();
+			using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
+			{
+				data.Stream.CopyTo(compressionStream);
+			}
 
-            //GZipStream gzip = new GZipStream(sout, CompressionMode.Compress);
-
-            //do
-            //{
-            //    ret = sin.Read(buff, 0, buff.Length);
-            //    gzip.Write(buff, 0, ret);
-            //}
-            //while (ret != 0);
-
-            //return new BitStream(sout.ToArray());
-
-            //MemoryStream sin = new MemoryStream(data.Value);
-
-            //MemoryStream sout = new MemoryStream();
-            //GZipStream zs = new GZipStream(sout, CompressionMode.Compress, true);
-
-            //zs.Write(data.Value, 0, data.Value.Length);
-
-            //byte[] ret;
-
-            string dataAsStrASCII = ASCIIEncoding.ASCII.GetString(data.Value);
-            byte[] dataAsStrUTF8Buff = Encoding.UTF8.GetBytes(dataAsStrASCII);
-
-            MemoryStream ms = new MemoryStream();
-            
-            using (GZipStream gzip = new GZipStream(ms, CompressionMode.Compress))
-            {
-                gzip.Write(data.Value, 0, data.Value.Length);
-            }
-
-            //ret = ms.ToArray();
-
-            //ms.Position = 0;
-            var compressedData = new byte[ms.Length];
-            ms.Read(compressedData, 0, compressedData.Length);
-
-            var gZipBuffer = new byte[compressedData.Length + 4];
-            Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
-            Buffer.BlockCopy(BitConverter.GetBytes(data.Value.Length), 0, gZipBuffer, 0, 4);
-            var x = Convert.ToString(gZipBuffer);
-            var xx = Convert.ToBase64String(gZipBuffer);
-
-            return new BitStream();
-            //return new BitStream(sout.ToArray());
+			return new BitStream(compressedData.ToArray());
 		}
 
-		protected override BitStream internalDecode(BitStream data)
+		protected override BitStream internalDecode(BitStream compressedData)
 		{
-			byte[] buff = new byte[1024];
-			int ret;
+			var data = new MemoryStream();
+			compressedData.SeekBits(0, SeekOrigin.Begin);
 
-			MemoryStream sin = new MemoryStream(data.Value);
-			MemoryStream sout = new MemoryStream();
-
-			GZipStream gzip = new GZipStream(sin, CompressionMode.Decompress);
-
-			do
+			using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
 			{
-				ret = gzip.Read(buff, 0, buff.Length);
-				sout.Write(buff, 0, ret);
+				compressionStream.CopyTo(data);
 			}
-			while (ret != 0);
 
-			return new BitStream(sout.ToArray());
+			return new BitStream(data.ToArray());
 		}
 	}
 }
