@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core;
@@ -56,13 +57,14 @@ namespace Peach.Core.Test.Transformers.Compress
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: ""
-            //byte[] precalcResult = new byte[] { 78 9C 03 00 00 00 00 01 };    // on ""
-            //byte[] precalcResult = new byte[] { 78 9C 4B 4C 4A 06 00 02 4D 01 27 };    // on "abc"
-            //Assert.AreEqual(1, values.Count);
-            //Assert.AreEqual(precalcResult, values[0].Value);
-            Assert.Null("TODO: Implement me!");
+			var valueData = new MemoryStream(values[0].Value);
+			var data = new MemoryStream();
+			using (GZipStream zip = new GZipStream(valueData, CompressionMode.Decompress))
+			{
+				zip.CopyTo(data);
+			}
+
+            Assert.AreEqual("abc", ASCIIEncoding.ASCII.GetString(data.ToArray()));
         }
     }
 }
