@@ -344,7 +344,7 @@ namespace Peach
 				}
 
 				Dictionary<string, object> parserArgs = new Dictionary<string, object>();
-				parserArgs["DefinedValues"] = this.DefinedValues;
+				parserArgs[PitParser.DEFINED_VALUES] = this.DefinedValues;
 
 				Engine e = new Engine(new ConsoleWatcher());
 				dom = Analyzer.defaultParser.asParser(parserArgs, extra[0]);

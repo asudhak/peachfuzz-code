@@ -53,7 +53,7 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// args key for passing a dictionary of defined values to replace.
 		/// </summary>
-		public const string DEFINED_VALUES = "DefinedValues";
+		public static string DEFINED_VALUES = "DefinedValues";
 
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";
@@ -96,9 +96,9 @@ namespace Peach.Core.Analyzers
 			XmlDocument xmldoc = new XmlDocument();
 			data.Position = 0;
 
-			if (args.ContainsKey("DefinedValues"))
+			if (args != null && args.ContainsKey(DEFINED_VALUES))
 			{
-				var definedValues = args["DefinedValues"] as Dictionary<string, string>;
+				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
 				StringBuilder sb;
 
 				using (MemoryStream sin = new MemoryStream())
