@@ -45,7 +45,6 @@ namespace Peach.Core.Mutators
         uint pos;
         byte[] zipFileData;
         string[] values = new string[] { };
-        MemoryStream ms;
         Stream s;
         ZipFile zip;
         ZipEntry entry;
@@ -64,19 +63,9 @@ namespace Peach.Core.Mutators
             string[] nonwfValues = new string[] { };
             string[] validValues = new string[] { };
 
-            // open the XMLTests.zip file and read it into a buffer
-			
-            using (FileStream fs = new FileStream(
-				Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),"xmltests.zip"), FileMode.Open))
-            {
-                int len = (int)fs.Length;
-                zipFileData = new byte[len];
-                fs.Read(zipFileData, 0, len);
-            }
-
             // create a memory stream of the buffer so that the ZipFile class can be used, then read in the zip file
-            ms = new MemoryStream(zipFileData);
-            zip = ZipFile.Read(ms);
+            Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.xmltests.zip");
+            zip = ZipFile.Read(s);
 
             // pull data from the zip file
             
@@ -132,7 +121,6 @@ namespace Peach.Core.Mutators
         ~XmlW3CParserTestsMutator()
         {
             // clean-up
-            ms.Close();
             zip.Dispose();
             s.Close();
         }

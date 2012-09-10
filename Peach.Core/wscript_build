@@ -27,6 +27,6 @@ bld(
 	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
-	resource = 'peach.xsd',
+	resource = 'peach.xsd xmltests.zip',
 	name = 'Peach.Core.dll',
 )
