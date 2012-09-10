@@ -42,9 +42,6 @@ namespace Peach.Core.Test.MutationStrategies
 				"       <Strategy class=\"RandomDeterministic\"/>" +
 				"   </Test>" +
 
-				"   <Run name=\"DefaultRun\">" +
-				"       <Test ref=\"TheTest\"/>" +
-				"   </Run>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();

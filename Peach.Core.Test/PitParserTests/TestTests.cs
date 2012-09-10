@@ -73,9 +73,6 @@ namespace Peach.Core.Test.PitParserTests
 				"		</Publisher>" +
 				"		<Exclude/>" +
 				"	</Test> " +
-				"	<Run name=\"Default\">"+
-				"		<Test ref=\"TheTest\" />"+
-				"	</Run> "+
 				"</Peach>";
 
 			PitParser parser = new PitParser();

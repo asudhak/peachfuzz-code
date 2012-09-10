@@ -166,11 +166,6 @@ namespace Peach.Core.Test.Monitors
 			"		<StateModel ref=\"TheState\"/>" +
 			"		<Publisher class=\"Null\" />" +
 			"	</Test>" +
-			"		" +
-			"	<Run name=\"DefaultRun\">" +
-			"		<Test ref=\"TheTest\"/>" +
-			"	</Run>" +
-			"		" +
 			"</Peach>";
 
 		private void RunTest(string xml, uint iterations, Engine.FaultEventHandler OnFault)

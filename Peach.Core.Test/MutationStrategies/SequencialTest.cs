@@ -40,9 +40,6 @@ namespace Peach.Core.Test.MutationStrategies
 				"       <Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
-				"   <Run name=\"DefaultRun\">" +
-				"       <Test ref=\"TheTest\"/>" +
-				"   </Run>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
@@ -113,9 +110,6 @@ namespace Peach.Core.Test.MutationStrategies
 				"       <Strategy class=\"Sequencial\"/>" +
 				"   </Test>" +
 
-				"   <Run name=\"DefaultRun\">" +
-				"       <Test ref=\"TheTest\"/>" +
-				"   </Run>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();

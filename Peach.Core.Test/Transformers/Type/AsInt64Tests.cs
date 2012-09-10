@@ -40,10 +40,6 @@ namespace Peach.Core.Test.Transformers.Type
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -89,10 +85,6 @@ namespace Peach.Core.Test.Transformers.Type
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
