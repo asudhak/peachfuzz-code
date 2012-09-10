@@ -130,10 +130,6 @@ class Node(object):
 		"String representation (abspath), for debugging purposes"
 		return self.abspath()
 
-	def __hash__(self):
-		"Node hash, used for storage in dicts. This hash is not persistent."
-		return id(self)
-
 	def __eq__(self, node):
 		"Node comparison, based on the IDs"
 		return id(self) == id(node)
