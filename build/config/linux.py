@@ -9,7 +9,6 @@ tools = [
 	'gxx',
 	'cs',
 	'resx',
-	'csprogram',
 	'utils',
 	'externals',
 	'test',

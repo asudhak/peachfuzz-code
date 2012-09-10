@@ -7,7 +7,6 @@ archs = [ 'x86', 'x64' ]
 tools = [
 	'msvc',
 	'cs',
-	'csprogram',
 	'resx',
 	'midl',
 	'utils',
