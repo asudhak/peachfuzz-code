@@ -77,7 +77,7 @@ namespace Peach.Core.Test.CrackingTests
 			// Positive test
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
 			data.LittleEndian();
@@ -104,7 +104,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Positive test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.LittleEndian();
@@ -122,7 +122,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Negative test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.LittleEndian();
@@ -154,7 +154,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Positive test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.LittleEndian();
@@ -172,7 +172,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Negative test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.LittleEndian();
@@ -202,7 +202,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Positive test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				//data.LittleEndian();
@@ -221,7 +221,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Negative test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.LittleEndian();
@@ -253,7 +253,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Positive test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.WriteUInt8(255);
@@ -270,7 +270,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Negative test
 
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 				BitStream data = new BitStream();
 				data.LittleEndian();
@@ -315,7 +315,7 @@ namespace Peach.Core.Test.CrackingTests
 				// Positive test
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
 			data.WriteInt16(1);
@@ -356,7 +356,7 @@ namespace Peach.Core.Test.CrackingTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
@@ -383,7 +383,7 @@ namespace Peach.Core.Test.CrackingTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));

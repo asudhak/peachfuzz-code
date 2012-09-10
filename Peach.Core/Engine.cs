@@ -285,8 +285,6 @@ namespace Peach.Core
 							test.stateModel.Run(context);
 
 							context.agentManager.IterationFinished();
-
-							//Thread.Sleep(1000 * 5);
 						}
 						catch (RedoTestException e)
 						{
@@ -321,7 +319,10 @@ namespace Peach.Core
 								IterationFinished(context, iterationCount);
 						}
 
-						// TODO: Pause for run.waitTime
+						// User can specify a time to wait between iterations
+						// we can use that time to better detect faults
+						if(context.test.waitTime > 0)
+							Thread.Sleep( (int) (context.test.waitTime * 1000) );
 
 						if (context.agentManager.DetectedFault())
 						{
@@ -330,12 +331,11 @@ namespace Peach.Core
 
 							var monitorData = context.agentManager.GetMonitorData();
 							
-							// TODO get state model data
+							// TODO get state model data (not sure we need todo this anymore)
 
 							OnFault(context, iterationCount, test.stateModel, monitorData);
 						}
 
-						// TODO: Check for agent stop signal
 						if (context.agentManager.MustStop())
 						{
 							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",

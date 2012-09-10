@@ -25,7 +25,7 @@
 //   Michael Eddington (mike@dejavusecurity.com)
 
 //
-// PIN Tool to find all basic blocks a program hits.
+// PIN Tool to find the edge bblocks arround bblocks we hit.
 //  This PIN Tool is intended for use with Peach.
 //
 //  Code based on examples from PIN documentation.

@@ -1,0 +1,40 @@
+﻿Build started 7/13/2012 4:44:48 PM.
+     1>Project "C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\cdistorm.vcxproj" on node 3 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "clib\libdistorm.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "clib\libdistorm.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Zi /nologo /W4 /WX- /Ox /Ob1 /Ot /Oy /D WIN32 /D NDEBUG /D SUPPORT_64BIT_OFFSET /D _VC80_UPGRADE=0x0710 /D _MBCS /GF /Gm /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"clib\\" /Fd"clib\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\src\decoder.c ..\..\src\distorm.c ..\..\src\instructions.c ..\..\src\insts.c ..\..\src\operands.c ..\..\src\prefix.c ..\..\src\textdefs.c ..\..\src\wstring.c ..\..\src\x86defs.c
+         x86defs.c
+         wstring.c
+         textdefs.c
+         prefix.c
+         operands.c
+         insts.c
+         instructions.c
+         distorm.c
+         decoder.c
+         Generating Code...
+     1>c:\peach3\3rdparty\pyew-2.0\distorm64\src\decoder.c(653): warning C4701: potentially uninitialized local variable 'di' used
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(1151,5): warning MSB8012: TargetPath(C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\clib\libdistorm.lib) does not match the Library's OutputFile property value (C:\Peach3\3rdParty\pyew-2.0\distorm64\distorm.lib). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(1153,5): warning MSB8012: TargetName(libdistorm) does not match the Library's OutputFile property value (distorm). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Lib.OutputFile).
+       Lib:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"..\..\distorm.lib" /NOLOGO clib\decoder.obj
+         clib\distorm.obj
+         clib\instructions.obj
+         clib\insts.obj
+         clib\operands.obj
+         clib\prefix.obj
+         clib\textdefs.obj
+         clib\wstring.obj
+         clib\x86defs.obj
+         cdistorm.vcxproj -> C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\clib\libdistorm.lib
+       FinalizeBuildStatus:
+         Deleting file "clib\libdistorm.unsuccessfulbuild".
+         Touching "clib\libdistorm.lastbuildstate".
+     1>Done Building Project "C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\cdistorm.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.82

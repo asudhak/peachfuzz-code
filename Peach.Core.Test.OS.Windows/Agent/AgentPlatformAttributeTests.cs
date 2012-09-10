@@ -78,9 +78,9 @@ namespace Peach.Core.Test.Agent
 
 			try
 			{
-				dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			}
-			catch(Exception ex)
+			catch
 			{
 				Assert.True(false);
 			}

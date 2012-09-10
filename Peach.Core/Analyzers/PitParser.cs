@@ -50,6 +50,11 @@ namespace Peach.Core.Analyzers
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
+		/// <summary>
+		/// args key for passing a dictionary of defined values to replace.
+		/// </summary>
+		public const string DEFINED_VALUES = "DefinedValues";
+
 		static int ErrorsCount = 0;
 		static string ErrorMessage = "";
 		public Dom.Dom _dom = null;
@@ -78,19 +83,41 @@ namespace Peach.Core.Analyzers
             
 		}
 
-        public override Dom.Dom asParser(Dictionary<string, string> args, Stream data)
+        public override Dom.Dom asParser(Dictionary<string, object> args, Stream data)
         {
             return asParser(args,data,true);
         }
-        public Dom.Dom asParser(Dictionary<string, string> args, Stream data, bool doValidatePit)
+
+        public Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
-			
             if(doValidatePit)
 			    validatePit(data);
 
-			data.Seek(0, SeekOrigin.Begin);
 			XmlDocument xmldoc = new XmlDocument();
-			xmldoc.Load(data);
+			data.Position = 0;
+
+			if (args.ContainsKey("DefinedValues"))
+			{
+				var definedValues = args["DefinedValues"] as Dictionary<string, string>;
+				StringBuilder sb;
+
+				using (MemoryStream sin = new MemoryStream())
+				{
+					data.CopyTo(sin);
+					sb = new StringBuilder(UTF8Encoding.UTF8.GetString(sin.ToArray()));
+				}
+
+				foreach (string key in definedValues.Keys)
+				{
+					sb.Replace("##" + key + "##", definedValues[key]);
+				}
+
+				xmldoc.Load(new StringReader(sb.ToString()));
+			}
+			else
+			{
+				xmldoc.Load(data);
+			}
 
 			_dom = new Dom.Dom();
 
@@ -1607,6 +1634,9 @@ namespace Peach.Core.Analyzers
 			test.parent = parent;
 
 			test.name = getXmlAttribute(node, "name");
+
+			if(hasXmlAttribute(node, "waitTime"))
+				test.waitTime = decimal.Parse(getXmlAttribute(node, "waitTime"));
 
 			foreach (XmlNode child in node.ChildNodes)
 			{

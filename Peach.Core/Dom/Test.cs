@@ -108,6 +108,12 @@ namespace Peach.Core.Dom
 			set { _name = value; }
 		}
 
+		/// <summary>
+		/// Time to wait in seconds between each test case. Value can be fractional
+		/// (0.25). Defaults to zero (0).
+		/// </summary>
+		public decimal waitTime { get; set; }
+
 		public void markMutableElements()
 		{
 			Dom dom;

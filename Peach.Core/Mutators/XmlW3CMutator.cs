@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Reflection;
 using Peach.Core.Dom;
 using Ionic.Zip;
 
@@ -64,7 +65,9 @@ namespace Peach.Core.Mutators
             string[] validValues = new string[] { };
 
             // open the XMLTests.zip file and read it into a buffer
-            using (FileStream fs = new FileStream("../../../Peach.Core/xmltests.zip", FileMode.Open))
+			
+            using (FileStream fs = new FileStream(
+				Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),"xmltests.zip"), FileMode.Open))
             {
                 int len = (int)fs.Length;
                 zipFileData = new byte[len];

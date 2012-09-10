@@ -59,7 +59,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Number num = dom.dataModels[0][1] as Number;
 
 			Variant val = num.InternalValue;
@@ -79,7 +79,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Number num = dom.dataModels[0][1] as Number;
 
 			Variant val = num.InternalValue;
@@ -99,7 +99,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
 			data.WriteInt8((sbyte)("Hello World".Length - 5));
@@ -127,7 +127,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Number num = dom.dataModels[0][1] as Number;
 
 			Variant val = num.InternalValue;
@@ -155,7 +155,7 @@ namespace Peach.Core.Test
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(new Dictionary<string, string>(), new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Number num1 = ((Block)dom.dataModels[0][0])[1] as Number;
 			Number num2 = dom.dataModels[0][1] as Number;
 			Number num3 = dom.dataModels[0][2] as Number;

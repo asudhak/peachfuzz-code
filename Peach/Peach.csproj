@@ -389,6 +389,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="samples\ExampleDefinitionsFile.xml" />
     <Content Include="samples\FileFuzzer.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

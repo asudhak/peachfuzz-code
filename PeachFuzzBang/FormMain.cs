@@ -500,7 +500,7 @@ namespace PeachFuzzBang
 			{
 
 				var pitParser = new Peach.Core.Analyzers.PitParser();
-				userSelectedDom = pitParser.asParser(new Dictionary<string, string>(), textBoxPitFileName.Text);
+				userSelectedDom = pitParser.asParser(null, textBoxPitFileName.Text);
 
 				comboBoxPitDataModel.Items.Clear();
 				foreach (var model in userSelectedDom.dataModels.Keys)

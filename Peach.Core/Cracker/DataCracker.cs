@@ -436,26 +436,29 @@ namespace Peach.Core.Cracker
 
 				long size = 0;
 				DataElement next = element;
+				DataElement sibling = null;
 
 				while (next != null)
 				{
-					next = next.nextSibling();
+					sibling = next.nextSibling();
 
-					if (next == null)
+					if (sibling == null)
 					{
-						var parent = element.parent;
-						while (next == null && parent != null)
+						var parent = next.parent;
+						while (sibling == null && parent != null)
 						{
-							next = parent.nextSibling();
+							sibling = parent.nextSibling();
 							parent = parent.parent;
 						}
 
-						if (next == null)
+						if (sibling == null)
 							return false;
 
-						while (next is DataElementContainer)
-							next = ((DataElementContainer)next)[0];
+						while (sibling is DataElementContainer && ((DataElementContainer)sibling).Count > 0)
+							sibling = ((DataElementContainer)sibling)[0];
 					}
+
+					next = sibling;
 
 					if (next.isToken)
 					{
@@ -474,7 +477,7 @@ namespace Peach.Core.Cracker
 						return false;
 					}
 
-					next = element.parent;
+					next = next.parent;
 				}
 
 				return false;
@@ -613,12 +616,13 @@ namespace Peach.Core.Cracker
 				long nextSize = 0;
 				DataElement token = null;
 
+				// Note: nextSize is in bits
 				if (isTokenNext(element, ref nextSize, ref token))
 				{
 					while (true)
 					{
 						long start = data.TellBits();
-						long end = data.IndexOf(token.Value, start + (nextSize * 8));
+						long end = data.IndexOf(token.Value, start + nextSize);
 						if (end >= 0)
 						{
 							logger.Debug("determineElementSize: Token was found in data stream, able to determine element size.");

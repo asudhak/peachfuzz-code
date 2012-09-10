@@ -1,0 +1,50 @@
+﻿Build started 7/13/2012 4:39:45 PM.
+     1>Project "C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\pydistorm.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "py23\pydistorm.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /IC:\Python27\include /Zi /nologo /W4 /WX- /Ox /Ob1 /Ot /Oy /D WIN32 /D NDEBUG /D SUPPORT_64BIT_OFFSET /D _DLL /D _VC80_UPGRADE=0x0710 /D _WINDLL /D _MBCS /GF /Gm- /EHsc /MT /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"py23\\" /Fd"py23\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\src\decoder.c ..\..\src\instructions.c ..\..\src\insts.c ..\..\src\operands.c ..\..\src\prefix.c ..\..\src\pydistorm.c ..\..\src\textdefs.c ..\..\src\wstring.c ..\..\src\x86defs.c
+         decoder.c
+         instructions.c
+         insts.c
+         operands.c
+         prefix.c
+         pydistorm.c
+     1>c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\math.h(162): warning C4211: nonstandard extension used : redefined extern to static
+     1>..\..\src\pydistorm.c(93): warning C4127: conditional expression is constant
+     1>..\..\src\pydistorm.c(98): warning C4127: conditional expression is constant
+     1>..\..\src\pydistorm.c(99): warning C4127: conditional expression is constant
+     1>..\..\src\pydistorm.c(104): warning C4127: conditional expression is constant
+         textdefs.c
+         wstring.c
+         x86defs.c
+         Generating Code...
+     1>c:\peach3\3rdparty\pyew-2.0\distorm64\src\decoder.c(653): warning C4701: potentially uninitialized local variable 'di' used
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _VC80_UPGRADE=0x0710 /l"0x0409" /nologo /fo"py23\resource.res" resource.rc 
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(990,5): warning MSB8012: TargetPath(C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\py23\pydistorm.dll) does not match the Linker's OutputFile property value (c:\python27\dlls\distorm.pyd). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(991,5): warning MSB8012: TargetExt(.dll) does not match the Linker's OutputFile property value (.pyd). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(992,5): warning MSB8012: TargetName(pydistorm) does not match the Linker's OutputFile property value (distorm). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"c:\python27\dlls\distorm.pyd" /VERSION:"1.0" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\Python27\libs python27.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"py23\pydistorm.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\py23\pydistorm.pdb" /OPT:REF /OPT:ICF /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"py23\pydistorm.lib" /MACHINE:X86 /DLL py23\resource.res
+         py23\decoder.obj
+         py23\instructions.obj
+         py23\insts.obj
+         py23\operands.obj
+         py23\prefix.obj
+         py23\pydistorm.obj
+         py23\textdefs.obj
+         py23\wstring.obj
+         py23\x86defs.obj
+            Creating library py23\pydistorm.lib and object py23\pydistorm.exp
+         pydistorm.vcxproj -> C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\py23\pydistorm.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"c:\python27\dlls\distorm.pyd;#2" /manifest py23\pydistorm.dll.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "py23\pydistorm.unsuccessfulbuild".
+         Touching "py23\pydistorm.lastbuildstate".
+     1>Done Building Project "C:\Peach3\3rdParty\pyew-2.0\distorm64\build\win32\pydistorm.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.81
