@@ -136,6 +136,7 @@ namespace PeachMinset
 
 			return;
 
+#if DISABLED
 			var ms = new Minset();
 			ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
 			ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
@@ -190,6 +191,7 @@ namespace PeachMinset
 				Console.WriteLine("\n[*] Finished");
 
 				return;
+#endif
 			}
 		}
 

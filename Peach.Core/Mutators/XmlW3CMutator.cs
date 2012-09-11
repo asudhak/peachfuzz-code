@@ -43,7 +43,6 @@ namespace Peach.Core.Mutators
         // members
         //
         uint pos;
-        byte[] zipFileData;
         string[] values = new string[] { };
         Stream s;
         ZipFile zip;
