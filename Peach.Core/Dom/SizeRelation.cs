@@ -93,12 +93,12 @@ namespace Peach.Core.Dom
 				if (_expressionSet != null)
 				{
 					Dictionary<string, object> state = new Dictionary<string, object>();
-					state["size"] = size;
+					state["size"] = size / 8;
 					state["value"] = size;
 					state["self"] = this._parent;
 
 					object newValue = Scripting.EvalExpression(_expressionSet, state);
-					size = Convert.ToInt64(newValue);
+					size = Convert.ToInt64(newValue) * 8;
 				}
 
 				if (_isByteRelation)
