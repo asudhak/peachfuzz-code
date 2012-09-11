@@ -39,10 +39,6 @@ namespace Peach.Core.Test.Mutators
                 "       <Publisher class=\"Null\"/>" +
                 "       <Strategy class=\"Sequencial\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -93,10 +89,6 @@ namespace Peach.Core.Test.Mutators
                 "       <Publisher class=\"Null\"/>" +
                 "       <Strategy class=\"Sequencial\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -146,10 +138,6 @@ namespace Peach.Core.Test.Mutators
                 "       <Publisher class=\"Null\"/>" +
                 "       <Strategy class=\"Sequencial\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
@@ -199,10 +187,6 @@ namespace Peach.Core.Test.Mutators
                 "       <Publisher class=\"Null\"/>" +
                 "       <Strategy class=\"Sequencial\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();

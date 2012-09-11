@@ -39,10 +39,6 @@ namespace Peach.Core.Test.Transformers.Compress
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();
