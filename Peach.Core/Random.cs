@@ -30,7 +30,11 @@ namespace Peach.Core
 		// min <= X < max
 		public int Next(int min, int max)
 		{
-			return (int)(_prng.GenerateFloat() * (max - min) + min);
+			uint diff = (uint)(max - min);
+			if (diff <= 1)
+				return min;
+
+			return (int)((uint)(_prng.GenerateFloat() * diff) + min);
 		}
 
 		// 0 <= X < max
@@ -42,7 +46,11 @@ namespace Peach.Core
 		// min <= X < max
 		public uint Next(uint min, uint max)
 		{
-			return (uint)(_prng.GenerateFloat() * (max - min) + min);
+			uint diff = (max - min);
+			if (diff <= 1)
+				return min;
+
+			return (uint)(_prng.GenerateFloat() * diff) + min;
 		}
 
 		// int.MinValue <= X <= int.MaxValue

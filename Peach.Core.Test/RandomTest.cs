@@ -140,12 +140,34 @@ namespace Peach.Core.Test
 			// sum the square of the delta from the mean
 			double sum = vals.Sum(d => Math.Pow(d - avg, 2));
 			// compute stddev
-			double stddev = Math.Sqrt(sum / (vals.Count() - 1));
+			double stddev = Math.Sqrt(sum / (vals.Count()));
 
 			// 1000000 samples, 13 buckets = 76923 per bucket
 			// Allow +/- 300 per bucket for a small percentage of play
 			Assert.GreaterOrEqual(stddev, 0.0);
 			Assert.Less(stddev, 300.0);
+		}
+
+		[Test]
+		public void Test5()
+		{
+			// Test that -100 <= X < 100
+			var rng = new Random(1);
+
+			int[] vals = new int[200];
+
+			for (int i = 0; i < 1000000; ++i)
+			{
+				int ret = rng.Next(-100, 100);
+				Assert.GreaterOrEqual(ret, -100);
+				Assert.Less(ret, 100);
+				vals[ret + 100] += 1;
+			}
+
+			foreach (int val in vals)
+			{
+				Assert.AreNotEqual(0, val);
+			}
 		}
 	}
 }

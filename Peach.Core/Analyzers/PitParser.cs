@@ -99,25 +99,22 @@ namespace Peach.Core.Analyzers
 			if (args != null && args.ContainsKey(DEFINED_VALUES))
 			{
 				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
-				StringBuilder sb;
-
-				using (MemoryStream sin = new MemoryStream())
-				{
-					data.CopyTo(sin);
-					sb = new StringBuilder(UTF8Encoding.UTF8.GetString(sin.ToArray()));
-				}
+				var sr = new StreamReader(data);
+				var sb = new StringBuilder(sr.ReadToEnd());
 
 				foreach (string key in definedValues.Keys)
 				{
 					sb.Replace("##" + key + "##", definedValues[key]);
 				}
 
-				xmldoc.Load(new StringReader(sb.ToString()));
+				var xml = sb.ToString();
+				var enc = Utilities.GetXmlEncoding(xml, Encoding.UTF8);
+				byte[] buf = enc.GetBytes(xml);
+
+				data = new MemoryStream(buf);
 			}
-			else
-			{
-				xmldoc.Load(data);
-			}
+
+			xmldoc.Load(data);
 
 			_dom = new Dom.Dom();
 
