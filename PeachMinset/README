@@ -1,0 +1,14 @@
+Peach Minset
+============
+
+Development notes:
+
+ - Trying out a replacement for the PIN Tool
+   - Use pyew to identify basic blocks
+   - Set breakpoints using a debugger
+
+   - Status: HandleLoadDll event callback is not hitting
+       so we are unable to set breakpoints.
+
+       Basic block finding seems to be working but is not validated.
+       Currently it is not also getting bb from dll dependencies.
