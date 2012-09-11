@@ -36,6 +36,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Peach.Core
 {
@@ -477,6 +479,28 @@ namespace Peach.Core
 
 			return isAvailable;
 		}
+
+		public static Encoding GetXmlEncoding(string xml, Encoding def)
+		{
+			// Look for <?xml encoding="xxx"?> - return def if not found
+
+			try
+			{
+				var re = new Regex("^<\\?xml.+?encoding=[\"']([^\"']+)[\"'].*?\\?>");
+				var m = re.Match(xml);
+				if (m.Success)
+				{
+					string enc = m.Groups[1].Value;
+					def = Encoding.GetEncoding(enc);
+				}
+			}
+			catch
+			{
+			}
+
+			return def;
+		}
+
 	}
 }
 

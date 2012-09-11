@@ -273,6 +273,7 @@
     <Compile Include="PitParserTests\BlobTests.cs" />
     <Compile Include="PitParserTests\ChoiceTests.cs" />
     <Compile Include="PitParserTests\DefaultsTests.cs" />
+    <Compile Include="PitParserTests\DefaultValuesTests.cs" />
     <Compile Include="PitParserTests\FlagTests.cs" />
     <Compile Include="PitParserTests\GeneralTests.cs" />
     <Compile Include="PitParserTests\NumberTests.cs" />
