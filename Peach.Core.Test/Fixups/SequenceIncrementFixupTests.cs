@@ -38,10 +38,6 @@ namespace Peach.Core.Test.Fixups
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
-
-                "   <Run name=\"DefaultRun\">" +
-                "       <Test ref=\"TheTest\"/>" +
-                "   </Run>" +
                 "</Peach>";
 
             PitParser parser = new PitParser();

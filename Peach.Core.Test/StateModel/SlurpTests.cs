@@ -28,10 +28,10 @@ namespace Peach.Core.Test.StateModel
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
 				"   <DataModel name=\"TheDataModel1\">" +
-				"       <String value=\"Hello\"/>" +
+				"       <String name=\"String1\" value=\"1234567890\"/>" +
 				"   </DataModel>" +
 				"   <DataModel name=\"TheDataModel2\">" +
-				"       <String value=\"Hello World!\"/>" +
+				"       <String name=\"String2\" value=\"Hello World!\"/>" +
 				"   </DataModel>" +
 
 				"   <StateModel name=\"TheStateModel\" initialState=\"InitialState\">" +
@@ -39,10 +39,13 @@ namespace Peach.Core.Test.StateModel
 				"           <Action name=\"Action1\" type=\"output\">" +
 				"               <DataModel ref=\"TheDataModel1\"/>" +
 				"           </Action>" +
-				"           <Action name=\"Action2\" type=\"slurp\" valueXpath=\"//InitialState//TheDataModel1\" setXpath=\"//TheDataModel2\"/>" +
+				
+				"           <Action name=\"Action2\" type=\"slurp\" valueXpath=\"//String1\" setXpath=\"//String2\" />"+
+
 				"           <Action name=\"Action3\" type=\"output\">" +
 				"               <DataModel ref=\"TheDataModel2\"/>" +
 				"           </Action>" +
+
 				"           <Action name=\"Action4\" type=\"output\">" +
 				"               <DataModel ref=\"TheDataModel2\"/>" +
 				"           </Action>" +
