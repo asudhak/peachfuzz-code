@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core;
@@ -17,14 +18,18 @@ namespace Peach.Core.Test.Transformers.Compress
         public void Test1()
         {
             // standard test
+			var valueData = new MemoryStream(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			var data = new MemoryStream();
+			using (GZipStream zip = new GZipStream(data, CompressionMode.Compress))
+			{
+				valueData.CopyTo(zip);
+			}
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Block name=\"TheBlock\">" +
-                "           <Transformer class=\"GzipDecompress\"/>" +
-                "           <Blob name=\"Data\" value=\"\"/>" +
-                "       </Block>" +
+                "			<Transformer class=\"GzipDecompress\"/>" +
+                "           <Blob name=\"Data\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -44,6 +49,7 @@ namespace Peach.Core.Test.Transformers.Compress
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.dataModels["TheDataModel"]["Data"].DefaultValue = new Variant(data.ToArray());
 
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
@@ -52,12 +58,15 @@ namespace Peach.Core.Test.Transformers.Compress
             e.config = config;
             e.startFuzzing(dom, config);
 
-            // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: ""
-            //byte[] precalcResult = new byte[] { 0x42, 0x5A, 0x68, 0x39, 0x17, 0x72, 0x45, 0x38, 0x50, 0x90, 0x00, 0x00, 0x00, 0x00 };
-            //Assert.AreEqual(1, values.Count);
-            //Assert.AreEqual(precalcResult, values[0].Value);
-            Assert.Null("TODO: Implement me!");
+			//valueData = new MemoryStream(values[0].Value);
+			//data = new MemoryStream();
+			//using (GZipStream zip = new GZipStream(valueData, CompressionMode.Decompress))
+			//{
+			//    zip.CopyTo(data);
+			//}
+
+			Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString(values[0].Value));
+
         }
     }
 }
