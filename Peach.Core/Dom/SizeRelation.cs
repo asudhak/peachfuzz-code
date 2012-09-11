@@ -71,7 +71,6 @@ namespace Peach.Core.Dom
 				if (_isByteRelation)
 					size = size * 8;
 
-
 				return size;
 			}
 			finally
@@ -90,19 +89,34 @@ namespace Peach.Core.Dom
 				_isRecursing = true;
 				long size = Of.Value.LengthBits;
 
-				if (_expressionSet != null)
-				{
-					Dictionary<string, object> state = new Dictionary<string, object>();
-					state["size"] = size / 8;
-					state["value"] = size;
-					state["self"] = this._parent;
-
-					object newValue = Scripting.EvalExpression(_expressionSet, state);
-					size = Convert.ToInt64(newValue) * 8;
-				}
-
 				if (_isByteRelation)
+				{
+					if (_expressionSet != null)
+					{
+						Dictionary<string, object> state = new Dictionary<string, object>();
+						state["size"] = size / 8;
+						state["value"] = size / 8;
+						state["self"] = this._parent;
+
+						object newValue = Scripting.EvalExpression(_expressionSet, state);
+						size = Convert.ToInt64(newValue) * 8;
+					}
+
 					size = size / 8;
+				}
+				else
+				{
+					if (_expressionSet != null)
+					{
+						Dictionary<string, object> state = new Dictionary<string, object>();
+						state["size"] = size;
+						state["value"] = size;
+						state["self"] = this._parent;
+
+						object newValue = Scripting.EvalExpression(_expressionSet, state);
+						size = Convert.ToInt64(newValue);
+					}
+				}
 				
 				return new Variant(size);
 			}
@@ -119,8 +133,8 @@ namespace Peach.Core.Dom
 			if (_expressionSet != null)
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
-				state["size"] = size;
-				state["value"] = size;
+				state["size"] = size / 8;
+				state["value"] = size / 8;
 				state["self"] = this._parent;
 
 				object newValue = Scripting.EvalExpression(_expressionSet, state);
