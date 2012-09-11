@@ -64,25 +64,17 @@ namespace Peach.Core.Dom
 			BitStream sizedData = data;
 			SizeRelation sizeRelation = null;
 			long startPosition = data.TellBits();
+			sizeRelation = element.relations.getOfSizeRelation();
 
 			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation)
+			if (element.relations.hasOfSizeRelation && !element.isParentOf(sizeRelation.From))
 			{
-				sizeRelation = element.relations.getOfSizeRelation();
+				long size = sizeRelation.GetValue();
+				context._sizedBlockStack.Add(element);
+				context._sizedBlockMap[element] = size;
 
-				if (!element.isParentOf(sizeRelation.From))
-				{
-					long size = sizeRelation.GetValue();
-					context._sizedBlockStack.Add(element);
-					context._sizedBlockMap[element] = size;
-
-					sizedData = data.ReadBitsAsBitStream(size);
-					sizeRelation = null;
-				}
-                else
-                {
-                    throw new NotImplementedException("relations of elements from children is not implemented. ");
-                }
+				sizedData = data.ReadBitsAsBitStream(size);
+				sizeRelation = null;
 			}
 			else if (element.hasLength)
 			{
