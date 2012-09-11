@@ -166,7 +166,7 @@ namespace Peach.Core.Agent.Monitors
 			return null;
 		}
 
-		protected string FindWinDbg()
+		public static string FindWinDbg()
 		{
 			// Lets try a few common places before failing.
 			List<string> pgPaths = new List<string>();
@@ -187,6 +187,8 @@ namespace Peach.Core.Agent.Monitors
 			dbgPaths.Add("Debugging Tools for Windows");
 			dbgPaths.Add("Debugging Tools for Windows (x64)");
 			dbgPaths.Add("Debugging Tools for Windows (x86)");
+			dbgPaths.Add("Windows Kits\\8.0\\Debuggers\\x64");
+			dbgPaths.Add("Windows Kits\\8.0\\Debuggers\\x86");
 
 			foreach (string path in pgPaths)
 			{

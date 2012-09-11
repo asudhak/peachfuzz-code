@@ -58,55 +58,10 @@ namespace Peach.Core.Agent.Monitors
 				_winDbgPath = (string)args["WinDbgPath"];
 			else
 			{
-				_winDbgPath = FindWinDbg();
+				_winDbgPath = WindowsDebuggerHybrid.FindWinDbg();
 				if (_winDbgPath == null)
 					throw new PeachException("Error, unable to locate WinDbg, please specify using 'WinDbgPath' parameter.");
 			}
-		}
-
-		protected string FindWinDbg()
-		{
-			// Lets try a few common places before failing.
-			List<string> pgPaths = new List<string>();
-			pgPaths.Add(@"c:\");
-			pgPaths.Add(Environment.GetEnvironmentVariable("SystemDrive"));
-			pgPaths.Add(Environment.GetEnvironmentVariable("ProgramFiles"));
-
-			if (Environment.GetEnvironmentVariable("ProgramW6432") != null)
-				pgPaths.Add(Environment.GetEnvironmentVariable("ProgramW6432"));
-			if (Environment.GetEnvironmentVariable("ProgramFiles") != null)
-				pgPaths.Add(Environment.GetEnvironmentVariable("ProgramFiles"));
-			if (Environment.GetEnvironmentVariable("ProgramFiles(x86)") != null)
-				pgPaths.Add(Environment.GetEnvironmentVariable("ProgramFiles(x86)"));
-
-			List<string> dbgPaths = new List<string>();
-			dbgPaths.Add("Debuggers");
-			dbgPaths.Add("Debugger");
-			dbgPaths.Add("Debugging Tools for Windows");
-			dbgPaths.Add("Debugging Tools for Windows (x64)");
-			dbgPaths.Add("Debugging Tools for Windows (x86)");
-
-			foreach (string path in pgPaths)
-			{
-				foreach (string dpath in dbgPaths)
-				{
-					string pathCheck = Path.Combine(path, dpath);
-					if (Directory.Exists(pathCheck) && File.Exists(Path.Combine(pathCheck, "dbgeng.dll")))
-					{
-						//verify x64 vs x86
-
-						var type = GetDllMachineType(Path.Combine(pathCheck, "dbgeng.dll"));
-						if (Environment.Is64BitProcess && type != MachineType.IMAGE_FILE_MACHINE_AMD64)
-							continue;
-						else if (!Environment.Is64BitProcess && type != MachineType.IMAGE_FILE_MACHINE_I386)
-							continue;
-
-						return pathCheck;
-					}
-				}
-			}
-
-			return null;
 		}
 
 		protected void Enable()
