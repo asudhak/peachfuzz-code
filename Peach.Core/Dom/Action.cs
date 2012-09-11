@@ -466,8 +466,6 @@ namespace Peach.Core.Dom
 
 						if (!publisher.HasStarted)
 							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
 
 						handleCall(publisher, context);
 						parent.parent.dataActions.Add(this);
@@ -476,8 +474,6 @@ namespace Peach.Core.Dom
 
 						if (!publisher.HasStarted)
 							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
 
 						handleGetProperty(publisher);
 						parent.parent.dataActions.Add(this);
@@ -486,8 +482,6 @@ namespace Peach.Core.Dom
 
 						if (!publisher.HasStarted)
 							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
 
 						handleSetProperty(publisher);
 						parent.parent.dataActions.Add(this);
