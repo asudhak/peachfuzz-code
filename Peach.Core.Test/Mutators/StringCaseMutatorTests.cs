@@ -72,7 +72,7 @@ namespace Peach.Core.Test.Mutators
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"str1\" value=\"Hello, World!\"/>" +
+                "       <String name=\"str1\" value=\"Hello World? Hello World!\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -112,7 +112,7 @@ namespace Peach.Core.Test.Mutators
             List<string> ret = new List<string>();
             foreach (string item in mutations)
             {
-                if (item != "hello, world!" && item != "HELLO, WORLD!")
+                if (item != "hello world? hello world!" && item != "HELLO WORLD? HELLO WORLD!")
                 {
                     ret.Add(item);
                 }
@@ -150,7 +150,7 @@ namespace Peach.Core.Test.Mutators
                 }
             }
 
-            Assert.Less(numSame, 50);
+            Assert.AreEqual(0, numSame);
         }
     }
 }
