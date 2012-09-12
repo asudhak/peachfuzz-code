@@ -1571,6 +1571,15 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="faultWaitTime" type="xs:decimal">
+				<xs:annotation>
+					<xs:documentation>
+						Time to wait in seconds between each iteration when in fault reproduction mode. 
+						This occurs when a fault has been detected and is being verified. Value can 
+						be fractional (0.25). Defaults to two (2) seconds.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 
