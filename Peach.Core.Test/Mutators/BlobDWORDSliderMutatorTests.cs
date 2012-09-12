@@ -139,9 +139,7 @@ namespace Peach.Core.Test.Mutators
                 "   <Test name=\"Default\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
-                "       <Strategy class=\"Random\">" +
-                "           <Param name=\"Seed\" value=\"100\"/>" +
-                "       </Strategy>" +
+                "       <Strategy class=\"Random\"/>" +
                 "   </Test>" +
 
                 "</Peach>";
@@ -156,6 +154,7 @@ namespace Peach.Core.Test.Mutators
             config.range = true;
             config.rangeStart = 0;
             config.rangeStop = 100;
+			config.randomSeed = 100;
 
             Engine e = new Engine(null);
             e.config = config;

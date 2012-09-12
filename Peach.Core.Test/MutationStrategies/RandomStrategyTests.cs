@@ -137,9 +137,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"RandomStrategy\">" +
-				"           <Param name=\"MaxFieldsToMutate\" value=\"5\"/>" +
-				"       </Strategy>" +
+				"       <Strategy class=\"RandomStrategy\"/>" +
 				"   </Test>" +
 				"</Peach>";
 
@@ -197,9 +195,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"RandomStrategy\">" +
-				"           <Param name=\"Seed\" value=\"12345\"/>" +
-				"       </Strategy>" +
+				"       <Strategy class=\"RandomStrategy\"/>" +
 				"   </Test>" +
 				"</Peach>";
 
@@ -266,9 +262,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"RandomStrategy\">" +
-				"           <Param name=\"Seed\" value=\"12345\"/>" +
-				"       </Strategy>" +
+				"       <Strategy class=\"RandomStrategy\"/>" +
 				"   </Test>" +
 				"</Peach>";
 
@@ -326,9 +320,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"RandomStrategy\">" +
-				"           <Param name=\"Seed\" value=\"12345\"/>" +
 				"           <Param name=\"SwitchCount\" value=\"10\"/>" +
-				
 				"       </Strategy>" +
 				"   </Test>" +
 				"</Peach>";
@@ -343,6 +335,7 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = 0;
 			config.rangeStop = 50;
 			config.range = true;
+			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
 			e.config = config;
@@ -419,9 +412,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"RandomStrategy\">" +
-				"           <Param name=\"Seed\" value=\"12345\"/>" +
 				"           <Param name=\"SwitchCount\" value=\"10\"/>" +
-
 				"       </Strategy>" +
 				"   </Test>" +
 				"</Peach>";
@@ -477,6 +468,7 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = start;
 			config.rangeStop = stop;
 			config.range = true;
+			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
 			e.config = config;
@@ -525,6 +517,7 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = start;
 			config.rangeStop = stop;
 			config.range = true;
+			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
 			e.config = config;

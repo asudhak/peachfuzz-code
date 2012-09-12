@@ -220,6 +220,7 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		[Ignore("TODO - Implement this feature, existing bug in github.")]
 		public void BasicAttributeTest()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
