@@ -75,7 +75,7 @@ namespace Peach.Core.Dom
 			{
 				_name = value;
 
-				if(this.Count > 0)
+				if (this.Count > 0)
 					this[0].name = value;
 			}
 		}
@@ -90,43 +90,42 @@ namespace Peach.Core.Dom
 			element.origionalElement = element[0];
 			element.Clear();
 
-            if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
-            {
-                long count = element.relations.hasOfCountRelation ? element.relations.getOfCountRelation().GetValue() : occurs;
+			if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
+			{
+				long count = element.relations.hasOfCountRelation ? element.relations.getOfCountRelation().GetValue() : occurs;
 
-                logger.Debug("Crack: {0} found count relation/occurs. Count = {1}", element.fullName, count);
+				logger.Debug("Crack: {0} found count relation/occurs. Count = {1}", element.fullName, count);
 
-                if (count < 0)
-                    throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count relation negative: " + count, element, data);
-                if (((count > maxOccurs && maxOccurs != -1) || count < minOccurs) && count != occurs)
-                    throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count outside of bounds of minOccurs='" +
-                        minOccurs + "' and maxOccurs='" + maxOccurs + "'. (Count = " + count + ")", element, data);
+				if (count < 0)
+					throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count relation negative: " + count, element, data);
+				if (((count > maxOccurs && maxOccurs != -1) || count < minOccurs) && count != occurs)
+					throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count outside of bounds of minOccurs='" +
+						minOccurs + "' and maxOccurs='" + maxOccurs + "'. (Count = " + count + ")", element, data);
 
-
-                for (int i = 0; i < count; i++)
-                {
+				for (int i = 0; i < count; i++)
+				{
 					logger.Debug("Crack: ======================");
-                    logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
+					logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
 
-                    
-                    DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
-                    clone.name = clone.name + "_" + i.ToString();
-                    clone.parent = element;
-                    element.Add(clone);
 
-                    try
-                    {
-                        context.handleNode(clone, data);
-                    }
-                    catch
-                    {
-                        logger.Debug("Crack: {0} Failed on #{1}", element.fullName, i.ToString());
-                        throw;
-                    }
-                }
+					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
+					clone.name = clone.name + "_" + i.ToString();
+					clone.parent = element;
+					element.Add(clone);
 
-                logger.Debug("Crack: {0} Done!", element.fullName);
-            }
+					try
+					{
+						context.handleNode(clone, data);
+					}
+					catch
+					{
+						logger.Debug("Crack: {0} Failed on #{1}", element.fullName, i.ToString());
+						throw;
+					}
+				}
+
+				logger.Debug("Crack: {0} Done!", element.fullName);
+			}
 
 			else if (maxOccurs > 1 || maxOccurs == -1)
 			{
@@ -148,7 +147,7 @@ namespace Peach.Core.Dom
 					}
 					catch
 					{
-                        logger.Debug("Crack: {0} Failed on #{1}", element.fullName, cnt.ToString());
+						logger.Debug("Crack: {0} Failed on #{1}", element.fullName, cnt.ToString());
 						element.Remove(clone);
 						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
 						break;
@@ -157,7 +156,7 @@ namespace Peach.Core.Dom
 					if (cnt == 0 && minOccurs == 0 && !context.lookAhead(this, data))
 					{
 						// Broke our look ahead, must be only zero elements in this array.
-						logger.Debug("Crack: {0}, minOccurs = 0, our look ahead failed, must be zero elements in this array.", 
+						logger.Debug("Crack: {0}, minOccurs = 0, our look ahead failed, must be zero elements in this array.",
 							element.fullName, cnt.ToString());
 
 						element.Remove(clone);
@@ -168,7 +167,7 @@ namespace Peach.Core.Dom
 
 					if (data.TellBits() == data.LengthBits)
 					{
-                        logger.Debug("Crack: {0} Found EOF, all done!", element.fullName);
+						logger.Debug("Crack: {0} Found EOF, all done!", element.fullName);
 						// Include this successful crack in the count
 						cnt++;
 						break;
