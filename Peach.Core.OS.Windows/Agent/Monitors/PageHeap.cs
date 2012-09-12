@@ -72,14 +72,14 @@ namespace Peach.Core.Agent.Monitors
 			startInfo.CreateNoWindow = true;
 			startInfo.UseShellExecute = false;
 
-		    try
-		    {
-                System.Diagnostics.Process.Start(startInfo).WaitForExit();
-		    }
-		    catch ( Win32Exception exception)
-		    {
-                throw new PeachException("Error, Enable PageHeap: " + exception.Message );
-		    }
+			try
+			{
+				System.Diagnostics.Process.Start(startInfo).WaitForExit();
+			}
+			catch (Win32Exception exception)
+			{
+				throw new PeachException("Error, Enable PageHeap: " + exception.Message);
+			}
 		}
 
 		protected void Disable()
@@ -90,15 +90,15 @@ namespace Peach.Core.Agent.Monitors
 			startInfo.CreateNoWindow = true;
 			startInfo.UseShellExecute = false;
 
-		    try
-		    {
+			try
+			{
 
-			    System.Diagnostics.Process.Start(startInfo).WaitForExit();
-		    }
-		    catch ( Win32Exception exception )
-		    {
-                throw new PeachException("Error, Disable PageHeap: " + exception.Message );
-		    }
+				System.Diagnostics.Process.Start(startInfo).WaitForExit();
+			}
+			catch (Win32Exception exception)
+			{
+				throw new PeachException("Error, Disable PageHeap: " + exception.Message);
+			}
 		}
 
 		public override void StopMonitor()
