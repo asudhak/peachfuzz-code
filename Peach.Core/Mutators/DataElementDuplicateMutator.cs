@@ -81,33 +81,38 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-
-            for (int i = 0; i < currentCount; ++i)
-            {
-                var newElem = ObjectCopier.Clone<DataElement>(obj);
-                newElem.name += "_" + i;
-                obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
-            }
+            performMutation(obj, currentCount);
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-
             // TODO: Since 'this.mutation = X' is only called by the
             // sequencial mutation strategy, the random strategy
             // will wither duplicate the element once or not
             // duplicate at all.  Is this right? Should this really be:
             //int newCount = context.Random.Next(minCount, maxCount + 1);
-            int newCount = context.Random.Next((int)currentCount + 1);
+            uint newCount = context.Random.Next(currentCount + 1);
+
+            performMutation(obj, newCount);
+        }
+
+        private void performMutation(DataElement obj, uint newCount)
+        {
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+
+            DataElement[] temp = new DataElement[newCount];
 
             for (uint i = 0; i < newCount; ++i)
             {
                 var newElem = ObjectCopier.Clone<DataElement>(obj);
                 newElem.name += "_" + i;
+                temp[i] = newElem;
+            }
+
+            foreach (var newElem in temp)
+            {
                 obj.parent.Insert(obj.parent.IndexOf(obj), newElem);
             }
         }
