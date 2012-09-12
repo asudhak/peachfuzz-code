@@ -54,8 +54,8 @@ namespace Peach.Core.MutationStrategies
 		protected override void OnDataModelRecorded()
 		{
 			// This strategy should randomize the iterations but always do it the same way
-			//System.Diagnostics.Debug.Assert(Seed == 0);
-			//System.Diagnostics.Debug.Assert(Iteration == 0);
+			// The data model record pass only happens at iteration 0
+			System.Diagnostics.Debug.Assert(Iteration == 0);
 
 			var elements = Random.Shuffle(_iterations.ToArray());
 			_iterations.Clear();

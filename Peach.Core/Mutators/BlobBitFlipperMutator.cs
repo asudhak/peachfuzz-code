@@ -118,7 +118,6 @@ namespace Peach.Core.Mutators
         public override void sequencialMutation(DataElement obj)
         {
             // Only called via the Sequencial mutation strategy, which should always have a consistent seed
-            System.Diagnostics.Debug.Assert(context.Seed == 0);
 
             randomMutation(obj);
         }
