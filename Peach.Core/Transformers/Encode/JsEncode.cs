@@ -37,7 +37,7 @@ namespace Peach.Core.Transformers.Encode
     [Transformer("JsEncode", "Encode on output as Javascript string.", true)]
     [Transformer("encode.JsEncode", "Encode on output as Javascript string.")]
     [Serializable]
-    class JsEncode : Transformer
+    public class JsEncode : Transformer
     {
         public JsEncode(Dictionary<string, Variant> args) : base(args)
         {
