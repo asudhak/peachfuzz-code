@@ -50,7 +50,6 @@ namespace Peach.Core
 
 		protected RunContext _context;
 		protected Engine _engine;
-		protected uint _seed;
 		protected Random _random;
 
 		public MutationStrategy(Dictionary<string, Variant> args)
@@ -87,7 +86,10 @@ namespace Peach.Core
 
 		public uint Seed
 		{
-			get { return _seed; }
+			get
+			{
+				return _context.config.randomSeed;
+			}
 		}
 
 		protected void SeedRandom()

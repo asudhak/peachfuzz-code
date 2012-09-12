@@ -40,6 +40,8 @@ using System.Runtime.Remoting.Channels.Ipc;
 using Peach.Core.Dom;
 using Peach.Core.Agent.Monitors.WindowsDebug;
 
+using NLog;
+
 /* Code to determine if an exe is 32/64bit.  Can be used to locate correct windbg.
  * 
  * //I added FileAccess.Read to your FileStream instantiation - otherwise it blows us when trying to determine bitness of DLLs in either C:\Windows or C:\Program Files – AngryHacker Aug 26 '11 at 17:45
@@ -65,6 +67,8 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", false)]
 	public class WindowsDebuggerHybrid : Monitor
 	{
+		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		string _name = null;
 		static bool _firstIteration = true;
 		string _commandLine = null;
@@ -328,19 +332,26 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool DetectedFault()
 		{
+			logger.Info("DetectedFault()");
+
 			bool fault = false;
 
 			if (_systemDebugger != null && _systemDebugger.caughtException)
 			{
+				logger.Info("DetectedFault - Using system debugger, triggering replay");
 				_replay = true;
 
 				_systemDebugger.StopDebugger();
 				_systemDebugger = null;
 
-				throw new ReplayTestException();
+				var ex = new ReplayTestException();
+				ex.ReproducingFault = true;
+				throw ex;
 			}
 			else if (_debugger != null && _hybrid)
 			{
+				logger.Info("DetectedFault - Using WinDbg, checking for fualt, disable replay.");
+
 				_replay = false;
 
 				// Lets give windbg a chance to detect the crash.
@@ -357,6 +368,9 @@ namespace Peach.Core.Agent.Monitors
 
 					Thread.Sleep(1000);
 				}
+
+				if(fault)
+					logger.Info("DetectedFault - Caught fault with windbg");
 
 				if (_debugger != null && _hybrid && !fault)
 				{

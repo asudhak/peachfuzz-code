@@ -43,11 +43,19 @@ namespace Peach.Core.MutationStrategies
 		{
 		}
 
+		public override void Initialize(RunContext context, Engine engine)
+		{
+			base.Initialize(context, engine);
+
+			// Force seed to always be the same
+			context.config.randomSeed = (uint)"Peach".GetHashCode();
+		}
+
 		protected override void OnDataModelRecorded()
 		{
 			// This strategy should randomize the iterations but always do it the same way
-			System.Diagnostics.Debug.Assert(Seed == 0);
-			System.Diagnostics.Debug.Assert(Iteration == 0);
+			//System.Diagnostics.Debug.Assert(Seed == 0);
+			//System.Diagnostics.Debug.Assert(Iteration == 0);
 
 			var elements = Random.Shuffle(_iterations.ToArray());
 			_iterations.Clear();

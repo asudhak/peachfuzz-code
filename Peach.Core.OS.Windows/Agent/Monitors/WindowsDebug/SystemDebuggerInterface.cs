@@ -131,7 +131,9 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 			// Wait for process to start up.
 			_dbgCreated.WaitOne();
-			_dbg.processStarted.WaitOne();
+
+			if(_dbg != null)
+				_dbg.processStarted.WaitOne();
 		}
 
 		public void StopDebugger()

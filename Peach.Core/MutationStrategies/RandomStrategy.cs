@@ -47,7 +47,6 @@ namespace Peach.Core.MutationStrategies
 	[MutationStrategy("Random")]
 	[MutationStrategy("RandomStrategy")]
 	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching. (default is 200)", false)]
-	[Parameter("Seed", typeof(int), "Random number seed. (default is none)", false)]
 	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once (default is 7).", false)]
 	public class RandomStrategy : MutationStrategy
 	{
@@ -83,13 +82,8 @@ namespace Peach.Core.MutationStrategies
 		{
 			if (args.ContainsKey("SwitchCount"))
 				switchCount = int.Parse((string)args["SwitchCount"]);
-			if (args.ContainsKey("Seed"))
-				_seed = uint.Parse((string)args["Seed"]);
 			if (args.ContainsKey("MaxFieldsToMutate"))
 				maxFieldsToMutate = int.Parse((string)args["MaxFieldsToMutate"]);
-
-			if (_seed == 0)
-				_seed = (uint)Environment.TickCount;
 
 			// Initalize our state by entering iteration 0
 			Iteration = 0;

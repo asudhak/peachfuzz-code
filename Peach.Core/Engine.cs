@@ -31,9 +31,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Threading;
+
 using Peach.Core.Agent;
 using Peach.Core.Dom;
-using System.Threading;
 
 namespace Peach.Core
 {
@@ -218,15 +219,8 @@ namespace Peach.Core
 			{
 				context.test = test;
 				context.agentManager = new AgentManager();
-				OnTestStarting(context);
-
-				// Start agents
-				foreach (Dom.Agent agent in test.agents.Values)
-				{
-					// Only use agent if on correct platform
-					if(agent.platform == Platform.OS.unknown || agent.platform == Platform.GetOS())
-						context.agentManager.AgentConnect(agent);
-				}
+				context.reproducingFault = false;
+				context.reproducingIterationJumpCount = 1;
 
 				// Get mutation strategy
 				MutationStrategy mutationStrategy = test.strategy;
@@ -266,6 +260,17 @@ namespace Peach.Core
 					iterationStart = context.config.skipToIteration;
 				}
 
+				OnTestStarting(context);
+
+				// Start agents
+				foreach (Dom.Agent agent in test.agents.Values)
+				{
+					// Only use agent if on correct platform
+					if (agent.platform == Platform.OS.unknown || agent.platform == Platform.GetOS())
+						context.agentManager.AgentConnect(agent);
+				}
+
+
 				context.agentManager.SessionStarting();
 
 				while (iterationCount < iterationStop && context.continueFuzzing)
@@ -279,16 +284,9 @@ namespace Peach.Core
 							if (IterationStarting != null)
 								IterationStarting(context, iterationCount, iterationTotal);
 
-							// TODO - Handle bool for is reproduction
 							context.agentManager.IterationStarting(iterationCount, false);
 
 							test.stateModel.Run(context);
-
-							context.agentManager.IterationFinished();
-						}
-						catch (RedoTestException e)
-						{
-							throw e;
 						}
 						catch (SoftException)
 						{
@@ -315,6 +313,8 @@ namespace Peach.Core
 						}
 						finally
 						{
+							context.agentManager.IterationFinished();
+
 							if (IterationFinished != null)
 								IterationFinished(context, iterationCount);
 						}
@@ -324,16 +324,66 @@ namespace Peach.Core
 						if(context.test.waitTime > 0)
 							Thread.Sleep( (int) (context.test.waitTime * 1000) );
 
+						if (context.reproducingFault)
+						{
+							// User can specify a time to wait between iterations
+							// when reproducing faults.
+							if (context.test.faultWaitTime > 0)
+								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
+						}
+
 						if (context.agentManager.DetectedFault())
 						{
 							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 								"detected fault on iteration " + iterationCount);
 
 							var monitorData = context.agentManager.GetMonitorData();
-							
+
 							// TODO get state model data (not sure we need todo this anymore)
 
 							OnFault(context, iterationCount, test.stateModel, monitorData);
+
+							if (context.reproducingFault)
+							{
+								// If we have moved less than 20 iterations, start fuzzing
+								// from here thinking we may have not really performed the
+								// next few iterations.
+
+								// Otherwise skip forward to were we left off.
+
+								if (context.reproducingInitialIteration - iterationCount > 20)
+								{
+									iterationCount = (uint)context.reproducingInitialIteration;
+								}
+
+								context.reproducingFault = false;
+								context.reproducingIterationJumpCount = 1;
+
+								context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+									"Reproduced fault, continuing fuzzing at iteration " + iterationCount);
+							}
+						}
+						else if(context.reproducingFault)
+						{
+							// Move back N iterations
+							iterationCount -= (uint)context.reproducingIterationJumpCount;
+
+							if (context.reproducingInitialIteration - iterationCount > context.reproducingMaxBacksearch)
+							{
+								context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+									"Giving up reproducing fault, reached max backsearch.");
+
+								context.reproducingFault = false;
+								iterationCount = context.reproducingInitialIteration;
+							}
+							else
+							{
+								context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+									"Moving backwards " + context.reproducingIterationJumpCount + " iterations to reproduce fault.");
+							}
+
+							// Make next jump larger
+							context.reproducingIterationJumpCount *= context.reproducingSkipMultiple;
 						}
 
 						if (context.agentManager.MustStop())
@@ -366,8 +416,28 @@ namespace Peach.Core
 
 						redoCount = 0;
 					}
-					catch (ReplayTestException)
+					catch (ReplayTestException rtex)
 					{
+						if (rtex.ReproducingFault)
+						{
+							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								"Attempting to reproduce fault.");
+
+							context.reproducingFault = true;
+							context.reproducingInitialIteration = iterationCount;
+							context.reproducingIterationJumpCount = 1;
+
+							// User can specify a time to wait between iterations
+							// we can use that time to better detect faults
+							if (context.test.waitTime > 0)
+								Thread.Sleep((int)(context.test.waitTime * 1000));
+
+							// User can specify a time to wait between iterations
+							// when reproducing faults.
+							if (context.test.faultWaitTime > 0)
+								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
+						}
+
 						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 							"replaying iteration " + iterationCount);
 					}
@@ -426,8 +496,22 @@ namespace Peach.Core
 	{
 	}
 
+	/// <summary>
+	/// Replay current test case
+	/// </summary>
+	/// <remarks>
+	/// Typically used by Agent/Monitors to replay
+	/// current iteration.
+	/// 
+	/// When a fault is detected we should replay the current
+	/// iteration to verify the fault.
+	/// </remarks>
 	public class ReplayTestException : Exception
 	{
+		/// <summary>
+		/// Are we replaying the test to reproduce a detected fault?
+		/// </summary>
+		public bool ReproducingFault = false;
 	}
 
 	public enum DebugLevel
@@ -437,114 +521,6 @@ namespace Peach.Core
 		DebugNormal,
 		DebugVerbose,
 		DebugSuperVerbose
-	}
-
-	[Serializable]
-	public class RunContext
-	{
-		public delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
-		public event DebugEventHandler Debug;
-
-		public void CriticalMessage(string from, string msg)
-		{
-			if (Debug != null)
-				Debug(DebugLevel.Critical, this, from, msg);
-		}
-
-		public void WarningMessage(string from, string msg)
-		{
-			if (Debug != null)
-				Debug(DebugLevel.Warning, this, from, msg);
-		}
-
-		public void DebugMessage(DebugLevel level, string from, string msg)
-		{
-			if (config.debug && Debug != null)
-				Debug(level, this, from, msg);
-		}
-
-		public RunConfiguration config = null;
-		public Dom.Dom dom = null;
-		public Test test = null;
-		public AgentManager agentManager = null;
-
-		public bool needDataModel = true;
-
-		/// <summary>
-		/// Controls if we continue fuzzing or exit
-		/// after current iteration.  This can be used
-		/// by UI code to stop Peach.
-		/// </summary>
-		public bool continueFuzzing = true;
-	}
-
-	/// <summary>
-	/// Configure the current run
-	/// </summary>
-	public class RunConfiguration
-	{
-		/// <summary>
-		/// Just get the count of mutations
-		/// </summary>
-		public bool countOnly = false;
-
-		/// <summary>
-		/// Perform a single iteration
-		/// </summary>
-		public bool singleIteration = false;
-		
-		/// <summary>
-		/// Specify the test range to perform
-		/// </summary>
-		public bool range = false;
-		public uint rangeStart = 0;
-		public uint rangeStop = 0;
-
-		/// <summary>
-		/// Skip to a specific iteration
-		/// </summary>
-		public uint skipToIteration;
-
-		/// <summary>
-		/// Enable or disable debugging output
-		/// </summary>
-		public bool debug = false;
-
-		/// <summary>
-		/// Fuzzing strategy to use
-		/// </summary>
-		public MutationStrategy strategy = null;
-
-		/// <summary>
-		/// Name of run to perform
-		/// </summary>
-		public string runName = "Default";
-
-		/// <summary>
-		/// Name of PIT file (used by logger)
-		/// </summary>
-		public string pitFile = null;
-
-		/// <summary>
-		/// Command line if any (used by logger)
-		/// </summary>
-		public string commandLine = null;
-
-		/// <summary>
-		/// Date and time of run (used by logger)
-		/// </summary>
-		public DateTime runDateTime = DateTime.Now;
-
-		/// <summary>
-		/// Peach version currently running (used by logger)
-		/// </summary>
-		public string version
-		{
-			get
-			{
-				return Assembly.GetExecutingAssembly().GetName().Version.ToString();
-			}
-		}
 	}
 }
 
