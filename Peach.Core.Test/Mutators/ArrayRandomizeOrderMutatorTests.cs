@@ -57,6 +57,7 @@ namespace Peach.Core.Test.Mutators
             myArray.Add(new Dom.String("a4", "4"));
 
             RunConfiguration config = new RunConfiguration();
+            config.randomSeed = 0;
 
             Engine e = new Engine(null);
             e.config = config;
@@ -123,6 +124,7 @@ namespace Peach.Core.Test.Mutators
             myArray.Add(new Dom.String("a4", "4"));
 
             RunConfiguration config = new RunConfiguration();
+            config.randomSeed = 0;
 
             Engine e = new Engine(null);
             e.config = config;

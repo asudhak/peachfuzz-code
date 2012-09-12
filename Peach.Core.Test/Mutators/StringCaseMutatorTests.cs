@@ -100,7 +100,7 @@ namespace Peach.Core.Test.Mutators
             config.range = true;
             config.rangeStart = 0;
             config.rangeStop = 1000;
-			config.randomSeed = 100;
+            config.randomSeed = 100;
 
             Engine e = new Engine(null);
             e.config = config;
@@ -137,7 +137,7 @@ namespace Peach.Core.Test.Mutators
 
             // For 1000 iterations, about 1/3 of the time the random case will be picked
             Assert.Greater(run1.Count, 330);
-            Assert.Less(run1.Count, 345);
+            Assert.Less(run1.Count, 350);
 
             int numSame = 0;
 

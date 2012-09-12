@@ -222,9 +222,7 @@ namespace Peach.Core.Loggers
 			log.WriteLine("Date of run: " + context.config.runDateTime.ToString());
 			log.WriteLine("Peach Version: " + context.config.version);
 
-			// BUG - This is wrong place to grab SEED from.  Seed should be
-			// a field on our context or context.config.
-			log.WriteLine("Seed: " + context.test.strategy.Seed);
+			log.WriteLine("Seed: " + context.config.randomSeed);
 
 			log.WriteLine("Command line: " + context.config.commandLine);
 			log.WriteLine("Pit File: " + context.config.pitFile);
