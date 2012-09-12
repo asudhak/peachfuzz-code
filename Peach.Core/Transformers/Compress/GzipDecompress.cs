@@ -31,8 +31,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
+
 using Peach.Core.Dom;
 using Peach.Core.IO;
+
+using NLog;
 
 namespace Peach.Core.Transformers.Compress
 {
@@ -41,49 +44,42 @@ namespace Peach.Core.Transformers.Compress
     [Serializable]
     public class GzipDecompress : Transformer
     {
-        public GzipDecompress(Dictionary<string, Variant> args) : base(args)
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		public GzipDecompress(Dictionary<string, Variant> args)
+			: base(args)
         {
         }
 
-        protected override BitStream internalEncode(BitStream data)
+		protected override BitStream internalEncode(BitStream compressedData)
         {
-            byte[] buff = new byte[1024];
-            int ret;
+			logger.Debug("internalDecode");
 
-            MemoryStream sin = new MemoryStream(data.Value);
-            MemoryStream sout = new MemoryStream();
+			var data = new MemoryStream();
+			compressedData.SeekBits(0, SeekOrigin.Begin);
 
-            GZipStream gzip = new GZipStream(sin, CompressionMode.Decompress);
+			using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
+			{
+				compressionStream.CopyTo(data);
+			}
 
-            do
-            {
-                ret = gzip.Read(buff, 0, buff.Length);
-                sout.Write(buff, 0, ret);
-            }
-            while (ret != 0);
-
-            return new BitStream(sout.ToArray());
-        }
+			return new BitStream(data.ToArray());
+		}
 
         protected override BitStream internalDecode(BitStream data)
         {
-            byte[] buff = new byte[1024];
-            int ret;
+			logger.Debug("internalDecode");
 
-            MemoryStream sin = new MemoryStream(data.Value);
-            MemoryStream sout = new MemoryStream();
+			var compressedData = new MemoryStream();
+			data.SeekBits(0, SeekOrigin.Begin);
 
-            GZipStream gzip = new GZipStream(sin, CompressionMode.Compress);
+			using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
+			{
+				data.Stream.CopyTo(compressionStream);
+			}
 
-            do
-            {
-                ret = gzip.Read(buff, 0, buff.Length);
-                sout.Write(buff, 0, ret);
-            }
-            while (ret != 0);
-
-            return new BitStream(sout.ToArray());
-        }
+			return new BitStream(compressedData.ToArray());
+		}
     }
 }
 

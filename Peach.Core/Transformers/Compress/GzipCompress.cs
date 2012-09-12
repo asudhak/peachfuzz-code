@@ -31,8 +31,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO.Compression;
 using System.IO;
+
 using Peach.Core.Dom;
 using Peach.Core.IO;
+
+using NLog;
 
 namespace Peach.Core.Transformers.Compress
 {
@@ -41,12 +44,17 @@ namespace Peach.Core.Transformers.Compress
     [Serializable]
 	public class GzipCompress : Transformer
 	{
-		public GzipCompress(Dictionary<string,Variant> args) : base(args)
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		public GzipCompress(Dictionary<string, Variant> args)
+			: base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
+			logger.Debug("internalEncode");
+
 			var compressedData = new MemoryStream();
 			data.SeekBits(0, SeekOrigin.Begin);
 
@@ -60,6 +68,8 @@ namespace Peach.Core.Transformers.Compress
 
 		protected override BitStream internalDecode(BitStream compressedData)
 		{
+			logger.Debug("internalDecode");
+
 			var data = new MemoryStream();
 			compressedData.SeekBits(0, SeekOrigin.Begin);
 
