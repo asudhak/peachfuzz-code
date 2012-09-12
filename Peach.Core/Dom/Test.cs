@@ -81,6 +81,9 @@ namespace Peach.Core.Dom
 			loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
 			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
 			//agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
+
+			waitTime = 0;
+			faultWaitTime = 2;
 		}
 
 		#region OrderedDictionary AddEvent Handlers
@@ -113,6 +116,16 @@ namespace Peach.Core.Dom
 		/// (0.25). Defaults to zero (0).
 		/// </summary>
 		public decimal waitTime { get; set; }
+
+		/// <summary>
+		/// Time to wait in seconds between each test case when reproducing faults. Value can be fractional
+		/// (0.25). Defaults to two (2) seconds.
+		/// </summary>
+		/// <remarks>
+		/// This value should be large enough to make sure a fault is detected at the correct
+		/// iteration.  We only wait this time when verifying a fault was detected.
+		/// </remarks>
+		public decimal faultWaitTime { get; set; }
 
 		public void markMutableElements()
 		{
