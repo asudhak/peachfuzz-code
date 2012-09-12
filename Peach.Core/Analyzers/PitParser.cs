@@ -1632,8 +1632,11 @@ namespace Peach.Core.Analyzers
 
 			test.name = getXmlAttribute(node, "name");
 
-			if(hasXmlAttribute(node, "waitTime"))
+			if (hasXmlAttribute(node, "waitTime"))
 				test.waitTime = decimal.Parse(getXmlAttribute(node, "waitTime"));
+
+			if (hasXmlAttribute(node, "faultWaitTime"))
+				test.waitTime = decimal.Parse(getXmlAttribute(node, "faultWaitTime"));
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
