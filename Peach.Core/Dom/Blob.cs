@@ -150,13 +150,7 @@ namespace Peach.Core.Dom
 
 			if (blob.DefaultValue != null && blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
 			{
-				BitStream sout = new BitStream();
-				sout.BigEndian();
-
-				if (((string)blob.DefaultValue) != null)
-					sout.WriteBytes(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
-				sout.SeekBytes(0, SeekOrigin.Begin);
-				blob.DefaultValue = new Variant(sout);
+				blob.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
 			}
 
 			return blob;

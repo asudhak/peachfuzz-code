@@ -987,7 +987,7 @@ namespace Peach.Core.Analyzers
 							}
 						}
 						else
-							elem.DefaultValue = new Variant(sout);
+							elem.DefaultValue = new Variant(sout.Value);
 
 						break;
 					case "literal":
