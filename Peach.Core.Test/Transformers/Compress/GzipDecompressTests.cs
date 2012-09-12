@@ -49,7 +49,8 @@ namespace Peach.Core.Test.Transformers.Compress
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			dom.dataModels["TheDataModel"]["Data"].DefaultValue = new Variant(data.ToArray());
+			var dataModel = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
+			dataModel["Data"].DefaultValue = new Variant(data.ToArray());
 
             RunConfiguration config = new RunConfiguration();
             config.singleIteration = true;
@@ -58,15 +59,8 @@ namespace Peach.Core.Test.Transformers.Compress
             e.config = config;
             e.startFuzzing(dom, config);
 
-			//valueData = new MemoryStream(values[0].Value);
-			//data = new MemoryStream();
-			//using (GZipStream zip = new GZipStream(valueData, CompressionMode.Decompress))
-			//{
-			//    zip.CopyTo(data);
-			//}
-
-			Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString(values[0].Value));
-
+			dataModel = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
+			Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString(dataModel.Value.Value));
         }
     }
 }
