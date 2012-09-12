@@ -84,14 +84,14 @@ namespace Peach.Core.MutationStrategies
 				switchCount = int.Parse((string)args["SwitchCount"]);
 			if (args.ContainsKey("MaxFieldsToMutate"))
 				maxFieldsToMutate = int.Parse((string)args["MaxFieldsToMutate"]);
-
-			// Initalize our state by entering iteration 0
-			Iteration = 0;
 		}
 
 		public override void Initialize(RunContext context, Engine engine)
 		{
 			base.Initialize(context, engine);
+
+			// Initalize our state by entering iteration 0
+			Iteration = 0;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			_mutators = new List<Type>();
