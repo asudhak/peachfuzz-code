@@ -11,10 +11,10 @@ from waflib import Utils, Errors, Logs
 import waflib.Node
 
 # the following 3 constants are updated on each new release (do not touch)
-HEXVERSION=0x1070200
+HEXVERSION=0x1070300
 """Constant updated on new releases"""
 
-WAFVERSION="1.7.2"
+WAFVERSION="1.7.3"
 """Constant updated on new releases"""
 
 WAFREVISION="a7e69d6b81b04729804754c4d5214da063779a65"
@@ -181,15 +181,6 @@ class Context(ctx):
 		self.stack_path = []
 		self.exec_dict = {'ctx':self, 'conf':self, 'bld':self, 'opt':self}
 		self.logger = None
-
-	def __hash__(self):
-		"""
-		Return a hash value for storing context objects in dicts or sets. The value is not persistent.
-
-		:return: hash value
-		:rtype: int
-		"""
-		return id(self)
 
 	def load(self, tool_list, *k, **kw):
 		"""
