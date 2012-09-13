@@ -54,8 +54,12 @@ class utest(Task.Task):
 	vars = []
 	def runnable_status(self):
 		"""
-		Always execute the task if `waf --alltests` was used
+		Always execute the task if `waf --alltests` was used or no
+                tests if ``waf --notests`` was used
 		"""
+                if getattr(Options.options, 'no_tests', False):
+                        return Task.SKIP_ME
+
 		ret = super(utest, self).runnable_status()
 		if ret == Task.SKIP_ME:
 			if getattr(Options.options, 'all_tests', False):
@@ -98,6 +102,11 @@ class utest(Task.Task):
 
 
 		cwd = getattr(self.generator, 'ut_cwd', '') or self.inputs[0].parent.abspath()
+
+                testcmd = getattr(Options.options, 'testcmd', False)
+                if testcmd:
+                        self.ut_exec = (testcmd % self.ut_exec[0]).split(' ')
+
 		proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE)
 		(stdout, stderr) = proc.communicate()
 
@@ -141,9 +150,37 @@ def summary(bld):
 			if code:
 				Logs.pprint('CYAN', '    %s' % f)
 
+def set_exit_code(bld):
+        """
+        If any of the tests fail waf will exit with that exit code.
+        This is useful if you have an automated build system which need
+        to report on errors from the tests.
+        You may use it like this:
+
+		def build(bld):
+			bld(features='cxx cxxprogram test', source='main.c', target='app')
+			from waflib.Tools import waf_unit_test
+			bld.add_post_fun(waf_unit_test.set_exit_code)
+        """
+        lst = getattr(bld, 'utest_results', [])
+        for (f, code, out, err) in lst:
+                if code:
+                        msg = []
+                        if out:
+                                msg.append('stdout:%s%s' % (os.linesep, out.decode('utf-8')))
+                        if err:
+                                msg.append('stderr:%s%s' % (os.linesep, err.decode('utf-8')))
+                        bld.fatal(os.linesep.join(msg))
+
+
 def options(opt):
 	"""
-	Provide the ``--alltests`` command-line option.
+	Provide the ``--alltests``, ``--notests`` and ``--testcmd`` command-line options.
 	"""
+        opt.add_option('--notests', action='store_true', default=False, help='Exec no unit tests', dest='no_tests')
 	opt.add_option('--alltests', action='store_true', default=False, help='Exec all unit tests', dest='all_tests')
+        opt.add_option('--testcmd', action='store', default=False,
+                       help = 'Run the unit tests using the test-cmd string'
+                              ' example "--test-cmd="valgrind --error-exitcode=1'
+                              ' %s" to run under valgrind', dest='testcmd')
 
