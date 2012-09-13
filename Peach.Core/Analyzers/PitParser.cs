@@ -510,30 +510,34 @@ namespace Peach.Core.Analyzers
 					{
 						logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
 
-						if (rel.From == elem)
+						try
 						{
-							DataElement of = rel.Of;
-							if (of == null)
-								throw new PeachException("Error, unable to resolve '" +
-									rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
+							if (rel.From == elem)
+							{
+								DataElement of = rel.Of;
 
-							if (!of.relations.Contains(rel))
-								of.relations.Add(rel);
-						}
-						else if (rel.Of == elem)
-						{
-							DataElement from = rel.From;
-							if (from == null)
-								throw new PeachException("Error, unable to resolve '" +
-									rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
+								if (!of.relations.Contains(rel))
+									of.relations.Add(rel);
+							}
+							else if (rel.Of == elem)
+							{
+								DataElement from = rel.From;
+								if (from == null)
+									throw new PeachException("Error, unable to resolve '" +
+										rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
 
-							if (!from.relations.Contains(rel))
-								from.relations.Add(rel);
+								if (!from.relations.Contains(rel))
+									from.relations.Add(rel);
+							}
+							else
+							{
+								logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
+								throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
+							}
 						}
-						else
+						catch (Exception ex)
 						{
-							logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
-							throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
+							logger.Debug("finalUpdateRelations: Exception: " + ex.Message);
 						}
 					}
 				}

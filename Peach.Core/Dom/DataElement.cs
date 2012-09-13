@@ -38,6 +38,7 @@ using System.Xml;
 
 using Peach.Core.IO;
 using Peach.Core.Cracker;
+using System.Diagnostics;
 
 namespace Peach.Core.Dom
 {
@@ -75,6 +76,7 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Optional name for element", false)]
 	[Parameter("value", typeof(string), "Optional default value", false)]
 	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
+	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{
 		/// <summary>
