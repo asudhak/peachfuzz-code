@@ -386,6 +386,87 @@ namespace Peach.Core.Test.Mutators
 
             Assert.AreEqual(0, numSame);
         }
+
+        private void TestRange(bool signed, int bits, int iterations = 1000)
+        {
+            ResetContainers();
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+                "<Peach>" +
+                "   <DataModel name=\"TheDataModel\">" +
+                "       <Number name=\"num1\" size=\"" + bits + "\" signed=\"" + signed + "\">" +
+                "           <Hint name=\"FiniteRandomNumbersMutator-N\" value=\"" + iterations + "\"/>" +
+                "       </Number>" +
+                "   </DataModel>" +
+
+                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+                "       <State name=\"Initial\">" +
+                "           <Action type=\"output\">" +
+                "               <DataModel ref=\"TheDataModel\"/>" +
+                "           </Action>" +
+                "       </State>" +
+                "   </StateModel>" +
+
+                "   <Test name=\"Default\">" +
+                "       <StateModel ref=\"TheState\"/>" +
+                "       <Publisher class=\"Null\"/>" +
+                "       <Strategy class=\"Sequencial\"/>" +
+                "   </Test>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            dom.tests[0].includedMutators = new List<string>();
+            dom.tests[0].includedMutators.Add("FiniteRandomNumbersMutator");
+
+            RunConfiguration config = new RunConfiguration();
+
+            Engine e = new Engine(null);
+            e.config = config;
+            e.startFuzzing(dom, config);
+
+            // verify values
+            long min;
+            ulong max;
+
+            if (signed)
+            {
+                max = (ulong)(Math.Pow(2, bits) / 2) - 1;
+                min = 0 - (long)(Math.Pow(2, bits) / 2);
+            }
+            else
+            {
+                max = (ulong)Math.Pow(2, bits) - 1;
+                min = 0;
+            }
+
+            Assert.AreEqual(iterations, mutations.Count);
+
+            foreach (var item in mutations)
+            {
+                if (signed)
+                {
+                    long val = (long)item;
+                    Assert.GreaterOrEqual(val, min);
+                    Assert.LessOrEqual(val, (long)max);
+                }
+                else
+                {
+                    ulong val = (ulong)item;
+                    Assert.GreaterOrEqual(val, (ulong)min);
+                    Assert.LessOrEqual(val, max);
+                }
+            }
+        }
+
+        [Test]
+        public void TestShort()
+        {
+            TestRange(false, 16);
+            TestRange(true, 16);
+        }
+
     }
 }
 

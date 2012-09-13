@@ -53,6 +53,37 @@ namespace Peach.Core
 			return (uint)(_prng.GenerateFloat() * diff) + min;
 		}
 
+		// 0 <= X < max
+		public long Next(long max)
+		{
+			return Next(0, max);
+		}
+
+		// min <= X < max
+		public long Next(long min, long max)
+		{
+			ulong diff = (ulong)(max - min);
+			if (diff <= 1)
+				return min;
+
+			return (long)((long)(_prng.GenerateFloat() * diff) + min);
+		}
+
+		// 0 <= X < max
+		public ulong Next(ulong max)
+		{
+			return Next(0, max);
+		}
+
+		// min <= X < max
+		public ulong Next(ulong min, ulong max)
+		{
+			ulong diff = (max - min);
+			if (diff <= 1)
+				return min;
+
+			return (ulong)(_prng.GenerateFloat() * diff) + min;
+		}
 		// int.MinValue <= X <= int.MaxValue
 		public int NextInt32()
 		{

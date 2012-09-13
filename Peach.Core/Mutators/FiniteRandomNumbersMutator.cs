@@ -155,33 +155,32 @@ namespace Peach.Core.Mutators
                 return;
             }
 
+            dynamic val;
+
             if (signed)
             {
-                if (size <= 32)
-                {
-                    Int32 value = context.Random.Next((int)minValue, (int)maxValue);
-                    obj.MutatedValue = new Variant(value);
-                }
+                if (size < 32)
+                    val = context.Random.Next((int)minValue, (int)maxValue);
+                else if (size == 32)
+                    val = context.Random.NextInt32();
+                else if (size < 64)
+                    val = context.Random.Next((long)minValue, (long)maxValue);
                 else
-                {
-                    Int64 value = context.Random.NextInt64();
-                    obj.MutatedValue = new Variant(value);
-                }
+                    val = context.Random.NextInt64();
             }
             else
             {
-                if (size <= 32)
-                {
-                    UInt32 value = context.Random.NextUInt32();
-                    obj.MutatedValue = new Variant(value);
-                }
+                if (size < 32)
+                    val = context.Random.Next((uint)minValue, (uint)maxValue);
+                else if (size == 32)
+                    val = context.Random.NextUInt32();
+                else if (size < 64)
+                    val = context.Random.Next((ulong)minValue, (ulong)maxValue);
                 else
-                {
-                    UInt64 value = context.Random.NextUInt64();
-                    obj.MutatedValue = new Variant(value);
-                }
+                    val = context.Random.NextUInt64();
             }
 
+            obj.MutatedValue = new Variant(val);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
     }
