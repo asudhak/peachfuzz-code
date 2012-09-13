@@ -152,6 +152,32 @@ class BuildContext(Context.Context):
 		self.task_gen_cache_names = {} # reset the cache, each time
 		self.add_to_group(ret, group=kw.get('group', None))
 		return ret
+	
+	def func(self, *k, **kw):
+		"""
+		Wrapper for creating a task generator using the decorator notation.
+
+
+		The the following code:
+
+			@bld.func(
+				target = "foo"
+			)
+			def _(tsk):
+				print "bar"
+
+		is equivalent to:
+
+			def bar(tsk):
+				print "bar"
+
+			bld(
+				target = "foo",
+				rule = bar,
+			)
+		"""
+		return lambda rule: self (*k, rule=rule, **kw)
+		
 
 	def __copy__(self):
 		"""Implemented to prevents copies of build contexts (raises an exception)"""
