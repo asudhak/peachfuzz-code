@@ -107,6 +107,7 @@ namespace Peach.Core.Test.Mutators
 			config.range = true;
 			config.rangeStart = 0;
 			config.rangeStop = iterations;
+			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
 			e.config = config;
