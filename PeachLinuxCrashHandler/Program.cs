@@ -62,8 +62,6 @@ namespace PeachLinuxCrashHandler
 
 				var p = new OptionSet()
 				{
-					{ "h|?|help", v => syntax() },
-
 					{ "u|uid=", v => uid = v },
 					{ "g|gid=", v => gid = v},
 					{ "s|sig=", v => sig = v },
@@ -84,6 +82,11 @@ namespace PeachLinuxCrashHandler
 				if (exe == null)
 				{
 					syntax();
+				}
+
+				if (!Directory.Exists(logFolder))
+				{
+					Directory.CreateDirectory(logFolder);
 				}
 
 				// Handle incoming core file!
