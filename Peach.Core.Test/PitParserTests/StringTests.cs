@@ -87,9 +87,10 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
-		[ExpectedException("System.Text.DecoderFallbackException")]
 		public void HexStringTest2()
 		{
+			// 0xaa 0xbb is not a valid ascii string, should throw
+			
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<String name=\"TheString\" valueType=\"hex\" value=\"0xaa 0xbb\"/>" +
@@ -97,13 +98,10 @@ namespace Peach.Core.Test.PitParserTests
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
-			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
-			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
-			Assert.AreEqual("\xaa\xbb", (string)str.DefaultValue);
+			Assert.Throws<PeachException>(delegate(){
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
 		}
 
 		[Test]
