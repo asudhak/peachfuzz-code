@@ -137,7 +137,7 @@ namespace Peach.Core.Test.Mutators
 		[Test]
 		public void TestExpandSingleRandom()
 		{
-			RunRandom(2000, "ExpandSingleRandom", 4, 0);
+			RunRandom(2500, "ExpandSingleRandom", 4, 0);
 
 			// Should expand by [0,255] bytes
 			// When expanding, will stick len bytes somewhere in the blob
