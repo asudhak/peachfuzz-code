@@ -153,7 +153,7 @@ class BuildContext(Context.Context):
 		self.add_to_group(ret, group=kw.get('group', None))
 		return ret
 	
-	def func(self, *k, **kw):
+	def rule(self, *k, **kw):
 		"""
 		Wrapper for creating a task generator using the decorator notation.
 
@@ -164,20 +164,19 @@ class BuildContext(Context.Context):
 				target = "foo"
 			)
 			def _(tsk):
-				print "bar"
+				print("bar")
 
 		is equivalent to:
 
 			def bar(tsk):
-				print "bar"
+				print("bar")
 
 			bld(
 				target = "foo",
 				rule = bar,
 			)
 		"""
-		return lambda rule: self (*k, rule=rule, **kw)
-		
+		return lambda rule: self(*k, rule=rule, **kw)
 
 	def __copy__(self):
 		"""Implemented to prevents copies of build contexts (raises an exception)"""
@@ -823,7 +822,7 @@ class BuildContext(Context.Context):
 
 class inst(Task.Task):
 	"""
-    Special task used for installing files and symlinks, it behaves both like a task
+	Special task used for installing files and symlinks, it behaves both like a task
 	and like a task generator
 	"""
 	color = 'CYAN'
