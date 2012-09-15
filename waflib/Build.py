@@ -176,7 +176,7 @@ class BuildContext(Context.Context):
 				rule = bar,
 			)
 		"""
-		return lambda rule: self(*k, rule=rule, **kw)
+		return self(*k, rule=rule, **kw)
 
 	def __copy__(self):
 		"""Implemented to prevents copies of build contexts (raises an exception)"""
