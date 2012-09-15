@@ -98,9 +98,6 @@ namespace Peach.Core.Test.PitParserTests
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Number name=\"TheNumber\" size=\"8\"/>" +
 				"	</DataModel>" +
-				"   <DataModel name=\"TheDataModel2\">" +
-				"       <String name=\"TheString\" value=\"Hello World!\"/>" +
-				"   </DataModel>" +
 
 				"   <StateModel name=\"TheStateModel\" initialState=\"InitialState\">" +
 				"       <State name=\"InitialState\">" +
