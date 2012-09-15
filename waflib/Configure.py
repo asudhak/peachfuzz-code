@@ -178,7 +178,7 @@ class ConfigurationContext(Context.Context):
 		self.bldnode.mkdir()
 
 		if not os.path.isdir(self.bldnode.abspath()):
-			conf.fatal('could not create the build directory %s' % self.bldnode.abspath())
+			conf.fatal('Could not create the build directory %s' % self.bldnode.abspath())
 
 	def execute(self):
 		"""

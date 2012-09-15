@@ -160,7 +160,7 @@ class BuildContext(Context.Context):
 
 		The the following code:
 
-			@bld.func(
+			@bld.rule(
 				target = "foo"
 			)
 			def _(tsk):
@@ -298,7 +298,7 @@ class BuildContext(Context.Context):
 				f = open(dbfn, 'rb')
 			except (IOError, EOFError):
 				# handle missing file/empty file
-				Logs.debug('build: could not load the build cache %s (missing)' % dbfn)
+				Logs.debug('build: Could not load the build cache %s (missing)' % dbfn)
 			else:
 				try:
 					waflib.Node.pickle_lock.acquire()
@@ -306,7 +306,7 @@ class BuildContext(Context.Context):
 					try:
 						data = cPickle.load(f)
 					except Exception as e:
-						Logs.debug('build: could not pickle the build cache %s: %r' % (dbfn, e))
+						Logs.debug('build: Could not pickle the build cache %s: %r' % (dbfn, e))
 					else:
 						for x in SAVED_ATTRS:
 							setattr(self, x, data[x])
@@ -852,7 +852,7 @@ class inst(Task.Task):
 						if y:
 							break
 					else:
-						raise Errors.WafError('could not find %r in %r' % (x, self.path))
+						raise Errors.WafError('Could not find %r in %r' % (x, self.path))
 			buf.append(y)
 		self.inputs = buf
 
@@ -1145,7 +1145,7 @@ class UninstallContext(InstallContext):
 					self.uninstall_error = True
 					Logs.warn('build: some files could not be uninstalled (retry with -vv to list them)')
 				if Logs.verbose > 1:
-					Logs.warn('could not remove %s (error code %r)' % (e.filename, e.errno))
+					Logs.warn('Could not remove %s (error code %r)' % (e.filename, e.errno))
 
 		# TODO ita refactor this into a post build action to uninstall the folders (optimization)
 		while tgt:
