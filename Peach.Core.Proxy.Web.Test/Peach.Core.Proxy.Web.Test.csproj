@@ -208,7 +208,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework">
-      <HintPath>..\3rdParty\NUnit-2.5.10.11092\bin\net-2.0\nunit.framework.dll</HintPath>
+      <HintPath>..\3rdParty\NUnit-2.6.0.12051\bin\framework\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
