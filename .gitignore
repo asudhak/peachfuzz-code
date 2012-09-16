@@ -46,4 +46,4 @@ dlldata.c
 *.pidb
 Peach.net.userprefs
 */test-results/
-
+*.resources
