@@ -47,3 +47,5 @@ dlldata.c
 Peach.net.userprefs
 test-results/
 *.resources
+
+/3rdParty/NUnit-2.6.0.12051/bin/TestResult.xml
