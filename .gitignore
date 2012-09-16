@@ -45,5 +45,5 @@ dlldata.c
 # MonoDevelop files
 *.pidb
 Peach.net.userprefs
-*/test-results/
+test-results/
 *.resources
