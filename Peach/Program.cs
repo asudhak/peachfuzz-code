@@ -237,42 +237,14 @@ namespace Peach
 
 				if (agent != null)
 				{
-					Type agentType = null;
-					foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-					{
-						foreach (Type t in a.GetExportedTypes())
-						{
-							if (!t.IsClass)
-								continue;
-
-							foreach (object attrib in t.GetCustomAttributes(true))
-							{
-								if (attrib is AgentServerAttribute)
-								{
-									if ((attrib as AgentServerAttribute).name == agent)
-									{
-										agentType = t;
-										break;
-									}
-								}
-							}
-
-							if (agentType != null)
-								break;
-						}
-
-						if (agentType != null)
-							break;
-					}
-
+					var agentType = ClassLoader.FindTypeByAttribute<AgentServerAttribute>((x, y) => y.name == agent);
 					if (agentType == null)
 					{
 						Console.WriteLine("Error, unable to locate agent server for protocol '" + agent + "'.\n");
 						return;
 					}
 
-					ConstructorInfo co = agentType.GetConstructor(new Type[0]);
-					IAgentServer agentServer = (IAgentServer)co.Invoke(new object[0]);
+					var agentServer = Activator.CreateInstance(agentType) as IAgentServer;
 
 					ConsoleWatcher.WriteInfoMark();
 					Console.WriteLine("Starting agent server");
@@ -283,34 +255,7 @@ namespace Peach
 
 				if (analyzer != null)
 				{
-					Type analyzerType = null;
-					foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-					{
-						foreach (Type t in a.GetExportedTypes())
-						{
-							if (!t.IsClass)
-								continue;
-
-							foreach (object attrib in t.GetCustomAttributes(true))
-							{
-								if (attrib is AnalyzerAttribute)
-								{
-									if ((attrib as AnalyzerAttribute).invokeName == analyzer)
-									{
-										analyzerType = t;
-										break;
-									}
-								}
-							}
-
-							if (analyzerType != null)
-								break;
-						}
-
-						if (analyzerType != null)
-							break;
-					}
-
+					var analyzerType = ClassLoader.FindTypeByAttribute<AnalyzerAttribute>((x, y) => y.Name == analyzer);
 					if (analyzerType == null)
 					{
 						Console.WriteLine("Error, unable to locate analyzer called '" + analyzer + "'.\n");
@@ -325,8 +270,7 @@ namespace Peach
 						return;
 					}
 
-					ConstructorInfo co = analyzerType.GetConstructor(new Type[0]);
-					Analyzer analyzerInstance = (Analyzer)co.Invoke(new object[0]);
+					var analyzerInstance = Activator.CreateInstance(analyzerType) as Analyzer;
 
 					ConsoleWatcher.WriteInfoMark();
 					Console.WriteLine("Starting Analyzer");

@@ -69,29 +69,29 @@ namespace Peach.Core.Analyzers
 		/// Mapping of XML ELement names to type as provided by PitParsableAttribute
 		/// </summary>
 		static Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
-        static readonly string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
+		static readonly string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
 
 		static PitParser()
 		{
 			PitParser.supportParser = true;
 			Analyzer.defaultParser = new PitParser();
-            populateDataElementPitParsable();
+			populateDataElementPitParsable();
 		}
 
 		public PitParser()
 		{
-            
+
 		}
 
-        public override Dom.Dom asParser(Dictionary<string, object> args, Stream data)
-        {
-            return asParser(args,data,true);
-        }
-
-        public Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
+		public override Dom.Dom asParser(Dictionary<string, object> args, Stream data)
 		{
-            if(doValidatePit)
-			    validatePit(data);
+			return asParser(args, data, true);
+		}
+
+		public Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
+		{
+			if (doValidatePit)
+				validatePit(data);
 
 			XmlDocument xmldoc = new XmlDocument();
 			data.Position = 0;
@@ -118,7 +118,7 @@ namespace Peach.Core.Analyzers
 
 			_dom = new Dom.Dom();
 
-			foreach(XmlNode child in xmldoc.ChildNodes)
+			foreach (XmlNode child in xmldoc.ChildNodes)
 			{
 				if (child.Name == "Peach")
 				{
@@ -137,24 +137,9 @@ namespace Peach.Core.Analyzers
 
 		static protected void populateDataElementPitParsable()
 		{
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			foreach (var kv in ClassLoader.GetAllByAttribute<PitParsableAttribute>(null))
 			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is PitParsableAttribute)
-							dataElementPitParsable[((PitParsableAttribute)attrib).xmlElementName] = t;
-					}
-				}
+				dataElementPitParsable[kv.Key.xmlElementName] = kv.Value;
 			}
 		}
 
@@ -210,10 +195,10 @@ namespace Peach.Core.Analyzers
 		protected Dom.Dom handlePeach(XmlNode node, Dom.Dom dom)
 		{
 
-            // Pass 0 - Basic check if Peach 2.3 ns  
-            if(node.NamespaceURI.Contains("2008"))
-               throw new PeachException("Error, Peach 2.3 namespace detected please upgrade the pit");
- 
+			// Pass 0 - Basic check if Peach 2.3 ns  
+			if (node.NamespaceURI.Contains("2008"))
+				throw new PeachException("Error, Peach 2.3 namespace detected please upgrade the pit");
+
 			// Pass 1 - Handle imports, includes, python path
 			foreach (XmlNode child in node)
 			{
@@ -267,7 +252,7 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "PythonPath":
-						if (isScriptingLanguageSet && 
+						if (isScriptingLanguageSet &&
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Python)
 						{
 							throw new PeachException("Error, cannot mix Python and Ruby!");
@@ -278,7 +263,7 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "RubyPath":
-						if (isScriptingLanguageSet && 
+						if (isScriptingLanguageSet &&
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Ruby)
 						{
 							throw new PeachException("Error, cannot mix Python and Ruby!");
@@ -289,18 +274,18 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Python":
-						if (isScriptingLanguageSet && 
+						if (isScriptingLanguageSet &&
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Python)
 						{
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
-						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string,object>());
+						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string, object>());
 						isScriptingLanguageSet = true;
 						break;
 
 					case "Ruby":
-						if (isScriptingLanguageSet && 
+						if (isScriptingLanguageSet &&
 							Scripting.DefaultScriptingEngine != ScriptingEngines.Ruby)
 						{
 							throw new PeachException("Error, cannot mix Python and Ruby!");
@@ -452,7 +437,7 @@ namespace Peach.Core.Analyzers
 				string ns = name.Substring(0, name.IndexOf(':') - 1);
 
 				if (!dom.ns.Keys.Contains(ns))
-					throw new PeachException("Unable to locate namespace '"+ns+"' in ref '"+name+"'.");
+					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + name + "'.");
 
 				name = name.Substring(name.IndexOf(':'));
 				dom = dom.ns["name"];
@@ -481,7 +466,7 @@ namespace Peach.Core.Analyzers
 			return null;
 		}
 
-#endregion
+		#endregion
 
 		/// <summary>
 		/// Locate all relations and pair from/of.
@@ -575,7 +560,7 @@ namespace Peach.Core.Analyzers
 					case "Flags":
 						if (hasXmlAttribute(child, "endian"))
 							args["endian"] = getXmlAttribute(child, "endian");
-						if(hasXmlAttribute(child, "size"))
+						if (hasXmlAttribute(child, "size"))
 							args["size"] = getXmlAttribute(child, "size");
 
 						dataElementDefaults[typeof(Flags)] = args;
@@ -599,7 +584,7 @@ namespace Peach.Core.Analyzers
 			agent.name = getXmlAttribute(node, "name");
 			agent.url = getXmlAttribute(node, "location");
 			agent.password = getXmlAttribute(node, "password");
-			
+
 			if (agent.url == null)
 				agent.url = "local://";
 
@@ -663,7 +648,7 @@ namespace Peach.Core.Analyzers
 
 		protected Dom.Array handleArray(XmlNode node, DataElementContainer parent)
 		{
-			return (Dom.Array) Dom.Array.PitParser(this, node, parent);
+			return (Dom.Array)Dom.Array.PitParser(this, node, parent);
 		}
 
 		protected bool IsArray(XmlNode node)
@@ -676,7 +661,7 @@ namespace Peach.Core.Analyzers
 
 		protected Block handleBlock(XmlNode node, DataElementContainer parent)
 		{
-			return (Block) Block.PitParser(this, node, parent);
+			return (Block)Block.PitParser(this, node, parent);
 		}
 
 		/// <summary>
@@ -695,7 +680,7 @@ namespace Peach.Core.Analyzers
 		{
 			if (hasXmlAttribute(node, "token"))
 				element.isToken = true;
-			
+
 			if (hasXmlAttribute(node, "mutable"))
 				element.isMutable = false;
 
@@ -704,7 +689,7 @@ namespace Peach.Core.Analyzers
 
 			if (hasXmlAttribute(node, "pointer"))
 				throw new NotSupportedException("Implement pointer attribute");
-			
+
 			if (hasXmlAttribute(node, "pointerDepth"))
 				throw new NotSupportedException("Implement pointerDepth attribute");
 
@@ -722,7 +707,7 @@ namespace Peach.Core.Analyzers
 						element.lengthType = LengthType.Chars;
 						break;
 					default:
-						throw new PeachException("Error, parsing lengthType on '" + element.name + 
+						throw new PeachException("Error, parsing lengthType on '" + element.name +
 							"', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
 				}
 			}
@@ -774,11 +759,11 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Fixup":
-						element.fixup = handleFixup(child, element);
+						element.fixup = handlePlugin<Fixup, FixupAttribute>(child, element, true);
 						break;
 
 					case "Transformer":
-						element.transformer = handleTransformer(child, element);
+						element.transformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
 						break;
 
 					case "Hint":
@@ -786,7 +771,7 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Analyzer":
-						handleAnalyzerDataElement(child, element);
+						element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(child, element, false);
 						break;
 
 					case "Placement":
@@ -836,12 +821,12 @@ namespace Peach.Core.Analyzers
 					continue;
 
 				if (!dataElementPitParsable.ContainsKey(child.Name))
-                {
-                    if(((IList<string>)dataElementCommon).Contains(child.Name))
-                        continue;
-                    else
-					    throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
-                }
+				{
+					if (((IList<string>)dataElementCommon).Contains(child.Name))
+						continue;
+					else
+						throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
+				}
 
 				Type dataElementType = dataElementPitParsable[child.Name];
 				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParser");
@@ -850,9 +835,9 @@ namespace Peach.Core.Analyzers
 
 				PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
-                elem = delegateAction(this, child, element);
-                
-                if (elem == null)
+				elem = delegateAction(this, child, element);
+
+				if (elem == null)
 					throw new PeachException("Error, type failed to parse provided XML: " + dataElementType.FullName);
 
 				// Wrap elements that are arrays with an Array object
@@ -940,7 +925,7 @@ namespace Peach.Core.Analyzers
 							value = "0" + value;
 
 						BitStream sout = new BitStream();
-						
+
 						if (elem is Number)
 						{
 							if (((Number)elem).LittleEndian)
@@ -957,31 +942,31 @@ namespace Peach.Core.Analyzers
 
 						sout.SeekBits(0, SeekOrigin.Begin);
 
-						if(elem is Number)
+						if (elem is Number)
 						{
 							Number num = elem as Number;
-							switch(num.lengthAsBits)
+							switch (num.lengthAsBits)
 							{
 								case 8:
-									if(num.Signed)
+									if (num.Signed)
 										elem.DefaultValue = new Variant(sout.ReadInt8());
 									else
 										elem.DefaultValue = new Variant(sout.ReadUInt8());
 									break;
 								case 16:
-									if(num.Signed)
+									if (num.Signed)
 										elem.DefaultValue = new Variant(sout.ReadInt16());
 									else
 										elem.DefaultValue = new Variant(sout.ReadUInt16());
 									break;
 								case 32:
-									if(num.Signed)
+									if (num.Signed)
 										elem.DefaultValue = new Variant(sout.ReadInt32());
 									else
 										elem.DefaultValue = new Variant(sout.ReadUInt32());
 									break;
 								case 64:
-									if(num.Signed)
+									if (num.Signed)
 										elem.DefaultValue = new Variant(sout.ReadInt64());
 									else
 										elem.DefaultValue = new Variant(sout.ReadUInt64());
@@ -1004,14 +989,14 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, invalid value for 'valueType' attribute: " + getXmlAttribute(node, "valueType"));
 				}
 			}
-			else if(value != null)
+			else if (value != null)
 				elem.DefaultValue = new Variant(value);
 
 		}
 
 		public bool hasDefaultAttribute(Type type, string key)
 		{
-			if(dataElementDefaults.ContainsKey(type))
+			if (dataElementDefaults.ContainsKey(type))
 				return dataElementDefaults[type].ContainsKey(key);
 			return false;
 		}
@@ -1053,18 +1038,18 @@ namespace Peach.Core.Analyzers
 					{
 						SizeRelation rel = new SizeRelation();
 						rel.OfName = getXmlAttribute(node, "of");
-						
-						if(hasXmlAttribute(node, "expressionGet"))
+
+						if (hasXmlAttribute(node, "expressionGet"))
 							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
 
-						if(hasXmlAttribute(node, "expressionSet"))
+						if (hasXmlAttribute(node, "expressionSet"))
 							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
-						
+
 						parent.relations.Add(rel);
 					}
 
 					break;
-				
+
 				case "count":
 					if (hasXmlAttribute(node, "of"))
 					{
@@ -1080,7 +1065,7 @@ namespace Peach.Core.Analyzers
 						parent.relations.Add(rel);
 					}
 					break;
-				
+
 				case "offset":
 					if (hasXmlAttribute(node, "of"))
 					{
@@ -1105,283 +1090,53 @@ namespace Peach.Core.Analyzers
 						parent.relations.Add(rel);
 					}
 					break;
-				
+
 				default:
-					throw new ApplicationException("Unknown relation type found '"+
-						getXmlAttribute(node, "type")+"'.");
+					throw new ApplicationException("Unknown relation type found '" +
+						getXmlAttribute(node, "type") + "'.");
 			}
 		}
 
-		protected Analyzer handleAnalyzerDataElement(XmlNode node, DataElement parent)
+		protected T handlePlugin<T, A>(XmlNode node, DataElement parent, bool useParent)
+			where T : class
+			where A : PluginAttribute
 		{
+			var pluginType = typeof(T).Name;
+
 			if (!hasXmlAttribute(node, "class"))
-				throw new PeachException("Analyzer element has no 'class' attribute [" + node.OuterXml + "].");
+				throw new PeachException(string.Format("{0} element has no 'class' attribute [{1}]", pluginType, node.OuterXml));
 
-			string cls = getXmlAttribute(node, "class");
-			Type tFixup = null;
+			var cls = getXmlAttribute(node, "class");
 			var arg = handleParams(node);
-			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
 
-			// Locate PublisherAttribute classes and check name
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
+			var type = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == cls);
+			if (type == null)
+				throw new PeachException(string.Format("Error, unable to locate {0} named '{1}'", pluginType, cls));
 
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					parameters.Clear();
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is AnalyzerAttribute && (attrib as AnalyzerAttribute).invokeName == cls)
-						{
-							tFixup = t;
-						}
-						else if (attrib is ParameterAttribute)
-							parameters.Add(attrib as ParameterAttribute);
-					}
-
-					if (tFixup != null)
-						break;
-				}
-
-				if (tFixup != null)
-					break;
-			}
-
-			if (tFixup == null)
-				throw new PeachException("Error, unable to locate Analyzer named '" + cls + "'.");
-
-			validateParameterAttributes("Analyzer", cls, parameters, arg);
-
-			Type[] targs = new Type[1];
-			targs[0] = typeof(Dictionary<string, Variant>);
-
-			ConstructorInfo co = tFixup.GetConstructor(targs);
-
-			if (co == null)
-				throw new PeachException("Error, unable to locate Analyzer named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
-
-			object[] args = new object[1];
-			args[0] = arg;
+			var parameters = type.GetAttributes<ParameterAttribute>(null);
+			validateParameterAttributes(pluginType, cls, parameters, arg);
 
 			try
 			{
-				parent.analyzer = co.Invoke(args) as Analyzer;
+				if (useParent)
+				{
+					return Activator.CreateInstance(type, parent, arg) as T;
+				}
+				else
+				{
+					return Activator.CreateInstance(type, arg) as T;
+				}
 			}
 			catch (Exception e)
 			{
-				throw new PeachException("Error, unable to locate Analyzer named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
-			}
-
-			return parent.analyzer;
-		}
-
-		protected MutationStrategy handleMutationStrategy(XmlNode node)
-		{
-			if (!hasXmlAttribute(node, "class"))
-				throw new PeachException("Strategy element has no 'class' attribute [" + node.OuterXml + "].");
-
-			string cls = getXmlAttribute(node, "class");
-			Type tFixup = null;
-			var arg = handleParams(node);
-			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
-
-			// Locate PublisherAttribute classes and check name
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					parameters.Clear();
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is MutationStrategyAttribute && (attrib as MutationStrategyAttribute).name == cls)
-						{
-							tFixup = t;
-						}
-						else if (attrib is ParameterAttribute)
-							parameters.Add(attrib as ParameterAttribute);
-					}
-
-					if (tFixup != null)
-						break;
-				}
-
-				if (tFixup != null)
-					break;
-			}
-
-			if (tFixup == null)
-				throw new PeachException("Error, unable to locate Strategy named '" + cls + "'.");
-
-			validateParameterAttributes("MutationStrategy", cls, parameters, arg);
-
-			Type[] targs = new Type[1];
-			targs[0] = typeof(Dictionary<string, Variant>);
-
-			ConstructorInfo co = tFixup.GetConstructor(targs);
-
-			if (co == null)
-				throw new PeachException("Error, unable to locate MutationStrategy named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
-
-			object[] args = new object[1];
-			args[0] = arg;
-
-			try
-			{
-				return co.Invoke(args) as MutationStrategy;
-			}
-			catch (Exception e)
-			{
-				throw new PeachException("Error, unable to locate MutationStrategy named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
+				throw new PeachException(string.Format(
+					"Error, unable to locate {0} named '{1}'.\nExtended error: Exception during object creation: {2}",
+					pluginType, cls, e.Message
+				));
 			}
 		}
 
-		protected Fixup handleFixup(XmlNode node, DataElement parent)
-		{
-			if (!hasXmlAttribute(node, "class"))
-				throw new PeachException("Fixup element has no 'class' attribute [" + node.OuterXml + "].");
-
-			string cls = getXmlAttribute(node, "class");
-			Type tFixup = null;
-			var arg = handleParams(node);
-			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
-
-			// Locate PublisherAttribute classes and check name
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					parameters.Clear();
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is FixupAttribute && (attrib as FixupAttribute).className == cls)
-						{
-							tFixup = t;
-						}
-						else if (attrib is ParameterAttribute)
-							parameters.Add(attrib as ParameterAttribute);
-					}
-
-					if (tFixup != null)
-						break;
-				}
-
-				if (tFixup != null)
-					break;
-			}
-
-			if (tFixup == null)
-				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.");
-
-			validateParameterAttributes("Fixup", cls, parameters, arg);
-
-			Type[] targs = new Type[2];
-			targs[0] = typeof(DataElement);
-			targs[1] = typeof(Dictionary<string, Variant>);
-
-			ConstructorInfo co = tFixup.GetConstructor(targs);
-
-			if (co == null)
-				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Was unable to find correct constructor.");
-
-			object[] args = new object[2];
-			args[0] = parent;
-			args[1] = arg;
-
-			try
-			{
-				parent.fixup = co.Invoke(args) as Fixup;
-			}
-			catch (Exception e)
-			{
-				throw new PeachException("Error, unable to locate Fixup named '" + cls + "'.\nExtended error: Exception during object creation: " + e.Message);
-			}
-
-			return parent.fixup;
-		}
-
-		protected Transformer handleTransformer(XmlNode node, DataElement parent)
-		{
-			string cls = getXmlAttribute(node, "class");
-			Type tTransformer = null;
-			var arg = handleParams(node);
-			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
-
-			// Locate PublisherAttribute classes and check name
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					parameters.Clear();
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is TransformerAttribute && (attrib as TransformerAttribute).elementName == cls)
-							tTransformer = t;
-						else if (attrib is ParameterAttribute)
-							parameters.Add(attrib as ParameterAttribute);
-					}
-
-					if (tTransformer != null)
-						break;
-				}
-
-				if (tTransformer != null)
-					break;
-			}
-
-			if (tTransformer == null)
-				throw new PeachException("Error, unable to locate Transformer named '" + cls + "'.");
-
-			validateParameterAttributes("Transformer", cls, parameters, arg);
-
-			Type[] targs = new Type[1];
-			targs[0] = typeof(Dictionary<string, Variant>);
-
-			ConstructorInfo co = tTransformer.GetConstructor(targs);
-
-			object[] args = new object[1];
-			args[0] = arg;
-
-			parent.transformer = co.Invoke(args) as Transformer;
-
-			return parent.transformer;
-		}
-
-#endregion
+		#endregion
 
 		#region State Model
 
@@ -1573,7 +1328,7 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
-				if(child.Name == "DataModel")
+				if (child.Name == "DataModel")
 					param.dataModel = dom.dataModels[getXmlAttribute(child, "ref")];
 				if (child.Name == "Data")
 					param.data = handleData(child);
@@ -1622,7 +1377,7 @@ namespace Peach.Core.Analyzers
 					Blob tmp = new Blob();
 					handleCommonDataElementValue(child, tmp);
 
-					data.fields.Add(getXmlAttribute(child,"name"), tmp.DefaultValue);
+					data.fields.Add(getXmlAttribute(child, "name"), tmp.DefaultValue);
 				}
 			}
 
@@ -1645,13 +1400,13 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")
-					test.logger = handleLogger(child);
+					test.logger = handlePlugin<Logger, LoggerAttribute>(child, null, false);
 
 				// Include
 				if (child.Name == "Include")
 				{
 					var xpath = getXmlAttribute(child, "xpath");
-					if(xpath == null)
+					if (xpath == null)
 						xpath = "//*";
 
 					test.mutables.Add(new Tuple<bool, string>(true, xpath));
@@ -1670,21 +1425,21 @@ namespace Peach.Core.Analyzers
 				// Strategy
 				if (child.Name == "Strategy")
 				{
-					test.strategy = handleMutationStrategy(child);
+					test.strategy = handlePlugin<MutationStrategy, MutationStrategyAttribute>(child, null, false);
 				}
 
 				// Agent
 				if (child.Name == "Agent")
 				{
 					string refName = getXmlAttribute(child, "ref");
-				    try
-				    {
-					    test.agents.Add(refName, parent.agents[refName]);
-				    }
-				    catch 
-				    {
-                        throw new PeachException("Error, Test::" + test.name +  " Agent name in ref attribute not found");
-				    }
+					try
+					{
+						test.agents.Add(refName, parent.agents[refName]);
+					}
+					catch
+					{
+						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found");
+					}
 
 					var platform = getXmlAttribute(child, "platform");
 					if (platform != null)
@@ -1717,7 +1472,7 @@ namespace Peach.Core.Analyzers
 					}
 					catch
 					{
-						throw new PeachException("Error, could not locate StateModel named '" + 
+						throw new PeachException("Error, could not locate StateModel named '" +
 							getXmlAttribute(child, "ref") + "' for Test '" + test.name + "'.");
 					}
 				}
@@ -1734,7 +1489,7 @@ namespace Peach.Core.Analyzers
 					else
 						name = getXmlAttribute(child, "name");
 
-					test.publishers.Add(name, handlePublisher(child, test));
+					test.publishers.Add(name, handlePlugin<Publisher, PublisherAttribute>(child, null, false));
 				}
 
 				// Mutator
@@ -1746,40 +1501,13 @@ namespace Peach.Core.Analyzers
 
 			if (test.stateModel == null)
 				throw new PeachException("Test '" + test.name + "' missing StateModel element.");
-			if(test.publishers.Count == 0)
+			if (test.publishers.Count == 0)
 				throw new PeachException("Test '" + test.name + "' missing Publisher element.");
 
 			if (test.strategy == null)
 			{
-				// Locate and load default strategy.
-				foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-				{
-					// Reflection of this type not supported on
-					// dynamic assemblies.
-					if (a.IsDynamic)
-						continue;
-
-					foreach (Type t in a.GetExportedTypes())
-					{
-						if (!t.IsClass)
-							continue;
-
-						foreach (object attrib in t.GetCustomAttributes(true))
-						{
-							if (attrib is DefaultMutationStrategyAttribute)
-							{
-								Type[] argTypes = new Type[1];
-								argTypes[0] = typeof(Dictionary<string, Variant>);
-								ConstructorInfo strategyCo = t.GetConstructor(argTypes);
-
-								object[] args = new object[1];
-								args[0] = new Dictionary<string, Variant>();
-
-								test.strategy = strategyCo.Invoke(args) as MutationStrategy;
-							}
-						}
-					}
-				}
+				var type = ClassLoader.FindTypeByAttribute<DefaultMutationStrategyAttribute>(null);
+				test.strategy = Activator.CreateInstance(type, new Dictionary<string, Variant>()) as MutationStrategy;
 			}
 
 			return test;
@@ -1787,77 +1515,7 @@ namespace Peach.Core.Analyzers
 
 		public static uint _uniquePublisherName = 0;
 
-		protected Publisher handlePublisher(XmlNode node, Test parent)
-		{
-			string reference = getXmlAttribute(node, "class");
-			Type pubType = null;
-			List<ParameterAttribute> publisherParameters = new List<ParameterAttribute>();
-
-			// Locate PublisherAttribute classes and check name
-			foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					publisherParameters.Clear();
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is PublisherAttribute && (attrib as PublisherAttribute).invokeName == reference)
-						{
-								pubType = t;
-						}
-						else if (attrib is ParameterAttribute)
-						{
-							publisherParameters.Add(attrib as ParameterAttribute);
-						}
-					}
-
-					if (pubType != null)
-						break;
-				}
-
-				if (pubType != null)
-					break;
-			}
-
-			if (pubType == null)
-				throw new PeachException("Error, unable to locate publisher '" + reference + "'.");
-
-			Type[] argTypes = new Type[1];
-			argTypes[0] = typeof(Dictionary<string, Variant>);
-			ConstructorInfo pubCo = pubType.GetConstructor(argTypes);
-
-			// Validate parameters
-			var xmlParams = handleParams(node);
-			validateParameterAttributes("Publisher", reference, publisherParameters, xmlParams);
-
-			// Create instance of publisher
-			object [] args = new object[1];
-			args[0] = xmlParams;
-
-			try
-			{
-				Publisher pub = pubCo.Invoke(args) as Publisher;
-				return pub;
-			}
-			catch (TargetInvocationException ex)
-			{
-				if (ex.InnerException != null)
-					throw ex.InnerException;
-				else
-					throw;
-			}
-		}
-
-		protected void validateParameterAttributes(string type, string name, List<ParameterAttribute> publisherParameters,
+		protected void validateParameterAttributes(string type, string name, IEnumerable<ParameterAttribute> publisherParameters,
 			Dictionary<string, Variant> xmlParameters)
 		{
 			foreach (ParameterAttribute p in publisherParameters)
@@ -1885,20 +1543,22 @@ namespace Peach.Core.Analyzers
 					}
 				}
 
-				if(!found)
+				if (!found)
 					throw new PeachException(string.Format("Error, {0} '{1}' has unknown parameter '{2}'.\n{3}",
 						type, name, p, formatParameterAttributes(publisherParameters)));
 			}
 		}
 
-		protected string formatParameterAttributes(List<ParameterAttribute> publisherParameters)
+		protected string formatParameterAttributes(IEnumerable<ParameterAttribute> publisherParameters)
 		{
-			publisherParameters.Reverse();
+			// XXX: why is this reversed?
+			var reversed = new List<ParameterAttribute>(publisherParameters);
+			reversed.Reverse();
 
 			string s = "\nSupported Parameters:\n\n";
-			foreach (var p in publisherParameters)
+			foreach (var p in reversed)
 			{
-				if(p.required)
+				if (p.required)
 					s += "  " + p.name + ": [REQUIRED] " + p.description + "\n";
 				else
 					s += "  " + p.name + ": " + p.description + "\n";
@@ -1919,77 +1579,19 @@ namespace Peach.Core.Analyzers
 				string name = getXmlAttribute(child, "name");
 				string value = getXmlAttribute(child, "value");
 
-        if (hasXmlAttribute(child, "valueType"))
-        {
-          ret.Add(name, new Variant(value, getXmlAttribute(child, "valueType")));
-        }
-        else
-        {
-          ret.Add(name, new Variant(value));
-        }
-					//throw new NotImplementedException("TODO Handle ValueType");
+				if (hasXmlAttribute(child, "valueType"))
+				{
+					ret.Add(name, new Variant(value, getXmlAttribute(child, "valueType")));
+				}
+				else
+				{
+					ret.Add(name, new Variant(value));
+				}
+				//throw new NotImplementedException("TODO Handle ValueType");
 
 			}
 
 			return ret;
-		}
-
-		protected Logger handleLogger(XmlNode node)
-		{
-			string reference = getXmlAttribute(node, "class");
-			Type pubType = null;
-			var arg = handleParams(node);
-			List<ParameterAttribute> parameters = new List<ParameterAttribute>();
-
-			// Locate PublisherAttribute classes and check name
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					parameters.Clear();
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is LoggerAttribute && (attrib as LoggerAttribute).invokeName == reference)
-							pubType = t;
-						else if (attrib is ParameterAttribute)
-							parameters.Add(attrib as ParameterAttribute);
-					}
-
-					if (pubType != null)
-						break;
-				}
-
-				if (pubType != null)
-					break;
-			}
-
-			if (pubType == null)
-				throw new PeachException("Error, unable to locate logger '" + reference + "'.");
-
-			validateParameterAttributes("Logger", reference, parameters, arg);
-
-			Type[] argTypes = new Type[1];
-			argTypes[0] = typeof(Dictionary<string, Variant>);
-			ConstructorInfo pubCo = pubType.GetConstructor(argTypes);
-
-			object[] args = new object[1];
-			args[0] = arg;
-
-			Logger logger = pubCo.Invoke(args) as Logger;
-
-			if(logger == null)
-				throw new PeachException("Error, unable to create logger '" + reference + "'.");
-
-			return logger;
 		}
 
 		#endregion

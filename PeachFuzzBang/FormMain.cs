@@ -63,23 +63,9 @@ namespace PeachFuzzBang
 		{
 			InitializeComponent();
 
-			List<MutationStrategy> strategies = new List<MutationStrategy>();
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			foreach (var strategy in ClassLoader.GetAllByAttribute<MutationStrategyAttribute>(null))
 			{
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is MutationStrategyAttribute)
-						{
-							//strategies.Add(((MutationStrategyAttribute)attrib).name);
-							comboBoxFuzzingStrategy.Items.Add(((MutationStrategyAttribute)attrib).name);
-						}
-					}
-				}
+				comboBoxFuzzingStrategy.Items.Add(strategy.Key.Name);
 			}
 
 			//tabControl.TabPages.Remove(tabPageGUI);

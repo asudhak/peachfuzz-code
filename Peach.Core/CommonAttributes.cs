@@ -25,4 +25,14 @@ namespace Peach.Core
 	public class NoParametersAttribute : Attribute
 	{
 	}
+
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+	public class PluginAttribute : Attribute
+	{
+		public string Name { get; set; }
+		public PluginAttribute(string name)
+		{
+			this.Name = name;
+		}
+	}
 }

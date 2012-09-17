@@ -95,17 +95,16 @@ namespace Peach.Core
 	/// Use this attribute to identify Transformers
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class TransformerAttribute : Attribute
+	public class TransformerAttribute : PluginAttribute
 	{
-		public string elementName;
 		public string description;
-    public bool isDefault;
+		public bool isDefault;
 
-		public TransformerAttribute(string elementName, string description, bool isDefault = false)
+		public TransformerAttribute(string name, string description, bool isDefault = false)
+			: base(name)
 		{
-			this.elementName = elementName;
 			this.description = description;
-      this.isDefault = isDefault;
+			this.isDefault = isDefault;
 		}
 	}
 }

@@ -330,15 +330,14 @@ namespace Peach.Core
 	/// provide it's invoking name used in the Pit XML file.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-	public class PublisherAttribute : Attribute
+	public class PublisherAttribute : PluginAttribute
 	{
-		public string invokeName;
 		public bool isDefault = false;
 
-		public PublisherAttribute(string invokeName, bool isDefault = false)
+		public PublisherAttribute(string name, bool isDefault = false)
+			: base(name)
 		{
-			this.invokeName = invokeName;
-      this.isDefault = isDefault;
+			this.isDefault = isDefault;
 		}
 	}
 }

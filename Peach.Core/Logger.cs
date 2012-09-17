@@ -45,15 +45,14 @@ namespace Peach.Core
 	/// provide it's invoking name used in the Pit XML file.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class LoggerAttribute : Attribute
+	public class LoggerAttribute : PluginAttribute
 	{
-		public string invokeName;
-    public bool isDefault;
+		public bool isDefault;
 
-		public LoggerAttribute(string invokeName, bool isDefault = false)
+		public LoggerAttribute(string name, bool isDefault = false)
+			: base(name)
 		{
-			this.invokeName = invokeName;
-      this.isDefault = isDefault;
+			this.isDefault = isDefault;
 		}
 	}
 

@@ -54,13 +54,11 @@ namespace Peach.Core.Agent
 		public virtual void AddAgent(Dom.Agent agentDef)
 		{
 			Uri uri = new Uri(agentDef.url);
-			Type tAgent = GetAgentByProtocol(uri);
-			if (tAgent == null)
+			var type = ClassLoader.FindTypeByAttribute<AgentAttribute>((x, y) => y.protocol == uri.Scheme);
+			if (type == null)
 				throw new PeachException("Error, unable to locate agent that supports the '" + uri.Scheme + "' protocol.");
 
-			ConstructorInfo co = tAgent.GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
-			AgentClient agent = (AgentClient)co.Invoke(new object[] { agentDef.name, agentDef.url, agentDef.password });
-
+			var agent = Activator.CreateInstance(type, agentDef.name, agentDef.url, agentDef.password) as AgentClient;
 			_agents[agentDef.name] = agent;
 			_agentDefinitions[agentDef.name] = agentDef;
 		}
@@ -87,31 +85,6 @@ namespace Peach.Core.Agent
 				AddAgent(agent);
 
 			AgentConnect(agent.name);
-		}
-
-		public Type GetAgentByProtocol(Uri uri)
-		{
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is AgentAttribute && ((AgentAttribute)attrib).protocol == uri.Scheme)
-						{
-							return t;
-						}
-					}
-				}
-			}
-
-			return null;
 		}
 
 		#region AgentServer

@@ -153,36 +153,17 @@ namespace Peach.Core
 			if (_context.test == null)
 				throw new ArgumentException("Error, _context.test == null");
 
-			List<Type> ret = new List<Type>();
-
-			// Locate all mutators
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			Func<Type, MutatorAttribute, bool> predicate = delegate(Type type, MutatorAttribute attr)
 			{
-				// Reflection of this type not supported on
-				// dynamic assemblies.
-				if (a.IsDynamic)
-					continue;
+				if (_context.test.includedMutators != null && !_context.test.includedMutators.Contains(type.Name))
+					return false;
 
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
+				if (_context.test.exludedMutators != null && _context.test.exludedMutators.Contains(type.Name))
+					return false;
 
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is MutatorAttribute)
-						{
-							if (_context.test.includedMutators != null && !_context.test.includedMutators.Contains(t.Name))
-								continue;
-
-							if (_context.test.exludedMutators != null && _context.test.exludedMutators.Contains(t.Name))
-								continue;
-
-							ret.Add(t);
-						}
-					}
-				}
-			}
+				return true;
+			};
+			var ret = new List<Type>(ClassLoader.GetAllTypesByAttribute(predicate));
 
 			// Different environments enumerate the mutators in different orders.
 			// To ensure mutation strategies run mutators in the same order everywhere
@@ -211,12 +192,11 @@ namespace Peach.Core
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
-	public class MutationStrategyAttribute : Attribute
+	public class MutationStrategyAttribute : PluginAttribute
 	{
-		public string name = null;
 		public MutationStrategyAttribute(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 	}
 }

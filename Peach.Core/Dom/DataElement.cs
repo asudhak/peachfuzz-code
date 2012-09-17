@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime;
@@ -225,11 +226,10 @@ namespace Peach.Core.Dom
 			{
 				if (type.IsClass && !type.IsAbstract)
 				{
-					object [] attr = type.GetCustomAttributes(typeof(DataElementAttribute), false);
-					DataElementAttribute dea = attr[0] as DataElementAttribute;
-					if (!dataElements.ContainsKey(dea.elementName))
+					var attr = type.GetAttributes<DataElementAttribute>(null).First();
+					if (!dataElements.ContainsKey(attr.elementName))
 					{
-						dataElements.Add(dea.elementName, type);
+						dataElements.Add(attr.elementName, type);
 					}
 				}
 			}

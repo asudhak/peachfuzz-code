@@ -108,14 +108,12 @@ namespace Peach.Core
 	/// Used to indicate a class is a valid Publisher and 
 	/// provide it's invoking name used in the Pit XML file.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class AnalyzerAttribute : Attribute
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	public class AnalyzerAttribute : PluginAttribute
 	{
-		public string invokeName;
-
-		public AnalyzerAttribute(string invokeName)
+		public AnalyzerAttribute(string name)
+			: base(name)
 		{
-			this.invokeName = invokeName;
 		}
 	}
 

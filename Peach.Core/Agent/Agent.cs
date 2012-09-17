@@ -191,45 +191,18 @@ namespace Peach.Core.Agent
 			monitors.Clear();
 		}
 
-		protected Type GetMonitorByClass(string cls)
-		{
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				if (a.IsDynamic)
-					continue;
-
-				foreach (Type t in a.GetExportedTypes())
-				{
-					if (!t.IsClass)
-						continue;
-
-					foreach (object attrib in t.GetCustomAttributes(true))
-					{
-						if (attrib is MonitorAttribute)
-						{
-							if ((attrib as MonitorAttribute).name == cls)
-								return t;
-						}
-					}
-				}
-			}
-
-			return null;
-		}
-
 		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
 
-			Type tMonitor = GetMonitorByClass(cls);
-			if (tMonitor == null)
+			var type = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.name == cls);
+			if (type == null)
 				throw new PeachException("Error, unable to locate Monitor '" + cls + "'");
 
-			ConstructorInfo co = tMonitor.GetConstructor(new Type[] { typeof(string), typeof(Dictionary<string, Variant>) });
 			try
 			{
-				Monitor monitor = (Monitor)co.Invoke(new object[] { name, args });
+				var monitor = Activator.CreateInstance(type, name, args) as Monitor;
 				this.monitors.Add(name, monitor);
 			}
 			catch (TargetInvocationException ex)

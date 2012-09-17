@@ -77,17 +77,16 @@ namespace Peach.Core
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class FixupAttribute : Attribute
+	public class FixupAttribute : PluginAttribute
 	{
-		public string className;
 		public string description;
-    public bool isDefault;
+		public bool isDefault;
 
-		public FixupAttribute(string className, string description, bool isDefault = false)
+		public FixupAttribute(string name, string description, bool isDefault = false)
+			: base(name)
 		{
-			this.className = className;
 			this.description = description;
-      this.isDefault = isDefault;
+			this.isDefault = isDefault;
 		}
 	}
 }

@@ -50,7 +50,7 @@ namespace Peach.Core.Analysis
 		/// <returns></returns>
 		public static Coverage CreateInstance()
 		{
-			return (Coverage)ClassLoader.FindAndCreateByTypeAndName(typeof(Coverage), "Peach.Core.Analysis.CoverageImpl");
+			return ClassLoader.FindAndCreateByTypeAndName<Coverage>("Peach.Core.Analysis.CoverageImpl");
 		}
 
 		/// <summary>

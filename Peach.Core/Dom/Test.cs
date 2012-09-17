@@ -196,7 +196,7 @@ namespace Peach.Core.Dom
           if (attrib is MutationStrategyAttribute)
           {
             XmlNode eStrategy = doc.CreateElement("Strategy");
-            eStrategy.AppendAttribute("class", ((MutationStrategyAttribute)attrib).name);
+            eStrategy.AppendAttribute("class", ((MutationStrategyAttribute)attrib).Name);
             node.AppendChild(eStrategy);
             break;
           }
@@ -253,7 +253,7 @@ namespace Peach.Core.Dom
               {
                 if (((PublisherAttribute)attrib).isDefault)
                 {
-                  className = ((PublisherAttribute)attrib).invokeName;
+                  className = ((PublisherAttribute)attrib).Name;
                   ePublisher.AppendAttribute("class", className);
                   break;
                 }
@@ -298,7 +298,7 @@ namespace Peach.Core.Dom
         LoggerAttribute loggerAttrib = (from o in attribs where (o is LoggerAttribute) && (((LoggerAttribute)o).isDefault = true) select o).First() as LoggerAttribute;
         List<ParameterAttribute> paramAttribs = (from o in attribs where (o is ParameterAttribute) select o as ParameterAttribute).ToList();
         XmlNode eLogger = doc.CreateElement("Logger");
-        eLogger.AppendAttribute("class", loggerAttrib.invokeName);
+        eLogger.AppendAttribute("class", loggerAttrib.Name);
 
         foreach (ParameterAttribute paramAttrib in paramAttribs)
         {

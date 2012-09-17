@@ -176,61 +176,116 @@ namespace Peach.Core
 		}
 
 		/// <summary>
-		/// Try to create instance of a class based on an attribute type
-		/// and name.
+		/// Extension to the Type class. Return all attributes matching the specified type and predicate.
 		/// </summary>
-		/// <param name="type">Attribute type</param>
-		/// <param name="name">Class name</param>
-		/// <returns>Returns new instance of found class, or null.</returns>
-		public static object FindAndCreateByAttributeAndName(Type type, string name)
+		/// <typeparam name="A">Attribute type to find.</typeparam>
+		/// <param name="type">Type in which the search should run over.</param>
+		/// <param name="predicate">Returns an attribute if the predicate returns true or the predicate itself is null.</param>
+		/// <returns>A generator which yields the attributes specified.</returns>
+		public static IEnumerable<A> GetAttributes<A>(this Type type, Func<Type, A, bool> predicate)
+			where A : Attribute
 		{
-			UpdateAssemblyCache();
-
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			foreach (var attr in type.GetCustomAttributes(true))
 			{
-				Type found = a.GetType(name, false, false);
-				if (!found.IsClass)
-					continue;
-
-				object [] attrs = found.GetCustomAttributes(type, true);
-				if (attrs.Length == 0)
-					continue;
-
-				ConstructorInfo cinfo = found.GetConstructor(new Type[0]);
-				return cinfo.Invoke(new object[0]);
+				var concrete = attr as A;
+				if (concrete != null && (predicate == null || predicate(type, concrete)))
+				{
+					yield return concrete;
+				}
 			}
+		}
 
-			return null;
+		/// <summary>
+		/// Finds all types that are decorated with the specified Attribute type and matches the specified predicate.
+		/// </summary>
+		/// <typeparam name="A">Attribute type to find.</typeparam>
+		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
+		/// <returns>A generator which yields KeyValuePair elements of custom attribute and type found.</returns>
+		public static IEnumerable<KeyValuePair<A, Type>> GetAllByAttribute<A>(Func<Type, A, bool> predicate)
+			where A : Attribute
+		{
+			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				if (asm.IsDynamic)
+					continue;
+
+				foreach (var type in asm.GetExportedTypes())
+				{
+					if (!type.IsClass)
+						continue;
+
+					foreach (var x in type.GetAttributes<A>(predicate))
+					{
+						yield return new KeyValuePair<A, Type>(x, type);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Finds all types that are decorated with the specified Attribute type and matches the specified predicate.
+		/// </summary>
+		/// <typeparam name="A">Attribute type to find.</typeparam>
+		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
+		/// <returns>A generator which yields elements of the type found.</returns>
+		public static IEnumerable<Type> GetAllTypesByAttribute<A>(Func<Type, A, bool> predicate)
+			where A : Attribute
+		{
+			return GetAllByAttribute<A>(predicate).Select(x => x.Value);
+		}
+
+		/// <summary>
+		/// Finds the first type that matches the specified query.
+		/// </summary>
+		/// <typeparam name="A">Attribute type to find.</typeparam>
+		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
+		/// <returns>KeyValuePair of custom attribute and type found.</returns>
+		public static KeyValuePair<A, Type> FindByAttribute<A>(Func<Type, A, bool> predicate) 
+			where A : Attribute
+		{
+			return GetAllByAttribute<A>(predicate).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Finds the first type that matches the specified query.
+		/// </summary>
+		/// <typeparam name="A">Attribute type to find.</typeparam>
+		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
+		/// <returns>Returns only the Type found.</returns>
+		public static Type FindTypeByAttribute<A>(Func<Type, A, bool> predicate)
+			where A : Attribute
+		{
+			return GetAllByAttribute<A>(predicate).FirstOrDefault().Value;
 		}
 
 		/// <summary>
 		/// Find and create and instance of class by parent type and 
 		/// name.
 		/// </summary>
-		/// <param name="type">Parent type</param>
-		/// <param name="name">Name of class</param>
-		/// <returns>Returns new instance of found class, or null.</returns>
-		public static object FindAndCreateByTypeAndName(Type type, string name)
+		/// <typeparam name="T">Return Type.</typeparam>
+		/// <param name="name">Name of type.</param>
+		/// <returns>Returns a new instance of found type, or null.</returns>
+		public static T FindAndCreateByTypeAndName<T>(string name)
+			where T : class
 		{
 			UpdateAssemblyCache();
 
-			foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 			{
-				if (a.IsDynamic)
+				if (asm.IsDynamic)
 					continue;
 
-				Type found = a.GetType(name);
-				if (found == null)
+				Type type = asm.GetType(name);
+				if (type == null)
 					continue;
 
-				if (!found.IsClass)
+				if (!type.IsClass)
 					continue;
 
-				if (!found.IsSubclassOf(type))
+				if (!type.IsSubclassOf(type))
 					continue;
 
-				ConstructorInfo cinfo = found.GetConstructor(new Type[0]);
-				return cinfo.Invoke(new object[0]);
+				return Activator.CreateInstance(type) as T;
 			}
 
 			return null;
