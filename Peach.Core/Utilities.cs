@@ -128,48 +128,32 @@ namespace Peach.Core
 	/// </summary>
 	public static class ClassLoader
 	{
-		public static List<string> AssemblyFilenames = new List<string>();
-		public static List<string> SearchPaths = new List<string>();
+		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
 
 		static ClassLoader()
 		{
-			SearchPaths.Add(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-			SearchPaths.Add(Directory.GetCurrentDirectory());
-		}
+			string[] searchPath = new string[] {
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+				Directory.GetCurrentDirectory(),
+			};
 
-		/// <summary>
-		/// Look through our search paths for assemblies to load.
-		/// </summary>
-		public static void UpdateAssemblyCache()
-		{
-			foreach (string path in SearchPaths)
+			foreach (string path in searchPath)
 			{
-				foreach (string file in Directory.GetFiles(path, "*.exe"))
+				foreach (string file in Directory.GetFiles(path))
 				{
-					if (!AssemblyFilenames.Contains(file))
+					if (!file.EndsWith(".exe") && !file.EndsWith(".dll"))
+						continue;
+
+					if (AssemblyCache.ContainsKey(file))
+						continue;
+
+					try
 					{
-						AssemblyFilenames.Add(file);
-						try
-						{
-							Assembly asm = Assembly.LoadFile(file);
-						}
-						catch
-						{
-						}
+						Assembly asm = Assembly.LoadFile(file);
+						AssemblyCache.Add(file, asm);
 					}
-				}
-				foreach (string file in Directory.GetFiles(path, "*.dll"))
-				{
-					if (!AssemblyFilenames.Contains(file))
+					catch
 					{
-						AssemblyFilenames.Add(file);
-						try
-						{
-							Assembly asm = Assembly.LoadFile(file);
-						}
-						catch
-						{
-						}
 					}
 				}
 			}
@@ -204,7 +188,7 @@ namespace Peach.Core
 		public static IEnumerable<KeyValuePair<A, Type>> GetAllByAttribute<A>(Func<Type, A, bool> predicate)
 			where A : Attribute
 		{
-			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+			foreach (var asm in ClassLoader.AssemblyCache.Values)
 			{
 				if (asm.IsDynamic)
 					continue;
@@ -268,9 +252,7 @@ namespace Peach.Core
 		public static T FindAndCreateByTypeAndName<T>(string name)
 			where T : class
 		{
-			UpdateAssemblyCache();
-
-			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+			foreach (var asm in ClassLoader.AssemblyCache.Values)
 			{
 				if (asm.IsDynamic)
 					continue;
