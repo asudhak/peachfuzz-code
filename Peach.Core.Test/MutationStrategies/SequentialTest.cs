@@ -7,11 +7,12 @@ using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
 using NUnit.Framework;
+using Peach.Core.MutationStrategies;
 
 namespace Peach.Core.Test.MutationStrategies
 {
 	[TestFixture]
-	class SequencialTest : DataModelCollector
+	class SequentialTest : DataModelCollector
 	{
 		[Test]
 		public void Test1()
@@ -37,7 +38,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"Sequencial\"/>" +
+				"       <Strategy class=\"Sequential\"/>" +
 				"   </Test>" +
 
 				"</Peach>";
@@ -61,7 +62,7 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.AreEqual(5 * (1413 + 3 + 2379), mutations.Count);
 			Assert.AreEqual(5 * 3, strategies.Count);
 
-			// this strategy fuzzes elements in a sequencial order
+			// this strategy fuzzes elements in a sequential order
 			string[] expected = {
 									"StringCaseMutator | TheDataModel.str1",
 									"StringMutator | TheDataModel.str1",
@@ -84,7 +85,7 @@ namespace Peach.Core.Test.MutationStrategies
 				Assert.AreEqual(expected[i], strategies[i]);
 		}
 
-		public void FuzzSequencial(RunConfiguration config)
+		public void FuzzSequential(RunConfiguration config)
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
@@ -107,7 +108,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"Sequencial\"/>" +
+				"       <Strategy class=\"Sequential\"/>" +
 				"   </Test>" +
 
 				"</Peach>";
@@ -129,7 +130,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Tests skipping to the 0th iteration
 			RunConfiguration config = new RunConfiguration();
 			config.skipToIteration = 0;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(16, values.Count);
 			Assert.AreEqual(15, mutations.Count);
 		}
@@ -140,7 +141,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Tests skipping to the 1st iteration
 			RunConfiguration config = new RunConfiguration();
 			config.skipToIteration = 1;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(16, values.Count);
 			Assert.AreEqual(15, mutations.Count);
 		}
@@ -151,7 +152,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Tests skipping a middle iteration
 			RunConfiguration config = new RunConfiguration();
 			config.skipToIteration = 12;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(5, values.Count);
 			Assert.AreEqual(4, mutations.Count);
 		}
@@ -162,7 +163,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Tests skipping past the last iteration
 			RunConfiguration config = new RunConfiguration();
 			config.skipToIteration = 16;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(1, values.Count);
 			Assert.AreEqual(0, mutations.Count);
 		}
@@ -173,7 +174,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Tests skipping way past the last iteration
 			RunConfiguration config = new RunConfiguration();
 			config.skipToIteration = 30;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(1, values.Count);
 			Assert.AreEqual(0, mutations.Count);
 		}
@@ -185,7 +186,7 @@ namespace Peach.Core.Test.MutationStrategies
 			config.range = true;
 			config.rangeStart = 5;
 			config.rangeStop = 5;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(1, values.Count);
 			Assert.AreEqual(0, mutations.Count);
 		}
@@ -197,9 +198,42 @@ namespace Peach.Core.Test.MutationStrategies
 			config.range = true;
 			config.rangeStart = 5;
 			config.rangeStop = 10;
-			FuzzSequencial(config);
+			FuzzSequential(config);
 			Assert.AreEqual(6, values.Count);
 			Assert.AreEqual(5, mutations.Count);
+		}
+
+		[Test]
+		public void TestSequencial()
+		{
+			string xml = 
+@"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+   <DataModel name='TheDataModel'>
+       <String name='str' value='Hello World!'/>
+   </DataModel>
+
+   <StateModel name='TheState' initialState='Initial'>
+       <State name='Initial'>
+           <Action type='output'>
+               <DataModel ref='TheDataModel'/>
+           </Action>
+       </State>
+   </StateModel>
+
+   <Test name='Default'>
+       <StateModel ref='TheState'/>
+       <Publisher class='Null'/>
+       <Strategy class='Sequencial'/>
+   </Test>
+
+</Peach>";
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			var strategy = dom.tests[0].strategy;
+			Assert.IsNotNull(strategy);
+			Assert.IsInstanceOf<Sequential>(strategy);
 		}
 	}
 }

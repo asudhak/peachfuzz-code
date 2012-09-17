@@ -69,9 +69,9 @@ namespace Peach.Core.Mutators
             return false;
         }
 
-        // SEQUENCIAL_MUTATION
+        // SEQUENTIAL_MUTATION
         //
-        public override void sequencialMutation(DataElement obj)
+        public override void sequentialMutation(DataElement obj)
         {
             performMutation(obj);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;

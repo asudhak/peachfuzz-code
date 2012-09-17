@@ -40,7 +40,7 @@ namespace Peach.Core.Test
 				"   <Test name=\"Default\" waitTime=\"5\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"Sequencial\"/>" +
+				"       <Strategy class=\"Sequential\"/>" +
 				"   </Test>" +
 				"</Peach>";
 

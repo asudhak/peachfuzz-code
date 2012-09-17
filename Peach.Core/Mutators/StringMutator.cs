@@ -63,7 +63,7 @@ namespace Peach.Core.Mutators
 			set { pos = value; }
 		}
 
-		public override void sequencialMutation(DataElement obj)
+		public override void sequentialMutation(DataElement obj)
 		{
 			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
 			obj.MutatedValue = new Variant(values[pos]);

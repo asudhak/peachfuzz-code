@@ -36,7 +36,7 @@ namespace Peach.Core.MutationStrategies
 {
 	[DefaultMutationStrategy]
 	[MutationStrategy("RandomDeterministic")]
-	public class RandomDeterministicStrategy : Sequencial
+	public class RandomDeterministicStrategy : Sequential
 	{
 		public RandomDeterministicStrategy(Dictionary<string, Variant> args)
 			: base(args)
@@ -51,7 +51,7 @@ namespace Peach.Core.MutationStrategies
 		protected override void OnDataModelRecorded()
 		{
 			// This strategy should randomize the order of mutators
-			// that would be performed by the sequencial mutation strategy.
+			// that would be performed by the sequential mutation strategy.
 			// The data model record pass only happens at iteration 0
 			System.Diagnostics.Debug.Assert(Iteration == 0);
 

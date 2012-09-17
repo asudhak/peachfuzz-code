@@ -68,9 +68,9 @@ namespace Peach.Core.Mutators
             return false;
         }
 
-        // SEQUENCIAL_MUTATION
+        // SEQUENTIAL_MUTATION
         //
-        public override void sequencialMutation(DataElement obj)
+        public override void sequentialMutation(DataElement obj)
         {
             var idx1 = obj.parent.IndexOf(obj);
             var copy1 = ObjectCopier.Clone<DataElement>(obj);
@@ -95,7 +95,7 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            sequencialMutation(obj);
+            sequentialMutation(obj);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
     }

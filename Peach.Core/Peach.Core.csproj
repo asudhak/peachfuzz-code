@@ -506,7 +506,7 @@
     <Compile Include="Loggers\File.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicStrategy.cs" />
     <Compile Include="MutationStrategies\RandomStrategy.cs" />
-    <Compile Include="MutationStrategies\Sequencial.cs" />
+    <Compile Include="MutationStrategies\Sequential.cs" />
     <Compile Include="MutationStrategy.cs" />
     <Compile Include="Mutator.cs" />
     <Compile Include="MutatorAttribute.cs" />

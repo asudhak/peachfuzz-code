@@ -157,11 +157,11 @@ namespace Peach.Core.Mutators
             return context.Random.Next(size - len);
         }
 
-        // SEQUENCIAL_MUTATION
+        // SEQUENTIAL_MUTATION
         //
-        public override void sequencialMutation(DataElement obj)
+        public override void sequentialMutation(DataElement obj)
         {
-            // The sequencial logic relies on expand being thte 1st change function when we have generate functions
+            // The sequential logic relies on expand being thte 1st change function when we have generate functions
             System.Diagnostics.Debug.Assert(generateFcns.Count == 0 || changeFcns[0] == changeExpandBuffer);
 
             if (pos < generateFcns.Count)

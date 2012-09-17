@@ -89,10 +89,10 @@ namespace Peach.Core
 		}
 
 		/// <summary>
-		/// Perform a sequencial mutation.
+		/// Perform a sequential mutation.
 		/// </summary>
 		/// <param name="obj"></param>
-		public abstract void sequencialMutation(DataElement obj);
+		public abstract void sequentialMutation(DataElement obj);
 
 		/// <summary>
 		/// Perform a random mutation.

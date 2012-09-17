@@ -1239,7 +1239,7 @@
 					<xs:annotation>
 						<xs:documentation>
 							Select a fuzzing strategy for this Test.  This is an optional element, by default
-							the "sequencial" fuzzing strategy is used.
+							the "sequential" fuzzing strategy is used.
 						</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
@@ -1266,7 +1266,7 @@
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<xs:enumeration value="Sequencial">
+											<xs:enumeration value="Sequential">
 												<xs:annotation>
 													<xs:documentation>
 														Each element will be mutated

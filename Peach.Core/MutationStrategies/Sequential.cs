@@ -36,8 +36,9 @@ using NLog;
 
 namespace Peach.Core.MutationStrategies
 {
-	[MutationStrategy("Sequencial")]
-	public class Sequencial : MutationStrategy
+	[MutationStrategy("Sequential")]
+	[MutationStrategy("Sequencial")] // for backwards compatibility with older PITs
+	public class Sequential : MutationStrategy
 	{
 		protected class Iterations : List<Tuple<string, Mutator>> { }
 
@@ -50,7 +51,7 @@ namespace Peach.Core.MutationStrategies
 		private uint _count = 1;
 		private uint _iteration = 0;
 
-		public Sequencial(Dictionary<string, Variant> args)
+		public Sequential(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}
@@ -200,7 +201,7 @@ namespace Peach.Core.MutationStrategies
 				OnMutating(fullName, mutator.name);
 				logger.Debug("Action_Starting: Fuzzing: " + fullName);
 				logger.Debug("Action_Starting: Mutator: " + mutator.name);
-				mutator.sequencialMutation(dataElement);
+				mutator.sequentialMutation(dataElement);
 			}
 		}
 

@@ -113,11 +113,11 @@ namespace Peach.Core.Mutators
             return false;
         }
 
-        // SEQUENCIAL_MUTATION
+        // SEQUENTIAL_MUTATION
         //
-        public override void sequencialMutation(DataElement obj)
+        public override void sequentialMutation(DataElement obj)
         {
-            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
+            // Only called via the Sequential mutation strategy, which should always have a consistent seed
 
             randomMutation(obj);
         }

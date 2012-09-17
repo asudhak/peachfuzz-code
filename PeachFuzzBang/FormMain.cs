@@ -381,7 +381,7 @@ namespace PeachFuzzBang
 				// Mutation Strategy
 				MutationStrategy strat = new RandomStrategy(new Dictionary<string, Variant>());
 				if (comboBoxFuzzingStrategy.Text.ToLower().IndexOf("Squencial") > -1)
-					strat = new Sequencial(new Dictionary<string, Variant>());
+					strat = new Sequential(new Dictionary<string, Variant>());
 
 				// Test
 				Test test = new Test();

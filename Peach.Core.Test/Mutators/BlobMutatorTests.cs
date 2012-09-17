@@ -62,12 +62,12 @@ namespace Peach.Core.Test.Mutators
 		}
 
 
-		private void RunSequencial(int expected, string hint = "")
+		private void RunSequential(int expected, string hint = "")
 		{
 			ResetContainers();
 
-			// Test all variations are hit when using the sequencial strategy
-			string xml = getXml("Sequencial", 4, 0, 255, hint);
+			// Test all variations are hit when using the sequential strategy
+			string xml = getXml("Sequential", 4, 0, 255, hint);
 
 			PitParser parser = new PitParser();
 
@@ -94,7 +94,7 @@ namespace Peach.Core.Test.Mutators
 		{
 			ResetContainers();
 
-			// Test all variations are hit when using the sequencial strategy
+			// Test all variations are hit when using the sequential strategy
 			string xml = getXml("Random", len, val, val, hint);
 
 			PitParser parser = new PitParser();
@@ -118,20 +118,20 @@ namespace Peach.Core.Test.Mutators
 		}
 
 		[Test]
-		public void TestSequencial()
+		public void TestSequential()
 		{
-			RunSequencial(Enum.GetValues(typeof(BlobMutator.How)).Length);
+			RunSequential(Enum.GetValues(typeof(BlobMutator.How)).Length);
 		}
 
 		[Test]
-		public void TestSequencialHints()
+		public void TestSequentialHints()
 		{
-			RunSequencial(1, "NullRange");
-			RunSequencial(1, "ExpandZero");
-			RunSequencial(2, "ExpandZero,ExpandAllRandom");
-			RunSequencial(2, "ExpandAllRandom,UnNullRange");
-			RunSequencial(3, "ChangeRange,Reduce,RangeSpecial");
-			Assert.Throws(typeof(PeachException), delegate() { RunSequencial(0, "badhint"); }, "Unexpected value for Hint named: BlobMutator-How");
+			RunSequential(1, "NullRange");
+			RunSequential(1, "ExpandZero");
+			RunSequential(2, "ExpandZero,ExpandAllRandom");
+			RunSequential(2, "ExpandAllRandom,UnNullRange");
+			RunSequential(3, "ChangeRange,Reduce,RangeSpecial");
+			Assert.Throws(typeof(PeachException), delegate() { RunSequential(0, "badhint"); }, "Unexpected value for Hint named: BlobMutator-How");
 		}
 
 		[Test]

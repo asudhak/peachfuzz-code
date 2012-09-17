@@ -34,7 +34,7 @@ namespace Peach.Core.Test.Publishers
 				       <Publisher class=""FilePerIteration"">
 				           <Param name=""FileName"" value=""{0}""/>
 				       </Publisher>
-				       <Strategy class=""Sequencial""/>
+				       <Strategy class=""Sequential""/>
 				   </Test>
 
 				   <Run name=""DefaultRun"">
