@@ -54,7 +54,7 @@ namespace PeachMinset
 
 			string samples = null;
 			string traces = null;
-			bool kill = false;
+//			bool kill = false;
 			string executable = null;
 			string arguments = "";
 			string minset = null;
@@ -62,7 +62,7 @@ namespace PeachMinset
 			var p = new OptionSet()
 				{
 					{ "h|?|help", v => Syntax() },
-					{ "k", v => kill = true },
+//					{ "k", v => kill = true },
 					{ "s|samples=", v => samples = v },
 					{ "t|traces=", v => traces = v},
 					{ "m|minset=", v => minset = v }
