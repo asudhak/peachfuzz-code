@@ -310,7 +310,7 @@ namespace Peach.Core.Test.Mutators
 		[Test]
 		public void TestReduce()
 		{
-			RunRandom(5000, "Reduce", 100, 0);
+			RunRandom(5000, "Reduce", 100, 1);
 
 			// Should reduce by [0,len] bytes
 

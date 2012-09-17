@@ -56,7 +56,7 @@ namespace Peach.Core.Mutators
         protected delegate byte[] changeFcn(DataElement obj);
         protected List<changeFcn> changeFcns;
 
-        protected delegate byte[] generateFcn(int size);
+        protected delegate byte[] generateFcn(byte[] buf, int index, int size);
         protected List<generateFcn> generateFcns;
 
         uint pos;
@@ -137,7 +137,7 @@ namespace Peach.Core.Mutators
 
         // GET_RANGE
         //
-        private void getRange(int size, out int start, out int end)
+        private void getRange(int size, out int start, out int end, int delta = int.MaxValue)
         {
             start = context.Random.Next(size);
             end = context.Random.Next(size);
@@ -148,13 +148,9 @@ namespace Peach.Core.Mutators
                 end = start;
                 start = temp;
             }
-        }
 
-        // GET_POSITION
-        //
-        private int getPosition(int size, int len = 0)
-        {
-            return context.Random.Next(size - len);
+            if ((end - start) > delta)
+                end = start + delta;
         }
 
         // SEQUENTIAL_MUTATION
@@ -193,20 +189,14 @@ namespace Peach.Core.Mutators
             return changeExpandBuffer(obj, how);
         }
 
-        private byte[] changeExpandBuffer(DataElement obj, generateFcn how)
+        private byte[] changeExpandBuffer(DataElement obj, generateFcn generate)
         {
             // expand the size of our buffer
-
-            List<byte> listData = new List<byte>();
             var data = obj.Value.Value;
             int size = context.Random.Next(256);
-            int pos = getPosition(size);
+            int pos = context.Random.Next(data.Length);
 
-            var pt1 = ArrayExtensions.Slice(data, 0, pos);
-            var pt2 = how(size);
-            var pt3 = ArrayExtensions.Slice(data, pos, data.Length);
-
-            return ArrayExtensions.Combine(pt1, pt2, pt3);
+            return generate(data, pos, size);
         }
 
         // REDUCE_BUFFER
@@ -221,10 +211,11 @@ namespace Peach.Core.Mutators
 
             getRange(data.Length, out start, out end);
 
-            var pt1 = ArrayExtensions.Slice(data, 0, start);
-            var pt2 = ArrayExtensions.Slice(data, end, data.Length);
+            byte[] ret = new byte[data.Length - (end - start)];
+            Buffer.BlockCopy(data, 0, ret, 0, start);
+            Buffer.BlockCopy(data, end, ret, start, data.Length - end);
 
-            return ArrayExtensions.Combine(pt1, pt2);
+            return ret;
         }
 
         // CHANGE_RANGE
@@ -237,18 +228,10 @@ namespace Peach.Core.Mutators
             int start = 0;
             int end = 0;
 
-            getRange(data.Length, out start, out end);
+            getRange(data.Length, out start, out end, 100);
 
-            if (end > start + 100)
-                end = start + 100;
-
-            foreach (int i in ArrayExtensions.Range(start, end, 1))
-            {
-                var pt1 = ArrayExtensions.Slice(data, 0, i);
-                byte[] pt2 = { (byte)(context.Random.Next(256)) };
-                var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
-                data = ArrayExtensions.Combine(pt1, pt2, pt3);
-            }
+            for (int i = start; i < end; ++i)
+                data[i] = (byte)(context.Random.Next(256));
 
             return data;
         }
@@ -264,18 +247,10 @@ namespace Peach.Core.Mutators
             int end = 0;
             byte[] special = { 0x00, 0x01, 0xFE, 0xFF };
 
-            getRange(data.Length, out start, out end);
+            getRange(data.Length, out start, out end, 100);
 
-            if (end > start + 100)
-                end = start + 100;
-
-            foreach (int i in ArrayExtensions.Range(start, end, 1))
-            {
-                var pt1 = ArrayExtensions.Slice(data, 0, i);
-                byte[] pt2 = { context.Random.Choice(special) };
-                var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
-                data = ArrayExtensions.Combine(pt1, pt2, pt3);
-            }
+            for (int i = start; i < end; ++i)
+                data[i] = context.Random.Choice(special);
 
             return data;
         }
@@ -290,18 +265,10 @@ namespace Peach.Core.Mutators
             int start = 0;
             int end = 0;
 
-            getRange(data.Length, out start, out end);
+            getRange(data.Length, out start, out end, 100);
 
-            if (end > start + 100)
-                end = start + 100;
-
-            foreach (int i in ArrayExtensions.Range(start, end, 1))
-            {
-                var pt1 = ArrayExtensions.Slice(data, 0, i);
-                byte[] pt2 = { 0x00 };
-                var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
-                data = ArrayExtensions.Combine(pt1, pt2, pt3);
-            }
+            for (int i = start; i < end; ++i)
+                data[i] = 0;
 
             return data;
         }
@@ -316,81 +283,87 @@ namespace Peach.Core.Mutators
             int start = 0;
             int end = 0;
 
-            getRange(data.Length, out start, out end);
+            getRange(data.Length, out start, out end, 100);
 
-            if (end > start + 100)
-                end = start + 100;
-
-            foreach (int i in ArrayExtensions.Range(start, end, 1))
-            {
+            for (int i = start; i < end; ++i)
                 if (data[i] == 0)
-                {
-                    var pt1 = ArrayExtensions.Slice(data, 0, i);
-                    byte[] pt2 = { (byte)(context.Random.Next(1, 256)) };
-                    var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
-                    data = ArrayExtensions.Combine(pt1, pt2, pt3);
-                }
-            }
+                    data[i] = (byte)(context.Random.Next(1, 256));
 
             return data;
         }
 
         // NEW_BYTES_SINGLE_RANDOM
         //
-        private byte[] generateNewBytesSingleRandom(int size)
+        private byte[] generateNewBytesSingleRandom(byte[] buf, int index, int size)
         {
-            // generate a buffer of size bytes, each byte is the same random number
+            // Grow buffer by size bytes starting at index, each byte is the same random number
+            byte[] ret = new byte[buf.Length + size];
+            Buffer.BlockCopy(buf, 0, ret, 0, index);
+            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
 
-            List<byte> newData = new List<byte>();
-            byte num = (byte)(context.Random.Next(256));
+            byte val = (byte)(context.Random.Next(256));
 
-            for (int i = 0; i < size; ++i)
-                newData.Add(num);
+            for (int i = index; i < index + size; ++i)
+                ret[i] = val;
 
-            return newData.ToArray();
+            return ret;
         }
 
         // NEW_BYTES_INCREMENTING
         //
-        private byte[] generateNewBytesIncrementing(int size)
+        private byte[] generateNewBytesIncrementing(byte[] buf, int index, int size)
         {
-            // generate a buffer of size bytes, each byte is incrementing from a random start
+            // Pick a starting value between [0, size] and grow buffer by
+            // a max of size bytes of incrementing values from [value,255]
+            System.Diagnostics.Debug.Assert(size < 256);
 
-            List<byte> newData = new List<byte>();
-            int x = context.Random.Next(size + 1);
+            int val = context.Random.Next(size + 1);
+            int max = 256 - val;
+            if (size > max)
+                size = max;
 
-            for (int i = 0; i < size && i + x <= 255; ++i)
-                newData.Add((byte)(i + x));
+            byte[] ret = new byte[buf.Length + size];
+            Buffer.BlockCopy(buf, 0, ret, 0, index);
+            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
 
-            return newData.ToArray();
+            for (int i = 0; i < size; ++i)
+                ret[index + i] = (byte)(val + i);
+
+            return ret;
         }
 
         // NEW_BYTES_ZERO
         //
-        private byte[] generateNewBytesZero(int size)
+        private byte[] generateNewBytesZero(byte[] buf, int index, int size)
         {
-            // generate a buffer of size bytes, each byte is zero (NULL)
+            // Grow buffer by size bytes starting at index, each byte is zero (NULL)
+            byte[] ret = new byte[buf.Length + size];
+            Buffer.BlockCopy(buf, 0, ret, 0, index);
+            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
 
-            List<byte> newData = new List<byte>();
+            byte val = (byte)(context.Random.Next(256));
 
-            for (int i = 0; i < size; ++i)
-                newData.Add(0x00);
+            for (int i = index; i < index + size; ++i)
+                ret[i] = 0;
 
-            return newData.ToArray();
+            return ret;
         }
 
         // NEW_BYTES_ALL_RANDOM
         //
-        private byte[] generateNewBytesAllRandom(int size)
+        private byte[] generateNewBytesAllRandom(byte[] buf, int index, int size)
         {
-            // generate a buffer of size bytes, each byte is randomly generated
+            // Grow buffer by size bytes starting at index, each byte is randomly generated
+            byte[] ret = new byte[buf.Length + size];
+            Buffer.BlockCopy(buf, 0, ret, 0, index);
+            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
 
-            List<byte> newData = new List<byte>();
+            byte val = (byte)(context.Random.Next(256));
 
-            for (int i = 0; i < size; ++i)
-                newData.Add((byte)(context.Random.Next(256)));
+            for (int i = index; i < index + size; ++i)
+                ret[i] = (byte)(context.Random.Next(256));
 
-            return newData.ToArray();
+            return ret;
         }
     }
 }
