@@ -214,23 +214,23 @@ namespace Peach.Core.Agent.Monitors
 			ASL_QUERY_OP_TRUE          = 0x0007,
 		};
 		
-		private static string ASL_KEY_TIME        = "Time";          /* Timestamp.  Set automatically */
-		private static string ASL_KEY_TIME_NSEC   = "TimeNanoSec";   /* Nanosecond time. */
-		private static string ASL_KEY_HOST        = "Host";          /* Sender's address (set by the server). */
-		private static string ASL_KEY_SENDER      = "Sender";        /* Sender's identification string.  Default is process name. */
-		private static string ASL_KEY_FACILITY    = "Facility";      /* Sender's facility.  Default is "user". */
-		private static string ASL_KEY_PID         = "PID";           /* Sending process ID encoded as a string.  Set automatically. */
-		private static string ASL_KEY_UID         = "UID";           /* UID that sent the log message (set by the server). */
-		private static string ASL_KEY_GID         = "GID";           /* GID that sent the log message (set by the server). */
-		private static string ASL_KEY_LEVEL       = "Level";         /* Log level number encoded as a string.  See levels above. */
-		private static string ASL_KEY_MSG         = "Message";       /* Message text. */
-		private static string ASL_KEY_READ_UID    = "ReadUID";       /* User read access (-1 is any group). */
-		private static string ASL_KEY_READ_GID    = "ReadGID";       /* Group read access (-1 is any group). */
-		private static string ASL_KEY_EXPIRE_TIME = "ASLExpireTime"; /* Expiration time for messages with long TTL. */
-		private static string ASL_KEY_MSG_ID      = "ASLMessageID";  /* 64-bit message ID number (set by the server). */
-		private static string ASL_KEY_SESSION     = "Session";       /* Session (set by the launchd). */
-		private static string ASL_KEY_REF_PID     = "RefPID";        /* Reference PID for messages proxied by launchd */
-		private static string ASL_KEY_REF_PROC    = "RefProc";       /* Reference process for messages proxied by launchd */
+		private static string ASL_KEY_TIME        { get { return "Time"; } }          /* Timestamp.  Set automatically */
+		private static string ASL_KEY_TIME_NSEC   { get { return "TimeNanoSec"; } }   /* Nanosecond time. */
+		private static string ASL_KEY_HOST        { get { return "Host"; } }          /* Sender's address (set by the server). */
+		private static string ASL_KEY_SENDER      { get { return "Sender"; } }        /* Sender's identification string.  Default is process name. */
+		private static string ASL_KEY_FACILITY    { get { return "Facility"; } }      /* Sender's facility.  Default is "user". */
+		private static string ASL_KEY_PID         { get { return "PID"; } }           /* Sending process ID encoded as a string.  Set automatically. */
+		private static string ASL_KEY_UID         { get { return "UID"; } }           /* UID that sent the log message (set by the server). */
+		private static string ASL_KEY_GID         { get { return "GID"; } }           /* GID that sent the log message (set by the server). */
+		private static string ASL_KEY_LEVEL       { get { return "Level"; } }         /* Log level number encoded as a string.  See levels above. */
+		private static string ASL_KEY_MSG         { get { return "Message"; } }       /* Message text. */
+		private static string ASL_KEY_READ_UID    { get { return "ReadUID"; } }       /* User read access (-1 is any group). */
+		private static string ASL_KEY_READ_GID    { get { return "ReadGID"; } }       /* Group read access (-1 is any group). */
+		private static string ASL_KEY_EXPIRE_TIME { get { return "ASLExpireTime"; } } /* Expiration time for messages with long TTL. */
+		private static string ASL_KEY_MSG_ID      { get { return "ASLMessageID"; } }  /* 64-bit message ID number (set by the server). */
+		private static string ASL_KEY_SESSION     { get { return "Session"; } }       /* Session (set by the launchd). */
+		private static string ASL_KEY_REF_PID     { get { return "RefPID"; } }        /* Reference PID for messages proxied by launchd */
+		private static string ASL_KEY_REF_PROC    { get { return "RefProc"; } }       /* Reference process for messages proxied by launchd */
 		
 		[DllImport("libc")]
 		// int asl_send(aslclient asl, aslmsg msg);
