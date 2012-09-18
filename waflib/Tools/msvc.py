@@ -89,7 +89,7 @@ def options(opt):
 	opt.add_option('--msvc_version', type='string', help = 'msvc version, eg: "msvc 10.0,msvc 9.0"', default='')
 	opt.add_option('--msvc_targets', type='string', help = 'msvc targets, eg: "x64,arm"', default='')
 
-def setup_msvc(conf, versions):
+def setup_msvc(conf, versions, arch = False):
 	platforms = getattr(Options.options, 'msvc_targets', '').split(',')
 	if platforms == ['']:
 		platforms=Utils.to_list(conf.env['MSVC_TARGETS']) or [i for i,j in all_msvc_platforms+all_icl_platforms+all_wince_platforms]
@@ -105,7 +105,10 @@ def setup_msvc(conf, versions):
 				try:
 					arch,(p1,p2,p3) = targets[target]
 					compiler,revision = version.rsplit(' ', 1)
-					return compiler,revision,p1,p2,p3
+					if arch:
+						return compiler,revision,p1,p2,p3,arch
+					else:
+						return compiler,revision,p1,p2,p3
 				except KeyError: continue
 		except KeyError: continue
 	conf.fatal('msvc: Impossible to find a valid architecture for building (in setup_msvc)')
@@ -456,9 +459,9 @@ def print_all_msvc_detected(conf):
 			Logs.info("\t"+target)
 
 @conf
-def detect_msvc(conf):
+def detect_msvc(conf, arch = False):
 	versions = get_msvc_versions(conf)
-	return setup_msvc(conf, versions)
+	return setup_msvc(conf, versions, arch)
 
 @conf
 def find_lt_names_msvc(self, libname, is_static=False):
@@ -579,7 +582,7 @@ def configure(conf):
 	"""
 	Configuration methods to call for detecting msvc
 	"""
-	conf.autodetect()
+	conf.autodetect(True)
 	conf.find_msvc()
 	conf.msvc_common_flags()
 	conf.cc_load_tools()
@@ -595,11 +598,16 @@ def no_autodetect(conf):
 	configure(conf)
 
 @conf
-def autodetect(conf):
+def autodetect(conf, arch = False):
 	v = conf.env
 	if v.NO_MSVC_DETECT:
 		return
-	compiler, version, path, includes, libdirs = conf.detect_msvc()
+	if arch:
+		compiler, version, path, includes, libdirs, arch = conf.detect_msvc(True)
+		v['DEST_CPU'] = arch
+	else:
+		compiler, version, path, includes, libdirs = conf.detect_msvc()
+
 	v['PATH'] = path
 	v['INCLUDES'] = includes
 	v['LIBPATH'] = libdirs
