@@ -32,7 +32,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			p.StartInfo = new System.Diagnostics.ProcessStartInfo();
 			p.StartInfo.EnvironmentVariables["PEACH"] = "qwertyuiopasdfghjklzxcvbnm";
 			p.StartInfo.UseShellExecute = false;
-			p.StartInfo.FileName = "/Users/seth/src/git/peach/output/osx_debug/bin/CrashingProgram";
+			p.StartInfo.FileName = "CrashingProgram";
 			p.Start();
 			reporter.IterationFinished();
 			Assert.True(reporter.DetectedFault());
@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			p.StartInfo = new System.Diagnostics.ProcessStartInfo();
 			p.StartInfo.EnvironmentVariables["PEACH"] = "qwertyuiopasdfghjklzxcvbnm";
 			p.StartInfo.UseShellExecute = false;
-			p.StartInfo.FileName = "/Users/seth/src/git/peach/output/osx_debug/bin/CrashingProgram";
+			p.StartInfo.FileName = "CrashingProgram";
 			p.Start();
 			reporter.IterationFinished();
 			Assert.True(reporter.DetectedFault());
@@ -82,7 +82,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			p.StartInfo = new System.Diagnostics.ProcessStartInfo();
 			p.StartInfo.EnvironmentVariables["PEACH"] = "qwertyuiopasdfghjklzxcvbnm";
 			p.StartInfo.UseShellExecute = false;
-			p.StartInfo.FileName = "/Users/seth/src/git/peach/output/osx_debug/bin/CrashingProgram";
+			p.StartInfo.FileName = "CrashingProgram";
 			p.Start();
 			reporter.IterationFinished();
 			Assert.False(reporter.DetectedFault());
