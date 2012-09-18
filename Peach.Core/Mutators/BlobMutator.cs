@@ -34,17 +34,33 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
-    public class BlobMutator : BlobBitFlipperMutator
+    [Hint("BlobMutator-How", "Comma seperated list of: ExpandSingleRandom,ExpandIncrementing,ExpandZero,ExpandAllRandom,Reduce,ChangeRange,RangeSpecial,NullRange,UnNullRange")]
+    public class BlobMutator : Mutator
     {
+        [Flags]
+        public enum How
+        {
+            ExpandSingleRandom = 0x001,
+            ExpandIncrementing = 0x002,
+            ExpandZero = 0x004,
+            ExpandAllRandom = 0x008,
+            Reduce = 0x010,
+            ChangeRange = 0x020,
+            RangeSpecial = 0x040,
+            NullRange = 0x080,
+            UnNullRange = 0x100,
+        }
+
         // members
         //
-        public delegate byte[] changeFcn(DataElement obj);
-        changeFcn[] changeFcns = new changeFcn[6];
+        protected delegate byte[] changeFcn(DataElement obj);
+        protected List<changeFcn> changeFcns;
 
-        public delegate byte[] generateFcn(int size);
-        generateFcn[] generateFcns = new generateFcn[5];
+        protected delegate byte[] generateFcn(int size);
+        protected List<generateFcn> generateFcns;
 
         uint pos;
+        int _count;
 
         // CTOR
         //
@@ -54,18 +70,44 @@ namespace Peach.Core.Mutators
             name = "BlobMutator";
             pos = 0;
 
-            changeFcns[0] = new changeFcn(changeExpandBuffer);
-            changeFcns[1] = new changeFcn(changeReduceBuffer);
-            changeFcns[2] = new changeFcn(changeChangeRange);
-            changeFcns[3] = new changeFcn(changeRangeSpecial);
-            changeFcns[4] = new changeFcn(changeNullRange);
-            changeFcns[5] = new changeFcn(changeUnNullRange);
+            How how = 0;
+            foreach (var flag in Enum.GetValues(typeof(How)))
+                how |= (How)flag;
 
-            generateFcns[0] = new generateFcn(generateNewBytes);
-            generateFcns[1] = new generateFcn(generateNewBytesSingleRandom);
-            generateFcns[2] = new generateFcn(generateNewBytesIncrementing);
-            generateFcns[3] = new generateFcn(generateNewBytesZero);
-            generateFcns[4] = new generateFcn(generateNewBytesAllRandom);
+            Hint hint;
+            if (obj.Hints.TryGetValue("BlobMutator-How", out hint))
+            {
+                if (!Enum.TryParse(hint.Value, out how))
+                    throw new PeachException("Unexpected value for Hint named: " + hint.Name);
+            }
+
+            changeFcns = new List<changeFcn>();
+            generateFcns = new List<generateFcn>();
+
+            if ((how & How.ExpandSingleRandom) == How.ExpandSingleRandom)
+                generateFcns.Add(new generateFcn(generateNewBytesSingleRandom));
+            if ((how & How.ExpandIncrementing) == How.ExpandIncrementing)
+                generateFcns.Add(new generateFcn(generateNewBytesIncrementing));
+            if ((how & How.ExpandZero) == How.ExpandZero)
+                generateFcns.Add(new generateFcn(generateNewBytesZero));
+            if ((how & How.ExpandAllRandom) == How.ExpandAllRandom)
+                generateFcns.Add(new generateFcn(generateNewBytesAllRandom));
+            if ((how & How.Reduce) == How.Reduce)
+                changeFcns.Add(new changeFcn(changeReduceBuffer));
+            if ((how & How.ChangeRange) == How.ChangeRange)
+                changeFcns.Add(new changeFcn(changeChangeRange));
+            if ((how & How.RangeSpecial) == How.RangeSpecial)
+                changeFcns.Add(new changeFcn(changeRangeSpecial));
+            if ((how & How.NullRange) == How.NullRange)
+                changeFcns.Add(new changeFcn(changeNullRange));
+            if ((how & How.UnNullRange) == How.UnNullRange)
+                changeFcns.Add(new changeFcn(changeUnNullRange));
+
+            _count = changeFcns.Count + generateFcns.Count;
+
+            // We only use expand when we have generate functions
+            if (generateFcns.Count > 0)
+                changeFcns.Insert(0, new changeFcn(changeExpandBuffer));
         }
 
         // MUTATION
@@ -73,14 +115,14 @@ namespace Peach.Core.Mutators
         public override uint mutation
         {
             get { return pos; }
-            set { pos = value;  }
+            set { pos = value; }
         }
 
         // COUNT
         //
         public override int count
         {
-            get { return changeFcns.Length; }
+            get { return _count; }
         }
 
         // SUPPORTED
@@ -119,10 +161,15 @@ namespace Peach.Core.Mutators
         //
         public override void sequencialMutation(DataElement obj)
         {
-            // Only called via the Sequencial mutation strategy, which should always have a consistent seed
-            System.Diagnostics.Debug.Assert(context.Seed == 0);
+            // The sequencial logic relies on expand being thte 1st change function when we have generate functions
+            System.Diagnostics.Debug.Assert(generateFcns.Count == 0 || changeFcns[0] == changeExpandBuffer);
 
-            obj.MutatedValue = new Variant(changeFcns[pos](obj));
+            if (pos < generateFcns.Count)
+                obj.MutatedValue = new Variant(changeExpandBuffer(obj, generateFcns[(int)pos]));
+            else if (generateFcns.Count > 0)
+                obj.MutatedValue = new Variant(changeFcns[(int)pos - generateFcns.Count + 1](obj));
+            else
+                obj.MutatedValue = new Variant(changeFcns[(int)pos](obj));
 
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
@@ -142,15 +189,21 @@ namespace Peach.Core.Mutators
         //
         private byte[] changeExpandBuffer(DataElement obj)
         {
+            var how = context.Random.Choice(generateFcns);
+            return changeExpandBuffer(obj, how);
+        }
+
+        private byte[] changeExpandBuffer(DataElement obj, generateFcn how)
+        {
             // expand the size of our buffer
 
             List<byte> listData = new List<byte>();
             var data = obj.Value.Value;
-            int size = context.Random.Next(255);
+            int size = context.Random.Next(256);
             int pos = getPosition(size);
 
             var pt1 = ArrayExtensions.Slice(data, 0, pos);
-            var pt2 = generateNewBytes(size);
+            var pt2 = how(size);
             var pt3 = ArrayExtensions.Slice(data, pos, data.Length);
 
             return ArrayExtensions.Combine(pt1, pt2, pt3);
@@ -192,7 +245,7 @@ namespace Peach.Core.Mutators
             foreach (int i in ArrayExtensions.Range(start, end, 1))
             {
                 var pt1 = ArrayExtensions.Slice(data, 0, i);
-                byte[] pt2 = { (byte)(context.Random.Next(255)) };
+                byte[] pt2 = { (byte)(context.Random.Next(256)) };
                 var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
                 data = ArrayExtensions.Combine(pt1, pt2, pt3);
             }
@@ -273,22 +326,13 @@ namespace Peach.Core.Mutators
                 if (data[i] == 0)
                 {
                     var pt1 = ArrayExtensions.Slice(data, 0, i);
-                    byte[] pt2 = { (byte)(context.Random.Next(1, 255)) };
+                    byte[] pt2 = { (byte)(context.Random.Next(1, 256)) };
                     var pt3 = ArrayExtensions.Slice(data, i + 1, data.Length);
                     data = ArrayExtensions.Combine(pt1, pt2, pt3);
                 }
             }
 
             return data;
-        }
-
-        // NEW_BYTES
-        //
-        private byte[] generateNewBytes(int size)
-        {
-            // generate new bytes to inject into Blob
-
-            return context.Random.Choice(generateFcns)(size);
         }
 
         // NEW_BYTES_SINGLE_RANDOM
@@ -298,7 +342,7 @@ namespace Peach.Core.Mutators
             // generate a buffer of size bytes, each byte is the same random number
 
             List<byte> newData = new List<byte>();
-            byte num = (byte)(context.Random.Next(255));
+            byte num = (byte)(context.Random.Next(256));
 
             for (int i = 0; i < size; ++i)
                 newData.Add(num);
@@ -313,15 +357,10 @@ namespace Peach.Core.Mutators
             // generate a buffer of size bytes, each byte is incrementing from a random start
 
             List<byte> newData = new List<byte>();
-            int x = context.Random.Next(size);
+            int x = context.Random.Next(size + 1);
 
-            foreach (int i in ArrayExtensions.Range(0, size, 1))
-            {
-                if (i + x > 255)
-                    return newData.ToArray();
-
+            for (int i = 0; i < size && i + x <= 255; ++i)
                 newData.Add((byte)(i + x));
-            }
 
             return newData.ToArray();
         }
@@ -349,7 +388,7 @@ namespace Peach.Core.Mutators
             List<byte> newData = new List<byte>();
 
             for (int i = 0; i < size; ++i)
-                newData.Add((byte)(context.Random.Next(255)));
+                newData.Add((byte)(context.Random.Next(256)));
 
             return newData.ToArray();
         }

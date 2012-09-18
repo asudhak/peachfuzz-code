@@ -14,6 +14,7 @@ namespace Peach.Core.Test.Transformers.Type
     class StringToIntTests : DataModelCollector
     {
         [Test]
+        [Ignore("TODO - Implement this test.")]
         public void Test1()
         {
             // standard test
@@ -53,7 +54,6 @@ namespace Peach.Core.Test.Transformers.Type
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.Null("TODO: Implement me!");
         }
     }
 }

@@ -76,7 +76,7 @@ namespace Peach.Core.Test.Mutators
                 if (ogArray.SequenceEqual(val))
                     ++numSame;
             }
-            Assert.LessOrEqual(numSame, 1);
+            Assert.LessOrEqual(numSame, 2);
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace Peach.Core.Test.Mutators
                 if (ogArray.SequenceEqual(val))
                     ++numSame;
             }
-            Assert.LessOrEqual(numSame, 1);
+            Assert.LessOrEqual(numSame, 2);
         }
 
         [Test]
@@ -174,7 +174,7 @@ namespace Peach.Core.Test.Mutators
                 }
             }
 
-            Assert.Less(numSame, 10);
+            Assert.Less(numSame, 12);
         }
     }
 }

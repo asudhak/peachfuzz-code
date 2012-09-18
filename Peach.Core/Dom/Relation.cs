@@ -35,6 +35,7 @@ using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Diagnostics;
 
 namespace Peach.Core.Dom
 {
@@ -42,6 +43,7 @@ namespace Peach.Core.Dom
 	/// Base class for all data element relations
 	/// </summary>
 	[Serializable]
+	[DebuggerDisplay("Of={_ofName} From={_fromName}")]
 	public abstract class Relation : IPitSerializable
 	{
 		protected DataElement _parent = null;
@@ -174,9 +176,8 @@ namespace Peach.Core.Dom
 				{
 					_of = parent.find(_ofName);
 
-					// TODO - What if null?
-                    if (_of == null)
-                        throw new System.NotImplementedException();
+					if (_of == null)
+						throw new PeachException("Error, unable to resolve '" + _ofName + "' from relation attached to '" + parent.fullName + "'.");
 
 					_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
@@ -232,6 +233,7 @@ namespace Peach.Core.Dom
 					else if (Of != null && Of != parent)
 					{
 						_from = parent;
+						_fromName = _from.name;
 					}
 
 					if (_of != null)

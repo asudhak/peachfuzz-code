@@ -97,40 +97,45 @@ def configure(conf):
 		'/define:PEACH',
 	])
 
+	env.append_value('CSFLAGS_debug', [
+		'/define:DEBUG,TRACE',
+	])
+	
+	env.append_value('CSFLAGS_release', [
+		'/define:TRACE',
+		'/optimize+',
+	])
+
 	env['CSPLATFORM'] = 'anycpu'
 
-	cflags = [
+	cppflags = [
 		'-pipe',
 		'-Werror',
 		'-Wno-unused',
 	]
 	
-	env.append_value('CFLAGS', cflags)
-	env.append_value('CXXFLAGS', cflags)
-
-	env.append_value('LIB', [ 'dl' ])
-
-	return [ 'debug', 'release' ]
-
-def debug(env):
-	env.CSDEBUG = 'full'
-
-	cflags = [
+	cppflags_debug = [
 		'-ggdb',
 	]
 
-	env.append_value('CSFLAGS', ['/define:DEBUG,TRACE'])
-	env.append_value('DEFINES', ['DEBUG'])
-	env.append_value('CFLAGS', cflags)
-	env.append_value('CXXFLAGS', cflags)
-
-def release(env):
-	env.CSDEBUG = 'pdbonly'
-
-	cflags = [
+	cppflags_release = [
 		'-O3',
 	]
 
-	env.append_value('CSFLAGS', ['/define:TRACE', '/optimize+'])
-	env.append_value('CFLAGS', cflags)
-	env.append_value('CXXFLAGS', cflags)
+	env.append_value('CPPFLAGS', cppflags)
+	env.append_value('CPPFLAGS_debug', cppflags_debug)
+	env.append_value('CPPFLAGS_release', cppflags_release)
+
+	env.append_value('LIB', [ 'dl' ])
+
+	env['VARIANTS'] = [ 'debug', 'release' ]
+	
+	return env['VARIANTS']
+
+def debug(env):
+	env.CSDEBUG = 'full'
+	env.VARIANT = 'debug'
+
+def release(env):
+	env.CSDEBUG = 'pdbonly'
+	env.VARIANT = 'release'

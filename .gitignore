@@ -42,3 +42,8 @@ dlldata.c
 /slag/
 /output/
 
+# MonoDevelop files
+*.pidb
+Peach.net.userprefs
+*/test-results/
+

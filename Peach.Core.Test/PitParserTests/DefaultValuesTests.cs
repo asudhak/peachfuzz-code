@@ -15,7 +15,11 @@ namespace Peach.Core.Test.PitParserTests
 	{
 		public void TestEncoding(Encoding enc)
 		{
-			string val = (enc != Encoding.Default) ? "encoding=\"" + enc.HeaderName + "\"" : "";
+			string encoding = enc.HeaderName;
+			if (enc is UnicodeEncoding)
+				encoding = Encoding.Unicode.HeaderName;
+
+			string val = (enc != Encoding.Default) ? "encoding=\"" + encoding + "\"" : "";
 			string xml = "<?xml version=\"1.0\" " + val + "?>\r\n" +
 				"<Peach>\r\n" +
 				"	<DataModel name=\"##VAR1##\">\r\n" +
@@ -39,7 +43,6 @@ namespace Peach.Core.Test.PitParserTests
 				}
 			}
 
-			Engine e = new Engine(null);
 			Dom.Dom dom = Analyzer.defaultParser.asParser(parserArgs, pitFile);
 			dom.evaulateDataModelAnalyzers();
 

@@ -630,6 +630,12 @@ namespace Peach.Core.IO
 
 		public void Write(BitStream bits, DataElement element)
 		{
+			foreach (var elem in bits._elementPositions)
+			{
+				elem.Value[0] += this.LengthBits;
+				_elementPositions[elem.Key] = elem.Value;
+			}
+
 			MarkStartOfElement(element, bits.LengthBits);
 			Write(bits);
 		}

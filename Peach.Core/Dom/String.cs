@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
@@ -297,30 +298,32 @@ namespace Peach.Core.Dom
 				switch (type)
 				{
 					case "ascii":
-						enc = (Encoding)Encoding.ASCII.Clone();
+						enc = Encoding.ASCII;
 						break;
 					case "utf16":
-						enc = (Encoding)Encoding.Unicode.Clone();
+						enc = Encoding.Unicode;
 						break;
 					case "utf16be":
-						enc = (Encoding)Encoding.BigEndianUnicode.Clone();
+						enc = Encoding.BigEndianUnicode;
 						break;
 					case "utf32":
-						enc = (Encoding)Encoding.UTF32.Clone();
+						enc = (Encoding)Encoding.UTF32;
 						break;
 					case "utf7":
-						enc = (Encoding)Encoding.UTF7.Clone();
+						enc = (Encoding)Encoding.UTF7;
 						break;
 					case "utf8":
-						enc = (Encoding)Encoding.UTF8.Clone();
+						enc = (Encoding)Encoding.UTF8;
 						break;
 					default:
-						enc = (Encoding)Encoding.ASCII.Clone();
+						type = "ascii";
+						enc = (Encoding)Encoding.ASCII;
 						break;
 				}
-				enc.EncoderFallback = new EncoderExceptionFallback();
-				enc.DecoderFallback = new DecoderExceptionFallback();
-				string asStr = enc.GetString(((byte[])str.DefaultValue));
+				byte[] val = (byte[])str.DefaultValue;
+				string asStr = enc.GetString(val);
+				if (!val.SequenceEqual(enc.GetBytes(asStr)))
+					throw new PeachException("String value contains invalid " + type + " bytes.");
 				str.DefaultValue = new Variant(asStr);
 			}
 

@@ -121,9 +121,19 @@ namespace Peach.Core
 
 		protected Mutator GetMutatorInstance(Type t, DataElement obj)
 		{
-			Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(DataElement) }).Invoke(new object[] { obj });
-			mutator.context = this;
-			return mutator;
+			try
+			{
+				Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(DataElement) }).Invoke(new object[] { obj });
+				mutator.context = this;
+				return mutator;
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+					throw ex.InnerException;
+				else
+					throw;
+			}
 		}
 
 		private static int CompareMutator(Type lhs, Type rhs)

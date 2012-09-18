@@ -72,7 +72,7 @@ namespace Peach.Core.Test.Mutators
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"str1\" value=\"Hello, World!\"/>" +
+                "       <String name=\"str1\" value=\"Hello World? Hello World!\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -100,7 +100,7 @@ namespace Peach.Core.Test.Mutators
             config.range = true;
             config.rangeStart = 0;
             config.rangeStop = 1000;
-			config.randomSeed = 100;
+            config.randomSeed = 100;
 
             Engine e = new Engine(null);
             e.config = config;
@@ -112,7 +112,7 @@ namespace Peach.Core.Test.Mutators
             List<string> ret = new List<string>();
             foreach (string item in mutations)
             {
-                if (item != "hello, world!" && item != "HELLO, WORLD!")
+                if (item != "hello world? hello world!" && item != "HELLO WORLD? HELLO WORLD!")
                 {
                     ret.Add(item);
                 }
@@ -137,7 +137,7 @@ namespace Peach.Core.Test.Mutators
 
             // For 1000 iterations, about 1/3 of the time the random case will be picked
             Assert.Greater(run1.Count, 330);
-            Assert.Less(run1.Count, 345);
+            Assert.Less(run1.Count, 350);
 
             int numSame = 0;
 
@@ -150,7 +150,7 @@ namespace Peach.Core.Test.Mutators
                 }
             }
 
-            Assert.Less(numSame, 50);
+            Assert.AreEqual(0, numSame);
         }
     }
 }

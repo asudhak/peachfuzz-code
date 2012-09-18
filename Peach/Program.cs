@@ -127,6 +127,7 @@ namespace Peach
 					{ "t|test", v => test = true},
 					{ "c|count", v => config.countOnly = true},
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
+					{ "seed=", v => config.randomSeed = Convert.ToUInt32(v)},
 					{ "p|parallel=", v => parallel = v},
 					{ "a|agent=", v => agent = v},
 					{ "D|define=", v => AddNewDefine(v) },

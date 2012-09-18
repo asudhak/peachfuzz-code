@@ -8,10 +8,13 @@ class NunitCounter(xml.sax.handler.ContentHandler):
 	def __init__(self):
 		self.num_passed = 0;
 		self.num_failed = 0;
+		self.num_skipped = 0;
 
 	def startElement(self, name, attrs):
 		if name == 'test-case':
-			if attrs['success'] == 'True':
+			if attrs['executed'] == 'False':
+				self.num_skipped += 1
+			elif attrs['success'] == 'True':
 				self.num_passed += 1
 			else:
 				self.num_failed += 1
@@ -24,7 +27,7 @@ def get_nunit_stats(filename):
 	parser = xml.sax.make_parser()
 	parser.setContentHandler(handler)
 	parser.parse(filename)
-	return '     |   Passed: %s, Failed: %s' % (handler.num_passed, handler.num_failed)
+	return '     |   Passed: %s, Failed: %s, Skipped: %s' % (handler.num_passed, handler.num_failed, handler.num_skipped)
 
 def summary(bld):
 	lst = getattr(bld, 'utest_results', [])
@@ -127,9 +130,9 @@ class utest(Task.Task):
 			def add_path(dct, path, var):
 				dct[var] = os.pathsep.join(Utils.to_list(path) + [os.environ.get(var, '')])
 
-			if Utils.is_win32:
-				add_path(fu, lst, 'PATH')
-			elif Utils.unversioned_sys_platform() == 'darwin':
+			add_path(fu, lst, 'PATH')
+
+			if Utils.unversioned_sys_platform() == 'darwin':
 				add_path(fu, lst, 'DYLD_LIBRARY_PATH')
 				add_path(fu, lst, 'LD_LIBRARY_PATH')
 			else:

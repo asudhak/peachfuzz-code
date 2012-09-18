@@ -53,8 +53,8 @@ namespace Peach.Core.Test.Transformers.Encode
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: "abcdef" (this becomes "GBGCGDGEGFGG")
-            byte[] precalcResult = new byte[] { 0x47, 0x42, 0x47, 0x43, 0x47, 0x44, 0x47, 0x45, 0x47, 0x46, 0x47, 0x47 };
+            // -- this is the pre-calculated result from Peach2.3 on the blob: "abcdef" (this becomes "EBECEDEEEFEG")
+            byte[] precalcResult = Encoding.ASCII.GetBytes("EBECEDEEEFEG");
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcResult, values[0].Value);
         }
