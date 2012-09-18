@@ -40,19 +40,27 @@ namespace Peach.Core.Transformers.Encode
     [Serializable]
     public class Utf16 : Transformer
     {
+        static byte[] _preamble = Encoding.Unicode.GetPreamble();
+
         public Utf16(Dictionary<string, Variant> args) : base(args)
         {
         }
 
         protected override BitStream internalEncode(BitStream data)
         {
-            byte[] buf = System.Text.UnicodeEncoding.Unicode.GetBytes(System.Text.ASCIIEncoding.ASCII.GetString(data.Value));
-            return new BitStream(ArrayExtensions.Combine(Encoding.Unicode.GetPreamble(), buf));
+            string value = Encoding.ASCII.GetString(data.Value);
+            int len = Encoding.Unicode.GetByteCount(value);
+            byte[] buf = new byte[_preamble.Length + len];
+            Buffer.BlockCopy(_preamble, 0, buf, 0, _preamble.Length);
+            Encoding.Unicode.GetBytes(value, 0, value.Length, buf, _preamble.Length);
+            return new BitStream(buf);
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(System.Text.UnicodeEncoding.Unicode.GetString(data.Value)));
+            string value = Encoding.Unicode.GetString(data.Value);
+            byte[] buf = Encoding.ASCII.GetBytes(value);
+            return new BitStream(buf);
         }
     }
 }

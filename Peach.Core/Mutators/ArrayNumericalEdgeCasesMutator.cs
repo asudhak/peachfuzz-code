@@ -149,7 +149,7 @@ namespace Peach.Core.Mutators
             if (num < objAsArray.Count)
             {
                 // remove some items
-                foreach (int i in ArrayExtensions.Range(objAsArray.Count - 1, num - 1, -1))
+                for (int i = objAsArray.Count - 1; i >= num; --i)
                 {
                     if (objAsArray[i] == null)
                         break;

@@ -38,6 +38,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
+using NLog;
 
 namespace Peach.Core
 {
@@ -75,7 +76,9 @@ namespace Peach.Core
 					if (os == "Darwin") return true;
 				}
 			}
-			catch { }
+			catch
+			{
+			}
 			finally
 			{
 				if (buf != IntPtr.Zero) Marshal.FreeHGlobal(buf);
@@ -128,6 +131,7 @@ namespace Peach.Core
 	/// </summary>
 	public static class ClassLoader
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
 
 		static ClassLoader()
@@ -152,8 +156,9 @@ namespace Peach.Core
 						Assembly asm = Assembly.LoadFile(file);
 						AssemblyCache.Add(file, asm);
 					}
-					catch
+					catch (Exception ex)
 					{
+						logger.Debug("ClassLoader skipping \"{0}\", {1}", file, ex.Message);
 					}
 				}
 			}
@@ -273,101 +278,6 @@ namespace Peach.Core
 			return null;
 		}
 	}
-
-    /// <summary>
-    /// Additional methods for array functionality.
-    /// </summary>
-    public static class ArrayExtensions
-    {
-        /// <summary>
-        /// Slice an array into a sub-array.
-        /// </summary>
-        /// <param name="source">The source array</param>
-        /// <param name="start">The starting index for slicing</param>
-        /// <param name="end">The ending index for slicing</param>
-        /// <returns>Returns newly sliced array.</returns>
-        public static T[] Slice<T>(this T[] source, int start, int end)
-        {
-            // catch invalid ends
-            if (end < 0)
-            {
-                end += source.Length;
-            }
-            else if (end > source.Length)
-            {
-                end = source.Length;
-            }
-            else if (start < 0)
-            {
-                start = 0;
-            }
-            else if (start > source.Length)
-            {
-                return new T[0];
-            }
-            int len = end - start;
-
-            // create new array
-            T[] ret = new T[len];
-            for (int i = 0; i < len; i++)
-            {
-                ret[i] = source[i + start];
-            }
-            return ret;
-        }
-
-        /// <summary>
-        /// Combine multiple arrays into one array.
-        /// </summary>
-        /// <param name="arrays">The list of arrays to be combined</param>
-        /// <returns>Returns newly combined array.</returns>
-        public static T[] Combine<T>(params T[][] arrays)
-        {
-            T[] ret = new T[arrays.Sum(a => a.Length)];
-            int offset = 0;
-
-            foreach (T[] array in arrays)
-            {
-                Buffer.BlockCopy(array, 0, ret, offset, array.Length);
-                offset += array.Length;
-            }
-
-            return ret;
-        }
-
-        /// <summary>
-        /// Combine multiple arrays into one array.
-        /// </summary>
-        /// <param name="arrays">The list of arrays to be combined</param>
-        /// <returns>Returns newly combined array.</returns>
-        public static int[] Range(int start, int stop, int step)
-        {
-            if (step == 0)
-                return null;
-
-            List<int> ret = new List<int>();
-            int value = start + step * ret.Count;
-
-            if (step > 0)
-            {
-                while (value < stop)
-                {
-                    ret.Add(value);
-                    value = start + step * ret.Count;
-                }
-            }
-            else
-            {
-                while (value > stop)
-                {
-                    ret.Add(value);
-                    value = start + step * ret.Count;
-                }
-            }
-
-            return ret.ToArray();
-        }
-    }
 
     /// <summary>
     /// A simple number generation class.

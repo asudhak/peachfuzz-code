@@ -230,10 +230,13 @@ namespace Peach.Core.Mutators
 
             getRange(data.Length, out start, out end, 100);
 
-            for (int i = start; i < end; ++i)
-                data[i] = (byte)(context.Random.Next(256));
+            byte[] ret = new byte[data.Length];
+            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
 
-            return data;
+            for (int i = start; i < end; ++i)
+                ret[i] = (byte)(context.Random.Next(256));
+
+            return ret;
         }
 
         // CHANGE_RANGE_SPECIAL
@@ -249,10 +252,13 @@ namespace Peach.Core.Mutators
 
             getRange(data.Length, out start, out end, 100);
 
-            for (int i = start; i < end; ++i)
-                data[i] = context.Random.Choice(special);
+            byte[] ret = new byte[data.Length];
+            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
 
-            return data;
+            for (int i = start; i < end; ++i)
+                ret[i] = context.Random.Choice(special);
+
+            return ret;
         }
 
         // NULL_RANGE
@@ -267,10 +273,13 @@ namespace Peach.Core.Mutators
 
             getRange(data.Length, out start, out end, 100);
 
-            for (int i = start; i < end; ++i)
-                data[i] = 0;
+            byte[] ret = new byte[data.Length];
+            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
 
-            return data;
+            for (int i = start; i < end; ++i)
+                ret[i] = 0;
+
+            return ret;
         }
 
         // UNNULL_RANGE
@@ -285,11 +294,14 @@ namespace Peach.Core.Mutators
 
             getRange(data.Length, out start, out end, 100);
 
-            for (int i = start; i < end; ++i)
-                if (data[i] == 0)
-                    data[i] = (byte)(context.Random.Next(1, 256));
+            byte[] ret = new byte[data.Length];
+            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
 
-            return data;
+            for (int i = start; i < end; ++i)
+                if (ret[i] == 0)
+                    ret[i] = (byte)(context.Random.Next(1, 256));
+
+            return ret;
         }
 
         // NEW_BYTES_SINGLE_RANDOM

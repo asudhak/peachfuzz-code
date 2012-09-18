@@ -37,6 +37,10 @@ namespace Peach.Core.Mutators
     [Hint("BlobDWORDSliderMutator", "Ability to disable this mutator.")]
     public class BlobDWORDSliderMutator : Mutator
     {
+        // constants
+        //
+        static byte[] inject = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
+
         // members
         //
         uint position;
@@ -104,7 +108,7 @@ namespace Peach.Core.Mutators
             }
 
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            performMutation(obj, context.Random.Next(length - 1));
+            performMutation(obj, context.Random.Next(length));
         }
 
         // PERFORM_MUTATION
@@ -112,35 +116,15 @@ namespace Peach.Core.Mutators
         private void performMutation(DataElement obj, int pos)
         {
             byte[] data = obj.Value.Value;
-            byte[] inject;
-            int currLen = data.Length;
 
-            if (pos >= currLen)
-                return;
+            System.Diagnostics.Debug.Assert(pos < data.Length);
 
-            int remaining = currLen - pos;
+            int len = Math.Min(data.Length - pos, inject.Length);
+            byte[] ret = new byte[data.Length];
+            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
+            Buffer.BlockCopy(inject, 0, ret, pos, len);
 
-            if (remaining == 1)
-            {
-                inject = new byte[] { 0xFF };
-            }
-            else if (remaining == 2)
-            {
-                inject = new byte[] { 0xFF, 0xFF };
-            }
-            else if (remaining == 3)
-            {
-                inject = new byte[] { 0xFF, 0xFF, 0xFF };
-            }
-            else
-            {
-                inject = BitConverter.GetBytes(DWORD);
-            }
-
-            var pt1 = ArrayExtensions.Slice(data, 0, pos);
-            var pt2 = ArrayExtensions.Slice(data, pos + inject.Length, data.Length);
-
-            obj.MutatedValue = new Variant(ArrayExtensions.Combine(pt1, inject, pt2));
+            obj.MutatedValue = new Variant(ret);
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
     }

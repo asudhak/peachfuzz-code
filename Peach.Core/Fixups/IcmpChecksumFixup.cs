@@ -65,16 +65,20 @@ namespace Peach.Core.Fixups
             uint chcksm = 0;
             int idx = 0;
 
-            // add a byte if not divisible by 2
-            if (data.Length % 2 != 0)
-                data = ArrayExtensions.Combine(data, new byte[] { 0x00 });
-
             // calculate checksum
-            while (idx < data.Length)
+            while (idx < (data.Length -1))
             {
                 chcksm += Convert.ToUInt32(BitConverter.ToUInt16(data, idx));
                 idx += 2;
             }
+
+			// Handle buffers with length not divisible by 2
+			if (idx != data.Length)
+			{
+				System.Diagnostics.Debug.Assert(idx == (data.Length - 1));
+				byte[] temp = new byte[] { data[idx], 0 };
+				chcksm += Convert.ToUInt32(BitConverter.ToUInt16(temp, 0));
+			}
 
             chcksm = (chcksm >> 16) + (chcksm & 0xFFFF);
             chcksm += (chcksm >> 16);
