@@ -130,9 +130,9 @@ class utest(Task.Task):
 			def add_path(dct, path, var):
 				dct[var] = os.pathsep.join(Utils.to_list(path) + [os.environ.get(var, '')])
 
-			if Utils.is_win32:
-				add_path(fu, lst, 'PATH')
-			elif Utils.unversioned_sys_platform() == 'darwin':
+			add_path(fu, lst, 'PATH')
+
+			if Utils.unversioned_sys_platform() == 'darwin':
 				add_path(fu, lst, 'DYLD_LIBRARY_PATH')
 				add_path(fu, lst, 'LD_LIBRARY_PATH')
 			else:
