@@ -84,10 +84,16 @@ namespace PeachLinuxCrashHandler
 					syntax();
 				}
 
+				if (!Directory.Exists(logFolder))
+				{
+					Directory.CreateDirectory(logFolder);
+				}
+
 				// Handle incoming core file!
 
-				var coreFilename = Path.Combine(logFolder, "peach_" + exe + "_" + pid + ".core");
-				var infoFilename = Path.Combine(logFolder, "peach_" + exe + "_" + pid + ".info");
+
+				var coreFilename = Path.Combine(logFolder, "peach_" + Path.GetFileName(exe) + "_" + pid + ".core");
+				var infoFilename = Path.Combine(logFolder, "peach_" + Path.GetFileName(exe) + "_" + pid + ".info");
 
 				using (var sout = File.Create(coreFilename))
 				using (var stdin = Console.OpenStandardInput())
@@ -120,30 +126,31 @@ namespace PeachLinuxCrashHandler
 				psi.RedirectStandardOutput = true;
 				psi.CreateNoWindow = true;
 
-				var gdb = new Process();
+				using(var gdb = new Process())
+				{
 				gdb.StartInfo = psi;
 				gdb.ErrorDataReceived += new DataReceivedEventHandler(gdb_ErrorDataReceived);
 				gdb.OutputDataReceived += new DataReceivedEventHandler(gdb_OutputDataReceived);
 				gdb.Start();
+				gdb.EnableRaisingEvents = true;
+				gdb.BeginErrorReadLine();
+				gdb.BeginOutputReadLine();
+				gdb.StandardInput.AutoFlush = true;
 
 				gdb.WaitForInputIdle();
-				stdout = "";
-				stderr = "";
+				
+				gdb.StandardInput.WriteLine("info frame");
+				gdb.WaitForInputIdle();
 
 				gdb.StandardInput.WriteLine("thread apply all backtrace");
 				gdb.WaitForInputIdle();
-				var backtrace = stdout;
-				stdout = "";
-				stderr = "";
 
 				gdb.StandardInput.WriteLine("info registers");
 				gdb.WaitForInputIdle();
-				var registers = stdout;
-				stdout = "";
-				stderr = "";
 
 				gdb.StandardInput.WriteLine("quit");
 				gdb.WaitForExit();
+				}
 
 				// Write out information file
 
@@ -160,18 +167,13 @@ SIG: {4}
 Host: {5}
 Time/date: {6}
 
-Registers
----------
+GDB Output
+----------
 
 {7}
 
-Backtrace
----------
-
-{8}
-
 ",
-					pid, exe, uid, gid, sig, host, time, registers, backtrace));
+					pid, exe, uid, gid, sig, host, time, stdout));
 
 				// Done
 			}
@@ -184,14 +186,16 @@ Backtrace
 
 		void gdb_OutputDataReceived(object sender, DataReceivedEventArgs e)
 		{
-			throw new NotImplementedException();
+			stdout += e.Data + "\n";
+			//Console.WriteLine(e.Data);
 		}
 
 		protected string stderr = "";
 
 		void gdb_ErrorDataReceived(object sender, DataReceivedEventArgs e)
 		{
-			throw new NotImplementedException();
+			stderr += e.Data + "\n";
+			//Console.WriteLine(e.Data);
 		}
 
 		public void syntax()
