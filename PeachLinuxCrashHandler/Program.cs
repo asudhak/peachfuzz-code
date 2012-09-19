@@ -62,8 +62,6 @@ namespace PeachLinuxCrashHandler
 
 				var p = new OptionSet()
 				{
-					{ "h|?|help", v => syntax() },
-
 					{ "u|uid=", v => uid = v },
 					{ "g|gid=", v => gid = v},
 					{ "s|sig=", v => sig = v },

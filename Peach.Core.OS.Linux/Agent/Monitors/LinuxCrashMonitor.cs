@@ -42,7 +42,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 	[Parameter("Executable", typeof(string), "Target executable used to filter crashes.", false)]
 	[Parameter("LogFolder", typeof(string), "Folder with log files. Defaults to /var/peachcrash", false)]
 	[Parameter("Mono", typeof(string), "Full path and executable for mono runtime. Defaults to /usr/bin/mono.", false)]
-	public class LinuxCrashMonitor : Core.Agent.Monitor
+	public class LinuxCrashMonitor : Peach.Core.Agent.Monitor
 	{
 		protected string corePattern = "|{0} {1} -p=%p -u=%u -g=%g -s=%s -t=%t -h=%h -e=%e";
 		protected string monoExecutable = "/usr/bin/mono";
@@ -118,7 +118,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				// Create our folder and set permissions
 
 				psi = new ProcessStartInfo();
-				psi.FileName = "/bin/mkdir";
+				psi.FileName = "mkdir";
 				psi.Arguments = "-p " + logFolder;
 				psi.UseShellExecute = true;
 
@@ -127,6 +127,19 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				p.Start();
 				p.WaitForExit();
 			}
+
+
+			// Enable core files
+
+			psi = new ProcessStartInfo();
+			psi.FileName = "ulimit";
+			psi.Arguments = "-c unlimited";
+			psi.UseShellExecute = true;
+
+			p = new Process();
+			p.StartInfo = psi;
+			p.Start();
+			p.WaitForExit();
 		}
 
 		public override void  SessionFinished()

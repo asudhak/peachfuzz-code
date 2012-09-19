@@ -122,7 +122,9 @@ namespace Peach.Core.Dom
 						// Add elements upto our index
 						for (int x = (array.Count > 0 ? array.Count - 1 : 0); x < index; x++)
 						{
-							array.Add(ObjectCopier.Clone<DataElement>(array.origionalElement));
+							var item = ObjectCopier.Clone<DataElement>(array.origionalElement);
+							array.Add(item);
+							Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(item);
 						}
 
 						array.hasExpanded = true;

@@ -65,9 +65,38 @@ namespace Peach.Core
 		/// <param name="args">Command line arguments</param>
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, string fileName)
 		{
-			return asParser(args, File.OpenRead(fileName));
+		    try
+		    {
+			    return asParser(args, File.OpenRead(fileName));
+		    }
+		    catch (FileNotFoundException fileNotFoundException)
+		    {
+		        throw new PeachException("Error, " + fileNotFoundException.Message); 
+		    }
+            catch (PathTooLongException pathTooLongException)
+            {
+                throw new PeachException("Error, " + pathTooLongException.Message); 
+            }
+            catch(DirectoryNotFoundException directoryNotFoundException)
+            {
+                throw new PeachException("Error, " + directoryNotFoundException.Message); 
+            }
+            catch(UnauthorizedAccessException unauthorizedAccessException)
+            {
+                throw new PeachException("Error, " + unauthorizedAccessException.Message); 
+            }
+            catch(NotSupportedException notSupportedException)
+            {
+                 throw new PeachException("Error, " + notSupportedException.Message); 
+            }
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data)
 		{
 			throw new NotImplementedException("");

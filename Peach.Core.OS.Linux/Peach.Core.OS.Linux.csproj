@@ -296,7 +296,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Agent\Monitors\Class1.cs" />
+    <Compile Include="Agent\Monitors\LinuxCrashMonitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
