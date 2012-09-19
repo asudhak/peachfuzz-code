@@ -222,7 +222,7 @@ namespace Peach.Core.Cracker
 					newParent = before.parent;
 
 					newName = oldName;
-					for (int i = 0; newParent.ContainsKey(oldName); i++)
+					for (int i = 0; newParent.ContainsKey(newName); i++)
 						newName = oldName + "_" + i;
 
 					element.parent.Remove(element);
