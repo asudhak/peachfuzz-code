@@ -146,6 +146,9 @@ namespace Peach.Core.Dom
 									data.ApplyFields(action.dataModel);
 								}
 
+								//Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.dataModel);
+								//Peach.Core.Analyzers.PitParser.displayDataModel(action.dataModel);
+
 								if (fileName != null)
 								{
 									try
@@ -160,10 +163,14 @@ namespace Peach.Core.Dom
 									}
 								}
 
+								//Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.dataModel);
+								//Peach.Core.Analyzers.PitParser.displayDataModel(action.dataModel);
+
 								var value = action.dataModel.Value;
 
 								// Update our origional copy to have data!
 								action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
+								Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.origionalDataModel);
 							}
 							else if (action.dataModel != null)
 							{
@@ -171,6 +178,7 @@ namespace Peach.Core.Dom
 
 								// Update our origional copy to have data!
 								action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
+								Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.origionalDataModel);
 							}
 							else if (action.parameters.Count > 0)
 							{
@@ -208,6 +216,7 @@ namespace Peach.Core.Dom
 
 									// Update our origional copy to have data!
 									param.origionalDataModel = ObjectCopier.Clone<DataModel>(param.dataModel);
+									Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(param.origionalDataModel);
 								}
 							}
 						}

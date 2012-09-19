@@ -90,20 +90,39 @@ def configure(conf):
                 'fake_lib',
                 'cs',
                 'test',
+                'debug',
+                'release',
         ])
 
-        cflags = [
-                '/nologo',
+        cppflags = [
                 '/W4',
                 '/WX',
         ]
 
-        env.append_value('CFLAGS', cflags)
-        env.append_value('CXXFLAGS', cflags + [ '/EHsc' ])
+        cppflags_debug = [
+                '/MDd',
+                '/Od',
+        ]
+
+        cppflags_release = [
+                '/MD',
+                '/Ox',
+        ]
+
+        env.append_value('CPPFLAGS', cppflags)
+        env.append_value('CPPFLAGS_debug', cppflags_debug)
+        env.append_value('CPPFLAGS_release', cppflags_release)
+
+        env.append_value('CXXFLAGS', [ '/EHsc' ])
 
         env.append_value('DEFINES', [
                 'WIN32',
                 '_CRT_SECURE_NO_WARNINGS',
+        ])
+
+        env.append_value('DEFINES_debug', [
+                'DEBUG',
+                '_DEBUG',
         ])
 
         env.append_value('CSFLAGS', [
@@ -113,6 +132,15 @@ def configure(conf):
                 '/warn:4',
                 '/define:PEACH',
                 '/errorreport:prompt',
+        ])
+
+        env.append_value('CSFLAGS_debug', [
+                '/define:DEBUG,TRACE',
+        ])
+
+        env.append_value('CSFLAGS_release', [
+                '/define:TRACE',
+                '/optimize+',
         ])
 
         env.append_value('ASSEMBLIES', [
@@ -132,29 +160,14 @@ def configure(conf):
                 '/%s' % ('x86' in env.SUBARCH and 'win32' or 'amd64'),
         ])
 
-        return [ 'debug', 'release' ]
+	env['VARIANTS'] = [ 'debug', 'release' ]
+
+	return env['VARIANTS']
 
 def debug(env):
         env.CSDEBUG = 'full'
-
-        cflags = [
-                '/MDd',
-                '/Od',
-        ]
-
-        env.append_value('CFLAGS', cflags)
-        env.append_value('CXXFLAGS', cflags)
-        env.append_value('CSFLAGS', ['/define:DEBUG,TRACE'])
-        env.append_value('DEFINES', ['DEBUG', '_DEBUG'])
+        env.VARIANT = 'debug'
 
 def release(env):
         env.CSDEBUG = 'pdbonly'
-
-        cflags = [
-                '/MD',
-                '/Ox',
-        ]
-
-        env.append_value('CFLAGS', cflags)
-        env.append_value('CXXFLAGS', cflags)
-        env.append_value('CSFLAGS', ['/define:TRACE', '/optimize+'])
+        env.VARIANT = 'release'

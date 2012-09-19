@@ -97,20 +97,40 @@ def configure(conf):
 		'/define:PEACH',
 	])
 
+	env.append_value('CSFLAGS_debug', [
+		'/define:DEBUG,TRACE',
+	])
+	
+	env.append_value('CSFLAGS_release', [
+		'/define:TRACE',
+		'/optimize+',
+	])
+
 	env['CSPLATFORM'] = 'anycpu'
 
-	cflags = [
+	cppflags = [
 		'-pipe',
 		'-Werror',
 		'-Wno-unused',
 	]
 	
-	env.append_value('CFLAGS', cflags)
-	env.append_value('CXXFLAGS', cflags)
+	cppflags_debug = [
+		'-ggdb',
+	]
+
+	cppflags_release = [
+		'-O3',
+	]
+
+	env.append_value('CPPFLAGS', cppflags)
+	env.append_value('CPPFLAGS_debug', cppflags_debug)
+	env.append_value('CPPFLAGS_release', cppflags_release)
 
 	env.append_value('LIB', [ 'dl' ])
 
-	return [ 'debug', 'release' ]
+	env['VARIANTS'] = [ 'debug', 'release' ]
+	
+	return env['VARIANTS']
 
 def debug(env):
 	env.CSDEBUG = 'full'
@@ -123,14 +143,8 @@ def debug(env):
 	env.append_value('DEFINES', ['DEBUG'])
 	env.append_value('CFLAGS', cflags)
 	env.append_value('CXXFLAGS', cflags)
+	env.VARIANT = 'debug'
 
 def release(env):
 	env.CSDEBUG = 'pdbonly'
-
-	cflags = [
-		'-O3',
-	]
-
-	env.append_value('CSFLAGS', ['/define:TRACE', '/optimize+'])
-	env.append_value('CFLAGS', cflags)
-	env.append_value('CXXFLAGS', cflags)
+	env.VARIANT = 'release'

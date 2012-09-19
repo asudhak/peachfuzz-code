@@ -59,6 +59,9 @@ namespace Peach.Core.MutationStrategies
 		{
 			base.Initialize(context, engine);
 
+			// Force seed to always be the same
+			context.config.randomSeed = 31337;
+
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			_mutators = new List<Type>();
 			_mutators.AddRange(EnumerateValidMutators());

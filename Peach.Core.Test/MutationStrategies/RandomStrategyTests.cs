@@ -137,7 +137,9 @@ namespace Peach.Core.Test.MutationStrategies
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"RandomStrategy\"/>" +
+				"       <Strategy class=\"RandomStrategy\">" +
+				"           <Param name=\"MaxFieldsToMutate\" value=\"5\"/>" +
+				"       </Strategy>" +
 				"   </Test>" +
 				"</Peach>";
 

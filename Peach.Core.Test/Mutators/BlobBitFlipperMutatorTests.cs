@@ -161,7 +161,7 @@ namespace Peach.Core.Test.Mutators
             config.range = true;
             config.rangeStart = 0;
             config.rangeStop = 1000;
-			config.randomSeed = 100;
+            config.randomSeed = 100;
 
             Engine e = new Engine(null);
             e.config = config;
@@ -207,7 +207,7 @@ namespace Peach.Core.Test.Mutators
                 }
             }
 
-            Assert.Less(numSame, 100);
+            Assert.Less(numSame, 300);
         }
     }
 }

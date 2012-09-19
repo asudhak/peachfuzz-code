@@ -289,6 +289,11 @@ namespace Peach.Core.Dom
 
 		public void Add(Relation item)
 		{
+			Add(item, true);
+		}
+
+		public void Add(Relation item, bool updateParent)
+		{
 			foreach (Type k in _childrenDict.Keys)
 				if (k == item.GetType())
 					throw new ApplicationException(
@@ -296,7 +301,9 @@ namespace Peach.Core.Dom
 
 			_childrenList.Add(item);
 			_childrenDict[item.GetType()] = item;
-			item.parent = parent;
+
+			if (updateParent)
+				item.parent = parent;
 		}
 
 		public void Clear()

@@ -46,7 +46,8 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalEncode(BitStream data)
         {
-            return new BitStream(System.Text.UnicodeEncoding.Unicode.GetBytes(System.Text.ASCIIEncoding.ASCII.GetString(data.Value)));
+            byte[] buf = System.Text.UnicodeEncoding.Unicode.GetBytes(System.Text.ASCIIEncoding.ASCII.GetString(data.Value));
+            return new BitStream(ArrayExtensions.Combine(Encoding.Unicode.GetPreamble(), buf));
         }
 
         protected override BitStream internalDecode(BitStream data)

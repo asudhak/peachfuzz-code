@@ -257,6 +257,29 @@ namespace Peach.Core.Cracker
 		}
 
 		/// <summary>
+		/// Recursively locate relations on elements and 
+		/// reset the relation so it will have to find by name
+		/// the instance in our tree.
+		/// </summary>
+		/// <param name="elem"></param>
+		public static void ClearRelationsRecursively(DataElement elem)
+		{
+			foreach (var rel in elem.relations)
+			{
+				if(rel.From.fullName == elem.fullName)
+					rel.parent = elem;
+
+				rel.Reset();
+			}
+
+			if (!(elem is DataElementContainer))
+				return;
+
+			foreach (var child in ((DataElementContainer)elem))
+				ClearRelationsRecursively(child);
+		}
+
+		/// <summary>
 		/// Perform optimizations of data model for cracking
 		/// </summary>
 		/// <remarks>

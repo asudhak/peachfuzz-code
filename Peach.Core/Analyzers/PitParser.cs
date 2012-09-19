@@ -379,6 +379,41 @@ namespace Peach.Core.Analyzers
 			return dom;
 		}
 
+		public static void displayDataModel(DataElement elem, int indent = 0)
+		{
+			string sIndent = "";
+			for (int i = 0; i < indent; i++)
+				sIndent += "  ";
+
+			Console.WriteLine(sIndent + string.Format("{0}: {1}", elem.GetHashCode(), elem.name));
+
+			foreach (var rel in elem.relations)
+			{
+				if (rel.parent != elem)
+					Console.WriteLine("Relation.parent != parent");
+
+				if (rel.parent.getRoot() != elem.getRoot())
+					Console.WriteLine("Relation.parent.getRoot != parent.getRoot");
+
+				if (rel.Of.getRoot() != elem.getRoot())
+					Console.WriteLine("Relation root != element root");
+			}
+
+			if (!(elem is DataElementContainer))
+				return;
+
+			foreach (var child in ((DataElementContainer)elem))
+			{
+				if (child.parent != elem)
+					Console.WriteLine("Child parent != actual parent");
+
+				if(child.getRoot() != elem.getRoot())
+					Console.WriteLine("Child getRoot != elem getRoor");
+
+				displayDataModel(child, indent+1);
+			}
+		}
+
 		#region Utility Methods
 
 		/// <summary>
@@ -502,6 +537,14 @@ namespace Peach.Core.Analyzers
 			{
 				logger.Debug("finalUpdateRelations: DataModel: " + model.name);
 
+				try
+				{
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(model);
+				}
+				catch
+				{
+				}
+
 				foreach (DataElement elem in model.EnumerateAllElements())
 				{
 					logger.Debug("finalUpdateRelations: " + elem.fullName);
@@ -510,34 +553,52 @@ namespace Peach.Core.Analyzers
 					{
 						logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
 
-						if (rel.From == elem)
+						try
 						{
-							DataElement of = rel.Of;
-							if (of == null)
-								throw new PeachException("Error, unable to resolve '" +
-									rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
+							if (rel.From == elem)
+							{
+								rel.parent = elem;
 
-							if (!of.relations.Contains(rel))
-								of.relations.Add(rel);
-						}
-						else if (rel.Of == elem)
-						{
-							DataElement from = rel.From;
-							if (from == null)
-								throw new PeachException("Error, unable to resolve '" +
-									rel.OfName + "' from relation attached to '" + elem.fullName + "'.");
+								DataElement of = rel.Of;
+								if (of == null)
+									continue;
 
-							if (!from.relations.Contains(rel))
-								from.relations.Add(rel);
+								if (!of.relations.Contains(rel))
+									of.relations.Add(rel, false);
+							}
+							else if (rel.Of == elem)
+							{
+								DataElement from = rel.From;
+								if (from == null)
+									continue;
+
+								if (!from.relations.Contains(rel))
+									from.relations.Add(rel, false);
+							}
+							else
+							{
+								logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
+								throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
+							}
 						}
-						else
+						catch (Exception ex)
 						{
-							logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
-							throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
+							logger.Debug("finalUpdateRelations: Exception: " + ex.Message);
 						}
 					}
 				}
 			}
+		}
+
+		protected bool hasRelationShipFrom(DataElement from, Relation rel)
+		{
+			foreach (var relation in from.relations)
+			{
+				if (relation.From.fullName == from.fullName && relation.GetType() == rel.GetType())
+					return true;
+			}
+
+			return false;
 		}
 
 		protected void handleDefaults(XmlNode node)
@@ -631,6 +692,8 @@ namespace Peach.Core.Analyzers
 					dataModel = ObjectCopier.Clone<DataModel>(refObj);
 					dataModel.name = name;
 					dataModel.isReference = true;
+
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(dataModel);
 				}
 				else
 				{
@@ -987,7 +1050,7 @@ namespace Peach.Core.Analyzers
 							}
 						}
 						else
-							elem.DefaultValue = new Variant(sout);
+							elem.DefaultValue = new Variant(sout.Value);
 
 						break;
 					case "literal":

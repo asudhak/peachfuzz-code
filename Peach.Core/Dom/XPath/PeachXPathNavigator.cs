@@ -64,6 +64,11 @@ namespace Peach.Core.Dom.XPath
 		protected int attributeIndex = 0;
 
 		/// <summary>
+		/// Current test index.
+		/// </summary>
+		protected int testIndex = 0;
+
+		/// <summary>
 		/// Are we iterating attributes?
 		/// </summary>
 		protected bool iteratingAttributes = false;
@@ -198,6 +203,7 @@ namespace Peach.Core.Dom.XPath
 
 				if (dom.tests.Count > 0)
 				{
+					testIndex = 0;
 					currentNode = dom.tests[0];
 					currentNodeType = PeachXPathNodeType.Test;
 					return true;
@@ -359,6 +365,7 @@ namespace Peach.Core.Dom.XPath
 					return false;
 
 				currentNode = dom.tests[index + 1];
+				testIndex = index + 1;
 				return true;
 			}
 
@@ -419,6 +426,13 @@ namespace Peach.Core.Dom.XPath
 					currentNode = obj.action;
 				else
 					throw new Exception("Error, data model with no dom/action parent!");
+			}
+			else if (obj is StateModel)
+			{
+				// state models have a parent of the dom, but we need to walk
+				// back up to the test since that is how we descend
+				Dom root = obj.parent as Dom;
+				currentNode = root.tests[testIndex];
 			}
 			else
 				currentNode = obj.parent;

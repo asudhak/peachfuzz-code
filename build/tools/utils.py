@@ -3,6 +3,17 @@ from waflib.TaskGen import feature, before_method, after_method
 from waflib import Utils, Logs, Task
 
 @feature('*')
+@before_method('process_source')
+def default_variant(self):
+	features = set(Utils.to_list(self.features))
+	available = set(Utils.to_list(self.env.VARIANTS))
+	intersect = features & available
+
+	if not intersect:
+		features.add(self.env.VARIANT)
+		self.features = list(features)
+
+@feature('*')
 @after_method('process_source')
 def install_extras(self):
 	try:
@@ -19,7 +30,7 @@ def install_extras(self):
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
 
-@feature('win', 'linux', 'osx')
+@feature('win', 'linux', 'osx', 'debug', 'release')
 def dummy_platform(self):
 	# prevent warnings about features with unbound methods
 	pass
@@ -40,12 +51,15 @@ def install_csshlib(self):
 			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
 
 @feature('pin')
+@before_method('process_source')
 def pin_disable_debug(self):
 	# ensure pin debug builds are built in release mode
 	e = self.env
-	e['CFLAGS']   = filter(lambda x: '/MD'   not in x, e['CFLAGS'])
-	e['CXXFLAGS'] = filter(lambda x: '/MD'   not in x, e['CXXFLAGS'])
-	e['DEFINES']  = filter(lambda x: 'DEBUG' not in x, e['DEFINES'])
+	e['CPPFLAGS_debug'] = e['CPPFLAGS_release'] = []
+	e['DEFINES_debug'] = []
+#	e['CFLAGS']   = filter(lambda x: '/MD'   not in x, e['CFLAGS'])
+#	e['CXXFLAGS'] = filter(lambda x: '/MD'   not in x, e['CXXFLAGS'])
+#	e['DEFINES']  = filter(lambda x: 'DEBUG' not in x, e['DEFINES'])
 
 @feature('cs')
 @before_method('apply_cs')

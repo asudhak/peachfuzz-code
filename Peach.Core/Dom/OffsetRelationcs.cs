@@ -151,7 +151,7 @@ namespace Peach.Core.Dom
 			}
 			else
 			{
-				commonAncestor = findCommonRoot(from.getRoot(), to);
+				commonAncestor = findCommonRoot(from, to);
 			}
 
 			if (commonAncestor == null)

@@ -3,6 +3,10 @@
 deps = [
 	'System.dll',
 	'System.Core.dll',
+	'nunit.framework.dll',
+	'NLog.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.OSX.dll',
 ]
 
 bld(
