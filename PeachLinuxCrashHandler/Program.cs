@@ -203,7 +203,7 @@ GDB Output
 		public void syntax()
 		{
 			Console.WriteLine("\n");
-			Console.WriteLine("[[ Peach Linux Crash Handler");
+			Console.WriteLine("[[ Peach 3 Linux Crash Handler");
 			Console.WriteLine("[[ Copyright (c) Michael Eddington\n");
 
 			Console.WriteLine(@"
@@ -220,28 +220,28 @@ Syntax: PeachLinuxCrashHandler.exe --register
 			throw new SyntaxException();
 		}
 
-		public void register()
+		public void register ()
 		{
-			Console.WriteLine("\n");
-			Console.WriteLine("[[ Peach Linux Crash Handler");
-			Console.WriteLine("[[ Copyright (c) Michael Eddington\n");
+			Console.WriteLine ("\n");
+			Console.WriteLine ("[[ Peach 3 Linux Crash Handler");
+			Console.WriteLine ("[[ Copyright (c) Michael Eddington\n");
 
 			Console.WriteLine (" - Registering with kernel\n");
 			
 			// Register our crash handler via proc file system
 			
-			var corePat = string.Format(corePattern,
+			var corePat = string.Format (corePattern,
 			                            monoExecutable,
 			                            linuxCrashHandlerExe);
 			
-			File.WriteAllText(
+			File.WriteAllText (
 				"/proc/sys/kernel/core_pattern",
 				corePat,
 				Encoding.ASCII);
 			
-			var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
-			if (checkWrite.IndexOf(linuxCrashHandlerExe) > -1)
-				Console.WriteLine("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
+			var checkWrite = File.ReadAllText ("/proc/sys/kernel/core_pattern", Encoding.ASCII);
+			if (checkWrite.IndexOf (linuxCrashHandlerExe) > -1)
+				Console.WriteLine ("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
 
 			throw new SyntaxException();
 		}
