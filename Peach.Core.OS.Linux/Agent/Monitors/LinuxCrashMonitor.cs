@@ -49,12 +49,10 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		protected string executable = null;
 		protected string logFolder = "/var/peachcrash";
 		protected string origionalCorePattern = null;
-		protected string linuxCrashHandlerExe = null;
+		protected string linuxCrashHandlerExe = "PeachLinuxCrashHandler.exe";
 
 		protected string data = null;
 		protected List<string> startingFiles = new List<string>();
-
-		bool alreadyPaused = false;
 
 		public LinuxCrashMonitor(string name, Dictionary<string, Variant> args)
 			: base(name, args)
@@ -76,7 +74,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		{
 			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
 
-			if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) != -1)
+			if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) == -1)
 			{
 				// Register our crash handler via proc file system
 
@@ -164,7 +162,9 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 
 		public override bool  DetectedFault()
 		{
-			foreach (var file in Directory.EnumerateFiles(logFolder))
+			Thread.Sleep (250);
+			
+			foreach (var file in Directory.GetFiles(logFolder))
 			{
 				if (executable != null)
 				{
@@ -182,13 +182,18 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 
 		public override void  GetMonitorData(System.Collections.Hashtable data)
 		{
-			foreach (var file in Directory.EnumerateFiles(logFolder))
+			var subdata = new Dictionary<string, Variant>();
+			data["LinuxCrashMonitor_"+Name] = subdata;
+			foreach (var file in Directory.GetFiles(logFolder))
 			{
+				if(startingFiles.Contains(file))
+					continue;
+
 				if (executable != null)
 				{
 					if (file.IndexOf(executable) != -1)
 					{
-						data["LinuxCrashMonitor_" + Name] = File.ReadAllBytes(file);
+						subdata[Path.GetFileName(file)] = new Variant(File.ReadAllBytes(file));
 						File.Delete(file);
 						return;
 					}
@@ -196,7 +201,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				else
 				{
 					// Support multiple crash files
-					data["LinuxCrashMonitor_" + Name + Path.GetFileNameWithoutExtension(file)] = File.ReadAllBytes(file);
+					subdata[Path.GetFileName(file)] = new Variant(File.ReadAllBytes(file));
 					File.Delete(file);
 				}
 			}

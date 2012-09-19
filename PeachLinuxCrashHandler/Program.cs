@@ -32,6 +32,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mono.Posix;
 
 namespace PeachLinuxCrashHandler
 {
@@ -42,16 +43,18 @@ namespace PeachLinuxCrashHandler
 			new Program(args);
 		}
 
+		protected string corePattern = "|{0} {1} -p=%p -u=%u -g=%g -s=%s -t=%t -h=%h -e=%e";
+		protected string monoExecutable = "/usr/bin/mono";
+		protected string origionalCorePattern = null;
+		protected string linuxCrashHandlerExe = "/PeachLinuxCrashHandler.exe";
 		protected string logFolder = "/var/peachcrash";
 
-		public Program(string[] args)
+		public Program (string[] args)
 		{
-			try
-			{
+			try {
 				if (args.Length == 0)
-					syntax();
+					syntax ();
 
-				bool register = false;
 				string uid = null;
 				string gid = null;
 				string sig = null;
@@ -60,7 +63,7 @@ namespace PeachLinuxCrashHandler
 				string exe = null;
 				string pid = null;
 
-				var p = new OptionSet()
+				var p = new OptionSet ()
 				{
 					{ "u|uid=", v => uid = v },
 					{ "g|gid=", v => gid = v},
@@ -70,44 +73,39 @@ namespace PeachLinuxCrashHandler
 					{ "e|exe=", v => exe = v},
 					{ "p|pid=", v => pid = v},
 					{ "l|logfolder=", v => logFolder = v},
+					{ "register", v => register() },
 				};
 
-				List<string> extra = p.Parse(args);
+				List<string> extra = p.Parse (args);
 
-				if (register)
-				{
-					throw new NotImplementedException();
+				if (exe == null) {
+					syntax ();
 				}
 
-				if (exe == null)
-				{
-					syntax();
+				if (!Directory.Exists (logFolder)) {
+					Directory.CreateDirectory (logFolder);
 				}
 
-				if (!Directory.Exists(logFolder))
-				{
-					Directory.CreateDirectory(logFolder);
-				}
+				// World RWX!
+				Mono.Unix.Native.Syscall.chmod (logFolder, Mono.Unix.Native.FilePermissions.S_IRWXO);
 
 				// Handle incoming core file!
 
 
-				var coreFilename = Path.Combine(logFolder, "peach_" + Path.GetFileName(exe) + "_" + pid + ".core");
-				var infoFilename = Path.Combine(logFolder, "peach_" + Path.GetFileName(exe) + "_" + pid + ".info");
+				var coreFilename = Path.Combine (logFolder, "peach_" + Path.GetFileName (exe) + "_" + pid + ".core");
+				var infoFilename = Path.Combine (logFolder, "peach_" + Path.GetFileName (exe) + "_" + pid + ".info");
 
 				using (var sout = File.Create(coreFilename))
-				using (var stdin = Console.OpenStandardInput())
-				{
+				using (var stdin = Console.OpenStandardInput()) {
 					var buff = new byte[1024];
 					int count;
 
-					while (true)
-					{
-						count = stdin.Read(buff, 0, buff.Length);
+					while (true) {
+						count = stdin.Read (buff, 0, buff.Length);
 						if (count == 0)
 							break;
 
-						sout.Write(buff, 0, count);
+						sout.Write (buff, 0, count);
 					}
 				}
 
@@ -117,8 +115,8 @@ namespace PeachLinuxCrashHandler
 				// gdb thread apply all backtrace
 				// gdb info registers
 
-				var psi = new ProcessStartInfo();
-				psi.FileName = "gdb";
+				var psi = new ProcessStartInfo ();
+				psi.FileName = "/usr/bin/gdb";
 				psi.Arguments = exe + " -c " + coreFilename;
 				psi.UseShellExecute = false;
 				psi.RedirectStandardError = true;
@@ -126,35 +124,35 @@ namespace PeachLinuxCrashHandler
 				psi.RedirectStandardOutput = true;
 				psi.CreateNoWindow = true;
 
-				using(var gdb = new Process())
+				using (var gdb = new Process())
 				{
-				gdb.StartInfo = psi;
-				gdb.ErrorDataReceived += new DataReceivedEventHandler(gdb_ErrorDataReceived);
-				gdb.OutputDataReceived += new DataReceivedEventHandler(gdb_OutputDataReceived);
-				gdb.Start();
-				gdb.EnableRaisingEvents = true;
-				gdb.BeginErrorReadLine();
-				gdb.BeginOutputReadLine();
-				gdb.StandardInput.AutoFlush = true;
+					gdb.StartInfo = psi;
+					gdb.ErrorDataReceived += new DataReceivedEventHandler (gdb_ErrorDataReceived);
+					gdb.OutputDataReceived += new DataReceivedEventHandler (gdb_OutputDataReceived);
+					gdb.Start ();
+					gdb.EnableRaisingEvents = true;
+					gdb.BeginErrorReadLine ();
+					gdb.BeginOutputReadLine ();
+					gdb.StandardInput.AutoFlush = true;
 
-				gdb.WaitForInputIdle();
+					gdb.WaitForInputIdle ();
 				
-				gdb.StandardInput.WriteLine("info frame");
-				gdb.WaitForInputIdle();
+					gdb.StandardInput.WriteLine ("info frame");
+					gdb.WaitForInputIdle ();
 
-				gdb.StandardInput.WriteLine("thread apply all backtrace");
-				gdb.WaitForInputIdle();
+					gdb.StandardInput.WriteLine ("thread apply all backtrace");
+					gdb.WaitForInputIdle ();
 
-				gdb.StandardInput.WriteLine("info registers");
-				gdb.WaitForInputIdle();
+					gdb.StandardInput.WriteLine ("info registers");
+					gdb.WaitForInputIdle ();
 
-				gdb.StandardInput.WriteLine("quit");
-				gdb.WaitForExit();
+					gdb.StandardInput.WriteLine ("quit");
+					gdb.WaitForExit ();
 				}
 
 				// Write out information file
 
-				File.WriteAllText(infoFilename, string.Format(@"
+				File.WriteAllText (infoFilename, string.Format (@"
 
 Linux Crash Handler -- Crash information
 ========================================
@@ -175,10 +173,14 @@ GDB Output
 ",
 					pid, exe, uid, gid, sig, host, time, stdout));
 
+				// World RWX
+				Mono.Unix.Native.Syscall.chmod (coreFilename, Mono.Unix.Native.FilePermissions.S_IRWXO);
+				Mono.Unix.Native.Syscall.chmod (infoFilename, Mono.Unix.Native.FilePermissions.S_IRWXO);
+
 				// Done
-			}
-			catch (SyntaxException)
-			{
+			} catch (SyntaxException) {
+			} catch (Exception ex) {
+				File.WriteAllText(Path.Combine (logFolder, "error"), ex.ToString());
 			}
 		}
 
@@ -200,9 +202,9 @@ GDB Output
 
 		public void syntax()
 		{
-			Console.Write("\n");
-			Console.Write("[[ Peach Linux Crash Handler");
-			Console.Write("[[ Copyright (c) Michael Eddington\n");
+			Console.WriteLine("\n");
+			Console.WriteLine("[[ Peach Linux Crash Handler");
+			Console.WriteLine("[[ Copyright (c) Michael Eddington\n");
 
 			Console.WriteLine(@"
 
@@ -210,9 +212,37 @@ This program is registered with the Linux kernel and called to collect
 the core file generated when a process crashes.  This is the main
 method of crash detection on Linux systems.
 
-This program is not intended to be run outside of Peach.
+Syntax: PeachLinuxCrashHandler.exe --register
+
+  --register   Register as crash handler.  Requires root privs.
 
 ");
+			throw new SyntaxException();
+		}
+
+		public void register()
+		{
+			Console.WriteLine("\n");
+			Console.WriteLine("[[ Peach Linux Crash Handler");
+			Console.WriteLine("[[ Copyright (c) Michael Eddington\n");
+
+			Console.WriteLine (" - Registering with kernel\n");
+			
+			// Register our crash handler via proc file system
+			
+			var corePat = string.Format(corePattern,
+			                            monoExecutable,
+			                            linuxCrashHandlerExe);
+			
+			File.WriteAllText(
+				"/proc/sys/kernel/core_pattern",
+				corePat,
+				Encoding.ASCII);
+			
+			var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
+			if (checkWrite.IndexOf(linuxCrashHandlerExe) > -1)
+				Console.WriteLine("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
+
 			throw new SyntaxException();
 		}
 	}

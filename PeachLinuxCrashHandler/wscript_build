@@ -3,6 +3,7 @@
 deps = [
 	'System.dll',
 	'System.Core.dll',
+	'Mono.Posix.dll',
 ]
 
 
