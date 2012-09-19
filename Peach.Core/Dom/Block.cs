@@ -50,15 +50,16 @@ namespace Peach.Core.Dom
 	[DataElement("Block")]
 	[PitParsable("Block")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-  [Serializable]
+	[ParameterAttribute("name", typeof(string), "", true)]
+	[Serializable]
 	public class Block : DataElementContainer
 	{
 		public Block()
 		{
 		}
 
-		public Block(string name) : base()
+		public Block(string name)
+			: base()
 		{
 			this.name = name;
 		}
@@ -77,12 +78,14 @@ namespace Peach.Core.Dom
 				{
 					string name = block.name;
 					block = ObjectCopier.Clone<Block>(refObj);
+
+					block.parent = parent;
 					block.name = name;
 					block.isReference = true;
 				}
 				else
 				{
-					throw new PeachException("Unable to locate 'ref' [" + context.getXmlAttribute(node, "ref") + 
+					throw new PeachException("Unable to locate 'ref' [" + context.getXmlAttribute(node, "ref") +
 						"] or found node did not match type. [" + node.OuterXml + "].");
 				}
 			}
@@ -113,9 +116,9 @@ namespace Peach.Core.Dom
 					stream.Write(child.Value, child);
 
 				// TODO - Remove this debugging code!
-                //if (stream.TellBytes() != stream.Value.Length)
-                //    throw new ApplicationException("Whoa, something is way off here: " +
-                //        stream.TellBytes() + " != " + stream.Value.Length);
+				//if (stream.TellBytes() != stream.Value.Length)
+				//    throw new ApplicationException("Whoa, something is way off here: " +
+				//        stream.TellBytes() + " != " + stream.Value.Length);
 
 				value = new Variant(stream);
 			}
@@ -155,28 +158,28 @@ namespace Peach.Core.Dom
 			return value;
 		}
 
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
-      }
-    }
+		public override object GetParameter(string parameterName)
+		{
+			switch (parameterName)
+			{
+				case "name":
+					return this.name;
+				default:
+					throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
+			}
+		}
 
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
-      }
-    }
+		public override void SetParameter(string parameterName, object value)
+		{
+			switch (parameterName)
+			{
+				case "name":
+					this.name = (string)value;
+					break;
+				default:
+					throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
+			}
+		}
 	}
 }
 

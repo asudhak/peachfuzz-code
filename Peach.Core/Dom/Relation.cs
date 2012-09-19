@@ -54,6 +54,12 @@ namespace Peach.Core.Dom
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
 
+		public void Reset()
+		{
+			_of = null;
+			_from = null;
+		}
+
 		/// <summary>
 		/// Expression that is run when getting the value.
 		/// </summary>
