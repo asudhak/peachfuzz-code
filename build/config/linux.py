@@ -119,7 +119,7 @@ def debug(env):
 		'-ggdb',
 	]
 
-	env.append_value('CSFLAGS', ['/define:DEBUG,TRACE'])
+	env.append_value('CSFLAGS', ['/define:DEBUG,TRACE', '/debug+'])
 	env.append_value('DEFINES', ['DEBUG'])
 	env.append_value('CFLAGS', cflags)
 	env.append_value('CXXFLAGS', cflags)

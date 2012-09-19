@@ -91,8 +91,9 @@ namespace PeachLinuxCrashHandler
 
 				// Handle incoming core file!
 
-				var coreFilename = Path.Combine(logFolder, "peach_" + exe + "_" + pid + ".core");
-				var infoFilename = Path.Combine(logFolder, "peach_" + exe + "_" + pid + ".info");
+
+				var coreFilename = Path.Combine(logFolder, "peach_" + Path.GetFileName(exe) + "_" + pid + ".core");
+				var infoFilename = Path.Combine(logFolder, "peach_" + Path.GetFileName(exe) + "_" + pid + ".info");
 
 				using (var sout = File.Create(coreFilename))
 				using (var stdin = Console.OpenStandardInput())

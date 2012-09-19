@@ -69,13 +69,13 @@ namespace Peach.Core.Analyzers
 		/// Mapping of XML ELement names to type as provided by PitParsableAttribute
 		/// </summary>
 		static Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
-        static readonly string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
+        	static string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
 
 		static PitParser()
 		{
-			PitParser.supportParser = true;
-			Analyzer.defaultParser = new PitParser();
-            populateDataElementPitParsable();
+			//PitParser.supportParser = true;
+			//Analyzer.defaultParser = new PitParser();
+		        //populateDataElementPitParsable();
 		}
 
 		public PitParser()
