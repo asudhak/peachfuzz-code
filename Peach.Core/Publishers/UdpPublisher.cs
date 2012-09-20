@@ -5,7 +5,6 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace Peach.Core.Publishers
 {
@@ -23,7 +22,6 @@ namespace Peach.Core.Publishers
 		protected int _timeout = 3 * 1000;
         protected int _srcport = 0;
 		protected UdpClient _udp = null;
-        protected IPEndPoint _remoteEP = null;
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _errors_send = 0;
 		protected int _errors_recv = 0;
@@ -53,26 +51,37 @@ namespace Peach.Core.Publishers
 		{
 			System.Diagnostics.Debug.Assert(_udp == null);
 			OnOpen(action);
+            try
+            {
+                if (_srcport > 0)
+                {
+                    _udp = new UdpClient(_srcport);
+                }
+                else
+                {
+                    _udp = new UdpClient();
+                }
+                _udp.Connect(_host, _port);
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentOutOfRangeException)
+                {
+                    logger.Debug("UDP ports for packets directed to {0} are not in range",
+                        _host);
+                }
+                else
+                {
+                    logger.Error("Unable to send UDP packet to {0}:{1}. {2}",
+                        _host, _port, ex.Message);
+                }
 
-            if (_srcport > 0)
-            {
-                _udp = new UdpClient(_srcport);
-            }
-            else
-            {
-                _udp = new UdpClient();
-            }  
-            Regex rex = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
-            if (rex.Match(_host).Success)
-            {
-                _remoteEP = new IPEndPoint(IPAddress.Parse(_host), _port);
-            }
-            else
-            {
-                _remoteEP = new IPEndPoint(Dns.GetHostAddresses(_host)[0], _port);
-            }
+                if (_errors_send++ == MaxErrors)
+                    throw new PeachException("Failed to send UDP packet after " + _errors_send + " attempts.");
 
-			IsOpen = true;
+                throw new SoftException();
+            }
+            IsOpen = true;
 		}
 
 		void Action_Starting(Dom.Action action)
@@ -86,10 +95,11 @@ namespace Peach.Core.Publishers
 
 			try
 			{
+                IPEndPoint remoteEP = null;
 				var asyncResult = _udp.BeginReceive(null, null);
 				if (!asyncResult.AsyncWaitHandle.WaitOne(_timeout))
 					throw new TimeoutException();
-				byte[] buf = _udp.EndReceive(asyncResult, ref _remoteEP);
+				byte[] buf = _udp.EndReceive(asyncResult, ref remoteEP);
 				_buffer = new MemoryStream(buf);
 				_errors_recv = 0;
 			}
@@ -128,7 +138,7 @@ namespace Peach.Core.Publishers
 			{
 
 				byte[] buf = (byte[])data;
-				var asyncResult = _udp.BeginSend(buf, buf.Length, _remoteEP, null, null);
+				var asyncResult = _udp.BeginSend(buf, buf.Length, null, null);
 				if (!asyncResult.AsyncWaitHandle.WaitOne(_timeout))
 					throw new TimeoutException();
 				_udp.EndSend(asyncResult);
