@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Peach.Core.Publishers
 {
@@ -12,6 +13,7 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
 	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
+    [ParameterAttribute("SrcPort", typeof(int), "Source port #", false)]
 	public class UdpPublisher : Publisher
 	{
 		static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
@@ -19,7 +21,9 @@ namespace Peach.Core.Publishers
 		protected string _host = null;
 		protected int _port = 0;
 		protected int _timeout = 3 * 1000;
+        protected int _srcport = 0;
 		protected UdpClient _udp = null;
+        protected IPEndPoint _remoteEP = null;
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _errors_send = 0;
 		protected int _errors_recv = 0;
@@ -33,6 +37,8 @@ namespace Peach.Core.Publishers
 
 			if (args.ContainsKey("Timeout"))
 				_timeout = (int)args["Timeout"];
+            if (args.ContainsKey("SrcPort"))
+                _srcport = (int)args["SrcPort"];
 
 			Dom.Action.Starting += new Dom.ActionStartingEventHandler(Action_Starting);
 		}
@@ -48,7 +54,24 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_udp == null);
 			OnOpen(action);
 
-			_udp = new UdpClient(_host, _port);
+            if (_srcport > 0)
+            {
+                _udp = new UdpClient(_srcport);
+            }
+            else
+            {
+                _udp = new UdpClient();
+            }  
+            Regex rex = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
+            if (rex.Match(_host).Success)
+            {
+                _remoteEP = new IPEndPoint(IPAddress.Parse(_host), _port);
+            }
+            else
+            {
+                _remoteEP = new IPEndPoint(Dns.GetHostAddresses(_host)[0], _port);
+            }
+
 			IsOpen = true;
 		}
 
@@ -63,11 +86,10 @@ namespace Peach.Core.Publishers
 
 			try
 			{
-				IPEndPoint remoteEP = null;
 				var asyncResult = _udp.BeginReceive(null, null);
 				if (!asyncResult.AsyncWaitHandle.WaitOne(_timeout))
 					throw new TimeoutException();
-				byte[] buf = _udp.EndReceive(asyncResult, ref remoteEP);
+				byte[] buf = _udp.EndReceive(asyncResult, ref _remoteEP);
 				_buffer = new MemoryStream(buf);
 				_errors_recv = 0;
 			}
@@ -104,8 +126,9 @@ namespace Peach.Core.Publishers
 
 			try
 			{
+
 				byte[] buf = (byte[])data;
-				var asyncResult = _udp.BeginSend(buf, buf.Length, null, null);
+				var asyncResult = _udp.BeginSend(buf, buf.Length, _remoteEP, null, null);
 				if (!asyncResult.AsyncWaitHandle.WaitOne(_timeout))
 					throw new TimeoutException();
 				_udp.EndSend(asyncResult);
