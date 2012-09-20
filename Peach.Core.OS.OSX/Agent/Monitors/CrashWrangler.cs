@@ -29,9 +29,12 @@
 using System;
 using System.IO;
 using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Peach.Core.Dom;
 using Proc = System.Diagnostics.Process;
 
@@ -114,7 +117,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (_detectedFault == null)
 			{
-				// Give CrashWrangler a change to write the log
+				// Give CrashWrangler a chance to write the log
 				Thread.Sleep(500);
 				_detectedFault = File.Exists(_cwLogFile);
 			}
@@ -127,7 +130,10 @@ namespace Peach.Core.Agent.Monitors
 			if (!DetectedFault())
 				return;
 
-			data.Add("CrashWrangler", "TODO: Crash goes here!");
+			string file = File.ReadAllText(_cwLogFile);
+
+			// TODO: Parse file into a simple string
+			data.Add("CrashWrangler", file);
 		}
 
 		public override bool MustStop()
@@ -189,33 +195,42 @@ namespace Peach.Core.Agent.Monitors
 
 		private bool _IsIdleCpu()
 		{
-			// TODO: Need to query _procCommand!
 			System.Diagnostics.Debug.Assert(_procHandler != null);
 
 			var lastTime = _totalProcessorTime;
-			_totalProcessorTime = _procHandler.TotalProcessorTime;
+			_totalProcessorTime = _procCommand.TotalProcessorTime;
 
-			return lastTime == _totalProcessorTime;
+			// TODO: TotalProcessorTime is not implemented, need to use task_info()
+			return lastTime == _totalProcessorTime && false;
 		}
 
 		private bool _IsProcessRunning()
 		{
-			return _procHandler != null && !_procHandler.HasExited;
+			return _procHandler != null && !_procHandler.HasExited && !_procCommand.HasExited;
 		}
 
 		private void _StartProcess()
 		{
-			// Delete the lock, pid and log
-			// Start exc_handler, it will write the pid of _command to the pid file
-
 			System.Diagnostics.Debug.Assert(_procHandler == null);
 			System.Diagnostics.Debug.Assert(_procCommand == null);
 
+			if (File.Exists(_cwPidFile))
+				File.Delete(_cwPidFile);
+
+			if (File.Exists(_cwLogFile))
+				File.Delete(_cwLockFile);
+
+			if (File.Exists(_cwLockFile))
+				File.Delete(_cwLockFile);
+
 			var si = new ProcessStartInfo();
 			si.FileName = _execHandler;
-			si.Arguments = _command + " " + _arguments;
+			si.Arguments = _command + (_arguments.Length == 0 ? "" : " ") + _arguments;
 			si.UseShellExecute = false;
-			si.EnvironmentVariables["PATH"] = Environment.CurrentDirectory + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+
+			foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+				si.EnvironmentVariables[de.Key.ToString()] = de.Value.ToString();
+
 			si.EnvironmentVariables["CW_LOG_PATH"] = _cwLogFile;
 			si.EnvironmentVariables["CW_PID_FILE"] = _cwPidFile;
 			si.EnvironmentVariables["CW_LOCK_FILE"] = _cwLockFile;
@@ -224,38 +239,99 @@ namespace Peach.Core.Agent.Monitors
 
 			_procHandler = new Proc();
 			_procHandler.StartInfo = si;
-			_procHandler.Start();
+
+			try
+			{
+				_procHandler.Start();
+			}
+			catch (Win32Exception ex)
+			{
+
+				string err = GetLastError(ex.NativeErrorCode);
+				throw new PeachException(string.Format("CrashWrangler: Could not start handler \"{0}\" - {1}", _execHandler, err));
+			}
 
 			_totalProcessorTime = TimeSpan.Zero;
 
 			// Wait for pid file to exist, open it up and read it
+			while (!File.Exists(_cwPidFile) && !_procHandler.HasExited)
+				Thread.Sleep(100);
+
+			string strPid = File.ReadAllText(_cwPidFile);
+			int pid = Convert.ToInt32(strPid);
+
+			try
+			{
+				_procCommand = Proc.GetProcessById(pid);
+			}
+			catch (ArgumentException)
+			{
+				if (!_procHandler.HasExited)
+					throw new PeachException("CrashWrangler: Could not open handle to command \"" + _command + "\" with pid \"" + pid + "\"");
+
+				var ret = _procHandler.ExitCode;
+				var log = File.Exists(_cwLogFile);
+
+				// If the exit code non-zero and no log means it was unable to run the command
+				// If the exit code is 0 or there is a log, the program ran to completion
+
+				if (ret != 0 && !log)
+					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"");
+			}
 		}
 
 		private void _StopProcess()
 		{
-			// Check if _procCommand is running
-			// If so, wait for _cwLockFile to not exist before killing
-			// Then stop _procHandler
 			if (_procHandler == null)
 				return;
 
-			// Try and exit gracefully
+			// Ensure a crash report is not being generated
+			while (File.Exists(_cwLockFile))
+				Thread.Sleep(250);
+
+			// Killing _procCommand will cause _procHandler to exit
+			System.Diagnostics.Debug.Assert(_procCommand != null);
+
+			if (!_procCommand.HasExited)
+			{
+				_procCommand.CloseMainWindow();
+				_procCommand.WaitForExit(500);
+
+				if (!_procCommand.HasExited)
+				{
+					try
+					{
+						_procCommand.Kill();
+					}
+					catch (InvalidOperationException)
+					{
+						// Already exited between HasEcited and Kill()
+					}
+					_procCommand.WaitForExit();
+				}
+			}
+
 			if (!_procHandler.HasExited)
 			{
-				_procHandler.CloseMainWindow();
-				_procHandler.WaitForExit(500);
-
-				// Kill forcefully
-				if (!_procHandler.HasExited)
-				{
-					_procHandler.Kill();
-					_procHandler.WaitForExit();
-				}
+				_procHandler.WaitForExit();
 			}
 
 			_procHandler.Close();
 			_procHandler = null;
+			_procCommand.Close();
+			_procHandler = null;
 		}
+
+		[DllImport("libc")]
+		private static extern IntPtr strerror(int err);
+
+		private static string GetLastError(int err)
+		{
+			IntPtr ptr = strerror(err);
+			string ret = Marshal.PtrToStringAnsi(ptr);
+			return ret;
+		}
+
 	}
 }
 
