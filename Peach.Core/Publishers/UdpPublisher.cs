@@ -12,6 +12,7 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
 	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
+    [ParameterAttribute("SrcPort", typeof(int), "Source port #", false)]
 	public class UdpPublisher : Publisher
 	{
 		static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
@@ -19,6 +20,7 @@ namespace Peach.Core.Publishers
 		protected string _host = null;
 		protected int _port = 0;
 		protected int _timeout = 3 * 1000;
+        protected int _srcport = 0;
 		protected UdpClient _udp = null;
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _errors_send = 0;
@@ -33,6 +35,8 @@ namespace Peach.Core.Publishers
 
 			if (args.ContainsKey("Timeout"))
 				_timeout = (int)args["Timeout"];
+            if (args.ContainsKey("SrcPort"))
+                _srcport = (int)args["SrcPort"];
 
 			Dom.Action.Starting += new Dom.ActionStartingEventHandler(Action_Starting);
 		}
@@ -47,9 +51,37 @@ namespace Peach.Core.Publishers
 		{
 			System.Diagnostics.Debug.Assert(_udp == null);
 			OnOpen(action);
+            try
+            {
+                if (_srcport > 0)
+                {
+                    _udp = new UdpClient(_srcport);
+                }
+                else
+                {
+                    _udp = new UdpClient();
+                }
+                _udp.Connect(_host, _port);
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentOutOfRangeException)
+                {
+                    logger.Debug("UDP ports for packets directed to {0} are not in range",
+                        _host);
+                }
+                else
+                {
+                    logger.Error("Unable to send UDP packet to {0}:{1}. {2}",
+                        _host, _port, ex.Message);
+                }
 
-			_udp = new UdpClient(_host, _port);
-			IsOpen = true;
+                if (_errors_send++ == MaxErrors)
+                    throw new PeachException("Failed to send UDP packet after " + _errors_send + " attempts.");
+
+                throw new SoftException();
+            }
+            IsOpen = true;
 		}
 
 		void Action_Starting(Dom.Action action)
@@ -63,7 +95,7 @@ namespace Peach.Core.Publishers
 
 			try
 			{
-				IPEndPoint remoteEP = null;
+                IPEndPoint remoteEP = null;
 				var asyncResult = _udp.BeginReceive(null, null);
 				if (!asyncResult.AsyncWaitHandle.WaitOne(_timeout))
 					throw new TimeoutException();
@@ -104,6 +136,7 @@ namespace Peach.Core.Publishers
 
 			try
 			{
+
 				byte[] buf = (byte[])data;
 				var asyncResult = _udp.BeginSend(buf, buf.Length, null, null);
 				if (!asyncResult.AsyncWaitHandle.WaitOne(_timeout))
