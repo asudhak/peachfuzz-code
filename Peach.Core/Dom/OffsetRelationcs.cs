@@ -89,7 +89,7 @@ namespace Peach.Core.Dom
 			try
 			{
 				_isRecursing = true;
-				long offset = calculateOffset(From, Of);
+				long offset = calculateOffset(From, Of)/8;
 
 				if (_expressionGet != null)
 				{
@@ -133,10 +133,12 @@ namespace Peach.Core.Dom
 		/// </summary>
 		/// <param name="from"></param>
 		/// <param name="to"></param>
-		/// <returns>Returns the offset in bytes between two elements.  Return can be negative.</returns>
+		/// <returns>Returns the offset in bits between two elements.  Return can be negative.</returns>
 		protected long calculateOffset(DataElement from, DataElement to)
 		{
 			DataElementContainer commonAncestor = null;
+			long fromPosition;
+			long toPosition;
 
 			if (isRelativeOffset)
 			{
@@ -148,19 +150,26 @@ namespace Peach.Core.Dom
 				{
 					commonAncestor = findCommonRoot(from.find(relativeTo), to);
 				}
+
+				if (commonAncestor == null)
+					throw new PeachException("Error, unable to calculate offset between '" +
+						from.fullName + "' and '" + to.fullName + "'.");
+
+				BitStream stream = commonAncestor.Value;
+				fromPosition = stream.DataElementPosition(from);
+				toPosition = stream.DataElementPosition(to);
 			}
 			else
 			{
 				commonAncestor = findCommonRoot(from, to);
+				if (commonAncestor == null)
+					throw new PeachException("Error, unable to calculate offset between '" +
+						from.fullName + "' and '" + to.fullName + "'.");
+
+				BitStream stream = commonAncestor.Value;
+				fromPosition = 0;
+				toPosition = stream.DataElementPosition(to);
 			}
-
-			if (commonAncestor == null)
-				throw new PeachException("Error, unable to calculate offset between '" + 
-					from.fullName + "' and '" + to.fullName + "'.");
-
-			BitStream stream = commonAncestor.Value;
-			long fromPosition = stream.DataElementPosition(from);
-			long toPosition = stream.DataElementPosition(to);
 
 			return toPosition - fromPosition;
 		}
