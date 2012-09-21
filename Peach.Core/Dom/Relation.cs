@@ -37,6 +37,8 @@ using System.Runtime.Serialization;
 using System.Xml;
 using System.Diagnostics;
 
+using NLog;
+
 namespace Peach.Core.Dom
 {
 	/// <summary>
@@ -46,6 +48,8 @@ namespace Peach.Core.Dom
 	[DebuggerDisplay("Of={_ofName} From={_fromName}")]
 	public abstract class Relation : IPitSerializable
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		protected DataElement _parent = null;
 		protected string _ofName = null;
 		protected string _fromName = null;
@@ -183,7 +187,10 @@ namespace Peach.Core.Dom
 					_of = parent.find(_ofName);
 
 					if (_of == null)
-						throw new PeachException("Error, unable to resolve '" + _ofName + "' from relation attached to '" + parent.fullName + "'.");
+					{
+						logger.Error("Error, unable to resolve '" + _ofName + "' from relation attached to '" + parent.fullName + "'.");
+						return null;
+					}
 
 					_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
@@ -191,7 +198,9 @@ namespace Peach.Core.Dom
 					{
 						// Verify _of and _from don't share Choice as common parent
 						if (FindCommonParent(_from, _of) is Choice)
-							throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+						{
+							logger.Error("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+						}
 					}
 				}
 
@@ -246,7 +255,9 @@ namespace Peach.Core.Dom
 					{
 						// Verify _of and _from don't share Choice as common parent
 						if (FindCommonParent(_from, _of) is Choice)
-							throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+						{
+							logger.Error("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+						}
 					}
 				}
 
@@ -259,7 +270,9 @@ namespace Peach.Core.Dom
 				{
 					// Verify _of and _from don't share Choice as common parent
 					if (FindCommonParent(value, _of) is Choice)
-						throw new PeachException("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+					{
+						logger.Error("Error, a Relation's 'of' and 'from' sides cannot share a common parent that is of type 'Choice'.  Relation: " + _of.fullName);
+					}
 				}
 
 				_from = value;

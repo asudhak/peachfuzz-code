@@ -139,7 +139,13 @@ namespace Peach.Core.Dom
 			{
 				if (r.Of != this)
 				{
-					value = r.CalculateFromValue();
+					// CalculateFromValue can return null sometimes
+					// when mutations mess up the relation.
+					// In that case use the exsiting value for this element.
+
+					var relationValue = r.CalculateFromValue();
+					if (relationValue != null)
+						value = relationValue;
 				}
 			}
 
