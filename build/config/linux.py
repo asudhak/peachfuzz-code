@@ -13,6 +13,7 @@ tools = [
 	'externals',
 	'test',
 	'version',
+	'xcompile',
 ]
 
 def prepare(conf):
@@ -25,6 +26,7 @@ def prepare(conf):
 	env['CXX']  = 'g++-4.6'
 
 	env['ARCH']    = ['-m%s' % ('64' in env.SUBARCH and '64' or '32')]
+	env['ARCH_ST'] = env['ARCH']
 
 	pin = j(root, '3rdParty', 'pin-2.11-49306-gcc.3.4.6-ia32_intel64-linux')
 
@@ -72,9 +74,6 @@ def prepare(conf):
 
 	env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
 
-def configure(conf):
-	env = conf.env
-
 	env.append_value('supported_features', [
 		'linux',
 		'c',
@@ -90,7 +89,8 @@ def configure(conf):
 		'test',
 	])
 
-	env['ARCH_ST'] = env['ARCH']
+def configure(conf):
+	env = conf.env
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',

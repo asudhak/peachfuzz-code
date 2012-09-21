@@ -83,6 +83,9 @@ def configure(conf):
 	}
 
 def apply_version(self, name, inputs, exts):
+	if not self.env.VARIANT:
+		return
+
 	exts = Utils.to_list(exts)
 
 	self.env.VER_TITLE   = getattr(self, 'ver_title', name)

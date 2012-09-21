@@ -5,6 +5,9 @@ from waflib import Utils, Logs, Task
 @feature('*')
 @before_method('process_source')
 def default_variant(self):
+	if not self.env.VARIANT:
+		return
+
 	features = set(Utils.to_list(self.features))
 	available = set(Utils.to_list(self.env.VARIANTS))
 	intersect = features & available
