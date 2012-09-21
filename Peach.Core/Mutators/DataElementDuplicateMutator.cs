@@ -107,7 +107,11 @@ namespace Peach.Core.Mutators
             for (uint i = 0; i < newCount; ++i)
             {
                 var newElem = ObjectCopier.Clone<DataElement>(obj);
-                newElem.name += "_" + i;
+				
+				// Make sure we pick a unique name
+				while (obj.parent.ContainsKey(newElem.name))
+					newElem.name += "_" + i;
+
                 temp[i] = newElem;
             }
 

@@ -35,6 +35,8 @@ using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using NLog;
+
 namespace Peach.Core.Dom
 {
 	/// <summary>
@@ -43,6 +45,7 @@ namespace Peach.Core.Dom
     [Serializable]
 	public class CountRelation : Relation
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 		protected bool _isRecursing = false;
 
 		public override long GetValue()
@@ -84,12 +87,22 @@ namespace Peach.Core.Dom
 			{
 				_isRecursing = true;
 
+				if (Of == null)
+				{
+					logger.Error("Error, Of returned null");
+					return null;
+				}
+
                 Array OfArray = Of as Array;
 
-                if (OfArray == null)
-                    throw new PeachException(
-                        string.Format("Count Relation requires '{0}' to be an array.  Set the minOccurs and maxOccurs properties.",
-                        OfName));
+				if (OfArray == null)
+				{
+					logger.Error(
+						string.Format("Count Relation requires '{0}' to be an array.  Set the minOccurs and maxOccurs properties.",
+						OfName));
+
+					return null;
+				}
 
 				int count = OfArray.Count;
 

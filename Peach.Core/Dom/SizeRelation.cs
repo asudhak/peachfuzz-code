@@ -35,6 +35,8 @@ using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using NLog;
+
 namespace Peach.Core.Dom
 {
 
@@ -44,6 +46,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class SizeRelation : Relation
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
+
 		protected bool _isRecursing = false;
 		protected bool _isByteRelation = true;
 
@@ -86,6 +90,12 @@ namespace Peach.Core.Dom
 
 			try
 			{
+				if (Of == null)
+				{
+					logger.Error("Error, Of returned null");
+					return null;
+				}
+
 				_isRecursing = true;
 				long size = Of.Value.LengthBits;
 

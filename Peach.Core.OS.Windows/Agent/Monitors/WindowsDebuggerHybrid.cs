@@ -387,6 +387,9 @@ namespace Peach.Core.Agent.Monitors
 				fault = true;
 			}
 
+			if(!fault)
+				logger.Info("DetectedFault() - No fault detected");
+
 			return fault;
 		}
 

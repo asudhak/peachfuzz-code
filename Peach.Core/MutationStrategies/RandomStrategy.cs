@@ -110,7 +110,7 @@ namespace Peach.Core.MutationStrategies
 			// Returns the iteration we should switch our dataSet based off our
 			// current iteration. For example, if switchCount is 10, this function
 			// will return 1, 11, 21, 31, 41, 51, etc.
-			return _iteration - ((_iteration - 1) % (uint)switchCount);
+			return _iteration - (_iteration % (uint)switchCount);
 		}
 
 		public override uint Iteration

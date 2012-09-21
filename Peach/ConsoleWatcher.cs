@@ -71,7 +71,7 @@ namespace Peach
 				Console.ForegroundColor = ConsoleColor.DarkGray;
 				Console.Write("\n[");
 				Console.ForegroundColor = ConsoleColor.Gray;
-				Console.Write(string.Format("{0},-,-", currentIteration));
+				Console.Write(string.Format("{0},-,-", currentIteration+1));
 				Console.ForegroundColor = ConsoleColor.DarkGray;
 				Console.Write("] ");
 				Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -84,7 +84,10 @@ namespace Peach
 				Console.ForegroundColor = ConsoleColor.DarkGray;
 				Console.Write("\n[");
 				Console.ForegroundColor = ConsoleColor.Gray;
-				Console.Write(string.Format("{0},{1},-", currentIteration, totalIterations));
+				if(totalIterations == uint.MaxValue)
+					Console.Write(string.Format("{0},-,-", currentIteration+1, totalIterations));
+				else
+					Console.Write(string.Format("{0},{1},-", currentIteration + 1, totalIterations));
 				Console.ForegroundColor = ConsoleColor.DarkGray;
 				Console.Write("] ");
 				Console.ForegroundColor = ConsoleColor.DarkGreen;

@@ -38,6 +38,8 @@ using System.Runtime.Serialization;
 using Peach.Core;
 using Peach.Core.IO;
 
+using NLog;
+
 namespace Peach.Core.Dom
 {
 
@@ -47,6 +49,7 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class OffsetRelation : Relation
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public bool isRelativeOffset;
 		public string relativeTo = null;
 
@@ -88,6 +91,12 @@ namespace Peach.Core.Dom
 
 			try
 			{
+				if (Of == null)
+				{
+					logger.Error("Error, Of returned null");
+					return null;
+				}
+
 				_isRecursing = true;
 				long offset = calculateOffset(From, Of)/8;
 
