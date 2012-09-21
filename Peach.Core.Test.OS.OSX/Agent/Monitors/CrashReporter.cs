@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Peach.Core;
 using Peach.Core.Agent.Monitors;
 using NUnit.Framework;
+using System.Threading;
 
 namespace Peach.Core.Test.Agent.Monitors
 {
@@ -92,6 +93,7 @@ namespace Peach.Core.Test.Agent.Monitors
 				p.StartInfo.FileName = process;
 				p.Start();
 			}
+			Thread.Sleep(2000);
 			reporter.IterationFinished();
 			Assert.AreEqual(shouldFault, reporter.DetectedFault());
 			System.Collections.Hashtable hash = new System.Collections.Hashtable();
