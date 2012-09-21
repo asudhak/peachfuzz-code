@@ -85,7 +85,7 @@ namespace PeachFuzzBang
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
-					richTextBoxOSX.LoadFile("OSXDebugging.rtf");
+					richTextBoxOSX.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.OSXDebugging.rtf"), RichTextBoxStreamType.RichText);
 					break;
 				case Platform.OS.Linux:
 					osAssembly = System.IO.Path.Combine(
@@ -95,7 +95,25 @@ namespace PeachFuzzBang
 					tabControl.TabPages.Remove(tabPageDebuggerOSX);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
-					richTextBoxLinux.LoadFile("LinuxDebugging.rtf");
+					richTextBoxLinux.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.LinuxDebugging.rtf"), RichTextBoxStreamType.RichText);
+
+					// Update default settings to include full path to PeachFuzzBang
+					// When double clicking the app to run it, the current working
+					// directory is $HOME
+					string cwd = Environment.CurrentDirectory + Path.DirectorySeparatorChar;
+					string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar;
+
+					if (path.StartsWith(cwd))
+					{
+						path = path.Substring(cwd.Length);
+					}
+
+					if (!string.IsNullOrEmpty(path))
+					{
+						textBoxFuzzedFile.Text = Path.Combine(path, textBoxFuzzedFile.Text);
+						textBoxTemplateFiles.Text = Path.Combine(path, textBoxTemplateFiles.Text);
+						textBoxLinuxArguments.Text = Path.Combine(path, textBoxLinuxArguments.Text);
+					}
 					break;
 				case Platform.OS.Windows:
 					{
@@ -139,7 +157,7 @@ namespace PeachFuzzBang
 
 			comboBoxPitDataModel.SelectedIndexChanged += new EventHandler(comboBoxPitDataModel_SelectedIndexChanged);
 
-			richTextBoxIntroduction.LoadFile("Introduction.rtf");
+			richTextBoxIntroduction.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.Introduction.rtf"), RichTextBoxStreamType.RichText);
 		}
 
 		void comboBoxPitDataModel_SelectedIndexChanged(object sender, EventArgs e)
