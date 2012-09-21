@@ -282,7 +282,7 @@ namespace Peach.Core
 						try
 						{
 							if (IterationStarting != null)
-								IterationStarting(context, iterationCount, iterationTotal);
+								IterationStarting(context, iterationCount, iterationTotal.HasValue ? iterationStop : iterationTotal);
 
 							context.agentManager.IterationStarting(iterationCount, false);
 

@@ -145,7 +145,8 @@ namespace Peach.Core.Agent.Monitors
 			if (_restartOnEachTest)
 				_Stop();
 
-			_Start();
+			if (_startOnCall == null)
+				_Start();
 		}
 
 		public override bool DetectedFault()
