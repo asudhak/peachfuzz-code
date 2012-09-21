@@ -37,6 +37,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using System.IO;
 using System.ServiceProcess;
+using System.Linq;
 
 using Peach;
 using Peach.Core;
@@ -117,26 +118,17 @@ namespace PeachFuzzBang
 
 						tabControl.TabPages.Remove(tabPageDebuggerOSX);
 						tabControl.TabPages.Remove(tabPageDebuggerLinux);
-						
+
 						if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 							MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
 
-						if (Environment.Is64BitOperatingSystem)
-						{
-							if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x64)"))
-								textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x64)";
-							else
-								textBoxDebuggerPath.Text = "Error, could not locate 64bit windbg!";
-						}
+						Type t = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.name == "WindowsDebugger");
+						string windbg = t.InvokeMember("FindWinDbg", BindingFlags.InvokeMethod, null, null, null) as string;
+
+						if (windbg != null)
+							textBoxDebuggerPath.Text = windbg;
 						else
-						{
-							if (Directory.Exists(@"C:\Program Files (x86)\Debugging Tools for Windows (x86)"))
-								textBoxDebuggerPath.Text = @"C:\Program Files (x86)\Debugging Tools for Windows (x86)";
-							if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows (x86)"))
-								textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows (x86)";
-							if (Directory.Exists(@"C:\Program Files\Debugging Tools for Windows"))
-								textBoxDebuggerPath.Text = @"C:\Program Files\Debugging Tools for Windows";
-						}
+							textBoxDebuggerPath.Text = "Error, could not locate windbg!";
 					}
 					break;
 			}
