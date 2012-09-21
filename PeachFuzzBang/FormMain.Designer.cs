@@ -100,7 +100,7 @@
 			this.groupBox10 = new System.Windows.Forms.GroupBox();
 			this.checkBoxLinuxCpuKill = new System.Windows.Forms.CheckBox();
 			this.button3 = new System.Windows.Forms.Button();
-			this.textBoxLinuxCommandLine = new System.Windows.Forms.TextBox();
+			this.textBoxLinuxExecutable = new System.Windows.Forms.TextBox();
 			this.label27 = new System.Windows.Forms.Label();
 			this.richTextBoxLinux = new System.Windows.Forms.RichTextBox();
 			this.tabPageGUI = new System.Windows.Forms.TabPage();
@@ -140,6 +140,8 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
+			this.textBoxLinuxArguments = new System.Windows.Forms.TextBox();
+			this.label29 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
@@ -868,13 +870,15 @@
 			// 
 			// groupBox10
 			// 
+			this.groupBox10.Controls.Add(this.label29);
+			this.groupBox10.Controls.Add(this.textBoxLinuxArguments);
 			this.groupBox10.Controls.Add(this.checkBoxLinuxCpuKill);
 			this.groupBox10.Controls.Add(this.button3);
-			this.groupBox10.Controls.Add(this.textBoxLinuxCommandLine);
+			this.groupBox10.Controls.Add(this.textBoxLinuxExecutable);
 			this.groupBox10.Controls.Add(this.label27);
 			this.groupBox10.Location = new System.Drawing.Point(8, 12);
 			this.groupBox10.Name = "groupBox10";
-			this.groupBox10.Size = new System.Drawing.Size(529, 77);
+			this.groupBox10.Size = new System.Drawing.Size(529, 97);
 			this.groupBox10.TabIndex = 10;
 			this.groupBox10.TabStop = false;
 			this.groupBox10.Text = "Start Process";
@@ -884,7 +888,7 @@
 			this.checkBoxLinuxCpuKill.AutoSize = true;
 			this.checkBoxLinuxCpuKill.Checked = true;
 			this.checkBoxLinuxCpuKill.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxLinuxCpuKill.Location = new System.Drawing.Point(92, 48);
+			this.checkBoxLinuxCpuKill.Location = new System.Drawing.Point(92, 74);
 			this.checkBoxLinuxCpuKill.Name = "checkBoxLinuxCpuKill";
 			this.checkBoxLinuxCpuKill.Size = new System.Drawing.Size(224, 17);
 			this.checkBoxLinuxCpuKill.TabIndex = 11;
@@ -900,29 +904,29 @@
 			this.button3.Text = "Browse";
 			this.button3.UseVisualStyleBackColor = true;
 			// 
-			// textBoxLinuxCommandLine
+			// textBoxLinuxExecutable
 			// 
-			this.textBoxLinuxCommandLine.Location = new System.Drawing.Point(92, 22);
-			this.textBoxLinuxCommandLine.Name = "textBoxLinuxCommandLine";
-			this.textBoxLinuxCommandLine.Size = new System.Drawing.Size(356, 20);
-			this.textBoxLinuxCommandLine.TabIndex = 1;
-			this.textBoxLinuxCommandLine.Text = "mspaint.exe fuzzed.png";
+			this.textBoxLinuxExecutable.Location = new System.Drawing.Point(92, 22);
+			this.textBoxLinuxExecutable.Name = "textBoxLinuxExecutable";
+			this.textBoxLinuxExecutable.Size = new System.Drawing.Size(356, 20);
+			this.textBoxLinuxExecutable.TabIndex = 1;
+			this.textBoxLinuxExecutable.Text = "/usr/bin/eog";
 			// 
 			// label27
 			// 
 			this.label27.AutoSize = true;
 			this.label27.Location = new System.Drawing.Point(6, 25);
 			this.label27.Name = "label27";
-			this.label27.Size = new System.Drawing.Size(80, 13);
+			this.label27.Size = new System.Drawing.Size(63, 13);
 			this.label27.TabIndex = 0;
-			this.label27.Text = "Command Line:";
+			this.label27.Text = "Executable:";
 			// 
 			// richTextBoxLinux
 			// 
-			this.richTextBoxLinux.Location = new System.Drawing.Point(3, 95);
+			this.richTextBoxLinux.Location = new System.Drawing.Point(3, 115);
 			this.richTextBoxLinux.Name = "richTextBoxLinux";
 			this.richTextBoxLinux.ReadOnly = true;
-			this.richTextBoxLinux.Size = new System.Drawing.Size(539, 281);
+			this.richTextBoxLinux.Size = new System.Drawing.Size(539, 261);
 			this.richTextBoxLinux.TabIndex = 1;
 			this.richTextBoxLinux.Text = "";
 			// 
@@ -1279,6 +1283,23 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
+			// textBoxLinuxArguments
+			// 
+			this.textBoxLinuxArguments.Location = new System.Drawing.Point(92, 48);
+			this.textBoxLinuxArguments.Name = "textBoxLinuxArguments";
+			this.textBoxLinuxArguments.Size = new System.Drawing.Size(356, 20);
+			this.textBoxLinuxArguments.TabIndex = 12;
+			this.textBoxLinuxArguments.Text = "fuzzed.png";
+			// 
+			// label29
+			// 
+			this.label29.AutoSize = true;
+			this.label29.Location = new System.Drawing.Point(6, 51);
+			this.label29.Name = "label29";
+			this.label29.Size = new System.Drawing.Size(60, 13);
+			this.label29.TabIndex = 13;
+			this.label29.Text = "Arguments:";
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1440,12 +1461,14 @@
 		private System.Windows.Forms.GroupBox groupBox10;
 		private System.Windows.Forms.CheckBox checkBoxLinuxCpuKill;
 		private System.Windows.Forms.Button button3;
-		private System.Windows.Forms.TextBox textBoxLinuxCommandLine;
+		private System.Windows.Forms.TextBox textBoxLinuxExecutable;
 		private System.Windows.Forms.Label label27;
 		private System.Windows.Forms.RichTextBox richTextBoxLinux;
 		private System.Windows.Forms.RichTextBox richTextBoxOSX;
 		private System.Windows.Forms.TextBox textBoxOSXArguments;
 		private System.Windows.Forms.Label label28;
+		private System.Windows.Forms.Label label29;
+		private System.Windows.Forms.TextBox textBoxLinuxArguments;
 	}
 }
 

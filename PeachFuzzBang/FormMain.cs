@@ -282,15 +282,10 @@ namespace PeachFuzzBang
 						break;
 
 					case Platform.OS.Linux:	// Linux
-						monitor.cls = "WindowsDebugger";
+						monitor.cls = "Process";
 						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
-						monitor.parameters["WinDbgPath"] = new Variant(textBoxDebuggerPath.Text);
-
-						if (!checkBoxCpuKill.Checked)
-							monitor.parameters["NoCpuKill"] = new Variant("true");
-
-						if (radioButtonDebuggerStartProcess.Checked)
-							monitor.parameters["CommandLine"] = new Variant(textBoxDebuggerCommandLine.Text);
+						monitor.parameters["Executable"] = new Variant(textBoxLinuxExecutable.Text);
+						monitor.parameters["Arguments"] = new Variant(textBoxLinuxArguments.Text);
 						break;
 
 					case Platform.OS.Windows:
