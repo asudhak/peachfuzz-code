@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using NUnit.Framework;
 using Peach.Core.IO;
 
 using Peach.Core.Dom;
+using Peach.Core.Analyzers;
 
 namespace Peach.Core.Test
 {
@@ -22,20 +24,20 @@ namespace Peach.Core.Test
 			DataModel dm = new DataModel("root");
 			dm.Add(new Block("block1"));
 			dm.Add(new Block("block2"));
-			((DataElementContainer)dm[0]).Add(new Block("block1.1"));
-			((DataElementContainer)dm[0]).Add(new Block("block1.2"));
-			((DataElementContainer)dm[1]).Add(new Block("block2.1"));
-			((DataElementContainer)dm[1]).Add(new Block("block2.2"));
+			((DataElementContainer)dm[0]).Add(new Block("block1_1"));
+			((DataElementContainer)dm[0]).Add(new Block("block1_2"));
+			((DataElementContainer)dm[1]).Add(new Block("block2_1"));
+			((DataElementContainer)dm[1]).Add(new Block("block2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1.1.1"));
-			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1.1.2"));
-			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1.2.1"));
-			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1.2.2"));
+			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1_1_1"));
+			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1_1_2"));
+			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1_2_1"));
+			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1_2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2.1.1"));
-			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2.1.2"));
-			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2.2.1"));
-			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2.2.2"));
+			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2_1_1"));
+			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2_1_2"));
+			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_1"));
+			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_2"));
 
 			var dmCopy = ObjectCopier.Clone<DataModel>(dm);
 			ValidateListVsDictionary(dmCopy, null);
@@ -51,25 +53,25 @@ namespace Peach.Core.Test
 			DataModel dm = new DataModel("root");
 			dm.Add(new Block("block1"));
 			dm.Add(new Block("block2"));
-			((DataElementContainer)dm[0]).Add(new Block("block1.1"));
-			((DataElementContainer)dm[0]).Add(new Block("block1.2"));
-			((DataElementContainer)dm[1]).Add(new Block("block2.1"));
-			((DataElementContainer)dm[1]).Add(new Block("block2.2"));
+			((DataElementContainer)dm[0]).Add(new Block("block1_1"));
+			((DataElementContainer)dm[0]).Add(new Block("block1_2"));
+			((DataElementContainer)dm[1]).Add(new Block("block2_1"));
+			((DataElementContainer)dm[1]).Add(new Block("block2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1.1.1"));
-			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1.1.2"));
-			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1.2.1"));
-			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1.2.2"));
+			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1_1_1"));
+			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1_1_2"));
+			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1_2_1"));
+			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1_2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2.1.1"));
-			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2.1.2"));
-			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2.2.1"));
-			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2.2.2"));
+			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2_1_1"));
+			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2_1_2"));
+			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_1"));
+			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_2"));
 
 			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations.Add(new SizeRelation());
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string1.1.2";
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1.1.1";
+			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string1_1_2";
+			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1_1_1";
 
 			var dmCopy = ObjectCopier.Clone<DataModel>(dm);
 			ValidateListVsDictionary(dmCopy, null);
@@ -85,29 +87,56 @@ namespace Peach.Core.Test
 			DataModel dm = new DataModel("root");
 			dm.Add(new Block("block1"));
 			dm.Add(new Block("block2"));
-			((DataElementContainer)dm[0]).Add(new Block("block1.1"));
-			((DataElementContainer)dm[0]).Add(new Block("block1.2"));
-			((DataElementContainer)dm[1]).Add(new Block("block2.1"));
-			((DataElementContainer)dm[1]).Add(new Block("block2.2"));
+			((DataElementContainer)dm[0]).Add(new Block("block1_1"));
+			((DataElementContainer)dm[0]).Add(new Block("block1_2"));
+			((DataElementContainer)dm[1]).Add(new Block("block2_1"));
+			((DataElementContainer)dm[1]).Add(new Block("block2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1.1.1"));
-			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1.1.2"));
-			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1.2.1"));
-			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1.2.2"));
+			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1_1_1"));
+			((DataElementContainer)((DataElementContainer)dm[0])[0]).Add(new Dom.String("string1_1_2"));
+			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1_2_1"));
+			((DataElementContainer)((DataElementContainer)dm[0])[1]).Add(new Dom.String("string1_2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2.1.1"));
-			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2.1.2"));
-			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2.2.1"));
-			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2.2.2"));
+			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2_1_1"));
+			((DataElementContainer)((DataElementContainer)dm[1])[0]).Add(new Dom.String("string2_1_2"));
+			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_1"));
+			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_2"));
 
 			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations.Add(new SizeRelation());
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string1.1.2";
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1.1.1";
+			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string2_1_2";
+			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1_1_1";
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[1].relations.Add(((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0], false);
+			((DataElementContainer)((DataElementContainer)dm[1])[0])[1].relations.Add(((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0], false);
 
-			var dmCopy = ObjectCopier.Clone<DataModel>(dm);
+			dm.find("string1_1_1").DefaultValue = new Variant("10");
+			dm.find("string2_1_2").DefaultValue = new Variant("1234567890");
+
+			var value = dm.Value;
+
+			DataModel dmCopy = ObjectCopier.Clone<DataModel>(dm);
+			for(int count = 0 ; count <10; count++)
+				dmCopy = ObjectCopier.Clone<DataModel>(dmCopy);
+
+			ValidateListVsDictionary(dmCopy, null);
+		}
+
+		[Test]
+		public void ValidateRelations3()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"Data\" value=\"12345\"/>" +
+				"		<Number name=\"TheNumber\" size=\"8\">" +
+				"			<Relation type=\"size\" of=\"Data\" />" +
+				"		</Number>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataModel dmCopy = ObjectCopier.Clone<DataModel>(dom.dataModels[0]);
 			ValidateListVsDictionary(dmCopy, null);
 		}
 
@@ -126,7 +155,7 @@ namespace Peach.Core.Test
 				Assert.AreEqual(countItem.GetHashCode(), dictItem.GetHashCode(), countItem.fullName);
 
 				foreach (var rel in countItem.relations)
-					Assert.AreEqual(rel.parent.GetHashCode(), countItem.GetHashCode(), countItem.fullName);
+					Assert.AreEqual(rel.parent.getRoot().GetHashCode(), countItem.getRoot().GetHashCode(), countItem.fullName);
 			}
 
 			foreach (var child in elem)
