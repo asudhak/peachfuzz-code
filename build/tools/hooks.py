@@ -118,7 +118,7 @@ def do_install(self, src, tgt, chmod=Utils.O644):
 	ret = self.base_do_install(src, tgt, chmod)
 
 	if self.progress_bar != -1 or str(ret) == 'False':
-		return
+		return ret
 
 	dest = os.path.split(tgt)[1]
 	filename = os.path.split(src)[1]

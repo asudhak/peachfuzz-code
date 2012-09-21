@@ -108,6 +108,10 @@ def configure(conf):
 
 	env['CSPLATFORM'] = 'anycpu'
 
+	env.append_value('DEFINES_debug', [
+		'DEBUG',
+	])
+
 	cppflags = [
 		'-pipe',
 		'-Werror',
@@ -129,22 +133,9 @@ def configure(conf):
 	env.append_value('LIB', [ 'dl' ])
 
 	env['VARIANTS'] = [ 'debug', 'release' ]
-	
-	return env['VARIANTS']
 
 def debug(env):
 	env.CSDEBUG = 'full'
 
-	cflags = [
-		'-ggdb',
-	]
-
-	env.append_value('CSFLAGS', ['/define:DEBUG,TRACE', '/debug+'])
-	env.append_value('DEFINES', ['DEBUG'])
-	env.append_value('CFLAGS', cflags)
-	env.append_value('CXXFLAGS', cflags)
-	env.VARIANT = 'debug'
-
 def release(env):
 	env.CSDEBUG = 'pdbonly'
-	env.VARIANT = 'release'
