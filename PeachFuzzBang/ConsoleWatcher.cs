@@ -104,16 +104,18 @@ namespace PeachFuzzBang
 				
 			this.currentIteration = currentIteration;
 				
-			if (totalIterations == null)
+			if (totalIterations == null || totalIterations > int.MaxValue)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
 					new object[] { _form.textBoxOutput, string.Format("\r\n[{0},-,-] Performing iteration\r\n", currentIteration) });
 			}
 			else
 			{
-				if(_form.progressBarOuputFuzzing.Maximum != (int)totalIterations)
+				// Progress bar max is inclusive.  Need to subtract 1 to get to 100%
+				int max = (int)totalIterations - 1;
+				if(_form.progressBarOuputFuzzing.Maximum != max)
 					_form.progressBarOuputFuzzing.Invoke(new DeligateSetMax(SetMax),
-						new object[] { _form.progressBarOuputFuzzing, (int)totalIterations });
+						new object[] { _form.progressBarOuputFuzzing, max });
 
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
 					new object[] { _form.textBoxOutput, string.Format("\r\n[{0},{1},?] Performing iteration\r\n", currentIteration, totalIterations) });
