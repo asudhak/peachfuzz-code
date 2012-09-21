@@ -357,7 +357,7 @@
 			// 
 			this.comboBoxFuzzingStrategy.FormattingEnabled = true;
 			this.comboBoxFuzzingStrategy.Items.AddRange(new object[] {
-            "Sequential Strategy",
+            "Sequencial Strategy",
             "Random Strategy"});
 			this.comboBoxFuzzingStrategy.Location = new System.Drawing.Point(115, 78);
 			this.comboBoxFuzzingStrategy.Name = "comboBoxFuzzingStrategy";
@@ -1360,7 +1360,6 @@
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.ComboBox comboBoxAttachToServiceServices;
 		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.TextBox textBoxIterations;
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.TabPage tabPageFuzzing;
 		private System.Windows.Forms.Label label11;
@@ -1446,6 +1445,7 @@
 		private System.Windows.Forms.RichTextBox richTextBoxOSX;
 		private System.Windows.Forms.TextBox textBoxOSXArguments;
 		private System.Windows.Forms.Label label28;
+		public System.Windows.Forms.TextBox textBoxIterations;
 	}
 }
 
