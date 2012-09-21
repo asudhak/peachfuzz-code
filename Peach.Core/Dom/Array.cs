@@ -112,6 +112,7 @@ namespace Peach.Core.Dom
 					clone.name = clone.name + "_" + i.ToString();
 					clone.parent = element;
 					element.Add(clone);
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(clone);
 
 					try
 					{
@@ -140,6 +141,7 @@ namespace Peach.Core.Dom
 					clone.name = clone.name + "_" + cnt.ToString();
 					clone.parent = element;
 					element.Add(clone);
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(clone);
 
 					try
 					{

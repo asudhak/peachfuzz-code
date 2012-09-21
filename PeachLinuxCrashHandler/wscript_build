@@ -3,11 +3,12 @@
 deps = [
 	'System.dll',
 	'System.Core.dll',
+	'Mono.Posix.dll',
 ]
 
 
 bld(
-	features = 'cs',
+	features = 'cs linux',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='PeachLinuxCrashHandler.exe',

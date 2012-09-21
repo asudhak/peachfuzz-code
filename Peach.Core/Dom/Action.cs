@@ -338,6 +338,12 @@ namespace Peach.Core.Dom
 					dataModel = null;
 					dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
 					dataModel.action = this;
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(dataModel);
+
+					// Verify children are correct
+					foreach (var child in dataModel)
+						child.parent = dataModel;
+
 					break;
 
 				case ActionType.Call:
@@ -345,6 +351,7 @@ namespace Peach.Core.Dom
 					{
 						p.dataModel = ObjectCopier.Clone<DataModel>(p.origionalDataModel);
 						p.dataModel.action = this;
+						Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(p.dataModel);
 					}
 
 					// TODO - Also set ActionResult
@@ -681,6 +688,7 @@ namespace Peach.Core.Dom
 				{
 					_dataModel = value;
 					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(_origionalDataModel);
 				}
 				else
 				{
@@ -715,6 +723,7 @@ namespace Peach.Core.Dom
 				{
 					_dataModel = value;
 					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
+					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(_origionalDataModel);
 				}
 				else
 				{

@@ -201,6 +201,7 @@ namespace Peach.Core.MutationStrategies
 
 				// Store copy of new origional data model
 				action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
+				Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.origionalDataModel);
 
 				// Refresh the mutators
 				RecordDataModel(action);

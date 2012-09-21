@@ -134,6 +134,15 @@ def configure(conf):
 
 def debug(env):
 	env.CSDEBUG = 'full'
+
+	cflags = [
+		'-ggdb',
+	]
+
+	env.append_value('CSFLAGS', ['/define:DEBUG,TRACE', '/debug+'])
+	env.append_value('DEFINES', ['DEBUG'])
+	env.append_value('CFLAGS', cflags)
+	env.append_value('CXXFLAGS', cflags)
 	env.VARIANT = 'debug'
 
 def release(env):

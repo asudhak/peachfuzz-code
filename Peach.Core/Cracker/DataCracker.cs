@@ -222,7 +222,7 @@ namespace Peach.Core.Cracker
 					newParent = before.parent;
 
 					newName = oldName;
-					for (int i = 0; newParent.ContainsKey(oldName); i++)
+					for (int i = 0; newParent.ContainsKey(newName); i++)
 						newName = oldName + "_" + i;
 
 					element.parent.Remove(element);
@@ -254,6 +254,29 @@ namespace Peach.Core.Cracker
 				}
 				
 			}
+		}
+
+		/// <summary>
+		/// Recursively locate relations on elements and 
+		/// reset the relation so it will have to find by name
+		/// the instance in our tree.
+		/// </summary>
+		/// <param name="elem"></param>
+		public static void ClearRelationsRecursively(DataElement elem)
+		{
+			foreach (var rel in elem.relations)
+			{
+				if(rel.From.fullName == elem.fullName)
+					rel.parent = elem;
+
+				rel.Reset();
+			}
+
+			if (!(elem is DataElementContainer))
+				return;
+
+			foreach (var child in ((DataElementContainer)elem))
+				ClearRelationsRecursively(child);
 		}
 
 		/// <summary>

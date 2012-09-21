@@ -47,11 +47,22 @@ namespace Peach.Core.Dom
 	{
 		protected DataElement parent;
 		protected List<Relation> _childrenList = new List<Relation>();
-		protected Dictionary<Type, Relation> _childrenDict = new Dictionary<Type, Relation>();
 
 		public RelationContainer(DataElement parent)
 		{
 			this.parent = parent;
+		}
+
+		public DataElement Parent
+		{
+			get
+			{
+				return parent;
+			}
+			set
+			{
+				parent = value;
+			}
 		}
 
 		public Relation this[int index]
@@ -62,30 +73,9 @@ namespace Peach.Core.Dom
 				if (value == null)
 					throw new ApplicationException("Cannot set null value");
 
-				_childrenDict.Remove(_childrenList[index].GetType());
-				_childrenDict.Add(value.GetType(), value);
-
 				_childrenList[index].parent = null;
 
 				_childrenList.RemoveAt(index);
-				_childrenList.Insert(index, value);
-
-				value.parent = parent;
-			}
-		}
-
-		public Relation this[Type key]
-		{
-			get { return _childrenDict[key]; }
-			set
-			{
-				if (value == null)
-					throw new ApplicationException("Cannot set null value");
-
-				int index = _childrenList.IndexOf(_childrenDict[key]);
-				_childrenList.RemoveAt(index);
-				_childrenDict[key].parent = null;
-				_childrenDict[key] = value;
 				_childrenList.Insert(index, value);
 
 				value.parent = parent;
@@ -255,30 +245,14 @@ namespace Peach.Core.Dom
 			return _childrenList.IndexOf(item);
 		}
 
-		protected bool HaveKey(Type key)
-		{
-			foreach (Type k in _childrenDict.Keys)
-				if (k == key)
-					return true;
-
-			return false;
-		}
-
 		public void Insert(int index, Relation item)
 		{
-			if (HaveKey(item.GetType()))
-				throw new ApplicationException(
-					string.Format("Child Relation typed {0} already exists.", item.GetType()));
-
 			_childrenList.Insert(index, item);
-			_childrenDict[item.GetType()] = item;
-
 			item.parent = parent;
 		}
 
 		public void RemoveAt(int index)
 		{
-			_childrenDict.Remove(_childrenList[index].GetType());
 			_childrenList[index].parent = null;
 			_childrenList.RemoveAt(index);
 		}
@@ -289,14 +263,20 @@ namespace Peach.Core.Dom
 
 		public void Add(Relation item)
 		{
-			foreach (Type k in _childrenDict.Keys)
-				if (k == item.GetType())
+			Add(item, true);
+		}
+
+		public void Add(Relation item, bool updateParent)
+		{
+			foreach (var rel in _childrenList)
+				if (rel.GetType() == item.GetType())
 					throw new ApplicationException(
 						string.Format("Child Relation typed {0} already exists.", item.GetType()));
 
 			_childrenList.Add(item);
-			_childrenDict[item.GetType()] = item;
-			item.parent = parent;
+
+			if (updateParent)
+				item.parent = parent;
 		}
 
 		public void Clear()
@@ -305,7 +285,6 @@ namespace Peach.Core.Dom
 				e.parent = null;
 
 			_childrenList.Clear();
-			_childrenDict.Clear();
 		}
 
 		public bool Contains(Relation item)
@@ -316,11 +295,6 @@ namespace Peach.Core.Dom
 		public void CopyTo(Relation[] array, int arrayIndex)
 		{
 			_childrenList.CopyTo(array, arrayIndex);
-			foreach (Relation e in array)
-			{
-				_childrenDict[e.GetType()] = e;
-				e.parent = parent;
-			}
 		}
 
 		public int Count
@@ -335,7 +309,6 @@ namespace Peach.Core.Dom
 
 		public bool Remove(Relation item)
 		{
-			_childrenDict.Remove(item.GetType());
 			bool ret = _childrenList.Remove(item);
 			item.parent = null;
 

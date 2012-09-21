@@ -291,6 +291,7 @@
     <Compile Include="Mutators\ValidValuesMutatorTests.cs" />
     <Compile Include="Mutators\XmlW3CMutatorTests.cs" />
     <Compile Include="MutationStrategies\RandomStrategyTests.cs" />
+    <Compile Include="ObjectCopierTests.cs" />
     <Compile Include="PeachXPathTests.cs" />
     <Compile Include="PitParserTests\ArrayTests.cs" />
     <Compile Include="Monitors\PcapMonitorTests.cs" />
@@ -299,7 +300,6 @@
     <Compile Include="PitParserTests\BlobTests.cs" />
     <Compile Include="PitParserTests\ChoiceTests.cs" />
     <Compile Include="PitParserTests\DefaultsTests.cs" />
-    <Compile Include="PitParserTests\DefaultValuesTests.cs" />
     <Compile Include="PitParserTests\FlagTests.cs" />
     <Compile Include="PitParserTests\GeneralTests.cs" />
     <Compile Include="PitParserTests\NumberTests.cs" />
@@ -316,7 +316,6 @@
     <Compile Include="RelationCountTests.cs" />
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="ReportedTests.cs" />
-    <Compile Include="RunTests.cs" />
     <Compile Include="StateModel\ActionWhenTests.cs" />
     <Compile Include="StateModel\InputTests.cs" />
     <Compile Include="StateModel\OutputTests.cs" />
