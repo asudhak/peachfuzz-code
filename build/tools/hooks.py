@@ -41,8 +41,10 @@ def add_to_group(self, tgen, group=None):
 def exec_command(self, cmd, **kw):
 	subprocess = Utils.subprocess
 	kw['shell'] = isinstance(cmd, str)
-	Logs.debug('runner: %r' % cmd)
-	Logs.debug('runner_env: kw=%s' % kw)
+
+	msg = self.logger or Logs
+	msg.debug('runner: %r' % cmd)
+	msg.debug('runner_env: kw=%s' % kw)
 
 	kw['stderr'] = kw['stdout'] = subprocess.PIPE
 
@@ -55,12 +57,17 @@ def exec_command(self, cmd, **kw):
 
 	if not isinstance(out, str):
 		out = out.decode(sys.stdout.encoding or 'iso8859-1')
-	if ret or Logs.verbose > 0:
+	if self.logger:
+		self.logger.debug('out: %s' % out)
+	elif ret or Logs.verbose > 0:
 		sys.stdout.write(out)
 
 	if not isinstance(err, str):
 		err = err.decode(sys.stdout.encoding or 'iso8859-1')
-	sys.stderr.write(err)
+	if self.logger:
+		self.logger.debug('err: %s' % err)
+	else:
+		sys.stderr.write(err)
 
 	return ret
 
