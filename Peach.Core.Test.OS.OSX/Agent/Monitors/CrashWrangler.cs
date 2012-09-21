@@ -24,16 +24,17 @@ namespace Peach.Core.Test.Agent.Monitors
 		}
 
 		// XXX: This test causes the testing framework to immediately die.  Need to investigate why
-		//[Test]
-		//public void BadCommand()
-		//{
-		//	Dictionary<string, Variant> args = new Dictionary<string, Variant>();
-		//	args["Command"] = new Variant("foo");
-		//	
-		//	CrashWrangler w = new CrashWrangler("name", args);
-		//	string expected = "CrashWrangler handler could not run command \"foo\".";
-		//	Assert.Throws<PeachException>(delegate() { w.SessionStarting(); }, expected);
-		//}
+		[Test]
+		[Ignore]
+		public void BadCommand()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("foo");
+
+			CrashWrangler w = new CrashWrangler("name", args);
+			string expected = "CrashWrangler handler could not run command \"foo\".";
+			Assert.Throws<PeachException>(delegate() { w.SessionStarting(); }, expected);
+		}
 		
 		[Test]
 		public void TestNoFault()
@@ -118,7 +119,6 @@ namespace Peach.Core.Test.Agent.Monitors
 		public void TestCpuKill()
 		{
 			Variant foo = new Variant("foo");
-			Variant ret;
 			
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Command"] = new Variant("nc");
@@ -129,9 +129,17 @@ namespace Peach.Core.Test.Agent.Monitors
 			w.Message("Action.Call", foo);
 			Thread.Sleep(1000);
 
-			ret = w.Message("Action.Call.IsRunning", foo);
+			// Should not be idle, as the cpu worked to start the program
+			Variant before = w.Message("Action.Call.IsRunning", foo);
+
+			Thread.Sleep(1000);
+
+			// Should be idle, as the cpu hasn't done anything
+			Variant after = w.Message("Action.Call.IsRunning", foo);
+
 			w.StopMonitor();
-			Assert.AreEqual(0, (int)ret);
+			Assert.AreEqual(1, (int)before);
+			Assert.AreEqual(0, (int)after);
 		}
 
 		[Test]
@@ -145,9 +153,14 @@ namespace Peach.Core.Test.Agent.Monitors
 			CrashWrangler w = new CrashWrangler("name", args);
 			w.SessionStarting();
 			w.IterationStarting(0, false);
-			Thread.Sleep(5000);
+			Thread.Sleep(1000);
 			w.IterationFinished();
 			Assert.AreEqual(true, w.DetectedFault());
+			Hashtable hash = new Hashtable();
+			w.GetMonitorData(hash);
+			Assert.True(hash.ContainsKey("CrashWrangler"));
+			string data = hash["CrashWrangler"] as string;
+			Assert.True(data.StartsWith("Exploitable_Crash_0x"));
 			w.SessionFinished();
 			w.StopMonitor();
 		}

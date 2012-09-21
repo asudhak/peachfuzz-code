@@ -3,6 +3,8 @@
 deps = [
 	'Peach.Core.dll',
 	'System.dll',
+	'System.Core.dll',
+	'NLog.dll',
 ]
 
 bld(
