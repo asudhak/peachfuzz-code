@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.IO;
 using Peach.Core.Dom;
+using NLog;
 
 namespace Peach.Core.Mutators
 {
@@ -38,7 +39,9 @@ namespace Peach.Core.Mutators
     [Hint("SizedVaranceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class SizedVaranceMutator : Mutator
     {
-        // members
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		// members
         //
         int n;
         int[] values;
@@ -146,7 +149,12 @@ namespace Peach.Core.Mutators
         {
             var sizeRelation = obj.relations.getFromSizeRelation();
             var objOf = sizeRelation.Of;
-            var size = (long)obj.GenerateInternalValue();
+			if (objOf == null)
+			{
+				logger.Error("Error, sizeRelation.Of == null, unable to perform mutation.");
+				return;
+			}
+			var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
             n = (int)size + curr;
