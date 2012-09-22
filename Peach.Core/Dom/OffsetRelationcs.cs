@@ -98,7 +98,10 @@ namespace Peach.Core.Dom
 				}
 
 				_isRecursing = true;
-				long offset = calculateOffset(From, Of)/8;
+
+				// calculateOffset can throw PeachException during mutations
+				// we will catch and return null;
+				long offset = calculateOffset(From, Of) / 8;
 
 				if (_expressionGet != null)
 				{
@@ -112,6 +115,11 @@ namespace Peach.Core.Dom
 				}
 
 				return new Variant(offset);
+			}
+			catch (PeachException ex)
+			{
+				logger.Error(ex.Message);
+				return null;
 			}
 			finally
 			{
@@ -161,8 +169,10 @@ namespace Peach.Core.Dom
 				}
 
 				if (commonAncestor == null)
+				{
 					throw new PeachException("Error, unable to calculate offset between '" +
 						from.fullName + "' and '" + to.fullName + "'.");
+				}
 
 				BitStream stream = commonAncestor.Value;
 				fromPosition = stream.DataElementPosition(from);

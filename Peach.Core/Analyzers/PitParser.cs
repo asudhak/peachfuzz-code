@@ -677,6 +677,7 @@ namespace Peach.Core.Analyzers
 					dataModel = ObjectCopier.Clone<DataModel>(refObj);
 					dataModel.name = name;
 					dataModel.isReference = true;
+					dataModel.referenceName = getXmlAttribute(node, "ref");
 
 					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(dataModel);
 				}

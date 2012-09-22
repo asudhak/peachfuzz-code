@@ -169,6 +169,10 @@ namespace Peach.Core.MutationStrategies
 			if (switchIteration == val.iteration)
 				return;
 
+			// Don't switch files if we are only using a single file :)
+			if (val.fileNames.Count < 2)
+				return;
+
 			// Only pick the file name once so any given iteration is guranteed to be deterministic
 			string fileName = _randomDataSet.Choice(val.fileNames);
 			byte[] fileBytes = null;
@@ -185,6 +189,16 @@ namespace Peach.Core.MutationStrategies
 				}
 
 				// Crack the file
+
+				// Note: We need to find the origional data model to use.  Re-using
+				// a data model that has been cracked into will fail in odd ways.
+
+				var referenceName = action.dataModel.referenceName;
+				action.dataModel = ObjectCopier.Clone<DataModel>(this._context.dom.dataModels[referenceName]);
+				action.dataModel.isReference = true;
+				action.dataModel.referenceName = referenceName;
+				Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.dataModel);
+
 				DataCracker cracker = new DataCracker();
 				cracker.CrackData(action.dataModel, new BitStream(fileBytes));
 

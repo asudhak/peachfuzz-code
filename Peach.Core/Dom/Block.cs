@@ -82,6 +82,7 @@ namespace Peach.Core.Dom
 					block.parent = parent;
 					block.name = name;
 					block.isReference = true;
+					block.referenceName = context.getXmlAttribute(node, "ref");
 				}
 				else
 				{

@@ -32,12 +32,16 @@ using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
+using NLog;
+
 namespace Peach.Core.Mutators
 {
     [Mutator("Change the length of sizes to numerical edge cases")]
     [Hint("SizedNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class SizedNumericalEdgeCasesMutator : Mutator
     {
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
         // members
         //
         int n;
@@ -172,6 +176,13 @@ namespace Peach.Core.Mutators
         {
             var sizeRelation = obj.relations.getFromSizeRelation();
             var objOf = sizeRelation.Of;
+
+			if (objOf == null)
+			{
+				logger.Error("Error, sizeRelation.Of == null, unable to perform mutation.");
+				return;
+			}
+
             var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
