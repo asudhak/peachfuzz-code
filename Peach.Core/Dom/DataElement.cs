@@ -344,6 +344,17 @@ namespace Peach.Core.Dom
 			set { _isReference = value; }
 		}
 
+		string _referenceName;
+
+		/// <summary>
+		/// If created by reference, has the reference name
+		/// </summary>
+		public string referenceName
+		{
+			get { return _referenceName; }
+			set { _referenceName = value; }
+		}
+
 		public DataElementContainer parent
 		{
 			get
