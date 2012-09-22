@@ -4,10 +4,11 @@ import os.path
 from waflib.TaskGen import feature, after_method, before_method
 from waflib.Build import InstallContext
 from waflib import Utils, Logs, Configure, Context, Options, Errors
-import tools.hooks
+from tools import pkg, hooks
 
 out = 'slag'
 inst = 'output'
+appname = 'peach'
 
 targets = [ 'win', 'linux', 'osx', 'foo' ]
 
@@ -42,7 +43,8 @@ def configure(ctx):
 		setattr(Configure.ConfigurationContext, 'fatal', null_fatal)
 
 	base_env = ctx.env
-	base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = 'output'
+	base_env.APPNAME = appname
+	base_env.OUTPUT = base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = inst
 	base_env.BUILDTAG = Options.options.buildtag
 
 	tool_dir =  [
@@ -69,6 +71,7 @@ def configure(ctx):
 			try:
 				ctx.setenv(name, env=base_env)
 				arch_env = ctx.get_env()
+				arch_env.TARGET = tgt;
 				arch_env.SUBARCH = arch;
 				arch_env.PREFIX = os.path.join(base_env.PREFIX, name)
 				arch_env.BINDIR = os.path.join(base_env.BINDIR, name)
@@ -77,9 +80,10 @@ def configure(ctx):
 				
 				for tool in getattr(config, 'tools', []):
 					ctx.load(tool, tool_dir)
-				
-				cfgs = config.configure(ctx)
-				
+
+				config.configure(ctx)
+				cfgs = ctx.env.VARIANTS
+
 				if not cfgs:
 					base_env.append_value('variants', name)
 
@@ -90,6 +94,7 @@ def configure(ctx):
 					cfg_env.PREFIX = os.path.join(base_env.BINDIR, variant)
 					cfg_env.BINDIR = os.path.join(base_env.BINDIR, variant, 'bin')
 					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'bin')
+					cfg_env.VARIANT = cfg
 					cfg_func = getattr(config, cfg)
 					cfg_func(cfg_env)
 					base_env.append_value('variants', variant)

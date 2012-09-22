@@ -108,13 +108,9 @@ def configure(conf):
 	env.append_value('DEFINES_debug', ['DEBUG'])
 
 	env['VARIANTS'] = [ 'debug', 'release' ]
-	
-	return env['VARIANTS']
 
 def debug(env):
 	env.CSDEBUG = 'full'
-	env.VARIANT = 'debug'
 
 def release(env):
 	env.CSDEBUG = 'pdbonly'
-	env.VARIANT = 'release'
