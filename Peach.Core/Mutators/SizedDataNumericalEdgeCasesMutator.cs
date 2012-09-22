@@ -170,7 +170,13 @@ namespace Peach.Core.Mutators
 
             var sizeRelation = obj.relations.getFromSizeRelation();
             var objOf = sizeRelation.Of;
-            n = (int)curr;
+			if (objOf == null)
+			{
+				logger.Error("Error, sizeRelation.Of == null, unable to perform mutation.");
+				return;
+			}
+			
+			n = (int)curr;
 
             obj.MutatedValue = null;
             objOf.MutatedValue = null;
