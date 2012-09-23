@@ -180,7 +180,7 @@ namespace PeachFuzzBang
 				buttonSaveConfiguration.Enabled = false;
 				buttonStopFuzzing.Enabled = true;
 
-				IterationCount = 0;
+				IterationCount = 1;
 				FaultCount = 0;
 				textBoxIterationCount.Text = IterationCount.ToString();
 				textBoxFaultCount.Text = FaultCount.ToString();
