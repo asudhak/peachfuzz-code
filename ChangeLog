@@ -1,3 +1,12 @@
+NEW IN WAF 1.7.3
+-----------------
+* Fixed the LD_LIBRARY_PATH race condition in waf_unit_test #1200
+* Library detection fixes in boost.py #1199
+* Various waf_unit_test enhancements #1194
+* Use the same function signature main(int, char**) in all configuration tests #1192
+* Fixed the Clang version number detection #1191
+* Let the feature 'includes' propagate INCLUDES and FRAMEWORKPATH variables
+
 NEW IN WAF 1.7.2
 ----------------
 * Install bld.subst() targets
