@@ -115,7 +115,7 @@ def dosomething(ctx):
 	print(nd3)
 
 	nd2.write('some text') <5>
-	print(nd2.read())
+	print(nd2.read()) <6>
 
 	print(ctx.path.listdir())
 ---------------
@@ -125,6 +125,7 @@ def dosomething(ctx):
 <3> Search for a node but do not try to create it
 <4> Search for a file which does not exist
 <5> Write to the file pointed by the node, creating or overwriting the file
+<6> In practice, it is best to use the read/write methods to prevent file handle inheritance issues on win32 systems when performing parallel builds
 
 The output will be the following:
 
@@ -325,6 +326,14 @@ def build(bld):
         source = bld.path.make_node('foo.txt'),
         target = bld.path.get_bld().make_node('foo.txt')
     )
+---------------
+
+In practice, it is easier to use a wrapper that conceals these details (more examples can be found in +demos/subst+):
+
+[source,python]
+---------------
+def build(bld):
+    bld(features='subst', source='wscript', target='wscript', is_copy=True)
 ---------------
 
 // ==== Serialization concerns
