@@ -55,8 +55,8 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		public static string DEFINED_VALUES = "DefinedValues";
 
-		static int ErrorsCount = 0;
-		static string ErrorMessage = "";
+		static readonly string PEACH_NAMESPACE_URI = "http://phed.org/2012/Peach";
+
 		public Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
 
@@ -155,35 +155,38 @@ namespace Peach.Core.Analyzers
 			if (t != null)
 				return;
 
-			XmlTextReader tr = new XmlTextReader(
-				Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd"));
 			XmlSchemaSet set = new XmlSchemaSet();
-			set.Add(null, tr);
+			var xsd = Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd");
+			using (var tr = XmlReader.Create(xsd))
+			{
+				set.Add(null, tr);
+			}
 
-			XmlReaderSettings settings = new XmlReaderSettings();
-			settings.IgnoreComments = true;
-			settings.Schemas = set;
-			settings.ValidationType = ValidationType.Schema;
-			settings.ValidationEventHandler += new ValidationEventHandler(vr_ValidationEventHandler);
+			var doc = new XmlDocument();
+			doc.Schemas = set;
+			doc.Load(data);
 
-			XmlReader xmlFile = XmlTextReader.Create(data, settings);
+			foreach (XmlNode root in doc.ChildNodes)
+			{
+				if (root.Name == "Peach")
+				{
+					if (string.IsNullOrEmpty(root.NamespaceURI))
+					{
+						var element = root as System.Xml.XmlElement;
+						element.SetAttribute("xmlns", PEACH_NAMESPACE_URI);
+					}
+					break;
+				}
+			}
 
-			while (xmlFile.Read()) ;
-			xmlFile.Close();
+			string errors = "";
+			doc.Validate(delegate(object sender, ValidationEventArgs e)
+			{
+				errors += e.Message + "\r\n";
+			});
 
-			if (ErrorsCount > 0)
-				throw new PeachException("Error: Pit file failed to validate: " + ErrorMessage);
-		}
-
-		/// <summary>
-		/// Called when the Schema validator hits an error.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		void vr_ValidationEventHandler(object sender, ValidationEventArgs e)
-		{
-			ErrorMessage = ErrorMessage + e.Message + "\r\n";
-			ErrorsCount++;
+			if (!string.IsNullOrEmpty(errors))
+				throw new PeachException("Error: Pit file failed to validate: " + errors);
 		}
 
 		/// <summary>

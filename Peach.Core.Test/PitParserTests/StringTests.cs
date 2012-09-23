@@ -143,7 +143,40 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
+		}
 
+		[Test]
+		public void NameWithDotsTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach xmlns=\"http://phed.org/2012/Peach\">\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"The.String\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+		}
+
+		[Test]
+		public void NameWithSpacesTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach xmlns=\"http://phed.org/2012/Peach\">\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"The String\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
 		}
 	}
 }
