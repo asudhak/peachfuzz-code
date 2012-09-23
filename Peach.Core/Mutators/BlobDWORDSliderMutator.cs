@@ -108,7 +108,7 @@ namespace Peach.Core.Mutators
             }
 
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            performMutation(obj, context.Random.Next(length));
+            performMutation(obj, context.Random.Next((int)obj.Value.LengthBytes));
         }
 
         // PERFORM_MUTATION
