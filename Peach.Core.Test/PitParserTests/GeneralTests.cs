@@ -67,9 +67,9 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel1\">" +
-				"       <Block name=\"TheBlock\">"+
+				"       <Block name=\"TheBlock\">" +
 				"		      <String name=\"TheString\" value=\"Hello\"/>" +
-				"       </Block>"+
+				"       </Block>" +
 				"	</DataModel>" +
 				"	<DataModel name=\"TheDataModel\" ref=\"TheDataModel1\">" +
 				"		<String name=\"TheBlock.TheString\" value=\"World\"/>" +
@@ -81,9 +81,32 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(1, dom.dataModels["TheDataModel"].Count);
 			Assert.AreEqual(1, ((DataElementContainer)dom.dataModels["TheDataModel"][0]).Count);
-			
+
 			Assert.AreEqual("TheString", ((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].name);
-			Assert.AreEqual("World", (string) ((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].DefaultValue);
+			Assert.AreEqual("World", (string)((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].DefaultValue);
+		}
+
+		[Test]
+		public void PeriodInName()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel1\">" +
+				"       <Block name=\"TheBlock\">" +
+				"		      <String name=\"The.String\" value=\"Hello\"/>" +
+				"       </Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			try
+			{
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.IsTrue(false);
+			}
+			catch (PeachException)
+			{
+				Assert.IsTrue(true);
+			}
 		}
 	}
 }
