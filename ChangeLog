@@ -6,6 +6,8 @@ NEW IN WAF 1.7.3
 * Use the same function signature main(int, char**) in all configuration tests #1192
 * Fixed the Clang version number detection #1191
 * Let the feature 'includes' propagate INCLUDES and FRAMEWORKPATH variables
+* Fix for incorrect installation paths #1202
+* Cabal script (haskell)
 
 NEW IN WAF 1.7.2
 ----------------
