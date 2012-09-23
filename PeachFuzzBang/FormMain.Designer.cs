@@ -823,6 +823,7 @@
 			this.textBoxOSXCrashWrangler.Name = "textBoxOSXCrashWrangler";
 			this.textBoxOSXCrashWrangler.Size = new System.Drawing.Size(356, 20);
 			this.textBoxOSXCrashWrangler.TabIndex = 2;
+			this.textBoxOSXCrashWrangler.Text = "exc_handler";
 			// 
 			// groupBox8
 			// 
