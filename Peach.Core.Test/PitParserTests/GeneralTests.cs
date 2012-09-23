@@ -101,7 +101,7 @@ namespace Peach.Core.Test.PitParserTests
 			try
 			{
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-				Assert.IsTrue(false);
+				Assert.IsTrue(false, "parsing should have caused exception");
 			}
 			catch (PeachException)
 			{
