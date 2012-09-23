@@ -61,5 +61,29 @@ namespace Peach.Core.Test.PitParserTests
 		//    Assert.IsTrue(num.Signed);
 		//    Assert.IsFalse(num.LittleEndian);
 		//}
+
+		[Test]
+		public void DeepOverride()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel1\">" +
+				"       <Block name=\"TheBlock\">"+
+				"		      <String name=\"TheString\" value=\"Hello\"/>" +
+				"       </Block>"+
+				"	</DataModel>" +
+				"	<DataModel name=\"TheDataModel\" ref=\"TheDataModel1\">" +
+				"		<String name=\"TheBlock.TheString\" value=\"World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(1, dom.dataModels["TheDataModel"].Count);
+			Assert.AreEqual(1, ((DataElementContainer)dom.dataModels["TheDataModel"][0]).Count);
+			
+			Assert.AreEqual("TheString", ((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].name);
+			Assert.AreEqual("World", (string) ((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].DefaultValue);
+		}
 	}
 }
