@@ -115,7 +115,7 @@ def dosomething(ctx):
 	print(nd3)
 
 	nd2.write('some text') <5>
-	print(nd2.read()) <6>
+	print(nd2.read())
 
 	print(ctx.path.listdir())
 ---------------
@@ -125,7 +125,6 @@ def dosomething(ctx):
 <3> Search for a node but do not try to create it
 <4> Search for a file which does not exist
 <5> Write to the file pointed by the node, creating or overwriting the file
-<6> In practice, it is best to use the read/write methods to prevent file handle inheritance issues on win32 systems when performing parallel builds
 
 The output will be the following:
 
@@ -146,7 +145,9 @@ some text
 
 NOTE: More methods may be found in the http://docs.waf.googlecode.com/git/apidocs_17/index.html[API documentation]
 
-WARNING: These methods are not safe for concurrent access. The node class methods are not meant to be thread-safe.
+WARNING: The Node methods are not meant to be safe for concurrent access. The code executed in parallel (method run() of task objects for example) must avoid modifying the Node object data structure.
+
+WARNING: The Node methods read/write must be used to prevent file handle inheritance issues on win32 systems instead of plain open/read/write. Such problems arise when spawning processes during parallel builds.
 
 ==== Listing files and folders
 
