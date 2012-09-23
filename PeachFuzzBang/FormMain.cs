@@ -75,7 +75,9 @@ namespace PeachFuzzBang
 
 			// Check OS and load side assembly
 			string osAssembly = null;
-			switch (Platform.GetOS())
+			Platform.OS os = Platform.GetOS();
+
+			switch (os)
 			{
 				case Platform.OS.Mac:
 					osAssembly = System.IO.Path.Combine(
@@ -96,24 +98,6 @@ namespace PeachFuzzBang
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
 					richTextBoxLinux.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.LinuxDebugging.rtf"), RichTextBoxStreamType.RichText);
-
-					// Update default settings to include full path to PeachFuzzBang
-					// When double clicking the app to run it, the current working
-					// directory is $HOME
-					string cwd = Environment.CurrentDirectory + Path.DirectorySeparatorChar;
-					string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar;
-
-					if (path.StartsWith(cwd))
-					{
-						path = path.Substring(cwd.Length);
-					}
-
-					if (!string.IsNullOrEmpty(path))
-					{
-						textBoxFuzzedFile.Text = Path.Combine(path, textBoxFuzzedFile.Text);
-						textBoxTemplateFiles.Text = Path.Combine(path, textBoxTemplateFiles.Text);
-						textBoxLinuxArguments.Text = Path.Combine(path, textBoxLinuxArguments.Text);
-					}
 					break;
 				case Platform.OS.Windows:
 					{
@@ -149,6 +133,28 @@ namespace PeachFuzzBang
 							textBoxDebuggerPath.Text = "Error, could not locate windbg!";
 					}
 					break;
+			}
+
+			if (os != Platform.OS.Windows)
+			{
+				// Update default settings to include full path to PeachFuzzBang
+				// When double clicking the app to run it, the current working
+				// directory is $HOME
+				string cwd = Environment.CurrentDirectory + Path.DirectorySeparatorChar;
+				string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar;
+
+				if (path.StartsWith(cwd))
+				{
+					path = path.Substring(cwd.Length);
+				}
+
+				if (!string.IsNullOrEmpty(path))
+				{
+					textBoxFuzzedFile.Text = Path.Combine(path, textBoxFuzzedFile.Text);
+					textBoxTemplateFiles.Text = Path.Combine(path, textBoxTemplateFiles.Text);
+					textBoxLinuxArguments.Text = Path.Combine(path, textBoxLinuxArguments.Text);
+					textBoxOSXArguments.Text = Path.Combine(path, textBoxOSXArguments.Text);
+				}
 			}
 
 			buttonStartFuzzing.Enabled = true;
@@ -290,11 +296,13 @@ namespace PeachFuzzBang
 							monitor.cls = "CrashWrangler";
 							monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 
-							// TODO - Support CPU Kill
-							//if (this.checkBoxOSXCpuKill.Checked)
-							//    monitor.parameters["CpuKill"] = new Variant("true");
+							if (this.checkBoxOSXCpuKill.Checked)
+								monitor.parameters["NoCpuKill"] = new Variant("false");
+							else
+								monitor.parameters["NoCpuKill"] = new Variant("true");
 
-							monitor.parameters["CommandLine"] = new Variant(this.textBoxOSXExecutable.Text);
+							monitor.parameters["Command"] = new Variant(this.textBoxOSXExecutable.Text);
+							monitor.parameters["Arguments"] = new Variant(this.textBoxOSXArguments.Text);
 							monitor.parameters["CrashWrangler"] = new Variant(this.textBoxOSXCrashWrangler.Text);
 						}
 						break;
