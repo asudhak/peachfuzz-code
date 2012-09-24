@@ -45,6 +45,8 @@ class PkgContext(InstallContext):
 			n = self.path.find_node(x)
 			if not n:
 				raise Errors.WafError("Source not found: %s" % x)
+			if not n.is_child_of(base_path):
+				continue
 			archive_name = os.path.join(base_name, n.path_from(base_path))
 			if Logs.verbose > 0:
 				Logs.info(' + add %s (from %s)' % (archive_name, x))
