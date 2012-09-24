@@ -37,9 +37,6 @@ namespace Peach.Core.Test.Publishers
 				       <Strategy class=""Sequential""/>
 				   </Test>
 
-				   <Run name=""DefaultRun"">
-				       <Test ref=""TheTest""/>
-				   </Run>
 				</Peach>";
 
 			xml = string.Format(xml, tempFile);
