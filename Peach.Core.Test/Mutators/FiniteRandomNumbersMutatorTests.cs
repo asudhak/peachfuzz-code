@@ -394,7 +394,7 @@ namespace Peach.Core.Test.Mutators
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"" + bits + "\" signed=\"" + signed + "\">" +
+                "       <Number name=\"num1\" size=\"" + bits + "\" signed=\"" + signed.ToString().ToLower() + "\">" +
                 "           <Hint name=\"FiniteRandomNumbersMutator-N\" value=\"" + iterations + "\"/>" +
                 "       </Number>" +
                 "   </DataModel>" +

@@ -34,7 +34,7 @@ namespace Peach.Core.Test.StateModel
 
 				"   <StateModel name=\"TheStateModel\" initialState=\"InitialState\">" +
 				"       <State name=\"InitialState\">" +
-				"           <Action name=\"Action1\" type=\"Input\">" +
+				"           <Action name=\"Action1\" type=\"input\">" +
 				"               <DataModel ref=\"TheDataModel1\"/>" +
 				"           </Action>" +
 				"       </State>" +
@@ -62,6 +62,7 @@ namespace Peach.Core.Test.StateModel
 			var stateModel = dom.tests[0].stateModel;
 			var state = stateModel.initialState;
 
+			Assert.AreEqual(ActionType.Input, state.actions.First().type);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World!"), state.actions[0].dataModel.Value.Value);
 		}
 	}
