@@ -37,9 +37,6 @@ namespace Peach.Core.Test.Publishers
 				       </Publisher>
 				   </Test>
 
-				   <Run name=""DefaultRun"">
-				       <Test ref=""TheTest""/>
-				   </Run>
 				</Peach>";
 
 			string tempFile = Path.GetTempFileName();
