@@ -45,14 +45,12 @@ namespace Peach.Core.Mutators
         //
         uint position;
         int length;
-        UInt32 DWORD;
 
         // CTOR
         //
         public BlobDWORDSliderMutator(DataElement obj)
         {
             position = 0;
-            DWORD = 0xFFFFFFFF;
             length = (int)obj.Value.LengthBytes;
             name = "BlobDWORDSliderMutator";
         }
