@@ -349,7 +349,7 @@ namespace Peach.Core.Test.MutationStrategies
 			int lastSize = 0;
 
 			// Skip data model 0, its the magical 1st pass w/o mutations
-			for (int i = 1; i < 50; ++i)
+			for (int i = 0; i < 50; ++i)
 			{
 				Assert.AreEqual(1, dataModels[i].Count);
 				Dom.Array item = dataModels[i][0] as Dom.Array;
@@ -360,8 +360,8 @@ namespace Peach.Core.Test.MutationStrategies
 
 				if (lastSize != item.Count)
 				{
-					// Change of data model should only occur at iteration 1, 11, 21, 31, 41
-					Assert.AreEqual(1, i % 10);
+					// Change of data model should only occur at iteration 10, 20, 30, 40
+					Assert.AreEqual(0, i % 10);
 					lastSize = item.Count;
 				}
 

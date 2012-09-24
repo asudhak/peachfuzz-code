@@ -21,7 +21,10 @@ class PkgContext(InstallContext):
 	def archive(self):
 		env = self.env
 		version = '%s.%s' % (env.VER_VERSION, env.BUILDTAG)
-		name = '-'.join([env.APPNAME, version, env.TARGET, env.SUBARCH, env.VARIANT])
+		args = [ env.APPNAME, version, env.TARGET ]
+		if env.SUBARCH: args.append(env.SUBARCH)
+		if env.VARIANT: args.append(env.VARIANT)
+		name = '-'.join(args)
 
 		base_path = self.path.make_node(env.BINDIR)
 		base_name = name
