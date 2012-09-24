@@ -54,7 +54,7 @@ namespace PeachMinset
 
 			string samples = null;
 			string traces = null;
-//			bool kill = false;
+			bool kill = false;
 			string executable = null;
 			string arguments = "";
 			string minset = null;
@@ -62,7 +62,7 @@ namespace PeachMinset
 			var p = new OptionSet()
 				{
 					{ "h|?|help", v => Syntax() },
-//					{ "k", v => kill = true },
+					{ "k", v => kill = true },
 					{ "s|samples=", v => samples = v },
 					{ "t|traces=", v => traces = v},
 					{ "m|minset=", v => minset = v }
@@ -118,81 +118,79 @@ namespace PeachMinset
 					break;
 			}
 
-			var bb = Coverage.CreateInstance().BasicBlocksForExecutable(@"C:\Peach3\Labs\Png\bin\pngcheck.exe");
+			////var bb = Coverage.CreateInstance().BasicBlocksForExecutable(@"C:\Peach3\Labs\Png\bin\pngcheck.exe");
 
-			Console.WriteLine("Found " + bb.Count + " basic blocks.");
+			////Console.WriteLine("Found " + bb.Count + " basic blocks.");
 
-			var coverage = Coverage.CreateInstance().CodeCoverageForExecutable(
-				@"C:\Peach3\Labs\Png\bin\pngcheck.exe",
-				@"C:\Peach3\Labs\Png\sample.png",
-				bb);
+			////var coverage = Coverage.CreateInstance().CodeCoverageForExecutable(
+			////    @"C:\Peach3\Labs\Png\bin\pngcheck.exe",
+			////    @"C:\Peach3\Labs\Png\sample.png",
+			////    bb);
 
-			Console.WriteLine("Coverage: ");
+			////Console.WriteLine("Coverage: ");
 
-			foreach (long i in coverage)
-			{
-				Console.WriteLine(i.ToString());
+			////foreach (long i in coverage)
+			////{
+			////    Console.WriteLine(i.ToString());
+			////}
+
+			////return;
+
+            var ms = new Minset();
+            ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
+            ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
+            var both = false;
+
+            if (extra.Count > 0 && minset != null && traces != null && samples != null)
+            {
+                both = true;
+                Console.WriteLine("[*] Running both trace and coverage analysis");
+            }
+
+            if (both || (executable != null && minset == null))
+            {
+                var sampleFiles = GetFiles(samples);
+
+                Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
+                var traceFiles = ms.RunTraces(executable, arguments, sampleFiles, kill);
+
+                Console.WriteLine("[*] Moving trace files to trace folder...");
+
+                if (!Directory.Exists(traces))
+                    Directory.CreateDirectory(traces);
+
+                foreach (string fileName in traceFiles)
+                {
+                    Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(traces, Path.GetFileName(fileName)));
+                    File.Move(fileName, Path.Combine(traces, Path.GetFileName(fileName)));
+                }
+
+                Console.WriteLine("\n[*] Finished");
+
+                return;
+            }
+
+            if (both || (extra.Count == 0 && minset != null && traces != null && samples != null))
+            {
+                Console.WriteLine("[*] Running coverage analysis...");
+                var minsetFiles = ms.RunCoverage(GetFiles(samples), GetFiles(traces));
+
+                Console.WriteLine("[-]   " + minsetFiles.Length + " files were selected from a total of " + samples.Length + ".");
+                Console.WriteLine("[*] Copying over selected files...");
+
+                if (!Directory.Exists(minset))
+                    Directory.CreateDirectory(minset);
+
+                foreach (string fileName in minsetFiles)
+                {
+                    Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
+                    File.Copy(fileName, Path.Combine(minset, Path.GetFileName(fileName)));
+                }
+
+                Console.WriteLine("\n[*] Finished");
+
+                return;
 			}
-
-			return;
-
-//#if DISABLED
-//            var ms = new Minset();
-//            ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
-//            ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
-//            var both = false;
-
-//            if (extra.Count > 0 && minset != null && traces != null && samples != null)
-//            {
-//                both = true;
-//                Console.WriteLine("[*] Running both trace and coverage analysis");
-//            }
-
-//            if (both || (executable != null && minset == null))
-//            {
-//                var sampleFiles = GetFiles(samples);
-
-//                Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
-//                var traceFiles = ms.RunTraces(executable, arguments, sampleFiles, kill);
-
-//                Console.WriteLine("[*] Moving trace files to trace folder...");
-
-//                if (!Directory.Exists(traces))
-//                    Directory.CreateDirectory(traces);
-
-//                foreach (string fileName in traceFiles)
-//                {
-//                    Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(traces, Path.GetFileName(fileName)));
-//                    File.Move(fileName, Path.Combine(traces, Path.GetFileName(fileName)));
-//                }
-
-//                Console.WriteLine("\n[*] Finished");
-
-//                return;
-//            }
-
-//            if (both || (extra.Count == 0 && minset != null && traces != null && samples != null))
-//            {
-//                Console.WriteLine("[*] Running coverage analysis...");
-//                var minsetFiles = ms.RunCoverage(GetFiles(samples), GetFiles(traces));
-
-//                Console.WriteLine("[-]   " + minsetFiles.Length + " files were selected from a total of " + samples.Length + ".");
-//                Console.WriteLine("[*] Copying over selected files...");
-
-//                if (!Directory.Exists(minset))
-//                    Directory.CreateDirectory(minset);
-
-//                foreach (string fileName in minsetFiles)
-//                {
-//                    Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
-//                    File.Copy(fileName, Path.Combine(minset, Path.GetFileName(fileName)));
-//                }
-
-//                Console.WriteLine("\n[*] Finished");
-
-//                return;
-//			}
-//#endif
 		}
 
 		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)
