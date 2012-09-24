@@ -116,13 +116,7 @@ namespace Peach.Core.Dom
 		public virtual string name
 		{
 			get { return _name; }
-			set
-			{
-				if (value.IndexOf('.') > -1)
-					throw new PeachException("Error, DataElements cannot contain a period in their name. \"" + value + "\"");
-
-				_name = value;
-			}
+			set { _name = value; }
 		}
 
 		public bool isMutable = true;

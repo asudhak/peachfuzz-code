@@ -952,6 +952,9 @@ namespace Peach.Core.Analyzers
 				// Otherwise enforce unique element names.
 				else
 				{
+					if (elem.name.IndexOf('.') > -1)
+						throw new PeachException("Error, DataElements cannot contain a period in their name. \"" + elem.name + "\"");
+
 					element.Add(elem);
 				}
 			}
