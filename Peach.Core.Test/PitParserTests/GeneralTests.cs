@@ -61,5 +61,54 @@ namespace Peach.Core.Test.PitParserTests
 		//    Assert.IsTrue(num.Signed);
 		//    Assert.IsFalse(num.LittleEndian);
 		//}
+		[Test]
+		public void NameWithDotsTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"The.String\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Assert.Throws<PeachException>(delegate()
+			{
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+		}
+
+		[Test]
+		public void NameRefWithDotsTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"Parent\">" +
+				"		<Block name=\"TheBlock\">" +
+				"			<String name=\"TheString\" value=\"abc\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"	<DataModel name=\"ChildModel\" ref=\"Parent\">" +
+				"		<String name=\"TheBlock.TheString\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test]
+		public void NameWithSpacesTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"The String\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Assert.Throws<PeachException>(delegate()
+			{
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+		}
 	}
 }

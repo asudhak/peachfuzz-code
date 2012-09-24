@@ -175,6 +175,11 @@ namespace Peach.Core.Analyzers
 						var element = root as System.Xml.XmlElement;
 						element.SetAttribute("xmlns", PEACH_NAMESPACE_URI);
 					}
+
+					var ms = new MemoryStream();
+					doc.Save(ms);
+					ms.Position = 0;
+					doc.Load(ms);
 					break;
 				}
 			}
