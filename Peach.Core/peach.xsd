@@ -100,14 +100,17 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:complexType name="tInclude">
 		<xs:attribute name="ref" />
 		<xs:attribute name="xpath"/>
 	</xs:complexType>
+	
 	<xs:complexType name="tExclude">
 		<xs:attribute name="ref" />
 		<xs:attribute name="xpath"/>
 	</xs:complexType>
+	
 	<xs:complexType name="tTemplate">
 		<xs:annotation>
 			<xs:documentation>
@@ -127,6 +130,7 @@
 		<xs:attributeGroup ref="peachCommonAttributes" />
 		<xs:attributeGroup ref="commonTemplateAttributes" />
 	</xs:complexType>
+
 	<xs:element name="Block" type="tBlock">
 		<xs:annotation>
 			<xs:documentation>Blocks are combinations of other data elements combined in sequence to
@@ -138,6 +142,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:complexType name="tBlock">
 		<xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element ref="Block" minOccurs="0" />
@@ -185,6 +190,7 @@
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
+	
 	<xs:element name="Number">
 		<xs:annotation>
 			<xs:documentation>Represents a non-ascii integer that has a size in bits, and a byte
@@ -209,6 +215,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:element name="Seek">
 		<xs:annotation>
 			<xs:documentation>Change our location in the input stream.</xs:documentation>
@@ -233,6 +240,7 @@
 			<xs:attributeGroup ref="commonTemplateAttributes" />
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="Choice">
 		<xs:annotation>
 			<xs:documentation>A choice will choose zero or more of the elements it contains based on
@@ -261,6 +269,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:element name="XmlElement">
 		<xs:annotation>
 			<xs:documentation>Represents an XML element.  XmlElement's can contain XmlAttribute children 
@@ -295,6 +304,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="XmlAttribute">
 		<xs:annotation>
 			<xs:documentation>Represents an XML Attribute</xs:documentation>
@@ -328,6 +338,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="String">
 		<xs:annotation>
 			<xs:documentation>A string of characters. This string element can represent both char and
@@ -428,6 +439,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:attributeGroup name="ValueAttributes">
 		<xs:attribute name="valueType">
 			<xs:annotation>
@@ -481,11 +493,22 @@
 	</xs:group>
 	
 	<xs:attributeGroup name="peachCommonAttributes">
-		<xs:attribute name="name" type="xs:string" use="optional">
+		<xs:attribute name="name">
 			<xs:annotation>
 				<xs:documentation>Unique (to context) name for element. Names must not contain periods (.)
 					or spaces ( ).</xs:documentation>
 			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:annotation>
+						<xs:documentation>
+							This pattern only tests for whitespace.
+							Dots need to be tested for in the parser because they are valid when they are used in a reference.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:pattern value="[^ \t\r\n\v\f]+"/>
+				</xs:restriction>
+			</xs:simpleType>
 		</xs:attribute>
 	</xs:attributeGroup>
 	
@@ -582,6 +605,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="Flags">
 		<xs:annotation>
 			<xs:documentation>Define a set of bit flags. Supports multiple bit flags.</xs:documentation>
@@ -645,6 +669,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:attributeGroup name="peachNumberAttributes">
 		<xs:attribute name="signed" type="xs:boolean">
 			<xs:annotation>
@@ -676,6 +701,7 @@
 			</xs:simpleType>
 		</xs:attribute>
 	</xs:attributeGroup>
+	
 	<xs:element name="Flag">
 		<xs:annotation>
 			<xs:documentation>A one or more bit flag that is part of a flag set (Flags
@@ -710,6 +736,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
+	
 	<xs:group name="peachCommonDataElements">
 		<xs:choice>
 			<xs:element ref="Relation" minOccurs="0" maxOccurs="1" />
@@ -720,6 +747,7 @@
 			<xs:element ref="Analyzer" minOccurs="0" maxOccurs="1"/>
 		</xs:choice>
 	</xs:group>
+	
 	<xs:element name="Data">
 		<xs:annotation>
 			<xs:documentation>Specified a set of default data values for a template.</xs:documentation>
@@ -815,6 +843,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="Blob">
 		<xs:annotation>
 			<xs:documentation>A piece of binary data specified in hex.</xs:documentation>
@@ -867,6 +896,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="Padding">
 		<xs:annotation>
 			<xs:documentation>Align a model/block with padding.  Will automatically pad to specified bit boundry, or provide an expression.</xs:documentation>
@@ -900,6 +930,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:attributeGroup name="commonTemplateAttributes">
 		<xs:attribute name="minOccurs" type="xs:string">
 			<xs:annotation>
@@ -956,6 +987,7 @@
 			</xs:annotation>
 		</xs:attribute>
 	</xs:attributeGroup>
+	
 	<xs:element name="Include">
 		<xs:annotation>
 			<xs:documentation>Imports other Peach XML files into a namespace. This allows reusing existing
@@ -991,6 +1023,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<xs:element name="Import">
 		<xs:annotation>
 			<xs:documentation>Import a python file into the current context. This allows referencing
@@ -1012,6 +1045,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
+	
 	<!--<xs:element name="Mutator">
 		<xs:annotation>
 			<xs:documentation>Includes a Mutator in this test.  Mutators provide methods for modifying templates and states to produce fuzzing cases.
@@ -1165,6 +1199,7 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>-->
+	
 	<xs:element name="Test">
 		<xs:annotation>
 			<xs:documentation>Define a test to run. Currently a test is defined as a combination of a

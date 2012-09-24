@@ -143,7 +143,6 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
-
 		}
 	}
 }
