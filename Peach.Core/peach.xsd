@@ -161,27 +161,10 @@
 		</xs:choice>
 		<xs:attributeGroup ref="peachCommonAttributes" />
 		<xs:attributeGroup ref="commonTemplateAttributes" />
-		<xs:attribute name="lengthType">
+		<xs:attribute name="lengthType" type="tLengthType">
 			<xs:annotation>
-				<xs:documentation>An optional attribute that specifies the value of length.  Default is string.</xs:documentation>
+				<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
 			</xs:annotation>
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="string">
-						<xs:annotation>
-							<xs:documentation>Indicates the length is a number in string form, e.g. 10.</xs:documentation>
-						</xs:annotation>
-					</xs:enumeration>
-					<xs:enumeration value="calc">
-						<xs:annotation>
-							<xs:documentation>Indicates the length value is actually a python expression 
-								that is evaulated to calculate the length value.  This expression will be evauluated
-								every time the length value is needed.  A special variable of "self" is available in the
-								expression which is the current object in the dom.</xs:documentation>
-						</xs:annotation>
-					</xs:enumeration>
-				</xs:restriction>
-			</xs:simpleType>
 		</xs:attribute>
 		<xs:attribute name="length" type="xs:string">
 			<xs:annotation>
@@ -367,7 +350,12 @@
 						</xs:enumeration>
 						<xs:enumeration value="utf8">
 							<xs:annotation>
-								<xs:documentation>Multibyte unicode characters</xs:documentation>
+								<xs:documentation>Multibyte unicode characters encoded in utf-8</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="utf32">
+							<xs:annotation>
+								<xs:documentation>Multibyte unicode characters encoded in utf-32</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
 					</xs:restriction>
@@ -378,27 +366,10 @@
 					<xs:documentation>[Optional] The class of an analyzer to further decompose data.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
-			<xs:attribute name="lengthType">
+			<xs:attribute name="lengthType" type="tLengthType">
 				<xs:annotation>
-					<xs:documentation>An optional attribute that specifies the value of length.  Default is string.</xs:documentation>
+					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
 				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:string">
-						<xs:enumeration value="string">
-							<xs:annotation>
-								<xs:documentation>Indicates the length is a number in string form, e.g. 10.</xs:documentation>
-							</xs:annotation>
-						</xs:enumeration>
-						<xs:enumeration value="calc">
-							<xs:annotation>
-								<xs:documentation>Indicates the length value is actually a python expression 
-									that is evaulated to calculate the length value.  This expression will be evauluated
-									every time the length value is needed.  A special variable of "self" is available in the
-									expression which is the current object in the dom.</xs:documentation>
-							</xs:annotation>
-						</xs:enumeration>
-					</xs:restriction>
-				</xs:simpleType>
 			</xs:attribute>
 			<xs:attribute name="length" type="xs:string">
 				<xs:annotation>
@@ -669,7 +640,7 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
-	
+
 	<xs:attributeGroup name="peachNumberAttributes">
 		<xs:attribute name="signed" type="xs:boolean">
 			<xs:annotation>
@@ -843,7 +814,37 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
-	
+
+	<xs:simpleType name="tLengthType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="bits">
+				<xs:annotation>
+					<xs:documentation>Indicates the length is specified in units of bits.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="bytes">
+				<xs:annotation>
+					<xs:documentation>Indicates the length is specified in units of bytes.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="chars">
+				<xs:annotation>
+					<xs:documentation>Indicates the length is specified in units of characters.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="calc">
+				<xs:annotation>
+					<xs:documentation>
+						Indicates the length value is actually a python expression
+						that is evaulated to calculate the length value.  This expression will be evauluated
+						every time the length value is needed.  A special variable of "self" is available in the
+						expression which is the current object in the dom.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+
 	<xs:element name="Blob">
 		<xs:annotation>
 			<xs:documentation>A piece of binary data specified in hex.</xs:documentation>
@@ -865,33 +866,19 @@
 					<xs:documentation>Indicates a token in the data stream.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
-			<xs:attribute name="lengthType">
+			<xs:attribute name="lengthType" type="tLengthType">
 				<xs:annotation>
-					<xs:documentation>An optional attribute that specifies the value of length.  Default is string.</xs:documentation>
+					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
 				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:string">
-						<xs:enumeration value="string">
-							<xs:annotation>
-								<xs:documentation>Indicates the length is a number in string form, e.g. 10.</xs:documentation>
-							</xs:annotation>
-						</xs:enumeration>
-						<xs:enumeration value="calc">
-							<xs:annotation>
-								<xs:documentation>
-									Indicates the length value is actually a python expression
-									that is evaulated to calculate the length value.  This expression will be evauluated
-									every time the length value is needed.  A special variable of "self" is available in the
-									expression which is the current object in the dom.
-								</xs:documentation>
-							</xs:annotation>
-						</xs:enumeration>
-					</xs:restriction>
-				</xs:simpleType>
 			</xs:attribute>
 			<xs:attribute name="length" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>[Optional] Specify length of blob.  Default is unbounded.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="signed" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Is blob signed. Defaults to true.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
@@ -1278,6 +1265,9 @@
 						</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
+						<xs:sequence minOccurs="0" maxOccurs="unbounded">
+							<xs:element ref="Param" />
+						</xs:sequence>
 						<xs:attribute name="class" use="required">
 							<xs:annotation>
 								<xs:documentation>Class name of Strategy to be used.</xs:documentation>
