@@ -110,7 +110,30 @@ namespace Peach.Core
 		/// <returns>Throws PeachException on error.</returns>
 		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
 		{
-			asParserValidation(args, File.OpenRead(fileName));
+            try
+            {
+                asParserValidation(args, File.OpenRead(fileName));
+            }
+		    catch (FileNotFoundException fileNotFoundException)
+		    {
+		        throw new PeachException("Error, " + fileNotFoundException.Message); 
+		    }
+            catch (PathTooLongException pathTooLongException)
+            {
+                throw new PeachException("Error, " + pathTooLongException.Message); 
+            }
+            catch(DirectoryNotFoundException directoryNotFoundException)
+            {
+                throw new PeachException("Error, " + directoryNotFoundException.Message); 
+            }
+            catch(UnauthorizedAccessException unauthorizedAccessException)
+            {
+                throw new PeachException("Error, " + unauthorizedAccessException.Message); 
+            }
+            catch(NotSupportedException notSupportedException)
+            {
+            throw new PeachException("Error, " + notSupportedException.Message); 
+            }
 		}
 		public virtual void asParserValidation(Dictionary<string, string> args, Stream data)
 		{
