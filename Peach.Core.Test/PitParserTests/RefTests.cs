@@ -188,8 +188,6 @@ namespace Peach.Core.Test.PitParserTests
 				"			<String name=\"Str3\" />" +
 				"		</Block>" +
 				"		<Block name=\"Block2\" ref=\"Block1\">" +
-				"			<String name=\"Block1a.Str1\" />" +
-				"			<String name=\"Block1a.Str2\" />" +
 				"			<String name=\"Str3\" />" +
 				"		</Block>" +
 				"	</DataModel>" +

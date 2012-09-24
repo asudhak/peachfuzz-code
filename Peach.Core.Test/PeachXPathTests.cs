@@ -136,7 +136,7 @@ namespace Peach.Core.Test
 				"			<Relation type=\"count\" of=\"Array\" />" +
 				"		</Number>" +
 				"		<Block name=\"Block1\">" +
-				"			<Block name=\"Block1.1\">" +
+				"			<Block name=\"Block1_1\">" +
 				"				<String name=\"FindMe\"/>" +
 				"			</Block>" +
 				"		</Block>" +
@@ -182,7 +182,7 @@ namespace Peach.Core.Test
 				"			<Relation type=\"count\" of=\"Array\" />" +
 				"		</Number>" +
 				"		<Block name=\"Block1\">" +
-				"			<Block name=\"Block1.1\">" +
+				"			<Block name=\"Block1_1\">" +
 				"				<String name=\"FindMe\"/>" +
 				"			</Block>" +
 				"		</Block>" +
@@ -212,7 +212,7 @@ namespace Peach.Core.Test
 			DataElement findMe2 = ((DataElementContainer)dataModel[3])[0];
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
-			XPathNodeIterator iter = navi.Select("//TheDataModel/Block1/Block1.1/FindMe");
+			XPathNodeIterator iter = navi.Select("//TheDataModel/Block1/Block1_1/FindMe");
 
 			Assert.IsTrue(iter.MoveNext());
 			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
@@ -229,7 +229,7 @@ namespace Peach.Core.Test
 				"			<Relation type=\"count\" of=\"Array\" />" +
 				"		</Number>" +
 				"		<Block name=\"Block1\">" +
-				"			<Block name=\"Block1.1\">" +
+				"			<Block name=\"Block1_1\">" +
 				"				<String name=\"FindMe\"/>" +
 				"			</Block>" +
 				"		</Block>" +
@@ -275,7 +275,7 @@ namespace Peach.Core.Test
 				"			<Relation type=\"count\" of=\"Array\" />" +
 				"		</Number>" +
 				"		<Block name=\"Block1\">" +
-				"			<Block name=\"Block1.1\">" +
+				"			<Block name=\"Block1_1\">" +
 				"				<String name=\"FindMe\"/>" +
 				"			</Block>" +
 				"		</Block>" +
