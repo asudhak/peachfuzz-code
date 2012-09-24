@@ -61,54 +61,52 @@ namespace Peach.Core.Test.PitParserTests
 		//    Assert.IsTrue(num.Signed);
 		//    Assert.IsFalse(num.LittleEndian);
 		//}
+
 		[Test]
-		public void NameWithDotsTest()
+		public void DeepOverride()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"TheDataModel\">" +
-				"		<String name=\"The.String\" value=\"abc\"/>" +
+				"	<DataModel name=\"TheDataModel1\">" +
+				"       <Block name=\"TheBlock\">" +
+				"		      <String name=\"TheString\" value=\"Hello\"/>" +
+				"       </Block>" +
+				"	</DataModel>" +
+				"	<DataModel name=\"TheDataModel\" ref=\"TheDataModel1\">" +
+				"		<String name=\"TheBlock.TheString\" value=\"World\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			Assert.Throws<PeachException>(delegate()
-			{
-				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			});
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(1, dom.dataModels["TheDataModel"].Count);
+			Assert.AreEqual(1, ((DataElementContainer)dom.dataModels["TheDataModel"][0]).Count);
+
+			Assert.AreEqual("TheString", ((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].name);
+			Assert.AreEqual("World", (string)((DataElementContainer)dom.dataModels["TheDataModel"][0])[0].DefaultValue);
 		}
 
 		[Test]
-		public void NameRefWithDotsTest()
+		public void PeriodInName()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"Parent\">" +
-				"		<Block name=\"TheBlock\">" +
-				"			<String name=\"TheString\" value=\"abc\"/>" +
-				"		</Block>" +
-				"	</DataModel>" +
-				"	<DataModel name=\"ChildModel\" ref=\"Parent\">" +
-				"		<String name=\"TheBlock.TheString\" value=\"abc\"/>" +
+				"	<DataModel name=\"TheDataModel1\">" +
+				"       <Block name=\"TheBlock\">" +
+				"		      <String name=\"The.String\" value=\"Hello\"/>" +
+				"       </Block>" +
 				"	</DataModel>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
-			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		}
-
-		[Test]
-		public void NameWithSpacesTest()
-		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"TheDataModel\">" +
-				"		<String name=\"The String\" value=\"abc\"/>" +
-				"	</DataModel>" +
-				"</Peach>";
-
-			PitParser parser = new PitParser();
-			Assert.Throws<PeachException>(delegate()
+			try
 			{
-				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			});
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.IsTrue(false, "parsing should have caused exception");
+			}
+			catch (PeachException)
+			{
+				Assert.IsTrue(true);
+			}
 		}
 	}
 }
