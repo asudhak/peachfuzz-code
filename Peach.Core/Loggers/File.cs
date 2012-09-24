@@ -65,7 +65,7 @@ namespace Peach.Core.Loggers
 		{
 			string bucketData = null;
 
-			log.WriteLine("! Fault detected at iteration {0}", currentIteration);
+			log.WriteLine("! Fault detected at iteration {0} : {1}", currentIteration, DateTime.Now.ToString());
 
 			foreach (Hashtable data in faultData.Values)
 			{
@@ -162,12 +162,12 @@ namespace Peach.Core.Loggers
 
 			if (totalIterations != null)
 			{
-				log.WriteLine(". Iteration {0} of {1}", currentIteration, (uint)totalIterations);
+				log.WriteLine(". Iteration {0} of {1} : {2}", currentIteration, (uint)totalIterations, DateTime.Now.ToString());
 				log.Flush();
 			}
 			else
 			{
-				log.WriteLine(". Iteration {0}", currentIteration);
+				log.WriteLine(". Iteration {0} : {1}", currentIteration, DateTime.Now.ToString());
 				log.Flush();
 			}
 		}
