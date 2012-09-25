@@ -903,6 +903,14 @@ namespace Peach.Core.Analyzers
 
 				PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
+				// Prevent dots from being in the name for element construction, they get resolved afterwards
+				var childName = getXmlAttribute(child, "name");
+				if (element.isReference && !string.IsNullOrEmpty(childName))
+				{
+					var refname = childName.Split('.');
+					child.Attributes["name"].InnerText = refname[refname.Length - 1];
+				}
+
 				elem = delegateAction(this, child, element);
 
 				if (elem == null)
@@ -928,9 +936,9 @@ namespace Peach.Core.Analyzers
 				// notation.
 				if (element.isReference)
 				{
-					if (elem.name.IndexOf(".") > -1)
+					if (childName.IndexOf(".") > -1)
 					{
-						DataElement parent = element.find(elem.name);
+						DataElement parent = element.find(childName);
 						if (parent == null)
 							throw new PeachException("Error, child name has dot notation but replacement element not found: '" + elem.name + ".");
 
@@ -952,9 +960,6 @@ namespace Peach.Core.Analyzers
 				// Otherwise enforce unique element names.
 				else
 				{
-					if (elem.name.IndexOf('.') > -1)
-						throw new PeachException("Error, DataElements cannot contain a period in their name. \"" + elem.name + "\"");
-
 					element.Add(elem);
 				}
 			}
