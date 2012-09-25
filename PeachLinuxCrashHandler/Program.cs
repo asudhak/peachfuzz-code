@@ -240,8 +240,8 @@ Syntax: PeachLinuxCrashHandler.exe --register
 				Encoding.ASCII);
 			
 			var checkWrite = File.ReadAllText ("/proc/sys/kernel/core_pattern", Encoding.ASCII);
-			if (checkWrite.IndexOf (linuxCrashHandlerExe) > -1)
-				Console.WriteLine ("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
+			if (checkWrite.IndexOf(linuxCrashHandlerExe) == -1)
+				Console.WriteLine("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
 
 			throw new SyntaxException();
 		}
