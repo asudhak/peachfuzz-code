@@ -21,8 +21,6 @@
 		
 		  Michael Eddington (mike@dejavusecurity.com)
 		
-		$Id$
-		
 	-->
 
 	<DataModel name="TestTemplate">
@@ -45,13 +43,13 @@
 
 	<Agent name="LocalAgent">
 		<Monitor class="WindowsDebugger">
-			<Param name="CommandLine" value="C:\Peach3\Release\CrashableServer.exe 127.0.0.1 4244" />
+			<Param name="CommandLine" value="CrashableServer.exe 127.0.0.1 4244" />
 			<!--<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />-->
 		</Monitor>
- 		<!--<Monitor class="PageHeap">
+ 		<Monitor class="PageHeap">
 			<Param name="Executable" value="CrashableServer.exe"/>
-			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />
-		</Monitor>-->
+			<!--<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />-->
+		</Monitor>
 	</Agent>
 
 	<Test name="Default">

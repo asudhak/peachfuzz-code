@@ -17,10 +17,10 @@
 		Authors:
 		Michael Eddington (mike@dejavusecurity.com)
 		
-		$Id: RemoteInclude.xml 1762 2009-06-11 23:46:24Z meddingt $
-		
 	-->
-	
+
+	<Include ns="example" src="http://phed.org/Peach/Example.xml" />
+
 	<StateModel name="State" initialState="Initial">
 		<State name="Initial">
 			<Action type="output">
@@ -30,9 +30,7 @@
 	</StateModel>
 	
 	<Test name="Default">
-		<!-- Reference our remote template using a namespace prefix -->
 		<StateModel ref="State" />
-		
 		<Publisher class="Console" />
 	</Test>
 	

@@ -9,11 +9,9 @@
 		Authors:
 		Michael Eddington (mike@dejavusecurity.com)
 		
-		$Id: Server-Example.xml 1762 2009-06-11 23:46:24Z meddingt $
-		
 	-->
 	
-	<DataModel name="HelloWorldTemplate">
+	<DataModel name="TheDataModel">
 		<String isStatic="true" value="Hello from phed.org!" />
 	</DataModel>
 	
@@ -23,7 +21,7 @@
 			<Action type="accept" />
 			
 			<Action type="output">
-				<DataModel ref="HelloWorldTemplate"/>
+				<DataModel ref="TheDataModel"/>
 			</Action>
 		</State>
 	</StateModel>

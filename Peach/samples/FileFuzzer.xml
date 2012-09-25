@@ -45,10 +45,10 @@
 			</Action>
 			
 			<!-- Close file -->
-			<Action type="close" publisher="file" />
+			<Action type="close" />
 			
 			<!-- Launch the file consumer -->
-			<Action type="call" method="ScoobySnacks" publisher="launch"/>
+			<Action type="call" method="ScoobySnacks" publisher="Peach.Agent"/>
 			
 		</State>
 	</StateModel>
@@ -68,7 +68,7 @@
 				Note: You will also need to add a parameter to the publisher called
 				    "debugger" and set it to "true"!
 				-->
-			<Param name="StartOnCall" value="ScoobySnacks" publisher="Peach.Agent" />
+			<Param name="StartOnCall" value="ScoobySnacks" />
 			
 		</Monitor>
 		

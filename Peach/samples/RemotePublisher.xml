@@ -10,21 +10,20 @@
 		
 		Syntax:
 		
-		python peach -a
+		Run this on remote machine:
+			peach -a tcp
 		
-		python peach samples\Debugger.xml
+		Run this on local machine:
+			peach samples\Debugger.xml
 		
 		Output:
 		
 		You will see the tests scroll along.  Once test 47 has occured you can check
-		the c:\peach\logfiles folder for a log of this test that will include a Debugger.txt
-		faul output.
+		the "logs" folder for a log of this test that will include debugger output.
 		
 		Authors:
 		
 		Michael Eddington (mike@dejavusecurity.com)
-		
-		$Id: Debugger.xml 807 2008-03-25 08:34:38Z meddingt $
 		
 	-->
 	
@@ -34,7 +33,7 @@
 	
 	<StateModel name="State" initialState="Initial">
 		<State name="Initial">
-			<Action name="SendValue1" type="output">
+			<Action type="output">
 				<DataModel ref="TestTemplate" />
 			</Action>
 		</State>
@@ -45,7 +44,7 @@
 		
 		<!-- Load up our target -->
 		<Monitor class="WindowsDebugger">
-			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 192.168.1.190 4242" />
+			<Param name="CommandLine" value="CrashableServer.exe 192.168.1.190 4242" />
 		</Monitor>
 	</Agent>
 	
@@ -56,13 +55,13 @@
 		<StateModel ref="State"/>
 		<Publisher class="RemotePublisher">
 			<Param name="Agent" value="RemoteAgent" />
-			<Param name="Name" value="pub1" />
-			<Param name="Class" value="tcp.Tcp"/>
+			<Param name="Class" value="Tcp"/>
 			<Param name="Host" value="192.168.1.190" />
 			<Param name="Port" value="4242" />
 		</Publisher>
+		
 		<Logger class="Filesystem">
-			<Param name="Path" value="logtest" />
+			<Param name="Path" value="logs" />
 		</Logger>
 	</Test>
 
