@@ -14,20 +14,18 @@
 		
 	Syntax:
 		
-		2nd machine: peach -a
+		2nd machine: peach -a tcp
 		1st machine: peach samples\Debugger.xml
 		
 	Output:
 		
 		You will see the tests scroll along.  Once test 47 has occured you can check
-		the c:\peach\logfiles folder for a log of this test that will include a Debugger.txt
+		the "Logs" folder for a log of this test that will include a Debugger.txt
 		and Network.pcap faul output.
 		
 	Authors:
 		
 		Michael Eddington (mike@dejavusecurity.com)
-		
-		$Id: Network.xml 2174 2010-10-28 00:12:48Z meddingt $
 		
 	-->
 
@@ -44,9 +42,9 @@
 	</StateModel>
 
 	<!-- Agents that run localy will be started automatically by Peach -->
-	<Agent name="LocalAgent">
-		<Monitor name="Debugger" class="WindowsDebugEngine">
-			<Param name="CommandLine" value="C:\Peach\samples\CrashableServer\release\CrashableServer.exe 127.0.0.1 4242"/>
+	<Agent name="RemoteAgent" location="tcp://192.168.1.190">
+		<Monitor name="Debugger" class="WindowsDebugger">
+			<Param name="CommandLine" value="CrashableServer.exe 192.168.1.190 4242"/>
 		</Monitor>
 
 		<Monitor name="Network" class="PcapMonitor">
@@ -55,11 +53,11 @@
 	</Agent>
 
 	<Test name="Default">
-		<Agent ref="LocalAgent" />
+		<Agent ref="RemoteAgent" />
 		<StateModel ref="TheStateModel"/>
 
 		<Publisher class="TcpClient">
-			<Param name="Host" value="127.0.0.1" />
+			<Param name="Host" value="192.168.1.190" />
 			<Param name="Port" value="4242" />
 		</Publisher>
 		

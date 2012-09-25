@@ -9,8 +9,8 @@
 	</DataModel>
 
 	<StateModel name="State" initialState="State1" >
-		<State name="State1"  >
-			<Action type="output" >
+		<State name="State1">
+			<Action type="output">
 				<DataModel ref="TheModel"/>
 			</Action>
 		</State>

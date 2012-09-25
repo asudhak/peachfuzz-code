@@ -27,7 +27,7 @@
 	
 	<!-- Setup a local agent that will monitor for faults -->
 	<Agent name="LocalAgent">
-		<Monitor class="WindowsDebugEngine">
+		<Monitor class="WindowsDebugger">
 			
 			<!-- The command line to run.  Notice the filename provided matched up 
 				to what is provided below in the Publisher configuration -->
