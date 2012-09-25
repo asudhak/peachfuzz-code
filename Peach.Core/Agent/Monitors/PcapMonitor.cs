@@ -68,8 +68,8 @@ namespace Peach.Core.Agent.Monitors
 		{
 			lock (_lock)
 			{
-				System.Diagnostics.Debug.Assert(_writer != null);
-				if (_writer.Opened)
+				// _writer can be null if a packet arrives before the 1st iteration
+				if (_writer != null && _writer.Opened)
 				{
 					_writer.Write(packet.Packet);
 					_numPackets += 1;
