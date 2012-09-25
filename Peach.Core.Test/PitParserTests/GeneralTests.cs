@@ -72,7 +72,9 @@ namespace Peach.Core.Test.PitParserTests
 				"       </Block>" +
 				"	</DataModel>" +
 				"	<DataModel name=\"TheDataModel\" ref=\"TheDataModel1\">" +
-				"      <String name=\"TheBlock.TheString\" value=\"World\"/>" +
+				"       <Block name=\"TheBlock\">" +
+				"		      <String name=\"TheString\" value=\"World\"/>" +
+				"       </Block>" +
 				"	</DataModel>" +
 				"</Peach>";
 
