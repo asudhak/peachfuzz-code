@@ -72,9 +72,7 @@ namespace Peach.Core.Test.PitParserTests
 				"       </Block>" +
 				"	</DataModel>" +
 				"	<DataModel name=\"TheDataModel\" ref=\"TheDataModel1\">" +
-				"       <Block name=\"TheBlock\">" +
-				"		      <String name=\"TheString\" value=\"World\"/>" +
-				"       </Block>" +
+				"      <String name=\"TheBlock.TheString\" value=\"World\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -99,16 +97,17 @@ namespace Peach.Core.Test.PitParserTests
 				"	</DataModel>" +
 				"</Peach>";
 
+			Assert.Throws<PeachException>(delegate()
+			{
+				new Dom.String("Foo.Bar");
+			});
+
 			PitParser parser = new PitParser();
-			try
+
+			Assert.Throws<PeachException>(delegate()
 			{
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-				Assert.IsTrue(false, "parsing should have caused exception");
-			}
-			catch (PeachException)
-			{
-				Assert.IsTrue(true);
-			}
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
 		}
 	}
 }
