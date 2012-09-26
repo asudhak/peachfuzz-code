@@ -176,6 +176,7 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// DataElement used to generate our value.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public DataElement Of
 		{
 			get
@@ -235,6 +236,7 @@ namespace Peach.Core.Dom
 		/// DataElement that receives our value
 		/// when generated.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public DataElement From
 		{
 			get
