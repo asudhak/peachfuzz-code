@@ -421,6 +421,9 @@ namespace Peach.Core.Dom
 
 		public bool Remove(DataElement item)
 		{
+			if (item.parent is Choice)
+				return parent.Remove(item.parent);
+
 			_childrenDict.Remove(item.name);
 			bool ret = _childrenList.Remove(item);
 			item.parent = null;
