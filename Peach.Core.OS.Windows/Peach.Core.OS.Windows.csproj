@@ -327,7 +327,6 @@
     <Compile Include="Agent\Monitors\WindowsDebug\DebuggerInstance.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\SystemDebuggerInterface.cs" />
     <Compile Include="Analysis\CoverageImpl.cs" />
-    <Compile Include="Analysis\CoveragePinImpl.cs" />
     <Compile Include="Debuggers\DebugEngine\Const.cs" />
     <Compile Include="Debuggers\DebugEngine\Tlb\IDebugAdvanced.cs" />
     <Compile Include="Debuggers\DebugEngine\Tlb\IDebugAdvanced2.cs" />
