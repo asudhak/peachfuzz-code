@@ -182,6 +182,15 @@ class Context(ctx):
 		self.exec_dict = {'ctx':self, 'conf':self, 'bld':self, 'opt':self}
 		self.logger = None
 
+	def __hash__(self):
+		"""
+		Return a hash value for storing context objects in dicts or sets. The value is not persistent.
+
+		:return: hash value
+		:rtype: int
+		"""
+		return id(self)
+
 	def load(self, tool_list, *k, **kw):
 		"""
 		Load a Waf tool as a module, and try calling the function named :py:const:`waflib.Context.Context.fun` from it.

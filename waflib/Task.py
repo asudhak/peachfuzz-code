@@ -190,6 +190,10 @@ class TaskBase(evil):
 			return 'executing: %s\n' % self.fun.__name__
 		return self.__class__.__name__ + '\n'
 
+	def __hash__(self):
+		"Very fast hashing scheme but not persistent (replace/implement in subclasses and see :py:meth:`waflib.Task.Task.uid`)"
+		return id(self)
+
 	def exec_command(self, cmd, **kw):
 		"""
 		Wrapper for :py:meth:`waflib.Context.Context.exec_command` which sets a current working directory to ``build.variant_dir``

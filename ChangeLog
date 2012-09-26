@@ -1,3 +1,7 @@
+NEW IN WAF 1.7.4
+----------------
+* Fixed a regression in the Node,Task and Context classes
+
 NEW IN WAF 1.7.3
 -----------------
 * Fixed the LD_LIBRARY_PATH race condition in waf_unit_test #1200
