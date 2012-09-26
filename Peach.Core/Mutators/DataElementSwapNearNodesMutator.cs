@@ -72,23 +72,16 @@ namespace Peach.Core.Mutators
         //
         public override void sequentialMutation(DataElement obj)
         {
-            var idx1 = obj.parent.IndexOf(obj);
-            var copy1 = ObjectCopier.Clone<DataElement>(obj);
-            var nextNode = obj.nextSibling();
             var dataModel = (DataElementContainer)obj.parent;
+            int idx1 = dataModel.IndexOf(obj);
+            int idx2 = idx1 + 1;
+            int count = dataModel.Count;
 
-            if (nextNode != null)
+            if (idx2 < count)
             {
-                var idx2 = obj.parent.IndexOf(nextNode);
-                var copy2 = ObjectCopier.Clone<DataElement>(nextNode);
-
-                dataModel.Remove(obj);
-                dataModel.Remove(nextNode);
-
-                dataModel.Insert(idx1, copy2);
-                dataModel.Insert(idx2, copy1);
+                dataModel.SwapElements(idx1, idx2);
+                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             }
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
 
         // RANDOM_MUTAION
@@ -96,7 +89,6 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             sequentialMutation(obj);
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
         }
     }
 }

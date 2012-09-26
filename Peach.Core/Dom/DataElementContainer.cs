@@ -409,6 +409,16 @@ namespace Peach.Core.Dom
 			get { return false; }
 		}
 
+		public void SwapElements(int first, int second)
+		{
+			if (first >= _childrenList.Count || second >= _childrenList.Count)
+				throw new ArgumentException();
+
+			var tmp = _childrenList[first];
+			_childrenList[first] = _childrenList[second];
+			_childrenList[second] = tmp;
+		}
+
 		public bool Remove(DataElement item)
 		{
 			_childrenDict.Remove(item.name);
