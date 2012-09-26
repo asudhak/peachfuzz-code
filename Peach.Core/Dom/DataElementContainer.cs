@@ -424,6 +424,8 @@ namespace Peach.Core.Dom
 			if (item.parent is Choice)
 				return parent.Remove(item.parent);
 
+			item.ClearRelations();
+
 			_childrenDict.Remove(item.name);
 			bool ret = _childrenList.Remove(item);
 			item.parent = null;

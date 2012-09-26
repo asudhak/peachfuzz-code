@@ -669,7 +669,7 @@ namespace Peach.Core.Dom
 
 			foreach(Relation r in _relations)
 			{
-				if (r.Of != this)
+				if (IsFromRelation(r))
 				{
 					// CalculateFromValue can return null sometimes
 					// when mutations mess up the relation.
@@ -867,6 +867,9 @@ namespace Peach.Core.Dom
 
 			foreach (DataElement elem in EnumerateElementsUpTree())
 			{
+				if (elem.fullName == name)
+					return elem;
+
 				if (!(elem is DataElementContainer))
 					continue;
 
@@ -1016,6 +1019,104 @@ namespace Peach.Core.Dom
 		public RelationContainer relations
 		{
 			get { return _relations; }
+		}
+
+		private static string FmtMessage(Relation r, DataElement obj, string who)
+		{
+			return string.Format("Relation Of=\"{0}\" From=\"{1}\" not {2} element \"{3}\"",
+					r.Of.fullName, r.From.fullName, who, obj.fullName);
+		}
+
+		private bool ContainsNamedRelation(Relation r)
+		{
+			string fullFrom = r.From.fullName;
+			string fullOf = r.Of.fullName;
+
+			foreach (var item in _relations)
+			{
+				if (fullOf == item.Of.fullName && fullFrom == item.From.fullName)
+					return true;
+			}
+
+			return false;
+		}
+
+		protected bool IsFromRelation(Relation r)
+		{
+#if DEBUG
+			if (!_relations.Contains(r))
+				throw new ArgumentException(FmtMessage(r, this, "referenced by this"));
+
+			if (r.From.parent == null)
+				throw new PeachException(FmtMessage(r, r.From, "valid parent in from"));
+
+			if (r.Of.parent == null)
+				throw new PeachException(FmtMessage(r, r.Of, "valid parent in of"));
+
+			if (!r.From.ContainsNamedRelation(r))
+				throw new PeachException(FmtMessage(r, r.From, "referenced in from"));
+
+			if (!r.Of.ContainsNamedRelation(r))
+				throw new PeachException(FmtMessage(r, r.Of, "contained in of"));
+
+			if (!r.From.relations.Contains(r))
+				throw new PeachException(FmtMessage(r, r.From, "contained in from"));
+
+			if (!r.Of.relations.Contains(r))
+				throw new PeachException(FmtMessage(r, r.Of, "referenced in of"));
+
+			bool notFromStr = r.From.fullName != this.fullName;
+			bool notOfStr = r.Of.fullName != this.fullName;
+
+			if (notOfStr == notFromStr)
+				throw new PeachException(FmtMessage(r, this, "named from or of"));
+
+			bool notFrom = r.From != this;
+			bool notOf = r.Of != this;
+
+			if (notOf == notFrom)
+				throw new PeachException(FmtMessage(r, this, "from or of"));
+#endif
+			return r.From == this;
+		}
+
+		public void VerifyRelations()
+		{
+#if DEBUG
+			foreach (var r in _relations)
+				IsFromRelation(r);
+
+			DataElementContainer cont = this as DataElementContainer;
+			if (cont == null)
+				return;
+
+			foreach (var c in cont)
+				c.VerifyRelations();
+#endif
+		}
+
+		public void ClearRelations()
+		{
+			foreach (var r in _relations)
+			{
+				// Remove toasts r.parent, so resolve 'From' and 'Of' 1st
+				bool removeFrom = r.From != this;
+				bool removeOf = r.Of != this;
+
+				if (removeFrom)
+					r.From.relations.Remove(r);
+				if (removeOf)
+					r.Of.relations.Remove(r);
+			}
+
+			_relations.Clear();
+
+			DataElementContainer cont = this as DataElementContainer;
+			if (cont == null)
+				return;
+
+			foreach (var child in cont)
+				child.ClearRelations();
 		}
 	}
 }

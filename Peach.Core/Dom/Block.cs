@@ -138,7 +138,7 @@ namespace Peach.Core.Dom
 
 			foreach (Relation r in _relations)
 			{
-				if (r.Of != this)
+				if (IsFromRelation(r))
 				{
 					// CalculateFromValue can return null sometimes
 					// when mutations mess up the relation.
