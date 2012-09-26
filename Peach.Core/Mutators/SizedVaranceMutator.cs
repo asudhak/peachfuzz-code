@@ -148,12 +148,19 @@ namespace Peach.Core.Mutators
         private void performMutation(DataElement obj, int curr)
         {
             var sizeRelation = obj.relations.getFromSizeRelation();
-            var objOf = sizeRelation.Of;
+			if (sizeRelation == null)
+			{
+				logger.Error("Error, sizeRelation == null, unable to perform mutation.");
+				return;
+			}
+
+			var objOf = sizeRelation.Of;
 			if (objOf == null)
 			{
 				logger.Error("Error, sizeRelation.Of == null, unable to perform mutation.");
 				return;
 			}
+
 			var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
