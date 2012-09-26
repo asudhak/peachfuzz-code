@@ -30,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
@@ -37,6 +39,8 @@ namespace Peach.Core.Mutators
     [Hint("BlobDWORDSliderMutator", "Ability to disable this mutator.")]
     public class BlobDWORDSliderMutator : Mutator
     {
+        static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
         // constants
         //
         static byte[] inject = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
@@ -52,6 +56,8 @@ namespace Peach.Core.Mutators
         {
             position = 0;
             length = (int)obj.Value.LengthBytes;
+            if (length <= 1)
+                length = 0;
             name = "BlobDWORDSliderMutator";
         }
 
@@ -91,7 +97,6 @@ namespace Peach.Core.Mutators
         //
         public override void sequentialMutation(DataElement obj)
         {
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             performMutation(obj, (int)position);
         }
 
@@ -99,13 +104,12 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            if ((length - 1) == 0)
+            if (obj.Value.LengthBytes <= 1)
             {
-                // TODO - Log that we are skipping
+                logger.Error("Error, length is " + length + ", unable to perform mutation.");
                 return;
             }
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             performMutation(obj, context.Random.Next((int)obj.Value.LengthBytes));
         }
 
@@ -113,16 +117,22 @@ namespace Peach.Core.Mutators
         //
         private void performMutation(DataElement obj, int pos)
         {
-            byte[] data = obj.Value.Value;
+            var stream = obj.Value;
 
-            System.Diagnostics.Debug.Assert(pos < data.Length);
+            System.Diagnostics.Debug.Assert(pos < stream.LengthBytes);
 
-            int len = Math.Min(data.Length - pos, inject.Length);
-            byte[] ret = new byte[data.Length];
-            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
-            Buffer.BlockCopy(inject, 0, ret, pos, len);
+            int len = Math.Min((int)stream.LengthBytes - pos, inject.Length);
+            long cur = stream.TellBits();
 
-            obj.MutatedValue = new Variant(ret);
+            stream.SeekBytes(pos, System.IO.SeekOrigin.Begin);
+
+            for (int i = 0; i < len; ++i)
+                stream.WriteByte(inject[i]);
+
+            stream.SeekBits(cur, System.IO.SeekOrigin.Begin);
+
+            obj.MutatedValue = new Variant(obj.Value);
+            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
     }
