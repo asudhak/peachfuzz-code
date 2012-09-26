@@ -1023,7 +1023,7 @@ namespace Peach.Core.Dom
 
 		private static string FmtMessage(Relation r, DataElement obj, string who)
 		{
-			return string.Format("Relation Of=\"{0}\" From=\"{1}\" not {2} element \"{3}\"",
+			return string.Format("Relation Of=\"{0}\" From=\"{1}\" not {2}element \"{3}\"",
 					r.Of.fullName, r.From.fullName, who, obj.fullName);
 		}
 
@@ -1045,37 +1045,36 @@ namespace Peach.Core.Dom
 		{
 #if DEBUG
 			if (!_relations.Contains(r))
-				throw new ArgumentException(FmtMessage(r, this, "referenced by this"));
+				throw new ArgumentException(FmtMessage(r, this, "referenced by "));
 
 			if (r.From.parent == null)
-				throw new PeachException(FmtMessage(r, r.From, "valid parent in from"));
+				throw new PeachException(FmtMessage(r, r.From, "valid parent in from="));
 
-			if (r.Of.parent == null)
-				throw new PeachException(FmtMessage(r, r.Of, "valid parent in of"));
+			// r.Of.parent can be null if r.Of is the data model
 
 			if (!r.From.ContainsNamedRelation(r))
-				throw new PeachException(FmtMessage(r, r.From, "referenced in from"));
+				throw new PeachException(FmtMessage(r, r.From, "referenced in from="));
 
 			if (!r.Of.ContainsNamedRelation(r))
-				throw new PeachException(FmtMessage(r, r.Of, "contained in of"));
+				throw new PeachException(FmtMessage(r, r.Of, "contained in of="));
 
 			if (!r.From.relations.Contains(r))
-				throw new PeachException(FmtMessage(r, r.From, "contained in from"));
+				throw new PeachException(FmtMessage(r, r.From, "contained in from="));
 
 			if (!r.Of.relations.Contains(r))
-				throw new PeachException(FmtMessage(r, r.Of, "referenced in of"));
+				throw new PeachException(FmtMessage(r, r.Of, "referenced in of="));
 
 			bool notFromStr = r.From.fullName != this.fullName;
 			bool notOfStr = r.Of.fullName != this.fullName;
 
 			if (notOfStr == notFromStr)
-				throw new PeachException(FmtMessage(r, this, "named from or of"));
+				throw new PeachException(FmtMessage(r, this, "named from or of="));
 
 			bool notFrom = r.From != this;
 			bool notOf = r.Of != this;
 
 			if (notOf == notFrom)
-				throw new PeachException(FmtMessage(r, this, "from or of"));
+				throw new PeachException(FmtMessage(r, this, "from or of="));
 #endif
 			return r.From == this;
 		}

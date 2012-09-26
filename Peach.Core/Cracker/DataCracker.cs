@@ -207,7 +207,7 @@ namespace Peach.Core.Cracker
 					for (int i = 0; newParent.ContainsKey(newName); i++)
 						newName = oldName + "_" + i;
 
-					element.parent.Remove(element);
+					element.parent.RemoveAt(element.parent.IndexOf(element));
 					element.name = newName;
 
 					newParent.Insert(newParent.IndexOf(after)+1, element);
@@ -225,7 +225,7 @@ namespace Peach.Core.Cracker
 					for (int i = 0; newParent.ContainsKey(newName); i++)
 						newName = oldName + "_" + i;
 
-					element.parent.Remove(element);
+					element.parent.RemoveAt(element.parent.IndexOf(element));
 					element.name = newName;
 
 					newParent.Insert(newParent.IndexOf(before), element);

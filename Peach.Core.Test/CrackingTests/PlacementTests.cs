@@ -156,6 +156,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
+			Assert.AreEqual(1, dom.dataModels[0][0].relations.Count);
 			Assert.AreEqual("TheDataModel.Data", dom.dataModels[0][0].relations[0].OfName);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
 		}
