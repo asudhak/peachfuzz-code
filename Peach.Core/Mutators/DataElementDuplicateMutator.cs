@@ -141,9 +141,10 @@ namespace Peach.Core.Mutators
 
 				// If we have cloned branch of the data model that contains a relation,
 				// and the parent is not in the original data model, this means
-				// we cloned the "Of" half and not the "From" half.  This means
-				// the "From" element now has two relations which makes
-				// this relation invalid so we should clear it.
+				// we cloned the "Of" half and not the "From" half.
+
+				var from = r.From;
+				var of = r.Of;
 
 				if (r.parent != newElem)
 				{
@@ -153,13 +154,18 @@ namespace Peach.Core.Mutators
 					var newParent = newElem.find(r.parent.fullName);
 					if (newParent.GetHashCode() != r.parent.GetHashCode())
 					{
-						// From half was not cloned, so remove this relationship
-						newElem.relations.RemoveAt(i);
-						continue;
+						// From half was not cloned, so update parent, reset, keep current
+						r.parent = newParent;
+						r.Reset();
+						r.Of = of;
 					}
 				}
-
-				r.Reset();
+				else
+				{
+					// We are the from half, reset and keep current From
+					r.Reset();
+					r.From = from;
+				}
 
 				if (!r.From.relations.Contains(r))
 					r.From.relations.Insert(r.From.relations.Count, r);

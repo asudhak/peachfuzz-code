@@ -268,14 +268,9 @@ namespace Peach.Core.Dom
 
 		public void Add(Relation item, bool updateParent)
 		{
-			foreach (var rel in _childrenList)
-				if (rel.GetType() == item.GetType())
-					throw new ApplicationException(
-						string.Format("Child Relation typed {0} already exists.", item.GetType()));
-
 			_childrenList.Add(item);
 
-			if (updateParent)
+			if (updateParent && item.parent != parent)
 				item.parent = parent;
 		}
 
