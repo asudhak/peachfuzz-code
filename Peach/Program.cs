@@ -75,7 +75,6 @@ namespace Peach
 				string analyzer = null;
 				string parser = null;
 				string strategy = null;
-				string range = null;
 				string parallel = null;
 				bool test = false;
 				string agent = null;
@@ -123,7 +122,7 @@ namespace Peach
 					{ "strategy=", v => strategy = v},
 					{ "debug", v => config.debug = true },
 					{ "1", v => config.singleIteration = true},
-					{ "range=", v => range = v},
+					{ "range=", v => ParseRange(config, v)},
 					{ "t|test", v => test = true},
 					{ "c|count", v => config.countOnly = true},
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
@@ -304,6 +303,9 @@ namespace Peach
 				if (config.skipToIteration > 0)
 					--config.skipToIteration;
 
+				if (config.rangeStart > 0)
+					--config.rangeStart;
+
 				foreach (string arg in args)
 					config.commandLine += arg + " ";
 
@@ -334,6 +336,33 @@ namespace Peach
 				Console.ForegroundColor = DefaultForground;
 				Console.BackgroundColor = DefaultBackground;
 			}
+		}
+
+		private void ParseRange(RunConfiguration config, string v)
+		{
+			string[] parts = v.Split(',');
+			if (parts.Length != 2)
+				throw new PeachException("Invalid range: " + v);
+
+			try
+			{
+				config.rangeStart = Convert.ToUInt32(parts[0]);
+			}
+			catch
+			{
+				throw new PeachException("Invalid range start iteration: " + parts[0]);
+			}
+
+			try
+			{
+				config.rangeStop = Convert.ToUInt32(parts[1]);
+			}
+			catch
+			{
+				throw new PeachException("Invalid range stop iteration: " + parts[1]);
+			}
+
+			config.range = true;
 		}
 
 		void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
