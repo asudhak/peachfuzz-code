@@ -119,7 +119,7 @@ namespace Peach
 			}
 
 			WriteInfoMark();
-			Console.WriteLine("Test '" + context.test.name + "' starting.");
+			Console.WriteLine("Test '" + context.test.name + "' starting with random seed " + context.config.randomSeed + ".");
 		}
 
 		public static void WriteInfoMark()
