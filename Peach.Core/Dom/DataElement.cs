@@ -182,12 +182,12 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnInvalidated(EventArgs e)
 		{
+			// Prevent infinite loops
+			if (_invalidated)
+				return;
+
 			try
 			{
-				// Prevent infinite loops
-				if (_invalidated)
-					return;
-
 				_invalidated = true;
 
 				// Cause values to be regenerated next time they are
