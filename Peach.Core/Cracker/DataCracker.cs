@@ -264,19 +264,19 @@ namespace Peach.Core.Cracker
 		/// <param name="elem"></param>
 		public static void ClearRelationsRecursively(DataElement elem)
 		{
-			foreach (var rel in elem.relations)
-			{
-				if(rel.From.fullName == elem.fullName)
-					rel.parent = elem;
+			//foreach (var rel in elem.relations)
+			//{
+			//    if(rel.From != null && rel.From.fullName == elem.fullName)
+			//        rel.parent = elem;
 
-				rel.Reset();
-			}
+			//    rel.Reset();
+			//}
 
-			if (!(elem is DataElementContainer))
-				return;
+			//if (!(elem is DataElementContainer))
+			//    return;
 
-			foreach (var child in ((DataElementContainer)elem))
-				ClearRelationsRecursively(child);
+			//foreach (var child in ((DataElementContainer)elem))
+			//    ClearRelationsRecursively(child);
 		}
 
 		/// <summary>

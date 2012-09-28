@@ -40,6 +40,8 @@ using System.Xml;
 using Peach.Core.IO;
 using Peach.Core.Cracker;
 using System.Diagnostics;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace Peach.Core.Dom
 {
@@ -80,6 +82,31 @@ namespace Peach.Core.Dom
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{
+		public class CloneContext
+		{
+			public CloneContext(DataElement root, string name)
+			{
+				this.root = root;
+				this.name = name;
+			}
+
+			public DataElement root = null;
+			public string name = null;
+			public List<Relation> relations = new List<Relation>();
+		}
+
+		public DataElement Clone(string newName)
+		{
+			CloneContext additional = new CloneContext(this, newName);
+			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
+			BinaryFormatter formatter = new BinaryFormatter(null, context);
+			MemoryStream stream = new MemoryStream();
+			formatter.Serialize(stream, this);
+			stream.Seek(0, SeekOrigin.Begin);
+			DataElement copy = (DataElement)formatter.Deserialize(stream);
+			return copy;
+		}
+
 		/// <summary>
 		/// Mutated vale override's fixupImpl
 		///

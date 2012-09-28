@@ -50,11 +50,19 @@ namespace Peach.Core.Dom
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
+		//[NonSerialized]
 		protected DataElement _parent = null;
+		//[NonSerialized]
+		protected DataElement _of = null;
+		//[NonSerialized]
+		protected DataElement _from = null;
+
+		protected string _ofFullName = null;
+		protected string _fromFullName = null;
+		protected string _parentFullName = null;
+
 		protected string _ofName = null;
 		protected string _fromName = null;
-		protected DataElement _of = null;
-		protected DataElement _from = null;
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
 
@@ -81,6 +89,9 @@ namespace Peach.Core.Dom
 			get { return _expressionGet; }
 			set
 			{
+				if (string.Equals(_expressionGet, value))
+					return;
+
 				_expressionGet = value;
 				if(From != null)
 					From.Invalidate();
@@ -104,6 +115,9 @@ namespace Peach.Core.Dom
 			get { return _expressionSet; }
 			set
 			{
+				if (string.Equals(_expressionSet, value))
+					return;
+
 				_expressionSet = value;
 				if (From != null)
 					From.Invalidate();
@@ -124,16 +138,23 @@ namespace Peach.Core.Dom
 			get { return _parent; }
 			set
 			{
+				if (object.Equals(_parent, value))
+					return;
+
 				if (_parent != null)
 				{
 					_parent.Invalidate();
 					_parent = null;
 				}
 
+				_parentFullName = null;
 				_parent = value;
 
 				if (_parent != null)
+				{
 					_parent.Invalidate();
+					_parentFullName = _parent.fullName;
+				}
 			}
 		}
 
@@ -145,6 +166,9 @@ namespace Peach.Core.Dom
 			get { return _ofName; }
 			set
 			{
+				if (string.Equals(_ofName, value))
+					return;
+
 				if (_of != null)
 					_of.Invalidated -= new InvalidatedEventHandler(OfInvalidated);
 
@@ -165,6 +189,9 @@ namespace Peach.Core.Dom
 			get { return _fromName; }
 			set
 			{
+				if (string.Equals(_fromName, value))
+					return;
+
 				if (_from != null)
 					_from.Invalidate();
 
@@ -209,6 +236,9 @@ namespace Peach.Core.Dom
 			}
 			set
 			{
+				if (object.Equals(_of, value))
+					return;
+
 				if (_of != null)
 				{
 					// Remove existing event
@@ -225,7 +255,8 @@ namespace Peach.Core.Dom
 				_of = value;
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
-				_ofName = _of.fullName;
+				_ofName = _of.name;
+				_ofFullName = _of.fullName;
 
 				// We need to invalidate now that we have a new of.
 				From.Invalidate();
@@ -268,6 +299,9 @@ namespace Peach.Core.Dom
 
 			set
 			{
+				if (object.Equals(_from, value))
+					return;
+
 				if (_of != null)
 				{
 					// Verify _of and _from don't share Choice as common parent
@@ -278,7 +312,8 @@ namespace Peach.Core.Dom
 				}
 
 				_from = value;
-				_fromName = _from.fullName;
+				_fromName = _from.name;
+				_fromFullName = _from.fullName;
 			}
 		}
 
@@ -354,22 +389,45 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-    public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
-      //type, of, from, when, expressionGet, expressionSet, relative, relativeTo
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+		}
 
-      node.AppendAttribute("type", this.GetType().ToString());
-      node.AppendAttribute("of", this.OfName);
-      node.AppendAttribute("from", this.FromName);
-      //node.AppendAttribute("when", this.when);
-      node.AppendAttribute("expressionGet", this.ExpressionGet);
-      node.AppendAttribute("expressionSet", this.ExpressionSet);
-      //node.AppendAttribute("relative", this.relative);
-      //node.AppendAttribute("relativeTo", this.relativeTo);
-      return node;
-    }
-  }
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+		}
+
+		[OnDeserializing]
+		private void OnDeserializing(StreamingContext context)
+		{
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx != null)
+				ctx.relations.Add(this);
+		}
+
+		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
+		{
+			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
+			//type, of, from, when, expressionGet, expressionSet, relative, relativeTo
+
+			node.AppendAttribute("type", this.GetType().ToString());
+			node.AppendAttribute("of", this.OfName);
+			node.AppendAttribute("from", this.FromName);
+			//node.AppendAttribute("when", this.when);
+			node.AppendAttribute("expressionGet", this.ExpressionGet);
+			node.AppendAttribute("expressionSet", this.ExpressionSet);
+			//node.AppendAttribute("relative", this.relative);
+			//node.AppendAttribute("relativeTo", this.relativeTo);
+			return node;
+		}
+	}
 }
 
 // end
