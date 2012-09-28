@@ -88,6 +88,28 @@ namespace Peach.Core
 	}
 
 	/// <summary>
+	/// Helper class to add a debug listener so asserts get written to the console.
+	/// </summary>
+	public class AssertWriter : System.Diagnostics.TraceListener
+	{
+		public static void Register()
+		{
+			System.Diagnostics.Debug.Listeners.Insert(0, new AssertWriter());
+		}
+
+		public override void Write(string message)
+		{
+			Console.Write(message);
+		}
+
+		public override void WriteLine(string message)
+		{
+			Console.WriteLine("Assertion {0}", message);
+			Console.WriteLine(new System.Diagnostics.StackTrace(2, true));
+		}
+	}
+
+	/// <summary>
 	/// Provides a method for performing a deep copy of an object.
 	/// Binary Serialization is used to perform the copy.
 	/// </summary>

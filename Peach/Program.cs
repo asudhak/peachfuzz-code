@@ -54,6 +54,8 @@ namespace Peach
 	{
 		static void Main(string[] args)
 		{
+			Peach.Core.AssertWriter.Register();
+
 			new Program(args);
 		}
 
