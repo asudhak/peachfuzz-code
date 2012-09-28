@@ -143,9 +143,6 @@ namespace Peach.Core.Mutators
 				// and the parent is not in the original data model, this means
 				// we cloned the "Of" half and not the "From" half.
 
-				var from = r.From;
-				var of = r.Of;
-
 				if (r.parent != newElem)
 				{
 					// We should be the "Of" half...
@@ -154,18 +151,13 @@ namespace Peach.Core.Mutators
 					var newParent = newElem.find(r.parent.fullName);
 					if (newParent.GetHashCode() != r.parent.GetHashCode())
 					{
-						// From half was not cloned, so update parent, reset, keep current
-						r.parent = newParent;
-						r.Reset();
-						r.Of = of;
+						// From half was not cloned, so remove this relationship
+						newElem.relations.RemoveAt(i);
+						continue;
 					}
 				}
-				else
-				{
-					// We are the from half, reset and keep current From
-					r.Reset();
-					r.From = from;
-				}
+
+				r.Reset();
 
 				if (!r.From.relations.Contains(r))
 					r.From.relations.Insert(r.From.relations.Count, r);
