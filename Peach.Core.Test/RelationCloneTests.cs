@@ -86,6 +86,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(fromRel.From, fromElem);
 			Assert.AreEqual(fromRel.Of, ofElem);
 
+			DataElement foo = fromRel.parent.Clone("foo");
+
 			IFormatter formatter = new BinaryFormatter();
 			Stream stream = new MemoryStream();
 			formatter.Serialize(stream, fromRel);
@@ -121,7 +123,6 @@ namespace Peach.Core.Test
 			r.From = fromElem;
 
 			Block copy = root.Clone("copy") as Block;
-
 			Assert.NotNull(copy);
 		}
 	}

@@ -50,13 +50,11 @@ namespace Peach.Core.Dom
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		//[NonSerialized]
 		protected DataElement _parent = null;
-		//[NonSerialized]
 		protected DataElement _of = null;
-		//[NonSerialized]
 		protected DataElement _from = null;
 
+		// Only used during serialization
 		protected string _ofFullName = null;
 		protected string _fromFullName = null;
 		protected string _parentFullName = null;
@@ -147,13 +145,11 @@ namespace Peach.Core.Dom
 					_parent = null;
 				}
 
-				_parentFullName = null;
 				_parent = value;
 
 				if (_parent != null)
 				{
 					_parent.Invalidate();
-					_parentFullName = _parent.fullName;
 				}
 			}
 		}
@@ -256,7 +252,6 @@ namespace Peach.Core.Dom
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
 				_ofName = _of.name;
-				_ofFullName = _of.fullName;
 
 				// We need to invalidate now that we have a new of.
 				From.Invalidate();
@@ -313,7 +308,6 @@ namespace Peach.Core.Dom
 
 				_from = value;
 				_fromName = _from.name;
-				_fromFullName = _from.fullName;
 			}
 		}
 
@@ -392,11 +386,50 @@ namespace Peach.Core.Dom
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			string root = ctx.root.fullName;
+
+			_ofFullName = _of.fullName;
+			if (!_ofFullName.StartsWith(root))
+			{
+				ctx.callbacks.Add(new DataElement.CloneContext.Callback(_of, delegate(object e) { _of = (DataElement)e; }));
+				ctx.relations.Add(_ofFullName, _of);
+				_of = null;
+			}
+
+			_fromFullName = _from.fullName;
+			if (!_fromFullName.StartsWith(root))
+			{
+				ctx.callbacks.Add(new DataElement.CloneContext.Callback(_from, delegate(object e) { _from = (DataElement)e; }));
+				ctx.relations.Add(_fromFullName, _from);
+				this._from = null;
+			}
+
+			_parentFullName = _parent.fullName;
+			if (!_parentFullName.StartsWith(root))
+			{
+				ctx.callbacks.Add(new DataElement.CloneContext.Callback(_parent, delegate(object e) { _parent = (DataElement)e; }));
+				ctx.relations.Add(_parentFullName, _parent);
+				this._parent = null;
+			}
 		}
 
 		[OnSerialized]
 		private void OnSerialized(StreamingContext context)
 		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			foreach (var cb in ctx.callbacks)
+				cb.func(cb.arg);
+
+			_fromFullName = null;
+			_ofFullName = null;
+			_parentFullName = null;
 		}
 
 		[OnDeserializing]
@@ -408,8 +441,34 @@ namespace Peach.Core.Dom
 		private void OnDeserialized(StreamingContext context)
 		{
 			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx != null)
-				ctx.relations.Add(this);
+			if (ctx == null)
+				return;
+
+			if (_of == null)
+			{
+				_of = ctx.relations[_ofFullName];
+				_of.relations.Add(this, false);
+			}
+
+			if (_from == null)
+			{
+				_from = ctx.relations[_fromFullName];
+				_from.relations.Add(this, false);
+			}
+
+			if (_parent == null)
+			{
+				_parent = ctx.relations[_parentFullName];
+			}
+
+			if (_fromFullName == ctx.root.fullName)
+			{
+				_fromName = ctx.name;
+			}
+
+			_fromFullName = null;
+			_ofFullName = null;
+			_parentFullName = null;
 		}
 
 		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)

@@ -84,6 +84,20 @@ namespace Peach.Core.Dom
 	{
 		public class CloneContext
 		{
+			public class Callback
+			{
+				public delegate void callback(object arg);
+
+				public Callback(object arg, callback func)
+				{
+					this.arg = arg;
+					this.func = func;
+				}
+
+				public object arg;
+				public callback func;
+			}
+
 			public CloneContext(DataElement root, string name)
 			{
 				this.root = root;
@@ -92,19 +106,33 @@ namespace Peach.Core.Dom
 
 			public DataElement root = null;
 			public string name = null;
-			public List<Relation> relations = new List<Relation>();
+			public Dictionary<string, DataElement> relations = new Dictionary<string, DataElement>();
+			public List<Callback> callbacks = new List<Callback>();
 		}
 
 		public DataElement Clone(string newName)
 		{
-			CloneContext additional = new CloneContext(this, newName);
-			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
-			BinaryFormatter formatter = new BinaryFormatter(null, context);
-			MemoryStream stream = new MemoryStream();
-			formatter.Serialize(stream, this);
-			stream.Seek(0, SeekOrigin.Begin);
-			DataElement copy = (DataElement)formatter.Deserialize(stream);
-			return copy;
+			var parent = this._parent;
+
+			try
+			{
+				this._parent = null;
+				CloneContext additional = new CloneContext(this, newName);
+				StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
+				BinaryFormatter formatter = new BinaryFormatter(null, context);
+				MemoryStream stream = new MemoryStream();
+				formatter.Serialize(stream, this);
+				stream.Seek(0, SeekOrigin.Begin);
+
+				DataElement copy = (DataElement)formatter.Deserialize(stream);
+				copy._name = newName;
+
+				return copy;
+			}
+			finally
+			{
+				this._parent = parent;
+			}
 		}
 
 		/// <summary>
