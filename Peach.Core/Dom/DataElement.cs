@@ -176,17 +176,11 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public const uint MUTATE_DEFAULT = MUTATE_OVERRIDE_FIXUP;
 
-		protected string _name;
-		public virtual string name
+		private string _name;
+
+		public string name
 		{
 			get { return _name; }
-			set
-			{
-				if (value.IndexOf('.') > -1)
-					throw new PeachException("Error, DataElements cannot contain a period in their name. \"" + value + "\"");
-
-				_name = value;
-			}
 		}
 
 		public bool isMutable = true;
@@ -344,6 +338,16 @@ namespace Peach.Core.Dom
 		{
 			_relations = new RelationContainer(this);
 			_name = name;
+		}
+
+		public static T Generate<T>(XmlNode node) where T : DataElement, new()
+		{
+			string name = node.getAttribute("name");
+
+			if (string.IsNullOrEmpty(name))
+				return new T();
+			else
+				return (T)Activator.CreateInstance(typeof(T), name);
 		}
 
 		/// <summary>

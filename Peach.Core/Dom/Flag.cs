@@ -46,8 +46,8 @@ namespace Peach.Core.Dom
 {
 	[DataElement("Flag")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-  [ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
+	[ParameterAttribute("name", typeof(string), "", true)]
+	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
 	[ParameterAttribute("size", typeof(int), "size in bits", true)]
 	[Serializable]
 	public class Flag : DataElement
@@ -61,13 +61,13 @@ namespace Peach.Core.Dom
 		}
 
 		public Flag(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 
 		public Flag(string name, int size, int position)
+			: base(name)
 		{
-			this.name = name;
 			this.size = size;
 			this.position = position;
 		}
@@ -98,29 +98,18 @@ namespace Peach.Core.Dom
 			if (node.Name == "Flags")
 				return null;
 
-			var flag = new Flag();
+			var flag = DataElement.Generate<Flag>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				flag.name = context.getXmlAttribute(node, "name");
-
-			if (context.hasXmlAttribute(node, "position"))
-				flag.position = int.Parse(context.getXmlAttribute(node, "position"));
-			else
+			string strPos = node.getAttribute("position");
+			if (strPos == null)
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
 
-			if (context.hasXmlAttribute(node, "size"))
-			{
-				try
-				{
-					flag.size = int.Parse(context.getXmlAttribute(node, "size"));
-				}
-				catch (Exception e)
-				{
-					throw new PeachException("Error parsing Flag size attribute: " + e.Message);
-				}
-			}
-			else
+			string strSize = node.getAttribute("size");
+			if (strSize == null)
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
+
+			flag.position = int.Parse(strPos);
+			flag.size = int.Parse(strSize);
 
 			context.handleCommonDataElementAttributes(node, flag);
 			context.handleCommonDataElementChildren(node, flag);

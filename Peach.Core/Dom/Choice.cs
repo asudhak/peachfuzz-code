@@ -67,8 +67,8 @@ namespace Peach.Core.Dom
 		}
 
 		public Choice(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 
 		public override void Crack(DataCracker context, BitStream data)
@@ -149,11 +149,7 @@ namespace Peach.Core.Dom
 			if (node.Name != "Choice")
 				return null;
 
-			var choice = new Choice();
-
-			// First name
-			if (context.hasXmlAttribute(node, "name"))
-				choice.name = context.getXmlAttribute(node, "name");
+			Choice choice = DataElement.Generate<Choice>(node);
 
 			context.handleCommonDataElementAttributes(node, choice);
 			context.handleCommonDataElementChildren(node, choice);

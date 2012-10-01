@@ -60,7 +60,7 @@ namespace Peach.Core.Dom
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected ulong _max = (ulong)sbyte.MaxValue;
 		protected long _min = sbyte.MinValue;
-		protected bool _signed = true;
+		protected bool _signed = false;
 		protected bool _isLittleEndian = true;
 
 		public Number()
@@ -175,22 +175,20 @@ namespace Peach.Core.Dom
 			if (node.Name != "Number")
 				return null;
 
-			var num = new Number();
+			var num = DataElement.Generate<Number>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				num.name = context.getXmlAttribute(node, "name");
-
-			if (context.hasXmlAttribute(node, "signed"))
-				num.Signed = context.getXmlAttributeAsBool(node, "signed", false);
+			if (node.hasAttribute("signed"))
+				num.Signed = node.getAttributeBool("signed", false);
 			else if (context.hasDefaultAttribute(typeof(Number), "signed"))
 				num.Signed = context.getDefaultAttributeAsBool(typeof(Number), "signed", false);
 
-			if (context.hasXmlAttribute(node, "size"))
+			string strSize = node.getAttribute("size");
+			if (strSize != null)
 			{
 				int size;
 				try
 				{
-					size = int.Parse(context.getXmlAttribute(node, "size"));
+					size = int.Parse(strSize);
 				}
 				catch
 				{
@@ -203,10 +201,10 @@ namespace Peach.Core.Dom
 				num.length = size;
 			}
 
-			if (context.hasXmlAttribute(node, "endian"))
+			string strEndian = node.getAttribute("endian");
+			if (strEndian != null)
 			{
-				string endian = context.getXmlAttribute(node, "endian").ToLower();
-				switch (endian)
+				switch (strEndian.ToLower())
 				{
 					case "little":
 						num.LittleEndian = true;
@@ -219,7 +217,7 @@ namespace Peach.Core.Dom
 						break;
 					default:
 						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
+							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", strEndian, num.name));
 				}
 			}
 			else if (context.hasDefaultAttribute(typeof(Number), "endian"))

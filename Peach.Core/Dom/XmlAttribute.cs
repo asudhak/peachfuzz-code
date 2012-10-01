@@ -52,16 +52,13 @@ namespace Peach.Core.Dom
 			if (node.Name != "XmlAttribute" || !(parent is XmlElement))
 				return null;
 
-			var xmlAttribute = new XmlAttribute();
+			var xmlAttribute = DataElement.Generate<XmlAttribute>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				xmlAttribute.name = context.getXmlAttribute(node, "name");
+			xmlAttribute.attributeName = node.getAttribute("attributeName");
+			xmlAttribute.ns = node.getAttribute("ns");
 
-			if (!context.hasXmlAttribute(node, "attributeName"))
+			if (xmlAttribute.attributeName == null)
 				throw new PeachException("Error, attributeName is a required attribute for XmlAttribute: " + xmlAttribute.name);
-
-			xmlAttribute.attributeName = context.getXmlAttribute(node, "attributeName");
-			xmlAttribute.ns = context.getXmlAttribute(node, "ns");
 
 			context.handleCommonDataElementAttributes(node, xmlAttribute);
 			context.handleCommonDataElementChildren(node, xmlAttribute);

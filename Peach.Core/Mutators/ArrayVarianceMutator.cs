@@ -150,13 +150,11 @@ namespace Peach.Core.Mutators
                 // add some items
                 try
                 {
-                    var newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
-                    var originalName = newElem.name;
+                    var name = objAsArray.origionalElement.name + "_" + (objAsArray.Count + 1);
+                    var newElem = objAsArray[objAsArray.Count - 1].Clone(name);
+
                     for (int i = objAsArray.Count; i < num; ++i)
-                    {
-                        newElem.name = originalName + "_" + (i + 1);
                         objAsArray.Add(newElem);
-                    }
                 }
                 catch
                 {

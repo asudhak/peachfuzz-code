@@ -208,9 +208,12 @@ namespace Peach.Core.Cracker
 						newName = oldName + "_" + i;
 
 					element.parent.RemoveAt(element.parent.IndexOf(element));
-					element.name = newName;
 
-					newParent.Insert(newParent.IndexOf(after)+1, element);
+					if (element.name == newName)
+						newParent.Insert(newParent.IndexOf(after) + 1, element);
+					else
+						newParent.Insert(newParent.IndexOf(after) + 1, element.Clone(newName));
+
 				}
 				else if (element.placement.before != null)
 				{
@@ -226,9 +229,11 @@ namespace Peach.Core.Cracker
 						newName = oldName + "_" + i;
 
 					element.parent.RemoveAt(element.parent.IndexOf(element));
-					element.name = newName;
 
-					newParent.Insert(newParent.IndexOf(before), element);
+					if (element.name == newName)
+						newParent.Insert(newParent.IndexOf(before), element);
+					else
+						newParent.Insert(newParent.IndexOf(before), element.Clone(newName));
 				}
 
 				newFullname = element.fullName;

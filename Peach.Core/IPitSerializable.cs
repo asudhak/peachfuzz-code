@@ -16,17 +16,4 @@ namespace Peach.Core
 		/// <returns>Returns instance of XmlNode containing serialized data or null.</returns>
 		XmlNode pitSerialize(XmlDocument doc, XmlNode parent);
 	}
-
-  public static class XmlExtensions
-  {
-    public static void AppendAttribute(this XmlNode node, string name, string value)
-    {
-      if (String.IsNullOrEmpty(value))
-        return;
-
-      ((XmlElement)node).SetAttribute(name, value);
-      return;
-    }
-
-  }
 }

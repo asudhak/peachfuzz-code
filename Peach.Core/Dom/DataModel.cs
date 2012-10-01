@@ -80,8 +80,8 @@ namespace Peach.Core.Dom
 		}
 
 		public DataModel(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 
     public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
