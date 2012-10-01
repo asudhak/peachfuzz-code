@@ -305,10 +305,6 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		static DataElement()
-		{
-		}
-
 		/// <summary>
 		/// Recursively returns elements of a specific type.  Will not
 		/// return elements of our partent.

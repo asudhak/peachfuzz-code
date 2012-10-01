@@ -84,27 +84,6 @@ namespace Peach.Core.Dom
 			this.name = name;
 		}
 
-		public Object GetRealObject(StreamingContext context)
-		{
-			// We need to fix parents!
-			FixParents(this);
-
-			return this;
-		}
-
-		void FixParents(DataElementContainer parent)
-		{
-			foreach (DataElement child in parent)
-			{
-				child.parent = parent;
-
-				if (child is DataElementContainer)
-				{
-					FixParents(child as DataElementContainer);
-				}
-			}
-		}
-
     public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
     {
       XmlNode node = doc.CreateNode(XmlNodeType.Element, "DataModel", null);
