@@ -168,21 +168,6 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
       }
     }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "length":
-          this.length = (long)value;
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
-      }
-    }
 	}
 }
 

@@ -1041,10 +1041,7 @@ namespace Peach.Core.Dom
 			yield break;
 		}
 
-
     public abstract object GetParameter(string parameterName);
-
-    public abstract void SetParameter(string parameterName, object value);
 
 		/// <summary>
 		/// Fixup for this data element.  Can be null.

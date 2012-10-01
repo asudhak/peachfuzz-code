@@ -124,24 +124,6 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
       }
     }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "attributeName":
-          this.attributeName = (string)value;
-          break;
-        case "ns":
-          this.ns = (string)ns;
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
-      }
-    }
 	}
 }
 

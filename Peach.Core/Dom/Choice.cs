@@ -291,18 +291,6 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Choice", parameterName));
       }
     }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)name;
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Choice", parameterName));
-      }
-    }
 	}
 }
 

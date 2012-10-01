@@ -180,24 +180,6 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flag", parameterName));
       }
     }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "position":
-          this.position = (int)value;
-          break;
-        case "size":
-          this.size = (int)size;
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flag", parameterName));
-      }
-    }
 	}
 }
 

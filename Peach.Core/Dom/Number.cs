@@ -453,27 +453,6 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
       }
     }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "size":
-          this.length = (long)value;
-          break;
-        case "signed":
-          this.Signed = (bool)value;
-          break;
-        case "endian":
-          this.LittleEndian = ((string)value == "little");
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
-      }
-    }
 	}
 }
 

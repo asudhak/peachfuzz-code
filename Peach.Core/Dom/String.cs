@@ -529,27 +529,6 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.String", parameterName));
       }
     }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "length":
-          this.length = (long)value;
-          break;
-        case "nullTerminated":
-          this.nullTerminated = (bool)value;
-          break;
-        case "type":
-          this.stringType = (StringType)Enum.Parse(typeof(StringType), (string)value);
-          break;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.String", parameterName));
-      }
-    }
 	}
 
 }
