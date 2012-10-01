@@ -102,75 +102,18 @@ namespace Peach.Core.Mutators
 		{
 			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
 
-			DataElement[] temp = new DataElement[newCount];
-
-			for (int i = 0; i < newCount; ++i)
-			{
-				var newElem = ObjectCopier.Clone<DataElement>(obj);
-
-				// Make sure we pick a unique name
-				while (obj.parent.ContainsKey(newElem.name))
-					newElem.name += "_" + i;
-
-				// If the cloned element has relations, update their names
-				foreach (var r in newElem.relations)
-				{
-					if (r.FromName == obj.name)
-						r.FromName = newElem.name;
-					if (r.OfName == obj.name)
-						r.OfName = newElem.name;
-				}
-
-				temp[i] = newElem;
-			}
-
 			int startIdx = obj.parent.IndexOf(obj) + 1;
 			for (int i = 0; i < newCount; ++i)
 			{
-				var newElem = temp[i];
+				string newName = obj.name + "_" + i;
+
+				// Make sure we pick a unique name
+				while (obj.parent.ContainsKey(newName))
+					newName += "_" + i;
+
+				DataElement newElem = obj.Clone(newName);
 				obj.parent.Insert(startIdx + i, newElem);
-				SyncRelations(newElem);
 			}
-		}
-
-		private void SyncRelations(DataElement newElem)
-		{
-			for (int i = newElem.relations.Count - 1; i >= 0; --i)
-			{
-				var r = newElem.relations[i];
-
-				// If we have cloned branch of the data model that contains a relation,
-				// and the parent is not in the original data model, this means
-				// we cloned the "Of" half and not the "From" half.
-
-				if (r.parent != newElem)
-				{
-					// We should be the "Of" half...
-					System.Diagnostics.Debug.Assert(r.OfName == newElem.name);
-
-					var newParent = newElem.find(r.parent.fullName);
-					if (newParent.GetHashCode() != r.parent.GetHashCode())
-					{
-						// From half was not cloned, so remove this relationship
-						newElem.relations.RemoveAt(i);
-						continue;
-					}
-				}
-
-				r.Reset();
-
-				if (!r.From.relations.Contains(r))
-					r.From.relations.Insert(r.From.relations.Count, r);
-				if (!r.Of.relations.Contains(r))
-					r.Of.relations.Insert(r.Of.relations.Count, r);
-			}
-
-			DataElementContainer cont = newElem as DataElementContainer;
-			if (cont == null)
-				return;
-
-			foreach (var child in cont)
-				SyncRelations(child);
 		}
 
     }

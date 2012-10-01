@@ -84,55 +84,64 @@ namespace Peach.Core.Dom
 	{
 		public class CloneContext
 		{
-			public class Callback
-			{
-				public delegate void callback(object arg);
-
-				public Callback(object arg, callback func)
-				{
-					this.arg = arg;
-					this.func = func;
-				}
-
-				public object arg;
-				public callback func;
-			}
-
-			public CloneContext(DataElement root, string name)
+			public CloneContext(DataElement root, string newName)
 			{
 				this.root = root;
-				this.name = name;
+				this.newName = newName;
 			}
 
 			public DataElement root = null;
-			public string name = null;
-			public Dictionary<string, DataElement> relations = new Dictionary<string, DataElement>();
-			public List<Callback> callbacks = new List<Callback>();
+			public string newName = null;
+
+			public Dictionary<string, DataElement> elements = new Dictionary<string, DataElement>();
+			public Dictionary<Relation, object> relations = new Dictionary<Relation, object>();
 		}
 
+		/// <summary>
+		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
+		/// </summary>
+		/// <returns>Returns a copy of the DataElement.</returns>
+		public DataElement Clone()
+		{
+			return Clone(name);
+		}
+
+		/// <summary>
+		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
+		/// </summary>
+		/// <param name="newName">What name to set on the cloned DataElement</param>
+		/// <returns>Returns a copy of the DataElement.</returns>
 		public DataElement Clone(string newName)
 		{
+			long size = 0;
+			return Clone(newName, ref size);
+		}
+
+		/// <summary>
+		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
+		/// </summary>
+		/// <param name="newName">What name to set on the cloned DataElement</param>
+		/// <param name="size">The size in bytes used when performing the copy. Useful for debugging statistics.</param>
+		/// <returns>Returns a copy of the DataElement.</returns>
+		public DataElement Clone(string newName, ref long size)
+		{
 			var parent = this._parent;
+			this._parent = null;
 
-			try
-			{
-				this._parent = null;
-				CloneContext additional = new CloneContext(this, newName);
-				StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
-				BinaryFormatter formatter = new BinaryFormatter(null, context);
-				MemoryStream stream = new MemoryStream();
-				formatter.Serialize(stream, this);
-				stream.Seek(0, SeekOrigin.Begin);
+			CloneContext additional = new CloneContext(this, newName);
+			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
+			BinaryFormatter formatter = new BinaryFormatter(null, context);
+			MemoryStream stream = new MemoryStream();
+			formatter.Serialize(stream, this);
+			stream.Seek(0, SeekOrigin.Begin);
 
-				DataElement copy = (DataElement)formatter.Deserialize(stream);
-				copy._name = newName;
+			DataElement copy = (DataElement)formatter.Deserialize(stream);
+			copy._parent = parent;
+			copy._name = newName;
+			this._parent = parent;
 
-				return copy;
-			}
-			finally
-			{
-				this._parent = parent;
-			}
+			size = stream.Length;
+			return copy;
 		}
 
 		/// <summary>
@@ -330,15 +339,15 @@ namespace Peach.Core.Dom
 		protected static uint _uniqueName = 0;
 		public DataElement()
 		{
-			name = "DataElement_" + _uniqueName;
-			_uniqueName++;
 			_relations = new RelationContainer(this);
+			_name = "DataElement_" + _uniqueName;
+			_uniqueName++;
 		}
 
 		public DataElement(string name)
 		{
-			this.name = name;
 			_relations = new RelationContainer(this);
+			_name = name;
 		}
 
 		/// <summary>
@@ -1171,6 +1180,31 @@ namespace Peach.Core.Dom
 
 			foreach (var child in cont)
 				child.ClearRelations();
+		}
+
+		/// <summary>
+		/// Determines whether or not a DataElement is a child of this DataElement.
+		/// Computes the relative name from 'this' to 'dataElement'.  If 'dataElement'
+		/// is not a child of 'this', the absolute path of 'dataElement' is computed.
+		/// </summary>
+		/// <param name="dataElement">The DataElement to test for a child relationship.</param>
+		/// <param name="relName">String to receive the realitive name of 'dataElement'.</param>
+		/// <returns>Returns true if 'dataElement' is a child, false otherwise.</returns>
+		public bool isChildOf(DataElement dataElement, out string relName)
+		{
+			relName = name;
+
+			DataElement obj = _parent;
+			while (obj != null)
+			{
+				if (obj == dataElement)
+					return true;
+
+				relName = obj.name + "." + relName;
+				obj = obj.parent;
+			}
+
+			return false;
 		}
 	}
 }

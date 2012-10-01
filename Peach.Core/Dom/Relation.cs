@@ -54,21 +54,10 @@ namespace Peach.Core.Dom
 		protected DataElement _of = null;
 		protected DataElement _from = null;
 
-		// Only used during serialization
-		protected string _ofFullName = null;
-		protected string _fromFullName = null;
-		protected string _parentFullName = null;
-
 		protected string _ofName = null;
 		protected string _fromName = null;
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
-
-		public void Reset()
-		{
-			_of = null;
-			_from = null;
-		}
 
 		/// <summary>
 		/// Expression that is run when getting the value.
@@ -383,6 +372,39 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
+		private class Metadata
+		{
+			public DataElement of = null;
+			public DataElement from = null;
+			public DataElement parent = null;
+			public string ofName = null;
+			public string fromName = null;
+		}
+
+		[Serializable]
+		private class FullNames
+		{
+			public string of = null;
+			public string from = null;
+			public string parent = null;
+		}
+
+		private FullNames _fullNames = null;
+
+		private static bool IsChildElement(string elem, string root)
+		{
+			if (string.IsNullOrEmpty(elem))
+				return false;
+
+			if (!elem.StartsWith(root))
+				return false;
+
+			if (elem.Length == root.Length)
+				return true;
+
+			return elem[root.Length] == '.';
+		}
+
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
@@ -390,31 +412,61 @@ namespace Peach.Core.Dom
 			if (ctx == null)
 				return;
 
-			string root = ctx.root.fullName;
+			System.Diagnostics.Debug.Assert(_fullNames == null);
+			System.Diagnostics.Debug.Assert(!ctx.relations.ContainsKey(this));
 
-			_ofFullName = _of.fullName;
-			if (!_ofFullName.StartsWith(root))
+			string relName;
+			_fullNames = new FullNames();
+			Metadata m = new Metadata();
+
+			if (_of == ctx.root)
 			{
-				ctx.callbacks.Add(new DataElement.CloneContext.Callback(_of, delegate(object e) { _of = (DataElement)e; }));
-				ctx.relations.Add(_ofFullName, _of);
+				m.ofName = _ofName;
+				_ofName = ctx.newName;
+			}
+			else if (_of != null && !_of.isChildOf(ctx.root, out relName))
+			{
+				_fullNames.of = relName;
+				ctx.elements[_fullNames.of] = _of;
+				m.of = _of;
 				_of = null;
 			}
 
-			_fromFullName = _from.fullName;
-			if (!_fromFullName.StartsWith(root))
+			if (_from == ctx.root)
 			{
-				ctx.callbacks.Add(new DataElement.CloneContext.Callback(_from, delegate(object e) { _from = (DataElement)e; }));
-				ctx.relations.Add(_fromFullName, _from);
-				this._from = null;
+				m.fromName = _fromName;
+				_fromName = ctx.newName;
+			}
+			else if (_from != null && !_from.isChildOf(ctx.root, out relName))
+			{
+				_fullNames.from = relName;
+				ctx.elements[_fullNames.from] = _from;
+				m.from = _from;
+				_from = null;
 			}
 
-			_parentFullName = _parent.fullName;
-			if (!_parentFullName.StartsWith(root))
+			if (_parent == ctx.root)
 			{
-				ctx.callbacks.Add(new DataElement.CloneContext.Callback(_parent, delegate(object e) { _parent = (DataElement)e; }));
-				ctx.relations.Add(_parentFullName, _parent);
-				this._parent = null;
+				if (_of == null && _ofName == ctx.root.name)
+				{
+					m.ofName = _ofName;
+					_ofName = ctx.newName;
+				}
+				if (_from == null && _fromName == ctx.root.name)
+				{
+					m.fromName = _fromName;
+					_fromName = ctx.newName;
+				}
 			}
+			else if (_parent != null && !_parent.isChildOf(ctx.root, out relName))
+			{
+				_fullNames.parent = relName;
+				ctx.elements[_fullNames.parent] = _parent;
+				m.parent = _parent;
+				_parent = null;
+			}
+
+			ctx.relations.Add(this, m);
 		}
 
 		[OnSerialized]
@@ -424,12 +476,23 @@ namespace Peach.Core.Dom
 			if (ctx == null)
 				return;
 
-			foreach (var cb in ctx.callbacks)
-				cb.func(cb.arg);
+			System.Diagnostics.Debug.Assert(_fullNames != null);
+			System.Diagnostics.Debug.Assert(ctx.relations.ContainsKey(this));
 
-			_fromFullName = null;
-			_ofFullName = null;
-			_parentFullName = null;
+			Metadata m = ctx.relations[this] as Metadata;
+
+			if (m.of != null)
+				this._of = m.of;
+			if (m.from != null)
+				this._from = m.from;
+			if (m.parent != null)
+				this._parent = m.parent;
+			if (m.ofName != null)
+				this._ofName = m.ofName;
+			if (m.fromName != null)
+				this._fromName = m.fromName;
+
+			_fullNames = null;
 		}
 
 		[OnDeserializing]
@@ -444,31 +507,29 @@ namespace Peach.Core.Dom
 			if (ctx == null)
 				return;
 
-			if (_of == null)
+			System.Diagnostics.Debug.Assert(_fullNames != null);
+
+			if (_of == null && !string.IsNullOrEmpty(_fullNames.of))
 			{
-				_of = ctx.relations[_ofFullName];
+				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.of));
+				_of = ctx.elements[_fullNames.of];
 				_of.relations.Add(this, false);
 			}
 
-			if (_from == null)
+			if (_from == null && !string.IsNullOrEmpty(_fullNames.from))
 			{
-				_from = ctx.relations[_fromFullName];
+				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.from));
+				_from = ctx.elements[_fullNames.from];
 				_from.relations.Add(this, false);
 			}
 
-			if (_parent == null)
+			if (_parent == null && !string.IsNullOrEmpty(_fullNames.parent))
 			{
-				_parent = ctx.relations[_parentFullName];
+				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.parent));
+				_parent = ctx.elements[_fullNames.parent];
 			}
 
-			if (_fromFullName == ctx.root.fullName)
-			{
-				_fromName = ctx.name;
-			}
-
-			_fromFullName = null;
-			_ofFullName = null;
-			_parentFullName = null;
+			_fullNames = null;
 		}
 
 		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
