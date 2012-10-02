@@ -51,6 +51,11 @@ def sub_file(fname, lst):
 	finally:
 		f.close()
 
+def to_bytes(x):
+	if sys.hexversion>0x300000f:
+		return x.encode()
+	return x
+
 print("------> Executing code from the top-level wscript <-----")
 def init(ctx):
 	if Options.options.setver: # maintainer only (ita)
@@ -333,9 +338,9 @@ def create_waf(*k, **kw):
 	f = open('waf', 'wb')
 	try:
 		f.write(ccc.encode())
-		f.write(b'#==>\n#')
+		f.write(to_bytes('#==>\n#'))
 		f.write(cnt)
-		f.write(b'\n#<==\n')
+		f.write(to_bytes('\n#<==\n'))
 	finally:
 		f.close()
 
