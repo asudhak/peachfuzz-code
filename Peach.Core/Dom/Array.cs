@@ -214,6 +214,32 @@ namespace Peach.Core.Dom
 			if (this == ctx.root && this.Count > 0 && ctx.oldName == this[0].name)
 				ctx.rename.Add(this[0]);
 		}
+
+		/// <summary>
+		/// Expands the size of the array to be 'num' long.
+		/// Does this by adding the same instance of the last
+		/// item in the array until the Count is num.
+		/// </summary>
+		/// <param name="num">The total size the array should be.</param>
+		public void ExpandTo(int num)
+		{
+			System.Diagnostics.Debug.Assert(Count > 0 || origionalElement != null);
+
+			DataElement item = null;
+			if (Count == 0)
+				item = origionalElement;
+			else
+				item = this[Count - 1];
+
+			// Force the same element to be duplicated in the DataElementContainer
+			for (int i = Count; i < num; ++i)
+			{
+				_childrenList.Insert(i, item);
+				_childrenDict[item.name] = item;
+			}
+
+			Invalidate();
+		}
 	}
 }
 
