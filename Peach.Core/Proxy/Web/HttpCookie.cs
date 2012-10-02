@@ -43,7 +43,7 @@ namespace Peach.Core.Proxy.Web
         public int MaxAge { get; set; }
         public bool IsSecure { get; set; }
         public bool IsHttpOnly { get; set; }
-        public DateTime Expires { get; set; }
+        public DateTime? Expires { get; set; }
         public string RawCookie { get; set; }
 
 		public HttpCookie()

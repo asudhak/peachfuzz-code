@@ -164,7 +164,7 @@ namespace Peach.Core.Test.Proxy.Web
 			Assert.AreEqual(2, req.Headers.Count);
 			Assert.IsTrue(req.Headers.ContainsKey("content-length"));
 			Assert.IsTrue(req.Headers.ContainsKey("host"));
-			Assert.AreEqual("1234567890", req.Body);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("1234567890"), req.Body);
 		}
 
 		[Test]
@@ -182,7 +182,7 @@ namespace Peach.Core.Test.Proxy.Web
 			Assert.AreEqual(2, res.Headers.Count);
 			Assert.IsTrue(res.Headers.ContainsKey("content-length"));
 			Assert.IsTrue(res.Headers.ContainsKey("host"));
-			Assert.AreEqual("1234567890", res.Body);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("1234567890"), res.Body);
 		}
 	}
 }
