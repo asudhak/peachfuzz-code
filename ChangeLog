@@ -2,6 +2,7 @@ NEW IN WAF 1.7.5
 ----------------
 * Fixed the kde4 library detection on Fedora
 * New tool for protocol buffers (protoc.py) #1184
+* Fixed a syntax error affecting Python < 2.6
 
 NEW IN WAF 1.7.4
 ----------------

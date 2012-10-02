@@ -177,7 +177,9 @@ class BuildContext(Context.Context):
 			)
 		"""
 		def f(rule):
-			return self(*k, rule=rule, **kw)
+			ret = self(*k, **kw)
+			ret.rule = rule
+			return ret
 		return f
 
 	def __copy__(self):
