@@ -413,13 +413,13 @@ namespace Peach.Core.Dom
 				return;
 
 			System.Diagnostics.Debug.Assert(_fullNames == null);
-			System.Diagnostics.Debug.Assert(!ctx.relations.ContainsKey(this));
+			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
 
 			string relName;
 			_fullNames = new FullNames();
 			Metadata m = new Metadata();
 
-			if (_of == ctx.root)
+			if (ctx.rename.Contains(_of))
 			{
 				m.ofName = _ofName;
 				_ofName = ctx.newName;
@@ -432,7 +432,7 @@ namespace Peach.Core.Dom
 				_of = null;
 			}
 
-			if (_from == ctx.root)
+			if (ctx.rename.Contains(_from))
 			{
 				m.fromName = _fromName;
 				_fromName = ctx.newName;
@@ -445,14 +445,14 @@ namespace Peach.Core.Dom
 				_from = null;
 			}
 
-			if (_parent == ctx.root)
+			if (ctx.rename.Contains(_parent))
 			{
-				if (_of == null && _ofName == ctx.root.name)
+				if (_of == null && _ofName == ctx.oldName)
 				{
 					m.ofName = _ofName;
 					_ofName = ctx.newName;
 				}
-				if (_from == null && _fromName == ctx.root.name)
+				if (_from == null && _fromName == ctx.oldName)
 				{
 					m.fromName = _fromName;
 					_fromName = ctx.newName;
@@ -466,7 +466,7 @@ namespace Peach.Core.Dom
 				_parent = null;
 			}
 
-			ctx.relations.Add(this, m);
+			ctx.metadata.Add(this, m);
 		}
 
 		[OnSerialized]
@@ -477,9 +477,9 @@ namespace Peach.Core.Dom
 				return;
 
 			System.Diagnostics.Debug.Assert(_fullNames != null);
-			System.Diagnostics.Debug.Assert(ctx.relations.ContainsKey(this));
+			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
 
-			Metadata m = ctx.relations[this] as Metadata;
+			Metadata m = ctx.metadata[this] as Metadata;
 
 			if (m.of != null)
 				this._of = m.of;

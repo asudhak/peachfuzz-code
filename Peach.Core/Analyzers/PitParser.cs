@@ -649,22 +649,12 @@ namespace Peach.Core.Analyzers
 			return dataModel;
 		}
 
-		protected Dom.Array handleArray(XmlNode node, DataElementContainer parent)
-		{
-			return (Dom.Array)Dom.Array.PitParser(this, node, parent);
-		}
-
 		protected bool IsArray(XmlNode node)
 		{
 			if (node.hasAttribute("minOccurs") || node.hasAttribute("maxOccurs") || node.hasAttribute("occurs"))
 				return true;
 
 			return false;
-		}
-
-		protected Block handleBlock(XmlNode node, DataElementContainer parent)
-		{
-			return (Block)Block.PitParser(this, node, parent);
 		}
 
 		/// <summary>

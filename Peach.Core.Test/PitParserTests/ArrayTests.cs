@@ -136,8 +136,6 @@ namespace Peach.Core.Test.PitParserTests
 				"	</DataModel>" +
 				"</Peach>";
 
-			Resetter.Reset();
-
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
@@ -160,8 +158,6 @@ namespace Peach.Core.Test.PitParserTests
 				"	</DataModel>" +
 				"</Peach>";
 
-			Resetter.Reset();
-
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
@@ -170,6 +166,35 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(1, array.Count);
 			Assert.AreEqual(0, array.relations.Count);
 			Assert.AreEqual(1, array[0].relations.Count);
+		}
+
+		[Test]
+		public void TestArrayClone()
+		{
+			// If an array is cloned with a new name, the 1st element in the array needs
+			// to have its name updated as well
+
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"Data\" value=\"Hello World\" minOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("Data", array.name);
+			Assert.AreEqual("Data", array[0].name);
+
+			var clone = array.Clone("NewData") as Dom.Array;
+
+			Assert.NotNull(clone);
+			Assert.AreEqual(1, clone.Count);
+			Assert.AreEqual("NewData", clone.name);
+			Assert.AreEqual("NewData", clone[0].name);
 		}
 	}
 }

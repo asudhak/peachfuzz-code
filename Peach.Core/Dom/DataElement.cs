@@ -87,14 +87,18 @@ namespace Peach.Core.Dom
 			public CloneContext(DataElement root, string newName)
 			{
 				this.root = root;
+				this.oldName = root.name;
 				this.newName = newName;
+				rename.Add(root);
 			}
 
 			public DataElement root = null;
+			public string oldName = null;
 			public string newName = null;
 
+			public List<DataElement> rename = new List<DataElement>();
 			public Dictionary<string, DataElement> elements = new Dictionary<string, DataElement>();
-			public Dictionary<Relation, object> relations = new Dictionary<Relation, object>();
+			public Dictionary<object, object> metadata = new Dictionary<object, object>();
 		}
 
 		/// <summary>
@@ -137,7 +141,6 @@ namespace Peach.Core.Dom
 
 			DataElement copy = (DataElement)formatter.Deserialize(stream);
 			copy._parent = parent;
-			copy._name = newName;
 			this._parent = parent;
 
 			size = stream.Length;
@@ -1203,6 +1206,43 @@ namespace Peach.Core.Dom
 
 			return false;
 		}
+
+		class Metadata
+		{
+			public string name;
+		}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
+			Metadata m = new Metadata();
+			if (ctx.rename.Contains(this))
+			{
+				m.name = _name;
+				_name = ctx.newName;
+			}
+			ctx.metadata.Add(this, m);
+		}
+
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
+
+			Metadata m = ctx.metadata[this] as Metadata;
+			if (m.name != null)
+				_name = m.name;
+		}
+
 	}
 }
 

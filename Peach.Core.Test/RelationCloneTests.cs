@@ -171,5 +171,44 @@ namespace Peach.Core.Test
 			Block copy = root.Clone() as Block;
 			Assert.NotNull(copy);
 		}
+
+		[Test]
+		public void TestArrayRelationClone()
+		{
+			// If an array is cloned wih a new name, and the array element contains a relation, 
+			// the relation's Of or From names need to be updated
+
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"Data\" value=\"Hello World\"/>" +
+				"		<Number name=\"Length\" size=\"32\"  minOccurs=\"100\">" +
+				"			<Relation type=\"size\" of=\"Data\" />" +
+				"		</Number>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual("Length", array.name);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("Length", array[0].name);
+			Assert.AreEqual(0, array.relations.Count);
+			Assert.AreEqual(1, array[0].relations.Count);
+
+			Dom.Array clone = array.Clone("NewLength") as Dom.Array;
+			Assert.NotNull(clone);
+			Assert.AreEqual("NewLength", clone.name);
+			Assert.AreEqual(1, clone.Count);
+			Assert.AreEqual("NewLength", clone[0].name);
+			Assert.AreEqual(0, clone.relations.Count);
+			Assert.AreEqual(1, clone[0].relations.Count);
+			Assert.AreEqual("Data", clone[0].relations[0].OfName);
+			Assert.AreEqual("NewLength", clone[0].relations[0].FromName);
+			Assert.AreEqual(2, clone[0].relations[0].Of.relations.Count);
+			Assert.AreEqual(clone[0].relations[0], clone[0].relations[0].Of.relations[1]);
+		}
 	}
 }

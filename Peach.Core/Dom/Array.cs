@@ -196,10 +196,23 @@ namespace Peach.Core.Dom
 				array.maxOccurs = int.Parse(strMaxOccurs);
 
 			string strOccurs = node.getAttribute("occurs");
-			if (strMaxOccurs != null)
+			if (strOccurs != null)
 				array.occurs = int.Parse(strOccurs);
 
 			return array;
+		}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			// If we are the root of the clone operation, and we have a child
+			// that shares our name, so tell the cloner to rename our 1st child
+			if (this == ctx.root && this.Count > 0 && ctx.oldName == this[0].name)
+				ctx.rename.Add(this[0]);
 		}
 	}
 }
