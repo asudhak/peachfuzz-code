@@ -473,14 +473,6 @@ namespace Peach.Core.Analyzers
 			{
 				logger.Debug("finalUpdateRelations: DataModel: " + model.name);
 
-				try
-				{
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(model);
-				}
-				catch
-				{
-				}
-
 				foreach (DataElement elem in model.EnumerateAllElements())
 				{
 					logger.Debug("finalUpdateRelations: " + elem.fullName);

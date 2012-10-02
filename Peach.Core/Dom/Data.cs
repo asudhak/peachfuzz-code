@@ -124,7 +124,6 @@ namespace Peach.Core.Dom
 						{
 							var item = ObjectCopier.Clone<DataElement>(array.origionalElement);
 							array.Add(item);
-							Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(item);
 						}
 
 						array.hasExpanded = true;
