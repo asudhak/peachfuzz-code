@@ -1,9 +1,0 @@
-#!/usr/bin/env python
-
-bld(
-#	features = 'cs',
-#	use = 'Peach.Core.dll',
-#	source = bld.path.ant_glob('**/*.cs'),
-#	name='Peach.Core.Analysis.dll',
-)
-

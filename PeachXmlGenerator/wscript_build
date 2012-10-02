@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 deps = [
-	'Peach.Core.Xml.dll',
+	'Peach.Core.dll',
 	'System.dll',
 	'System.Core.dll',
 	'System.Data.dll',

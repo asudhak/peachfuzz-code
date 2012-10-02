@@ -311,6 +311,8 @@
     <Compile Include="PitParserTests\TestTests.cs" />
     <Compile Include="PitParserTests\XmlTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Proxy\Web\SmokeTests.cs" />
+    <Compile Include="Proxy\ProxyTests.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\FilePerIterationTests.cs" />
     <Compile Include="Publishers\FilePublisherTests.cs" />
