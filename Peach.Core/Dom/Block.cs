@@ -79,7 +79,7 @@ namespace Peach.Core.Dom
 
 				string name = node.getAttribute("name");
 				if (string.IsNullOrEmpty(name))
-					name = refName;
+					name = new Block().name;
 
 				block = refObj.Clone(name) as Block;
 				block.parent = parent;
