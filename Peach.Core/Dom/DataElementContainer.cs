@@ -382,8 +382,14 @@ namespace Peach.Core.Dom
 
 		public void Clear()
 		{
-			foreach (DataElement e in _childrenList)
-				e.parent = null;
+			Clear(true);
+		}
+
+		protected void Clear(bool resetParent)
+		{
+			if (resetParent)
+				foreach (DataElement e in _childrenList)
+					e.parent = null;
 
 			_childrenList.Clear();
 			_childrenDict.Clear();

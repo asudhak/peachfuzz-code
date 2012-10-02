@@ -162,7 +162,7 @@ namespace Peach.Core.Dom
 				elem.parent = choice;
 			}
 
-			choice.Clear();
+			choice.Clear(false);
 
 			return choice;
 		}

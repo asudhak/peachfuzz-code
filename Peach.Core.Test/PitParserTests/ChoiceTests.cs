@@ -62,5 +62,33 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.IsTrue(dom.dataModels[0][0] is Choice);
 			Assert.AreEqual(3, ((Choice)dom.dataModels[0][0]).choiceElements.Count);
 		}
+
+		[Test]
+		public void VerifyParents()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Choice> " +
+				"			<Number name=\"N1\" size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"			<Number name=\"N2\" size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"			<Number name=\"N3\" size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"		</Choice> " +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.IsTrue(dom.dataModels[0].Count == 1);
+			var choice = dom.dataModels[0][0] as Choice;
+			Assert.NotNull(choice);
+			Assert.AreEqual(3, choice.choiceElements.Count);
+			Assert.AreEqual(0, choice.Count);
+			foreach (var element in choice.choiceElements.Values)
+			{
+				Assert.NotNull(element.parent);
+				Assert.AreEqual(choice, element.parent);
+			}
+		}
 	}
 }
