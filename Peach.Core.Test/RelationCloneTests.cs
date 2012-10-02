@@ -149,8 +149,8 @@ namespace Peach.Core.Test
 			formatter.Serialize(stream, fromRel.parent);
 			long lenSimple = stream.Length;
 
-			Assert.GreaterOrEqual(lenSimple, 26500);
-			Assert.LessOrEqual(size, 5300);
+			Assert.GreaterOrEqual(lenSimple, 26000);
+			Assert.LessOrEqual(size, 5200);
 		}
 
 		[Test]
