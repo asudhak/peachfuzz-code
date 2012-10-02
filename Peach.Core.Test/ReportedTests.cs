@@ -78,7 +78,7 @@ namespace Peach.Core.Test
 
 			Assert.NotNull(dom);
 
-			var newDom = ObjectCopier.Clone<Dom.Dom>(dom);
+			var newDom = dom.dataModels[0].Clone();
 
 			Assert.NotNull(newDom);
 		}
@@ -129,7 +129,7 @@ namespace Peach.Core.Test
 
 			Assert.NotNull(dom);
 
-			var newDom = ObjectCopier.Clone<Dom.Dom>(dom);
+			var newDom = dom.dataModels[0].Clone();
 
 			Assert.NotNull(newDom);
 		}

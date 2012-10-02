@@ -194,7 +194,7 @@ namespace Peach.Core.MutationStrategies
 				// a data model that has been cracked into will fail in odd ways.
 
 				var referenceName = action.dataModel.referenceName;
-				action.dataModel = ObjectCopier.Clone<DataModel>(this._context.dom.dataModels[referenceName]);
+				action.dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
 				action.dataModel.isReference = true;
 				action.dataModel.referenceName = referenceName;
 
@@ -213,7 +213,7 @@ namespace Peach.Core.MutationStrategies
 					_iterations.Remove(item.fullName);
 
 				// Store copy of new origional data model
-				action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
+				action.origionalDataModel = action.dataModel.Clone() as DataModel;
 
 				// Refresh the mutators
 				RecordDataModel(action);

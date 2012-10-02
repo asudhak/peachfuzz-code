@@ -335,8 +335,7 @@ namespace Peach.Core.Dom
 				case ActionType.Output:
 				case ActionType.GetProperty:
 				case ActionType.SetProperty:
-					dataModel = null;
-					dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
+					dataModel = origionalDataModel.Clone() as DataModel;
 					dataModel.action = this;
 
 					break;
@@ -344,7 +343,7 @@ namespace Peach.Core.Dom
 				case ActionType.Call:
 					foreach (ActionParameter p in this.parameters)
 					{
-						p.dataModel = ObjectCopier.Clone<DataModel>(p.origionalDataModel);
+						p.dataModel = p.origionalDataModel.Clone() as DataModel;
 						p.dataModel.action = this;
 					}
 
@@ -678,15 +677,10 @@ namespace Peach.Core.Dom
 			get { return _dataModel; }
 			set
 			{
+				_dataModel = value;
+
 				if (_origionalDataModel == null)
-				{
-					_dataModel = value;
-					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
-				}
-				else
-				{
-					_dataModel = value;
-				}
+					_origionalDataModel =_dataModel.Clone() as DataModel;
 			}
 		}
 
@@ -712,15 +706,10 @@ namespace Peach.Core.Dom
 			get { return _dataModel; }
 			set
 			{
+				_dataModel = value;
+
 				if (_origionalDataModel == null)
-				{
-					_dataModel = value;
-					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
-				}
-				else
-				{
-					_dataModel = value;
-				}
+					_origionalDataModel = _dataModel.Clone() as DataModel;
 			}
 		}
 	}

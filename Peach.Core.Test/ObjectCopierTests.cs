@@ -39,7 +39,7 @@ namespace Peach.Core.Test
 			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_1"));
 			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_2"));
 
-			var dmCopy = ObjectCopier.Clone<DataModel>(dm);
+			var dmCopy = dm.Clone() as DataModel;
 			ValidateListVsDictionary(dmCopy, null);
 		}
 
@@ -73,7 +73,7 @@ namespace Peach.Core.Test
 			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string1_1_2";
 			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1_1_1";
 
-			var dmCopy = ObjectCopier.Clone<DataModel>(dm);
+			var dmCopy = dm.Clone() as DataModel;
 			ValidateListVsDictionary(dmCopy, null);
 		}
 
@@ -114,9 +114,9 @@ namespace Peach.Core.Test
 
 			var value = dm.Value;
 
-			DataModel dmCopy = ObjectCopier.Clone<DataModel>(dm);
-			for(int count = 0 ; count <10; count++)
-				dmCopy = ObjectCopier.Clone<DataModel>(dmCopy);
+			var dmCopy = dm.Clone() as DataModel;
+			for (int count = 0; count < 10; count++)
+				dmCopy = dmCopy.Clone() as DataModel;
 
 			ValidateListVsDictionary(dmCopy, null);
 		}
@@ -136,7 +136,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			DataModel dmCopy = ObjectCopier.Clone<DataModel>(dom.dataModels[0]);
+			DataModel dmCopy = dom.dataModels[0].Clone() as DataModel;
 			ValidateListVsDictionary(dmCopy, null);
 		}
 

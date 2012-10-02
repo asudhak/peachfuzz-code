@@ -672,7 +672,7 @@ namespace Peach.Core.Cracker
 				IsLookAhead = true;
 
 
-				var root = ObjectCopier.Clone<DataElementContainer>(element.getRoot() as DataElementContainer);
+				var root = element.getRoot().Clone() as DataElementContainer;
 				var node = root.find(element.fullName);
 				var sibling = node.nextSibling();
 

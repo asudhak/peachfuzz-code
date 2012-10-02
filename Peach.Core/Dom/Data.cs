@@ -122,7 +122,8 @@ namespace Peach.Core.Dom
 						// Add elements upto our index
 						for (int x = (array.Count > 0 ? array.Count - 1 : 0); x < index; x++)
 						{
-							var item = ObjectCopier.Clone<DataElement>(array.origionalElement);
+							string itemName = array.origionalElement.name + "_" + x;
+							var item = array.origionalElement.Clone(itemName);
 							array.Add(item);
 						}
 
