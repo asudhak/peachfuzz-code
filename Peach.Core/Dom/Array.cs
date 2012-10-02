@@ -85,7 +85,7 @@ namespace Peach.Core.Dom
 			logger.Debug("Crack: {0} type: {1}", element.fullName, element[0].GetType());
 
 			element.origionalElement = element[0];
-			element.Clear();
+			element.Clear(false);
 
 			if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
 			{
