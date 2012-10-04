@@ -79,18 +79,23 @@ namespace Peach.Core.Analyzers
 				if (node.Name.StartsWith("#"))
 					continue;
 
-				xmlElement = handleXmlNode(node);
+				xmlElement = handleXmlNode(node, parent.name);
 			}
 
 			xmlElement.parent = parent.parent;
-			xmlElement.name = parent.name;
 
 			parent.parent[parent.name] = xmlElement;
 		}
 
-		protected virtual Dom.XmlElement handleXmlNode(XmlNode node)
+		protected Dom.XmlElement handleXmlNode(XmlNode node, string name)
 		{
-			var elem = new Dom.XmlElement();
+			Dom.XmlElement elem = null;
+
+			if (name != null)
+				elem = new Dom.XmlElement(name);
+			else
+				elem = new Dom.XmlElement();
+
 			elem.elementName = node.Name;
 			elem.ns = node.NamespaceURI;
 
@@ -109,14 +114,14 @@ namespace Peach.Core.Analyzers
 				}
 				else if (!child.Name.StartsWith("#"))
 				{
-					elem.Add(handleXmlNode(child));
+					elem.Add(handleXmlNode(child, null));
 				}
 			}
 
 			return elem;
 		}
 
-		protected virtual Dom.XmlAttribute handleXmlAttribute(System.Xml.XmlAttribute attrib)
+		protected Dom.XmlAttribute handleXmlAttribute(System.Xml.XmlAttribute attrib)
 		{
 			var xmlAttrib = new Dom.XmlAttribute();
 			xmlAttrib.attributeName = attrib.Name;

@@ -42,6 +42,24 @@ namespace Peach.Core.Test.PitParserTests
 	[TestFixture]
 	class ArrayTests
 	{
+		class Resetter : DataElement
+		{
+			public static void Reset()
+			{
+				DataElement._uniqueName = 0;
+			}
+
+			public override void Crack(Cracker.DataCracker context, IO.BitStream data)
+			{
+				throw new NotImplementedException();
+			}
+
+			public override object GetParameter(string parameterName)
+			{
+				throw new NotImplementedException();
+			}
+		}
+
 		[Test]
 		public void ArrayHintsTest()
 		{
@@ -63,6 +81,120 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.NotNull(array.Hints);
 			Assert.AreEqual(1, array.Hints.Count);
 			Assert.AreEqual("World", array.Hints["Hello"].Value);
+		}
+
+		[Test]
+		public void ArrayNameTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"stuff\" value=\"Hello World\" minOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("TheDataModel.stuff", array.fullName);
+			Assert.AreEqual("TheDataModel.stuff.stuff", array[0].fullName);
+			Assert.AreEqual(array, array[0].parent);
+		}
+
+		[Test]
+		public void ArrayNoNameTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob value=\"Hello World\" minOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			Resetter.Reset();
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("TheDataModel.DataElement_0.DataElement_0", array[0].fullName);
+			Assert.AreEqual("TheDataModel.DataElement_0", array.fullName);
+		}
+
+		[Test]
+		public void ArrayOfRelationTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"Length\" size=\"32\">" +
+				"			<Relation type=\"size\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<Blob name=\"Data\" value=\"Hello World\" minOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(1, array.relations.Count);
+			Assert.AreEqual(0, array[0].relations.Count);
+		}
+
+		[Test]
+		public void ArrayFromRelationTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"Data\" value=\"Hello World\"/>" +
+				"		<Number name=\"Length\" size=\"32\"  minOccurs=\"100\">" +
+				"			<Relation type=\"size\" of=\"Data\" />" +
+				"		</Number>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(0, array.relations.Count);
+			Assert.AreEqual(1, array[0].relations.Count);
+		}
+
+		[Test]
+		public void TestArrayClone()
+		{
+			// If an array is cloned with a new name, the 1st element in the array needs
+			// to have its name updated as well
+
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob name=\"Data\" value=\"Hello World\" minOccurs=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
+
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("Data", array.name);
+			Assert.AreEqual("Data", array[0].name);
+
+			var clone = array.Clone("NewData") as Dom.Array;
+
+			Assert.NotNull(clone);
+			Assert.AreEqual(1, clone.Count);
+			Assert.AreEqual("NewData", clone.name);
+			Assert.AreEqual("NewData", clone[0].name);
 		}
 	}
 }

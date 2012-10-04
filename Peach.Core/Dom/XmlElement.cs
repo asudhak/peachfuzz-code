@@ -53,9 +53,9 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public XmlElement(string name) : base()
+		public XmlElement(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -63,16 +63,13 @@ namespace Peach.Core.Dom
 			if (node.Name != "XmlElement")
 				return null;
 
-			var xmlElement = new XmlElement();
+			var xmlElement = DataElement.Generate<XmlElement>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				xmlElement.name = context.getXmlAttribute(node, "name");
+			xmlElement.elementName = node.getAttribute("elementName");
+			xmlElement.ns = node.getAttribute("ns");
 
-			if (!context.hasXmlAttribute(node, "elementName"))
+			if (xmlElement.elementName == null)
 				throw new PeachException("Error, elementName is a required attribute for XmlElement: " + xmlElement.name);
-
-			xmlElement.elementName = context.getXmlAttribute(node, "elementName");
-			xmlElement.ns = context.getXmlAttribute(node, "ns");
 
 			context.handleCommonDataElementAttributes(node, xmlElement);
 			context.handleCommonDataElementChildren(node, xmlElement);
@@ -161,24 +158,6 @@ namespace Peach.Core.Dom
           return this.elementName;
         case "ns":
           return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlElement", parameterName));
-      }
-    }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "elementName":
-          this.elementName = (string)value;
-          break;
-        case "ns":
-          this.ns = (string)value;
-          break;
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlElement", parameterName));
       }

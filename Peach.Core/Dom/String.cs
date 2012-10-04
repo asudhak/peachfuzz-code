@@ -229,19 +229,16 @@ namespace Peach.Core.Dom
 			if (node.Name != "String")
 				return null;
 
-			var str = new String();
+			var str = DataElement.Generate<String>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				str.name = context.getXmlAttribute(node, "name");
-
-			if (context.hasXmlAttribute(node, "nullTerminated"))
-				str.nullTerminated = context.getXmlAttributeAsBool(node, "nullTerminated", false);
+			if (node.hasAttribute("nullTerminated"))
+				str.nullTerminated = node.getAttributeBool("nullTerminated", false);
 			else if (context.hasDefaultAttribute(typeof(String), "nullTerminated"))
 				str.nullTerminated = context.getDefaultAttributeAsBool(typeof(String), "nullTerminated", false);
 
 			string type = null;
-			if (context.hasXmlAttribute(node, "type"))
-				type = context.getXmlAttribute(node, "type");
+			if (node.hasAttribute("type"))
+				type = node.getAttribute("type");
 			else if (context.hasDefaultAttribute(str.GetType(), "type"))
 				type = context.getDefaultAttribute(str.GetType(), "type");
 
@@ -272,19 +269,19 @@ namespace Peach.Core.Dom
 				}
 			}
 
-			if (context.hasXmlAttribute(node, "padCharacter"))
+			if (node.hasAttribute("padCharacter"))
 			{
-				str.padCharacter = context.getXmlAttribute(node, "padCharacter")[0];
+				str.padCharacter = node.getAttribute("padCharacter")[0];
 			}
 			else if (context.hasDefaultAttribute(str.GetType(), "padCharacter"))
 			{
 				str.padCharacter = context.getDefaultAttribute(str.GetType(), "padCharacter")[0];
 			}
 
-			if (context.hasXmlAttribute(node, "tokens")) // This item has a default!
+			if (node.hasAttribute("tokens")) // This item has a default!
 				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
 
-			if (context.hasXmlAttribute(node, "analyzer")) // this should be passed via a child element me things!
+			if (node.hasAttribute("analyzer")) // this should be passed via a child element me things!
 				throw new NotSupportedException("Analyzer attribute is depricated in Peach 3.  Use a child element instead.");
 
 			context.handleCommonDataElementAttributes(node, str);
@@ -525,27 +522,6 @@ namespace Peach.Core.Dom
           return this.nullTerminated;
         case "type":
           return this.stringType;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.String", parameterName));
-      }
-    }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "length":
-          this.length = (long)value;
-          break;
-        case "nullTerminated":
-          this.nullTerminated = (bool)value;
-          break;
-        case "type":
-          this.stringType = (StringType)Enum.Parse(typeof(StringType), (string)value);
-          break;
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.String", parameterName));
       }

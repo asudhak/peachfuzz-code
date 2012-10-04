@@ -67,8 +67,8 @@ namespace Peach.Core.Dom
 		}
 
 		public Choice(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 
 		public override void Crack(DataCracker context, BitStream data)
@@ -149,11 +149,7 @@ namespace Peach.Core.Dom
 			if (node.Name != "Choice")
 				return null;
 
-			var choice = new Choice();
-
-			// First name
-			if (context.hasXmlAttribute(node, "name"))
-				choice.name = context.getXmlAttribute(node, "name");
+			Choice choice = DataElement.Generate<Choice>(node);
 
 			context.handleCommonDataElementAttributes(node, choice);
 			context.handleCommonDataElementChildren(node, choice);
@@ -166,7 +162,7 @@ namespace Peach.Core.Dom
 				elem.parent = choice;
 			}
 
-			choice.Clear();
+			choice.Clear(false);
 
 			return choice;
 		}
@@ -287,18 +283,6 @@ namespace Peach.Core.Dom
       {
         case "name":
           return this.name;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Choice", parameterName));
-      }
-    }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)name;
-          break;
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Choice", parameterName));
       }

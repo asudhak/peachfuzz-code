@@ -40,6 +40,8 @@ using System.Xml;
 using Peach.Core.IO;
 using Peach.Core.Cracker;
 using System.Diagnostics;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace Peach.Core.Dom
 {
@@ -80,6 +82,71 @@ namespace Peach.Core.Dom
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{
+		public class CloneContext
+		{
+			public CloneContext(DataElement root, string newName)
+			{
+				this.root = root;
+				this.oldName = root.name;
+				this.newName = newName;
+				rename.Add(root);
+			}
+
+			public DataElement root = null;
+			public string oldName = null;
+			public string newName = null;
+
+			public List<DataElement> rename = new List<DataElement>();
+			public Dictionary<string, DataElement> elements = new Dictionary<string, DataElement>();
+			public Dictionary<object, object> metadata = new Dictionary<object, object>();
+		}
+
+		/// <summary>
+		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
+		/// </summary>
+		/// <returns>Returns a copy of the DataElement.</returns>
+		public DataElement Clone()
+		{
+			return Clone(name);
+		}
+
+		/// <summary>
+		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
+		/// </summary>
+		/// <param name="newName">What name to set on the cloned DataElement</param>
+		/// <returns>Returns a copy of the DataElement.</returns>
+		public DataElement Clone(string newName)
+		{
+			long size = 0;
+			return Clone(newName, ref size);
+		}
+
+		/// <summary>
+		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
+		/// </summary>
+		/// <param name="newName">What name to set on the cloned DataElement</param>
+		/// <param name="size">The size in bytes used when performing the copy. Useful for debugging statistics.</param>
+		/// <returns>Returns a copy of the DataElement.</returns>
+		public DataElement Clone(string newName, ref long size)
+		{
+			var parent = this._parent;
+			this._parent = null;
+
+			CloneContext additional = new CloneContext(this, newName);
+			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
+			BinaryFormatter formatter = new BinaryFormatter(null, context);
+			MemoryStream stream = new MemoryStream();
+			formatter.Serialize(stream, this);
+			stream.Seek(0, SeekOrigin.Begin);
+
+			DataElement copy = (DataElement)formatter.Deserialize(stream);
+			copy._parent = parent;
+			this._parent = parent;
+
+			size = stream.Length;
+			return copy;
+		}
+
 		/// <summary>
 		/// Mutated vale override's fixupImpl
 		///
@@ -112,17 +179,11 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public const uint MUTATE_DEFAULT = MUTATE_OVERRIDE_FIXUP;
 
-		protected string _name;
-		public virtual string name
+		private string _name;
+
+		public string name
 		{
 			get { return _name; }
-			set
-			{
-				if (value.IndexOf('.') > -1)
-					throw new PeachException("Error, DataElements cannot contain a period in their name. \"" + value + "\"");
-
-				_name = value;
-			}
 		}
 
 		public bool isMutable = true;
@@ -241,10 +302,6 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		static DataElement()
-		{
-		}
-
 		/// <summary>
 		/// Recursively returns elements of a specific type.  Will not
 		/// return elements of our partent.
@@ -275,15 +332,39 @@ namespace Peach.Core.Dom
 		protected static uint _uniqueName = 0;
 		public DataElement()
 		{
-			name = "DataElement_" + _uniqueName;
-			_uniqueName++;
 			_relations = new RelationContainer(this);
+			_name = "DataElement_" + _uniqueName;
+			_uniqueName++;
 		}
 
 		public DataElement(string name)
 		{
-			this.name = name;
+			if (name.IndexOf('.') > -1)
+				throw new PeachException("Error, DataElements cannot contain a period in their name. \"" + name + "\"");
+
 			_relations = new RelationContainer(this);
+			_name = name;
+		}
+
+		public static T Generate<T>(XmlNode node) where T : DataElement, new()
+		{
+			string name = node.getAttribute("name");
+
+			if (string.IsNullOrEmpty(name))
+			{
+				return new T();
+			}
+			else
+			{
+				try
+				{
+					return (T)Activator.CreateInstance(typeof(T), name);
+				}
+				catch (TargetInvocationException ex)
+				{
+					throw ex.InnerException;
+				}
+			}
 		}
 
 		/// <summary>
@@ -981,10 +1062,7 @@ namespace Peach.Core.Dom
 			yield break;
 		}
 
-
     public abstract object GetParameter(string parameterName);
-
-    public abstract void SetParameter(string parameterName, object value);
 
 		/// <summary>
 		/// Fixup for this data element.  Can be null.
@@ -1117,6 +1195,68 @@ namespace Peach.Core.Dom
 			foreach (var child in cont)
 				child.ClearRelations();
 		}
+
+		/// <summary>
+		/// Determines whether or not a DataElement is a child of this DataElement.
+		/// Computes the relative name from 'this' to 'dataElement'.  If 'dataElement'
+		/// is not a child of 'this', the absolute path of 'dataElement' is computed.
+		/// </summary>
+		/// <param name="dataElement">The DataElement to test for a child relationship.</param>
+		/// <param name="relName">String to receive the realitive name of 'dataElement'.</param>
+		/// <returns>Returns true if 'dataElement' is a child, false otherwise.</returns>
+		public bool isChildOf(DataElement dataElement, out string relName)
+		{
+			relName = name;
+
+			DataElement obj = _parent;
+			while (obj != null)
+			{
+				if (obj == dataElement)
+					return true;
+
+				relName = obj.name + "." + relName;
+				obj = obj.parent;
+			}
+
+			return false;
+		}
+
+		class Metadata
+		{
+			public string name;
+		}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
+			Metadata m = new Metadata();
+			if (ctx.rename.Contains(this))
+			{
+				m.name = _name;
+				_name = ctx.newName;
+			}
+			ctx.metadata.Add(this, m);
+		}
+
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
+
+			Metadata m = ctx.metadata[this] as Metadata;
+			if (m.name != null)
+				_name = m.name;
+		}
+
 	}
 }
 

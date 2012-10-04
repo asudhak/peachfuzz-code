@@ -317,6 +317,7 @@
     <Compile Include="Publishers\FilePerIterationTests.cs" />
     <Compile Include="Publishers\FilePublisherTests.cs" />
     <Compile Include="RandomTest.cs" />
+    <Compile Include="RelationCloneTests.cs" />
     <Compile Include="RelationCountTests.cs" />
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="ReportedTests.cs" />

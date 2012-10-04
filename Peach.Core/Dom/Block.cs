@@ -59,9 +59,8 @@ namespace Peach.Core.Dom
 		}
 
 		public Block(string name)
-			: base()
+			: base(name)
 		{
-			this.name = name;
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -69,33 +68,28 @@ namespace Peach.Core.Dom
 			if (node.Name != "Block")
 				return null;
 
-			var block = new Block();
+			Block block = null;
+			string refName = node.getAttribute("ref");
 
-			if (context.hasXmlAttribute(node, "ref"))
+			if (refName != null)
 			{
-				Block refObj = context.getReference(context._dom, context.getXmlAttribute(node, "ref"), parent) as Block;
-				if (refObj != null)
-				{
-					string name = block.name;
-					block = ObjectCopier.Clone<Block>(refObj);
+				Block refObj = Analyzers.PitParser.getReference(context._dom, refName, parent) as Block;
+				if (refObj == null)
+					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
-					block.parent = parent;
-					block.name = name;
-					block.isReference = true;
-					block.referenceName = context.getXmlAttribute(node, "ref");
-				}
-				else
-				{
-					throw new PeachException("Unable to locate 'ref' [" + context.getXmlAttribute(node, "ref") +
-						"] or found node did not match type. [" + node.OuterXml + "].");
-				}
+				string name = node.getAttribute("name");
+				if (string.IsNullOrEmpty(name))
+					name = new Block().name;
+
+				block = refObj.Clone(name) as Block;
+				block.parent = parent;
+				block.isReference = true;
+				block.referenceName = refName;
 			}
-
-			// name
-			if (context.hasXmlAttribute(node, "name"))
-				block.name = context.getXmlAttribute(node, "name");
-
-			// alignment
+			else
+			{
+				block = DataElement.Generate<Block>(node);
+			}
 
 			context.handleCommonDataElementAttributes(node, block);
 			context.handleCommonDataElementChildren(node, block);
@@ -171,18 +165,6 @@ namespace Peach.Core.Dom
 			{
 				case "name":
 					return this.name;
-				default:
-					throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
-			}
-		}
-
-		public override void SetParameter(string parameterName, object value)
-		{
-			switch (parameterName)
-			{
-				case "name":
-					this.name = (string)value;
-					break;
 				default:
 					throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
 			}

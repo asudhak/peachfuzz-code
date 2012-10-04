@@ -51,8 +51,8 @@ namespace Peach.Core.Dom
 	[DataElement("Blob")]
 	[PitParsable("Blob")]
 	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-  [ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
+	[ParameterAttribute("name", typeof(string), "", true)]
+	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
 	[Serializable]
 	public class Blob : DataElement
 	{
@@ -63,21 +63,21 @@ namespace Peach.Core.Dom
 		}
 		
 		public Blob(string name)
+			: base(name)
 		{
-			this.name = name;
 			_defaultValue = new Variant(new byte[] { });
 		}
 		
 		public Blob(string name, int length)
+			: base(name)
 		{
-			this.name = name;
 			this.length = length;
 			_defaultValue = new Variant(new byte[] { });
 		}
 		
 		public Blob(string name, int length, Variant defaultValue)
+			: base(name)
 		{
-			this.name = name;
 			this.length = length;
 			_defaultValue = defaultValue;
 		}
@@ -139,10 +139,7 @@ namespace Peach.Core.Dom
 			if (node.Name != "Blob")
 				return null;
 
-			var blob = new Blob();
-
-			if (context.hasXmlAttribute(node, "name"))
-				blob.name = context.getXmlAttribute(node, "name");
+			var blob = DataElement.Generate<Blob>(node);
 
 			context.handleCommonDataElementAttributes(node, blob);
 			context.handleCommonDataElementChildren(node, blob);
@@ -164,21 +161,6 @@ namespace Peach.Core.Dom
           return this.name;
         case "length":
           return this.length;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
-      }
-    }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "length":
-          this.length = (long)value;
-          break;
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
       }

@@ -208,9 +208,12 @@ namespace Peach.Core.Cracker
 						newName = oldName + "_" + i;
 
 					element.parent.RemoveAt(element.parent.IndexOf(element));
-					element.name = newName;
 
-					newParent.Insert(newParent.IndexOf(after)+1, element);
+					if (element.name == newName)
+						newParent.Insert(newParent.IndexOf(after) + 1, element);
+					else
+						newParent.Insert(newParent.IndexOf(after) + 1, element.Clone(newName));
+
 				}
 				else if (element.placement.before != null)
 				{
@@ -226,9 +229,11 @@ namespace Peach.Core.Cracker
 						newName = oldName + "_" + i;
 
 					element.parent.RemoveAt(element.parent.IndexOf(element));
-					element.name = newName;
 
-					newParent.Insert(newParent.IndexOf(before), element);
+					if (element.name == newName)
+						newParent.Insert(newParent.IndexOf(before), element);
+					else
+						newParent.Insert(newParent.IndexOf(before), element.Clone(newName));
 				}
 
 				newFullname = element.fullName;
@@ -254,29 +259,6 @@ namespace Peach.Core.Cracker
 				}
 				
 			}
-		}
-
-		/// <summary>
-		/// Recursively locate relations on elements and 
-		/// reset the relation so it will have to find by name
-		/// the instance in our tree.
-		/// </summary>
-		/// <param name="elem"></param>
-		public static void ClearRelationsRecursively(DataElement elem)
-		{
-			foreach (var rel in elem.relations)
-			{
-				if(rel.From.fullName == elem.fullName)
-					rel.parent = elem;
-
-				rel.Reset();
-			}
-
-			if (!(elem is DataElementContainer))
-				return;
-
-			foreach (var child in ((DataElementContainer)elem))
-				ClearRelationsRecursively(child);
 		}
 
 		/// <summary>
@@ -690,7 +672,7 @@ namespace Peach.Core.Cracker
 				IsLookAhead = true;
 
 
-				var root = ObjectCopier.Clone<DataElementContainer>(element.getRoot() as DataElementContainer);
+				var root = element.getRoot().Clone() as DataElementContainer;
 				var node = root.find(element.fullName);
 				var sibling = node.nextSibling();
 

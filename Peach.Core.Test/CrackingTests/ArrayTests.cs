@@ -306,6 +306,35 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.AreEqual("Hello", str);
 		}
+
+		[Test]
+		public void CrackArrayParentName()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str1\" nullTerminated=\"true\" minOccurs=\"1\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(Encoding.ASCII.GetBytes("Hello\x00World\x00"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+			Assert.AreEqual(2, array.Count);
+			Assert.AreEqual("TheDataModel.str1", array.fullName);
+			Assert.AreEqual("TheDataModel.str1.str1", array.origionalElement.fullName);
+			Assert.AreEqual("TheDataModel.str1.str1_0", array[0].fullName);
+			Assert.AreEqual("TheDataModel.str1.str1_1", array[1].fullName);
+		}
 	}
 }
 

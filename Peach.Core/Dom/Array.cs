@@ -68,16 +68,13 @@ namespace Peach.Core.Dom
 
 		public DataElement origionalElement = null;
 
-		public override string name
+		public Array()
 		{
-			get { return _name; }
-			set
-			{
-				_name = value;
+		}
 
-				if (this.Count > 0)
-					this[0].name = value;
-			}
+		public Array(string name)
+			: base(name)
+		{
 		}
 
 		public override void Crack(DataCracker context, BitStream data)
@@ -88,7 +85,7 @@ namespace Peach.Core.Dom
 			logger.Debug("Crack: {0} type: {1}", element.fullName, element[0].GetType());
 
 			element.origionalElement = element[0];
-			element.Clear();
+			element.Clear(false);
 
 			if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
 			{
@@ -107,12 +104,10 @@ namespace Peach.Core.Dom
 					logger.Debug("Crack: ======================");
 					logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
 
-
-					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
-					clone.name = clone.name + "_" + i.ToString();
-					clone.parent = element;
+					string name = element.origionalElement.name + "_" + i;
+					System.Diagnostics.Debug.Assert(!element.ContainsKey(name));
+					var clone = element.origionalElement.Clone(name);
 					element.Add(clone);
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(clone);
 
 					try
 					{
@@ -137,11 +132,11 @@ namespace Peach.Core.Dom
 					logger.Debug("Crack: {0} Trying #{1}", element.fullName, cnt.ToString());
 
 					long pos = data.TellBits();
-					DataElement clone = ObjectCopier.Clone<DataElement>(element.origionalElement);
-					clone.name = clone.name + "_" + cnt.ToString();
-					clone.parent = element;
+
+					string name = element.origionalElement.name + "_" + cnt;
+					System.Diagnostics.Debug.Assert(!element.ContainsKey(name));
+					var clone = element.origionalElement.Clone(name);
 					element.Add(clone);
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(clone);
 
 					try
 					{
@@ -187,25 +182,63 @@ namespace Peach.Core.Dom
 
 		public new static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
-			var array = new Array();
+			var array = DataElement.Generate<Array>(node);
 
-			// name
-			if (context.hasXmlAttribute(node, "name"))
-				array.name = context.getXmlAttribute(node, "name");
-
-			if (context.hasXmlAttribute(node, "minOccurs"))
+			string strMinOccurs = node.getAttribute("minOccurs");
+			if (strMinOccurs != null)
 			{
-				array.minOccurs = int.Parse(context.getXmlAttribute(node, "minOccurs"));
+				array.minOccurs = int.Parse(strMinOccurs);
 				array.maxOccurs = -1;
 			}
 
-			if (context.hasXmlAttribute(node, "maxOccurs"))
-				array.maxOccurs = int.Parse(context.getXmlAttribute(node, "maxOccurs"));
+			string strMaxOccurs = node.getAttribute("maxOccurs");
+			if (strMaxOccurs != null)
+				array.maxOccurs = int.Parse(strMaxOccurs);
 
-			if (context.hasXmlAttribute(node, "occurs"))
-				array.occurs = int.Parse(context.getXmlAttribute(node, "occurs"));
+			string strOccurs = node.getAttribute("occurs");
+			if (strOccurs != null)
+				array.occurs = int.Parse(strOccurs);
 
 			return array;
+		}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			// If we are the root of the clone operation, and we have a child
+			// that shares our name, so tell the cloner to rename our 1st child
+			if (this == ctx.root && this.Count > 0 && ctx.oldName == this[0].name)
+				ctx.rename.Add(this[0]);
+		}
+
+		/// <summary>
+		/// Expands the size of the array to be 'num' long.
+		/// Does this by adding the same instance of the last
+		/// item in the array until the Count is num.
+		/// </summary>
+		/// <param name="num">The total size the array should be.</param>
+		public void ExpandTo(int num)
+		{
+			System.Diagnostics.Debug.Assert(Count > 0 || origionalElement != null);
+
+			DataElement item = null;
+			if (Count == 0)
+				item = origionalElement;
+			else
+				item = this[Count - 1];
+
+			// Force the same element to be duplicated in the DataElementContainer
+			for (int i = Count; i < num; ++i)
+			{
+				_childrenList.Insert(i, item);
+				_childrenDict[item.name] = item;
+			}
+
+			Invalidate();
 		}
 	}
 }

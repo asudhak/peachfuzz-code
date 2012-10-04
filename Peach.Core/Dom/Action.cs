@@ -335,23 +335,16 @@ namespace Peach.Core.Dom
 				case ActionType.Output:
 				case ActionType.GetProperty:
 				case ActionType.SetProperty:
-					dataModel = null;
-					dataModel = ObjectCopier.Clone<DataModel>(origionalDataModel);
+					dataModel = origionalDataModel.Clone() as DataModel;
 					dataModel.action = this;
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(dataModel);
-
-					// Verify children are correct
-					foreach (var child in dataModel)
-						child.parent = dataModel;
 
 					break;
 
 				case ActionType.Call:
 					foreach (ActionParameter p in this.parameters)
 					{
-						p.dataModel = ObjectCopier.Clone<DataModel>(p.origionalDataModel);
+						p.dataModel = p.origionalDataModel.Clone() as DataModel;
 						p.dataModel.action = this;
-						Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(p.dataModel);
 					}
 
 					// TODO - Also set ActionResult
@@ -684,16 +677,10 @@ namespace Peach.Core.Dom
 			get { return _dataModel; }
 			set
 			{
+				_dataModel = value;
+
 				if (_origionalDataModel == null)
-				{
-					_dataModel = value;
-					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(_origionalDataModel);
-				}
-				else
-				{
-					_dataModel = value;
-				}
+					_origionalDataModel =_dataModel.Clone() as DataModel;
 			}
 		}
 
@@ -719,16 +706,10 @@ namespace Peach.Core.Dom
 			get { return _dataModel; }
 			set
 			{
+				_dataModel = value;
+
 				if (_origionalDataModel == null)
-				{
-					_dataModel = value;
-					_origionalDataModel = ObjectCopier.Clone<DataModel>(_dataModel);
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(_origionalDataModel);
-				}
-				else
-				{
-					_dataModel = value;
-				}
+					_origionalDataModel = _dataModel.Clone() as DataModel;
 			}
 		}
 	}

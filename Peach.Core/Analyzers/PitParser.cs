@@ -213,8 +213,8 @@ namespace Peach.Core.Analyzers
 				switch (child.Name)
 				{
 					case "Include":
-						string ns = getXmlAttribute(child, "ns");
-						string fileName = getXmlAttribute(child, "src");
+						string ns = child.getAttribute("ns");
+						string fileName = child.getAttribute("src");
 						fileName = fileName.Replace("file:", "");
 
 						PitParser parser = new PitParser();
@@ -249,14 +249,14 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Require":
-						Scripting.Imports.Add(getXmlAttribute(child, "require"));
+						Scripting.Imports.Add(child.getAttribute("require"));
 						break;
 
 					case "Import":
-						if (hasXmlAttribute(child, "from"))
+						if (child.hasAttribute("from"))
 							throw new PeachException("Error, This version of Peach does not support the 'from' attribute for 'Import' elements.");
 
-						Scripting.Imports.Add(getXmlAttribute(child, "import"));
+						Scripting.Imports.Add(child.getAttribute("import"));
 						break;
 
 					case "PythonPath":
@@ -266,7 +266,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
-						Scripting.Paths.Add(getXmlAttribute(child, "import"));
+						Scripting.Paths.Add(child.getAttribute("import"));
 						isScriptingLanguageSet = true;
 						break;
 
@@ -277,7 +277,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Ruby;
-						Scripting.Paths.Add(getXmlAttribute(child, "require"));
+						Scripting.Paths.Add(child.getAttribute("require"));
 						isScriptingLanguageSet = true;
 						break;
 
@@ -288,7 +288,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
-						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string, object>());
+						Scripting.Exec(child.getAttribute("code"), new Dictionary<string, object>());
 						isScriptingLanguageSet = true;
 						break;
 
@@ -299,7 +299,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Ruby;
-						Scripting.Exec(getXmlAttribute(child, "code"), new Dictionary<string, object>());
+						Scripting.Exec(child.getAttribute("code"), new Dictionary<string, object>());
 						isScriptingLanguageSet = true;
 						break;
 
@@ -410,70 +410,13 @@ namespace Peach.Core.Analyzers
 		#region Utility Methods
 
 		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns innerText or null.</returns>
-		public string getXmlAttribute(XmlNode node, string name)
-		{
-			System.Xml.XmlAttribute attr = node.Attributes.GetNamedItem(name) as System.Xml.XmlAttribute;
-			if (attr != null)
-			{
-				return attr.InnerText;
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <param name="defaultValue">Default value if attribute is missing</param>
-		/// <returns>Returns true/false or default value</returns>
-		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
-		{
-			string value = getXmlAttribute(node, name);
-			if (value == null)
-				return defaultValue;
-
-			switch (value.ToLower())
-			{
-				case "1":
-				case "true":
-					return true;
-				case "0":
-				case "false":
-					return false;
-				default:
-					throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
-			}
-		}
-
-		/// <summary>
-		/// Check to see if XmlNode has specific attribute.
-		/// </summary>
-		/// <param name="node">XmlNode to check</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns boolean true or false.</returns>
-		public bool hasXmlAttribute(XmlNode node, string name)
-		{
-			object o = node.Attributes.GetNamedItem(name);
-			return o != null;
-		}
-
-		/// <summary>
 		/// Resolve a 'ref' attribute.  Will throw a PeachException if
 		/// namespace is given, but not found.
 		/// </summary>
 		/// <param name="dom">DOM to use for resolving ref.</param>
 		/// <param name="name">Ref name to resolve.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
-		public DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
+		public static DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
 		{
 			if (name.IndexOf(':') > -1)
 			{
@@ -529,14 +472,6 @@ namespace Peach.Core.Analyzers
 			foreach (DataModel model in models)
 			{
 				logger.Debug("finalUpdateRelations: DataModel: " + model.name);
-
-				try
-				{
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(model);
-				}
-				catch
-				{
-				}
 
 				foreach (DataElement elem in model.EnumerateAllElements())
 				{
@@ -603,36 +538,36 @@ namespace Peach.Core.Analyzers
 				switch (child.Name)
 				{
 					case "Number":
-						if (hasXmlAttribute(child, "endian"))
-							args["endian"] = getXmlAttribute(child, "endian");
-						if (hasXmlAttribute(child, "signed"))
-							args["signed"] = getXmlAttribute(child, "signed");
+						if (child.hasAttribute("endian"))
+							args["endian"] = child.getAttribute("endian");
+						if (child.hasAttribute("signed"))
+							args["signed"] = child.getAttribute("signed");
 
 						dataElementDefaults[typeof(Number)] = args;
 						break;
 					case "String":
-						if (hasXmlAttribute(child, "lengthType"))
-							args["lengthType"] = getXmlAttribute(child, "lengthType");
-						if (hasXmlAttribute(child, "padCharacter"))
-							args["padCharacter"] = getXmlAttribute(child, "padCharacter");
-						if (hasXmlAttribute(child, "type"))
-							args["type"] = getXmlAttribute(child, "type");
-						if (hasXmlAttribute(child, "nullTerminated"))
-							args["nullTerminated"] = getXmlAttribute(child, "nullTerminated");
+						if (child.hasAttribute("lengthType"))
+							args["lengthType"] = child.getAttribute("lengthType");
+						if (child.hasAttribute("padCharacter"))
+							args["padCharacter"] = child.getAttribute("padCharacter");
+						if (child.hasAttribute("type"))
+							args["type"] = child.getAttribute("type");
+						if (child.hasAttribute("nullTerminated"))
+							args["nullTerminated"] = child.getAttribute("nullTerminated");
 
 						dataElementDefaults[typeof(Dom.String)] = args;
 						break;
 					case "Flags":
-						if (hasXmlAttribute(child, "endian"))
-							args["endian"] = getXmlAttribute(child, "endian");
-						if (hasXmlAttribute(child, "size"))
-							args["size"] = getXmlAttribute(child, "size");
+						if (child.hasAttribute("endian"))
+							args["endian"] = child.getAttribute("endian");
+						if (child.hasAttribute("size"))
+							args["size"] = child.getAttribute("size");
 
 						dataElementDefaults[typeof(Flags)] = args;
 						break;
 					case "Blob":
-						if (hasXmlAttribute(child, "lengthType"))
-							args["lengthType"] = getXmlAttribute(child, "lengthType");
+						if (child.hasAttribute("lengthType"))
+							args["lengthType"] = child.getAttribute("lengthType");
 
 						dataElementDefaults[typeof(Blob)] = args;
 						break;
@@ -646,9 +581,9 @@ namespace Peach.Core.Analyzers
 		{
 			Dom.Agent agent = new Dom.Agent();
 
-			agent.name = getXmlAttribute(node, "name");
-			agent.url = getXmlAttribute(node, "location");
-			agent.password = getXmlAttribute(node, "password");
+			agent.name = node.getAttribute("name");
+			agent.url = node.getAttribute("location");
+			agent.password = node.getAttribute("password");
 
 			if (agent.url == null)
 				agent.url = "local://";
@@ -659,8 +594,8 @@ namespace Peach.Core.Analyzers
 				{
 					Dom.Monitor monitor = new Monitor();
 
-					monitor.cls = getXmlAttribute(child, "class");
-					monitor.name = getXmlAttribute(child, "name");
+					monitor.cls = child.getAttribute("class");
+					monitor.name = child.getAttribute("name");
 					monitor.parameters = handleParams(child);
 
 					agent.monitors.Add(monitor);
@@ -674,37 +609,29 @@ namespace Peach.Core.Analyzers
 
 		protected DataModel handleDataModel(XmlNode node)
 		{
-			var dataModel = new DataModel();
+			DataModel dataModel = null;
+			string name = node.getAttribute("name");
+			string refName = node.getAttribute("ref");
 
-			if (hasXmlAttribute(node, "ref"))
+			if (refName != null)
 			{
-				DataModel refObj = getReference(_dom, getXmlAttribute(node, "ref"), null) as DataModel;
-				if (refObj != null)
-				{
-					string name = dataModel.name;
-					dataModel = ObjectCopier.Clone<DataModel>(refObj);
-					dataModel.name = name;
-					dataModel.isReference = true;
-					dataModel.referenceName = getXmlAttribute(node, "ref");
+				DataModel refObj = getReference(_dom, refName, null) as DataModel;
+				if (refObj == null)
+					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
-					Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(dataModel);
-				}
-				else
-				{
-					throw new PeachException("Unable to locate 'ref' [" + getXmlAttribute(node, "ref") + "] or found node did not match type. [" + node.OuterXml + "].");
-				}
+				if (string.IsNullOrEmpty(name))
+					name = refName;
 
-				if (!hasXmlAttribute(node, "name"))
-					dataModel.name = getXmlAttribute(node, "ref");
-				else
-					dataModel.name = getXmlAttribute(node, "name");
+				dataModel = refObj.Clone(name) as DataModel;
+				dataModel.isReference = true;
+				dataModel.referenceName = refName;
 			}
 			else
 			{
-				dataModel.name = getXmlAttribute(node, "name");
-				if (dataModel.name == null)
+				if (string.IsNullOrEmpty(name))
 					throw new PeachException("Error, DataModel missing required 'name' attribute.");
 
+				dataModel = new DataModel(name);
 			}
 
 			handleCommonDataElementAttributes(node, dataModel);
@@ -714,22 +641,12 @@ namespace Peach.Core.Analyzers
 			return dataModel;
 		}
 
-		protected Dom.Array handleArray(XmlNode node, DataElementContainer parent)
-		{
-			return (Dom.Array)Dom.Array.PitParser(this, node, parent);
-		}
-
 		protected bool IsArray(XmlNode node)
 		{
-			if (hasXmlAttribute(node, "minOccurs") || hasXmlAttribute(node, "maxOccurs") || hasXmlAttribute(node, "occurs"))
+			if (node.hasAttribute("minOccurs") || node.hasAttribute("maxOccurs") || node.hasAttribute("occurs"))
 				return true;
 
 			return false;
-		}
-
-		protected Block handleBlock(XmlNode node, DataElementContainer parent)
-		{
-			return (Block)Block.PitParser(this, node, parent);
 		}
 
 		/// <summary>
@@ -746,24 +663,24 @@ namespace Peach.Core.Analyzers
 		/// <param name="element">Element to set attributes on</param>
 		public void handleCommonDataElementAttributes(XmlNode node, DataElement element)
 		{
-			if (hasXmlAttribute(node, "token"))
+			if (node.hasAttribute("token"))
 				element.isToken = true;
 
-			if (hasXmlAttribute(node, "mutable"))
+			if (node.hasAttribute("mutable"))
 				element.isMutable = false;
 
-			if (hasXmlAttribute(node, "constraint"))
-				element.constraint = getXmlAttribute(node, "constraint");
+			if (node.hasAttribute("constraint"))
+				element.constraint = node.getAttribute("constraint");
 
-			if (hasXmlAttribute(node, "pointer"))
+			if (node.hasAttribute("pointer"))
 				throw new NotSupportedException("Implement pointer attribute");
 
-			if (hasXmlAttribute(node, "pointerDepth"))
+			if (node.hasAttribute("pointerDepth"))
 				throw new NotSupportedException("Implement pointerDepth attribute");
 
-			if (hasXmlAttribute(node, "lengthType"))
+			if (node.hasAttribute("lengthType"))
 			{
-				switch (getXmlAttribute(node, "lengthType"))
+				switch (node.getAttribute("lengthType"))
 				{
 					case "bytes":
 						element.lengthType = LengthType.Bytes;
@@ -776,7 +693,7 @@ namespace Peach.Core.Analyzers
 						break;
 					default:
 						throw new PeachException("Error, parsing lengthType on '" + element.name +
-							"', unknown value: '" + getXmlAttribute(node, "lengthType") + "'.");
+							"', unknown value: '" + node.getAttribute("lengthType") + "'.");
 				}
 			}
 			else if (hasDefaultAttribute(element.GetType(), "lengthType"))
@@ -795,11 +712,11 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
-			if (hasXmlAttribute(node, "length"))
+			if (node.hasAttribute("length"))
 			{
 				try
 				{
-					element.length = Int32.Parse(getXmlAttribute(node, "length"));
+					element.length = Int32.Parse(node.getAttribute("length"));
 				}
 				catch (Exception e)
 				{
@@ -807,7 +724,7 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
-			element.lengthCalc = getXmlAttribute(node, "lengthCalc");
+			element.lengthCalc = node.getAttribute("lengthCalc");
 		}
 
 		/// <summary>
@@ -855,7 +772,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="element">Element to add items to</param>
 		protected void handleHint(XmlNode node, DataElement element)
 		{
-			var hint = new Hint(getXmlAttribute(node, "name"), getXmlAttribute(node, "value"));
+			var hint = new Hint(node.getAttribute("name"), node.getAttribute("value"));
 			element.Hints.Add(hint.Name, hint);
 		}
 
@@ -863,10 +780,10 @@ namespace Peach.Core.Analyzers
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 
-			if (hasXmlAttribute(node, "after"))
-				args["after"] = new Variant(getXmlAttribute(node, "after"));
-			else if (hasXmlAttribute(node, "before"))
-				args["before"] = new Variant(getXmlAttribute(node, "before"));
+			if (node.hasAttribute("after"))
+				args["after"] = new Variant(node.getAttribute("after"));
+			else if (node.hasAttribute("before"))
+				args["before"] = new Variant(node.getAttribute("before"));
 			else
 				throw new PeachException("Error, Placement on element \"" + element.name + "\" is missing 'after' or 'before' attribute.");
 
@@ -904,7 +821,7 @@ namespace Peach.Core.Analyzers
 				PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
 				// Prevent dots from being in the name for element construction, they get resolved afterwards
-				var childName = getXmlAttribute(child, "name");
+				var childName = child.getAttribute("name");
 				if (element.isReference && !string.IsNullOrEmpty(childName))
 				{
 					var refname = childName.Split('.');
@@ -919,6 +836,9 @@ namespace Peach.Core.Analyzers
 				// Wrap elements that are arrays with an Array object
 				if (IsArray(child))
 				{
+					// Ensure the array has the same name as the 1st element
+					((System.Xml.XmlElement)child).SetAttribute("name", elem.name);
+
 					var array = Dom.Array.PitParser(this, child, element) as Dom.Array;
 					array.Add(elem);
 					array.origionalElement = elem;
@@ -942,7 +862,7 @@ namespace Peach.Core.Analyzers
 						if (parent == null)
 							throw new PeachException("Error, child name has dot notation but replacement element not found: '" + elem.name + ".");
 
-						elem.name = parent.name;
+						System.Diagnostics.Debug.Assert(elem.name == parent.name);
 						parent.parent[parent.name] = elem;
 					}
 					else
@@ -971,9 +891,9 @@ namespace Peach.Core.Analyzers
 		{
 			string value = null;
 
-			if (hasXmlAttribute(node, "value"))
+			if (node.hasAttribute("value"))
 			{
-				value = getXmlAttribute(node, "value");
+				value = node.getAttribute("value");
 
 				value = value.Replace("\\\\", "\\");
 				value = value.Replace("\\n", "\n");
@@ -981,9 +901,9 @@ namespace Peach.Core.Analyzers
 				value = value.Replace("\\t", "\t");
 			}
 
-			if (hasXmlAttribute(node, "valueType") && value != null)
+			if (node.hasAttribute("valueType") && value != null)
 			{
-				switch (getXmlAttribute(node, "valueType").ToLower())
+				switch (node.getAttribute("valueType").ToLower())
 				{
 					case "hex":
 						// Handle hex data.
@@ -1062,7 +982,7 @@ namespace Peach.Core.Analyzers
 						elem.DefaultValue = new Variant(value);
 						break;
 					default:
-						throw new PeachException("Error, invalid value for 'valueType' attribute: " + getXmlAttribute(node, "valueType"));
+						throw new PeachException("Error, invalid value for 'valueType' attribute: " + node.getAttribute("valueType"));
 				}
 			}
 			else if (value != null)
@@ -1107,19 +1027,19 @@ namespace Peach.Core.Analyzers
 
 		protected void handleRelation(XmlNode node, DataElement parent)
 		{
-			switch (getXmlAttribute(node, "type"))
+			switch (node.getAttribute("type"))
 			{
 				case "size":
-					if (hasXmlAttribute(node, "of"))
+					if (node.hasAttribute("of"))
 					{
 						SizeRelation rel = new SizeRelation();
-						rel.OfName = getXmlAttribute(node, "of");
+						rel.OfName = node.getAttribute("of");
 
-						if (hasXmlAttribute(node, "expressionGet"))
-							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+						if (node.hasAttribute("expressionGet"))
+							rel.ExpressionGet = node.getAttribute("expressionGet");
 
-						if (hasXmlAttribute(node, "expressionSet"))
-							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+						if (node.hasAttribute("expressionSet"))
+							rel.ExpressionSet = node.getAttribute("expressionSet");
 
 						parent.relations.Add(rel);
 					}
@@ -1127,40 +1047,40 @@ namespace Peach.Core.Analyzers
 					break;
 
 				case "count":
-					if (hasXmlAttribute(node, "of"))
+					if (node.hasAttribute("of"))
 					{
 						CountRelation rel = new CountRelation();
-						rel.OfName = getXmlAttribute(node, "of");
+						rel.OfName = node.getAttribute("of");
 
-						if (hasXmlAttribute(node, "expressionGet"))
-							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+						if (node.hasAttribute("expressionGet"))
+							rel.ExpressionGet = node.getAttribute("expressionGet");
 
-						if (hasXmlAttribute(node, "expressionSet"))
-							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+						if (node.hasAttribute("expressionSet"))
+							rel.ExpressionSet = node.getAttribute("expressionSet");
 
 						parent.relations.Add(rel);
 					}
 					break;
 
 				case "offset":
-					if (hasXmlAttribute(node, "of"))
+					if (node.hasAttribute("of"))
 					{
 						OffsetRelation rel = new OffsetRelation();
-						rel.OfName = getXmlAttribute(node, "of");
+						rel.OfName = node.getAttribute("of");
 
-						if (hasXmlAttribute(node, "expressionGet"))
-							rel.ExpressionGet = getXmlAttribute(node, "expressionGet");
+						if (node.hasAttribute("expressionGet"))
+							rel.ExpressionGet = node.getAttribute("expressionGet");
 
-						if (hasXmlAttribute(node, "expressionSet"))
-							rel.ExpressionSet = getXmlAttribute(node, "expressionSet");
+						if (node.hasAttribute("expressionSet"))
+							rel.ExpressionSet = node.getAttribute("expressionSet");
 
-						if (hasXmlAttribute(node, "relative"))
+						if (node.hasAttribute("relative"))
 							rel.isRelativeOffset = true;
 
-						if (hasXmlAttribute(node, "relativeTo"))
+						if (node.hasAttribute("relativeTo"))
 						{
 							rel.isRelativeOffset = true;
-							rel.relativeTo = getXmlAttribute(node, "relativeTo");
+							rel.relativeTo = node.getAttribute("relativeTo");
 						}
 
 						parent.relations.Add(rel);
@@ -1169,7 +1089,7 @@ namespace Peach.Core.Analyzers
 
 				default:
 					throw new ApplicationException("Unknown relation type found '" +
-						getXmlAttribute(node, "type") + "'.");
+						node.getAttribute("type") + "'.");
 			}
 		}
 
@@ -1179,10 +1099,10 @@ namespace Peach.Core.Analyzers
 		{
 			var pluginType = typeof(T).Name;
 
-			if (!hasXmlAttribute(node, "class"))
+			if (!node.hasAttribute("class"))
 				throw new PeachException(string.Format("{0} element has no 'class' attribute [{1}]", pluginType, node.OuterXml));
 
-			var cls = getXmlAttribute(node, "class");
+			var cls = node.getAttribute("class");
 			var arg = handleParams(node);
 
 			var type = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == cls);
@@ -1218,8 +1138,8 @@ namespace Peach.Core.Analyzers
 
 		protected StateModel handleStateModel(XmlNode node, Dom.Dom parent)
 		{
-			string name = getXmlAttribute(node, "name");
-			string initialState = getXmlAttribute(node, "initialState");
+			string name = node.getAttribute("name");
+			string initialState = node.getAttribute("initialState");
 			StateModel stateModel = new StateModel();
 			stateModel.name = name;
 			stateModel.parent = parent;
@@ -1245,7 +1165,7 @@ namespace Peach.Core.Analyzers
 		{
 			State state = new State();
 			state.parent = parent;
-			state.name = getXmlAttribute(node, "name");
+			state.name = node.getAttribute("name");
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -1264,18 +1184,18 @@ namespace Peach.Core.Analyzers
 			Core.Dom.Action action = new Core.Dom.Action();
 			action.parent = parent;
 
-			if (hasXmlAttribute(node, "name"))
-				action.name = getXmlAttribute(node, "name");
+			if (node.hasAttribute("name"))
+				action.name = node.getAttribute("name");
 
-			if (hasXmlAttribute(node, "when"))
-				action.when = getXmlAttribute(node, "when");
+			if (node.hasAttribute("when"))
+				action.when = node.getAttribute("when");
 
-			if (hasXmlAttribute(node, "publisher"))
-				action.publisher = getXmlAttribute(node, "publisher");
+			if (node.hasAttribute("publisher"))
+				action.publisher = node.getAttribute("publisher");
 
-			if (hasXmlAttribute(node, "type"))
+			if (node.hasAttribute("type"))
 			{
-				switch (getXmlAttribute(node, "type").ToLower())
+				switch (node.getAttribute("type").ToLower())
 				{
 					case "accept":
 						action.type = ActionType.Accept;
@@ -1317,62 +1237,62 @@ namespace Peach.Core.Analyzers
 						action.type = ActionType.Stop;
 						break;
 					default:
-						throw new PeachException("Error, action of type '" + getXmlAttribute(node, "type") + "' is not valid.");
+						throw new PeachException("Error, action of type '" + node.getAttribute("type") + "' is not valid.");
 				}
 			}
 
-			if (hasXmlAttribute(node, "onStart"))
-				action.onStart = getXmlAttribute(node, "onStart");
+			if (node.hasAttribute("onStart"))
+				action.onStart = node.getAttribute("onStart");
 
-			if (hasXmlAttribute(node, "onComplete"))
-				action.onComplete = getXmlAttribute(node, "onComplete");
+			if (node.hasAttribute("onComplete"))
+				action.onComplete = node.getAttribute("onComplete");
 
-			if (hasXmlAttribute(node, "ref"))
+			if (node.hasAttribute("ref"))
 			{
 				if (action.type == ActionType.ChangeState)
-					action.reference = getXmlAttribute(node, "ref");
+					action.reference = node.getAttribute("ref");
 				else
 					throw new PeachException("Error, only Actions of type ChangeState are allowed to use the 'ref' attribute");
 			}
 
-			if (hasXmlAttribute(node, "method"))
+			if (node.hasAttribute("method"))
 			{
 				if (action.type != ActionType.Call)
 					throw new PeachException("Error, only Actions of type Call are allowed to use the 'method' attribute");
 
-				action.method = getXmlAttribute(node, "method");
+				action.method = node.getAttribute("method");
 			}
 
-			if (hasXmlAttribute(node, "property"))
+			if (node.hasAttribute("property"))
 			{
 				if (action.type != ActionType.GetProperty && action.type != ActionType.SetProperty)
 					throw new PeachException("Error, only Actions of type GetProperty and SetProperty are allowed to use the 'property' attribute");
 
-				action.property = getXmlAttribute(node, "property");
+				action.property = node.getAttribute("property");
 			}
 
-			if (hasXmlAttribute(node, "setXpath"))
+			if (node.hasAttribute("setXpath"))
 			{
 				if (action.type != ActionType.Slurp)
 					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'setXpath' attribute");
 
-				action.setXpath = getXmlAttribute(node, "setXpath");
+				action.setXpath = node.getAttribute("setXpath");
 			}
 
-			if (hasXmlAttribute(node, "valueXpath"))
+			if (node.hasAttribute("valueXpath"))
 			{
 				if (action.type != ActionType.Slurp)
 					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'valueXpath' attribute");
 
-				action.valueXpath = getXmlAttribute(node, "valueXpath");
+				action.valueXpath = node.getAttribute("valueXpath");
 			}
 
-			//if (hasXmlAttribute(node, "value"))
+			//if (node.hasAttribute("value"))
 			//{
 			//    if (action.type != ActionType.Slurp)
 			//        throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'value' attribute");
 
-			//    action.value = getXmlAttribute(node, "value");
+			//    action.value = node.getAttribute("value");
 			//}
 
 			foreach (XmlNode child in node.ChildNodes)
@@ -1405,7 +1325,7 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "DataModel")
-					param.dataModel = dom.dataModels[getXmlAttribute(child, "ref")];
+					param.dataModel = dom.dataModels[child.getAttribute("ref")];
 				if (child.Name == "Data")
 					param.data = handleData(child);
 			}
@@ -1416,8 +1336,8 @@ namespace Peach.Core.Analyzers
 		protected Data handleData(XmlNode node)
 		{
 			Data data = new Data();
-			data.name = getXmlAttribute(node, "name");
-			string dataFileName = getXmlAttribute(node, "fileName");
+			data.name = node.getAttribute("name");
+			string dataFileName = node.getAttribute("fileName");
 
 			if (dataFileName != null)
 			{
@@ -1453,7 +1373,7 @@ namespace Peach.Core.Analyzers
 					Blob tmp = new Blob();
 					handleCommonDataElementValue(child, tmp);
 
-					data.fields.Add(getXmlAttribute(child, "name"), tmp.DefaultValue);
+					data.fields.Add(child.getAttribute("name"), tmp.DefaultValue);
 				}
 			}
 
@@ -1465,13 +1385,13 @@ namespace Peach.Core.Analyzers
 			Test test = new Test();
 			test.parent = parent;
 
-			test.name = getXmlAttribute(node, "name");
+			test.name = node.getAttribute("name");
 
-			if (hasXmlAttribute(node, "waitTime"))
-				test.waitTime = decimal.Parse(getXmlAttribute(node, "waitTime"));
+			if (node.hasAttribute("waitTime"))
+				test.waitTime = decimal.Parse(node.getAttribute("waitTime"));
 
-			if (hasXmlAttribute(node, "faultWaitTime"))
-				test.waitTime = decimal.Parse(getXmlAttribute(node, "faultWaitTime"));
+			if (node.hasAttribute("faultWaitTime"))
+				test.waitTime = decimal.Parse(node.getAttribute("faultWaitTime"));
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -1481,7 +1401,7 @@ namespace Peach.Core.Analyzers
 				// Include
 				if (child.Name == "Include")
 				{
-					var xpath = getXmlAttribute(child, "xpath");
+					var xpath = child.getAttribute("xpath");
 					if (xpath == null)
 						xpath = "//*";
 
@@ -1491,7 +1411,7 @@ namespace Peach.Core.Analyzers
 				// Exclude
 				if (child.Name == "Exclude")
 				{
-					var xpath = getXmlAttribute(child, "xpath");
+					var xpath = child.getAttribute("xpath");
 					if (xpath == null)
 						xpath = "//*";
 
@@ -1507,7 +1427,7 @@ namespace Peach.Core.Analyzers
 				// Agent
 				if (child.Name == "Agent")
 				{
-					string refName = getXmlAttribute(child, "ref");
+					string refName = child.getAttribute("ref");
 					try
 					{
 						test.agents.Add(refName, parent.agents[refName]);
@@ -1517,7 +1437,7 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found");
 					}
 
-					var platform = getXmlAttribute(child, "platform");
+					var platform = child.getAttribute("platform");
 					if (platform != null)
 					{
 						switch (platform.ToLower())
@@ -1539,17 +1459,17 @@ namespace Peach.Core.Analyzers
 				// StateModel
 				if (child.Name == "StateModel")
 				{
-					if (!hasXmlAttribute(child, "ref"))
+					if (!child.hasAttribute("ref"))
 						throw new PeachException("Error, StateModel element must have a 'ref' attribute when used as a child of Test");
 
 					try
 					{
-						test.stateModel = parent.stateModels[getXmlAttribute(child, "ref")];
+						test.stateModel = parent.stateModels[child.getAttribute("ref")];
 					}
 					catch
 					{
 						throw new PeachException("Error, could not locate StateModel named '" +
-							getXmlAttribute(child, "ref") + "' for Test '" + test.name + "'.");
+							child.getAttribute("ref") + "' for Test '" + test.name + "'.");
 					}
 				}
 
@@ -1557,13 +1477,13 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Publisher")
 				{
 					string name;
-					if (!hasXmlAttribute(child, "name"))
+					if (!child.hasAttribute("name"))
 					{
 						name = "Pub_" + _uniquePublisherName;
 						_uniquePublisherName++;
 					}
 					else
-						name = getXmlAttribute(child, "name");
+						name = child.getAttribute("name");
 
 					test.publishers.Add(name, handlePlugin<Publisher, PublisherAttribute>(child, null, false));
 				}
@@ -1652,12 +1572,12 @@ namespace Peach.Core.Analyzers
 				if (child.Name != "Param")
 					continue;
 
-				string name = getXmlAttribute(child, "name");
-				string value = getXmlAttribute(child, "value");
+				string name = child.getAttribute("name");
+				string value = child.getAttribute("value");
 
-				if (hasXmlAttribute(child, "valueType"))
+				if (child.hasAttribute("valueType"))
 				{
-					ret.Add(name, new Variant(value, getXmlAttribute(child, "valueType")));
+					ret.Add(name, new Variant(value, child.getAttribute("valueType")));
 				}
 				else
 				{

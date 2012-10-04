@@ -147,21 +147,9 @@ namespace Peach.Core.Mutators
             }
             else if (num > objAsArray.Count)
             {
-                // add some items
-                try
-                {
-                    var newElem = ObjectCopier.Clone<DataElement>(objAsArray[objAsArray.Count - 1]);
-                    var originalName = newElem.name;
-                    for (int i = objAsArray.Count; i < num; ++i)
-                    {
-                        newElem.name = originalName + "_" + (i + 1);
-                        objAsArray.Add(newElem);
-                    }
-                }
-                catch
-                {
-                    throw new OutOfMemoryException();
-                }
+                // add some items, but do it by replicating
+                // the last item over and over to save memory
+                objAsArray.ExpandTo(num);
             }
         }
     }

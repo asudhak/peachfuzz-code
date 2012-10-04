@@ -63,13 +63,13 @@ namespace Peach.Core.Dom
 		}
 
 		public Flags(string name)
+			: base(name)
 		{
-			this.name = name;
 		}
 
 		public Flags(string name, int size)
+			: base(name)
 		{
-			this.name = name;
 			this.size = size;
 		}
 
@@ -109,17 +109,14 @@ namespace Peach.Core.Dom
 			if (node.Name != "Flags")
 				return null;
 
-			var flags = new Flags();
+			var flags = DataElement.Generate<Flags>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				flags.name = context.getXmlAttribute(node, "name");
-
-			if (context.hasXmlAttribute(node, "size"))
+			if (node.hasAttribute("size"))
 			{
 				int size;
 				try
 				{
-					size = int.Parse(context.getXmlAttribute(node, "size"));
+					size = int.Parse(node.getAttribute("size"));
 				}
 				catch
 				{
@@ -151,10 +148,10 @@ namespace Peach.Core.Dom
 				flags.size = size;
 			}
 
-			if (context.hasXmlAttribute(node, "endian"))
+			string strEndian = node.getAttribute("endian");
+			if (strEndian != null)
 			{
-				string endian = context.getXmlAttribute(node, "endian").ToLower();
-				switch (endian)
+				switch (strEndian.ToLower())
 				{
 					case "little":
 						flags.LittleEndian = true;
@@ -167,7 +164,7 @@ namespace Peach.Core.Dom
 						break;
 					default:
 						throw new PeachException(string.Format(
-							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, flags.name));
+							"Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", strEndian, flags.name));
 				}
 			}
 			else if (context.hasDefaultAttribute(typeof(Flags), "endian"))
@@ -261,24 +258,6 @@ namespace Peach.Core.Dom
               return "big";
           }
 
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flags", parameterName));
-      }
-    }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "size":
-          this.size = (int)value;
-          break;
-        case "endian":
-          this.LittleEndian = (((string)value) == "little");
-          break;
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flags", parameterName));
       }

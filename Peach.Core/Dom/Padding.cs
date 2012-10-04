@@ -79,8 +79,8 @@ namespace Peach.Core.Dom
 		/// <param name="alignment">Byte boundry for alignment (8, 16, etc)</param>
 		/// <param name="alignedTo">Align to another element (default is parent)</param>
 		public Padding(string name, bool aligned = true, int alignment = 8, DataElement alignedTo = null)
+			: base(name)
 		{
-			this.name = name;
 			this._aligned = aligned;
 			this._alignment = alignment;
 			this._alignedTo = alignedTo;
@@ -135,21 +135,19 @@ namespace Peach.Core.Dom
 			if (node.Name != "Padding")
 				return null;
 
-			var padding = new Padding();
+			var padding = DataElement.Generate<Padding>(node);
 
-			if (context.hasXmlAttribute(node, "name"))
-				padding.name = context.getXmlAttribute(node, "name");
+			padding.aligned = node.getAttributeBool("aligned", false);
 
-			padding.aligned = context.getXmlAttributeAsBool(node, "aligned", false);
+			if (node.hasAttribute("alignment"))
+				padding.alignment = int.Parse(node.getAttribute("alignment"));
 
-			if (context.hasXmlAttribute(node, "alignment"))
-				padding.alignment = int.Parse(context.getXmlAttribute(node, "alignment"));
-
-			if (context.hasXmlAttribute(node, "alignedTo"))
+			string strTo = node.getAttribute("alignedTo");
+			if (strTo != null)
 			{
-				padding.alignedTo = parent.find(context.getXmlAttribute(node, "alignedTo"));
+				padding.alignedTo = parent.find(strTo);
 				if (padding.alignedTo == null)
-					throw new PeachException("Error, unable to resolve alignedTo '" + context.getXmlAttribute(node, "alignedTo") + "'.");
+					throw new PeachException("Error, unable to resolve alignedTo '" + strTo + "'.");
 			}
 
 			context.handleCommonDataElementAttributes(node, padding);
@@ -287,30 +285,6 @@ namespace Peach.Core.Dom
           return this.alignedTo.name;
         case "lengthCalc":
           return this.lengthCalc;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Padding", parameterName));
-      }
-    }
-
-    public override void SetParameter(string parameterName, object value)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          this.name = (string)value;
-          break;
-        case "aligned":
-          this.aligned = (bool)value;
-          break;
-        case "alignment":
-          this.alignment = (int)value;
-          break;
-        case "alignedTo":
-          this.alignedTo = (DataElement)value;
-          break;
-        case "lengthCalc":
-          this.lengthCalc = (string)value;
-          break;
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Padding", parameterName));
       }

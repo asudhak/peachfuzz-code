@@ -51,18 +51,13 @@ namespace Peach.Core.Dom
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		protected DataElement _parent = null;
-		protected string _ofName = null;
-		protected string _fromName = null;
 		protected DataElement _of = null;
 		protected DataElement _from = null;
+
+		protected string _ofName = null;
+		protected string _fromName = null;
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
-
-		public void Reset()
-		{
-			_of = null;
-			_from = null;
-		}
 
 		/// <summary>
 		/// Expression that is run when getting the value.
@@ -81,6 +76,9 @@ namespace Peach.Core.Dom
 			get { return _expressionGet; }
 			set
 			{
+				if (string.Equals(_expressionGet, value))
+					return;
+
 				_expressionGet = value;
 				if(From != null)
 					From.Invalidate();
@@ -104,6 +102,9 @@ namespace Peach.Core.Dom
 			get { return _expressionSet; }
 			set
 			{
+				if (string.Equals(_expressionSet, value))
+					return;
+
 				_expressionSet = value;
 				if (From != null)
 					From.Invalidate();
@@ -124,6 +125,9 @@ namespace Peach.Core.Dom
 			get { return _parent; }
 			set
 			{
+				if (object.Equals(_parent, value))
+					return;
+
 				if (_parent != null)
 				{
 					_parent.Invalidate();
@@ -133,7 +137,9 @@ namespace Peach.Core.Dom
 				_parent = value;
 
 				if (_parent != null)
+				{
 					_parent.Invalidate();
+				}
 			}
 		}
 
@@ -145,6 +151,9 @@ namespace Peach.Core.Dom
 			get { return _ofName; }
 			set
 			{
+				if (string.Equals(_ofName, value))
+					return;
+
 				if (_of != null)
 					_of.Invalidated -= new InvalidatedEventHandler(OfInvalidated);
 
@@ -165,6 +174,9 @@ namespace Peach.Core.Dom
 			get { return _fromName; }
 			set
 			{
+				if (string.Equals(_fromName, value))
+					return;
+
 				if (_from != null)
 					_from.Invalidate();
 
@@ -209,6 +221,9 @@ namespace Peach.Core.Dom
 			}
 			set
 			{
+				if (object.Equals(_of, value))
+					return;
+
 				if (_of != null)
 				{
 					// Remove existing event
@@ -225,7 +240,7 @@ namespace Peach.Core.Dom
 				_of = value;
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
-				_ofName = _of.fullName;
+				_ofName = _of.name;
 
 				// We need to invalidate now that we have a new of.
 				From.Invalidate();
@@ -268,6 +283,9 @@ namespace Peach.Core.Dom
 
 			set
 			{
+				if (object.Equals(_from, value))
+					return;
+
 				if (_of != null)
 				{
 					// Verify _of and _from don't share Choice as common parent
@@ -278,7 +296,7 @@ namespace Peach.Core.Dom
 				}
 
 				_from = value;
-				_fromName = _from.fullName;
+				_fromName = _from.name;
 			}
 		}
 
@@ -354,22 +372,182 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-    public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
-      //type, of, from, when, expressionGet, expressionSet, relative, relativeTo
+		private class Metadata
+		{
+			public DataElement of = null;
+			public DataElement from = null;
+			public DataElement parent = null;
+			public string ofName = null;
+			public string fromName = null;
+		}
 
-      node.AppendAttribute("type", this.GetType().ToString());
-      node.AppendAttribute("of", this.OfName);
-      node.AppendAttribute("from", this.FromName);
-      //node.AppendAttribute("when", this.when);
-      node.AppendAttribute("expressionGet", this.ExpressionGet);
-      node.AppendAttribute("expressionSet", this.ExpressionSet);
-      //node.AppendAttribute("relative", this.relative);
-      //node.AppendAttribute("relativeTo", this.relativeTo);
-      return node;
-    }
-  }
+		[Serializable]
+		private class FullNames
+		{
+			public string of = null;
+			public string from = null;
+			public string parent = null;
+		}
+
+		private FullNames _fullNames = null;
+
+		private static bool IsChildElement(string elem, string root)
+		{
+			if (string.IsNullOrEmpty(elem))
+				return false;
+
+			if (!elem.StartsWith(root))
+				return false;
+
+			if (elem.Length == root.Length)
+				return true;
+
+			return elem[root.Length] == '.';
+		}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(_fullNames == null);
+			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
+
+			string relName;
+			_fullNames = new FullNames();
+			Metadata m = new Metadata();
+
+			if (ctx.rename.Contains(_of))
+			{
+				m.ofName = _ofName;
+				_ofName = ctx.newName;
+			}
+			else if (_of != null && !_of.isChildOf(ctx.root, out relName))
+			{
+				_fullNames.of = relName;
+				ctx.elements[_fullNames.of] = _of;
+				m.of = _of;
+				_of = null;
+			}
+
+			if (ctx.rename.Contains(_from))
+			{
+				m.fromName = _fromName;
+				_fromName = ctx.newName;
+			}
+			else if (_from != null && !_from.isChildOf(ctx.root, out relName))
+			{
+				_fullNames.from = relName;
+				ctx.elements[_fullNames.from] = _from;
+				m.from = _from;
+				_from = null;
+			}
+
+			if (ctx.rename.Contains(_parent))
+			{
+				if (_of == null && _ofName == ctx.oldName)
+				{
+					m.ofName = _ofName;
+					_ofName = ctx.newName;
+				}
+				if (_from == null && _fromName == ctx.oldName)
+				{
+					m.fromName = _fromName;
+					_fromName = ctx.newName;
+				}
+			}
+			else if (_parent != null && !_parent.isChildOf(ctx.root, out relName))
+			{
+				_fullNames.parent = relName;
+				ctx.elements[_fullNames.parent] = _parent;
+				m.parent = _parent;
+				_parent = null;
+			}
+
+			ctx.metadata.Add(this, m);
+		}
+
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(_fullNames != null);
+			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
+
+			Metadata m = ctx.metadata[this] as Metadata;
+
+			if (m.of != null)
+				this._of = m.of;
+			if (m.from != null)
+				this._from = m.from;
+			if (m.parent != null)
+				this._parent = m.parent;
+			if (m.ofName != null)
+				this._ofName = m.ofName;
+			if (m.fromName != null)
+				this._fromName = m.fromName;
+
+			_fullNames = null;
+		}
+
+		[OnDeserializing]
+		private void OnDeserializing(StreamingContext context)
+		{
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(_fullNames != null);
+
+			if (_of == null && !string.IsNullOrEmpty(_fullNames.of))
+			{
+				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.of));
+				_of = ctx.elements[_fullNames.of];
+				_of.relations.Add(this, false);
+			}
+
+			if (_from == null && !string.IsNullOrEmpty(_fullNames.from))
+			{
+				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.from));
+				_from = ctx.elements[_fullNames.from];
+				_from.relations.Add(this, false);
+			}
+
+			if (_parent == null && !string.IsNullOrEmpty(_fullNames.parent))
+			{
+				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.parent));
+				_parent = ctx.elements[_fullNames.parent];
+			}
+
+			_fullNames = null;
+		}
+
+		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
+		{
+			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
+			//type, of, from, when, expressionGet, expressionSet, relative, relativeTo
+
+			node.AppendAttribute("type", this.GetType().ToString());
+			node.AppendAttribute("of", this.OfName);
+			node.AppendAttribute("from", this.FromName);
+			//node.AppendAttribute("when", this.when);
+			node.AppendAttribute("expressionGet", this.ExpressionGet);
+			node.AppendAttribute("expressionSet", this.ExpressionSet);
+			//node.AppendAttribute("relative", this.relative);
+			//node.AppendAttribute("relativeTo", this.relativeTo);
+			return node;
+		}
+	}
 }
 
 // end

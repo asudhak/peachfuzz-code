@@ -169,16 +169,14 @@ namespace Peach.Core.Dom
 								var value = action.dataModel.Value;
 
 								// Update our origional copy to have data!
-								action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
-								Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.origionalDataModel);
+								action.origionalDataModel = action.dataModel.Clone() as DataModel;
 							}
 							else if (action.dataModel != null)
 							{
 								var value = action.dataModel.Value;
 
 								// Update our origional copy to have data!
-								action.origionalDataModel = ObjectCopier.Clone<DataModel>(action.dataModel);
-								Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.origionalDataModel);
+								action.origionalDataModel = action.dataModel.Clone() as DataModel;
 							}
 							else if (action.parameters.Count > 0)
 							{
@@ -215,8 +213,7 @@ namespace Peach.Core.Dom
 									var value = param.dataModel.Value;
 
 									// Update our origional copy to have data!
-									param.origionalDataModel = ObjectCopier.Clone<DataModel>(param.dataModel);
-									Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(param.origionalDataModel);
+									param.origionalDataModel = param.dataModel.Clone() as DataModel;
 								}
 							}
 						}

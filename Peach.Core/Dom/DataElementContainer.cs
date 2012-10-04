@@ -55,6 +55,15 @@ namespace Peach.Core.Dom
 		protected List<DataElement> _childrenList = new List<DataElement>();
 		protected Dictionary<string, DataElement> _childrenDict = new Dictionary<string, DataElement>();
 
+		public DataElementContainer()
+		{
+		}
+
+		public DataElementContainer(string name)
+			: base(name)
+		{
+		}
+
 		public override void Crack(DataCracker context, BitStream data)
 		{
 			DataElementContainer element = this;
@@ -373,8 +382,14 @@ namespace Peach.Core.Dom
 
 		public void Clear()
 		{
-			foreach (DataElement e in _childrenList)
-				e.parent = null;
+			Clear(true);
+		}
+
+		protected void Clear(bool resetParent)
+		{
+			if (resetParent)
+				foreach (DataElement e in _childrenList)
+					e.parent = null;
 
 			_childrenList.Clear();
 			_childrenDict.Clear();
