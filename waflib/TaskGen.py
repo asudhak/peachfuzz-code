@@ -668,6 +668,11 @@ class subst_pc(Task.Task):
 
 		code = self.inputs[0].read(encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
 
+		if getattr(self.generator, 'subst_fun', None):
+			code = self.generator.subst_fun(self, code)
+			self.outputs[0].write(code, encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
+			return
+
 		# replace all % by %% to prevent errors by % signs
 		code = code.replace('%', '%%')
 
