@@ -132,7 +132,8 @@ namespace Peach.Core.Dom
 		/// <returns>Returns a copy of the DataElement.</returns>
 		public DataElement Clone(string newName, ref long size)
 		{
-			logger.Debug("Clone {0} as {1}", fullName, newName);
+			if (DataElement.DebugClone)
+				logger.Debug("Clone {0} as {1}", fullName, newName);
 
 			var parent = this._parent;
 			this._parent = null;
@@ -150,7 +151,8 @@ namespace Peach.Core.Dom
 
 			size = stream.Length;
 
-			logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);
+			if (DataElement.DebugClone)
+				logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);
 
 			return copy;
 		}
