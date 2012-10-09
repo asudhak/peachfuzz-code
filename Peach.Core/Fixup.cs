@@ -29,7 +29,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Peach.Core.Dom;
+using System.Runtime.Serialization;
 
 namespace Peach.Core
 {
@@ -39,11 +41,26 @@ namespace Peach.Core
 		protected Dictionary<string, Variant> args;
 		protected bool isRecursing = false;
 		protected DataElement parent = null;
+		protected Dictionary<string, DataElement> elements = null;
 
-		public Fixup(DataElement parent, Dictionary<string, Variant> args)
+		// Needed for re-subscribing the Invalidated event on deserialize
+		private List<DataElement> elementList = new List<DataElement>();
+		private string[] refs;
+
+		public Fixup(DataElement parent, Dictionary<string, Variant> args, params string[] refs)
 		{
 			this.parent = parent;
 			this.args = args;
+			this.refs = refs;
+
+			if (!refs.SequenceEqual(refs.Intersect(args.Keys)))
+			{
+				string msg = string.Format("Error, {0} requires a '{1}' argument!",
+					this.GetType().Name,
+					string.Join("' AND '", refs));
+
+				throw new PeachException(msg);
+			}
 		}
 
 		public Dictionary<string, Variant> arguments
@@ -65,12 +82,56 @@ namespace Peach.Core
 			try
 			{
 				isRecursing = true;
-				return fixupImpl(obj);
+				return doFixupImpl(obj);
 			}
 			finally
 			{
 				isRecursing = false;
 			}
+		}
+
+		private Variant doFixupImpl(DataElement obj)
+		{
+			System.Diagnostics.Debug.Assert(parent != null);
+
+			if (elements == null)
+			{
+				elements = new Dictionary<string,DataElement>();
+
+				foreach (var refName in refs)
+				{
+					string elemName = (string)args[refName];
+
+					var elem = obj.find(elemName);
+					if (elem == null)
+						throw new PeachException(string.Format("{0} could not find ref element '{1}'", this.GetType().Name, elemName));
+
+					elem.Invalidated += new InvalidatedEventHandler(OnInvalidated);
+					elements.Add(refName, elem);
+					elementList.Add(elem);
+				}
+			}
+
+			return fixupImpl(obj);
+		}
+
+		private void OnInvalidated(object sender, EventArgs e)
+		{
+			parent.Invalidate();
+		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			// DataElement.Invalidated is not serialized, so re-subscribe to the event
+			// Can't use the Dictionary, must use a list
+			// See: http://stackoverflow.com/questions/457134/strange-behaviour-of-net-binary-serialization-on-dictionarykey-value
+			foreach (var item in elementList)
+				item.Invalidated += new InvalidatedEventHandler(OnInvalidated);
 		}
 
 		protected abstract Variant fixupImpl(DataElement obj);

@@ -1,4 +1,4 @@
-﻿
+
 //
 // Copyright (c) Michael Eddington
 //
@@ -36,15 +36,21 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("SHA384Fixup", "Standard SHA384 checksum.", true)]
-	[FixupAttribute("checksums.SHA384Fixup", "Standard SHA384 checksum.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
-	public class SHA384Fixup : HashFixup<SHA384CryptoServiceProvider>
+	public class HashFixup<T> : Fixup where T: HashAlgorithm, new()
 	{
-		public SHA384Fixup(DataElement parent, Dictionary<string, Variant> args)
-			: base(parent, args)
+		public HashFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
 		{
+		}
+
+		protected override Variant fixupImpl(DataElement obj)
+		{
+			var from = elements["ref"];
+			byte[] data = from.Value.Value;
+			T hashTool = new T();
+			
+			return new Variant(hashTool.ComputeHash(data));
 		}
 	}
 }

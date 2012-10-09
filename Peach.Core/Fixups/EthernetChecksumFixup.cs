@@ -36,44 +36,28 @@ using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("EthernetChecksumFixup", "Standard ethernet checksum.", true)]
-    [FixupAttribute("checksums.EthernetChecksumFixup", "Standard ethernet checksum.")]
-    [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
-    public class EthernetChecksumFixup : Fixup
-    {
-		bool invalidateEvent = false;
-
-        public EthernetChecksumFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
-        {
-            if (!args.ContainsKey("ref"))
-                throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
-        }
-
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-			if (!invalidateEvent)
-			{
-				invalidateEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
-			}
-            if (from == null)
-                throw new PeachException(string.Format("EthernetChecksumFixup could not find ref element '{0}'", objRef));
-
-            byte[] data = from.Value.Value;
-            CRC32 crc = new CRC32();
-
-            uint checksum = BitConverter.ToUInt32(crc.ComputeHash(data), 0);
-            return new Variant(checksum);
-        }
-
-		void from_Invalidated(object sender, EventArgs e)
+	[FixupAttribute("EthernetChecksumFixup", "Standard ethernet checksum.", true)]
+	[FixupAttribute("checksums.EthernetChecksumFixup", "Standard ethernet checksum.")]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
+	public class EthernetChecksumFixup : Fixup
+	{
+		public EthernetChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
 		{
-			parent.Invalidate();
 		}
-    }
+
+		protected override Variant fixupImpl(DataElement obj)
+		{
+			var elem = elements["ref"];
+			byte[] data = elem.Value.Value;
+
+			CRC32 crc = new CRC32();
+			uint checksum = BitConverter.ToUInt32(crc.ComputeHash(data), 0);
+	
+			return new Variant(checksum);
+		}
+	}
 }
 
 // end

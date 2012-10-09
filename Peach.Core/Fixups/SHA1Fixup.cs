@@ -36,43 +36,17 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("SHA1Fixup", "Standard SHA1 checksum.", true)]
-    [FixupAttribute("checksums.SHA1Fixup", "Standard SHA1 checksum.")]
-    [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
-    public class SHA1Fixup : Fixup
-    {
-		bool invalidateEvent = false;
-
-        public SHA1Fixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
-        {
-            if (!args.ContainsKey("ref"))
-                throw new PeachException("Error, SHA1Fixup requires a 'ref' argument!");
-        }
-
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-			if (!invalidateEvent)
-			{
-				invalidateEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
-			}
-            if (from == null)
-                throw new PeachException(string.Format("SHA1Fixup could not find ref element '{0}'", objRef));
-
-            byte[] data = from.Value.Value;
-            SHA1 sha1Tool = new SHA1CryptoServiceProvider();
-
-            return new Variant(sha1Tool.ComputeHash(data));
-        }
-
-		void from_Invalidated(object sender, EventArgs e)
+	[FixupAttribute("SHA1Fixup", "Standard SHA1 checksum.", true)]
+	[FixupAttribute("checksums.SHA1Fixup", "Standard SHA1 checksum.")]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
+	public class SHA1Fixup : HashFixup<SHA1CryptoServiceProvider>
+	{
+		public SHA1Fixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args)
 		{
-			parent.Invalidate();
 		}
-    }
+	}
 }
 
 // end

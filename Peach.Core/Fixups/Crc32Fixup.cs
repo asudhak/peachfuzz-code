@@ -32,45 +32,29 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.Fixups.Libraries;
+using System.Runtime.Serialization;
 
 namespace Peach.Core.Fixups
 {
-  [FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.", true)]
+	[FixupAttribute("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.", true)]
 	[FixupAttribute("checksums.Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
 	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
+	[Serializable]
 	public class Crc32Fixup : Fixup
 	{
-	  bool invalidatedEvent = false;
-		public Crc32Fixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
+		public Crc32Fixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
 		{
-			if (!args.ContainsKey("ref"))
-				throw new PeachException("Error, Crc32Fixup requires a 'ref' argument!");
 		}
 
 		protected override Variant fixupImpl(DataElement obj)
 		{
-			string objRef = (string)args["ref"];
-			DataElement from = obj.find(objRef);
-			if(!invalidatedEvent)
-			{
-				invalidatedEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
-			}
+			var elem = elements["ref"];
+			byte[] data = elem.Value.Value;
 
-            if (from == null)
-                throw new PeachException(string.Format("Crc32Fixup could not find ref element '{0}'", objRef));
-
-            byte[] data = from.Value.Value;
 			CRCTool crcTool = new CRCTool();
-            crcTool.Init(CRCTool.CRCCode.CRC32);
-
-            return new Variant((uint)crcTool.crctablefast(data));
-		}
-
-		void from_Invalidated(object sender, EventArgs e)
-		{
-			parent.Invalidate();
+			crcTool.Init(CRCTool.CRCCode.CRC32);
+			return new Variant((uint)crcTool.crctablefast(data));
 		}
 	}
 }

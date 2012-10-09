@@ -35,46 +35,29 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("LRCFixup", "XOR bytes of data.", true)]
-    [FixupAttribute("checksums.LRCFixup", "XOR bytes of data.")]
-    [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
-    public class LRCFixup : Fixup
-    {
-		bool invalidatedEvent = false;
-
-        public LRCFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
-        {
-            if (!args.ContainsKey("ref"))
-                throw new PeachException("Error, LRCFixup requires a 'ref' argument!");
-        }
-
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-			if (!invalidatedEvent)
-			{
-				invalidatedEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
-			}
-
-            if (from == null)
-                throw new PeachException(string.Format("LCRFixup could not find ref element '{0}'", objRef));
-
-            byte[] data = from.Value.Value;
-            byte lrc = 0;
-            foreach (byte b in data)
-                lrc ^= b;
-
-            return new Variant(Convert.ToChar(lrc).ToString());
-        }
-
-		void from_Invalidated(object sender, EventArgs e)
+	[FixupAttribute("LRCFixup", "XOR bytes of data.", true)]
+	[FixupAttribute("checksums.LRCFixup", "XOR bytes of data.")]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
+	public class LRCFixup : Fixup
+	{
+		public LRCFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
 		{
-			parent.Invalidate();
 		}
-    }
+
+		protected override Variant fixupImpl(DataElement obj)
+		{
+			var from = elements["ref"];
+			byte[] data = from.Value.Value;
+			byte lrc = 0;
+
+			foreach (byte b in data)
+				lrc ^= b;
+
+			return new Variant(Convert.ToChar(lrc).ToString());
+		}
+	}
 }
 
 // end

@@ -37,37 +37,19 @@ namespace Peach.Core.Fixups
 {
 	[FixupAttribute("CopyValueFixup", "Fixup used in testing.  Will copy another elements value into us.", true)]
 	[FixupAttribute("CopyValue", "Fixup used in testing.  Will copy another elements value into us.")]
-  [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-  [Serializable]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
 	public class CopyValueFixup : Fixup
 	{
-		bool invalidatedEvent = false;
-
-		public CopyValueFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
+		public CopyValueFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
 		{
-			if (!args.ContainsKey("ref"))
-				throw new PeachException("Error, CopyValueFixup requires a 'ref' argument!");
 		}
 
 		protected override Variant fixupImpl(DataElement obj)
 		{
-			string objRef = (string)args["ref"];
-			DataElement from = obj.find(objRef);
-			if (!invalidatedEvent)
-			{
-				invalidatedEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
-			}
-
-            if (from == null)
-                throw new PeachException(string.Format("CopyValueFixup could not find ref element '{0}'", objRef));
-
-			return new Variant(from.Value);
-		}
-
-		void from_Invalidated(object sender, EventArgs e)
-		{
-			parent.Invalidate();
+			var elem = elements["ref"];
+			return new Variant(elem.Value);
 		}
 	}
 }

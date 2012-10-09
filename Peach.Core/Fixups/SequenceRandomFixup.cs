@@ -34,23 +34,24 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("SequenceRandomFixup", "Standard sequential random fixup.", true)]
-    [FixupAttribute("sequence.SequenceRandomFixup", "Standard sequential Random fixup.")]
-    [Serializable]
-    public class SequenceRandomFixup : Fixup
-    {
-        System.Random rand = new System.Random();
+	[FixupAttribute("SequenceRandomFixup", "Standard sequential random fixup.", true)]
+	[FixupAttribute("sequence.SequenceRandomFixup", "Standard sequential Random fixup.")]
+	[Serializable]
+	public class SequenceRandomFixup : Fixup
+	{
+		System.Random rand = new System.Random();
 
-        public SequenceRandomFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
-        {
-            //TODO: reseed fixup based on iteration number for deterministic operation
-        }
+		public SequenceRandomFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args)
+		{
+			//TODO: reseed fixup based on iteration number for deterministic operation
+		}
 
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            return new Variant(rand.Next());
-        }
-    }
+		protected override Variant fixupImpl(DataElement obj)
+		{
+			return new Variant(rand.Next());
+		}
+	}
 }
 
 // end

@@ -35,42 +35,30 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("IcmpChecksumFixup", "Standard ICMP checksum.", true)]
-    [FixupAttribute("checksums.IcmpChecksumFixup", "Standard ICMP checksum.")]
-    [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
-    public class IcmpChecksumFixup : Fixup
-    {
-		bool invalidatedEvent = false;
-        public IcmpChecksumFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
-        {
-            if (!args.ContainsKey("ref"))
-                throw new PeachException("Error, IcmpChecksumFixup requires a 'ref' argument!");
-        }
+	[FixupAttribute("IcmpChecksumFixup", "Standard ICMP checksum.", true)]
+	[FixupAttribute("checksums.IcmpChecksumFixup", "Standard ICMP checksum.")]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
+	public class IcmpChecksumFixup : Fixup
+	{
+		public IcmpChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
+		{
+		}
 
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-			if (!invalidatedEvent)
+		protected override Variant fixupImpl(DataElement obj)
+		{
+			var elem = elements["ref"];
+			byte[] data = elem.Value.Value;
+			uint chcksm = 0;
+			int idx = 0;
+
+			// calculate checksum
+			while (idx < (data.Length - 1))
 			{
-				invalidatedEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
+				chcksm += Convert.ToUInt32(BitConverter.ToUInt16(data, idx));
+				idx += 2;
 			}
-
-            if (from == null)
-                throw new PeachException(string.Format("IcmpChecksumFixup could not find ref element '{0}'", objRef));
-
-            byte[] data = from.Value.Value;
-            uint chcksm = 0;
-            int idx = 0;
-
-            // calculate checksum
-            while (idx < (data.Length -1))
-            {
-                chcksm += Convert.ToUInt32(BitConverter.ToUInt16(data, idx));
-                idx += 2;
-            }
 
 			// Handle buffers with length not divisible by 2
 			if (idx != data.Length)
@@ -80,17 +68,12 @@ namespace Peach.Core.Fixups
 				chcksm += Convert.ToUInt32(BitConverter.ToUInt16(temp, 0));
 			}
 
-            chcksm = (chcksm >> 16) + (chcksm & 0xFFFF);
-            chcksm += (chcksm >> 16);
+			chcksm = (chcksm >> 16) + (chcksm & 0xFFFF);
+			chcksm += (chcksm >> 16);
 
-            return new Variant((ushort)(~chcksm));
-        }
-
-		void from_Invalidated(object sender, EventArgs e)
-		{
-			parent.Invalidate();
+			return new Variant((ushort)(~chcksm));
 		}
-    }
+	}
 }
 
 // end

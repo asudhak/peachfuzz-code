@@ -34,23 +34,24 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-    [FixupAttribute("SequenceIncrementFixup", "Standard sequential increment fixup.", true)]
-    [FixupAttribute("sequence.SequenceIncrementFixup", "Standard sequential increment fixup.")]
-    [Serializable]
-    public class SequenceIncrementFixup : Fixup
-    {
-        int num = 1;
+	[FixupAttribute("SequenceIncrementFixup", "Standard sequential increment fixup.", true)]
+	[FixupAttribute("sequence.SequenceIncrementFixup", "Standard sequential increment fixup.")]
+	[Serializable]
+	public class SequenceIncrementFixup : Fixup
+	{
+		int num = 1;
 
-        public SequenceIncrementFixup(DataElement parent, Dictionary<string, Variant> args) : base(parent, args)
-        {
-        }
+		public SequenceIncrementFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args)
+		{
+		}
 
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            ++num;
-            return new Variant(num);
-        }
-    }
+		protected override Variant fixupImpl(DataElement obj)
+		{
+			++num;
+			return new Variant(num);
+		}
+	}
 }
 
 // end

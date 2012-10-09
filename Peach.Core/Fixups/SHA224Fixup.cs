@@ -36,46 +36,17 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-
-
-    [FixupAttribute("SHA224Fixup", "Standard SHA256 checksum.", true)]
-    [FixupAttribute("checksums.SHA224Fixup", "Standard SHA256 checksum.")]
-    [ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-    [Serializable]
-    public class SHA224Fixup : Fixup
-    {
-		bool invalidateEvent = false;
-
-        public SHA224Fixup(DataElement parent, Dictionary<string, Variant> args)
-            : base(parent, args)
-        {
-            if (!args.ContainsKey("ref"))
-                throw new PeachException("Error, SHA224Fixup requires a 'ref' argument!");
-        }
-
-        protected override Variant fixupImpl(DataElement obj)
-        {
-            string objRef = (string)args["ref"];
-            DataElement from = obj.find(objRef);
-			if (!invalidateEvent)
-			{
-				invalidateEvent = true;
-				from.Invalidated += new InvalidatedEventHandler(from_Invalidated);
-			}
-            if (from == null)
-                throw new PeachException(string.Format("SHA224Fixup could not find ref element '{0}'", objRef));
-
-            byte[] data = from.Value.Value;
-            Libraries.SHA224Managed sha224Tool = new Libraries.SHA224Managed();
-         
-            return new Variant(sha224Tool.ComputeHash(data));
-        }
-
-		void from_Invalidated(object sender, EventArgs e)
+	[FixupAttribute("SHA224Fixup", "Standard SHA256 checksum.", true)]
+	[FixupAttribute("checksums.SHA224Fixup", "Standard SHA256 checksum.")]
+	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Serializable]
+	public class SHA224Fixup : HashFixup<Libraries.SHA224Managed>
+	{
+		public SHA224Fixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args)
 		{
-			parent.Invalidate();
 		}
-    }
+	}
 }
 
 // end
