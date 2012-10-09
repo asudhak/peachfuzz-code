@@ -47,7 +47,7 @@ namespace Peach.Core.Fixups
 			//TODO: reseed fixup based on iteration number for deterministic operation
 		}
 
-		protected override Variant fixupImpl(DataElement obj)
+		protected override Variant fixupImpl()
 		{
 			return new Variant(rand.Next());
 		}

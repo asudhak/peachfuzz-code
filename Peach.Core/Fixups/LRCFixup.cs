@@ -46,7 +46,7 @@ namespace Peach.Core.Fixups
 		{
 		}
 
-		protected override Variant fixupImpl(DataElement obj)
+		protected override Variant fixupImpl()
 		{
 			var from = elements["ref"];
 			byte[] data = from.Value.Value;

@@ -47,7 +47,7 @@ namespace Peach.Core.Fixups
 		{
 		}
 
-		protected override Variant fixupImpl(DataElement obj)
+		protected override Variant fixupImpl()
 		{
 			var ref1 = elements["ref1"];
 			var ref2 = elements["ref2"];

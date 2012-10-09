@@ -48,7 +48,7 @@ namespace Peach.Core.Fixups
 				throw new PeachException("Error, ExpressionFixup requires an 'expression' argument!");
 		}
 
-		protected override Variant fixupImpl(DataElement obj)
+		protected override Variant fixupImpl()
 		{
 			var from = elements["ref"];
 			string expression = (string)args["expression"];

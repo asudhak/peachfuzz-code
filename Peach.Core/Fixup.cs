@@ -121,7 +121,7 @@ namespace Peach.Core
 				}
 			}
 
-			return fixupImpl(obj);
+			return fixupImpl();
 		}
 
 		private void OnInvalidated(object sender, EventArgs e)
@@ -236,7 +236,7 @@ namespace Peach.Core
 			fullNames = null;
 		}
 
-		protected abstract Variant fixupImpl(DataElement obj);
+		protected abstract Variant fixupImpl();
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
