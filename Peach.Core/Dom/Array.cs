@@ -66,6 +66,7 @@ namespace Peach.Core.Dom
 		public bool hasExpanded = false;
 		public int? overrideCount = null;
 
+		[NonSerialized]
 		public DataElement origionalElement = null;
 
 		public Array()

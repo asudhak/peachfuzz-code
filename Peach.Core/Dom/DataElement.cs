@@ -43,6 +43,8 @@ using System.Diagnostics;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
+using NLog;
+
 namespace Peach.Core.Dom
 {
 	/// <summary>
@@ -68,8 +70,6 @@ namespace Peach.Core.Dom
 	}
 
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);
-	public delegate void DefaultValueChangedEventHandler(object sender, EventArgs e);
-	public delegate void MutatedValueChangedEventHandler(object sender, EventArgs e);
 
 	/// <summary>
 	/// Base class for all data elements.
@@ -82,6 +82,9 @@ namespace Peach.Core.Dom
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		public static bool DebugClone = false;
+
 		public class CloneContext
 		{
 			public CloneContext(DataElement root, string newName)
@@ -129,6 +132,8 @@ namespace Peach.Core.Dom
 		/// <returns>Returns a copy of the DataElement.</returns>
 		public DataElement Clone(string newName, ref long size)
 		{
+			logger.Debug("Clone {0} as {1}", fullName, newName);
+
 			var parent = this._parent;
 			this._parent = null;
 
@@ -144,6 +149,9 @@ namespace Peach.Core.Dom
 			this._parent = parent;
 
 			size = stream.Length;
+
+			logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);
+
 			return copy;
 		}
 
@@ -235,9 +243,14 @@ namespace Peach.Core.Dom
 
 		#region Events
 
-		public event InvalidatedEventHandler Invalidated;
-		public event DefaultValueChangedEventHandler DefaultValueChanged;
-		public event MutatedValueChangedEventHandler MutatedValueChanged;
+		[NonSerialized]
+		private InvalidatedEventHandler _invalidatedEvent;
+
+		public event InvalidatedEventHandler Invalidated
+		{
+			add { _invalidatedEvent += value; }
+			remove { _invalidatedEvent -= value; }
+		}
 
 		public abstract void Crack(DataCracker context, BitStream data);
 
@@ -261,27 +274,13 @@ namespace Peach.Core.Dom
 				if (_parent != null)
 					_parent.Invalidate();
 
-				if (Invalidated != null)
-					Invalidated(this, e);
+				if (_invalidatedEvent != null)
+					_invalidatedEvent(this, e);
 			}
 			finally
 			{
 				_invalidated = false;
 			}
-		}
-
-		protected virtual void OnDefaultValueChanged(EventArgs e)
-		{
-			if (DefaultValueChanged != null)
-				DefaultValueChanged(this, e);
-		}
-
-		protected virtual void OnMutatedValueChanged(EventArgs e)
-		{
-			OnInvalidated(null);
-
-			if (MutatedValueChanged != null)
-				MutatedValueChanged(this, e);
 		}
 
 		#endregion
@@ -663,7 +662,6 @@ namespace Peach.Core.Dom
 			set
 			{
 				_defaultValue = value;
-				OnDefaultValueChanged(null);
 				Invalidate();
 			}
 		}
@@ -679,7 +677,6 @@ namespace Peach.Core.Dom
 			set
 			{
 				_mutatedValue = value;
-				OnMutatedValueChanged(null);
 				Invalidate();
 			}
 		}
@@ -1177,13 +1174,13 @@ namespace Peach.Core.Dom
 			foreach (var r in _relations)
 			{
 				// Remove toasts r.parent, so resolve 'From' and 'Of' 1st
-				bool removeFrom = r.From != this;
-				bool removeOf = r.Of != this;
+				var from = r.From;
+				var of = r.Of;
 
-				if (removeFrom)
-					r.From.relations.Remove(r);
-				if (removeOf)
-					r.Of.relations.Remove(r);
+				if (from != this)
+					from.relations.Remove(r);
+				if (of != this)
+					of.relations.Remove(r);
 			}
 
 			_relations.Clear();
@@ -1221,11 +1218,6 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
-		class Metadata
-		{
-			public string name;
-		}
-
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
@@ -1233,14 +1225,16 @@ namespace Peach.Core.Dom
 			if (ctx == null)
 				return;
 
+			if (DataElement.DebugClone)
+				logger.Debug("Serializing {0}", fullName);
+
 			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
-			Metadata m = new Metadata();
+
 			if (ctx.rename.Contains(this))
 			{
-				m.name = _name;
+				ctx.metadata.Add(this, _name);
 				_name = ctx.newName;
 			}
-			ctx.metadata.Add(this, m);
 		}
 
 		[OnSerialized]
@@ -1250,11 +1244,9 @@ namespace Peach.Core.Dom
 			if (ctx == null)
 				return;
 
-			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
-
-			Metadata m = ctx.metadata[this] as Metadata;
-			if (m.name != null)
-				_name = m.name;
+			object obj;
+			if (ctx.metadata.TryGetValue(this, out obj))
+				_name = obj as string;
 		}
 
 	}

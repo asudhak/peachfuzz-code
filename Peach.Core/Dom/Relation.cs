@@ -155,7 +155,7 @@ namespace Peach.Core.Dom
 					return;
 
 				if (_of != null)
-					_of.Invalidated -= new InvalidatedEventHandler(OfInvalidated);
+					_of.Invalidated -= OfInvalidated;
 
 				_ofName = value;
 				_of = null;
@@ -227,7 +227,7 @@ namespace Peach.Core.Dom
 				if (_of != null)
 				{
 					// Remove existing event
-					_of.Invalidated -= new InvalidatedEventHandler(OfInvalidated);
+					_of.Invalidated -= OfInvalidated;
 				}
 
 				if (_from != null)
@@ -391,26 +391,17 @@ namespace Peach.Core.Dom
 
 		private FullNames _fullNames = null;
 
-		private static bool IsChildElement(string elem, string root)
-		{
-			if (string.IsNullOrEmpty(elem))
-				return false;
-
-			if (!elem.StartsWith(root))
-				return false;
-
-			if (elem.Length == root.Length)
-				return true;
-
-			return elem[root.Length] == '.';
-		}
-
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{
 			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
 			if (ctx == null)
 				return;
+
+			if (DataElement.DebugClone)
+				logger.Debug("Serializing From={0}, Of={1}",
+					_of == null ? "(null) " + _ofName : _of.fullName,
+					_from == null ? "(null) " + _fromName : _from.fullName);
 
 			System.Diagnostics.Debug.Assert(_fullNames == null);
 			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
@@ -466,7 +457,8 @@ namespace Peach.Core.Dom
 				_parent = null;
 			}
 
-			ctx.metadata.Add(this, m);
+			if (m.from != null || m.of != null || m.parent != null || m.ofName != null || m.fromName != null)
+				ctx.metadata.Add(this, m);
 		}
 
 		[OnSerialized]
@@ -477,9 +469,13 @@ namespace Peach.Core.Dom
 				return;
 
 			System.Diagnostics.Debug.Assert(_fullNames != null);
-			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
+			_fullNames = null;
 
-			Metadata m = ctx.metadata[this] as Metadata;
+			object obj;
+			if (!ctx.metadata.TryGetValue(this, out obj))
+				return;
+
+			Metadata m = obj as Metadata;
 
 			if (m.of != null)
 				this._of = m.of;
@@ -491,8 +487,6 @@ namespace Peach.Core.Dom
 				this._ofName = m.ofName;
 			if (m.fromName != null)
 				this._fromName = m.fromName;
-
-			_fullNames = null;
 		}
 
 		[OnDeserializing]
@@ -528,6 +522,10 @@ namespace Peach.Core.Dom
 				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.parent));
 				_parent = ctx.elements[_fullNames.parent];
 			}
+
+			// Must always re-subscribe the invalidated event on deserialize
+			if (_of != null)
+				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
 			_fullNames = null;
 		}

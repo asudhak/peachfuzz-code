@@ -207,6 +207,18 @@ namespace Peach.Core.Dom
 
 		bool _inDefaultValue = false;
 
+		[OnDeserialized]
+		void OnDeserialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			// DataElement.Invalidated is not serialized, so re-subscribe to the event
+			if (_alignedTo != null)
+				_alignedTo.Invalidated += new InvalidatedEventHandler(_alignedTo_Invalidated);
+		}
+
 		public override Variant DefaultValue
 		{
 			get
