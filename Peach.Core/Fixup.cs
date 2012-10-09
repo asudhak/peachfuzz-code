@@ -41,17 +41,18 @@ namespace Peach.Core
 		protected Dictionary<string, Variant> args;
 		protected bool isRecursing = false;
 		protected DataElement parent = null;
+
+		[NonSerialized]
 		protected Dictionary<string, DataElement> elements = null;
 
 		// Needed for re-subscribing the Invalidated event on deserialize
-		private List<DataElement> elementList = new List<DataElement>();
-		private string[] refs;
+		private List<Tuple<string, DataElement>> refs = new List<Tuple<string, DataElement>>();
+		private bool resolvedRefs = false;
 
 		public Fixup(DataElement parent, Dictionary<string, Variant> args, params string[] refs)
 		{
 			this.parent = parent;
 			this.args = args;
-			this.refs = refs;
 
 			if (!refs.SequenceEqual(refs.Intersect(args.Keys)))
 			{
@@ -61,6 +62,9 @@ namespace Peach.Core
 
 				throw new PeachException(msg);
 			}
+
+			foreach (var item in refs)
+				this.refs.Add(new Tuple<string, DataElement>(item, null));
 		}
 
 		public Dictionary<string, Variant> arguments
@@ -94,12 +98,17 @@ namespace Peach.Core
 		{
 			System.Diagnostics.Debug.Assert(parent != null);
 
-			if (elements == null)
+			if (!resolvedRefs)
 			{
+				resolvedRefs = true;
+
+				System.Diagnostics.Debug.Assert(elements == null);
 				elements = new Dictionary<string,DataElement>();
 
-				foreach (var refName in refs)
+				for (int i = 0; i < refs.Count; ++i)
 				{
+					System.Diagnostics.Debug.Assert(refs[i].Item2 == null);
+					string refName = refs[i].Item1;
 					string elemName = (string)args[refName];
 
 					var elem = obj.find(elemName);
@@ -108,7 +117,7 @@ namespace Peach.Core
 
 					elem.Invalidated += new InvalidatedEventHandler(OnInvalidated);
 					elements.Add(refName, elem);
-					elementList.Add(elem);
+					refs[i] = new Tuple<string,DataElement>(refName, elem);
 				}
 			}
 
@@ -118,6 +127,71 @@ namespace Peach.Core
 		private void OnInvalidated(object sender, EventArgs e)
 		{
 			parent.Invalidate();
+		}
+
+		[Serializable]
+		class FullName
+		{
+			public FullName(string refName, string fullName)
+			{
+				this.refName = refName;
+				this.fullName = fullName;
+			}
+
+			public string refName;
+			public string fullName;
+		}
+
+		private List<FullName> fullNames = null;
+
+		class Metadata : Dictionary<string, DataElement> {}
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(fullNames == null);
+			fullNames = new List<FullName>();
+
+			// Nothing to do if we haven't resolved any data elements yet
+			if (!resolvedRefs)
+				return;
+
+			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
+			Metadata m = new Metadata();
+
+			for (int i = 0; i < refs.Count; ++i)
+			{
+				string relName;
+				var name = refs[i].Item1;
+				var elem = refs[i].Item2;
+
+				// Fixup references an element that is not a child of ctx.root
+				if (elem != null && elem != ctx.root && !elem.isChildOf(ctx.root, out relName))
+				{
+					ctx.elements[relName] = elem;
+					m.Add(name, elem);
+					fullNames.Add(new FullName(name, relName));
+					refs[i] = new Tuple<string, DataElement>(name, null);
+				}
+			}
+
+			if (m.Count > 0)
+				ctx.metadata.Add(this, m);
+		}
+
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			System.Diagnostics.Debug.Assert(fullNames != null);
+			fullNames = null;
 		}
 
 		[OnDeserialized]
@@ -130,8 +204,36 @@ namespace Peach.Core
 			// DataElement.Invalidated is not serialized, so re-subscribe to the event
 			// Can't use the Dictionary, must use a list
 			// See: http://stackoverflow.com/questions/457134/strange-behaviour-of-net-binary-serialization-on-dictionarykey-value
-			foreach (var item in elementList)
-				item.Invalidated += new InvalidatedEventHandler(OnInvalidated);
+
+			System.Diagnostics.Debug.Assert(fullNames != null);
+
+			// If we haven't resolved any references yet, there is nothing to do
+			if (!resolvedRefs)
+			{
+				fullNames = null;
+				return;
+			}
+
+			System.Diagnostics.Debug.Assert(elements == null);
+			elements = new Dictionary<string, DataElement>();
+
+			for (int i = 0; i < refs.Count; ++i)
+			{
+				if (refs[i].Item2 == null)
+				{
+					// DataElement is not a child of ctx.root, resolve it
+					string tgt = refs[i].Item1;
+					var rec = fullNames.Find(v => v.refName == tgt);
+					System.Diagnostics.Debug.Assert(rec != null);
+					var elem = ctx.elements[rec.fullName];
+					refs[i] = new Tuple<string, DataElement>(tgt, elem);
+				}
+
+				refs[i].Item2.Invalidated += new InvalidatedEventHandler(OnInvalidated);
+				elements.Add(refs[i].Item1, refs[i].Item2);
+			}
+
+			fullNames = null;
 		}
 
 		protected abstract Variant fixupImpl(DataElement obj);
