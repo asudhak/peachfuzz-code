@@ -1107,7 +1107,7 @@ namespace Peach.Core.Analyzers
 
 			var type = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == cls);
 			if (type == null)
-				throw new PeachException(string.Format("Error, unable to locate {0} named '{1}'", pluginType, cls));
+				throw new PeachException(string.Format("Error, unable to locate {0} named '{1}', FindTypeByAttribute returned null.", pluginType, cls));
 
 			var parameters = type.GetAttributes<ParameterAttribute>(null);
 			validateParameterAttributes(pluginType, cls, parameters, arg);
@@ -1126,8 +1126,8 @@ namespace Peach.Core.Analyzers
 			catch (Exception e)
 			{
 				throw new PeachException(string.Format(
-					"Error, unable to locate {0} named '{1}'.\nExtended error: Exception during object creation: {2}",
-					pluginType, cls, e.Message
+					"Error, unable to create instance of '{0}' named '{1}'.\nExtended error: Exception during object creation: {2}",
+					pluginType, cls, e.InnerException.Message
 				));
 			}
 		}
