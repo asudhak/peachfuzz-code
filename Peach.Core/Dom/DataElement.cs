@@ -104,6 +104,18 @@ namespace Peach.Core.Dom
 			public Dictionary<object, object> metadata = new Dictionary<object, object>();
 		}
 
+		private sealed class DataElementBinder : SerializationBinder
+		{
+			public override Type BindToType(string assemblyName, string typeName)
+			{
+				Type type = null;
+				var asm = AppDomain.CurrentDomain.GetAssemblies().First(u => u.FullName == assemblyName);
+				if (asm != null)
+					type = asm.GetType(typeName);
+				return type;
+			}
+		}
+
 		/// <summary>
 		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
 		/// </summary>
@@ -142,6 +154,8 @@ namespace Peach.Core.Dom
 			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
 			BinaryFormatter formatter = new BinaryFormatter(null, context);
 			MemoryStream stream = new MemoryStream();
+			formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+			formatter.Binder = new DataElementBinder();
 			formatter.Serialize(stream, this);
 			stream.Seek(0, SeekOrigin.Begin);
 
