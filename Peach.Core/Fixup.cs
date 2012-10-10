@@ -192,6 +192,18 @@ namespace Peach.Core
 
 			System.Diagnostics.Debug.Assert(fullNames != null);
 			fullNames = null;
+
+			if (!resolvedRefs)
+				return;
+
+			for (int i = 0; i < refs.Count; ++i)
+			{
+				if (refs[i].Item2 == null)
+				{
+					string tgt = refs[i].Item1;
+					refs[i] = new Tuple<string, DataElement>(tgt, elements[tgt]);
+				}
+			}
 		}
 
 		[OnDeserialized]
@@ -226,6 +238,7 @@ namespace Peach.Core
 					var rec = fullNames.Find(v => v.refName == tgt);
 					System.Diagnostics.Debug.Assert(rec != null);
 					var elem = ctx.elements[rec.fullName];
+					System.Diagnostics.Debug.Assert(elem != null);
 					refs[i] = new Tuple<string, DataElement>(tgt, elem);
 				}
 
