@@ -33,7 +33,8 @@ def prepare(conf):
                                 j(pin, 'extras', 'components', 'include'),
                                 j(pin, 'extras', 'xed2-ia32', 'include'),
                         ],
-                        'STLIBPATH'   : [
+                        'HEADERS'   : [],
+                        'STLIBPATH' : [
                                 j(pin, 'ia32', 'lib'),
                                 j(pin, 'ia32', 'lib-ext'),
                                 j(pin, 'extras', 'xed2-ia32', 'lib'),
@@ -44,6 +45,9 @@ def prepare(conf):
                         'CXXFLAGS'  : [ '/MT' ],
                         'LINKFLAGS' : [ '/EXPORT:main', '/ENTRY:Ptrace_DllMainCRTStartup@12', '/BASE:0x55000000' ],
                 },
+                'com' : {
+                        'HEADERS' : [ 'atlbase.h' ],
+                }
         }
 
         env['EXTERNALS_x64'] = {
@@ -54,6 +58,7 @@ def prepare(conf):
                                 j(pin, 'extras', 'components', 'include'),
                                 j(pin, 'extras', 'xed2-intel64', 'include'),
                         ],
+                        'HEADERS'   : [],
                         'STLIBPATH'   : [
                                 j(pin, 'intel64', 'lib'),
                                 j(pin, 'intel64', 'lib-ext'),
@@ -65,7 +70,10 @@ def prepare(conf):
                         'CXXFLAGS'  : [ '/MT' ],
                         'LINKFLAGS' : [ '/EXPORT:main', '/ENTRY:Ptrace_DllMainCRTStartup', '/BASE:0xC5000000' ],
                 },
-        }
+                 'com' : {
+                        'HEADERS' : [ 'atlbase.h' ],
+                }
+       }
 
         env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
 

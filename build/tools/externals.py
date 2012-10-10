@@ -32,11 +32,15 @@ def config_uselib(conf, var, name, ext):
 		conf.env[uselib] = value
 	
 def config_external(conf, name, ext):
-	paths = ext.get('LIBPATH', [])
+	paths = ext.get('INCLUDES', conf.env['INCLUDES'])
+	for x in ext.get('HEADERS', []):
+		find_external(conf, x, path_list=paths)
+
+	paths = ext.get('LIBPATH', conf.env['LIBPATH'])
 	for x in ext.get('LIB', []):
 		find_external(conf, x, path_list=paths, fmt=conf.env['cshlib_PATTERN'])
 
-	paths = ext.get('STLIBPATH', [])
+	paths = ext.get('STLIBPATH', conf.env['STLIBPATH'])
 	for x in ext.get('STLIB', []):
 		find_external(conf, x, path_list=paths, fmt=conf.env['cstlib_PATTERN'])
 

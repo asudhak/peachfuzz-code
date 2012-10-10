@@ -33,7 +33,7 @@ def install_extras(self):
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
 
-@feature('win', 'linux', 'osx', 'debug', 'release')
+@feature('win', 'linux', 'osx', 'debug', 'release', 'com')
 def dummy_platform(self):
 	# prevent warnings about features with unbound methods
 	pass
@@ -60,9 +60,6 @@ def pin_disable_debug(self):
 	e = self.env
 	e['CPPFLAGS_debug'] = e['CPPFLAGS_release'] = []
 	e['DEFINES_debug'] = []
-#	e['CFLAGS']   = filter(lambda x: '/MD'   not in x, e['CFLAGS'])
-#	e['CXXFLAGS'] = filter(lambda x: '/MD'   not in x, e['CXXFLAGS'])
-#	e['DEFINES']  = filter(lambda x: 'DEBUG' not in x, e['DEFINES'])
 
 @feature('cs')
 @before_method('apply_cs')
