@@ -59,7 +59,6 @@ def prepare_nunit_test(self):
 	self.ut_exec.extend([
 		self.generator.bld.env.NUNIT,
 		self.inputs[0].abspath(),
-		'-labels',
 		'-nologo',
 		'-out:%s' % self.outputs[1].abspath(),
 		'-xml:%s' % self.outputs[0].abspath(),
