@@ -670,7 +670,8 @@ class subst_pc(Task.Task):
 
 		if getattr(self.generator, 'subst_fun', None):
 			code = self.generator.subst_fun(self, code)
-			self.outputs[0].write(code, encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
+			if code:
+				self.outputs[0].write(code, encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
 			return
 
 		# replace all % by %% to prevent errors by % signs
@@ -712,6 +713,9 @@ class subst_pc(Task.Task):
 		bld = self.generator.bld
 		env = self.env
 		upd = self.m.update
+
+		if getattr(self.generator, 'subst_fun', None):
+			upd(Utils.h_fun(self.generator.subst_fun))
 
 		# raw_deps: persistent custom values returned by the scanner
 		vars = self.generator.bld.raw_deps.get(self.uid(), [])
