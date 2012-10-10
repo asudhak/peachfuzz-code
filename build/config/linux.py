@@ -38,6 +38,7 @@ def prepare(conf):
 				j(pin, 'extras', 'components', 'include'),
 				j(pin, 'extras', 'xed2-ia32', 'include'),
 			],
+			'HEADERS'   : [],
 			'STLIBPATH'   : [
 				j(pin, 'ia32', 'lib'),
 				j(pin, 'ia32', 'lib-ext'),
@@ -59,6 +60,7 @@ def prepare(conf):
 				j(pin, 'extras', 'components', 'include'),
 				j(pin, 'extras', 'xed2-intel64', 'include'),
 			],
+			'HEADERS'   : [],
 			'STLIBPATH'   : [
 				j(pin, 'intel64', 'lib'),
 				j(pin, 'intel64', 'lib-ext'),
@@ -87,6 +89,8 @@ def prepare(conf):
 		'fake_lib',
 		'cs',
 		'test',
+		'debug',
+		'release',
 	])
 
 def configure(conf):
