@@ -56,6 +56,7 @@ namespace Peach.Core
 			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
 			context.Debug += new RunContext.DebugEventHandler(RunContext_Debug);
 
+			MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 			State.Starting += new StateStartingEventHandler(State_Starting);
@@ -67,6 +68,7 @@ namespace Peach.Core
 
 		public void Finalize(Engine engine, RunContext context)
 		{
+			MutationStrategy.Mutating -= MutationStrategy_Mutating;
 			StateModel.Starting -= StateModel_Starting;
 			StateModel.Finished -= StateModel_Finished;
 			State.Starting -= State_Starting;
@@ -74,6 +76,10 @@ namespace Peach.Core
 			State.ChangingState -= State_ChangingState;
 			Core.Dom.Action.Starting -= Action_Starting;
 			Core.Dom.Action.Finished -= Action_Finished;
+		}
+
+		protected virtual void MutationStrategy_Mutating(string elementName, string mutatorName)
+		{
 		}
 
 		protected virtual void Engine_HaveCount(RunContext context, uint totalIterations)

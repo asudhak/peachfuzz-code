@@ -122,6 +122,14 @@ namespace Peach
 			Console.WriteLine("Test '" + context.test.name + "' starting with random seed " + context.config.randomSeed + ".");
 		}
 
+		protected override void MutationStrategy_Mutating(string elementName, string mutatorName)
+		{
+			WriteInfoMark();
+			Console.WriteLine("Fuzzing: {0}", elementName);
+			WriteInfoMark();
+			Console.WriteLine("Mutator: {0}", mutatorName);
+		}
+
 		public static void WriteInfoMark()
 		{
 			var foregroundColor = Console.ForegroundColor;
