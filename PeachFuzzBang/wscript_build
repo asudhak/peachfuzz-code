@@ -36,6 +36,7 @@ bld(
 	source = bld.path.ant_glob('**/*.cs **/*.resx'),
 	resource = 'Introduction.rtf LinuxDebugging.rtf OSXDebugging.rtf',
 	name = 'PeachFuzzBang.exe',
+	bintype = 'winexe',
 	icon = 'peach-line.ico',
 	install = bld.path.ant_glob('samples_png/*'),
 )

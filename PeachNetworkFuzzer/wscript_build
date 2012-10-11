@@ -13,6 +13,7 @@ deps = [
 bld(
 	features = 'cs',
 	use = deps,
+	bintype = 'winexe',
 	source = bld.path.ant_glob('**/*.cs'),
 	name='PeachNetworkFuzzer.exe',
 )
