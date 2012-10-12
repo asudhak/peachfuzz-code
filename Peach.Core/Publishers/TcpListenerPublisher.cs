@@ -9,6 +9,7 @@ using System.Threading;
 
 using NLog;
 
+#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("TcpListener", true)]
@@ -352,3 +353,4 @@ namespace Peach.Core.Publishers
 }
 
 // end
+#endif

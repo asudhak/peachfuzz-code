@@ -39,14 +39,5 @@ namespace Peach.Core
 		}
 	}
 
-  public delegate DataElement PitParserDelegate(PitParser context, XmlNode node, DataElementContainer parent);
-
-  /// <summary>
-  /// Any type that is marked with this attribute will not be serialized to Pit files
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-  public class NotPitParsableAttribute : Attribute
-  {
-
-  }
+	public delegate DataElement PitParserDelegate(PitParser context, XmlNode node, DataElementContainer parent);
 }

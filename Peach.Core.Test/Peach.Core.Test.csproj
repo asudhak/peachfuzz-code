@@ -317,6 +317,7 @@
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\FilePerIterationTests.cs" />
     <Compile Include="Publishers\FilePublisherTests.cs" />
+    <Compile Include="Publishers\ParameterTests.cs" />
     <Compile Include="RandomTest.cs" />
     <Compile Include="RelationCloneTests.cs" />
     <Compile Include="RelationCountTests.cs" />

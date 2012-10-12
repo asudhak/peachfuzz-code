@@ -20,6 +20,15 @@ using Peach.Core.Publishers;
 
 namespace Peach.Core.Test.StateModel
 {
+	class MemoryStreamPublisher : StreamPublisher
+	{
+		public MemoryStreamPublisher(MemoryStream stream)
+			: base(new Dictionary<string, Variant>())
+		{
+			this.stream = stream;
+		}
+	}
+
 	[TestFixture]
 	class OutputTests
 	{

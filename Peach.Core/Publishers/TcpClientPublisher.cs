@@ -38,6 +38,7 @@ using Peach.Core.Dom;
 
 using NLog;
 
+#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("Tcp", true)]
@@ -360,3 +361,4 @@ namespace Peach.Core.Publishers
 }
 
 // end
+#endif

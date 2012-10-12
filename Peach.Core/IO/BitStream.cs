@@ -1326,10 +1326,12 @@ namespace Peach.Core.IO
 
 		public void WantBytes(long bytes)
 		{
-			if (stream is Publisher)
-			{
-				((Publisher)stream).WantBytes(bytes);
-			}
+			if (bytes <= 0)
+				return;
+
+			Publisher pub = stream as Publisher;
+			if (pub != null)
+				pub.input(pub.CurrentAction, bytes);
 		}
 
 		#region IDisposable Members

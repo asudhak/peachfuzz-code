@@ -13,22 +13,25 @@ namespace Peach.Core.Test.Publishers
 {
 	class TestPublisher : Peach.Core.Publishers.ConsoleHexPublisher
 	{
-		class LameMemStream : MemoryStream
-		{
-			public LameMemStream() : base() { }
-			public override void Close() { }
-		}
-
-		LameMemStream memStream;
-
 		public TestPublisher()
 			: base(new Dictionary<string,Variant>())
 		{
-			this.memStream = new LameMemStream();
-			this.stream = memStream;
+			this.stream = new MemoryStream();
+			this.BytesPerLine = 16;
 		}
 
-		public MemoryStream Stream { get { return this.memStream; } }
+		public MemoryStream Stream
+		{
+			get { return this.stream as MemoryStream; }
+		}
+
+		protected override void OnOpen()
+		{
+		}
+
+		protected override void OnClose()
+		{
+		}
 	}
 
 	[TestFixture]

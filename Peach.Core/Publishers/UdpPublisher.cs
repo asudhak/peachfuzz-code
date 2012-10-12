@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Net;
 
+#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("Udp", true)]
@@ -216,3 +217,4 @@ namespace Peach.Core.Publishers
 		}
 	}
 }
+#endif

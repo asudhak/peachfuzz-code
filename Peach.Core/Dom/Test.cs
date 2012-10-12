@@ -78,8 +78,8 @@ namespace Peach.Core.Dom
 
 		public Test()
 		{
-			loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
-			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
+			//loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
+			//publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
 			//agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
 
 			waitTime = 0;
@@ -93,15 +93,15 @@ namespace Peach.Core.Dom
 		//    value.parent = this;
 		//}
 
-		void publishers_AddEvent(OrderedDictionary<string, Publisher> sender, string key, Publisher value)
-		{
-			value.parent = this;
-		}
+		//void publishers_AddEvent(OrderedDictionary<string, Publisher> sender, string key, Publisher value)
+		//{
+		//    value.parent = this;
+		//}
 
-		void loggers_AddEvent(OrderedDictionary<string, Logger> sender, string key, Logger value)
-		{
-			value.parent = this;
-		}
+		//void loggers_AddEvent(OrderedDictionary<string, Logger> sender, string key, Logger value)
+		//{
+		//    value.parent = this;
+		//}
 
 		#endregion
 
@@ -235,15 +235,6 @@ namespace Peach.Core.Dom
           object[] attribs = publisherType.GetCustomAttributes(true);
           XmlNode ePublisher = doc.CreateElement("Publisher");
           string className = System.String.Empty;
-
-          foreach (object attrib in attribs)
-          {
-            if (attrib is NotPitParsableAttribute)
-            {
-              skip = true;
-              break;
-            }
-          }
 
           if (skip == false)
           {

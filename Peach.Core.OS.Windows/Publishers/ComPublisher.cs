@@ -39,44 +39,24 @@ using System.Runtime.Remoting.Channels.Ipc;
 using Peach.Core.Dom;
 using Peach.Core.Publishers.Com;
 
-using NLog;
-
 namespace Peach.Core.Publishers
 {
-	[PublisherAttribute("Com")]
-	[PublisherAttribute("com.Com")]
-	[ParameterAttribute("clsid", typeof(string), "COM CLSID of object", true)]
+	[Publisher("Com")]
+	[Publisher("com.Com")]
+	[Parameter("clsid", typeof(string), "COM CLSID of object", true)]
 	public class ComPublisher : Publisher
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		public string clsid { get; set; }
 
-		string _clsid = null;
-		string _host = "localhost";
-		int _port = 9001;
-		IComContainer _proxy = null;
-		bool _initialized = false;
+		private IComContainer _proxy = null;
 
 		public ComPublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			_clsid = (string)args["clsid"];
-
-			if (args.ContainsKey("host"))
-				_host = (string) args["host"];
-			if (args.ContainsKey("port"))
-				_port = (int)args["port"];
 		}
 
 		protected void startTcpRemoting()
 		{
-			if (_proxy != null)
-				return;
-
-			//TcpChannel chan = new TcpChannel();
-			//ChannelServices.RegisterChannel(chan, false); // Disable security for speed
-			//_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
-			//    string.Format("tcp://{0}:{1}/PeachComContainer", _host, _port));
-
 			try
 			{
 				ChannelServices.RegisterChannel(new IpcChannel(), false);
@@ -87,56 +67,31 @@ namespace Peach.Core.Publishers
 
 			_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
 				"ipc://Peach_Com_Container/PeachComContainer");
-			
-			_initialized = false;
+
+			if (!_proxy.Intialize(clsid))
+				throw new PeachException("Error, ComPublisher was unable to create object from id '" + clsid + "'");
 		}
 
 		protected void stopTcpRemoting()
 		{
 			// TODO - How do we stop this madnes?
 			_proxy = null;
-			_initialized = false;
 		}
 
-		public override void start(Dom.Action action)
+		protected override void OnStart()
 		{
-			base.stop(action);
-			if (_proxy == null)
-				startTcpRemoting();
-
-			if (!_proxy.Intialize(_clsid))
-				throw new PeachException("Error, ComPublisher was unable to create object from id '" + _clsid + "'");
-
-			_initialized = true;
+			System.Diagnostics.Debug.Assert(_proxy == null);
+			startTcpRemoting();
 		}
 
-		public override void stop(Dom.Action action)
+		protected override void OnStop()
 		{
-			base.stop(action);
+			System.Diagnostics.Debug.Assert(_proxy != null);
 			stopTcpRemoting();
 		}
 
-		public override void open(Core.Dom.Action action)
+		protected override Variant OnCall(string method, List<ActionParameter> args)
 		{
-			if (_initialized)
-				return;
-
-			OnOpen(action);
-
-		}
-
-		public override void close(Core.Dom.Action action)
-		{
-			OnClose(action);
-
-		}
-
-		public override Variant call(Core.Dom.Action action, string method, List<ActionParameter> args)
-		{
-			open(action);
-
-			OnCall(action, method, args);
-
 			try
 			{
 				List<object> parameters = new List<object>();
@@ -157,12 +112,8 @@ namespace Peach.Core.Publishers
 			return null;
 		}
 
-		public override void setProperty(Core.Dom.Action action, string property, Variant value)
+		protected override void OnSetProperty(string property, Variant value)
 		{
-			open(action);
-
-			OnSetProperty(action, property, value);
-
 			try
 			{
 				_proxy.SetProperty(property, (string)value);
@@ -173,12 +124,8 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override Variant getProperty(Core.Dom.Action action, string property)
+		protected override Variant OnGetProperty(string property)
 		{
-			open(action);
-
-			OnGetProperty(action, property);
-
 			try
 			{
 				object value = _proxy.GetProperty(property);

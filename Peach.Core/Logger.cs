@@ -37,7 +37,6 @@ namespace Peach.Core
 	/// </summary>
 	public abstract class Logger : Watcher
 	{
-		public object parent;
 	}
 
 	/// <summary>

@@ -435,11 +435,13 @@ namespace Peach.Core
 
 		// Slightly tweaked from:
 		// http://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
-		public static string HexDump(byte[] bytes, int bytesPerLine = 16)
+		public static string HexDump(Stream data, int bytesPerLine = 16)
 		{
-			System.Diagnostics.Debug.Assert(bytes != null);
+			System.Diagnostics.Debug.Assert(data != null);
 			StringBuilder sb = new StringBuilder();
-			int bytesLength = bytes.Length;
+			long pos = data.Position;
+			long bytesLength = data.Length - pos;
+			byte[] bytes = new byte[bytesPerLine];
 
 			char[] HexChars = "0123456789ABCDEF".ToCharArray();
 
@@ -457,7 +459,7 @@ namespace Peach.Core
 				+ Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
 
 			char[] line = (new System.String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-			int expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
+			long expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
 
 			for (int i = 0; i < bytesLength; i += bytesPerLine)
 			{
@@ -473,10 +475,12 @@ namespace Peach.Core
 				int hexColumn = firstHexColumn;
 				int charColumn = firstCharColumn;
 
+				int readLen = data.Read(bytes, 0, bytesPerLine);
+
 				for (int j = 0; j < bytesPerLine; j++)
 				{
 					if (j > 0 && (j & 7) == 0) hexColumn++;
-					if (i + j >= bytesLength)
+					if (j >= readLen)
 					{
 						line[hexColumn] = ' ';
 						line[hexColumn + 1] = ' ';
@@ -484,7 +488,7 @@ namespace Peach.Core
 					}
 					else
 					{
-						byte b = bytes[i + j];
+						byte b = bytes[j];
 						line[hexColumn] = HexChars[(b >> 4) & 0xF];
 						line[hexColumn + 1] = HexChars[b & 0xF];
 						line[charColumn] = (b < 32 ? '·' : (char)b);
@@ -496,7 +500,14 @@ namespace Peach.Core
 				sb.Append(line);
 			}
 
+			data.Seek(pos, SeekOrigin.Begin);
 			return sb.ToString();
+		}
+
+		public static string HexDump(ArraySegment<byte> data, int bytesPerLine = 16)
+		{
+			MemoryStream stream = new MemoryStream(data.Array, data.Offset, data.Count);
+			return HexDump(stream, bytesPerLine);
 		}
 	}
 }

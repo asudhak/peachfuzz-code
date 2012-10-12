@@ -38,8 +38,8 @@ namespace Peach.Core
 	/// </summary>
 	public class PeachException : ApplicationException
 	{
-		public PeachException(string message)
-			: base(message)
+		public PeachException(string message, params string[] args)
+			: base(string.Format(message, args))
 		{
 		}
 	}

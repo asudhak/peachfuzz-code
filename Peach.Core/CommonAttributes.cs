@@ -11,6 +11,7 @@ namespace Peach.Core
 		public Type type;
 		public string description;
 		public bool required;
+		public string defaultVaue;
 
 		public ParameterAttribute(string name, Type type, string description, bool required)
 		{
@@ -18,12 +19,18 @@ namespace Peach.Core
 			this.type = type;
 			this.description = description;
 			this.required = required;
+			this.defaultVaue = null;
 		}
-	}
 
-	[AttributeUsage(AttributeTargets.Class)]
-	public class NoParametersAttribute : Attribute
-	{
+		public ParameterAttribute(string name, Type type, string description, string defaultValue)
+			: this(name, type, description, false)
+		{
+			this.name = name;
+			this.type = type;
+			this.description = description;
+			this.required = false;
+			this.defaultVaue = defaultValue;
+		}
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]

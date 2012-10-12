@@ -37,6 +37,7 @@ using System.Net;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
+#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("RawIPv4", true)]
@@ -260,3 +261,4 @@ namespace Peach.Core.Publishers
 }
 
 // end
+#endif

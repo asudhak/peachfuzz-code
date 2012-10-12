@@ -36,6 +36,7 @@ using System.Net.Sockets;
 using System.Net;
 using Peach.Core.Dom;
 
+#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("RawIPv6", true)]
@@ -75,3 +76,4 @@ namespace Peach.Core.Publishers
 		}
 	}
 }
+#endif

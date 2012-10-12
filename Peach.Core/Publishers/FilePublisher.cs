@@ -43,202 +43,74 @@ namespace Peach.Core.Publishers
 	[Publisher("FileStream")]
 	[Publisher("file.FileWriter")]
 	[Publisher("file.FileReader")]
-	[ParameterAttribute("FileName", typeof(string), "Name of file to open for reading/writing", true)]
-	[ParameterAttribute("Overwrite", typeof(bool), "Replace existing file? [true/false, default true]", false)]
-	[ParameterAttribute("Append", typeof(bool), "Append to end of file [true/false, default flase]", false)]
-	public class FilePublisher : Publisher
+	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing", true)]
+	[Parameter("Overwrite", typeof(bool), "Replace existing file? [true/false, default true]", "true")]
+	[Parameter("Append", typeof(bool), "Append to end of file [true/false, default flase]", "false")]
+	public class FilePublisher : StreamPublisher
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		protected string fileName;
-		protected bool overwrite = true;
-		protected bool append = false;
-		protected FileStream stream = null;
+		public string FileName { get; set; }
+		public bool Overwrite { get; set; }
+		public bool Append { get; set; }
 
-		public FilePublisher(Dictionary<string, Variant> args) : base(args)
+		private static int maxOpenAttempts = 10;
+		private FileMode fileMode = FileMode.OpenOrCreate;
+
+		public FilePublisher(Dictionary<string, Variant> args)
+			: base(args)
 		{
-			if (!args.ContainsKey("FileName"))
-				throw new PeachException("Error, File publisher missing parameter 'FileName' which is required.");
-
-			fileName = (string) args["FileName"];
-
-			if (args.ContainsKey("Overwrite"))
-			{
-				string value = ((string)args["Overwrite"]).ToLower();
-
-				if (value == "true")
-					overwrite = true;
-				else if (value == "false")
-					overwrite = false;
-				else
-					throw new PeachException("Error, Unexpected value for parameter 'Overwrite' to File publisher.  Expected 'True' or 'False'.");
-			}
-
-			if (args.ContainsKey("Append"))
-			{
-				string value = ((string)args["Append"]).ToLower();
-
-				if (value == "true")
-				{
-					if (overwrite)
-						throw new PeachException("Error, File publisher does not support Overwrite and Append being enabled at once.");
-
-					append = true;
-				}
-				else if (value == "false")
-					append = false;
-				else
-					throw new PeachException("Error, Unexpected value for parameter 'Append' to File publisher.  Expected 'True' or 'False'.");
-			}
+			if (Overwrite && Append)
+				throw new PeachException("File publisher does not support Overwrite and Append being enabled at once.");
+			else if (Overwrite)
+				fileMode = FileMode.Create;
+			else if (Append)
+				fileMode = FileMode.Append | FileMode.OpenOrCreate;
+			else
+				fileMode = FileMode.OpenOrCreate;
 		}
 
-		public override void open(Core.Dom.Action action)
+		protected override void OnOpen()
 		{
-			close(action);
+			System.Diagnostics.Debug.Assert(stream == null);
 
-			OnOpen(action);
-			IsOpen = true;
-			logger.Debug("open()");
+			int i = 0;
 
-			for (int i = 0; i < 10; i++)
+			while (true)
 			{
 				try
 				{
-					if (overwrite)
-						stream = System.IO.File.Open(fileName, FileMode.Create);
-					else if (append)
-						stream = System.IO.File.Open(fileName, FileMode.Append | FileMode.OpenOrCreate);
-					else
-						stream = System.IO.File.Open(fileName, FileMode.OpenOrCreate);
-
-					break;
+					stream = System.IO.File.Open(FileName, fileMode);
+					return;
 				}
 				catch (Exception ex)
 				{
-					if (i < 9)
+					if (++i < maxOpenAttempts)
+					{
 						Thread.Sleep(200);
+					}
 					else
 					{
-						logger.Error(ex.Message);
-						throw ex;
+						logger.Error("Could not open file '{0}' after {1} attempts.  {2}", FileName, maxOpenAttempts, ex.Message);
+						throw;
 					}
 				}
 			}
 		}
 
-		public override void close(Core.Dom.Action action)
+		protected override void OnClose()
 		{
-			if (stream != null)
-			{
-				IsOpen = false;
-				OnClose(action);
-				logger.Debug("close()");
-
-				try
-				{
-					stream.Close();
-					stream.Dispose();
-				}
-				catch(Exception ex)
-				{
-					logger.Error(ex.Message);
-				}
-
-				stream = null;
-			}
-		}
-
-		public override void output(Core.Dom.Action action, Variant data)
-		{
-			if (stream == null)
-				open(action);
-
-			OnOutput(action, data);
-			logger.Debug("output()");
+			System.Diagnostics.Debug.Assert(stream != null);
 
 			try
 			{
-				if (data.GetVariantType() == Variant.VariantType.BitStream)
-				{
-					((BitStream)data).Stream.Position = 0;
-					((BitStream)data).Stream.CopyTo(stream);
-				}
-				else
-				{
-					byte[] buff = (byte[])data;
-					stream.Write(buff, 0, buff.Length);
-				}
+				stream.Close();
 			}
 			catch (Exception ex)
 			{
 				logger.Error(ex.Message);
-				throw ex;
 			}
+
+			stream = null;
 		}
-
-		#region Stream
-
-		public override bool CanRead
-		{
-			get { return stream.CanRead; }
-		}
-
-		public override bool CanSeek
-		{
-			get { return stream.CanSeek; }
-		}
-
-		public override bool CanWrite
-		{
-			get { return stream.CanWrite; }
-		}
-
-		public override void Flush()
-		{
-			stream.Flush();
-		}
-
-		public override long Length
-		{
-			get { return stream.Length; }
-		}
-
-		public override long Position
-		{
-			get
-			{
-				return stream.Position;
-			}
-			set
-			{
-				stream.Position = value;
-			}
-		}
-
-		public override int Read(byte[] buffer, int offset, int count)
-		{
-			OnInput(currentAction, count);
-
-			return stream.Read(buffer, offset, count);
-		}
-
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			return stream.Seek(offset, origin);
-		}
-
-		public override void SetLength(long value)
-		{
-			stream.SetLength(value);
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			OnOutput(currentAction, new Variant(buffer));
-
-			stream.Write(buffer, offset, count);
-		}
-
-		#endregion
 	}
 }
 

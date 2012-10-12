@@ -30,21 +30,26 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Peach.Core.Dom;
 using Peach;
+using Peach.Core.IO;
+using System.Reflection;
+using NLog;
+using Action = Peach.Core.Dom.Action;
 
 namespace Peach.Core
 {
-	public delegate void StartEventHandler(Publisher publisher, Core.Dom.Action action);
-	public delegate void StopEventHandler(Publisher publisher, Core.Dom.Action action);
-	public delegate void AcceptEventHandler(Publisher publisher, Core.Dom.Action action);
-	public delegate void OpenEventHandler(Publisher publisher, Core.Dom.Action action);
-	public delegate void CloseEventHandler(Publisher publisher, Core.Dom.Action action);
-	public delegate void InputEventHandler(Publisher publisher, Core.Dom.Action action, int size);
-	public delegate void OutputEventHandler(Publisher publisher, Core.Dom.Action action, Variant data);
-	public delegate void CallEventHandler(Publisher publisher, Core.Dom.Action action, string method, List<ActionParameter> aregs);
-	public delegate void SetPropertyEventHandler(Publisher publisher, Core.Dom.Action action, string property, Variant value);
-	public delegate void GetPropertyEventHandler(Publisher publisher, Core.Dom.Action action, string property);
+	public delegate void StartEventHandler(Publisher publisher, Action action);
+	public delegate void StopEventHandler(Publisher publisher, Action action);
+	public delegate void AcceptEventHandler(Publisher publisher, Action action);
+	public delegate void OpenEventHandler(Publisher publisher, Action action);
+	public delegate void CloseEventHandler(Publisher publisher, Action action);
+	public delegate void InputEventHandler(Publisher publisher, Action action, long length);
+	public delegate void OutputEventHandler(Publisher publisher, Action action, Stream data);
+	public delegate void CallEventHandler(Publisher publisher, Action action, string method, List<ActionParameter> aregs);
+	public delegate void SetPropertyEventHandler(Publisher publisher, Action action, string property, Variant value);
+	public delegate void GetPropertyEventHandler(Publisher publisher, Action action, string property);
 
 	/// <summary>
 	/// Publishers are I/O interfaces for Peach.  They glue the actions
@@ -59,115 +64,232 @@ namespace Peach.Core
 	/// </summary>
 	public abstract class Publisher : Stream
 	{
-		public object parent;
+		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		#region Properties
+
+		/// <summary>
+		/// Gets/sets the current fuzzing iteration.
+		/// </summary>
 		public uint Iteration { get; set; }
-		public bool HasStarted { get; protected set; }
-		public bool IsOpen { get; protected set; }
+
+		/// <summary>
+		/// Gets a value that indicates whether the publisher has been started.
+		/// </summary>
+		public bool HasStarted { get; private set; }
+
+		/// <summary>
+		/// Gets a value that indicates whether the publisher has been opened.
+		/// </summary>
+		public bool IsOpen { get; private set; }
+
+		/// <summary>
+		/// Gets the most recent action that called the publisher.
+		/// </summary>
+		public Action CurrentAction { get; private set; }
+
+		#endregion
 
 		#region Events
 
-		public static event StartEventHandler Start;
-		public static event StopEventHandler Stop;
-		public static event AcceptEventHandler Accept;
-		public static event OpenEventHandler Open;
-		public static event CloseEventHandler Closing;
-		public static event InputEventHandler Input;
-		public static event OutputEventHandler Output;
-		public static event CallEventHandler Call;
-		public static event SetPropertyEventHandler SetProperty;
-		public static event GetPropertyEventHandler GetProperty;
+		public static event StartEventHandler StartEvent;
+		public static event StopEventHandler StopEvent;
+		public static event AcceptEventHandler AcceptEvent;
+		public static event OpenEventHandler OpenEvent;
+		public static event CloseEventHandler CloseEvent;
+		public static event InputEventHandler InputEvent;
+		public static event OutputEventHandler OutputEvent;
+		public static event CallEventHandler CallEvent;
+		public static event SetPropertyEventHandler SetPropertyEvent;
+		public static event GetPropertyEventHandler GetPropertyEvent;
 
-		public void OnStart(Core.Dom.Action action)
+		#endregion
+
+		#region Implementation Functions
+
+		/// <summary>
+		/// Called when the publisher is started.  This method will be called
+		/// once per fuzzing "Session", not on every iteration.
+		/// </summary>
+		protected virtual void OnStart()
 		{
-			if (Start != null)
-				Start(this, action);
 		}
-		public void OnStop(Core.Dom.Action action)
+
+		/// <summary>
+		/// Called when the publisher is stopped.  This method will be called
+		/// once per fuzzing "Session", not on every iteration.
+		/// </summary>
+		protected virtual void OnStop()
 		{
-			if (Stop != null)
-				Stop(this, action);
 		}
-		public void OnAccept(Core.Dom.Action action)
+
+		/// <summary>
+		/// Open or connect to a resource.  Will be called
+		/// automatically if not called specifically.
+		/// </summary>
+		protected virtual void OnOpen()
 		{
-			if (Accept != null)
-				Accept(this, action);
 		}
-		public void OnOpen(Core.Dom.Action action)
+
+		/// <summary>
+		/// Close a resource.  Will be called automatically when
+		/// state model exists.  Can also be called explicitly when
+		/// needed.
+		/// </summary>
+		protected virtual void OnClose()
 		{
-			if (Open != null)
-				Open(this, action);
 		}
-		public void OnClose(Core.Dom.Action action)
+
+		/// <summary>
+		/// Accept an incoming connection.
+		/// </summary>
+		protected virtual void OnAccept()
 		{
-			if (Closing != null)
-				Closing(this, action);
+			throw new PeachException("Error, action 'accept' not supported by publisher");
 		}
-		public void OnInput(Core.Dom.Action action)
+
+		/// <summary>
+		/// Call a method on the Publishers resource
+		/// </summary>
+		/// <param name="method">Name of method to call</param>
+		/// <param name="args">Arguments to pass</param>
+		/// <returns>Returns resulting data</returns>
+		protected virtual Variant OnCall(string method, List<ActionParameter> args)
 		{
-			if (Input != null)
-				Input(this, action, -1);
+			throw new PeachException("Error, action 'call' not supported by publisher");
 		}
-		public void OnInput(Core.Dom.Action action, int size)
+
+		/// <summary>
+		/// Set a property on the Publishers resource.
+		/// </summary>
+		/// <param name="property">Name of property to set</param>
+		/// <param name="value">Value to set on property</param>
+		protected virtual void OnSetProperty(string property, Variant value)
 		{
-			if (Input != null)
-				Input(this, action, size);
+			throw new PeachException("Error, action 'setProperty' not supported by publisher");
 		}
-		public void OnOutput(Core.Dom.Action action, Variant data)
+
+		/// <summary>
+		/// Get value of a property exposed by Publishers resource
+		/// </summary>
+		/// <param name="property">Name of property</param>
+		/// <returns>Returns value of property</returns>
+		protected virtual Variant OnGetProperty(string property)
 		{
-			if (Output != null)
-				Output(this, action, data);
+			throw new PeachException("Error, action 'getProperty' not supported by publisher");
 		}
-		public void OnCall(Core.Dom.Action action, string method, List<ActionParameter> args)
+
+		/// <summary>
+		/// Send data
+		/// </summary>
+		/// <param name="data">Data to send/write</param>
+		protected virtual void OnOutput(Stream data)
 		{
-			if (Call != null)
-				Call(this, action, method, args);
+			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
-		public void OnSetProperty(Core.Dom.Action action, string property, Variant value)
+
+		/// <summary>
+		/// Read data
+		/// </summary>
+		/// <param name="data">Minimum length of data to read</param>
+		protected virtual void OnInput(long length)
 		{
-			if (SetProperty != null)
-				SetProperty(this, action, property, value);
-		}
-		public void OnGetProperty(Core.Dom.Action action, string property)
-		{
-			if (GetProperty != null)
-				GetProperty(this, action, property);
+			throw new PeachException("Error, action 'input' not supported by publisher");
 		}
 
 		#endregion
 
+		#region Ctor
+
 		public Publisher(Dictionary<string, Variant> args)
 		{
+			foreach (var attr in GetType().GetAttributes<ParameterAttribute>(null))
+			{
+				Variant value;
+
+				if (args.TryGetValue(attr.name, out value))
+					ApplyProperty(attr, (string)value);
+				else if (!attr.required)
+					ApplyProperty(attr, attr.defaultVaue);
+				else
+					RaiseError("is missing required parameter '{0}'.", attr.name);
+			}
 		}
 
-		/// <summary>
-		/// The current Action operating on the Publisher.
-		/// </summary>
-		public virtual Core.Dom.Action currentAction
+		private void ApplyProperty(ParameterAttribute attr, string value)
 		{
-			get;
-			set;
+			object obj = null;
+			try
+			{
+				obj = Convert.ChangeType(value, attr.type);
+			}
+			catch (Exception ex)
+			{
+				RaiseError("could not set parameter '{0}'.  {1}",attr.name, ex.Message);
+			}
+
+			var prop = GetType().GetProperty(attr.name, attr.type);
+			if (prop != null)
+				prop.SetValue(this, obj, null);
+			else
+				RaiseError("has no public property for parameter '{0}'.",attr.name);
 		}
+
+		private void RaiseError(string fmt, params string[] args)
+		{
+			var attrs = GetType().GetAttributes<PublisherAttribute>(null);
+			var pub = attrs.FirstOrDefault(a => a.isDefault == true);
+			if (pub == null) pub = attrs.First();
+
+			string msg = string.Format("{0} publisher {1}", pub.Name, string.Format(fmt, args));
+			throw new PeachException(msg);
+		}
+
+		#endregion
+
+		#region Public Methods
 
 		/// <summary>
 		/// Called to Start publisher.  This action is always performed
-		/// even if not specifically called.  THis method will be called
+		/// even if not specifically called.  This method will be called
 		/// once per fuzzing "Session", not on every iteration.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void start(Core.Dom.Action action)
+		public void start(Action action)
 		{
-			OnStart(action);
+			if (HasStarted)
+				return;
+
+			CurrentAction = action;
+
+			if (StartEvent != null)
+				StartEvent(this, CurrentAction);
+
+			logger.Debug("start({0})", action.name);
+			OnStart();
+
 			HasStarted = true;
 		}
+
 		/// <summary>
 		/// Called to Stop publisher.  This action is always performed
-		/// even if not specifically called.  THis method will be called
+		/// even if not specifically called.  This method will be called
 		/// once per fuzzing "Session", not on every iteration.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void stop(Core.Dom.Action action)
+		public void stop(Action action)
 		{
-			OnStop(action);
+			if (!HasStarted)
+				return;
+
+			CurrentAction = action;
+
+			if (StopEvent != null)
+				StopEvent(this, CurrentAction);
+
+			logger.Debug("stop({0})", action.name);
+			OnStop();
+
 			HasStarted = false;
 		}
 
@@ -175,31 +297,58 @@ namespace Peach.Core
 		/// Accept an incoming connection.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void accept(Core.Dom.Action action)
+		public void accept(Action action)
 		{
-			OnAccept(action);
-			throw new PeachException("Error, action 'accept' not supported by publisher");
+			CurrentAction = action;
+
+			if (AcceptEvent != null)
+				AcceptEvent(this, CurrentAction);
+
+			logger.Debug("accept({0})", action.name);
+			OnAccept();
 		}
+
 		/// <summary>
 		/// Open or connect to a resource.  Will be called
 		/// automatically if not called specifically.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void open(Core.Dom.Action action)
+		public void open(Action action)
 		{
-			OnOpen(action);
-			throw new PeachException("Error, action 'open' not supported by publisher");
+			if (IsOpen)
+				return;
+
+			CurrentAction = action;
+
+			if (OpenEvent != null)
+				OpenEvent(this, CurrentAction);
+
+			logger.Debug("open({0})", action.name);
+			OnOpen();
+
+			IsOpen = true;
 		}
+
 		/// <summary>
 		/// Close a resource.  Will be called automatically when
 		/// state model exists.  Can also be called explicitly when
 		/// needed.
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
-		public virtual void close(Core.Dom.Action action)
+		public void close(Action action)
 		{
-			OnClose(action);
-			throw new PeachException("Error, action 'close' not supported by publisher");
+			if (!IsOpen)
+				return;
+
+			CurrentAction = action;
+
+			if (CloseEvent != null)
+				CloseEvent(this, CurrentAction);
+
+			logger.Debug("close({0})", action == null ? "<null>" : action.name);
+			OnClose();
+
+			IsOpen = false;
 		}
 
 		/// <summary>
@@ -209,10 +358,15 @@ namespace Peach.Core
 		/// <param name="method">Name of method to call</param>
 		/// <param name="args">Arguments to pass</param>
 		/// <returns>Returns resulting data</returns>
-		public virtual Variant call(Core.Dom.Action action, string method, List<ActionParameter> args)
+		public Variant call(Action action, string method, List<ActionParameter> args)
 		{
-			OnCall(action, method, args);
-			throw new PeachException("Error, action 'call' not supported by publisher");
+			CurrentAction = action;
+
+			if (CallEvent != null)
+				CallEvent(this, CurrentAction, method, args);
+
+			logger.Debug("call({0}, {1}, {2})", action.name, method, args);
+			return OnCall(method, args);
 		}
 
 		/// <summary>
@@ -221,10 +375,15 @@ namespace Peach.Core
 		/// <param name="action">Action calling publisher</param>
 		/// <param name="property">Name of property to set</param>
 		/// <param name="value">Value to set on property</param>
-		public virtual void setProperty(Core.Dom.Action action, string property, Variant value)
+		public void setProperty(Action action, string property, Variant value)
 		{
-			OnSetProperty(action, property, value);
-			throw new PeachException("Error, action 'setProperty' not supported by publisher");
+			CurrentAction = action;
+
+			if (SetPropertyEvent != null)
+				SetPropertyEvent(this, CurrentAction, property, value);
+
+			logger.Debug("setProperty({0}, {1}, {2})", action.name, property, value);
+			OnSetProperty(property, value);
 		}
 
 		/// <summary>
@@ -233,10 +392,15 @@ namespace Peach.Core
 		/// <param name="action">Action calling publisher</param>
 		/// <param name="property">Name of property</param>
 		/// <returns>Returns value of property</returns>
-		public virtual Variant getProperty(Core.Dom.Action action, string property)
+		public Variant getProperty(Action action, string property)
 		{
-			OnGetProperty(action, property);
-			throw new PeachException("Error, action 'getProperty' not supported by publisher");
+			CurrentAction = action;
+
+			if (GetPropertyEvent != null)
+				GetPropertyEvent(this, CurrentAction, property);
+
+			logger.Debug("getProperty({0}, {1})", action.name, property);
+			return OnGetProperty(property);
 		}
 
 		/// <summary>
@@ -244,20 +408,38 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
 		/// <param name="data">Data to send/write</param>
-		public virtual void output(Core.Dom.Action action, Variant data)
+		public void output(Action action, Stream data)
 		{
-			OnOutput(action, data);
-			throw new PeachException("Error, action 'output' not supported by publisher");
+			CurrentAction = action;
+
+			if (OutputEvent != null)
+				OutputEvent(this, CurrentAction, data);
+
+			logger.Debug("output({0}, {1} bytes)", action.name, data.Length);
+
+			var pos = data.Position;
+			data.Seek(0, SeekOrigin.Begin);
+			OnOutput(data);
+			data.Seek(pos, SeekOrigin.Begin);
 		}
 
 		/// <summary>
-		/// Called from cracker when we need data.  This allows
-		/// us to block until we have enough data.
+		/// Read data
 		/// </summary>
-		/// <param name="bytes"></param>
-		public virtual void WantBytes(long bytes)
+		/// <param name="action">Action calling publisher</param>
+		/// <param name="data">Minimum length of data to read</param>
+		public void input(Action action, long length)
 		{
+			CurrentAction = action;
+
+			if (InputEvent != null)
+				InputEvent(this, CurrentAction, length);
+
+			logger.Debug("input({0}, {1} bytes)", action.name, length);
+			OnInput(length);
 		}
+
+		#endregion
 
 		#region Stream
 
@@ -288,20 +470,12 @@ namespace Peach.Core
 
 		public override long Position
 		{
-			get
-			{
-				throw new NotImplementedException();
-			}
-			set
-			{
-				throw new NotImplementedException();
-			}
+			get { throw new NotImplementedException(); }
+			set { throw new NotImplementedException(); }
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			OnInput(currentAction);
-
 			throw new NotImplementedException();
 		}
 
@@ -317,8 +491,6 @@ namespace Peach.Core
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			OnOutput(currentAction, new Variant(buffer));
-
 			throw new NotImplementedException();
 		}
 

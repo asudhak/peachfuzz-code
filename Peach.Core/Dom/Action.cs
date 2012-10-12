@@ -447,6 +447,7 @@ namespace Peach.Core.Dom
 						if (!publisher.IsOpen)
 							publisher.open(this);
 
+						publisher.input(this, 0);
 						handleInput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
@@ -458,7 +459,7 @@ namespace Peach.Core.Dom
 						if (!publisher.IsOpen)
 							publisher.open(this);
 
-						publisher.output(this, new Variant(dataModel.Value));
+						publisher.output(this, dataModel.Value.Stream);
 						parent.parent.dataActions.Add(this);
 						break;
 

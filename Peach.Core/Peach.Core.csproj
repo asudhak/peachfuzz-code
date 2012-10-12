@@ -561,10 +561,10 @@
     <Compile Include="Publishers\FilePerIterationPublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
     <Compile Include="Dom\StateModel.cs" />
-    <Compile Include="Publishers\MemoryStreamPublisher.cs" />
     <Compile Include="Publishers\RawIPv4Publisher.cs" />
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
+    <Compile Include="Publishers\StreamPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
     <Compile Include="Publishers\TcpListenerPublisher.cs" />
     <Compile Include="Publishers\NullPublisher.cs" />

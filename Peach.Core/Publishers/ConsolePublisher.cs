@@ -37,7 +37,6 @@ namespace Peach.Core.Publishers
 	[Publisher("Console", true)]
 	[Publisher("Stdout")]
 	[Publisher("stdout.Stdout")]
-	[NoParametersAttribute()]
 	public class ConsolePublisher : Publisher
 	{
 		protected Stream stream = null;
@@ -47,102 +46,23 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		public override void open(Core.Dom.Action action)
+		protected override void OnOpen()
 		{
-			if (stream == null)
-			{
-				OnOpen(action);
-				stream = System.Console.OpenStandardOutput();
-			}
+			System.Diagnostics.Debug.Assert(stream == null);
+			stream = System.Console.OpenStandardOutput();
 		}
 
-		public override void close(Core.Dom.Action action)
+		protected override void OnClose()
 		{
-			OnClose(action);
-
-			if (stream != null)
-			{
-				stream.Close();
-				stream = null;
-			}
+			System.Diagnostics.Debug.Assert(stream != null);
+			stream.Close();
+			stream = null;
 		}
 
-		public override void output(Core.Dom.Action action, Variant data)
+		protected override void OnOutput(Stream data)
 		{
-			open(action);
-
-			OnOutput(action, data);
-			byte[] buff = (byte[])data;
-
-			for (int cnt = 0; cnt < buff.Length; cnt += 1024)
-			{
-				stream.Write(buff, cnt, ((buff.Length - cnt) > 1024) ? 1024 : (buff.Length - cnt));
-			}
+			data.CopyTo(stream);
 		}
-
-		#region Stream
-
-		public override bool CanRead
-		{
-			get { return stream.CanRead; }
-		}
-
-		public override bool CanSeek
-		{
-			get { return stream.CanSeek; }
-		}
-
-		public override bool CanWrite
-		{
-			get { return stream.CanWrite; }
-		}
-
-		public override void Flush()
-		{
-			stream.Flush();
-		}
-
-		public override long Length
-		{
-			get { return stream.Length; }
-		}
-
-		public override long Position
-		{
-			get
-			{
-				return stream.Position;
-			}
-			set
-			{
-				stream.Position = value;
-			}
-		}
-
-		public override int Read(byte[] buffer, int offset, int count)
-		{
-			OnInput(currentAction, count);
-			return stream.Read(buffer, offset, count);
-		}
-
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			return stream.Seek(offset, origin);
-		}
-
-		public override void SetLength(long value)
-		{
-			stream.SetLength(value);
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			OnOutput(currentAction, new Variant(buffer));
-
-			stream.Write(buffer, offset, count);
-		}
-
-		#endregion
 	}
 }
 
