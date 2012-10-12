@@ -141,9 +141,9 @@ namespace Peach.Core.Publishers
 
 				_errorsSend = 0;
 
-				if (buf.Length != txLen)
+				if (stream.Length != txLen)
 					logger.Debug("Only sent {0} of {1} byte {2} packet to {3}:{4}.",
-						_type, txLen, buf.Length, Host, Port);
+						_type, txLen, stream.Length, Host, Port);
 			}
 			catch (Exception ex)
 			{
