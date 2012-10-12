@@ -35,230 +35,28 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using Peach.Core.Dom;
-using Peach.Core.IO;
 
-#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("RawIPv4", true)]
-	[Publisher("RawIP")]
-	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
-	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
-	public class RawIPv4Publisher : Publisher
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
+	[Parameter("Port", typeof(ushort), "Destination port #", true)]
+	[Parameter("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", "3")]
+	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
+	public class RawIPv4Publisher : SocketPublisher
 	{
-		protected string _host = null;
-		protected int _port = 0;
-		protected int _timeout = 3 * 1000;
-		protected int _throttle = 0;
-		protected Socket _socket = null;
-		protected MemoryStream _buffer = new MemoryStream();
-		protected int _pos = 0;
-		protected EndPoint _remoteEndpoint = null;
-		protected byte[] receiveBuffer = new byte[1024];
-
 		public RawIPv4Publisher(Dictionary<string, Variant> args)
-			: base(args)
-		{
-			_host = (string)args["Host"];
-			_port = (int)args["Port"];
-
-			if (args.ContainsKey("Timeout"))
-				_timeout = (int)args["Timeout"];
-			if (args.ContainsKey("Throttle"))
-				_throttle = (int)args["Throttle"];
-		}
-
-		public int Timeout
-		{
-			get { return _timeout; }
-			set { _timeout = value; }
-		}
-
-		public int Throttle
-		{
-			get { return _throttle; }
-			set { _throttle = value; }
-		}
-
-		protected Socket Socket
-		{
-			get { return _socket; }
-			set
-			{
-				if (_socket != null)
-					_socket.Close();
-
-				_socket = value;
-			}
-		}
-
-		/// <summary>
-		/// Open or connect to a resource.  Will be called
-		/// automatically if not called specifically.
-		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public override void open(Core.Dom.Action action)
-		{
-			// If socket is open, call close first.  This is what
-			// we call an implicit action
-			if (_socket != null)
-				close(action);
-
-			OnOpen(action);
-			
-			_socket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
-			_socket.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 0));
-			_socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
-
-			_remoteEndpoint = new IPEndPoint(Dns.GetHostEntry(_host).AddressList[0], _port);
-
-			_socket.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-				new AsyncCallback(ReceiveData), null);
-		}
-
-		protected void ReceiveData(IAsyncResult iar)
-		{
-			Socket remote = (Socket)iar.AsyncState;
-			int recv = remote.EndReceive(iar);
-
-			lock (_buffer)
-			{
-				long pos = _buffer.Position;
-				_buffer.Seek(0, SeekOrigin.End);
-				_buffer.Write(receiveBuffer, 0, recv);
-				_buffer.Position = pos;
-			}
-
-			_socket.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-				new AsyncCallback(ReceiveData), null);
-		}
-
-		/// <summary>
-		/// Close a resource.  Will be called automatically when
-		/// state model exists.  Can also be called explicitly when
-		/// needed.
-		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public override void close(Core.Dom.Action action)
-		{
-			OnClose(action);
-
-			_socket.Close();
-			_socket = null;
-		}
-
-		public override void output(Core.Dom.Action action, Variant data)
-		{
-			if (_socket == null)
-				open(action);
-
-			OnOutput(action, data);
-			byte[] buff = (byte[])data;
-			_socket.SendTo(buff, _remoteEndpoint);
-		}
-
-
-		#region Stream
-
-		public override bool CanRead
-		{
-			get
-			{
-				lock (_buffer)
-				{
-					return _buffer.CanRead;
-				}
-			}
-		}
-
-		public override bool CanSeek
-		{
-			get
-			{
-				lock (_buffer)
-				{
-					return _buffer.CanSeek;
-				}
-			}
-		}
-
-		public override bool CanWrite
-		{
-			get { return true; }
-		}
-
-		public override void Flush()
+			: base("RawIPv4", args)
 		{
 		}
 
-		public override long Length
+		protected override Socket OpenSocket()
 		{
-			get
-			{
-				lock (_buffer)
-				{
-					return _buffer.Length;
-				}
-			}
+			Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
+			s.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
+			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
+			s.Connect(Host, Port);
+			return s;
 		}
-
-		public override long Position
-		{
-			get
-			{
-				lock (_buffer)
-				{
-					return _buffer.Position;
-				}
-			}
-			set
-			{
-				lock (_buffer)
-				{
-					_buffer.Position = value;
-				}
-			}
-		}
-
-		public override int Read(byte[] buffer, int offset, int count)
-		{
-			OnInput(currentAction, count);
-
-			lock (_buffer)
-			{
-				return _buffer.Read(buffer, offset, count);
-			}
-		}
-
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			lock (_buffer)
-			{
-				return _buffer.Seek(offset, origin);
-			}
-		}
-
-		public override void SetLength(long value)
-		{
-			lock (_buffer)
-			{
-				_buffer.SetLength(value);
-			}
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			OnOutput(currentAction, new Variant(buffer));
-
-			_socket.Send(buffer, offset, count, SocketFlags.None);
-		}
-
-		#endregion
-
 	}
 }
-
-// end
-#endif

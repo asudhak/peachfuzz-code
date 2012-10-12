@@ -287,7 +287,7 @@ namespace Peach.Core
 			if (StopEvent != null)
 				StopEvent(this, CurrentAction);
 
-			logger.Debug("stop({0})", action.name);
+			logger.Debug("stop({0})", action == null ? "<null>" : action.name);
 			OnStop();
 
 			HasStarted = false;

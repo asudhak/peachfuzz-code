@@ -36,44 +36,27 @@ using System.Net.Sockets;
 using System.Net;
 using Peach.Core.Dom;
 
-#if DISABLED
 namespace Peach.Core.Publishers
 {
 	[Publisher("RawIPv6", true)]
-	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[ParameterAttribute("Port", typeof(int), "Destination port #", true)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", false)]
-	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
-	public class RawIPv6Publisher : RawIPv4Publisher
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
+	[Parameter("Port", typeof(ushort), "Destination port #", true)]
+	[Parameter("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", "3")]
+	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
+	public class RawIPv6Publisher : SocketPublisher
 	{
 		public RawIPv6Publisher(Dictionary<string, Variant> args)
-			: base(args)
+			: base("RawIPv6", args)
 		{
 		}
 
-		/// <summary>
-		/// Open or connect to a resource.  Will be called
-		/// automatically if not called specifically.
-		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public override void open(Core.Dom.Action action)
+		protected override Socket OpenSocket()
 		{
-			// If socket is open, call close first.  This is what
-			// we call an implicit action
-			if (_socket != null)
-				close(action);
-
-			OnOpen(action);
-
-			_socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.IP);
-			_socket.Bind(new IPEndPoint(IPAddress.Parse("::"), 0));
-			_socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
-
-			_remoteEndpoint = new IPEndPoint(Dns.GetHostEntry(_host).AddressList[0], _port);
-
-			_socket.BeginReceive(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
-				new AsyncCallback(ReceiveData), null);
+			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.IP);
+			s.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
+			s.Connect(Host, Port);
+			return s;
 		}
 	}
 }
-#endif
