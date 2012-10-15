@@ -108,11 +108,12 @@ namespace Peach.Core.Dom
 		{
 			public override Type BindToType(string assemblyName, string typeName)
 			{
-				Type type = null;
-				var asm = AppDomain.CurrentDomain.GetAssemblies().First(u => u.FullName == assemblyName);
-				if (asm != null)
-					type = asm.GetType(typeName);
-				return type;
+				foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+				{
+					if (asm.FullName == assemblyName)
+						return asm.GetType(typeName);
+				}
+				return null;
 			}
 		}
 
