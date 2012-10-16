@@ -10,7 +10,8 @@ namespace Peach.Core.Publishers
 {
 	public abstract class SocketPublisher : Publisher
 	{
-		public string Interface { get; set; }
+		public ProtocolType Protocol { get; set; }
+		public IPAddress Interface { get; set; }
 		public string Host { get; set; }
 		public ushort Port { get; set; }
 		public ushort SrcPort { get; set; }
@@ -18,7 +19,6 @@ namespace Peach.Core.Publishers
 
 		private string _type = null;
 		private Socket _socket = null;
-		private EndPoint _recvEp = null;
 		private MemoryStream _recvBuffer = null;
 		private MemoryStream _sendBuffer = null;
 		private int _errorsMax = 10;
@@ -49,11 +49,6 @@ namespace Peach.Core.Publishers
 					_sendBuffer = new MemoryStream(_socket.SendBufferSize);
 
 				_errorsOpen = 0;
-
-				if (_socket.AddressFamily == AddressFamily.InterNetwork)
-					_recvEp = new IPEndPoint(IPAddress.Any, 0);
-				else
-					_recvEp = new IPEndPoint(IPAddress.IPv6Any, 0);
 			}
 			catch (Exception ex)
 			{
@@ -71,7 +66,6 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_socket != null);
 			_socket.Close();
 			_socket = null;
-			_recvEp = null;
 		}
 
 		protected override void OnInput()
@@ -88,10 +82,10 @@ namespace Peach.Core.Publishers
 				int offset = (int)_recvBuffer.Position;
 				int size = (int)_recvBuffer.Length;
 
-				var ar = _socket.BeginReceiveFrom(buf, offset, size, SocketFlags.None, ref _recvEp, null, null);
+				var ar = _socket.BeginReceive(buf, offset, size, SocketFlags.None, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
-				var rxLen = _socket.EndReceiveFrom(ar, ref _recvEp);
+				var rxLen = _socket.EndReceive(ar);
 
 				_recvBuffer.SetLength(rxLen);
 				_errorsRecv = 0;
@@ -132,15 +126,14 @@ namespace Peach.Core.Publishers
 
 			try
 			{
-				EndPoint ep = _socket.RemoteEndPoint;
 				byte[] buf = stream.GetBuffer();
 				int offset = (int)stream.Position;
 				int size = (int)stream.Length;
 
-				var ar = _socket.BeginSendTo(buf, offset, size, SocketFlags.None, ep, null, null);
+				var ar = _socket.BeginSend(buf, offset, size, SocketFlags.None, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
-				var txLen = _socket.EndSendTo(ar);
+				var txLen = _socket.EndSend(ar);
 
 				_errorsSend = 0;
 

@@ -38,11 +38,42 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("RawIPv6", true)]
+	[Publisher("RawV6", true)]
+	[Publisher("Raw6")]
+	[Publisher("raw.Raw6")]
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Port", typeof(ushort), "Destination port #", true)]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
+	[Parameter("Protocol", typeof(ProtocolType), "IP protocol to use", true)]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
-	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
+	public class RawV6Publisher : SocketPublisher
+	{
+		public RawV6Publisher(Dictionary<string, Variant> args)
+			: base("RawV6", args)
+		{
+			// Protocol 'IP' is really 'Unspecified' and means the socket will include the IP header.
+			// This publisher should not include the IP header.  Also, multiple enum values are '0'
+			// so use the name passed in args when raising the error
+			if (Protocol == ProtocolType.IP)
+				throw new PeachException("Protocol \"" + (string)args["Protocol"] + "\" is not supported by the RawV4 publisher.");
+		}
+
+		protected override Socket OpenSocket()
+		{
+			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
+			if (Interface != null)
+				s.Bind(new IPEndPoint(Interface, 0));
+			s.Connect(Host, 0);
+			return s;
+		}
+	}
+
+	[Publisher("RawIPv6", true)]
+	[Publisher("RawIp6")]
+	[Publisher("raw.RawIp6")]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
+	[Parameter("Protocol", typeof(ProtocolType), "IP protocol to use", "Unspecified")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawIPv6Publisher : SocketPublisher
 	{
 		public RawIPv6Publisher(Dictionary<string, Variant> args)
@@ -52,10 +83,11 @@ namespace Peach.Core.Publishers
 
 		protected override Socket OpenSocket()
 		{
-			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.IP);
-			s.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
+			if (Interface != null)
+				s.Bind(new IPEndPoint(Interface, 0));
+			s.Connect(Host, 0);
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
-			s.Connect(Host, Port);
 			return s;
 		}
 	}

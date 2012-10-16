@@ -12,6 +12,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[Parameter("Port", typeof(ushort), "Destination port number", true)]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
 	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
 	public class UdpPublisher : SocketPublisher
 	{
@@ -24,10 +25,17 @@ namespace Peach.Core.Publishers
 		{
 			IPAddress remote = Dns.GetHostAddresses(Host)[0];
 			Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-			if (remote.AddressFamily == AddressFamily.InterNetwork)
-				s.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
-			else
-				s.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+			if (Interface != null)
+			{
+				s.Bind(new IPEndPoint(Interface, SrcPort));
+			}
+			else if (SrcPort != 0)
+			{
+				if (remote.AddressFamily == AddressFamily.InterNetwork)
+					s.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
+				else
+					s.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+			}
 			s.Connect(remote, Port);
 			return s;
 		}
