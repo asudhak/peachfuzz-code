@@ -223,6 +223,8 @@ namespace Peach.Core
 			{
 				if (attr.type == typeof(IPAddress))
 					obj = IPAddress.Parse(value);
+				else if (attr.type.IsEnum)
+					obj = Enum.Parse(attr.type, value);
 				else
 					obj = Convert.ChangeType(value, attr.type);
 			}

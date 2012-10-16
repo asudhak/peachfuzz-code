@@ -6,6 +6,7 @@ using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core;
 using System.Net;
+using System.IO;
 
 namespace Peach.Core.Test.Publishers
 {
@@ -32,6 +33,35 @@ namespace Peach.Core.Test.Publishers
 				: base(args)
 			{
 			}
+		}
+
+		[Publisher("enumPub")]
+		[Parameter("enum1", typeof(FileMode), "File Mode", true)]
+		[Parameter("enum2", typeof(ConsoleColor), "Console Color", "Red")]
+		class EnumPub : Publisher
+		{
+			public FileMode enum1 { get; set; }
+			public ConsoleColor enum2 { get; set; }
+
+			public EnumPub(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+		}
+
+		[Test]
+		public void TestEnums()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["enum1"] = new Variant("OpenOrCreate");
+			var p1 = new EnumPub(args);
+			Assert.AreEqual(p1.enum1, FileMode.OpenOrCreate);
+			Assert.AreEqual(p1.enum2, ConsoleColor.Red);
+
+			args["enum2"] = new Variant("DarkCyan");
+			var p2 = new EnumPub(args);
+			Assert.AreEqual(p2.enum1, FileMode.OpenOrCreate);
+			Assert.AreEqual(p2.enum2, ConsoleColor.DarkCyan);
 		}
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "testA publisher is missing required parameter 'req1'.")]
