@@ -370,6 +370,7 @@
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
     <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
@@ -571,7 +572,7 @@
     <Compile Include="Publishers\NullPublisher.cs" />
     <Compile Include="Publishers\TcpPublisher.cs" />
     <Compile Include="Publishers\UdpPublisher.cs" />
-    <None Include="Publishers\WebServicePublisher.cs" />
+    <Compile Include="Publishers\WebServicePublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />

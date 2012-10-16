@@ -24,17 +24,16 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Url", typeof(string), "WebService URL", true)]
 	[ParameterAttribute("Service", typeof(string), "Service name", true)]
 	[ParameterAttribute("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", false)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3 seconds)", false)]
-	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", false)]
+	[ParameterAttribute("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
+	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
 	public class WebServicePublisher : Publisher
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		public string Url { get; set; }
+		public string Service { get; set; }
+		public string Wsdl { get; set; }
+		public int Timeout { get; set; }
+		public int Throttle { get; set; }
 
-		protected Uri _url = null;
-		protected string _service = null;
-		protected string _wsdl = null;
-		protected int _timeout = 3 * 1000;
-		protected int _throttle = 0;
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
 
@@ -43,31 +42,9 @@ namespace Peach.Core.Publishers
 		public WebServicePublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			_url = new Uri((string)args["Url"]);
-			_service = (string)args["Service"];
-
-			if(args.ContainsKey("Wsdl"))
-				_wsdl = (string)args["Wsdl"];
-
-			if (args.ContainsKey("Timeout"))
-				_timeout = (int)args["Timeout"];
-			if (args.ContainsKey("Throttle"))
-				_throttle = (int)args["Throttle"];
 		}
 
-		public int Timeout
-		{
-			get { return _timeout; }
-			set { _timeout = value; }
-		}
-
-		public int Throttle
-		{
-			get { return _throttle; }
-			set { _throttle = value; }
-		}
-
-		public override Variant call(Dom.Action action, string method, List<Dom.ActionParameter> args)
+		protected override Variant OnCall(string method, List<Dom.ActionParameter> args)
 		{
 			object [] parameters = new object[args.Count];
 			int count = 0;
@@ -77,8 +54,8 @@ namespace Peach.Core.Publishers
 				count++;
 			}
 
-			WebServiceInvoker invoker = new WebServiceInvoker(_url);
-			object ret = invoker.InvokeMethod<object>(_service, method, parameters);
+			WebServiceInvoker invoker = new WebServiceInvoker(new Uri(this.Url));
+			object ret = invoker.InvokeMethod<object>(this.Service, method, parameters);
 
 			return new Variant(ret.ToString());
 		}
