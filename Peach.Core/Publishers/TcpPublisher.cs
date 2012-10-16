@@ -132,7 +132,7 @@ namespace Peach.Core.Publishers
 				}
 			}
 
-			if (!_event.WaitOne(TimeSpan.FromSeconds(Timeout)))
+			if (!_event.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 			{
 				lock (_clientLock)
 				{
@@ -177,7 +177,7 @@ namespace Peach.Core.Publishers
 
 			DateTime start = DateTime.Now;
 
-			// Wait up to Timeout seconds to see if count bytes become available
+			// Wait up to Timeout milliseconds to see if count bytes become available
 			do
 			{
 				lock (_bufferLock)
@@ -188,7 +188,7 @@ namespace Peach.Core.Publishers
 
 				Thread.Sleep(100);
 			}
-			while ((DateTime.Now - start) < TimeSpan.FromSeconds(Timeout));
+			while ((DateTime.Now - start) < TimeSpan.FromMilliseconds(Timeout));
 		}
 
 		#region Stream

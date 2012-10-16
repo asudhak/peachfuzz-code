@@ -13,9 +13,9 @@ namespace Peach.Core.Publishers
 {
 	[Publisher("TcpListener", true)]
 	[Publisher("tcp.TcpListener")]
-	[ParameterAttribute("Interface", typeof(IPAddress), "Interface to bind to (0.0.0.0 for all)", true)]
-	[ParameterAttribute("Port", typeof(ushort), "Local port to listen on", true)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection", "3")]
+	[Parameter("Interface", typeof(IPAddress), "Interface to bind to (0.0.0.0 for all)", true)]
+	[Parameter("Port", typeof(ushort), "Local port to listen on", true)]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{
 		public IPAddress Interface { get; set; }
@@ -67,7 +67,7 @@ namespace Peach.Core.Publishers
 			try
 			{
 				var ar = _listener.BeginAcceptTcpClient(null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(Timeout)))
+				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				_client = _listener.EndAcceptTcpClient(ar);
 				_errors = 0;
@@ -76,7 +76,7 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("Connection could not be accepted on {1}:{2} within {3} seconds, timing out.",
+					logger.Debug("Connection could not be accepted on {1}:{2} within {3}ms, timing out.",
 						Interface, Port, Timeout);
 				}
 				else

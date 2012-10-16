@@ -11,7 +11,7 @@ namespace Peach.Core.Publishers
 	[Publisher("Udp", true)]
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[Parameter("Port", typeof(ushort), "Destination port number", true)]
-	[Parameter("Timeout", typeof(int), "How many seconds to wait for data/connection (default 3)", "3")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
 	public class UdpPublisher : SocketPublisher
 	{

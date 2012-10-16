@@ -43,9 +43,9 @@ namespace Peach.Core.Publishers
 	[Publisher("Tcp", true)]
 	[Publisher("TcpClient")]
 	[Publisher("tcp.Tcp")]
-	[ParameterAttribute("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[ParameterAttribute("Port", typeof(ushort), "Local port to listen on", true)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait for data/connection", "3")]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
+	[Parameter("Port", typeof(ushort), "Local port to listen on", true)]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpClientPublisher : TcpPublisher
 	{
 		public string Host { get; set; }
@@ -66,7 +66,7 @@ namespace Peach.Core.Publishers
 			{
 				_client = new TcpClient();
 				var ar = _client.BeginConnect(Host, Port, null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(Timeout)))
+				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				_client.EndConnect(ar);
 			}
@@ -74,7 +74,7 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("Could not connect to {1}:{2} within {3} seconds, timing out.",
+					logger.Debug("Could not connect to {1}:{2} within {3}ms, timing out.",
 						Host, Port, Timeout);
 				}
 				else

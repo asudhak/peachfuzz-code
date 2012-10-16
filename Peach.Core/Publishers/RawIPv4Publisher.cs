@@ -41,7 +41,7 @@ namespace Peach.Core.Publishers
 	[Publisher("RawIPv4", true)]
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[Parameter("Port", typeof(ushort), "Destination port #", true)]
-	[Parameter("Timeout", typeof(int), "How long to wait for data/connection (default 3 seconds)", "3")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
 	public class RawIPv4Publisher : SocketPublisher
 	{

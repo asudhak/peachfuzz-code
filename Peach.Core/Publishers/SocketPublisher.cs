@@ -89,7 +89,7 @@ namespace Peach.Core.Publishers
 				int size = (int)_recvBuffer.Length;
 
 				var ar = _socket.BeginReceiveFrom(buf, offset, size, SocketFlags.None, ref _recvEp, null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(Timeout)))
+				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				var rxLen = _socket.EndReceiveFrom(ar, ref _recvEp);
 
@@ -100,7 +100,7 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("{0} packet not received from {1}:{2} in {3} seconds, timing out.",
+					logger.Debug("{0} packet not received from {1}:{2} in {3}ms, timing out.",
 						_type, Host, Port, Timeout);
 				}
 				else
@@ -138,7 +138,7 @@ namespace Peach.Core.Publishers
 				int size = (int)stream.Length;
 
 				var ar = _socket.BeginSendTo(buf, offset, size, SocketFlags.None, ep, null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(Timeout)))
+				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				var txLen = _socket.EndSendTo(ar);
 
@@ -152,7 +152,7 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("{0} packet not sent to {1}:{2} in {3} seconds, timing out.",
+					logger.Debug("{0} packet not sent to {1}:{2} in {3}ms, timing out.",
 						_type, Host, Port, Timeout);
 				}
 				else
