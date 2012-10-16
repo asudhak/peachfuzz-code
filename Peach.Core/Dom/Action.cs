@@ -447,7 +447,7 @@ namespace Peach.Core.Dom
 						if (!publisher.IsOpen)
 							publisher.open(this);
 
-						publisher.input(this, 0);
+						publisher.input(this);
 						handleInput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;

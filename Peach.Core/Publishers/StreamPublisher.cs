@@ -17,7 +17,7 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnInput(long length)
+		protected override void OnInput()
 		{
 		}
 

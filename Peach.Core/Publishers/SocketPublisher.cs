@@ -18,6 +18,7 @@ namespace Peach.Core.Publishers
 
 		private string _type = null;
 		private Socket _socket = null;
+		private EndPoint _recvEp = null;
 		private MemoryStream _recvBuffer = null;
 		private MemoryStream _sendBuffer = null;
 		private int _errorsMax = 10;
@@ -48,6 +49,11 @@ namespace Peach.Core.Publishers
 					_sendBuffer = new MemoryStream(_socket.SendBufferSize);
 
 				_errorsOpen = 0;
+
+				if (_socket.AddressFamily == AddressFamily.InterNetwork)
+					_recvEp = new IPEndPoint(IPAddress.Any, 0);
+				else
+					_recvEp = new IPEndPoint(IPAddress.IPv6Any, 0);
 			}
 			catch (Exception ex)
 			{
@@ -65,30 +71,27 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_socket != null);
 			_socket.Close();
 			_socket = null;
+			_recvEp = null;
 		}
 
-		protected override void OnInput(long length)
+		protected override void OnInput()
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 			System.Diagnostics.Debug.Assert(_recvBuffer != null);
-
-			if (length > 0)
-				return;
 
 			_recvBuffer.Seek(0, SeekOrigin.Begin);
 			_recvBuffer.SetLength(_recvBuffer.Capacity);
 
 			try
 			{
-				EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
 				byte[] buf = _recvBuffer.GetBuffer();
 				int offset = (int)_recvBuffer.Position;
 				int size = (int)_recvBuffer.Length;
 
-				var ar = _socket.BeginReceiveFrom(buf, offset, size, SocketFlags.None, ref ep, null, null);
+				var ar = _socket.BeginReceiveFrom(buf, offset, size, SocketFlags.None, ref _recvEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(Timeout)))
 					throw new TimeoutException();
-				var rxLen = _socket.EndReceiveFrom(ar, ref ep);
+				var rxLen = _socket.EndReceiveFrom(ar, ref _recvEp);
 
 				_recvBuffer.SetLength(rxLen);
 				_errorsRecv = 0;

@@ -22,9 +22,13 @@ namespace Peach.Core.Publishers
 
 		protected override Socket OpenSocket()
 		{
-			Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-			s.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
-			s.Connect(Host, Port);
+			IPAddress remote = Dns.GetHostAddresses(Host)[0];
+			Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+			if (remote.AddressFamily == AddressFamily.InterNetwork)
+				s.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
+			else
+				s.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+			s.Connect(remote, Port);
 			return s;
 		}
 	}

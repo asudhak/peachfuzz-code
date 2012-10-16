@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core;
+using System.Net;
 
 namespace Peach.Core.Test.Publishers
 {
@@ -24,6 +25,7 @@ namespace Peach.Core.Test.Publishers
 		[Publisher("testA1")]
 		[Publisher("testA1.default", true)]
 		[Parameter("req1", typeof(int), "desc", true)]
+		[Parameter("ip", typeof(IPAddress), "desc", false)]
 		class PubDefaultName : Publisher
 		{
 			public PubDefaultName(Dictionary<string, Variant> args)
@@ -64,6 +66,7 @@ namespace Peach.Core.Test.Publishers
 
 		[Publisher("good")]
 		[Parameter("Param_string", typeof(string), "desc", true)]
+		[Parameter("Param_ip", typeof(IPAddress), "desc", false)]
 		class GoodPub : Publisher
 		{
 			public GoodPub(Dictionary<string,Variant> args)
@@ -72,6 +75,7 @@ namespace Peach.Core.Test.Publishers
 			}
 
 			public string Param_string { get; set; }
+			public IPAddress Param_ip { get; set; }
 		}
 
 		[Test]
@@ -79,9 +83,20 @@ namespace Peach.Core.Test.Publishers
 		{
 			Dictionary<string, Variant> args = new Dictionary<string,Variant>();
 			args["Param_string"] = new Variant("the string");
+			args["Param_ip"] = new Variant("192.168.1.1");
 
 			var p = new GoodPub(args);
 			Assert.AreEqual("the string", p.Param_string);
+			Assert.AreEqual(IPAddress.Parse("192.168.1.1"), p.Param_ip);
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "good publisher could not set parameter 'Param_ip'.  An invalid IP address was specified.")]
+		public void TestBadIpParameter()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Param_string"] = new Variant("100");
+			args["Param_ip"] = new Variant("999.888.777.666");
+			new GoodPub(args);
 		}
 	}
 }

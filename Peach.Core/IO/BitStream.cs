@@ -1331,7 +1331,7 @@ namespace Peach.Core.IO
 
 			Publisher pub = stream as Publisher;
 			if (pub != null)
-				pub.input(pub.CurrentAction, bytes);
+				pub.WantBytes(bytes);
 		}
 
 		#region IDisposable Members

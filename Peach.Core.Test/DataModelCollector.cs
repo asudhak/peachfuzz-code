@@ -45,6 +45,9 @@ namespace Peach.Core.Test
 
 		protected void Action_Finished(Dom.Action action)
 		{
+			if (action.dataModel == null)
+				return;
+
 			// Collect mutated values only after the first run
 			if (!firstRun.Add(action.dataModel.fullName))
 				mutations.Add(action.dataModel[0].InternalValue);

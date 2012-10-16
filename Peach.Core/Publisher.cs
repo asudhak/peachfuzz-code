@@ -37,6 +37,7 @@ using Peach.Core.IO;
 using System.Reflection;
 using NLog;
 using Action = Peach.Core.Dom.Action;
+using System.Net;
 
 namespace Peach.Core
 {
@@ -45,7 +46,7 @@ namespace Peach.Core
 	public delegate void AcceptEventHandler(Publisher publisher, Action action);
 	public delegate void OpenEventHandler(Publisher publisher, Action action);
 	public delegate void CloseEventHandler(Publisher publisher, Action action);
-	public delegate void InputEventHandler(Publisher publisher, Action action, long length);
+	public delegate void InputEventHandler(Publisher publisher, Action action);
 	public delegate void OutputEventHandler(Publisher publisher, Action action, Stream data);
 	public delegate void CallEventHandler(Publisher publisher, Action action, string method, List<ActionParameter> aregs);
 	public delegate void SetPropertyEventHandler(Publisher publisher, Action action, string property, Variant value);
@@ -191,8 +192,7 @@ namespace Peach.Core
 		/// <summary>
 		/// Read data
 		/// </summary>
-		/// <param name="data">Minimum length of data to read</param>
-		protected virtual void OnInput(long length)
+		protected virtual void OnInput()
 		{
 			throw new PeachException("Error, action 'input' not supported by publisher");
 		}
@@ -209,9 +209,9 @@ namespace Peach.Core
 
 				if (args.TryGetValue(attr.name, out value))
 					ApplyProperty(attr, (string)value);
-				else if (!attr.required)
+				else if (!attr.required && attr.defaultVaue != null)
 					ApplyProperty(attr, attr.defaultVaue);
-				else
+				else if (attr.required)
 					RaiseError("is missing required parameter '{0}'.", attr.name);
 			}
 		}
@@ -221,7 +221,10 @@ namespace Peach.Core
 			object obj = null;
 			try
 			{
-				obj = Convert.ChangeType(value, attr.type);
+				if (attr.type == typeof(IPAddress))
+					obj = IPAddress.Parse(value);
+				else
+					obj = Convert.ChangeType(value, attr.type);
 			}
 			catch (Exception ex)
 			{
@@ -428,15 +431,24 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="action">Action calling publisher</param>
 		/// <param name="data">Minimum length of data to read</param>
-		public void input(Action action, long length)
+		public void input(Action action)
 		{
 			CurrentAction = action;
 
 			if (InputEvent != null)
-				InputEvent(this, CurrentAction, length);
+				InputEvent(this, CurrentAction);
 
-			logger.Debug("input({0}, {1} bytes)", action.name, length);
-			OnInput(length);
+			logger.Debug("input({0})", action.name);
+			OnInput();
+		}
+
+		/// <summary>
+		/// Blocking stream based publishers override this to wait
+		/// for a certian amount of bytes to be available for reading.
+		/// </summary>
+		/// <param name="count">The requested byte count</param>
+		public virtual void WantBytes(long count)
+		{
 		}
 
 		#endregion

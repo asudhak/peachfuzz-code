@@ -569,7 +569,9 @@
     <Compile Include="Publishers\TcpClientPublisher.cs" />
     <Compile Include="Publishers\TcpListenerPublisher.cs" />
     <Compile Include="Publishers\NullPublisher.cs" />
+    <Compile Include="Publishers\TcpPublisher.cs" />
     <Compile Include="Publishers\UdpPublisher.cs" />
+    <None Include="Publishers\WebServicePublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />

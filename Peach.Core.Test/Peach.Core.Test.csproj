@@ -319,6 +319,7 @@
     <Compile Include="Publishers\FilePublisherTests.cs" />
     <Compile Include="Publishers\ParameterTests.cs" />
     <Compile Include="Publishers\SocketPublisherTests.cs" />
+    <Compile Include="Publishers\TcpPublisherTests.cs" />
     <Compile Include="RandomTest.cs" />
     <Compile Include="RelationCloneTests.cs" />
     <Compile Include="RelationCountTests.cs" />
