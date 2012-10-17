@@ -459,7 +459,7 @@ Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 
 Syntax:
 
-  peach -a [port] [password]
+  peach -a channel
   peach -c peach_xml_file [run_name]
   peach -g
   peach [--skipto #] peach_xml_flie [run_name]
@@ -485,12 +485,10 @@ Syntax:
 
 Peach Agent
 
-  Syntax: peach.py -a
-  Syntax: peach.py -a port
-  Syntax: peach.py -a port password
+  Syntax: peach.py -a channel
   
-  Starts up a Peach Agent instance on this current machine.  Defaults to
-  port 9000.  When specifying a password, the port # must also be given.
+  Starts up a Peach Agent instance on this current machine.  User must provide
+  a channel/protocol name (e.g. tcp).
 
   Note: Local agents are started automatically.
 
