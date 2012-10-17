@@ -37,7 +37,8 @@ using Peach;
 namespace Peach.Core.Dom
 {
 	[DataElement("XmlAttribute")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+    [PitParsable("XmlAttribute")]
+    [DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[Parameter("name", typeof(string), "Name of element", false)]
 	[Parameter("attributeName", typeof(string), "Name of attribute", true)]
 	[Parameter("ns", typeof(string), "XML Namespace", false)]
