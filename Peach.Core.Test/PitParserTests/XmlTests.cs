@@ -45,27 +45,54 @@ namespace Peach.Core.Test.PitParserTests
 	[TestFixture]
 	class XmlTests
 	{
-		//[Test]
-		//public void NumberDefaults()
-		//{
-		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-		//        "	<Defaults>" +
-		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
-		//        "	</Defaults>" +
-		//        "	<DataModel name=\"TheDataModel\">" +
-		//        "		<Number name=\"TheNumber\" size=\"8\"/>" +
-		//        "	</DataModel>" +
-		//        "</Peach>";
+        //[Test]
+        //public void NumberDefaults()
+        //{
+        //    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+        //        "	<Defaults>" +
+        //        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
+        //        "	</Defaults>" +
+        //        "	<DataModel name=\"TheDataModel\">" +
+        //        "		<Number name=\"TheNumber\" size=\"8\"/>" +
+        //        "	</DataModel>" +
+        //        "</Peach>";
 
-		//    PitParser parser = new PitParser();
-		//    Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		//    Number num = dom.dataModels[0][0] as Number;
+        //    PitParser parser = new PitParser();
+        //    Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+        //    Number num = dom.dataModels[0][0] as Number;
 
-		//    Assert.IsTrue(num.Signed);
-		//    Assert.IsFalse(num.LittleEndian);
-		//}
-		
-		[Test]
+        //    Assert.IsTrue(num.Signed);
+        //    Assert.IsFalse(num.LittleEndian);
+        //}
+
+        [Test]
+        public void BasicXmlElement()
+        {
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                "	<DataModel name=\"TheDataModel\">" +
+                "		<XmlElement elementName=\"Foo\">"+
+                "           <XmlAttribute attributeName=\"bar\">"+
+                "               <String value=\"attribute value\"/> "+
+                "           </XmlAttribute>"+
+                "		    <XmlElement elementName=\"ChildElement\">" +
+                "               <XmlAttribute attributeName=\"name\">" +
+                "                   <String value=\"attribute value\"/> " +
+                "               </XmlAttribute>" +
+                "           </XmlElement>" +
+                "       </XmlElement>" +
+                "	</DataModel>" +
+                "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            var elem = dom.dataModels[0][0];
+
+            Assert.NotNull(elem);
+            Assert.IsTrue(elem is Dom.XmlElement);
+            Assert.AreEqual(2, ((Dom.XmlElement)elem).Count);
+        }
+
+        [Test]
 		public void SimpleXPath()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
