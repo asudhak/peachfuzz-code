@@ -38,6 +38,7 @@
 		</xs:annotation>
 		<xs:complexType>
 			<xs:choice minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="Ocl" />
 				<xs:element ref="PythonPath" />
 				<xs:element ref="Import" />
 				<xs:element ref="Include" />
@@ -68,11 +69,21 @@
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
-	
+
+	<xs:element name="Ocl">
+		<xs:annotation>
+			<xs:documentation>
+				Provide OCL script inside of cdata.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
 	<xs:element name="Python">
 		<xs:annotation>
-			<xs:documentation>This element allows for running Python code.  This is usefull to call any initialization methods for code
-				that is later used.  This is an advanced element.</xs:documentation>
+			<xs:documentation>
+				This element allows for running Python code.  This is usefull to call any initialization methods for code
+				that is later used.  This is an advanced element.
+			</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:attribute name="code" type="xs:string">
@@ -2110,6 +2121,18 @@
 											</xs:complexType>
 										</xs:element>-->
 										<xs:element ref="Data" maxOccurs="1" minOccurs="0" />
+										<xs:element name="Ocl" maxOccurs="1" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Provide an OCL script or reference existing context.</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:attribute name="context" type="xs:string">
+													<xs:annotation>
+														<xs:documentation>Reference existing OCL Context</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
 										<xs:element name="Param" minOccurs="0" maxOccurs="unbounded">
 											<xs:annotation>
 												<xs:documentation>Define a parameter for call.  Parameters are passed in the order they appear.</xs:documentation>
