@@ -382,7 +382,73 @@ namespace Peach.Core
 	/// </summary>
 	public class Utilities
 	{
-		public bool TcpPortAvailable(int port)
+        public static string FormatAsPrettyHex(byte[] data, int startPos = 0, int length = -1)
+        {
+            StringBuilder sb = new StringBuilder();
+            StringBuilder rightSb = new StringBuilder();
+            int lineLength = 15;
+            int groupLength = 7;
+            string gap = "  ";
+            byte b;
+
+            if (length == -1)
+                length = data.Length;
+
+            int cnt = 0;
+            for (int i = startPos; i<data.Length && i<length; i++)
+            {
+                b = data[i];
+
+                sb.Append(b.ToString("X2"));
+
+                if (b >= 32 && b < 127)
+                    rightSb.Append(ASCIIEncoding.ASCII.GetString(new byte[] {b}));
+                else
+                    rightSb.Append(".");
+
+
+                if (cnt == groupLength)
+                {
+                    sb.Append("  ");
+                }
+                else if (cnt == lineLength)
+                {
+                    sb.Append(gap);
+                    sb.Append(rightSb);
+                    sb.Append("\n");
+                    rightSb.Clear();
+
+                    cnt = -1; // (+1 happens later)
+                }
+                else
+                {
+                    sb.Append(" ");
+                }
+
+                cnt++;
+            }
+
+            for (; cnt <= lineLength; cnt++)
+            {
+                sb.Append("  ");
+
+                if (cnt == groupLength)
+                    sb.Append(" ");
+                else if (cnt < lineLength)
+                {
+                    sb.Append(" ");
+                }
+            }
+
+            sb.Append(gap);
+            sb.Append(rightSb);
+            sb.Append("\n");
+            rightSb.Clear();
+
+            return sb.ToString();
+        }
+
+		public static bool TcpPortAvailable(int port)
 		{
 			bool isAvailable = true;
 

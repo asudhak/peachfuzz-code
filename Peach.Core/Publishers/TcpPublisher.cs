@@ -65,6 +65,8 @@ namespace Peach.Core.Publishers
 							_buffer.Seek(0, SeekOrigin.End);
 							_buffer.Write(_recvBuf, 0, len);
 							_buffer.Position = pos;
+
+                            logger.Debug("\n"+Utilities.FormatAsPrettyHex(_recvBuf, 0, len));
 						}
 
 						ScheduleRecv();
@@ -301,7 +303,9 @@ namespace Peach.Core.Publishers
 				{
 					_client.GetStream().Write(buffer, offset, count);
 					logger.Debug("Write {0} bytes to {1}", count, _client.Client.RemoteEndPoint);
-				}
+
+                    logger.Debug("\n" + Utilities.FormatAsPrettyHex(buffer, offset, count));
+                }
 				catch (SocketException ex)
 				{
 					logger.Debug("Failed to write {0} bytes to {1}.  {2}",
