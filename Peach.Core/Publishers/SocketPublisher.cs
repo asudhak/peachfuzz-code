@@ -17,6 +17,8 @@ namespace Peach.Core.Publishers
 		public ushort SrcPort { get; set; }
 		public int Timeout { get; set; }
 
+		public static int MaxSendSize = 65000;
+
 		private string _type = null;
 		private Socket _socket = null;
 		private MemoryStream _recvBuffer = null;
@@ -43,10 +45,10 @@ namespace Peach.Core.Publishers
 				_socket = OpenSocket();
 
 				if (_recvBuffer == null || _recvBuffer.Capacity < _socket.ReceiveBufferSize)
-					_recvBuffer = new MemoryStream(_socket.ReceiveBufferSize);
+					_recvBuffer = new MemoryStream(MaxSendSize);
 
 				if (_sendBuffer == null || _sendBuffer.Capacity < _socket.SendBufferSize)
-					_sendBuffer = new MemoryStream(_socket.SendBufferSize);
+					_sendBuffer = new MemoryStream(MaxSendSize);
 
 				_errorsOpen = 0;
 			}
@@ -124,12 +126,21 @@ namespace Peach.Core.Publishers
 				stream.Seek(0, SeekOrigin.Begin);
 			}
 
+			byte[] buf = stream.GetBuffer();
+			int offset = (int)stream.Position;
+			int size = (int)stream.Length;
+
+			if (size > MaxSendSize)
+			{
+				if (Iteration == 0)
+					throw new PeachException("Data to output is larger than the maximum {0} packet size of {1} bytes.", _type, MaxSendSize);
+
+				// This will be logged below as a truncated send
+				size = MaxSendSize;
+			}
+
 			try
 			{
-				byte[] buf = stream.GetBuffer();
-				int offset = (int)stream.Position;
-				int size = (int)stream.Length;
-
 				var ar = _socket.BeginSend(buf, offset, size, SocketFlags.None, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
@@ -137,9 +148,9 @@ namespace Peach.Core.Publishers
 
 				_errorsSend = 0;
 
-				if (stream.Length != txLen)
+				if (data.Length != txLen)
 					logger.Debug("Only sent {0} of {1} byte {2} packet to {3}:{4}.",
-						_type, txLen, stream.Length, Host, Port);
+						_type, txLen, data.Length, Host, Port);
 			}
 			catch (Exception ex)
 			{
