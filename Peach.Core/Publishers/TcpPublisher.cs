@@ -72,7 +72,7 @@ namespace Peach.Core.Publishers
 						ScheduleRecv();
 					}
 				}
-				catch (SocketException ex)
+				catch (Exception ex)
 				{
 					logger.Debug("Unable to receive on TCP socket.  " + ex.Message);
 					CloseClient();
@@ -306,7 +306,7 @@ namespace Peach.Core.Publishers
 
                     logger.Debug("\n" + Utilities.FormatAsPrettyHex(buffer, offset, count));
                 }
-				catch (SocketException ex)
+				catch (Exception ex)
 				{
 					logger.Debug("Failed to write {0} bytes to {1}.  {2}",
 						count, _client.Client.RemoteEndPoint, ex.Message);

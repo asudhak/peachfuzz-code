@@ -39,7 +39,7 @@ namespace Peach.Core.Publishers
 				_listener = new TcpListener(Interface, Port);
 				_listener.Start();
 			}
-			catch (SocketException ex)
+			catch (Exception ex)
 			{
 				throw new PeachException("Error, unable to bind to interface " +
 					Interface + " on port " + Port + ": " + ex.Message);
