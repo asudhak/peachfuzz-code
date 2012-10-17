@@ -74,13 +74,19 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("Could not connect to {1}:{2} within {3}ms, timing out.",
+					logger.Debug("Could not connect to {0}:{1} within {2}ms, timing out.",
 						Host, Port, Timeout);
 				}
 				else
 				{
-					logger.Error("Could not connect to {1}:{2}. {3}",
+					logger.Error("Could not connect to {0}:{1}. {2}",
 						Host, Port, ex.Message);
+				}
+
+				if (_client != null)
+				{
+					_client.Close();
+					_client = null;
 				}
 
 				if (++_errors == _errorsMax)

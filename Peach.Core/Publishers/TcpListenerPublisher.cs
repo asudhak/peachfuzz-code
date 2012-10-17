@@ -76,12 +76,12 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("Connection could not be accepted on {1}:{2} within {3}ms, timing out.",
+					logger.Debug("Connection could not be accepted on {0}:{1} within {2}ms, timing out.",
 						Interface, Port, Timeout);
 				}
 				else
 				{
-					logger.Error("Connection could not be accepted on {1}:{2}. {3}",
+					logger.Error("Connection could not be accepted on {0}:{1}. {2}",
 						Interface, Port, ex.Message);
 				}
 
