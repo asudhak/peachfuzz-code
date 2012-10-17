@@ -540,7 +540,7 @@ def process_rule(self):
 		return
 
 	# create the task class
-	name = str(getattr(self, 'name', None) or self.target or self.rule)
+	name = str(getattr(self, 'name', None) or self.target or getattr(self.rule, '__name__', self.rule))
 
 	# or we can put the class in a cache for performance reasons
 	try:
