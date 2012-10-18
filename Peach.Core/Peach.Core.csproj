@@ -577,6 +577,7 @@
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />
     <Compile Include="Scripting.cs" />
+    <Compile Include="SerializableDictionary.cs" />
     <Compile Include="TinyMT32.cs" />
     <Compile Include="Transformer.cs" />
     <Compile Include="Transformers\Compress\Bz2Compress.cs" />

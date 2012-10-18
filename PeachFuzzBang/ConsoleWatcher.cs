@@ -51,7 +51,7 @@ namespace PeachFuzzBang
 		{
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
+		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faultData)
 		{
 			_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
 				new object[] { _form.textBoxOutput, "\r\n**** FAULT DETECTED AND LOGGED! ****\r\n" });

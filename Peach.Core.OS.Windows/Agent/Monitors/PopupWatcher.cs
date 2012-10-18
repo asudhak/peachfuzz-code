@@ -167,8 +167,9 @@ namespace Peach.Core.Agent.Monitors
 			return false;
 		}
 
-		public override void GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
+            return null;
 		}
 
 		public override bool MustStop()

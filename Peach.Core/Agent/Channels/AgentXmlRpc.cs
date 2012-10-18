@@ -120,7 +120,7 @@ namespace Peach.Core.Agent.Channels
 			return proxy.DetectedFault();
 		}
 
-		public override Hashtable GetMonitorData()
+		public override Fault[] GetMonitorData()
 		{
 			return proxy.GetMonitorData();
 		}
@@ -203,7 +203,7 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[XmlRpcMethod("GetMonitorData")]
-		public Hashtable GetMonitorData()
+		public Fault[] GetMonitorData()
 		{
 			return agent.GetMonitorData();
 		}
@@ -247,7 +247,7 @@ namespace Peach.Core.Agent.Channels
 		[XmlRpcMethod("DetectedFault")]
 		bool DetectedFault();
 		[XmlRpcMethod("GetMonitorData")]
-		Hashtable GetMonitorData();
+		Fault[] GetMonitorData();
 		[XmlRpcMethod("MustStop")]
 		bool MustStop();
 		[XmlRpcMethod("Message")]

@@ -118,7 +118,7 @@ namespace Peach.Core
 		{
 		}
 
-		protected virtual void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
+		protected virtual void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault [] faultData)
 		{
 		}
 

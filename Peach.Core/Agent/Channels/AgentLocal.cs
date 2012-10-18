@@ -110,7 +110,7 @@ namespace Peach.Core.Agent.Channels
 			return agent.DetectedFault();
 		}
 
-		public override Hashtable GetMonitorData()
+		public override Fault[] GetMonitorData()
 		{
 			return agent.GetMonitorData();
 		}

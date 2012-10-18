@@ -61,39 +61,41 @@ namespace Peach.Core.Loggers
 		}
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel,
-			Dictionary<AgentClient, Hashtable> faultData)
+			Fault [] faults)
 		{
-			string bucketData = null;
+            Fault coreFault = null;
+            List<Fault> dataFaults = new List<Fault>();
 
 			log.WriteLine("! Fault detected at iteration {0} : {1}", currentIteration, DateTime.Now.ToString());
 
-			foreach (Hashtable data in faultData.Values)
-			{
-				foreach (object subdata in data.Values)
-				{
-					if (subdata is Dictionary<string, Variant> && ((Dictionary<string, Variant>)subdata).ContainsKey("Bucket"))
-					{
-						bucketData = (string)((Dictionary<string, Variant>)subdata)["Bucket"];
-						break;
-					}
-				}
+            // First find the core fault.
+            foreach (Fault fault in faults)
+            {
+                if (fault.type == FaultType.Fault)
+                    coreFault = fault;
+                else
+                    dataFaults.Add(fault);
+            }
 
-				if (bucketData != null)
-					break;
-			}
+            if (coreFault == null)
+                throw new ApplicationException("Error, we should always have a fault with type = Fault!");
 
 			string faultPath = System.IO.Path.Combine(ourpath, "Faults");
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-			if (bucketData != null)
-			{
-				faultPath = System.IO.Path.Combine(faultPath, bucketData);
-			}
-			else
-			{
-				faultPath = System.IO.Path.Combine(faultPath, "Unknown");
-			}
+            if(coreFault.folderName != null)
+                faultPath = System.IO.Path.Combine(faultPath, coreFault.folderName);
+
+            else if (coreFault.majorHash == null && coreFault.minorHash == null && coreFault.exploitability == null)
+            {
+                faultPath = System.IO.Path.Combine(faultPath, "Unknown");
+            }
+            else
+            {
+                faultPath = System.IO.Path.Combine(faultPath,
+                    string.Format("{0}_{1}_{2}", coreFault.exploitability, coreFault.majorHash, coreFault.minorHash));
+            }
 
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
@@ -127,32 +129,23 @@ namespace Peach.Core.Loggers
 				}
 			}
 
-			foreach (AgentClient agent in faultData.Keys)
-			{
-				Hashtable data = faultData[agent];
+            // Write out all data information
+            foreach (Fault fault in faults)
+            {
+                foreach(string key in fault.collectedData.Keys)
+                {
+                    string fileName = System.IO.Path.Combine(faultPath, 
+                        fault.detectionSource + "_" + key);
+                    File.WriteAllBytes(fileName, fault.collectedData[key]);
+                }
 
-				foreach (string key in data.Keys)
-				{
-					string path = System.IO.Path.Combine(faultPath, key);
-					Directory.CreateDirectory(path);
-
-					object subdata = data[key];
-					if (subdata is Dictionary<string, Variant>)
-					{
-						var dict = subdata as Dictionary<string, Variant>;
-						foreach (string dictKey in dict.Keys)
-						{
-							string fileName = System.IO.Path.Combine(path, dictKey);
-							Variant value = dict[dictKey];
-
-							if (value.GetVariantType() == Variant.VariantType.String)
-								File.WriteAllText(fileName, (string)value);
-							else
-								File.WriteAllBytes(fileName, (byte[])value);
-						}
-					}
-				}
-			}
+                if (fault.description != null)
+                {
+                    string fileName = System.IO.Path.Combine(faultPath,
+                        fault.detectionSource + "_" + "description.txt");
+                    File.WriteAllText(fileName, fault.description);
+                }
+            }
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)

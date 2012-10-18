@@ -393,18 +393,22 @@ namespace Peach.Core.Agent.Monitors
 			return fault;
 		}
 
-		public override void GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
 			if (!DetectedFault())
-				return;
+				return null;
 
-			data.Add(_name + "WindowsDebuggerHybrid", _debugger.crashInfo);
+            Fault fault = _debugger.crashInfo;
+            fault.type = FaultType.Fault;
+            fault.detectionSource = "WindowsDebuggerHybrid";
 
 			if (_hybrid)
 			{
 				_StopDebugger();
 				_FinishDebugger();
 			}
+
+            return fault;
 		}
 
 		public override bool MustStop()

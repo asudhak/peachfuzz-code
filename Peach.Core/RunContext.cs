@@ -44,6 +44,20 @@ namespace Peach.Core
 		public delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
 		public event DebugEventHandler Debug;
 
+        public delegate void CollectFaultsHandler(RunContext context);
+
+        /// <summary>
+        /// This event is triggered after an interation has occured to allow
+        /// collection of faults into RunContext.faults collection.
+        /// </summary>
+        public event CollectFaultsHandler CollectFaults;
+
+        public void OnCollectFaults()
+        {
+            if (CollectFaults != null)
+                CollectFaults(this);
+        }
+
 		public void CriticalMessage(string from, string msg)
 		{
 			if (Debug != null)
@@ -68,6 +82,15 @@ namespace Peach.Core
 		public AgentManager agentManager = null;
 
 		public bool needDataModel = true;
+
+        /// <summary>
+        /// Faults for current iteration of fuzzing.  This collection
+        /// is cleared after each iteration.
+        /// </summary>
+        /// <remarks>
+        /// This collection should only be added to from the CollectFaults event.
+        /// </remarks>
+        public List<Fault> faults = new List<Fault>();
 
 		/// <summary>
 		/// Controls if we continue fuzzing or exit
@@ -133,6 +156,83 @@ namespace Peach.Core
 
 		#endregion
 	}
+
+    /// <summary>
+    /// Type of fault
+    /// </summary>
+    public enum FaultType
+    {
+        Unknown,
+        // Actual fault
+        Fault,
+        // Data collection
+        Data
+    }
+
+    /// <summary>
+    /// Fault detected during fuzzing run
+    /// </summary>
+    /// </remarks>
+    [Serializable]
+    public class Fault
+    {
+        public Fault()
+        {
+        }
+
+        /// <summary>
+        /// Iteration fault was detected on
+        /// </summary>
+        public uint iteration = 0;
+
+        /// <summary>
+        /// Type of fault
+        /// </summary>
+        public FaultType type = FaultType.Unknown;
+
+        /// <summary>
+        /// Who detected this fault?
+        /// </summary>
+        /// <remarks>
+        /// Example: "PageHeap Monitor"
+        /// Example: "Name (PageHeap Monitor)"
+        /// </remarks>
+        public string detectionSource = null;
+
+        /// <summary>
+        /// Title of finding
+        /// </summary>
+        public string title = null;
+
+        /// <summary>
+        /// Multiline description and collection of information.
+        /// </summary>
+        public string description = null;
+
+        /// <summary>
+        /// Major hash of fault used for bucketting.
+        /// </summary>
+        public string majorHash = null;
+        /// <summary>
+        /// Minor hash of fault used for bucketting.
+        /// </summary>
+        public string minorHash = null;
+        /// <summary>
+        /// Exploitability of fault, used for bucketting.
+        /// </summary>
+        public string exploitability = null;
+
+        /// <summary>
+        /// Folder for fault to be collected under.  Only used when
+        /// major/minor hashes and exploitability are not defined.
+        /// </summary>
+        public string folderName = null;
+
+        /// <summary>
+        /// Binary data collected about fault.  Key is filename, value is content.
+        /// </summary>
+        public SerializableDictionary<string, byte[]> collectedData = new SerializableDictionary<string, byte[]>();
+    }
 }
 
 // end
