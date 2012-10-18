@@ -91,6 +91,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void StopMonitor()
 		{
+			if (File.Exists(_tempFileName))
+				File.Delete(_tempFileName);
 		}
 
 		public override void SessionStarting()
@@ -163,7 +165,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			lock (_lock)
 			{
-				_writer = new CaptureFileWriterDevice(_device, Path.GetTempFileName());
+				_writer = new CaptureFileWriterDevice(_device, _tempFileName);
 				_numPackets = 0;
 			}
 		}
