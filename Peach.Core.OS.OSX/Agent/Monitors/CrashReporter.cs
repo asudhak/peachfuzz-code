@@ -145,18 +145,22 @@ namespace Peach.Core.Agent.Monitors
 			return this._crashLogs.Length > 0;
 		}
 
-		public override void GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
 			if (!DetectedFault())
-				return;
+				return null;
 
-			StringBuilder sb = new StringBuilder();
+			Fault fault = new Fault();
+			fault.detectionSource = "CrashReporter";
+			fault.type = FaultType.Fault;
+
 			foreach (string file in _crashLogs)
 			{
-				sb.Append(File.ReadAllText(file));
+				string key = Path.GetFileName(file);
+				fault.collectedData[key] = File.ReadAllBytes(file);
 			}
 
-			data.Add("CrashReporter", sb.ToString());
+			return fault;
 		}
 
 		public override bool MustStop()

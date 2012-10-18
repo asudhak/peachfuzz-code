@@ -129,15 +129,20 @@ namespace Peach.Core.Agent.Monitors
 			return _detectedFault.Value;
 		}
 
-		public override void GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
 			if (!DetectedFault())
-				return;
+				return null;
 
 			string log = File.ReadAllText(_cwLogFile);
 			string summary = GenerateSummary(log);
 
-			data.Add("CrashWrangler", summary);
+			Fault fault = new Fault();
+			fault.detectionSource = "CrashWrangler";
+			fault.type = FaultType.Fault;
+			fault.description = summary;
+			fault.collectedData["Log"] = Encoding.UTF8.GetBytes(log);
+			return fault;
 		}
 
 		public override bool MustStop()
