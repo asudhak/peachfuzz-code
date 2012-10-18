@@ -18,6 +18,8 @@ namespace Peach.Core.Test.Publishers
 		public EndPoint remoteEP;
 		public byte[] RecvBuf;
 		public Socket Socket;
+		public int Max = 1;
+		public int Count = 0;
 
 		public SocketEcho()
 		{
@@ -32,12 +34,13 @@ namespace Peach.Core.Test.Publishers
 			Socket.BeginSend(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, new AsyncCallback(OnSend), null);
 		}
 
-		public void Start(IPAddress local)
+		public void Start(IPAddress local, int count = 1)
 		{
 			Socket = new Socket(local.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 			Socket.Bind(new IPEndPoint(local, 0));
-			RecvBuf = new byte[Socket.ReceiveBufferSize];
+			RecvBuf = new byte[65535];
 			remoteEP = new IPEndPoint(local, 0);
+			Max = count;
 			Socket.BeginReceiveFrom(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, ref remoteEP, new AsyncCallback(OnRecv), null);
 		}
 
@@ -56,12 +59,29 @@ namespace Peach.Core.Test.Publishers
 
 		private void OnRecv(IAsyncResult ar)
 		{
-			var len = Socket.EndReceiveFrom(ar, ref remoteEP);
+			try
+			{
+				var len = Socket.EndReceiveFrom(ar, ref remoteEP);
 
-			byte[] response = Encoding.ASCII.GetBytes(string.Format("Recv {0} bytes!", len));
-			Socket.SendTo(response, remoteEP);
-			Socket.Close();
-			Socket = null;
+				byte[] response = Encoding.ASCII.GetBytes(string.Format("Recv {0} bytes!", len));
+				Socket.SendTo(response, remoteEP);
+			}
+			catch (Exception)
+			{
+				Socket.Close();
+				Socket = null;
+				throw;
+			}
+
+			if (++Count == Max)
+			{
+				Socket.Close();
+				Socket = null;
+			}
+			else
+			{
+				Socket.BeginReceiveFrom(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, ref remoteEP, new AsyncCallback(OnRecv), null);
+			}
 		}
 	}
 
@@ -100,7 +120,11 @@ namespace Peach.Core.Test.Publishers
 <Peach>
 
 	<DataModel name=""TheDataModel"">
-		<String name=""str"" value=""Hello World""/>
+		<String name=""str"" value=""{3}""/>
+	</DataModel>
+
+	<DataModel name=""ResponseModel"">
+		<String name=""str"" mutable=""false""/>
 	</DataModel>
 
 	<StateModel name=""TheStateModel"" initialState=""InitialState"">
@@ -110,7 +134,7 @@ namespace Peach.Core.Test.Publishers
 			</Action>
 
 			<Action name=""Recv"" type=""input"">
-				<DataModel ref=""TheDataModel""/>
+				<DataModel ref=""ResponseModel""/>
 			</Action>
 		</State>
 	</StateModel>
@@ -206,7 +230,7 @@ namespace Peach.Core.Test.Publishers
 			echo.Start(IPAddress.Loopback);
 			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
 
-			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port);
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port, "Hello World");
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -222,7 +246,7 @@ namespace Peach.Core.Test.Publishers
 
 			var de1 = actions[0].dataModel.find("TheDataModel.str");
 			Assert.NotNull(de1);
-			var de2 = actions[1].dataModel.find("TheDataModel.str");
+			var de2 = actions[1].dataModel.find("ResponseModel.str");
 			Assert.NotNull(de2);
 
 			string send = (string)de1.DefaultValue;
@@ -240,7 +264,7 @@ namespace Peach.Core.Test.Publishers
 			echo.Start(IPAddress.IPv6Loopback);
 			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
 
-			string xml = string.Format(template, "Udp", IPAddress.IPv6Loopback, ep.Port);
+			string xml = string.Format(template, "Udp", IPAddress.IPv6Loopback, ep.Port, "Hello World");
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -256,7 +280,7 @@ namespace Peach.Core.Test.Publishers
 
 			var de1 = actions[0].dataModel.find("TheDataModel.str");
 			Assert.NotNull(de1);
-			var de2 = actions[1].dataModel.find("TheDataModel.str");
+			var de2 = actions[1].dataModel.find("ResponseModel.str");
 			Assert.NotNull(de2);
 
 			string send = (string)de1.DefaultValue;
@@ -265,6 +289,62 @@ namespace Peach.Core.Test.Publishers
 			Assert.AreEqual("Hello World", send);
 			Assert.AreEqual("Recv 11 bytes!", recv);
 
+		}
+
+		[Test]
+		public void UdpSizeTest()
+		{
+			// If the data model is too large, the publisher should throw a PeachException
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, 1000, new string('a', 70000));
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
+		}
+
+
+		[Test]
+		public void UdpSizeMutateTest()
+		{
+			// If mutation makes the output too large, the socket publisher should truncate
+
+			SocketEcho echo = new SocketEcho();
+			echo.Start(IPAddress.Loopback, 2);
+			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
+
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port, new string('a', 40000));
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementDuplicateMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 0;
+			config.rangeStop = 2;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(4, dataModels.Count);
+
+			var de1 = dataModels[1].find("ResponseModel.str");
+			Assert.NotNull(de1);
+			string recv1 = (string)de1.DefaultValue;
+			Assert.AreEqual("Recv 40000 bytes!", recv1);
+
+			var de2 = dataModels[3].find("ResponseModel.str");
+			Assert.NotNull(de2);
+			string recv2 = (string)de2.DefaultValue;
+			Assert.AreEqual("Recv 65000 bytes!", recv2);
 		}
 
 		[Test]

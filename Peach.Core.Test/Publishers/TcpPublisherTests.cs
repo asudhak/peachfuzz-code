@@ -285,5 +285,25 @@ namespace Peach.Core.Test.Publishers
 			// Test TcpListener deals with client initiating shutdown
 			TcpClient(true);
 		}
+
+		[Test]
+		public void TcpConnectRetry()
+		{
+			// Tcp should try 9 times before erroring on the 10th failure.
+			string xml = string.Format(template, "ClientState", "TcpClient", "Host", 20);
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 0;
+			config.rangeStop = 9;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(9, dataModels.Count);
+		}
 	}
 }
