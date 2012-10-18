@@ -47,7 +47,7 @@ int DoWinsock(const char* pcAddress, int nPort)
 {
     // Begin listening for connections
     cout << "Establishing the listener..." << endl;
-    SOCKET ListeningSocket = SetUpListener(pcAddress, htons(nPort));
+    SOCKET ListeningSocket = SetUpListener(pcAddress, htons((u_short)nPort));
     if (ListeningSocket == INVALID_SOCKET) {
         cout << endl << "establish listener error:" << WSAGetLastError() <<
                 endl;
@@ -55,7 +55,7 @@ int DoWinsock(const char* pcAddress, int nPort)
     }
 
     // Spin forever handling clients
-    while (1) {
+    for (;;) {
         // Wait for a connection, and accepting it when one arrives.
         cout << "Waiting for a connection..." << flush;
         sockaddr_in sinRemote;
@@ -88,10 +88,6 @@ int DoWinsock(const char* pcAddress, int nPort)
             return 3;
         }
     }
-
-#if defined(_MSC_VER)
-    return 0;       // warning eater
-#endif
 }
 
 
@@ -108,7 +104,7 @@ SOCKET SetUpListener(const char* pcAddress, int nPort)
             sockaddr_in sinInterface;
             sinInterface.sin_family = AF_INET;
             sinInterface.sin_addr.s_addr = nInterfaceAddr;
-            sinInterface.sin_port = nPort;
+            sinInterface.sin_port = (u_short)nPort;
             if (bind(sd, (sockaddr*)&sinInterface, 
                     sizeof(sockaddr_in)) != SOCKET_ERROR) {
                 listen(sd, 1);
@@ -183,7 +179,6 @@ bool EchoIncomingPackets(SOCKET sd)
 				CrashMe(acReadBuffer);
 			}
 			
-            int nSentBytes = 0;
             //while (nSentBytes < nReadBytes) {
             //    int nTemp = send(sd, acReadBuffer + nSentBytes,
             //            nReadBytes - nSentBytes, 0);
