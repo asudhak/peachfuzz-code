@@ -163,7 +163,14 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(Stream data)
 		{
-			data.CopyTo(this);
+			try
+			{
+				data.CopyTo(this);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("output: Ignoring error during send.  " + ex.Message);
+			}
 		}
 
 		public override void WantBytes(long count)
@@ -300,21 +307,7 @@ namespace Peach.Core.Publishers
 				if (_client == null)
 					throw new NotSupportedException();
 
-				try
-				{
-					_client.GetStream().Write(buffer, offset, count);
-					Logger.Debug("Write {0} bytes to {1}", count, _client.Client.RemoteEndPoint);
-
-					if (Logger.IsDebugEnabled)
-						Logger.Debug("\n" + Utilities.FormatAsPrettyHex(buffer, offset, count));
-				}
-				catch (Exception ex)
-				{
-					Logger.Debug("Failed to write {0} bytes to {1}.  {2}",
-						count, _client.Client.RemoteEndPoint, ex.Message);
-
-					throw new SoftException();
-				}
+				_client.GetStream().Write(buffer, offset, count);
 			}
 		}
 
