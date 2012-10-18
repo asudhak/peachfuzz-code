@@ -189,23 +189,15 @@ namespace Peach.Core.Agent.Monitors
 
 		public override Fault GetMonitorData()
 		{
-            Fault fault = new Fault();
+			Fault fault = new Fault();
 
-            fault.detectionSource = "PcapMonitor";
-            fault.type = FaultType.Data;
-            fault.description = "Collected " + _numPackets + " packets.";
+			fault.detectionSource = "PcapMonitor";
+			fault.folderName = "PcapMonitor";
+			fault.type = FaultType.Data;
+			fault.description = "Collected " + _numPackets + " packets.";
+			fault.collectedData[this.Name + "_NetworkCapture.pcap"] = File.ReadAllBytes(_writer.Name);
 
-			// Return log
-			byte[] buff;
-			using (Stream sin = File.OpenRead(_writer.Name))
-			{
-				buff = new byte[sin.Length];
-				sin.Read(buff, 0, buff.Length);
-			}
-
-			fault.collectedData[this.Name + "_NetworkCapture.pcap"] = buff;
-
-            return fault;
+			return fault;
 		}
 
 		public override bool MustStop()
