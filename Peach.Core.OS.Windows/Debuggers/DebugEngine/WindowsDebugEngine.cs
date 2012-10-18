@@ -116,6 +116,9 @@ namespace Peach.Core.Debuggers.DebugEngine
 		[DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
 		public extern static IntPtr GetProcAddress(IntPtr dllPointer, string functionName);
 
+		public static uint LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000;
+		public static uint LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100;
+
 		/// <summary>
 		/// This will to load concret dll file
 		/// </summary>
@@ -126,7 +129,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 		/// </exception>
 		public static IntPtr LoadWin32Library(string dllFilePath)
 		{
-			System.IntPtr moduleHandle = LoadLibraryEx(dllFilePath, IntPtr.Zero, 0);
+			System.IntPtr moduleHandle = LoadLibraryEx(dllFilePath, IntPtr.Zero, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 			if (moduleHandle == IntPtr.Zero)
 			{
 				// I'm gettin last dll error
