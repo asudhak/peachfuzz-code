@@ -6,6 +6,7 @@ using System.Web;
 using System.Net;
 using System.IO;
 using System.Xml;
+using System.Xml.Schema;
 using System.Xml.XPath;
 using System.Xml.Serialization;
 using System.Reflection;
@@ -44,13 +45,34 @@ namespace Peach.Core.Publishers
 		{
 		}
 
+        protected object GetVariantValue(Variant value)
+        {
+            switch (value.GetVariantType())
+            {
+                //case Variant.VariantType.Boolean:
+                //    return (bool)value;
+                case Variant.VariantType.Int:
+                    return (int)value;
+                case Variant.VariantType.Long:
+                    return (long)value;
+                case Variant.VariantType.String:
+                    return (string)value;
+                case Variant.VariantType.ULong:
+                    return (ulong)value;
+                case Variant.VariantType.BitStream:
+                    return (byte[])value;
+            }
+
+            return null;
+        }
+
 		protected override Variant OnCall(string method, List<Dom.ActionParameter> args)
 		{
 			object [] parameters = new object[args.Count];
 			int count = 0;
 			foreach(var arg in args)
 			{
-				parameters[count] = arg.data;
+                parameters[count] = GetVariantValue(arg.dataModel.InternalValue);
 				count++;
 			}
 
@@ -87,86 +109,6 @@ namespace Peach.Core.Publishers
 
 				return UTF8Encoding.UTF8.GetString(sin.ToArray());
 			}
-		}
-
-		public string FlattenWsdl(Uri wsdlUrl, List<string> seenImports = null)
-		{
-			return FlattenWsdl(GetUrlContent(wsdlUrl), seenImports);
-		}
-
-		public string FlattenWsdl(string wsdl, 
-			List<string> seenImports = null, 
-			XmlDocument topLevelDoc = null, 
-			XmlNode schemaPlaceholder = null)
-		{
-			logger.Debug("FlattenWsdl()");
-
-			if (seenImports == null)
-				seenImports = new List<string>();
-
-			XmlDocument doc = new XmlDocument();
-			doc.LoadXml(wsdl);
-
-			if (topLevelDoc == null)
-				topLevelDoc = doc;
-
-			foreach (XmlNode import in doc.SelectNodes("//*[@schemaLocation]"))
-			{
-				string ns = import.Attributes["namespace"].Value;
-				string url = import.Attributes["schemaLocation"].Value;
-				
-				if (schemaPlaceholder == null)
-					schemaPlaceholder = import.ParentNode;
-
-				if (seenImports.Contains(ns))
-				{
-					import.ParentNode.RemoveChild(import);
-					continue;
-				}
-
-				seenImports.Add(ns);
-
-				logger.Debug("FlattenWsdl: NS: " + ns + " Url: " + url);
-
-				string importXml = GetUrlContent(new Uri(url));
-				importXml = FlattenWsdl(importXml, seenImports);
-
-				XmlDocument importDoc = new XmlDocument();
-				importDoc.LoadXml(importXml);
-				XmlNode importNode = null;
-
-				foreach (XmlNode child in importDoc.ChildNodes)
-				{
-					if (child.NodeType == XmlNodeType.Element)
-					{
-						importNode = doc.ImportNode(child, true);
-
-						logger.Debug("FlattenWsdl: Inserting node: " + importNode.Name + " - " + importNode.NodeType.ToString());
-						logger.Debug("FlattenWsdl: Parent of insert: " + import.ParentNode.Name);
-
-						import.ParentNode.ReplaceChild(importNode, import);
-
-						//foreach (XmlNode subChild in child.ChildNodes)
-						//{
-						//    importNode = doc.ImportNode(subChild, true);
-
-						//    logger.Debug("FlattenWsdl: Inserting node: " + importNode.Name + " - " + importNode.NodeType.ToString());
-						//    logger.Debug("FlattenWsdl: Parent of insert: " + import.ParentNode.Name);
-							
-						//    import.ParentNode.InsertBefore(importNode, import);
-						//}
-
-						break;
-					}
-				}
-
-				if (importNode == null)
-					throw new PeachException("Error, while trying to flatten the WSDL definition we were unable to import '" + url + "'.");
-
-				//import.ParentNode.RemoveChild(import);
-			}
-
-			return doc.InnerXml;
 		}
 
 		/// <summary>
@@ -232,7 +174,11 @@ namespace Peach.Core.Publishers
 
 			Type type = obj.GetType();
 
-			return (T)type.InvokeMember(methodName, BindingFlags.InvokeMethod, null, obj, args);
+            var method = type.GetMethod(methodName);
+            //var params = method.GetParameters();
+            return (T)method.Invoke(obj, args);
+
+			//return (T)type.InvokeMember(methodName, BindingFlags.InvokeMethod, null, obj, args);
 		}
 
 		/// <summary>
@@ -244,44 +190,30 @@ namespace Peach.Core.Publishers
 		private ServiceDescriptionImporter BuildServiceDescriptionImporter(string webserviceUri)
 		{
 			ServiceDescriptionImporter descriptionImporter = null;
-			ServiceDescription serviceDescription = null;
-
-			// Figure out how to handle Proxy if we need to.
-			//WebClient client = new WebClient { Proxy = new WebProxy(host, port) };
-			using (WebClient client = new WebClient())
-			{
-				using (Stream stream = client.OpenRead(webserviceUri))
-				{
-					string xml;
-
-					using (var sin = new MemoryStream())
-					{
-						stream.CopyTo(sin);
-						sin.Position = 0;
-						xml = UTF8Encoding.UTF8.GetString(sin.ToArray());
-					}
-
-					xml = FlattenWsdl(xml);
-					File.WriteAllText(@"c:\temp\flat2.xml", xml);
-					//xml = File.ReadAllText(@"c:\temp\flat.xml");
-
-					using (var sout = new MemoryStream(UTF8Encoding.UTF8.GetBytes(xml)))
-					{
-						using (XmlReader xmlreader = XmlReader.Create(sout))
-						{
-							serviceDescription = ServiceDescription.Read(xmlreader);
-						}
-					}
-				}
-			}
 
 			// build an importer, that assumes the SOAP protocol, client binding, and generates properties
 			descriptionImporter = new ServiceDescriptionImporter();
 			//descriptionImporter.ProtocolName = "Soap12";
-			descriptionImporter.ProtocolName = "Soap12";
-			descriptionImporter.AddServiceDescription(serviceDescription, null, null);
+			descriptionImporter.ProtocolName = "Soap";
 			descriptionImporter.Style = ServiceDescriptionImportStyle.Client;
 			descriptionImporter.CodeGenerationOptions = CodeGenerationOptions.GenerateProperties;
+
+            // This is the better way rather then trying to flatten document ourselves.
+
+            DiscoveryClientProtocol clientProtocol = new DiscoveryClientProtocol();
+            clientProtocol.DiscoverAny(webserviceUri);
+            clientProtocol.ResolveAll();
+
+            clientProtocol.Documents.Values.OfType<object>()
+                                   .Select(document =>
+                                   {
+                                       if (document is ServiceDescription)
+                                           descriptionImporter.AddServiceDescription(document as ServiceDescription, string.Empty, string.Empty);
+                                       else if (document is XmlSchema)
+                                           descriptionImporter.Schemas.Add(document as XmlSchema);
+                                       return true;
+                                   })
+                                   .ToList();
 
 			return descriptionImporter;
 		}
