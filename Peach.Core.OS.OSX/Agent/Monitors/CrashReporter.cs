@@ -152,7 +152,9 @@ namespace Peach.Core.Agent.Monitors
 
 			Fault fault = new Fault();
 			fault.detectionSource = "CrashReporter";
+			fault.folderName = "CrashReporter";
 			fault.type = FaultType.Fault;
+			fault.description = _processName + " crash report.";
 
 			foreach (string file in _crashLogs)
 			{

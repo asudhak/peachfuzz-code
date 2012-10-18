@@ -139,9 +139,10 @@ namespace Peach.Core.Agent.Monitors
 
 			Fault fault = new Fault();
 			fault.detectionSource = "CrashWrangler";
+			fault.folderName = "CrashWrangler";
 			fault.type = FaultType.Fault;
 			fault.description = summary;
-			fault.collectedData["Log"] = Encoding.UTF8.GetBytes(log);
+			fault.collectedData["Log"] = File.ReadAllBytes(_cwLogFile);
 			return fault;
 		}
 
