@@ -8,7 +8,7 @@ namespace Peach.Core.Publishers
 	/// Helper class for creating stream based publishers.
 	/// Derived classes should only need to override OnOpen and OnClose
 	/// </summary>
-	public class StreamPublisher : Publisher
+	public abstract class StreamPublisher : Publisher
 	{
 		protected Stream stream = null;
 

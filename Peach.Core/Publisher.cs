@@ -65,7 +65,7 @@ namespace Peach.Core
 	/// </summary>
 	public abstract class Publisher : Stream
 	{
-		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected abstract NLog.Logger Logger { get; }
 
 		#region Properties
 
@@ -270,7 +270,7 @@ namespace Peach.Core
 			if (StartEvent != null)
 				StartEvent(this, CurrentAction);
 
-			logger.Debug("start({0})", action.name);
+			Logger.Debug("start({0})", action.name);
 			OnStart();
 
 			HasStarted = true;
@@ -292,7 +292,7 @@ namespace Peach.Core
 			if (StopEvent != null)
 				StopEvent(this, CurrentAction);
 
-			logger.Debug("stop({0})", action == null ? "<null>" : action.name);
+			Logger.Debug("stop({0})", action == null ? "<null>" : action.name);
 			OnStop();
 
 			HasStarted = false;
@@ -309,7 +309,7 @@ namespace Peach.Core
 			if (AcceptEvent != null)
 				AcceptEvent(this, CurrentAction);
 
-			logger.Debug("accept({0})", action.name);
+			Logger.Debug("accept({0})", action.name);
 			OnAccept();
 		}
 
@@ -328,7 +328,7 @@ namespace Peach.Core
 			if (OpenEvent != null)
 				OpenEvent(this, CurrentAction);
 
-			logger.Debug("open({0})", action.name);
+			Logger.Debug("open({0})", action.name);
 			OnOpen();
 
 			IsOpen = true;
@@ -350,7 +350,7 @@ namespace Peach.Core
 			if (CloseEvent != null)
 				CloseEvent(this, CurrentAction);
 
-			logger.Debug("close({0})", action == null ? "<null>" : action.name);
+			Logger.Debug("close({0})", action == null ? "<null>" : action.name);
 			OnClose();
 
 			IsOpen = false;
@@ -370,7 +370,7 @@ namespace Peach.Core
 			if (CallEvent != null)
 				CallEvent(this, CurrentAction, method, args);
 
-			logger.Debug("call({0}, {1}, {2})", action.name, method, args);
+			Logger.Debug("call({0}, {1}, {2})", action.name, method, args);
 			return OnCall(method, args);
 		}
 
@@ -387,7 +387,7 @@ namespace Peach.Core
 			if (SetPropertyEvent != null)
 				SetPropertyEvent(this, CurrentAction, property, value);
 
-			logger.Debug("setProperty({0}, {1}, {2})", action.name, property, value);
+			Logger.Debug("setProperty({0}, {1}, {2})", action.name, property, value);
 			OnSetProperty(property, value);
 		}
 
@@ -404,7 +404,7 @@ namespace Peach.Core
 			if (GetPropertyEvent != null)
 				GetPropertyEvent(this, CurrentAction, property);
 
-			logger.Debug("getProperty({0}, {1})", action.name, property);
+			Logger.Debug("getProperty({0}, {1})", action.name, property);
 			return OnGetProperty(property);
 		}
 
@@ -420,7 +420,7 @@ namespace Peach.Core
 			if (OutputEvent != null)
 				OutputEvent(this, CurrentAction, data);
 
-			logger.Debug("output({0}, {1} bytes)", action.name, data.Length);
+			Logger.Debug("output({0}, {1} bytes)", action.name, data.Length);
 
 			var pos = data.Position;
 			data.Seek(0, SeekOrigin.Begin);
@@ -440,7 +440,7 @@ namespace Peach.Core
 			if (InputEvent != null)
 				InputEvent(this, CurrentAction);
 
-			logger.Debug("input({0})", action.name);
+			Logger.Debug("input({0})", action.name);
 			OnInput();
 		}
 

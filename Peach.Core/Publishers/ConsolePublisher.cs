@@ -31,6 +31,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using NLog;
 
 namespace Peach.Core.Publishers
 {
@@ -39,6 +40,9 @@ namespace Peach.Core.Publishers
 	[Publisher("stdout.Stdout")]
 	public class ConsolePublisher : Publisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		protected Stream stream = null;
 
 		public ConsolePublisher(Dictionary<string, Variant> args)

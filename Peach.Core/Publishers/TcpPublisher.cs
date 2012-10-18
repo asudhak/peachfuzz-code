@@ -12,7 +12,7 @@ using NLog;
 
 namespace Peach.Core.Publishers
 {
-	public class TcpPublisher : Publisher
+	public abstract class TcpPublisher : Publisher
 	{
 		public ushort Port { get; set; }
 		public int Timeout { get; set; }
@@ -52,12 +52,12 @@ namespace Peach.Core.Publishers
 
 					if (len == 0)
 					{
-						logger.Debug("Read 0 bytes from {0}, closing client connection.", _client.Client.RemoteEndPoint);
+						Logger.Debug("Read 0 bytes from {0}, closing client connection.", _client.Client.RemoteEndPoint);
 						CloseClient();
 					}
 					else
 					{
-						logger.Debug("Read {0} bytes from {0}", len, _client.Client.RemoteEndPoint);
+						Logger.Debug("Read {0} bytes from {0}", len, _client.Client.RemoteEndPoint);
 
 						lock (_bufferLock)
 						{
@@ -66,7 +66,7 @@ namespace Peach.Core.Publishers
 							_buffer.Write(_recvBuf, 0, len);
 							_buffer.Position = pos;
 
-                            logger.Debug("\n"+Utilities.FormatAsPrettyHex(_recvBuf, 0, len));
+                            Logger.Debug("\n"+Utilities.FormatAsPrettyHex(_recvBuf, 0, len));
 						}
 
 						ScheduleRecv();
@@ -74,7 +74,7 @@ namespace Peach.Core.Publishers
 				}
 				catch (Exception ex)
 				{
-					logger.Debug("Unable to receive on TCP socket.  " + ex.Message);
+					Logger.Debug("Unable to receive on TCP socket.  " + ex.Message);
 					CloseClient();
 				}
 			}
@@ -95,7 +95,7 @@ namespace Peach.Core.Publishers
 			lock (_clientLock)
 			{
 				System.Diagnostics.Debug.Assert(_client != null);
-				logger.Debug("Closing connection to {0}", _client.Client.RemoteEndPoint);
+				Logger.Debug("Closing connection to {0}", _client.Client.RemoteEndPoint);
 				_client.Close();
 				_client = null;
 				_event.Set();
@@ -129,7 +129,7 @@ namespace Peach.Core.Publishers
 			{
 				if (_client != null)
 				{
-					logger.Debug("Shutting down connection to {0}", _client.Client.RemoteEndPoint);
+					Logger.Debug("Shutting down connection to {0}", _client.Client.RemoteEndPoint);
 					_client.Client.Shutdown(SocketShutdown.Send);
 				}
 			}
@@ -140,7 +140,7 @@ namespace Peach.Core.Publishers
 				{
 					if (_client != null)
 					{
-						logger.Debug("Graceful shutdown of socket timed out.  Force closing...");
+						Logger.Debug("Graceful shutdown of socket timed out.  Force closing...");
 						CloseClient();
 					}
 				}
@@ -302,13 +302,13 @@ namespace Peach.Core.Publishers
 				try
 				{
 					_client.GetStream().Write(buffer, offset, count);
-					logger.Debug("Write {0} bytes to {1}", count, _client.Client.RemoteEndPoint);
+					Logger.Debug("Write {0} bytes to {1}", count, _client.Client.RemoteEndPoint);
 
-                    logger.Debug("\n" + Utilities.FormatAsPrettyHex(buffer, offset, count));
+                    Logger.Debug("\n" + Utilities.FormatAsPrettyHex(buffer, offset, count));
                 }
 				catch (Exception ex)
 				{
-					logger.Debug("Failed to write {0} bytes to {1}.  {2}",
+					Logger.Debug("Failed to write {0} bytes to {1}.  {2}",
 						count, _client.Client.RemoteEndPoint, ex.Message);
 
 					throw new SoftException();

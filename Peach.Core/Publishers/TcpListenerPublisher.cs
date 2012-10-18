@@ -18,6 +18,9 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public IPAddress Interface { get; set; }
 
 		protected TcpListener _listener = null;
@@ -76,12 +79,12 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("Connection could not be accepted on {0}:{1} within {2}ms, timing out.",
+					Logger.Debug("Connection could not be accepted on {0}:{1} within {2}ms, timing out.",
 						Interface, Port, Timeout);
 				}
 				else
 				{
-					logger.Error("Connection could not be accepted on {0}:{1}. {2}",
+					Logger.Error("Connection could not be accepted on {0}:{1}. {2}",
 						Interface, Port, ex.Message);
 				}
 

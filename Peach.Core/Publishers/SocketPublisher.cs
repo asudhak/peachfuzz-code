@@ -54,7 +54,7 @@ namespace Peach.Core.Publishers
 			}
 			catch (Exception ex)
 			{
-				logger.Error("Unable to open {0} socket to {1}:{2}. {3}.", _type, Host, Port, ex.Message);
+				Logger.Error("Unable to open {0} socket to {1}:{2}. {3}.", _type, Host, Port, ex.Message);
 
 				if (++_errorsOpen == _errorsMax)
 					throw new PeachException("Failed to open " + _type + " socket after " + _errorsOpen + " attempts.");
@@ -96,12 +96,12 @@ namespace Peach.Core.Publishers
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("{0} packet not received from {1}:{2} in {3}ms, timing out.",
+					Logger.Debug("{0} packet not received from {1}:{2} in {3}ms, timing out.",
 						_type, Host, Port, Timeout);
 				}
 				else
 				{
-					logger.Error("Unable to receive {0} packet from {1}:{2}. {3}",
+					Logger.Error("Unable to receive {0} packet from {1}:{2}. {3}",
 						_type, Host, Port, ex.Message);
 				}
 
@@ -149,19 +149,19 @@ namespace Peach.Core.Publishers
 				_errorsSend = 0;
 
 				if (data.Length != txLen)
-					logger.Debug("Only sent {0} of {1} byte {2} packet to {3}:{4}.",
+					Logger.Debug("Only sent {0} of {1} byte {2} packet to {3}:{4}.",
 						_type, txLen, data.Length, Host, Port);
 			}
 			catch (Exception ex)
 			{
 				if (ex is TimeoutException)
 				{
-					logger.Debug("{0} packet not sent to {1}:{2} in {3}ms, timing out.",
+					Logger.Debug("{0} packet not sent to {1}:{2} in {3}ms, timing out.",
 						_type, Host, Port, Timeout);
 				}
 				else
 				{
-					logger.Error("Unable to send {0} packet to {1}:{2}. {3}",
+					Logger.Error("Unable to send {0} packet to {1}:{2}. {3}",
 						_type, Host, Port, ex.Message);
 				}
 

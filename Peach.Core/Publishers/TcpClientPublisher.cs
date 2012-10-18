@@ -48,6 +48,9 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpClientPublisher : TcpPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public string Host { get; set; }
 
 		public TcpClientPublisher(Dictionary<string, Variant> args)
@@ -79,12 +82,12 @@ namespace Peach.Core.Publishers
 
 					if (cnt < 9)
 					{
-						logger.Warn("open: Warn, Unable to connect to remote host {0} on port {1}.  Trying again...", Host, Port);
+						Logger.Warn("open: Warn, Unable to connect to remote host {0} on port {1}.  Trying again...", Host, Port);
 						Thread.Sleep(500);
 					}
 					else
 					{
-						logger.Error("open: Error, Unable to connect to remote host {0} on port {1}.");
+						Logger.Error("open: Error, Unable to connect to remote host {0} on port {1}.", Host, Port);
 						throw new ActionException();
 					}
 				}
