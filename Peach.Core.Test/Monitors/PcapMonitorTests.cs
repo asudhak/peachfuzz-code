@@ -295,17 +295,21 @@ namespace Peach.Core.Test.Monitors
 
 		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)
 		{
-			foreach (var item in faults)
-			{
-                if (item.detectionSource == "PcapMonitor")
-                {
-                    Assert.AreEqual(0, int.Parse(ASCIIEncoding.ASCII.GetString(item.collectedData["Mon0_NumPackets"])));
-                    Assert.AreEqual(1, int.Parse(ASCIIEncoding.ASCII.GetString(item.collectedData["Mon1_NumPackets"])));
-                    Assert.AreEqual(2, int.Parse(ASCIIEncoding.ASCII.GetString(item.collectedData["Mon2_NumPackets"])));
+			Assert.AreEqual(3, faults.Length);
 
-                    testResults.Add("Success");
-                }
-			}
+			Assert.AreEqual("Collected 0 packets.", faults[0].description);
+			Assert.AreEqual(1, faults[0].collectedData.Keys.Count);
+			Assert.True(faults[0].collectedData.ContainsKey("Mon0_NetworkCapture.pcap"));
+
+			Assert.AreEqual("Collected 1 packets.", faults[1].description);
+			Assert.AreEqual(1, faults[1].collectedData.Keys.Count);
+			Assert.True(faults[1].collectedData.ContainsKey("Mon1_NetworkCapture.pcap"));
+
+			Assert.AreEqual("Collected 2 packets.", faults[2].description);
+			Assert.AreEqual(1, faults[2].collectedData.Keys.Count);
+			Assert.True(faults[2].collectedData.ContainsKey("Mon2_NetworkCapture.pcap"));
+
+			testResults.Add("Success");
 		}
 	}
 }
