@@ -460,11 +460,11 @@ Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 Syntax:
 
   peach -a channel
-  peach -c peach_xml_file [run_name]
+  peach -c peach_xml_file [test_name]
   peach -g
-  peach [--skipto #] peach_xml_flie [run_name]
-  peach -p 10,2 [--skipto #] peach_xml_file [run_name]
-  peach --range 100,200 peach_xml_file [run_name]
+  peach [--skipto #] peach_xml_flie [test_name]
+  peach -p 10,2 [--skipto #] peach_xml_file [test_name]
+  peach --range 100,200 peach_xml_file [test_name]
   peach -t peach_xml_file
 
   -1                         Perform a single iteration
@@ -483,6 +483,7 @@ Syntax:
                              ##KEY## and it will be replaced for VALUE.
   --definedvalues=FILENAME   XML file containing defined values
 
+
 Peach Agent
 
   Syntax: peach.py -a channel
@@ -494,12 +495,12 @@ Peach Agent
 
 Performing Fuzzing Run
 
-  Syntax: peach peach_xml_flie [run_name]
-  Syntax: peach --skipto 1234 peach_xml_flie [run_name]
-  Syntax: peach --range 100,200 peach_xml_flie [run_name]
+  Syntax: peach peach_xml_flie [test_name]
+  Syntax: peach --skipto 1234 peach_xml_flie [test_name]
+  Syntax: peach --range 100,200 peach_xml_flie [test_name]
   
   A fuzzing run is started by by specifying the Peach XML file and the
-  name of a run to perform.
+  name of a test to perform.
   
   If a run is interupted for some reason it can be restarted using the
   --skipto parameter and providing the test # to start at.
@@ -508,7 +509,7 @@ Performing Fuzzing Run
 
 Performing A Parellel Fuzzing Run
 
-  Syntax: peach -p 10,2 peach_xml_flie [run_name]
+  Syntax: peach -p 10,2 peach_xml_flie [test_name]
 
   A parallel fuzzing run uses multiple machines to perform the same fuzzing
   which shortens the time required.  To run in parallel mode we will need
