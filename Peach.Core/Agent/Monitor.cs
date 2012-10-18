@@ -78,7 +78,12 @@ namespace Peach.Core.Agent
         /// <returns>True if a fault was detected, else false.</returns>
         public abstract bool DetectedFault();
 
-        public abstract void GetMonitorData(Hashtable data);
+        /// <summary>
+        /// Return a Fault instance
+        /// </summary>
+        /// <returns></returns>
+        public abstract Fault GetMonitorData();
+
         /// <summary>
         /// Can the fuzzing session continue, or must we stop?
         /// </summary>

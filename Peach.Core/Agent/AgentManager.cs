@@ -46,10 +46,34 @@ namespace Peach.Core.Agent
 		static int UniqueNames = 0;
 		OrderedDictionary<string, AgentClient> _agents = new OrderedDictionary<string, AgentClient>();
 		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();
+        RunContext context;
 
-		public AgentManager()
+		public AgentManager(RunContext context)
 		{
+            this.context = context;
+            context.CollectFaults += new RunContext.CollectFaultsHandler(context_CollectFaults);
 		}
+
+        void context_CollectFaults(RunContext context)
+        {
+            if (DetectedFault())
+            {
+                var agentFaults = GetMonitorData();
+
+                foreach (var agent in agentFaults.Keys)
+                {
+                    var faults = agentFaults[agent];
+
+                    foreach (var fault in faults)
+                    {
+                        if (fault == null)
+                            continue;
+
+                        context.faults.Add(fault);
+                    }
+                }
+            }
+        }
 
 		public virtual void AddAgent(Dom.Agent agentDef)
 		{
@@ -141,15 +165,15 @@ namespace Peach.Core.Agent
 			return ret;
 		}
 
-		public virtual Dictionary<AgentClient, System.Collections.Hashtable> GetMonitorData()
+        public virtual Dictionary<AgentClient, Fault[]> GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
-			Dictionary<AgentClient, System.Collections.Hashtable> data = new Dictionary<AgentClient, System.Collections.Hashtable>();
+            Dictionary<AgentClient, Fault[]> faults = new Dictionary<AgentClient, Fault[]>();
 
 			foreach (AgentClient agent in _agents.Values)
-				data[agent] = agent.GetMonitorData();
+                faults[agent] = agent.GetMonitorData();
 
-			return data;
+            return faults;
 		}
 
 		public virtual bool MustStop()

@@ -149,7 +149,7 @@ namespace Peach.Core.Agent.Channels
 			return proxy.DetectedFault();
 		}
 
-		public override Hashtable GetMonitorData()
+		public override Fault[] GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
 			OnGetMonitorDataEvent();
@@ -244,7 +244,7 @@ namespace Peach.Core.Agent.Channels
 			return agent.DetectedFault();
 		}
 
-		public Hashtable GetMonitorData()
+		public Fault[] GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
 			return agent.GetMonitorData();

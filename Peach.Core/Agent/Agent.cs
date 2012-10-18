@@ -31,7 +31,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+
 using Peach.Core.Dom;
+
 using NLog;
 
 namespace Peach.Core.Agent
@@ -284,16 +286,17 @@ namespace Peach.Core.Agent
 			return detectedFault;
 		}
 
-		public Hashtable GetMonitorData()
+		public Fault[] GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
 			OnGetMonitorDataEvent();
 
-			Hashtable data = new Hashtable();
-			foreach (Monitor monitor in monitors.Values)
-				monitor.GetMonitorData(data);
+            List<Fault> faults = new List<Fault>();
 
-			return data;
+            foreach (Monitor monitor in monitors.Values)
+                faults.Add(monitor.GetMonitorData());
+
+			return faults.ToArray();
 		}
 
 		public bool MustStop()
@@ -367,7 +370,7 @@ namespace Peach.Core.Agent
 		void IterationStarting(uint iterationCount, bool isReproduction);
 		bool IterationFinished();
 		bool DetectedFault();
-		Hashtable GetMonitorData();
+		Fault[] GetMonitorData();
 		bool MustStop();
 		Variant Message(string name, Variant data);
 	}

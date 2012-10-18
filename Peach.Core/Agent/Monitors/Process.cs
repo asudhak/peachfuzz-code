@@ -160,12 +160,19 @@ namespace Peach.Core.Agent.Monitors
 			return false;
 		}
 
-		public override void GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
 			if (!DetectedFault())
-				return;
+				return null;
 
-			data.Add(this.Name + "_Process", "Process exited early: " + _executable + " " + _arguments);
+            Fault fault = new Fault();
+            fault.type = FaultType.Fault;
+            fault.detectionSource = "ProcessMonitor";
+            fault.title = "Process exited early";
+            fault.description = "Process exited early: " + _executable + " " + _arguments;
+            fault.folderName = "ProcessExitedEarly";
+
+            return fault;
 		}
 
 		public override bool MustStop()

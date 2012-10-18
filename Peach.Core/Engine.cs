@@ -54,7 +54,7 @@ namespace Peach.Core
 		public delegate void TestStartingEventHandler(RunContext context);
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
-		public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData);
+        public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault [] faultData);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
@@ -106,7 +106,7 @@ namespace Peach.Core
 			if (IterationFinished != null)
 				IterationFinished(context, currentIteration);
 		}
-		public void OnFault(RunContext context, uint currentIteration, StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
+		public void OnFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{
 			if (Fault != null)
 				Fault(context, currentIteration, stateModel, faultData);
@@ -218,7 +218,7 @@ namespace Peach.Core
 			try
 			{
 				context.test = test;
-				context.agentManager = new AgentManager();
+				context.agentManager = new AgentManager(context);
 				context.reproducingFault = false;
 				context.reproducingIterationJumpCount = 1;
 
@@ -232,6 +232,9 @@ namespace Peach.Core
 				uint? iterationTotal = null;
 
 				uint redoCount = 0;
+
+                // We don't want to hang onto last iterations faults.
+                context.faults.Clear();
 
 				if (context.config.range)
 				{
@@ -332,16 +335,18 @@ namespace Peach.Core
 								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
 						}
 
-						if (context.agentManager.DetectedFault())
+                        // Collect any faults that were found
+                        context.OnCollectFaults();
+
+						if (context.faults.Count > 0)
 						{
 							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
 								"detected fault on iteration " + iterationCount);
 
-							var monitorData = context.agentManager.GetMonitorData();
+                            foreach (Fault fault in context.faults)
+                                fault.iteration = iterationCount;
 
-							// TODO get state model data (not sure we need todo this anymore)
-
-							OnFault(context, iterationCount, test.stateModel, monitorData);
+							OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
 							if (context.reproducingFault)
 							{

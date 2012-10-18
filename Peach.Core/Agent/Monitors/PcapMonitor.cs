@@ -185,8 +185,14 @@ namespace Peach.Core.Agent.Monitors
 			return false;
 		}
 
-		public override void GetMonitorData(Hashtable data)
+		public override Fault GetMonitorData()
 		{
+            Fault fault = new Fault();
+
+            fault.detectionSource = "PcapMonitor";
+            fault.type = FaultType.Data;
+            fault.description = "Collected " + _numPackets + " packets.";
+
 			// Return log
 			byte[] buff;
 			using (Stream sin = File.OpenRead(_writer.Name))
@@ -195,15 +201,9 @@ namespace Peach.Core.Agent.Monitors
 				sin.Read(buff, 0, buff.Length);
 			}
 
-			if (!data.Contains("PcapMonitor"))
-				data["PcapMonitor"] = new Hashtable();
+			fault.collectedData[this.Name + "_NetworkCapture.pcap"] = buff;
 
-			Hashtable ret = data["PcapMonitor"] as Hashtable;
-
-			ret[this.Name + "_NetworkCapture.pcap"] = buff;
-			ret[this.Name + "_NumPackets"] = _numPackets;
-
-			data["PcapMonitor"] = ret;
+            return fault;
 		}
 
 		public override bool MustStop()

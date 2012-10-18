@@ -92,8 +92,9 @@ namespace Peach.Core.Test.Monitors
 			return true;
 		}
 
-		public override void GetMonitorData(Hashtable data)
+		public override Fault GetMonitorData()
 		{
+            return null;
 		}
 
 		public override bool MustStop()
@@ -292,16 +293,18 @@ namespace Peach.Core.Test.Monitors
 			RunTest(agent_xml, 1, new Engine.FaultEventHandler(_Fault));
 		}
 
-		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
+		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)
 		{
-			foreach (var item in faultData)
+			foreach (var item in faults)
 			{
-				var result = item.Value["PcapMonitor"] as Hashtable;
-				Assert.AreEqual(0, (int)result["Mon0_NumPackets"]);
-				Assert.AreEqual(1, (int)result["Mon1_NumPackets"]);
-				Assert.AreEqual(2, (int)result["Mon2_NumPackets"]);
+                if (item.detectionSource == "PcapMonitor")
+                {
+                    Assert.AreEqual(0, int.Parse(ASCIIEncoding.ASCII.GetString(item.collectedData["Mon0_NumPackets"])));
+                    Assert.AreEqual(1, int.Parse(ASCIIEncoding.ASCII.GetString(item.collectedData["Mon1_NumPackets"])));
+                    Assert.AreEqual(2, int.Parse(ASCIIEncoding.ASCII.GetString(item.collectedData["Mon2_NumPackets"])));
 
-				testResults.Add("Success");
+                    testResults.Add("Success");
+                }
 			}
 		}
 	}

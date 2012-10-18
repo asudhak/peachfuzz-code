@@ -68,7 +68,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 		public StringBuilder output = new StringBuilder();
 
-		public Dictionary<string, Variant> crashInfo = null;
+		public Fault crashInfo = null;
 
 		public delegate uint DebugCreate(
 			ref Guid InterfaceId,
@@ -411,21 +411,17 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 				string output = _engine.output.ToString();
 
-				crashInfo["StackTrace.txt"] = new Variant(output);
+                Fault fault = new Fault();
+                fault.type = FaultType.Fault;
+				fault.majorHash = reMajorHash.Match(output).Groups[1].Value;
+				fault.minorHash = reMinorHash.Match(output).Groups[1].Value;
+				fault.exploitability = reClassification.Match(output).Groups[1].Value;
+				fault.title = reShortDescription.Match(output).Groups[1].Value;
 
-				string majorHash = reMajorHash.Match(output).Groups[1].Value;
-				string minorHash = reMinorHash.Match(output).Groups[1].Value;
-				string classification = reClassification.Match(output).Groups[1].Value;
-				string shortDescription = reShortDescription.Match(output).Groups[1].Value;
+                fault.collectedData["StackTrace.txt"] = UTF8Encoding.UTF8.GetBytes(output);
+                fault.description = output;
 
-				crashInfo["Bucket"] = new Variant(string.Format("{0}_{1}_{2}_{3}",
-					classification,
-					shortDescription,
-					majorHash,
-					minorHash));
-
-				_engine.crashInfo = crashInfo;
-
+				_engine.crashInfo = fault;
 			}
 			finally
 			{

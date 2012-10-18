@@ -33,12 +33,18 @@ namespace Peach.Core.Agent.Monitors
 			return false;
 		}
 
-		public override void GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
 			if (!DetectedFault())
-				return;
+				return null;
 
-			data.Add("ReplayMonitor", data);
+            Fault fault = new Fault();
+            fault.detectionSource = "ReplayMonitor";
+            fault.title = "Fake ReplayMonitor Finding";
+            fault.folderName = "ReplayMonitor";
+            fault.type = FaultType.Fault;
+
+            return fault;
 		}
 
 		public override bool MustStop()

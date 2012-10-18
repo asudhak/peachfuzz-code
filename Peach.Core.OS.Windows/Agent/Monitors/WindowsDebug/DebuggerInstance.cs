@@ -71,7 +71,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public bool dbgExited = false;
 		public bool caughtException = false;
-		public Dictionary<string, Variant> crashInfo = null;
+		public Fault crashInfo = null;
 
 		public DebuggerInstance()
 		{

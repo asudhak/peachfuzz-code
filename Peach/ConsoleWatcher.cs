@@ -42,7 +42,7 @@ namespace Peach
 			Console.WriteLine(string.Format("DBG[{0}] {1}: {2}", level.ToString(), from, msg));
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Dictionary<AgentClient, Hashtable> faultData)
+		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
 		{
 			var color = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
