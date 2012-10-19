@@ -165,7 +165,7 @@ bool ShutdownConnection(SOCKET sd)
 	// Then we'll get a 0 back from recv, signalling that the remote
 	// host has closed its side of the connection.
 	char acReadBuffer[kBufferSize];
-	while (1) {
+	for(;;) {
 		int nNewBytes = recv(sd, acReadBuffer, kBufferSize, 0);
 		if (nNewBytes == SOCKET_ERROR) {
 			return false;

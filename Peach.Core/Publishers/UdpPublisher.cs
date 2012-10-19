@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using System.Net;
+using NLog;
 
 namespace Peach.Core.Publishers
 {
@@ -16,6 +17,9 @@ namespace Peach.Core.Publishers
 	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
 	public class UdpPublisher : SocketPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public UdpPublisher(Dictionary<string, Variant> args)
 			: base("Udp", args)
 		{

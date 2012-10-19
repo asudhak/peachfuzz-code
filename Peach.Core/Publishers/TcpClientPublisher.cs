@@ -48,10 +48,10 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpClientPublisher : TcpPublisher
 	{
-		public string Host { get; set; }
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
 
-		private int _errorsMax = 10;
-		private int _errors = 0;
+		public string Host { get; set; }
 
 		public TcpClientPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -62,37 +62,35 @@ namespace Peach.Core.Publishers
 		{
 			base.OnOpen();
 
-			try
+			for (int cnt = 0; cnt < 10 && _client == null; ++cnt)
 			{
-				_client = new TcpClient();
-				var ar = _client.BeginConnect(Host, Port, null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
-					throw new TimeoutException();
-				_client.EndConnect(ar);
-			}
-			catch (Exception ex)
-			{
-				if (ex is TimeoutException)
+				try
 				{
-					logger.Debug("Could not connect to {0}:{1} within {2}ms, timing out.",
-						Host, Port, Timeout);
+					_client = new TcpClient();
+					var ar = _client.BeginConnect(Host, Port, null, null);
+					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
+						throw new TimeoutException();
+					_client.EndConnect(ar);
 				}
-				else
+				catch (Exception)
 				{
-					logger.Error("Could not connect to {0}:{1}. {2}",
-						Host, Port, ex.Message);
+					if (_client != null)
+					{
+						_client.Close();
+						_client = null;
+					}
+
+					if (cnt < 9)
+					{
+						Logger.Warn("open: Warn, Unable to connect to remote host {0} on port {1}.  Trying again...", Host, Port);
+						Thread.Sleep(500);
+					}
+					else
+					{
+						Logger.Error("open: Error, Unable to connect to remote host {0} on port {1}.", Host, Port);
+						throw new ActionException();
+					}
 				}
-
-				if (_client != null)
-				{
-					_client.Close();
-					_client = null;
-				}
-
-				if (++_errors == _errorsMax)
-					throw new PeachException("Failed to connect after " + _errors + " attempts.");
-
-				throw new SoftException();
 			}
 
 			StartClient();

@@ -48,6 +48,9 @@ namespace Peach.Core.Publishers
 	[Parameter("Append", typeof(bool), "Append to end of file [true/false, default flase]", "false")]
 	public class FilePublisher : StreamPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public string FileName { get; set; }
 		public bool Overwrite { get; set; }
 		public bool Append { get; set; }
@@ -89,7 +92,7 @@ namespace Peach.Core.Publishers
 					}
 					else
 					{
-						logger.Error("Could not open file '{0}' after {1} attempts.  {2}", FileName, maxOpenAttempts, ex.Message);
+						Logger.Error("Could not open file '{0}' after {1} attempts.  {2}", FileName, maxOpenAttempts, ex.Message);
 						throw;
 					}
 				}

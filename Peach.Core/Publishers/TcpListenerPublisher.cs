@@ -18,12 +18,12 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public IPAddress Interface { get; set; }
 
 		protected TcpListener _listener = null;
-
-		private int _errorsMax = 10;
-		private int _errors = 0;
 
 		public TcpListenerPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -70,25 +70,10 @@ namespace Peach.Core.Publishers
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				_client = _listener.EndAcceptTcpClient(ar);
-				_errors = 0;
 			}
 			catch (Exception ex)
 			{
-				if (ex is TimeoutException)
-				{
-					logger.Debug("Connection could not be accepted on {0}:{1} within {2}ms, timing out.",
-						Interface, Port, Timeout);
-				}
-				else
-				{
-					logger.Error("Connection could not be accepted on {0}:{1}. {2}",
-						Interface, Port, ex.Message);
-				}
-
-				if (++_errors == _errorsMax)
-					throw new PeachException("Failed to accept connection after " + _errors + " attempts.");
-
-				throw new SoftException();
+				throw new PeachException("Error, unable to accept incoming connection: " + ex.Message);
 			}
 
 			// Start receiving on the client

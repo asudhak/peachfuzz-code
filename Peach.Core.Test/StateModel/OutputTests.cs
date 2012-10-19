@@ -22,6 +22,9 @@ namespace Peach.Core.Test.StateModel
 {
 	class MemoryStreamPublisher : StreamPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public MemoryStreamPublisher(MemoryStream stream)
 			: base(new Dictionary<string, Variant>())
 		{

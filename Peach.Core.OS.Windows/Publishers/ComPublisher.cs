@@ -38,6 +38,7 @@ using System.Runtime.Remoting.Channels.Ipc;
 
 using Peach.Core.Dom;
 using Peach.Core.Publishers.Com;
+using NLog;
 
 namespace Peach.Core.Publishers
 {
@@ -46,6 +47,9 @@ namespace Peach.Core.Publishers
 	[Parameter("clsid", typeof(string), "COM CLSID of object", true)]
 	public class ComPublisher : Publisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public string clsid { get; set; }
 
 		private IComContainer _proxy = null;

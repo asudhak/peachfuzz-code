@@ -4,6 +4,7 @@ deps = [
 	'Peach.Core.dll',
 	'System.dll',
 	'System.Core.dll',
+	'System.Xml.dll',
 	'NLog.dll',
 ]
 

@@ -7,16 +7,19 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using System.Net;
 using System.IO;
-
+using NLog;
 namespace Peach.Core.Test.Publishers
 {
 	[TestFixture]
 	class ParameterTests
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		[Publisher("testA")]
 		[Parameter("req1", typeof(int), "desc", true)]
 		class PubMissingDefaultName : Publisher
 		{
+			protected override NLog.Logger Logger { get { return logger; } }
 			public PubMissingDefaultName(Dictionary<string, Variant> args)
 				: base(args)
 			{
@@ -29,6 +32,7 @@ namespace Peach.Core.Test.Publishers
 		[Parameter("ip", typeof(IPAddress), "desc", false)]
 		class PubDefaultName : Publisher
 		{
+			protected override NLog.Logger Logger { get { return logger; } }
 			public PubDefaultName(Dictionary<string, Variant> args)
 				: base(args)
 			{
@@ -40,6 +44,7 @@ namespace Peach.Core.Test.Publishers
 		[Parameter("enum2", typeof(ConsoleColor), "Console Color", "Red")]
 		class EnumPub : Publisher
 		{
+			protected override NLog.Logger Logger { get { return logger; } }
 			public FileMode enum1 { get; set; }
 			public ConsoleColor enum2 { get; set; }
 
@@ -99,7 +104,8 @@ namespace Peach.Core.Test.Publishers
 		[Parameter("Param_ip", typeof(IPAddress), "desc", false)]
 		class GoodPub : Publisher
 		{
-			public GoodPub(Dictionary<string,Variant> args)
+			protected override NLog.Logger Logger { get { return logger; } }
+			public GoodPub(Dictionary<string, Variant> args)
 				: base(args)
 			{
 			}

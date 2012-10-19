@@ -29,6 +29,9 @@ namespace Peach.Core.Publishers
 	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
 	public class WebServicePublisher : Publisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public string Url { get; set; }
 		public string Service { get; set; }
 		public string Wsdl { get; set; }

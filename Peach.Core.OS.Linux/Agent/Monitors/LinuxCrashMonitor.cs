@@ -193,10 +193,18 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			return false;
 		}
 
-		public override void  GetMonitorData(System.Collections.Hashtable data)
+		public override Fault GetMonitorData()
 		{
-			var subdata = new Dictionary<string, Variant>();
-			data["LinuxCrashMonitor_"+Name] = subdata;
+			Fault fault = new Fault();
+			fault.detectionSource = "LinuxCrashMonitor";
+			fault.folderName = "LinuxCrashMonitor";
+			fault.type = FaultType.Fault;
+
+			if (executable != null)
+				fault.description = string.Format("LinuxCrashMonitor_{0} ({1})", Name, executable);
+			else
+				fault.description = string.Format("LinuxCrashMonitor_{0}", Name);
+
 			foreach (var file in Directory.GetFiles(logFolder))
 			{
 				if(startingFiles.Contains(file))
@@ -206,18 +214,20 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				{
 					if (file.IndexOf(executable) != -1)
 					{
-						subdata[Path.GetFileName(file)] = new Variant(File.ReadAllBytes(file));
+						fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
 						File.Delete(file);
-						return;
+						break;
 					}
 				}
 				else
 				{
 					// Support multiple crash files
-					subdata[Path.GetFileName(file)] = new Variant(File.ReadAllBytes(file));
+					fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
 					File.Delete(file);
 				}
 			}
+
+			return fault;
 		}
 
 		public override bool  MustStop()

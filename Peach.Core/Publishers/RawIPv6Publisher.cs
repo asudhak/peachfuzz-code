@@ -35,6 +35,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using Peach.Core.Dom;
+using NLog;
 
 namespace Peach.Core.Publishers
 {
@@ -47,6 +48,9 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawV6Publisher : SocketPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public RawV6Publisher(Dictionary<string, Variant> args)
 			: base("RawV6", args)
 		{
@@ -76,6 +80,9 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawIPv6Publisher : SocketPublisher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected override NLog.Logger Logger { get { return logger; } }
+
 		public RawIPv6Publisher(Dictionary<string, Variant> args)
 			: base("RawIPv6", args)
 		{

@@ -157,10 +157,12 @@ namespace Peach.Core.Test.Agent.Monitors
 			w.IterationFinished();
 			Assert.AreEqual(true, w.DetectedFault());
 			Hashtable hash = new Hashtable();
-			w.GetMonitorData(hash);
-			Assert.True(hash.ContainsKey("CrashWrangler"));
-			string data = hash["CrashWrangler"] as string;
-			Assert.True(data.StartsWith("Exploitable_Crash_0x"));
+			Fault fault = w.GetMonitorData();
+			Assert.NotNull(fault);
+			Assert.AreEqual(1, fault.collectedData.Count);
+			Assert.True(fault.collectedData.ContainsKey("Log"));
+			Assert.Greater(fault.collectedData["Log"].Length, 0);
+			Assert.True(fault.description.StartsWith("Exploitable_Crash_0x"));
 			w.SessionFinished();
 			w.StopMonitor();
 		}

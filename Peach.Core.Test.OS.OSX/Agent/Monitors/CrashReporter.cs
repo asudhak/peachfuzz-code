@@ -36,12 +36,15 @@ namespace Peach.Core.Test.Agent.Monitors
 			string process = "CrashingProgram";
 			bool shouldFault = true;
 
-			Hashtable hash = RunProcess(peach, process, shouldFault, args);
+			Fault fault = RunProcess(peach, process, shouldFault, args);
 
-			Assert.AreNotEqual(0, hash.Count);
-			Assert.True(hash.ContainsKey("CrashReporter"));
-			string data = hash["CrashReporter"] as string;
-			Assert.AreNotEqual(null, data);
+			Assert.NotNull(fault);
+			Assert.Greater(fault.collectedData.Count, 0);
+			foreach (var item in fault.collectedData)
+			{
+				Assert.NotNull(item.Key);
+				Assert.Greater(item.Value.Length, 0);
+			}
 		}
 
 		[Test]
@@ -56,12 +59,15 @@ namespace Peach.Core.Test.Agent.Monitors
 			string process = "CrashingProgram";
 			bool shouldFault = true;
 
-			Hashtable hash = RunProcess(peach, process, shouldFault, args);
+			Fault fault = RunProcess(peach, process, shouldFault, args);
 
-			Assert.AreNotEqual(0, hash.Count);
-			Assert.True(hash.ContainsKey("CrashReporter"));
-			string data = hash["CrashReporter"] as string;
-			Assert.AreNotEqual(null, data);
+			Assert.NotNull(fault);
+			Assert.Greater(fault.collectedData.Count, 0);
+			foreach (var item in fault.collectedData)
+			{
+				Assert.NotNull(item.Key);
+				Assert.Greater(item.Value.Length, 0);
+			}
 		}
 
 		[Test]
@@ -79,7 +85,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			RunProcess(peach, process, shouldFault, args);
 		}
 
-		private static Hashtable RunProcess(string peach, string process, bool shouldFault, Dictionary<string, Variant> args)
+		private static Fault RunProcess(string peach, string process, bool shouldFault, Dictionary<string, Variant> args)
 		{
 			CrashReporter reporter = new CrashReporter("name", args);
 			reporter.SessionStarting();
@@ -97,9 +103,9 @@ namespace Peach.Core.Test.Agent.Monitors
 			reporter.IterationFinished();
 			Assert.AreEqual(shouldFault, reporter.DetectedFault());
 			System.Collections.Hashtable hash = new System.Collections.Hashtable();
-			reporter.GetMonitorData(hash);
+			Fault fault = reporter.GetMonitorData();
 			reporter.StopMonitor();
-			return hash;
+			return fault;
 		}
 	}
 }
