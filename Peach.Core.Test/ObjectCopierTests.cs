@@ -112,7 +112,9 @@ namespace Peach.Core.Test
 			dm.find("string1_1_1").DefaultValue = new Variant("10");
 			dm.find("string2_1_2").DefaultValue = new Variant("1234567890");
 
+			// Generate the value
 			var value = dm.Value;
+			Assert.NotNull(value);
 
 			var dmCopy = dm.Clone() as DataModel;
 			for (int count = 0; count < 10; count++)

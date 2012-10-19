@@ -162,14 +162,13 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			var dataModel = dom.tests["Default"].stateModel.states["State1"].actions[0].dataModel;
-			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dataModel[1])[0])[0];
-			DataElement findMe2 = ((DataElementContainer)dataModel[3])[0];
+			DataElement findMe = ((DataElementContainer)((DataElementContainer)dataModel[1])[0])[0];
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
 			XPathNodeIterator iter = navi.Select("//Block1//FindMe");
 
 			Assert.IsTrue(iter.MoveNext());
-			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.AreEqual(findMe, ((PeachXPathNavigator)iter.Current).currentNode);
 			Assert.IsFalse(iter.MoveNext());
 		}
 
@@ -208,14 +207,13 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			var dataModel = dom.tests["Default"].stateModel.states["State1"].actions[0].dataModel;
-			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dataModel[1])[0])[0];
-			DataElement findMe2 = ((DataElementContainer)dataModel[3])[0];
+			DataElement findMe = ((DataElementContainer)((DataElementContainer)dataModel[1])[0])[0];
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
 			XPathNodeIterator iter = navi.Select("//TheDataModel/Block1/Block1_1/FindMe");
 
 			Assert.IsTrue(iter.MoveNext());
-			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.AreEqual(findMe, ((PeachXPathNavigator)iter.Current).currentNode);
 			Assert.IsFalse(iter.MoveNext());
 		}
 
@@ -255,14 +253,13 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			var dataModel = dom.tests["Default"].stateModel.states["State1"].actions[0].dataModel;
-			DataElement findMe1 = ((DataElementContainer)((DataElementContainer)dataModel[1])[0])[0];
-			DataElement findMe2 = ((DataElementContainer)dataModel[3])[0];
+			DataElement findMe = ((DataElementContainer)dataModel[3])[0];
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
 			XPathNodeIterator iter = navi.Select("//FindMe[@isToken=true]");
 
 			Assert.IsTrue(iter.MoveNext());
-			Assert.AreEqual(findMe2, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.AreEqual(findMe, ((PeachXPathNavigator)iter.Current).currentNode);
 			Assert.IsFalse(iter.MoveNext());
 		}
 

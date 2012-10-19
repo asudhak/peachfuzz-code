@@ -373,7 +373,7 @@ namespace Peach.Core.Test.Mutators
 			// Should change a range of [0,100] bytes to a random value
 			// from 0x00, 0x01, 0xfe, 0xff
 
-			int[] vals = new int[4];
+			int[] vals = new int[5];
 			int[] count = new int[101];
 
 			foreach (var item in mutations)
@@ -398,6 +398,7 @@ namespace Peach.Core.Test.Mutators
 				vals[1] += num01;
 				vals[2] += numFE;
 				vals[3] += numFF;
+				vals[4] += numAA;
 			}
 
 			int numLenMissed = count.Count(n => n == 0);
