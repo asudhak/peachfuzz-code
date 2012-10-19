@@ -378,7 +378,7 @@ def configure(ctx):
 	try:
 		ctx.find_program('some_app')
 	except ctx.errors.ConfigurationError: <1>
-		self.to_log('some_app was not found (ignoring)') <2>
+		ctx.to_log('some_app was not found (ignoring)') <2>
 ---------------
 
 <1> For convenience, the module _waflib.Errors_ is bound to _ctx.errors_
