@@ -72,7 +72,7 @@ namespace Peach.Core.Publishers
 			int count = 0;
 			foreach(var arg in args)
 			{
-                parameters[count] = GetVariantValue(arg.dataModel.InternalValue);
+                parameters[count] = GetVariantValue(arg.dataModel[0].InternalValue);
 				count++;
 			}
 
@@ -171,14 +171,11 @@ namespace Peach.Core.Publishers
 			// create an instance of the specified service
 			// and invoke the method
 			object obj = this.webServiceAssembly.CreateInstance(serviceName);
-
-			Type type = obj.GetType();
+			
+            Type type = obj.GetType();
 
             var method = type.GetMethod(methodName);
-            //var params = method.GetParameters();
             return (T)method.Invoke(obj, args);
-
-			//return (T)type.InvokeMember(methodName, BindingFlags.InvokeMethod, null, obj, args);
 		}
 
 		/// <summary>
