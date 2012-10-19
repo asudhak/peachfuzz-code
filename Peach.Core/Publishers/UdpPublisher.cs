@@ -25,22 +25,14 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override Socket OpenSocket()
+		protected override bool AddressFamilySupported(AddressFamily af)
 		{
-			IPAddress remote = Dns.GetHostAddresses(Host)[0];
+			return (af == AddressFamily.InterNetwork) || (af == AddressFamily.InterNetworkV6);
+		}
+
+		protected override Socket OpenSocket(EndPoint remote)
+		{
 			Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-			if (Interface != null)
-			{
-				s.Bind(new IPEndPoint(Interface, SrcPort));
-			}
-			else if (SrcPort != 0)
-			{
-				if (remote.AddressFamily == AddressFamily.InterNetwork)
-					s.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
-				else
-					s.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
-			}
-			s.Connect(remote, Port);
 			return s;
 		}
 	}

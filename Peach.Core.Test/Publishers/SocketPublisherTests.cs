@@ -29,14 +29,14 @@ namespace Peach.Core.Test.Publishers
 		{
 			Socket = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 			remoteEP = new IPEndPoint(remote, 5000);
-			Socket.Connect(remoteEP);
 			RecvBuf = Encoding.ASCII.GetBytes("SendOnly!");
-			Socket.BeginSend(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, new AsyncCallback(OnSend), null);
+			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
 		}
 
 		public void Start(IPAddress local, int count = 1)
 		{
 			Socket = new Socket(local.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+			Socket.ReceiveBufferSize = 65535;
 			Socket.Bind(new IPEndPoint(local, 0));
 			RecvBuf = new byte[65535];
 			remoteEP = new IPEndPoint(local, 0);
@@ -49,12 +49,39 @@ namespace Peach.Core.Test.Publishers
 			try
 			{
 				Socket.EndSend(ar);
-				System.Threading.Thread.Sleep(500);
-				Socket.BeginSend(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, new AsyncCallback(OnSend), null);
 			}
 			catch (ObjectDisposedException)
 			{
+				return;
 			}
+			catch (SocketException ex)
+			{
+				// Fail
+				if (ex.SocketErrorCode != SocketError.ConnectionRefused)
+					Assert.Null(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				// Fail
+				Assert.Null(ex.Message);
+			}
+
+			System.Threading.Thread.Sleep(500);
+
+			try
+			{
+				Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
+			}
+			catch (ObjectDisposedException)
+			{
+				return;
+			}
+			catch (Exception ex)
+			{
+				// Fail
+				Assert.Null(ex.Message);
+			}
+
 		}
 
 		private void OnRecv(IAsyncResult ar)
@@ -93,7 +120,7 @@ namespace Peach.Core.Test.Publishers
 			if (Platform.GetOS() != Platform.OS.Windows)
 			{
 				if (af == AddressFamily.InterNetwork)
-					return new Tuple<string, IPAddress>("lo", IPAddress.Loopback);
+					return new Tuple<string, IPAddress>("lo", IPAddress.Parse("127.0.0.1"));
 				else
 					return new Tuple<string, IPAddress>("lo", IPAddress.IPv6Loopback);
 			}
@@ -184,18 +211,17 @@ namespace Peach.Core.Test.Publishers
 	</DataModel>
 
 	<DataModel name=""udp_packet"">
-		<Block name=""ip"" ref=""IpDataModel""/>
 		<Block name=""udp"" ref=""UdpDataModel""/>
 		<Block name=""str"" ref=""TheDataModel""/>
 	</DataModel>
 
 	<StateModel name=""IpStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
-			<Action name=""Send"" type=""output"">
-				<DataModel ref=""TheDataModel""/>
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""ip_packet""/>
 			</Action>
 
-			<Action name=""Recv"" type=""input"">
+			<Action name=""Send"" type=""output"">
 				<DataModel ref=""ip_packet""/>
 			</Action>
 		</State>
@@ -203,11 +229,11 @@ namespace Peach.Core.Test.Publishers
 
 	<StateModel name=""UdpStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
-			<Action name=""Send"" type=""output"">
-				<DataModel ref=""TheDataModel""/>
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""ip_packet""/>
 			</Action>
 
-			<Action name=""Recv"" type=""input"">
+			<Action name=""Send"" type=""output"">
 				<DataModel ref=""udp_packet""/>
 			</Action>
 		</State>
@@ -354,24 +380,37 @@ namespace Peach.Core.Test.Publishers
 			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
 			echo.SendOnly(self);
 
-			string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "Unspecified");
-			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			try
+			{
+				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "Udp");
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			RunConfiguration config = new RunConfiguration();
-			config.singleIteration = true;
+				RunConfiguration config = new RunConfiguration();
+				config.singleIteration = true;
 
-			Engine e = new Engine(null);
-			e.config = config;
-			e.startFuzzing(dom, config);
+				Engine e = new Engine(null);
+				e.config = config;
+				e.startFuzzing(dom, config);
 
-			echo.Socket.Close();
+				if (Platform.GetOS() == Platform.OS.Mac)
+				{
+					// Mac raw sockets don't support TCP or UDP receptions.
+					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
+					Assert.AreEqual(1, actions.Count);
+					return;
+				}
 
-			var de = actions[1].dataModel.find("ip_packet.str.str");
-			Assert.NotNull(de);
-			string str = (string)de.DefaultValue;
-			Assert.AreEqual("SendOnly!", str);
-
+				Assert.AreEqual(2, actions.Count);
+				var de = actions[0].dataModel.find("ip_packet.str.str");
+				Assert.NotNull(de);
+				string str = (string)de.DefaultValue;
+				Assert.AreEqual("SendOnly!", str);
+			}
+			finally
+			{
+				echo.Socket.Close();
+			}
 		}
 
 		[Test]
@@ -381,7 +420,44 @@ namespace Peach.Core.Test.Publishers
 			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
 			echo.SendOnly(self);
 
-			string xml = string.Format(raw_template, "RawV4", self, "UdpStateModel", "Udp");
+			try
+			{
+				string xml = string.Format(raw_template, "RawV4", self, "UdpStateModel", "Udp");
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+				RunConfiguration config = new RunConfiguration();
+				config.singleIteration = true;
+
+				Engine e = new Engine(null);
+				e.config = config;
+				e.startFuzzing(dom, config);
+
+				if (Platform.GetOS() == Platform.OS.Mac)
+				{
+					// Mac raw sockets don't support TCP or UDP receptions.
+					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
+					Assert.AreEqual(1, actions.Count);
+					return;
+				}
+
+				Assert.AreEqual(2, actions.Count);
+				var de = actions[0].dataModel.find("ip_packet.str.str");
+				Assert.NotNull(de);
+				string str = (string)de.DefaultValue;
+				Assert.AreEqual("SendOnly!", str);
+			}
+			finally
+			{
+				echo.Socket.Close();
+			}
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "The resolved IP '127.0.0.1:0' for host '127.0.0.1' is not compatible with the RawV6 publisher.")]
+		public void BadAddressFamily()
+		{
+			// Tests what happens when we give an ipv4 address to an ipv6 publisher.
+			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "UdpStateModel", "Udp");
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -391,14 +467,6 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.config = config;
 			e.startFuzzing(dom, config);
-
-			echo.Socket.Close();
-
-			var de = actions[1].dataModel.find("udp_packet.str.str");
-			Assert.NotNull(de);
-			string str = (string)de.DefaultValue;
-			Assert.AreEqual("SendOnly!", str);
-
 		}
 	}
 }

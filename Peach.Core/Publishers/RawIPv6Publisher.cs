@@ -61,12 +61,14 @@ namespace Peach.Core.Publishers
 				throw new PeachException("Protocol \"" + (string)args["Protocol"] + "\" is not supported by the RawV4 publisher.");
 		}
 
-		protected override Socket OpenSocket()
+		protected override bool AddressFamilySupported(AddressFamily af)
+		{
+			return af == AddressFamily.InterNetworkV6;
+		}
+
+		protected override Socket OpenSocket(EndPoint remote)
 		{
 			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
-			if (Interface != null)
-				s.Bind(new IPEndPoint(Interface, 0));
-			s.Connect(Host, 0);
 			return s;
 		}
 	}
@@ -88,12 +90,14 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override Socket OpenSocket()
+		protected override bool AddressFamilySupported(AddressFamily af)
+		{
+			return af == AddressFamily.InterNetworkV6;
+		}
+
+		protected override Socket OpenSocket(EndPoint remote)
 		{
 			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
-			if (Interface != null)
-				s.Bind(new IPEndPoint(Interface, 0));
-			s.Connect(Host, 0);
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 			return s;
 		}

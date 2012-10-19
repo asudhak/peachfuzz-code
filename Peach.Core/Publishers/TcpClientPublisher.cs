@@ -66,6 +66,8 @@ namespace Peach.Core.Publishers
 			{
 				try
 				{
+					// Must build a new client object after every failed attempt to connect.
+					// For some reason, just calling BeginConnect again does not work on mono.
 					_client = new TcpClient();
 					var ar = _client.BeginConnect(Host, Port, null, null);
 					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))

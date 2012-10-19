@@ -19,6 +19,8 @@ namespace Peach.Core.Publishers
 
 		public static int MaxSendSize = 65000;
 
+		private EndPoint _localEp = null;
+		private EndPoint _remoteEp = null;
 		private string _type = null;
 		private Socket _socket = null;
 		private MemoryStream _recvBuffer = null;
@@ -28,7 +30,9 @@ namespace Peach.Core.Publishers
 		private int _errorsSend = 0;
 		private int _errorsRecv = 0;
 
-		protected abstract Socket OpenSocket();
+		protected abstract bool AddressFamilySupported(AddressFamily af);
+
+		protected abstract Socket OpenSocket(EndPoint remote);
 
 		public SocketPublisher(string type, Dictionary<string, Variant> args)
 			: base(args)
@@ -36,24 +40,70 @@ namespace Peach.Core.Publishers
 			_type = type;
 		}
 
+		private IPEndPoint ResolveHost()
+		{
+			IPAddress[] entries = Dns.GetHostAddresses(Host);
+			foreach (var ip in entries)
+			{
+				if (ip.ToString() != Host)
+					Logger.Debug("Resolved host \"{0}\" to \"{1}\".", Host, ip);
+
+				return new IPEndPoint(ip, Port);
+			}
+
+			throw new PeachException("Could not resolve the IP address of host \"{0}\".", Host);
+		}
+
+		/// <summary>
+		/// Returns the local ip that should be used to talk to 'remote'
+		/// </summary>
+		/// <param name="remote"></param>
+		/// <returns></returns>
+		protected static IPAddress GetLocalIp(IPEndPoint remote)
+		{
+			using (Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp))
+			{
+				s.Connect(remote.Address, 22);
+				IPEndPoint local = s.LocalEndPoint as IPEndPoint;
+				return local.Address;
+			}
+		}
+
 		protected override void OnOpen()
 		{
 			System.Diagnostics.Debug.Assert(_socket == null);
 
+			IPEndPoint ep = ResolveHost();
+
+			if (!AddressFamilySupported(ep.AddressFamily))
+				throw new PeachException("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type);
+
 			try
 			{
-				_socket = OpenSocket();
+				_socket = OpenSocket(ep);
 
-				if (_recvBuffer == null || _recvBuffer.Capacity < _socket.ReceiveBufferSize)
-					_recvBuffer = new MemoryStream(MaxSendSize);
+				IPAddress local = Interface;
+				if (Interface == null)
+					local = GetLocalIp(ep);
 
-				if (_sendBuffer == null || _sendBuffer.Capacity < _socket.SendBufferSize)
-					_sendBuffer = new MemoryStream(MaxSendSize);
-
-				_errorsOpen = 0;
+				_socket.Bind(new IPEndPoint(local, SrcPort));
+			}
+			catch (PeachException)
+			{
+				throw;
 			}
 			catch (Exception ex)
 			{
+				if (_socket != null)
+				{
+					_socket.Close();
+					_socket = null;
+				}
+
+				SocketException se = ex as SocketException;
+				if (se != null && se.SocketErrorCode == SocketError.AccessDenied)
+					throw new PeachException("Access denied when trying open a {0} socket.  Ensure the user has the appropriate permissions.", _type);
+
 				Logger.Error("Unable to open {0} socket to {1}:{2}. {3}.", _type, Host, Port, ex.Message);
 
 				if (++_errorsOpen == _errorsMax)
@@ -61,12 +111,28 @@ namespace Peach.Core.Publishers
 
 				throw new SoftException();
 			}
+
+			_socket.ReceiveBufferSize = MaxSendSize;
+			_socket.SendBufferSize = MaxSendSize;
+
+			if (_recvBuffer == null || _recvBuffer.Capacity < _socket.ReceiveBufferSize)
+				_recvBuffer = new MemoryStream(MaxSendSize);
+
+			if (_sendBuffer == null || _sendBuffer.Capacity < _socket.SendBufferSize)
+				_sendBuffer = new MemoryStream(MaxSendSize);
+
+			_localEp = _socket.LocalEndPoint;
+			_remoteEp = ep;
+
+			_errorsOpen = 0;
 		}
 
 		protected override void OnClose()
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 			_socket.Close();
+			_localEp = null;
+			_remoteEp = null;
 			_socket = null;
 		}
 
@@ -75,40 +141,69 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_socket != null);
 			System.Diagnostics.Debug.Assert(_recvBuffer != null);
 
-			_recvBuffer.Seek(0, SeekOrigin.Begin);
-			_recvBuffer.SetLength(_recvBuffer.Capacity);
+			EndPoint ep = new IPEndPoint(_socket.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0);
 
-			try
+			int expires = Environment.TickCount + Timeout;
+			int wait = 0;
+
+			for (;;)
 			{
-				byte[] buf = _recvBuffer.GetBuffer();
-				int offset = (int)_recvBuffer.Position;
-				int size = (int)_recvBuffer.Length;
+				wait = Math.Max(0, expires - Environment.TickCount);
 
-				var ar = _socket.BeginReceive(buf, offset, size, SocketFlags.None, null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
-					throw new TimeoutException();
-				var rxLen = _socket.EndReceive(ar);
-
-				_recvBuffer.SetLength(rxLen);
-				_errorsRecv = 0;
-			}
-			catch (Exception ex)
-			{
-				if (ex is TimeoutException)
+				try
 				{
-					Logger.Debug("{0} packet not received from {1}:{2} in {3}ms, timing out.",
-						_type, Host, Port, Timeout);
+					_recvBuffer.Seek(0, SeekOrigin.Begin);
+					_recvBuffer.SetLength(_recvBuffer.Capacity);
+
+					byte[] buf = _recvBuffer.GetBuffer();
+					int offset = (int)_recvBuffer.Position;
+					int size = (int)_recvBuffer.Length;
+
+					var ar = _socket.BeginReceiveFrom(buf, offset, size, SocketFlags.None, ref ep, null, null);
+					if (!ar.AsyncWaitHandle.WaitOne(wait))
+						throw new TimeoutException();
+					var rxLen = _socket.EndReceiveFrom(ar, ref ep);
+
+					_recvBuffer.SetLength(rxLen);
+					_errorsRecv = 0;
+
+					if (!IPEndPoint.Equals(ep, _remoteEp))
+					{
+						Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", ep, _remoteEp);
+					}
+					else
+					{
+						if (Logger.IsDebugEnabled)
+							Logger.Debug("\n" + Utilities.HexDump(_recvBuffer));
+
+						// Got a valid packet
+						return;
+					}
 				}
-				else
+				catch (Exception ex)
 				{
-					Logger.Error("Unable to receive {0} packet from {1}:{2}. {3}",
-						_type, Host, Port, ex.Message);
+					if (ex is SocketException && ((SocketException)ex).SocketErrorCode == SocketError.ConnectionRefused)
+					{
+						// Eat Connection reset by peer errors
+						Logger.Debug("Connection reset by peer.  Ignoring...");
+						continue;
+					}
+					else if (ex is TimeoutException)
+					{
+						Logger.Debug("{0} packet not received from {1}:{2} in {3}ms, timing out.",
+							_type, Host, Port, Timeout);
+					}
+					else
+					{
+						Logger.Error("Unable to receive {0} packet from {1}:{2}. {3}",
+							_type, Host, Port, ex.Message);
+					}
+
+					if (++_errorsRecv == _errorsMax)
+						throw new PeachException("Failed to receive " + _type + " packet after " + _errorsRecv + " attempts.");
+
+					throw new SoftException();
 				}
-
-				if (++_errorsRecv == _errorsMax)
-					throw new PeachException("Failed to receive " + _type + " packet after " + _errorsRecv + " attempts.");
-
-				throw new SoftException();
 			}
 		}
 
@@ -139,12 +234,15 @@ namespace Peach.Core.Publishers
 				size = MaxSendSize;
 			}
 
+			if (Logger.IsDebugEnabled)
+				Logger.Debug("\n" + Utilities.HexDump(stream));
+
 			try
 			{
-				var ar = _socket.BeginSend(buf, offset, size, SocketFlags.None, null, null);
+				var ar = _socket.BeginSendTo(buf, offset, size, SocketFlags.None, _remoteEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
-				var txLen = _socket.EndSend(ar);
+				var txLen = _socket.EndSendTo(ar);
 
 				_errorsSend = 0;
 

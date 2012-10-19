@@ -22,13 +22,15 @@ namespace Peach.Core.Test.Publishers
 
 		public SimpleTcpClient(ushort port, bool graceful)
 		{
-			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			localEP = new IPEndPoint(IPAddress.Loopback, port);
 			Graceful = graceful;
 		}
 
 		public void Start()
 		{
+			if (Socket != null)
+				Socket.Close();
+			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			Socket.BeginConnect(localEP, OnConnect, null);
 		}
 
@@ -66,8 +68,12 @@ namespace Peach.Core.Test.Publishers
 				}
 				else
 				{
-					throw;
+					Assert.Null(ex.Message);
 				}
+			}
+			catch (Exception ex)
+			{
+				Assert.Null(ex.Message);
 			}
 		}
 	}

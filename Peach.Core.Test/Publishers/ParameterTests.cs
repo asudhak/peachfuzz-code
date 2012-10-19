@@ -83,12 +83,23 @@ namespace Peach.Core.Test.Publishers
 			new PubDefaultName(args);
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "testA1.default publisher could not set parameter 'req1'.  Input string was not in a correct format.")]
+		[Test]
 		public void TestBadParameter()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["req1"] = new Variant("not a number");
-			new PubDefaultName(args);
+
+			PeachException pe = null;
+			try
+			{
+				new PubDefaultName(args);
+			}
+			catch (PeachException ex)
+			{
+				pe = ex;
+			}
+			Assert.NotNull(pe);
+			Assert.True(pe.Message.StartsWith("testA1.default publisher could not set parameter 'req1'.  Input string was not in"));
 		}
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "testA1.default publisher has no public property for parameter 'req1'.")]

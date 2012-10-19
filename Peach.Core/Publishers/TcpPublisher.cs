@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using Peach.Core.Dom;
 
 using NLog;
+using System.Net;
 
 namespace Peach.Core.Publishers
 {
@@ -23,6 +24,8 @@ namespace Peach.Core.Publishers
 		protected ManualResetEvent _event = null;
 		protected TcpClient _client = null;
 		protected MemoryStream _buffer = null;
+		protected EndPoint _localEp = null;
+		protected EndPoint _remoteEp = null;
 
 		public TcpPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -52,12 +55,12 @@ namespace Peach.Core.Publishers
 
 					if (len == 0)
 					{
-						Logger.Debug("Read 0 bytes from {0}, closing client connection.", _client.Client.RemoteEndPoint);
+						Logger.Debug("Read 0 bytes from {0}, closing client connection.", _remoteEp);
 						CloseClient();
 					}
 					else
 					{
-						Logger.Debug("Read {0} bytes from {0}", len, _client.Client.RemoteEndPoint);
+						Logger.Debug("Read {0} bytes from {0}", len, _remoteEp);
 
 						lock (_bufferLock)
 						{
@@ -85,9 +88,13 @@ namespace Peach.Core.Publishers
 		{
 			System.Diagnostics.Debug.Assert(_client != null);
 			System.Diagnostics.Debug.Assert(_buffer == null);
+			System.Diagnostics.Debug.Assert(_localEp == null);
+			System.Diagnostics.Debug.Assert(_remoteEp == null);
 
 			_buffer = new MemoryStream();
 			_event.Reset();
+			_localEp = _client.Client.LocalEndPoint;
+			_remoteEp = _client.Client.RemoteEndPoint;
 			ScheduleRecv();
 		}
 
@@ -96,9 +103,13 @@ namespace Peach.Core.Publishers
 			lock (_clientLock)
 			{
 				System.Diagnostics.Debug.Assert(_client != null);
-				Logger.Debug("Closing connection to {0}", _client.Client.RemoteEndPoint);
+				System.Diagnostics.Debug.Assert(_localEp != null);
+				System.Diagnostics.Debug.Assert(_remoteEp != null);
+				Logger.Debug("Closing connection to {0}", _remoteEp);
 				_client.Close();
 				_client = null;
+				_remoteEp = null;
+				_localEp = null;
 				_event.Set();
 			}
 		}
@@ -130,7 +141,7 @@ namespace Peach.Core.Publishers
 			{
 				if (_client != null)
 				{
-					Logger.Debug("Shutting down connection to {0}", _client.Client.RemoteEndPoint);
+					Logger.Debug("Shutting down connection to {0}", _remoteEp);
 					_client.Client.Shutdown(SocketShutdown.Send);
 				}
 			}
