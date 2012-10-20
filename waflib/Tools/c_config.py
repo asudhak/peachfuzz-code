@@ -253,6 +253,12 @@ def exec_cfg(self, kw):
 	:type define_variable: dict(string: string)
 	"""
 
+	def define_it():
+		if kw.get('uselib_store', None):
+			self.env.append_unique('DEFINES_%s' % kw['uselib_store'], "%s=1" % self.have_define(kw['uselib_store']))
+		else:
+			self.define(self.have_define(kw['package']), 1, 0)
+
 	# pkg-config version
 	if 'atleast_pkgconfig_version' in kw:
 		cmd = [kw['path'], '--atleast-pkgconfig-version=%s' % kw['atleast_pkgconfig_version']]
@@ -268,7 +274,7 @@ def exec_cfg(self, kw):
 			self.cmd_and_log([kw['path'], '--%s=%s' % (x, kw[y]), kw['package']])
 			if not 'okmsg' in kw:
 				kw['okmsg'] = 'yes'
-			self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
+			define_it()
 			break
 
 	# retrieving the version of a module
@@ -313,7 +319,7 @@ def exec_cfg(self, kw):
 	if not 'okmsg' in kw:
 		kw['okmsg'] = 'yes'
 
-	self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
+	define_it()
 	self.parse_flags(ret, kw.get('uselib_store', kw['package'].upper()), kw.get('env', self.env), force_static=static)
 	return ret
 
