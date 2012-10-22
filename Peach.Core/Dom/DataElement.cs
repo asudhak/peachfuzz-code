@@ -231,6 +231,7 @@ namespace Peach.Core.Dom
 
 		protected DataElementContainer _parent;
 
+		private uint _recursionDepth = 0;
 		private Variant _internalValue;
 		private BitStream _value;
 
@@ -721,8 +722,19 @@ namespace Peach.Core.Dom
 			{
 				if (_value == null || _invalidated)
 				{
-					_value = GenerateValue();
+					_recursionDepth++;
+
+					var value = GenerateValue();
 					_invalidated = false;
+
+					_recursionDepth--;
+
+					if (_recursionDepth == 0)
+						_value = value;
+					else
+						Invalidate(); // Reset all elements with cached dependencies on us
+
+					return value;
 				}
 
 				return _value;
