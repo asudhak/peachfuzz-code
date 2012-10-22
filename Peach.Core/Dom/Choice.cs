@@ -244,7 +244,6 @@ namespace Peach.Core.Dom
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
 			{
-				_internalValue = MutatedValue;
 				return MutatedValue;
 			}
 
@@ -266,14 +265,12 @@ namespace Peach.Core.Dom
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
 			{
-				_internalValue = MutatedValue;
 				return MutatedValue;
 			}
 
 			if (_fixup != null)
 				value = _fixup.fixup(this);
 
-			_internalValue = value;
 			return value;
 		}
 

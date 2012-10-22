@@ -136,8 +136,7 @@ namespace Peach.Core.Dom
 		{
 			XmlDocument doc = new XmlDocument();
 			doc.AppendChild(GenerateXmlNode(doc, null));
-			_internalValue = new Variant(doc.OuterXml);
-			return _internalValue;
+			return new Variant(doc.OuterXml);
 		}
 
 		protected override BitStream InternalValueToBitStream()

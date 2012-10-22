@@ -231,8 +231,8 @@ namespace Peach.Core.Dom
 
 		protected DataElementContainer _parent;
 
-		protected Variant _internalValue;
-		protected BitStream _value;
+		private Variant _internalValue;
+		private BitStream _value;
 
 		protected bool _invalidated = false;
 
@@ -706,7 +706,7 @@ namespace Peach.Core.Dom
 			get
 			{
 				if (_internalValue == null || _invalidated)
-					GenerateInternalValue();
+					_internalValue = GenerateInternalValue();
 
 				return _internalValue;
 			}
@@ -721,16 +721,11 @@ namespace Peach.Core.Dom
 			{
 				if (_value == null || _invalidated)
 				{
-					GenerateValue();
+					_value = GenerateValue();
 					_invalidated = false;
 				}
 
 				return _value;
-			}
-
-			set
-			{
-				_value = value;
 			}
 		}
 
@@ -750,7 +745,6 @@ namespace Peach.Core.Dom
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
 			{
-				_internalValue = MutatedValue;
 				return MutatedValue;
 			}
 
@@ -758,7 +752,6 @@ namespace Peach.Core.Dom
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
 			{
-				_internalValue = MutatedValue;
 				return MutatedValue;
 			}
 
@@ -780,16 +773,12 @@ namespace Peach.Core.Dom
 
 			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
 			{
-				_internalValue = MutatedValue;
 				return MutatedValue;
 			}
 
 			if (_fixup != null)
 				value = _fixup.fixup(this);
 
-			// 5. Set _internalValue
-
-			_internalValue = value;
 			return value;
 		}
 
@@ -821,7 +810,6 @@ namespace Peach.Core.Dom
                 if (_transformer != null)
                     value = _transformer.encode(value);
 
-			_value = value;
 			return value;
 		}
 

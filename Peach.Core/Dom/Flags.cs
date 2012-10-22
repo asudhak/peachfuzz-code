@@ -237,8 +237,7 @@ namespace Peach.Core.Dom
 					throw new ApplicationException("Flag has child thats not a flag!");
 			}
 
-			_internalValue = new Variant(bits);
-			return _internalValue;
+			return new Variant(bits);
 		}
 
     public override object GetParameter(string parameterName)
