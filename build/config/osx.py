@@ -138,7 +138,7 @@ def configure(conf):
 	
 	cppflags = [
 		'-pipe',
-	#	'-Werror',
+		'-Werror',
 		'-Wno-unused',
 	]
 	
