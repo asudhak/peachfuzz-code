@@ -23,7 +23,7 @@
 	<Agent name="LocalAgent">
 		<Monitor class="LinuxCrashMonitor"/>
 		<Monitor class="Process">
-			<Param name="Executable" value="./CrashingProgram/CrashingProgram" />
+			<Param name="Executable" value="./CrashingProgram" />
 			<Param name="StartOnCall" value="Start" />
 			<Param name="Arguments" value="fuzzed.bin" />
 		</Monitor>
@@ -34,7 +34,7 @@
 
 		<StateModel ref="State"/>
 		<Publisher class="File">
-			<Param name="Filename" value="fuzzed.bin" />
+			<Param name="FileName" value="fuzzed.bin" />
 		</Publisher>
 		<Logger class="Filesystem">
 			<Param name="Path" value="Logs" />
