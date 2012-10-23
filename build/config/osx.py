@@ -39,7 +39,7 @@ def prepare(conf):
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
 	
-		pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
+	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
