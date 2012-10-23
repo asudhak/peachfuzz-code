@@ -137,7 +137,7 @@ namespace Peach.Core
 
 					try
 					{
-						Assembly asm = Assembly.LoadFile(file);
+						Assembly asm = Assembly.LoadFrom(file);
 						asm.GetExportedTypes(); // make sure we can load exported types.
 						AssemblyCache.Add(file, asm);
 					}
