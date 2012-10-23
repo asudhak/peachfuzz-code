@@ -108,12 +108,12 @@ def configure(conf):
         ]
 
         cppflags_debug = [
-                '/MDd',
+                '/MTd',
                 '/Od',
         ]
 
         cppflags_release = [
-                '/MD',
+                '/MT',
                 '/Ox',
         ]
 
