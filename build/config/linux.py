@@ -28,7 +28,7 @@ def prepare(conf):
 	env['ARCH']    = ['-m%s' % ('64' in env.SUBARCH and '64' or '32')]
 	env['ARCH_ST'] = env['ARCH']
 
-	pin = j(root, '3rdParty', 'pin-2.11-49306-gcc.3.4.6-ia32_intel64-linux')
+	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-gcc.4.4.7-linux')
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {

@@ -295,7 +295,6 @@ namespace Peach
 				Engine e = new Engine(new ConsoleWatcher());
 				dom = Analyzer.defaultParser.asParser(parserArgs, extra[0]);
 				config.pitFile = extra[0];
-				dom.evaulateDataModelAnalyzers();
 
 				// Used for unittests
 				if (parseOnly)

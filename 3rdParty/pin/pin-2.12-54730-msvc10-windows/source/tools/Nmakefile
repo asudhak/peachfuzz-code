@@ -1,0 +1,312 @@
+
+######################################################################################
+# This is the NMAKE file for building and testing PIN tools.
+#
+# When this Nmakefile is invoked directly by NMAKE it defines the following targets:
+# tools : Build all tools in all subdirectories of the PinTool project or PIN kit
+# test  : Test all tools in all subdirectories of the PinTool project or PIN kit
+# clean : delete all files created for all targets 
+#
+# This file is also included by Nmakefiles contained in subdirectories of the PinTool 
+# project or PIN kit. In this case it defines rules and targets for tools contained in 
+# this subdirectory:
+# tools             : Build all tools in the subdirectory
+# test              : Test all tools in the subdirectory
+# <tool_name>.dll   : Build specified tool 
+# <tool_name>.test  : Test specified tool (build the tool if necesary) 
+# clean             : delete all files created for all targets 
+######################################################################################
+
+######################################################################################
+#             Optional arguments (variables) accepted by this file
+# TARGET      "ia32" or "ia32e". By default, the PROCESSOR_ARCHITECTURE environment 
+#             variable is used to determine CPU.
+# DEBUG       Debug (1) or release (0) build. The default is 0.
+# PIN_HOME    Location of the source/tool directory in the PIN kit or PinTool directory
+#             in the development tree. By default this is the current directory.
+# SET_VCENV   1 - find MSVC installation directories and set environment accordingly.
+#             0 - use current environment as is. Should be only used when running
+#                 in the MSVS 2005/2008/2010 command prompt. 
+#             The default is 1.
+# MSVCVER     8  - use Visual Studio 2005
+#             9  - use visual studio 2008
+#             10 - use visual studio 2010
+######################################################################################
+
+!if "$(DEBUG)"==""
+DEBUG=0
+!endif
+
+!if "$(MSVCVER)"==""
+MSVCVER=8
+!endif
+
+!if "$(PIN_HOME)"==""
+PIN_HOME=.
+!endif
+
+!if "$(SET_VCENV)"==""
+SET_VCENV=1
+!endif
+
+# Determine target CPU = host CPU.
+######################################################################################
+!if "$(TARGET)"==""
+!if "$(PROCESSOR_ARCHITECTURE)"=="AMD64"
+TARGET=ia32e
+!elseif "$(PROCESSOR_ARCHITEW6432)"=="AMD64"
+TARGET=ia32e
+!elseif "$(PROCESSOR_ARCHITECTURE)"=="x86"
+TARGET=ia32
+!endif
+!endif
+
+!if "$(TARGET)"!="ia32" && "$(TARGET)"!="ia32e"
+!error  NMAKE file: you must define TARGET of ia32 or ia32e on the command line       
+!endif
+
+!if "$(TARGET)"=="ia32"
+TARGET_LONG=ia32
+TARGET_EXT=ia32
+!elseif "$(TARGET)"=="ia32e"
+TARGET_LONG=intel64
+TARGET_EXT=intel64
+!endif
+
+# Find MSVC installation directory
+######################################################################################
+
+!if "$(SET_VCENV)"!="0"
+
+!if "$(VSINSTALLDIR)"==""
+!error NMAKE file: Could not find MSVS installation directory. Make sure you run from Nmake.bat
+!elseif (("$(MSVCVER)"=="9" || "$(MSVCVER)"=="10") && "$(WINDOWSSDKDIR)"=="")
+!error NMAKE file: Could not find MSVS 9.0/10.0 windows SDK directory. Make sure you run from Nmake.bat
+!else
+VS_DIR = $(VSINSTALLDIR)
+!endif
+
+!if "$(VCINSTALLDIR)" == ""
+VC_DIR = $(VS_DIR)\VC
+!else
+VC_DIR = $(VCINSTALLDIR)
+!endif
+
+!if ("$(MSVCVER)"=="9" || "$(MSVCVER)"=="10")
+MSSDK=$(WINDOWSSDKDIR)
+!else
+MSSDK=$(VC_DIR)\PlatformSDK\
+!endif
+
+!if "$(TARGET)"=="ia32"
+VCBIN_DIR=$(VC_DIR)\BIN
+VCLIB_DIR=$(VC_DIR)\LIB
+VCSDKLIB_DIR=$(MSSDK)\LIB
+!else
+VCBIN_DIR=$(VC_DIR)\BIN\AMD64
+VCLIB_DIR=$(VC_DIR)\LIB\AMD64
+!if ("$(MSVCVER)"=="9" || "$(MSVCVER)"=="10")
+VCSDKLIB_DIR=$(MSSDK)\LIB\x64
+!else
+VCSDKLIB_DIR=$(MSSDK)\LIB\AMD64
+!endif
+!endif
+
+!if !EXIST("$(VCBIN_DIR)\cl.exe")
+!error NMAKE file: Could not find MSVC compiler. Make sure you run from Nmake.bat
+!endif
+
+
+# Set environment for MSVC tools
+######################################################################################
+PATH=$(VCBIN_DIR);$(PATH)
+PATH=$(VS_DIR)\Common7\IDE;$(PATH)
+
+INCLUDE=$(MSSDK)\include;$(INCLUDE)
+INCLUDE=$(VC_DIR)\include;$(INCLUDE)
+
+LIB=$(VCSDKLIB_DIR);$(LIB)
+LIB=$(VCLIB_DIR);$(LIB)
+
+SET_VCENV=0
+
+!endif ###if SET_VCENV != 0
+
+
+# Determine which kind of directory tree we are building in: KIT or development tree  
+######################################################################################
+PIN_ROOT_KIT    = $(PIN_HOME)\..\..\source\tools\..\..
+PIN_BINDIR_DEV = $(PIN_HOME)\..\build\Source\pin\pin-windows-$(TARGET_LONG)
+
+# Try to find pin.exe in root directory of KIT
+!if EXIST("$(PIN_ROOT_KIT)\pin.exe")
+# building out of KIT
+PIN         = $(PIN_ROOT_KIT)\pin.exe
+XEDKIT      = $(PIN_ROOT_KIT)\extras\xed2-$(TARGET_LONG)
+PIN_IPATHS  = /I$(PIN_ROOT_KIT)\source\include /I$(PIN_ROOT_KIT)\source\include\gen \
+              /I$(PIN_HOME)\InstLib /I$(XEDKIT)\include /I$(PIN_ROOT_KIT)\extras\components\include
+PIN_LPATHS  = /LIBPATH:$(PIN_ROOT_KIT)\$(TARGET_LONG)\lib /LIBPATH:$(PIN_ROOT_KIT)\$(TARGET_LONG)\lib-ext \
+              /LIBPATH:$(XEDKIT)\lib
+
+!elseif EXIST("$(PIN_BINDIR_DEV)\pin.exe")
+# building out of development tree
+PIN         = $(PIN_BINDIR_DEV)\pin.exe
+BUILDDIR    = $(PIN_HOME)\..\build\Source
+XEDKIT      = $(BUILDDIR)\xed\export-windows-$(TARGET_LONG)\xed2-kit
+PIN_IPATHS  = /I$(PIN_HOME)\Include \
+              /I$(BUILDDIR)\pin\pin-W-X-Y-$(TARGET_EXT)-windows\source\include \
+              /I$(BUILDDIR)\pin\pin-W-X-Y-$(TARGET_EXT)-windows\source\include\gen \
+              /I$(PIN_HOME)\InstLib /I$(XEDKIT)\include \
+              /I$(PIN_HOME)\..\Source\fund\00-export-include /I$(PIN_HOME)\..\Source\util\00-export-include
+PIN_LPATHS  = /LIBPATH:$(PIN_BINDIR_DEV) \
+              /LIBPATH:$(PIN_HOME)\..\External\Ntdll\Lib_$(TARGET)_w \
+              /LIBPATH:$(XEDKIT)\lib
+
+!else
+!message NMAKE file: Could not find PIN executable file. Relying on system search...
+PIN=pin
+!endif
+
+# Define MSVC options for building tools
+######################################################################################
+!INCLUDE ms.flags
+
+PIN_CXXFLAGS = $(PIN_COMMON_CXXFLAGS) $(PIN_EXTRA_CXXFLAGS)
+PIN_LDFLAGS  = $(PIN_COMMON_LDFLAGS)  $(PIN_EXTRA_LDFLAGS) 
+
+!if "$(DEBUG)"=="1"
+PIN_CXXFLAGS = $(PIN_CXXFLAGS) $(PIN_DEBUG_CXXFLAGS)
+PIN_LDFLAGS  = $(PIN_LDFLAGS)  $(PIN_DEBUG_LDFLAGS)
+!else
+PIN_CXXFLAGS = $(PIN_CXXFLAGS) $(PIN_RELEASE_CXXFLAGS)
+PIN_LDFLAGS  = $(PIN_LDFLAGS)  $(PIN_RELEASE_LDFLAGS)
+!endif
+
+!if "$(TARGET)"=="ia32"
+PIN_CXXFLAGS = $(PIN_CXXFLAGS) $(PIN_IA32_CXXFLAGS) $(PIN_EXTRA_IA32_CXXFLAGS)
+PIN_LDFLAGS  = $(PIN_LDFLAGS)  $(PIN_IA32_LDFLAGS)  $(PIN_EXTRA_IA32_LDFLAGS)
+PIN_LIBS     = $(PIN_COMMON_LIBS) $(PIN_IA32_LIBS)
+!else
+PIN_CXXFLAGS = $(PIN_CXXFLAGS) $(PIN_IA32E_CXXFLAGS) $(PIN_EXTRA_IA32E_CXXFLAGS)
+PIN_LDFLAGS  = $(PIN_LDFLAGS)  $(PIN_IA32E_LDFLAGS)  $(PIN_EXTRA_IA32E_LDFLAGS)
+PIN_LIBS     = $(PIN_COMMON_LIBS) $(PIN_IA32E_LIBS)
+!endif
+
+# append include/lib paths to compiler/linker flags
+PIN_CXXFLAGS = $(PIN_CXXFLAGS) $(PIN_IPATHS)
+PIN_LDFLAGS  = $(PIN_LDFLAGS)  $(PIN_LPATHS)
+
+######################################################################################
+# Building rules for makefiles in subdirectories. 
+######################################################################################
+!if "$(INCLUDE_SUB_RULES)"=="1"
+
+.SUFFIXES :
+.SUFFIXES : .test .dll .exe .o .asm .c .cpp
+
+# Rules for building PIN tools. 
+######################################################################################
+OBJDIR=obj-$(TARGET_LONG)
+
+!if "$(TARGET)"=="ia32"
+TOOLS=$(COMMON_TOOLS) $(IA32_TOOLS)
+!else
+TOOLS=$(COMMON_TOOLS) $(IA32E_TOOLS)
+!endif
+
+tools : $(TOOLS)
+
+# The dependency line defines dependents $(OBJDIR)\<tool_name>.o and $(OBJDIR)\<tool_name>.dll
+# for each target <tool_name>.dll
+# As a result, it first activates inference rule .cpp{$(OBJDIR)\}.o:
+# that builds $(OBJDIR)\<tool_name>.o from <tool_name>.cpp
+# followed by inference rule {$(OBJDIR)\}.o{$(OBJDIR)\}.dll:
+# that builds target $(OBJDIR)\<tool_name>.dll from $(OBJDIR)\<tool_name>.o
+$(TOOLS) : .\$(OBJDIR) $(OBJDIR)\$(*B).o  $(OBJDIR)\$(*B).dll
+
+# Restricts inference rule to specific $(OBJDIR) directory
+{$(OBJDIR)}.o{$(OBJDIR)}.dll:
+    $(PIN_LD) $(PIN_LDFLAGS) /IMPLIB:$*.lib /PDB:$*.pdb /OUT:$@ $? $(PIN_LIBS) 
+
+.cpp{$(OBJDIR)}.o:
+    $(CXX) /c $(PIN_CXXFLAGS) /Fo$@ $<
+
+.\$(OBJDIR):
+    md $@
+
+# Rule for building test application. 
+######################################################################################
+TEST_OBJDIR = $(PIN_HOME)\Tests\$(OBJDIR)
+TEST_APP = $(TEST_OBJDIR)\cp-pin.exe
+
+test_app: $(TEST_OBJDIR) $(TEST_APP)
+
+$(TEST_APP) : $(TEST_OBJDIR)\..\$(*B).cpp
+    $(CXX) /nologo /EHsc /MD /Fo$*.o /Fe$@ $?
+
+$(TEST_OBJDIR):
+    md $@
+
+# Rules for testing PIN tools. 
+######################################################################################
+!ifndef TEST_TOOLS
+TEST_TOOLS=$(TOOLS:.dll=.test)
+!endif
+
+test: $(TEST_TOOLS) 
+
+$(TEST_TOOLS) : $*.dll test_app
+
+{$(OBJDIR)}.dll.test:
+    @echo tested > $<.tested
+    @echo failed > $<.failed
+    @echo  > $<.Nmakefile.copy
+    @erase /F $<.Nmakefile.copy
+    $(PIN) -t $< -- $(TEST_APP) Nmakefile $<.Nmakefile.copy
+    @fc.exe Nmakefile $<.Nmakefile.copy /L /A
+    @-erase /F $<.Nmakefile.copy
+    @-erase /F $<.failed
+
+.PRECIOUS : %.tested %.failed
+
+# Cleaning rules. 
+######################################################################################
+clean:
+    @-rd /S/Q $(OBJDIR)
+    @-erase /Q *.out
+
+!else  ###INCLUDE_SUB_RULES
+
+######################################################################################
+# Building rules for the root makefile. 
+######################################################################################
+TOOL_DIRS  = SimpleExamples_TOOL_DIR \
+             ManualExamples_TOOL_DIR \
+             DebugTrace_TOOL_DIR \
+             InstLibExamples_TOOL_DIR \
+             Memory_TOOL_DIR \
+             PinPoints_TOOL_DIR
+
+TEST_DIRS  = $(TOOL_DIRS:_TOOL_DIR=_TEST_DIR)
+CLEAN_DIRS = $(TOOL_DIRS:_TOOL_DIR=_CLEAN_DIR)
+
+NMAKE_OPT = /$(MAKEFLAGS) /f Nmakefile TARGET=$(TARGET) DEBUG=$(DEBUG) SET_VCENV=$(SET_VCENV) \
+   PIN_HOME="..\$(PIN_HOME)"
+
+tools : $(TOOL_DIRS)
+
+$(TOOL_DIRS):
+    cd $(PIN_HOME)\$(@:_TOOL_DIR=) && $(MAKE) $(NMAKE_OPT) tools && cd $(MAKEDIR)
+
+test : $(TEST_DIRS)
+
+$(TEST_DIRS):
+    cd $(PIN_HOME)\$(@:_TEST_DIR=) && $(MAKE) $(NMAKE_OPT) test && cd $(MAKEDIR)
+
+clean : $(CLEAN_DIRS)
+
+$(CLEAN_DIRS):
+    cd $(PIN_HOME)\$(@:_CLEAN_DIR=) && $(MAKE) $(NMAKE_OPT) clean && cd $(MAKEDIR)
+
+!endif  ###INCLUDE_SUB_RULES
+

@@ -1,0 +1,8 @@
+icl  /c /MT /EHs- /EHa- /wd4530  /DTARGET_WINDOWS /DBIGARRAY_MULTIPLIER=1 /DUSING_XED /D_CRT_SECURE_NO_DEPRECATE /D_SECURE_SCL=0 /nologo /Gy /O2 /DTARGET_IA32 /DHOST_IA32E  /I../../../source/include /I../../../source/include/gen /I../../../source/tools/InstLib  /I../../../extras/xed2-ia32/include /I../../../extras/components/include /Foobj-ia32/xed_interface_for_app.obj xed_interface_for_app.cpp
+
+
+icl /c /MT /nologo /DTARGET_WINDOWS /DFUND_TC_HOSTOS=FUND_OS_WINDOWS /DFUND_TC_TARGETOS=FUND_OS_WINDOWS /I../../Source/atomic/00-export-include  /I../../Source/fund/00-export-include  /I../../Source/sync/00-export-include  /I../../Source/util/00-export-include  /EHa /Gy- /DTARGET_IA32 /DFUND_TC_HOSTCPU=FUND_CPU_INTEL64 /DFUND_TC_TARGETCPU=FUND_CPU_INTEL64 /c /Foobj-ia32/sys_memory.obj sys_memory_windows.c
+
+icl  /MT /nologo /DTARGET_WINDOWS /DFUND_TC_HOSTOS=FUND_OS_WINDOWS /DFUND_TC_TARGETOS=FUND_OS_WINDOWS /I../../Source/atomic/00-export-include  /I../../Source/fund/00-export-include  /I../../Source/sync/00-export-include  /I../../Source/util/00-export-include  /EHa /Gy- /DTARGET_IA32 /DFUND_TC_HOSTCPU=FUND_CPU_INTEL64 /DFUND_TC_TARGETCPU=FUND_CPU_INTEL64 /Od /Feobj-ia32/gather_with_exception gather_with_exception.cpp /link /NOLOGO /INCREMENTAL:NO /OPT:NOREF  /LIBPATH:../../../ia32/lib /LIBPATH:../../../ia32/lib-ext  /LIBPATH:../../../extras/xed2-ia32/lib /LIBPATH:../../build/Source/pin/pin-windows-ia32  /LIBPATH:../../External/Ntdll/Lib_ia32_windows  /LIBPATH:../../build/Source/xed/xed-msvc-pin-windows-ia32/xed2-kit/lib libxed.lib libcpmt.lib libcmt.lib  kernel32.lib obj-ia32/sys_memory.obj obj-ia32/xed_interface_for_app.obj
+ 
+ 

@@ -38,6 +38,55 @@ def prepare(conf):
 		'/Developer/SDKs',
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
+	
+		pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
+
+	env['EXTERNALS_x86'] = {
+		'pin' : {
+			'INCLUDES'  : [
+				j(pin, 'source', 'include'),
+				j(pin, 'source', 'include', 'gen'),
+				j(pin, 'extras', 'components', 'include'),
+				j(pin, 'extras', 'xed2-ia32', 'include'),
+			],
+			'HEADERS'   : [],
+			'STLIBPATH'   : [
+				j(pin, 'ia32', 'lib'),
+				j(pin, 'ia32', 'lib-ext'),
+				j(pin, 'extras', 'xed2-ia32', 'lib'),
+			],
+			'STLIB'     : [ 'dwarf', 'elf', 'pin', 'xed' ],
+			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_OSX', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
+			'CFLAGS'    : [],
+			'CXXFLAGS'  : [],
+			'LINKFLAGS' : [],
+		},
+	}
+
+	env['EXTERNALS_x86_64'] = {
+		'pin' : {
+			'INCLUDES'  : [
+				j(pin, 'source', 'include'),
+				j(pin, 'source', 'include', 'gen'),
+				j(pin, 'extras', 'components', 'include'),
+				j(pin, 'extras', 'xed2-intel64', 'include'),
+			],
+			'HEADERS'   : [],
+			'STLIBPATH'   : [
+				j(pin, 'intel64', 'lib'),
+				j(pin, 'intel64', 'lib-ext'),
+				j(pin, 'extras', 'xed2-intel64', 'lib'),
+			],
+			'STLIB'     : [ 'dwarf', 'elf', 'xed' ],
+			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_LINUX', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
+			'CFLAGS'    : [],
+			'CXXFLAGS'  : [],
+			'LINKFLAGS' : [],
+		},
+	}
+
+	env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
+
 
 def configure(conf):
 	env = conf.env

@@ -23,7 +23,7 @@ def prepare(conf):
         env['MSVC_VERSIONS'] = ['msvc 10.0']
         env['MSVC_TARGETS']  = [ env.SUBARCH ]
 
-        pin = j(root, '3rdParty', 'pin-msvc10-ia32_intel64-windows')
+        pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-msvc10-windows')
 
         env['EXTERNALS_x86'] = {
                 'pin' : {

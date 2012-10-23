@@ -1,0 +1,2 @@
+icl  /nologo /DTARGET_WINDOWS /DFUND_TC_HOSTOS=FUND_OS_WINDOWS /DFUND_TC_TARGETOS=FUND_OS_WINDOWS /I../../Source/atomic/00-export-include  /I../../Source/fund/00-export-include  /I../../Source/sync/00-export-include  /I../../Source/util/00-export-include /MD /EHa /Gy- /DTARGET_IA32 /DFUND_TC_HOSTCPU=FUND_CPU_IA32 /DFUND_TC_TARGETCPU=FUND_CPU_IA32  /O2  /Feobj-ia32/tsx2t_app tsx2t_app.cpp  
+copy obj-ia32\tsx2t_app.exe tsx2t_app_ia32_w.exe
