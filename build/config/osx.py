@@ -23,7 +23,9 @@ def find_directory(dirname, paths):
 	raise Errors.WafError('Could not find directory \'%s\'' % dirname)
 
 def prepare(conf):
+	root = conf.path.abspath()
 	env = conf.env
+	j = os.path.join
 
 	env['PATH'] = [
 		'/Library/Frameworks/Mono.framework/Commands',
@@ -31,17 +33,17 @@ def prepare(conf):
 	]
 
 	env['MCS']  = 'dmcs'
-	env['CC']   = 'llvm-gcc-4.2'
-	env['CXX']  = 'llvm-g++-4.2'
+	env['CC']   = 'clang'
+	env['CXX']  = 'clang++'
 
-	env['SYSROOT'] = find_directory('MacOSX10.6.sdk', [
+	env['SYSROOT'] = find_directory('MacOSX10.7.sdk', [
 		'/Developer/SDKs',
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
 	
 	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
 
-	env['EXTERNALS_x86'] = {
+	env['EXTERNALS_i386'] = {
 		'pin' : {
 			'INCLUDES'  : [
 				j(pin, 'source', 'include'),
@@ -55,8 +57,8 @@ def prepare(conf):
 				j(pin, 'ia32', 'lib-ext'),
 				j(pin, 'extras', 'xed2-ia32', 'lib'),
 			],
-			'STLIB'     : [ 'dwarf', 'elf', 'pin', 'xed' ],
-			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_OSX', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
+			'STLIB'     : [ 'pin', 'xed' ],
+			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_MAC', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
 			'CFLAGS'    : [],
 			'CXXFLAGS'  : [],
 			'LINKFLAGS' : [],
@@ -77,21 +79,21 @@ def prepare(conf):
 				j(pin, 'intel64', 'lib-ext'),
 				j(pin, 'extras', 'xed2-intel64', 'lib'),
 			],
-			'STLIB'     : [ 'dwarf', 'elf', 'xed' ],
-			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_LINUX', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
+			'STLIB'     : [ 'pin', 'xed' ],
+			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_MAC', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
 			'CFLAGS'    : [],
 			'CXXFLAGS'  : [],
 			'LINKFLAGS' : [],
 		},
 	}
 
-	env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
+	env['EXTERNALS'] = env['EXTERNALS_x86_64']
 
 
 def configure(conf):
 	env = conf.env
 
-	env.supported_features = [
+	env.append_value('supported_features', [
 		'osx',
 		'c',
 		'cstlib',
@@ -106,7 +108,7 @@ def configure(conf):
 		'test',
 		'debug',
 		'release',
-	]
+	])
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',
@@ -128,20 +130,20 @@ def configure(conf):
 		'-mmacosx-version-min=10.6',
 		'-isysroot',
 		env.SYSROOT,
-		'-arch',
-		'i386',
+#		'-arch',
+#		'i386',
 		'-arch',
 		'x86_64',
 	]
 	
 	cppflags = [
 		'-pipe',
-		'-Werror',
+	#	'-Werror',
 		'-Wno-unused',
 	]
 	
 	cppflags_debug = [
-		'-ggdb',
+		'-g',
 	]
 
 	cppflags_release = [
@@ -155,6 +157,9 @@ def configure(conf):
 	env.append_value('LINKFLAGS', arch_flags)
 
 	env.append_value('DEFINES_debug', ['DEBUG'])
+
+	# Override g++ darwin defaults in tools/gxx.py
+	env['CXXFLAGS_cxxshlib'] = [ '-fPIC' ]
 
 	env['VARIANTS'] = [ 'debug', 'release' ]
 
