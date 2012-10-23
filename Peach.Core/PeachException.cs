@@ -57,6 +57,14 @@ namespace Peach.Core
 	/// </summary>
 	public class SoftException : ApplicationException
 	{
+        public SoftException()
+            : base()
+        {
+        }
+
+        public SoftException(Exception innerException) : base("SoftExeption", innerException)
+        {
+        }
 	}
 
 	/// <summary>
