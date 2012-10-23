@@ -158,18 +158,8 @@ namespace PeachLinuxCrashHandler
 
                     /// CERT Exploitable ///////////////////////////////
                     
-                    // Add our module path
-                    gdb.StandardInput.WriteLine("python");
-                    gdb.WaitForInputIdle();
-                    gdb.StandardInput.WriteLine("import sys");
-                    gdb.WaitForInputIdle();
-                    gdb.StandardInput.WriteLine("sys.path.insert(0, '/PeachGdb'");
-                    gdb.WaitForInputIdle();
-                    gdb.StandardInput.WriteLine("end");
-                    gdb.WaitForInputIdle();
-
                     // Load CERT code
-                    gdb.StandardInput.WriteLine("python import exploitable");
+                    gdb.StandardInput.WriteLine("source /PeachGdb/exploitable/exploitable.py");
                     gdb.WaitForInputIdle();
                     gdb.StandardInput.WriteLine("exploitable");
                     gdb.WaitForInputIdle();
