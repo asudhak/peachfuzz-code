@@ -232,6 +232,8 @@ namespace Peach.Core.Dom
 		protected DataElementContainer _parent;
 
 		private uint _recursionDepth = 0;
+		private bool _readValueCache = true;
+		private bool _writeValueCache = true;
 		private Variant _internalValue;
 		private BitStream _value;
 
@@ -702,12 +704,19 @@ namespace Peach.Core.Dom
         /// <summary>
         /// Get the Internal Value of this data element
         /// </summary>
-		public virtual Variant InternalValue
+		public Variant InternalValue
 		{
 			get
 			{
-				if (_internalValue == null || _invalidated)
-					_internalValue = GenerateInternalValue();
+				if (_internalValue == null || _invalidated || !_readValueCache)
+				{
+					var internalValue = GenerateInternalValue();
+
+					if (_writeValueCache)
+						_internalValue = internalValue;
+
+					return internalValue;
+				}
 
 				return _internalValue;
 			}
@@ -716,29 +725,64 @@ namespace Peach.Core.Dom
         /// <summary>
         /// Get the final Value of this data element
         /// </summary>
-		public virtual BitStream Value
+		public BitStream Value
 		{
 			get
 			{
-				if (_value == null || _invalidated)
+				// If cache reads have not been disabled, inherit value from parent
+				var oldReadCache = _readValueCache;
+				if (_readValueCache && parent != null)
+					_readValueCache = parent._readValueCache;
+
+				// If cache writes have not been disabled, inherit value from parent
+				var oldWriteCache = _writeValueCache;
+				if (_writeValueCache && parent != null)
+					_writeValueCache = parent._writeValueCache;
+
+				try
 				{
-					_recursionDepth++;
+					if (_value == null || _invalidated || !_readValueCache)
+					{
+						// If we have recursed onto ourselves, turn off caching of results
+						if (_recursionDepth++ > 0)
+							_writeValueCache = false;
 
-					var value = GenerateValue();
-					_invalidated = false;
+						var value = GenerateValue();
+						_invalidated = false;
 
-					_recursionDepth--;
+						_recursionDepth--;
 
-					if (_recursionDepth == 0)
-						_value = value;
-					else
-						Invalidate(); // Reset all elements with cached dependencies on us
+						if (_writeValueCache)
+							_value = value;
 
-					return value;
+						return value;
+					}
+
+					return _value;
 				}
-
-				return _value;
+				finally
+				{
+					// Restore values
+					_writeValueCache = oldWriteCache;
+					_readValueCache = oldReadCache;
+				}
 			}
+		}
+
+		public long CalcLengthBits()
+		{
+			// Turn off read and write caching of 'Value'
+			var oldReadCache = _readValueCache;
+			_readValueCache = false;
+			var oldWriteCache = _writeValueCache;
+			_writeValueCache = false;
+
+			var ret = Value.LengthBits;
+
+			_writeValueCache = oldWriteCache;
+			_readValueCache = oldReadCache;
+
+			return ret;
 		}
 
 		/// <summary>
@@ -796,9 +840,10 @@ namespace Peach.Core.Dom
 
 		protected virtual BitStream InternalValueToBitStream()
 		{
-			if (InternalValue == null)
+			var ret = InternalValue;
+			if (ret == null)
 				return new BitStream();
-			return (BitStream)InternalValue;
+			return (BitStream)ret;
 		}
 
 		/// <summary>

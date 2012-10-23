@@ -46,7 +46,7 @@ namespace Peach.Core.Test.CrackingTests
 	{
 		static string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 			"	<DataModel name=\"TheDataModel\">" +
-			"		<Blob length=\"1\" valueType=\"hex\" value=\"00\" />" +
+			"		<Blob name=\"blb\" length=\"1\" valueType=\"hex\" value=\"00\" />" +
 			"		<Padding aligned=\"true\" alignment=\"16\" /> " +
 			"	</DataModel>" +
 			"</Peach>";
@@ -64,14 +64,16 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
+			Assert.AreEqual(new byte[] { 1 }, (byte[])dom.dataModels[0][0].Value.Value);
 			Assert.AreEqual(new byte[] { 1 }, (byte[])dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual(8, ((BitStream)dom.dataModels[0][1].DefaultValue).LengthBits);
+			Assert.AreEqual(8, ((BitStream)dom.dataModels[0][1].Value).LengthBits);
 
 			var value = dom.dataModels[0].Value;
+			value.SeekBytes(0, SeekOrigin.Begin);
 			Assert.AreEqual(2, value.LengthBytes);
 			Assert.AreEqual(1, value.ReadByte());
 			Assert.AreEqual(0, value.ReadByte());
-
 		}
 
 		[Test]

@@ -237,7 +237,7 @@ namespace Peach.Core.Dom
 
 					if (_aligned)
 					{
-						long currentLength = alignedElement.Value.LengthBits;
+						long currentLength = alignedElement.CalcLengthBits();
 
 						if (currentLength > 0 && currentLength % _alignment == 0)
 							return _defaultValue;
