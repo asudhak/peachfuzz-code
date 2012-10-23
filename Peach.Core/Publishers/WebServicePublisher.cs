@@ -37,6 +37,7 @@ namespace Peach.Core.Publishers
 		public string Wsdl { get; set; }
 		public int Timeout { get; set; }
 		public int Throttle { get; set; }
+        public string StatusCode = HttpStatusCode.OK.ToString();
 
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
@@ -79,10 +80,32 @@ namespace Peach.Core.Publishers
 				count++;
 			}
 
-			WebServiceInvoker invoker = new WebServiceInvoker(new Uri(this.Url));
-			object ret = invoker.InvokeMethod<object>(this.Service, method, parameters);
+            try
+            {
+                WebServiceInvoker invoker = new WebServiceInvoker(new Uri(this.Url));
+                object ret = invoker.InvokeMethod<object>(this.Service, method, parameters);
 
-			return new Variant(ret.ToString());
+                StatusCode = HttpStatusCode.OK.ToString();
+
+                return new Variant(ret.ToString());
+            }
+            catch (Exception ex)
+            {
+                if (!(ex.InnerException is WebException))
+                    throw ex;
+
+                var webEx = ex.InnerException as WebException;
+                var response = webEx.Response as HttpWebResponse;
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    StatusCode = response.StatusCode.ToString();
+
+                    var sex = new SoftException(ex); // Soft or ignore?
+                    throw sex;
+                }
+
+                throw ex;
+            }
 		}
 	}
 
@@ -171,10 +194,10 @@ namespace Peach.Core.Publishers
 		/// <returns>The return value from the web service method.</returns>
 		public T InvokeMethod<T>(string serviceName, string methodName, params object[] args)
 		{
-			// create an instance of the specified service
-			// and invoke the method
-			object obj = this.webServiceAssembly.CreateInstance(serviceName);
-			
+            // create an instance of the specified service
+            // and invoke the method
+            object obj = this.webServiceAssembly.CreateInstance(serviceName);
+
             Type type = obj.GetType();
 
             var method = type.GetMethod(methodName);

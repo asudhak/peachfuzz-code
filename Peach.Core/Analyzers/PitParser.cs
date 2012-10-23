@@ -127,6 +127,7 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+            _dom.evaulateDataModelAnalyzers();
 			return _dom;
 		}
 
