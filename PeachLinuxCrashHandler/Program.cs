@@ -158,11 +158,11 @@ namespace PeachLinuxCrashHandler
 
                     /// CERT Exploitable ///////////////////////////////
                     
-                    // Load CERT code
-                    gdb.StandardInput.WriteLine("source /PeachGdb/exploitable/exploitable.py");
-                    gdb.WaitForInputIdle();
-                    gdb.StandardInput.WriteLine("exploitable");
-                    gdb.WaitForInputIdle();
+                    //// Load CERT code
+                    //gdb.StandardInput.WriteLine("source /PeachGdb/exploitable/exploitable.py");
+                    //gdb.WaitForInputIdle();
+                    //gdb.StandardInput.WriteLine("exploitable");
+                    //gdb.WaitForInputIdle();
 
                     // Exit GDB
                     gdb.StandardInput.WriteLine("quit");
