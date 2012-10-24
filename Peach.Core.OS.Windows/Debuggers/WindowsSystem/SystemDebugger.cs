@@ -239,7 +239,12 @@ namespace Peach.Core.Debuggers.WindowsSystem
 				if (!UnsafeMethods.WaitForDebugEvent(ref debug_event, 100))
 					continue;
 
-				ProcessDebugEvent(ref debug_event);
+				// Filter for target process id.  It is possible to get a 2nd
+				// chance exception for a process that we stopped wanting
+				// to monitor after processing a 1st chance exception. Or anytime
+				// the ContinueDebugging callback returns false before processExit is true.
+				if (debug_event.dwProcessId == this.dwProcessId)
+					ProcessDebugEvent(ref debug_event);
 
 				if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId,
 									debug_event.dwThreadId, DBG_EXCEPTION_NOT_HANDLED))
