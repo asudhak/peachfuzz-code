@@ -235,6 +235,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 			while (!processExit && ContinueDebugging())
 			{
+				uint dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
 
 				if (!UnsafeMethods.WaitForDebugEvent(ref debug_event, 100))
 					continue;
@@ -244,10 +245,10 @@ namespace Peach.Core.Debuggers.WindowsSystem
 				// to monitor after processing a 1st chance exception. Or anytime
 				// the ContinueDebugging callback returns false before processExit is true.
 				if (debug_event.dwProcessId == this.dwProcessId)
-					ProcessDebugEvent(ref debug_event);
+					dwContinueStatus = ProcessDebugEvent(ref debug_event);
 
 				if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId,
-									debug_event.dwThreadId, DBG_EXCEPTION_NOT_HANDLED))
+									debug_event.dwThreadId, dwContinueStatus))
 					throw new Exception("ContinueDebugEvent failed");
 			}
 		}
@@ -316,8 +317,10 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		//}
 
 
-		protected void ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
+		protected uint ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
+			uint dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+
 			switch (DebugEv.dwDebugEventCode)
 			{
 				case EXCEPTION_DEBUG_EVENT:
@@ -341,6 +344,15 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 						case EXCEPTION_BREAKPOINT:
 							logger.Trace("EXCEPTION_BREAKPOINT");
+
+							// From: http://stackoverflow.com/questions/3799294/im-having-problems-with-waitfordebugevent-exception-debug-event
+							// If launch a process and expect to debug it using the Windows API calls,
+							// you should know that Windows will send one EXCEPTION_BREAKPOINT (INT3)
+							// when it first loads. You must DEBUG_CONTINUE this first breakpoint
+							// exception... if you DBG_EXCEPTION_NOT_HANDLED you will get the popup
+							// message box: The application failed to initialize properly (0x80000003).
+
+							dwContinueStatus = DBG_CONTINUE;
 
 							//if (!_breakpointOrigionalInstructions.ContainsKey((ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()))
 							//    break;
@@ -501,6 +513,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					logger.Trace("UNKNOWN DEBUG EVENT");
 					break;
 			}
+
+			return dwContinueStatus;
 		}
 
 		string GetFileNameFromHandle(IntPtr hFile)
