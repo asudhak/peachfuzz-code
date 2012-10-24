@@ -46,7 +46,7 @@ namespace Peach
 		{
 			var color = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
+			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration+1));
 			Console.ForegroundColor = color;
 
 		}
