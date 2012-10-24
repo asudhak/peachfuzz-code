@@ -75,12 +75,12 @@ VOID PIN_FAST_ANALYSIS_CALL rememberBlock(ADDRINT bbl)
 	ret = setKnownBlocks.insert(bbl);
 	if(ret.second == true)
 	{
-		fprintf(trace, "%16.16zx\n", (size_t)bbl);
+		fprintf(trace, "%u\n", (size_t)bbl);
 		fflush(trace);
 
 		if(haveExisting)
 		{
-			fprintf(existing, "%16.16zx\n", (size_t)bbl);
+			fprintf(existing, "%u\n", (size_t)bbl);
 			fflush(existing);
 		}
 	}
@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
 		haveExisting = TRUE;
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%zx\n", &block) < 4)
+			if(fscanf(existing, "%u\n", &block) < 4)
 				setExistingBlocks.insert(block);
 		}
 

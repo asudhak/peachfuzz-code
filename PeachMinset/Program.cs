@@ -95,28 +95,28 @@ namespace PeachMinset
 			}
 
 			// Check OS and load side assembly
-			string osAssembly = null;
-			switch (Platform.GetOS())
-			{
-				case Platform.OS.Mac:
-					osAssembly = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						"Peach.Core.OS.OSX.dll");
-					Assembly.LoadFrom(osAssembly);
-					break;
-				case Platform.OS.Linux:
-					osAssembly = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						"Peach.Core.OS.Linux.dll");
-					Assembly.LoadFrom(osAssembly);
-					break;
-				case Platform.OS.Windows:
-					osAssembly = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						"Peach.Core.OS.Windows.dll");
-					Assembly.LoadFrom(osAssembly);
-					break;
-			}
+            //string osAssembly = null;
+            //switch (Platform.GetOS())
+            //{
+            //    case Platform.OS.Mac:
+            //        osAssembly = System.IO.Path.Combine(
+            //            System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+            //            "Peach.Core.OS.OSX.dll");
+            //        Assembly.LoadFrom(osAssembly);
+            //        break;
+            //    case Platform.OS.Linux:
+            //        osAssembly = System.IO.Path.Combine(
+            //            System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+            //            "Peach.Core.OS.Linux.dll");
+            //        Assembly.LoadFrom(osAssembly);
+            //        break;
+            //    case Platform.OS.Windows:
+            //        osAssembly = System.IO.Path.Combine(
+            //            System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+            //            "Peach.Core.OS.Windows.dll");
+            //        Assembly.LoadFrom(osAssembly);
+            //        break;
+            //}
 
 			////var bb = Coverage.CreateInstance().BasicBlocksForExecutable(@"C:\Peach3\Labs\Png\bin\pngcheck.exe");
 
@@ -159,48 +159,52 @@ namespace PeachMinset
                 if (!Directory.Exists(traces))
                     Directory.CreateDirectory(traces);
 
+				string newFilename = null;
                 foreach (string fileName in traceFiles)
                 {
-                    Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(traces, Path.GetFileName(fileName)));
-                    File.Move(fileName, Path.Combine(traces, Path.GetFileName(fileName)));
+					newFilename = Path.Combine(traces, Path.GetFileName(fileName));
+                    Console.WriteLine("[-]   " + fileName + " -> " + newFilename);
+					
+					if(File.Exists(newFilename))
+						File.Delete(newFilename);
+
+					File.Move(fileName, newFilename);
                 }
 
                 Console.WriteLine("\n[*] Finished");
-
-                return;
             }
 
-            if (both || (extra.Count == 0 && minset != null && traces != null && samples != null))
-            {
-                Console.WriteLine("[*] Running coverage analysis...");
-                var minsetFiles = ms.RunCoverage(GetFiles(samples), GetFiles(traces));
+			if (both || (extra.Count == 0 && minset != null && traces != null && samples != null))
+			{
+				Console.WriteLine("[*] Running coverage analysis...");
+				var sampleFiles = GetFiles(samples);
+				var minsetFiles = ms.RunCoverage(sampleFiles, GetFiles(traces));
 
-                Console.WriteLine("[-]   " + minsetFiles.Length + " files were selected from a total of " + samples.Length + ".");
-                Console.WriteLine("[*] Copying over selected files...");
+				Console.WriteLine("[-]   " + minsetFiles.Length + " files were selected from a total of " + sampleFiles.Count() + ".");
+				Console.WriteLine("[*] Copying over selected files...");
 
-                if (!Directory.Exists(minset))
-                    Directory.CreateDirectory(minset);
+				if (!Directory.Exists(minset))
+					Directory.CreateDirectory(minset);
 
-                foreach (string fileName in minsetFiles)
-                {
-                    Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
-                    File.Copy(fileName, Path.Combine(minset, Path.GetFileName(fileName)));
-                }
+				foreach (string fileName in minsetFiles)
+				{
+					Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
+					File.Copy(fileName, Path.Combine(minset, Path.GetFileName(fileName)));
+				}
 
-                Console.WriteLine("\n[*] Finished");
-
-                return;
+				Console.WriteLine("\n[*] Finished");
 			}
 		}
 
 		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)
 		{
-			Console.WriteLine("[{0}:{1}]   Converage trace of {2}.", 
+			Console.Write("[{0}:{1}]   Converage trace of {2}...", 
 				count, totalCount, fileName);
 		}
 
 		void ms_TraceCompleted(Minset sender, string fileName, int count, int totalCount)
 		{
+			Console.WriteLine("done.");
 		}
 
 		string[] GetFiles(string path)

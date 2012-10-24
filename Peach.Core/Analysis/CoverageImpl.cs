@@ -32,6 +32,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 using Peach.Core;
 
@@ -40,11 +41,11 @@ namespace Peach.Core.Analysis
     /// <summary>
     /// Coverage implementation that utalizes PinTools
     /// </summary>
-    public class CoverageImpl: Coverage, IDisposable
+    public class CoverageImpl: Coverage
     {
         string _traceFolder = null;
         bool _needsKilling = false;
-        string _pin = "pin-2.8-37300-msvc10-ia32_intel64-windows\\ia32\\bin\\pin.exe";
+		string _pin = "pin\\pin-2.12-54730-msvc10-windows\\pin_bat.bat";
 
         public CoverageImpl()
         {
@@ -53,6 +54,9 @@ namespace Peach.Core.Analysis
                 _traceFolder = Guid.NewGuid().ToString();
 
             Directory.CreateDirectory(_traceFolder);
+
+            if (File.Exists("bblocks.existing"))
+                File.Delete("bblocks.existing");
         }
 
         /// <summary>
@@ -62,7 +66,7 @@ namespace Peach.Core.Analysis
         /// <returns></returns>
         public override List<ulong> BasicBlocksForExecutable(string executable)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         /// <summary>
@@ -79,8 +83,6 @@ namespace Peach.Core.Analysis
             {
                 if (File.Exists("bblocks.out"))
                     File.Delete("bblocks.out");
-                if (File.Exists("bblocks.existing"))
-                    File.Delete("bblocks.existing");
 
                 if (basicBlocks != null && basicBlocks.Count > 0)
                 {
@@ -91,11 +93,13 @@ namespace Peach.Core.Analysis
                     File.WriteAllText("bblocks.existing", sb.ToString());
                 }
 
+                var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
                 var psi = new ProcessStartInfo();
                 psi.Arguments = "-t bblocks.dll -- " + executable + " " + arguments;
-                psi.FileName = _pin;
+                psi.FileName = Path.Combine(peachBinaries, _pin);
                 psi.CreateNoWindow = true;
-                psi.UseShellExecute = false;
+                psi.UseShellExecute = true;
 
                 var proc = new Process();
                 proc.StartInfo = psi;
@@ -117,8 +121,15 @@ namespace Peach.Core.Analysis
                     string line = rin.ReadLine();
                     while (!string.IsNullOrEmpty(line))
                     {
-                        blocks.Add(ulong.Parse(line));
-                        line = rin.ReadLine();
+						try
+						{
+							blocks.Add(ulong.Parse(line));
+							line = rin.ReadLine();
+						}
+						catch
+						{
+							Console.Error.WriteLine("[" + line + "]");
+						}
                     }
                 }
 
@@ -128,15 +139,16 @@ namespace Peach.Core.Analysis
             {
                 if (File.Exists("bblocks.out"))
                     File.Delete("bblocks.out");
-                if (File.Exists("bblocks.existing"))
-                    File.Delete("bblocks.existing");
             }
         }
 
-        public void Dispose()
-        {
-            if(_traceFolder != null && Directory.Exists(_traceFolder))
-                Directory.Delete(_traceFolder, true);
-        }
+		public override void Dispose()
+		{
+			if (File.Exists("bblocks.existing"))
+				File.Delete("bblocks.existing");
+
+			if (_traceFolder != null && Directory.Exists(_traceFolder))
+				Directory.Delete(_traceFolder, true);
+		}
     }
 }

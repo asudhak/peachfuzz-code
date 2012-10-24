@@ -3,6 +3,6 @@
 bld(
 	features = 'cxx cxxshlib pin',
 	source = 'bblocks.cpp',
-	target='Peach.Core.Analysis.Pin.BasicBlocks',
+	target='bblocks',
 )
 

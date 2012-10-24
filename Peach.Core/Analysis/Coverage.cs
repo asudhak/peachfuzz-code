@@ -42,7 +42,7 @@ namespace Peach.Core.Analysis
 	/// <remarks>
 	/// So far only Windows has an implementation.
 	/// </remarks>
-	public abstract class Coverage
+	public abstract class Coverage : IDisposable
 	{
 		/// <summary>
 		/// Create an instance of this abstract class
@@ -50,7 +50,8 @@ namespace Peach.Core.Analysis
 		/// <returns></returns>
 		public static Coverage CreateInstance()
 		{
-			return ClassLoader.FindAndCreateByTypeAndName<Coverage>("Peach.Core.Analysis.CoverageImpl");
+            return new CoverageImpl();
+			//return ClassLoader.FindAndCreateByTypeAndName<Coverage>("Peach.Core.Analysis.CoverageImpl");
 		}
 
 		/// <summary>
@@ -69,5 +70,7 @@ namespace Peach.Core.Analysis
 		/// <param name="basicBlocks"></param>
 		/// <returns></returns>
 		public abstract List<ulong> CodeCoverageForExecutable(string executable, string arguments, List<ulong> basicBlocks = null);
+
+		public abstract void Dispose();
 	}
 }

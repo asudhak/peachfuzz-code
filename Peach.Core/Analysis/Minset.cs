@@ -49,8 +49,6 @@ namespace Peach.Core.Analysis
 		public event TraceStartingEventHandler TraceStarting;
 		public event TraceCompletedEventHandler TraceCompleted;
 
-		Coverage _coverage = Coverage.CreateInstance();
-
 		protected void OnTraceStarting(string fileName, int count, int totalCount)
 		{
 			if (TraceStarting != null)
@@ -170,22 +168,32 @@ namespace Peach.Core.Analysis
 		/// <returns>Returns a collection of trace files</returns>
 		public string[] RunTraces(string executable, string arguments, string[] sampleFiles, bool needsKilling = false)
 		{
-			int count = 0;
-			List<string> traces = new List<string>();
-			List<ulong> basicBlocks = _coverage.BasicBlocksForExecutable(executable);
-
-			foreach (string fileName in sampleFiles)
+			using (Coverage coverage = Coverage.CreateInstance())
 			{
-				count++;
-				OnTraceStarting(fileName, count, sampleFiles.Length);
+				int count = 0;
+				List<string> traces = new List<string>();
+				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable);
 
-				if (RunSingleTrace(fileName + ".trace", executable, arguments.Replace("%s", fileName), basicBlocks, needsKilling))
-					traces.Add(fileName + ".trace");
+				foreach (string fileName in sampleFiles)
+				{
+					count++;
+					OnTraceStarting(fileName, count, sampleFiles.Length);
 
-				OnTraceCompleted(fileName, count, sampleFiles.Length);
+					if (RunSingleTrace(coverage,
+						fileName + ".trace",
+						executable,
+						arguments.Replace("%s", fileName),
+						basicBlocks,
+						needsKilling))
+					{
+						traces.Add(fileName + ".trace");
+					}
+
+					OnTraceCompleted(fileName, count, sampleFiles.Length);
+				}
+
+				return traces.ToArray();
 			}
-
-			return traces.ToArray();
 		}
 
 		/// <summary>
@@ -197,10 +205,14 @@ namespace Peach.Core.Analysis
 		/// <param name="basicBlocks">List of basic blocks to trap on</param>
 		/// <param name="needsKilling">Does this process require killing?</param>
 		/// <returns>True on success, false if a failure occured.</returns>
-		public bool RunSingleTrace(string traceFile, string executable, string arguments, List<ulong> basicBlocks, bool needsKilling = false)
+		public bool RunSingleTrace(Coverage cov, string traceFile, string executable, string arguments, List<ulong> basicBlocks, bool needsKilling = false)
 		{
 			string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			List<ulong> coverage = _coverage.CodeCoverageForExecutable(executable, arguments, basicBlocks);
+			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, basicBlocks);
+
+			// Delete existing trace file
+			if (File.Exists(traceFile))
+				File.Delete(traceFile);
 
 			// Create trace file
 			using(FileStream fout = File.Create(traceFile))
