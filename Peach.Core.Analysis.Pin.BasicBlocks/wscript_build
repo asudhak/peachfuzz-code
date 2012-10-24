@@ -1,8 +1,24 @@
 #!/usr/bin/env python
 
-bld(
-	features = 'cxx cxxshlib pin',
-	source = 'bblocks.cpp',
-	target='bblocks',
-)
+if bld.env.DEST_OS is 'win32':
+	bld(
+		features = 'cxx cxxshlib pin',
+		source = 'bblocks.cpp',
+		target='bblocks32',
+		env=bld.all_envs['win_x86_release'].derive(),
+	)
 
+	if bld.env.SUBARCH is 'x64':
+		bld(
+			features = 'cxx cxxshlib pin',
+			source = 'bblocks.cpp',
+			target='bblocks64',
+			env=bld.all_envs['win_x64_release'].derive(),
+		)
+
+else:
+	bld(
+		features = 'cxx cxxshlib pin release',
+		source = 'bblocks.cpp',
+		target='bblocks',
+	)

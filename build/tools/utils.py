@@ -33,7 +33,7 @@ def install_extras(self):
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
 
-@feature('win', 'linux', 'osx', 'debug', 'release', 'com')
+@feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin')
 def dummy_platform(self):
 	# prevent warnings about features with unbound methods
 	pass
@@ -52,14 +52,6 @@ def install_csshlib(self):
 		config = lib.parent.find_resource(lib.name + '.config')
 		if config:
 			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
-
-@feature('pin')
-@before_method('process_source')
-def pin_disable_debug(self):
-	# ensure pin debug builds are built in release mode
-	e = self.env
-	e['CPPFLAGS_debug'] = e['CPPFLAGS_release'] = []
-	e['DEFINES_debug'] = []
 
 @feature('cs')
 @before_method('apply_cs')
