@@ -1,5 +1,6 @@
 import os.path
 from waflib.TaskGen import feature, before_method, after_method
+from waflib.Configure import conf
 from waflib import Utils, Logs, Task
 
 @feature('*')
@@ -93,3 +94,11 @@ def cs_resource(self):
 		inst_to = getattr(self, 'install_path', '${BINDIR}')
 		cfg = self.path.find_or_declare('app.config')
 		self.bld.install_as('%s/%s.config' % (inst_to, base), cfg, env=self.env, chmod=Utils.O755)
+
+@conf
+def clone_env(self, variant):
+	copy = self.all_envs[variant].derive()
+	copy.PREFIX = self.env.PREFIX
+	copy.BINDIR = self.env.BINDIR
+	copy.LIBDIR = self.env.LIBDIR
+	return copy
