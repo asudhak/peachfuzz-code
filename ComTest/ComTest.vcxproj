@@ -250,11 +250,10 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
@@ -266,6 +265,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -287,11 +287,10 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
@@ -303,6 +302,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -324,11 +324,10 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
@@ -340,6 +339,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -360,11 +360,10 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -374,6 +373,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -393,11 +393,10 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -407,6 +406,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -426,11 +426,10 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -440,6 +439,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -460,11 +460,10 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
@@ -474,6 +473,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -497,11 +497,10 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
@@ -511,6 +510,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -534,11 +534,10 @@
       <TargetEnvironment>Win32</TargetEnvironment>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
@@ -548,6 +547,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -570,11 +570,10 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -583,6 +582,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -604,11 +604,10 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -617,6 +616,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -638,11 +638,10 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)ComTest.tlb</TypeLibraryName>
-      <HeaderFileName>ComTest_i.h</HeaderFileName>
-      <DllDataFileName>
-      </DllDataFileName>
-      <InterfaceIdentifierFileName>ComTest_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>ComTest_p.c</ProxyFileName>
+      <HeaderFileName>idl\ComTest_i.h</HeaderFileName>
+      <DllDataFileName>idl\dlldata.c</DllDataFileName>
+      <InterfaceIdentifierFileName>idl\ComTest_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>idl\ComTest_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -651,6 +650,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>idl</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -721,7 +721,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Linux|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - OS X|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ComTest_i.c">
+    <ClCompile Include="idl\ComTest_i.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - OS X|Win32'">
@@ -775,7 +775,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="ComTest_i.h" />
+    <ClInclude Include="idl\ComTest_i.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ComTest.rc" />

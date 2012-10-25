@@ -20,11 +20,7 @@
 /*/x64/
 
 # Visual Studio generated files
-*_i.h
-*_i.c
-*_p.c
-*.tlb
-dlldata.c
+/ComTest/idl/
 
 # Visual C++ cache files
 /ipch/

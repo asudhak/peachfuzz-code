@@ -31,7 +31,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ComTest_i.c">
+    <ClCompile Include="idl\ComTest_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,7 +68,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ComTest_i.h">
+    <ClInclude Include="idl\ComTest_i.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
