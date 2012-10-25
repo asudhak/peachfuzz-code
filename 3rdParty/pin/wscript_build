@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+import os.path
+from waflib import Utils
+
+def install_pin(suffix):
+	pin = 'pin-2.12-54730-%s' % suffix
+	src = bld.path.find_dir(pin).ant_glob('* **/bin/**')
+	bld.install_files('${BINDIR}/pin', src, chmod=Utils.O755, relative_trick=True)
+
+if 'win' in bld.variant:
+	install_pin('msvc10-windows')
+elif 'linux' in bld.variant:
+	install_pin('gcc.4.4.7-linux')
+elif 'osx' in bld.variant:
+	install_pin('clang.3.0-mac')

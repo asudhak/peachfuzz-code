@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+bld.recurse('pin')
+
 nlog = bld.env.CS_NAME == 'mono' and 'Mono 2.x' or '.NET Framework 4.0'
 
 bld.read_csshlib('NLog.dll',                         paths=['NLog-v2.0.0.2000/%s' % nlog])
