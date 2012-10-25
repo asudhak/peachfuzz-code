@@ -327,7 +327,9 @@ class ConfigSet(object):
 		The history is kept in a stack, and is lost during the serialization by :py:meth:`ConfigSet.store`
 		"""
 		self.undo_stack = self.undo_stack + [self.table]
-		self.table = self.table.copy()
+		tbl = self.table = self.table.copy()
+		for x in tbl.keys():
+			tbl[x] = copy.deepcopy(tbl[x])
 
 	def revert(self):
 		"""
