@@ -133,6 +133,12 @@ namespace Peach.Core.Analysis
 				coveredBlocks.AddRange(delta);
 			}
 
+			// Strip the .trace and path off
+			for (int cnt = 0; cnt < minset.Count; cnt++)
+			{
+				minset[cnt] = Path.GetFileNameWithoutExtension(minset[cnt]);
+			}
+
 			return minset.ToArray();
 		}
 
@@ -166,11 +172,15 @@ namespace Peach.Core.Analysis
 		/// <param name="sampleFiles">Collection of sample files</param>
 		/// <param name="needsKilling">Does this command requiring forcefull killing to exit?</param>
 		/// <returns>Returns a collection of trace files</returns>
-		public string[] RunTraces(string executable, string arguments, string[] sampleFiles, bool needsKilling = false)
+		public string[] RunTraces(string executable, string arguments, string tracesFolder, string[] sampleFiles, bool needsKilling = false)
 		{
+			if (!Directory.Exists(tracesFolder))
+				Directory.CreateDirectory(tracesFolder);
+
 			using (Coverage coverage = Coverage.CreateInstance())
 			{
 				int count = 0;
+				string traceFilename = null;
 				List<string> traces = new List<string>();
 				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable);
 
@@ -179,14 +189,17 @@ namespace Peach.Core.Analysis
 					count++;
 					OnTraceStarting(fileName, count, sampleFiles.Length);
 
+					// Output trace into the specified tracesFolder
+					traceFilename = Path.Combine(tracesFolder, Path.GetFileName(fileName) + ".trace");
+
 					if (RunSingleTrace(coverage,
-						fileName + ".trace",
+						traceFilename,
 						executable,
 						arguments.Replace("%s", fileName),
 						basicBlocks,
 						needsKilling))
 					{
-						traces.Add(fileName + ".trace");
+						traces.Add(traceFilename);
 					}
 
 					OnTraceCompleted(fileName, count, sampleFiles.Length);

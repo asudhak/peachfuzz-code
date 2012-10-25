@@ -94,48 +94,6 @@ namespace PeachMinset
 				}
 			}
 
-			// Check OS and load side assembly
-            //string osAssembly = null;
-            //switch (Platform.GetOS())
-            //{
-            //    case Platform.OS.Mac:
-            //        osAssembly = System.IO.Path.Combine(
-            //            System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-            //            "Peach.Core.OS.OSX.dll");
-            //        Assembly.LoadFrom(osAssembly);
-            //        break;
-            //    case Platform.OS.Linux:
-            //        osAssembly = System.IO.Path.Combine(
-            //            System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-            //            "Peach.Core.OS.Linux.dll");
-            //        Assembly.LoadFrom(osAssembly);
-            //        break;
-            //    case Platform.OS.Windows:
-            //        osAssembly = System.IO.Path.Combine(
-            //            System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-            //            "Peach.Core.OS.Windows.dll");
-            //        Assembly.LoadFrom(osAssembly);
-            //        break;
-            //}
-
-			////var bb = Coverage.CreateInstance().BasicBlocksForExecutable(@"C:\Peach3\Labs\Png\bin\pngcheck.exe");
-
-			////Console.WriteLine("Found " + bb.Count + " basic blocks.");
-
-			////var coverage = Coverage.CreateInstance().CodeCoverageForExecutable(
-			////    @"C:\Peach3\Labs\Png\bin\pngcheck.exe",
-			////    @"C:\Peach3\Labs\Png\sample.png",
-			////    bb);
-
-			////Console.WriteLine("Coverage: ");
-
-			////foreach (long i in coverage)
-			////{
-			////    Console.WriteLine(i.ToString());
-			////}
-
-			////return;
-
             var ms = new Minset();
             ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
             ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
@@ -152,24 +110,7 @@ namespace PeachMinset
                 var sampleFiles = GetFiles(samples);
 
                 Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
-                var traceFiles = ms.RunTraces(executable, arguments, sampleFiles, kill);
-
-                Console.WriteLine("[*] Moving trace files to trace folder...");
-
-                if (!Directory.Exists(traces))
-                    Directory.CreateDirectory(traces);
-
-				string newFilename = null;
-                foreach (string fileName in traceFiles)
-                {
-					newFilename = Path.Combine(traces, Path.GetFileName(fileName));
-                    Console.WriteLine("[-]   " + fileName + " -> " + newFilename);
-					
-					if(File.Exists(newFilename))
-						File.Delete(newFilename);
-
-					File.Move(fileName, newFilename);
-                }
+                var traceFiles = ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
 
                 Console.WriteLine("\n[*] Finished");
             }
@@ -188,8 +129,8 @@ namespace PeachMinset
 
 				foreach (string fileName in minsetFiles)
 				{
-					Console.WriteLine("[-]   " + fileName + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
-					File.Copy(fileName, Path.Combine(minset, Path.GetFileName(fileName)));
+					Console.WriteLine("[-]   " + Path.Combine(samples, Path.GetFileName(fileName)) + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
+					File.Copy(Path.Combine(samples, Path.GetFileName(fileName)), Path.Combine(minset, Path.GetFileName(fileName)));
 				}
 
 				Console.WriteLine("\n[*] Finished");
@@ -281,6 +222,14 @@ Syntax:
 
 Note:
   %s will be replaced by sample filename.
+
+
+Distributing Minset
+-------------------
+
+Minset can be distributed by splitting up the sample files and 
+distributing the collecting of traces to multiple machines.  The
+final compute minimum set cannot be distributed.
 
 ");
 

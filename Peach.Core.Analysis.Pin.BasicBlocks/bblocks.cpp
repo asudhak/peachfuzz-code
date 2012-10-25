@@ -69,18 +69,24 @@ static pair<set<ADDRINT>::iterator,bool> ret;
 // Do we have an existing bblocks trace?
 int haveExisting = FALSE;
 
+#ifdef TARGET_WINDOWS
+#define FMT "%u\n"
+#else
+#define FMT "%zu\n"
+#endif
+
 // Method called every time an instrumented bblock is executed
 VOID PIN_FAST_ANALYSIS_CALL rememberBlock(ADDRINT bbl)
 {
 	ret = setKnownBlocks.insert(bbl);
 	if(ret.second == true)
 	{
-		fprintf(trace, "%zu\n", (size_t)bbl);
+		fprintf(trace, FMT, (size_t)bbl);
 		fflush(trace);
 
 		if(haveExisting)
 		{
-			fprintf(existing, "%zu\n", (size_t)bbl);
+			fprintf(existing, FMT, (size_t)bbl);
 			fflush(existing);
 		}
 	}
@@ -120,7 +126,7 @@ int main(int argc, char * argv[])
 		haveExisting = TRUE;
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%zu\n", &block) < 4)
+			if(fscanf(existing, FMT, &block) < 4)
 				setExistingBlocks.insert(block);
 		}
 

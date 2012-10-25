@@ -43,9 +43,64 @@ namespace Peach.Core.Analysis
     /// </summary>
     public class CoverageImpl: Coverage
     {
+		/// <summary>
+		/// Temporary folder to store traces
+		/// </summary>
         string _traceFolder = null;
+
+		/// <summary>
+		/// Does our process need killing based on CPU time?
+		/// </summary>
         bool _needsKilling = false;
-		string _pin = "pin\\pin-2.12-54730-msvc10-windows\\pin_bat.bat";
+
+		/// <summary>
+		/// Executables for pin tools by OS and architecture.
+		/// </summary>
+		static Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>> pinExecutables = new Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>>();
+
+		/// <summary>
+		/// Pin tool dll by os and architecture.
+		/// </summary>
+		static Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>> pinTool = new Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>>();
+
+		/// <summary>
+		/// OS/Arch specific executable to run
+		/// </summary>
+		string _pin = null;
+
+		/// <summary>
+		/// Dynamic library pin tool
+		/// </summary>
+		string _pinTool = null;
+
+		static CoverageImpl()
+		{
+			pinExecutables.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
+			pinExecutables.Add(Platform.OS.Linux, new Dictionary<Platform.Architecture, string>());
+			pinExecutables.Add(Platform.OS.Mac, new Dictionary<Platform.Architecture, string>());
+
+			pinExecutables[Platform.OS.Windows][Platform.Architecture.x86] = @"pin\pin-2.12-54730-msvc10-windows\ia32\bin\pin.exe";
+			pinExecutables[Platform.OS.Windows][Platform.Architecture.x64] = @"pin\pin-2.12-54730-msvc10-windows\intel64\bin\pin.exe";
+
+			pinExecutables[Platform.OS.Linux][Platform.Architecture.x86] = @"pin/pin-2.12-54730-gcc.4.4.7-linux/ia32/bin/pinbin";
+			pinExecutables[Platform.OS.Linux][Platform.Architecture.x64] = @"pin/pin-2.12-54730-gcc.4.4.7-linux/intel64/bin/pinbin";
+
+			pinExecutables[Platform.OS.Mac][Platform.Architecture.x86] = @"pin/pin-2.12-54730-clang.3.0-mac/ia32/bin/pinbin";
+			pinExecutables[Platform.OS.Mac][Platform.Architecture.x64] = @"pin/pin-2.12-54730-clang.3.0-mac/intel64/bin/pinbin";
+
+			pinTool.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
+			pinTool.Add(Platform.OS.Linux, new Dictionary<Platform.Architecture, string>());
+			pinTool.Add(Platform.OS.Mac, new Dictionary<Platform.Architecture, string>());
+
+			pinTool[Platform.OS.Windows][Platform.Architecture.x86] = @"bblocks32.dll";
+			pinTool[Platform.OS.Windows][Platform.Architecture.x64] = @"bblocks64.dll";
+
+			pinTool[Platform.OS.Linux][Platform.Architecture.x86] = @"libbblocks32.so";
+			pinTool[Platform.OS.Linux][Platform.Architecture.x64] = @"libbblocks64.so";
+
+			pinTool[Platform.OS.Mac][Platform.Architecture.x86] = @"libbblocks32.dyn";
+			pinTool[Platform.OS.Mac][Platform.Architecture.x64] = @"libbblocks64.dyn";
+		}
 
         public CoverageImpl()
         {
@@ -55,9 +110,10 @@ namespace Peach.Core.Analysis
 
             Directory.CreateDirectory(_traceFolder);
 
-            if (File.Exists("bblocks.existing"))
-                File.Delete("bblocks.existing");
-        }
+			var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+			_pin = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.GetArch()]);
+			_pinTool = Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.GetArch()]);
+		}
 
         /// <summary>
         /// Collect all basic blocks in binary
@@ -84,20 +140,25 @@ namespace Peach.Core.Analysis
                 if (File.Exists("bblocks.out"))
                     File.Delete("bblocks.out");
 
-                if (basicBlocks != null && basicBlocks.Count > 0)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    foreach (ulong block in basicBlocks)
-                        sb.AppendLine(block.ToString());
+				// This is intended to disable this feature.
+				// We currently want all trace files to be "masters" and not
+				// diffs.  This will make it easy to distrubute out using
+				// Peach Farm.
+				if (File.Exists("bblocks.existing"))
+					File.Delete("bblocks.existing");
 
-                    File.WriteAllText("bblocks.existing", sb.ToString());
-                }
+				//if (basicBlocks != null && basicBlocks.Count > 0)
+				//{
+				//    StringBuilder sb = new StringBuilder();
+				//    foreach (ulong block in basicBlocks)
+				//        sb.AppendLine(block.ToString());
 
-                var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+				//    File.WriteAllText("bblocks.existing", sb.ToString());
+				//}
 
                 var psi = new ProcessStartInfo();
-                psi.Arguments = "-t bblocks.dll -- " + executable + " " + arguments;
-                psi.FileName = Path.Combine(peachBinaries, _pin);
+                psi.Arguments = "-t " + _pinTool + " -- " + executable + " " + arguments;
+                psi.FileName = _pin;
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = true;
 
@@ -139,7 +200,12 @@ namespace Peach.Core.Analysis
             {
                 if (File.Exists("bblocks.out"))
                     File.Delete("bblocks.out");
-            }
+
+				// See comments at top of function regarding
+				// removing this file on every iteration.
+				if (File.Exists("bblocks.existing"))
+					File.Delete("bblocks.existing");
+			}
         }
 
 		public override void Dispose()

@@ -54,7 +54,16 @@ namespace Peach.Core
 		static private bool mIsMac;
 		
 		public enum OS { Windows, Mac, Linux, unknown };
-		
+		public enum Architecture { x64, x86 };
+
+		static public Architecture GetArch()
+		{
+			if (IntPtr.Size == 64)
+				return Architecture.x64;
+
+			return Architecture.x86;
+		}
+
 		static public OS GetOS()
 		{
 			if (mIsWindows = (System.IO.Path.DirectorySeparatorChar == '\\')) return OS.Windows;
@@ -62,6 +71,8 @@ namespace Peach.Core
 			if (!mIsMac && System.Environment.OSVersion.Platform == PlatformID.Unix) return OS.Linux;
 			return OS.unknown;
 		}
+
+
 		//From Managed.Windows.Forms/XplatUI
 		static bool IsRunningOnMac()
 		{
