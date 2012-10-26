@@ -19,9 +19,7 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(System.IO.Stream data)
 		{
-			string str = Utilities.HexDump(data, BytesPerLine);
-			byte[] buff = System.Text.Encoding.ASCII.GetBytes(str);
-			stream.Write(buff, 0, buff.Length);
+			Utilities.HexDump(data, stream, BytesPerLine);
 		}
 	}
 }
