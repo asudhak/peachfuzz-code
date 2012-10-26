@@ -143,6 +143,10 @@ namespace Peach.Core.MutationStrategies
 
 		void Action_Starting(Core.Dom.Action action)
 		{
+			// Is this a supported action?
+			if (!(action.type == ActionType.Output || action.type == ActionType.SetProperty || action.type == ActionType.Call))
+				return;
+
 			if (_iteration == 0)
 			{
 				RecordDataSet(action);
