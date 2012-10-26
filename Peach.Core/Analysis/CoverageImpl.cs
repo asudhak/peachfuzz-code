@@ -63,16 +63,6 @@ namespace Peach.Core.Analysis
 		/// </summary>
 		static Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>> pinTool = new Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>>();
 
-		/// <summary>
-		/// OS/Arch specific executable to run
-		/// </summary>
-		string _pin = null;
-
-		/// <summary>
-		/// Dynamic library pin tool
-		/// </summary>
-		string _pinTool = null;
-
 		static CoverageImpl()
 		{
 			pinExecutables.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
@@ -110,11 +100,6 @@ namespace Peach.Core.Analysis
                 _traceFolder = Guid.NewGuid().ToString();
 
             Directory.CreateDirectory(_traceFolder);
-
-			var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			//_pin = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.GetArch()]);
-			_pin = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x86]);
-			_pinTool = Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.GetArch()]);
 		}
 
         /// <summary>
@@ -170,7 +155,7 @@ namespace Peach.Core.Analysis
 					Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.Architecture.x64]),
 					executable, arguments);
 
-				psi.FileName = _pin;
+				psi.FileName = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x86]);
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
 
