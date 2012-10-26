@@ -112,7 +112,8 @@ namespace Peach.Core.Analysis
             Directory.CreateDirectory(_traceFolder);
 
 			var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			_pin = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.GetArch()]);
+			//_pin = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.GetArch()]);
+			_pin = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x86]);
 			_pinTool = Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.GetArch()]);
 		}
 
@@ -157,11 +158,21 @@ namespace Peach.Core.Analysis
 				//    File.WriteAllText("bblocks.existing", sb.ToString());
 				//}
 
+				var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
                 var psi = new ProcessStartInfo();
-                psi.Arguments = "-t " + _pinTool + " -- " + executable + " " + arguments;
-                psi.FileName = _pin;
+				
+				//psi.Arguments = "-t " + _pinTool + " -- " + executable + " " + arguments;
+				psi.Arguments = string.Format("-p32 {0} -p64 {1} -t {2} -t64 {3} -- {4} {5}",
+					Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x86]),
+					Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x64]),
+					Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.Architecture.x86]),
+					Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.Architecture.x64]),
+					executable, arguments);
+
+				psi.FileName = _pin;
                 psi.CreateNoWindow = true;
-                psi.UseShellExecute = true;
+                psi.UseShellExecute = false;
 
                 var proc = new Process();
                 proc.StartInfo = psi;
@@ -176,6 +187,12 @@ namespace Peach.Core.Analysis
                 {
                     proc.WaitForExit();
                 }
+
+				if (!File.Exists("bblocks.out"))
+				{
+					Console.Error.WriteLine(psi.FileName);
+					Console.Error.WriteLine(psi.Arguments);
+				}
 
                 List<ulong> blocks = new List<ulong>();
                 using (StreamReader rin = new StreamReader("bblocks.out"))

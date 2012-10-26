@@ -130,7 +130,7 @@ namespace PeachMinset
 				foreach (string fileName in minsetFiles)
 				{
 					Console.WriteLine("[-]   " + Path.Combine(samples, Path.GetFileName(fileName)) + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
-					File.Copy(Path.Combine(samples, Path.GetFileName(fileName)), Path.Combine(minset, Path.GetFileName(fileName)));
+					File.Copy(Path.Combine(samples, Path.GetFileName(fileName)), Path.Combine(minset, Path.GetFileName(fileName)), true);
 				}
 
 				Console.WriteLine("\n[*] Finished");
