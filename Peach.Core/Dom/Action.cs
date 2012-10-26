@@ -403,6 +403,11 @@ namespace Peach.Core.Dom
 					publisher = context.test.publishers[0];
 				}
 
+				if (context.controlIteration && context.controlRecordingIteration)
+					context.controlRecordingActionsExecuted.Add(this);
+				else if(context.controlIteration)
+					context.controlActionsExecuted.Add(this);
+
 				OnStarting();
 
 				switch (type)

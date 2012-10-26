@@ -37,11 +37,6 @@ namespace Peach
 {
 	public class ConsoleWatcher : Watcher
 	{
-		protected override void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
-		{
-			Console.WriteLine(string.Format("DBG[{0}] {1}: {2}", level.ToString(), from, msg));
-		}
-
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
 		{
 			var color = Console.ForegroundColor;
