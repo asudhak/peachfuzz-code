@@ -8,6 +8,8 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using Peach.Core.Publishers;
+using NLog;
 
 namespace Peach.Core.Test.Mutators
 {
@@ -128,6 +130,69 @@ namespace Peach.Core.Test.Mutators
                 Assert.NotNull((byte[])item);
             }
         }
+
+		class FixedInputPublisher : StreamPublisher
+		{
+			private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+			protected override NLog.Logger Logger { get { return logger; } }
+
+			byte[] buffer = new byte[] { 0, 1, 2, 3 };
+
+			public FixedInputPublisher()
+				: base(new Dictionary<string, Variant>())
+			{
+				this.stream = new MemoryStream();
+			}
+
+			protected override void OnInput()
+			{
+				stream = new MemoryStream(buffer);
+			}
+
+			protected override void OnOutput(Stream data)
+			{
+			}
+		}
+
+		[Test]
+		public void InputTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"       <Number name=\"num\" size=\"8\" maxOccurs=\"4\"/>" +
+				"   </DataModel>" +
+
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"input\">" +
+				"               <DataModel ref=\"TheDataModel\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
+
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Null\"/>" +
+				"       <Strategy class=\"Sequential\"/>" +
+				"   </Test>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("ArrayNumericalEdgeCasesMutator");
+			dom.tests[0].publishers[0] = new FixedInputPublisher();
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+		}
+
     }
 }
 

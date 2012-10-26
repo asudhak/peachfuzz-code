@@ -98,8 +98,9 @@ namespace Peach.Core.Analysis
 			pinTool[Platform.OS.Linux][Platform.Architecture.x86] = @"libbblocks32.so";
 			pinTool[Platform.OS.Linux][Platform.Architecture.x64] = @"libbblocks64.so";
 
-			pinTool[Platform.OS.Mac][Platform.Architecture.x86] = @"libbblocks32.dyn";
-			pinTool[Platform.OS.Mac][Platform.Architecture.x64] = @"libbblocks64.dyn";
+			// OSX supports fat binaries
+			pinTool[Platform.OS.Mac][Platform.Architecture.x86] = @"libbblocks.dylib";
+			pinTool[Platform.OS.Mac][Platform.Architecture.x64] = @"libbblocks.dylib";
 		}
 
         public CoverageImpl()
