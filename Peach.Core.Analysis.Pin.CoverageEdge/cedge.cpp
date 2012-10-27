@@ -66,6 +66,14 @@ static pair<set<ADDRINT>::iterator,bool> ret;
 // Do we have an existing bblocks trace?
 int haveExisting = FALSE;
 
+#if defined(TARGET_IA32)
+#define FMT "%u\n"
+#elif defined(TARGET_IA32E)
+#define FMT "%llu\n"
+#else
+#error TARGET_IA32 or TARGET_IA32E must be defined
+#endif
+
 VOID handleInsertCall( ADDRINT src, ADDRINT dst, INT32 taken )
 {
 	src;
@@ -115,7 +123,7 @@ VOID Fini(INT32 code, VOID *v)
 	{
 		for (set<ADDRINT>::iterator i = setKnownBlocks.begin(); i!=setKnownBlocks.end(); ++i)
 		{
-			fprintf(existing, "%16.16zx\n", (size_t)*i);
+			fprintf(existing, FMT, *i);
 		}
 
 		fclose(existing);
@@ -127,7 +135,7 @@ VOID Fini(INT32 code, VOID *v)
 	{
 		for (set<ADDRINT>::iterator i = setUnknownBlocks.begin(); i != setUnknownBlocks.end(); ++i)
 		{
-			fprintf(existing, "%16.16zx\n", (size_t)*i);
+			fprintf(existing, FMT, *i);
 		}
 
 		fclose(existing);
@@ -146,7 +154,7 @@ int main(int argc, char * argv[])
 	{
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%zx\n", &block) < 4)
+			if(fscanf(existing, FMT, &block) < 4)
 				setKnownBlocks.insert(block);
 		}
 		
@@ -160,7 +168,7 @@ int main(int argc, char * argv[])
 	{
 		while(!feof(existing))
 		{
-			if(fscanf(existing, "%zx\n", &block) < 4)
+			if(fscanf(existing, FMT, &block) < 4)
 				setUnknownBlocks.insert(block);
 		}
 
