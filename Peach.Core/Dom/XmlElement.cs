@@ -117,7 +117,7 @@ namespace Peach.Core.Dom
 				}
 				else if (child is String)
 				{
-					xmlNode.Value = (string)child.InternalValue;
+					xmlNode.InnerText = (string)child.InternalValue;
 				}
 				else if (child is XmlElement)
 				{

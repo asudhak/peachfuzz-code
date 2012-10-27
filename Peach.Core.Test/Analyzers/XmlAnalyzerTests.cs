@@ -66,6 +66,37 @@ namespace Peach.Core.Test.Analyzers
 
             Assert.AreEqual("Root", elem1.elementName);
         }
+
+		[Test]
+		public void AdvancedTest()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+	<DataModel name=""TheDataModel"">
+
+		<String value=""&lt;Root&gt;
+		                &lt;Element1 attrib1=&quot;Attrib1Value&quot;&gt;
+		                Hello
+		                &lt;/Element1&gt;
+		                &lt;/Root&gt;"">
+			<Analyzer class=""Xml""/>
+		</String>
+
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.IsTrue(dom.dataModels["TheDataModel"][0] is Dom.XmlElement);
+
+			var elem1 = dom.dataModels["TheDataModel"][0] as Dom.XmlElement;
+
+			Assert.AreEqual("Root", elem1.elementName);
+
+			var result = dom.dataModels[0].Value;
+			Assert.NotNull(result);
+		}
     }
 }
 
