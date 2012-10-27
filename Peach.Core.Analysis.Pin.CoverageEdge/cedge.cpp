@@ -67,11 +67,15 @@ static pair<set<ADDRINT>::iterator,bool> ret;
 int haveExisting = FALSE;
 
 #if defined(TARGET_IA32)
-#define FMT "%u\n"
+# define FMT "%u\n"
 #elif defined(TARGET_IA32E)
-#define FMT "%llu\n"
+# if defined(TARGET_LINUX)
+#  define FMT "%lu\n"
+# else
+#  define FMT "%llu\n"
+# endif
 #else
-#error TARGET_IA32 or TARGET_IA32E must be defined
+# error TARGET_IA32 or TARGET_IA32E must be defined
 #endif
 
 VOID handleInsertCall( ADDRINT src, ADDRINT dst, INT32 taken )
