@@ -130,6 +130,57 @@ namespace Peach.Core.Test.Mutators
                 Assert.AreEqual(i, dataModels[i][1].Value.Value.Length);
             }
         }
+
+
+
+		[Test]
+		public void TestEmptyValue()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"       <String name=\"sizeRelation1\">" +
+				"           <Relation type=\"size\" of=\"string1\" expressionSet=\"size + 10\"/>" +
+				"       </String>" +
+				"       <String name=\"string1\" value=\"\"/>" +
+				"   </DataModel>" +
+
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
+
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Null\"/>" +
+				"       <Strategy class=\"Sequencial\"/>" +
+				"   </Test>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("SizedDataVaranceMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			// verify values
+			Assert.Greater(dataModels.Count, 1);
+			foreach (var item in dataModels)
+			{
+				Assert.AreEqual(Variant.VariantType.Long, item[0].InternalValue.GetVariantType());
+				long len = (long)item[0].InternalValue;
+				Assert.GreaterOrEqual(len, 10);
+			}
+		}
     }
 }
 

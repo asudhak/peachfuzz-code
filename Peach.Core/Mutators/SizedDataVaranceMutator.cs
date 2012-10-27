@@ -188,7 +188,7 @@ namespace Peach.Core.Mutators
                 for (int i = 0; i < n; ++i)
                     newData.Add(data[i]);
             }
-            else if (size == 0)
+            else if (data.Length == 0)
             {
                 // fill in with A's
                 for (int i = 0; i < n; ++i)
