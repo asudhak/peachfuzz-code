@@ -146,9 +146,9 @@ namespace Peach.Core.MutationStrategies
 			if (!(action.type == ActionType.Output || action.type == ActionType.SetProperty || action.type == ActionType.Call))
 				return;
 
-			if (_iteration > 0)
+			if (_iteration > 0 && !_context.controlIteration)
 				MutateDataModel(action);
-			else
+			else if(_iteration == 0)
 				RecordDataModel(action);
 		}
 

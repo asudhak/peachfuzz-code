@@ -47,10 +47,6 @@ namespace PeachFuzzBang
 			_form = form;
 		}
 
-		protected override void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
-		{
-		}
-
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faultData)
 		{
 			_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),

@@ -36,6 +36,8 @@ using System.Threading;
 using Peach.Core.Agent;
 using Peach.Core.Dom;
 
+using NLog;
+
 namespace Peach.Core
 {
 	/// <summary>
@@ -43,6 +45,8 @@ namespace Peach.Core
 	/// </summary>
 	public class Engine
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public Watcher watcher = null;
 		public RunContext context = null;
 		public RunConfiguration config = null;
@@ -238,7 +242,7 @@ namespace Peach.Core
 
 				if (context.config.range)
 				{
-					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+					logger.Debug("Engine::runTest",
 						"context.config.range == true, start: " +
 						context.config.rangeStart +
 						", stop: " +
@@ -249,18 +253,24 @@ namespace Peach.Core
 				}
 				else if (context.config.singleIteration)
 				{
-					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+					logger.Debug("Engine::runTest",
 						"context.config.singleIteration == true");
 
 					iterationStop = 1;
 				}
 				else if (context.config.skipToIteration > 0)
 				{
-					context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+					logger.Debug("Engine::runTest",
 						"context.config.skipToIteration == " + 
 						context.config.skipToIteration);
 
 					iterationStart = context.config.skipToIteration;
+				}
+
+				if (iterationCount == 0)
+				{
+					context.controlIteration = true;
+					context.controlRecordingIteration = true;
 				}
 
 				OnTestStarting(context);
@@ -297,7 +307,7 @@ namespace Peach.Core
 							// They indicate we should move to the next
 							// iteration.
 
-							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							logger.Debug("Engine::runTest",
 								"SoftException, skipping to next iteration");
 						}
 						catch (PathException)
@@ -306,12 +316,12 @@ namespace Peach.Core
 							// They indicate we should move to the next
 							// iteration.
 
-							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							logger.Debug("Engine::runTest",
 								"PathException, skipping to next iteration");
 						}
 						catch (System.OutOfMemoryException)
 						{
-							context.DebugMessage(DebugLevel.Warning, "Engine::runTest", 
+							logger.Debug("Engine::runTest", 
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
 						}
 						finally
@@ -320,6 +330,81 @@ namespace Peach.Core
 
 							if (IterationFinished != null)
 								IterationFinished(context, iterationCount);
+
+							// If this was a control iteration, verify it againt our origional
+							// recording.
+							if (context.controlRecordingIteration == false && context.controlIteration)
+							{
+								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
+								{
+									context.continueFuzzing = false;
+
+									Fault fault = new Fault();
+									fault.detectionSource = "PeachControlIteration";
+									fault.iteration = iterationCount;
+									fault.title = "Peach Control Iteration Failed";
+									fault.description = @"The Peach control iteration performed failed
+to execute same as initial control.  Number of actions is different.";
+									fault.folderName = "ControlIteration";
+									fault.type = FaultType.Fault;
+								}
+								else if (context.controlRecordingStatesExecuted.Count != context.controlStatesExecuted.Count)
+								{
+									context.continueFuzzing = false;
+
+									Fault fault = new Fault();
+									fault.detectionSource = "PeachControlIteration";
+									fault.iteration = iterationCount;
+									fault.title = "Peach Control Iteration Failed";
+									fault.description = @"The Peach control iteration performed failed
+to execute same as initial control.  Number of states is different.";
+									fault.folderName = "ControlIteration";
+									fault.type = FaultType.Fault;
+								}
+
+								if(context.faults.Count == 0)
+								{
+									foreach (Dom.Action action in context.controlRecordingActionsExecuted)
+									{
+										if (!context.controlActionsExecuted.Contains(action))
+										{
+											context.continueFuzzing = false;
+
+											Fault fault = new Fault();
+											fault.detectionSource = "PeachControlIteration";
+											fault.iteration = iterationCount;
+											fault.title = "Peach Control Iteration Failed";
+											fault.description = @"The Peach control iteration performed failed
+to execute same as initial control.  Action " + action.name + " was not performed.";
+											fault.folderName = "ControlIteration";
+											fault.type = FaultType.Fault;
+										}
+									}
+								}
+
+								if(context.faults.Count == 0)
+								{
+									foreach (Dom.State state in context.controlRecordingStatesExecuted)
+									{
+										if (!context.controlStatesExecuted.Contains(state))
+										{
+											context.continueFuzzing = false;
+
+											Fault fault = new Fault();
+											fault.detectionSource = "PeachControlIteration";
+											fault.iteration = iterationCount;
+											fault.title = "Peach Control Iteration Failed";
+											fault.description = @"The Peach control iteration performed failed
+to execute same as initial control.  State " + state.name + "was not performed.";
+											fault.folderName = "ControlIteration";
+											fault.type = FaultType.Fault;
+										}
+									}
+								}
+							}
+
+							context.controlIteration = false;
+							context.controlRecordingIteration = false;
 						}
 
 						// User can specify a time to wait between iterations
@@ -340,7 +425,7 @@ namespace Peach.Core
 
 						if (context.faults.Count > 0)
 						{
-							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							logger.Debug("Engine::runTest",
 								"detected fault on iteration " + iterationCount);
 
                             foreach (Fault fault in context.faults)
@@ -364,7 +449,7 @@ namespace Peach.Core
 								context.reproducingFault = false;
 								context.reproducingIterationJumpCount = 1;
 
-								context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								logger.Debug("Engine::runTest",
 									"Reproduced fault, continuing fuzzing at iteration " + iterationCount);
 							}
 						}
@@ -375,7 +460,7 @@ namespace Peach.Core
 
 							if (context.reproducingInitialIteration - iterationCount > context.reproducingMaxBacksearch)
 							{
-								context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								logger.Debug("Engine::runTest",
 									"Giving up reproducing fault, reached max backsearch.");
 
 								context.reproducingFault = false;
@@ -383,7 +468,7 @@ namespace Peach.Core
 							}
 							else
 							{
-								context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+								logger.Debug("Engine::runTest",
 									"Moving backwards " + context.reproducingIterationJumpCount + " iterations to reproduce fault.");
 							}
 
@@ -393,7 +478,7 @@ namespace Peach.Core
 
 						if (context.agentManager.MustStop())
 						{
-							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							logger.Debug("Engine::runTest",
 								"agents say we must stop!");
 
 							throw new PeachException("Error, agent monitor stopped run!");
@@ -425,7 +510,7 @@ namespace Peach.Core
 					{
 						if (rtex.ReproducingFault)
 						{
-							context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+							logger.Debug("Engine::runTest",
 								"Attempting to reproduce fault.");
 
 							context.reproducingFault = true;
@@ -443,12 +528,12 @@ namespace Peach.Core
 								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
 						}
 
-						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+						logger.Debug("Engine::runTest",
 							"replaying iteration " + iterationCount);
 					}
 					catch (RedoIterationException rte)
 					{
-						context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+						logger.Debug("Engine::runTest",
 							"redoing test iteration for the " + redoCount + " time.");
 
 						// Repeat the same iteration unless
@@ -464,7 +549,7 @@ namespace Peach.Core
 			catch (MutatorCompleted)
 			{
 				// Ignore, signals end of fuzzing run
-				context.DebugMessage(DebugLevel.DebugNormal, "Engine::runTest",
+				logger.Debug("Engine::runTest",
 					"MutatorCompleted exception, ending fuzzing");
 			}
 			// TODO: Catch keyboard interrupt

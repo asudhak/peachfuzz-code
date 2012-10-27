@@ -38,11 +38,13 @@ using Peach.Core.Dom;
 
 namespace Peach.Core
 {
+	/// <summary>
+	/// Contains state information regarding the current fuzzing run.
+	/// </summary>
 	[Serializable]
 	public class RunContext
 	{
-		public delegate void DebugEventHandler(DebugLevel level, RunContext context, string from, string msg);
-		public event DebugEventHandler Debug;
+		#region Events
 
         public delegate void CollectFaultsHandler(RunContext context);
 
@@ -58,32 +60,96 @@ namespace Peach.Core
                 CollectFaults(this);
         }
 
-		public void CriticalMessage(string from, string msg)
-		{
-			if (Debug != null)
-				Debug(DebugLevel.Critical, this, from, msg);
-		}
+		#endregion
 
-		public void WarningMessage(string from, string msg)
-		{
-			if (Debug != null)
-				Debug(DebugLevel.Warning, this, from, msg);
-		}
-
-		public void DebugMessage(DebugLevel level, string from, string msg)
-		{
-			if (config.debug && Debug != null)
-				Debug(level, this, from, msg);
-		}
-
+		/// <summary>
+		/// Configuration settings for this run
+		/// </summary>
 		public RunConfiguration config = null;
+
+		/// <summary>
+		/// Dom to use for this run
+		/// </summary>
 		public Dom.Dom dom = null;
+
+		/// <summary>
+		/// Current test being run
+		/// </summary>
+		/// <remarks>
+		/// Currently the Engine code sets this.
+		/// </remarks>
 		public Test test = null;
+
+		/// <summary>
+		/// Current agent manager for this run.
+		/// </summary>
+		/// <remarks>
+		/// Currently the Engine code sets this.
+		/// </remarks>
 		public AgentManager agentManager = null;
 
 		public bool needDataModel = true;
 
-        /// <summary>
+		#region Control Iterations
+
+		/// <summary>
+		/// Is this a control iteration.  Control iterations are used
+		/// to verify the system can still reliably fuzz and are performed
+		/// with out any mutations applied.
+		/// </summary>
+		/// <remarks>
+		/// The first iteration is a special control iteration.  We also
+		/// perform control iterations after we have collected a fault.
+		/// 
+		/// In later version we will likely inject control iterations every 
+		/// N iterations where N is >= 100.
+		/// </remarks>
+		public bool controlIteration = false;
+
+		/// <summary>
+		/// Is this control operation also a recording iteration?
+		/// </summary>
+		/// <remarks>
+		/// Recording iterations set our controlActionsExecuted and 
+		/// controlStatesExecuted arrays.
+		/// </remarks>
+		public bool controlRecordingIteration = false;
+
+		/// <summary>
+		/// Actions performed during first control iteration.  Used to validate
+		/// control iterations that come later have same action coverage.
+		/// </summary>
+		public List<Dom.Action> controlRecordingActionsExecuted = new List<Dom.Action>();
+
+		/// <summary>
+		/// States performed during first control iteration.  Used to validate
+		/// control iterations that come later have same state coverage.
+		/// </summary>
+		/// <remarks>
+		/// This may not be required with action coverage.
+		/// </remarks>
+		public List<Dom.State> controlRecordingStatesExecuted = new List<State>();
+
+		/// <summary>
+		/// Actions performed during later control iterations.  Used to validate
+		/// control iterations that come later have same action coverage.
+		/// </summary>
+		public List<Dom.Action> controlActionsExecuted = new List<Dom.Action>();
+
+		/// <summary>
+		/// States performed during later control iterations.  Used to validate
+		/// control iterations that come later have same state coverage.
+		/// </summary>
+		/// <remarks>
+		/// This may not be required with action coverage.
+		/// </remarks>
+		public List<Dom.State> controlStatesExecuted = new List<State>();
+
+		#endregion
+
+		#region Faults
+
+		/// <summary>
         /// Faults for current iteration of fuzzing.  This collection
         /// is cleared after each iteration.
         /// </summary>
@@ -98,6 +164,8 @@ namespace Peach.Core
 		/// by UI code to stop Peach.
 		/// </summary>
 		public bool continueFuzzing = true;
+
+		#endregion
 
 		#region Reproduce Fault
 

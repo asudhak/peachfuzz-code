@@ -237,7 +237,7 @@ namespace Peach.Core.Dom
 		private Variant _internalValue;
 		private BitStream _value;
 
-		protected bool _invalidated = false;
+		private bool _invalidated = false;
 
 		/// <summary>
 		/// Does this element have a defined length?
@@ -274,7 +274,7 @@ namespace Peach.Core.Dom
 
 		public abstract void Crack(DataCracker context, BitStream data);
 
-		protected virtual void OnInvalidated(EventArgs e)
+		protected void OnInvalidated(EventArgs e)
 		{
 			// Prevent infinite loops
 			if (_invalidated)
@@ -712,7 +712,7 @@ namespace Peach.Core.Dom
 				{
 					var internalValue = GenerateInternalValue();
 
-					if (_writeValueCache)
+					if (CacheValue)
 						_internalValue = internalValue;
 
 					return internalValue;
@@ -743,17 +743,15 @@ namespace Peach.Core.Dom
 				{
 					if (_value == null || _invalidated || !_readValueCache)
 					{
-						// If we have recursed onto ourselves, turn off caching of results
-						if (_recursionDepth++ > 0)
-							_writeValueCache = false;
+						_recursionDepth++;
 
 						var value = GenerateValue();
 						_invalidated = false;
 
-						_recursionDepth--;
-
-						if (_writeValueCache)
+						if (CacheValue)
 							_value = value;
+
+						_recursionDepth--;
 
 						return value;
 					}
@@ -766,6 +764,28 @@ namespace Peach.Core.Dom
 					_writeValueCache = oldWriteCache;
 					_readValueCache = oldReadCache;
 				}
+			}
+		}
+
+		private bool CacheValue
+		{
+			get
+			{
+				if (!_writeValueCache || _recursionDepth > 1)
+					return false;
+
+				if (_fixup != null)
+				{
+					// The root can't have a fixup!
+					System.Diagnostics.Debug.Assert(_parent != null);
+
+					// We can only have a valid fixup value when the parent
+					// has not recursed onto itself
+					if (_parent._recursionDepth > 1)
+						return false;
+				}
+
+				return true;
 			}
 		}
 
@@ -847,11 +867,19 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
+		/// How many times GenerateValue has been called on this element
+		/// </summary>
+		/// <returns></returns>
+		public uint GenerateCount { get; private set; }
+
+		/// <summary>
 		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
 		public BitStream GenerateValue()
 		{
+			++GenerateCount;
+
 			BitStream value = null;
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)

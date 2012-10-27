@@ -174,7 +174,7 @@ namespace Peach.Core.Publishers
 					else
 					{
 						if (Logger.IsDebugEnabled)
-							Logger.Debug("\n" + Utilities.HexDump(_recvBuffer));
+							Logger.Debug("\n" + Utilities.FormatAsPrettyHex(buf, offset, size));
 
 						// Got a valid packet
 						return;
@@ -235,7 +235,7 @@ namespace Peach.Core.Publishers
 			}
 
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n" + Utilities.HexDump(stream));
+				Logger.Debug("\n" + Utilities.FormatAsPrettyHex(buf, offset));
 
 			try
 			{

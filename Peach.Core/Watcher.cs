@@ -54,7 +54,6 @@ namespace Peach.Core
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 			engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
 			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
-			context.Debug += new RunContext.DebugEventHandler(RunContext_Debug);
 
 			MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
@@ -111,10 +110,6 @@ namespace Peach.Core
 		}
 
 		protected virtual void StateModel_Starting(StateModel model)
-		{
-		}
-
-		protected virtual void RunContext_Debug(DebugLevel level, RunContext context, string from, string msg)
 		{
 		}
 

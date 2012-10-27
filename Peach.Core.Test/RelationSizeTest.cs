@@ -324,6 +324,79 @@ namespace Peach.Core.Test
 			byte[] expected = Encoding.ASCII.GetBytes("\x01\x01\x10\x00Hello World!");
 			Assert.AreEqual(expected, val.Value);
 		}
+
+		Dictionary<string, object> SpeedTest(uint repeat)
+		{
+			// When the data element duplicator clones blockData multiple times,
+			// it becomes painfully slow to evaulate the final value of DM3
+
+			string outter_xml = @"
+<Peach>
+
+<DataModel name=""DM3"">
+	<Number name=""tag"" size=""16"" signed=""false"" endian=""big"">
+		<Fixup class=""Crc32Fixup"">
+			<Param name=""ref"" value=""blockData""/>
+		</Fixup>
+	</Number>
+{0}
+</DataModel>
+
+</Peach>
+";
+
+			string inner_xml = @"
+	<Block name=""blockData{0}"">
+		<Number name=""CommandSize"" size=""32"" signed=""false"" endian=""big"">
+			<Relation type=""size"" of=""DM3"" />
+		</Number>
+		<Number name=""CommandCode"" size=""32"" signed=""false"" endian=""big"">
+			<Transformer class=""Md5""/>
+		</Number>
+	</Block>
+";
+
+			StringBuilder sb = new StringBuilder();
+			sb.Append(string.Format(inner_xml, ""));
+			for (int i = 0; i < repeat; ++i)
+			{
+				sb.Append(string.Format(inner_xml, "_" + i));
+			}
+
+			string xml = string.Format(outter_xml, sb.ToString());
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.AreEqual(1, dom.dataModels.Count);
+
+			int start = Environment.TickCount;
+
+			var value = dom.dataModels[0].Value;
+
+			int end = Environment.TickCount;
+
+			Assert.NotNull(value);
+
+			TimeSpan delta = TimeSpan.FromMilliseconds(end - start);
+
+			Dictionary<string, object> ret = new Dictionary<string, object>();
+			ret["delta"] = delta;
+			ret["count"] = dom.dataModels[0].GenerateCount;
+			return ret;
+		}
+
+		[Test]
+		public void MeasureSpeed()
+		{
+			for (uint i = 0; i <= 50; i += 10)
+			{
+				var ret = SpeedTest(i);
+				TimeSpan delta = (TimeSpan)ret["delta"];
+				uint count = (uint)ret["count"];
+				Assert.LessOrEqual(delta, TimeSpan.FromSeconds(30));
+				Assert.AreEqual(count, i + 2);
+			}
+		}
 	}
 }
 

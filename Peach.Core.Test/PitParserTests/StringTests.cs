@@ -68,6 +68,111 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
+		public void Utf7Test()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf7\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf7, str.stringType);
+			Assert.AreEqual("abc", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(Encoding.UTF7.GetBytes("abc"), value.Value);
+		}
+
+		[Test]
+		public void Utf8Test()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf8\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf8, str.stringType);
+			Assert.AreEqual("abc", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(Encoding.UTF8.GetBytes("abc"), value.Value);
+		}
+
+		[Test]
+		public void Utf16Test()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf16\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf16, str.stringType);
+			Assert.AreEqual("abc", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(Encoding.Unicode.GetBytes("abc"), value.Value);
+		}
+
+		[Test]
+		public void Utf16BeTest()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf16be\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf16be, str.stringType);
+			Assert.AreEqual("abc", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(Encoding.BigEndianUnicode.GetBytes("abc"), value.Value);
+		}
+
+		[Test]
+		public void Utf32Test()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"utf32\" value=\"abc\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
+			Assert.AreEqual("abc", (string)str.DefaultValue);
+
+			BitStream value = str.Value;
+			Assert.AreEqual(Encoding.UTF32.GetBytes("abc"), value.Value);
+		}
+
+		[Test]
 		public void HexStringTest()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +

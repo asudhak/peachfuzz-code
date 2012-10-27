@@ -152,7 +152,7 @@ namespace Peach.Core.MutationStrategies
 				RecordDataSet(action);
 				RecordDataModel(action);
 			}
-			else
+			else if (!_context.controlIteration)
 			{
 				SyncDataSet(action);
 				MutateDataModel(action);

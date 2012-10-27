@@ -91,7 +91,13 @@ namespace Peach.Core.Dom
 		{
 			try
 			{
+				if (context.controlIteration && context.controlRecordingIteration)
+					context.controlRecordingStatesExecuted.Add(this);
+				else if(context.controlIteration)
+					context.controlStatesExecuted.Add(this);
+
 				OnStarting();
+
 				foreach (Action action in actions)
 				{
 					action.Run(context);

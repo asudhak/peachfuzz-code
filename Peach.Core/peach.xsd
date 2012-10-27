@@ -348,25 +348,35 @@
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
-						<xs:enumeration value="char">
+						<xs:enumeration value="ascii">
 							<xs:annotation>
 								<xs:documentation>Single byte characters</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
-						<xs:enumeration value="wchar">
+						<xs:enumeration value="utf16">
 							<xs:annotation>
 								<xs:documentation>Double byte characters as commonly used with Windows
 								applications</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
-						<xs:enumeration value="utf8">
+						<xs:enumeration value="utf16be">
 							<xs:annotation>
-								<xs:documentation>Multibyte unicode characters encoded in utf-8</xs:documentation>
+								<xs:documentation>Multibyte unicode characters encoded in utf-16 big endian</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
 						<xs:enumeration value="utf32">
 							<xs:annotation>
 								<xs:documentation>Multibyte unicode characters encoded in utf-32</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="utf7">
+							<xs:annotation>
+								<xs:documentation>Multibyte unicode characters encoded in utf-7</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="utf8">
+							<xs:annotation>
+								<xs:documentation>Multibyte unicode characters encoded in utf-8</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
 					</xs:restriction>
