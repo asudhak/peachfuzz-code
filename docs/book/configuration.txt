@@ -448,7 +448,7 @@ Though several calls to 'stash' can be made, the copies made are shallow, which 
 [source,python]
 ---------------
 def configure(ctx):
-	ctx.env.CFLAGS += ['-O2']
+	ctx.env.CFLAGS.append('-O2')
 ---------------
 
 The methods should always be used instead:
