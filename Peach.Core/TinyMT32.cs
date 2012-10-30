@@ -20,6 +20,9 @@ namespace Peach.Core
 		private static int SH8 = 8;
 
 		private static uint MASK = 0x7fffffff;
+
+		private static double DENOMINATOR = (double)uint.MaxValue + 1;
+
 		#endregion
 
 		#region Members
@@ -51,10 +54,10 @@ namespace Peach.Core
 			return temper();
 		}
 
-		// Generates a float X where 0 <= X < 1.0
-		public float GenerateFloat()
+		// Generates a double X where 0 <= X < 1.0
+		public double Sample()
 		{
-			return GenerateUInt() * 1.0f / 4294967296.0f;
+			return GenerateUInt() * 1.0 / DENOMINATOR;
 		}
 		#endregion
 

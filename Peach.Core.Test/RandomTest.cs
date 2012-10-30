@@ -106,7 +106,7 @@ namespace Peach.Core.Test
 				"0.0908061", "0.0637298", "0.5002119", "0.1056944", "0.0936889",
 				"0.0609042", "0.0725737", "0.7802557", "0.8761557", "0.5714423",
 				"0.1706455", "0.4046336", "0.4131218", "0.2825145", "0.8249400",
-				"0.4180385", "0.2152816", "0.4346161", "0.4916836", "0.5997444",
+				"0.4180386", "0.2152816", "0.4346161", "0.4916836", "0.5997445",
 				"0.9118823", "0.1928336", "0.7523277", "0.9890286", "0.7421532",
 				"0.9053972", "0.3542483", "0.9161059", "0.1209783", "0.8205475",
 				"0.8592416", "0.8379903", "0.6638085", "0.8796422", "0.8608698",
@@ -115,7 +115,7 @@ namespace Peach.Core.Test
 
 			foreach (var exp in init_by_array)
 			{
-				var val = prng.GenerateFloat();
+				var val = prng.Sample();
 				Assert.AreEqual(exp, val.ToString("0.0000000"));
 			}
 		}
@@ -162,6 +162,28 @@ namespace Peach.Core.Test
 				Assert.GreaterOrEqual(ret, -100);
 				Assert.Less(ret, 100);
 				vals[ret + 100] += 1;
+			}
+
+			foreach (int val in vals)
+			{
+				Assert.AreNotEqual(0, val);
+			}
+		}
+
+		[Test]
+		public void TestSmallRange()
+		{
+			// Test that 0 <= X < 4
+			var rng = new Random(277208);
+
+			int[] vals = new int[4];
+
+			for (int i = 0; i < 1000; ++i)
+			{
+				int ret = rng.Next(0, 4);
+				Assert.GreaterOrEqual(ret, 0);
+				Assert.Less(ret, 4);
+				vals[ret] += 1;
 			}
 
 			foreach (int val in vals)
