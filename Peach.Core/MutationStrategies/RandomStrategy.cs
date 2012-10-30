@@ -198,6 +198,8 @@ namespace Peach.Core.MutationStrategies
 				// a data model that has been cracked into will fail in odd ways.
 
 				var referenceName = action.dataModel.referenceName;
+				if (referenceName == null)
+					referenceName = action.dataModel.name;
 				action.dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
 				action.dataModel.isReference = true;
 				action.dataModel.referenceName = referenceName;
