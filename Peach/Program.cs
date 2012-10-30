@@ -146,26 +146,33 @@ namespace Peach
 
 				// Check OS and load side assembly
 				string osAssembly = null;
-				switch (Platform.GetOS())
+				try
 				{
-					case Platform.OS.Mac:
-						osAssembly = System.IO.Path.Combine(
-							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-							"Peach.Core.OS.OSX.dll");
-						Assembly.LoadFrom(osAssembly);
-						break;
-					case Platform.OS.Linux:
-						osAssembly = System.IO.Path.Combine(
-							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-							"Peach.Core.OS.Linux.dll");
-						Assembly.LoadFrom(osAssembly);
-						break;
-					case Platform.OS.Windows:
-						osAssembly = System.IO.Path.Combine(
-							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-							"Peach.Core.OS.Windows.dll");
-						Assembly.LoadFrom(osAssembly);
-						break;
+					switch (Platform.GetOS())
+					{
+						case Platform.OS.Mac:
+							osAssembly = System.IO.Path.Combine(
+								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+								"Peach.Core.OS.OSX.dll");
+							Assembly.LoadFrom(osAssembly);
+							break;
+						case Platform.OS.Linux:
+							osAssembly = System.IO.Path.Combine(
+								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+								"Peach.Core.OS.Linux.dll");
+							Assembly.LoadFrom(osAssembly);
+							break;
+						case Platform.OS.Windows:
+							osAssembly = System.IO.Path.Combine(
+								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+								"Peach.Core.OS.Windows.dll");
+							Assembly.LoadFrom(osAssembly);
+							break;
+					}
+				}
+				catch (Exception ex)
+				{
+					throw new PeachException(ex.Message);
 				}
 
 				if (definedValuesFile != null)
