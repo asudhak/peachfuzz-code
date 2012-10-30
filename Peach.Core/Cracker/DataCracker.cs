@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 using Peach.Core.Dom;
 using Peach.Core.IO;
@@ -150,114 +151,59 @@ namespace Peach.Core.Cracker
 
 			foreach (DataElement element in elementsWithPlacement)
 			{
-				// Locate any fixups and relations so we can update them
+				var fixups = new List<Tuple<Fixup, string>>();
 
-				List<Relation> ofs = new List<Relation>();
-				List<Relation> froms = new List<Relation>();
-				List<Fixup> fixups = new List<Fixup>();
-
+				// Ensure relations are resolved
 				foreach (Relation relation in element.relations)
 				{
-					if(relation.Of == element)
-						ofs.Add(relation);
-					else if(relation.From == element)
-						froms.Add(relation);
-					else
-						throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.",
-							element, data);
+					if (relation.Of != element && relation.From != element)
+						throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.", element, data);
 				}
 
+				// Locate relevant fixups
 				foreach (DataElement child in model.EnumerateAllElements())
 				{
-					if (child.relations.Count > 0)
-					{
-						foreach (Relation relation in child.relations)
-						{
-							if (relation.Of == element)
-								ofs.Add(relation);
-						}
-					}
+					if (child.fixup == null)
+						continue;
 
-					if (child.fixup != null && child.fixup.arguments.ContainsKey("ref"))
+					foreach (var item in child.fixup.references)
 					{
-						if (child.find((string)child.fixup.arguments["ref"]) == element)
-							fixups.Add(child.fixup);
+						if (item.Item2 != element.name)
+							continue;
+
+						var refElem = child.find(item.Item2);
+						if (refElem == null)
+							throw new CrackingFailure("Error, unable to resolve Fixup reference to match current element.", element, data);
+
+						if (refElem == element)
+							fixups.Add(new Tuple<Fixup, string>(child.fixup, item.Item1));
 					}
 				}
 
-				// Move element
-
-				DataElementContainer oldParent = element.parent;
-				DataElementContainer newParent = null;
-
-				string oldName = element.name;
-				string newName = null;
-				string newFullname = null;
+				DataElement newElem = null;
 
 				if (element.placement.after != null)
 				{
-					DataElement after = element.find(element.placement.after);
+					var after = element.find(element.placement.after);
 					if (after == null)
-						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name + 
+						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name +
 							"' with 'after' == '" + element.placement.after + "'.", element, data);
-
-					newParent = after.parent;
-
-					newName = oldName;
-					for (int i = 0; newParent.ContainsKey(newName); i++)
-						newName = oldName + "_" + i;
-
-					element.parent.RemoveAt(element.parent.IndexOf(element));
-
-					if (element.name == newName)
-						newParent.Insert(newParent.IndexOf(after) + 1, element);
-					else
-						newParent.Insert(newParent.IndexOf(after) + 1, element.Clone(newName));
-
+					newElem = element.MoveAfter(after);
 				}
 				else if (element.placement.before != null)
 				{
 					DataElement before = element.find(element.placement.before);
 					if (before == null)
-						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name + 
-							"' with 'before' == '" + element.placement.before + "'.", element, data);
-
-					newParent = before.parent;
-
-					newName = oldName;
-					for (int i = 0; newParent.ContainsKey(newName); i++)
-						newName = oldName + "_" + i;
-
-					element.parent.RemoveAt(element.parent.IndexOf(element));
-
-					if (element.name == newName)
-						newParent.Insert(newParent.IndexOf(before), element);
-					else
-						newParent.Insert(newParent.IndexOf(before), element.Clone(newName));
-				}
-
-				newFullname = element.fullName;
-
-				// Update relations
-
-				foreach (Relation relation in ofs)
-				{
-					relation.OfName = newFullname;
-				}
-				foreach (Relation relation in froms)
-				{
-					relation.FromName = newFullname;
+						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name +
+							"' with 'after' == '" + element.placement.after + "'.", element, data);
+					newElem = element.MoveBefore(before);
 				}
 
 				// Update fixups
-
-				foreach (Fixup fixup in fixups)
+				foreach (var fixup in fixups)
 				{
-					// We might have to create a new fixup!
-
-					fixup.arguments["ref"] = new Variant(newFullname);
+					fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
 				}
-				
 			}
 		}
 

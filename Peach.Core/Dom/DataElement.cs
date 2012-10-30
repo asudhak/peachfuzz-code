@@ -1308,6 +1308,62 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
+		public DataElement MoveTo(DataElementContainer newParent, int index)
+		{
+			// Locate any fixups so we can update them
+			// Move element
+			DataElement newElem;
+
+			DataElementContainer oldParent = this.parent;
+
+			string newName = this.name;
+			for (int i = 0; newParent.ContainsKey(newName); i++)
+				newName = this.name + "_" + i;
+
+			oldParent.RemoveAt(oldParent.IndexOf(this));
+
+			if (newName == this.name)
+			{
+				newElem = this;
+			}
+			else
+			{
+				newElem = this.Clone(newName);
+				this.ClearRelations();
+			}
+
+			newParent.Insert(index, newElem);
+
+			foreach (Relation relation in newElem.relations)
+			{
+				if (relation.Of == newElem)
+				{
+					relation.OfName = newElem.fullName;
+				}
+				
+				if (relation.From == newElem)
+				{
+					relation.FromName = newElem.fullName;
+				}
+			}
+
+			return newElem;
+		}
+
+		public DataElement MoveBefore(DataElement target)
+		{
+			DataElementContainer parent = target.parent;
+			int offset = parent.IndexOf(target);
+			return MoveTo(parent, offset);
+		}
+
+		public DataElement MoveAfter(DataElement target)
+		{
+			DataElementContainer parent = target.parent;
+			int offset = parent.IndexOf(target) + 1;
+			return MoveTo(parent, offset);
+		}
+
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
 		{

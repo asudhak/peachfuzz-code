@@ -81,10 +81,38 @@ namespace Peach.Core
 				this.refs.Add(new Tuple<string, DataElement>(item, null));
 		}
 
-		public Dictionary<string, Variant> arguments
+		public void updateRef(string refKey, string refValue)
 		{
-			get { return args; }
-			set { args = value; }
+			int i = 0;
+			for (i = 0; i < refs.Count; ++i)
+			{
+				var item = refs[i];
+				
+				if (item.Item1 == refKey)
+				{
+					if (resolvedRefs)
+					{
+						System.Diagnostics.Debug.Assert(item.Item2 != null);
+						System.Diagnostics.Debug.Assert(elements.ContainsKey(refValue));
+						item.Item2.Invalidated -= OnInvalidated;
+
+						var newElem = parent.find(refValue);
+						if (newElem == null)
+							throw new PeachException(string.Format("{0} could not find ref element '{1}'", this.GetType().Name, refValue));
+
+						newElem.Invalidated += new InvalidatedEventHandler(OnInvalidated);
+						elements[refValue] = newElem;
+					}
+
+					break;
+				}
+			}
+
+			if (i == refs.Count)
+				throw new ArgumentOutOfRangeException("refKey", "Reference key could not be found.");
+
+			System.Diagnostics.Debug.Assert(args.ContainsKey(refKey));
+			args[refKey] = new Variant(refValue);
 		}
 
 		/// <summary>
