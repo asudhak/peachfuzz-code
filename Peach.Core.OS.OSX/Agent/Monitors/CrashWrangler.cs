@@ -209,10 +209,9 @@ namespace Peach.Core.Agent.Monitors
 
 			var lastTime = _totalProcessorTime;
 
-
 			_totalProcessorTime = GetTotalCputime(_procCommand.Id);
 
-			return lastTime == _totalProcessorTime;
+			return _totalProcessorTime > 0 && lastTime == _totalProcessorTime;
 		}
 
 		public static ulong GetTotalCputime(int pid)

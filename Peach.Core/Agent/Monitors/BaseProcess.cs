@@ -100,7 +100,7 @@ namespace Peach.Core.Agent.Monitors
 				logger.Debug("_Start(): Starting process");
 				_process.Start();
 
-				_totalProcessorTime = ulong.MaxValue;
+				_totalProcessorTime = 0;
 			}
 			else
 			{
@@ -249,7 +249,7 @@ namespace Peach.Core.Agent.Monitors
 						var lastTime = _totalProcessorTime;
 						_totalProcessorTime = GetTotalCpuTime(_process);
 
-						if (lastTime == _totalProcessorTime)
+						if (_totalProcessorTime > 0 && lastTime == _totalProcessorTime)
 						{
 							logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
 							_Stop();
