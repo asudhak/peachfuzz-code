@@ -49,6 +49,20 @@ namespace Peach.Core
 		private List<Tuple<string, DataElement>> refs = new List<Tuple<string, DataElement>>();
 		private bool resolvedRefs = false;
 
+		// Returns a tuple of ref key to ref value, eg: ("ref1", "DataModel.Emenent_0")
+		public IEnumerable<Tuple<string, string>> references
+		{
+			get
+			{
+				foreach (var item in refs)
+				{
+					System.Diagnostics.Debug.Assert(args.ContainsKey(item.Item1));
+					var ret = new Tuple<string, string>(item.Item1, (string)args[item.Item1]);
+					yield return ret;
+				}
+			}
+		}
+
 		public Fixup(DataElement parent, Dictionary<string, Variant> args, params string[] refs)
 		{
 			this.parent = parent;
