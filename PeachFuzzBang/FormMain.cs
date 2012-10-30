@@ -311,6 +311,7 @@ namespace PeachFuzzBang
 						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 						monitor.parameters["Executable"] = new Variant(textBoxLinuxExecutable.Text);
 						monitor.parameters["Arguments"] = new Variant(textBoxLinuxArguments.Text);
+						monitor.parameters["CpuKill"] = new Variant("true");
 						break;
 
 					case Platform.OS.Windows:
