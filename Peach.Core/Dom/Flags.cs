@@ -226,6 +226,9 @@ namespace Peach.Core.Dom
 		{
 			BitStream bits = new BitStream();
 
+			// Expand to 'size' bits
+			bits.WriteBits(0, size);
+
 			foreach (DataElement child in this)
 			{
 				if (child is Flag)
