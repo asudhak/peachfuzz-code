@@ -5,6 +5,8 @@ deps = [
 	'System.Core.dll',
 	'nunit.framework.dll',
 	'NLog.dll',
+	'Peach.Core.dll',
+	'Peach.Core.OS.Linux.dll',
 ]
 
 bld(

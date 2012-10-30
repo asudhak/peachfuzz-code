@@ -323,6 +323,7 @@
   <ItemGroup>
     <Compile Include="Agent\Monitors\PageHeap.cs" />
     <Compile Include="Agent\Monitors\PopupWatcher.cs" />
+    <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="Agent\Monitors\WindowsDebuggerHybrid.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\DebuggerInstance.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\SystemDebuggerInterface.cs" />

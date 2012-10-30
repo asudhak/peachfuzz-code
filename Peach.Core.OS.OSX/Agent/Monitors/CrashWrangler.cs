@@ -209,30 +209,39 @@ namespace Peach.Core.Agent.Monitors
 
 			var lastTime = _totalProcessorTime;
 
-			// TODO: TotalProcessorTime is not implemented, need to use proc_pidinfo()
 
+			_totalProcessorTime = GetTotalCputime(_procCommand.Id);
+
+			return lastTime == _totalProcessorTime;
+		}
+
+		public static ulong GetTotalCputime(int pid)
+		{
 			int len = Marshal.SizeOf(typeof(proc_taskinfo));
 			IntPtr ptr = Marshal.AllocHGlobal(len);
 
 			try
 			{
-				int err = proc_pidinfo(_procCommand.Id, PROC_PIDTASKINFO, 0, ptr, len);
+				ulong ret = 0;
+
+				int err = proc_pidinfo(pid, PROC_PIDTASKINFO, 0, ptr, len);
 				if (err != len)
 				{
-					logger.Info("CrashWrangler: Could not measure CPU times for pid {0}, assuming idle.", _procCommand.Id);
+					logger.Info("CrashWrangler: Could not measure CPU times for pid {0}, assuming idle.", pid);
 				}
 				else
 				{
 					proc_taskinfo ti = (proc_taskinfo)Marshal.PtrToStructure(ptr, typeof(proc_taskinfo));
-					_totalProcessorTime = ti.pti_total_user + ti.pti_total_system;
+					ret = ti.pti_total_user + ti.pti_total_system;
 				}
+				
+				return ret;
 			}
 			finally
 			{
 				Marshal.FreeHGlobal(ptr);
 			}
 
-			return lastTime == _totalProcessorTime;
 		}
 
 		private bool _IsProcessRunning()

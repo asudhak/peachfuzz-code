@@ -42,8 +42,6 @@ namespace Peach.Core.Agent.Monitors
 	/// <summary>
 	/// Start a process
 	/// </summary>
-	[Monitor("Process", true)]
-	[Monitor("process.Process")]
 	[Parameter("Executable", typeof(string), "Executable to launch", true)]
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", false)]
 	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation (defaults to false)", false)]
@@ -51,8 +49,10 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CpuKill", typeof(bool), "Terminate process when CPU usage nears zero (defaults to false)", false)]
 	[Parameter("StartOnCall", typeof(string), "Start command on state model call", false)]
 	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", false)]
-	public class Process : Monitor
+	public abstract class BaseProcess : Monitor
 	{
+		protected abstract ulong GetTotalCpuTime(System.Diagnostics.Process process);
+
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		System.Diagnostics.Process _process = null;
@@ -64,10 +64,9 @@ namespace Peach.Core.Agent.Monitors
 		bool _faultOnEarlyExit = false;
 		bool _cpuKill = false;
 		bool _firstIteration = true;
-		DateTime _processStarted = DateTime.MinValue;
-		bool _cpuKillProcessStarted = false;
+		ulong _totalProcessorTime = 0;
 
-		public Process(string name, Dictionary<string, Variant> args)
+		public BaseProcess(string name, Dictionary<string, Variant> args)
 			: base(name, args)
 		{
 			if (args.ContainsKey("Executable"))
@@ -100,14 +99,13 @@ namespace Peach.Core.Agent.Monitors
 
 				logger.Debug("_Start(): Starting process");
 				_process.Start();
+
+				_totalProcessorTime = ulong.MaxValue;
 			}
 			else
 			{
 				logger.Debug("_Start(): Process already running, ignore");
 			}
-
-			_cpuKillProcessStarted = false;
-			_processStarted = DateTime.Now;
 		}
 
 		void _Stop()
@@ -248,29 +246,18 @@ namespace Peach.Core.Agent.Monitors
 
 					if (_cpuKill)
 					{
+						var lastTime = _totalProcessorTime;
+						_totalProcessorTime = GetTotalCpuTime(_process);
 
-						try
+						if (lastTime == _totalProcessorTime)
 						{
-							float cpu = GetProcessCpuUsage(_process);
-
-							logger.Debug("Message(Action.Call.IsRunning): GetProcessCpuUsage: " + cpu);
-
-							if (cpu > 1.0 || (DateTime.Now - _processStarted).Seconds > 3)
-								_cpuKillProcessStarted = true;
-
-							if (_cpuKillProcessStarted && cpu < 1.0)
-							{
-								logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
-								_Stop();
-								return new Variant(0);
-							}
+							logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
+							_Stop();
+							return new Variant(0);
 						}
-						catch
-						{
-						}
-
-						return new Variant(1);
 					}
+
+					return new Variant(1);
 				}
 				catch (ArgumentException)
 				{

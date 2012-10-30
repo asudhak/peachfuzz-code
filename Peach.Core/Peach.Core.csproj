@@ -407,7 +407,7 @@
     <Compile Include="Agent\Monitors\Memory.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
     <Compile Include="Agent\Monitors\PingMonitor.cs" />
-    <Compile Include="Agent\Monitors\Process.cs" />
+    <Compile Include="Agent\Monitors\BaseProcess.cs" />
     <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
     <Compile Include="Agent\Monitors\UdpMonitor.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />

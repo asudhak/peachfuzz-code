@@ -114,7 +114,7 @@ namespace Peach.Core.Agent
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class MonitorAttribute : Attribute
 	{
 		public string name;
