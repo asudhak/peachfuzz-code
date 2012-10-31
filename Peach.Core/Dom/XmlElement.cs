@@ -36,6 +36,16 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
+	public class PeachXmlDoc
+	{
+		public PeachXmlDoc()
+		{
+		}
+
+		public XmlDocument doc = new XmlDocument();
+		public Dictionary<string, Variant> values = new Dictionary<string, Variant>();
+	}
+
 	[DataElement("XmlElement")]
 	[PitParsable("XmlElement")]
 	[DataElementChildSupported(DataElementTypes.Any)]
@@ -104,9 +114,9 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public virtual XmlNode GenerateXmlNode(XmlDocument doc, XmlNode parent)
+		public virtual XmlNode GenerateXmlNode(PeachXmlDoc doc, XmlNode parent)
 		{
-			XmlNode xmlNode = doc.CreateElement(elementName, ns);
+			XmlNode xmlNode = doc.doc.CreateElement(elementName, ns);
 
 			foreach (DataElement child in this)
 			{
@@ -117,7 +127,9 @@ namespace Peach.Core.Dom
 				}
 				else if (child is String)
 				{
-					xmlNode.InnerText = (string)child.InternalValue;
+					var fullName = child.fullName;
+					xmlNode.InnerText = "|||" + fullName + "|||";
+					doc.values.Add(xmlNode.InnerText, child.InternalValue);
 				}
 				else if (child is XmlElement)
 				{
@@ -134,9 +146,38 @@ namespace Peach.Core.Dom
 
 		public override Variant GenerateInternalValue()
 		{
-			XmlDocument doc = new XmlDocument();
-			doc.AppendChild(GenerateXmlNode(doc, null));
-			return new Variant(doc.OuterXml);
+			PeachXmlDoc doc = new PeachXmlDoc();
+			doc.doc.AppendChild(GenerateXmlNode(doc, null));
+			string template = doc.doc.OuterXml;
+			string[] parts = doc.doc.OuterXml.Split(new string[]{"|||"}, StringSplitOptions.RemoveEmptyEntries);
+
+			BitStream bs = new BitStream();
+
+			foreach (string item in parts)
+			{
+				BitStream toWrite = null;
+				Variant var = null;
+				string key = "|||" + item + "|||";
+				if (doc.values.TryGetValue(key, out var))
+				{
+					var type = var.GetVariantType();
+
+					if (type == Variant.VariantType.BitStream)
+						toWrite = (BitStream)var;
+					else if (type == Variant.VariantType.ByteString)
+						toWrite = new BitStream((byte[])var);
+					else
+						toWrite = new BitStream(Encoding.ASCII.GetBytes((string)var));
+				}
+				else
+				{
+					toWrite = new BitStream(Encoding.ASCII.GetBytes(item));
+				}
+
+				bs.Write(toWrite);
+			}
+
+			return new Variant(bs);
 		}
 
 		protected override BitStream InternalValueToBitStream()
@@ -144,7 +185,7 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			return new BitStream(Encoding.UTF8.GetBytes((string)InternalValue));
+			return new BitStream(((BitStream)InternalValue).Stream);
 		}
 
     public override object GetParameter(string parameterName)

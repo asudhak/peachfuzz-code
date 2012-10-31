@@ -101,10 +101,12 @@ namespace Peach.Core.Dom
 		/// <param name="doc">XmlDocument this attribute will be part of.</param>
 		/// <param name="parent">The parent XmlNode</param>
 		/// <returns>Returns a valid instance of an XmlAttribute.</returns>
-		public virtual System.Xml.XmlAttribute GenerateXmlAttribute(XmlDocument doc, XmlNode parent)
+		public virtual System.Xml.XmlAttribute GenerateXmlAttribute(PeachXmlDoc doc, XmlNode parent)
 		{
-			var xmlAttrib = doc.CreateAttribute(attributeName, ns);
-			xmlAttrib.Value = (string)this[0].InternalValue;
+			var elem = this[0];
+			var xmlAttrib = doc.doc.CreateAttribute(attributeName, ns);
+			xmlAttrib.Value = "|||" + elem.fullName + "|||";
+			doc.values.Add(xmlAttrib.Value, elem.InternalValue);
 			return xmlAttrib;
 		}
 
