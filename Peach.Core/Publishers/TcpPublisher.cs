@@ -142,14 +142,15 @@ namespace Peach.Core.Publishers
 				if (_client != null)
 				{
 					Logger.Debug("Shutting down connection to {0}", _remoteEp);
-					
+
 					try
-                    {
-                        _client.Client.Shutdown(SocketShutdown.Send);
-                    }
-                    catch (SocketException e)
-                    {
-                    }
+					{
+						_client.Client.Shutdown(SocketShutdown.Send);
+					}
+					catch (SocketException e)
+					{
+						Logger.Debug("Failed to gracefully shutdown connection to {0}.  {1}", _remoteEp, e.Message);
+					}
 				}
 			}
 
