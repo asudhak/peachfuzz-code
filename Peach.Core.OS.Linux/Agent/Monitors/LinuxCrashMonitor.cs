@@ -35,6 +35,8 @@ using System.Threading;
 
 using Peach.Core.Dom;
 using Peach.Core.Agent;
+using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace Peach.Core.OS.Linux.Agent.Monitors
 {
@@ -50,6 +52,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		protected string logFolder = "/var/peachcrash";
 		protected string origionalCorePattern = null;
 		protected string linuxCrashHandlerExe = "PeachLinuxCrashHandler.exe";
+		protected bool logFolderCreated = false;
 
 		protected string data = null;
 		protected List<string> startingFiles = new List<string>();
@@ -95,49 +98,21 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				origionalCorePattern = null;
 
 			if (Directory.Exists(logFolder))
-			{
-				// Clean up our folder
-				using (var p = new Process())
-				{
-					var psi = new ProcessStartInfo();
-					psi.FileName = "/bin/rm";
-					psi.Arguments = "-rf " + logFolder + "/*";
-					psi.UseShellExecute = true;
+				DeleteLogFolder();
 
-					p.StartInfo = psi;
-					p.Start();
-					p.WaitForExit();
-				}
+			try
+			{
+				Directory.CreateDirectory(logFolder);
 			}
-			else
+			catch (Exception ex)
 			{
-				// Create our folder and set permissions
-				using (var p = new Process())
-				{
-					var psi = new ProcessStartInfo();
-					psi.FileName = "mkdir";
-					psi.Arguments = "-p " + logFolder;
-					psi.UseShellExecute = true;
-
-					p.StartInfo = psi;
-					p.Start();
-					p.WaitForExit();
-				}
+				throw new PeachException("Error, LinuxCrashMonitor was unable to create the log directory.  {0}", ex.Message);
 			}
 
+			logFolderCreated = true;
 
 			// Enable core files
-			using (var p = new Process())
-			{
-				var psi = new ProcessStartInfo();
-				psi.FileName = "ulimit";
-				psi.Arguments = "-c unlimited";
-				psi.UseShellExecute = true;
-
-				p.StartInfo = psi;
-				p.Start();
-				p.WaitForExit();
-			}
+			UlimitUnlimited();
 		}
 
 		public override void  SessionFinished()
@@ -148,20 +123,22 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				File.WriteAllText("/proc/sys/kernel/core_pattern", origionalCorePattern, Encoding.ASCII);
 			}
 
-			if (Directory.Exists(logFolder))
-			{
-				// Remove folder
-				using (var p = new Process())
-				{
-					var psi = new ProcessStartInfo();
-					psi.FileName = "/bin/rm";
-					psi.Arguments = "-rf " + logFolder;
-					psi.UseShellExecute = true;
+			// Remove folder
+			if (logFolderCreated)
+				DeleteLogFolder();
 
-					p.StartInfo = psi;
-					p.Start();
-					p.WaitForExit();
-				}
+			logFolderCreated = false;
+		}
+
+		private void DeleteLogFolder()
+		{
+			try
+			{
+				Directory.Delete(logFolder);
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Error, LinuxCrashMonitor was unable to clear the log directory.  {0}", ex.Message);
 			}
 		}
 
@@ -211,20 +188,27 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				if(startingFiles.Contains(file))
 					continue;
 
-				if (executable != null)
+				try
 				{
-					if (file.IndexOf(executable) != -1)
+					if (executable != null)
 					{
+						if (file.IndexOf(executable) != -1)
+						{
+							fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
+							File.Delete(file);
+							break;
+						}
+					}
+					else
+					{
+						// Support multiple crash files
 						fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
 						File.Delete(file);
-						break;
 					}
 				}
-				else
+				catch (UnauthorizedAccessException ex)
 				{
-					// Support multiple crash files
-					fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
-					File.Delete(file);
+					throw new PeachException("Error, LinuxCrashMonitor was unable to read the crash log.  {0}", ex.Message);
 				}
 			}
 
@@ -240,5 +224,63 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		{
 			return null;
 		}
+
+		#region Ulimit
+
+		private static void UlimitUnlimited()
+		{
+			rlimit rlim = new rlimit();
+
+			if (0 != getrlimit(rlimit_resource.RLIMIT_CORE, ref rlim))
+			{
+				int err = Marshal.GetLastWin32Error();
+				Win32Exception ex = new Win32Exception(err);
+				throw new PeachException("Error, LinuxCrashHandler could not query the core size resource limit.  {0}", ex.Message);
+			}
+
+			rlim.rlim_curr = rlim.rlim_max;
+
+			if (0 != setrlimit(rlimit_resource.RLIMIT_CORE, ref rlim))
+			{
+				int err = Marshal.GetLastWin32Error();
+				Win32Exception ex = new Win32Exception(err);
+				throw new PeachException("Error, LinuxCrashHandler could not set the core size resource limit.  {0}", ex.Message);
+			}
+		}
+
+		enum rlimit_resource : int
+		{
+			RLIMIT_CPU = 0,
+			RLIMIT_FSIZE = 1,
+			RLIMIT_DATA = 2,
+			RLIMIT_STACK = 3,
+			RLIMIT_CORE = 4,
+			RLIMIT_RSS = 5,
+			RLIMIT_NPROC = 6,
+			RLIMIT_NOFILE = 7,
+			RLIMIT_MEMLOCK = 8,
+			RLIMIT_AS = 9,
+			RLIMIT_LOCKS = 10,
+			RLIMIT_SIGPENDING = 11,
+			RLIMIT_MSGQUEUE = 12,
+			RLIMIT_NICE = 13,
+			RLIMIT_RTPRIO = 14,
+			RLIMIT_RTTIME = 15,
+			RLIMIT_NLIMITS = 16,
+		};
+
+		struct rlimit
+		{
+			public IntPtr rlim_curr;
+			public IntPtr rlim_max;
+		}
+
+		[DllImport("libc", SetLastError = true)]
+		private static extern int getrlimit(rlimit_resource resource, ref rlimit rlim);
+
+		[DllImport("libc", EntryPoint = "getrlimit", SetLastError = true)]
+		private static extern int setrlimit(rlimit_resource resource, ref rlimit rlim);
+
+		#endregion
 	}
 }
