@@ -313,6 +313,7 @@ namespace Peach.Core.Agent.Monitors
 					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"");
 
 				// If the exit code is 0 or there is a log, the program ran to completion
+				_procCommand.Close();
 				_procCommand = null;
 			}
 		}

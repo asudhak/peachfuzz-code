@@ -145,8 +145,12 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					int pid = 0;
 					System.Diagnostics.Process proc = null;
 					var procs = System.Diagnostics.Process.GetProcessesByName(processName);
-					if(procs != null && procs.Length > 0)
+					if (procs != null && procs.Length > 0)
+					{
 						proc = procs[0];
+						for (int i = 1; i < procs.Length; ++i)
+							procs[i].Close();
+					}
 
 					if (proc == null && int.TryParse(processName, out pid))
 						proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
