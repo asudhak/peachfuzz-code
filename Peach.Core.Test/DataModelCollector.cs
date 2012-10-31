@@ -50,10 +50,10 @@ namespace Peach.Core.Test
 
 			// Collect mutated values only after the first run
 			if (!firstRun.Add(action.dataModel.fullName))
-				mutations.Add(action.dataModel[0].InternalValue);
+					mutations.Add(action.dataModel.Count > 0 ? action.dataModel[0].InternalValue : null);
 
 			// Collect transformed values, actions and dataModels always
-			values.Add(action.dataModel[0].Value);
+			values.Add(action.dataModel.Count > 0 ? action.dataModel[0].Value : null);
 			actions.Add(action);
 			dataModels.Add(action.dataModel);
 		}

@@ -103,6 +103,7 @@ namespace Peach.Core.Dom
 		/// <returns>Returns a valid instance of an XmlAttribute.</returns>
 		public virtual System.Xml.XmlAttribute GenerateXmlAttribute(PeachXmlDoc doc, XmlNode parent)
 		{
+			System.Diagnostics.Debug.Assert(Count > 0);
 			var elem = this[0];
 			var xmlAttrib = doc.doc.CreateAttribute(attributeName, ns);
 			xmlAttrib.Value = "|||" + elem.fullName + "|||";

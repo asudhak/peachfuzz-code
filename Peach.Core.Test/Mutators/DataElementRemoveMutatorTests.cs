@@ -96,6 +96,51 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual("num2", dataModels[5][2].name);
             Assert.AreEqual("num3", dataModels[5][3].name);
         }
+
+		[Test]
+		public void TextXml()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<XmlElement name=""example"" elementName=""Foo"">
+			<XmlAttribute attributeName=""Bar"">
+				<String value=""My Attribute!""/>
+			</XmlAttribute>
+		</XmlElement>
+	</DataModel>
+
+	<StateModel name=""State"" initialState=""State1"">
+		<State name=""State1""  >
+			<Action type=""output"" >
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""State""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementRemoveMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			// verify values (4 models = 1 control + 3 elements to remove)
+			Assert.AreEqual(4, dataModels.Count);
+		}
+
     }
 }
 

@@ -123,7 +123,8 @@ namespace Peach.Core.Dom
 				if (child is XmlAttribute)
 				{
 					XmlAttribute attrib = child as XmlAttribute;
-					xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
+					if (attrib.Count > 0)
+						xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
 				}
 				else if (child is String)
 				{
