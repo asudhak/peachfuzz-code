@@ -301,11 +301,20 @@ namespace Peach.Core
 
 							test.stateModel.Run(context);
 						}
-						catch (SoftException)
+						catch (SoftException se)
 						{
 							// We should just eat SoftExceptions.
 							// They indicate we should move to the next
 							// iteration.
+
+							if (context.controlIteration)
+							{
+								logger.Debug("Engine::runTest",
+									"SoftException on control iteration");
+								if (se.InnerException != null)
+									throw new PeachException(se.InnerException.Message);
+								throw new PeachException(se.Message);
+							}
 
 							logger.Debug("Engine::runTest",
 								"SoftException, skipping to next iteration");

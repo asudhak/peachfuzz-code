@@ -73,7 +73,7 @@ namespace Peach.Core.Publishers
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, unable to accept incoming connection: " + ex.Message);
+				throw new SoftException(new PeachException("Error, unable to accept incoming connection: " + ex.Message));
 			}
 
 			// Start receiving on the client

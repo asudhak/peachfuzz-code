@@ -73,13 +73,15 @@ namespace Peach.Core.Publishers
 		{
 			System.Diagnostics.Debug.Assert(_socket == null);
 
-			IPEndPoint ep = ResolveHost();
-
-			if (!AddressFamilySupported(ep.AddressFamily))
-				throw new PeachException("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type);
+			IPEndPoint ep = null;
 
 			try
 			{
+				ep = ResolveHost();
+
+				if (!AddressFamilySupported(ep.AddressFamily))
+					throw new PeachException("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type);
+
 				_socket = OpenSocket(ep);
 
 				IPAddress local = Interface;
@@ -87,10 +89,6 @@ namespace Peach.Core.Publishers
 					local = GetLocalIp(ep);
 
 				_socket.Bind(new IPEndPoint(local, SrcPort));
-			}
-			catch (PeachException)
-			{
-				throw;
 			}
 			catch (Exception ex)
 			{
@@ -106,10 +104,7 @@ namespace Peach.Core.Publishers
 
 				Logger.Error("Unable to open {0} socket to {1}:{2}. {3}.", _type, Host, Port, ex.Message);
 
-				if (++_errorsOpen == _errorsMax)
-					throw new PeachException("Failed to open " + _type + " socket after " + _errorsOpen + " attempts.");
-
-				throw new SoftException();
+				throw new SoftException(ex);
 			}
 
 			_socket.ReceiveBufferSize = MaxSendSize;
@@ -199,10 +194,7 @@ namespace Peach.Core.Publishers
 							_type, Host, Port, ex.Message);
 					}
 
-					if (++_errorsRecv == _errorsMax)
-						throw new PeachException("Failed to receive " + _type + " packet after " + _errorsRecv + " attempts.");
-
-					throw new SoftException();
+					throw new SoftException(ex);
 				}
 			}
 		}
@@ -227,9 +219,6 @@ namespace Peach.Core.Publishers
 
 			if (size > MaxSendSize)
 			{
-				if (Iteration == 0)
-					throw new PeachException("Data to output is larger than the maximum {0} packet size of {1} bytes.", _type, MaxSendSize);
-
 				// This will be logged below as a truncated send
 				size = MaxSendSize;
 			}
@@ -247,8 +236,7 @@ namespace Peach.Core.Publishers
 				_errorsSend = 0;
 
 				if (data.Length != txLen)
-					Logger.Debug("Only sent {0} of {1} byte {2} packet to {3}:{4}.",
-						_type, txLen, data.Length, Host, Port);
+					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, data.Length));
 			}
 			catch (Exception ex)
 			{
@@ -263,10 +251,7 @@ namespace Peach.Core.Publishers
 						_type, Host, Port, ex.Message);
 				}
 
-				if (++_errorsSend == _errorsMax)
-					throw new PeachException("Failed to send " + _type + " packet after " + _errorsSend + " attempts.");
-
-				throw new SoftException();
+				throw new SoftException(ex);
 			}
 		}
 

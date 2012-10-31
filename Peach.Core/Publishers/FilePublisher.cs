@@ -93,7 +93,7 @@ namespace Peach.Core.Publishers
 					else
 					{
 						Logger.Error("Could not open file '{0}' after {1} attempts.  {2}", FileName, maxOpenAttempts, ex.Message);
-						throw;
+						throw new SoftException(ex);
 					}
 				}
 			}

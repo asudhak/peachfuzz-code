@@ -338,7 +338,7 @@ namespace Peach.Core.Test.Publishers
 		[Test]
 		public void UdpSizeMutateTest()
 		{
-			// If mutation makes the output too large, the socket publisher should truncate
+			// If mutation makes the output too large, the socket publisher should skip iteration
 
 			SocketEcho echo = new SocketEcho();
 			echo.Start(IPAddress.Loopback, 2);
@@ -360,17 +360,12 @@ namespace Peach.Core.Test.Publishers
 			e.config = config;
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(4, dataModels.Count);
+			Assert.AreEqual(3, dataModels.Count);
 
 			var de1 = dataModels[1].find("ResponseModel.str");
 			Assert.NotNull(de1);
 			string recv1 = (string)de1.DefaultValue;
 			Assert.AreEqual("Recv 40000 bytes!", recv1);
-
-			var de2 = dataModels[3].find("ResponseModel.str");
-			Assert.NotNull(de2);
-			string recv2 = (string)de2.DefaultValue;
-			Assert.AreEqual("Recv 65000 bytes!", recv2);
 		}
 
 		[Test]
