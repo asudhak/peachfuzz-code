@@ -33,7 +33,7 @@ def lib_name(i):
 
 def createHeader(name):
     filename = name + ".h"
-    handle = file(filename, "w" )
+    handle = open(filename, "w" )
 
     guard = name + '_h_'
     handle.write ('#ifndef ' + guard + '\n');
@@ -50,7 +50,7 @@ def createHeader(name):
 
 def createCPP(name, lib_number, classes_per_lib, internal_includes, external_includes):
     filename = name + ".cpp"
-    handle = file(filename, "w" )
+    handle = open(filename, "w" )
 
     header= name + ".h"
     handle.write ('#include "' + header + '"\n');
@@ -72,7 +72,7 @@ def createCPP(name, lib_number, classes_per_lib, internal_includes, external_inc
 
 
 def createSConscript(lib_number, classes):
-    handle = file("SConscript", "w");
+    handle = open("SConscript", "w");
     handle.write("Import('env')\n")
     handle.write('list = Split("""\n');
     for i in range(classes):
@@ -81,11 +81,11 @@ def createSConscript(lib_number, classes):
     handle.write('env.StaticLibrary("lib_' + str(lib_number) + '", list)\n\n')
 
 def createLibCMakeLists(lib_number, classes):
-    handle = file("CMakeLists.txt", "w")
+    handle = open("CMakeLists.txt", "w")
     handle.write("""add_library(lib_%s STATIC %s)\n""" % (str(lib_number), ' '.join(('class_%s' % str(i) for i in range(classes)))))
 
 def createLibMakefile(lib_number, classes):
-    handle = file("Makefile", "w");
+    handle = open("Makefile", "w");
     handle.write ("""COMPILER = g++
 INC = -I..
 CCFLAGS = -g -Wall $(INC)
@@ -120,7 +120,7 @@ depend:
 """)
 
 def createLibJamFile(lib_number, classes):
-    handle = file("Jamfile", "w")
+    handle = open("Jamfile", "w")
     handle.write ("SubDir TOP lib_" + str(lib_number) + " ;\n\n")
     handle.write ("SubDirHdrs $(INCLUDES) ;\n\n")
     handle.write ("Library lib_" + str(lib_number) + " :\n")
@@ -129,7 +129,7 @@ def createLibJamFile(lib_number, classes):
     handle.write ('    ;\n')
 
 def createVCProjFile(lib_number, classes):
-    handle = file("lib_" + str(lib_number) + ".vcproj", "w")
+    handle = open("lib_" + str(lib_number) + ".vcproj", "w")
     handle.write("""<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
@@ -197,7 +197,7 @@ def createLibrary(lib_number, classes, internal_includes, external_includes):
     os.chdir("..")
 
 def createCMakeLists(libs):
-    handle = file("CMakeLists.txt", "w")
+    handle = open("CMakeLists.txt", "w")
     handle.write("""project('profiling-test')
 cmake_minimum_required(VERSION 2.8)
 
@@ -208,7 +208,7 @@ include_directories(${CMAKE_SOURCE_DIR})
         handle.write("""add_subdirectory(lib_%s)\n""" % str(i))
 
 def createSConstruct(libs):
-    handle = file("SConstruct", "w");
+    handle = open("SConstruct", "w");
     handle.write("""env = Environment(CPPFLAGS=['-Wall'], CPPDEFINES=['LINUX'], CPPPATH=[Dir('#')])\n""")
     handle.write("""env.Decider('timestamp-newer')\n""")
     handle.write("""env.SetOption('implicit_cache', True)\n""")
@@ -218,7 +218,7 @@ def createSConstruct(libs):
         handle.write("""env.SConscript("lib_%s/SConscript", exports=['env'])\n""" % str(i))
 
 def createFullMakefile(libs):
-    handle = file("Makefile", "w")
+    handle = open("Makefile", "w")
 
     handle.write('subdirs = \\\n')
     for i in range(libs):
@@ -239,13 +239,13 @@ depend:
 """)
 
 def createFullJamfile(libs):
-    handle = file("Jamfile", "w")
+    handle = open("Jamfile", "w")
     handle.write ("SubDir TOP ;\n\n")
 
     for i in range(libs):
         handle.write('SubInclude TOP ' + lib_name(i) + ' ;\n')
 
-    handle = file("Jamrules", "w")
+    handle = open("Jamrules", "w")
     handle.write('INCLUDES = $(TOP) ;\n')
 
 WT = """#! /usr/bin/env python
@@ -275,7 +275,7 @@ def createWtop(libs, classes):
 	f.close()
 
 def createFullSolution(libs):
-    handle = file("solution.sln", "w")
+    handle = open("solution.sln", "w")
     handle.write("Microsoft Visual Studio Solution File, Format Version 8.00\n")
 
     for i in range(libs):
@@ -285,7 +285,7 @@ def createFullSolution(libs):
         handle.write('EndProject\n')
 
 def createAutotoolsTop(libs):
-    handle = file("configure.ac", "w")
+    handle = open("configure.ac", "w")
     handle.write('''\
 AC_INIT([bench], [1.0.0])
 AC_CONFIG_AUX_DIR([autotools-aux])
@@ -296,7 +296,7 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 ''')
 
-    handle = file("Makefile.am", "w")
+    handle = open("Makefile.am", "w")
     handle.write('''\
 AM_CPPFLAGS = -I$(srcdir)
 lib_LTLIBRARIES =
@@ -305,7 +305,7 @@ lib_LTLIBRARIES =
 
 def createAutotools(lib_number, classes):
 
-    handle = file("Makefile.am", "w")
+    handle = open("Makefile.am", "w")
     handle.write('''\
 lib_LTLIBRARIES += lib%s.la
 lib%s_la_SOURCES =''' % (str(lib_number), str(lib_number)))

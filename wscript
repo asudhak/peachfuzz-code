@@ -70,8 +70,7 @@ def init(ctx):
 		pats.append(('^HEXVERSION(.*)', 'HEXVERSION=%s' % hexver))
 
 		try:
-			#rev = k[0].cmd_and_log('git log | grep "^commit" | wc -l', quiet=0).strip()
-			rev = k[0].cmd_and_log("git rev-parse HEAD").strip()
+			rev = ctx.cmd_and_log("git rev-parse HEAD").strip()
 			pats.append(('^WAFREVISION(.*)', 'WAFREVISION="%s"' % rev))
 		except Exception:
 			pass
@@ -129,7 +128,7 @@ def compute_revision():
 	sources.sort()
 	m = md5()
 	for source in sources:
-		f = file(source,'rb')
+		f = open(source,'rb')
 		readBytes = 100000
 		while (readBytes):
 			readString = f.read(readBytes)
