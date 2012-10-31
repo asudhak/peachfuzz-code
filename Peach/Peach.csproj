@@ -425,6 +425,7 @@
     <Content Include="samples\FilePerIteration.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="samples\fixup.py" />
     <Content Include="samples\HelloWorld.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -444,6 +445,7 @@
     <Content Include="samples\RemotePublisher.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="samples\ScriptFixup.xml" />
     <Content Include="samples\Server-Example.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
