@@ -147,7 +147,7 @@ namespace Peach.Core.Publishers
                     {
                         _client.Client.Shutdown(SocketShutdown.Send);
                     }
-                    catch (SocketException ex)
+                    catch (SocketException e)
                     {
                     }
 				}
