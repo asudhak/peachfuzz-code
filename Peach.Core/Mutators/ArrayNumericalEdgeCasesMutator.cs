@@ -167,11 +167,13 @@ namespace Peach.Core.Mutators
 
                     objAsArray.overrideCount = num;
 
-                    var elemValue = objAsArray[objAsArray.Count - 1].Value.Value;
+                    var elemValue = objAsArray[objAsArray.Count - 1].Value;
 
-                    var newValue = new BitStream(elemValue);
+                    var newValue = new BitStream();
+                    newValue.Write(elemValue);
+
                     for (int i = objAsArray.Count; i < num; i++)
-                        newValue.WriteBytes(elemValue);
+                        newValue.Write(elemValue);
 
                     objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
                     objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
