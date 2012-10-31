@@ -436,6 +436,7 @@
     <Compile Include="Dom\INamed.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Fixups\HashFixup.cs" />
+    <Compile Include="Fixups\ScriptFixup.cs" />
     <Compile Include="IPitSerializable.cs" />
     <Compile Include="Dom\Monitor.cs" />
     <Compile Include="Dom\Padding.cs" />
