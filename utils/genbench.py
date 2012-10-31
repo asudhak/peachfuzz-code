@@ -319,7 +319,7 @@ def setDir(dir):
 
 def main(argv):
     if len(argv) != 6:
-        print HELP_USAGE
+        print(HELP_USAGE)
         return
 
     root_dir = argv[1]
