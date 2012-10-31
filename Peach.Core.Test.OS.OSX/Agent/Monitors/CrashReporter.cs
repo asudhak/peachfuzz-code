@@ -92,12 +92,14 @@ namespace Peach.Core.Test.Agent.Monitors
 			reporter.IterationStarting(0, false);
 			if (process != null)
 			{
-				System.Diagnostics.Process p = new System.Diagnostics.Process();
-				p.StartInfo = new System.Diagnostics.ProcessStartInfo();
-				p.StartInfo.EnvironmentVariables["PEACH"] = peach;
-				p.StartInfo.UseShellExecute = false;
-				p.StartInfo.FileName = process;
-				p.Start();
+				using (System.Diagnostics.Process p = new System.Diagnostics.Process())
+				{
+					p.StartInfo = new System.Diagnostics.ProcessStartInfo();
+					p.StartInfo.EnvironmentVariables["PEACH"] = peach;
+					p.StartInfo.UseShellExecute = false;
+					p.StartInfo.FileName = process;
+					p.Start();
+				}
 			}
 			Thread.Sleep(2000);
 			reporter.IterationFinished();

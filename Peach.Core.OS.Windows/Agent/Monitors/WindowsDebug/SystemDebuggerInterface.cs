@@ -100,9 +100,9 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				if (_dbg == null)
 					return false;
 
-				foreach(System.Diagnostics.Process process in System.Diagnostics.Process.GetProcesses())
+				using (var p = System.Diagnostics.Process.GetProcessById(_dbg.dwProcessId))
 				{
-					if (process.Id == (int)_dbg.dwProcessId)
+					if (p != null && !p.HasExited)
 						return true;
 				}
 
@@ -184,7 +184,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					System.Diagnostics.Process proc = null;
 					var procs = System.Diagnostics.Process.GetProcessesByName(processName);
 					if (procs != null && procs.Length > 0)
+					{
 						proc = procs[0];
+						for (int i = 1; i < procs.Length; ++i)
+							procs[i].Close();
+					}
 
 					if (proc == null && int.TryParse(processName, out pid))
 						proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));

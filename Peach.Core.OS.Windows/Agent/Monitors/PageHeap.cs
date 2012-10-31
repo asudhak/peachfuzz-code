@@ -74,7 +74,12 @@ namespace Peach.Core.Agent.Monitors
 
 			try
 			{
-				System.Diagnostics.Process.Start(startInfo).WaitForExit();
+				using (var p = new System.Diagnostics.Process())
+				{
+					p.StartInfo = startInfo;
+					p.Start();
+					p.WaitForExit();
+				}
 			}
 			catch (Win32Exception exception)
 			{
@@ -92,8 +97,12 @@ namespace Peach.Core.Agent.Monitors
 
 			try
 			{
-
-				System.Diagnostics.Process.Start(startInfo).WaitForExit();
+				using (var p = new System.Diagnostics.Process())
+				{
+					p.StartInfo = startInfo;
+					p.Start();
+					p.WaitForExit();
+				}
 			}
 			catch (Win32Exception exception)
 			{

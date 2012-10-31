@@ -121,6 +121,7 @@ namespace PeachFuzzBang
 						foreach (Process proc in Process.GetProcesses())
 						{
 							textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
+							proc.Close();
 						}
 
 						LoadPlatformAssembly("Peach.Core.OS.Windows.dll");

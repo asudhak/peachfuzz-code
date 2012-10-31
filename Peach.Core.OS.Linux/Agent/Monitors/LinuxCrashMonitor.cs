@@ -94,50 +94,50 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			else
 				origionalCorePattern = null;
 
-			Process p;
-			ProcessStartInfo psi;
-
 			if (Directory.Exists(logFolder))
 			{
 				// Clean up our folder
+				using (var p = new Process())
+				{
+					var psi = new ProcessStartInfo();
+					psi.FileName = "/bin/rm";
+					psi.Arguments = "-rf " + logFolder + "/*";
+					psi.UseShellExecute = true;
 
-				psi = new ProcessStartInfo();
-				psi.FileName = "/bin/rm";
-				psi.Arguments = "-rf " + logFolder + "/*";
-				psi.UseShellExecute = true;
-
-				p = new Process();
-				p.StartInfo = psi;
-				p.Start();
-				p.WaitForExit();
+					p.StartInfo = psi;
+					p.Start();
+					p.WaitForExit();
+				}
 			}
 			else
 			{
 				// Create our folder and set permissions
+				using (var p = new Process())
+				{
+					var psi = new ProcessStartInfo();
+					psi.FileName = "mkdir";
+					psi.Arguments = "-p " + logFolder;
+					psi.UseShellExecute = true;
 
-				psi = new ProcessStartInfo();
-				psi.FileName = "mkdir";
-				psi.Arguments = "-p " + logFolder;
-				psi.UseShellExecute = true;
-
-				p = new Process();
-				p.StartInfo = psi;
-				p.Start();
-				p.WaitForExit();
+					p.StartInfo = psi;
+					p.Start();
+					p.WaitForExit();
+				}
 			}
 
 
 			// Enable core files
+			using (var p = new Process())
+			{
+				var psi = new ProcessStartInfo();
+				psi.FileName = "ulimit";
+				psi.Arguments = "-c unlimited";
+				psi.UseShellExecute = true;
 
-			psi = new ProcessStartInfo();
-			psi.FileName = "ulimit";
-			psi.Arguments = "-c unlimited";
-			psi.UseShellExecute = true;
-
-			p = new Process();
-			p.StartInfo = psi;
-			p.Start();
-			p.WaitForExit();
+				p.StartInfo = psi;
+				p.Start();
+				p.WaitForExit();
+			}
 		}
 
 		public override void  SessionFinished()
@@ -151,16 +151,17 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			if (Directory.Exists(logFolder))
 			{
 				// Remove folder
+				using (var p = new Process())
+				{
+					var psi = new ProcessStartInfo();
+					psi.FileName = "/bin/rm";
+					psi.Arguments = "-rf " + logFolder;
+					psi.UseShellExecute = true;
 
-				var psi = new ProcessStartInfo();
-				psi.FileName = "/bin/rm";
-				psi.Arguments = "-rf " + logFolder;
-				psi.UseShellExecute = true;
-
-				var p = new Process();
-				p.StartInfo = psi;
-				p.Start();
-				p.WaitForExit();
+					p.StartInfo = psi;
+					p.Start();
+					p.WaitForExit();
+				}
 			}
 		}
 

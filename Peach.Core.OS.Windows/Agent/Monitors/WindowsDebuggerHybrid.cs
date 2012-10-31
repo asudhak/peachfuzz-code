@@ -264,16 +264,18 @@ namespace Peach.Core.Agent.Monitors
 					try
 					{
 						int pid = _debugger != null ? _debugger.ProcessId : _systemDebugger.ProcessId;
-						var proc = System.Diagnostics.Process.GetProcessById(pid);
-						if (proc.HasExited)
-							return new Variant(0);
-
-						float cpu = GetProcessCpuUsage(proc);
-
-						if (cpu < 1.0)
+						using (var proc = System.Diagnostics.Process.GetProcessById(pid))
 						{
-							_StopDebugger();
-							return new Variant(0);
+							if (proc == null || proc.HasExited)
+								return new Variant(0);
+
+							float cpu = GetProcessCpuUsage(proc);
+
+							if (cpu < 1.0)
+							{
+								_StopDebugger();
+								return new Variant(0);
+							}
 						}
 					}
 					catch
@@ -488,9 +490,10 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (_debuggerProcess == null || _debuggerProcess.HasExited)
 			{
-				_debuggerChannelName = "PeachCore_" + 
-					System.Diagnostics.Process.GetCurrentProcess().Id.ToString() + "_" + 
-					(ipcChannelCount++);
+				using (var p = System.Diagnostics.Process.GetCurrentProcess())
+				{
+					_debuggerChannelName = "PeachCore_" + p.Id + "_" + (ipcChannelCount++);
+				}
 
 				// Launch the server process
 				_debuggerProcess = new System.Diagnostics.Process();
@@ -601,6 +604,7 @@ namespace Peach.Core.Agent.Monitors
 					if ((DateTime.Now - startTimer).Minutes >= 1)
 					{
 						_debuggerProcess.Kill();
+						_debuggerProcess.Close();
 						throw;
 					}
 				}
@@ -639,6 +643,7 @@ namespace Peach.Core.Agent.Monitors
 				{
 				}
 
+				_debuggerProcess.Close();
 				_debuggerProcess = null;
 			}
 		}

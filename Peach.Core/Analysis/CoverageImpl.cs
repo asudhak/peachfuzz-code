@@ -159,19 +159,21 @@ namespace Peach.Core.Analysis
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
 
-                var proc = new Process();
-                proc.StartInfo = psi;
-                proc.Start();
+				using (var proc = new Process())
+				{
+					proc.StartInfo = psi;
+					proc.Start();
 
-                if (_needsKilling)
-                {
-                    // TODO - Check process/cpu usage
-                    throw new NotImplementedException();
-                }
-                else
-                {
-                    proc.WaitForExit();
-                }
+					if (_needsKilling)
+					{
+						// TODO - Check process/cpu usage
+						throw new NotImplementedException();
+					}
+					else
+					{
+						proc.WaitForExit();
+					}
+				}
 
 				if (!File.Exists("bblocks.out"))
 				{
