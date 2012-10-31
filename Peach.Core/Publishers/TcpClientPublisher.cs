@@ -74,7 +74,7 @@ namespace Peach.Core.Publishers
 						throw new TimeoutException();
 					_client.EndConnect(ar);
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
 					if (_client != null)
 					{
@@ -90,7 +90,7 @@ namespace Peach.Core.Publishers
 					else
 					{
 						Logger.Error("open: Error, Unable to connect to remote host {0} on port {1}.", Host, Port);
-						throw new ActionException();
+						throw new SoftException(ex);
 					}
 				}
 			}

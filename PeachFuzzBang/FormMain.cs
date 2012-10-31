@@ -60,6 +60,23 @@ namespace PeachFuzzBang
 		Peach.Core.Dom.Dom userSelectedDom = null;
 		DataModel userSelectedDataModel = null;
 
+		private void LoadPlatformAssembly(string name)
+		{
+			string osAssembly = System.IO.Path.Combine(
+				System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+				name);
+
+			try
+			{
+				Assembly.LoadFrom(osAssembly);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Could not load platform assembly \"" + name + "\".", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				Console.WriteLine(ex.Message);
+			}
+		}
+
 		public FormMain()
 		{
 			InitializeComponent();
@@ -74,26 +91,19 @@ namespace PeachFuzzBang
 			//tabControl.TabPages.Remove(tabPageOutput);
 
 			// Check OS and load side assembly
-			string osAssembly = null;
 			Platform.OS os = Platform.GetOS();
 
 			switch (os)
 			{
 				case Platform.OS.Mac:
-					osAssembly = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						"Peach.Core.OS.OSX.dll");
-					Assembly.LoadFrom(osAssembly);
+					LoadPlatformAssembly("Peach.Core.OS.OSX.dll");
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
 					richTextBoxOSX.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.OSXDebugging.rtf"), RichTextBoxStreamType.RichText);
 					break;
 				case Platform.OS.Linux:
-					osAssembly = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						"Peach.Core.OS.Linux.dll");
-					Assembly.LoadFrom(osAssembly);
+					LoadPlatformAssembly("Peach.Core.OS.Linux.dll");
 					tabControl.TabPages.Remove(tabPageDebuggerOSX);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
@@ -113,10 +123,7 @@ namespace PeachFuzzBang
 							textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
 						}
 
-						osAssembly = System.IO.Path.Combine(
-							System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-							"Peach.Core.OS.Windows.dll");
-						Assembly.LoadFrom(osAssembly);
+						LoadPlatformAssembly("Peach.Core.OS.Windows.dll");
 
 						tabControl.TabPages.Remove(tabPageDebuggerOSX);
 						tabControl.TabPages.Remove(tabPageDebuggerLinux);

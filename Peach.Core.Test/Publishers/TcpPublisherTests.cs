@@ -295,6 +295,7 @@ namespace Peach.Core.Test.Publishers
 		[Test]
 		public void TcpConnectRetry()
 		{
+			// Should throw PeachException if unable to connect during a control iteration
 			string xml = string.Format(template, "ClientState", "TcpClient", "Host", 20);
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -304,9 +305,7 @@ namespace Peach.Core.Test.Publishers
 
 			Engine e = new Engine(null);
 			e.config = config;
-			e.startFuzzing(dom, config);
-
-			Assert.AreEqual(1, dataModels.Count);
+			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
 		}
 	}
 }
