@@ -646,17 +646,7 @@ namespace Peach.Core.IO
 
 		public static void CopyTo(Stream sin, Stream sout)
 		{
-			byte[] buff = new byte[1024 * 3];
-			int ret;
-
-			while (true)
-			{
-				ret = sin.Read(buff, 0, buff.Length);
-				if (ret == 0)
-					break;
-
-				sout.Write(buff, 0, ret);
-			}
+			sin.CopyTo(sout, 1024*1024);
 		}
 
 		/// <summary>
