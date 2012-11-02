@@ -646,7 +646,8 @@ namespace Peach.Core.IO
 
 		public static void CopyTo(Stream sin, Stream sout)
 		{
-			sin.CopyTo(sout, 1024*1024);
+			int len = (int)Math.Max(sin.Length, 1024*1024);
+			sin.CopyTo(sout, len);
 		}
 
 		/// <summary>
