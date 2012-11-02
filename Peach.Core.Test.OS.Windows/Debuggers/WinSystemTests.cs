@@ -100,15 +100,15 @@ namespace Peach.Core.Test.Debuggers
 
 					if (e.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
 					{
-						if (e.u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 &&
-							e.u.Exception.ExceptionRecord.ExceptionInformation[1] != 0)
+						if (e.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 1 &&
+							e.u.Exception.ExceptionRecord.ExceptionInformation[1].ToInt64() != 0)
 						{
 							// is write a/v?
 							Console.Error.WriteLine("HandleAccessViolation: First chance write a/v");
 							break;
 						}
 
-						if (e.u.Exception.ExceptionRecord.ExceptionInformation[0] == 0)
+						if (e.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
 						{
 							// is DEP?
 							Console.Error.WriteLine("HandleAccessViolation: First chance DEP");

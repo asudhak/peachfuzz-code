@@ -63,7 +63,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public bool _caughtException = false;
 		public Dictionary<string, Variant> crashInfo = null;
 
-		ManualResetEvent _dbgCreated = new ManualResetEvent(false);
+		ManualResetEvent _dbgCreated;
 		
 		public SystemDebuggerInstance()
 		{
@@ -124,7 +124,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			if (_dbg != null || _dbgThread != null)
 				FinishDebugging();
 
-			_dbgCreated.Reset();
+			_dbgCreated = new ManualResetEvent(false);
 
 			_dbgThread = new Thread(new ThreadStart(Run));
 			_dbgThread.Start();
@@ -150,8 +150,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			var b = this.caughtException;
 
 			dbgExited = true;
+			_dbg.Close();
 			_dbg = null;
 			_dbgThread = null;
+			_dbgCreated.Close();
+			_dbgCreated = null;
 		}
 
 		public void FinishDebugging()
@@ -252,12 +255,12 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
 				{
 					// A/V on EIP || DEP
-					if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0] == 0)
+					if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
 						handle = true;
 
 					// write a/v not near null
-					else if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0] == 1 &&
-						DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[1] != 0)
+					else if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 1 &&
+						DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[1].ToInt64() != 0)
 						handle = true;
 				}
 

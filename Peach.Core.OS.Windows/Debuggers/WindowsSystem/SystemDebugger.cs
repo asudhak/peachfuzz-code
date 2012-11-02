@@ -83,16 +83,6 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public const uint DBG_CONTINUE = 0x00010002;
 		public const uint DBG_EXCEPTION_NOT_HANDLED = 0x80010001;
 
-		public const uint CREATE_PROCESS_DEBUG_EVENT = 3;
-		public const uint CREATE_THREAD_DEBUG_EVENT = 2;
-		public const uint EXCEPTION_DEBUG_EVENT = 1;
-		public const uint EXIT_PROCESS_DEBUG_EVENT = 5;
-		public const uint EXIT_THREAD_DEBUG_EVENT = 4;
-		public const uint LOAD_DLL_DEBUG_EVENT = 6;
-		public const uint OUTPUT_DEBUG_STRING_EVENT = 8;
-		public const uint RIP_EVENT = 9;
-		public const uint UNLOAD_DLL_DEBUG_EVENT = 7;
-
 		public const uint STATUS_GUARD_PAGE_VIOLATION = 0x80000001;
 		public const uint STATUS_DATATYPE_MISALIGNMENT = 0x80000002;
 		public const uint STATUS_BREAKPOINT = 0x80000003;
@@ -230,22 +220,15 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		public void MainLoop()
 		{
-			UnsafeMethods.DEBUG_EVENT debug_event = new UnsafeMethods.DEBUG_EVENT();
+			UnsafeMethods.DEBUG_EVENT debug_event;
 			processStarted.Set();
 
 			while (!processExit && ContinueDebugging())
 			{
-				uint dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-
-				if (!UnsafeMethods.WaitForDebugEvent(ref debug_event, 100))
+				if (!UnsafeMethods.WaitForDebugEvent(out debug_event, 100))
 					continue;
 
-				// Filter for target process id.  It is possible to get a 2nd
-				// chance exception for a process that we stopped wanting
-				// to monitor after processing a 1st chance exception. Or anytime
-				// the ContinueDebugging callback returns false before processExit is true.
-				if (debug_event.dwProcessId == this.dwProcessId)
-					dwContinueStatus = ProcessDebugEvent(ref debug_event);
+				uint dwContinueStatus = ProcessDebugEvent(ref debug_event);
 
 				if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId,
 									debug_event.dwThreadId, dwContinueStatus))
@@ -253,69 +236,10 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			}
 		}
 
-		/// <summary>
-		/// Set a breakpoint at a specific address
-		/// </summary>
-		/// <param name="module"></para>m
-		/// <param name="addr"></param>
-		public void SetBreakpoint(string module, ulong addr)
+		public void Close()
 		{
-			if (_breakpointOrigionalInstructions.ContainsKey(addr))
-				return;
-
-//            byte [] instruction = new byte[1];
-//            byte [] newInstruction = new byte[1];
-//            uint dwReadBytes;
-
-//            newInstruction[0] = 0xcc;
-
-////				IntPtr.Add(_moduleBaseAddresses[module], (int)addr), 
-//            UnsafeMethods.ReadProcessMemory(
-//                _processInformation.hProcess, 
-//                IntPtr.Add(IntPtr.Zero, (int)addr),
-//                instruction, 
-//                1, 
-//                out dwReadBytes);
-
-//            UnsafeMethods.WriteProcessMemory(_processInformation.hProcess,
-//                IntPtr.Add(IntPtr.Zero, (int)addr),
-//                newInstruction,
-//                1,
-//                out dwReadBytes);
-
-//            UnsafeMethods.FlushInstructionCache(
-//                _processInformation.hProcess,
-//                IntPtr.Add(IntPtr.Zero, (int)addr),
-//                1);
-
-//            _breakpointOrigionalInstructions[addr] = instruction[0];
+			processStarted.Close();
 		}
-
-		///* Source: http://bytes.com/topic/c-sharp/answers/249770-byte-structure */
-		//public static object RawDeserialize(byte[] rawData, int position, Type anyType)
-		//{
-		//    int rawsize = Marshal.SizeOf(anyType);
-		//    if (rawsize > rawData.Length)
-		//        return null;
-		//    IntPtr buffer = Marshal.AllocHGlobal(rawsize);
-		//    Marshal.Copy(rawData, position, buffer, rawsize);
-		//    object retobj = Marshal.PtrToStructure(buffer, anyType);
-		//    Marshal.FreeHGlobal(buffer);
-		//    return retobj;
-		//}
-
-		///* Source: http://bytes.com/topic/c-sharp/answers/249770-byte-structure */
-		//public static byte[] RawSerialize(object anything)
-		//{
-		//    int rawSize = Marshal.SizeOf(anything);
-		//    IntPtr buffer = Marshal.AllocHGlobal(rawSize);
-		//    Marshal.StructureToPtr(anything, buffer, false);
-		//    byte[] rawDatas = new byte[rawSize];
-		//    Marshal.Copy(buffer, rawDatas, 0, rawSize);
-		//    Marshal.FreeHGlobal(buffer);
-		//    return rawDatas;
-		//}
-
 
 		protected uint ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
@@ -323,106 +247,26 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 			switch (DebugEv.dwDebugEventCode)
 			{
-				case EXCEPTION_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.EXCEPTION_DEBUG_EVENT:
 					// Process the exception code. When handling 
 					// exceptions, remember to set the continuation 
 					// status parameter (dwContinueStatus). This value 
 					// is used by the ContinueDebugEvent function. 
-
 					logger.Trace("EXCEPTION_DEBUG_EVENT");
-					switch (DebugEv.u.Exception.ExceptionRecord.ExceptionCode)
-					{
-						case EXCEPTION_ACCESS_VIOLATION:
-							// First chance: Pass this on to the system. 
-							// Last chance: Display an appropriate error. 
-
-							logger.Trace("EXCEPTION_ACCESS_VIOLATION");
-							if(HandleAccessViolation != null)
-								HandleAccessViolation(DebugEv);
-
-							break;
-
-						case EXCEPTION_BREAKPOINT:
-							logger.Trace("EXCEPTION_BREAKPOINT");
-
-							// From: http://stackoverflow.com/questions/3799294/im-having-problems-with-waitfordebugevent-exception-debug-event
-							// If launch a process and expect to debug it using the Windows API calls,
-							// you should know that Windows will send one EXCEPTION_BREAKPOINT (INT3)
-							// when it first loads. You must DEBUG_CONTINUE this first breakpoint
-							// exception... if you DBG_EXCEPTION_NOT_HANDLED you will get the popup
-							// message box: The application failed to initialize properly (0x80000003).
-
-							dwContinueStatus = DBG_CONTINUE;
-
-							//if (!_breakpointOrigionalInstructions.ContainsKey((ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()))
-							//    break;
-
-							//// 1. GetThreadContext, reduce EIP by one, SetThreadContext
-							//UnsafeMethods.CONTEXT lcContext = new UnsafeMethods.CONTEXT();
-							//lcContext.ContextFlags = (uint)UnsafeMethods.CONTEXT_FLAGS.CONTEXT_ALL;
-							//UnsafeMethods.GetThreadContext(_processInformation.hThread, ref lcContext);
-
-							//lcContext.Eip --; // Move back one byte
-							//UnsafeMethods.SetThreadContext(_processInformation.hThread, ref lcContext);
-
-							//// 2. Revert the original instruction
-							//uint dwWriteSize;
-							//byte[] instruction = new byte[1];
-							//instruction[0] = _breakpointOrigionalInstructions[(ulong)DebugEv.u.Exception.ExceptionRecord.ExceptionAddress.ToInt64()];
-
-							//UnsafeMethods.WriteProcessMemory(
-							//    _processInformation.hProcess,
-							//    DebugEv.u.Exception.ExceptionRecord.ExceptionAddress,
-							//    instruction, 
-							//    1, 
-							//    out dwWriteSize);
-
-							//UnsafeMethods.FlushInstructionCache(
-							//    _processInformation.hProcess, 
-							//    DebugEv.u.Exception.ExceptionRecord.ExceptionAddress, 
-							//    1);
-
-							//if (HandleBreakPoint != null)
-							//    HandleBreakPoint(DebugEv);
-							break;
-
-						case EXCEPTION_DATATYPE_MISALIGNMENT:
-							logger.Trace("EXCEPTION_DATATYPE_MISALIGNMENT");
-							// First chance: Pass this on to the system. 
-							// Last chance: Display an appropriate error. 
-							break;
-
-						case EXCEPTION_SINGLE_STEP:
-							logger.Trace("EXCEPTION_SINGLE_STEP");
-							// First chance: Update the display of the 
-							// current instruction and register values. 
-							break;
-
-						case DBG_CONTROL_C:
-							logger.Trace("DBG_CONTROL_C");
-							// First chance: Pass this on to the system. 
-							// Last chance: Display an appropriate error. 
-							break;
-
-						default:
-							logger.Trace("UNKNOWN");
-							// Handle other exceptions. 
-							break;
-					}
-
+					dwContinueStatus = OnExceptionDebugEvent(DebugEv);
 					break;
 
-				case CREATE_THREAD_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.CREATE_THREAD_DEBUG_EVENT:
 					// As needed, examine or change the thread's registers 
 					// with the GetThreadContext and SetThreadContext functions; 
 					// and suspend and resume thread execution with the 
 					// SuspendThread and ResumeThread functions. 
 
-					//dwContinueStatus = OnCreateThreadDebugEvent(DebugEv);
 					logger.Trace("CREATE_THREAD_DEBUG_EVENT");
+					dwContinueStatus = OnCreateThreadDebugEvent(DebugEv);
 					break;
 
-				case CREATE_PROCESS_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.CREATE_PROCESS_DEBUG_EVENT:
 					// As needed, examine or change the registers of the
 					// process's initial thread with the GetThreadContext and
 					// SetThreadContext functions; read from and write to the
@@ -432,89 +276,169 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// functions. Be sure to close the handle to the process image
 					// file with CloseHandle.
 
-					//dwContinueStatus = OnCreateProcessDebugEvent(DebugEv);
 					logger.Trace("CREATE_PROCESS_DEBUG_EVENT");
+					dwContinueStatus = OnCreateProcessDebugEvent(DebugEv);
 					break;
 
-				case EXIT_THREAD_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.EXIT_THREAD_DEBUG_EVENT:
 					// Display the thread's exit code. 
 
-					//dwContinueStatus = OnExitThreadDebugEvent(DebugEv);
 					logger.Trace("EXIT_PROCESS_DEBUG_EVENT");
+					dwContinueStatus = OnExitThreadDebugEvent(DebugEv);
 					break;
 
-				case EXIT_PROCESS_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.EXIT_PROCESS_DEBUG_EVENT:
 					// Display the process's exit code. 
 
-					//dwContinueStatus = OnExitProcessDebugEvent(DebugEv);
 					logger.Trace("EXIT_PROCESS_DEBUG_EVENT");
-					if (dwProcessId == DebugEv.dwProcessId)
-					{
-						processExit = true;
-					}
-
+					dwContinueStatus = OnExitProcessDebugEvent(DebugEv);
 					break;
 
-				case LOAD_DLL_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.LOAD_DLL_DEBUG_EVENT:
 					// Read the debugging information included in the newly 
 					// loaded DLL. Be sure to close the handle to the loaded DLL 
 					// with CloseHandle.
 
 					logger.Trace("LOAD_DLL_DEBUG_EVENT");
-					//dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
-
-					//string name = null;
-					//IntPtr baseAddr = IntPtr.Zero;
-					//IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(DebugEv));
-					//UnsafeMethods.UnionLoadDll2 unionLoadDll = new UnsafeMethods.UnionLoadDll2();
-
-					//Marshal.StructureToPtr(DebugEv, ptr, false);
-					//unionLoadDll = (UnsafeMethods.UnionLoadDll2)Marshal.PtrToStructure(ptr, typeof(UnsafeMethods.UnionLoadDll2));
-
-					//if (unionLoadDll.LoadDll.lpImageName != IntPtr.Zero)
-					//    name = Marshal.PtrToStringAnsi(unionLoadDll.LoadDll.lpImageName);
-
-					//if(name == null || name == "")
-					//    name = GetFileNameFromHandle(unionLoadDll.LoadDll.hFile);
-					//if (name == null)
-					//    break;
-
-					//_moduleBaseAddresses[name.ToLower()] = unionLoadDll.LoadDll.lpBaseOfDll;
-
-					//if (HandleLoadDll != null)
-					//    HandleLoadDll(DebugEv, name.ToLower());
-
+					dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
 					break;
 
-				case UNLOAD_DLL_DEBUG_EVENT:
+				case UnsafeMethods.DebugEventType.UNLOAD_DLL_DEBUG_EVENT:
 					// Display a message that the DLL has been unloaded. 
 
-					//dwContinueStatus = OnUnloadDllDebugEvent(DebugEv);
-
 					logger.Trace("UNLOAD_DLL_DEBUG_EVENT");
+					dwContinueStatus = OnUnloadDllDebugEvent(DebugEv);
 					break;
 
-				case OUTPUT_DEBUG_STRING_EVENT:
+				case UnsafeMethods.DebugEventType.OUTPUT_DEBUG_STRING_EVENT:
 					// Display the output debugging string. 
 
-					//dwContinueStatus = OnOutputDebugStringEvent(DebugEv);
-
 					logger.Trace("OUTPUT_DEBUG_STRING_EVENT");
+					dwContinueStatus = OnOutputDebugStringEvent(DebugEv);
 					break;
 
-				case RIP_EVENT:
-					//dwContinueStatus = OnRipEvent(DebugEv);
-
+				case UnsafeMethods.DebugEventType.RIP_EVENT:
 					logger.Trace("RIP_EVENT");
+					dwContinueStatus = OnRipEvent(DebugEv);
 					break;
 
 				default:
-
 					logger.Trace("UNKNOWN DEBUG EVENT");
 					break;
 			}
 
 			return dwContinueStatus;
+		}
+
+		private uint OnRipEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			return DBG_CONTINUE;
+		}
+
+		private uint OnOutputDebugStringEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			return DBG_CONTINUE;
+		}
+
+		private uint OnUnloadDllDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			return DBG_CONTINUE;
+		}
+
+		private uint OnLoadDllDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			var LoadDll = DebugEv.u.LoadDll;
+			UnsafeMethods.CloseHandle(LoadDll.hFile);
+			return DBG_CONTINUE;
+		}
+
+		private uint OnExitThreadDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			return DBG_CONTINUE;
+		}
+
+		private uint OnCreateProcessDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			var CreateProcessInfo = DebugEv.u.CreateProcessInfo;
+			UnsafeMethods.CloseHandle(CreateProcessInfo.hFile);
+			UnsafeMethods.CloseHandle(CreateProcessInfo.hProcess);
+			UnsafeMethods.CloseHandle(CreateProcessInfo.hThread);
+			return DBG_CONTINUE;
+		}
+
+		private uint OnCreateThreadDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			var CreateThread = DebugEv.u.CreateThread;
+			UnsafeMethods.CloseHandle(CreateThread.hThread);
+			return DBG_CONTINUE;
+		}
+
+		private uint OnExitProcessDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			if (dwProcessId == DebugEv.dwProcessId)
+			{
+				processExit = true;
+			}
+
+			return DBG_CONTINUE;
+		}
+
+		private uint OnExceptionDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
+			// Filter for target process id.  It is possible to get a 2nd
+			// chance exception for a process that we stopped wanting
+			// to monitor after processing a 1st chance exception. Or anytime
+			// the ContinueDebugging callback returns false before processExit is true.
+
+			var Exception = DebugEv.u.Exception;
+
+			switch (Exception.ExceptionRecord.ExceptionCode)
+			{
+				case EXCEPTION_ACCESS_VIOLATION:
+					// First chance: Pass this on to the system. 
+					// Last chance: Display an appropriate error. 
+
+					logger.Trace("EXCEPTION_ACCESS_VIOLATION");
+					if (DebugEv.dwProcessId == this.dwProcessId && HandleAccessViolation != null)
+						HandleAccessViolation(DebugEv);
+
+					break;
+
+				case EXCEPTION_BREAKPOINT:
+					logger.Trace("EXCEPTION_BREAKPOINT");
+					// From: http://stackoverflow.com/questions/3799294/im-having-problems-with-waitfordebugevent-exception-debug-event
+					// If launch a process and expect to debug it using the Windows API calls,
+					// you should know that Windows will send one EXCEPTION_BREAKPOINT (INT3)
+					// when it first loads. You must DEBUG_CONTINUE this first breakpoint
+					// exception... if you DBG_EXCEPTION_NOT_HANDLED you will get the popup
+					// message box: The application failed to initialize properly (0x80000003).
+					return DBG_CONTINUE;
+
+				case EXCEPTION_DATATYPE_MISALIGNMENT:
+					logger.Trace("EXCEPTION_DATATYPE_MISALIGNMENT");
+					// First chance: Pass this on to the system. 
+					// Last chance: Display an appropriate error. 
+					break;
+
+				case EXCEPTION_SINGLE_STEP:
+					logger.Trace("EXCEPTION_SINGLE_STEP");
+					// First chance: Update the display of the 
+					// current instruction and register values. 
+					break;
+
+				case DBG_CONTROL_C:
+					logger.Trace("DBG_CONTROL_C");
+					// First chance: Pass this on to the system. 
+					// Last chance: Display an appropriate error. 
+					break;
+
+				default:
+					logger.Trace("UNKNOWN");
+					// Handle other exceptions. 
+					break;
+			}
+
+			return DBG_EXCEPTION_NOT_HANDLED;
 		}
 
 		string GetFileNameFromHandle(IntPtr hFile)
