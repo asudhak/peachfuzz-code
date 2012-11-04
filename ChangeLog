@@ -6,6 +6,7 @@ NEW IN WAF 1.7.6
 * Raise an error when a tex manually-provided dependency is not found #1209
 * Enforce a stable name in bld(rule=..., name=undefined) to prevent rebuilds
 * Enhanced support for flex on win32 and msys #1207 #1211
+* Fixed a regression on configuration tests running with -Werror/-Wall #1220
 
 NEW IN WAF 1.7.5
 ----------------
