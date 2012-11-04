@@ -27,7 +27,10 @@ MAIN_CODE = '''
 #define testEXPORT
 #endif
 testEXPORT int lib_func(void);
-int main(int argc, char **argv) {return !(lib_func() == 9);}
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return !(lib_func() == 9);
+}
 '''
 
 @feature('link_lib_test')
@@ -123,7 +126,12 @@ def check_inline(self, **kw):
 
 ########################################################################################
 
-LARGE_FRAGMENT = '#include <unistd.h>\nint main(int argc, char **argv) { return !(sizeof(off_t) >= 8); }\n'
+LARGE_FRAGMENT = '''#include <unistd.h>
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
+	return !(sizeof(off_t) >= 8);
+}
+'''
 
 @conf
 def check_large_file(self, **kw):

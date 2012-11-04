@@ -24,7 +24,7 @@ cfg_ver = {
 }
 
 SNIP_FUNCTION = '''
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
 	(void)argc; (void)argv;
 	void *p;
 	p=(void*)(%s);
