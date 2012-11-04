@@ -35,6 +35,7 @@ extern "C" {
 #endif
 int main(int argc, char **argv)
 {
+   (void)argc; (void)argv;
    Py_Initialize();
    Py_Finalize();
    return 0;
