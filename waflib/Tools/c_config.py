@@ -83,14 +83,23 @@ MACRO_TO_DESTOS = {
 
 MACRO_TO_DEST_CPU = {
 '__x86_64__'  : 'x86_64',
+'__amd64__'   : 'x86_64',
 '__i386__'    : 'x86',
 '__ia64__'    : 'ia',
 '__mips__'    : 'mips',
 '__sparc__'   : 'sparc',
 '__alpha__'   : 'alpha',
+'__aarch64__' : 'aarch64',
+'__thumb__'   : 'thumb',
 '__arm__'     : 'arm',
 '__hppa__'    : 'hppa',
 '__powerpc__' : 'powerpc',
+'__ppc__'     : 'powerpc',
+'__convex__'  : 'convex',
+'__m68k__'    : 'm68k',
+'__s390x__'   : 's390x',
+'__s390__'    : 's390',
+'__sh__'      : 'sh',
 }
 
 @conf
