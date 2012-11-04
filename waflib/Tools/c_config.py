@@ -24,7 +24,8 @@ cfg_ver = {
 }
 
 SNIP_FUNCTION = '''
-	int main(int argc, char **argv) {
+int main(int argc, char ** argv) {
+	(void)argc; (void)argv;
 	void *p;
 	p=(void*)(%s);
 	return 0;
@@ -34,6 +35,7 @@ SNIP_FUNCTION = '''
 
 SNIP_TYPE = '''
 int main(int argc, char **argv) {
+	(void)argc; (void)argv;
 	if ((%(type_name)s *) 0) return 0;
 	if (sizeof (%(type_name)s)) return 0;
 	return 1;
@@ -43,12 +45,14 @@ int main(int argc, char **argv) {
 
 SNIP_EMPTY_PROGRAM = '''
 int main(int argc, char **argv) {
+	(void)argc; (void)argv;
 	return 0;
 }
 '''
 
 SNIP_FIELD = '''
 int main(int argc, char **argv) {
+	(void)argc; (void)argv;
 	char *off;
 	off = (char*) &((%(type_name)s*)0)->%(field_name)s;
 	return (size_t) off < sizeof(%(type_name)s);
