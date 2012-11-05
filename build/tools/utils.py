@@ -97,7 +97,10 @@ def cs_resource(self):
 
 @conf
 def clone_env(self, variant):
-	copy = self.all_envs[variant].derive()
+	env = self.all_envs.get(variant, None)
+	if env is None:
+		return None
+	copy = env.derive()
 	copy.PREFIX = self.env.PREFIX
 	copy.BINDIR = self.env.BINDIR
 	copy.LIBDIR = self.env.LIBDIR
