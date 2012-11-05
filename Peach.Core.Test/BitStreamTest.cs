@@ -34,6 +34,7 @@ using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.IO;
+using System.IO;
 
 namespace Peach.Core.Test
 {
@@ -616,6 +617,46 @@ namespace Peach.Core.Test
 			bs.WriteInt64(Int64.MinValue);
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MinValue, bs.ReadInt64());
+		}
+
+		[Test]
+		public void TestSeek()
+		{
+			MemoryStream ms = new MemoryStream();
+			Assert.AreEqual(0, ms.Length);
+			Assert.AreEqual(0, ms.Position);
+			ms.Seek(10, SeekOrigin.Begin);
+			Assert.AreEqual(0, ms.Length);
+			Assert.AreEqual(10, ms.Position);
+			ms.WriteByte(1);
+			Assert.AreEqual(11, ms.Length);
+			Assert.AreEqual(11, ms.Position);
+
+			BitStream bs = new BitStream();
+			Assert.AreEqual(0, bs.LengthBits);
+			Assert.AreEqual(0, bs.LengthBytes);
+			Assert.AreEqual(0, bs.TellBits());
+			Assert.AreEqual(0, bs.TellBytes());
+			Assert.AreEqual(0, bs.Stream.Length);
+			Assert.AreEqual(0, bs.Stream.Position);
+
+			bs.SeekBits(10, SeekOrigin.Begin);
+			Assert.AreEqual(0, bs.LengthBits);
+			Assert.AreEqual(0, bs.LengthBytes);
+			Assert.AreEqual(10, bs.TellBits());
+			Assert.AreEqual(1, bs.TellBytes());
+			Assert.AreEqual(0, bs.Stream.Length);
+			Assert.AreEqual(1, bs.Stream.Position);
+
+			bs.WriteBit(1);
+			Assert.AreEqual(11, bs.LengthBits);
+			Assert.AreEqual(2, bs.LengthBytes);
+			Assert.AreEqual(11, bs.TellBits());
+			Assert.AreEqual(1, bs.TellBytes());
+			Assert.AreEqual(2, bs.Stream.Length);
+			Assert.AreEqual(1, bs.Stream.Position);
+
+
 		}
 	}
 }
