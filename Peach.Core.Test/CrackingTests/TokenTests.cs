@@ -392,6 +392,64 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 		}
+
+        [Test]
+        public void SizedByToken()
+        {
+            //Test that unknown sizes can be successfully bounded by linear tokens.
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+               "<Peach>" +
+               "   <DataModel name=\"TheDataModel\">" +
+                "      <String name=\"Token1\" value=\"!PRE!\" token=\"true\"/>" +
+               "       <Block name=\"TheBlock\">" +
+               "           <Transformer class=\"Base64Encode\"/>" +
+               "           <String name=\"Data\" value=\"SUCCESS\" token=\"true\"/>" +
+               "       </Block>" +
+               "      <String name=\"Token2\" value=\"!POST!\" token=\"true\"/>" +
+               "   </DataModel>" +
+               "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("!PRE!U1VDQ0VTUw==!POST!"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+        }
+
+        [Test]
+        public void SizedByToken2()
+        {
+            //Test that unknown sizes can be successfully bounded by linear tokens.
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+               "<Peach>" +
+               "   <DataModel name=\"TheDataModel\">" +
+                "      <String name=\"Token1\" value=\"!PRE!\" token=\"true\"/>" +
+               "       <Block name=\"TheBlock\">" +
+               "           <Transformer class=\"Base64Encode\"/>" +
+               "           <String name=\"Data\" />" +
+               "       </Block>" +
+               "      <String name=\"Token2\" value=\"!POST!\" token=\"true\"/>" +
+               "   </DataModel>" +
+               "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("!PRE!U1VDQ0VTUw==!POST!"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual("SUCCESS", (string)dom.dataModels[0].find("Data").DefaultValue);
+        }
 	}
 }
 
