@@ -436,8 +436,10 @@ namespace Peach.Core.Dom
 
 		public bool Remove(DataElement item)
 		{
-			if (item.parent is Choice)
-				return parent.Remove(item.parent);
+			System.Diagnostics.Debug.Assert(item.parent == this);
+
+			if (parent != null && Count == 1)
+				return parent.Remove(this);
 
 			item.ClearRelations();
 
