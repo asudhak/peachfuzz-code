@@ -100,8 +100,6 @@ namespace Peach.Core.Mutators
 
 		private void performMutation(DataElement obj, uint newCount)
 		{
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-
 			int startIdx = obj.parent.IndexOf(obj) + 1;
 			for (int i = 0; i < newCount; ++i)
 			{

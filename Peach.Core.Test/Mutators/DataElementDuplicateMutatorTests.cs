@@ -122,6 +122,56 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual(1, min);
             Assert.AreEqual(2, max);
         }
+
+		[Test]
+		public void TypeTransform()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheModel"">
+		<Number name=""num"" size=""16"">
+			<Relation type=""size"" of=""str""/>
+		</Number>
+		<String name=""str"" value=""Hello"" />
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Random""/>
+	</Test>
+</Peach>
+";
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("SizedNumericalEdgeCasesMutator");
+			dom.tests[0].includedMutators.Add("DataElementDuplicateMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.randomSeed = 1;
+			config.rangeStart = 0;
+			config.rangeStop = 3;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(3, iterStrategies.Count);
+
+			// Looking for SizedNumerical on len and DataElementDuplicate on str
+			Assert.AreEqual("SizedNumericalEdgeCasesMutator | TheModel.num ; DataElementDuplicateMutator | TheModel.str", iterStrategies[2]);
+		}
+
     }
 }
 
