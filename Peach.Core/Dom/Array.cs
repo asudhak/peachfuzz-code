@@ -157,7 +157,7 @@ namespace Peach.Core.Dom
 						logger.Debug("Crack: {0}, minOccurs = 0, our look ahead failed, must be zero elements in this array.",
 							element.fullName, cnt.ToString());
 
-						element.Remove(clone);
+						element.RemoveAt(clone.parent.IndexOf(clone));
 						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
 
 						break;
