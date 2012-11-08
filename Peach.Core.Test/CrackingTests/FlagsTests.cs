@@ -67,5 +67,59 @@ namespace Peach.Core.Test.CrackingTests
 			string expected = "00000000   00 00 48 65 6C 6C 6F 20  57 6F 72 6C 64            ??Hello World   " + Environment.NewLine;
 			Assert.AreEqual(expected, results);
 		}
+
+		[Test]
+		public void OutputFlag()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""Model"">
+		<Block name=""block"">
+			<Flags name=""tlv"" size=""16"" endian=""little"">
+				<Flag name=""type"" size=""7""  position=""0"" value=""1""/>
+				<Flag name=""length"" size=""9"" position=""7"" value=""7""/>
+			</Flags>
+			<Blob name=""value"" valueType=""hex"" value=""ff""/>
+		</Block>
+	</DataModel>
+
+	<StateModel name=""TheStateModel"" initialState=""initial"">
+		<State name=""initial"">
+			<Action type=""output"">
+				<DataModel ref=""Model"" />
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<Strategy class=""Sequential""/>
+		<StateModel ref=""TheStateModel""/>
+		<Publisher class=""Null""/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			BitStream val = dom.dataModels[0].Value;
+			Assert.NotNull(val);
+			Assert.AreEqual(3, val.LengthBytes);
+			Assert.AreEqual(3 * 8, val.LengthBits);
+
+			MemoryStream ms = val.Stream as MemoryStream;
+			byte[] buf = ms.GetBuffer();
+
+			Assert.AreEqual(0x02, buf[0]);
+			Assert.AreEqual(0x07, buf[1]);
+			Assert.AreEqual(0xff, buf[2]);
+		}
 	}
 }

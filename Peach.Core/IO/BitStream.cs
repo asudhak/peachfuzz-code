@@ -772,7 +772,7 @@ namespace Peach.Core.IO
 
 			// Increment our current position
 			pos++;
-			if (pos >= len)
+			if (pos > len)
 				len++;
 		}
 
