@@ -283,79 +283,39 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			FileMapExecute = 0x0020,
 		}
 
-		[StructLayout(LayoutKind.Explicit, Size = 84)]
-		public struct Union
+		public enum DebugEventType : uint
 		{
-			[FieldOffset(0)]
-			public EXCEPTION_DEBUG_INFO Exception;
-			//public CREATE_THREAD_DEBUG_INFO CreateThread;
-			//[FieldOffset(0)]
-			//public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
-			//[FieldOffset(0)]
-			//public EXIT_THREAD_DEBUG_INFO ExitThread;
-			//[FieldOffset(0)]
-			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
-			//[FieldOffset(0)]
-			//public LOAD_DLL_DEBUG_INFO LoadDll;
-			//[FieldOffset(0)]
-			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
-			//[FieldOffset(0)]
-			//public OUTPUT_DEBUG_STRING_INFO DebugString;
-			//[FieldOffset(0)]
-			//public RIP_INFO RipInfo;
-		}
+			EXCEPTION_DEBUG_EVENT      = 1,
+			CREATE_THREAD_DEBUG_EVENT  = 2,
+			CREATE_PROCESS_DEBUG_EVENT = 3,
+			EXIT_THREAD_DEBUG_EVENT    = 4,
+			EXIT_PROCESS_DEBUG_EVENT   = 5,
+			LOAD_DLL_DEBUG_EVENT       = 6,
+			UNLOAD_DLL_DEBUG_EVENT     = 7,
+			OUTPUT_DEBUG_STRING_EVENT  = 8,
+			RIP_EVENT                  = 9,
+		};
 
-		[StructLayout(LayoutKind.Explicit, Size = 84)]
-		public struct UnionLoadDll
-		{
-			//[FieldOffset(0)]
-			//public EXCEPTION_DEBUG_INFO Exception;
-			//public CREATE_THREAD_DEBUG_INFO CreateThread;
-			//[FieldOffset(0)]
-			//public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
-			//[FieldOffset(0)]
-			//public EXIT_THREAD_DEBUG_INFO ExitThread;
-			//[FieldOffset(0)]
-			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
-			[FieldOffset(0)]
-			public LOAD_DLL_DEBUG_INFO LoadDll;
-			//[FieldOffset(0)]
-			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
-			//[FieldOffset(0)]
-			//public OUTPUT_DEBUG_STRING_INFO DebugString;
-			//[FieldOffset(0)]
-			//public RIP_INFO RipInfo;
-		}
-
-		[StructLayout(LayoutKind.Explicit, Size = 84)]
-		public struct UnionLoadDll2
-		{
-			//[FieldOffset(0)]
-			//public EXCEPTION_DEBUG_INFO Exception;
-			//public CREATE_THREAD_DEBUG_INFO CreateThread;
-			//[FieldOffset(0)]
-			//public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
-			//[FieldOffset(0)]
-			//public EXIT_THREAD_DEBUG_INFO ExitThread;
-			//[FieldOffset(0)]
-			//public EXIT_PROCESS_DEBUG_INFO ExitProcess;
-			[FieldOffset(0)]
-			public LOAD_DLL_DEBUG_INFO_2 LoadDll;
-			//[FieldOffset(0)]
-			//public UNLOAD_DLL_DEBUG_INFO UnloadDll;
-			//[FieldOffset(0)]
-			//public OUTPUT_DEBUG_STRING_INFO DebugString;
-			//[FieldOffset(0)]
-			//public RIP_INFO RipInfo;
-		}
-
-		[StructLayout(LayoutKind.Sequential)]
 		public struct DEBUG_EVENT
 		{
-			public uint dwDebugEventCode;
+			public DebugEventType dwDebugEventCode;
 			public uint dwProcessId;
 			public uint dwThreadId;
+
 			public Union u;
+		}
+
+		public struct Union
+		{
+			public EXCEPTION_DEBUG_INFO Exception;
+			public CREATE_THREAD_DEBUG_INFO CreateThread;
+			public CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;
+			public EXIT_THREAD_DEBUG_INFO ExitThread;
+			public EXIT_PROCESS_DEBUG_INFO ExitProcess;
+			public LOAD_DLL_DEBUG_INFO LoadDll;
+			public UNLOAD_DLL_DEBUG_INFO UnloadDll;
+			public OUTPUT_DEBUG_STRING_INFO DebugString;
+			public RIP_INFO RipInfo;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -373,18 +333,16 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			public IntPtr ExceptionRecord;
 			public IntPtr ExceptionAddress;
 			public uint NumberParameters;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 15, ArraySubType = UnmanagedType.U4)]
-			public uint[] ExceptionInformation;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 15)]
+			public IntPtr[] ExceptionInformation;
 		}
-
-		public delegate uint PTHREAD_START_ROUTINE(IntPtr lpThreadParameter);
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct CREATE_THREAD_DEBUG_INFO
 		{
 			public IntPtr hThread;
 			public IntPtr lpThreadLocalBase;
-			public PTHREAD_START_ROUTINE lpStartAddress;
+			public IntPtr lpStartAddress;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -397,7 +355,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			public uint dwDebugInfoFileOffset;
 			public uint nDebugInfoSize;
 			public IntPtr lpThreadLocalBase;
-			public PTHREAD_START_ROUTINE lpStartAddress;
+			public IntPtr lpStartAddress;
 			public IntPtr lpImageName;
 			public ushort fUnicode;
 		}
@@ -413,19 +371,9 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		{
 			public uint dwExitCode;
 		}
+
 		[StructLayout(LayoutKind.Sequential)]
 		public struct LOAD_DLL_DEBUG_INFO
-		{
-			public IntPtr hFile;
-			public IntPtr lpBaseOfDll;
-			public uint dwDebugInfoFileOffset;
-			public uint nDebugInfoSize;
-			[MarshalAs(UnmanagedType.LPStr)]
-			public string lpImageName;
-			public ushort fUnicode;
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public struct LOAD_DLL_DEBUG_INFO_2
 		{
 			public IntPtr hFile;
 			public IntPtr lpBaseOfDll;
@@ -444,8 +392,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		[StructLayout(LayoutKind.Sequential)]
 		public struct OUTPUT_DEBUG_STRING_INFO
 		{
-			[MarshalAs(UnmanagedType.LPStr)]
-			public string lpDebugStringData;
+			public IntPtr lpDebugStringData;
 			public ushort fUnicode;
 			public ushort nDebugStringLength;
 		}
@@ -457,9 +404,68 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			public uint dwType;
 		}
 
+		// Inner union of structs must me aligned on IntPtr boundary
+		private static int DEBUG_EVENT_OFFSET = 12 + (12 % IntPtr.Size);
+
+		private static int DEBUG_EVENT_SIZE = Marshal.SizeOf(typeof(EXCEPTION_DEBUG_INFO)) + DEBUG_EVENT_OFFSET;
+
+		public static bool WaitForDebugEvent(out DEBUG_EVENT debug_event, uint dwMilliseconds)
+		{
+			debug_event = new DEBUG_EVENT();
+			int len = DEBUG_EVENT_SIZE;
+			IntPtr buf = Marshal.AllocHGlobal(len);
+			ZeroMemory(buf, IntPtr.Zero + len);
+			bool ret = WaitForDebugEvent(buf, dwMilliseconds);
+
+			if (ret)
+			{
+				debug_event.dwDebugEventCode = (DebugEventType)Marshal.ReadInt32(buf, 0);
+				debug_event.dwProcessId = (uint)Marshal.ReadInt32(buf, 4);
+				debug_event.dwThreadId = (uint)Marshal.ReadInt32(buf, 8);
+
+				IntPtr offset = buf + DEBUG_EVENT_OFFSET;
+
+				switch (debug_event.dwDebugEventCode)
+				{
+					case DebugEventType.EXCEPTION_DEBUG_EVENT:
+						debug_event.u.Exception = (EXCEPTION_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(EXCEPTION_DEBUG_INFO));
+						break;
+					case DebugEventType.CREATE_THREAD_DEBUG_EVENT:
+						debug_event.u.CreateThread = (CREATE_THREAD_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(CREATE_THREAD_DEBUG_INFO));
+						break;
+					case DebugEventType.CREATE_PROCESS_DEBUG_EVENT:
+						debug_event.u.CreateProcessInfo = (CREATE_PROCESS_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(CREATE_PROCESS_DEBUG_INFO));
+						break;
+					case DebugEventType.EXIT_THREAD_DEBUG_EVENT:
+						debug_event.u.ExitThread = (EXIT_THREAD_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(EXIT_THREAD_DEBUG_INFO));
+						break;
+					case DebugEventType.EXIT_PROCESS_DEBUG_EVENT:
+						debug_event.u.ExitProcess = (EXIT_PROCESS_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(EXIT_PROCESS_DEBUG_INFO));
+						break;
+					case DebugEventType.LOAD_DLL_DEBUG_EVENT:
+						debug_event.u.LoadDll = (LOAD_DLL_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(LOAD_DLL_DEBUG_INFO));
+						break;
+					case DebugEventType.UNLOAD_DLL_DEBUG_EVENT:
+						debug_event.u.UnloadDll = (UNLOAD_DLL_DEBUG_INFO)Marshal.PtrToStructure(offset, typeof(UNLOAD_DLL_DEBUG_INFO));
+						break;
+					case DebugEventType.OUTPUT_DEBUG_STRING_EVENT:
+						debug_event.u.DebugString = (OUTPUT_DEBUG_STRING_INFO)Marshal.PtrToStructure(offset, typeof(OUTPUT_DEBUG_STRING_INFO));
+						break;
+					case DebugEventType.RIP_EVENT:
+						debug_event.u.RipInfo = (RIP_INFO)Marshal.PtrToStructure(offset, typeof(RIP_INFO));
+						break;
+					default:
+						break;
+				}
+			}
+
+			Marshal.FreeHGlobal(buf);
+			return ret;
+		}
+
 		[DllImport("kernel32.dll", EntryPoint = "WaitForDebugEvent")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		public static extern bool WaitForDebugEvent(ref DEBUG_EVENT lpDebugEvent, uint dwMilliseconds);
+		private static extern bool WaitForDebugEvent(IntPtr lpDebugEvent, uint dwMilliseconds);
 
 		[DllImport("kernel32.dll")]
 		public static extern bool DebugActiveProcess(uint dwProcessId);
@@ -470,5 +476,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		[DllImport("kernel32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool CloseHandle(IntPtr hObject);
+
+		[DllImport("Kernel32.dll", EntryPoint = "RtlZeroMemory", SetLastError = false)]
+		static extern void ZeroMemory(IntPtr dest, IntPtr size);
 	}
 }

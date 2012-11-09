@@ -630,9 +630,10 @@ namespace Peach.Core.IO
 
 		public void Write(BitStream bits, DataElement element)
 		{
+			long currentPos = TellBits();
 			foreach (var elem in bits._elementPositions)
 			{
-				elem.Value[0] += this.LengthBits;
+				elem.Value[0] += currentPos;
 				_elementPositions[elem.Key] = elem.Value;
 			}
 
@@ -646,17 +647,8 @@ namespace Peach.Core.IO
 
 		public static void CopyTo(Stream sin, Stream sout)
 		{
-			byte[] buff = new byte[1024 * 3];
-			int ret;
-
-			while (true)
-			{
-				ret = sin.Read(buff, 0, buff.Length);
-				if (ret == 0)
-					break;
-
-				sout.Write(buff, 0, ret);
-			}
+			int len = (int)Math.Min(sin.Length, 1024*1024);
+			sin.CopyTo(sout, len);
 		}
 
 		/// <summary>
@@ -780,7 +772,7 @@ namespace Peach.Core.IO
 
 			// Increment our current position
 			pos++;
-			if (pos >= len)
+			if (pos > len)
 				len++;
 		}
 

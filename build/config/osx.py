@@ -43,52 +43,39 @@ def prepare(conf):
 	
 	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
 
-	env['EXTERNALS_i386'] = {
+	env['EXTERNALS'] = {
 		'pin' : {
 			'INCLUDES'  : [
 				j(pin, 'source', 'include'),
 				j(pin, 'source', 'include', 'gen'),
 				j(pin, 'extras', 'components', 'include'),
-				j(pin, 'extras', 'xed2-ia32', 'include'),
 			],
-			'HEADERS'   : [],
-			'STLIBPATH'   : [
-				j(pin, 'ia32', 'lib'),
-				j(pin, 'ia32', 'lib-ext'),
-				j(pin, 'extras', 'xed2-ia32', 'lib'),
+			'HEADERS'   : [ 'pin.h' ],
+			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_MAC', 'USING_XED', ],
+			'CPPFLAGS'  : [
+				'-Xarch_i386',   '-DTARGET_IA32',
+				'-Xarch_i386',   '-DHOST_IA32',
+				'-Xarch_i386',   '-I%s' % j(pin, 'extras', 'xed2-ia32', 'include'),
+
+				'-Xarch_x86_64', '-DTARGET_IA32E',
+				'-Xarch_x86_64', '-DHOST_IA32E',
+				'-Xarch_x86_64', '-I%s' % j(pin, 'extras', 'xed2-intel64', 'include'),
 			],
-			'STLIB'     : [ 'pin', 'xed' ],
-			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_MAC', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
-			'CFLAGS'    : [],
-			'CXXFLAGS'  : [],
-			'LINKFLAGS' : [],
+			'LINKFLAGS' : [
+				'-Xarch_i386',   '-L%s' % j(pin, 'ia32', 'lib'),
+				'-Xarch_i386',   '-L%s' % j(pin, 'ia32', 'lib-ext'),
+				'-Xarch_i386',   '-L%s' % j(pin, 'extras', 'xed2-ia32', 'lib'),
+				'-Xarch_i386',   '-l-lpin',
+				'-Xarch_i386',   '-l-lxed',
+
+				'-Xarch_x86_64', '-L%s' % j(pin, 'intel64', 'lib'),
+				'-Xarch_x86_64', '-L%s' % j(pin, 'intel64', 'lib-ext'),
+				'-Xarch_x86_64', '-L%s' % j(pin, 'extras', 'xed2-intel64', 'lib'),
+				'-Xarch_x86_64', '-l-lpin',
+				'-Xarch_x86_64', '-l-lxed',
+			],
 		},
 	}
-
-	env['EXTERNALS_x86_64'] = {
-		'pin' : {
-			'INCLUDES'  : [
-				j(pin, 'source', 'include'),
-				j(pin, 'source', 'include', 'gen'),
-				j(pin, 'extras', 'components', 'include'),
-				j(pin, 'extras', 'xed2-intel64', 'include'),
-			],
-			'HEADERS'   : [],
-			'STLIBPATH'   : [
-				j(pin, 'intel64', 'lib'),
-				j(pin, 'intel64', 'lib-ext'),
-				j(pin, 'extras', 'xed2-intel64', 'lib'),
-			],
-			'STLIB'     : [ 'pin', 'xed' ],
-			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_MAC', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
-			'CFLAGS'    : [],
-			'CXXFLAGS'  : [],
-			'LINKFLAGS' : [],
-		},
-	}
-
-	env['EXTERNALS'] = env['EXTERNALS_x86_64']
-
 
 def configure(conf):
 	env = conf.env
@@ -130,8 +117,8 @@ def configure(conf):
 		'-mmacosx-version-min=10.6',
 		'-isysroot',
 		env.SYSROOT,
-#		'-arch',
-#		'i386',
+		'-arch',
+		'i386',
 		'-arch',
 		'x86_64',
 	]

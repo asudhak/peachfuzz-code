@@ -22,10 +22,11 @@ deps = [
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
 	'Peach.Core.dll',
+	'Mono.Posix.dll',
 ]
 
 bld(
-	features = 'cs',
+	features = 'cs linux',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.OS.Linux.dll',

@@ -310,6 +310,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -322,6 +326,7 @@
     <Compile Include="Agent\Monitors\LinuxCrashMonitor.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Publishers\RawEtherPublisher.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="gdb\exploitable\exploitable.py">

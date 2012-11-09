@@ -512,7 +512,9 @@ namespace Peach.Core
 
 		// Slightly tweaked from:
 		// http://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
-		public static void HexDump(Stream data, Stream output, int bytesPerLine = 16)
+		private delegate void HexOutputFunc(char[] line);
+
+		private static void HexDump(Stream data, HexOutputFunc output, int bytesPerLine = 16)
 		{
 			System.Diagnostics.Debug.Assert(data != null);
 			long pos = data.Position;
@@ -573,11 +575,29 @@ namespace Peach.Core
 					charColumn++;
 				}
 
-				byte[] buf = Encoding.ASCII.GetBytes(line);
-				output.Write(buf, 0, buf.Length);
+				output(line);
 			}
 
 			data.Seek(pos, SeekOrigin.Begin);
+		}
+
+		public static void HexDump(Stream data, Stream output, int bytesPerLine = 16)
+		{
+			HexOutputFunc func = delegate(char[] line)
+			{
+				byte[] buf = Encoding.ASCII.GetBytes(line);
+				output.Write(buf, 0, buf.Length);
+			};
+
+			HexDump(data, func, bytesPerLine);
+		}
+
+		public static string HexDump(Stream data, int bytesPerLine = 16)
+		{
+			StringBuilder sb = new StringBuilder();
+			HexOutputFunc func = delegate(char[] line) { sb.Append(line); };
+			HexDump(data, func, bytesPerLine);
+			return sb.ToString();
 		}
 	}
 }

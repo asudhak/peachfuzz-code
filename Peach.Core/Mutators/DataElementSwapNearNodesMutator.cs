@@ -78,10 +78,7 @@ namespace Peach.Core.Mutators
             int count = dataModel.Count;
 
             if (idx2 < count)
-            {
                 dataModel.SwapElements(idx1, idx2);
-                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            }
         }
 
         // RANDOM_MUTAION

@@ -25,10 +25,6 @@ namespace Peach.Core.Publishers
 		private Socket _socket = null;
 		private MemoryStream _recvBuffer = null;
 		private MemoryStream _sendBuffer = null;
-		private int _errorsMax = 10;
-		private int _errorsOpen = 0;
-		private int _errorsSend = 0;
-		private int _errorsRecv = 0;
 
 		protected abstract bool AddressFamilySupported(AddressFamily af);
 
@@ -118,8 +114,6 @@ namespace Peach.Core.Publishers
 
 			_localEp = _socket.LocalEndPoint;
 			_remoteEp = ep;
-
-			_errorsOpen = 0;
 		}
 
 		protected override void OnClose()
@@ -160,7 +154,6 @@ namespace Peach.Core.Publishers
 					var rxLen = _socket.EndReceiveFrom(ar, ref ep);
 
 					_recvBuffer.SetLength(rxLen);
-					_errorsRecv = 0;
 
 					if (!IPEndPoint.Equals(ep, _remoteEp))
 					{
@@ -232,8 +225,6 @@ namespace Peach.Core.Publishers
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				var txLen = _socket.EndSendTo(ar);
-
-				_errorsSend = 0;
 
 				if (data.Length != txLen)
 					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, data.Length));

@@ -145,5 +145,53 @@ namespace Peach.Core.Test.Publishers
 			args["Param_ip"] = new Variant("999.888.777.666");
 			new GoodPub(args);
 		}
+
+		class CustomType
+		{
+			public string Message { get; set; }
+
+			public CustomType()
+			{
+			}
+		}
+
+		[Publisher("CustomTypePub")]
+		[Parameter("param", typeof(CustomType), "Custom Type", true)]
+		class CustomTypePub : Publisher
+		{
+			protected override NLog.Logger Logger { get { return logger; } }
+			public CustomType param { get; set; }
+
+			public CustomTypePub(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+
+			static void Parse(string str, out IPAddress val)
+			{
+				val = IPAddress.Parse(str);
+			}
+
+			static void Parse(string str, out CustomType val)
+			{
+				val = new CustomType();
+				val.Message = str;
+			}
+		}
+
+		[Test]
+		public void TestCustomConvert()
+		{
+			// When the bas Publisher can not convert a string parameter
+			// into the type defined in the Parameter attribute, it should
+			// look for a conversion function on the derived publisher
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["param"] = new Variant("foo");
+			var pub = new CustomTypePub(args);
+
+			Assert.NotNull(pub);
+			Assert.AreEqual(pub.param.Message, "foo");
+		}
 	}
 }

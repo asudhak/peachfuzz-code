@@ -14,6 +14,7 @@ namespace Peach.Core.Test
 		protected List<Dom.DataModel> dataModels = null;
 		protected List<Dom.Action> actions = null;
 		protected List<string> strategies = null;
+		protected List<string> iterStrategies = null;
 		protected List<string> allStrategies = null;
 		protected SortedSet<string> firstRun = null;
 
@@ -41,6 +42,7 @@ namespace Peach.Core.Test
 			dataModels = new List<Dom.DataModel>();
 			strategies = new List<string>();
 			allStrategies = new List<string>();
+			iterStrategies = new List<string>();
 		}
 
 		protected void Action_Finished(Dom.Action action)
@@ -65,6 +67,14 @@ namespace Peach.Core.Test
 			allStrategies.Add(item);
 			if (len == 0 || strategies[len - 1] != item)
 				strategies.Add(item);
+
+			while (iterStrategies.Count < (actions.Count + 1))
+				iterStrategies.Add("");
+
+			if (iterStrategies[actions.Count].Length > 0)
+				iterStrategies[actions.Count] += " ; ";
+
+			iterStrategies[actions.Count] += item;
 		}
 	}
 }

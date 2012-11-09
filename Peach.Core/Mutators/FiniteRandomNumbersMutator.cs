@@ -152,6 +152,7 @@ namespace Peach.Core.Mutators
             {
                 UInt32 value = context.Random.NextUInt32();
                 obj.MutatedValue = new Variant(value.ToString());
+                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
                 return;
             }
 

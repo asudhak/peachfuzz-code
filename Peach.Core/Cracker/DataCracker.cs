@@ -248,7 +248,7 @@ namespace Peach.Core.Cracker
 			while (true)
 			{
 				currentElement = oldElement.nextSibling();
-				if (currentElement == null && oldElement.parent == null)
+				if (currentElement == null && (oldElement.parent == null || oldElement.parent.transformer != null))
 					break;
 				else if (currentElement == null)
 					currentElement = oldElement.parent;
@@ -396,7 +396,7 @@ namespace Peach.Core.Cracker
 					if (sibling == null)
 					{
 						var parent = next.parent;
-						while (sibling == null && parent != null)
+						while (sibling == null && parent != null && parent.transformer == null)
 						{
 							sibling = parent.nextSibling();
 							parent = parent.parent;
@@ -491,6 +491,17 @@ namespace Peach.Core.Cracker
 				//    throw new CrackingFailure("'" + element.fullName +
 				//        "' could not be cracked sinze buffer has zero bytes left.", element, data);
 
+                if (element.transformer != null)
+                {
+                    long? size = determineElementSize(element, data);
+
+                    if (size == null)
+                        throw new CrackingFailure("Could not determine size for transformer!", element, data);
+
+                    var decodedData = element.transformer.decode(data.ReadBitsAsBitStream(size.Value));
+                    element.Crack(this, decodedData);
+                }
+                else
 				element.Crack(this, data);
 
 				if (element.constraint != null)
