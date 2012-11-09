@@ -404,12 +404,13 @@
     <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
     <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
     <Compile Include="Agent\Monitor.cs" />
+    <Compile Include="Agent\Monitors\IpPower9258Monitor.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Agent\Monitors\Memory.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
-    <Compile Include="Agent\Monitors\PingMonitor.cs" />
     <Compile Include="Agent\Monitors\BaseProcess.cs" />
     <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
-    <Compile Include="Agent\Monitors\UdpMonitor.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
