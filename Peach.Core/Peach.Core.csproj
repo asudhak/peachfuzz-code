@@ -404,6 +404,7 @@
     <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
     <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
     <Compile Include="Agent\Monitor.cs" />
+    <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
     <Compile Include="Agent\Monitors\IpPower9258Monitor.cs">
       <SubType>Component</SubType>
     </Compile>
