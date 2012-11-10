@@ -141,7 +141,58 @@ namespace Peach.Core.Test.Mutators
 			Assert.AreEqual(4, dataModels.Count);
 		}
 
-    }
+		[Test]
+		public void TestChildren()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String name=""str"" value=""Hello"" maxOccurs=""100""/>
+	</DataModel>
+
+	<StateModel name=""State"" initialState=""State1"">
+		<State name=""State1""  >
+			<Action type=""output"" >
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""State""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Random""/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementRemoveMutator");
+			dom.tests[0].includedMutators.Add("ArrayVarianceMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.randomSeed = 1;
+			config.rangeStart = 0;
+			config.rangeStop = 30;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			// Ensure we don't crash by trying to run the ArrayVarianceMutator after removing the str data element
+
+			Assert.AreEqual(30, dataModels.Count);
+
+			foreach (var item in iterStrategies)
+			{
+				if (item.StartsWith("DataElementRemove"))
+					Assert.AreEqual(-1, item.LastIndexOf(';'));
+			}
+		}
+	}
 }
 
 // end

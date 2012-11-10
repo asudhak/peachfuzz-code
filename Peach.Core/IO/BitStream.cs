@@ -630,9 +630,10 @@ namespace Peach.Core.IO
 
 		public void Write(BitStream bits, DataElement element)
 		{
+			long currentPos = TellBits();
 			foreach (var elem in bits._elementPositions)
 			{
-				elem.Value[0] += this.LengthBits;
+				elem.Value[0] += currentPos;
 				_elementPositions[elem.Key] = elem.Value;
 			}
 
@@ -771,7 +772,7 @@ namespace Peach.Core.IO
 
 			// Increment our current position
 			pos++;
-			if (pos >= len)
+			if (pos > len)
 				len++;
 		}
 

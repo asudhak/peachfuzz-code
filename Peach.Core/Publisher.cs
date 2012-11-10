@@ -226,7 +226,7 @@ namespace Peach.Core
 				else if (attr.type.IsEnum)
 					obj = Enum.Parse(attr.type, value);
 				else
-					obj = Convert.ChangeType(value, attr.type);
+					obj = ChangeType(value, attr.type);
 			}
 			catch (Exception ex)
 			{
@@ -238,6 +238,42 @@ namespace Peach.Core
 				prop.SetValue(this, obj, null);
 			else
 				RaiseError("has no public property for parameter '{0}'.",attr.name);
+		}
+
+		private object ChangeType(string value, Type type)
+		{
+			try
+			{
+				return Convert.ChangeType(value, type);
+			}
+			catch (InvalidCastException)
+			{
+			}
+
+			// Find a converter on this type with the signature:
+			// static void ParseParam(string str, out "type" val)
+
+			BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+			Type[] types = new Type[] { typeof(string), type.MakeByRefType() };
+			var method = GetType().GetMethod("Parse", bindingAttr, Type.DefaultBinder, types, null);
+			if (method == null || method.ReturnType != typeof(void) || !method.GetParameters()[1].IsOut)
+				throw new InvalidCastException("No suitable method exists for converting a string to " + type.Name + ".");
+
+			try
+			{
+				object[] parameters = new object[] { value, null };
+				method.Invoke(null, parameters);
+				System.Diagnostics.Debug.Assert(parameters[1] != null);
+				return parameters[1];
+			}
+			catch (TargetInvocationException ex)
+			{
+				throw ex.InnerException;
+			}
+			catch (Exception)
+			{
+				throw;
+			}
 		}
 
 		private void RaiseError(string fmt, params string[] args)

@@ -51,6 +51,7 @@ def config_external(conf, name, ext):
 	config_uselib(conf, 'STLIB', name, ext)
 	config_uselib(conf, 'DEFINES', name, ext)
 	config_uselib(conf, 'CFLAGS', name, ext)
+	config_uselib(conf, 'CPPFLAGS', name, ext)
 	config_uselib(conf, 'CXXFLAGS', name, ext)
 	config_uselib(conf, 'LINKFLAGS', name, ext)
 	
