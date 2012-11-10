@@ -655,8 +655,181 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, bs.TellBytes());
 			Assert.AreEqual(2, bs.Stream.Length);
 			Assert.AreEqual(1, bs.Stream.Position);
+		}
 
+		interface IEndian
+		{
+			int Full(int written, int todo); // When writing a full byte
+			int Part(int written, int todo); // When writing a partial byte
+		}
 
+		class LittleEndian : IEndian
+		{
+			public int Full(int written, int todo) { return written; }
+			public int Part(int written, int todo) { return written; }
+		}
+
+		class BigEndian : IEndian
+		{
+			public int Full(int written, int todo) { return todo; }
+			public int Part(int written, int todo) { return 0;    }
+		}
+
+		class BitWriter<T> where T : IEndian, new()
+		{
+			// For computing bit shift offsets
+			private static T offset = new T();
+
+			// Stores the output
+			public MemoryStream ms = new MemoryStream();
+
+			// How many bits of the last byte are unset
+			private int remain = 8;
+
+			// Mask representing the set bits in the last byte
+			private int mask = 0;
+
+			// Length in bits
+			private long length = 0;
+
+			// Returns the next byte in the memory stream
+			private byte NextByte
+			{
+				get
+				{
+					if (ms.Position == ms.Length)
+						return 0;
+
+					byte ret = (byte)ms.ReadByte();
+					ms.Seek(-1, SeekOrigin.Current);
+					return ret;
+				}
+			}
+
+			public long LengthBits
+			{
+				get
+				{
+					return length;
+				}
+			}
+
+			public MemoryStream Stream
+			{
+				get
+				{
+					return ms;
+				}
+			}
+
+			public void Write(ulong value, int bits)
+			{
+				if (bits < 0 || bits > 64)
+					throw new ArgumentOutOfRangeException();
+
+				byte pending = NextByte;
+
+				int written = 0;
+				int todo = bits;
+
+				while (todo > 0)
+				{
+					System.Diagnostics.Debug.Assert(written + todo == bits);
+
+					if (todo < remain)
+					{
+						remain -= todo;
+						byte lowMask = (byte)((1 << remain) - 1);
+						mask |= lowMask;
+
+						// LE: written, BE: zero
+						int shift = offset.Part(written, todo);
+
+						byte next = (byte)(value >> shift);
+						next <<= remain;
+
+						pending = (byte)((pending & mask) | (next & ~mask));
+						ms.WriteByte(pending);
+						ms.Seek(-1, SeekOrigin.Current);
+
+						mask = ~lowMask;
+						todo = 0;
+					}
+					else
+					{
+						todo -= remain;
+
+						// LE: written, BE: todo
+						int shift = offset.Full(written, todo);
+						byte next = (byte)(value >> shift);
+
+						pending = (byte)((pending & mask) | (next & ~mask));
+						ms.WriteByte(pending);
+						pending = NextByte;
+
+						written += remain;
+						remain = 8;
+						mask = 0;
+					}
+				}
+
+				length += bits;
+			}
+
+			public void Write(long value, int bits)
+			{
+				Write((ulong)value, bits);
+			}
+		}
+
+		[Test]
+		public void BitwiseNumbers()
+		{
+			/*
+			 * Unsigned, BE, 12bit "A B C" -> 0x0ABC ->  2748
+			 * Signed  , BE, 12bit "A B C" -> 0xFABC -> -1348
+			 * Unsigned, LE, 12bit "B C A" -> 0x0ABC ->  2748
+			 * Signed  , LE, 12bit "B C A" -> 0xFABC -> -1348
+			 */
+
+			var w = new BitWriter<BigEndian>();
+			w.Write(0, 32);
+			w.Write(0x00, 1);
+			w.Write(0x01, 1);
+			w.Write(0x00, 1);
+			w.Write(-1, 5);
+			w.Write(0x0f, 4);
+			w.Write(0x123456789A, 40);
+
+			Assert.AreEqual(84, w.LengthBits);
+			Assert.AreEqual(11, w.Stream.Length);
+			byte[] exp1 = new byte[] { 0x0, 0x0, 0x0, 0x0, 0x5f, 0xf1, 0x23, 0x45, 0x67, 0x89, 0xa0 };
+			byte[] act1 = new byte[11];
+			Buffer.BlockCopy(w.Stream.GetBuffer(), 0, act1, 0, 11);
+			Assert.AreEqual(exp1, act1);
+
+			var w1 = new BitWriter<LittleEndian>();
+			w1.Write(0x12345678, 32);
+			w1.Write(0xabc, 12);
+
+			Assert.AreEqual(44, w1.LengthBits);
+			Assert.AreEqual(6, w1.Stream.Length);
+			byte[] exp2 = new byte[] { 0x78, 0x56, 0x34, 0x12, 0xbc, 0xa0 };
+			byte[] act2 = new byte[6];
+			Buffer.BlockCopy(w1.Stream.GetBuffer(), 0, act2, 0, 6);
+			Assert.AreEqual(exp1, act1);
+
+			var w2 = new BitWriter<LittleEndian>();
+			w2.Write(1, 1);
+			w2.Write(0, 1);
+			w2.Write(0xffff, 6);
+
+			Assert.AreEqual(8, w2.LengthBits);
+			Assert.AreEqual(1, w2.Stream.Length);
+			byte[] exp3 = new byte[] { 0xbf };
+			byte[] act3 = new byte[1];
+			Buffer.BlockCopy(w2.Stream.GetBuffer(), 0, act3, 0, 1);
+			Assert.AreEqual(exp3, act3);
 		}
 	}
 }
