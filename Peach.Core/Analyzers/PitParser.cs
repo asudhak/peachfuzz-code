@@ -931,7 +931,7 @@ namespace Peach.Core.Analyzers
 								sout.BigEndian();
 						}
 
-						for (int cnt = value.Length / 2; cnt < elem.length / 8; cnt++)
+						for (int cnt = value.Length / 2; cnt < elem.length; cnt++)
 							sout.WriteByte(0);
 
 						for (int cnt = 0; cnt < value.Length; cnt += 2)
