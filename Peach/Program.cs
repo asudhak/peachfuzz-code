@@ -216,6 +216,9 @@ namespace Peach
 
 						foreach (XmlNode defNode in node.ChildNodes)
 						{
+							if (defNode is XmlComment)
+								continue;
+
 							if (!hasXmlAttribute(defNode, "key") || !hasXmlAttribute(defNode, "value"))
 								throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
 
@@ -449,6 +452,9 @@ namespace Peach
 		/// <returns>Returns boolean true or false.</returns>
 		public bool hasXmlAttribute(XmlNode node, string name)
 		{
+			if (node.Attributes == null)
+				return false;
+
 			object o = node.Attributes.GetNamedItem(name);
 			return o != null;
 		}
