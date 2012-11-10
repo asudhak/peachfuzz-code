@@ -92,5 +92,25 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), (byte[])blob.DefaultValue);
 		}
+
+		[Test]
+		public void HexPad()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob length=\"4\" valueType=\"hex\" value=\"48 65 6c 6c 6f\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Blob blob = dom.dataModels[0][0] as Dom.Blob;
+
+			Assert.AreNotEqual(null, blob);
+//			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+//			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
+//			Assert.AreEqual("Hello", (string)str.DefaultValue);
+		}
+
 	}
 }
