@@ -715,7 +715,7 @@ class subst_pc(Task.Task):
 		upd = self.m.update
 
 		if getattr(self.generator, 'subst_fun', None):
-			upd(Utils.h_fun(self.generator.subst_fun))
+			upd(Utils.h_fun(self.generator.subst_fun).encode())
 
 		# raw_deps: persistent custom values returned by the scanner
 		vars = self.generator.bld.raw_deps.get(self.uid(), [])

@@ -17,7 +17,7 @@ HEXVERSION=0x1070600
 WAFVERSION="1.7.6"
 """Constant updated on new releases"""
 
-WAFREVISION="96e3676951305cd761e7f8b8c9c432ae7252c071"
+WAFREVISION="704f85f131c77b2244eaf134afe8fe04373d3707"
 """Constant updated on new releases"""
 
 ABI = 98
