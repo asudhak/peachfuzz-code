@@ -47,13 +47,18 @@ namespace Peach.Core.Agent.Monitors
 				_powerPause = (int)args["PowerOnOffPause"];
 		}
 
-		void resetPower()
+		void resetPower(bool turnOff = true)
 		{
 			using (var serial = new SerialPort(_serialPort, 115200, Parity.None, 8, StopBits.One))
 			{
 				serial.Open();
-				serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
-				System.Threading.Thread.Sleep(_powerPause);
+
+				if (turnOff)
+				{
+					serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
+					System.Threading.Thread.Sleep(_powerPause);
+				}
+
 				serial.Write("REL" + _relayNumber + ".ON\r\n");
 			}
 		}
@@ -64,6 +69,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
+			resetPower(false);
 		}
 
 		public override void SessionFinished()

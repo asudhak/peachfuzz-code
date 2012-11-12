@@ -48,7 +48,7 @@ namespace Peach.Core.Agent.Monitors
 				_powerPause = (int)args["PowerOnOffPause"];
 		}
 
-		void resetPower()
+		void resetPower(bool turnOff = true)
 		{
 			string challenge;
 
@@ -81,13 +81,16 @@ namespace Peach.Core.Agent.Monitors
 				string postData = "Username=" + _user + "&Response=" + sb.ToString() + "&Challenge=&Password=";
 				client.UploadString("http://"+_host+"/tgi/login.tgi", postData);
 
-				// Off
+				if (turnOff)
+				{
+					// Off
 
-				postData = "P6"+_port+"=Off&ButtonName=Apply";
-				client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
-				
-				// Pause
-				System.Threading.Thread.Sleep(_powerPause);
+					postData = "P6" + _port + "=Off&ButtonName=Apply";
+					client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
+
+					// Pause
+					System.Threading.Thread.Sleep(_powerPause);
+				}
 
 				// On
 
@@ -102,6 +105,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
+			// Make sure port is on :)
+			resetPower(false);
 		}
 
 		public override void SessionFinished()
