@@ -216,6 +216,49 @@ namespace Peach.Core.Test.Mutators
 			Assert.AreEqual(98, mutations.Count);
 		}
 
+		[Test]
+		public void NoDuplicateFlag()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheModel"">
+		<Flags name=""flags"" size=""16"">
+			<Flag name=""flag1"" position=""0"" size=""2""/>
+			<Flag name=""flag2"" position=""4"" size=""2""/>
+		</Flags>
+		<String name=""str"" value=""Hello"" />
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementDuplicateMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(2, strategies.Count);
+			Assert.AreEqual("DataElementDuplicateMutator | TheModel.flags", strategies[0]);
+			Assert.AreEqual("DataElementDuplicateMutator | TheModel.str", strategies[1]);
+		}
     }
 }
 
