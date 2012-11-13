@@ -249,7 +249,7 @@ namespace Peach.Core.Agent.Monitors
 			{
 				if (_waitForExitTimeout > 0)
 				{
-					logger.Debug("WaitForExit(" + _waitForExitOnCall + ")");
+					logger.Debug("WaitForExit(" + _waitForExitTimeout + ")");
 					if (_process != null && !_process.HasExited)
 					{
 						if (!_process.WaitForExit(_waitForExitTimeout))
