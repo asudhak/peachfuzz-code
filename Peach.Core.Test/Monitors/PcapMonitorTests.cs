@@ -52,8 +52,8 @@ namespace Peach.Core.Test.Monitors
 		private IPAddress _dest;
 		private Socket _socket;
 
-		public TestMonitor(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public TestMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			bool ret = IPAddress.TryParse((string)args["Address"], out _dest);
 			System.Diagnostics.Debug.Assert(ret);

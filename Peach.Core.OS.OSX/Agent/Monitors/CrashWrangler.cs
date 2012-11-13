@@ -94,8 +94,8 @@ namespace Peach.Core.Agent.Monitors
 		protected bool? _detectedFault = null;
 		protected ulong _totalProcessorTime = 0;
 
-		public CrashWrangler(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public CrashWrangler(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			_command = args.GetString("Command", null);
 			_arguments = args.GetString("Arguments", "");

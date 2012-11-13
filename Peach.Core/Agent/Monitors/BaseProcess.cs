@@ -49,6 +49,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CpuKill", typeof(bool), "Terminate process when CPU usage nears zero (defaults to false)", false)]
 	[Parameter("StartOnCall", typeof(string), "Start command on state model call", false)]
 	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", false)]
+	[Parameter("WaitForExitTimeout", typeof(int), "Wait timeout value.  Triggers fault when timeout hit.", false)]
 	public abstract class BaseProcess : Monitor
 	{
 		protected abstract ulong GetTotalCpuTime(System.Diagnostics.Process process);
@@ -65,9 +66,11 @@ namespace Peach.Core.Agent.Monitors
 		bool _cpuKill = false;
 		bool _firstIteration = true;
 		ulong _totalProcessorTime = 0;
+		int _waitForExitTimeout = 0;
+		bool _waitForExitFault = false;
 
-		public BaseProcess(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public BaseProcess(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Executable"))
 				_executable = (string)args["Executable"];
@@ -83,6 +86,8 @@ namespace Peach.Core.Agent.Monitors
 				_startOnCall = (string)args["StartOnCall"];
 			if (args.ContainsKey("WaitForExitOnCall"))
 				_waitForExitOnCall = (string)args["WaitForExitOnCall"];
+			if (args.ContainsKey("WaitForExitTimeout"))
+				_waitForExitTimeout = (int)args["WaitForExitTimeout"];
 		}
 
 		void _Start()
@@ -112,7 +117,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			logger.Debug("_Stop()");
 
-			for(int i = 0; i < 100 && (_process != null && !_process.HasExited); i++)
+			for (int i = 0; i < 100 && (_process != null && !_process.HasExited); i++)
 			{
 				logger.Debug("_Stop(): Killing process");
 				try
@@ -126,7 +131,7 @@ namespace Peach.Core.Agent.Monitors
 				{
 				}
 			}
-			
+
 			if (_process != null)
 			{
 				_process.Dispose();
@@ -140,6 +145,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			_waitForExitFault = false;
+
 			if (_restartOnEachTest)
 				_Stop();
 
@@ -155,6 +162,12 @@ namespace Peach.Core.Agent.Monitors
 				return true;
 			}
 
+			if (_waitForExitFault)
+			{
+				logger.Debug("DetectedFault(): Process did not exit in time, triggering fault");
+				return true;
+			}
+
 			return false;
 		}
 
@@ -163,14 +176,26 @@ namespace Peach.Core.Agent.Monitors
 			if (!DetectedFault())
 				return null;
 
-            Fault fault = new Fault();
-            fault.type = FaultType.Fault;
-            fault.detectionSource = "ProcessMonitor";
-            fault.title = "Process exited early";
-            fault.description = "Process exited early: " + _executable + " " + _arguments;
-            fault.folderName = "ProcessExitedEarly";
+			Fault fault = new Fault();
 
-            return fault;
+			if (_waitForExitFault)
+			{
+				fault.type = FaultType.Fault;
+				fault.detectionSource = "ProcessMonitor";
+				fault.title = "Process did not exit in time";
+				fault.description = "Process failed to exit in wait time: " + _executable + " " + _arguments;
+				fault.folderName = "ProcessFailedToExit";
+
+				return fault;
+			}
+
+			fault.type = FaultType.Fault;
+			fault.detectionSource = "ProcessMonitor";
+			fault.title = "Process exited early";
+			fault.description = "Process exited early: " + _executable + " " + _arguments;
+			fault.folderName = "ProcessExitedEarly";
+
+			return fault;
 		}
 
 		public override bool MustStop()
@@ -223,17 +248,32 @@ namespace Peach.Core.Agent.Monitors
 			}
 			else if (name == "Action.Call" && ((string)data) == _waitForExitOnCall)
 			{
-				if (_process != null && !_process.HasExited)
+				if (_waitForExitTimeout > 0)
+				{
+					logger.Debug("WaitForExit(" + _waitForExitTimeout + ")");
+					if (_process != null && !_process.HasExited)
+					{
+						if (!_process.WaitForExit(_waitForExitTimeout))
+						{
+							logger.Debug("FAULT, WaitForExit ran out of time!");
+							_waitForExitFault = true;
+							this.Agent.QueryMonitors("CanaKitRelay_Reset");
+						}
+					}
+				}
+				else
 				{
 					// WARNING: Infinite wait!
-					_process.WaitForExit();
+					if (_process != null && !_process.HasExited)
+					{
+						_process.WaitForExit();
+					}
 				}
 
 				_Stop();
 				return null;
 			}
-
-			else if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall)
+			else if (name == "Action.Call.IsRunning" && (((string)data) == _startOnCall || ((string)data) == _waitForExitOnCall))
 			{
 				try
 				{

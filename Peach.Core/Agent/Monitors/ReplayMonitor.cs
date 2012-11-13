@@ -12,7 +12,7 @@ namespace Peach.Core.Agent.Monitors
         bool replay = true;
         bool firstIteration = true;
 
-        public ReplayMonitor(string name, Dictionary<string, Variant> args) : base(name, args)
+        public ReplayMonitor(IAgent agent, string name, Dictionary<string, Variant> args) : base(agent, name, args)
 		{
 		}
 
