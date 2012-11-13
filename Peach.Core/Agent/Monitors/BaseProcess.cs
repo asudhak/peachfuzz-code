@@ -165,6 +165,7 @@ namespace Peach.Core.Agent.Monitors
 			if (_waitForExitFault)
 			{
 				logger.Debug("DetectedFault(): Process did not exit in time, triggering fault");
+				return true;
 			}
 
 			return false;
