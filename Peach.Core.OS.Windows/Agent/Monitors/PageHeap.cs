@@ -49,8 +49,8 @@ namespace Peach.Core.Agent.Monitors
 		string _gflagsArgsEnable = "/p /enable \"{0}\" /full";
 		string _gflagsArgsDisable = "/p /disable \"{0}\"";
 
-		public PageHeap(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public PageHeap(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			_executable = (string)args["Executable"];
 			

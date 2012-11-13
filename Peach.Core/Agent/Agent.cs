@@ -204,7 +204,7 @@ namespace Peach.Core.Agent
 
 			try
 			{
-				var monitor = Activator.CreateInstance(type, name, args) as Monitor;
+				var monitor = Activator.CreateInstance(type, this, name, args) as Monitor;
 				this.monitors.Add(name, monitor);
 			}
 			catch (TargetInvocationException ex)
@@ -373,6 +373,7 @@ namespace Peach.Core.Agent
 		Fault[] GetMonitorData();
 		bool MustStop();
 		Variant Message(string name, Variant data);
+		object QueryMonitors(string query);
 	}
 
 }

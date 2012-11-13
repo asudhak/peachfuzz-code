@@ -34,8 +34,8 @@ namespace Peach.Core.Agent.Monitors
 		int _powerPause = 500;
 		bool _everyIteration = false;
 
-		public CanaKitRelayMonitor(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public CanaKitRelayMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("SerialPort"))
 				_serialPort = (string)args["SerialPort"];
@@ -115,6 +115,14 @@ namespace Peach.Core.Agent.Monitors
 		public override Variant Message(string name, Variant data)
 		{
 			return null;
+		}
+
+		public override object ProcessQueryMonitors(string query)
+		{
+			if (query == "CanaKitRelay_Reset")
+				resetPower();
+
+			return true;
 		}
 	}
 }

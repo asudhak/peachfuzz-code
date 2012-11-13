@@ -15,8 +15,8 @@ namespace Peach.Core.Agent.Monitors
 	{
 		string _fileName = null;
 
-		public SaveFileMonitor(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public SaveFileMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Filename"))
 				_fileName = (string)args["Filename"];

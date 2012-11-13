@@ -41,12 +41,17 @@ namespace Peach.Core.Agent
 	/// </summary>
 	public abstract class Monitor
 	{
-		public Monitor(string name, Dictionary<string, Variant> args)
+		IAgent _agent;
+
+		public Monitor(IAgent agent, string name, Dictionary<string, Variant> args)
 		{
+			_agent = agent;
 			Name = name;
 		}
 
 		public string Name { get; set; }
+
+		protected IAgent Agent { get { return _agent; } }
 
         public abstract void StopMonitor();
 

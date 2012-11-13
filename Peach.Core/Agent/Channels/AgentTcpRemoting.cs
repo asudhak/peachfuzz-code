@@ -169,6 +169,7 @@ namespace Peach.Core.Agent.Channels
 			OnMessageEvent(name, data);
 			return proxy.Message(name, data);
 		}
+
 	}
 
 	/// <summary>
@@ -260,6 +261,12 @@ namespace Peach.Core.Agent.Channels
 		{
 			logger.Trace("Message: {0}", name);
 			return agent.Message(name, data);
+		}
+
+		public object QueryMonitors(string query)
+		{
+			logger.Trace("QueryMonitors: {0}", query);
+			return agent.QueryMonitors(query);
 		}
 	}
 

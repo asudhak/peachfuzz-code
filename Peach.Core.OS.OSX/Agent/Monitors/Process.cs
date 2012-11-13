@@ -18,8 +18,8 @@ namespace Peach.Core.Agent.Monitors
 	[Monitor("process.Process")]
 	public class Process : BaseProcess
 	{
-		public Process(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public Process(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 		}
 

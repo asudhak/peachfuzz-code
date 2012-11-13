@@ -57,8 +57,8 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		protected string data = null;
 		protected List<string> startingFiles = new List<string>();
 
-		public LinuxCrashMonitor(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public LinuxCrashMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Executable"))
 				executable = (string)args["Executable"];

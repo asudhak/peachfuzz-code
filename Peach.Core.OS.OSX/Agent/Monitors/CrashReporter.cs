@@ -54,8 +54,8 @@ namespace Peach.Core.Agent.Monitors
 		private IntPtr _asl = IntPtr.Zero;
 		private string[] _crashLogs = null;
 
-		public CrashReporter(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public CrashReporter(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("ProcessName"))
 				this._processName = (string)args["ProcessName"];

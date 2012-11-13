@@ -36,8 +36,8 @@ namespace Peach.Core.Agent.Monitors
 		int _powerPause = 500;
 		bool _everyIteration = false;
 
-		public IpPower9258Monitor(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public IpPower9258Monitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Host"))
 				_host = (string)args["Host"];

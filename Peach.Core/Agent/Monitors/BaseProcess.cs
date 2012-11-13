@@ -69,8 +69,8 @@ namespace Peach.Core.Agent.Monitors
 		int _waitForExitTimeout = 0;
 		bool _waitForExitFault = false;
 
-		public BaseProcess(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public BaseProcess(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Executable"))
 				_executable = (string)args["Executable"];
@@ -255,6 +255,7 @@ namespace Peach.Core.Agent.Monitors
 						if (!_process.WaitForExit(_waitForExitTimeout))
 						{
 							logger.Debug("FAULT, WaitForExit ran out of time!");
+							this.Agent.QueryMonitors("CanaKitRelay_Reset");
 							_waitForExitFault = true;
 							_process.Kill();
 							_process.WaitForExit(1000);

@@ -60,8 +60,8 @@ namespace Peach.Core.Agent.Monitors
 		Thread _worker = null;
 		bool _workerStop = false;
 
-		public PopupWatcher(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public PopupWatcher(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			_windowNames.AddRange(((string)args["WindowNames"]).Split(';'));
 

@@ -134,6 +134,12 @@ namespace Peach.Core.Agent.Channels
 		{
 			return proxy.Message(name, data);
 		}
+
+		public object QueryMonitors(string query)
+		{
+			return proxy.QueryMonitors(query);
+		}
+
 	}
 
 	/// <summary>
@@ -219,6 +225,12 @@ namespace Peach.Core.Agent.Channels
 		{
 			return agent.Message(name, data);
 		}
+
+		[XmlRpcMethod("QueryMonitors")]
+		public object QueryMonitors(string query)
+		{
+			return agent.QueryMonitors(query);
+		}
 	}
 
 	[XmlRpcUrl("http://localhost/PeachAgent")]
@@ -252,6 +264,8 @@ namespace Peach.Core.Agent.Channels
 		bool MustStop();
 		[XmlRpcMethod("Message")]
 		Variant Message(string name, Variant data);
+		[XmlRpcMethod("QueryMonitors")]
+		object QueryMonitors(string query);
 	}
 
 	[AgentServer("http")]
