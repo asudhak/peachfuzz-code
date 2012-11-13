@@ -455,9 +455,9 @@ namespace Peach.Core.Dom
 
 	public enum ByteOrder
 	{
-		Little,
-		Big,
-		Network
+		little,
+		big,
+		network
 	}
 }
 
