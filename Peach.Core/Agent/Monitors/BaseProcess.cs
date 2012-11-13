@@ -265,7 +265,7 @@ namespace Peach.Core.Agent.Monitors
 				return null;
 			}
 
-			else if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall)
+			else if (name == "Action.Call.IsRunning" && (((string)data) == _startOnCall || ((string)data) == _waitForExitOnCall))
 			{
 				try
 				{
