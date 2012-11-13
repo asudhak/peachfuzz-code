@@ -237,9 +237,6 @@ namespace Peach.Core
 
 				uint redoCount = 0;
 
-                // We don't want to hang onto last iterations faults.
-                context.faults.Clear();
-
 				if (context.config.range)
 				{
 					logger.Debug("Engine::runTest:" +
@@ -273,9 +270,6 @@ namespace Peach.Core
 					context.controlRecordingIteration = true;
 				}
 
-				// Make sure we are not hanging on to old faults.
-				context.faults.Clear();
-
 				OnTestStarting(context);
 
 				// Start agents
@@ -294,6 +288,9 @@ namespace Peach.Core
 					try
 					{
 						mutationStrategy.Iteration = iterationCount;
+
+						// Make sure we are not hanging on to old faults.
+						context.faults.Clear();
 
 						try
 						{
