@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 
+using Peach.Core;
+
 namespace Peach.Core.Agent.Monitors
 {
 	/// <summary>
@@ -15,6 +17,9 @@ namespace Peach.Core.Agent.Monitors
 	/// a port of your choice when a fault is detected.  Optionally you can have
 	/// the on/off occur before every iteration.
 	/// </summary>
+	/// <remarks>
+	/// http://www.opengear.com/product-ip-power-9258.html
+	/// </remarks>
 	[Monitor("IpPower9258", true)]
 	[Parameter("Host", typeof(string), "Host or IP address (can include http interface port e.g. :8080)", true)]
 	[Parameter("User", typeof(string), "Username", true)]
@@ -150,59 +155,6 @@ namespace Peach.Core.Agent.Monitors
 		public override Variant Message(string name, Variant data)
 		{
 			return null;
-		}
-	}
-
-	/// <summary>
-	/// Extention of WebClient that supports cookies
-	/// </summary>
-	class WebClientEx : WebClient
-	{
-		public WebClientEx()
-		{
-			this.container = new CookieContainer();
-		}
-
-		public WebClientEx(CookieContainer container)
-		{
-			this.container = container;
-		}
-
-		private readonly CookieContainer container = new CookieContainer();
-
-		protected override WebRequest GetWebRequest(Uri address)
-		{
-			WebRequest r = base.GetWebRequest(address);
-			var request = r as HttpWebRequest;
-			if (request != null)
-			{
-				request.CookieContainer = container;
-			}
-			return r;
-		}
-
-		protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
-		{
-			WebResponse response = base.GetWebResponse(request, result);
-			ReadCookies(response);
-			return response;
-		}
-
-		protected override WebResponse GetWebResponse(WebRequest request)
-		{
-			WebResponse response = base.GetWebResponse(request);
-			ReadCookies(response);
-			return response;
-		}
-
-		private void ReadCookies(WebResponse r)
-		{
-			var response = r as HttpWebResponse;
-			if (response != null)
-			{
-				CookieCollection cookies = response.Cookies;
-				container.Add(cookies);
-			}
 		}
 	}
 }

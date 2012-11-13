@@ -252,9 +252,13 @@ namespace Peach.Core.Agent.Monitors
 					// WARNING: Infinite wait!
 					if (_waitForExitTimeout > 0)
 					{
+						logger.Debug("WaitForExit("+_waitForExitOnCall+")");
 						if (!_process.WaitForExit(_waitForExitTimeout))
 						{
+							logger.Debug("FAULT, WaitForExit ran out of time!");
 							_waitForExitFault = true;
+							_process.Kill();
+							_process.WaitForExit(1000);
 						}
 					}
 					else

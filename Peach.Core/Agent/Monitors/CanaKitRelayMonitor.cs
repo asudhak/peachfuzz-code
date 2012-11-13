@@ -70,6 +70,8 @@ namespace Peach.Core.Agent.Monitors
 		public override void SessionStarting()
 		{
 			resetPower(false);
+			System.Threading.Thread.Sleep(250);
+			resetPower(false);
 		}
 
 		public override void SessionFinished()
