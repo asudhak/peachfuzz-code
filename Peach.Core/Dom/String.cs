@@ -47,12 +47,12 @@ namespace Peach.Core.Dom
 {
 	public enum StringType
 	{
-		Ascii,
-		Utf7,
-		Utf8,
-		Utf16,
-		Utf16be,
-		Utf32
+		ascii,
+		utf7,
+		utf8,
+		utf16,
+		utf16be,
+		utf32
 	}
 	
 	/// <summary>
@@ -74,7 +74,7 @@ namespace Peach.Core.Dom
 	public class String : DataElement
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		protected StringType _type = StringType.Ascii;
+		protected StringType _type = StringType.ascii;
 		protected bool _nullTerminated = false;
 		protected char _padCharacter = '\0';
 
@@ -129,7 +129,7 @@ namespace Peach.Core.Dom
 			{
 				// Locate NULL character in stream
 				bool foundNull = false;
-				bool twoNulls = element.stringType == StringType.Utf16 || element.stringType == StringType.Utf16be;
+				bool twoNulls = element.stringType == StringType.utf16 || element.stringType == StringType.utf16be;
 				long currentPos = data.TellBits();
 
 				for (long i = data.TellBytes(); i < data.LengthBytes; i++)
@@ -247,22 +247,22 @@ namespace Peach.Core.Dom
 				switch (type.ToLower())
 				{
 					case "ascii":
-						str.stringType = StringType.Ascii;
+						str.stringType = StringType.ascii;
 						break;
 					case "utf16":
-						str.stringType = StringType.Utf16;
+						str.stringType = StringType.utf16;
 						break;
 					case "utf16be":
-						str.stringType = StringType.Utf16be;
+						str.stringType = StringType.utf16be;
 						break;
 					case "utf32":
-						str.stringType = StringType.Utf32;
+						str.stringType = StringType.utf32;
 						break;
 					case "utf7":
-						str.stringType = StringType.Utf7;
+						str.stringType = StringType.utf7;
 						break;
 					case "utf8":
-						str.stringType = StringType.Utf8;
+						str.stringType = StringType.utf8;
 						break;
 					default:
 						throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
@@ -386,22 +386,22 @@ namespace Peach.Core.Dom
 
 			Variant v = InternalValue;
 
-			if (_type == StringType.Ascii)
+			if (_type == StringType.ascii)
 				value = Encoding.ASCII.GetBytes((string)v);
 
-			else if (_type == StringType.Utf7)
+			else if (_type == StringType.utf7)
 				value = Encoding.UTF7.GetBytes((string)v);
 
-			else if (_type == StringType.Utf8)
+			else if (_type == StringType.utf8)
 				value = Encoding.UTF8.GetBytes((string)v);
 
-			else if (_type == StringType.Utf16)
+			else if (_type == StringType.utf16)
 				value = Encoding.Unicode.GetBytes((string)v);
 
-			else if (_type == StringType.Utf16be)
+			else if (_type == StringType.utf16be)
 				value = Encoding.BigEndianUnicode.GetBytes((string)v);
 
-			else if (_type == StringType.Utf32)
+			else if (_type == StringType.utf32)
 				value = Encoding.UTF32.GetBytes((string)v);
 
 			else
