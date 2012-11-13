@@ -659,21 +659,22 @@ namespace Peach.Core.Test
 
 		interface IEndian
 		{
-			int Full(int written, int todo); // When writing a full byte
-			int Part(int written, int todo); // When writing a partial byte
+			int ShiftBy(int written, int todo);
 		}
 
 		class LittleEndian : IEndian
 		{
-			public int Full(int written, int todo) { return written; }
-			public int Part(int written, int todo) { return written; }
+			public int ShiftBy(int written, int todo) { return written; }
 		}
 
 		class BigEndian : IEndian
 		{
-			public int Full(int written, int todo) { return todo; }
-			public int Part(int written, int todo) { return 0;    }
+			public int ShiftBy(int written, int todo) { return Math.Max(0, todo); }
 		}
+
+		class LittleBitWriter : BitWriter<LittleEndian> { }
+
+		class BigBitWriter : BitWriter<BigEndian> { }
 
 		class BitWriter<T> where T : IEndian, new()
 		{
@@ -739,12 +740,13 @@ namespace Peach.Core.Test
 					if (todo < remain)
 					{
 						remain -= todo;
+						todo = 0;
+
 						byte lowMask = (byte)((1 << remain) - 1);
 						mask |= lowMask;
 
 						// LE: written, BE: zero
-						int shift = offset.Part(written, todo);
-
+						int shift = offset.ShiftBy(written, todo);
 						byte next = (byte)(value >> shift);
 						next <<= remain;
 
@@ -753,14 +755,13 @@ namespace Peach.Core.Test
 						ms.Seek(-1, SeekOrigin.Current);
 
 						mask = ~lowMask;
-						todo = 0;
 					}
 					else
 					{
 						todo -= remain;
 
 						// LE: written, BE: todo
-						int shift = offset.Full(written, todo);
+						int shift = offset.ShiftBy(written, todo);
 						byte next = (byte)(value >> shift);
 
 						pending = (byte)((pending & mask) | (next & ~mask));
@@ -780,6 +781,108 @@ namespace Peach.Core.Test
 			{
 				Write((ulong)value, bits);
 			}
+
+			#region Static Convert Methods
+
+			public static byte[] GetBits(long value, int bitlen)
+			{
+				return GetBits((ulong)value, bitlen);
+			}
+
+			public static byte[] GetBits(ulong value, int bitlen)
+			{
+				if (bitlen <= 0 || bitlen > 64)
+					throw new ArgumentOutOfRangeException("bitlen");
+
+				byte[] ret = new byte[(bitlen + 7) / 8];
+				int index = 0;
+				int written = 0;
+
+				while (bitlen > 0)
+				{
+					bitlen -= 8;
+
+					// LE: written, BE: bitlen
+					int shift = offset.ShiftBy(written, bitlen);
+					byte next = (byte)(value >> shift);
+
+					if (bitlen < 0)
+						next <<= -bitlen;
+
+					ret[index++] = next;
+					written += 8;
+				}
+
+				return ret;
+			}
+
+			public static ulong GetUInt64(byte[] buf, int bitlen)
+			{
+				if (bitlen <= 0 || bitlen > 64)
+					throw new ArgumentOutOfRangeException("bitlen");
+				if (buf.Length != ((bitlen + 7) / 8))
+					throw new ArgumentOutOfRangeException("buf");
+
+				ulong ret = 0;
+				int index = 0;
+				int written = 0;
+
+				while (bitlen > 0)
+				{
+					bitlen -= 8;
+
+					byte next = buf[index++];
+
+					if (bitlen < 0)
+						next >>= -bitlen;
+
+					// LE: written, BE: bitlen
+					int shift = offset.ShiftBy(written, bitlen);
+
+					ret |= ((ulong)next << shift);
+					written += 8;
+				}
+
+				return ret;
+			}
+
+			public static long GetInt64(byte[] buf, int bitlen)
+			{
+				ulong ret = GetUInt64(buf, bitlen);
+
+				// Handle sign expansion
+				ulong mask = ((ulong)1 << (bitlen - 1));
+				if ((ret & mask) != 0)
+					ret |= ~(mask - 1);
+
+				return (long)ret;
+			}
+
+			#endregion
+		}
+
+		[Test]
+		public void BitConverter()
+		{
+			/*
+			 * Unsigned, BE, 12bit "A B C" -> 0x0ABC ->  2748
+			 * Signed  , BE, 12bit "A B C" -> 0xFABC -> -1348
+			 * Unsigned, LE, 12bit "B C A" -> 0x0ABC ->  2748
+			 * Signed  , LE, 12bit "B C A" -> 0xFABC -> -1348
+			 */
+
+			byte[] val = null;
+
+			val = BitWriter<BigEndian>.GetBits(0xABC, 12);
+			Assert.AreEqual(new byte[] { 0xab, 0xc0 }, val);
+			Assert.AreEqual(2748, BigBitWriter.GetUInt64(val, 12));
+			Assert.AreEqual(-1348, BigBitWriter.GetInt64(val, 12));
+
+			val = BitWriter<LittleEndian>.GetBits(0xABC, 12);
+			Assert.AreEqual(new byte[] { 0xbc, 0xa0 }, val);
+			Assert.AreEqual(2748, LittleBitWriter.GetUInt64(val, 12));
+			Assert.AreEqual(-1348, LittleBitWriter.GetInt64(val, 12));
+
 		}
 
 		[Test]
