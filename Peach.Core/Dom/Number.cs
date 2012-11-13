@@ -53,7 +53,7 @@ namespace Peach.Core.Dom
   [ParameterAttribute("name", typeof(string), "", true)]
   [ParameterAttribute("size", typeof(uint), "size in bits", true)]
 	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
-	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
+	[ParameterAttribute("endian", typeof(ByteOrder), "Byte order of number (default 'little')", false)]
 	[Serializable]
 	public class Number : DataElement
 	{
@@ -451,6 +451,13 @@ namespace Peach.Core.Dom
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
       }
     }
+	}
+
+	public enum ByteOrder
+	{
+		Little,
+		Big,
+		Network
 	}
 }
 
