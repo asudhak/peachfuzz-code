@@ -204,7 +204,7 @@ namespace Peach.Core.Agent
 
 			try
 			{
-				var monitor = Activator.CreateInstance(type, this, name, args) as Monitor;
+				var monitor = Activator.CreateInstance(type, (IAgent) this, name, args) as Monitor;
 				this.monitors.Add(name, monitor);
 			}
 			catch (TargetInvocationException ex)
