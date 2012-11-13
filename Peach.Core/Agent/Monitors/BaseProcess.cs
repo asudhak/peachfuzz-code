@@ -117,7 +117,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			logger.Debug("_Stop()");
 
-			for(int i = 0; i < 100 && (_process != null && !_process.HasExited); i++)
+			for (int i = 0; i < 100 && (_process != null && !_process.HasExited); i++)
 			{
 				logger.Debug("_Stop(): Killing process");
 				try
@@ -131,7 +131,7 @@ namespace Peach.Core.Agent.Monitors
 				{
 				}
 			}
-			
+
 			if (_process != null)
 			{
 				_process.Dispose();
@@ -188,13 +188,13 @@ namespace Peach.Core.Agent.Monitors
 				return fault;
 			}
 
-            fault.type = FaultType.Fault;
-            fault.detectionSource = "ProcessMonitor";
-            fault.title = "Process exited early";
-            fault.description = "Process exited early: " + _executable + " " + _arguments;
-            fault.folderName = "ProcessExitedEarly";
+			fault.type = FaultType.Fault;
+			fault.detectionSource = "ProcessMonitor";
+			fault.title = "Process exited early";
+			fault.description = "Process exited early: " + _executable + " " + _arguments;
+			fault.folderName = "ProcessExitedEarly";
 
-            return fault;
+			return fault;
 		}
 
 		public override bool MustStop()
@@ -247,12 +247,11 @@ namespace Peach.Core.Agent.Monitors
 			}
 			else if (name == "Action.Call" && ((string)data) == _waitForExitOnCall)
 			{
-				if (_process != null && !_process.HasExited)
+				if (_waitForExitTimeout > 0)
 				{
-					// WARNING: Infinite wait!
-					if (_waitForExitTimeout > 0)
+					logger.Debug("WaitForExit(" + _waitForExitOnCall + ")");
+					if (_process != null && !_process.HasExited)
 					{
-						logger.Debug("WaitForExit("+_waitForExitOnCall+")");
 						if (!_process.WaitForExit(_waitForExitTimeout))
 						{
 							logger.Debug("FAULT, WaitForExit ran out of time!");
@@ -261,14 +260,19 @@ namespace Peach.Core.Agent.Monitors
 							_process.WaitForExit(1000);
 						}
 					}
-					else
+				}
+				else
+				{
+					// WARNING: Infinite wait!
+					if (_process != null && !_process.HasExited)
+					{
 						_process.WaitForExit();
+					}
 				}
 
 				_Stop();
 				return null;
 			}
-
 			else if (name == "Action.Call.IsRunning" && (((string)data) == _startOnCall || ((string)data) == _waitForExitOnCall))
 			{
 				try
