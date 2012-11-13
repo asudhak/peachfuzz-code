@@ -49,6 +49,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CpuKill", typeof(bool), "Terminate process when CPU usage nears zero (defaults to false)", false)]
 	[Parameter("StartOnCall", typeof(string), "Start command on state model call", false)]
 	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", false)]
+	[Parameter("WaitForExitTimeout", typeof(int), "Wait timeout value.  Triggers fault when timeout hit.", false)]
 	public abstract class BaseProcess : Monitor
 	{
 		protected abstract ulong GetTotalCpuTime(System.Diagnostics.Process process);
@@ -65,6 +66,8 @@ namespace Peach.Core.Agent.Monitors
 		bool _cpuKill = false;
 		bool _firstIteration = true;
 		ulong _totalProcessorTime = 0;
+		int _waitForExitTimeout = 0;
+		bool _waitForExitFault = false;
 
 		public BaseProcess(string name, Dictionary<string, Variant> args)
 			: base(name, args)
@@ -83,6 +86,8 @@ namespace Peach.Core.Agent.Monitors
 				_startOnCall = (string)args["StartOnCall"];
 			if (args.ContainsKey("WaitForExitOnCall"))
 				_waitForExitOnCall = (string)args["WaitForExitOnCall"];
+			if (args.ContainsKey("WaitForExitTimeout"))
+				_waitForExitTimeout = (int)args["WaitForExitTimeout"];
 		}
 
 		void _Start()
@@ -140,6 +145,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			_waitForExitFault = false;
+
 			if (_restartOnEachTest)
 				_Stop();
 
@@ -155,6 +162,11 @@ namespace Peach.Core.Agent.Monitors
 				return true;
 			}
 
+			if (_waitForExitFault)
+			{
+				logger.Debug("DetectedFault(): Process did not exit in time, triggering fault");
+			}
+
 			return false;
 		}
 
@@ -163,7 +175,19 @@ namespace Peach.Core.Agent.Monitors
 			if (!DetectedFault())
 				return null;
 
-            Fault fault = new Fault();
+			Fault fault = new Fault();
+
+			if (_waitForExitFault)
+			{
+				fault.type = FaultType.Fault;
+				fault.detectionSource = "ProcessMonitor";
+				fault.title = "Process did not exit in time";
+				fault.description = "Process failed to exit in wait time: " + _executable + " " + _arguments;
+				fault.folderName = "ProcessFailedToExit";
+
+				return fault;
+			}
+
             fault.type = FaultType.Fault;
             fault.detectionSource = "ProcessMonitor";
             fault.title = "Process exited early";
@@ -226,7 +250,15 @@ namespace Peach.Core.Agent.Monitors
 				if (_process != null && !_process.HasExited)
 				{
 					// WARNING: Infinite wait!
-					_process.WaitForExit();
+					if (_waitForExitTimeout > 0)
+					{
+						if (!_process.WaitForExit(_waitForExitTimeout))
+						{
+							_waitForExitFault = true;
+						}
+					}
+					else
+						_process.WaitForExit();
 				}
 
 				_Stop();
