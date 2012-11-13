@@ -27,12 +27,14 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("RelayNumber", typeof(int), "Which realy to trigger (1..4)", true)]
 	[Parameter("ResetEveryIteration", typeof(bool), "Reset power on every iteration (default is false)", false)]
 	[Parameter("OnOffPause", typeof(int), "Pause in milliseconds between off/on (default is 1/2 second)", false)]
+	[Parameter("ResetOnStart", typeof(bool), "Reset device on start? (defaults to false)", false)]
 	public class CanaKitRelayMonitor : Monitor
 	{
 		string _serialPort = null;
 		string _relayNumber = null;
 		int _powerPause = 500;
 		bool _everyIteration = false;
+		bool _resetOnStart = false;
 
 		public CanaKitRelayMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -45,6 +47,8 @@ namespace Peach.Core.Agent.Monitors
 				_everyIteration = (string)args["ResetEveryIteration"] == "true";
 			if (args.ContainsKey("PowerOnOffPause"))
 				_powerPause = (int)args["PowerOnOffPause"];
+			if (args.ContainsKey("ResetOnStart"))
+				_resetOnStart = (string)args["ResetOnStart"] == "true";
 		}
 
 		void resetPower(bool turnOff = true)
@@ -69,9 +73,18 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
-			resetPower(false);
-			System.Threading.Thread.Sleep(250);
-			resetPower(false);
+			if (!_resetOnStart)
+			{
+				resetPower(false);
+				System.Threading.Thread.Sleep(250);
+				resetPower(false);
+			}
+			else
+			{
+				resetPower(false);
+				System.Threading.Thread.Sleep(250);
+				resetPower();
+			}
 		}
 
 		public override void SessionFinished()
