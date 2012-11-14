@@ -90,21 +90,7 @@ namespace Peach.Core.Dom
 			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
 				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
 
-			byte[] buf = new byte[(lengthAsBits + 7) / 8];
-
-			int i = 0;
-			int todo = (int)lengthAsBits;
-			while (todo >= 8)
-			{
-				buf[i++] = data.ReadByte();
-				todo -= 8;
-			}
-			if (todo > 0)
-			{
-				buf[i] = (byte)(data.ReadBits(todo) << (8 - todo));
-			}
-
-			Variant defaultValue = new Variant(ParseArray(buf));
+			Variant defaultValue = new Variant(FromBitstream(data));
 
 			logger.Debug("Number's value is: {0}", defaultValue);
 
@@ -237,60 +223,56 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		private dynamic ParseString(string str)
+		private dynamic SanitizeString(string str)
 		{
-			string strValue;
-			NumberStyles style;
-
-			if (str.StartsWith("0x"))
-			{
-				strValue = str.Substring(2);
-				style = NumberStyles.HexNumber;
-			}
-			else
-			{
-				strValue = str;
-				style = NumberStyles.Integer;
-			}
-
 			if (Signed)
 			{
 				long value;
-				if (long.TryParse(strValue, style, null, out value))
+				if (long.TryParse(str, out value))
 					return value;
 			}
 			else
 			{
 				ulong value;
-				if (ulong.TryParse(strValue, style, null, out value))
+				if (ulong.TryParse(str, out value))
 					return value;
 			}
 
 			throw new PeachException("Error,  {0} value \"{1}\" could not be converted to a {2}-bit {3} number.", name, str, lengthAsBits, Signed ? "signed" : "unsigned");
 		}
 
-		private dynamic ParseArray(byte[] buf)
+		private dynamic SanitizeStream(BitStream bs)
 		{
-			int mask = (1 << ((int)lengthAsBits % 8)) - 1;
-			if ((buf[buf.Length - 1] & mask) != 0)
-				throw new PeachException("Error,  {0} value \"{1}\" has an invalid bytes for a {2}-bit {3} number.", name, buf, lengthAsBits, Signed ? "signed" : "unsigned");
+			if (bs.LengthBytes != ((lengthAsBits + 7) / 8))
+				throw new PeachException("Error,  {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", name, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8);
 
-			if (buf.Length != ((lengthAsBits + 7) / 8))
-				throw new PeachException("Error,  {0} value \"{1}\" has an incorrect length for a {2}-bit {3} number.", name, buf, lengthAsBits, Signed ? "signed" : "unsigned");
+			if (bs.LengthBits > lengthAsBits)
+			{
+				ulong extra = bs.ReadBits((int)(bs.LengthBits - lengthAsBits));
+				if (extra != 0)
+					throw new PeachException("Error,  {0} value has an invalid bytes for a {1}-bit {2} number.", name, lengthAsBits, Signed ? "signed" : "unsigned");
+			}
+
+			return FromBitstream(bs);
+		}
+
+		private dynamic FromBitstream(BitStream bs)
+		{
+			ulong bits = bs.ReadBits((int)lengthAsBits);
 
 			if (Signed)
 			{
 				if (LittleEndian)
-					return LittleBitWriter.GetInt64(buf, (int)lengthAsBits);
+					return LittleBitWriter.GetInt64(bits, (int)lengthAsBits);
 				else
-					return BigBitWriter.GetInt64(buf, (int)lengthAsBits);
+					return BigBitWriter.GetInt64(bits, (int)lengthAsBits);
 			}
 			else
 			{
 				if (LittleEndian)
-					return LittleBitWriter.GetUInt64(buf, (int)lengthAsBits);
+					return LittleBitWriter.GetUInt64(bits, (int)lengthAsBits);
 				else
-					return BigBitWriter.GetUInt64(buf, (int)lengthAsBits);
+					return BigBitWriter.GetUInt64(bits, (int)lengthAsBits);
 			}
 		}
 
@@ -301,10 +283,11 @@ namespace Peach.Core.Dom
 			switch (variant.GetVariantType())
 			{
 				case Variant.VariantType.String:
-					value = ParseString((string)variant);
+					value = SanitizeString((string)variant);
 					break;
+				case Variant.VariantType.BitStream:
 				case Variant.VariantType.ByteString:
-					value = ParseArray((byte[])variant);
+					value = SanitizeStream((BitStream)variant);
 					break;
 				case Variant.VariantType.Int:
 				case Variant.VariantType.Long:
@@ -317,9 +300,9 @@ namespace Peach.Core.Dom
 					throw new ArgumentException("Variant type is unsupported.", "variant");
 			}
 
-			if (value < 0 && (long)value < _min)
+			if (value < 0 && (long)value < MinValue)
 				throw new PeachException("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
-			if (value > 0 && (ulong)value > _max)
+			if (value > 0 && (ulong)value > MaxValue)
 				throw new PeachException("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
 
 			if (Signed)
@@ -362,27 +345,36 @@ namespace Peach.Core.Dom
 
 		protected override BitStream InternalValueToBitStream()
 		{
-			byte[] buf;
+			ulong bits;
+			dynamic value;
 
 			if (Signed)
-			{
-				if (LittleEndian)
-					buf = LittleBitWriter.GetBits((long)InternalValue, (int)lengthAsBits);
-				else
-					buf = BigBitWriter.GetBits((long)InternalValue, (int)lengthAsBits);
-			}
+				value = (long)InternalValue;
 			else
+				value = (ulong)InternalValue;
+
+			if (value > 0 && (ulong)value > MaxValue)
 			{
-				if (LittleEndian)
-					buf = LittleBitWriter.GetBits((ulong)InternalValue, (int)lengthAsBits);
-				else
-					buf = BigBitWriter.GetBits((ulong)InternalValue, (int)lengthAsBits);
+				string msg = string.Format("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
+				var inner = new OverflowException(msg);
+				throw new SoftException(inner);
 			}
 
-			BitStream bits = new BitStream(buf);
-			bits.SeekBits(lengthAsBits, System.IO.SeekOrigin.Begin);
-			bits.Truncate();
-			return bits;
+			if (value < 0 && (long)value < MinValue)
+			{
+				string msg = string.Format("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
+				var inner = new OverflowException(msg);
+				throw new SoftException(inner);
+			}
+
+			if (LittleEndian)
+				bits = LittleBitWriter.GetBits(value, (int)lengthAsBits);
+			else
+				bits = BigBitWriter.GetBits(value, (int)lengthAsBits);
+
+			var bs = new BitStream();
+			bs.WriteBits(bits, (int)lengthAsBits);
+			return bs;
 		}
 
     public override object GetParameter(string parameterName)

@@ -777,15 +777,28 @@ namespace Peach.Core.Test
 
 			byte[] val = null;
 
-			val = BitWriter<BigEndian>.GetBits(0xABC, 12);
+			val = BitWriter<BigEndian>.GetBytes(0xABC, 12);
 			Assert.AreEqual(new byte[] { 0xab, 0xc0 }, val);
 			Assert.AreEqual(2748, BigBitWriter.GetUInt64(val, 12));
 			Assert.AreEqual(-1348, BigBitWriter.GetInt64(val, 12));
 
-			val = BitWriter<LittleEndian>.GetBits(0xABC, 12);
+			val = BitWriter<LittleEndian>.GetBytes(0xABC, 12);
 			Assert.AreEqual(new byte[] { 0xbc, 0xa0 }, val);
 			Assert.AreEqual(2748, LittleBitWriter.GetUInt64(val, 12));
 			Assert.AreEqual(-1348, LittleBitWriter.GetInt64(val, 12));
+
+			ulong bits = 0;
+
+			bits = BitWriter<BigEndian>.GetBits(0xABC, 12);
+			Assert.AreEqual(0xABC, bits);
+			Assert.AreEqual(2748, BigBitWriter.GetUInt64(bits, 12));
+			Assert.AreEqual(-1348, BigBitWriter.GetInt64(bits, 12));
+
+			bits = BitWriter<LittleEndian>.GetBits(0xABC, 12);
+			Assert.AreEqual(0xBCA, bits);
+			Assert.AreEqual(2748, LittleBitWriter.GetUInt64(bits, 12));
+			Assert.AreEqual(-1348, LittleBitWriter.GetInt64(bits, 12));
+		}
 
 		[Test]
 		public void BitStreamBits()

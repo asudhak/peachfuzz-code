@@ -923,58 +923,12 @@ namespace Peach.Core.Analyzers
 
 						BitStream sout = new BitStream();
 
-						if (elem is Number)
-						{
-							if (((Number)elem).LittleEndian)
-								sout.LittleEndian();
-							else
-								sout.BigEndian();
-						}
-
-						for (int cnt = value.Length / 2; cnt < elem.length; cnt++)
-							sout.WriteByte(0);
-
 						for (int cnt = 0; cnt < value.Length; cnt += 2)
 							sout.WriteByte(Convert.ToByte(value.Substring(cnt, 2), 16));
 
 						sout.SeekBits(0, SeekOrigin.Begin);
 
-						if (elem is Number)
-						{
-							Number num = elem as Number;
-							switch (num.lengthAsBits)
-							{
-								case 8:
-									if (num.Signed)
-										elem.DefaultValue = new Variant(sout.ReadInt8());
-									else
-										elem.DefaultValue = new Variant(sout.ReadUInt8());
-									break;
-								case 16:
-									if (num.Signed)
-										elem.DefaultValue = new Variant(sout.ReadInt16());
-									else
-										elem.DefaultValue = new Variant(sout.ReadUInt16());
-									break;
-								case 32:
-									if (num.Signed)
-										elem.DefaultValue = new Variant(sout.ReadInt32());
-									else
-										elem.DefaultValue = new Variant(sout.ReadUInt32());
-									break;
-								case 64:
-									if (num.Signed)
-										elem.DefaultValue = new Variant(sout.ReadInt64());
-									else
-										elem.DefaultValue = new Variant(sout.ReadUInt64());
-									break;
-								default:
-									throw new NotImplementedException("todo, variable bit Numbers");
-							}
-						}
-						else
-							elem.DefaultValue = new Variant(sout.Value);
-
+						elem.DefaultValue = new Variant(sout.Value);
 						break;
 					case "literal":
 						throw new NotImplementedException("todo valueType");

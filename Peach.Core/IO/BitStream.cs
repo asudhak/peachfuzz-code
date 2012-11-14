@@ -1086,6 +1086,27 @@ namespace Peach.Core.IO
 
 			return ret;
 		}
+
+		public byte[] ReadBitsAsBytes(long sizeInBits)
+		{
+			byte[] buf = new byte[(sizeInBits + 7) / 8];
+
+			int i = 0;
+
+			while (sizeInBits >= 8)
+			{
+				buf[i++] = ReadByte();
+				sizeInBits -= 8;
+			}
+
+			if (sizeInBits > 0)
+			{
+				buf[i] = (byte)(ReadBits((int)sizeInBits) << (int)(8 - sizeInBits));
+			}
+
+			return buf;
+		}
+
 		public byte[] ReadBytes(long count)
 		{
 			if (count == 0)

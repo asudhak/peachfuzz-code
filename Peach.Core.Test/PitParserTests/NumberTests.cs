@@ -182,7 +182,7 @@ namespace Peach.Core.Test.PitParserTests
 		[Test]
 		public void TestNoValue()
 		{
-			string xml = "<Peach><DataModel name=\"DM\"><Number size=\"12\" value=\"0x123\"/></DataModel></Peach>";
+			string xml = "<Peach><DataModel name=\"DM\"><Number size=\"12\"/></DataModel></Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -190,17 +190,16 @@ namespace Peach.Core.Test.PitParserTests
 
 			var defaultValue = num.DefaultValue;
 			Assert.NotNull(defaultValue);
+			Assert.AreEqual(0, (int)defaultValue);
+
 			var final = num.Value;
 			Assert.NotNull(final);
-
-			BitStream data = new BitStream( new byte[] { 0x01, 0x23 } );
-			Peach.Core.Cracker.DataCracker cracker = new Peach.Core.Cracker.DataCracker();
-			cracker.CrackData(dom.dataModels[0], data);
-			defaultValue = num.DefaultValue;
-			Assert.NotNull(defaultValue);
-			final = num.Value;
-			Assert.NotNull(final);
-
+			Assert.AreEqual(12, final.LengthBits);
+			Assert.AreEqual(2, final.LengthBytes);
+			MemoryStream ms = final.Stream as MemoryStream;
+			Assert.NotNull(ms);
+			Assert.AreEqual(0, ms.GetBuffer()[0]);
+			Assert.AreEqual(0, ms.GetBuffer()[1]);
 		}
 
 		[Test]
@@ -225,26 +224,49 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(new byte[]{0x01, 0x02, 0x03, 0x04}, val.Value);
 		}
 
-		[Test]
-		public void TestHexParseShort()
+		private void DoHexParse(bool throws, string value, int size)
 		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+			string template = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Number name=\"TheNumber\" size=\"32\" value=\"01\"" +
+				"		<Number name=\"TheNumber\" size=\"{0}\" value=\"{1}\"" +
 				"		signed=\"true\" endian=\"big\" valueType=\"hex\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
+			string xml = string.Format(template, size, value);
 			PitParser parser = new PitParser();
+
+			if (throws)
+			{
+				Assert.Throws<PeachException>(delegate() {
+					parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				});
+
+				return;
+			}
+
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Number num = dom.dataModels[0][0] as Number;
-
 			Assert.AreEqual(true, num.Signed);
 			Assert.AreEqual(false, num.LittleEndian);
-			Assert.AreEqual(1, (int)num.DefaultValue);
+			Assert.AreNotEqual(0, (long)num.DefaultValue);
 			BitStream val = num.Value;
-			Assert.AreEqual(32, val.LengthBits);
-			Assert.AreEqual(new byte[] { 0x00, 0x00, 0x00, 0x01 }, val.Value);
+			Assert.AreEqual(size, val.LengthBits);
+		}
+
+		[Test]
+		public void TestHexParseSize()
+		{
+			DoHexParse(false, "01", 1);
+			DoHexParse(false, "01", 8);
+			DoHexParse(true, "01", 9);
+			DoHexParse(false, "0f", 4);
+			DoHexParse(true, "f0", 4);
+			DoHexParse(false, "0f 00", 12);
+			DoHexParse(true, "f0 00", 12);
+			DoHexParse(false, "00 00 00 01", 32);
+			DoHexParse(true, "01", 32);
+			DoHexParse(true, "00 00 00 00 01", 32);
 		}
 	}
 }
