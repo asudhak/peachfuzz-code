@@ -1000,29 +1000,30 @@ namespace Peach.Core.Analyzers
 
 		public string getDefaultAttribute(Type type, string key)
 		{
-			return dataElementDefaults[type][key];
+			Dictionary<string, string> defaults = null;
+			if (!dataElementDefaults.TryGetValue(type, out defaults))
+				return null;
+
+			string value = null;
+			if (!defaults.TryGetValue(key, out value))
+				return null;
+
+			return value;
 		}
 
 		public bool getDefaultAttributeAsBool(Type type, string key, bool defaultValue)
 		{
-			try
+			string value = getDefaultAttribute(type, key);
+			switch (value)
 			{
-				string value = dataElementDefaults[type][key].ToLower();
-				switch (value)
-				{
-					case "1":
-					case "true":
-						return true;
-					case "0":
-					case "false":
-						return false;
-					default:
-						throw new PeachException("Error, " + key + " has unknown value, should be boolean.");
-				}
-			}
-			catch
-			{
-				return defaultValue;
+				case "1":
+				case "true":
+					return true;
+				case "0":
+				case "false":
+					return false;
+				default:
+					return defaultValue;
 			}
 		}
 
