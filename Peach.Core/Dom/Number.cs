@@ -197,20 +197,19 @@ namespace Peach.Core.Dom
 			set
 			{
 				if (value <= 0 || value > 64)
-					throw new ApplicationException("size must be > 0");
+					throw new ArgumentOutOfRangeException("Error, value must be greater than 0 and less than 65.");
 
 				_length = value;
 
 				if (_signed)
 				{
-					// TODO: fix overflow
-					_max = (ulong)(Math.Pow(2, lengthAsBits) / 2) - 1;
-					_min = 0 - (long)(Math.Pow(2, lengthAsBits) / 2);
+					_max = (ulong)((ulong)1 << ((int)lengthAsBits - 1)) - 1;
+					_min = 0 - (long)((ulong)1 << ((int)lengthAsBits - 1));
 				}
 				else
 				{
-					// TODO: fix overflow
-					_max = (ulong)Math.Pow(2, lengthAsBits) - 1;
+					_max = (ulong)((ulong)1 << ((int)lengthAsBits - 1));
+					_max += (_max - 1);
 					_min = 0;
 				}
 
@@ -267,17 +266,17 @@ namespace Peach.Core.Dom
 					return value;
 			}
 
-			throw new PeachException("err");
+			throw new PeachException("Error,  {0} value \"{1}\" could not be converted to a {2}-bit {3} number.", name, str, lengthAsBits, Signed ? "signed" : "unsigned");
 		}
 
 		private dynamic ParseArray(byte[] buf)
 		{
 			int mask = (1 << ((int)lengthAsBits % 8)) - 1;
 			if ((buf[buf.Length - 1] & mask) != 0)
-				throw new PeachException("trailer!");
+				throw new PeachException("Error,  {0} value \"{1}\" has an invalid bytes for a {2}-bit {3} number.", name, buf, lengthAsBits, Signed ? "signed" : "unsigned");
 
 			if (buf.Length != ((lengthAsBits + 7) / 8))
-				throw new PeachException("bad length");
+				throw new PeachException("Error,  {0} value \"{1}\" has an incorrect length for a {2}-bit {3} number.", name, buf, lengthAsBits, Signed ? "signed" : "unsigned");
 
 			if (Signed)
 			{
@@ -315,14 +314,13 @@ namespace Peach.Core.Dom
 					value = (ulong)variant;
 					break;
 				default:
-					System.Diagnostics.Debug.Assert(false, "Unexpected variant type");
-					break;
+					throw new ArgumentException("Variant type is unsupported.", "variant");
 			}
 
 			if (value < 0 && (long)value < _min)
-				throw new PeachException("too small!");
+				throw new PeachException("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
 			if (value > 0 && (ulong)value > _max)
-				throw new PeachException("too big");
+				throw new PeachException("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
 
 			if (Signed)
 				return new Variant((long)value);

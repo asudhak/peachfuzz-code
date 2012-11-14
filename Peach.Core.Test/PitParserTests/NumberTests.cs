@@ -152,8 +152,32 @@ namespace Peach.Core.Test.PitParserTests
 		[Test]
 		public void TestBitwise()
 		{
-			TestString<short>(0xabc, new byte[] { 0xbc, 0xa0 }, 12, false, true);
+			// value, expected, size, signed, little
+			TestString<byte>(0xff, new byte[] { 0xff }, 8, false, true);
+			TestString<sbyte>(-1, new byte[] { 0xff }, 8, true, true);
+
+			Assert.Throws<PeachException>(delegate() {
+				TestString<sbyte>(-1, new byte[] { 0xff }, 8, false, true);
+			});
+
+			TestString<sbyte>(7, new byte[] { 0x70 }, 4, true, true);
+			TestString<sbyte>(-8, new byte[] { 0x80 }, 4, true, true);
+
+			Assert.Throws<PeachException>(delegate() {
+				TestString<byte>(100, new byte[] { 0xf0 }, 4, false, true);
+			});
+
+			Assert.Throws<PeachException>(delegate() {
+				TestString<sbyte>(-100, new byte[] { 0xf0 }, 4, true, true);
+			});
+
+			TestString<ushort>(0xabc, new byte[] { 0xbc, 0xa0 }, 12, false, true);
+			TestString<ushort>(0xabc, new byte[] { 0xab, 0xc0 }, 12, false, false);
+
+			TestString<uint>(0xffffffff, new byte[] { 0xff, 0xff, 0xff, 0xff }, 32, false, false);
+			TestString<ulong>(0xffffffffffffffff, new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, 64, false, false);
 		}
+
 
 		[Test]
 		public void TestNoValue()
