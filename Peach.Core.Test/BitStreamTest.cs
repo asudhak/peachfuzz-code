@@ -657,26 +657,7 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, bs.Stream.Position);
 		}
 
-		interface IEndian
-		{
-			int ShiftBy(int written, int todo);
-		}
-
-		class LittleEndian : IEndian
-		{
-			public int ShiftBy(int written, int todo) { return written; }
-		}
-
-		class BigEndian : IEndian
-		{
-			public int ShiftBy(int written, int todo) { return Math.Max(0, todo); }
-		}
-
-		class LittleBitWriter : BitWriter<LittleEndian> { }
-
-		class BigBitWriter : BitWriter<BigEndian> { }
-
-		class BitWriter<T> where T : IEndian, new()
+		class BitStreamWriter<T> where T : IEndian, new()
 		{
 			// For computing bit shift offsets
 			private static T offset = new T();
@@ -782,83 +763,6 @@ namespace Peach.Core.Test
 				Write((ulong)value, bits);
 			}
 
-			#region Static Convert Methods
-
-			public static byte[] GetBits(long value, int bitlen)
-			{
-				return GetBits((ulong)value, bitlen);
-			}
-
-			public static byte[] GetBits(ulong value, int bitlen)
-			{
-				if (bitlen <= 0 || bitlen > 64)
-					throw new ArgumentOutOfRangeException("bitlen");
-
-				byte[] ret = new byte[(bitlen + 7) / 8];
-				int index = 0;
-				int written = 0;
-
-				while (bitlen > 0)
-				{
-					bitlen -= 8;
-
-					// LE: written, BE: bitlen
-					int shift = offset.ShiftBy(written, bitlen);
-					byte next = (byte)(value >> shift);
-
-					if (bitlen < 0)
-						next <<= -bitlen;
-
-					ret[index++] = next;
-					written += 8;
-				}
-
-				return ret;
-			}
-
-			public static ulong GetUInt64(byte[] buf, int bitlen)
-			{
-				if (bitlen <= 0 || bitlen > 64)
-					throw new ArgumentOutOfRangeException("bitlen");
-				if (buf.Length != ((bitlen + 7) / 8))
-					throw new ArgumentOutOfRangeException("buf");
-
-				ulong ret = 0;
-				int index = 0;
-				int written = 0;
-
-				while (bitlen > 0)
-				{
-					bitlen -= 8;
-
-					byte next = buf[index++];
-
-					if (bitlen < 0)
-						next >>= -bitlen;
-
-					// LE: written, BE: bitlen
-					int shift = offset.ShiftBy(written, bitlen);
-
-					ret |= ((ulong)next << shift);
-					written += 8;
-				}
-
-				return ret;
-			}
-
-			public static long GetInt64(byte[] buf, int bitlen)
-			{
-				ulong ret = GetUInt64(buf, bitlen);
-
-				// Handle sign expansion
-				ulong mask = ((ulong)1 << (bitlen - 1));
-				if ((ret & mask) != 0)
-					ret |= ~(mask - 1);
-
-				return (long)ret;
-			}
-
-			#endregion
 		}
 
 		[Test]
@@ -895,7 +799,7 @@ namespace Peach.Core.Test
 			 * Signed  , LE, 12bit "B C A" -> 0xFABC -> -1348
 			 */
 
-			var w = new BitWriter<BigEndian>();
+			var w = new BitStreamWriter<BigEndian>();
 			w.Write(0, 32);
 			w.Write(0x00, 1);
 			w.Write(0x01, 1);
@@ -911,7 +815,7 @@ namespace Peach.Core.Test
 			Buffer.BlockCopy(w.Stream.GetBuffer(), 0, act1, 0, 11);
 			Assert.AreEqual(exp1, act1);
 
-			var w1 = new BitWriter<LittleEndian>();
+			var w1 = new BitStreamWriter<LittleEndian>();
 			w1.Write(0x12345678, 32);
 			w1.Write(0xabc, 12);
 
@@ -922,7 +826,7 @@ namespace Peach.Core.Test
 			Buffer.BlockCopy(w1.Stream.GetBuffer(), 0, act2, 0, 6);
 			Assert.AreEqual(exp1, act1);
 
-			var w2 = new BitWriter<LittleEndian>();
+			var w2 = new BitStreamWriter<LittleEndian>();
 			w2.Write(1, 1);
 			w2.Write(0, 1);
 			w2.Write(0xffff, 6);

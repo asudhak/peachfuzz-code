@@ -41,6 +41,7 @@ using Peach.Core.IO;
 using Peach.Core.Cracker;
 
 using NLog;
+using System.Globalization;
 
 namespace Peach.Core.Dom
 {
@@ -49,15 +50,16 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Number")]
 	[PitParsable("Number")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-  [ParameterAttribute("size", typeof(uint), "size in bits", true)]
-	[ParameterAttribute("signed", typeof(bool), "Is number signed (default false)", false)]
-	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[Parameter("name", typeof(string), "", true)]
+	[Parameter("size", typeof(uint), "size in bits", true)]
+	[Parameter("signed", typeof(bool), "Is number signed (default false)", false)]
+	[Parameter("endian", typeof(string), "Byte order of number (default 'little')", false)]
 	[Serializable]
 	public class Number : DataElement
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		protected ulong _max = (ulong)sbyte.MaxValue;
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = false;
@@ -66,35 +68,17 @@ namespace Peach.Core.Dom
 		public Number()
 			: base()
 		{
-			length = 8;
 			lengthType = LengthType.Bits;
+			length = 8;
 			DefaultValue = new Variant(0);
 		}
 
 		public Number(string name)
 			: base(name)
 		{
+			lengthType = LengthType.Bits;
 			length = 8;
-			lengthType = LengthType.Bits;
 			DefaultValue = new Variant(0);
-		}
-
-		public Number(string name, long value, int size)
-			: base(name)
-		{
-			lengthType = LengthType.Bits;
-			length = size;
-			DefaultValue = new Variant(value);
-		}
-
-		public Number(string name, long value, int size, bool signed, bool isLittleEndian)
-			: base(name)
-		{
-			lengthType = LengthType.Bits;
-			length = size;
-			_signed = signed;
-			_isLittleEndian = isLittleEndian;
-			DefaultValue = new Variant(value);
 		}
 
 		public override void Crack(DataCracker context, BitStream data)
@@ -106,57 +90,23 @@ namespace Peach.Core.Dom
 			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
 				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
 
-			if (element.LittleEndian)
-				data.LittleEndian();
-			else
-				data.BigEndian();
+			byte[] buf = new byte[(lengthAsBits + 7) / 8];
 
-			Variant defaultValue;
-
-			if (element.Signed)
+			int i = 0;
+			int todo = (int)lengthAsBits;
+			while (todo >= 8)
 			{
-				switch (element.lengthAsBits)
-				{
-					case 8:
-						defaultValue = new Variant(data.ReadInt8());
-						break;
-					case 16:
-						defaultValue = new Variant(data.ReadInt16());
-						break;
-					case 32:
-						defaultValue = new Variant(data.ReadInt32());
-						break;
-					case 64:
-						defaultValue = new Variant(data.ReadInt64());
-						break;
-					default:
-						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
-				}
-
-				logger.Debug("Number's value is: " + (long)defaultValue);
+				buf[i++] = data.ReadByte();
+				todo -= 8;
 			}
-			else
+			if (todo > 0)
 			{
-				switch (element.lengthAsBits)
-				{
-					case 8:
-						defaultValue = new Variant(data.ReadUInt8());
-						break;
-					case 16:
-						defaultValue = new Variant(data.ReadUInt16());
-						break;
-					case 32:
-						defaultValue = new Variant(data.ReadUInt32());
-						break;
-					case 64:
-						defaultValue = new Variant(data.ReadUInt64());
-						break;
-					default:
-						throw new CrackingFailure("Number '" + element.name + "' had unsupported size '" + element.lengthAsBits + "'.", element, data);
-				}
-
-				logger.Debug("Number's value is: " + (ulong)defaultValue);
+				buf[i] = (byte)(data.ReadBits(todo) << (8 - todo));
 			}
+
+			Variant defaultValue = new Variant(ParseArray(buf));
+
+			logger.Debug("Number's value is: {0}", defaultValue);
 
 			if (element.isToken)
 			{
@@ -179,29 +129,28 @@ namespace Peach.Core.Dom
 
 			if (node.hasAttribute("signed"))
 				num.Signed = node.getAttributeBool("signed", false);
-			else if (context.hasDefaultAttribute(typeof(Number), "signed"))
+			else
 				num.Signed = context.getDefaultAttributeAsBool(typeof(Number), "signed", false);
 
 			string strSize = node.getAttribute("size");
 			if (strSize != null)
 			{
 				int size;
-				try
-				{
-					size = int.Parse(strSize);
-				}
-				catch
-				{
+			
+				if (!int.TryParse(strSize, out size))
 					throw new PeachException("Error, " + num.name + " size attribute is not valid number.");
-				}
 
 				if (size < 1 || size > 64)
 					throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, num.name));
 
+				num.lengthType = LengthType.Bits;
 				num.length = size;
 			}
 
 			string strEndian = node.getAttribute("endian");
+			if (strEndian == null)
+				strEndian = context.getDefaultAttribute(typeof(Number), "endian");
+
 			if (strEndian != null)
 			{
 				switch (strEndian.ToLower())
@@ -218,25 +167,6 @@ namespace Peach.Core.Dom
 					default:
 						throw new PeachException(
 							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", strEndian, num.name));
-				}
-			}
-			else if (context.hasDefaultAttribute(typeof(Number), "endian"))
-			{
-				string endian = ((string)context.getDefaultAttribute(typeof(Number), "endian")).ToLower();
-				switch (endian)
-				{
-					case "little":
-						num.LittleEndian = true;
-						break;
-					case "big":
-						num.LittleEndian = false;
-						break;
-					case "network":
-						num.LittleEndian = false;
-						break;
-					default:
-						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", endian, num.name));
 				}
 			}
 
@@ -261,23 +191,25 @@ namespace Peach.Core.Dom
 					return _length / 8;
 				}
 
-				throw new NotSupportedException("Error, invalid LenngType for Number.");
+				throw new NotSupportedException("Error, invalid LengthType for Number.");
 			}
 
 			set
 			{
-				if (value == 0)
+				if (value <= 0 || value > 64)
 					throw new ApplicationException("size must be > 0");
 
 				_length = value;
 
 				if (_signed)
 				{
+					// TODO: fix overflow
 					_max = (ulong)(Math.Pow(2, lengthAsBits) / 2) - 1;
 					_min = 0 - (long)(Math.Pow(2, lengthAsBits) / 2);
 				}
 				else
 				{
+					// TODO: fix overflow
 					_max = (ulong)Math.Pow(2, lengthAsBits) - 1;
 					_min = 0;
 				}
@@ -292,32 +224,110 @@ namespace Peach.Core.Dom
 			{
 				return true;
 			}
-			set
-			{
-				throw new NotSupportedException("A number always has a size.");
-			}
 		}
 
 		public override Variant DefaultValue
 		{
-			get { return base.DefaultValue; }
+			get
+			{
+				return base.DefaultValue;
+			}
 			set
 			{
-				if (Signed)
-				{
-					if ((long)value >= _min)
-						base.DefaultValue = value;
-					else
-						throw new ApplicationException("DefaultValue not with in min/max values.");
-				}
-				else
-				{
-					if ((ulong)value <= _max)
-						base.DefaultValue = value;
-					else
-						throw new ApplicationException("DefaultValue not with in min/max values.");
-				}
+				base.DefaultValue = Sanitize(value);
 			}
+		}
+
+		private dynamic ParseString(string str)
+		{
+			string strValue;
+			NumberStyles style;
+
+			if (str.StartsWith("0x"))
+			{
+				strValue = str.Substring(2);
+				style = NumberStyles.HexNumber;
+			}
+			else
+			{
+				strValue = str;
+				style = NumberStyles.Integer;
+			}
+
+			if (Signed)
+			{
+				long value;
+				if (long.TryParse(strValue, style, null, out value))
+					return value;
+			}
+			else
+			{
+				ulong value;
+				if (ulong.TryParse(strValue, style, null, out value))
+					return value;
+			}
+
+			throw new PeachException("err");
+		}
+
+		private dynamic ParseArray(byte[] buf)
+		{
+			int mask = (1 << ((int)lengthAsBits % 8)) - 1;
+			if ((buf[buf.Length - 1] & mask) != 0)
+				throw new PeachException("trailer!");
+
+			if (buf.Length != ((lengthAsBits + 7) / 8))
+				throw new PeachException("bad length");
+
+			if (Signed)
+			{
+				if (LittleEndian)
+					return LittleBitWriter.GetInt64(buf, (int)lengthAsBits);
+				else
+					return BigBitWriter.GetInt64(buf, (int)lengthAsBits);
+			}
+			else
+			{
+				if (LittleEndian)
+					return LittleBitWriter.GetUInt64(buf, (int)lengthAsBits);
+				else
+					return BigBitWriter.GetUInt64(buf, (int)lengthAsBits);
+			}
+		}
+
+		private Variant Sanitize(Variant variant)
+		{
+			dynamic value = 0;
+
+			switch (variant.GetVariantType())
+			{
+				case Variant.VariantType.String:
+					value = ParseString((string)variant);
+					break;
+				case Variant.VariantType.ByteString:
+					value = ParseArray((byte[])variant);
+					break;
+				case Variant.VariantType.Int:
+				case Variant.VariantType.Long:
+					value = (long)variant;
+					break;
+				case Variant.VariantType.ULong:
+					value = (ulong)variant;
+					break;
+				default:
+					System.Diagnostics.Debug.Assert(false, "Unexpected variant type");
+					break;
+			}
+
+			if (value < 0 && (long)value < _min)
+				throw new PeachException("too small!");
+			if (value > 0 && (ulong)value > _max)
+				throw new PeachException("too big");
+
+			if (Signed)
+				return new Variant((long)value);
+			else
+				return new Variant((ulong)value);
 		}
 
 		public bool Signed
@@ -354,78 +364,26 @@ namespace Peach.Core.Dom
 
 		protected override BitStream InternalValueToBitStream()
 		{
-			BitStream bits = new BitStream();
+			byte[] buf;
 
-			if (_isLittleEndian)
-				bits.LittleEndian();
+			if (Signed)
+			{
+				if (LittleEndian)
+					buf = LittleBitWriter.GetBits((long)InternalValue, (int)lengthAsBits);
+				else
+					buf = BigBitWriter.GetBits((long)InternalValue, (int)lengthAsBits);
+			}
 			else
-				bits.BigEndian();
+			{
+				if (LittleEndian)
+					buf = LittleBitWriter.GetBits((ulong)InternalValue, (int)lengthAsBits);
+				else
+					buf = BigBitWriter.GetBits((ulong)InternalValue, (int)lengthAsBits);
+			}
 
-            if (Signed)
-            {
-                switch (lengthAsBits)
-                {
-                    case 8:
-                        bits.WriteInt8((sbyte)InternalValue);
-                        break;
-                    case 16:
-                        bits.WriteInt16((short)InternalValue);
-                        break;
-                    case 32:
-                        bits.WriteInt32((int)InternalValue);
-                        break;
-                    case 64:
-                        bits.WriteInt64((long)InternalValue);
-                        break;
-                    default:
-                        {
-                            byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
-                            byte lastByte = buff[buff.Length - 1];
-                            bits.WriteBytes(buff, 0, buff.Length - 1);
-                            bits.WriteBits(lastByte, (int)lengthAsBits % 8);
-                            break;
-                        }
-                }
-            }
-            else
-            {
-                switch (lengthAsBits)
-                {
-                    case 8:
-                        bits.WriteUInt8((byte)(uint)InternalValue);
-                        break;
-                    case 16:
-                        bits.WriteUInt16((ushort)(uint)InternalValue);
-                        break;
-                    case 32:
-                        bits.WriteUInt32((uint)InternalValue);
-                        break;
-                    case 64:
-                        bits.WriteUInt64((ulong)InternalValue);
-                        break;
-                    default:
-                        {
-                            byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
-                            byte lastByte = buff[buff.Length - 1];
-                            bits.WriteBytes(buff, 0, buff.Length - 1);
-                            bits.WriteBits(lastByte, (int)lengthAsBits % 8);
-                            break;
-                        }
-                }
-            }
-
-            //if (lengthAsBits % 8 == 0)
-            //{
-            //    bits.WriteBytes(bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)lengthAsBits / 8));
-            //}
-            //else
-            //{
-            //    byte[] buff = bits.bitConverter.GetBytes((long)(uint)InternalValue, (int)(lengthAsBits / 8) + 1);
-            //    byte lastByte = buff[buff.Length - 1];
-            //    bits.WriteBytes(buff, 0, buff.Length - 1);
-            //    bits.WriteBits(lastByte, (int)lengthAsBits % 8);
-            //}
-
+			BitStream bits = new BitStream(buf);
+			bits.SeekBits(lengthAsBits, System.IO.SeekOrigin.Begin);
+			bits.Truncate();
 			return bits;
 		}
 

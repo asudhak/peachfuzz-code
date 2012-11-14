@@ -150,6 +150,36 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
+		public void TestBitwise()
+		{
+			TestString<short>(0xabc, new byte[] { 0xbc, 0xa0 }, 12, false, true);
+		}
+
+		[Test]
+		public void TestNoValue()
+		{
+			string xml = "<Peach><DataModel name=\"DM\"><Number size=\"12\" value=\"0x123\"/></DataModel></Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Number num = dom.dataModels[0][0] as Number;
+
+			var defaultValue = num.DefaultValue;
+			Assert.NotNull(defaultValue);
+			var final = num.Value;
+			Assert.NotNull(final);
+
+			BitStream data = new BitStream( new byte[] { 0x01, 0x23 } );
+			Peach.Core.Cracker.DataCracker cracker = new Peach.Core.Cracker.DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+			defaultValue = num.DefaultValue;
+			Assert.NotNull(defaultValue);
+			final = num.Value;
+			Assert.NotNull(final);
+
+		}
+
+		[Test]
 		public void TestHexParse()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
