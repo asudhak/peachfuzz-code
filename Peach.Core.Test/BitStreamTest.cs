@@ -787,6 +787,23 @@ namespace Peach.Core.Test
 			Assert.AreEqual(2748, LittleBitWriter.GetUInt64(val, 12));
 			Assert.AreEqual(-1348, LittleBitWriter.GetInt64(val, 12));
 
+		[Test]
+		public void BitStreamBits()
+		{
+			byte[] expected = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89 };
+			BitStream bs = new BitStream(expected);
+			ulong test = bs.ReadBits(40);
+			Assert.AreEqual(0x0123456789, test);
+
+			bs = new BitStream();
+			bs.WriteBits(test, 40);
+			Assert.AreEqual(40, bs.LengthBits);
+			MemoryStream ms = bs.Stream as MemoryStream;
+			Assert.NotNull(ms);
+			Assert.AreEqual(ms.Length, 5);
+
+			for (int i = 0; i < expected.Length; ++i)
+				Assert.AreEqual(expected[i], ms.GetBuffer()[i]);
 		}
 
 		[Test]

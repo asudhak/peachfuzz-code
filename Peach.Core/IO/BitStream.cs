@@ -942,7 +942,7 @@ namespace Peach.Core.IO
 
 			for (int cnt = 0; cnt < bits; cnt++)
 			{
-				ret |= (byte)(ReadBit() << (int)((bits - 1) - cnt));
+				ret |= ((ulong)ReadBit() << (int)((bits - 1) - cnt));
 			}
 
 			return ret;
