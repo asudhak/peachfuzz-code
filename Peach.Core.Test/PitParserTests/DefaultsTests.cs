@@ -79,7 +79,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.IsTrue(str.nullTerminated);
-			Assert.IsTrue(str.stringType == StringType.Utf8);
+			Assert.IsTrue(str.stringType == StringType.utf8);
 			Assert.IsTrue(str.lengthType == LengthType.Chars);
 			Assert.IsTrue(str.padCharacter == 'z');
 		}

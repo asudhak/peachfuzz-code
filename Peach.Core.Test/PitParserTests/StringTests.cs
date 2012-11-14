@@ -59,7 +59,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -81,7 +81,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf7, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf7, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -102,7 +102,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf8, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf8, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -123,7 +123,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf16, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf16, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -144,7 +144,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf16be, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf16be, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -165,7 +165,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf32, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -186,7 +186,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("\n", (string)str.DefaultValue);
 		}
@@ -223,7 +223,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf32, str.stringType);
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 
 			BitStream value = str.Value;
@@ -245,7 +245,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Utf32, str.stringType);
+			Assert.AreEqual(Dom.StringType.utf32, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 		}
