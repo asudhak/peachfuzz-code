@@ -122,7 +122,6 @@ namespace Peach.Core.Test.Monitors
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
             RunConfiguration config = new RunConfiguration();
-            config.singleIteration = true;
 
             Engine e = new Engine(null);
             e.config = config;
