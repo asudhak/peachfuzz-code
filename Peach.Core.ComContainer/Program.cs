@@ -49,24 +49,6 @@ namespace Peach.Core.ComContainer
 
 		static void Main(string[] args)
 		{
-			//int port = 9001;
-
-			//if (args.Count() > 0)
-			//    port = int.Parse(args[0]);
-
-			////select channel to communicate
-			//TcpChannel chan = new TcpChannel(port);
-			//ChannelServices.RegisterChannel(chan, false);    //register channel
-
-			////register remote object
-			//RemotingConfiguration.RegisterWellKnownServiceType(
-			//    typeof(ComContainer),
-			//    "PeachComContainer", WellKnownObjectMode.Singleton);
-
-			////inform console
-			//while (!Shutdown)
-			//    Thread.Sleep(500);
-
 			var ipcChannelName = "Peach_Com_Container";
 
 			if (args.Length == 1 && args[0] == "-h")

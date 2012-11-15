@@ -91,8 +91,8 @@ namespace Peach.Core.Agent.Monitors
 		SystemDebuggerInstance _systemDebugger = null;
 		IpcChannel _ipcChannel = null;
 
-		public WindowsDebuggerHybrid(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public WindowsDebuggerHybrid(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			_name = name;
 

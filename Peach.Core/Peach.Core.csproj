@@ -405,9 +405,8 @@
     <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
-    <Compile Include="Agent\Monitors\IpPower9258Monitor.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Agent\Monitors\SaveFileMonitor.cs" />
+    <Compile Include="Agent\Monitors\IpPower9258Monitor.cs" />
     <Compile Include="Agent\Monitors\Memory.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
     <Compile Include="Agent\Monitors\BaseProcess.cs" />
@@ -626,7 +625,9 @@
     <Compile Include="Transformers\Type\NumberToString.cs" />
     <Compile Include="Transformers\Type\StringToFloat.cs" />
     <Compile Include="Transformers\Type\StringToInt.cs" />
-    <Compile Include="Utilities.cs" />
+    <Compile Include="Utilities.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Variant.cs" />
     <Compile Include="Watcher.cs" />
     <Compile Include="Xml\Defaults.cs" />

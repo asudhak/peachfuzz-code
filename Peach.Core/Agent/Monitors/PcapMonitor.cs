@@ -55,8 +55,8 @@ namespace Peach.Core.Agent.Monitors
 		protected LibPcapLiveDevice _device = null;
 		protected CaptureFileWriterDevice _writer = null;
 
-		public PcapMonitor(string name, Dictionary<string, Variant> args)
-			: base(name, args)
+		public PcapMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Device"))
 				_deviceName = (string)args["Device"];

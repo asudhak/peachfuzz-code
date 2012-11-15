@@ -394,6 +394,13 @@ namespace Peach.Core.Dom
       }
     }
 	}
+
+	public enum ByteOrder
+	{
+		little,
+		big,
+		network
+	}
 }
 
 // end
