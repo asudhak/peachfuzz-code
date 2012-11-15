@@ -120,10 +120,10 @@ namespace Peach.Core.Test.PitParserTests
 <Peach>
 	<DataModel name=""DM"">
 		<Flags size=""16"" endian=""{0}"">
-			<Flag position=""0""  size=""4"" value=""10""/>
-			<Flag position=""4""  size=""4"" value=""11""/>
-			<Flag position=""8""  size=""4"" value=""12""/>
-			<Flag position=""12"" size=""4"" value=""13""/>
+			<Flag position=""0""  size=""4"" valueType=""hex"" value=""0x0a""/>
+			<Flag position=""4""  size=""4"" valueType=""hex"" value=""0x0b""/>
+			<Flag position=""8""  size=""4"" valueType=""hex"" value=""0x0c""/>
+			<Flag position=""12"" size=""4"" valueType=""hex"" value=""0x0d""/>
 		</Flags>
 	</DataModel>
 </Peach>";
