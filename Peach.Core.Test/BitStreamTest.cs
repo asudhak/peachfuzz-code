@@ -654,7 +654,7 @@ namespace Peach.Core.Test
 			Assert.AreEqual(11, bs.TellBits());
 			Assert.AreEqual(1, bs.TellBytes());
 			Assert.AreEqual(2, bs.Stream.Length);
-			Assert.AreEqual(1, bs.Stream.Position);
+			Assert.AreEqual(2, bs.Stream.Position);
 		}
 
 		class BitStreamWriter<T> where T : IEndian, new()

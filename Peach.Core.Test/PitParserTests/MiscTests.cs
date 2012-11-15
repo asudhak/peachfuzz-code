@@ -21,7 +21,7 @@ namespace Peach.Core.Test.PitParserTests
 			string xml =
 @"<Peach>
 	<DataModel name=""DM3"">
-		<Number name=""tag"" size=""16"" signed=""false"" endian=""big"">
+		<Number name=""tag"" size=""32"" signed=""false"" endian=""big"">
 			<Fixup class=""Crc32Fixup"">
 				<Param name=""ref"" value=""blockData""/>
 			</Fixup>

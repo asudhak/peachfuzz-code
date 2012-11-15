@@ -36,6 +36,7 @@ using NUnit.Framework;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.PitParserTests
 {
@@ -93,24 +94,48 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), (byte[])blob.DefaultValue);
 		}
 
-		[Test]
-		public void HexPad()
+		private void DoHexPad(bool throws, int length, string value)
 		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+			string attr = value == null ? "" : string.Format("value=\"{0}\"", value);
+
+			string template = "<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Blob length=\"4\" valueType=\"hex\" value=\"48 65 6c 6c 6f\"/>" +
+				"		<Blob length=\"{0}\" valueType=\"hex\" {1}/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
+			string xml = string.Format(template, length, attr);
+
 			PitParser parser = new PitParser();
+
+			if (throws)
+			{
+				Assert.Throws<PeachException>(delegate() {
+					parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				});
+				return;
+			}
+
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Dom.Blob blob = dom.dataModels[0][0] as Dom.Blob;
 
 			Assert.AreNotEqual(null, blob);
-//			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
-//			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
-//			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			Assert.NotNull(blob.DefaultValue);
+			Assert.AreEqual(0, blob.lengthAsBits % 8);
+			Assert.AreEqual(length, blob.lengthAsBits / 8);
+			var type = blob.DefaultValue.GetVariantType();
+			Assert.True(Variant.VariantType.BitStream == type ||Variant.VariantType.ByteString == type);
+			BitStream bs = (BitStream)blob.DefaultValue;
+			Assert.AreEqual(length, bs.LengthBytes);
 		}
 
+		[Test]
+		public void TestHexPad()
+		{
+			DoHexPad(false, 4, null);
+			DoHexPad(false, 4, "01 02 03 04");
+			DoHexPad(false, 4, "01 02 03");
+			DoHexPad(true, 4, "01 02 03 04 05");
+		}
 	}
 }
