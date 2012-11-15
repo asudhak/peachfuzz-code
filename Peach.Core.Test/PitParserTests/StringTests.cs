@@ -266,11 +266,11 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreNotEqual(null, str);
 			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
-			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			Assert.AreEqual("Hello\0\0\0\0\0", (string)str.DefaultValue);
 		}
 
 		[Test]
-		public void HexStringPadNull()
+		public void StringPadNull()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
@@ -286,6 +286,39 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Helloaaaa\0", (string)str.DefaultValue);
+		}
+
+		[Test]
+		public void StringTooLong()
+		{
+			string xml = "<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"ascii\" length=\"4\" value=\"Hello\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+		}
+
+		[Test]
+		public void HexStringTooLong()
+		{
+			string xml = "<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" type=\"ascii\" length=\"4\" valueType=\"hex\" value=\"48 65 6c 6c 6f\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			
+			Assert.Throws<PeachException>(delegate() {
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
 		}
 	}
 }
