@@ -193,6 +193,51 @@ namespace Peach.Core.Test.Mutators
 
 		}
 
+		[Test]
+		public void CountOverflow()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Number name=""num"" size=""4""/>
+		<Number name=""count"" size=""4"">
+			<Relation type=""count"" of=""array""/>
+		</Number>
+		<String name=""array"" value=""1"" maxOccurs=""100""/>
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""DM""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("ArrayNumericalEdgeCasesMutator");
+			dom.tests[0].publishers[0] = new FixedInputPublisher();
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+			Assert.NotNull(mutations);
+
+		}
+
     }
 }
 

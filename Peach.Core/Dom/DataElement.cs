@@ -549,7 +549,6 @@ namespace Peach.Core.Dom
 
 				return _hasLength;
 			}
-			set { _hasLength = value; }
 		}
 
 		/// <summary>

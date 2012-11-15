@@ -33,7 +33,7 @@ using Peach.Core;
 
 namespace Peach.Core.Dom
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public class DataElementAttribute : Attribute
 	{
 		public string elementName;

@@ -145,12 +145,27 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementChildren(node, blob);
 			context.handleCommonDataElementValue(node, blob);
 
-			if (blob.DefaultValue != null && blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
-			{
+			if (blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
 				blob.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
+
+			if (blob.hasLength)
+			{
+				BitStream bs = (BitStream)blob.DefaultValue;
+				if (bs.LengthBits > blob.lengthAsBits)
+					throw new PeachException("Error, value of element \"{0}\" is longer than specified length.", blob.name);
+				else if (bs.LengthBits < blob.lengthAsBits)
+					ExpandDefaultValue(blob, bs);
 			}
 
 			return blob;
+		}
+
+		private static void ExpandDefaultValue(Blob blob, BitStream bs)
+		{
+			bs.SeekBits(blob.lengthAsBits - 1, SeekOrigin.Begin);
+			bs.WriteBit(0);
+			bs.SeekBits(0, SeekOrigin.Begin);
+			blob.DefaultValue = new Variant(bs);
 		}
 
     public override object GetParameter(string parameterName)

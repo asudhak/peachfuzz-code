@@ -61,5 +61,44 @@ namespace Peach.Core.Test.Publishers
 			e.startFuzzing(dom, config);
 
 		}
+
+		[Test]
+		public void TestShort()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String value=""Test""/>
+	</DataModel>
+
+	<StateModel name=""TheStateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Send"" type=""output"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheStateModel""/>
+		<Publisher class=""RawEther"">
+			<Param name=""Interface"" value=""eth0""/>
+			<Param name=""Protocol"" value=""ETH_P_IP""/>
+		</Publisher>
+	</Test>
+
+</Peach>
+";
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.config = config;
+			e.startFuzzing(dom, config);
+
+		}
 	}
 }

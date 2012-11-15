@@ -210,13 +210,13 @@ namespace Peach.Core.Test
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Number name=\"num1\" size=\"8\">" +
+				"		<Number name=\"num1\" size=\"16\">" +
 				"			<Relation type=\"size\" of=\"Data\" />" +
 				"		</Number>" +
 				"		<Blob name=\"Data\" value=\"00 01 02 03 04 05 06 07\" valueType=\"hex\" >" +
 				"			<Hint name=\"BlobMutator-How\" value=\"ExpandAllRandom\" />" + 
 				"		</Blob>" +
-				"		<Number name=\"num2\" size=\"8\">" +
+				"		<Number name=\"num2\" size=\"16\">" +
 				"			<Relation type=\"size\" of=\"Data\" />" +
 				"		</Number>" +
 				"	</DataModel>" +
@@ -334,7 +334,7 @@ namespace Peach.Core.Test
 <Peach>
 
 <DataModel name=""DM3"">
-	<Number name=""tag"" size=""16"" signed=""false"" endian=""big"">
+	<Number name=""tag"" size=""32"" signed=""false"" endian=""big"">
 		<Fixup class=""Crc32Fixup"">
 			<Param name=""ref"" value=""blockData""/>
 		</Fixup>

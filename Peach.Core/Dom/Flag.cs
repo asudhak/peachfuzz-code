@@ -50,7 +50,7 @@ namespace Peach.Core.Dom
 	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
 	[ParameterAttribute("size", typeof(int), "size in bits", true)]
 	[Serializable]
-	public class Flag : DataElement
+	public class Flag : Number
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected int _size = 0;
@@ -82,15 +82,48 @@ namespace Peach.Core.Dom
 		{
 			Flag element = this;
 
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
+			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			var defaultValue = new Variant(data.ReadBits(element.size));
+			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
+				throw new CrackingFailure("Failed cracking Flag '" + element.fullName + "'.", element, data);
+
+			Variant defaultValue = new Variant(FromBitstream(data));
+
+			logger.Debug("Flag's value is: {0}", defaultValue);
 
 			if (element.isToken)
+			{
 				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Flag '" + element.name + "' marked as token, values did not match '" + (string)defaultValue + "' vs. '" + (string)element.DefaultValue + "'.", element, data);
+				{
+					logger.Debug("Flag marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.");
+					throw new CrackingFailure("Flag marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
+				}
+			}
 
 			element.DefaultValue = defaultValue;
+		}
+
+		/// <summary>
+		/// Determines if a flag at position 'position' with size 'size' overlapps this element
+		/// </summary>
+		/// <param name="position">Position to test</param>
+		/// <param name="size">Size to test</param>
+		/// <returns>True if overlapps, false otherwise</returns>
+		protected bool Overlapps(int position, int size)
+		{
+			if (position >= this.position)
+			{
+				if (position < (this.position + this.size))
+					return true;
+			}
+			else
+			{
+				int end = position + size;
+				if (end > this.position && end <= (this.position + size))
+					return true;
+			}
+
+			return false;
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, Flags parent)
@@ -108,8 +141,31 @@ namespace Peach.Core.Dom
 			if (strSize == null)
 				throw new PeachException("Error, Flag elements must have 'position' attribute!");
 
-			flag.position = int.Parse(strPos);
-			flag.size = int.Parse(strSize);
+			int position;
+			if (!int.TryParse(strPos, out position))
+				throw new PeachException("Error, " + flag.name + " position attribute is not valid number.");
+
+			int size;
+			if (!int.TryParse(strSize, out size))
+				throw new PeachException("Error, " + flag.name + " size attribute is not valid number.");
+
+			if (position < 0 || size < 0 || (position + size) > parent.size)
+				throw new PeachException("Error, flag {0} is placed outside its parent.", flag.name);
+
+			if (parent.LittleEndian)
+				position = parent.size - size - position;
+
+			foreach (Flag other in parent)
+			{
+				if (other.Overlapps(position, size))
+					throw new PeachException("Error, flag {0} overlapps with flag {1}.", flag.name, other.name);
+			}
+
+			flag.size = (int)size;
+			flag.lengthType = LengthType.Bits;
+			flag.length = size;
+			flag.position = (int)position;
+			flag.LittleEndian = parent.LittleEndian;
 
 			context.handleCommonDataElementAttributes(node, flag);
 			context.handleCommonDataElementChildren(node, flag);
@@ -140,19 +196,6 @@ namespace Peach.Core.Dom
 				_position = value;
 				Invalidate();
 			}
-		}
-
-		protected override BitStream InternalValueToBitStream()
-		{
-			BitStream bits = new BitStream();
-			Variant v = InternalValue;
-
-			if (v == null)
-				bits.WriteBits((ulong)0, size);
-			else
-				bits.WriteBits((ulong)v, size);
-
-			return bits;
 		}
 
     public override object GetParameter(string parameterName)
