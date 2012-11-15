@@ -264,7 +264,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Hello\0\0\0\0\0", (string)str.DefaultValue);
 		}
@@ -283,7 +283,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.String str = dom.dataModels[0][0] as Dom.String;
 
 			Assert.AreNotEqual(null, str);
-			Assert.AreEqual(Dom.StringType.Ascii, str.stringType);
+			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Helloaaaa\0", (string)str.DefaultValue);
 		}
