@@ -119,7 +119,7 @@ namespace Peach.Core.Dom
 
 			string strEndian = node.getAttribute("endian");
 			if (strEndian == null)
-				strEndian = context.getDefaultAttribute(typeof(Number), "endian");
+				strEndian = context.getDefaultAttribute(typeof(Flags), "endian");
 
 			if (strEndian != null)
 			{

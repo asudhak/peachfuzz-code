@@ -75,7 +75,7 @@ namespace Peach.Core.Test.CrackingTests
 <Peach>
 	<DataModel name=""Model"">
 		<Block name=""block"">
-			<Flags name=""tlv"" size=""16"" endian=""little"">
+			<Flags name=""tlv"" size=""16"" endian=""big"">
 				<Flag name=""type"" size=""7""  position=""0"" value=""1""/>
 				<Flag name=""length"" size=""9"" position=""7"" value=""7""/>
 			</Flags>
