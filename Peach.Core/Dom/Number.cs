@@ -172,7 +172,7 @@ namespace Peach.Core.Dom
 				if (lengthType == LengthType.Bytes)
 				{
 					if (_length % 8 != 0)
-						throw new InvalidOperationException("Error, Number is not power of 8, cannot return length in bytes.");
+						throw new InvalidOperationException("Error, length is not power of 8, cannot return length in bytes.");
 
 					return _length / 8;
 				}
@@ -256,7 +256,7 @@ namespace Peach.Core.Dom
 			return FromBitstream(bs);
 		}
 
-		private dynamic FromBitstream(BitStream bs)
+		protected dynamic FromBitstream(BitStream bs)
 		{
 			ulong bits = bs.ReadBits((int)lengthAsBits);
 
@@ -388,13 +388,7 @@ namespace Peach.Core.Dom
         case "signed":
           return Signed;
         case "endian":
-          switch (this.LittleEndian)
-          {
-            case true:
-              return "little";
-            default:
-              return "big";
-          }
+          return this.LittleEndian ? "little" : "big";
         default:
           throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
       }
