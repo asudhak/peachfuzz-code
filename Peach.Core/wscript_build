@@ -22,6 +22,7 @@ deps = [
 	'Microsoft.CSharp.dll',
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
+	'Renci.SshNet.dll',
 ]
 
 bld(
