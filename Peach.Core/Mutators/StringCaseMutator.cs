@@ -89,6 +89,9 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
+            if ((obj.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+                return;
+
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             context.Random.Choice(mutations)(obj);
         }
