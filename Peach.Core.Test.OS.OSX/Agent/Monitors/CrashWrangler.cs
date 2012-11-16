@@ -18,7 +18,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			args["Command"] = new Variant("foo");
 			args["ExecHandler"] = new Variant("foo");
 			
-			CrashWrangler w = new CrashWrangler("name", args);
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			string expected = "CrashWrangler could not start handler \"foo\" - No such file or directory.";
 			Assert.Throws<PeachException>(delegate() { w.SessionStarting(); }, expected);
 		}
@@ -31,7 +31,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Command"] = new Variant("foo");
 
-			CrashWrangler w = new CrashWrangler("name", args);
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			string expected = "CrashWrangler handler could not run command \"foo\".";
 			Assert.Throws<PeachException>(delegate() { w.SessionStarting(); }, expected);
 		}
@@ -43,7 +43,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			args["Command"] = new Variant("echo");
 			args["Arguments"] = new Variant("hello");
 
-			CrashWrangler w = new CrashWrangler("name", args);
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			w.SessionStarting();
 			w.IterationStarting(0, false);
 			Thread.Sleep(1000);
@@ -59,8 +59,8 @@ namespace Peach.Core.Test.Agent.Monitors
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Command"] = new Variant("nc");
 			args["Arguments"] = new Variant("-l 12345");
-			
-			CrashWrangler w = new CrashWrangler("name", args);
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			w.SessionStarting();
 			w.IterationStarting(0, false);
 			Thread.Sleep(1000);
@@ -81,8 +81,8 @@ namespace Peach.Core.Test.Agent.Monitors
 			args["Arguments"] = new Variant("-l 12345");
 			args["StartOnCall"] = foo;
 			args["NoCpuKill"] = new Variant("true");
-			
-			CrashWrangler w = new CrashWrangler("name", args);
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			ret = w.Message("Action.Call.IsRunning", foo);
 			Assert.AreEqual(0, (int)ret);
 
@@ -125,7 +125,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			args["Arguments"] = new Variant("-l 12345");
 			args["StartOnCall"] = foo;
 			
-			CrashWrangler w = new CrashWrangler("name", args);
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			w.Message("Action.Call", foo);
 			Thread.Sleep(1000);
 
@@ -150,7 +150,7 @@ namespace Peach.Core.Test.Agent.Monitors
 
 			System.Environment.SetEnvironmentVariable("PEACH", "qwertyuiopasdfghjklzxcvbnmqwertyuio");
 
-			CrashWrangler w = new CrashWrangler("name", args);
+			CrashWrangler w = new CrashWrangler(null, "name", args);
 			w.SessionStarting();
 			w.IterationStarting(0, false);
 			Thread.Sleep(1000);

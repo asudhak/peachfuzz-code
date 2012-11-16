@@ -87,7 +87,7 @@ namespace Peach.Core.Test.Agent.Monitors
 
 		private static Fault RunProcess(string peach, string process, bool shouldFault, Dictionary<string, Variant> args)
 		{
-			CrashReporter reporter = new CrashReporter("name", args);
+			CrashReporter reporter = new CrashReporter(null, "name", args);
 			reporter.SessionStarting();
 			reporter.IterationStarting(0, false);
 			if (process != null)
