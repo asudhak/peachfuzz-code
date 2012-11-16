@@ -44,7 +44,7 @@ namespace Peach.Core.Publishers
 	[Publisher("raw.Raw6")]
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
-	[Parameter("Protocol", typeof(ProtocolType), "IP protocol to use", true)]
+	[Parameter("Protocol", typeof(byte), "IP protocol to use", true)]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawV6Publisher : SocketPublisher
 	{
@@ -54,11 +54,6 @@ namespace Peach.Core.Publishers
 		public RawV6Publisher(Dictionary<string, Variant> args)
 			: base("RawV6", args)
 		{
-			// Protocol 'IP' is really 'Unspecified' and means the socket will include the IP header.
-			// This publisher should not include the IP header.  Also, multiple enum values are '0'
-			// so use the name passed in args when raising the error
-			if (Protocol == ProtocolType.IP)
-				throw new PeachException("Protocol \"" + (string)args["Protocol"] + "\" is not supported by the RawV4 publisher.");
 		}
 
 		protected override bool AddressFamilySupported(AddressFamily af)
@@ -68,7 +63,8 @@ namespace Peach.Core.Publishers
 
 		protected override Socket OpenSocket(EndPoint remote)
 		{
-			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
+			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
+			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 0);
 			return s;
 		}
 	}
@@ -78,7 +74,7 @@ namespace Peach.Core.Publishers
 	[Publisher("raw.RawIp6")]
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
-	[Parameter("Protocol", typeof(ProtocolType), "IP protocol to use", "Unspecified")]
+	[Parameter("Protocol", typeof(byte), "IP protocol to use", "Unspecified")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawIPv6Publisher : SocketPublisher
 	{
@@ -97,7 +93,7 @@ namespace Peach.Core.Publishers
 
 		protected override Socket OpenSocket(EndPoint remote)
 		{
-			Socket s = new Socket(AddressFamily.InterNetworkV6, SocketType.Raw, ProtocolType.Unspecified);
+			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 			return s;
 		}

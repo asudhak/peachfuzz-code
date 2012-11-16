@@ -5,12 +5,13 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace Peach.Core.Publishers
 {
 	public abstract class SocketPublisher : Publisher
 	{
-		public ProtocolType Protocol { get; set; }
+		public byte Protocol { get; set; }
 		public IPAddress Interface { get; set; }
 		public string Host { get; set; }
 		public ushort Port { get; set; }
@@ -19,6 +20,7 @@ namespace Peach.Core.Publishers
 
 		public static int MaxSendSize = 65000;
 
+		private bool _multicast = false;
 		private EndPoint _localEp = null;
 		private EndPoint _remoteEp = null;
 		private string _type = null;
@@ -34,6 +36,10 @@ namespace Peach.Core.Publishers
 			: base(args)
 		{
 			_type = type;
+
+			// Ensure Protocol is supported
+			if (Platform.GetOS() == Platform.OS.Windows)
+				GetProtocolType(Protocol);
 		}
 
 		private IPEndPoint ResolveHost()
@@ -65,6 +71,134 @@ namespace Peach.Core.Publishers
 			}
 		}
 
+		private static bool IsMulticast(IPAddress addr)
+		{
+			// IPv6 -> 1st byte is 0xff
+			// IPv4 -> 1st byte is 0xE0 -> 0xEF
+
+			byte[] buf = addr.GetAddressBytes();
+
+			if (addr.AddressFamily == AddressFamily.InterNetwork)
+				return (buf[0] & 0xe0) == 0xe0;
+			else
+				return (buf[0] == 0xff);
+		}
+
+		private static SocketError WSAGetLastError()
+		{
+			int err = Marshal.GetLastWin32Error();
+
+			switch (err)
+			{
+				case 1:  // EPERM -> WSAEACCESS
+					return SocketError.AccessDenied;
+				case 13: // EACCES -> WSAEACCESS
+					return SocketError.AccessDenied;
+				case 97: // EAFNOSUPPORT -> WSAEAFNOSUPPORT
+					return SocketError.AddressFamilyNotSupported;
+				case 22: // EINVAL -> WSAEINVAL
+					return SocketError.InvalidArgument;
+				case 24: // EMFILE -> WSAEPROCLIM
+					return SocketError.ProcessLimit;
+				case 23: // ENFILE -> WSAEMFILE
+					return SocketError.TooManyOpenSockets;
+				case 105: // ENOBUFS -> WSAENOBUFS
+					return SocketError.NoBufferSpaceAvailable;
+				case 12: // ENOMEM -> WSAENOBUFS
+					return SocketError.NoBufferSpaceAvailable;
+				case 93: // EPROTONOTSUPPORT -> WSAEPROTONOSUPPORT
+					return SocketError.ProtocolNotSupported;
+				default:
+					return SocketError.SocketError;
+			}
+		}
+
+		private ProtocolType GetProtocolType(int protocol)
+		{
+			switch (protocol)
+			{
+				case 0:   // Dummy Protocol
+				case 1:   // Internet Control Message Protocol
+				case 2:   // Internet Group Management Protocol
+				case 4:   // IPIP tunnels
+				case 6:   // Transmission Control Protocol
+				case 12:  // PUP protocol
+				case 17:  // User Datagram Protocol
+				case 22:  // XNS IDP Protocol
+				case 41:  // IPv6-in-IPv4 tunneling
+				case 43:  // IPv6 routing header
+				case 44:  // IPv6 fragmentation header
+				case 50:  // Encapsulation Security PAyload protocol
+				case 51:  // Authentication Header protocol
+				case 58:  // ICMPv6
+				case 59:  // IPv6 no next header
+				case 60:  // IPv6 destination options
+				case 255: // Raw IP packets
+					return (ProtocolType)protocol;
+				default:
+					throw new PeachException("Error, the {0} publisher does not support protocol type 0x{1:X2}.", _type, protocol);
+			}
+		}
+
+		[DllImport("libc", SetLastError = true)]
+		private static extern int socket(int family, int type, int protocol);
+
+		[DllImport("libc", SetLastError=true)]
+		private static extern int close(int fd);
+
+		protected Socket OpenRawSocket(AddressFamily af, int protocol)
+		{
+			if (Platform.GetOS() == Platform.OS.Windows)
+			{
+				ProtocolType protocolType = GetProtocolType(protocol);
+				return new Socket(af, SocketType.Raw, protocolType);
+			}
+
+			// This is slightly tricky.  Mono doesn't let us specify socket
+			// parameters that are not in the enums. See:
+			// https://bugzilla.xamarin.com/show_bug.cgi?id=262
+			// http://lists.ximian.com/pipermail/mono-devel-list/2011-July/037847.html
+			// Now these links deal with supporting address families other than AF_INET/AF_INET6
+			// We just want to support a different protocol.  To do this we need to create a
+			// Socket() object, P/Invoke close the handle, and then call libc's socket() and hope
+			// We have 10 tries to get the same fd
+			for (int i = 0; i < 10; ++i)
+			{
+				// Generate the internal mono fd tracking state
+				Socket temp = new Socket(af, SocketType.Raw, ProtocolType.Unspecified);
+
+				// Cleanup the object w/o releasing internal state
+				var info = temp.DuplicateAndClose(0);
+
+				// ProtocolInformation = [(int)family,(int)type,(int)protocol,(long)fd]
+				int oldfd = (int)BitConverter.ToInt64(info.ProtocolInformation, 16);
+
+				// Close the file descriptor
+				close(oldfd);
+
+				// Open a new file descriptor for the correct protocol
+				int fd = socket((int)af, (int)SocketType.Raw, protocol);
+
+				if (fd != oldfd)
+				{
+					temp = new Socket(info);
+					temp.Close();
+
+					if (fd == -1)
+						throw new SocketException((int)WSAGetLastError());
+
+					continue;
+				}
+
+				// Save off the new protocol
+				Buffer.BlockCopy(BitConverter.GetBytes((int)protocol), 0, info.ProtocolInformation, 8, 4);
+
+				return new Socket(info);
+			}
+
+			throw new PeachException("{0} publisher could not open raw socket", _type);
+		}
+
 		protected override void OnOpen()
 		{
 			System.Diagnostics.Debug.Assert(_socket == null);
@@ -84,7 +218,32 @@ namespace Peach.Core.Publishers
 				if (Interface == null)
 					local = GetLocalIp(ep);
 
-				_socket.Bind(new IPEndPoint(local, SrcPort));
+				_multicast = IsMulticast(ep.Address);
+
+				if (_multicast)
+				{
+					if (Platform.GetOS() == Platform.OS.Windows)
+					{
+						// Multicast needs to bind to INADDR_ANY on windows
+						if (ep.AddressFamily == AddressFamily.InterNetwork)
+							_socket.Bind(new IPEndPoint(IPAddress.Any, SrcPort));
+						else
+							_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+					}
+					else
+					{
+						// Multicast needs to bind to the group on *nix
+						_socket.Bind(new IPEndPoint(ep.Address, SrcPort));
+					}
+
+					var level = local.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
+					var opt = new MulticastOption(ep.Address, local);
+					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
+				}
+				else
+				{
+					_socket.Bind(new IPEndPoint(local, SrcPort));
+				}
 			}
 			catch (Exception ex)
 			{
@@ -155,7 +314,7 @@ namespace Peach.Core.Publishers
 
 					_recvBuffer.SetLength(rxLen);
 
-					if (!IPEndPoint.Equals(ep, _remoteEp))
+					if (!_multicast && !IPEndPoint.Equals(ep, _remoteEp))
 					{
 						Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", ep, _remoteEp);
 					}

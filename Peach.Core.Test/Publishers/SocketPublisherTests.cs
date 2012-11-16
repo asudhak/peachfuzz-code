@@ -25,10 +25,10 @@ namespace Peach.Core.Test.Publishers
 		{
 		}
 
-		public void SendOnly(IPAddress remote)
+		public void SendOnly(IPAddress remote, int port = 5000)
 		{
 			Socket = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-			remoteEP = new IPEndPoint(remote, 5000);
+			remoteEP = new IPEndPoint(remote, port);
 			RecvBuf = Encoding.ASCII.GetBytes("SendOnly!");
 			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
 		}
@@ -171,6 +171,7 @@ namespace Peach.Core.Test.Publishers
 		<Publisher class=""{0}"">
 			<Param name=""Host"" value=""{1}""/>
 			<Param name=""Port"" value=""{2}""/>
+			<Param name=""SrcPort"" value=""{4}""/>
 		</Publisher>
 	</Test>
 
@@ -239,6 +240,14 @@ namespace Peach.Core.Test.Publishers
 		</State>
 	</StateModel>
 
+	<StateModel name=""OspfStateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Send"" type=""output"">
+				<DataModel ref=""udp_packet""/>
+			</Action>
+		</State>
+	</StateModel>
+
 <Test name=""Default"">
 		<StateModel ref=""{2}""/>
 		<Publisher class=""{0}"">
@@ -256,7 +265,7 @@ namespace Peach.Core.Test.Publishers
 			echo.Start(IPAddress.Loopback);
 			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
 
-			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port, "Hello World");
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port, "Hello World", "0");
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -284,13 +293,53 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Test]
+		public void MulticastUdpTest()
+		{
+			SocketEcho echo = new SocketEcho();
+			echo.SendOnly(IPAddress.Parse("234.5.6.7"), 12345);
+			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
+
+			try
+			{
+				string xml = string.Format(template, "Udp", "234.5.6.7", "1000", "Hello World", "12345");
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+				RunConfiguration config = new RunConfiguration();
+				config.singleIteration = true;
+
+				Engine e = new Engine(null);
+				e.config = config;
+				e.startFuzzing(dom, config);
+
+				Assert.AreEqual(2, actions.Count);
+
+				var de1 = actions[0].dataModel.find("TheDataModel.str");
+				Assert.NotNull(de1);
+				var de2 = actions[1].dataModel.find("ResponseModel.str");
+				Assert.NotNull(de2);
+
+				string send = (string)de1.DefaultValue;
+				string recv = (string)de2.DefaultValue;
+
+				Assert.AreEqual("Hello World", send);
+				Assert.AreEqual("SendOnly!", recv);
+			}
+			finally
+			{
+				echo.Socket.Close();
+			}
+		}
+
+		[Test]
 		public void Udp6Test()
 		{
 			SocketEcho echo = new SocketEcho();
 			echo.Start(IPAddress.IPv6Loopback);
 			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
 
-			string xml = string.Format(template, "Udp", IPAddress.IPv6Loopback, ep.Port, "Hello World");
+			string xml = string.Format(template, "Udp", IPAddress.IPv6Loopback, ep.Port, "Hello World", "0");
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -321,7 +370,7 @@ namespace Peach.Core.Test.Publishers
 		public void UdpSizeTest()
 		{
 			// If the data model is too large, the publisher should throw a PeachException
-			string xml = string.Format(template, "Udp", IPAddress.Loopback, 1000, new string('a', 70000));
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, 1000, new string('a', 70000), "0");
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -344,7 +393,7 @@ namespace Peach.Core.Test.Publishers
 			echo.Start(IPAddress.Loopback, 2);
 			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
 
-			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port, new string('a', 40000));
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, ep.Port, new string('a', 40000), "0");
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -377,7 +426,7 @@ namespace Peach.Core.Test.Publishers
 
 			try
 			{
-				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "Udp");
+				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "17");
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -417,7 +466,7 @@ namespace Peach.Core.Test.Publishers
 
 			try
 			{
-				string xml = string.Format(raw_template, "RawV4", self, "UdpStateModel", "Udp");
+				string xml = string.Format(raw_template, "RawV4", self, "UdpStateModel", "17");
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -452,7 +501,7 @@ namespace Peach.Core.Test.Publishers
 		public void BadAddressFamily()
 		{
 			// Tests what happens when we give an ipv4 address to an ipv6 publisher.
-			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "UdpStateModel", "Udp");
+			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "UdpStateModel", "17");
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
