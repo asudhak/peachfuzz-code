@@ -156,7 +156,6 @@ namespace Peach.Core.Test.Agent.Monitors
 			Thread.Sleep(1000);
 			w.IterationFinished();
 			Assert.AreEqual(true, w.DetectedFault());
-			Hashtable hash = new Hashtable();
 			Fault fault = w.GetMonitorData();
 			Assert.NotNull(fault);
 			Assert.AreEqual(1, fault.collectedData.Count);

@@ -104,7 +104,6 @@ namespace Peach.Core.Test.Agent.Monitors
 			Thread.Sleep(2000);
 			reporter.IterationFinished();
 			Assert.AreEqual(shouldFault, reporter.DetectedFault());
-			System.Collections.Hashtable hash = new System.Collections.Hashtable();
 			Fault fault = reporter.GetMonitorData();
 			reporter.StopMonitor();
 			return fault;

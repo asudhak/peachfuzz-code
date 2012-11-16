@@ -297,7 +297,6 @@ namespace Peach.Core.Test.Publishers
 		{
 			SocketEcho echo = new SocketEcho();
 			echo.SendOnly(IPAddress.Parse("234.5.6.7"), 12345);
-			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
 
 			try
 			{

@@ -854,7 +854,7 @@ namespace Peach.Core.Test
 			byte[] exp2 = new byte[] { 0x78, 0x56, 0x34, 0x12, 0xbc, 0xa0 };
 			byte[] act2 = new byte[6];
 			Buffer.BlockCopy(w1.Stream.GetBuffer(), 0, act2, 0, 6);
-			Assert.AreEqual(exp1, act1);
+			Assert.AreEqual(exp2, act2);
 
 			var w2 = new BitStreamWriter<LittleEndian>();
 			w2.Write(1, 1);
