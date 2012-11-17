@@ -344,7 +344,7 @@ namespace Peach.Core.Dom.XPath
 				if (stateModel.states.Values.Count <= (index + 1))
 					return false;
 
-				currentNode = stateModel.states.ElementAt(index + 1);
+				currentNode = stateModel.states.Values.ElementAt(index + 1);
 				return true;
 			}
 			else if (currentNode is Action)
