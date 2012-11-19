@@ -12,12 +12,14 @@ appname = 'peach'
 
 targets = [ 'win', 'linux', 'osx', 'foo' ]
 
+
 class TestContext(InstallContext):
 	cmd = 'test'
 
 	def __init__(self, **kw):
 		super(TestContext, self).__init__(**kw)
 		self.is_test = True
+
 
 def options(opt):
 	opt.add_option('--variant',
@@ -30,11 +32,13 @@ def options(opt):
 	               default = 0,
 	               help = 'Specifies the buildtag to embed in the binaries')
 
+
 def init(ctx):
 	if Logs.verbose == 0:
 		def null_msg(self, msg, result, color=None):
 			pass
 		setattr(Configure.ConfigurationContext, 'msg', null_msg)
+
 
 def configure(ctx):
 	if Logs.verbose == 0:
@@ -111,6 +115,7 @@ def configure(ctx):
 						traceback.print_exc()
 					Logs.warn('%s is not available: %s' % (name, e))
 
+
 def build(bld):
 	subdirs = [ str(x.parent) for x in bld.path.ant_glob('*/wscript_build', maxdepth=1) ]
 	what = Options.options.variant or ''
@@ -133,6 +138,7 @@ def build(bld):
 
 	if not success:
 		raise Errors.WafError('"%s" is not a supported variant' % what)
+
 
 def go(bld):
 	bld.fun = 'build'

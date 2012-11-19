@@ -22,8 +22,8 @@ def prepare(conf):
 	j = os.path.join
 
 	env['MCS']  = 'dmcs'
-	env['CC']   = 'gcc-4.6'
-	env['CXX']  = 'g++-4.6'
+	env['CC']   = 'gcc'
+	env['CXX']  = 'g++'
 
 	env['ARCH']    = ['-m%s' % ('64' in env.SUBARCH and '64' or '32')]
 	env['ARCH_ST'] = env['ARCH']
