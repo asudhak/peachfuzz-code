@@ -57,6 +57,8 @@ def configure(ctx):
 		os.path.join(Context.waf_dir, 'waflib', 'extras'),
 	]
 
+	platform = Utils.unversioned_sys_platform()
+
 	for tgt in targets:
 		try:
 			config = Context.load_tool(tgt, [os.path.join('build', 'config')])
@@ -64,7 +66,8 @@ def configure(ctx):
 		except:
 			ctx.msg("Loading '%s' config" % tgt, 'not found', color='YELLOW')
 			continue
-			
+
+		platforms = getattr(config, 'host_plat', [])
 		archs = getattr(config, 'archs', None)
 		options = [ ('%s_%s' % (tgt, arch), arch) for arch in archs ] or [ (tgt, None) ]
 
@@ -73,6 +76,9 @@ def configure(ctx):
 				Logs.pprint('NORMAL', 'Configuring variant %s :' % name.ljust(20), sep='')
 
 			try:
+				if platform not in platforms:
+					raise Exception('Unsupported build host')
+
 				ctx.setenv(name, env=base_env)
 				arch_env = ctx.get_env()
 				arch_env.TARGET = tgt;
@@ -108,7 +114,7 @@ def configure(ctx):
 				
 			except Exception, e:
 				if Logs.verbose == 0:
-					Logs.pprint('YELLOW', 'Not Available')
+					Logs.pprint('YELLOW', 'Not Available - %s' % e)
 				else:
 					if Logs.verbose > 1:
 						import traceback

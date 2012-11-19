@@ -2,6 +2,8 @@ from waflib import Utils, Errors
 from waflib.TaskGen import feature
 import os.path
 
+host_plat = [ 'darwin' ]
+
 archs = [ ]
 
 tools = [

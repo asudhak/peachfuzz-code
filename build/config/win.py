@@ -2,6 +2,8 @@ import os, os.path, platform
 from waflib import Utils, Errors
 from waflib.TaskGen import feature
 
+host_plat = [ 'win32' ]
+
 archs = [ 'x86', 'x64' ]
 
 tools = [

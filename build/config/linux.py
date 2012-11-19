@@ -2,6 +2,8 @@ import os.path
 from waflib import Utils
 from waflib.TaskGen import feature
 
+host_plat = [ 'linux' ]
+
 archs = [ 'x86', 'x86_64' ]
 
 tools = [
