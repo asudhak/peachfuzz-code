@@ -114,6 +114,7 @@ namespace Peach
 					syntax();
 
 				RunConfiguration config = new RunConfiguration();
+				config.shouldStop = delegate() { return shouldStop; };
 				config.debug = false;
 
 				var p = new OptionSet()
@@ -375,19 +376,16 @@ namespace Peach
 
 			config.range = true;
 		}
-
-		void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+		
+		private static bool shouldStop = false;
+		
+		private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
 		{
-			// Reset console colors
-			Console.Write("\n");
-			Console.ForegroundColor = DefaultForground;
-			Console.BackgroundColor = DefaultBackground;
-
+			Console.WriteLine();
 			Console.WriteLine(" --- Ctrl+C Detected --- ");
-
-			Console.ForegroundColor = DefaultForground;
-			Console.BackgroundColor = DefaultBackground;
-			Console.SetOut(new System.IO.StringWriter());
+		
+			shouldStop = true;
+			e.Cancel = true;
 		}
 
 		public void AddNewDefine(string value)

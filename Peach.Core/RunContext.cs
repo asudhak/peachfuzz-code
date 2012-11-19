@@ -163,7 +163,23 @@ namespace Peach.Core
 		/// after current iteration.  This can be used
 		/// by UI code to stop Peach.
 		/// </summary>
-		public bool continueFuzzing = true;
+		private bool _continueFuzzing = true;
+
+		public bool continueFuzzing 
+		{
+			get
+			{
+				if (!_continueFuzzing)
+					return false;
+				if (config != null && config.shouldStop != null)
+					return !config.shouldStop();
+				return true;
+			}
+			set
+			{
+				_continueFuzzing = value;
+			}
+		}
 
 		#endregion
 

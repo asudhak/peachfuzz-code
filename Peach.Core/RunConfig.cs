@@ -114,6 +114,16 @@ namespace Peach.Core
 				return Assembly.GetExecutingAssembly().GetName().Version.ToString();
 			}
 		}
+		
+		/// <summary>
+		/// Function that returns true if the engine should stop
+		/// </summary>
+		public delegate bool StopHandler();
+		
+		/// <summary>
+		/// Called every iteration by the engine to check if it should stop
+		/// </summary>
+		public StopHandler shouldStop = null;
 	}
 }
 
