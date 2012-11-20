@@ -94,7 +94,12 @@ namespace Peach.Core
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error executing expression ["+code+"]: " + ex.ToString());
+				throw new PeachException("Error executing expression [" + code + "]: " + ex.ToString());
+			}
+			finally
+			{
+				// Clean up any internal state created by the engine
+				engine.Runtime.Shutdown();
 			}
 		}
 
@@ -151,6 +156,11 @@ namespace Peach.Core
 			catch (Exception ex)
 			{
 				throw new PeachException("Error executing expression ["+code+"]: " + ex.ToString());
+			}
+			finally
+			{
+				// Clean up any internal state created by the engine
+				engine.Runtime.Shutdown();
 			}
 		}
 	}
