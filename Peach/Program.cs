@@ -294,7 +294,7 @@ namespace Peach
 				if (test)
 				{
 					ConsoleWatcher.WriteInfoMark();
-					Console.Write("Validating file [" + extra[0] + "]...");
+					Console.Write("Validating file [" + extra[0] + "]... ");
 					Analyzer.defaultParser.asParserValidation(null, extra[0]);
 					Console.WriteLine("No Errors Found.");
 					return;
