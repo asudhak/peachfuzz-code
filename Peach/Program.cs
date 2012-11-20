@@ -296,7 +296,12 @@ namespace Peach
 					ConsoleWatcher.WriteInfoMark();
 					Console.Write("Validating file [" + extra[0] + "]... ");
 					Analyzer.defaultParser.asParserValidation(null, extra[0]);
-					Console.WriteLine("No Errors Found.");
+
+					if (Type.GetType("Mono.Runtime") != null)
+						Console.WriteLine("File parsed successfully, but XSD validation is not supported on the Mono runtime.");
+					else
+						Console.WriteLine("No Errors Found.");
+
 					return;
 				}
 

@@ -162,6 +162,12 @@ namespace Peach.Core.Analyzers
 			doc.Schemas = set;
 			doc.Load(data);
 
+			// Right now XSD validation is disabled on Mono :(
+			// Still load the doc to verify well formed xml
+			Type t = Type.GetType("Mono.Runtime");
+			if (t != null)
+				return;
+
 			foreach (XmlNode root in doc.ChildNodes)
 			{
 				if (root.Name == "Peach")
@@ -188,13 +194,6 @@ namespace Peach.Core.Analyzers
 
 			if (!string.IsNullOrEmpty(errors))
 				throw new PeachException("Error, Pit file failed to validate: " + errors);
-
-			// Right now XSD validation is disabled on Mono :(
-			// Still load the pit to verify well formatted xml, but alert the user
-			// XSD validation was not performed
-			Type t = Type.GetType("Mono.Runtime");
-			if (t != null)
-				throw new PeachException("Pit file successfully parsed, but XSD validation is not supported on the Mono runtime.");
 		}
 
 		/// <summary>
