@@ -91,7 +91,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 					Encoding.ASCII);
 
 				var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
-				if (checkWrite.IndexOf(linuxCrashHandlerExe) > -1)
+				if (checkWrite.IndexOf(linuxCrashHandlerExe) == -1)
 					throw new PeachException("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
 			}
 			else
