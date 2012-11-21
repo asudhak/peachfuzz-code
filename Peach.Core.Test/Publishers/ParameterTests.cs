@@ -276,7 +276,7 @@ namespace Peach.Core.Test.Publishers
 			// Ensure the auto setting supports handles only get properties
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["param"] = new Variant("foo");
-			var pub = new GetPub(args);
+			new GetPub(args);
 		}
 	}
 }
