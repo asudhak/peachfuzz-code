@@ -69,14 +69,14 @@ namespace Peach.Core.Test.Publishers
 			Assert.AreEqual(p2.enum2, ConsoleColor.DarkCyan);
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "testA publisher is missing required parameter 'req1'.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'testA' is missing required parameter 'req1'.")]
 		public void TestNameNoDefault()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			new PubMissingDefaultName(args);
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "testA1.default publisher is missing required parameter 'req1'.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'testA1.default' is missing required parameter 'req1'.")]
 		public void TestNameDefault()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
@@ -99,10 +99,10 @@ namespace Peach.Core.Test.Publishers
 				pe = ex;
 			}
 			Assert.NotNull(pe);
-			Assert.True(pe.Message.StartsWith("testA1.default publisher could not set parameter 'req1'.  Input string was not in"));
+			Assert.True(pe.Message.StartsWith("Publisher 'testA1.default' could not set parameter 'req1'.  Input string was not in"));
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "testA1.default publisher has no public property for parameter 'req1'.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'testA1.default' has no property for parameter 'req1'.")]
 		public void TestMissingProperty()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
@@ -137,7 +137,7 @@ namespace Peach.Core.Test.Publishers
 			Assert.AreEqual(IPAddress.Parse("192.168.1.1"), p.Param_ip);
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "good publisher could not set parameter 'Param_ip'.  An invalid IP address was specified.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'good' could not set parameter 'Param_ip'.  An invalid IP address was specified.")]
 		public void TestBadIpParameter()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
@@ -192,6 +192,91 @@ namespace Peach.Core.Test.Publishers
 
 			Assert.NotNull(pub);
 			Assert.AreEqual(pub.param.Message, "foo");
+		}
+
+		[Publisher("PrivatePub")]
+		[Parameter("param", typeof(string), "param", true)]
+		[Parameter("param1", typeof(string), "param1", true)]
+		class PrivatePub : Publisher
+		{
+			protected override NLog.Logger Logger { get { return logger; } }
+
+			private string param { get; set; }
+			public string param1 { get; private set; }
+
+			public string GetParam { get { return param; } }
+
+			public PrivatePub(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+		}
+
+		[Test]
+		public void TestPrivate()
+		{
+			// Ensure the auto setting supports private properties
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["param"] = new Variant("foo");
+			args["param1"] = new Variant("bar");
+			var pub = new PrivatePub(args);
+
+			Assert.NotNull(pub);
+			Assert.AreEqual(pub.GetParam, "foo");
+			Assert.AreEqual(pub.param1, "bar");
+		}
+
+		[Publisher("SetPub")]
+		[Parameter("param", typeof(string), "param", true)]
+		class SetPub : Publisher
+		{
+			protected override NLog.Logger Logger { get { return logger; } }
+
+			private string _val;
+
+			private string param { set { _val = value; } }
+
+			public string GetParam { get { return _val; } }
+
+			public SetPub(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+		}
+
+		[Test]
+		public void TestSetOnly()
+		{
+			// Ensure the auto setting supports handles only set properties
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["param"] = new Variant("foo");
+			var pub = new SetPub(args);
+
+			Assert.NotNull(pub);
+			Assert.AreEqual(pub.GetParam, "foo");
+		}
+
+		[Publisher("GetPub")]
+		[Parameter("param", typeof(string), "param", true)]
+		class GetPub : Publisher
+		{
+			protected override NLog.Logger Logger { get { return logger; } }
+
+			public string param { get { return "hello"; } }
+
+			public GetPub(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'GetPub' has no settable property for parameter 'param'.")]
+		public void TestGetOnly()
+		{
+			// Ensure the auto setting supports handles only get properties
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["param"] = new Variant("foo");
+			var pub = new GetPub(args);
 		}
 	}
 }
