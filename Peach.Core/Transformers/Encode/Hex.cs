@@ -34,14 +34,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-	[Serializable]
-    [TransformerAttribute("Hex", "Encode on output as a hex string.", true)]
-    [TransformerAttribute("encode.Hex", "Encode on output as a hex string.")]
+    [Description("Encode on output as a hex string.")]
+    [Transformer("Hex", true)]
+    [Transformer("encode.Hex")]
+    [Serializable]
     public class Hex : Transformer
     {
         public Hex(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {

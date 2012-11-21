@@ -35,9 +35,10 @@ using Peach.Core.Fixups.Libraries;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("CopyValueFixup", "Fixup used in testing.  Will copy another elements value into us.", true)]
-	[FixupAttribute("CopyValue", "Fixup used in testing.  Will copy another elements value into us.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Description("Fixup used in testing.  Will copy another elements value into us.")]
+	[Fixup("CopyValueFixup", true)]
+	[Fixup("CopyValue")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
 	public class CopyValueFixup : Fixup
 	{

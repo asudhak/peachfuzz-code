@@ -132,7 +132,7 @@ namespace PeachFuzzBang
 						if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 							MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
 
-						Type t = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.name == "WindowsDebugger");
+						Type t = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.Name == "WindowsDebugger");
 						string windbg = t.InvokeMember("FindWinDbg", BindingFlags.InvokeMethod, null, null, null) as string;
 
 						if (windbg != null)

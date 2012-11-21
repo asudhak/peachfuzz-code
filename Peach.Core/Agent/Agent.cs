@@ -198,7 +198,7 @@ namespace Peach.Core.Agent
 			logger.Trace("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
 
-			var type = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.name == cls);
+			var type = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.Name == cls);
 			if (type == null)
 				throw new PeachException("Error, unable to locate Monitor '" + cls + "'");
 

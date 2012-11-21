@@ -36,10 +36,11 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("AsInt64", "Changes the size of a number.", true)]
-    [TransformerAttribute("type.AsInt64", "Changes the size of a number.")]
-    [ParameterAttribute("isSigned", typeof(int), "Signed/Unsigned", false)]
-    [ParameterAttribute("isLittleEndian", typeof(int), "Big/Little Endian", false)]
+    [Description("Changes the size of a number.")]
+    [Transformer("AsInt64", true)]
+    [Transformer("type.AsInt64")]
+    [Parameter("isSigned", typeof(int), "Signed/Unsigned", false)]
+    [Parameter("isLittleEndian", typeof(int), "Big/Little Endian", false)]
     [Serializable]
     public class AsInt64 : Transformer
     {

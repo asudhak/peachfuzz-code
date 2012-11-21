@@ -34,14 +34,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("UrlEncode", "Encode on output as a URL without pluses.", true)]
-    [TransformerAttribute("encode.UrlEncode", "Encode on output as a URL without pluses.")]
+    [Description("Encode on output as a URL without pluses.")]
+    [Transformer("UrlEncode", true)]
+    [Transformer("encode.UrlEncode")]
     [Serializable]
     public class UrlEncode : Transformer
     {
         public UrlEncode(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {

@@ -33,13 +33,29 @@ namespace Peach.Core
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+	public class DescriptionAttribute : Attribute
+	{
+		public string Description { get; private set; }
+
+		public DescriptionAttribute(string description)
+		{
+			this.Description = description;
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class PluginAttribute : Attribute
 	{
-		public string Name { get; set; }
-		public PluginAttribute(string name)
+		public string Name { get; private set; }
+		public Type Type { get; private set; }
+		public bool IsDefault { get; private set; }
+
+		public PluginAttribute(Type type, string name, bool isDefault)
 		{
 			this.Name = name;
+			this.Type = type;
+			this.IsDefault = isDefault;
 		}
 	}
 }

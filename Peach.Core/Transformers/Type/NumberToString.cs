@@ -36,26 +36,28 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("NumberToString", "Transforms any type of number to a string.", true)]
-    [TransformerAttribute("type.NumberToString", "Transforms any type of number to a string.")]
-    [Serializable]
-    public class NumberToString : Transformer
-    {
-        public NumberToString(Dictionary<string,Variant> args) : base(args)
+	[Description("Transforms any type of number to a string.")]
+	[Transformer("NumberToString", true)]
+	[Transformer("type.NumberToString")]
+	[Serializable]
+	public class NumberToString : Transformer
+	{
+		public NumberToString(Dictionary<string, Variant> args)
+			: base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsStr = ASCIIEncoding.ASCII.GetString(data.Value);
-            return new BitStream(Encoding.ASCII.GetBytes(dataAsStr));
+			string dataAsStr = ASCIIEncoding.ASCII.GetString(data.Value);
+			return new BitStream(Encoding.ASCII.GetBytes(dataAsStr));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-            throw new NotImplementedException();
+			throw new NotImplementedException();
 		}
-    }
+	}
 }
 
 // end

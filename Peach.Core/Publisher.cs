@@ -279,7 +279,7 @@ namespace Peach.Core
 		private void RaiseError(string fmt, params string[] args)
 		{
 			var attrs = GetType().GetAttributes<PublisherAttribute>(null);
-			var pub = attrs.FirstOrDefault(a => a.isDefault == true);
+			var pub = attrs.FirstOrDefault(a => a.IsDefault == true);
 			if (pub == null) pub = attrs.First();
 
 			string msg = string.Format("{0} publisher {1}", pub.Name, string.Format(fmt, args));
@@ -554,12 +554,9 @@ namespace Peach.Core
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class PublisherAttribute : PluginAttribute
 	{
-		public bool isDefault = false;
-
 		public PublisherAttribute(string name, bool isDefault = false)
-			: base(name)
+			: base(typeof(Publisher), name, isDefault)
 		{
-			this.isDefault = isDefault;
 		}
 	}
 }

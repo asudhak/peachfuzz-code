@@ -37,26 +37,28 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Md5", "MD5 transform (hex & binary).", true)]
-    [TransformerAttribute("crypto.Md5", "MD5 transform (hex & binary).")]
-    [Serializable]
-    public class Md5 : Transformer
-    {
-        public Md5(Dictionary<string, Variant> args) : base(args)
+	[Description("MD5 transform (hex & binary).")]
+	[Transformer("Md5", true)]
+	[Transformer("crypto.Md5")]
+	[Serializable]
+	public class Md5 : Transformer
+	{
+		public Md5(Dictionary<string, Variant> args)
+			: base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            MD5 md5Tool = MD5.Create();
-            return new BitStream(md5Tool.ComputeHash(data.Value));
+			MD5 md5Tool = MD5.Create();
+			return new BitStream(md5Tool.ComputeHash(data.Value));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-            throw new NotImplementedException();
+			throw new NotImplementedException();
 		}
-    }
+	}
 }
 
 // end

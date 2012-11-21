@@ -242,7 +242,7 @@ namespace Peach.Core.Dom
             {
               if (attrib is PublisherAttribute)
               {
-                if (((PublisherAttribute)attrib).isDefault)
+                if (((PublisherAttribute)attrib).IsDefault)
                 {
                   className = ((PublisherAttribute)attrib).Name;
                   ePublisher.AppendAttribute("class", className);
@@ -286,7 +286,7 @@ namespace Peach.Core.Dom
       {
         Type loggerType = this.logger.GetType();
         List<object> attribs = new List<object>(loggerType.GetCustomAttributes(false));
-        LoggerAttribute loggerAttrib = (from o in attribs where (o is LoggerAttribute) && (((LoggerAttribute)o).isDefault = true) select o).First() as LoggerAttribute;
+        LoggerAttribute loggerAttrib = (from o in attribs where (o is LoggerAttribute) && (((LoggerAttribute)o).IsDefault == true) select o).First() as LoggerAttribute;
         List<ParameterAttribute> paramAttribs = (from o in attribs where (o is ParameterAttribute) select o as ParameterAttribute).ToList();
         XmlNode eLogger = doc.CreateElement("Logger");
         eLogger.AppendAttribute("class", loggerAttrib.Name);

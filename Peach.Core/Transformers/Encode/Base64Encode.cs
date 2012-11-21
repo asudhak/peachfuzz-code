@@ -34,14 +34,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Base64Encode", "Encode on output as Base64.", true)]
-    [TransformerAttribute("encode.Base64Encode", "Encode on output as Base64.")]
+    [Description("Encode on output as Base64.")]
+    [Transformer("Base64Encode", true)]
+    [Transformer("encode.Base64Encode")]
     [Serializable]
     public class Base64Encode : Transformer
     {
         public Base64Encode(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {

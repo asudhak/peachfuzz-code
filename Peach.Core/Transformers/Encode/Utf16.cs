@@ -35,8 +35,9 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Encode
 {
     //TODO: Validate claims same for C#.
-    [TransformerAttribute("Utf16", "Encode on output a string as UTF-16. String is prefixed with a BOM. Supports surrogate pair	encoding of values larger then 0xFFFF.", true)]
-    [TransformerAttribute("encode.Utf16", "Encode on output a string as UTF-16. String is prefixed with a BOM. Supports surrogate pair	encoding of values larger then 0xFFFF.")]
+    [Description("Encode on output a string as UTF-16. String is prefixed with a BOM. Supports surrogate pair	encoding of values larger then 0xFFFF.")]
+    [Transformer("Utf16", true)]
+    [Transformer("encode.Utf16")]
     [Serializable]
     public class Utf16 : Transformer
     {

@@ -37,17 +37,19 @@ using Ionic.BZip2;
 
 namespace Peach.Core.Transformers.Compress
 {
-    [TransformerAttribute("Bz2Decompress", "Decompress on output using bz2.", true)]
-    [TransformerAttribute("compress.Bz2Decompress", "Decompress on output using bz2.")]
-    [Serializable]
-    public class Bz2Decompress : Transformer
-    {
-        public Bz2Decompress(Dictionary<string, Variant> args) : base(args)
-        {
-        }
+	[Description("Decompress on output using bz2.")]
+	[Transformer("Bz2Decompress", true)]
+	[Transformer("compress.Bz2Decompress")]
+	[Serializable]
+	public class Bz2Decompress : Transformer
+	{
+		public Bz2Decompress(Dictionary<string, Variant> args)
+			: base(args)
+		{
+		}
 
-        protected override BitStream internalEncode(BitStream data)
-        {
+		protected override BitStream internalEncode(BitStream data)
+		{
 			MemoryStream sin = new MemoryStream((byte[])data.Value);
 			MemoryStream sout = new MemoryStream();
 
@@ -60,20 +62,20 @@ namespace Peach.Core.Transformers.Compress
 			{
 			}
 
-            return new BitStream(sout.ToArray());
-        }
+			return new BitStream(sout.ToArray());
+		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
-            MemoryStream sin = new MemoryStream((byte[])data.Value);
-            MemoryStream sout = new MemoryStream();
-            BZip2OutputStream bzip2 = new BZip2OutputStream(sout);
+		protected override BitStream internalDecode(BitStream data)
+		{
+			MemoryStream sin = new MemoryStream((byte[])data.Value);
+			MemoryStream sout = new MemoryStream();
+			BZip2OutputStream bzip2 = new BZip2OutputStream(sout);
 			sin.CopyTo(bzip2);
 			bzip2.Dispose();
 
-            return new BitStream(sout.ToArray());
-        }
-    }
+			return new BitStream(sout.ToArray());
+		}
+	}
 }
 
 // end

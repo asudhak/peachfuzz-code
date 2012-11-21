@@ -36,28 +36,30 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("IntToHex", "Transforms an integer into hex.", true)]
-    [TransformerAttribute("type.IntToHex", "Transforms an integer into hex.")]
-    [Serializable]
-    public class IntToHex : Transformer
-    {
-        public IntToHex(Dictionary<string,Variant> args) : base(args)
+	[Description("Transforms an integer into hex.")]
+	[Transformer("IntToHex", true)]
+	[Transformer("type.IntToHex")]
+	[Serializable]
+	public class IntToHex : Transformer
+	{
+		public IntToHex(Dictionary<string, Variant> args)
+			: base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsStr = ASCIIEncoding.ASCII.GetString(data.Value);
-            int dataAsInt = Int32.Parse(dataAsStr);
-            string dataAsHexStr = dataAsInt.ToString("X");
-            return new BitStream(Encoding.ASCII.GetBytes(dataAsHexStr));
+			string dataAsStr = ASCIIEncoding.ASCII.GetString(data.Value);
+			int dataAsInt = Int32.Parse(dataAsStr);
+			string dataAsHexStr = dataAsInt.ToString("X");
+			return new BitStream(Encoding.ASCII.GetBytes(dataAsHexStr));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-            throw new NotImplementedException();
+			throw new NotImplementedException();
 		}
-    }
+	}
 }
 
 // end

@@ -39,20 +39,21 @@ using NLog;
 
 namespace Peach.Core.Transformers.Compress
 {
-    [TransformerAttribute("GzipDecompress", "Decompress on output using gzip.", true)]
-    [TransformerAttribute("compress.GzipDecompress", "Decompress on output using gzip.")]
-    [Serializable]
-    public class GzipDecompress : Transformer
-    {
+	[Description("Decompress on output using gzip.")]
+	[Transformer("GzipDecompress", true)]
+	[Transformer("compress.GzipDecompress")]
+	[Serializable]
+	public class GzipDecompress : Transformer
+	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public GzipDecompress(Dictionary<string, Variant> args)
 			: base(args)
-        {
-        }
+		{
+		}
 
 		protected override BitStream internalEncode(BitStream compressedData)
-        {
+		{
 			logger.Debug("internalDecode");
 
 			var data = new MemoryStream();
@@ -66,8 +67,8 @@ namespace Peach.Core.Transformers.Compress
 			return new BitStream(data.ToArray());
 		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
+		protected override BitStream internalDecode(BitStream data)
+		{
 			logger.Debug("internalDecode");
 
 			var compressedData = new MemoryStream();
@@ -80,7 +81,7 @@ namespace Peach.Core.Transformers.Compress
 
 			return new BitStream(compressedData.ToArray());
 		}
-    }
+	}
 }
 
 // end

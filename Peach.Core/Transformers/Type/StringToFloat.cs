@@ -36,27 +36,29 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("StringToFloat", "Transforms a string into an float.", true)]
-    [TransformerAttribute("encode.StringToFloat", "Transforms a string into an float.")]
-    [Serializable]
-    public class StringToFloat : Transformer
-    {
-        public StringToFloat(Dictionary<string,Variant> args) : base(args)
+	[Description("Transforms a string into an float.")]
+	[Transformer("StringToFloat", true)]
+	[Transformer("encode.StringToFloat")]
+	[Serializable]
+	public class StringToFloat : Transformer
+	{
+		public StringToFloat(Dictionary<string, Variant> args)
+			: base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string dataAsStr = Encoding.ASCII.GetString(data.Value);
-            float dataAsFloat = float.Parse(dataAsStr);
-            return new BitStream(BitConverter.GetBytes(dataAsFloat));
+			string dataAsStr = Encoding.ASCII.GetString(data.Value);
+			float dataAsFloat = float.Parse(dataAsStr);
+			return new BitStream(BitConverter.GetBytes(dataAsFloat));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-            throw new NotImplementedException();
+			throw new NotImplementedException();
 		}
-    }
+	}
 }
 
 // end

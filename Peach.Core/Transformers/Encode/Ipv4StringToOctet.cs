@@ -34,14 +34,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.", true)]
-    [TransformerAttribute("encode.Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [Description("Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [Transformer("Ipv4StringToOctet", true)]
+    [Transformer("encode.Ipv4StringToOctet")]
     [Serializable]
     public class Ipv4StringToOctet : Transformer
     {
         public Ipv4StringToOctet(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {

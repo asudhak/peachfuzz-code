@@ -37,26 +37,28 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Sha1", "SHA-1 transform (hex & binary).", true)]
-    [TransformerAttribute("crypto.Sha1", "SHA-1 transform (hex & binary).")]
-    [Serializable]
-    public class Sha1 : Transformer
-    {
-        public Sha1(Dictionary<string, Variant> args) : base(args)
+	[Description("SHA-1 transform (hex & binary).")]
+	[Transformer("Sha1", true)]
+	[Transformer("crypto.Sha1")]
+	[Serializable]
+	public class Sha1 : Transformer
+	{
+		public Sha1(Dictionary<string, Variant> args)
+			: base(args)
 		{
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            SHA1 sha1Tool = SHA1.Create();
-            return new BitStream(sha1Tool.ComputeHash(data.Value));
+			SHA1 sha1Tool = SHA1.Create();
+			return new BitStream(sha1Tool.ComputeHash(data.Value));
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-            throw new NotImplementedException();
+			throw new NotImplementedException();
 		}
-    }
+	}
 }
 
 // end

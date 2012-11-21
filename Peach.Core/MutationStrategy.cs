@@ -191,11 +191,11 @@ namespace Peach.Core
 	{
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class MutationStrategyAttribute : PluginAttribute
 	{
-		public MutationStrategyAttribute(string name)
-			: base(name)
+		public MutationStrategyAttribute(string name, bool isDefault = false)
+			: base(typeof(MutationStrategy), name, isDefault)
 		{
 		}
 	}

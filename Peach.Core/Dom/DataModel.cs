@@ -133,7 +133,7 @@ namespace Peach.Core.Dom
         {
           List<object> attribs = new List<object>(currentTransformer.GetType().GetCustomAttributes(false));
 
-          TransformerAttribute transformerAttrib = (from o in attribs where (o is TransformerAttribute) && ((TransformerAttribute)o).isDefault select o).First() as TransformerAttribute;
+          TransformerAttribute transformerAttrib = (from o in attribs where (o is TransformerAttribute) && ((TransformerAttribute)o).IsDefault select o).First() as TransformerAttribute;
           eTransformer.AppendAttribute("class", transformerAttrib.Name);
 
           if (currentTransformer.anotherTransformer != null)

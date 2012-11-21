@@ -34,14 +34,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("WideChar", "Encode on output a string as wchar string.", true)]
-    [TransformerAttribute("encode.WideChar", "Encode on output a string as wchar string.")]
+    [Description("Encode on output a string as wchar string.")]
+    [Transformer("WideChar", true)]
+    [Transformer("encode.WideChar")]
     [Serializable]
     public class WideChar : Transformer
     {
         public WideChar(Dictionary<string,Variant> args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {

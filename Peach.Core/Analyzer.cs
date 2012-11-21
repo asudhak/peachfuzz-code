@@ -152,8 +152,8 @@ namespace Peach.Core
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class AnalyzerAttribute : PluginAttribute
 	{
-		public AnalyzerAttribute(string name)
-			: base(name)
+		public AnalyzerAttribute(string name, bool isDefault = false)
+			: base(typeof(Analyzer), name, isDefault)
 		{
 		}
 	}

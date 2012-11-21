@@ -294,17 +294,12 @@ namespace Peach.Core
 		protected abstract Variant fixupImpl();
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class FixupAttribute : PluginAttribute
 	{
-		public string description;
-		public bool isDefault;
-
-		public FixupAttribute(string name, string description, bool isDefault = false)
-			: base(name)
+		public FixupAttribute(string name, bool isDefault = false)
+			: base(typeof(Fixup), name, isDefault)
 		{
-			this.description = description;
-			this.isDefault = isDefault;
 		}
 	}
 }
