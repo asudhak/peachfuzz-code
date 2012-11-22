@@ -36,8 +36,8 @@ namespace Peach.Core.Fixups
 {
 	[FixupAttribute("ExpressionFixup", "XOR bytes of data.", true)]
 	[FixupAttribute("checksums.ExpressionFixup", "XOR bytes of data.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-	[ParameterAttribute("expression", typeof(string), "Expression returning string or int", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("expression", typeof(string), "Expression returning string or int", true)]
 	[Serializable]
 	public class ExpressionFixup : Fixup
 	{

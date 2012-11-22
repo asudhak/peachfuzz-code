@@ -34,8 +34,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("WideChar", "Encode on output a string as wchar string.", true)]
-    [TransformerAttribute("encode.WideChar", "Encode on output a string as wchar string.")]
+    [Transformer("WideChar", "Encode on output a string as wchar string.", true)]
+    [Transformer("encode.WideChar", "Encode on output a string as wchar string.")]
     [Serializable]
     public class WideChar : Transformer
     {

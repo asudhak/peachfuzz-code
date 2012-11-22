@@ -34,8 +34,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Base64Decode", "Decode on output from Base64.", true)]
-    [TransformerAttribute("encode.Base64Decode", "Decode on output from Base64.")]
+    [Transformer("Base64Decode", "Decode on output from Base64.", true)]
+    [Transformer("encode.Base64Decode", "Decode on output from Base64.")]
     [Serializable]
     public class Base64Decode : Transformer
     {

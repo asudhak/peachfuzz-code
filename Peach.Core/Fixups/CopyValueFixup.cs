@@ -37,7 +37,7 @@ namespace Peach.Core.Fixups
 {
 	[FixupAttribute("CopyValueFixup", "Fixup used in testing.  Will copy another elements value into us.", true)]
 	[FixupAttribute("CopyValue", "Fixup used in testing.  Will copy another elements value into us.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
 	public class CopyValueFixup : Fixup
 	{

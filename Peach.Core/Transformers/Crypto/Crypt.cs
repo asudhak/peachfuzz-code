@@ -36,8 +36,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [TransformerAttribute("Crypt", "UNIX style crypt.", true)]
-    [TransformerAttribute("crypto.Crypt", "UNIX style crypt.")]
+    [Transformer("Crypt", "UNIX style crypt.", true)]
+    [Transformer("crypto.Crypt", "UNIX style crypt.")]
     [Serializable]
     public class Crypt : Transformer
     {

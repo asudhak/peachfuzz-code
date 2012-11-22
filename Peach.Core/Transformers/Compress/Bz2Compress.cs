@@ -37,8 +37,8 @@ using Ionic.BZip2;
 
 namespace Peach.Core.Transformers.Compress
 {
-    [TransformerAttribute("Bz2Compress", "Compress on output using bz2.", true)]
-    [TransformerAttribute("compress.Bz2Compress", "Compress on output using bz2.")]
+    [Transformer("Bz2Compress", "Compress on output using bz2.", true)]
+    [Transformer("compress.Bz2Compress", "Compress on output using bz2.")]
     [Serializable]
     public class Bz2Compress : Transformer
     {

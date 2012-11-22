@@ -37,8 +37,8 @@ using System.Xml;
 namespace Peach.Core.Dom
 {
 	[Serializable]
-  public class Dom : INamed
-    {
+	public class Dom : INamed
+	{
 		public string fileName;
 		public string version;
 		public string author;
@@ -125,38 +125,38 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-    public XmlDocument pitSerialize()
-    {
-      
-      XmlDocument doc = new XmlDocument();
-      
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Peach", "");
+		public XmlDocument pitSerialize()
+		{
 
-      foreach (DataModel dataModel in dataModels.Values)
-      {
-        node.AppendChild(dataModel.pitSerialize(doc, node));
-      }
+			XmlDocument doc = new XmlDocument();
 
-      foreach (StateModel stateModel in stateModels.Values)
-      {
-        node.AppendChild(stateModel.pitSerialize(doc, node));
-      }
+			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Peach", "");
 
-      foreach (Agent agent in agents.Values)
-      {
-        node.AppendChild(agent.pitSerialize(doc, node));
-      }
+			foreach (DataModel dataModel in dataModels.Values)
+			{
+				node.AppendChild(dataModel.pitSerialize(doc, node));
+			}
 
-      foreach (Test test in tests.Values)
-      {
-        node.AppendChild(test.pitSerialize(doc, node));
-      }
+			foreach (StateModel stateModel in stateModels.Values)
+			{
+				node.AppendChild(stateModel.pitSerialize(doc, node));
+			}
 
-      doc.AppendChild(node);
+			foreach (Agent agent in agents.Values)
+			{
+				node.AppendChild(agent.pitSerialize(doc, node));
+			}
 
-      return doc;
-    }
-  }
+			foreach (Test test in tests.Values)
+			{
+				node.AppendChild(test.pitSerialize(doc, node));
+			}
+
+			doc.AppendChild(node);
+
+			return doc;
+		}
+	}
 }
 
 

@@ -471,7 +471,6 @@
     <Compile Include="Cracker\DataCracker.cs" />
     <Compile Include="Cracker\IncomingStream.cs" />
     <Compile Include="Dom\Array.cs" />
-    <Compile Include="Dom\Asn1Element.cs" />
     <Compile Include="Dom\Blob.cs" />
     <Compile Include="Dom\Block.cs" />
     <Compile Include="Dom\Choice.cs" />

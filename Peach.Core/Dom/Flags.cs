@@ -46,11 +46,10 @@ namespace Peach.Core.Dom
 {
 	[DataElement("Flags")]
 	[PitParsable("Flags")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[DataElementChildSupportedAttribute("Flag")]
-	[ParameterAttribute("name", typeof(string), "", true)]
-	[ParameterAttribute("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]", true)]
-	[ParameterAttribute("endian", typeof(string), "Byte order of number (default 'little')", false)]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[DataElementChildSupported("Flag")]
+	[Parameter("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]", true)]
+	[Parameter("endian", typeof(ByteOrder), "Byte order of number (default 'little')", false)]
 	[Serializable]
 	public class Flags : DataElementContainer
 	{

@@ -38,7 +38,7 @@ namespace Peach.Core.Fixups
 {
 	[FixupAttribute("SHA384Fixup", "Standard SHA384 checksum.", true)]
 	[FixupAttribute("checksums.SHA384Fixup", "Standard SHA384 checksum.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
 	public class SHA384Fixup : HashFixup<SHA384CryptoServiceProvider>
 	{

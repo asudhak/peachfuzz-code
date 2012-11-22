@@ -36,8 +36,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("NumberToString", "Transforms any type of number to a string.", true)]
-    [TransformerAttribute("type.NumberToString", "Transforms any type of number to a string.")]
+    [Transformer("NumberToString", "Transforms any type of number to a string.", true)]
+    [Transformer("type.NumberToString", "Transforms any type of number to a string.")]
     [Serializable]
     public class NumberToString : Transformer
     {

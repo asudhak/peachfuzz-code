@@ -39,8 +39,8 @@ using NLog;
 
 namespace Peach.Core.Transformers.Compress
 {
-    [TransformerAttribute("GzipDecompress", "Decompress on output using gzip.", true)]
-    [TransformerAttribute("compress.GzipDecompress", "Decompress on output using gzip.")]
+    [Transformer("GzipDecompress", "Decompress on output using gzip.", true)]
+    [Transformer("compress.GzipDecompress", "Decompress on output using gzip.")]
     [Serializable]
     public class GzipDecompress : Transformer
     {

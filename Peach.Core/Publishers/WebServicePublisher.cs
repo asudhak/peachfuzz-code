@@ -22,11 +22,11 @@ using NLog;
 namespace Peach.Core.Publishers
 {
 	[Publisher("WebService", true)]
-	[ParameterAttribute("Url", typeof(string), "WebService URL", true)]
-	[ParameterAttribute("Service", typeof(string), "Service name", true)]
-	[ParameterAttribute("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", false)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
-	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
+	[Parameter("Url", typeof(string), "WebService URL", true)]
+	[Parameter("Service", typeof(string), "Service name", true)]
+	[Parameter("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", false)]
+	[Parameter("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
+	[Parameter("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
 	public class WebServicePublisher : Publisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();

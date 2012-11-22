@@ -18,8 +18,8 @@ namespace Peach.Core.Fixups
 	/// a byte[] array as output.
 	/// </remarks>
 	[FixupAttribute("ScriptFixup", "A Python or Ruby fixup", true)]
-	[ParameterAttribute("class", typeof(string), "Reference to data element", true)]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("class", typeof(string), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
 	public class ScriptFixup : Fixup
 	{

@@ -37,7 +37,7 @@ namespace Peach.Core.Fixups
 {
 	[FixupAttribute("IcmpChecksumFixup", "Standard ICMP checksum.", true)]
 	[FixupAttribute("checksums.IcmpChecksumFixup", "Standard ICMP checksum.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
 	public class IcmpChecksumFixup : Fixup
 	{

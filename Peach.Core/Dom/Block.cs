@@ -50,7 +50,6 @@ namespace Peach.Core.Dom
 	[DataElement("Block")]
 	[PitParsable("Block")]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	[ParameterAttribute("name", typeof(string), "", true)]
 	[Serializable]
 	public class Block : DataElementContainer
 	{

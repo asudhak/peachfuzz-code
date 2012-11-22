@@ -37,7 +37,7 @@ namespace Peach.Core.Fixups
 {
 	[FixupAttribute("LRCFixup", "XOR bytes of data.", true)]
 	[FixupAttribute("checksums.LRCFixup", "XOR bytes of data.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
 	[Serializable]
 	public class LRCFixup : Fixup
 	{
