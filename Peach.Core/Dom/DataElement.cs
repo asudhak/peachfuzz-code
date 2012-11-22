@@ -82,6 +82,9 @@ namespace Peach.Core.Dom
 	[Parameter("token", typeof(bool), "Is element a token, optional, default false", false)]
 	[Parameter("mutable", typeof(bool), "Is element mutable, optional, default false", false)]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false.  Optional.", false)]
+	[Parameter("minOccurs", typeof(int), "Minimum occurances, optional, defaults to 1", false)]
+	[Parameter("maxOccurs", typeof(int), "Maximum occurances, optional, defaults to 1", false)]
+	[Parameter("occurs", typeof(int), "Actual occurances, optional, defaults to 1", false)]
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{
