@@ -79,6 +79,9 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Optional name for element", false)]
 	[Parameter("value", typeof(string), "Optional default value", false)]
 	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
+	[Parameter("token", typeof(bool), "Is element a token, optional, default false", false)]
+	[Parameter("mutable", typeof(bool), "Is element mutable, optional, default false", false)]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false.  Optional.", false)]
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{

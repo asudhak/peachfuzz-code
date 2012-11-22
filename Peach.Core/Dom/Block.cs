@@ -49,6 +49,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Block")]
 	[PitParsable("Block")]
+	[Parameter("ref", typeof(string), "Reference to another element. Optional.", false)]
 	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
 	[Serializable]
 	public class Block : DataElementContainer
