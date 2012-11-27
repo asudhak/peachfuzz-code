@@ -38,6 +38,9 @@ namespace Peach.Core
 		/// look for a static method on 'type' to perform the conversion.  For example,
 		/// if the attribute type was class 'SomeClass', the function signature would be:
 		/// static void ParseParam(string str, out SomeClass val)
+		/// 
+		/// If the value is string.Empty and the destination type is nullable, the value
+		/// null will be returned.
 		/// </summary>
 		/// <param name="type">Object type that is decorated with the Parameter attribute.</param>
 		/// <param name="attr">Parameter attribute describing the destination type.</param>
@@ -47,7 +50,7 @@ namespace Peach.Core
 		{
 			object val = null;
 
-			if (value == null)
+			if (value == string.Empty)
 			{
 				if (attr.type.IsValueType)
 					RaiseError(type, "could not set value type parameter '{0}' to 'null'.", attr.name);

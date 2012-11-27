@@ -285,13 +285,15 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Plugin(typeof(NullTest), "NullPlugin", true)]
-		[Parameter("str", typeof(string), "", null)]
-		[Parameter("num", typeof(int), "", null)]
+		[Parameter("custom", typeof(CustomType), "desc", "")]
+		[Parameter("str", typeof(string), "desc", "")]
+		[Parameter("num", typeof(int), "desc", "")]
 		class NullTest
 		{
 			public NullTest() { }
 			public string str { get; set; }
 			public int num { get; set; }
+			public CustomType custom { set; get; }
 		}
 
 		[Test]
@@ -305,6 +307,7 @@ namespace Peach.Core.Test.Publishers
 
 			Assert.Null(obj.str);
 			Assert.AreEqual(10, obj.num);
+			Assert.Null(obj.custom);
 
 			var onlyStr = new Dictionary<string, Variant>();
 			onlyNum["str"] = new Variant("hi");
