@@ -43,8 +43,8 @@ namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("PcapMonitor", true)]
 	[Monitor("network.PcapMonitor")]
-	[Parameter("Device", typeof(string), "Device name for capturing on", true)]
-	[Parameter("Filter", typeof(string), "PCAP Style filter", true)]
+	[Parameter("Device", typeof(string), "Device name for capturing on")]
+	[Parameter("Filter", typeof(string), "PCAP Style filter", "")]
 	public class PcapMonitor : Monitor
 	{
 		protected string _deviceName;

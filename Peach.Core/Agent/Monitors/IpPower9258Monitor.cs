@@ -21,12 +21,12 @@ namespace Peach.Core.Agent.Monitors
 	/// http://www.opengear.com/product-ip-power-9258.html
 	/// </remarks>
 	[Monitor("IpPower9258", true)]
-	[Parameter("Host", typeof(string), "Host or IP address (can include http interface port e.g. :8080)", true)]
-	[Parameter("User", typeof(string), "Username", true)]
-	[Parameter("Password", typeof(string), "Password", true)]
-	[Parameter("Port", typeof(int), "Port number to reset", true)]
-	[Parameter("ResetEveryIteration", typeof(bool), "Reset power on every iteration (default is false)", false)]
-	[Parameter("PowerOnOffPause", typeof(int), "Pause in milliseconds between power off/power on (default is 1/2 second)", false)]
+	[Parameter("Host", typeof(string), "Host or IP address (can include http interface port e.g. :8080)")]
+	[Parameter("User", typeof(string), "Username")]
+	[Parameter("Password", typeof(string), "Password")]
+	[Parameter("Port", typeof(int), "Port number to reset")]
+	[Parameter("ResetEveryIteration", typeof(bool), "Reset power on every iteration (default is false)", "false")]
+	[Parameter("PowerOnOffPause", typeof(int), "Pause in milliseconds between power off/power on (default is 1/2 second)", "500")]
 	public class IpPower9258Monitor : Monitor
 	{
 		string _host = null;

@@ -45,7 +45,7 @@ namespace Peach.Core.Agent.Monitors
 	/// </summary>
 	[Monitor("CrashReporter")]
 	[Monitor("osx.CrashReporter")]
-	[Parameter("ProcessName", typeof(string), "Process name to watch for (defaults to all)", false)]
+	[Parameter("ProcessName", typeof(string), "Process name to watch for (defaults to all)", "")]
 	public class CrashReporter : Monitor, IDisposable
 	{
 		private Regex _regex = new Regex("Saved crash report for (.*)\\[\\d+\\] version .*? to (.*)");

@@ -65,16 +65,16 @@ namespace Peach.Core.Agent.Monitors
 	/// </summary>
 	[Monitor("CrashWrangler")]
 	[Monitor("osx.CrashWrangler")]
-	[Parameter("Command", typeof(string), "Command to execute", true)]
-	[Parameter("Arguments", typeof(string), "Commad line arguments", false)]
-	[Parameter("StartOnCall", typeof(string), "Start command on state model call", false)]
-	[Parameter("UseDebugMalloc", typeof(bool), "Use OS X Debug Malloc (slower) (defaults to false)", false)]
-	[Parameter("ExecHandler", typeof(string), "Crash Wrangler Execution Handler program.", true)]
-	[Parameter("ExploitableReads", typeof(bool), "Are read a/v's considered exploitable? (defaults to false)", false)]
-	[Parameter("NoCpuKill", typeof(bool), "Disable process killing by CPU usage? (defaults to false)", false)]
-	[Parameter("CwLogFile", typeof(string), "CrashWrangler Log file (defaults to cw.log)", false)]
-	[Parameter("CwLockFile", typeof(string), "CrashWRangler Lock file (defaults to cw.lock)", false)]
-	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", false)]
+	[Parameter("Command", typeof(string), "Command to execute")]
+	[Parameter("Arguments", typeof(string), "Commad line arguments", "")]
+	[Parameter("StartOnCall", typeof(string), "Start command on state model call", "")]
+	[Parameter("UseDebugMalloc", typeof(bool), "Use OS X Debug Malloc (slower) (defaults to false)", "false")]
+	[Parameter("ExecHandler", typeof(string), "Crash Wrangler Execution Handler program.", "exc_handler")]
+	[Parameter("ExploitableReads", typeof(bool), "Are read a/v's considered exploitable? (defaults to false)", "false")]
+	[Parameter("NoCpuKill", typeof(bool), "Disable process killing by CPU usage? (defaults to false)", "false")]
+	[Parameter("CwLogFile", typeof(string), "CrashWrangler Log file (defaults to cw.log)", "cw.log")]
+	[Parameter("CwLockFile", typeof(string), "CrashWRangler Lock file (defaults to cw.lock)", "cw.lock")]
+	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", "cw.pid")]
 	public class CrashWrangler : Monitor
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

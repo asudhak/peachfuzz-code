@@ -41,9 +41,9 @@ using System.ComponentModel;
 namespace Peach.Core.OS.Linux.Agent.Monitors
 {
 	[Monitor("LinuxCrashMonitor")]
-	[Parameter("Executable", typeof(string), "Target executable used to filter crashes.", false)]
-	[Parameter("LogFolder", typeof(string), "Folder with log files. Defaults to /var/peachcrash", false)]
-	[Parameter("Mono", typeof(string), "Full path and executable for mono runtime. Defaults to /usr/bin/mono.", false)]
+	[Parameter("Executable", typeof(string), "Target executable used to filter crashes.", "")]
+	[Parameter("LogFolder", typeof(string), "Folder with log files. Defaults to /var/peachcrash", "/var/peachcrash")]
+	[Parameter("Mono", typeof(string), "Full path and executable for mono runtime. Defaults to /usr/bin/mono.", "/usr/bin/mono")]
 	public class LinuxCrashMonitor : Peach.Core.Agent.Monitor
 	{
 		protected string corePattern = "|{0} {1} -p=%p -u=%u -g=%g -s=%s -t=%t -h=%h -e=%e";

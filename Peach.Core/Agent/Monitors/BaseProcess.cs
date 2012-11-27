@@ -42,14 +42,14 @@ namespace Peach.Core.Agent.Monitors
 	/// <summary>
 	/// Start a process
 	/// </summary>
-	[Parameter("Executable", typeof(string), "Executable to launch", true)]
-	[Parameter("Arguments", typeof(string), "Optional command line arguments", false)]
-	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation (defaults to false)", false)]
-	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", false)]
-	[Parameter("CpuKill", typeof(bool), "Terminate process when CPU usage nears zero (defaults to false)", false)]
-	[Parameter("StartOnCall", typeof(string), "Start command on state model call", false)]
-	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", false)]
-	[Parameter("WaitForExitTimeout", typeof(int), "Wait timeout value.  Triggers fault when timeout hit.", false)]
+	[Parameter("Executable", typeof(string), "Executable to launch")]
+	[Parameter("Arguments", typeof(string), "Optional command line arguments", "")]
+	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation (defaults to false)", "false")]
+	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
+	[Parameter("CpuKill", typeof(bool), "Terminate process when CPU usage nears zero (defaults to false)", "false")]
+	[Parameter("StartOnCall", typeof(string), "Start command on state model call", "")]
+	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", "")]
+	[Parameter("WaitForExitTimeout", typeof(int), "Wait timeout value.  Triggers fault when timeout hit.", "0")]
 	public abstract class BaseProcess : Monitor
 	{
 		protected abstract ulong GetTotalCpuTime(System.Diagnostics.Process process);
