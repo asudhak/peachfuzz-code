@@ -13,8 +13,8 @@ namespace Peach.Core.Publishers
 {
 	[Publisher("TcpListener", true)]
 	[Publisher("tcp.TcpListener")]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", true)]
-	[Parameter("Port", typeof(ushort), "Local port to listen on", true)]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to")]
+	[Parameter("Port", typeof(ushort), "Local port to listen on")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{

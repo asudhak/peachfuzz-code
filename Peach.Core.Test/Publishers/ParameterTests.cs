@@ -16,7 +16,7 @@ namespace Peach.Core.Test.Publishers
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		[Publisher("testA")]
-		[Parameter("req1", typeof(int), "desc", true)]
+		[Parameter("req1", typeof(int), "desc")]
 		class PubMissingDefaultName : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
@@ -27,9 +27,9 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("testA1")]
-		[Publisher("testA1.default", true)]
-		[Parameter("req1", typeof(int), "desc", true)]
-		[Parameter("ip", typeof(IPAddress), "desc", false)]
+		[Publisher("testA1.default")]
+		[Parameter("req1", typeof(int), "desc")]
+		[Parameter("ip", typeof(IPAddress), "desc", "")]
 		class PubDefaultName : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
@@ -40,7 +40,7 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("enumPub")]
-		[Parameter("enum1", typeof(FileMode), "File Mode", true)]
+		[Parameter("enum1", typeof(FileMode), "File Mode")]
 		[Parameter("enum2", typeof(ConsoleColor), "Console Color", "Red")]
 		class EnumPub : Publisher
 		{
@@ -116,8 +116,8 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("good")]
-		[Parameter("Param_string", typeof(string), "desc", true)]
-		[Parameter("Param_ip", typeof(IPAddress), "desc", false)]
+		[Parameter("Param_string", typeof(string), "desc")]
+		[Parameter("Param_ip", typeof(IPAddress), "desc", "")]
 		class GoodPub : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
@@ -161,7 +161,7 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("CustomTypePub")]
-		[Parameter("param", typeof(CustomType), "Custom Type", true)]
+		[Parameter("param", typeof(CustomType), "Custom Type")]
 		class CustomTypePub : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
@@ -200,8 +200,8 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("PrivatePub")]
-		[Parameter("param", typeof(string), "param", true)]
-		[Parameter("param1", typeof(string), "param1", true)]
+		[Parameter("param", typeof(string), "param")]
+		[Parameter("param1", typeof(string), "param1")]
 		class PrivatePub : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
@@ -232,7 +232,7 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("SetPub")]
-		[Parameter("param", typeof(string), "param", true)]
+		[Parameter("param", typeof(string), "param")]
 		class SetPub : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
@@ -262,7 +262,7 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Publisher("GetPub")]
-		[Parameter("param", typeof(string), "param", true)]
+		[Parameter("param", typeof(string), "param")]
 		class GetPub : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }

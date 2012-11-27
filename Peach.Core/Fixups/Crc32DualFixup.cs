@@ -38,8 +38,8 @@ namespace Peach.Core.Fixups
 	[Description("Standard CRC32 as defined by ISO 3309 applied to two elements.")]
 	[Fixup("Crc32DualFixup", true)]
 	[Fixup("checksums.Crc32DualFixup")]
-	[Parameter("ref1", typeof(DataElement), "Reference to data element", true)]
-	[Parameter("ref2", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref1", typeof(DataElement), "Reference to first data element")]
+	[Parameter("ref2", typeof(DataElement), "Reference to second data element")]
 	[Serializable]
 	public class Crc32DualFixup : Fixup
 	{

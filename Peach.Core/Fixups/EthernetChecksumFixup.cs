@@ -39,7 +39,7 @@ namespace Peach.Core.Fixups
 	[Description("Standard ethernet checksum.")]
 	[Fixup("EthernetChecksumFixup", true)]
 	[Fixup("checksums.EthernetChecksumFixup")]
-	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class EthernetChecksumFixup : Fixup
 	{

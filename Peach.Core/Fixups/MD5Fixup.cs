@@ -39,7 +39,7 @@ namespace Peach.Core.Fixups
 	[Description("Standard MD5 checksum.")]
 	[Fixup("MD5Fixup", true)]
 	[Fixup("checksums.MD5Fixup")]
-	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class MD5Fixup : HashFixup<MD5CryptoServiceProvider>
 	{

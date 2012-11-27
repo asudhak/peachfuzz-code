@@ -39,8 +39,8 @@ namespace Peach.Core.Transformers.Encode
     [Description("Transforms a string of bytes into the specified hex format.")]
     [Transformer("HexString", true)]
     [Transformer("encode.HexString")]
-    [Parameter("resolution", typeof(int), "Number of nibbles between separator. (Must be a positive, even int.)", false)]
-    [Parameter("prefix", typeof(string), "A value to prepend each chunk with. (defaults to ' ')", false)]
+    [Parameter("resolution", typeof(int), "Number of nibbles between separator. Must be a positive, even int.", "1")]
+    [Parameter("prefix", typeof(string), "A value to prepend each chunk with.", " ")]
     public class HexString : Transformer
     {
         Dictionary<string, Variant> m_args;

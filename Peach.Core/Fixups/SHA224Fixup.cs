@@ -39,7 +39,7 @@ namespace Peach.Core.Fixups
 	[Description("Standard SHA256 checksum.")]
 	[Fixup("SHA224Fixup", true)]
 	[Fixup("checksums.SHA224Fixup")]
-	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class SHA224Fixup : HashFixup<Libraries.SHA224Managed>
 	{

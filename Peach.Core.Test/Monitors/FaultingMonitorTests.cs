@@ -14,7 +14,7 @@ using NUnit.Framework.Constraints;
 namespace Peach.Core.Test.Monitors
 {
     [Monitor("FaultingMonitor", true)]
-    [Parameter("Iteration", typeof(int), "Iteration to Fault on", true)]
+    [Parameter("Iteration", typeof(int), "Iteration to Fault on")]
     public class FaultingMonitor : Peach.Core.Agent.Monitor
     {
         protected int Iter = 0;

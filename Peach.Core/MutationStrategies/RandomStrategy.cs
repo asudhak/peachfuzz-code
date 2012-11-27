@@ -46,8 +46,8 @@ namespace Peach.Core.MutationStrategies
 {
 	[MutationStrategy("Random")]
 	[MutationStrategy("RandomStrategy")]
-	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching. (default is 200)", false)]
-	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once (default is 7).", false)]
+	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching.", "200")]
+	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once.", "7")]
 	public class RandomStrategy : MutationStrategy
 	{
 		class DataSetTracker

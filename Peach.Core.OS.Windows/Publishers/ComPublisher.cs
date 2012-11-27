@@ -44,7 +44,7 @@ namespace Peach.Core.Publishers
 {
 	[Publisher("Com")]
 	[Publisher("com.Com")]
-	[Parameter("clsid", typeof(string), "COM CLSID of object", true)]
+	[Parameter("clsid", typeof(string), "COM CLSID of object")]
 	public class ComPublisher : Publisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();

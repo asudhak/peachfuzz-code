@@ -22,9 +22,9 @@ using NLog;
 namespace Peach.Core.Publishers
 {
 	[Publisher("WebService", true)]
-	[Parameter("Url", typeof(string), "WebService URL", true)]
-	[Parameter("Service", typeof(string), "Service name", true)]
-	[Parameter("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", false)]
+	[Parameter("Url", typeof(string), "WebService URL")]
+	[Parameter("Service", typeof(string), "Service name")]
+	[Parameter("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", null)]
 	[Parameter("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
 	[Parameter("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
 	public class WebServicePublisher : Publisher

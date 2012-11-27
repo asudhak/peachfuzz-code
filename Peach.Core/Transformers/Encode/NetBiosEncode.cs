@@ -35,7 +35,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Encode
 {
     [Description("Encode on output from a string to a binary NetBios representation.")]
-    [Parameter("pad", typeof(bool), "Should the NetBios names be padded/trimmed to 32 bytes?", false)]
+    [Parameter("pad", typeof(bool), "Should the NetBios names be padded/trimmed to 32 bytes?", "false")]
     [Transformer("NetBiosEncode", true)]
     [Transformer("encode.NetBiosEncode")]
     [Serializable]

@@ -19,8 +19,8 @@ namespace Peach.Core.Fixups
 	/// </remarks>
 	[Description("A Python or Ruby fixup.")]
 	[Fixup("ScriptFixup", true)]
-	[Parameter("class", typeof(string), "Reference to data element", true)]
-	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
+	[Parameter("class", typeof(string), "Reference to data element")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class ScriptFixup : Fixup
 	{

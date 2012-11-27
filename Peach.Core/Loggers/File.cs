@@ -43,7 +43,7 @@ namespace Peach.Core.Loggers
 	[Logger("File")]
 	[Logger("Filesystem", true)]
 	[Logger("logger.Filesystem")]
-	[Parameter("Path", typeof(string), "Log folder", true)]
+	[Parameter("Path", typeof(string), "Log folder")]
 	public class FileLogger : Logger
 	{
 		string logpath = null;

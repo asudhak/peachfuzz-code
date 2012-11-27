@@ -42,9 +42,9 @@ namespace Peach.Core.Publishers
 	[Publisher("RawV4", true)]
 	[Publisher("Raw")]
 	[Publisher("raw.Raw")]
-	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
-	[Parameter("Protocol", typeof(byte), "IP protocol to use", true)]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host")]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
+	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawV4Publisher : SocketPublisher
 	{
@@ -72,9 +72,9 @@ namespace Peach.Core.Publishers
 	[Publisher("RawIPv4", true)]
 	[Publisher("RawIp")]
 	[Publisher("raw.RawIp")]
-	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
-	[Parameter("Protocol", typeof(byte), "IP protocol to use", "Unspecified")]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host")]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
+	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawIPv4Publisher : SocketPublisher
 	{

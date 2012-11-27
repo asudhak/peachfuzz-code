@@ -42,7 +42,7 @@ namespace Peach.Core.Analyzers
 	[Analyzer("StringToken")]
 	[Analyzer("StringTokenAnalyzer")]
 	[Analyzer("stringtoken.StringTokenAnalyzer")]
-	[Parameter("Tokens", typeof(string), "List of character tokens", false)]
+	[Parameter("Tokens", typeof(string), "List of character tokens", StringTokenAnalyzer.TOKENS)]
 	[Serializable]
 	public class StringTokenAnalyzer : Analyzer
 	{

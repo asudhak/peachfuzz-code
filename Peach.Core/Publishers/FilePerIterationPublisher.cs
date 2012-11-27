@@ -7,7 +7,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Publishers
 {
 	[Publisher("FilePerIteration", true)]
-	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing", true)]
+	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing")]
 	public class FilePerIterationPublisher : FilePublisher
 	{
 		protected string fileTemplate;

@@ -39,7 +39,7 @@ namespace Peach.Core.Transformers
 	[Description("Evaluate a statement.")]
 	[Transformer("Eval", true)]
 	[Transformer("misc.Eval")]
-	[Parameter("eval", typeof(string), "Formatter for data.", true)]
+	[Parameter("eval", typeof(string), "Formatter for data.")]
 	[Serializable]
 	public class Eval : Transformer
 	{

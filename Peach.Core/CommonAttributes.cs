@@ -13,6 +13,7 @@ namespace Peach.Core
 		public bool required;
 		public string defaultVaue;
 
+		[Obsolete("This constructor is obsolete")]
 		public ParameterAttribute(string name, Type type, string description, bool required)
 		{
 			this.name = name;
@@ -22,9 +23,34 @@ namespace Peach.Core
 			this.defaultVaue = null;
 		}
 
-		public ParameterAttribute(string name, Type type, string description, string defaultValue)
-			: this(name, type, description, false)
+		/// <summary>
+		/// Constructs a REQUIRED parameter.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="type"></param>
+		/// <param name="description"></param>
+		/// <param name="defaultValue"></param>
+		public ParameterAttribute(string name, Type type, string description)
 		{
+			this.name = name;
+			this.type = type;
+			this.description = description;
+			this.required = true;
+			this.defaultVaue = null;
+		}
+
+		/// <summary>
+		/// Constructs an OPTIONAL parameter.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="type"></param>
+		/// <param name="description"></param>
+		/// <param name="defaultValue"></param>
+		public ParameterAttribute(string name, Type type, string description, string defaultValue)
+		{
+			if (defaultValue == null)
+				throw new ArgumentNullException("defaultValue");
+
 			this.name = name;
 			this.type = type;
 			this.description = description;

@@ -44,7 +44,7 @@ namespace Peach.Core.Analyzers
 {
 	[Analyzer("Com")]
 	[Analyzer("ComAnalyzer")]
-	[Parameter("TypeLibrary", typeof(string), "Path to a COM type library (sometimes this is the DLL/EXE otherwise a .TLB)", true)]
+	[Parameter("TypeLibrary", typeof(string), "Path to a COM type library (sometimes this is the DLL/EXE otherwise a .TLB)")]
 	[Serializable]
 	public class ComAnalyzer : Analyzer
 	{

@@ -43,7 +43,7 @@ namespace Peach.Core.Publishers
 	[Publisher("FileStream")]
 	[Publisher("file.FileWriter")]
 	[Publisher("file.FileReader")]
-	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing", true)]
+	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing")]
 	[Parameter("Overwrite", typeof(bool), "Replace existing file? [true/false, default true]", "true")]
 	[Parameter("Append", typeof(bool), "Append to end of file [true/false, default flase]", "false")]
 	public class FilePublisher : StreamPublisher

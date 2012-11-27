@@ -10,10 +10,10 @@ using NLog;
 namespace Peach.Core.Publishers
 {
 	[Publisher("Udp", true)]
-	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Port", typeof(ushort), "Destination port number", true)]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host")]
+	[Parameter("Port", typeof(ushort), "Destination port number")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
 	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
 	public class UdpPublisher : SocketPublisher
 	{
