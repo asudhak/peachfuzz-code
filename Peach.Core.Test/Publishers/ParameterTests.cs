@@ -67,6 +67,11 @@ namespace Peach.Core.Test.Publishers
 			var p2 = new EnumPub(args);
 			Assert.AreEqual(p2.enum1, FileMode.OpenOrCreate);
 			Assert.AreEqual(p2.enum2, ConsoleColor.DarkCyan);
+
+			args["enum2"] = new Variant("DaRkMaGeNtA");
+			var p3 = new EnumPub(args);
+			Assert.AreEqual(p3.enum1, FileMode.OpenOrCreate);
+			Assert.AreEqual(p3.enum2, ConsoleColor.DarkMagenta);
 		}
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'testA' is missing required parameter 'req1'.")]
@@ -278,5 +283,34 @@ namespace Peach.Core.Test.Publishers
 			args["param"] = new Variant("foo");
 			new GetPub(args);
 		}
+
+		[Plugin(typeof(NullTest), "NullPlugin", true)]
+		[Parameter("str", typeof(string), "", null)]
+		[Parameter("num", typeof(int), "", null)]
+		class NullTest
+		{
+			public NullTest() { }
+			public string str { get; set; }
+			public int num { get; set; }
+		}
+
+		[Test]
+		public void TestNullDefault()
+		{
+			var obj = new NullTest();
+
+			var onlyNum = new Dictionary<string, Variant>();
+			onlyNum["num"] = new Variant(10);
+			ParameterParser.Parse(obj, onlyNum);
+
+			Assert.Null(obj.str);
+			Assert.AreEqual(10, obj.num);
+
+			var onlyStr = new Dictionary<string, Variant>();
+			onlyNum["str"] = new Variant("hi");
+
+			Assert.Throws<PeachException>(delegate() { ParameterParser.Parse(obj, onlyStr); });
+		}
+
 	}
 }
