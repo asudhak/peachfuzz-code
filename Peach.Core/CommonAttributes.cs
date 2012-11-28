@@ -11,7 +11,7 @@ namespace Peach.Core
 		public Type type { get; private set; }
 		public string description { get; private set; }
 		public bool required { get; private set; }
-		public string defaultVaue { get; private set; }
+		public string defaultValue { get; private set; }
 
 		/// <summary>
 		/// Constructs a REQUIRED parameter.
@@ -26,7 +26,7 @@ namespace Peach.Core
 			this.type = type;
 			this.description = description;
 			this.required = true;
-			this.defaultVaue = null;
+			this.defaultValue = null;
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Peach.Core
 			this.type = type;
 			this.description = description;
 			this.required = false;
-			this.defaultVaue = defaultValue;
+			this.defaultValue = defaultValue;
 		}
 	}
 

@@ -505,7 +505,7 @@ namespace Peach.Core
 			{
 				string value = "";
 				if (!prop.required)
-					value = string.Format(" default=\"{0}\"", prop.defaultVaue.Replace("\r", "\\r").Replace("\n", "\\n"));
+					value = string.Format(" default=\"{0}\"", prop.defaultValue.Replace("\r", "\\r").Replace("\n", "\\n"));
 
 				string type = string.Format("({0})", prop.type.Name);
 

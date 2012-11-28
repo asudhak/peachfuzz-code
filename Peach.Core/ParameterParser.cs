@@ -26,7 +26,7 @@ namespace Peach.Core
 				if (args.TryGetValue(attr.name, out value))
 					ApplyProperty(obj, attr, (string)value);
 				else if (!attr.required)
-					ApplyProperty(obj, attr, attr.defaultVaue);
+					ApplyProperty(obj, attr, attr.defaultValue);
 				else if (attr.required)
 					RaiseError(obj.GetType(), "is missing required parameter '{0}'.", attr.name);
 			}
