@@ -64,5 +64,20 @@ namespace Peach.Core.Test.PitParserTests
 			e.startFuzzing(dom, config);
 
 		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, the value of element 'blob' is not a valid hex string.")]
+		public void TestBadHex()
+		{
+			// Verify good error message when parsing bad hex value
+			string xml =
+@"<Peach>
+	<DataModel name=""DM"">
+		<Blob name=""blob"" valueType=""hex"" value=""hello world""/>
+	</DataModel>
+</Peach>";
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		}
+
 	}
 }
