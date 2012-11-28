@@ -204,7 +204,6 @@ def apply_link(self):
 	self.link_task.add_target(self.target)
 
 	# remember that the install paths are given by the task generators
-	# we need to define install_task even during the build phase because others might need the installation path
 	try:
 		inst_to = self.install_path
 	except AttributeError:
@@ -459,7 +458,7 @@ def apply_implib(self):
 # ============ the code above must not know anything about vnum processing on unix platforms =========
 
 @feature('cshlib', 'cxxshlib', 'dshlib', 'fcshlib', 'vnum')
-@after_method('apply_link')
+@after_method('apply_link', 'propagate_uselib_vars')
 def apply_vnum(self):
 	"""
 	Enforce version numbering on shared libraries. The valid version numbers must have at most two dots::
@@ -504,9 +503,16 @@ def apply_vnum(self):
 		t3 = bld.symlink_as(path + os.sep + libname, name3)
 		self.vnum_install_task = (t1, t2, t3)
 
-	if '-dynamiclib' in self.env['LINKFLAGS'] and getattr(self, 'install_task', None):
-		path = os.path.join(self.install_task.get_install_path(), self.link_task.outputs[0].name)
-		self.env.append_value('LINKFLAGS', ['-install_name', path])
+	if '-dynamiclib' in self.env['LINKFLAGS']:
+		# this requires after(propagate_uselib_vars)
+		try:
+			inst_to = self.install_path
+		except AttributeError:
+			inst_to = self.link_task.__class__.inst_to
+		if inst_to:
+			p = Utils.subst_vars(inst_to, self.env)
+			path = os.path.join(p, self.link_task.outputs[0].name)
+			self.env.append_value('LINKFLAGS', ['-install_name', path])
 
 class vnum(Task.Task):
 	"""
