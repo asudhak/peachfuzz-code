@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Peach.Core
 {
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
 	public class ParameterAttribute : Attribute
 	{
 		public string name { get; private set; }
