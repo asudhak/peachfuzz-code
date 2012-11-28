@@ -388,6 +388,133 @@ namespace Peach.Core
         }
     }
 
+	public static class Usage
+	{
+		private class TypeComparer : IComparer<Type>
+		{
+			public int Compare(Type x, Type y)
+			{
+				return x.Name.CompareTo(y.Name);
+			}
+		}
+
+		private class PluginComparer : IComparer<PluginAttribute>
+		{
+			public int Compare(PluginAttribute x, PluginAttribute y)
+			{
+				if (x.IsDefault == y.IsDefault)
+					return x.Name.CompareTo(y.Name);
+
+				if (x.IsDefault)
+					return -1;
+
+				return 1;
+			}
+		}
+
+		private class ParamComparer : IComparer<ParameterAttribute>
+		{
+			public int Compare(ParameterAttribute x, ParameterAttribute y)
+			{
+				if (x.required == y.required)
+					return x.name.CompareTo(y.name);
+
+				if (x.required)
+					return -1;
+
+				return 1;
+			}
+		}
+
+		public static void Print()
+		{
+			var color = Console.ForegroundColor;
+
+			var domTypes = new SortedSet<Type>(new TypeComparer());
+
+			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.Dom.DataElementAttribute>(null))
+			{
+				if (!domTypes.Add(type.Value))
+					Console.WriteLine("Already scanned data element: {0}", type.Value.Name);
+			}
+
+			var plugins = new SortedDictionary<Type, SortedDictionary<Type, SortedSet<PluginAttribute>>>(new TypeComparer());
+
+			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.PluginAttribute>(null))
+			{
+				var pluginType = type.Key.Type;
+
+				if (!plugins.ContainsKey(pluginType))
+					plugins.Add(pluginType, new SortedDictionary<Type, SortedSet<PluginAttribute>>(new TypeComparer()));
+
+				var plugin = plugins[pluginType];
+
+				if (!plugin.ContainsKey(type.Value))
+					plugin.Add(type.Value, new SortedSet<PluginAttribute>(new PluginComparer()));
+
+				var attrs = plugin[type.Value];
+
+				if (!attrs.Add(type.Key))
+					Console.WriteLine("{0} class '{1}' already has attribute '{2}'.", pluginType.Name, type.Value.Name, type.Key.Name);
+			}
+
+			Console.WriteLine("----- Data Elements --------------------------------------------");
+			foreach (var elem in domTypes)
+			{
+				Console.WriteLine();
+				Console.WriteLine("  {0}", elem.Name);
+				PrintParams(elem);
+			}
+
+			foreach (var kv in plugins)
+			{
+				Console.WriteLine();
+				Console.WriteLine();
+				Console.WriteLine("----- {0}s --------------------------------------------", kv.Key.Name);
+
+				foreach (var plugin in kv.Value)
+				{
+					Console.WriteLine();
+					Console.Write(" ");
+
+					foreach (var attr in plugin.Value)
+					{
+						Console.Write(" ");
+						if (attr.IsDefault)
+							Console.ForegroundColor = ConsoleColor.White;
+						Console.Write(attr.Name);
+						Console.ForegroundColor = color;
+					}
+
+					Console.WriteLine();
+
+					var desc = plugin.Key.GetAttributes<DescriptionAttribute>(null).FirstOrDefault();
+					if (desc != null)
+						Console.WriteLine("    [{0}]", desc.Description);
+
+					PrintParams(plugin.Key);
+				}
+			}
+		}
+
+		private static void PrintParams(Type elem)
+		{
+			var properties = new SortedSet<ParameterAttribute>(elem.GetAttributes<ParameterAttribute>(null), new ParamComparer());
+
+			foreach (var prop in properties)
+			{
+				string value = "";
+				if (!prop.required)
+					value = string.Format(" default=\"{0}\"", prop.defaultVaue.Replace("\r", "\\r").Replace("\n", "\\n"));
+
+				string type = string.Format("({0})", prop.type.Name);
+
+				Console.WriteLine("    {0} {1} {2} {3}{4}", prop.required ? "*" : "-",
+					prop.name.PadRight(24), type.PadRight(14), prop.description, value);
+			}
+		}
+	}
+
 	/// <summary>
 	/// Some utility methods that be usefull
 	/// </summary>
