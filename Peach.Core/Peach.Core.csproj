@@ -363,6 +363,9 @@
     <Reference Condition="'$(Configuration)' == 'Release'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="Renci.SshNet">
+      <HintPath>..\3rdParty\Renci.SshNet\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Management" />
@@ -405,6 +408,7 @@
     <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
+    <Compile Include="Agent\Monitors\PingMonitor.cs" />
     <Compile Include="Agent\Monitors\SaveFileMonitor.cs" />
     <Compile Include="Agent\Monitors\IpPower9258Monitor.cs" />
     <Compile Include="Agent\Monitors\Memory.cs" />
@@ -414,6 +418,8 @@
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
+    <Compile Include="Agent\Monitors\SSHMonitor.cs" />
+    <Compile Include="Agent\Monitors\TCPListenerMonitor.cs" />
     <Compile Include="Analysis\Coverage.cs" />
     <Compile Include="Analysis\CoverageImpl.cs" />
     <Compile Include="Analysis\Minset.cs" />
