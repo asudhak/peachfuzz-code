@@ -76,7 +76,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
 
 			Assert.NotNull(array);
-			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(100, array.Count);
 
 			Assert.NotNull(array.Hints);
 			Assert.AreEqual(1, array.Hints.Count);
@@ -97,9 +97,10 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
 
 			Assert.NotNull(array);
-			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(100, array.Count);
 			Assert.AreEqual("TheDataModel.stuff", array.fullName);
 			Assert.AreEqual("TheDataModel.stuff.stuff", array[0].fullName);
+			Assert.AreEqual("TheDataModel.stuff.stuff_1", array[1].fullName);
 			Assert.AreEqual(array, array[0].parent);
 		}
 
@@ -119,9 +120,10 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
 
 			Assert.NotNull(array);
-			Assert.AreEqual(1, array.Count);
-			Assert.AreEqual("TheDataModel.DataElement_0.DataElement_0", array[0].fullName);
+			Assert.AreEqual(100, array.Count);
 			Assert.AreEqual("TheDataModel.DataElement_0", array.fullName);
+			Assert.AreEqual("TheDataModel.DataElement_0.DataElement_0", array[0].fullName);
+			Assert.AreEqual("TheDataModel.DataElement_0.DataElement_0_1", array[1].fullName);
 		}
 
 		[Test]
@@ -141,7 +143,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
 
 			Assert.NotNull(array);
-			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(100, array.Count);
 			Assert.AreEqual(1, array.relations.Count);
 			Assert.AreEqual(0, array[0].relations.Count);
 		}
@@ -163,7 +165,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
 
 			Assert.NotNull(array);
-			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(100, array.Count);
 			Assert.AreEqual(0, array.relations.Count);
 			Assert.AreEqual(1, array[0].relations.Count);
 		}
@@ -185,16 +187,59 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Array array = dom.dataModels[0][0] as Dom.Array;
 
 			Assert.NotNull(array);
-			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(100, array.Count);
 			Assert.AreEqual("Data", array.name);
 			Assert.AreEqual("Data", array[0].name);
 
 			var clone = array.Clone("NewData") as Dom.Array;
 
 			Assert.NotNull(clone);
-			Assert.AreEqual(1, clone.Count);
+			Assert.AreEqual(100, clone.Count);
 			Assert.AreEqual("NewData", clone.name);
 			Assert.AreEqual("NewData", clone[0].name);
+		}
+
+		private void DoOccurs(string occurs, byte[] expected)
+		{
+			string template =
+@"<Peach>
+	<DataModel name=""DM"">
+		<String value=""XYZ"" {0}/>
+	</DataModel>
+</Peach>";
+
+			string xml = string.Format(template, occurs);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var value = dom.dataModels[0].Value;
+			Assert.NotNull(value);
+			MemoryStream ms = value.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			Assert.AreEqual(expected.Length, ms.Length);
+
+			byte[] actual = new byte[ms.Length];
+			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void TestOccurs()
+		{
+			DoOccurs("minOccurs=\"5\"", Encoding.ASCII.GetBytes("XYZXYZXYZXYZXYZ"));
+			DoOccurs("minOccurs=\"1\"", Encoding.ASCII.GetBytes("XYZ"));
+			DoOccurs("minOccurs=\"0\"", Encoding.ASCII.GetBytes(""));
+
+			DoOccurs("occurs=\"5\"", Encoding.ASCII.GetBytes("XYZXYZXYZXYZXYZ"));
+			DoOccurs("occurs=\"1\"", Encoding.ASCII.GetBytes("XYZ"));
+			DoOccurs("occurs=\"0\"", Encoding.ASCII.GetBytes(""));
+
+			DoOccurs("maxOccurs=\"5\"", Encoding.ASCII.GetBytes("XYZ"));
+			DoOccurs("maxOccurs=\"1\"", Encoding.ASCII.GetBytes("XYZ"));
+			DoOccurs("maxOccurs=\"0\"", Encoding.ASCII.GetBytes("XYZ"));
+
 		}
 	}
 }

@@ -843,8 +843,14 @@ namespace Peach.Core.Analyzers
 					((System.Xml.XmlElement)child).SetAttribute("name", elem.name);
 
 					var array = Dom.Array.PitParser(this, child, element) as Dom.Array;
-					array.Add(elem);
 					array.origionalElement = elem;
+
+					if (array.occurs > 0)
+						array.Add(elem);
+
+					// Expand all occurances
+					for (int i = 1; i < array.occurs; ++i)
+						array.Add(elem.Clone(elem.name + "_" + i));
 
 					// Copy over hints, some may be for array
 					foreach (var key in elem.Hints.Keys)

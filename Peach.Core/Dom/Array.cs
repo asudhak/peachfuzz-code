@@ -55,6 +55,7 @@ namespace Peach.Core.Dom
 	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("minOccurs", typeof(int), "Minimum number of occurrences 0-N", "1")]
 	[Parameter("maxOccurs", typeof(int), "Maximum number of occurrences (-1 for unlimited)", "1")]
+	[Parameter("occurs", typeof(int), "Number of occurrences 0-N", "1")]
 	[Serializable]
 	public class Array : Block
 	{
@@ -66,7 +67,6 @@ namespace Peach.Core.Dom
 		public bool hasExpanded = false;
 		public int? overrideCount = null;
 
-		[NonSerialized]
 		public DataElement origionalElement = null;
 
 		public Array()
@@ -83,10 +83,13 @@ namespace Peach.Core.Dom
 			Array element = this;
 
 			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-			logger.Debug("Crack: {0} type: {1}", element.fullName, element[0].GetType());
+			logger.Debug("Crack: {0} type: {1}", element.fullName, element.origionalElement.GetType());
 
-			element.origionalElement = element[0];
-			element.Clear(false);
+			if (this.Count > 0)
+			{
+				element.origionalElement = element[0];
+				element.Clear(false);
+			}
 
 			if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
 			{
@@ -190,6 +193,7 @@ namespace Peach.Core.Dom
 			{
 				array.minOccurs = int.Parse(strMinOccurs);
 				array.maxOccurs = -1;
+				array.occurs = array.minOccurs;
 			}
 
 			string strMaxOccurs = node.getAttribute("maxOccurs");

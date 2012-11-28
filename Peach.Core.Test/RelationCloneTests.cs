@@ -193,22 +193,23 @@ namespace Peach.Core.Test
 
 			Assert.NotNull(array);
 			Assert.AreEqual("Length", array.name);
-			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(100, array.Count);
 			Assert.AreEqual("Length", array[0].name);
 			Assert.AreEqual(0, array.relations.Count);
 			Assert.AreEqual(1, array[0].relations.Count);
+			Assert.AreEqual(100, array[0].relations[0].Of.relations.Count);
 
 			Dom.Array clone = array.Clone("NewLength") as Dom.Array;
 			Assert.NotNull(clone);
 			Assert.AreEqual("NewLength", clone.name);
-			Assert.AreEqual(1, clone.Count);
+			Assert.AreEqual(100, clone.Count);
 			Assert.AreEqual("NewLength", clone[0].name);
 			Assert.AreEqual(0, clone.relations.Count);
 			Assert.AreEqual(1, clone[0].relations.Count);
 			Assert.AreEqual("Data", clone[0].relations[0].OfName);
 			Assert.AreEqual("NewLength", clone[0].relations[0].FromName);
-			Assert.AreEqual(2, clone[0].relations[0].Of.relations.Count);
-			Assert.AreEqual(clone[0].relations[0], clone[0].relations[0].Of.relations[1]);
+			Assert.AreEqual(200, clone[0].relations[0].Of.relations.Count);
+			Assert.AreEqual(clone[0].relations[0], clone[0].relations[0].Of.relations[100]);
 		}
 	}
 }
