@@ -327,6 +327,7 @@
     <Compile Include="RandomTest.cs" />
     <Compile Include="RelationCloneTests.cs" />
     <Compile Include="RelationCountTests.cs" />
+    <Compile Include="RelationOffsetTest.cs" />
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="ReportedTests.cs" />
     <Compile Include="StateModel\ActionWhenTests.cs" />

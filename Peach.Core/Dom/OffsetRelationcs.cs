@@ -154,19 +154,20 @@ namespace Peach.Core.Dom
 		protected long calculateOffset(DataElement from, DataElement to)
 		{
 			DataElementContainer commonAncestor = null;
-			long fromPosition;
-			long toPosition;
+			long fromPosition = 0;
+			long toPosition = 0;
 
 			if (isRelativeOffset)
 			{
-				if (string.IsNullOrEmpty(relativeTo))
+				if (!string.IsNullOrEmpty(relativeTo))
 				{
-					commonAncestor = findCommonRoot(from, to);
+					DataElement relative = from.find(relativeTo);
+					if (relative == null)
+						throw new PeachException("Error, offset relation from element '{0}' couldn't locate relative to element '{1}'.", from.fullName, relativeTo);
+					from = relative;
 				}
-				else
-				{
-					commonAncestor = findCommonRoot(from.find(relativeTo), to);
-				}
+
+				commonAncestor = findCommonRoot(from, to);
 
 				if (commonAncestor == null)
 				{
@@ -175,7 +176,8 @@ namespace Peach.Core.Dom
 				}
 
 				BitStream stream = commonAncestor.Value;
-				fromPosition = stream.DataElementPosition(from);
+				if (from != from.getRoot())
+					stream.DataElementPosition(from);
 				toPosition = stream.DataElementPosition(to);
 			}
 			else
@@ -208,6 +210,9 @@ namespace Peach.Core.Dom
 		protected DataElementContainer findCommonRoot(DataElement elem1, DataElement elem2)
 		{
 			List<DataElementContainer> parentsElem1 = new List<DataElementContainer>();
+
+			if (elem1 is DataElementContainer)
+				parentsElem1.Add((DataElementContainer)elem1);
 
 			DataElementContainer parent = elem1.parent;
 			while (parent != null)
