@@ -138,6 +138,7 @@ namespace Peach
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
 					{ "showdevices", var => ShowDevices() },
+					{ "showenv", var => ShowEnvironment() },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -622,6 +623,13 @@ Debug Peach XML File
 				Console.WriteLine("Name: {0}\nDescription: {1}\n\n", dev.Name, dev.Description);
 				i++;
 			}
+
+			throw new SyntaxException();
+		}
+
+		public void ShowEnvironment()
+		{
+			Peach.Core.Usage.Print();
 
 			throw new SyntaxException();
 		}
