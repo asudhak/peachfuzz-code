@@ -29,7 +29,6 @@ namespace Peach.Core.Test.Publishers
 		[Publisher("testA1")]
 		[Publisher("testA1.default", true)]
 		[Parameter("req1", typeof(int), "desc")]
-		[Parameter("ip", typeof(IPAddress), "desc", "")]
 		class PubDefaultName : Publisher
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
