@@ -12,7 +12,7 @@ namespace Peach.Core.Publishers
 {
 	[Publisher("RawEther", true)]
 	[Publisher("raw.RawEther")]
-	[Parameter("Interface", typeof(string), "Name of interface to bind to", true)]
+	[Parameter("Interface", typeof(string), "Name of interface to bind to")]
 	[Parameter("Protocol", typeof(EtherProto), "Ethernet protocol to use", "ETH_P_ALL")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawEtherPublisher : Publisher

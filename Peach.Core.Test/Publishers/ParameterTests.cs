@@ -284,7 +284,7 @@ namespace Peach.Core.Test.Publishers
 			new GetPub(args);
 		}
 
-		[Plugin(typeof(NullTest), "NullPlugin", true)]
+		[Publisher("NullPlugin", true)]
 		[Parameter("custom", typeof(CustomType), "desc", "")]
 		[Parameter("str", typeof(string), "desc", "")]
 		[Parameter("num", typeof(int), "desc", "")]

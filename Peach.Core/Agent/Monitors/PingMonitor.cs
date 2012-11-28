@@ -6,10 +6,10 @@ using System.Text;
 namespace Peach.Core.Agent.Monitors
 {
     [Monitor("PingMonitor")]
-    [Parameter("Host", typeof(string), "Host to ping : default 127.0.0.1", true)]
-    [Parameter("Timeout", typeof(int), "Ping timeout in milliseconds default : 1000", false)] 
-    [Parameter("Data", typeof(string), "Data to send : default none", false)]
-    [Parameter("FaultOnSuccess", typeof(bool), "Fault if ping is successful : default is false", false)]
+    [Parameter("Host", typeof(string), "Host to ping : default 127.0.0.1")]
+    [Parameter("Timeout", typeof(int), "Ping timeout in milliseconds default : 1000", "1000")] 
+    [Parameter("Data", typeof(string), "Data to send : default none", "")]
+    [Parameter("FaultOnSuccess", typeof(bool), "Fault if ping is successful : default is false", "false")]
     public class PingMonitor : Peach.Core.Agent.Monitor
     {
         protected string Host = "127.0.0.1";

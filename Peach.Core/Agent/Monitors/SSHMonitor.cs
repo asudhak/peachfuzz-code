@@ -8,16 +8,16 @@ using Renci.SshNet;
 namespace Peach.Core.Agent.Monitors
 {
     [Monitor("SSHMonitor")]
-    [Parameter("Host", typeof (string), "Host to ssh to.", true)]
-    [Parameter("Username", typeof (string), "Username for ssh", false)]
-    [Parameter("Password", typeof (string), "Password for ssh account", false)]
-    [Parameter("KeyPath", typeof(string), "Path to ssh key", false)]
-    [Parameter("Command", typeof (string), "Command to check for fault", false)]
-    [Parameter("CheckValue", typeof(string), "Value to look for in response", false)]
-    [Parameter("Fetch", typeof(bool), "Download the remote file that is output of the ssh command", false)]
-    [Parameter("Remove", typeof(bool), "Remove the remote file after download", false)]
-    [Parameter("GDBAnalyze", typeof(bool), "Analyze the core file in GDB (not implemented)", false)]
-    [Parameter("GDBPath", typeof(string), "Path to GDB (not implemented)", false)]
+    [Parameter("Host", typeof (string), "Host to ssh to.")]
+    [Parameter("Username", typeof (string), "Username for ssh", "")]
+	[Parameter("Password", typeof(string), "Password for ssh account", "")]
+	[Parameter("KeyPath", typeof(string), "Path to ssh key", "")]
+	[Parameter("Command", typeof(string), "Command to check for fault", "")]
+	[Parameter("CheckValue", typeof(string), "Value to look for in response", "")]
+    [Parameter("Fetch", typeof(bool), "Download the remote file that is output of the ssh command", "false")]
+    [Parameter("Remove", typeof(bool), "Remove the remote file after download", "false")]
+    [Parameter("GDBAnalyze", typeof(bool), "Analyze the core file in GDB (not implemented)", "false")]
+    [Parameter("GDBPath", typeof(string), "Path to GDB (not implemented)", "gdb")]
     public class SSHMonitor : Peach.Core.Agent.Monitor
     {
         protected string Host       = "";

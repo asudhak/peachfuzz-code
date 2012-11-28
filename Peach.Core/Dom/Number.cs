@@ -51,10 +51,10 @@ namespace Peach.Core.Dom
 	[DataElement("Number")]
 	[PitParsable("Number")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", true)]
-	[Parameter("size", typeof(uint), "size in bits", true)]
-	[Parameter("signed", typeof(bool), "Is number signed (default false)", false)]
-	[Parameter("endian", typeof(string), "Byte order of number (default 'little')", false)]
+	[Parameter("name", typeof(string), "", "")]
+	[Parameter("size", typeof(uint), "size in bits")]
+	[Parameter("signed", typeof(bool), "Is number signed (default false)", "false")]
+	[Parameter("endian", typeof(string), "Byte order of number (default 'little')", "little")]
 	[Serializable]
 	public class Number : DataElement
 	{

@@ -49,8 +49,8 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Block")]
 	[PitParsable("Block")]
-	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	[ParameterAttribute("name", typeof(string), "", true)]
+	[DataElementChildSupported(DataElementTypes.Any)]
+	[Parameter("name", typeof(string), "", "")]
 	[Serializable]
 	public class Block : DataElementContainer
 	{

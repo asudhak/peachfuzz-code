@@ -65,11 +65,11 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("String")]
 	[PitParsable("String")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-	[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
-	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
-	[ParameterAttribute("type", typeof(StringType), "Type of string (encoding)", true)]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[Parameter("name", typeof(string), "", "")]
+	[Parameter("length", typeof(uint), "Length in characters", "")]
+	[Parameter("nullTerminated", typeof(bool), "Is string null terminated?", "false")]
+	[Parameter("type", typeof(StringType), "Type of string (encoding)", "ascii")]
 	[Serializable]
 	public class String : DataElement
 	{
@@ -507,9 +507,6 @@ namespace Peach.Core.Dom
 			}
 		}
 
-    //[ParameterAttribute("length", typeof(uint), "Length in characters", false)]
-    //[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated?", false)]
-    //[ParameterAttribute("type", typeof(StringType), "Type of string (encoding)", true)]
     public override object GetParameter(string parameterName)
     {
       switch (parameterName)

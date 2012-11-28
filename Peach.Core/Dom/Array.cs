@@ -53,8 +53,8 @@ namespace Peach.Core.Dom
 	[PitParsable("Array")]
 	[DataElementChildSupported(DataElementTypes.Any)]
 	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("minOccurs", typeof(int), "Minimum number of occurrences 0-N", false)]
-	[Parameter("maxOccurs", typeof(int), "Maximum number of occurrences (-1 for unlimited)", false)]
+	[Parameter("minOccurs", typeof(int), "Minimum number of occurrences 0-N", "1")]
+	[Parameter("maxOccurs", typeof(int), "Maximum number of occurrences (-1 for unlimited)", "1")]
 	[Serializable]
 	public class Array : Block
 	{

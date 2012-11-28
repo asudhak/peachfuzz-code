@@ -7,21 +7,11 @@ namespace Peach.Core
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class ParameterAttribute : Attribute
 	{
-		public string name;
-		public Type type;
-		public string description;
-		public bool required;
-		public string defaultVaue;
-
-		[Obsolete("This constructor is obsolete")]
-		public ParameterAttribute(string name, Type type, string description, bool required)
-		{
-			this.name = name;
-			this.type = type;
-			this.description = description;
-			this.required = required;
-			this.defaultVaue = null;
-		}
+		public string name { get; private set; }
+		public Type type { get; private set; }
+		public string description { get; private set; }
+		public bool required { get; private set; }
+		public string defaultVaue { get; private set; }
 
 		/// <summary>
 		/// Constructs a REQUIRED parameter.
@@ -71,13 +61,13 @@ namespace Peach.Core
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-	public class PluginAttribute : Attribute
+	public abstract class PluginAttribute : Attribute
 	{
 		public string Name { get; private set; }
 		public Type Type { get; private set; }
 		public bool IsDefault { get; private set; }
 
-		public PluginAttribute(Type type, string name, bool isDefault)
+		protected PluginAttribute(Type type, string name, bool isDefault)
 		{
 			this.Name = name;
 			this.Type = type;

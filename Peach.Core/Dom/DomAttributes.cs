@@ -83,13 +83,4 @@ namespace Peach.Core.Dom
 		{
 		}
 	}
-
-	[DataElement("String")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
-	[ParameterAttribute("type", typeof(string), "Type of string (char, wchar, utf8)", false)]
-	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated (default: false)", false)]
-	public class DomString
-	{
-	}
 }

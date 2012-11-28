@@ -45,10 +45,10 @@ using NLog;
 namespace Peach.Core.Dom
 {
 	[DataElement("Flag")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("name", typeof(string), "", true)]
-	[ParameterAttribute("position", typeof(int), "Bit position of flag", true)]
-	[ParameterAttribute("size", typeof(int), "size in bits", true)]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[Parameter("name", typeof(string), "", "")]
+	[Parameter("position", typeof(int), "Bit position of flag")]
+	[Parameter("size", typeof(int), "size in bits")]
 	[Serializable]
 	public class Flag : Number
 	{

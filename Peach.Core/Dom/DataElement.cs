@@ -76,9 +76,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	[Parameter("name", typeof(string), "Optional name for element", false)]
-	[Parameter("value", typeof(string), "Optional default value", false)]
-	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
+	[Parameter("name", typeof(string), "Optional name for element", "")]
+	[Parameter("value", typeof(string), "Optional default value", "")]
+	[Parameter("valueType", typeof(ValueType), "Optional name for element", "string")]
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{

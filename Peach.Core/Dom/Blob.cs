@@ -50,9 +50,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Blob")]
 	[PitParsable("Blob")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("name", typeof(string), "", true)]
-	[ParameterAttribute("length", typeof(uint), "Length in bytes", false)]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[Parameter("name", typeof(string), "", "")]
+	[Parameter("length", typeof(uint), "Length in bytes")]
 	[Serializable]
 	public class Blob : DataElement
 	{

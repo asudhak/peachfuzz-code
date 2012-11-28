@@ -39,9 +39,9 @@ namespace Peach.Core.Dom
 	[DataElement("XmlAttribute")]
     [PitParsable("XmlAttribute")]
     [DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("attributeName", typeof(string), "Name of attribute", true)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
+	[Parameter("name", typeof(string), "Name of element", "")]
+	[Parameter("attributeName", typeof(string), "Name of attribute")]
+	[Parameter("ns", typeof(string), "XML Namespace", "")]
 	[Serializable]
 	public class XmlAttribute : DataElementContainer
 	{

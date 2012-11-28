@@ -7,11 +7,11 @@ using System.Text;
 namespace Peach.Core.Agent.Monitors
 {
     [Monitor("TCPListenerMonitor")]
-    [Parameter("Host", typeof(string), "Interface to listen on defaults to 0.0.0.0", false)]
-    [Parameter("Port", typeof(int), "Port to listen on for connection default 8080", false)]
-    [Parameter("Pattern", typeof(string), "Regex pattern to match if any (not yet implemented)", false)]
-    [Parameter("Backlog", typeof(int), "Backlog number of sockets to accept default 100", false)]
-    [Parameter("Delay", typeof(int), "Length of time to wait before checking if connections was accepted default 1000 ms", false)]
+    [Parameter("Host", typeof(string), "Interface to listen on defaults to 0.0.0.0", "0.0.0.0")]
+    [Parameter("Port", typeof(int), "Port to listen on for connection default 8080", "8080")]
+    [Parameter("Pattern", typeof(string), "Regex pattern to match if any (not yet implemented)", "")]
+    [Parameter("Backlog", typeof(int), "Backlog number of sockets to accept default 100", "100")]
+    [Parameter("Delay", typeof(int), "Length of time to wait before checking if connections was accepted default 1000 ms", "1000")]
     public class TCPListenerMonitor : Peach.Core.Agent.Monitor
     {
         protected string Host = "0.0.0.0";

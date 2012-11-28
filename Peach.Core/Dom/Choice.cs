@@ -53,9 +53,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Choice")]
 	[PitParsable("Choice")]
-	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-  [Serializable]
+	[DataElementChildSupported(DataElementTypes.Any)]
+	[Parameter("name", typeof(string), "", "")]
+	[Serializable]
 	public class Choice : DataElementContainer
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
