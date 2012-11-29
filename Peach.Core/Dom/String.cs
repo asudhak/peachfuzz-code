@@ -77,6 +77,7 @@ namespace Peach.Core.Dom
 		protected StringType _type = StringType.ascii;
 		protected bool _nullTerminated = false;
 		protected char _padCharacter = '\0';
+		protected Encoding encoding = null;
 
 		public String()
 			: base()
@@ -236,37 +237,40 @@ namespace Peach.Core.Dom
 			else if (context.hasDefaultAttribute(typeof(String), "nullTerminated"))
 				str.nullTerminated = context.getDefaultAttributeAsBool(typeof(String), "nullTerminated", false);
 
-			string type = null;
+			string type = "ascii";
 			if (node.hasAttribute("type"))
 				type = node.getAttribute("type");
 			else if (context.hasDefaultAttribute(str.GetType(), "type"))
 				type = context.getDefaultAttribute(str.GetType(), "type");
 
-			if (type != null)
+			switch (type.ToLower())
 			{
-				switch (type.ToLower())
-				{
-					case "ascii":
-						str.stringType = StringType.ascii;
-						break;
-					case "utf16":
-						str.stringType = StringType.utf16;
-						break;
-					case "utf16be":
-						str.stringType = StringType.utf16be;
-						break;
-					case "utf32":
-						str.stringType = StringType.utf32;
-						break;
-					case "utf7":
-						str.stringType = StringType.utf7;
-						break;
-					case "utf8":
-						str.stringType = StringType.utf8;
-						break;
-					default:
-						throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
-				}
+				case "ascii":
+					str.stringType = StringType.ascii;
+					str.encoding = Encoding.ASCII;
+					break;
+				case "utf16":
+					str.stringType = StringType.utf16;
+					str.encoding = Encoding.Unicode;
+					break;
+				case "utf16be":
+					str.stringType = StringType.utf16be;
+					str.encoding = Encoding.BigEndianUnicode;
+					break;
+				case "utf32":
+					str.stringType = StringType.utf32;
+					str.encoding = Encoding.UTF32;
+					break;
+				case "utf7":
+					str.stringType = StringType.utf7;
+					str.encoding = Encoding.UTF7;
+					break;
+				case "utf8":
+					str.stringType = StringType.utf8;
+					str.encoding = Encoding.UTF8;
+					break;
+				default:
+					throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
 			}
 
 			if (node.hasAttribute("padCharacter"))
@@ -288,42 +292,6 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementValue(node, str);
 			context.handleCommonDataElementChildren(node, str);
 
-			Encoding enc = null;
-			switch (type)
-			{
-				case "ascii":
-					enc = Encoding.ASCII;
-					break;
-				case "utf16":
-					enc = Encoding.Unicode;
-					break;
-				case "utf16be":
-					enc = Encoding.BigEndianUnicode;
-					break;
-				case "utf32":
-					enc = (Encoding)Encoding.UTF32;
-					break;
-				case "utf7":
-					enc = (Encoding)Encoding.UTF7;
-					break;
-				case "utf8":
-					enc = (Encoding)Encoding.UTF8;
-					break;
-				default:
-					type = "ascii";
-					enc = (Encoding)Encoding.ASCII;
-					break;
-			}
-
-			if (str.DefaultValue.GetVariantType() == Variant.VariantType.BitStream || str.DefaultValue.GetVariantType() == Variant.VariantType.ByteString)
-			{
-				byte[] val = (byte[])str.DefaultValue;
-				string asStr = enc.GetString(val);
-				if (!val.SequenceEqual(enc.GetBytes(asStr)))
-					throw new PeachException("String value contains invalid " + type + " bytes.");
-				str.DefaultValue = new Variant(asStr);
-			}
-
 			int test;
 			if (int.TryParse((string)str.DefaultValue, out test))
 			{
@@ -336,66 +304,88 @@ namespace Peach.Core.Dom
 					str.Hints.Remove("NumericalString");
 			}
 
-			string final = (string)str.DefaultValue;
+			return str;
+		}
 
-			if (str._hasLength)
+		public override Variant DefaultValue
+		{
+			get
 			{
-				var lenType = str.lengthType;
-				var len = str.length;
+				return base.DefaultValue;
+			}
+			set
+			{
+				string final = null;
 
-				if (lenType == LengthType.Chars)
+				if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
 				{
-					len /= 8;
-
-					if (str.NeedsExpand(final.Length, len, str.nullTerminated, final))
-					{
-						if (str.nullTerminated)
-							len -= 1;
-
-						final += str.MakePad((int)len - final.Length);
-					}
+					byte[] val = (byte[])value;
+					final = encoding.GetString(val);
+					if (!val.SequenceEqual(encoding.GetBytes(final)))
+						throw new PeachException("String value contains invalid " + stringType + " bytes.");
 				}
 				else
 				{
-					if (lenType == LengthType.Bits)
-					{
-						if ((len % 8) != 0)
-							throw new PeachException("Error, {2} string '{0}' has invalid length of {1} bits.", str.name, len, str.stringType);
+					final = (string)value;
+				}
 
-						len = len / 8;
-						lenType = LengthType.Bytes;
+				if (_hasLength)
+				{
+					var lenType = lengthType;
+					var len = length;
+
+					if (lenType == LengthType.Chars)
+					{
+						len /= 8;
+
+						if (NeedsExpand(final.Length, len, nullTerminated, final))
+						{
+							if (nullTerminated)
+								len -= 1;
+
+							final += MakePad((int)len - final.Length);
+						}
 					}
-
-					System.Diagnostics.Debug.Assert(lenType == LengthType.Bytes);
-
-					int actual = enc.GetByteCount(final);
-
-					if (str.NeedsExpand(actual, len, str.nullTerminated, final))
+					else
 					{
-						int nullLen = enc.GetByteCount("\0");
-						int padLen = enc.GetByteCount(new char[1] { str.padCharacter });
+						if (lenType == LengthType.Bits)
+						{
+							if ((len % 8) != 0)
+								throw new PeachException("Error, {2} string '{0}' has invalid length of {1} bits.", name, len, stringType);
 
-						int grow = (int)len - actual;
+							len = len / 8;
+							lenType = LengthType.Bytes;
+						}
 
-						if (str.nullTerminated)
-							grow -= nullLen;
+						System.Diagnostics.Debug.Assert(lenType == LengthType.Bytes);
 
-						if (grow < 0 || (grow % padLen) != 0)
-							throw new PeachException("Error, can not satisfy length requirement of {1} {2} when padding {3} string '{0}'.",
-								str.name, str.lengthType == LengthType.Bits ? len * 8 : len, str.lengthType.ToString().ToLower(), str.stringType);
+						int actual = encoding.GetByteCount(final);
 
-						final += str.MakePad(grow / padLen);
+						if (NeedsExpand(actual, len, nullTerminated, final))
+						{
+							int nullLen = encoding.GetByteCount("\0");
+							int padLen = encoding.GetByteCount(new char[1] { padCharacter });
+
+							int grow = (int)len - actual;
+
+							if (nullTerminated)
+								grow -= nullLen;
+
+							if (grow < 0 || (grow % padLen) != 0)
+								throw new PeachException("Error, can not satisfy length requirement of {1} {2} when padding {3} string '{0}'.",
+									name, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType);
+
+							final += MakePad(grow / padLen);
+						}
 					}
 				}
-			}
-			else if (str.nullTerminated && !final.EndsWith("\0"))
-			{
-				final += "\0";
-			}
+				else if (nullTerminated && !final.EndsWith("\0"))
+				{
+					final += "\0";
+				}
 
-			str.DefaultValue = new Variant(final);
-
-			return str;
+				base.DefaultValue = new Variant(final);
+			}
 		}
 
 		private string MakePad(int numPadChars)
