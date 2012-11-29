@@ -250,6 +250,65 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 		}
 
+		private void DoExpand(string enc, string lenType, int len, char pad, bool nullTerm, string expected, int finalLen)
+		{
+			string template = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String value=""Hello"" type=""{0}"" lengthType=""{1}"" length=""{2}"" padCharacter=""{3}"" nullTerminated=""{4}""/>
+	</DataModel>
+</Peach>";
+			string xml = string.Format(template, enc, lenType, len, pad, nullTerm.ToString().ToLower());
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+			Assert.AreNotEqual(null, str);
+
+			Assert.AreEqual(expected, (string)str.DefaultValue);
+			Assert.AreEqual(finalLen, str.Value.Stream.Length);
+		}
+
+		[Test]
+		public void ExpandTests()
+		{
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("ascii", "bits", 5, '_', true, "", 0);
+			});
+
+			DoExpand("ascii", "bytes", 10, '_', true, "Hello____\0", 10);
+			DoExpand("ascii", "bits", 80, '_', true, "Hello____\0", 10);
+			DoExpand("utf32", "bytes", 40, '_', true, "Hello____\0", 40);
+
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("utf32", "bytes", 21, '_', true, "", 0);
+			});
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				DoExpand("utf32", "bytes", 43, '_', true, "", 0);
+			});
+
+			DoExpand("utf8", "chars", 10, '_', true, "Hello____\0", 10);
+			DoExpand("utf16", "chars", 10, '_', true, "Hello____\0", 20);
+			DoExpand("utf16be", "chars", 10, '_', true, "Hello____\0", 20);
+			DoExpand("utf32", "chars", 10, '_', true, "Hello____\0", 40);
+
+			DoExpand("ascii", "chars", 10, '_', false, "Hello_____", 10);
+			DoExpand("ascii", "chars", 10, '_', true, "Hello____\0", 10);
+			DoExpand("ascii", "chars", 6, '_', false, "Hello_", 6);
+			DoExpand("ascii", "chars", 6, '_', true, "Hello\0", 6);
+			DoExpand("ascii", "chars", 5, '_', false, "Hello", 5);
+
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("ascii", "chars", 5, '_', true, "", 0);
+			});
+
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("ascii", "chars", 4, '_', true, "", 0);
+			});
+		}
+
 		[Test]
 		public void HexStringPad()
 		{
