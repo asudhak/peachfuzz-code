@@ -545,6 +545,8 @@ namespace Peach.Core.Analyzers
 							args["endian"] = child.getAttribute("endian");
 						if (child.hasAttribute("signed"))
 							args["signed"] = child.getAttribute("signed");
+						if (child.hasAttribute("valueType"))
+							args["valueType"] = child.getAttribute("valueType");
 
 						dataElementDefaults[typeof(Number)] = args;
 						break;
@@ -557,6 +559,8 @@ namespace Peach.Core.Analyzers
 							args["type"] = child.getAttribute("type");
 						if (child.hasAttribute("nullTerminated"))
 							args["nullTerminated"] = child.getAttribute("nullTerminated");
+						if (child.hasAttribute("valueType"))
+							args["valueType"] = child.getAttribute("valueType");
 
 						dataElementDefaults[typeof(Dom.String)] = args;
 						break;
@@ -571,6 +575,8 @@ namespace Peach.Core.Analyzers
 					case "Blob":
 						if (child.hasAttribute("lengthType"))
 							args["lengthType"] = child.getAttribute("lengthType");
+						if (child.hasAttribute("valueType"))
+							args["valueType"] = child.getAttribute("valueType");
 
 						dataElementDefaults[typeof(Blob)] = args;
 						break;
@@ -920,9 +926,16 @@ namespace Peach.Core.Analyzers
 				value = value.Replace("\\t", "\t");
 			}
 
-			if (node.hasAttribute("valueType") && value != null)
+			string valueType = null;
+
+			if (node.hasAttribute("valueType"))
+				valueType = node.getAttribute("valueType");
+			else if (hasDefaultAttribute(elem.GetType(), "valueType"))
+				valueType = getDefaultAttribute(elem.GetType(), "valueType");
+
+			if (valueType != null && value != null)
 			{
-				switch (node.getAttribute("valueType").ToLower())
+				switch (valueType.ToLower())
 				{
 					case "hex":
 						// Handle hex data.
