@@ -164,6 +164,7 @@ namespace Peach.Core
 
 		public static Assembly LoadAssembly(string fullPath)
 		{
+			// http://mikehadlow.blogspot.com/2011/07/detecting-and-changing-files-internet.html
 			var zone = Zone.CreateFromUrl(fullPath);
 			if (zone.SecurityZone > SecurityZone.MyComputer)
 				throw new SecurityException("The assemly is part of the " + zone.SecurityZone + " Security Zone and loading has been blocked.");
