@@ -56,7 +56,13 @@ namespace Peach.Core.Fixups
 			foreach (byte b in data)
 				lrc ^= b;
 
-			return new Variant(Convert.ToChar(lrc).ToString());
+			if (parent is Dom.String)
+				return new Variant(lrc.ToString());
+
+			if (parent is Dom.Number)
+				return new Variant((uint)lrc);
+
+			return new Variant(new byte[] { lrc });
 		}
 	}
 }
