@@ -148,33 +148,31 @@ namespace Peach
 
 				// Check OS and load side assembly
 				string osAssembly = null;
+
+				switch (Platform.GetOS())
+				{
+					case Platform.OS.Mac:
+						osAssembly = "Peach.Core.OS.OSX.dll";
+						break;
+					case Platform.OS.Linux:
+						osAssembly = "Peach.Core.OS.Linux.dll";
+						break;
+					case Platform.OS.Windows:
+						osAssembly = "Peach.Core.OS.Windows.dll";
+						break;
+				}
+
 				try
 				{
-					switch (Platform.GetOS())
-					{
-						case Platform.OS.Mac:
-							osAssembly = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-								"Peach.Core.OS.OSX.dll");
-							Assembly.LoadFrom(osAssembly);
-							break;
-						case Platform.OS.Linux:
-							osAssembly = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-								"Peach.Core.OS.Linux.dll");
-							Assembly.LoadFrom(osAssembly);
-							break;
-						case Platform.OS.Windows:
-							osAssembly = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-								"Peach.Core.OS.Windows.dll");
-							Assembly.LoadFrom(osAssembly);
-							break;
-					}
+					string fullPath = System.IO.Path.Combine(
+						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+						osAssembly);
+
+					ClassLoader.LoadAssembly(fullPath);
 				}
 				catch (Exception ex)
 				{
-					throw new PeachException(ex.Message);
+					throw new PeachException("Error, could not load platform assembly '{0}'.  {1}", osAssembly, ex.Message);
 				}
 
 				if (definedValuesFile != null)

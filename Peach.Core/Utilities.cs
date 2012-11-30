@@ -39,6 +39,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
+using System.Security;
+using System.Security.Policy;
 
 namespace Peach.Core
 {
@@ -148,7 +150,7 @@ namespace Peach.Core
 
 					try
 					{
-						Assembly asm = Assembly.LoadFrom(file);
+						Assembly asm = LoadAssembly(file);
 						asm.GetExportedTypes(); // make sure we can load exported types.
 						AssemblyCache.Add(file, asm);
 					}
@@ -158,6 +160,16 @@ namespace Peach.Core
 					}
 				}
 			}
+		}
+
+		public static Assembly LoadAssembly(string fullPath)
+		{
+			var zone = Zone.CreateFromUrl(fullPath);
+			if (zone.SecurityZone > SecurityZone.MyComputer)
+				throw new SecurityException("The assemly is part of the " + zone.SecurityZone + " Security Zone and loading has been blocked.");
+
+			Assembly asm = Assembly.LoadFrom(fullPath);
+			return asm;
 		}
 
 		/// <summary>

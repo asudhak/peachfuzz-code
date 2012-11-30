@@ -68,11 +68,11 @@ namespace PeachFuzzBang
 
 			try
 			{
-				Assembly.LoadFrom(osAssembly);
+				ClassLoader.LoadAssembly(osAssembly);
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Could not load platform assembly \"" + name + "\".", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Could not load platform assembly \"" + name + "\".\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Console.WriteLine(ex.Message);
 			}
 		}
