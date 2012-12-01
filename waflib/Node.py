@@ -351,7 +351,7 @@ class Node(object):
 			def build(bld):
 				n1 = bld.path.find_node('foo/bar/xyz.txt')
 				n2 = bld.path.find_node('foo/stuff/')
-				n1.path_from(n2) # './bar/xyz.txt'
+				n1.path_from(n2) # '../bar/xyz.txt'
 
 		:param node: path to use as a reference
 		:type node: :py:class:`waflib.Node.Node`
