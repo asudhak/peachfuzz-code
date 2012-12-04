@@ -436,7 +436,7 @@ namespace Peach.Core.Test.Publishers
 				e.config = config;
 				e.startFuzzing(dom, config);
 
-				if (Platform.GetOS() == Platform.OS.Mac)
+				if (Platform.GetOS() == Platform.OS.OSX)
 				{
 					// Mac raw sockets don't support TCP or UDP receptions.
 					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
@@ -476,7 +476,7 @@ namespace Peach.Core.Test.Publishers
 				e.config = config;
 				e.startFuzzing(dom, config);
 
-				if (Platform.GetOS() == Platform.OS.Mac)
+				if (Platform.GetOS() == Platform.OS.OSX)
 				{
 					// Mac raw sockets don't support TCP or UDP receptions.
 					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw

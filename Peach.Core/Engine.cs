@@ -276,7 +276,7 @@ namespace Peach.Core
 				foreach (Dom.Agent agent in test.agents.Values)
 				{
 					// Only use agent if on correct platform
-					if (agent.platform == Platform.OS.unknown || agent.platform == Platform.GetOS())
+					if ((agent.platform & Platform.GetOS()) != Platform.OS.None)
 						context.agentManager.AgentConnect(agent);
 				}
 

@@ -63,7 +63,7 @@ namespace Peach.Core.Dom
 		/// Limit Agent to specific platform.  Platform of unknown is 
 		/// any OS.
 		/// </summary>
-		public Platform.OS platform = Platform.OS.unknown;
+		public Platform.OS platform = Platform.OS.All;
 
 		/// <summary>
 		/// List of monitors Agent should spin up.
