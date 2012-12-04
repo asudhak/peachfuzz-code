@@ -1,3 +1,7 @@
+NEW IN WAF 1.7.7
+----------------
+* XLC and XLF detection fixes #1230
+
 NEW IN WAF 1.7.6
 ----------------
 * Better encapsulation of conf.check_cfg(uselib_store=...) defines #1212
