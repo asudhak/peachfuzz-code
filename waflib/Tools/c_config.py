@@ -1131,7 +1131,7 @@ def get_xlc_version(conf, cc):
 		conf.fatal('Could not find xlc %r' % cmd)
 
 	# the intention is to catch the 8.0 in "IBM XL C/C++ Enterprise Edition V8.0 for AIX..."
-	for v in (r"IBM XL C/C\+\+.* V(?P<major>\d*)\.(?P<minor>\d*)"):
+	for v in (r"IBM XL C/C\+\+.* V(?P<major>\d*)\.(?P<minor>\d*)",):
 		version_re = re.compile(v, re.I).search
 		match = version_re(out or err)
 		if match:
