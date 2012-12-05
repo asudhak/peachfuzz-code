@@ -221,7 +221,7 @@ if hasattr(os, 'O_NOINHERIT'):
 
 		if sys.hexversion > 0x3000000 and not 'b' in m:
 			m += 'b'
-			f = open(f, m)
+			f = os.fdopen(fd, m)
 			try:
 				txt = f.read()
 			finally:
