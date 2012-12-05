@@ -35,6 +35,8 @@ namespace Peach.Core.Test
 			config.LoggingRules.Add(rule);
 
 			LogManager.Configuration = config;
+
+			Peach.Core.Platform.LoadAssembly();
 		}
 	}
 }

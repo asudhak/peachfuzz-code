@@ -1024,6 +1024,7 @@
     <Compile Include="Debuggers\DebugEngine\WindowsDebugEngine.cs" />
     <Compile Include="Debuggers\WindowsSystem\SystemDebugger.cs" />
     <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
+    <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\ComPublisher.cs" />
     <Compile Include="Publishers\Com\IComContainer.cs" />

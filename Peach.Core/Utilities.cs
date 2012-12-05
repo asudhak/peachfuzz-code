@@ -45,62 +45,6 @@ using System.Security.Policy;
 namespace Peach.Core
 {
 	/// <summary>
-	/// Helper class to determine the OS/Platform we are on.  The built in 
-	/// method returns incorrect results.
-	/// </summary>
-	public static class Platform
-	{
-		[DllImport("libc")]
-		static extern int uname(IntPtr buf);
-		static private bool mIsWindows;
-		static private bool mIsMac;
-		
-		public enum OS { None = 0, Windows = 1, OSX = 2, Linux = 4, Unix = 6, All = 7 };
-		public enum Architecture { x64, x86 };
-
-		static public Architecture GetArch()
-		{
-			if (IntPtr.Size == 64)
-				return Architecture.x64;
-
-			return Architecture.x86;
-		}
-
-		static public OS GetOS()
-		{
-			if (mIsWindows = (System.IO.Path.DirectorySeparatorChar == '\\')) return OS.Windows;
-			if (mIsMac = (!mIsWindows && IsRunningOnMac())) return OS.OSX;
-			if (!mIsMac && System.Environment.OSVersion.Platform == PlatformID.Unix) return OS.Linux;
-			return OS.None;
-		}
-
-
-		//From Managed.Windows.Forms/XplatUI
-		static bool IsRunningOnMac()
-		{
-			IntPtr buf = IntPtr.Zero;
-			try
-			{
-				buf = Marshal.AllocHGlobal(8192);
-				// This is a hacktastic way of getting sysname from uname ()
-				if (uname(buf) == 0)
-				{
-					string os = Marshal.PtrToStringAnsi(buf);
-					if (os == "Darwin") return true;
-				}
-			}
-			catch
-			{
-			}
-			finally
-			{
-				if (buf != IntPtr.Zero) Marshal.FreeHGlobal(buf);
-			}
-			return false;
-		}
-	}
-
-	/// <summary>
 	/// Helper class to add a debug listener so asserts get written to the console.
 	/// </summary>
 	public class AssertWriter : System.Diagnostics.TraceListener

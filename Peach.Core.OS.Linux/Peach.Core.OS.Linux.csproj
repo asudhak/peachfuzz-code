@@ -325,6 +325,7 @@
   <ItemGroup>
     <Compile Include="Agent\Monitors\LinuxCrashMonitor.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
+    <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\RawEtherPublisher.cs" />
   </ItemGroup>
