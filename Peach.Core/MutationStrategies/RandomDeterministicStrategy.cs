@@ -36,6 +36,7 @@ namespace Peach.Core.MutationStrategies
 {
 	[DefaultMutationStrategy]
 	[MutationStrategy("RandomDeterministic")]
+	[Serializable]
 	public class RandomDeterministicStrategy : Sequential
 	{
 		public RandomDeterministicStrategy(Dictionary<string, Variant> args)

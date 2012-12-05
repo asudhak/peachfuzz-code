@@ -5,8 +5,10 @@ using System.Text;
 
 namespace Peach.Core
 {
+	[Serializable]
 	public class Random
 	{
+		[NonSerialized]
 		TinyMT32 _prng;
 		protected uint _seed;
 

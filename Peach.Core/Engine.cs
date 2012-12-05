@@ -43,11 +43,13 @@ namespace Peach.Core
 	/// <summary>
 	/// The main Peach fuzzing engine!
 	/// </summary>
+	[Serializable]
 	public class Engine
 	{
 		[NonSerialized]
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
+		[NonSerialized]
 		public Watcher watcher = null;
 		public RunContext context = null;
 		public RunConfiguration config = null;
@@ -241,7 +243,7 @@ namespace Peach.Core
 
 				if (context.config.range)
 				{
-					logger.Debug("Engine::runTest: context.config.range == true, start: " +
+					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);
 
 					iterationStart = context.config.rangeStart;
@@ -249,15 +251,15 @@ namespace Peach.Core
 				}
 				else if (context.config.skipToIteration > 1)
 				{
-					logger.Debug("Engine::runTest: context.config.skipToIteration == " + 
+					logger.Debug("runTest: context.config.skipToIteration == " + 
 						context.config.skipToIteration);
 
 					iterationStart = context.config.skipToIteration;
 				}
 
 				// First iteration is always a control/recording iteration
-					context.controlIteration = true;
-					context.controlRecordingIteration = true;
+				context.controlIteration = true;
+				context.controlRecordingIteration = true;
 
 				OnTestStarting(context);
 
@@ -277,7 +279,7 @@ namespace Peach.Core
 					{
 						if (context.config.singleIteration && !context.controlIteration && iterationCount == 1)
 						{
-							logger.Debug("Engine::runTest: context.config.singleIteration == true");
+							logger.Debug("runTest: context.config.singleIteration == true");
 							break;
 						}
 
@@ -291,6 +293,14 @@ namespace Peach.Core
 							if (IterationStarting != null)
 								IterationStarting(context, iterationCount, iterationTotal.HasValue ? iterationStop : iterationTotal);
 
+							if (context.controlIteration)
+							{
+								if (context.controlRecordingIteration)
+									logger.Debug("runTest: Performing recording iteration.");
+								else
+									logger.Debug("runTest: Performing control iteration.");
+							}
+
 							context.agentManager.IterationStarting(iterationCount, false);
 
 							test.stateModel.Run(context);
@@ -303,13 +313,13 @@ namespace Peach.Core
 
 							if (context.controlIteration)
 							{
-								logger.Debug("Engine::runTest: SoftException on control iteration");
+								logger.Debug("runTest: SoftException on control iteration");
 								if (se.InnerException != null)
 									throw new PeachException(se.InnerException.Message);
 								throw new PeachException(se.Message);
 							}
 
-							logger.Debug("Engine::runTest: SoftException, skipping to next iteration");
+							logger.Debug("runTest: SoftException, skipping to next iteration");
 						}
 						catch (PathException)
 						{
@@ -317,11 +327,11 @@ namespace Peach.Core
 							// They indicate we should move to the next
 							// iteration.
 
-							logger.Debug("Engine::runTest: PathException, skipping to next iteration");
+							logger.Debug("runTest: PathException, skipping to next iteration");
 						}
 						catch (System.OutOfMemoryException)
 						{
-							logger.Debug("Engine::runTest: " +
+							logger.Debug("runTest: " +
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
 						}
 						finally
@@ -422,7 +432,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 						if (context.faults.Count > 0)
 						{
-							logger.Debug("Engine::runTest: detected fault on iteration " + iterationCount);
+							logger.Debug("runTest: detected fault on iteration " + iterationCount);
 
 							foreach (Fault fault in context.faults)
 								fault.iteration = iterationCount;
@@ -445,7 +455,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 								context.reproducingFault = false;
 								context.reproducingIterationJumpCount = 1;
 
-								logger.Debug("Engine::runTest: Reproduced fault, continuing fuzzing at iteration " + iterationCount);
+								logger.Debug("runTest: Reproduced fault, continuing fuzzing at iteration " + iterationCount);
 							}
 						}
 						else if (context.reproducingFault)
@@ -455,14 +465,14 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 							if (context.reproducingInitialIteration - iterationCount > context.reproducingMaxBacksearch)
 							{
-								logger.Debug("Engine::runTest: Giving up reproducing fault, reached max backsearch.");
+								logger.Debug("runTest: Giving up reproducing fault, reached max backsearch.");
 
 								context.reproducingFault = false;
 								iterationCount = context.reproducingInitialIteration;
 							}
 							else
 							{
-								logger.Debug("Engine::runTest: " +
+								logger.Debug("runTest: " +
 									"Moving backwards " + context.reproducingIterationJumpCount + " iterations to reproduce fault.");
 							}
 
@@ -472,7 +482,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 						if (context.agentManager.MustStop())
 						{
-							logger.Debug("Engine::runTest: agents say we must stop!");
+							logger.Debug("runTest: agents say we must stop!");
 
 							throw new PeachException("Error, agent monitor stopped run!");
 						}
@@ -511,7 +521,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 					{
 						if (rtex.ReproducingFault)
 						{
-							logger.Debug("Engine::runTest: Attempting to reproduce fault.");
+							logger.Debug("runTest: Attempting to reproduce fault.");
 
 							context.reproducingFault = true;
 							context.reproducingInitialIteration = iterationCount;
@@ -528,11 +538,11 @@ to execute same as initial control.  State " + state.name + "was not performed."
 								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
 						}
 
-						logger.Debug("Engine::runTest: replaying iteration " + iterationCount);
+						logger.Debug("runTest: replaying iteration " + iterationCount);
 					}
 					catch (RedoIterationException rte)
 					{
-						logger.Debug("Engine::runTest: redoing test iteration for the " + redoCount + " time.");
+						logger.Debug("runTest: redoing test iteration for the " + redoCount + " time.");
 
 						// Repeat the same iteration unless
 						// we have already retried 3 times.
@@ -552,14 +562,8 @@ to execute same as initial control.  State " + state.name + "was not performed."
 			catch (MutatorCompleted)
 			{
 				// Ignore, signals end of fuzzing run
-				logger.Debug("Engine::runTest: MutatorCompleted exception, ending fuzzing");
+				logger.Debug("runTest: MutatorCompleted exception, ending fuzzing");
 			}
-			// TODO: Catch keyboard interrupt
-			//catch (Exception e)
-			//{
-			//    OnTestError(context, e);
-			//    throw e;
-			//}
 			finally
 			{
 				foreach (Publisher publisher in context.test.publishers.Values)

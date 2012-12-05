@@ -37,14 +37,17 @@ using NLog;
 namespace Peach.Core.MutationStrategies
 {
 	[MutationStrategy("Sequential")]
-	[MutationStrategy("Sequencial")] // for backwards compatibility with older PITs
+	[Serializable]
 	public class Sequential : MutationStrategy
 	{
 		protected class Iterations : List<Tuple<string, Mutator>> { }
 
+		[NonSerialized]
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
+		[NonSerialized]
 		protected Iterations.Enumerator _enumerator;
+		[NonSerialized]
 		protected Iterations _iterations = new Iterations();
 
 		private List<Type> _mutators = null;
@@ -64,6 +67,7 @@ namespace Peach.Core.MutationStrategies
 			context.config.randomSeed = 31337;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.State.Starting += new StateStartingEventHandler(State_Starting);
 			context.engine.IterationFinished += new Engine.IterationFinishedEventHandler(engine_IterationFinished);
 			context.engine.IterationStarting += new Engine.IterationStartingEventHandler(engine_IterationStarting);
 			_mutators = new List<Type>();
@@ -129,10 +133,6 @@ namespace Peach.Core.MutationStrategies
 				_enumerator.Current.Item2.mutation = 0;
 			}
 
-			// Iteration 1 is a control iteration, one next iteration value == 2.  If
-			// left alown it will cause us to skip the first iteration.  We decrement
-			// by the number of control iterations to return with needed == 0.
-
 			uint needed = value - _iteration;
 
 			if (needed == 0)
@@ -168,6 +168,24 @@ namespace Peach.Core.MutationStrategies
 			else if(_context.controlIteration && _context.controlRecordingIteration)
 				RecordDataModel(action);
 		}
+
+		void State_Starting(State state)
+		{
+			if (_context.controlIteration && _context.controlRecordingIteration)
+			{
+				foreach (Type t in _mutators)
+				{
+					// can add specific mutators here
+					if (SupportedState(t, state))
+					{
+						var mutator = GetMutatorInstance(t, state);
+						_iterations.Add(new Tuple<string, Mutator>("STATE_"+state.name, mutator));
+						_count += (uint)mutator.count;
+					}
+				}
+			}
+		}
+
 
 		// Recursivly walk all DataElements in a container.
 		// Add the element and accumulate any supported mutators.
@@ -211,6 +229,26 @@ namespace Peach.Core.MutationStrategies
 			}
 		}
 
+		/// <summary>
+		/// Allows mutation strategy to affect state change.
+		/// </summary>
+		/// <param name="state"></param>
+		/// <returns></returns>
+		public override State MutateChangingState(State state)
+		{
+			if (_context.controlIteration)
+				return state;
+
+			if ("STATE_" + state.name == _enumerator.Current.Item1)
+			{
+				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
+				logger.Debug("MutateChangingState: Mutator: " + _enumerator.Current.Item2.name);
+				return _enumerator.Current.Item2.changeState(state);
+			}
+
+			return state;
+		}
+
 		private void ApplyMutation(DataModel dataModel)
 		{
 			var fullName = _enumerator.Current.Item1;
@@ -220,8 +258,8 @@ namespace Peach.Core.MutationStrategies
 			{
 				var mutator = _enumerator.Current.Item2;
 				OnMutating(fullName, mutator.name);
-				logger.Debug("Action_Starting: Fuzzing: " + fullName);
-				logger.Debug("Action_Starting: Mutator: " + mutator.name);
+				logger.Debug("ApplyMutation: Fuzzing: " + fullName);
+				logger.Debug("ApplyMutation: Mutator: " + mutator.name);
 				mutator.sequentialMutation(dataElement);
 			}
 		}

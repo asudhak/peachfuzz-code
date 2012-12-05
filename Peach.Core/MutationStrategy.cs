@@ -104,6 +104,16 @@ namespace Peach.Core
 		}
 
 		/// <summary>
+		/// Allows mutation strategy to affect state change.
+		/// </summary>
+		/// <param name="state"></param>
+		/// <returns></returns>
+		public virtual State MutateChangingState(State state)
+		{
+			return state;
+		}
+
+		/// <summary>
 		/// Call supportedDataElement method on Mutator type.
 		/// </summary>
 		/// <param name="mutator"></param>
@@ -119,11 +129,46 @@ namespace Peach.Core
 			return (bool)supportedDataElement.Invoke(null, args);
 		}
 
+		/// <summary>
+		/// Call supportedDataElement method on Mutator type.
+		/// </summary>
+		/// <param name="mutator"></param>
+		/// <param name="elem"></param>
+		/// <returns>Returns true or false</returns>
+		protected bool SupportedState(Type mutator, State elem)
+		{
+			MethodInfo supportedState = mutator.GetMethod("supportedState");
+			if (supportedState == null)
+				return false;
+
+			object[] args = new object[1];
+			args[0] = elem;
+
+			return (bool)supportedState.Invoke(null, args);
+		}
+
 		protected Mutator GetMutatorInstance(Type t, DataElement obj)
 		{
 			try
 			{
 				Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(DataElement) }).Invoke(new object[] { obj });
+				mutator.context = this;
+				return mutator;
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+					throw ex.InnerException;
+				else
+					throw;
+			}
+		}
+
+		protected Mutator GetMutatorInstance(Type t, State obj)
+		{
+			try
+			{
+				Mutator mutator = (Mutator)t.GetConstructor(new Type[] { typeof(State) }).Invoke(new object[] { obj });
 				mutator.context = this;
 				return mutator;
 			}

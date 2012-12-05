@@ -239,7 +239,16 @@ namespace Peach.Core.Dom
 					}
 					catch (ActionChangeStateException ase)
 					{
-						currentState = ase.changeToState;
+						var newState = context.test.strategy.MutateChangingState(ase.changeToState);
+						
+						if(newState == ase.changeToState)
+							logger.Debug("Run(): Changing to state \"" + newState.name + "\".");
+						else
+							logger.Debug("Run(): Changing state mutated.  Switching to \"" + newState.name + 
+								"\" instead of \""+ase.changeToState+"\".");
+						
+						currentState.OnChanging(newState);
+						currentState = newState;
 					}
 				}
 			}
