@@ -247,12 +247,6 @@ namespace Peach.Core
 					iterationStart = context.config.rangeStart;
 					iterationStop = context.config.rangeStop;
 				}
-				else if (context.config.singleIteration)
-				{
-					logger.Debug("Engine::runTest: context.config.singleIteration == true");
-
-					iterationStop = 2;
-				}
 				else if (context.config.skipToIteration > 1)
 				{
 					logger.Debug("Engine::runTest: context.config.skipToIteration == " + 
@@ -281,6 +275,12 @@ namespace Peach.Core
 				{
 					try
 					{
+						if (context.config.singleIteration && !context.controlIteration && iterationCount == 1)
+						{
+							logger.Debug("Engine::runTest: context.config.singleIteration == true");
+							break;
+						}
+
 						mutationStrategy.Iteration = iterationCount;
 
 						// Make sure we are not hanging on to old faults.
