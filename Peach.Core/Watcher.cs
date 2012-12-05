@@ -39,6 +39,7 @@ namespace Peach.Core
 	/// Watches the Peach Engine events.  This is how to 
 	/// add a UI or logging.
 	/// </summary>
+	[Serializable]
 	public abstract class Watcher
 	{
 		public Watcher()

@@ -43,7 +43,7 @@ namespace Peach.Core.Dom
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);
 
-    //[Serializable]
+    [Serializable]
 	public class StateModel : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

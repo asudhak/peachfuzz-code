@@ -664,8 +664,10 @@ namespace Peach.Core.Dom
 		InOut
 	}
 
+	[Serializable]
 	public class ActionParameter : IPitSerializable
 	{
+		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
 
@@ -696,8 +698,10 @@ namespace Peach.Core.Dom
     }
   }
 
+	[Serializable]
 	public class ActionResult
 	{
+		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
 
@@ -720,6 +724,7 @@ namespace Peach.Core.Dom
 		}
 	}
 
+	[Serializable]
 	public class ActionChangeStateException : Exception
 	{
 		public State changeToState;

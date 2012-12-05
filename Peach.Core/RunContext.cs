@@ -68,6 +68,11 @@ namespace Peach.Core
 		public RunConfiguration config = null;
 
 		/// <summary>
+		/// Engine instance for this run
+		/// </summary>
+		public Engine engine = null;
+
+		/// <summary>
 		/// Dom to use for this run
 		/// </summary>
 		public Dom.Dom dom = null;
@@ -86,6 +91,7 @@ namespace Peach.Core
 		/// <remarks>
 		/// Currently the Engine code sets this.
 		/// </remarks>
+		[NonSerialized]
 		public AgentManager agentManager = null;
 
 		public bool needDataModel = true;

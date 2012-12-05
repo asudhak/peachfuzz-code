@@ -45,11 +45,22 @@ namespace Peach.Core.Dom
 	{
 		public string _name = null;
 		public object parent = null;
+		
+		[NonSerialized]
 		public Logger logger = null;
+
 		public StateModel stateModel = null;
+
+		[NonSerialized]
 		public MutationStrategy strategy = null;
+		
+		[NonSerialized]
 		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
+
+		[NonSerialized]
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
+
+		[NonSerialized]
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
 
 		/// <summary>

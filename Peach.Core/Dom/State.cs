@@ -42,6 +42,7 @@ namespace Peach.Core.Dom
 	public delegate void StateFinishedEventHandler(State state);
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
+	[Serializable]
 	public class State : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

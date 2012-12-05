@@ -49,7 +49,7 @@ namespace Peach.Core.MutationStrategies
 
 		private List<Type> _mutators = null;
 		private uint _count = 1;
-		private uint _iteration = 0;
+		private uint _iteration = 1;
 
 		public Sequential(Dictionary<string, Variant> args)
 			: base(args)
@@ -64,8 +64,27 @@ namespace Peach.Core.MutationStrategies
 			context.config.randomSeed = 31337;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			context.engine.IterationFinished += new Engine.IterationFinishedEventHandler(engine_IterationFinished);
+			context.engine.IterationStarting += new Engine.IterationStartingEventHandler(engine_IterationStarting);
 			_mutators = new List<Type>();
 			_mutators.AddRange(EnumerateValidMutators());
+		}
+
+		void engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
+		{
+			if (context.controlIteration && context.controlRecordingIteration)
+			{
+				// Starting to record
+				_iterations = new Iterations();
+				_count = 1;
+			}
+		}
+
+		void engine_IterationFinished(RunContext context, uint currentIteration)
+		{
+			// If we were recording, end of iteration is end of recording
+			if(context.controlIteration && context.controlRecordingIteration)
+				OnDataModelRecorded();	
 		}
 
 		public override void Finalize(RunContext context, Engine engine)
@@ -94,28 +113,25 @@ namespace Peach.Core.MutationStrategies
 
 		private void SetIteration(uint value)
 		{
-			if (value == 0)
+			System.Diagnostics.Debug.Assert(value > 0);
+
+			if (_context.controlIteration && _context.controlRecordingIteration)
 			{
-				_iterations = new Iterations();
-				_count = 1;
-				_iteration = 0;
+				_iteration = value;
 				return;
 			}
 
-			System.Diagnostics.Debug.Assert(value > 0);
-			System.Diagnostics.Debug.Assert(value < Count);
-
-			// When we transition out of iteration 0, signal the data model has been recorded
-			if (_iteration == 0 && value > 0)
-				OnDataModelRecorded();
-
-			if (_iteration == 0 || value < _iteration)
+			if (_iteration == 1 || value < _iteration)
 			{
 				_iteration = 1;
 				_enumerator = _iterations.GetEnumerator();
 				_enumerator.MoveNext();
 				_enumerator.Current.Item2.mutation = 0;
 			}
+
+			// Iteration 1 is a control iteration, one next iteration value == 2.  If
+			// left alown it will cause us to skip the first iteration.  We decrement
+			// by the number of control iterations to return with needed == 0.
 
 			uint needed = value - _iteration;
 
@@ -146,9 +162,10 @@ namespace Peach.Core.MutationStrategies
 			if (!(action.type == ActionType.Output || action.type == ActionType.SetProperty || action.type == ActionType.Call))
 				return;
 
-			if (_iteration > 0 && !_context.controlIteration)
+			if (!_context.controlIteration)
 				MutateDataModel(action);
-			else if(_iteration == 0)
+
+			else if(_context.controlIteration && _context.controlRecordingIteration)
 				RecordDataModel(action);
 		}
 
@@ -178,7 +195,7 @@ namespace Peach.Core.MutationStrategies
 		private void RecordDataModel(Core.Dom.Action action)
 		{
 			// ParseDataModel should only be called during iteration 0
-			System.Diagnostics.Debug.Assert(_iteration == 0);
+			System.Diagnostics.Debug.Assert(_context.controlIteration && _context.controlRecordingIteration);
 
 			if (action.dataModel != null)
 			{
@@ -214,6 +231,7 @@ namespace Peach.Core.MutationStrategies
 			// MutateDataModel should only be called after ParseDataModel
 			System.Diagnostics.Debug.Assert(_count > 1);
 			System.Diagnostics.Debug.Assert(_iteration > 0);
+			System.Diagnostics.Debug.Assert(!_context.controlIteration);
 
 			if (action.dataModel != null)
 			{

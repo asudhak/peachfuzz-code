@@ -42,7 +42,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 0, 1000);
+			RunEngine(xml, 1, 1001);
 
 			// verify values
 			Assert.AreEqual(999, mutations.Count);
@@ -82,7 +82,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 0, 1000);
+			RunEngine(xml, 1, 1001);
 
 			// verify values
 			int dm1 = 0;
@@ -143,7 +143,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 0, 1000);
+			RunEngine(xml, 1, 1001);
 
 			// verify values
 			// Random number between 1 and 5 is on average 3, for 1000 iterations is 3000 mutations
@@ -201,7 +201,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 0, 1000);
+			RunEngine(xml, 1, 1001);
 
 			// Sanity check
 			Assert.AreEqual(3000, actions.Count);
@@ -212,7 +212,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Reset the DataModelCollector
 			ResetContainers();
 
-			RunEngine(xml, 0, 1000);
+			RunEngine(xml, 1, 1001);
 
 			// Verify
 			VerifySameResults(oldStrategies, oldActions);
@@ -268,7 +268,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 0, 1000);
+			RunEngine(xml, 1, 1001);
 
 			// Sanity check
 			Assert.AreEqual(3000, actions.Count);
@@ -334,8 +334,8 @@ namespace Peach.Core.Test.MutationStrategies
 			dom.tests[0].includedMutators.Add("StringCaseMutator");
 
 			RunConfiguration config = new RunConfiguration();
-			config.rangeStart = 0;
-			config.rangeStop = 50;
+			config.rangeStart = 1;
+			config.rangeStop = 51;
 			config.range = true;
 			config.randomSeed = 12345;
 
@@ -419,14 +419,14 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunSwitchTest(xml, 0, 100);
+			RunSwitchTest(xml, 1, 101);
 			Assert.AreEqual(200, dataModels.Count);
 			var oldDataModels = dataModels;
 
 			ResetContainers();
 			Assert.AreEqual(0, dataModels.Count);
 
-			RunSwitchTest(xml, 47, 100);
+			RunSwitchTest(xml, 48, 101);
 			Assert.AreEqual(108, dataModels.Count);
 
 			oldDataModels.RemoveRange(0, oldDataModels.Count - dataModels.Count);
