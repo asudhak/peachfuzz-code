@@ -151,7 +151,7 @@ namespace Peach
 
 				switch (Platform.GetOS())
 				{
-					case Platform.OS.Mac:
+					case Platform.OS.OSX:
 						osAssembly = "Peach.Core.OS.OSX.dll";
 						break;
 					case Platform.OS.Linux:
@@ -198,7 +198,7 @@ namespace Peach
 							switch (getXmlAttribute(node, "platform").ToLower())
 							{
 								case "osx":
-									if (Platform.GetOS() != Platform.OS.Mac)
+									if (Platform.GetOS() != Platform.OS.OSX)
 										continue;
 									break;
 								case "linux":

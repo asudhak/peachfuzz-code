@@ -1441,7 +1441,7 @@ namespace Peach.Core.Analyzers
 								parent.agents[refName].platform = Platform.OS.Windows;
 								break;
 							case "osx":
-								parent.agents[refName].platform = Platform.OS.Mac;
+								parent.agents[refName].platform = Platform.OS.OSX;
 								break;
 							case "linux":
 							case "unix":

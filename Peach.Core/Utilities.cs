@@ -55,7 +55,7 @@ namespace Peach.Core
 		static private bool mIsWindows;
 		static private bool mIsMac;
 		
-		public enum OS { Windows, Mac, Linux, unknown };
+		public enum OS { None = 0, Windows = 1, OSX = 2, Linux = 4, Unix = 6, All = 7 };
 		public enum Architecture { x64, x86 };
 
 		static public Architecture GetArch()
@@ -69,9 +69,9 @@ namespace Peach.Core
 		static public OS GetOS()
 		{
 			if (mIsWindows = (System.IO.Path.DirectorySeparatorChar == '\\')) return OS.Windows;
-			if (mIsMac = (!mIsWindows && IsRunningOnMac())) return OS.Mac;
+			if (mIsMac = (!mIsWindows && IsRunningOnMac())) return OS.OSX;
 			if (!mIsMac && System.Environment.OSVersion.Platform == PlatformID.Unix) return OS.Linux;
-			return OS.unknown;
+			return OS.None;
 		}
 
 

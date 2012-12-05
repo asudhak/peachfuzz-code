@@ -95,7 +95,7 @@ namespace PeachFuzzBang
 
 			switch (os)
 			{
-				case Platform.OS.Mac:
+				case Platform.OS.OSX:
 					LoadPlatformAssembly("Peach.Core.OS.OSX.dll");
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
@@ -282,7 +282,7 @@ namespace PeachFuzzBang
 
 				switch (Platform.GetOS())
 				{
-					case Platform.OS.Mac:
+					case Platform.OS.OSX:
 						if (radioButtonOSXCrashReporter.Checked)
 						{
 							monitor.cls = "CrashReporter";

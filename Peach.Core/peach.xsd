@@ -1446,7 +1446,7 @@
 						<xs:attribute name="platform" use="optional">
 							<xs:annotation>
 								<xs:documentation>
-									Specify which platform this Agent is used for (defaults to any).
+									Specify which platform this Agent is used for (defaults to Any).
 								</xs:documentation>
 							</xs:annotation>
 							<xs:simpleType>
@@ -1458,6 +1458,13 @@
 									</xs:simpleType>
 									<xs:simpleType>
 										<xs:restriction base="xs:string">
+											<xs:enumeration value="None">
+												<xs:annotation>
+													<xs:documentation>
+														No platform (disabled)
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
 											<xs:enumeration value="Windows">
 												<xs:annotation>
 													<xs:documentation>

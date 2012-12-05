@@ -67,7 +67,7 @@ namespace Peach.Core.Analysis
 		{
 			pinExecutables.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
 			pinExecutables.Add(Platform.OS.Linux, new Dictionary<Platform.Architecture, string>());
-			pinExecutables.Add(Platform.OS.Mac, new Dictionary<Platform.Architecture, string>());
+			pinExecutables.Add(Platform.OS.OSX, new Dictionary<Platform.Architecture, string>());
 
 			pinExecutables[Platform.OS.Windows][Platform.Architecture.x86] = @"pin\pin-2.12-54730-msvc10-windows\ia32\bin\pin.exe";
 			pinExecutables[Platform.OS.Windows][Platform.Architecture.x64] = @"pin\pin-2.12-54730-msvc10-windows\intel64\bin\pin.exe";
@@ -75,12 +75,12 @@ namespace Peach.Core.Analysis
 			pinExecutables[Platform.OS.Linux][Platform.Architecture.x86] = @"pin/pin-2.12-54730-gcc.4.4.7-linux/ia32/bin/pinbin";
 			pinExecutables[Platform.OS.Linux][Platform.Architecture.x64] = @"pin/pin-2.12-54730-gcc.4.4.7-linux/intel64/bin/pinbin";
 
-			pinExecutables[Platform.OS.Mac][Platform.Architecture.x86] = @"pin/pin-2.12-54730-clang.3.0-mac/ia32/bin/pinbin";
-			pinExecutables[Platform.OS.Mac][Platform.Architecture.x64] = @"pin/pin-2.12-54730-clang.3.0-mac/intel64/bin/pinbin";
+			pinExecutables[Platform.OS.OSX][Platform.Architecture.x86] = @"pin/pin-2.12-54730-clang.3.0-mac/ia32/bin/pinbin";
+			pinExecutables[Platform.OS.OSX][Platform.Architecture.x64] = @"pin/pin-2.12-54730-clang.3.0-mac/intel64/bin/pinbin";
 
 			pinTool.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
 			pinTool.Add(Platform.OS.Linux, new Dictionary<Platform.Architecture, string>());
-			pinTool.Add(Platform.OS.Mac, new Dictionary<Platform.Architecture, string>());
+			pinTool.Add(Platform.OS.OSX, new Dictionary<Platform.Architecture, string>());
 
 			pinTool[Platform.OS.Windows][Platform.Architecture.x86] = @"bblocks32.dll";
 			pinTool[Platform.OS.Windows][Platform.Architecture.x64] = @"bblocks64.dll";
@@ -89,8 +89,8 @@ namespace Peach.Core.Analysis
 			pinTool[Platform.OS.Linux][Platform.Architecture.x64] = @"libbblocks64.so";
 
 			// OSX supports fat binaries
-			pinTool[Platform.OS.Mac][Platform.Architecture.x86] = @"libbblocks.dylib";
-			pinTool[Platform.OS.Mac][Platform.Architecture.x64] = @"libbblocks.dylib";
+			pinTool[Platform.OS.OSX][Platform.Architecture.x86] = @"libbblocks.dylib";
+			pinTool[Platform.OS.OSX][Platform.Architecture.x64] = @"libbblocks.dylib";
 		}
 
         public CoverageImpl()
