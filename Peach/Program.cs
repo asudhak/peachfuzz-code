@@ -146,34 +146,7 @@ namespace Peach
 				if (extra.Count == 0 && agent == null && analyzer == null)
 					syntax();
 
-				// Check OS and load side assembly
-				string osAssembly = null;
-
-				switch (Platform.GetOS())
-				{
-					case Platform.OS.OSX:
-						osAssembly = "Peach.Core.OS.OSX.dll";
-						break;
-					case Platform.OS.Linux:
-						osAssembly = "Peach.Core.OS.Linux.dll";
-						break;
-					case Platform.OS.Windows:
-						osAssembly = "Peach.Core.OS.Windows.dll";
-						break;
-				}
-
-				try
-				{
-					string fullPath = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						osAssembly);
-
-					ClassLoader.LoadAssembly(fullPath);
-				}
-				catch (Exception ex)
-				{
-					throw new PeachException("Error, could not load platform assembly '{0}'.  {1}", osAssembly, ex.Message);
-				}
+				Platform.LoadAssembly();
 
 				if (definedValuesFile != null)
 				{
