@@ -59,7 +59,7 @@ namespace Peach.Core.Agent.Monitors
 
             try
             {
-                IPHostEntry hostInfo        = Dns.Resolve( Host );
+                IPHostEntry hostInfo        = Dns.GetHostEntry( Host );
                 IPAddress   address         = hostInfo.AddressList[0]; 
                 IPEndPoint  localEndPoint   = new IPEndPoint( address, Port );
 
