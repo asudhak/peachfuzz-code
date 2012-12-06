@@ -438,19 +438,34 @@ namespace Peach.Core
 		{
 			var color = Console.ForegroundColor;
 
-			var domTypes = new SortedSet<Type>(new TypeComparer());
+			var domTypes = new SortedDictionary<string, Type>();
 
 			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.Dom.DataElementAttribute>(null))
 			{
-				if (!domTypes.Add(type.Value))
-					Console.WriteLine("Already scanned data element: {0}", type.Value.Name);
+				if (domTypes.ContainsKey(type.Key.elementName))
+				{
+					PrintDuplicate("Data element", type.Key.elementName, domTypes[type.Key.elementName], type.Value);
+					continue;
+				}
+
+				domTypes.Add(type.Key.elementName, type.Value);
 			}
 
+			var pluginsByName = new SortedDictionary<string, Type>();
 			var plugins = new SortedDictionary<Type, SortedDictionary<Type, SortedSet<PluginAttribute>>>(new TypeComparer());
 
 			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.PluginAttribute>(null))
 			{
 				var pluginType = type.Key.Type;
+
+				string fullName = type.Key.Type.Name + ": " + type.Key.Name;
+				if (pluginsByName.ContainsKey(fullName))
+				{
+					PrintDuplicate(type.Key.Type.Name, type.Key.Name, pluginsByName[fullName], type.Value);
+					continue;
+				}
+			
+				pluginsByName.Add(fullName, type.Value);
 
 				if (!plugins.ContainsKey(pluginType))
 					plugins.Add(pluginType, new SortedDictionary<Type, SortedSet<PluginAttribute>>(new TypeComparer()));
@@ -462,16 +477,16 @@ namespace Peach.Core
 
 				var attrs = plugin[type.Value];
 
-				if (!attrs.Add(type.Key))
-					Console.WriteLine("{0} class '{1}' already has attribute '{2}'.", pluginType.Name, type.Value.Name, type.Key.Name);
+				bool added = attrs.Add(type.Key);
+				System.Diagnostics.Debug.Assert(added);
 			}
 
 			Console.WriteLine("----- Data Elements --------------------------------------------");
 			foreach (var elem in domTypes)
 			{
 				Console.WriteLine();
-				Console.WriteLine("  {0}", elem.Name);
-				PrintParams(elem);
+				Console.WriteLine("  {0}", elem.Key);
+				PrintParams(elem.Value);
 			}
 
 			foreach (var kv in plugins)
@@ -503,6 +518,28 @@ namespace Peach.Core
 					PrintParams(plugin.Key);
 				}
 			}
+		}
+
+		private static void PrintDuplicate(string category, string name, Type type1, Type type2)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+
+			if (type1 == type2)
+			{
+				// duplicate name on same type
+				Console.WriteLine("{0} '{1}' declared more than once in assembly '{2}' class '{3}'.",
+					category, name, type1.Assembly.Location, type1.FullName);
+			}
+			else
+			{
+				// duplicate name on different types
+				Console.WriteLine("{0} '{1}' declared in assembly '{2}' class '{3}' and in assembly {4} and class '{5}'.",
+					category, name, type1.Assembly.Location, type1.FullName, type2.Assembly.Location, type2.FullName);
+			}
+
+			Console.ForegroundColor = color;
+			Console.WriteLine();
 		}
 
 		private static void PrintParams(Type elem)
