@@ -15,6 +15,12 @@ namespace Peach.Core
 	
 	public interface IProcessInfo
 	{
+		/// <summary>
+		/// Returns a populated ProcessInfo instance.
+		/// throws ArgumentException if the Process is not valid.
+		/// </summary>
+		/// <param name="p">Process to obtain info about.</param>
+		/// <returns>Information about the process.</returns>
 		ProcessInfo Snapshot(Process p);
 	}
 
@@ -24,9 +30,9 @@ namespace Peach.Core
 		public string ProcessName;
 		public bool Responding;
 
-		public TimeSpan TotalProcessorTime;
-		public TimeSpan UserProcessorTime;
-		public TimeSpan PrivilegedProcessorTime;
+		public ulong TotalProcessorTicks;
+		public ulong UserProcessorTicks;
+		public ulong PrivilegedProcessorTicks;
 
 		public long PeakVirtualMemorySize64;
 		public long PeakWorkingSet64;

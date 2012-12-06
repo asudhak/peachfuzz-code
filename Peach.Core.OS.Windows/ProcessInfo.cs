@@ -13,9 +13,10 @@ namespace Peach.Core
 			pi.ProcessName = p.ProcessName;
 			pi.Responding = p.Responding;
 
-			pi.TotalProcessorTime = p.TotalProcessorTime;
-			pi.UserProcessorTime = p.UserProcessorTime;
-			pi.PrivilegedProcessorTime = p.PrivilegedProcessorTime;
+
+			pi.TotalProcessorTicks = (ulong)(p.TotalProcessorTime.TotalMilliseconds * TimeSpan.TicksPerMillisecond);
+			pi.UserProcessorTicks = (ulong)(p.UserProcessorTime.TotalMilliseconds * TimeSpan.TicksPerMillisecond);
+			pi.PrivilegedProcessorTicks = (ulong)(p.PrivilegedProcessorTime.TotalMilliseconds * TimeSpan.TicksPerMillisecond);
 
 			pi.PeakVirtualMemorySize64 = p.PeakVirtualMemorySize64;
 			pi.PeakWorkingSet64 = p.PeakWorkingSet64;

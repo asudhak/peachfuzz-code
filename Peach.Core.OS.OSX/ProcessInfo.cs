@@ -1,11 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
-
+using NLog;
 namespace Peach.Core
 {
 	[PlatformImpl(Platform.OS.OSX)]
 	public class ProcessInfoImpl : IProcessInfo
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		#region P/Invoke Stuff
 
 		// <libproc.h>
@@ -139,11 +140,21 @@ namespace Peach.Core
 		{
 			var kp = GetKernProc(p.Id);
 			if (!kp.HasValue)
-				throw new InvalidOperationException();
+			{
+				if (p.HasExited)
+					throw new ArgumentException();
+				else
+					throw new UnauthorizedAccessException();
+			}
 
 			var ti = GetTaskInfo(p.Id);
 			if (!ti.HasValue)
-				throw new InvalidOperationException();
+			{
+				if (p.HasExited)
+					throw new ArgumentException();
+				else
+					throw new UnauthorizedAccessException();
+			}
 
 			ProcessInfo pi = new ProcessInfo();
 			pi.Id = p.Id;
@@ -153,9 +164,9 @@ namespace Peach.Core
 			pi.ProcessName = p.ProcessName;
 			pi.Responding = kp.Value.p_stat != (byte)p_stat.SZOMB;
 
-			pi.UserProcessorTime = TimeSpan.FromTicks((long)ti.Value.pti_total_user);
-			pi.PrivilegedProcessorTime = TimeSpan.FromTicks((long)ti.Value.pti_total_system);
-			pi.TotalProcessorTime = pi.UserProcessorTime + pi.PrivilegedProcessorTime;
+			pi.UserProcessorTicks = ti.Value.pti_total_user;
+			pi.PrivilegedProcessorTicks = ti.Value.pti_total_system;
+			pi.TotalProcessorTicks = pi.UserProcessorTicks + pi.PrivilegedProcessorTicks;
 
 			pi.VirtualMemorySize64 = (long)ti.Value.pti_virtual_size;
 			pi.WorkingSet64 = (long)ti.Value.pti_resident_size;

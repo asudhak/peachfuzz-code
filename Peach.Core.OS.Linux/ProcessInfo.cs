@@ -25,7 +25,7 @@ namespace Peach.Core
 			{
 				stat = File.ReadAllText(string.Format(StatPath, pid));
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return null;
 			}
@@ -55,7 +55,7 @@ namespace Peach.Core
 		{
 			var parts = ReadProc(p.Id);
 			if (parts == null)
-				throw new InvalidOperationException();
+				throw new ArgumentException();
 
 			ProcessInfo pi = new ProcessInfo();
 
@@ -63,9 +63,9 @@ namespace Peach.Core
 			pi.ProcessName = p.ProcessName;
 			pi.Responding = parts[(int)Fields.State] != "Z";
 
-			pi.UserProcessorTime = TimeSpan.FromTicks(long.Parse(parts[(int)Fields.UserTime]));
-			pi.PrivilegedProcessorTime = TimeSpan.FromTicks(long.Parse(parts[(int)Fields.KernelTime]));
-			pi.TotalProcessorTime = pi.UserProcessorTime + pi.PrivilegedProcessorTime;
+			pi.UserProcessorTicks = ulong.Parse(parts[(int)Fields.UserTime]);
+			pi.PrivilegedProcessorTicks = ulong.Parse(parts[(int)Fields.KernelTime]);
+			pi.TotalProcessorTicks = pi.UserProcessorTicks + pi.PrivilegedProcessorTicks;
 
 			pi.PrivateMemorySize64 = p.PrivateMemorySize64;         // /proc/[pid]/status VmData
 			pi.VirtualMemorySize64 = p.VirtualMemorySize64;         // /proc/[pid]/status VmSize
