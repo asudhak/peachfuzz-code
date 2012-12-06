@@ -74,14 +74,28 @@ namespace Peach.Core
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
+		static string[] searchPath = GetSearchPath();
 
-		static ClassLoader()
+		static string[] GetSearchPath()
 		{
-			string[] searchPath = new string[] {
+			var ret = new List<string> {
 				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 				Directory.GetCurrentDirectory(),
 			};
 
+			string devpath = Environment.GetEnvironmentVariable("DEVPATH");
+			if (!string.IsNullOrEmpty(devpath))
+				ret.AddRange(devpath.Split(Path.PathSeparator));
+
+			string mono_path = Environment.GetEnvironmentVariable("MONO_PATH");
+			if (!string.IsNullOrEmpty(mono_path))
+				ret.AddRange(mono_path.Split(Path.PathSeparator));
+
+			return ret.ToArray();
+		}
+
+		static ClassLoader()
+		{
 			foreach (string path in searchPath)
 			{
 				foreach (string file in Directory.GetFiles(path))
@@ -94,7 +108,7 @@ namespace Peach.Core
 
 					try
 					{
-						Assembly asm = LoadAssembly(file);
+						Assembly asm = Load(file);
 						asm.GetExportedTypes(); // make sure we can load exported types.
 						AssemblyCache.Add(file, asm);
 					}
@@ -106,8 +120,11 @@ namespace Peach.Core
 			}
 		}
 
-		public static Assembly LoadAssembly(string fullPath)
+		static Assembly Load(string fullPath)
 		{
+			if (!File.Exists(fullPath))
+				throw new FileNotFoundException("The file \"" + fullPath + "\" does not exist.");
+
 			// http://mikehadlow.blogspot.com/2011/07/detecting-and-changing-files-internet.html
 			var zone = Zone.CreateFromUrl(fullPath);
 			if (zone.SecurityZone > SecurityZone.MyComputer)
@@ -115,6 +132,40 @@ namespace Peach.Core
 
 			Assembly asm = Assembly.LoadFrom(fullPath);
 			return asm;
+		}
+
+		static bool TryLoad(string fullPath)
+		{
+			if (!File.Exists(fullPath))
+				return false;
+
+			if (!AssemblyCache.ContainsKey(fullPath))
+			{
+				var asm = Load(fullPath);
+				asm.GetExportedTypes(); // make sure we can load exported types.
+				AssemblyCache.Add(fullPath, asm);
+			}
+
+			return true;
+		}
+
+		public static void LoadAssembly(string fileName)
+		{
+			if (Path.IsPathRooted(fileName))
+			{
+				if (TryLoad(fileName))
+					return;
+			}
+			else
+			{
+				foreach (string path in searchPath)
+				{
+					if (TryLoad(Path.Combine(path, fileName)))
+						return;
+				}
+			}
+
+			throw new FileNotFoundException();
 		}
 
 		/// <summary>

@@ -74,8 +74,7 @@ namespace Peach.Core
 
 			try
 			{
-				string fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), osAssembly);
-				ClassLoader.LoadAssembly(fullPath);
+				ClassLoader.LoadAssembly(osAssembly);
 			}
 			catch (Exception ex)
 			{
