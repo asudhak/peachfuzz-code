@@ -56,7 +56,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		public static string DEFINED_VALUES = "DefinedValues";
 
-		static readonly string PEACH_NAMESPACE_URI = "http://phed.org/2012/Peach";
+		static readonly string PEACH_NAMESPACE_URI = "http://peachfuzzer.com/2012/Peach";
 
 		public Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
