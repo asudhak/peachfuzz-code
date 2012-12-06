@@ -62,6 +62,12 @@ namespace Peach.Core.MutationStrategies
 		Dictionary<string, DataSetTracker> _dataSets;
 		List<Type> _mutators;
 		Iterations _iterations;
+
+		/// <summary>
+		/// container also contains states if we have mutations
+		/// we can apply to them.  State names are prefixed with "STATE_" to avoid
+		/// conflicting with data model names.
+		/// </summary>
 		SortedSet<string> _dataModels;
 		string _targetDataModel;
 		uint _iteration;
@@ -179,6 +185,9 @@ namespace Peach.Core.MutationStrategies
 			if (!_context.controlIteration || !_context.controlRecordingIteration)
 				return;
 
+			if (_dataModels.Contains("STATE_" + state.name))
+				return;
+
 			List<Mutator> mutators = new List<Mutator>();
 
 			foreach (Type t in _mutators)
@@ -192,7 +201,10 @@ namespace Peach.Core.MutationStrategies
 			}
 
 			if (mutators.Count > 0)
+			{
+				_dataModels.Add("STATE_" + state.name);
 				_iterations["STATE_" + state.name] = mutators;
+			}
 		}
 
 
@@ -388,27 +400,29 @@ namespace Peach.Core.MutationStrategies
 			// TODO: Why don't we mutate the action.parameters data model?
 		}
 
-		// TODO implement
+		/// <summary>
+		/// Allows mutation strategy to affect state change.
+		/// </summary>
+		/// <param name="state"></param>
+		/// <returns></returns>
+		public override State MutateChangingState(State state)
+		{
+			if (_context.controlIteration)
+				return state;
 
-		///// <summary>
-		///// Allows mutation strategy to affect state change.
-		///// </summary>
-		///// <param name="state"></param>
-		///// <returns></returns>
-		//public override State MutateChangingState(State state)
-		//{
-		//    if (_context.controlIteration)
-		//        return state;
+			if ("STATE_" + state.name == _targetDataModel)
+			{
+				Mutator mutator = Random.Choice(_iterations["STATE_" + state.name]);
+				OnMutating(state.name, mutator.name);
 
-		//    if ("STATE_" + state.name == _iterations.Current.Item1)
-		//    {
-		//        logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
-		//        logger.Debug("MutateChangingState: Mutator: " + _enumerator.Current.Item2.name);
-		//        return _enumerator.Current.Item2.changeState(state);
-		//    }
+				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
+				logger.Debug("MutateChangingState: Mutator: " + mutator.name);
 
-		//    return state;
-		//}
+				return mutator.changeState(state);
+			}
+
+			return state;
+		}
 
 		public override uint Count
 		{

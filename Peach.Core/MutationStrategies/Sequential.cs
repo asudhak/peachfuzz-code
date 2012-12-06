@@ -244,6 +244,7 @@ namespace Peach.Core.MutationStrategies
 
 			if ("STATE_" + state.name == _enumerator.Current.Item1)
 			{
+				OnMutating(state.name, _enumerator.Current.Item2.name);
 				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
 				logger.Debug("MutateChangingState: Mutator: " + _enumerator.Current.Item2.name);
 				return _enumerator.Current.Item2.changeState(state);
