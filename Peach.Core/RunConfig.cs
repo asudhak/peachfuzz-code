@@ -41,6 +41,7 @@ namespace Peach.Core
 	/// <summary>
 	/// Configure the current run
 	/// </summary>
+	[Serializable]
 	public class RunConfiguration
 	{
 		/// <summary>

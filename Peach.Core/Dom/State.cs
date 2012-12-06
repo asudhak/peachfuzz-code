@@ -42,6 +42,7 @@ namespace Peach.Core.Dom
 	public delegate void StateFinishedEventHandler(State state);
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
+	[Serializable]
 	public class State : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -81,7 +82,7 @@ namespace Peach.Core.Dom
 				Finished(this);
 		}
 
-		protected virtual void OnChanging(State toState)
+		public virtual void OnChanging(State toState)
 		{
 			if (ChangingState != null)
 				ChangingState(this, toState);
@@ -99,14 +100,7 @@ namespace Peach.Core.Dom
 				OnStarting();
 
 				foreach (Action action in actions)
-				{
 					action.Run(context);
-				}
-			}
-			catch (ActionChangeStateException e)
-			{
-				OnChanging(e.changeToState);
-				throw e;
 			}
 			finally
 			{

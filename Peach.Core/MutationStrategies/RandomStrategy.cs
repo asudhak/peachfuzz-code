@@ -53,7 +53,7 @@ namespace Peach.Core.MutationStrategies
 		class DataSetTracker
 		{
 			public List<string> fileNames = new List<string>();
-			public uint iteration = 0;
+			public uint iteration = 1;
 		};
 
 		protected class Iterations : Dictionary<string, List<Mutator>> { }
@@ -62,10 +62,17 @@ namespace Peach.Core.MutationStrategies
 		Dictionary<string, DataSetTracker> _dataSets;
 		List<Type> _mutators;
 		Iterations _iterations;
+
+		/// <summary>
+		/// container also contains states if we have mutations
+		/// we can apply to them.  State names are prefixed with "STATE_" to avoid
+		/// conflicting with data model names.
+		/// </summary>
 		SortedSet<string> _dataModels;
 		string _targetDataModel;
 		uint _iteration;
 		Random _randomDataSet;
+		uint _lastIteration = 0;
 
 		/// <summary>
 		/// How often to switch files.
@@ -75,7 +82,7 @@ namespace Peach.Core.MutationStrategies
 		/// <summary>
 		/// Maximum number of fields to mutate at once.
 		/// </summary>
-		int maxFieldsToMutate = 7;
+		int maxFieldsToMutate = 6;
 
 		public RandomStrategy(Dictionary<string, Variant> args)
 			: base(args)
@@ -91,11 +98,23 @@ namespace Peach.Core.MutationStrategies
 			base.Initialize(context, engine);
 
 			// Initalize our state by entering iteration 0
-			Iteration = 0;
+			Iteration = 1;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.State.Starting += new StateStartingEventHandler(State_Starting);
+			engine.IterationStarting += new Engine.IterationStartingEventHandler(engine_IterationStarting);
 			_mutators = new List<Type>();
 			_mutators.AddRange(EnumerateValidMutators());
+		}
+
+		void engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
+		{
+			if (context.controlIteration && context.controlRecordingIteration)
+			{
+				_iterations = new Iterations();
+				_dataModels = new SortedSet<string>();
+				_dataSets = new Dictionary<string, DataSetTracker>();
+			}
 		}
 
 		public override void Finalize(RunContext context, Engine engine)
@@ -103,6 +122,8 @@ namespace Peach.Core.MutationStrategies
 			base.Finalize(context, engine);
 
 			Core.Dom.Action.Starting -= Action_Starting;
+			Core.Dom.State.Starting -= State_Starting;
+			engine.IterationStarting -= engine_IterationStarting;
 		}
 
 		private uint GetSwitchIteration()
@@ -121,22 +142,22 @@ namespace Peach.Core.MutationStrategies
 			}
 			set
 			{
+				_lastIteration = _iteration;
 				_iteration = value;
 				_targetDataModel = null;
 				SeedRandom();
 
-				if (_iteration == GetSwitchIteration())
+				if (!_context.controlIteration && _iteration == GetSwitchIteration() && _lastIteration != _iteration)
 					_randomDataSet = null;
 
-				if (_iteration == 0)
+				if (_randomDataSet == null)
 				{
-					_iterations = new Iterations();
-					_dataModels = new SortedSet<string>();
-					_dataSets = new Dictionary<string, DataSetTracker>();
-				}
-				else if (_randomDataSet == null)
-				{
+					logger.Debug("Iteration: Switch iteration, setting controlIteration and controlRecordingIteration.");
+
 					_randomDataSet = new Random(this.Seed + GetSwitchIteration());
+
+					_context.controlIteration = true;
+					_context.controlRecordingIteration = true;
 				}
 			}
 		}
@@ -147,7 +168,7 @@ namespace Peach.Core.MutationStrategies
 			if (!(action.type == ActionType.Output || action.type == ActionType.SetProperty || action.type == ActionType.Call))
 				return;
 
-			if (_iteration == 0)
+			if (_context.controlIteration && _context.controlRecordingIteration)
 			{
 				RecordDataSet(action);
 				RecordDataModel(action);
@@ -158,6 +179,34 @@ namespace Peach.Core.MutationStrategies
 				MutateDataModel(action);
 			}
 		}
+
+		void State_Starting(State state)
+		{
+			if (!_context.controlIteration || !_context.controlRecordingIteration)
+				return;
+
+			if (_dataModels.Contains("STATE_" + state.name))
+				return;
+
+			List<Mutator> mutators = new List<Mutator>();
+
+			foreach (Type t in _mutators)
+			{
+				// can add specific mutators here
+				if (SupportedState(t, state))
+				{
+					var mutator = GetMutatorInstance(t, state);
+					mutators.Add(mutator);
+				}
+			}
+
+			if (mutators.Count > 0)
+			{
+				_dataModels.Add("STATE_" + state.name);
+				_iterations["STATE_" + state.name] = mutators;
+			}
+		}
+
 
 		private void SyncDataSet(Dom.Action action)
 		{
@@ -349,6 +398,30 @@ namespace Peach.Core.MutationStrategies
 				ApplyMutation(action.dataModel);
 
 			// TODO: Why don't we mutate the action.parameters data model?
+		}
+
+		/// <summary>
+		/// Allows mutation strategy to affect state change.
+		/// </summary>
+		/// <param name="state"></param>
+		/// <returns></returns>
+		public override State MutateChangingState(State state)
+		{
+			if (_context.controlIteration)
+				return state;
+
+			if ("STATE_" + state.name == _targetDataModel)
+			{
+				Mutator mutator = Random.Choice(_iterations["STATE_" + state.name]);
+				OnMutating(state.name, mutator.name);
+
+				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
+				logger.Debug("MutateChangingState: Mutator: " + mutator.name);
+
+				return mutator.changeState(state);
+			}
+
+			return state;
 		}
 
 		public override uint Count

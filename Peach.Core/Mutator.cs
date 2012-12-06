@@ -61,6 +61,10 @@ namespace Peach.Core
 		{
 		}
 
+		public Mutator(State obj)
+		{
+		}
+
 		/// <summary>
 		/// Check to see if DataElement is supported by this 
 		/// mutator.
@@ -68,6 +72,17 @@ namespace Peach.Core
 		/// <param name="obj">DataElement to check</param>
 		/// <returns>True if object is supported, else False</returns>
 		public static bool supportedDataElement(DataElement obj)
+		{
+			return false;
+		}
+
+		/// <summary>
+		/// Check to see if State is supported by this 
+		/// mutator.
+		/// </summary>
+		/// <param name="obj">State to check</param>
+		/// <returns>True if object is supported, else False</returns>
+		public static bool supportedState(State obj)
 		{
 			return false;
 		}
@@ -99,6 +114,16 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="obj"></param>
 		public abstract void randomMutation(DataElement obj);
+
+		/// <summary>
+		/// Allow changing which state we change to.
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public virtual State changeState(State obj)
+		{
+			throw new NotImplementedException();
+		}
 
 		#region IWeighted Members
 

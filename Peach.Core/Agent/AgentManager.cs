@@ -40,12 +40,16 @@ namespace Peach.Core.Agent
 	/// Manages all agents.  This includes
 	/// full lifetime.
 	/// </summary>
+	[Serializable]
 	public class AgentManager
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		static int UniqueNames = 0;
+		[NonSerialized]
 		OrderedDictionary<string, AgentClient> _agents = new OrderedDictionary<string, AgentClient>();
+		[NonSerialized]
 		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();
+		[NonSerialized]
         RunContext context;
 
 		public AgentManager(RunContext context)
