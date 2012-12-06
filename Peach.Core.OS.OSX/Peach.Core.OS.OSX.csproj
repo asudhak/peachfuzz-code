@@ -328,7 +328,6 @@
   <ItemGroup>
     <Compile Include="Agent\Monitors\CrashReporter.cs" />
     <Compile Include="Agent\Monitors\CrashWrangler.cs" />
-    <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
