@@ -226,6 +226,8 @@ namespace Peach.Core
 			try
 			{
 				context.test = test;
+				context.test.strategy.Context = context;
+				context.test.strategy.Engine = this;
 				context.agentManager = new AgentManager(context);
 				context.reproducingFault = false;
 				context.reproducingIterationJumpCount = 1;

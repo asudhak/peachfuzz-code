@@ -68,6 +68,18 @@ namespace Peach.Core
 			_engine = null;
 		}
 
+		public virtual RunContext Context
+		{
+			get { return _context; }
+			set { _context = value; }
+		}
+
+		public virtual Engine Engine
+		{
+			get { return _engine; }
+			set { _engine = value; }
+		}
+
 		public abstract uint Count
 		{
 			get;

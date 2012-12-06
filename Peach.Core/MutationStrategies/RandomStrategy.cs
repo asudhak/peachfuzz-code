@@ -95,6 +95,7 @@ namespace Peach.Core.MutationStrategies
 			Iteration = 1;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.State.Starting += new StateStartingEventHandler(State_Starting);
 			engine.IterationStarting += new Engine.IterationStartingEventHandler(engine_IterationStarting);
 			_mutators = new List<Type>();
 			_mutators.AddRange(EnumerateValidMutators());
@@ -115,6 +116,8 @@ namespace Peach.Core.MutationStrategies
 			base.Finalize(context, engine);
 
 			Core.Dom.Action.Starting -= Action_Starting;
+			Core.Dom.State.Starting -= State_Starting;
+			engine.IterationStarting -= engine_IterationStarting;
 		}
 
 		private uint GetSwitchIteration()
@@ -170,6 +173,28 @@ namespace Peach.Core.MutationStrategies
 				MutateDataModel(action);
 			}
 		}
+
+		void State_Starting(State state)
+		{
+			if (!_context.controlIteration || !_context.controlRecordingIteration)
+				return;
+
+			List<Mutator> mutators = new List<Mutator>();
+
+			foreach (Type t in _mutators)
+			{
+				// can add specific mutators here
+				if (SupportedState(t, state))
+				{
+					var mutator = GetMutatorInstance(t, state);
+					mutators.Add(mutator);
+				}
+			}
+
+			if (mutators.Count > 0)
+				_iterations["STATE_" + state.name] = mutators;
+		}
+
 
 		private void SyncDataSet(Dom.Action action)
 		{
@@ -362,6 +387,28 @@ namespace Peach.Core.MutationStrategies
 
 			// TODO: Why don't we mutate the action.parameters data model?
 		}
+
+		// TODO implement
+
+		///// <summary>
+		///// Allows mutation strategy to affect state change.
+		///// </summary>
+		///// <param name="state"></param>
+		///// <returns></returns>
+		//public override State MutateChangingState(State state)
+		//{
+		//    if (_context.controlIteration)
+		//        return state;
+
+		//    if ("STATE_" + state.name == _iterations.Current.Item1)
+		//    {
+		//        logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
+		//        logger.Debug("MutateChangingState: Mutator: " + _enumerator.Current.Item2.name);
+		//        return _enumerator.Current.Item2.changeState(state);
+		//    }
+
+		//    return state;
+		//}
 
 		public override uint Count
 		{

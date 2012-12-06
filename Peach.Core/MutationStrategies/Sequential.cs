@@ -96,6 +96,9 @@ namespace Peach.Core.MutationStrategies
 			base.Finalize(context, engine);
 
 			Core.Dom.Action.Starting -= Action_Starting;
+			Core.Dom.State.Starting -= State_Starting;
+			context.engine.IterationStarting -= engine_IterationStarting;
+			context.engine.IterationFinished -= engine_IterationFinished;
 		}
 
 		protected virtual void OnDataModelRecorded()

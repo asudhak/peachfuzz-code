@@ -206,7 +206,7 @@ namespace Peach.Core.Test.MutationStrategies
 		[Test]
 		public void TestSequencial()
 		{
-			string xml = 
+			string xml =
 @"<?xml version='1.0' encoding='utf-8'?>
 <Peach>
    <DataModel name='TheDataModel'>
@@ -224,7 +224,7 @@ namespace Peach.Core.Test.MutationStrategies
    <Test name='Default'>
        <StateModel ref='TheState'/>
        <Publisher class='Null'/>
-       <Strategy class='Sequencial'/>
+       <Strategy class='Sequential'/>
    </Test>
 
 </Peach>";
