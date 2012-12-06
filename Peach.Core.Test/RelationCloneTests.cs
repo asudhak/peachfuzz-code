@@ -209,7 +209,7 @@ namespace Peach.Core.Test
 			Assert.AreEqual("Data", clone[0].relations[0].OfName);
 			Assert.AreEqual("NewLength", clone[0].relations[0].FromName);
 			Assert.AreEqual(200, clone[0].relations[0].Of.relations.Count);
-			Assert.AreEqual(clone[0].relations[0], clone[0].relations[0].Of.relations[100]);
+			Assert.True(clone[0].relations[0].Of.relations.Contains(clone[0].relations[0]));
 		}
 	}
 }
