@@ -437,7 +437,11 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							logger.Debug("runTest: detected fault on iteration " + iterationCount);
 
 							foreach (Fault fault in context.faults)
+							{
 								fault.iteration = iterationCount;
+								fault.controlIteration = context.controlIteration;
+								fault.controlRecordingIteration = context.controlRecordingIteration;
+							}
 
 							OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
