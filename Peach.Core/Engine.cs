@@ -349,29 +349,15 @@ namespace Peach.Core
 							{
 								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
 								{
-									context.continueFuzzing = false;
-
-									Fault fault = new Fault();
-									fault.detectionSource = "PeachControlIteration";
-									fault.iteration = iterationCount;
-									fault.title = "Peach Control Iteration Failed";
-									fault.description = @"The Peach control iteration performed failed
+									string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Number of actions is different.";
-									fault.folderName = "ControlIteration";
-									fault.type = FaultType.Fault;
+									OnControlFault(context, iterationCount, description);
 								}
 								else if (context.controlRecordingStatesExecuted.Count != context.controlStatesExecuted.Count)
 								{
-									context.continueFuzzing = false;
-
-									Fault fault = new Fault();
-									fault.detectionSource = "PeachControlIteration";
-									fault.iteration = iterationCount;
-									fault.title = "Peach Control Iteration Failed";
-									fault.description = @"The Peach control iteration performed failed
+									string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Number of states is different.";
-									fault.folderName = "ControlIteration";
-									fault.type = FaultType.Fault;
+									OnControlFault(context, iterationCount, description);
 								}
 
 								if (context.faults.Count == 0)
@@ -380,16 +366,9 @@ to execute same as initial control.  Number of states is different.";
 									{
 										if (!context.controlActionsExecuted.Contains(action))
 										{
-											context.continueFuzzing = false;
-
-											Fault fault = new Fault();
-											fault.detectionSource = "PeachControlIteration";
-											fault.iteration = iterationCount;
-											fault.title = "Peach Control Iteration Failed";
-											fault.description = @"The Peach control iteration performed failed
+											string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Action " + action.name + " was not performed.";
-											fault.folderName = "ControlIteration";
-											fault.type = FaultType.Fault;
+											OnControlFault(context, iterationCount, description);
 										}
 									}
 								}
@@ -400,16 +379,9 @@ to execute same as initial control.  Action " + action.name + " was not performe
 									{
 										if (!context.controlStatesExecuted.Contains(state))
 										{
-											context.continueFuzzing = false;
-
-											Fault fault = new Fault();
-											fault.detectionSource = "PeachControlIteration";
-											fault.iteration = iterationCount;
-											fault.title = "Peach Control Iteration Failed";
-											fault.description = @"The Peach control iteration performed failed
+											string description = @"The Peach control iteration performed failed
 to execute same as initial control.  State " + state.name + "was not performed.";
-											fault.folderName = "ControlIteration";
-											fault.type = FaultType.Fault;
+											OnControlFault(context, iterationCount, description);
 										}
 									}
 								}
@@ -591,6 +563,22 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 				test.strategy.Finalize(context, this);
 			}
+		}
+
+		private void OnControlFault(RunContext context, uint iterationCount, string description)
+		{
+			context.continueFuzzing = false;
+
+			Fault fault = new Fault();
+			fault.detectionSource = "PeachControlIteration";
+			fault.iteration = iterationCount;
+			fault.controlIteration = context.controlIteration;
+			fault.controlRecordingIteration = context.controlRecordingIteration;
+			fault.title = "Peach Control Iteration Failed";
+			fault.description = description;
+			fault.folderName = "ControlIteration";
+			fault.type = FaultType.Fault;
+			context.faults.Add(fault);
 		}
 	}
 
