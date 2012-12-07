@@ -485,7 +485,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 						if (iterationCount == 1)
 						{
 							if (iterationStart > iterationCount)
-								iterationCount = (iterationStart - 1);
+								iterationCount = iterationStart;
 						}
 
 						// Don't increment the iteration count if we are on a 
