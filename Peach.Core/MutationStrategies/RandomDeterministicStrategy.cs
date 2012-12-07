@@ -53,9 +53,9 @@ namespace Peach.Core.MutationStrategies
 		{
 			// This strategy should randomize the order of mutators
 			// that would be performed by the sequential mutation strategy.
-			// The data model record pass only happens at iteration 0
-
-			var elements = Random.Shuffle(_iterations.ToArray());
+			// The shuffle should always use the same seed.
+			var rng = new Random(Seed);
+			var elements = rng.Shuffle(_iterations.ToArray());
 			_iterations.Clear();
 			_iterations.AddRange(elements);
 		}
