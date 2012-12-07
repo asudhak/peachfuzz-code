@@ -183,8 +183,8 @@ namespace Peach.Core.Test.Monitors
 			Engine e = new Engine(null);
 			e.config = config;
 			e.config.range = true;
-			e.config.rangeStart = 0;
-			e.config.rangeStop = iterations;
+			e.config.rangeStart = 1;
+			e.config.rangeStop = 1 + iterations;
 
 			if (OnFault != null)
 			{
