@@ -204,7 +204,7 @@ namespace Peach.Core.Test.MutationStrategies
 		}
 
 		[Test]
-		public void TestSequencial()
+		public void TestSequential()
 		{
 			string xml =
 @"<?xml version='1.0' encoding='utf-8'?>
