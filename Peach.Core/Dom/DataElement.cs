@@ -44,6 +44,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 using NLog;
+using System.Xml.Serialization;
 
 namespace Peach.Core.Dom
 {
@@ -56,17 +57,24 @@ namespace Peach.Core.Dom
 	/// </remarks>
 	public enum LengthType
 	{
+    [XmlEnum("bytes")]
 		Bytes,
+    [XmlEnum("bits")]
 		Bits,
-		Chars
+    [XmlEnum("chars")]
+		Chars,
+    [XmlEnum("calc")]
+    Calc
 	}
 
 	public enum ValueType
 	{
+    [XmlEnum("string")]
 		String,
+    [XmlEnum("hex")]
 		Hex,
-		Python,
-		Ruby
+    [XmlEnum("literal")]
+		Literal
 	}
 
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);

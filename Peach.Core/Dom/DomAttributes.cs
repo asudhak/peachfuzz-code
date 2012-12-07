@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core;
+using System.Xml.Serialization;
 
 namespace Peach.Core.Dom
 {
@@ -59,9 +60,14 @@ namespace Peach.Core.Dom
 
 	public enum DataElementRelations
 	{
+    [System.ComponentModel.Browsable(false)]
+    [XmlIgnore]
 		Any,
+    [XmlEnum("size")]
 		Size,
+    [XmlEnum("count")]
 		Count,
+    [XmlEnum("offset")]
 		Offset
 	}
 
