@@ -75,6 +75,11 @@ namespace Peach.Core
 		public uint Iteration { get; set; }
 
 		/// <summary>
+		/// Gets/sets if the current iteration is a control iteration.
+		/// </summary>
+		public bool IsControlIteration { get; set; }
+
+		/// <summary>
 		/// Gets a value that indicates whether the publisher has been started.
 		/// </summary>
 		public bool HasStarted { get; private set; }
