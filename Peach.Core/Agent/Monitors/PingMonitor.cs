@@ -76,7 +76,7 @@ namespace Peach.Core.Agent.Monitors
                 else
                     return true;
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return false; 
             }

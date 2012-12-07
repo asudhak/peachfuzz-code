@@ -104,7 +104,6 @@ namespace Peach.Core.Agent.Monitors
             catch (Exception e)
             {
                 throw new PeachException(e.Message);
-                return false; 
             }
 
             //TODO change to regex
