@@ -48,20 +48,7 @@ namespace Peach.Core.Test.Monitors
 
         public override bool DetectedFault()
         {
-            bool _FaultResponse = false;
-            try
-            {
-                _FaultResponse = (curIter == Iter);
-
-            }
-            catch (Exception e)
-            {
-                throw new PeachException(e.Message);
-            }
-
-            //TODO change to regex
-            return _FaultResponse;
-
+            return curIter == Iter;
         }
 
         public override Fault GetMonitorData()
@@ -138,7 +125,7 @@ namespace Peach.Core.Test.Monitors
 
             if (OnFault != null)
             {
-                Assert.AreEqual(1, testResults.Count);
+                Assert.AreEqual(expectedFaults, testResults.Count);
                 testResults.Clear();
             }
 
@@ -147,6 +134,7 @@ namespace Peach.Core.Test.Monitors
         }
 
         uint expectedFaultIteration;
+        uint expectedFaults;
 
         [Test]
         public void FirstIterTest()
@@ -154,12 +142,14 @@ namespace Peach.Core.Test.Monitors
             string agent_xml =
                 "	<Agent name=\"LocalAgent\">" +
                 "		<Monitor class=\"FaultingMonitor\">" +
-                "			<Param name=\"Iteration\" value=\"0\"/>" +
+                "			<Param name=\"Iteration\" value=\"1\"/>" +
                 "		</Monitor>" +
                 "	</Agent>";
-            expectedFaultIteration = 0;
+            expectedFaultIteration = 1;
+            expectedFaults = 2; // Iteration 1 runs twice, once as control and once for mutation
             RunTest(agent_xml, 10, new Engine.FaultEventHandler(_Fault));
         }
+
         void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)
         {
             Assert.AreEqual(expectedFaultIteration, currentIteration);
@@ -176,10 +166,11 @@ namespace Peach.Core.Test.Monitors
             string agent_xml =
                 "	<Agent name=\"LocalAgent\">" +
                 "		<Monitor class=\"FaultingMonitor\">" +
-                "			<Param name=\"Iteration\" value=\"1\"/>" +
+                "			<Param name=\"Iteration\" value=\"2\"/>" +
                 "		</Monitor>" +
                 "	</Agent>";
-            expectedFaultIteration = 1;
+            expectedFaultIteration = 2;
+            expectedFaults = 1;
             RunTest(agent_xml, 10, new Engine.FaultEventHandler(_Fault));
         }
     }
