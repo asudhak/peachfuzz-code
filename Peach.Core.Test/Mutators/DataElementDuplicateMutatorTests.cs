@@ -94,7 +94,7 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
             config.range = true;
             config.rangeStart = 0;
-            config.rangeStop = 1000;
+            config.rangeStop = 1001;
             config.randomSeed = 100;
 
             Engine e = new Engine(null);
@@ -102,15 +102,17 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreEqual(1000, dataModels.Count);
+            // 1000 mutations, switch every 200 iterations
+            Assert.AreEqual(1005, dataModels.Count);
+            Assert.AreEqual(1000, mutatedDataModels.Count);
 
-            // No mutation on the 0th iteration
+            // No mutation on the 1st control iteration
             Assert.AreEqual(1, dataModels[0].Count);
 
             int min = int.MaxValue;
             int max = int.MinValue;
 
-            for (int i = 1; i < dataModels.Count; ++i)
+            for (int i = 0; i < mutatedDataModels.Count; ++i)
             {
                 if (dataModels[i].Count > max)
                     max = dataModels[i].Count;
