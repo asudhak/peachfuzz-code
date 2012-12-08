@@ -72,7 +72,7 @@ namespace Peach.Core.MutationStrategies
 		string _targetDataModel;
 		uint _iteration;
 		Random _randomDataSet;
-		uint _lastIteration = 0;
+		uint _lastIteration = 1;
 
 		/// <summary>
 		/// How often to switch files.
@@ -96,9 +96,6 @@ namespace Peach.Core.MutationStrategies
 		public override void Initialize(RunContext context, Engine engine)
 		{
 			base.Initialize(context, engine);
-
-			// Initalize our state by entering iteration 0
-			Iteration = 1;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			Core.Dom.State.Starting += new StateStartingEventHandler(State_Starting);
@@ -131,7 +128,8 @@ namespace Peach.Core.MutationStrategies
 			// Returns the iteration we should switch our dataSet based off our
 			// current iteration. For example, if switchCount is 10, this function
 			// will return 1, 11, 21, 31, 41, 51, etc.
-			return _iteration - (_iteration % (uint)switchCount);
+			uint ret = _iteration - ((_iteration - 1) % (uint)switchCount);
+			return ret;
 		}
 
 		public override uint Iteration
@@ -171,11 +169,11 @@ namespace Peach.Core.MutationStrategies
 			if (_context.controlIteration && _context.controlRecordingIteration)
 			{
 				RecordDataSet(action);
+				SyncDataSet(action);
 				RecordDataModel(action);
 			}
 			else if (!_context.controlIteration)
 			{
-				SyncDataSet(action);
 				MutateDataModel(action);
 			}
 		}
@@ -269,9 +267,6 @@ namespace Peach.Core.MutationStrategies
 
 				// Store copy of new origional data model
 				action.origionalDataModel = action.dataModel.Clone() as DataModel;
-
-				// Refresh the mutators
-				RecordDataModel(action);
 
 				// Save our current state
 				val.iteration = switchIteration;

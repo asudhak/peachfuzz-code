@@ -124,7 +124,6 @@ namespace Peach.Core.MutationStrategies
 
 			if (_context.controlIteration && _context.controlRecordingIteration)
 			{
-				_iteration = value;
 				return;
 			}
 

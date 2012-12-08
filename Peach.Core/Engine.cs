@@ -236,7 +236,6 @@ namespace Peach.Core
 				MutationStrategy mutationStrategy = test.strategy;
 				mutationStrategy.Initialize(context, this);
 
-				uint iterationCount = 1;
 				uint iterationStart = 1;
 				uint iterationStop = Int32.MaxValue;
 				uint? iterationTotal = null;
@@ -259,6 +258,9 @@ namespace Peach.Core
 					iterationStart = context.config.skipToIteration;
 				}
 
+				uint iterationCount = Math.Max(1, iterationStart);
+				bool firstRun = true;
+
 				// First iteration is always a control/recording iteration
 				context.controlIteration = true;
 				context.controlRecordingIteration = true;
@@ -275,8 +277,10 @@ namespace Peach.Core
 
 				context.agentManager.SessionStarting();
 
-				while (iterationCount < iterationStop && context.continueFuzzing)
+				while ((firstRun || iterationCount < iterationStop) && context.continueFuzzing)
 				{
+					firstRun = false;
+
 					try
 					{
 						if (context.config.singleIteration && !context.controlIteration && iterationCount == 1)
@@ -478,14 +482,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							if (iterationTotal < iterationStop)
 								iterationStop = iterationTotal.Value;
 
-						}
-
-						// The 1th iteration is magical and needs to always run once so we can
-						// figure out how many iterations are actually available
-						if (iterationCount == 1)
-						{
-							if (iterationStart > iterationCount)
-								iterationCount = iterationStart;
 						}
 
 						// Don't increment the iteration count if we are on a 
