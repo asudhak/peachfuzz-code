@@ -188,7 +188,7 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
-            Assert.AreEqual(1000, actions.Count);
+            Assert.AreEqual(999, mutations.Count);
             int min = int.MaxValue;
             int max = int.MinValue;
             for (int i = 0; i < 999; ++i)
