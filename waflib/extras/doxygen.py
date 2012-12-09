@@ -24,7 +24,27 @@ c cc cxx cpp c++ java ii ixx ipp i++ inl h hh hxx hpp h++ idl odl cs php php3
 inc m mm py f90c cc cxx cpp c++ java ii ixx ipp i++ inl h hh hxx
 '''.split())
 
-re_nl = re.compile('\\\\\r*\n', re.MULTILINE)
+re_rl = re.compile('\\\\\r*\n', re.MULTILINE)
+re_nl = re.compile('\r*\n', re.M)
+def parse_doxy(txt):
+	tbl = {}
+	txt   = re_rl.sub('', txt)
+	lines = re_nl.split(txt)
+	for x in lines:
+		x = x.strip()
+		if not x or x.startswith('#') or x.find('=') < 0:
+			continue
+		if x.find('+=') >= 0:
+			tmp = x.split('+=')
+			key = tmp[0].strip()
+			if key in tbl:
+				tbl[key] += ' ' + '+='.join(tmp[1:]).strip()
+			else:
+				tbl[key] = '+='.join(tmp[1:]).strip()
+		else:
+			tmp = x.split('=')
+			tbl[tmp[0].strip()] = '='.join(tmp[1:]).strip()
+	return tbl
 
 class doxygen(Task.Task):
 	vars  = ['DOXYGEN', 'DOXYFLAGS']
@@ -44,8 +64,7 @@ class doxygen(Task.Task):
 
 		if not getattr(self, 'pars', None):
 			txt = self.inputs[0].read()
-			txt = re_nl.sub('', txt)
-			self.pars = Utils.str_to_dict(txt)
+			self.pars = parse_doxy(txt)
 			if not self.pars.get('OUTPUT_DIRECTORY'):
 				self.pars['OUTPUT_DIRECTORY'] = self.inputs[0].parent.get_bld().abspath()
 			if not self.pars.get('INPUT'):
