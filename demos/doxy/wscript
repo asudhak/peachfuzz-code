@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# Thomas Nagy, 2008-2010 (ita)
+# Thomas Nagy, 2008-2012 (ita)
+
+from waflib import Build, TaskGen
 
 VERSION='0.0.1'
 APPNAME='cc_test'
@@ -14,18 +16,34 @@ def options(opt):
 def configure(conf):
 	conf.load('compiler_cxx doxygen')
 
+# NOTES:
+#
+# 1. The test.conf file has "OUTPUT_DIRECTORY" commented
+#
+# 2. Doxygen parameters may be passed using pars attribute
+#       e.g. pars={'EXCLUDE_PATTERNS': '*.foo'}
+#
+# 3. if you want to build the docs in another command, use something like:
+#    if bld.cmd == 'doxy': in the build
+#
+
 def build(bld):
-	# Note: Doxgen parameters may be passed using pars attribute
-	#       e.g. pars={'EXCLUDE_PATTERNS':'*.babu'}
+	bld(
+		features='doxygen',
+		doxyfile='test.conf',
+		doxy_tar='docs.tar.bz2')
 
-	if bld.cmd == 'doxy':
-		bld(
-			features='doxygen',
-			doxyfile='test.conf',
-			doxy_tar='docs.tar.bz2')
-	else:
-		print('Call "waf doxy" for building the documentation')
+	# if the documentation is to be installed
+	bld.add_group()
+	bld.post_mode = Build.POST_LAZY
+	bld(features='special_doxygen_stuff')
 
+	@TaskGen.feature('special_doxygen_stuff')
+	def special_doxygen_stuff(self):
+		node = self.path.get_bld().make_node('html')
+		self.bld.install_files('${PREFIX}/doc/html', node.ant_glob('**'))
+
+# example for the NOTES point #3
 from waflib import Build
 class doxy(Build.BuildContext):
 	fun = 'build'
