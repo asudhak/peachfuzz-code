@@ -486,6 +486,21 @@ def gather_intel_composer_versions(conf, versions):
 						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,batch_file))))
 					except conf.errors.ConfigurationError as e:
 						pass
+				# The intel compilervar_arch.bat is broken when used with Visual Studio Express 2012
+				# http://software.intel.com/en-us/forums/topic/328487
+				compilervars_warning_attr = '_compilervars_warning_key'
+				if version[0:2] == '13' and getattr(conf, compilervars_warning_attr, True):
+					setattr(conf, compilervars_warning_attr, False)
+					patch_url = 'http://software.intel.com/en-us/forums/topic/328487'
+					compilervars_arch = os.path.join(path, 'bin', 'compilervars_arch.bat')
+					vs_express_path = os.environ['VS110COMNTOOLS']+'..\IDE\VSWinExpress.exe'
+					dev_env_path = os.environ['VS110COMNTOOLS']+'..\IDE\devenv.exe'
+					if (r'if exist "%VS110COMNTOOLS%..\IDE\VSWinExpress.exe"' in Utils.readf(compilervars_arch) and
+						not os.path.exists(vs_express_path) and not os.path.exists(dev_env_path)):
+						Logs.warn(('The Intel compilervar_arch.bat only checks for one Visual Studio SKU '
+						           '(VSWinExpress.exe) but it does not seem to be installed at \'%s\'.  '
+						           'The intel command line set up will fail to configure unless the file \'%s\''
+						           'is patched. See : %s') % (vs_express_path, compilervars_arch, patch_url))
 			except WindowsError:
 				pass
 		major = version[0:2]
