@@ -13,7 +13,7 @@ namespace Peach.Core.Test.PitParserTests
 	[TestFixture]
 	class DefaultValuesTests
 	{
-		public void TestEncoding(Encoding enc)
+		public void TestEncoding(Encoding enc, bool defaultArgs)
 		{
 			string encoding = enc.HeaderName;
 			if (enc is UnicodeEncoding)
@@ -27,11 +27,16 @@ namespace Peach.Core.Test.PitParserTests
 				"	</DataModel>\r\n" +
 				"</Peach>";
 
-			var defaultValues = new Dictionary<string, string>();
-			defaultValues["VAR1"] = "TheDataModel";
-			defaultValues["VAR2"] = "SomeString";
 			Dictionary<string, object> parserArgs = new Dictionary<string, object>();
-			parserArgs[PitParser.DEFINED_VALUES] = defaultValues;
+
+			if (defaultArgs)
+			{
+				var defaultValues = new Dictionary<string, string>();
+				defaultValues["VAR1"] = "TheDataModel";
+				defaultValues["VAR2"] = "SomeString";
+
+				parserArgs[PitParser.DEFINED_VALUES] = defaultValues;
+			}
 
 			string pitFile = Path.GetTempFileName();
 
@@ -47,39 +52,53 @@ namespace Peach.Core.Test.PitParserTests
 			dom.evaulateDataModelAnalyzers();
 
 			Assert.AreEqual(1, dom.dataModels.Count);
-			Assert.AreEqual("TheDataModel", dom.dataModels[0].name);
 			Assert.AreEqual(1, dom.dataModels[0].Count);
-			Assert.AreEqual("SomeString", dom.dataModels[0][0].name);
+
+			if (defaultArgs)
+			{
+				Assert.AreEqual("TheDataModel", dom.dataModels[0].name);
+				Assert.AreEqual("SomeString", dom.dataModels[0][0].name);
+			}
+			else
+			{
+				Assert.AreEqual("##VAR1##", dom.dataModels[0].name);
+				Assert.AreEqual("##VAR2##", dom.dataModels[0][0].name);
+			}
 		}
 
 		[Test]
 		public void TestDefault()
 		{
-			TestEncoding(Encoding.Default);
+			TestEncoding(Encoding.Default, true);
+			TestEncoding(Encoding.Default, false);
 		}
 
 		[Test]
 		public void TestUtf8()
 		{
-			TestEncoding(Encoding.UTF8);
+			TestEncoding(Encoding.UTF8, true);
+			TestEncoding(Encoding.UTF8, false);
 		}
 
 		[Test]
 		public void TestUtf16()
 		{
-			TestEncoding(Encoding.Unicode);
+			TestEncoding(Encoding.Unicode, true);
+			TestEncoding(Encoding.Unicode, false);
 		}
 
 		[Test]
 		public void TestUtf32()
 		{
-			TestEncoding(Encoding.UTF32);
+			TestEncoding(Encoding.UTF32, true);
+			TestEncoding(Encoding.UTF32, false);
 		}
 
 		[Test]
 		public void TestUtf16BE()
 		{
-			TestEncoding(Encoding.BigEndianUnicode);
+			TestEncoding(Encoding.BigEndianUnicode, true);
+			TestEncoding(Encoding.BigEndianUnicode, false);
 		}
 	}
 }

@@ -96,26 +96,22 @@ namespace Peach.Core.Analyzers
 
 			XmlDocument xmldoc = new XmlDocument();
 			data.Position = 0;
+			string xml = new StreamReader(data).ReadToEnd();
 
 			if (args != null && args.ContainsKey(DEFINED_VALUES))
 			{
 				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
-				var sr = new StreamReader(data);
-				var sb = new StringBuilder(sr.ReadToEnd());
+				var sb = new StringBuilder(xml);
 
 				foreach (string key in definedValues.Keys)
 				{
 					sb.Replace("##" + key + "##", definedValues[key]);
 				}
 
-				var xml = sb.ToString();
-				var enc = Utilities.GetXmlEncoding(xml, Encoding.UTF8);
-				byte[] buf = enc.GetBytes(xml);
-
-				data = new MemoryStream(buf);
+				xml = sb.ToString();
 			}
 
-			xmldoc.Load(data);
+			xmldoc.LoadXml(xml);
 
 			_dom = new Dom.Dom();
 
@@ -161,7 +157,9 @@ namespace Peach.Core.Analyzers
 
 			var doc = new XmlDocument();
 			doc.Schemas = set;
-			doc.Load(data);
+			// Mono has issues reading utf-32 BOM when just calling doc.Load(data)
+			string xmlData = new StreamReader(data).ReadToEnd();
+			doc.LoadXml(xmlData);
 
 			// Right now XSD validation is disabled on Mono :(
 			// Still load the doc to verify well formed xml
