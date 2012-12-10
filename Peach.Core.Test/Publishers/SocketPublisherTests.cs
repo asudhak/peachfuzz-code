@@ -434,15 +434,26 @@ namespace Peach.Core.Test.Publishers
 
 				Engine e = new Engine(null);
 				e.config = config;
-				e.startFuzzing(dom, config);
 
 				if (Platform.GetOS() == Platform.OS.OSX)
 				{
 					// Mac raw sockets don't support TCP or UDP receptions.
 					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
-					Assert.AreEqual(1, actions.Count);
-					return;
+					// Are able to send, but will get a timeout exception on receive
+					try
+					{
+						e.startFuzzing(dom, config);
+					}
+					catch (PeachException ex)
+					{
+						Assert.AreEqual("The operation has timed-out.", ex.Message);
+						return;
+					}
+
+					Assert.Null("Exception should have been thrown!");
 				}
+
+				e.startFuzzing(dom, config);
 
 				Assert.AreEqual(2, actions.Count);
 				var de = actions[0].dataModel.find("ip_packet.str.str");
@@ -474,15 +485,27 @@ namespace Peach.Core.Test.Publishers
 
 				Engine e = new Engine(null);
 				e.config = config;
-				e.startFuzzing(dom, config);
+
 
 				if (Platform.GetOS() == Platform.OS.OSX)
 				{
 					// Mac raw sockets don't support TCP or UDP receptions.
 					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
-					Assert.AreEqual(1, actions.Count);
-					return;
+					// Are able to send, but will get a timeout exception on receive
+					try
+					{
+						e.startFuzzing(dom, config);
+					}
+					catch (PeachException ex)
+					{
+						Assert.AreEqual("The operation has timed-out.", ex.Message);
+						return;
+					}
+
+					Assert.Null("Exception should have been thrown!");
 				}
+
+				e.startFuzzing(dom, config);
 
 				Assert.AreEqual(2, actions.Count);
 				var de = actions[0].dataModel.find("ip_packet.str.str");
