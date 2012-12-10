@@ -239,6 +239,16 @@ namespace Peach.Core.Publishers
 					var level = local.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
 					var opt = new MulticastOption(ep.Address, local);
 					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
+
+					if (local != IPAddress.Any && local != IPAddress.IPv6Any)
+					{
+						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, local);
+						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, local.GetAddressBytes());
+					}
+					else if (Platform.GetOS() == Platform.OS.OSX)
+					{
+						throw new PeachException("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface);
+					}
 				}
 				else
 				{
