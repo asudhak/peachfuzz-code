@@ -77,8 +77,6 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", "cw.pid")]
 	public class CrashWrangler : Monitor
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		protected string _command = null;
 		protected string _arguments = null;
 		protected string _startOnCall = null;

@@ -6,7 +6,6 @@ namespace Peach.Core
 	[PlatformImpl(Platform.OS.OSX)]
 	public class ProcessInfoImpl : IProcessInfo
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		#region P/Invoke Stuff
 
 		// <libproc.h>
