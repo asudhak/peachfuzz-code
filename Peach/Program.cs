@@ -75,8 +75,6 @@ namespace Peach
 				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 
 				string analyzer = null;
-				string parser = null;
-				string strategy = null;
 				string parallel = null;
 				bool test = false;
 				string agent = null;
@@ -121,8 +119,6 @@ namespace Peach
 				{
 					{ "h|?|help", v => syntax() },
 					{ "analyzer=", v => analyzer = v },
-					{ "parser=", v => parser = v },
-					{ "strategy=", v => strategy = v},
 					{ "debug", v => config.debug = true },
 					{ "1", v => config.singleIteration = true},
 					{ "range=", v => ParseRange(config, v)},
@@ -287,6 +283,12 @@ namespace Peach
 				// Used for unittests
 				if (parseOnly)
 					return;
+
+				if (!string.IsNullOrEmpty(parallel))
+				{
+					ConsoleWatcher.WriteInfoMark();
+					Console.WriteLine("Warning, parallel fuzzing is supported yet.");
+				}
 
 				// The core uses 0 based iterations, users expect 1 based iterations
 				if (config.skipToIteration > 0)

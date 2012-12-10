@@ -218,7 +218,6 @@ namespace Peach.Core.Analyzers
 						string fileName = child.getAttribute("src");
 						fileName = fileName.Replace("file:", "");
 
-						PitParser parser = new PitParser();
 						if (!File.Exists(fileName))
 						{
 							string newFileName = Path.Combine(

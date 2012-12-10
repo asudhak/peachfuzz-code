@@ -110,7 +110,7 @@ namespace PeachMinset
                 var sampleFiles = GetFiles(samples);
 
                 Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
-                var traceFiles = ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
+                ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
 
                 Console.WriteLine("\n[*] Finished");
             }

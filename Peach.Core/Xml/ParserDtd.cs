@@ -282,7 +282,6 @@ namespace Peach.Core.Xml
 			int indexOfComma = data.IndexOf(',', pos);
 			int indexOfPipe = data.IndexOf('|', pos);
 			int indexOfParenClose = data.IndexOf(')', pos);
-			int indexOfParenOpen = data.IndexOf(')', pos);
 
 			if ((indexOfComma < indexOfPipe && indexOfComma != -1) || indexOfPipe == -1)
 			{

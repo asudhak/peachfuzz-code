@@ -61,11 +61,10 @@ namespace Peach.Core.Agent
 	/// Agent logic.  This class is typically
 	/// called from the server side of agent channels.
 	/// </summary>
-	public class Agent : IAgent
+	public class Agent : IAgent, INamed
 	{
 		public object parent;
 		Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
-		string name;
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		#region Events
@@ -360,6 +359,12 @@ namespace Peach.Core.Agent
 		public void AgentConnect(string password)
 		{
 			throw new NotImplementedException();
+		}
+
+		public string name
+		{
+			get;
+			protected set;
 		}
 	}
 

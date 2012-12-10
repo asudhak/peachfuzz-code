@@ -273,6 +273,8 @@ namespace Peach.Core.Publishers
 
 			_localEp = _socket.LocalEndPoint;
 			_remoteEp = ep;
+
+			Logger.Trace("Opened {0} socket, Local: {1}, Remote: {2}", _type, _localEp, _remoteEp);
 		}
 
 		protected override void OnClose()

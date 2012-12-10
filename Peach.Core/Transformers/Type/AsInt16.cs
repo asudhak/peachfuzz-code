@@ -44,23 +44,23 @@ namespace Peach.Core.Transformers.Type
     [Serializable]
     public class AsInt16 : Transformer
     {
-        Dictionary<string, Variant> m_args;
+        //Dictionary<string, Variant> m_args;
 
         public AsInt16(Dictionary<string, Variant> args) : base(args)
         {
-            m_args = args;
+            //m_args = args;
         }
 
         protected override BitStream internalEncode(BitStream data)
         {
-            int signed = 1;
-            int littleEndian = 1;
+            //int signed = 1;
+            //int littleEndian = 1;
 
-            if (m_args.ContainsKey("isSigned"))
-                signed = Int32.Parse((string)m_args["isSigned"]);
+            //if (m_args.ContainsKey("isSigned"))
+            //    signed = Int32.Parse((string)m_args["isSigned"]);
 
-            if (m_args.ContainsKey("isLittleEndian"))
-                littleEndian = Int32.Parse((string)m_args["isLittleEndian"]);
+            //if (m_args.ContainsKey("isLittleEndian"))
+            //    littleEndian = Int32.Parse((string)m_args["isLittleEndian"]);
 
             // TODO: FIXME: This doesn't honor signedness or endianness
             byte[] final = new byte[sizeof(Int16)];

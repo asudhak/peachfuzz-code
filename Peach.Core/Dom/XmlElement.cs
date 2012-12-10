@@ -150,7 +150,7 @@ namespace Peach.Core.Dom
 			PeachXmlDoc doc = new PeachXmlDoc();
 			doc.doc.AppendChild(GenerateXmlNode(doc, null));
 			string template = doc.doc.OuterXml;
-			string[] parts = doc.doc.OuterXml.Split(new string[]{"|||"}, StringSplitOptions.RemoveEmptyEntries);
+			string[] parts = template.Split(new string[]{"|||"}, StringSplitOptions.RemoveEmptyEntries);
 
 			BitStream bs = new BitStream();
 

@@ -128,7 +128,7 @@ namespace Peach.Core.Analyzers
 					var funcDesc = (System.Runtime.InteropServices.ComTypes.FUNCDESC)Marshal.PtrToStructure(ppFuncDesc, typeof(System.Runtime.InteropServices.ComTypes.FUNCDESC));
 
 					int memberID = funcDesc.memid;
-					var elemDesc = funcDesc.elemdescFunc;
+					//var elemDesc = funcDesc.elemdescFunc;
 
 					typeInfo.GetDocumentation(memberID, out name, out doc, out helpid, out helpfile);
 					Console.WriteLine("    " + name);

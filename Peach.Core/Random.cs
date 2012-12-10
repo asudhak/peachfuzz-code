@@ -151,7 +151,6 @@ namespace Peach.Core
 		/// <returns></returns>
 		public T[] Shuffle<T>(T[] items)
 		{
-			T[] ret = items;
 			T temp;
 			int n = items.Length;
 			int k = 0;

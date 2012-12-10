@@ -142,9 +142,6 @@ namespace Peach.Core.Agent.Monitors
 
         public static void ReadCallBack(IAsyncResult ar)
         {
-            
-            String content = String.Empty;
-
             StateObject state = (StateObject) ar.AsyncState;
             Socket handler = state.WorkSocket;
 
@@ -153,7 +150,6 @@ namespace Peach.Core.Agent.Monitors
             if( bytesRead > 0 )
             {
                 _State.StringBuffer.Append(Encoding.ASCII.GetString(_State.Buffer, 0, bytesRead));
-                content = _State.StringBuffer.ToString(); 
             }
 
         }

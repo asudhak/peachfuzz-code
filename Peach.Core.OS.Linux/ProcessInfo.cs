@@ -44,6 +44,9 @@ namespace Peach.Core
 			if (strPid.Length != 1 || strPid[0] != pid.ToString())
 				return null;
 
+			if (string.IsNullOrEmpty(middle))
+				return null;
+
 			string[] parts = after.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			if (parts.Length < (int)Fields.Max)
 				return null;

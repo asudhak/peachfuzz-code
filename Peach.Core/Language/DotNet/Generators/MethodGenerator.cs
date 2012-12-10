@@ -36,7 +36,7 @@ namespace Peach.Core.Language.DotNet.Generators
 	public class MethodGenerator : ITypeGenerator
 	{
 		IContext _context;
-		IGroup _group;
+		//IGroup _group;
 		MethodInfo _methodInfo;
 		object[] _args = null;
 		IGenerator _ctorGenerator;
@@ -49,7 +49,7 @@ namespace Peach.Core.Language.DotNet.Generators
 		public MethodGenerator(IContext context, IGroup group, MethodInfo ctorInfo, IGenerator ctorGenerator)
 		{
 			_context = context;
-			_group = group;
+			//_group = group;
 			_methodInfo = ctorInfo;
 			_ctorGenerator = ctorGenerator;
 

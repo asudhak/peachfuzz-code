@@ -37,9 +37,9 @@ namespace Peach.Core.Language.DotNet.Generators
 	public class PropertyGenerator : Generators.Generator, ITypeGenerator
 	{
 		IContext _context;
-		Type _type;
+		//Type _type;
 		PropertyInfo _info;
-		IGenerator _ctorGenerator;
+		//IGenerator _ctorGenerator;
 
 		Dictionary<MethodInfo, IGenerator> _methodGenerators = new Dictionary<MethodInfo, IGenerator>(2);
 
@@ -50,9 +50,9 @@ namespace Peach.Core.Language.DotNet.Generators
 		{
 			_context = context;
 			Group = group;
-			_type = type;
+			//_type = type;
 			_info = (PropertyInfo)objs[0];
-			_ctorGenerator = (IGenerator)objs[1];
+			//_ctorGenerator = (IGenerator)objs[1];
 
 			MethodInfo methodInfo;
 

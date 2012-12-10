@@ -138,11 +138,9 @@ namespace Peach.Core.Language.DotNet.Generators
 	public class NumberGenerator : SystemTypesGenerator
 	{
 		int _position = 0;
-		Type _type;
 
 		NumberGenerator(IContext context, IGroup group, Type type)
 		{
-			_type = type;
 		}
 
 		#region ITypeGenerator Members
@@ -295,7 +293,7 @@ namespace Peach.Core.Language.DotNet.Generators
 
 	public class ArrayGenerator : SystemTypesGenerator
 	{
-		IGenerator _elementGenerator;
+		//IGenerator _elementGenerator;
 		Type _type;
 		object _array;
 
@@ -303,7 +301,7 @@ namespace Peach.Core.Language.DotNet.Generators
 			: base()
 		{
 			_type = type;
-			_elementGenerator = context.GetTypeGenerator(null, type.GetElementType(), null);
+			//_elementGenerator = context.GetTypeGenerator(null, type.GetElementType(), null);
 			//_elementGenerator = context.GetTypeGenerator(null,
 			//	Type.GetType(type.FullName.Substring(0, type.FullName.LastIndexOf('['))), null);
 

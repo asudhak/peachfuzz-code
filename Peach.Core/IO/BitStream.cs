@@ -169,7 +169,7 @@ namespace Peach.Core.IO
 			{
 				if (stream is Publisher)
 				{
-					long l = len / 8 + (len % 8 == 0 ? 0 : 1);
+					//long l = len / 8 + (len % 8 == 0 ? 0 : 1);
 					if (stream.Length > 1)
 					{
 						len = stream.Length * 8;
@@ -190,7 +190,7 @@ namespace Peach.Core.IO
 			{
 				if (stream is Publisher)
 				{
-					long l = len / 8 + (len % 8 == 0 ? 0 : 1);
+					//long l = len / 8 + (len % 8 == 0 ? 0 : 1);
 					if (stream.Length > 1)
 					{
 						len = stream.Length * 8;

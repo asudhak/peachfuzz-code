@@ -79,7 +79,7 @@ namespace PeachLinuxCrashHandler
 					{ "register", v => register() },
 				};
 
-                List<string> extra = p.Parse(args);
+                p.Parse(args);
 
                 if (exe == null)
                 {

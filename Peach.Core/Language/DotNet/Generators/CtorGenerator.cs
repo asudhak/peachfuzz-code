@@ -36,7 +36,7 @@ namespace Peach.Core.Language.DotNet.Generators
 	public class CtorGenerator : ITypeGenerator
 	{
 		IContext _context;
-		IGroup _group;
+		//IGroup _group;
 		ConstructorInfo _ctorInfo;
 		object[] _args = null;
 
@@ -48,7 +48,7 @@ namespace Peach.Core.Language.DotNet.Generators
 		public CtorGenerator(IContext context, IGroup group, ConstructorInfo ctorInfo)
 		{
 			_context = context;
-			_group = group;
+			//_group = group;
 			_ctorInfo = ctorInfo;
 
 			_parameters = ctorInfo.GetParameters();

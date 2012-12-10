@@ -709,7 +709,6 @@ namespace Peach.Core
 				+ Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
 
 			char[] line = (new System.String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-			long expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
 
 			for (int i = 0; i < bytesLength; i += bytesPerLine)
 			{
