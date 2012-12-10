@@ -453,7 +453,7 @@ def apply_implib(self):
 	if not inst_to:
 		return
 
-	self.implib_install_task = self.bld.install_as('${PREFIX}/lib/%s' % implib.name, implib, self.env)
+	self.implib_install_task = self.bld.install_as('${LIBDIR}/%s' % implib.name, implib, self.env)
 
 # ============ the code above must not know anything about vnum processing on unix platforms =========
 
