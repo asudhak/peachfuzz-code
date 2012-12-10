@@ -3,6 +3,7 @@
 # Carlos Rafael Giani, 2006 (dv)
 # Tamas Pal, 2007 (folti)
 # Nicolas Mercier, 2009
+# Matt Clarkson, 2012
 
 """
 Microsoft Visual C++/Intel C++ compiler support
@@ -33,9 +34,9 @@ Supported platforms: ia64, x64, x86, x86_amd64, x86_ia64
 
 Compilers supported:
 
-* msvc       => Visual Studio, versions 6.0 (VC 98, VC .NET 2002) to 10.0 (Visual Studio 2010)
-* wsdk       => Windows SDK, versions 6.0, 6.1, 7.0
-* icl        => Intel compiler, versions 9,10,11
+* msvc       => Visual Studio, versions 6.0 (VC 98, VC .NET 2002) to 11.0 (Visual Studio 2012)
+* wsdk       => Windows SDK, versions 6.0, 6.1, 7.0, 7.1
+* icl        => Intel compiler, versions 9, 10, 11, 13
 * Smartphone => Compiler/SDK for Smartphone devices (armv4/v4i)
 * PocketPC   => Compiler/SDK for PocketPC devices (armv4/v4i)
 
@@ -145,7 +146,9 @@ echo LIB=%%LIB%%
 		if lines[0].startswith('Error'):
 			conf.fatal('msvc: Could not find a valid architecture for building (get_msvc_version_1)')
 	else:
-		for x in ('Setting environment', 'Setting SDK environment', 'Intel(R) C++ Compiler', 'Intel Parallel Studio'):
+		for x in ('Setting environment', 'Setting SDK environment', 'Intel(R) C++ Compiler',
+				'Intel Parallel Studio', 'Intel(R) Parallel Studio', 'Intel(R) Composer',
+				'Intel Corporation. All rights reserved.'):
 			if lines[0].find(x) > -1:
 				lines.pop(0)
 				break
@@ -413,9 +416,10 @@ def gather_icl_versions(conf, versions):
 				Utils.winreg.OpenKey(all_versions,version+'\\'+targetDir)
 				icl_version=Utils.winreg.OpenKey(all_versions,version)
 				path,type=Utils.winreg.QueryValueEx(icl_version,'ProductDir')
-				if os.path.isfile(os.path.join(path,'bin','iclvars.bat')):
+				batch_file=os.path.join(path,'bin','iclvars.bat')
+				if os.path.isfile(batch_file):
 					try:
-						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,os.path.join(path,'bin','iclvars.bat')))))
+						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,batch_file))))
 					except conf.errors.ConfigurationError:
 						pass
 			except WindowsError:
@@ -424,13 +428,66 @@ def gather_icl_versions(conf, versions):
 			try:
 				icl_version = Utils.winreg.OpenKey(all_versions, version+'\\'+target)
 				path,type = Utils.winreg.QueryValueEx(icl_version,'ProductDir')
-				if os.path.isfile(os.path.join(path, 'bin', 'iclvars.bat')):
+				batch_file=os.path.join(path,'bin','iclvars.bat')
+				if os.path.isfile(batch_file):
 					try:
-						targets.append((target, (arch, conf.get_msvc_version('intel', version, target, os.path.join(path, 'bin', 'iclvars.bat')))))
+						targets.append((target, (arch, conf.get_msvc_version('intel', version, target, batch_file))))
 					except conf.errors.ConfigurationError:
 						pass
 			except WindowsError:
 				continue
+		major = version[0:2]
+		versions.append(('intel ' + major, targets))
+
+@conf
+def gather_intel_composer_versions(conf, versions):
+	"""
+	Checks ICL compilers that are part of Intel Composer Suites
+
+	:param versions: list to modify
+	:type versions: list
+	"""
+	version_pattern = re.compile('^...?.?\...?.?.?')
+	try:
+		all_versions = Utils.winreg.OpenKey(Utils.winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Wow6432node\\Intel\\Suites')
+	except WindowsError:
+		try:
+			all_versions = Utils.winreg.OpenKey(Utils.winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Intel\\Suites')
+		except WindowsError:
+			pass
+	index = 0
+	while 1:
+		try:
+			version = Utils.winreg.EnumKey(all_versions, index)
+		except WindowsError:
+			break
+		index = index + 1
+		if not version_pattern.match(version):
+			continue
+		targets = []
+		for target,arch in all_icl_platforms:
+			try:
+				if target=='intel64': targetDir='EM64T_NATIVE'
+				else: targetDir=target
+				try:
+					defaults = Utils.winreg.OpenKey(all_versions,version+'\\Defaults\\C++\\'+targetDir)
+				except WindowsError:
+					if targetDir=='EM64T_NATIVE':
+						defaults = Utils.winreg.OpenKey(all_versions,version+'\\Defaults\\C++\\EM64T')
+					else:
+						raise WindowsError
+				uid,type = Utils.winreg.QueryValueEx(defaults, 'SubKey')
+				Utils.winreg.OpenKey(all_versions,version+'\\'+uid+'\\C++\\'+targetDir)
+				icl_version=Utils.winreg.OpenKey(all_versions,version+'\\'+uid+'\\C++')
+				path,type=Utils.winreg.QueryValueEx(icl_version,'ProductDir')
+				batch_file=os.path.join(path,'bin','iclvars.bat')
+				if os.path.isfile(batch_file):
+					try:
+						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,batch_file))))
+					except conf.errors.ConfigurationError as e:
+						pass
+			except WindowsError:
+				pass
 		major = version[0:2]
 		versions.append(('intel ' + major, targets))
 
@@ -443,6 +500,7 @@ def get_msvc_versions(conf):
 	if not conf.env['MSVC_INSTALLED_VERSIONS']:
 		lst = []
 		conf.gather_icl_versions(lst)
+		conf.gather_intel_composer_versions(lst)
 		conf.gather_wsdk_versions(lst)
 		conf.gather_msvc_versions(lst)
 		conf.env['MSVC_INSTALLED_VERSIONS'] = lst
