@@ -117,8 +117,11 @@ namespace Peach.Core.Test.Monitors
 		// interface that is up and has a valid IPv4 address.
 		private static Tuple<string, IPAddress> GetInterface()
 		{
-			if (Platform.GetOS() != Platform.OS.Windows)
+			if (Platform.GetOS() == Platform.OS.Linux)
 				return new Tuple<string, IPAddress>("lo", IPAddress.Loopback);
+
+			if (Platform.GetOS() == Platform.OS.OSX)
+				return new Tuple<string, IPAddress>("lo0", IPAddress.Loopback);
 
 			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
 			foreach (NetworkInterface adapter in nics)
