@@ -199,6 +199,14 @@ namespace Peach.Core.Publishers
 			throw new PeachException("{0} publisher could not open raw socket", _type);
 		}
 
+		protected virtual void FilterInput(MemoryStream ms)
+		{
+		}
+
+		protected virtual void FilterOutput(MemoryStream ms)
+		{
+		}
+
 		protected override void OnOpen()
 		{
 			System.Diagnostics.Debug.Assert(_socket == null);
@@ -332,6 +340,8 @@ namespace Peach.Core.Publishers
 					}
 					else
 					{
+						FilterInput(_recvBuffer);
+
 						if (Logger.IsDebugEnabled)
 							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
 
@@ -389,6 +399,8 @@ namespace Peach.Core.Publishers
 
 			if (Logger.IsDebugEnabled)
 				Logger.Debug("\n\n" + Utilities.HexDump(stream));
+
+			FilterOutput(stream);
 
 			try
 			{
