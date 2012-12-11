@@ -42,7 +42,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
-	[Analyzer("Com")]
+	[Analyzer("Com", true)]
 	[Analyzer("ComAnalyzer")]
 	[Parameter("TypeLibrary", typeof(string), "Path to a COM type library (sometimes this is the DLL/EXE otherwise a .TLB)")]
 	[Serializable]

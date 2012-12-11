@@ -35,7 +35,7 @@ using System.Threading;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("PopupWatcher")]
+	[Monitor("PopupWatcher", true)]
 	[Parameter("WindowNames", typeof(string), "Window names separated by a ';'.  Defaults to all.", "")]
 	[Parameter("Fault", typeof(bool), "Should we fault when a window is found?", "false")]
 	public class PopupWatcher : Monitor

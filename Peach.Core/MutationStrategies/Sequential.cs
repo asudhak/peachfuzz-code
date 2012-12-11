@@ -36,7 +36,7 @@ using NLog;
 
 namespace Peach.Core.MutationStrategies
 {
-	[MutationStrategy("Sequential")]
+	[MutationStrategy("Sequential", true)]
 	[Serializable]
 	public class Sequential : MutationStrategy
 	{

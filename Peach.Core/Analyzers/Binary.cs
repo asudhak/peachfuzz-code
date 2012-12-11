@@ -40,7 +40,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
-    [Analyzer("Binary")]
+    [Analyzer("Binary", true)]
     [Analyzer("BinaryAnalyzer")]
     [Serializable]
     public class Binary : Analyzer

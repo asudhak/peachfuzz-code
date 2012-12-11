@@ -42,7 +42,7 @@ using NLog;
 
 namespace Peach.Core.Publishers
 {
-	[Publisher("Com")]
+	[Publisher("Com", true)]
 	[Publisher("com.Com")]
 	[Parameter("clsid", typeof(string), "COM CLSID of object")]
 	public class ComPublisher : Publisher
