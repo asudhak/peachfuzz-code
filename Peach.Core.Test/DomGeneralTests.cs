@@ -148,5 +148,65 @@ namespace Peach.Core.Test
 				Assert.Null(msg);
 			}
 		}
+
+		[Test]
+		public void DataElementAttributes()
+		{
+			var errors = new StringBuilder();
+
+			var deByType = new Dictionary<Type, DataElementAttribute>();
+			var deByName = new Dictionary<string, KeyValuePair<DataElementAttribute, Type>>();
+
+			foreach (var kv in ClassLoader.GetAllByAttribute<DataElementAttribute>(null))
+			{
+				var attr = kv.Key;
+				var type = kv.Value;
+
+				// Verify only 1 DataElement attribute per type
+				if (deByType.ContainsKey(type))
+				{
+					var old = deByType[type];
+
+					errors.AppendLine();
+					errors.AppendFormat("DataElement in assembly '{0}' class '{1}' declared both '{2}' and '{3}.",
+						type.Assembly.Location, type.FullName, attr.elementName, old.elementName);
+				}
+				else
+				{
+					deByType.Add(type, attr);
+				}
+
+				// Verify no elementName collissions
+				if (deByName.ContainsKey(attr.elementName))
+				{
+					var old = deByName[attr.elementName];
+
+					errors.AppendLine();
+					errors.AppendFormat("DataElement '{0}' declared in assembly '{1}' class '{2}' and in assembly {3} and class '{4}'.",
+						attr.elementName, kv.Value.Assembly.Location, kv.Value.FullName, old.Value.Assembly.Location, old.Value.FullName);
+				}
+				else
+				{
+					deByName.Add(attr.elementName, kv);
+				}
+
+				var paramAttrs = type.GetAttributes<ParameterAttribute>(null).Select(a => a.name).ToList();
+				var dupes = paramAttrs.GroupBy(a => a).SelectMany(g => g.Skip(1)).Distinct().ToList();
+				if (dupes.Count != 0)
+				{
+					errors.AppendLine();
+					errors.AppendFormat("DataElement '{0}' declared in assembly '{1}' class '{2}' has duplicate parameters: '{3}'",
+						attr.elementName, type.Assembly.Location, type.FullName, string.Join("', '", dupes));
+				}
+			}
+
+			string msg = errors.ToString();
+
+			if (!string.IsNullOrEmpty(msg))
+			{
+				logger.Debug(msg);
+				Assert.Null(msg);
+			}
+		}
 	}
 }
