@@ -284,7 +284,7 @@ namespace Peach.Core.Agent.Monitors
 
 			// Wait for pid file to exist, open it up and read it
 			while (!File.Exists(_cwPidFile) && !_procHandler.HasExited)
-				Thread.Sleep(100);
+				Thread.Sleep(250);
 
 			string strPid = File.ReadAllText(_cwPidFile);
 			int pid = Convert.ToInt32(strPid);
