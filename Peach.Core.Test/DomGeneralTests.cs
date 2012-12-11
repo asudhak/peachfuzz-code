@@ -39,12 +39,6 @@ namespace Peach.Core.Test
 			Assert.NotNull(dm.find("string1_1_1").find("string2_1_2"));
 		}
 
-		[Publisher("Console")]
-		[Publisher("Console")]
-		public class Foo
-		{
-		}
-
 		[Test]
 		public void PluginAttributes()
 		{
