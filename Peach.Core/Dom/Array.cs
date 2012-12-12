@@ -49,13 +49,6 @@ namespace Peach.Core.Dom
 	/// Array of data elements.  Can be
 	/// zero or more elements.
 	/// </summary>
-	[DataElement("Array")]
-	[PitParsable("Array")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
-	[Parameter("minOccurs", typeof(int), "Minimum number of occurrences 0-N", "1")]
-	[Parameter("maxOccurs", typeof(int), "Maximum number of occurrences (-1 for unlimited)", "1")]
-	[Parameter("occurs", typeof(int), "Number of occurrences 0-N", "1")]
 	[Serializable]
 	public class Array : Block
 	{

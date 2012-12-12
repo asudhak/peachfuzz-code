@@ -42,7 +42,13 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Array count relation
 	/// </summary>
-    [Serializable]
+	[Serializable]
+	[Relation("count", true)]
+	[Description("Array count relation")]
+	[Parameter("of", typeof(string), "Element used to generate relation value", "")]
+	[Parameter("from", typeof(string), "Element that receives relation value", "")]
+	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
+	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
 	public class CountRelation : Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 

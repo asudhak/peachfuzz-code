@@ -554,7 +554,7 @@ namespace Peach.Core
 
 				string type = string.Format("({0})", prop.type.Name);
 
-				Console.WriteLine("    {0} {1} {2} {3}{4}", prop.required ? "*" : "-",
+				Console.WriteLine("    {0} {1} {2} {3}.{4}", prop.required ? "*" : "-",
 					prop.name.PadRight(24), type.PadRight(14), prop.description, value);
 			}
 		}

@@ -51,8 +51,16 @@ namespace Peach.Core.Dom
 	[DataElementChildSupported(DataElementTypes.Any)]
 	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("name", typeof(string), "Name of element", "")]
+	[Parameter("attributeName", typeof(string), "Name of XML element")]
 	[Parameter("ns", typeof(string), "XML Namespace", "")]
-	[Parameter("elementName", typeof(string), "XML Element Name")]
+	[Parameter("length", typeof(uint), "Length in data element", "")]
+	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
+	[Parameter("lengthCalc", typeof(uint), "Scripting expression that evaluates to an integer", "")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
+	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
+	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]
+	[Parameter("occurs", typeof(int), "Actual occurances", "1")]
 	[Serializable]
 	public class XmlElement : DataElementContainer
 	{

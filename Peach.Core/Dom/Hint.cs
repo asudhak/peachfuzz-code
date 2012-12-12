@@ -39,6 +39,7 @@ namespace Peach.Core.Dom
 	/// for mutators.
 	/// </summary>
 	[Serializable]
+	[DataElement("Hint")]
 	[Parameter("Name", typeof(string), "Name of hint")]
 	[Parameter("Value", typeof(string), "Value of hint")]
 	public class Hint

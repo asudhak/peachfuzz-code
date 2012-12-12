@@ -48,9 +48,15 @@ namespace Peach.Core.Dom
 	[PitParsable("Flags")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[DataElementChildSupported("Flag")]
-	[Parameter("name", typeof(string), "", "")]
+	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]")]
 	[Parameter("endian", typeof(string), "Byte order of number (default 'little')", "little")]
+	[Parameter("token", typeof(bool), "Is element a token", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
+	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
+	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]
+	[Parameter("occurs", typeof(int), "Actual occurances", "1")]
 	[Serializable]
 	public class Flags : DataElementContainer
 	{
