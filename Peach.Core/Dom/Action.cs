@@ -165,6 +165,21 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		/// <summary>
+		/// Action was started
+		/// </summary>
+		public bool started { get; set; }
+
+		/// <summary>
+		/// Action finished
+		/// </summary>
+		public bool finished { get; set; }
+
+		/// <summary>
+		/// Action errored
+		/// </summary>
+		public bool error { get; set; }
+
 		//public string value
 		//{
 		//    get { return _value; }
@@ -394,7 +409,7 @@ namespace Peach.Core.Dom
 					if (!context.test.publishers.ContainsKey(this.publisher))
 					{
 						logger.Debug("Run: Publisher '" + this.publisher + "' not found!");
-						throw new PeachException("Error, Action '"+name+"' publisher value '" + this.publisher + "' was not found!");
+						throw new PeachException("Error, Action '" + name + "' publisher value '" + this.publisher + "' was not found!");
 					}
 
 					publisher = context.test.publishers[this.publisher];
@@ -406,8 +421,12 @@ namespace Peach.Core.Dom
 
 				if (context.controlIteration && context.controlRecordingIteration)
 					context.controlRecordingActionsExecuted.Add(this);
-				else if(context.controlIteration)
+				else if (context.controlIteration)
 					context.controlActionsExecuted.Add(this);
+
+				started = true;
+				finished = false;
+				error = false;
 
 				OnStarting();
 
@@ -506,6 +525,14 @@ namespace Peach.Core.Dom
 					default:
 						throw new ApplicationException("Error, Action.Run fell into unknown Action type handler!");
 				}
+
+				finished = true;
+			}
+			catch
+			{
+				error = true;
+				finished = true;
+				throw;
 			}
 			finally
 			{

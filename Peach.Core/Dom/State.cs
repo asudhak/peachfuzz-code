@@ -124,6 +124,7 @@ namespace Peach.Core.Dom
 			{
 				error = true;
 				finished = true;
+				throw;
 			}
 			finally
 			{

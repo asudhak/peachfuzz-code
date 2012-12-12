@@ -281,6 +281,9 @@ namespace Peach.Core
 				{
 					firstRun = false;
 
+					// Clear out or iteration based state store
+					context.iterationStateStore.Clear();
+
 					try
 					{
 						if (context.config.singleIteration && !context.controlIteration && iterationCount == 1)

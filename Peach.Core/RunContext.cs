@@ -96,6 +96,17 @@ namespace Peach.Core
 
 		public bool needDataModel = true;
 
+		/// <summary>
+		/// An object store that will last entire run.  For use
+		/// by Peach code to store some state.
+		/// </summary>
+		public Dictionary<string, object> stateStore = new Dictionary<string, object>();
+
+		/// <summary>
+		/// An object store that will last current iteration.
+		/// </summary>
+		public Dictionary<string, object> iterationStateStore = new Dictionary<string, object>();
+
 		#region Control Iterations
 
 		/// <summary>
