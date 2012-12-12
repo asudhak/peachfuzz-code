@@ -45,7 +45,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class State : INamed, IPitSerializable
 	{
-		public string _name = "Unknown State";
+		static int nameNum = 0;
+		public string _name = "Unknown State " + (++nameNum);
 		public List<Action> actions = new List<Action>();
 
 		public StateModel parent = null;

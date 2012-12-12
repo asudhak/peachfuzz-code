@@ -79,7 +79,8 @@ namespace Peach.Core.Dom
 	public class Action : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public string _name = "Unknown Action";
+		static int nameNum = 0;
+		public string _name = "Unknown Action " + (++nameNum);
 		public ActionType type = ActionType.Unknown;
 
 		public State parent = null;
