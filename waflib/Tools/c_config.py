@@ -25,8 +25,8 @@ cfg_ver = {
 
 SNIP_FUNCTION = '''
 int main(int argc, char **argv) {
-	(void)argc; (void)argv;
 	void *p;
+	(void)argc; (void)argv;
 	p=(void*)(%s);
 	return 0;
 }
@@ -52,8 +52,8 @@ int main(int argc, char **argv) {
 
 SNIP_FIELD = '''
 int main(int argc, char **argv) {
-	(void)argc; (void)argv;
 	char *off;
+	(void)argc; (void)argv;
 	off = (char*) &((%(type_name)s*)0)->%(field_name)s;
 	return (size_t) off < sizeof(%(type_name)s);
 }
