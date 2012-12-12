@@ -139,6 +139,8 @@ namespace Peach.Core
 		public Engine(Watcher watcher)
 		{
             this.watcher = watcher;
+			context = new RunContext();
+			context.engine = this;
 		}
 
 		/// <summary>
@@ -177,11 +179,9 @@ namespace Peach.Core
 				if (config == null)
 					throw new ArgumentNullException("config paremeter is null");
 
-				context = new RunContext();
 				context.config = config;
 				context.dom = dom;
 				context.test = test;
-				context.engine = this;
 
 				dom.context = context;
 
