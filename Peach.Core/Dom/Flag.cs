@@ -46,9 +46,13 @@ namespace Peach.Core.Dom
 {
 	[DataElement("Flag")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", "")]
+	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("position", typeof(int), "Bit position of flag")]
 	[Parameter("size", typeof(int), "size in bits")]
+	[Parameter("value", typeof(string), "Default value", "")]
+	[Parameter("valueType", typeof(ValueType), "Format of value attribute", "string")]
+	[Parameter("token", typeof(bool), "Is element a token", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
 	[Serializable]
 	public class Flag : Number
 	{

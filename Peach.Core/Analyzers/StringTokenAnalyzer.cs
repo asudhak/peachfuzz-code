@@ -39,7 +39,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
-	[Analyzer("StringToken")]
+	[Analyzer("StringToken", true)]
 	[Analyzer("StringTokenAnalyzer")]
 	[Analyzer("stringtoken.StringTokenAnalyzer")]
 	[Parameter("Tokens", typeof(string), "List of character tokens", StringTokenAnalyzer.TOKENS)]

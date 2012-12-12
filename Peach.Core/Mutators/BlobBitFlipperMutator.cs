@@ -40,8 +40,6 @@ namespace Peach.Core.Mutators
     [Hint("BlobBitFlipperMutator-N", "Gets N by checking node for hint, or returns default (20).")]
     public class BlobBitFlipperMutator : Mutator
     {
-        static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
         // members
         //
         int n;

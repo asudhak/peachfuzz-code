@@ -45,62 +45,6 @@ using System.Security.Policy;
 namespace Peach.Core
 {
 	/// <summary>
-	/// Helper class to determine the OS/Platform we are on.  The built in 
-	/// method returns incorrect results.
-	/// </summary>
-	public static class Platform
-	{
-		[DllImport("libc")]
-		static extern int uname(IntPtr buf);
-		static private bool mIsWindows;
-		static private bool mIsMac;
-		
-		public enum OS { None = 0, Windows = 1, OSX = 2, Linux = 4, Unix = 6, All = 7 };
-		public enum Architecture { x64, x86 };
-
-		static public Architecture GetArch()
-		{
-			if (IntPtr.Size == 64)
-				return Architecture.x64;
-
-			return Architecture.x86;
-		}
-
-		static public OS GetOS()
-		{
-			if (mIsWindows = (System.IO.Path.DirectorySeparatorChar == '\\')) return OS.Windows;
-			if (mIsMac = (!mIsWindows && IsRunningOnMac())) return OS.OSX;
-			if (!mIsMac && System.Environment.OSVersion.Platform == PlatformID.Unix) return OS.Linux;
-			return OS.None;
-		}
-
-
-		//From Managed.Windows.Forms/XplatUI
-		static bool IsRunningOnMac()
-		{
-			IntPtr buf = IntPtr.Zero;
-			try
-			{
-				buf = Marshal.AllocHGlobal(8192);
-				// This is a hacktastic way of getting sysname from uname ()
-				if (uname(buf) == 0)
-				{
-					string os = Marshal.PtrToStringAnsi(buf);
-					if (os == "Darwin") return true;
-				}
-			}
-			catch
-			{
-			}
-			finally
-			{
-				if (buf != IntPtr.Zero) Marshal.FreeHGlobal(buf);
-			}
-			return false;
-		}
-	}
-
-	/// <summary>
 	/// Helper class to add a debug listener so asserts get written to the console.
 	/// </summary>
 	public class AssertWriter : System.Diagnostics.TraceListener
@@ -130,14 +74,28 @@ namespace Peach.Core
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
+		static string[] searchPath = GetSearchPath();
 
-		static ClassLoader()
+		static string[] GetSearchPath()
 		{
-			string[] searchPath = new string[] {
+			var ret = new List<string> {
 				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 				Directory.GetCurrentDirectory(),
 			};
 
+			string devpath = Environment.GetEnvironmentVariable("DEVPATH");
+			if (!string.IsNullOrEmpty(devpath))
+				ret.AddRange(devpath.Split(Path.PathSeparator));
+
+			string mono_path = Environment.GetEnvironmentVariable("MONO_PATH");
+			if (!string.IsNullOrEmpty(mono_path))
+				ret.AddRange(mono_path.Split(Path.PathSeparator));
+
+			return ret.ToArray();
+		}
+
+		static ClassLoader()
+		{
 			foreach (string path in searchPath)
 			{
 				foreach (string file in Directory.GetFiles(path))
@@ -150,7 +108,7 @@ namespace Peach.Core
 
 					try
 					{
-						Assembly asm = LoadAssembly(file);
+						Assembly asm = Load(file);
 						asm.GetExportedTypes(); // make sure we can load exported types.
 						AssemblyCache.Add(file, asm);
 					}
@@ -162,8 +120,11 @@ namespace Peach.Core
 			}
 		}
 
-		public static Assembly LoadAssembly(string fullPath)
+		static Assembly Load(string fullPath)
 		{
+			if (!File.Exists(fullPath))
+				throw new FileNotFoundException("The file \"" + fullPath + "\" does not exist.");
+
 			// http://mikehadlow.blogspot.com/2011/07/detecting-and-changing-files-internet.html
 			var zone = Zone.CreateFromUrl(fullPath);
 			if (zone.SecurityZone > SecurityZone.MyComputer)
@@ -171,6 +132,40 @@ namespace Peach.Core
 
 			Assembly asm = Assembly.LoadFrom(fullPath);
 			return asm;
+		}
+
+		static bool TryLoad(string fullPath)
+		{
+			if (!File.Exists(fullPath))
+				return false;
+
+			if (!AssemblyCache.ContainsKey(fullPath))
+			{
+				var asm = Load(fullPath);
+				asm.GetExportedTypes(); // make sure we can load exported types.
+				AssemblyCache.Add(fullPath, asm);
+			}
+
+			return true;
+		}
+
+		public static void LoadAssembly(string fileName)
+		{
+			if (Path.IsPathRooted(fileName))
+			{
+				if (TryLoad(fileName))
+					return;
+			}
+			else
+			{
+				foreach (string path in searchPath)
+				{
+					if (TryLoad(Path.Combine(path, fileName)))
+						return;
+				}
+			}
+
+			throw new FileNotFoundException();
 		}
 
 		/// <summary>
@@ -443,19 +438,34 @@ namespace Peach.Core
 		{
 			var color = Console.ForegroundColor;
 
-			var domTypes = new SortedSet<Type>(new TypeComparer());
+			var domTypes = new SortedDictionary<string, Type>();
 
 			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.Dom.DataElementAttribute>(null))
 			{
-				if (!domTypes.Add(type.Value))
-					Console.WriteLine("Already scanned data element: {0}", type.Value.Name);
+				if (domTypes.ContainsKey(type.Key.elementName))
+				{
+					PrintDuplicate("Data element", type.Key.elementName, domTypes[type.Key.elementName], type.Value);
+					continue;
+				}
+
+				domTypes.Add(type.Key.elementName, type.Value);
 			}
 
+			var pluginsByName = new SortedDictionary<string, Type>();
 			var plugins = new SortedDictionary<Type, SortedDictionary<Type, SortedSet<PluginAttribute>>>(new TypeComparer());
 
 			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.PluginAttribute>(null))
 			{
 				var pluginType = type.Key.Type;
+
+				string fullName = type.Key.Type.Name + ": " + type.Key.Name;
+				if (pluginsByName.ContainsKey(fullName))
+				{
+					PrintDuplicate(type.Key.Type.Name, type.Key.Name, pluginsByName[fullName], type.Value);
+					continue;
+				}
+			
+				pluginsByName.Add(fullName, type.Value);
 
 				if (!plugins.ContainsKey(pluginType))
 					plugins.Add(pluginType, new SortedDictionary<Type, SortedSet<PluginAttribute>>(new TypeComparer()));
@@ -467,16 +477,16 @@ namespace Peach.Core
 
 				var attrs = plugin[type.Value];
 
-				if (!attrs.Add(type.Key))
-					Console.WriteLine("{0} class '{1}' already has attribute '{2}'.", pluginType.Name, type.Value.Name, type.Key.Name);
+				bool added = attrs.Add(type.Key);
+				System.Diagnostics.Debug.Assert(added);
 			}
 
 			Console.WriteLine("----- Data Elements --------------------------------------------");
 			foreach (var elem in domTypes)
 			{
 				Console.WriteLine();
-				Console.WriteLine("  {0}", elem.Name);
-				PrintParams(elem);
+				Console.WriteLine("  {0}", elem.Key);
+				PrintParams(elem.Value);
 			}
 
 			foreach (var kv in plugins)
@@ -510,6 +520,28 @@ namespace Peach.Core
 			}
 		}
 
+		private static void PrintDuplicate(string category, string name, Type type1, Type type2)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+
+			if (type1 == type2)
+			{
+				// duplicate name on same type
+				Console.WriteLine("{0} '{1}' declared more than once in assembly '{2}' class '{3}'.",
+					category, name, type1.Assembly.Location, type1.FullName);
+			}
+			else
+			{
+				// duplicate name on different types
+				Console.WriteLine("{0} '{1}' declared in assembly '{2}' class '{3}' and in assembly {4} and class '{5}'.",
+					category, name, type1.Assembly.Location, type1.FullName, type2.Assembly.Location, type2.FullName);
+			}
+
+			Console.ForegroundColor = color;
+			Console.WriteLine();
+		}
+
 		private static void PrintParams(Type elem)
 		{
 			var properties = new SortedSet<ParameterAttribute>(elem.GetAttributes<ParameterAttribute>(null), new ParamComparer());
@@ -522,7 +554,7 @@ namespace Peach.Core
 
 				string type = string.Format("({0})", prop.type.Name);
 
-				Console.WriteLine("    {0} {1} {2} {3}{4}", prop.required ? "*" : "-",
+				Console.WriteLine("    {0} {1} {2} {3}.{4}", prop.required ? "*" : "-",
 					prop.name.PadRight(24), type.PadRight(14), prop.description, value);
 			}
 		}
@@ -677,7 +709,6 @@ namespace Peach.Core
 				+ Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
 
 			char[] line = (new System.String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-			long expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
 
 			for (int i = 0; i < bytesLength; i += bytesPerLine)
 			{

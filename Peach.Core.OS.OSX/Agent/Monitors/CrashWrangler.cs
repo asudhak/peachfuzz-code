@@ -63,7 +63,7 @@ namespace Peach.Core.Agent.Monitors
 	/// Monitor will use OS X's built in CrashReporter (similar to watson)
 	/// to detect and report crashes.
 	/// </summary>
-	[Monitor("CrashWrangler")]
+	[Monitor("CrashWrangler", true)]
 	[Monitor("osx.CrashWrangler")]
 	[Parameter("Command", typeof(string), "Command to execute")]
 	[Parameter("Arguments", typeof(string), "Commad line arguments", "")]
@@ -77,8 +77,6 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", "cw.pid")]
 	public class CrashWrangler : Monitor
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		protected string _command = null;
 		protected string _arguments = null;
 		protected string _startOnCall = null;
@@ -209,43 +207,38 @@ namespace Peach.Core.Agent.Monitors
 
 			var lastTime = _totalProcessorTime;
 
-			_totalProcessorTime = GetTotalCputime(_procCommand.Id);
+			_totalProcessorTime = GetTotalCputime(_procCommand);
 
 			return _totalProcessorTime > 0 && lastTime == _totalProcessorTime;
 		}
 
-		public static ulong GetTotalCputime(int pid)
+		private ulong GetTotalCputime(Proc p)
 		{
-			int len = Marshal.SizeOf(typeof(proc_taskinfo));
-			IntPtr ptr = Marshal.AllocHGlobal(len);
-
 			try
 			{
-				ulong ret = 0;
-
-				int err = proc_pidinfo(pid, PROC_PIDTASKINFO, 0, ptr, len);
-				if (err != len)
-				{
-					logger.Info("CrashWrangler: Could not measure CPU times for pid {0}, assuming idle.", pid);
-				}
-				else
-				{
-					proc_taskinfo ti = (proc_taskinfo)Marshal.PtrToStructure(ptr, typeof(proc_taskinfo));
-					ret = ti.pti_total_user + ti.pti_total_system;
-				}
-				
-				return ret;
+				return ProcessInfo.Instance.Snapshot(p).TotalProcessorTicks;
 			}
-			finally
+			catch
 			{
-				Marshal.FreeHGlobal(ptr);
+				return 0;
 			}
-
 		}
 
 		private bool _IsProcessRunning()
 		{
-			return _procCommand != null && !_procCommand.HasExited && !IsZombie(_procCommand.Id);
+			return _procCommand != null && !_procCommand.HasExited && !IsZombie(_procCommand);
+		}
+
+		private bool IsZombie(Proc p)
+		{
+			try
+			{
+				return !ProcessInfo.Instance.Snapshot(p).Responding;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		private void _StartProcess()
@@ -291,7 +284,7 @@ namespace Peach.Core.Agent.Monitors
 
 			// Wait for pid file to exist, open it up and read it
 			while (!File.Exists(_cwPidFile) && !_procHandler.HasExited)
-				Thread.Sleep(100);
+				Thread.Sleep(250);
 
 			string strPid = File.ReadAllText(_cwPidFile);
 			int pid = Convert.ToInt32(strPid);
@@ -313,8 +306,11 @@ namespace Peach.Core.Agent.Monitors
 					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"");
 
 				// If the exit code is 0 or there is a log, the program ran to completion
-				_procCommand.Close();
-				_procCommand = null;
+				if (_procCommand != null)
+				{
+					_procCommand.Close();
+					_procCommand = null;
+				}
 			}
 		}
 
@@ -417,38 +413,6 @@ namespace Peach.Core.Agent.Monitors
 			return summary.ToString();
 		}
 
-		bool IsZombie(int pid)
-		{
-			int[] mib = new int[] {
-				CTL_KERN,
-				KERN_PROC,
-				KERN_PROC_PID,
-				pid
-			};
-
-			int len = kinfo_proc_size;
-			IntPtr ptr = Marshal.AllocHGlobal(len);
-
-			try
-			{
-				int ret = sysctl(mib, (uint)mib.Length, ptr, ref len, IntPtr.Zero, 0);
-				if (ret != -1)
-				{
-					extern_proc kp = (extern_proc)Marshal.PtrToStructure(ptr, typeof(extern_proc));
-					return kp.p_stat == (int)p_stat.SZOMB;
-				}
-				else
-				{
-					logger.Info("CrashWrangler: Failed to query process info for pid {0}.", pid);
-					return false;
-				}
-			}
-			finally
-			{
-				Marshal.FreeHGlobal(ptr);
-			}
-		}
-
 		private static string GetLastError(int err)
 		{
 			IntPtr ptr = strerror(err);
@@ -456,99 +420,8 @@ namespace Peach.Core.Agent.Monitors
 			return ret;
 		}
 
-		#region P/Invoke Stuff
-		// <libproc.h>
-		[DllImport("libc")]
-		private static extern int proc_pidinfo(int pid, int flavor, ulong arg, IntPtr buffer, int buffersize);
-
-		// <sys/proc_info.h>
-		[StructLayout(LayoutKind.Sequential)]
-		struct proc_taskinfo
-		{
-			public ulong pti_virtual_size;       /* virtual memory size (bytes) */
-			public ulong pti_resident_size;      /* resident memory size (bytes) */
-			public ulong pti_total_user;         /* total time */
-			public ulong pti_total_system;
-			public ulong pti_threads_user;       /* existing threads only */
-			public ulong pti_threads_system;
-			public int pti_policy;               /* default policy for new threads */
-			public int pti_faults;               /* number of page faults */
-			public int pti_pageins;              /* number of actual pageins */
-			public int pti_cow_faults;           /* number of copy-on-write faults */
-			public int pti_messages_sent;        /* number of messages sent */
-			public int pti_messages_received;    /* number of messages received */
-			public int pti_syscalls_mach;        /* number of mach system calls */
-			public int pti_syscalls_unix;        /* number of unix system calls */
-			public int pti_csw;                  /* number of context switches */
-			public int pti_threadnum;            /* number of threads in the task */
-			public int pti_numrunning;           /* number of running threads */
-			public int pti_priority;             /* task priority*/
-		}
-
-		// <sys/proc_info.h>
-		private static int PROC_PIDTASKINFO { get { return 4; } }
-
-		// sizeof(struct kinfo_proc)
-		private static int kinfo_proc_size { get { return 648; } }
-
-		// <sys/proc.h>
-		// Only contains the interesting parts at the beginning of the struct.
-		// However, we allocate kinfo_proc_size when calling the sysctl.
-		[StructLayout(LayoutKind.Sequential)]
-		struct extern_proc
-		{
-			public int p_starttime_tv_sec;
-			public int p_starttime_tv_usec;
-			public IntPtr p_vmspace;
-			public IntPtr p_sigacts;
-			public int p_flag;
-			public char p_stat;
-			public int p_pid;
-			public int p_oppid;
-			public int p_dupfd;
-			public IntPtr user_stack;
-			public IntPtr exit_thread;
-			public int p_debugger;
-			public int sigwait;
-			public uint p_estcpu;
-			public int p_cpticks;
-			public uint p_pctcpu;
-			public IntPtr p_wchan;
-			public IntPtr p_wmesg;
-			public uint p_swtime;
-			public uint p_slptime;
-			public uint p_realtimer_it_interval_tv_sec;
-			public uint p_realtimer_it_interval_tv_usec;
-			public uint p_realtimer_it_value_tv_sec;
-			public uint p_realtimer_it_value_tv_usec;
-			public uint p_rtime_tv_sec;
-			public uint p_rtime_tv_usec;
-			public ulong p_uticks;
-			public ulong p_sticks;
-			public ulong p_iticks;
-		}
-
-		// <sys/sysctl.h>
-		private static int CTL_KERN = 1;
-		private static int KERN_PROC = 14;
-		private static int KERN_PROC_PID = 1;
-
-		// <sys/proc.h>
-		private enum p_stat
-		{
-			SIDL   = 1, // Process being created by fork.
-			SRUN   = 2, // Currently runnable.
-			SSLEEP = 3, // Sleeping on an address.
-			SSTOP  = 4, // Process debugging or suspension.
-			SZOMB  = 5, // Awiting collection by parent.
-		}
-
 		[DllImport("libc")]
 		private static extern IntPtr strerror(int err);
-
-		[DllImport("libc")]
-		private static extern int sysctl([MarshalAs(UnmanagedType.LPArray)] int[] name, uint namelen, IntPtr oldp, ref int oldlenp, IntPtr newp, int newlen);
-		#endregion
 	}
 }
 

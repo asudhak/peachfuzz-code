@@ -565,9 +565,9 @@ namespace Peach.Core
 	{
 		private const int DefaultInitialCapacity = 0;
 
-		private static readonly string _keyTypeName = typeof(TKey).FullName;
-		private static readonly string _valueTypeName = typeof(TValue).FullName;
-		private static readonly bool _valueTypeIsReferenceType = !typeof(ValueType).IsAssignableFrom(typeof(TValue));
+		//private static readonly string _keyTypeName = typeof(TKey).FullName;
+		//private static readonly string _valueTypeName = typeof(TValue).FullName;
+		//private static readonly bool _valueTypeIsReferenceType = !typeof(ValueType).IsAssignableFrom(typeof(TValue));
 
 		private Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey,TValue>();
 		private List<KeyValuePair<TKey, TValue>> _list = new List<KeyValuePair<TKey,TValue>>();

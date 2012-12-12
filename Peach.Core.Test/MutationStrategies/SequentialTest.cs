@@ -147,6 +147,17 @@ namespace Peach.Core.Test.MutationStrategies
 		}
 
 		[Test]
+		public void Test3a()
+		{
+			// Tests skipping to the 2nd iteration
+			RunConfiguration config = new RunConfiguration();
+			config.skipToIteration = 2;
+			FuzzSequential(config);
+			Assert.AreEqual(15, values.Count);
+			Assert.AreEqual(14, mutations.Count);
+		}
+
+		[Test]
 		public void Test4()
 		{
 			// Tests skipping a middle iteration
@@ -155,6 +166,17 @@ namespace Peach.Core.Test.MutationStrategies
 			FuzzSequential(config);
 			Assert.AreEqual(5, values.Count);
 			Assert.AreEqual(4, mutations.Count);
+		}
+
+		[Test]
+		public void Test4a()
+		{
+			// Tests skipping to the last iteration
+			RunConfiguration config = new RunConfiguration();
+			config.skipToIteration = 15;
+			FuzzSequential(config);
+			Assert.AreEqual(2, values.Count);
+			Assert.AreEqual(1, mutations.Count);
 		}
 
 		[Test]
@@ -204,7 +226,7 @@ namespace Peach.Core.Test.MutationStrategies
 		}
 
 		[Test]
-		public void TestSequencial()
+		public void TestSequential()
 		{
 			string xml =
 @"<?xml version='1.0' encoding='utf-8'?>

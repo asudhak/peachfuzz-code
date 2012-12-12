@@ -43,19 +43,19 @@ namespace Peach.Core.Transformers
 	[Serializable]
 	public class Eval : Transformer
 	{
-		Dictionary<string, Variant> m_args;
+		//Dictionary<string, Variant> m_args;
 
 		public Eval(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			m_args = args;
+			//m_args = args;
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-			string format;
-			if (m_args.ContainsKey("eval"))
-				format = (string)(m_args["eval"]);
+			//string format;
+			//if (m_args.ContainsKey("eval"))
+			//    format = (string)(m_args["eval"]);
 
 			return new BitStream(data.Value);
 		}

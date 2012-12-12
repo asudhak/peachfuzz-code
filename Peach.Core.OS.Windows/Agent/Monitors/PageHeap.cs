@@ -38,7 +38,7 @@ using System.Threading;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("PageHeap")]
+	[Monitor("PageHeap", true)]
 	[Parameter("Executable", typeof(string), "Name of executable to enable (NO PATH)")]
 	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", "")]
 	public class PageHeap : Monitor

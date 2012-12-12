@@ -413,7 +413,7 @@
     <Compile Include="Agent\Monitors\IpPower9258Monitor.cs" />
     <Compile Include="Agent\Monitors\Memory.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
-    <Compile Include="Agent\Monitors\BaseProcess.cs" />
+    <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
@@ -554,6 +554,8 @@
     <Compile Include="ParameterParser.cs" />
     <Compile Include="PeachException.cs" />
     <Compile Include="PitParsableAttribute.cs" />
+    <Compile Include="Platform.cs" />
+    <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxy\Connection.cs" />
     <Compile Include="Proxy\Net\NetProxy.cs" />

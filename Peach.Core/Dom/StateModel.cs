@@ -115,7 +115,10 @@ namespace Peach.Core.Dom
 				OnStarting();
 
 				foreach (Publisher publisher in context.test.publishers.Values)
+				{
 					publisher.Iteration = context.test.strategy.Iteration;
+					publisher.IsControlIteration = context.controlIteration;
+				}
 
 				dataActions.Clear();
 
@@ -167,6 +170,7 @@ namespace Peach.Core.Dom
 								//Peach.Core.Analyzers.PitParser.displayDataModel(action.dataModel);
 
 								var value = action.dataModel.Value;
+								System.Diagnostics.Debug.Assert(value != null);
 
 								// Update our origional copy to have data!
 								action.origionalDataModel = action.dataModel.Clone() as DataModel;
@@ -174,6 +178,7 @@ namespace Peach.Core.Dom
 							else if (action.dataModel != null)
 							{
 								var value = action.dataModel.Value;
+								System.Diagnostics.Debug.Assert(value != null);
 
 								// Update our origional copy to have data!
 								action.origionalDataModel = action.dataModel.Clone() as DataModel;
@@ -211,6 +216,7 @@ namespace Peach.Core.Dom
 
 									// Invalidate model and produce value
 									var value = param.dataModel.Value;
+									System.Diagnostics.Debug.Assert(value != null);
 
 									// Update our origional copy to have data!
 									param.origionalDataModel = param.dataModel.Clone() as DataModel;

@@ -60,19 +60,15 @@ namespace PeachFuzzBang
 		Peach.Core.Dom.Dom userSelectedDom = null;
 		DataModel userSelectedDataModel = null;
 
-		private void LoadPlatformAssembly(string name)
+		private void LoadPlatformAssembly()
 		{
-			string osAssembly = System.IO.Path.Combine(
-				System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-				name);
-
 			try
 			{
-				ClassLoader.LoadAssembly(osAssembly);
+				Platform.LoadAssembly();
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Could not load platform assembly \"" + name + "\".\n\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Console.WriteLine(ex.Message);
 			}
 		}
@@ -90,20 +86,20 @@ namespace PeachFuzzBang
 			tabControl.TabPages.Remove(tabPageFuzzing);
 			//tabControl.TabPages.Remove(tabPageOutput);
 
+			LoadPlatformAssembly();
+
 			// Check OS and load side assembly
 			Platform.OS os = Platform.GetOS();
 
 			switch (os)
 			{
 				case Platform.OS.OSX:
-					LoadPlatformAssembly("Peach.Core.OS.OSX.dll");
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
 					richTextBoxOSX.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.OSXDebugging.rtf"), RichTextBoxStreamType.RichText);
 					break;
 				case Platform.OS.Linux:
-					LoadPlatformAssembly("Peach.Core.OS.Linux.dll");
 					tabControl.TabPages.Remove(tabPageDebuggerOSX);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
@@ -123,8 +119,6 @@ namespace PeachFuzzBang
 							textBoxAttachToProcessProcessName.Items.Add(proc.ProcessName);
 							proc.Close();
 						}
-
-						LoadPlatformAssembly("Peach.Core.OS.Windows.dll");
 
 						tabControl.TabPages.Remove(tabPageDebuggerOSX);
 						tabControl.TabPages.Remove(tabPageDebuggerLinux);

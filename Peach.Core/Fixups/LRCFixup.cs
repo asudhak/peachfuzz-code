@@ -54,7 +54,9 @@ namespace Peach.Core.Fixups
 			byte lrc = 0;
 
 			foreach (byte b in data)
-				lrc ^= b;
+				lrc = (byte)((lrc + b) & 0xff);
+
+			lrc = (byte)(((lrc ^ 0xff) + 1) % 0xff);
 
 			if (parent is Dom.String)
 				return new Variant(lrc.ToString());

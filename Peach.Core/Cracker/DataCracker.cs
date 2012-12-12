@@ -74,11 +74,6 @@ namespace Peach.Core.Cracker
 		/// </summary>
 		List<DataElement> _elementsWithAnalyzer = new List<DataElement>();
 
-		/// <summary>
-		/// The full data stream.
-		/// </summary>
-		BitStream _data = null;
-
 		#region Events
 
 		public event EnterHandleNodeEventHandler EnterHandleNodeEvent;
@@ -126,7 +121,6 @@ namespace Peach.Core.Cracker
 		{
 			_sizedBlockStack = new List<DataElement>();
 			_sizedBlockMap = new Dictionary<DataElement, long>();
-			_data = data;
 
 			IsLookAhead = false;
 
@@ -222,8 +216,6 @@ namespace Peach.Core.Cracker
 			{
 				if (element is Choice)
 				{
-					var choice = element as Choice;
-
 					// TODO - Fast CACHE IT!
 				}
 			}

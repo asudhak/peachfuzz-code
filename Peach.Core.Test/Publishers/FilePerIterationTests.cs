@@ -48,8 +48,8 @@ namespace Peach.Core.Test.Publishers
 
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
-			config.rangeStart = 0;
-			config.rangeStop = stop;
+			config.rangeStart = 1;
+			config.rangeStop = stop + 1;
 
 			Engine e = new Engine(null);
 			e.config = config;
@@ -80,7 +80,12 @@ namespace Peach.Core.Test.Publishers
 
 			for (uint i = 0; i < 10; ++i)
 			{
-				string[] result = File.ReadAllLines(string.Format(tempFile, i));
+				string file = string.Format(tempFile, i);
+
+				if (i == 0)
+					file = string.Format(tempFile, 1) + ".Control";
+
+				string[] result = File.ReadAllLines(file);
 
 				if (expected[i].Length > 0)
 				{

@@ -68,7 +68,7 @@ namespace PeachXmlGenerator
 					{ "s|samples=", v => samplesFolder = v },
 				};
 
-				List<string> extra = p.Parse(args);
+				p.Parse(args);
 
 				if (dtdFile == null || rootElementName == null)
 				{

@@ -236,7 +236,6 @@ namespace Peach.Core
 				MutationStrategy mutationStrategy = test.strategy;
 				mutationStrategy.Initialize(context, this);
 
-				uint iterationCount = 1;
 				uint iterationStart = 1;
 				uint iterationStop = Int32.MaxValue;
 				uint? iterationTotal = null;
@@ -259,6 +258,9 @@ namespace Peach.Core
 					iterationStart = context.config.skipToIteration;
 				}
 
+				uint iterationCount = Math.Max(1, iterationStart);
+				bool firstRun = true;
+
 				// First iteration is always a control/recording iteration
 				context.controlIteration = true;
 				context.controlRecordingIteration = true;
@@ -275,8 +277,10 @@ namespace Peach.Core
 
 				context.agentManager.SessionStarting();
 
-				while (iterationCount < iterationStop && context.continueFuzzing)
+				while ((firstRun || iterationCount < iterationStop) && context.continueFuzzing)
 				{
+					firstRun = false;
+
 					try
 					{
 						if (context.config.singleIteration && !context.controlIteration && iterationCount == 1)
@@ -349,29 +353,15 @@ namespace Peach.Core
 							{
 								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
 								{
-									context.continueFuzzing = false;
-
-									Fault fault = new Fault();
-									fault.detectionSource = "PeachControlIteration";
-									fault.iteration = iterationCount;
-									fault.title = "Peach Control Iteration Failed";
-									fault.description = @"The Peach control iteration performed failed
+									string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Number of actions is different.";
-									fault.folderName = "ControlIteration";
-									fault.type = FaultType.Fault;
+									OnControlFault(context, iterationCount, description);
 								}
 								else if (context.controlRecordingStatesExecuted.Count != context.controlStatesExecuted.Count)
 								{
-									context.continueFuzzing = false;
-
-									Fault fault = new Fault();
-									fault.detectionSource = "PeachControlIteration";
-									fault.iteration = iterationCount;
-									fault.title = "Peach Control Iteration Failed";
-									fault.description = @"The Peach control iteration performed failed
+									string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Number of states is different.";
-									fault.folderName = "ControlIteration";
-									fault.type = FaultType.Fault;
+									OnControlFault(context, iterationCount, description);
 								}
 
 								if (context.faults.Count == 0)
@@ -380,16 +370,9 @@ to execute same as initial control.  Number of states is different.";
 									{
 										if (!context.controlActionsExecuted.Contains(action))
 										{
-											context.continueFuzzing = false;
-
-											Fault fault = new Fault();
-											fault.detectionSource = "PeachControlIteration";
-											fault.iteration = iterationCount;
-											fault.title = "Peach Control Iteration Failed";
-											fault.description = @"The Peach control iteration performed failed
+											string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Action " + action.name + " was not performed.";
-											fault.folderName = "ControlIteration";
-											fault.type = FaultType.Fault;
+											OnControlFault(context, iterationCount, description);
 										}
 									}
 								}
@@ -400,16 +383,9 @@ to execute same as initial control.  Action " + action.name + " was not performe
 									{
 										if (!context.controlStatesExecuted.Contains(state))
 										{
-											context.continueFuzzing = false;
-
-											Fault fault = new Fault();
-											fault.detectionSource = "PeachControlIteration";
-											fault.iteration = iterationCount;
-											fault.title = "Peach Control Iteration Failed";
-											fault.description = @"The Peach control iteration performed failed
+											string description = @"The Peach control iteration performed failed
 to execute same as initial control.  State " + state.name + "was not performed.";
-											fault.folderName = "ControlIteration";
-											fault.type = FaultType.Fault;
+											OnControlFault(context, iterationCount, description);
 										}
 									}
 								}
@@ -437,7 +413,11 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							logger.Debug("runTest: detected fault on iteration " + iterationCount);
 
 							foreach (Fault fault in context.faults)
+							{
 								fault.iteration = iterationCount;
+								fault.controlIteration = context.controlIteration;
+								fault.controlRecordingIteration = context.controlRecordingIteration;
+							}
 
 							OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
@@ -502,14 +482,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							if (iterationTotal < iterationStop)
 								iterationStop = iterationTotal.Value;
 
-						}
-
-						// The 1th iteration is magical and needs to always run once so we can
-						// figure out how many iterations are actually available
-						if (iterationCount == 1)
-						{
-							if (iterationStart > iterationCount)
-								iterationCount = (iterationStart - 1);
 						}
 
 						// Don't increment the iteration count if we are on a 
@@ -587,6 +559,22 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 				test.strategy.Finalize(context, this);
 			}
+		}
+
+		private void OnControlFault(RunContext context, uint iterationCount, string description)
+		{
+			context.continueFuzzing = false;
+
+			Fault fault = new Fault();
+			fault.detectionSource = "PeachControlIteration";
+			fault.iteration = iterationCount;
+			fault.controlIteration = context.controlIteration;
+			fault.controlRecordingIteration = context.controlRecordingIteration;
+			fault.title = "Peach Control Iteration Failed";
+			fault.description = description;
+			fault.folderName = "ControlIteration";
+			fault.type = FaultType.Fault;
+			context.faults.Add(fault);
 		}
 	}
 

@@ -12,11 +12,11 @@ namespace Peach.Core.Test
 		protected List<Variant> mutations = null;
 		protected List<BitStream> values = null;
 		protected List<Dom.DataModel> dataModels = null;
+		protected List<Dom.DataModel> mutatedDataModels = null;
 		protected List<Dom.Action> actions = null;
 		protected List<string> strategies = null;
 		protected List<string> iterStrategies = null;
 		protected List<string> allStrategies = null;
-		protected SortedSet<string> firstRun = null;
 
 		[SetUp]
 		public void SetUp()
@@ -35,11 +35,11 @@ namespace Peach.Core.Test
 
 		protected void ResetContainers()
 		{
-			firstRun = new SortedSet<string>();
 			values = new List<BitStream>();
 			mutations = new List<Variant>();
 			actions = new List<Dom.Action>();
 			dataModels = new List<Dom.DataModel>();
+			mutatedDataModels = new List<Dom.DataModel>();
 			strategies = new List<string>();
 			allStrategies = new List<string>();
 			iterStrategies = new List<string>();
@@ -51,8 +51,13 @@ namespace Peach.Core.Test
 				return;
 
 			// Collect mutated values only after the first run
-			if (!firstRun.Add(action.dataModel.fullName))
-					mutations.Add(action.dataModel.Count > 0 ? action.dataModel[0].InternalValue : null);
+			var dom = action.parent.parent.parent as Dom.Dom;
+
+			if (!dom.context.controlIteration)
+			{
+				mutations.Add(action.dataModel.Count > 0 ? action.dataModel[0].InternalValue : null);
+				mutatedDataModels.Add(action.dataModel);
+			}
 
 			// Collect transformed values, actions and dataModels always
 			values.Add(action.dataModel.Count > 0 ? action.dataModel[0].Value : null);

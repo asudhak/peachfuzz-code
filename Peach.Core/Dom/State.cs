@@ -45,7 +45,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class State : INamed, IPitSerializable
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public string _name = "Unknown State";
 		public List<Action> actions = new List<Action>();
 

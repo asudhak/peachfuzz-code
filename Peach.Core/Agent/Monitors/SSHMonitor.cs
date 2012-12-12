@@ -7,7 +7,7 @@ using Renci.SshNet;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("SSHMonitor")]
+    [Monitor("SSHMonitor", true)]
     [Parameter("Host", typeof (string), "Host to ssh to.")]
     [Parameter("Username", typeof (string), "Username for ssh", "")]
 	[Parameter("Password", typeof(string), "Password for ssh account", "")]
@@ -104,7 +104,6 @@ namespace Peach.Core.Agent.Monitors
             catch (Exception e)
             {
                 throw new PeachException(e.Message);
-                return false; 
             }
 
             //TODO change to regex

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("PingMonitor")]
+    [Monitor("PingMonitor", true)]
     [Parameter("Host", typeof(string), "Host to ping : default 127.0.0.1")]
     [Parameter("Timeout", typeof(int), "Ping timeout in milliseconds default : 1000", "1000")] 
     [Parameter("Data", typeof(string), "Data to send : default none", "")]
@@ -76,7 +76,7 @@ namespace Peach.Core.Agent.Monitors
                 else
                     return true;
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return false; 
             }

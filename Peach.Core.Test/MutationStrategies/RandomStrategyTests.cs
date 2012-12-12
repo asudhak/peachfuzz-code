@@ -42,7 +42,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1001);
+			RunEngine(xml, 1, 1000);
 
 			// verify values
 			Assert.AreEqual(999, mutations.Count);
@@ -82,7 +82,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1001);
+			RunEngine(xml, 1, 1000);
 
 			// verify values
 			int dm1 = 0;
@@ -95,7 +95,8 @@ namespace Peach.Core.Test.MutationStrategies
 					dm2 += 1;
 			}
 
-			Assert.AreEqual(2000, actions.Count);
+			// 999 mutations, control at iteration 1, 201, 401, 601, 801, two data models = (999+5)*2
+			Assert.AreEqual((999+5)*2, actions.Count);
 			Assert.AreEqual(999, allStrategies.Count);
 			Assert.AreEqual(allStrategies.Count, dm1 + dm2);
 
@@ -146,8 +147,9 @@ namespace Peach.Core.Test.MutationStrategies
 			RunEngine(xml, 1, 1001);
 
 			// verify values
+			// 1000 mutations, control on iteration 1, 201, 401, 601, 801 = 1005 actions
 			// Random number between 1 and 5 is on average 3, for 1000 iterations is 3000 mutations
-			Assert.AreEqual(1000, actions.Count);
+			Assert.AreEqual(1005, actions.Count);
 			Assert.Greater(allStrategies.Count, 2900);
 			Assert.Less(allStrategies.Count, 3100);
 		}
@@ -204,7 +206,8 @@ namespace Peach.Core.Test.MutationStrategies
 			RunEngine(xml, 1, 1001);
 
 			// Sanity check
-			Assert.AreEqual(3000, actions.Count);
+			// 1000 mutations, control on 1, 201, 401, 601, 801, 3 data models
+			Assert.AreEqual((1000+5)*3, actions.Count);
 
 			var oldStrategies = allStrategies;
 			var oldActions = actions;
@@ -271,7 +274,8 @@ namespace Peach.Core.Test.MutationStrategies
 			RunEngine(xml, 1, 1001);
 
 			// Sanity check
-			Assert.AreEqual(3000, actions.Count);
+			// 1000 mutations, control on 1, 201, 401, 601, 801, 3 data models
+			Assert.AreEqual((1000+5)*3, actions.Count);
 
 			var oldStrategies = allStrategies;
 			var oldActions = actions;
@@ -279,10 +283,11 @@ namespace Peach.Core.Test.MutationStrategies
 			// Reset the DataModelCollector
 			ResetContainers();
 
-			RunEngine(xml, 501, 1000);
+			RunEngine(xml, 501, 1001);
 
 			// Sanity check
-			Assert.AreEqual(1500, actions.Count);
+			// 500 mutations, control on 501, 601, 801, 3 data models
+			Assert.AreEqual((500+3)*3, actions.Count);
 
 			oldStrategies.RemoveRange(0, oldStrategies.Count - allStrategies.Count);
 			oldActions.RemoveRange(0, oldActions.Count - actions.Count);
@@ -343,13 +348,15 @@ namespace Peach.Core.Test.MutationStrategies
 			e.config = config;
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(49, mutations.Count);
-			Assert.AreEqual(50, dataModels.Count);
+			Assert.AreEqual(50, mutations.Count);
+
+			// 50 mutations, control on 1, 11, 21, 31, 41
+			Assert.AreEqual(50 + 5, dataModels.Count);
 
 			int lastSize = 0;
 
 			// Skip data model 0, its the magical 1st pass w/o mutations
-			for (int i = 0; i < 50; ++i)
+			for (int i = 0; i < 55; ++i)
 			{
 				Assert.AreEqual(1, dataModels[i].Count);
 				Dom.Array item = dataModels[i][0] as Dom.Array;
@@ -360,8 +367,9 @@ namespace Peach.Core.Test.MutationStrategies
 
 				if (lastSize != item.Count)
 				{
-					// Change of data model should only occur at iteration 10, 20, 30, 40
-					Assert.AreEqual(0, i % 10);
+					// Change of data model should only occur at iteration 1, 11, 21, 31, 41
+					// which is the 0, 11, 22, 33, 44 indices
+					Assert.AreEqual(i / 10, i % 10);
 					lastSize = item.Count;
 				}
 
@@ -420,26 +428,39 @@ namespace Peach.Core.Test.MutationStrategies
 				"</Peach>";
 
 			RunSwitchTest(xml, 1, 101);
-			Assert.AreEqual(200, dataModels.Count);
+			// 2 actions, 100 mutations, switch every 10
+			Assert.AreEqual((100 + 10) * 2, dataModels.Count);
+			Assert.AreEqual(100 * 2, mutatedDataModels.Count);
+
 			var oldDataModels = dataModels;
+			var oldMutations = mutatedDataModels;
 
 			ResetContainers();
 			Assert.AreEqual(0, dataModels.Count);
+			Assert.AreEqual(0, mutatedDataModels.Count);
 
 			RunSwitchTest(xml, 48, 101);
-			Assert.AreEqual(108, dataModels.Count);
+			// 2 actions, 53 mutations, control iterations at 48, 51, 61, 71, 81, 91
+			Assert.AreEqual((53 + 6) * 2, dataModels.Count);
+			Assert.AreEqual(53 * 2, mutatedDataModels.Count);
 
 			oldDataModels.RemoveRange(0, oldDataModels.Count - dataModels.Count);
 			Assert.AreEqual(dataModels.Count, oldDataModels.Count);
 
-			// Because there are two actions, the first two entries in dataModels are the 0th iteration
-			for (int i = 2; i < dataModels.Count; ++i)
-			{
-				Assert.AreEqual(1, dataModels[i].Count);
-				Assert.AreEqual(1, oldDataModels[i].Count);
+			oldMutations.RemoveRange(0, oldMutations.Count - mutatedDataModels.Count);
+			Assert.AreEqual(oldMutations.Count, mutatedDataModels.Count);
 
-				Dom.Array item = dataModels[i][0] as Dom.Array;
-				Dom.Array oldItem = oldDataModels[i][0] as Dom.Array;
+			// Because there are two actions, the first two entries in dataModels are the 0th iteration
+			var oldDm = oldMutations;
+			var newDm = mutatedDataModels;
+
+			for (int i = 2; i < oldDm.Count; ++i)
+			{
+				Assert.AreEqual(1, oldDm[i].Count);
+				Assert.AreEqual(1, newDm[i].Count);
+
+				Dom.Array item = newDm[i][0] as Dom.Array;
+				Dom.Array oldItem = oldDm[i][0] as Dom.Array;
 
 				Assert.AreNotEqual(null, item);
 				Assert.AreNotEqual(null, oldItem);

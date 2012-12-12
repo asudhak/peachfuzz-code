@@ -50,11 +50,13 @@ namespace Peach.Core.Dom
 	[DataElement("Padding")]
 	[PitParsable("Padding")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "", "")]
+	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("aligned", typeof(bool), "Align parent to 8 byte boundry", "false")]
 	[Parameter("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", "8")]
-	[Parameter("alignedTo", typeof(DataElement), "Name of element to base our padding on (default is parent)", "")]
+	[Parameter("alignedTo", typeof(DataElement), "Name of element to base our padding on", "")]
 	[Parameter("lengthCalc", typeof(string), "Length calculation", "")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Serializable]
 	public class Padding : DataElement
 	{

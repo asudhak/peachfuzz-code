@@ -276,6 +276,16 @@ namespace Peach.Core
         public uint iteration = 0;
 
         /// <summary>
+        /// Is this a control iteration.
+        /// </summary>
+        public bool controlIteration = false;
+
+        /// <summary>
+        /// Is this control operation also a recording iteration?
+        /// </summary>
+        public bool controlRecordingIteration = false;
+
+        /// <summary>
         /// Type of fault
         /// </summary>
         public FaultType type = FaultType.Unknown;

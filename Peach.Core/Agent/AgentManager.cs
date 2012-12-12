@@ -49,12 +49,9 @@ namespace Peach.Core.Agent
 		OrderedDictionary<string, AgentClient> _agents = new OrderedDictionary<string, AgentClient>();
 		[NonSerialized]
 		Dictionary<string, Dom.Agent> _agentDefinitions = new Dictionary<string, Dom.Agent>();
-		[NonSerialized]
-        RunContext context;
 
 		public AgentManager(RunContext context)
 		{
-            this.context = context;
             context.CollectFaults += new RunContext.CollectFaultsHandler(context_CollectFaults);
 		}
 

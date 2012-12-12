@@ -199,6 +199,14 @@ namespace Peach.Core.Publishers
 			throw new PeachException("{0} publisher could not open raw socket", _type);
 		}
 
+		protected virtual void FilterInput(MemoryStream ms)
+		{
+		}
+
+		protected virtual void FilterOutput(MemoryStream ms)
+		{
+		}
+
 		protected override void OnOpen()
 		{
 			System.Diagnostics.Debug.Assert(_socket == null);
@@ -239,6 +247,16 @@ namespace Peach.Core.Publishers
 					var level = local.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
 					var opt = new MulticastOption(ep.Address, local);
 					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
+
+					if (local != IPAddress.Any && local != IPAddress.IPv6Any)
+					{
+						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, local);
+						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, local.GetAddressBytes());
+					}
+					else if (Platform.GetOS() == Platform.OS.OSX)
+					{
+						throw new PeachException("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface);
+					}
 				}
 				else
 				{
@@ -273,6 +291,8 @@ namespace Peach.Core.Publishers
 
 			_localEp = _socket.LocalEndPoint;
 			_remoteEp = ep;
+
+			Logger.Trace("Opened {0} socket, Local: {1}, Remote: {2}", _type, _localEp, _remoteEp);
 		}
 
 		protected override void OnClose()
@@ -320,6 +340,8 @@ namespace Peach.Core.Publishers
 					}
 					else
 					{
+						FilterInput(_recvBuffer);
+
 						if (Logger.IsDebugEnabled)
 							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
 
@@ -377,6 +399,8 @@ namespace Peach.Core.Publishers
 
 			if (Logger.IsDebugEnabled)
 				Logger.Debug("\n\n" + Utilities.HexDump(stream));
+
+			FilterOutput(stream);
 
 			try
 			{

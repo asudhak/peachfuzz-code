@@ -39,6 +39,35 @@ using NLog;
 
 namespace Peach.Core.Publishers
 {
+	internal static class RawHelpers
+	{
+		public const int IpHeaderLen = 20;
+
+		public static void SetLength(MemoryStream ms)
+		{
+			if (ms.Length < IpHeaderLen)
+				return;
+
+			var buf = ms.GetBuffer();
+			// Get in host order
+			ushort ip_len = BitConverter.ToUInt16(buf, 2);
+			ip_len += (ushort)(((ushort)(buf[0] & 0x0f)) << 2);
+			// Set in network order
+			buf[2] = (byte)(ip_len >> 8);
+			buf[3] = (byte)(ip_len);
+		}
+	}
+
+	/// <summary>
+	/// Allows for input/output of raw IP packets.
+	/// Protocol is the IP protocol number to send/receive.
+	/// This publisher does not expect an IP header in the output buffer.
+	/// The IP header is always included in the input buffer.
+	/// </summary>
+	/// <remarks>
+	/// Mac raw sockets don't support TCP or UDP receptions.
+	/// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
+	/// </remarks>
 	[Publisher("RawV4", true)]
 	[Publisher("Raw")]
 	[Publisher("raw.Raw")]
@@ -67,8 +96,28 @@ namespace Peach.Core.Publishers
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 0);
 			return s;
 		}
+
+		protected override void FilterInput(MemoryStream ms)
+		{
+			if (Platform.GetOS() != Platform.OS.OSX)
+				return;
+
+			// On OSX, ip_len is in host order and does not include the ip header
+			// http://cseweb.ucsd.edu/~braghava/notes/freebsd-sockets.txt
+			RawHelpers.SetLength(ms);
+		}
 	}
 
+	/// <summary>
+	/// Allows for input/output of raw IP packets.
+	/// Protocol is the IP protocol number to send/receive.
+	/// This publisher expects an IP header in the output buffer.
+	/// The IP header is always included in the input buffer.
+	/// </summary>
+	/// <remarks>
+	/// Mac raw sockets don't support TCP or UDP receptions.
+	/// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
+	/// </remarks>
 	[Publisher("RawIPv4", true)]
 	[Publisher("RawIp")]
 	[Publisher("raw.RawIp")]
@@ -96,6 +145,43 @@ namespace Peach.Core.Publishers
 			Socket s = OpenRawSocket(AddressFamily.InterNetwork, Protocol);
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 			return s;
+		}
+
+		protected override void FilterInput(MemoryStream ms)
+		{
+			if (Platform.GetOS() != Platform.OS.OSX)
+				return;
+
+			// On OSX, ip_len is in host order and does not include the ip header
+			// http://cseweb.ucsd.edu/~braghava/notes/freebsd-sockets.txt
+			RawHelpers.SetLength(ms);
+		}
+
+		protected override void FilterOutput(MemoryStream ms)
+		{
+			if (Platform.GetOS() != Platform.OS.OSX)
+				return;
+
+
+			if (ms.Length < RawHelpers.IpHeaderLen)
+				return;
+
+			// On OSX, ip_len and ip_off need to be in host order
+			// http://cseweb.ucsd.edu/~braghava/notes/freebsd-sockets.txt
+
+			byte tmp;
+
+			var buf = ms.GetBuffer();
+
+			// Swap ip_len
+			tmp = buf[2];
+			buf[2] = buf[3];
+			buf[3] = tmp;
+
+			// Swap ip_off
+			tmp = buf[6];
+			buf[6] = buf[7];
+			buf[7] = tmp;
 		}
 	}
 }

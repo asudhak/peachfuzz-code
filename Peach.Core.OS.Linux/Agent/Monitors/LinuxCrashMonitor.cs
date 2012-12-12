@@ -40,7 +40,7 @@ using System.ComponentModel;
 
 namespace Peach.Core.OS.Linux.Agent.Monitors
 {
-	[Monitor("LinuxCrashMonitor")]
+	[Monitor("LinuxCrashMonitor", true)]
 	[Parameter("Executable", typeof(string), "Target executable used to filter crashes.", "")]
 	[Parameter("LogFolder", typeof(string), "Folder with log files. Defaults to /var/peachcrash", "/var/peachcrash")]
 	[Parameter("Mono", typeof(string), "Full path and executable for mono runtime. Defaults to /usr/bin/mono.", "/usr/bin/mono")]

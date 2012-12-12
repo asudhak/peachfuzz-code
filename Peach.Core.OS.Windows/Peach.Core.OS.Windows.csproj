@@ -323,7 +323,6 @@
   <ItemGroup>
     <Compile Include="Agent\Monitors\PageHeap.cs" />
     <Compile Include="Agent\Monitors\PopupWatcher.cs" />
-    <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="Agent\Monitors\WindowsDebuggerHybrid.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\DebuggerInstance.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\SystemDebuggerInterface.cs" />
@@ -1024,6 +1023,7 @@
     <Compile Include="Debuggers\DebugEngine\WindowsDebugEngine.cs" />
     <Compile Include="Debuggers\WindowsSystem\SystemDebugger.cs" />
     <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
+    <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\ComPublisher.cs" />
     <Compile Include="Publishers\Com\IComContainer.cs" />

@@ -359,7 +359,7 @@
 			// 
 			this.comboBoxFuzzingStrategy.FormattingEnabled = true;
 			this.comboBoxFuzzingStrategy.Items.AddRange(new object[] {
-            "Sequencial Strategy",
+            "Sequential Strategy",
             "Random Strategy"});
 			this.comboBoxFuzzingStrategy.Location = new System.Drawing.Point(115, 78);
 			this.comboBoxFuzzingStrategy.Name = "comboBoxFuzzingStrategy";

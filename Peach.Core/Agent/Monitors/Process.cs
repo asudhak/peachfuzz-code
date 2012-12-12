@@ -42,6 +42,8 @@ namespace Peach.Core.Agent.Monitors
 	/// <summary>
 	/// Start a process
 	/// </summary>
+	[Monitor("Process", true)]
+	[Monitor("process.Process")]
 	[Parameter("Executable", typeof(string), "Executable to launch")]
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", "")]
 	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation (defaults to false)", "false")]
@@ -50,10 +52,8 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("StartOnCall", typeof(string), "Start command on state model call", "")]
 	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call", "")]
 	[Parameter("WaitForExitTimeout", typeof(int), "Wait timeout value.  Triggers fault when timeout hit.", "0")]
-	public abstract class BaseProcess : Monitor
+	public class Process : Monitor
 	{
-		protected abstract ulong GetTotalCpuTime(System.Diagnostics.Process process);
-
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		System.Diagnostics.Process _process = null;
@@ -69,7 +69,7 @@ namespace Peach.Core.Agent.Monitors
 		int _waitForExitTimeout = 0;
 		bool _waitForExitFault = false;
 
-		public BaseProcess(IAgent agent, string name, Dictionary<string, Variant> args)
+		public Process(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
 			if (args.ContainsKey("Executable"))
@@ -286,8 +286,10 @@ namespace Peach.Core.Agent.Monitors
 
 					if (_cpuKill)
 					{
+						var pi = ProcessInfo.Instance.Snapshot(_process);
+
 						var lastTime = _totalProcessorTime;
-						_totalProcessorTime = GetTotalCpuTime(_process);
+						_totalProcessorTime = pi.TotalProcessorTicks;
 
 						if (_totalProcessorTime > 0 && lastTime == _totalProcessorTime)
 						{

@@ -44,6 +44,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 using NLog;
+using System.Xml.Serialization;
 
 namespace Peach.Core.Dom
 {
@@ -56,17 +57,34 @@ namespace Peach.Core.Dom
 	/// </remarks>
 	public enum LengthType
 	{
+		[XmlEnum("bytes")]
 		Bytes,
+		[XmlEnum("bits")]
 		Bits,
-		Chars
+		[XmlEnum("chars")]
+		Chars,
+		[XmlEnum("calc")]
+		Calc
 	}
 
 	public enum ValueType
 	{
+		[XmlEnum("string")]
 		String,
+		[XmlEnum("hex")]
 		Hex,
-		Python,
-		Ruby
+		[XmlEnum("literal")]
+		Literal
+	}
+
+	public enum EndianType
+	{
+		[XmlEnum("big")]
+		Big,
+		[XmlEnum("little")]
+		Little,
+		[XmlEnum("network")]
+		Network,
 	}
 
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);
@@ -76,15 +94,6 @@ namespace Peach.Core.Dom
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	[Parameter("name", typeof(string), "Optional name for element", "")]
-	[Parameter("value", typeof(string), "Optional default value", "")]
-	[Parameter("valueType", typeof(ValueType), "Optional name for element", "string")]
-	[Parameter("token", typeof(bool), "Is element a token, optional, default false", "false")]
-	[Parameter("mutable", typeof(bool), "Is element mutable, optional, default false", "false")]
-	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false.  Optional.", "")]
-	[Parameter("minOccurs", typeof(int), "Minimum occurances, optional, defaults to 1", "1")]
-	[Parameter("maxOccurs", typeof(int), "Maximum occurances, optional, defaults to 1", "1")]
-	[Parameter("occurs", typeof(int), "Actual occurances, optional, defaults to 1", "1")]
 	[DebuggerDisplay("{fullName}")]
 	public abstract class DataElement : INamed, ICrackable
 	{

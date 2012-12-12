@@ -75,8 +75,6 @@ namespace Peach
 				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 
 				string analyzer = null;
-				string parser = null;
-				string strategy = null;
 				string parallel = null;
 				bool test = false;
 				string agent = null;
@@ -121,8 +119,6 @@ namespace Peach
 				{
 					{ "h|?|help", v => syntax() },
 					{ "analyzer=", v => analyzer = v },
-					{ "parser=", v => parser = v },
-					{ "strategy=", v => strategy = v},
 					{ "debug", v => config.debug = true },
 					{ "1", v => config.singleIteration = true},
 					{ "range=", v => ParseRange(config, v)},
@@ -146,34 +142,7 @@ namespace Peach
 				if (extra.Count == 0 && agent == null && analyzer == null)
 					syntax();
 
-				// Check OS and load side assembly
-				string osAssembly = null;
-
-				switch (Platform.GetOS())
-				{
-					case Platform.OS.OSX:
-						osAssembly = "Peach.Core.OS.OSX.dll";
-						break;
-					case Platform.OS.Linux:
-						osAssembly = "Peach.Core.OS.Linux.dll";
-						break;
-					case Platform.OS.Windows:
-						osAssembly = "Peach.Core.OS.Windows.dll";
-						break;
-				}
-
-				try
-				{
-					string fullPath = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-						osAssembly);
-
-					ClassLoader.LoadAssembly(fullPath);
-				}
-				catch (Exception ex)
-				{
-					throw new PeachException("Error, could not load platform assembly '{0}'.  {1}", osAssembly, ex.Message);
-				}
+				Platform.LoadAssembly();
 
 				if (definedValuesFile != null)
 				{
@@ -314,6 +283,12 @@ namespace Peach
 				// Used for unittests
 				if (parseOnly)
 					return;
+
+				if (!string.IsNullOrEmpty(parallel))
+				{
+					ConsoleWatcher.WriteInfoMark();
+					Console.WriteLine("Warning, parallel fuzzing is supported yet.");
+				}
 
 				// The core uses 0 based iterations, users expect 1 based iterations
 				if (config.skipToIteration > 0)

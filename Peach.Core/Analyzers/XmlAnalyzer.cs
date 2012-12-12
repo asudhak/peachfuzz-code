@@ -40,7 +40,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
-	[Analyzer("Xml")]
+	[Analyzer("Xml", true)]
 	[Analyzer("XmlAnalyzer")]
 	[Analyzer("xml.XmlAnalyzer")]
 	[Serializable]

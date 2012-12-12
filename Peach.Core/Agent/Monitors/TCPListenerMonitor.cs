@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("TCPListenerMonitor")]
+    [Monitor("TCPListenerMonitor", true)]
     [Parameter("Host", typeof(string), "Interface to listen on defaults to 0.0.0.0", "0.0.0.0")]
     [Parameter("Port", typeof(int), "Port to listen on for connection default 8080", "8080")]
     [Parameter("Pattern", typeof(string), "Regex pattern to match if any (not yet implemented)", "")]
@@ -59,7 +59,7 @@ namespace Peach.Core.Agent.Monitors
 
             try
             {
-                IPHostEntry hostInfo        = Dns.Resolve( Host );
+                IPHostEntry hostInfo        = Dns.GetHostEntry( Host );
                 IPAddress   address         = hostInfo.AddressList[0]; 
                 IPEndPoint  localEndPoint   = new IPEndPoint( address, Port );
 
@@ -142,9 +142,6 @@ namespace Peach.Core.Agent.Monitors
 
         public static void ReadCallBack(IAsyncResult ar)
         {
-            
-            String content = String.Empty;
-
             StateObject state = (StateObject) ar.AsyncState;
             Socket handler = state.WorkSocket;
 
@@ -153,7 +150,6 @@ namespace Peach.Core.Agent.Monitors
             if( bytesRead > 0 )
             {
                 _State.StringBuffer.Append(Encoding.ASCII.GetString(_State.Buffer, 0, bytesRead));
-                content = _State.StringBuffer.ToString(); 
             }
 
         }

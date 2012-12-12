@@ -44,7 +44,9 @@
   <ItemGroup>
     <Compile Include="Agent\Monitors\CrashReporter.cs" />
     <Compile Include="Agent\Monitors\CrashWrangler.cs" />
+    <Compile Include="PlatformTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">

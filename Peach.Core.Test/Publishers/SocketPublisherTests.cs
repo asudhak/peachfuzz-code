@@ -33,6 +33,14 @@ namespace Peach.Core.Test.Publishers
 			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
 		}
 
+		public void SendRaw(IPAddress remote, int port = 5000)
+		{
+			Socket = new Socket(remote.AddressFamily, SocketType.Raw, ProtocolType.Pup);
+			remoteEP = new IPEndPoint(remote, port);
+			RecvBuf = Encoding.ASCII.GetBytes("SendOnly!");
+			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
+		}
+
 		public void Start(IPAddress local, int count = 1)
 		{
 			Socket = new Socket(local.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
@@ -186,16 +194,16 @@ namespace Peach.Core.Test.Publishers
 	</DataModel>
 
 	<DataModel name=""IpDataModel"">
-		<Number name=""ihl"" size=""8"" signed=""false""/>
+		<Number name=""ihl"" valueType=""hex"" value=""45"" size=""8"" signed=""false""/>
 		<Number name=""dscp"" size=""8"" signed=""false""/>
-		<Number name=""tot_len"" size=""16"" signed=""false""/>
+		<Number name=""tot_len"" value=""31"" endian=""big"" size=""16"" signed=""false""/>
 		<Number name=""id"" size=""16"" signed=""false""/>
 		<Number name=""fragoff"" size=""16"" signed=""false""/>
-		<Number name=""ttl"" size=""8"" signed=""false""/>
-		<Number name=""protocol"" size=""8"" signed=""false""/>
+		<Number name=""ttl"" value= ""1"" size=""8"" signed=""false""/>
+		<Number name=""protocol"" value=""13"" size=""8"" signed=""false""/>
 		<Number name=""csum"" size=""16"" signed=""false""/>
-		<Number name=""src"" size=""32"" signed=""false""/>
-		<Number name=""dst"" size=""32"" signed=""false""/>
+		<Number name=""src"" valueType=""hex"" value=""7f 00 00 01"" size=""32"" signed=""false"" endian=""big""/>
+		<Number name=""dst"" valueType=""hex"" value=""7f 00 00 01"" size=""32"" signed=""false"" endian=""big""/>
 	</DataModel>
 
 	<DataModel name=""UdpDataModel"">
@@ -207,12 +215,10 @@ namespace Peach.Core.Test.Publishers
 
 	<DataModel name=""ip_packet"">
 		<Block name=""ip"" ref=""IpDataModel""/>
-		<Block name=""udp"" ref=""UdpDataModel""/>
 		<Block name=""str"" ref=""TheDataModel""/>
 	</DataModel>
 
-	<DataModel name=""udp_packet"">
-		<Block name=""udp"" ref=""UdpDataModel""/>
+	<DataModel name=""pup_packet"">
 		<Block name=""str"" ref=""TheDataModel""/>
 	</DataModel>
 
@@ -228,14 +234,14 @@ namespace Peach.Core.Test.Publishers
 		</State>
 	</StateModel>
 
-	<StateModel name=""UdpStateModel"" initialState=""InitialState"">
+	<StateModel name=""PupStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
 			<Action name=""Recv"" type=""input"">
 				<DataModel ref=""ip_packet""/>
 			</Action>
 
 			<Action name=""Send"" type=""output"">
-				<DataModel ref=""udp_packet""/>
+				<DataModel ref=""pup_packet""/>
 			</Action>
 		</State>
 	</StateModel>
@@ -243,7 +249,7 @@ namespace Peach.Core.Test.Publishers
 	<StateModel name=""OspfStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
 			<Action name=""Send"" type=""output"">
-				<DataModel ref=""udp_packet""/>
+				<DataModel ref=""ip_packet""/>
 			</Action>
 		</State>
 	</StateModel>
@@ -421,11 +427,11 @@ namespace Peach.Core.Test.Publishers
 		{
 			SocketEcho echo = new SocketEcho();
 			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
-			echo.SendOnly(self);
+			echo.SendRaw(self);
 
 			try
 			{
-				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "17");
+				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "12");
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -435,14 +441,6 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.config = config;
 				e.startFuzzing(dom, config);
-
-				if (Platform.GetOS() == Platform.OS.OSX)
-				{
-					// Mac raw sockets don't support TCP or UDP receptions.
-					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
-					Assert.AreEqual(1, actions.Count);
-					return;
-				}
 
 				Assert.AreEqual(2, actions.Count);
 				var de = actions[0].dataModel.find("ip_packet.str.str");
@@ -461,11 +459,11 @@ namespace Peach.Core.Test.Publishers
 		{
 			SocketEcho echo = new SocketEcho();
 			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
-			echo.SendOnly(self);
+			echo.SendRaw(self);
 
 			try
 			{
-				string xml = string.Format(raw_template, "RawV4", self, "UdpStateModel", "17");
+				string xml = string.Format(raw_template, "RawV4", self, "PupStateModel", "12");
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -475,14 +473,6 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.config = config;
 				e.startFuzzing(dom, config);
-
-				if (Platform.GetOS() == Platform.OS.OSX)
-				{
-					// Mac raw sockets don't support TCP or UDP receptions.
-					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
-					Assert.AreEqual(1, actions.Count);
-					return;
-				}
 
 				Assert.AreEqual(2, actions.Count);
 				var de = actions[0].dataModel.find("ip_packet.str.str");
@@ -500,7 +490,7 @@ namespace Peach.Core.Test.Publishers
 		public void BadAddressFamily()
 		{
 			// Tests what happens when we give an ipv4 address to an ipv6 publisher.
-			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "UdpStateModel", "17");
+			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "PupStateModel", "17");
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 

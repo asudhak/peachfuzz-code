@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -7,7 +7,7 @@ using Peach.Core;
 using NUnit.Framework;
 using NLog;
 
-namespace Peach.Core.Test.OS.Linux
+namespace Peach.Core.Test.OS.OSX
 {
 	[TestFixture]
 	public class PlatformTests
@@ -18,6 +18,7 @@ namespace Peach.Core.Test.OS.Linux
 		public void Test1()
 		{
 			logger.Debug("Hello World");
+			logger.Debug(new FileNotFoundException().Message);
 			bool value = true;
 			Assert.IsTrue(value);
 		}
@@ -30,7 +31,7 @@ namespace Peach.Core.Test.OS.Linux
 				var pi = ProcessInfo.Instance.Snapshot(p);
 				Assert.NotNull(pi);
 				Assert.AreEqual(1, pi.Id);
-				Assert.AreEqual("init", pi.ProcessName);
+				Assert.AreEqual("launchd", pi.ProcessName);
 				Assert.Greater(pi.PrivilegedProcessorTicks, 0);
 				Assert.Greater(pi.UserProcessorTicks, 0);
 			}

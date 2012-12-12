@@ -546,6 +546,19 @@ namespace Peach.Core.Dom
 			return node;
 		}
 	}
+
+	/// <summary>
+	/// Used to indicate a class is a valid Relation and 
+	/// provide it's invoking name used in the Pit XML file.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	public class RelationAttribute : PluginAttribute
+	{
+		public RelationAttribute(string name, bool isDefault = false)
+			: base(typeof(Relation), name, isDefault)
+		{
+		}
+	}
 }
 
 // end

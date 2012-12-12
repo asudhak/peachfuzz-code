@@ -48,7 +48,7 @@ namespace Peach.Core.Mutators
         int n;
         long[] values;
         uint currentCount;
-        long originalDataLength;
+        //long originalDataLength;
 
         // CTOR
         //
@@ -57,7 +57,7 @@ namespace Peach.Core.Mutators
             currentCount = 0;
             n = getN(obj, 50);
             name = "SizedDataNumericalEdgeCasesMutator";
-            originalDataLength = (long)obj.GenerateInternalValue();
+            //originalDataLength = (long)obj.GenerateInternalValue();
             PopulateValues(obj);
         }
 

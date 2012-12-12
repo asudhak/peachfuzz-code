@@ -160,7 +160,8 @@ namespace Peach.Core.Dom
 				_origionalDataModel = value;
 
 				// Optimize output by pre-generating value
-				object tmp = _origionalDataModel.Value;
+				var tmp = _origionalDataModel.Value;
+				System.Diagnostics.Debug.Assert(tmp != null);
 			}
 		}
 
