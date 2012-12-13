@@ -34,7 +34,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Mutators
 {
     [Mutator("Allows different valid values to be specified")]
-    [Hint("ValidValues", "Provide additional values for element separeted with ;. Can include wordlists as \"file:Path/to/file\".")]
+    [Hint("ValidValues", "Provide additional values for element separeted with ;.")]
     [Hint("WordList", "Wordlist Containing newline seperated valid strings.")]
     public class ValidValuesMutator : Mutator
     {
