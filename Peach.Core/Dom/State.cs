@@ -45,7 +45,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class State : INamed, IPitSerializable
 	{
-		public string _name = "Unknown State";
+		static int nameNum = 0;
+		public string _name = "Unknown State " + (++nameNum);
 		public List<Action> actions = new List<Action>();
 
 		public StateModel parent = null;
@@ -68,6 +69,19 @@ namespace Peach.Core.Dom
 			get { return _name; }
 			set { _name = value; }
 		}
+
+		/// <summary>
+		/// Has the state started?
+		/// </summary>
+		public bool started { get; set; }
+		/// <summary>
+		/// Has the start completed?
+		/// </summary>
+		public bool finished { get; set; }
+		/// <summary>
+		/// Has an error occured?
+		/// </summary>
+		public bool error { get; set; }
 
 		protected virtual void OnStarting()
 		{
@@ -93,13 +107,25 @@ namespace Peach.Core.Dom
 			{
 				if (context.controlIteration && context.controlRecordingIteration)
 					context.controlRecordingStatesExecuted.Add(this);
-				else if(context.controlIteration)
+				else if (context.controlIteration)
 					context.controlStatesExecuted.Add(this);
+
+				started = true;
+				finished = false;
+				error = false;
 
 				OnStarting();
 
 				foreach (Action action in actions)
 					action.Run(context);
+
+				finished = true;
+			}
+			catch
+			{
+				error = true;
+				finished = true;
+				throw;
 			}
 			finally
 			{

@@ -79,7 +79,8 @@ namespace Peach.Core.Dom
 	public class Action : INamed, IPitSerializable
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public string _name = "Unknown Action";
+		static int nameNum = 0;
+		public string _name = "Unknown Action " + (++nameNum);
 		public ActionType type = ActionType.Unknown;
 
 		public State parent = null;
@@ -164,6 +165,21 @@ namespace Peach.Core.Dom
 				System.Diagnostics.Debug.Assert(tmp != null);
 			}
 		}
+
+		/// <summary>
+		/// Action was started
+		/// </summary>
+		public bool started { get; set; }
+
+		/// <summary>
+		/// Action finished
+		/// </summary>
+		public bool finished { get; set; }
+
+		/// <summary>
+		/// Action errored
+		/// </summary>
+		public bool error { get; set; }
 
 		//public string value
 		//{
@@ -394,7 +410,7 @@ namespace Peach.Core.Dom
 					if (!context.test.publishers.ContainsKey(this.publisher))
 					{
 						logger.Debug("Run: Publisher '" + this.publisher + "' not found!");
-						throw new PeachException("Error, Action '"+name+"' publisher value '" + this.publisher + "' was not found!");
+						throw new PeachException("Error, Action '" + name + "' publisher value '" + this.publisher + "' was not found!");
 					}
 
 					publisher = context.test.publishers[this.publisher];
@@ -406,8 +422,12 @@ namespace Peach.Core.Dom
 
 				if (context.controlIteration && context.controlRecordingIteration)
 					context.controlRecordingActionsExecuted.Add(this);
-				else if(context.controlIteration)
+				else if (context.controlIteration)
 					context.controlActionsExecuted.Add(this);
+
+				started = true;
+				finished = false;
+				error = false;
 
 				OnStarting();
 
@@ -506,6 +526,14 @@ namespace Peach.Core.Dom
 					default:
 						throw new ApplicationException("Error, Action.Run fell into unknown Action type handler!");
 				}
+
+				finished = true;
+			}
+			catch
+			{
+				error = true;
+				finished = true;
+				throw;
 			}
 			finally
 			{

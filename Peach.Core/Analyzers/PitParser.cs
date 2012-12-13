@@ -89,7 +89,7 @@ namespace Peach.Core.Analyzers
 			return asParser(args, data, true);
 		}
 
-		public Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
+		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
 			if (doValidatePit)
 				validatePit(data);
@@ -201,7 +201,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="node">XmlNode to parse</param>
 		/// <param name="dom">DOM to fill</param>
 		/// <returns>Returns the parsed Dom object.</returns>
-		protected Dom.Dom handlePeach(XmlNode node, Dom.Dom dom)
+		protected virtual Dom.Dom handlePeach(XmlNode node, Dom.Dom dom)
 		{
 
 			// Pass 0 - Basic check if Peach 2.3 ns  
@@ -529,7 +529,7 @@ namespace Peach.Core.Analyzers
 			return false;
 		}
 
-		protected void handleDefaults(XmlNode node)
+		protected virtual void handleDefaults(XmlNode node)
 		{
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -583,7 +583,7 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
-		protected Dom.Agent handleAgent(XmlNode node)
+		protected virtual Dom.Agent handleAgent(XmlNode node)
 		{
 			Dom.Agent agent = new Dom.Agent();
 
@@ -1128,7 +1128,7 @@ namespace Peach.Core.Analyzers
 
 		#region State Model
 
-		protected StateModel handleStateModel(XmlNode node, Dom.Dom parent)
+		protected virtual StateModel handleStateModel(XmlNode node, Dom.Dom parent)
 		{
 			string name = node.getAttribute("name");
 			string initialState = node.getAttribute("initialState");
@@ -1153,7 +1153,7 @@ namespace Peach.Core.Analyzers
 			return stateModel;
 		}
 
-		protected State handleState(XmlNode node, StateModel parent)
+		protected virtual State handleState(XmlNode node, StateModel parent)
 		{
 			State state = new State();
 			state.parent = parent;
@@ -1171,7 +1171,7 @@ namespace Peach.Core.Analyzers
 			return state;
 		}
 
-		protected Core.Dom.Action handleAction(XmlNode node, State parent)
+		protected virtual Core.Dom.Action handleAction(XmlNode node, State parent)
 		{
 			Core.Dom.Action action = new Core.Dom.Action();
 			action.parent = parent;
@@ -1309,7 +1309,7 @@ namespace Peach.Core.Analyzers
 			return action;
 		}
 
-		protected ActionParameter handleActionParameter(XmlNode node, Dom.Action parent)
+		protected virtual ActionParameter handleActionParameter(XmlNode node, Dom.Action parent)
 		{
 			ActionParameter param = new ActionParameter();
 			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
@@ -1325,7 +1325,7 @@ namespace Peach.Core.Analyzers
 			return param;
 		}
 
-		protected Data handleData(XmlNode node)
+		protected virtual Data handleData(XmlNode node)
 		{
 			Data data = new Data();
 			data.name = node.getAttribute("name");
@@ -1372,7 +1372,7 @@ namespace Peach.Core.Analyzers
 			return data;
 		}
 
-		protected Test handleTest(XmlNode node, Dom.Dom parent)
+		protected virtual Test handleTest(XmlNode node, Dom.Dom parent)
 		{
 			Test test = new Test();
 			test.parent = parent;
