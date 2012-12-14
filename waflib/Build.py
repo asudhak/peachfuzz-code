@@ -915,7 +915,10 @@ class inst(Task.Task):
 		Predefined method for installing a symlink
 		"""
 		destfile = self.get_install_path()
-		self.generator.bld.do_link(self.link, destfile)
+		src = self.link
+		if self.relative_trick:
+			src = os.path.relpath(src, os.path.dirname(destfile))
+		self.generator.bld.do_link(src, destfile)
 
 class InstallContext(BuildContext):
 	'''installs the targets on the system'''
@@ -1093,7 +1096,7 @@ class InstallContext(BuildContext):
 		self.run_task_now(tsk, postpone)
 		return tsk
 
-	def symlink_as(self, dest, src, env=None, cwd=None, add=True, postpone=True):
+	def symlink_as(self, dest, src, env=None, cwd=None, add=True, postpone=True, relative_trick=False):
 		"""
 		Create a task to install a symlink::
 
@@ -1110,6 +1113,8 @@ class InstallContext(BuildContext):
 		:type add: bool
 		:param postpone: execute the task immediately to perform the installation
 		:type postpone: bool
+		:param relative_trick: make the symlink relative (default: ``False``)
+		:type relative_trick: bool
 		"""
 
 		if Utils.is_win32:
@@ -1122,6 +1127,7 @@ class InstallContext(BuildContext):
 		tsk.path = cwd or self.path
 		tsk.source = []
 		tsk.link = src
+		tsk.relative_trick = relative_trick
 		tsk.exec_task = tsk.exec_symlink_as
 		if add: self.add_to_group(tsk)
 		self.run_task_now(tsk, postpone)
