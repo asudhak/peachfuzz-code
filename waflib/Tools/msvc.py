@@ -970,22 +970,24 @@ def exec_command_msvc(self, *k, **kw):
 	Change the command-line execution for msvc programs.
 	Instead of quoting all the paths and keep using the shell, we can just join the options msvc is interested in
 	"""
-	if self.env['CC_NAME'] == 'msvc':
-		if isinstance(k[0], list):
-			lst = []
-			carry = ''
-			for a in k[0]:
-				if a == '/Fo' or a == '/doc' or a[-1] == ':':
-					carry = a
-				else:
-					lst.append(carry + a)
-					carry = ''
-			k = [lst]
+	if self.env['CC_NAME'] != 'msvc':
+		return self.exec_command_nomsvc(*k, **kw)
 
-		if self.env['PATH']:
-			env = dict(self.env.env or os.environ)
-			env.update(PATH = ';'.join(self.env['PATH']))
-			kw['env'] = env
+	if isinstance(k[0], list):
+		lst = []
+		carry = ''
+		for a in k[0]:
+			if a == '/Fo' or a == '/doc' or a[-1] == ':':
+				carry = a
+			else:
+				lst.append(carry + a)
+				carry = ''
+		k = [lst]
+
+	if self.env['PATH']:
+		env = dict(self.env.env or os.environ)
+		env.update(PATH = ';'.join(self.env['PATH']))
+		kw['env'] = env
 
 	bld = self.generator.bld
 	try:
@@ -1002,6 +1004,7 @@ def exec_command_msvc(self, *k, **kw):
 for k in 'c cxx cprogram cxxprogram cshlib cxxshlib cstlib cxxstlib'.split():
 	cls = Task.classes.get(k, None)
 	if cls:
+		cls.exec_command_nomsvc = cls.exec_command
 		cls.exec_command = exec_command_msvc
 		cls.exec_response_command = exec_response_command
 		cls.quote_response_command = quote_response_command
