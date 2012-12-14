@@ -33,14 +33,16 @@ namespace Peach.Core.Test.Fixups
 				"       <Number name=\"len\" size=\"32\" signed=\"false\">" +
 				"           <Relation type=\"size\" of=\"TheDataModel\" />" +
 				"       </Number>" +
-				"       <Number name=\"CRC\" size=\"32\" signed=\"false\">" +
-				"           <Fixup class=\"Crc32Fixup\">" +
-				"               <Param name=\"ref\" value=\"TheDataModel\"/>" +
-				"           </Fixup>" +
-				"       </Number>" +
-				"       <Blob name=\"Data\" value=\"Hello\">" +
-				"           <Hint name=\"BlobMutator-How\" value=\"ExpandAllRandom\"/>" +
-				"       </Blob>" +
+				"       <Block>" +
+				"           <Number name=\"CRC\" size=\"32\" signed=\"false\">" +
+				"               <Fixup class=\"Crc32Fixup\">" +
+				"                   <Param name=\"ref\" value=\"TheDataModel\"/>" +
+				"               </Fixup>" +
+				"           </Number>" +
+				"           <Blob name=\"Data\" value=\"Hello\">" +
+				"               <Hint name=\"BlobMutator-How\" value=\"ExpandAllRandom\"/>" +
+				"           </Blob>" +
+				"       </Block>" +
 				"   </DataModel>" +
 
 				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -107,11 +109,13 @@ namespace Peach.Core.Test.Fixups
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
 				"   <DataModel name=\"TheDataModel\">" +
-				"       <Number name=\"CRC\" size=\"32\" signed=\"false\">" +
-				"           <Fixup class=\"Crc32Fixup\">" +
-				"               <Param name=\"ref\" value=\"TheDataModel\"/>" +
-				"           </Fixup>" +
-				"       </Number>" +
+				"       <Block>" +
+				"           <Number name=\"CRC\" size=\"32\" signed=\"false\">" +
+				"               <Fixup class=\"Crc32Fixup\">" +
+				"                   <Param name=\"ref\" value=\"TheDataModel\"/>" +
+				"               </Fixup>" +
+				"           </Number>" +
+				"       </Block>" +
 				"       <Number name=\"len\" size=\"32\" signed=\"false\">" +
 				"           <Relation type=\"size\" of=\"TheDataModel\" />" +
 				"       </Number>" +
@@ -183,11 +187,13 @@ namespace Peach.Core.Test.Fixups
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
 				"   <DataModel name=\"TheDataModel\">" +
-				"       <Number name=\"CRC\" size=\"32\" endian=\"big\" signed=\"false\">" +
-				"           <Fixup class=\"Crc32Fixup\">" +
-				"               <Param name=\"ref\" value=\"LEN\"/>" +
-				"           </Fixup>" +
-				"       </Number>" +
+				"       <Block>" +
+				"           <Number name=\"CRC\" size=\"32\" endian=\"big\" signed=\"false\">" +
+				"               <Fixup class=\"Crc32Fixup\">" +
+				"                   <Param name=\"ref\" value=\"LEN\"/>" +
+				"               </Fixup>" +
+				"           </Number>" +
+				"       </Block>" +
 				"       <Number name=\"LEN\" size=\"32\" endian=\"big\" signed=\"false\">" +
 				"           <Relation type=\"size\" of=\"CRC\" />" +
 				"       </Number>" +
@@ -228,11 +234,13 @@ namespace Peach.Core.Test.Fixups
 				"       <Number name=\"LEN\" size=\"32\" endian=\"big\" signed=\"false\">" +
 				"           <Relation type=\"size\" of=\"CRC\" />" +
 				"       </Number>" +
-				"       <Number name=\"CRC\" size=\"32\" endian=\"big\" signed=\"false\">" +
-				"           <Fixup class=\"Crc32Fixup\">" +
-				"               <Param name=\"ref\" value=\"LEN\"/>" +
-				"           </Fixup>" +
-				"       </Number>" +
+				"       <Block>" +
+				"           <Number name=\"CRC\" size=\"32\" endian=\"big\" signed=\"false\">" +
+				"               <Fixup class=\"Crc32Fixup\">" +
+				"                   <Param name=\"ref\" value=\"LEN\"/>" +
+				"               </Fixup>" +
+				"           </Number>" +
+				"       </Block>" +
 				"   </DataModel>" +
 				"</Peach>";
 

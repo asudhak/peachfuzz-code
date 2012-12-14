@@ -172,6 +172,23 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public override bool CacheValue
+		{
+			get
+			{
+				if (!base.CacheValue)
+					return false;
+
+				foreach (var elem in this)
+				{
+					if (!elem.CacheValue)
+						return false;
+				}
+
+				return true;
+			}
+		}
+
 		/// <summary>
 		/// Recursively execute analyzers
 		/// </summary>
