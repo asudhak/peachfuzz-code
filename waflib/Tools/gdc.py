@@ -14,7 +14,7 @@ def find_gdc(conf):
 	conf.find_program('gdc', var='D')
 
 	out = conf.cmd_and_log([conf.env.D, '--version'])
-	if out.find("gdc (GCC)") == -1:
+	if out.find("gdc ") == -1:
 		conf.fatal("detected compiler is not gdc")
 
 @conf

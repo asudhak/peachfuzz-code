@@ -2,6 +2,7 @@ NEW IN WAF 1.7.7
 ----------------
 * XLC and XLF detection fixes #1230
 * Fixed the multiple gcc/msvc builds #1237
+* Better gdc detection on Ubuntu #1222
 
 NEW IN WAF 1.7.6
 ----------------
