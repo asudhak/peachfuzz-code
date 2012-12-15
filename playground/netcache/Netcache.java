@@ -23,7 +23,7 @@ public class Netcache implements Runnable, Comparator<Object[]> {
 	private static double CLEANRATIO = 0.8;
 	private static int BUF = 16 * 8192;
 
-	private static HashMap<String, Object[]> flist = null;
+	private final static HashMap<String, Object[]> flist = new HashMap<String, Object[]>();
 	private Socket sock = null;
 	private int port = 0;
 
@@ -222,8 +222,8 @@ public class Netcache implements Runnable, Comparator<Object[]> {
 	}
 
 	public static void init_flist() {
-		flist = new HashMap<String, Object[]>();
 		synchronized(flist) {
+			flist.clear();
 			File dir = new File(CACHEDIR);
 			try {
 				dir.mkdirs();
