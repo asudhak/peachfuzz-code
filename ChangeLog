@@ -3,7 +3,11 @@ NEW IN WAF 1.7.7
 * XLC and XLF detection fixes #1230
 * Fixed the multiple gcc/msvc builds #1237
 * Better gdc detection on Ubuntu #1222
-* Enable relative symlinks #1234
+* Relative symlinks in symlink_as #1234
+* Various improvements in the doxygen tool #1232 #1233
+* Fixed windows filehandle issues on Python #1235
+* Visual Studio 2012 detection improvements
+* OSX soname installation fix
 
 NEW IN WAF 1.7.6
 ----------------

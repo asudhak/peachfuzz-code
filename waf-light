@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 import os, sys
 
-VERSION="1.7.6"
+VERSION="1.7.7"
 REVISION="x"
 INSTALL="x"
 C1='x'
