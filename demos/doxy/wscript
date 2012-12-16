@@ -41,7 +41,7 @@ def build(bld):
 	@TaskGen.feature('special_doxygen_stuff')
 	def special_doxygen_stuff(self):
 		node = self.path.get_bld().make_node('html')
-		self.bld.install_files('${PREFIX}/doc/html', node.ant_glob('**'))
+		self.bld.install_files('${PREFIX}/doc/html', node.ant_glob('**', remove=False))
 
 # example for the NOTES point #3
 from waflib import Build

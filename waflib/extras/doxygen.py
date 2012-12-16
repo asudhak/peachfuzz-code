@@ -67,8 +67,19 @@ class doxygen(Task.Task):
 			self.pars = parse_doxy(txt)
 			if not self.pars.get('OUTPUT_DIRECTORY'):
 				self.pars['OUTPUT_DIRECTORY'] = self.inputs[0].parent.get_bld().abspath()
+
+			self.doxy_inputs = getattr(self, 'doxy_inputs', [])
 			if not self.pars.get('INPUT'):
-				self.pars['INPUT'] = self.inputs[0].parent.abspath()
+				self.doxy_inputs.append(self.inputs[0].parent)
+			else:
+				for i in self.pars.get('INPUT').split():
+					if os.path.isabs(i):
+						node = self.generator.bld.root.find_node(i)
+					else:
+						node = self.generator.path.find_node(i)
+					if not node:
+						self.generator.bld.fatal('Could not find the doxygen input %r' % i)
+					self.doxy_inputs.append(node)
 
 		if not getattr(self, 'output_dir', None):
 			bld = self.generator.bld
@@ -77,7 +88,6 @@ class doxygen(Task.Task):
 			if not self.output_dir:
 				self.output_dir = bld.path.find_or_declare(self.pars['OUTPUT_DIRECTORY'])
 
-
 		self.signature()
 		return Task.Task.runnable_status(self)
 
@@ -85,7 +95,6 @@ class doxygen(Task.Task):
 		if self.pars.get('RECURSIVE') == 'YES':
 			Logs.warn("Doxygen RECURSIVE dependencies are not supported")
 
-		inputs = self.pars.get('INPUT').split()
 		exclude_patterns = self.pars.get('EXCLUDE_PATTERNS', '').split()
 		file_patterns = self.pars.get('FILE_PATTERNS', '').split()
 		if not file_patterns:
@@ -93,17 +102,12 @@ class doxygen(Task.Task):
 
 		nodes = []
 		names = []
-		for i in inputs:
-			node = self.generator.bld.root.make_node(i)
-			if node:
-				if os.path.isdir(node.abspath()):
-					for m in node.ant_glob(file_patterns):
-						nodes.append(self.generator.bld.root.make_node(m.abspath()))
-				else:
-					nodes.append(node)
+		for node in self.doxy_inputs:
+			if os.path.isdir(node.abspath()):
+				for m in node.ant_glob(file_patterns):
+					nodes.append(m)
 			else:
-				names.append(i)
-
+				nodes.append(node)
 		return (nodes, names)
 
 	def run(self):
@@ -117,17 +121,11 @@ class doxygen(Task.Task):
 		return proc.returncode
 
 	def post_run(self):
-		nodes = self.output_dir.ant_glob('**/*')
+		nodes = self.output_dir.ant_glob('**/*', quiet=True)
 		for x in nodes:
 			x.sig = Utils.h_file(x.abspath())
 		self.outputs += nodes
 		return Task.Task.post_run(self)
-
-	#def install(self):
-	#	if getattr(self.generator, 'install_to', None):
-	#		update_build_dir(self.inputs[0].parent, self.env)
-	#		pattern = getattr(self, 'instype', 'html/*')
-	#		self.generator.bld.install_files(self.generator.install_to, self.generator.path.ant_glob(pattern, dir=0, src=0))
 
 class tar(Task.Task):
 	"quick tar creation"
