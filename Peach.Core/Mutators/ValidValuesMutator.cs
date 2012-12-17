@@ -35,7 +35,6 @@ namespace Peach.Core.Mutators
 {
     [Mutator("Allows different valid values to be specified")]
     [Hint("ValidValues", "Provide additional values for element separeted with ;.")]
-    [Hint("WordList", "Wordlist Containing newline seperated valid strings.")]
     public class ValidValuesMutator : Mutator
     {
         // members
@@ -60,62 +59,13 @@ namespace Peach.Core.Mutators
             // 2. Split on ';'
             // 3. Return each value in turn
 
-            if (obj.Hints.ContainsKey("ValidValues"))
+            Hint h = null;
+            if (obj.Hints.TryGetValue("ValidValues", out h))
             {
-                Hint h = null;
-                if (obj.Hints.TryGetValue("ValidValues", out h))
-                {
-                    values = h.Value.Split(';');
-                }
-            }
-            if (obj.Hints.ContainsKey("WordList"))
-            {
-                Hint h = null;
-                if (obj.Hints.TryGetValue("WordList", out h))
-                {
-                    AddListToValues(h.Value);
-                }
+                values = h.Value.Split(';');
             }
         }
 
-        private void AddListToValues(string curfile)
-        {
-            var newvalues = new List<string>();
-            if (System.IO.File.Exists(curfile))
-            {
-                newvalues.AddRange(System.IO.File.ReadAllLines(curfile));
-            }
-            else
-            {
-                throw new PeachException("Invalid Wordlist File: " + curfile);
-            }
-            newvalues.AddRange(values);
-            values = newvalues.ToArray();
-        }
-
-        private void ReplaceFileWithValues()
-        {
-            var newvalues = new List<string>();
-            foreach (string curval in values){
-                if (curval.StartsWith("file:"))
-                {
-                    string curfile = curval.Substring(5);
-                    if (System.IO.File.Exists(curfile))
-                    {
-                        newvalues.AddRange(System.IO.File.ReadAllLines(curfile));
-                    }
-                    else
-                    {
-                        throw new PeachException("Invalid Wordlist File: " + curfile);
-                    }
-                }
-                else
-                {
-                    newvalues.Add(curval);
-                }
-            }
-            values = newvalues.ToArray();
-        }
 
         public override uint mutation
         {
