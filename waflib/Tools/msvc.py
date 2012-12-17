@@ -454,7 +454,7 @@ def gather_intel_composer_versions(conf, versions):
 		try:
 			all_versions = Utils.winreg.OpenKey(Utils.winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Intel\\Suites')
 		except WindowsError:
-			pass
+			return
 	index = 0
 	while 1:
 		try:
