@@ -250,15 +250,19 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 		}
 
-		private void DoExpand(string enc, string lenType, int len, char pad, bool nullTerm, string expected, int finalLen)
+		private void DoExpand(string enc, string lenType, int len, char? pad, bool nullTerm, string expected, int finalLen, string value="value=\"Hello\"")
 		{
+			string padChar = "";
+			if (pad.HasValue)
+				padChar = string.Format("padCharacter=\"{0}\"", pad.Value);
+
 			string template = @"
 <Peach>
 	<DataModel name=""TheDataModel"">
-		<String value=""Hello"" type=""{0}"" lengthType=""{1}"" length=""{2}"" padCharacter=""{3}"" nullTerminated=""{4}""/>
+		<String {5} type=""{0}"" lengthType=""{1}"" length=""{2}"" {3} nullTerminated=""{4}""/>
 	</DataModel>
 </Peach>";
-			string xml = string.Format(template, enc, lenType, len, pad, nullTerm.ToString().ToLower());
+			string xml = string.Format(template, enc, lenType, len, padChar, nullTerm.ToString().ToLower(), value);
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -307,6 +311,11 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.Throws<PeachException>(delegate() {
 				DoExpand("ascii", "chars", 4, '_', true, "", 0);
 			});
+
+			DoExpand("ascii", "chars", 5, 'a', false, "aaaaa", 5, "");
+			DoExpand("ascii", "chars", 5, 'a', true, "aaaa\0", 5, "");
+			DoExpand("ascii", "bytes", 5, null, true, "\0\0\0\0\0", 5, "");
+			DoExpand("utf16", "chars", 5, null, false, "\0\0\0\0\0", 10, "");
 		}
 
 		[Test]

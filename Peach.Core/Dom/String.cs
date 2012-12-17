@@ -302,6 +302,9 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementValue(node, str);
 			context.handleCommonDataElementChildren(node, str);
 
+			if (!node.hasAttribute("value"))
+				str.DefaultValue = new Variant("");
+
 			int test;
 			if (int.TryParse((string)str.DefaultValue, out test))
 			{

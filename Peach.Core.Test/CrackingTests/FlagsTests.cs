@@ -69,6 +69,47 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackOnlyFlag()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Flags size=""8"" endian=""big"">
+			<Flag position=""0"" size=""3"" token=""true"" value=""7""/>
+		</Flags>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0xe6 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			var flags = dom.dataModels[0][0] as Flags;
+			Assert.AreEqual(1, flags.Count);
+			var flag = flags[0] as Flag;
+			Assert.AreEqual(7, (int)flag.DefaultValue);
+
+			BitStream bad = new BitStream();
+			bad.LittleEndian();
+			bad.WriteBytes(new byte[] { 0x16 });
+			bad.SeekBits(0, SeekOrigin.Begin);
+
+			Assert.Throws<CrackingFailure>(delegate()
+			{
+				cracker.CrackData(dom.dataModels[0], bad);
+			});
+		}
+
+		[Test]
 		public void OutputFlag()
 		{
 			string xml = @"
