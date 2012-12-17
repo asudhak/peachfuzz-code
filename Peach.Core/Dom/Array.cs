@@ -71,6 +71,25 @@ namespace Peach.Core.Dom
 		{
 		}
 
+		public override IEnumerable<DataElement> EnumerateAllElements(List<DataElement> knownParents)
+		{
+			if (Count == 0)
+			{
+				// First our origionalElement
+				yield return origionalElement;
+
+				// Next our origionalElement element's children
+				foreach (var item in origionalElement.EnumerateAllElements(knownParents))
+					yield return item;
+			}
+			else
+			{
+				// Default to our base to enumerate array elements
+				foreach (var item in base.EnumerateAllElements(knownParents))
+					yield return item;
+			}
+		}
+
 		public override void Crack(DataCracker context, BitStream data)
 		{
 			Array element = this;

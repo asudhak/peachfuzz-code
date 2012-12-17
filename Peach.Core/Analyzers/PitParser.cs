@@ -850,6 +850,8 @@ namespace Peach.Core.Analyzers
 
 					if (array.occurs > 0)
 						array.Add(elem);
+					else
+						elem.parent = array;
 
 					// Expand all occurances
 					for (int i = 1; i < array.occurs; ++i)
