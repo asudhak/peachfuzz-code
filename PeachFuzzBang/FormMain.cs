@@ -59,12 +59,14 @@ namespace PeachFuzzBang
 
 		Peach.Core.Dom.Dom userSelectedDom = null;
 		DataModel userSelectedDataModel = null;
+		bool hasPlatformAsm = false;
 
 		private void LoadPlatformAssembly()
 		{
 			try
 			{
 				Platform.LoadAssembly();
+				hasPlatformAsm = true;
 			}
 			catch (Exception ex)
 			{
@@ -597,6 +599,12 @@ namespace PeachFuzzBang
 				return;
 
 			textBoxLogPath.Text = dialog.FileName;
+		}
+
+		private void FormMain_Load(object sender, EventArgs e)
+		{
+			if (!hasPlatformAsm)
+				Close();
 		}
 	}
 }
