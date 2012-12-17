@@ -440,7 +440,7 @@ namespace PeachFuzzBang
 						{
 							config.range = true;
 							config.rangeStart = 0;
-							config.rangeStop = (uint)iter;
+							config.rangeStop = (uint)iter + 1;
 						}
 					}
 					catch

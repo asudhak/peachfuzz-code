@@ -93,8 +93,8 @@ namespace PeachFuzzBang
 		uint currentIteration = 0;
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			// Don't increment if we are replaying the same iteration
-			if(this.currentIteration != currentIteration)
+			// Don't increment if we are replaying the same iteration or it is a control iteration
+			if(!context.controlIteration && this.currentIteration != currentIteration)
 				_form.progressBarOuputFuzzing.Invoke(new DeligateIncrement(Increment),
 					new object[] { _form.progressBarOuputFuzzing });
 				
@@ -103,18 +103,18 @@ namespace PeachFuzzBang
 			if (totalIterations == null || totalIterations > int.MaxValue)
 			{
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, string.Format("\r\n[{0},-,-] Performing iteration\r\n", currentIteration+1) });
+					new object[] { _form.textBoxOutput, string.Format("\r\n[{0},-,-] Performing iteration\r\n", currentIteration) });
 			}
 			else
 			{
-				// Progress bar max is inclusive.  Need to subtract 1 to get to 100%
-				int max = (int)totalIterations - 1;
+				// Progress bar max is inclusive.
+				int max = (int)totalIterations - 2;
 				if(_form.progressBarOuputFuzzing.Maximum != max)
 					_form.progressBarOuputFuzzing.Invoke(new DeligateSetMax(SetMax),
 						new object[] { _form.progressBarOuputFuzzing, max });
 
 				_form.textBoxOutput.Invoke(new DeligateAppendToText(AppendToText),
-					new object[] { _form.textBoxOutput, string.Format("\r\n[{0},{1},?] Performing iteration\r\n", currentIteration+1, totalIterations) });
+					new object[] { _form.textBoxOutput, string.Format("\r\n[{0},{1},?] Performing iteration\r\n", currentIteration, totalIterations) });
 			}
 		}
 
