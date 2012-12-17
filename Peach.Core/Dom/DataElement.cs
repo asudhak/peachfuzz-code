@@ -781,7 +781,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		private bool CacheValue
+		public virtual bool CacheValue
 		{
 			get
 			{
@@ -793,10 +793,25 @@ namespace Peach.Core.Dom
 					// The root can't have a fixup!
 					System.Diagnostics.Debug.Assert(_parent != null);
 
-					// We can only have a valid fixup value when the parent
-					// has not recursed onto itself
-					if (_parent._recursionDepth > 1)
-						return false;
+
+					//// We can only have a valid fixup value when the parent
+					//// has not recursed onto itself
+					//if (_parent._recursionDepth > 1)
+					//    return false;
+
+					foreach (var elem in _fixup.dependents)
+					{
+						// If elem is in out parent heirarchy, we are invalid if the _recustionDepth > 1
+						// Otherwise, we are invalid if the _recursionDepth > 0
+
+						uint minDepth = 0;
+						string relName = null;
+						if (isChildOf(elem, out relName))
+							minDepth = 1;
+
+						if (elem._recursionDepth > minDepth)
+							return false;
+					}
 				}
 
 				return true;

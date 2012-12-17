@@ -63,6 +63,20 @@ namespace Peach.Core
 			}
 		}
 
+		public IEnumerable<DataElement> dependents
+		{
+			get
+			{
+				if (elements != null)
+				{
+					foreach (var kv in elements)
+					{
+						yield return kv.Value;
+					}
+				}
+			}
+		}
+
 		public Fixup(DataElement parent, Dictionary<string, Variant> args, params string[] refs)
 		{
 			this.parent = parent;

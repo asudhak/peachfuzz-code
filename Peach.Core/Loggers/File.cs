@@ -173,12 +173,12 @@ namespace Peach.Core.Loggers
 
 		protected override void Engine_TestFinished(RunContext context)
 		{
-			log.WriteLine(". Test finished: " + context.test.name);
-			log.Flush();
-
-			if (log != null)
+	        if (log != null)
 			{
-				log.Flush();
+			    log.WriteLine(". Test finished: " + context.test.name);
+			    log.Flush();
+
+			    log.Flush();
 				log.Close();
 				log.Dispose();
 				log = null;
@@ -205,9 +205,17 @@ namespace Peach.Core.Loggers
 			else
 				ourpath += "_" + context.config.runName + "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
 
-			Directory.CreateDirectory(ourpath);
+            try
+            {
 
-			log = File.CreateText(System.IO.Path.Combine(ourpath, "status.txt"));
+                Directory.CreateDirectory(ourpath);
+            }
+            catch(Exception e)
+            {
+                throw new PeachException(e.Message); 
+            }
+
+		    log = File.CreateText(System.IO.Path.Combine(ourpath, "status.txt"));
 
 			log.WriteLine("Peach Fuzzing Run");
 			log.WriteLine("=================");
