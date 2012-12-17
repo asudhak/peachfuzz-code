@@ -79,7 +79,7 @@ namespace Peach.Core.Dom
 
 			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			if (data.LengthBits <= (data.TellBits() + element.size))
+			if (data.LengthBits < (data.TellBits() + element.size))
 				throw new CrackingFailure("Not enough data to crack '" + element.fullName + "'.", element, data);
 
 			long startPos = data.TellBits();
