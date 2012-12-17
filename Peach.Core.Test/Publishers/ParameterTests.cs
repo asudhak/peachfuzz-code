@@ -314,5 +314,36 @@ namespace Peach.Core.Test.Publishers
 			Assert.Throws<PeachException>(delegate() { ParameterParser.Parse(obj, onlyStr); });
 		}
 
+		[Publisher("NullablePlugin", true)]
+		[Parameter("num1", typeof(int?), "desc")]
+		[Parameter("num2", typeof(int?), "desc", "")]
+		[Parameter("num3", typeof(int?), "desc", "")]
+		class NullableTest
+		{
+			public NullableTest() { }
+			public int? num1 { get; set; }
+			public int? num2 { get; set; }
+			public int? num3 { get; set; }
+		}
+
+		[Test]
+		public void TestNullable()
+		{
+			var obj = new NullableTest();
+
+			var onlyNum = new Dictionary<string, Variant>();
+			onlyNum["num1"] = new Variant(10);
+			onlyNum["num2"] = new Variant(20);
+
+			ParameterParser.Parse(obj, onlyNum);
+
+			Assert.True(obj.num1.HasValue);
+			Assert.True(obj.num2.HasValue);
+			Assert.False(obj.num3.HasValue);
+
+			Assert.AreEqual(10, obj.num1.Value);
+			Assert.AreEqual(20, obj.num2.Value);
+		}
+
 	}
 }

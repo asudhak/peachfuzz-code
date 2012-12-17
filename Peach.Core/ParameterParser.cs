@@ -50,21 +50,30 @@ namespace Peach.Core
 		{
 			object val = null;
 
+			Type destType = attr.type;
+			bool nullable = !destType.IsValueType;
+
+			if (attr.type.IsGenericType && attr.type.GetGenericTypeDefinition() == typeof(Nullable<>))
+			{
+				destType = attr.type.GetGenericArguments()[0];
+				nullable = true;
+			}
+
 			if (value == string.Empty)
 			{
-				if (attr.type.IsValueType)
+				if (!nullable)
 					RaiseError(type, "could not set value type parameter '{0}' to 'null'.", attr.name);
 			}
 			else
 			{
 				try
 				{
-					if (attr.type == typeof(IPAddress))
+					if (destType == typeof(IPAddress))
 						val = IPAddress.Parse(value);
-					else if (attr.type.IsEnum)
-						val = Enum.Parse(attr.type, value, true);
+					else if (destType.IsEnum)
+						val = Enum.Parse(destType, value, true);
 					else
-						val = ChangeType(type, value, attr.type);
+						val = ChangeType(type, value, destType);
 				}
 				catch (Exception ex)
 				{
