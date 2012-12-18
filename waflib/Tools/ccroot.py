@@ -494,7 +494,7 @@ def apply_vnum(self):
 	# the following task is just to enable execution from the build dir :-/
 	self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
 
-	if getattr(self.bld, 'is_install', None):
+	if getattr(self, 'install_task', None):
 		self.install_task.hasrun = Task.SKIP_ME
 		bld = self.bld
 		path = self.install_task.dest
