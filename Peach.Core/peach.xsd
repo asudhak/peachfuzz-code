@@ -98,6 +98,14 @@
 		<xs:annotation>
 			<xs:documentation>This element allow setting default values for data elements.</xs:documentation>
 		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Number" type="NumberDefaults" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="String" type="StringDefaults" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="Flags"  type="FlagsDefaults"  minOccurs="0" maxOccurs="1"/>
+				<xs:element name="Blob"   type="BlobDefaults"   minOccurs="0" maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
 	</xs:element>
 
 	<xs:element name="DataModel" type="tTemplate">
@@ -140,6 +148,224 @@
 		</xs:choice>
 		<xs:attributeGroup ref="peachCommonAttributes" />
 		<xs:attributeGroup ref="commonTemplateAttributes" />
+	</xs:complexType>
+
+	<xs:complexType name="NumberDefaults">
+		<xs:attribute name="endian">
+			<xs:annotation>
+				<xs:documentation>
+					Select byte order of little, network, or big.
+					Default is little.
+				</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="little" />
+					<xs:enumeration value="big" />
+					<xs:enumeration value="network" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="signed" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation>Is number signed. Defaults to true.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="valueType">
+			<xs:annotation>
+				<xs:documentation>Format of value attribute.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string">
+						<xs:annotation>
+							<xs:documentation>
+								Regular string. C style &quot;\&quot; escaping can be used
+								such as: \r, \n, \t, and \\.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="literal">
+						<xs:annotation>
+							<xs:documentation>
+								Treated as a python literal string. An example is
+								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								list.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="hex">
+						<xs:annotation>
+							<xs:documentation>Hex string. Allows specifying binary data.</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="StringDefaults">
+		<xs:attribute name="lengthType" type="tLengthType">
+			<xs:annotation>
+				<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="padCharacter">
+			<xs:annotation>
+				<xs:documentation>
+					Specify the character to bad the string with if it's length if less then
+					specified in the length attribute. Only valid when the length attribute is also
+					specified.  This field will accept python escape sequences
+					such as \xNN, \r, \n, etc.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="type">
+			<xs:annotation>
+				<xs:documentation>Specify type of string. Default is char.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="ascii">
+						<xs:annotation>
+							<xs:documentation>Single byte characters</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="utf16">
+						<xs:annotation>
+							<xs:documentation>
+								Double byte characters as commonly used with Windows
+								applications
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="utf16be">
+						<xs:annotation>
+							<xs:documentation>Multibyte unicode characters encoded in utf-16 big endian</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="utf32">
+						<xs:annotation>
+							<xs:documentation>Multibyte unicode characters encoded in utf-32</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="utf7">
+						<xs:annotation>
+							<xs:documentation>Multibyte unicode characters encoded in utf-7</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="utf8">
+						<xs:annotation>
+							<xs:documentation>Multibyte unicode characters encoded in utf-8</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="nullTerminated" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation>
+					Indicate if string is null terminated. Default is
+					false.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="valueType">
+			<xs:annotation>
+				<xs:documentation>Format of value attribute.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string">
+						<xs:annotation>
+							<xs:documentation>
+								Regular string. C style &quot;\&quot; escaping can be used
+								such as: \r, \n, \t, and \\.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="literal">
+						<xs:annotation>
+							<xs:documentation>
+								Treated as a python literal string. An example is
+								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								list.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="hex">
+						<xs:annotation>
+							<xs:documentation>Hex string. Allows specifying binary data.</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="FlagsDefaults">
+		<xs:attribute name="endian">
+			<xs:annotation>
+				<xs:documentation>
+					Select byte order of little, network, or big.
+					Default is little.
+				</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="little" />
+					<xs:enumeration value="big" />
+					<xs:enumeration value="network" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="size" type="xs:unsignedShort" use="required">
+			<xs:annotation>
+				<xs:documentation>
+					Length in bits of this flag set. Valid values are 8, 16, 32, and
+					64.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="BlobDefaults">
+		<xs:attribute name="lengthType" type="tLengthType">
+			<xs:annotation>
+				<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="valueType">
+			<xs:annotation>
+				<xs:documentation>Format of value attribute.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string">
+						<xs:annotation>
+							<xs:documentation>
+								Regular string. C style &quot;\&quot; escaping can be used
+								such as: \r, \n, \t, and \\.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="literal">
+						<xs:annotation>
+							<xs:documentation>
+								Treated as a python literal string. An example is
+								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								list.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+					<xs:enumeration value="hex">
+						<xs:annotation>
+							<xs:documentation>Hex string. Allows specifying binary data.</xs:documentation>
+						</xs:annotation>
+					</xs:enumeration>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
 	</xs:complexType>
 
 	<xs:element name="Block" type="tBlock">
