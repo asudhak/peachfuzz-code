@@ -111,7 +111,10 @@ class doxygen(Task.Task):
 		return (nodes, names)
 
 	def run(self):
-		code = '\n'.join(['%s = %s' % (x, self.pars[x]) for x in self.pars])
+		dct = self.pars.copy()
+		# TODO will break if paths have spaces
+		dct['INPUT'] = ' '.join([x.abspath() for x in self.doxy_inputs])
+		code = '\n'.join(['%s = %s' % (x, dct[x]) for x in self.pars])
 		code = code.encode() # for python 3
 		#fmt = DOXY_STR % (self.inputs[0].parent.abspath())
 		cmd = Utils.subst_vars(DOXY_STR, self.env)
