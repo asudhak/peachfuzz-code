@@ -25,7 +25,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
-			folderListing = GetListing().ToList();
+			folderListing = GetListing();
 		}
 
 		public override void SessionFinished()
@@ -82,16 +82,16 @@ namespace Peach.Core.Agent.Monitors
 
 		List<string> folderListing;
 
-		IEnumerable<string> GetListing()
+		List<string> GetListing()
 		{
 			try
 			{
-				return Directory.EnumerateFileSystemEntries(Folder, "*", SearchOption.TopDirectoryOnly);
+				return Directory.EnumerateFileSystemEntries(Folder, "*", SearchOption.TopDirectoryOnly).ToList();
 			}
 			catch (Exception ex)
 			{
 				logger.Debug("Could not list contents of folder '{0}'. {1}", Folder, ex.Message);
-				return Enumerable.Empty<string>();
+				return new List<string>();
 			}
 		}
 	}
