@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Net;
+using System.Collections;
 
 namespace Peach.Core
 {
@@ -48,21 +49,42 @@ namespace Peach.Core
 		/// <returns></returns>
 		public static object FromString(Type type, ParameterAttribute attr, string value)
 		{
+			return FromString(type, attr.type, attr.name, value);
+		}
+
+		private static object FromString(Type pluginType, Type destType, string name, string value)
+		{
 			object val = null;
 
-			Type destType = attr.type;
+			if (destType.IsArray)
+			{
+				if (destType.GetArrayRank() != 1)
+					throw new NotSupportedException();
+
+				string[] parts = value.Split(new char[]{','}, StringSplitOptions.RemoveEmptyEntries);
+				IList array = Activator.CreateInstance(destType, new object[] { parts.Length }) as IList;
+				Type elemType = destType.GetElementType();
+
+				for (int i = 0; i < parts.Length; ++i)
+				{
+					array[i] = FromString(pluginType, elemType, name, parts[i]);
+				}
+
+				return array;
+			}
+
 			bool nullable = !destType.IsValueType;
 
-			if (attr.type.IsGenericType && attr.type.GetGenericTypeDefinition() == typeof(Nullable<>))
+			if (destType.IsGenericType && destType.GetGenericTypeDefinition() == typeof(Nullable<>))
 			{
-				destType = attr.type.GetGenericArguments()[0];
+				destType = destType.GetGenericArguments()[0];
 				nullable = true;
 			}
 
 			if (value == string.Empty)
 			{
 				if (!nullable)
-					RaiseError(type, "could not set value type parameter '{0}' to 'null'.", attr.name);
+					RaiseError(pluginType, "could not set value type parameter '{0}' to 'null'.", name);
 			}
 			else
 			{
@@ -73,11 +95,11 @@ namespace Peach.Core
 					else if (destType.IsEnum)
 						val = Enum.Parse(destType, value, true);
 					else
-						val = ChangeType(type, value, destType);
+						val = ChangeType(pluginType, value, destType);
 				}
 				catch (Exception ex)
 				{
-					RaiseError(type, "could not set parameter '{0}'.  {1}", attr.name, ex.Message);
+					RaiseError(pluginType, "could not set parameter '{0}'.  {1}", name, ex.Message);
 				}
 			}
 
