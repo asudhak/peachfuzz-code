@@ -267,6 +267,7 @@
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
+    <Compile Include="Monitors\MemoryMonitorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
     <Compile Include="MutationStrategies\SequentialTest.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicTest.cs" />

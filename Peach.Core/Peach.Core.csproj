@@ -411,7 +411,7 @@
     <Compile Include="Agent\Monitors\PingMonitor.cs" />
     <Compile Include="Agent\Monitors\SaveFileMonitor.cs" />
     <Compile Include="Agent\Monitors\IpPower9258Monitor.cs" />
-    <Compile Include="Agent\Monitors\Memory.cs" />
+    <Compile Include="Agent\Monitors\MemoryMonitor.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="Agent\Monitors\ReplayMonitor.cs" />

@@ -53,6 +53,9 @@ namespace Peach.Core.Test.Monitors
 
         public override Fault GetMonitorData()
         {
+            if (!DetectedFault())
+                return null;
+
             Fault fault = new Fault();
             fault.detectionSource = "FaultingMonitor";
             fault.folderName = "FaultingMonitor";
