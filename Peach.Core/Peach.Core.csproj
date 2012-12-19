@@ -410,6 +410,7 @@
     <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
     <Compile Include="Agent\Monitors\CleanupFolderMonitor.cs" />
     <Compile Include="Agent\Monitors\PingMonitor.cs" />
+    <Compile Include="Agent\Monitors\ProcessKillerMonitor.cs" />
     <Compile Include="Agent\Monitors\SaveFileMonitor.cs" />
     <Compile Include="Agent\Monitors\IpPower9258Monitor.cs" />
     <Compile Include="Agent\Monitors\MemoryMonitor.cs" />
