@@ -39,6 +39,16 @@ using Peach.Core.Analyzers;
 
 namespace Peach.Core.Test.PitParserTests
 {
+	public static class Extensions
+	{
+		public static bool mutable(this DataModel dm, string element)
+		{
+			var de = dm.find(element);
+			Assert.NotNull(de);
+			return de.isMutable;
+		}
+	}
+
 	[TestFixture]
 	class GeneralTests
 	{
@@ -182,6 +192,64 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(2, dom.tests[0].excludedMutators.Count);
 			Assert.AreEqual("StringCaseMutator", dom.tests[0].excludedMutators[0]);
 			Assert.AreEqual("BlobMutator", dom.tests[0].excludedMutators[1]);
+		}
+
+		[Test]
+		public void IncludeExcludeMutable()
+		{
+			string xml =
+@"<Peach>
+	<DataModel name='TheDataModel'>
+		<String name='str' value='Hello World!'/>
+		<String name='str2' value='Hello World!'/>
+		<Block name='block'>
+			<Block name='subblock'>
+				<Blob name='blob'/>
+				<Number name='subnum' size='8'/>
+			</Block>
+			<Number name='num' size='8'/>
+		</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Exclude ref='str'/>
+		<Exclude ref='block'/>
+		<Include ref='subblock'/>
+	</Test>
+</Peach>";
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataElement de;
+
+			// Shouldn't update the top level data model
+			de = dom.dataModels[0].find("TheDataModel.str");
+			Assert.NotNull(de);
+			Assert.True(de.isMutable);
+
+			var dm = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
+			Assert.NotNull(dm);
+
+			// Should update the action's data model
+
+			Assert.False(dm.mutable("TheDataModel.str"));
+			Assert.True( dm.mutable("TheDataModel.str2"));
+			Assert.False(dm.mutable("TheDataModel.block"));
+			Assert.True( dm.mutable("TheDataModel.block.subblock"));
+			Assert.True( dm.mutable("TheDataModel.block.subblock.blob"));
+			Assert.True( dm.mutable("TheDataModel.block.subblock.subnum"));
+			Assert.False(dm.mutable("TheDataModel.block.num"));
 		}
 	}
 }

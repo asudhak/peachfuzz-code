@@ -1414,21 +1414,33 @@ namespace Peach.Core.Analyzers
 				// Include
 				if (child.Name == "Include")
 				{
-					var xpath = child.getAttribute("xpath");
-					if (xpath == null)
-						xpath = "//*";
+					var attr = child.getAttribute("xpath");
+					if (attr == null)
+					{
+						attr = child.getAttribute("ref");
+						if (attr == null)
+							throw new PeachException("Error, Include element must have either 'ref' or 'xpath' attribute.");
 
-					test.mutables.Add(new Tuple<bool, string>(true, xpath));
+						attr = string.Format("//{0} | //{0}/*", attr);
+					}
+
+					test.mutables.Add(new Tuple<bool, string>(true, attr));
 				}
 
 				// Exclude
 				if (child.Name == "Exclude")
 				{
-					var xpath = child.getAttribute("xpath");
-					if (xpath == null)
-						xpath = "//*";
+					var attr = child.getAttribute("xpath");
+					if (attr == null)
+					{
+						attr = child.getAttribute("ref");
+						if (attr == null)
+							throw new PeachException("Error, Exclude element must have either 'ref' or 'xpath' attribute.");
 
-					test.mutables.Add(new Tuple<bool, string>(false, xpath));
+						attr = string.Format("//{0} | //{0}/*", attr);
+					}
+
+					test.mutables.Add(new Tuple<bool, string>(false, attr));
 				}
 
 				// Strategy
