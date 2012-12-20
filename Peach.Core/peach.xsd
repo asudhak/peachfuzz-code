@@ -1504,6 +1504,68 @@
 				</xs:element>
 				<xs:element name="Include" type="tInclude"/>
 				<xs:element name="Exclude" type="tExclude"/>
+				<xs:element name="Mutators" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>
+							Specifiy applicable mutators to this test.  This is an optional element.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="Mutator">
+								<xs:annotation>
+									<xs:documentation>Defines an individual mutator.</xs:documentation>
+								</xs:annotation>
+
+								<xs:complexType>
+									<xs:attribute name="class" use="required">
+										<xs:annotation>
+											<xs:documentation>The name of the mutator.</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:maxLength value="1024" />
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="mode" use="required">
+							<xs:annotation>
+								<xs:documentation>Defines whether or not the mutator list is to be included or excluded.</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:union>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:maxLength value="1024" />
+										</xs:restriction>
+									</xs:simpleType>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:enumeration value="include">
+												<xs:annotation>
+													<xs:documentation>
+														Include the specified mutators.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="exclude">
+												<xs:annotation>
+													<xs:documentation>
+														Exclude the specified mutators.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:union>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
 				<xs:element name="Strategy" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>

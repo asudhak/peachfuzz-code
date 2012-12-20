@@ -109,5 +109,79 @@ namespace Peach.Core.Test.PitParserTests
 				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 		}
+
+		[Test]
+		public void IncludeMutators()
+		{
+			string xml =
+@"<Peach>
+   <DataModel name='TheDataModel'>
+       <String name='str' value='Hello World!'/>
+   </DataModel>
+
+   <StateModel name='TheState' initialState='Initial'>
+       <State name='Initial'>
+           <Action type='output'>
+               <DataModel ref='TheDataModel'/>
+           </Action>
+       </State>
+   </StateModel>
+
+   <Test name='Default'>
+       <StateModel ref='TheState'/>
+       <Publisher class='Null'/>
+       <Strategy class='Sequential'/>
+       <Mutators mode='include'>
+           <Mutator class='StringCaseMutator'/>
+           <Mutator class='BlobMutator'/>
+       </Mutators>
+   </Test>
+</Peach>";
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(0, dom.tests[0].excludedMutators.Count);
+			Assert.AreEqual(2, dom.tests[0].includedMutators.Count);
+			Assert.AreEqual("StringCaseMutator", dom.tests[0].includedMutators[0]);
+			Assert.AreEqual("BlobMutator", dom.tests[0].includedMutators[1]);
+		}
+
+		[Test]
+		public void ExcludeMutators()
+		{
+			string xml =
+@"<Peach>
+   <DataModel name='TheDataModel'>
+       <String name='str' value='Hello World!'/>
+   </DataModel>
+
+   <StateModel name='TheState' initialState='Initial'>
+       <State name='Initial'>
+           <Action type='output'>
+               <DataModel ref='TheDataModel'/>
+           </Action>
+       </State>
+   </StateModel>
+
+   <Test name='Default'>
+       <StateModel ref='TheState'/>
+       <Publisher class='Null'/>
+       <Strategy class='Sequential'/>
+       <Mutators mode='exclude'>
+           <Mutator class='StringCaseMutator'/>
+           <Mutator class='BlobMutator'/>
+       </Mutators>
+   </Test>
+</Peach>";
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(0, dom.tests[0].includedMutators.Count);
+			Assert.AreEqual(2, dom.tests[0].excludedMutators.Count);
+			Assert.AreEqual("StringCaseMutator", dom.tests[0].excludedMutators[0]);
+			Assert.AreEqual("BlobMutator", dom.tests[0].excludedMutators[1]);
+		}
 	}
 }

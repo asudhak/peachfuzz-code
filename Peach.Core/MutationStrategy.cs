@@ -212,10 +212,10 @@ namespace Peach.Core
 
 			Func<Type, MutatorAttribute, bool> predicate = delegate(Type type, MutatorAttribute attr)
 			{
-				if (_context.test.includedMutators != null && !_context.test.includedMutators.Contains(type.Name))
+				if (_context.test.includedMutators.Count > 0 && !_context.test.includedMutators.Contains(type.Name))
 					return false;
 
-				if (_context.test.exludedMutators != null && _context.test.exludedMutators.Contains(type.Name))
+				if (_context.test.excludedMutators.Count > 0 && _context.test.excludedMutators.Contains(type.Name))
 					return false;
 
 				return true;

@@ -67,18 +67,18 @@ namespace Peach.Core.Dom
 		/// List of mutators to include in run
 		/// </summary>
 		/// <remarks>
-		/// If exclude is null, and this collection contains values, then remove all mutators and only
+		/// If exclude is empty, and this collection contains values, then remove all mutators and only
 		/// include these.
 		/// </remarks>
-		public List<string> includedMutators = null;
+		public List<string> includedMutators = new List<string>();
 
 		/// <summary>
 		/// List of mutators to exclude from run
 		/// </summary>
 		/// <remarks>
-		/// If include is null then use all mutators excluding those in this list.
+		/// If include is empty then use all mutators excluding those in this list.
 		/// </remarks>
-		public List<string> exludedMutators = null;
+		public List<string> excludedMutators = new List<string>();
 
 		/// <summary>
 		/// Collection of xpaths to mark state model/data models as mutable true/false
@@ -186,9 +186,9 @@ namespace Peach.Core.Dom
       #endregion
 
       #region Exclude
-      if (this.exludedMutators != null)
+      if (this.excludedMutators != null)
       {
-        foreach (string s in this.exludedMutators)
+        foreach (string s in this.excludedMutators)
         {
           XmlNode eExclude = doc.CreateElement("Exclude");
           eExclude.AppendAttribute("name", s);
