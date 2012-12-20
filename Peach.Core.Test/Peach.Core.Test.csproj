@@ -269,6 +269,7 @@
     <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
+    <Compile Include="Monitors\PingMonitorTests.cs" />
     <Compile Include="Monitors\ProcessKillerMoniorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
     <Compile Include="MutationStrategies\SequentialTest.cs" />
