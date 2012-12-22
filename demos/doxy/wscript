@@ -43,6 +43,9 @@ def build(bld):
 		node = self.path.get_bld().make_node('html')
 		self.bld.install_files('${PREFIX}/doc/html', node.ant_glob('**', remove=False))
 
+	# and additional targets
+	bld(features='cxx cxxshlib', source='subdir/c.cpp', target='somelib')
+
 # example for the NOTES point #3
 from waflib import Build
 class doxy(Build.BuildContext):
