@@ -166,6 +166,7 @@ namespace Peach.Core.Dom.XPath
 
 			this.dom = otherXpath.dom;
 			this.currentNode = otherXpath.currentNode;
+			this.currentNodeType = otherXpath.currentNodeType;
 			this.attributeIndex = otherXpath.attributeIndex;
 
 			return true;
