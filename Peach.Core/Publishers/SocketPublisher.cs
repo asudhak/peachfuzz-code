@@ -71,19 +71,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		private static bool IsMulticast(IPAddress addr)
-		{
-			// IPv6 -> 1st byte is 0xff
-			// IPv4 -> 1st byte is 0xE0 -> 0xEF
-
-			byte[] buf = addr.GetAddressBytes();
-
-			if (addr.AddressFamily == AddressFamily.InterNetwork)
-				return (buf[0] & 0xe0) == 0xe0;
-			else
-				return (buf[0] == 0xff);
-		}
-
 		private static SocketError WSAGetLastError()
 		{
 			int err = Marshal.GetLastWin32Error();
@@ -226,7 +213,7 @@ namespace Peach.Core.Publishers
 				if (Interface == null)
 					local = GetLocalIp(ep);
 
-				_multicast = IsMulticast(ep.Address);
+				_multicast = ep.Address.IsMulticast();
 
 				if (_multicast)
 				{

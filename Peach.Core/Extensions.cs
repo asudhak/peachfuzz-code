@@ -5,6 +5,22 @@ using System.Xml;
 
 namespace Peach.Core
 {
+	public static class IpAddressExtensions
+	{
+		public static bool IsMulticast(this System.Net.IPAddress ip)
+		{
+			// IPv6 -> 1st byte is 0xff
+			// IPv4 -> 1st byte is 0xE0 -> 0xEF
+
+			byte[] buf = ip.GetAddressBytes();
+
+			if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+				return (buf[0] & 0xe0) == 0xe0;
+			else
+				return (buf[0] == 0xff);
+		}
+	}
+
 	public static class XmlExtensions
 	{
 		/// <summary>
