@@ -420,6 +420,7 @@
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
+    <Compile Include="Agent\Monitors\SocketMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />
     <Compile Include="Agent\Monitors\TCPListenerMonitor.cs" />
     <Compile Include="Analysis\Coverage.cs" />
