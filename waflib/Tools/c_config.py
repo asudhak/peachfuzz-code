@@ -267,10 +267,7 @@ def exec_cfg(self, kw):
 	"""
 
 	def define_it():
-		if kw.get('uselib_store', None):
-			self.env.append_unique('DEFINES_%s' % kw['uselib_store'], "%s=1" % self.have_define(kw['uselib_store']))
-		else:
-			self.define(self.have_define(kw['package']), 1, 0)
+		self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
 
 	# pkg-config version
 	if 'atleast_pkgconfig_version' in kw:
