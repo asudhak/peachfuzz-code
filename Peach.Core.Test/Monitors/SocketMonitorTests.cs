@@ -6,12 +6,81 @@ using System.Text;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Peach.Core.Analyzers;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Peach.Core.Test.Monitors
 {
 	[TestFixture]
 	class SocketMonitorTests
 	{
+		class UdpSender : UdpClient
+		{
+			byte[] buffer;
+			IPEndPoint remoteEP;
+
+			public UdpSender(string ip, ushort port, string payload)
+				: base(IPAddress.Parse(ip).AddressFamily)
+			{
+				remoteEP = new IPEndPoint(IPAddress.Parse(ip), port);
+				buffer = Encoding.ASCII.GetBytes(payload);
+
+				if (remoteEP.Address.IsMulticast())
+				{
+					if (remoteEP.Address.AddressFamily == AddressFamily.InterNetwork)
+					{
+						Client.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+						Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, IPAddress.Loopback.GetAddressBytes());
+					}
+					else
+					{
+						Client.Bind(new IPEndPoint(IPAddress.IPv6Loopback, 0));
+						Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastInterface, IPAddress.IPv6Loopback.GetAddressBytes());
+					}
+				}
+				else
+				{
+					Client.Bind(new IPEndPoint(remoteEP.Address, 0));
+				}
+
+				OnSend(null);
+			}
+
+			void OnSend(IAsyncResult ar)
+			{
+				try
+				{
+					if (ar != null)
+						EndSend(ar);
+				}
+				catch (ObjectDisposedException)
+				{
+					return;
+				}
+				catch (Exception ex)
+				{
+					SocketException se = ex as SocketException;
+					if (se == null || se.SocketErrorCode != SocketError.ConnectionRefused)
+						Assert.Null(ex.Message);
+				}
+
+				System.Threading.Thread.Sleep(500);
+
+				try
+				{
+					BeginSend(buffer, buffer.Length, remoteEP, OnSend, null);
+				}
+				catch (ObjectDisposedException)
+				{
+					return;
+				}
+				catch (Exception ex)
+				{
+					Assert.Null(ex.Message);
+				}
+			}
+		}
+
 		class Params : Dictionary<string, string> { }
 
 		private uint faultIteration;
@@ -95,7 +164,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestNoConnNoFault()
 		{
 			// No connections, no faults
-			Run(new Params());
+			Run(new Params { { "Timeout", "1" } });
 			Assert.Null(faults);
 		}
 
@@ -105,7 +174,7 @@ namespace Peach.Core.Test.Monitors
 			// Different monitor faults, SocketMonitor returns FaultType.Data
 			faultIteration = 1;
 
-			Run(new Params());
+			Run(new Params { { "Timeout", "1" } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -119,7 +188,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestNoConnFault()
 		{
 			// No connection, FaultOnSuccess = true results in fault
-			Run(new Params { { "FaultOnSuccess", "true" } });
+			Run(new Params { { "Timeout", "1" }, { "FaultOnSuccess", "true" } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
@@ -136,7 +205,7 @@ namespace Peach.Core.Test.Monitors
 
 			faultIteration = 1;
 
-			Run(new Params());
+			Run(new Params { { "Timeout", "1" } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -145,7 +214,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(FaultType.Data, faults[1].type);
 			Assert.AreEqual("Monitoring 0.0.0.0:8080", faults[1].title);
 
-			Run(new Params { { "Host", "::1" } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "::1" } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -154,7 +223,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(FaultType.Data, faults[1].type);
 			Assert.AreEqual("Monitoring [::1]:8080", faults[1].title);
 
-			Run(new Params { { "Host", "127.0.0.2" } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -169,7 +238,7 @@ namespace Peach.Core.Test.Monitors
 				addr = ((System.Net.IPEndPoint)u.Client.LocalEndPoint).Address.ToString();
 			}
 
-			Run(new Params { { "Host", "1.1.1.1" } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "1.1.1.1" } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -179,7 +248,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("Monitoring " + addr + ":8080", faults[1].title);
 		}
 
-		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
+		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Could not start monitor \"SocketMonitor\".  Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
 		public void TestBadHostInterface()
 		{
 			// Deal with IPv4/IPv6 mismatched Host & Interface parameters
@@ -187,17 +256,73 @@ namespace Peach.Core.Test.Monitors
 		}
 
 		[Test]
-		[Ignore]
 		public void TestConnNoFault()
 		{
 			// receive connection, FaultOnSuccess = true results in no fault
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
+				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.Null(faults);
 		}
 
 		[Test]
-		[Ignore]
+		public void TestConnNoFaultOtherFault()
+		{
+			// receive connection, FaultOnSuccess = true results in fault data when other monitor faults
+			faultIteration = 1;
+
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
+				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(2, faults.Length);
+			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual("SocketMonitor", faults[1].detectionSource);
+			Assert.AreEqual(FaultType.Data, faults[1].type);
+			Assert.AreEqual(desc, faults[1].description);
+		}
+
+		[Test]
 		public void TestMulticast()
 		{
 			// Support 'Host' of 234.5.6.7
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string host = "234.5.6.7";
+			string desc;
+
+			using (var sender = new UdpSender(host, port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
+				Run(new Params { { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Host", host }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+		}
+
+		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"SocketMonitor\".  Multicast hosts are not supported with the tcp protocol.")]
+		public void TestMulticastTcp()
+		{
+			// Multicast is not supported when Protocol is tcp
+			Run(new Params { { "Host", "234.5.6.7" } });
 		}
 
 		[Test]
@@ -208,22 +333,74 @@ namespace Peach.Core.Test.Monitors
 		}
 
 		[Test]
-		[Ignore]
 		public void TestUdpHost()
 		{
 			// Only accept UDP connections from specified host
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
+			{
+				Run(new Params { { "Protocol", "udp" }, { "Host", "127.0.0.2" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.Null(faults);
+
+			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
+				Run(new Params { { "Protocol", "udp" }, { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
 		[Test]
-		[Ignore]
 		public void TestUdp4()
 		{
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
+				Run(new Params { { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
 		[Test]
-		[Ignore]
 		public void TestUdp6()
 		{
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new UdpSender("::1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
+				Run(new Params { { "Protocol", "udp" }, { "Interface", "::1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
 		[Test]
