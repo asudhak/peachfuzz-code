@@ -14,6 +14,83 @@ namespace Peach.Core.Test.Monitors
 	[TestFixture]
 	class SocketMonitorTests
 	{
+		class TcpSender : IDisposable
+		{
+			byte[] buffer;
+			IPEndPoint remoteEP;
+			IPEndPoint localEP;
+			public Socket socket;
+
+			public TcpSender(string ip, ushort port, string payload)
+			{
+				remoteEP = new IPEndPoint(IPAddress.Parse(ip), port);
+				localEP = new IPEndPoint(remoteEP.Address, 0);
+				buffer = Encoding.ASCII.GetBytes(payload);
+
+				Connect();
+			}
+
+			private void Connect()
+			{
+				socket = new Socket(remoteEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+				socket.Bind(localEP);
+				if (localEP.Port == 0)
+					localEP.Port = ((IPEndPoint)socket.LocalEndPoint).Port;
+				socket.BeginConnect(remoteEP.Address, remoteEP.Port, OnConnect, null);
+			}
+
+			void OnConnect(IAsyncResult ar)
+			{
+				try
+				{
+					socket.EndConnect(ar);
+				}
+				catch (ObjectDisposedException)
+				{
+					return;
+				}
+				catch (Exception ex)
+				{
+					SocketException se = ex as SocketException;
+					if (se == null || se.SocketErrorCode != SocketError.ConnectionRefused)
+						Assert.Null(ex.Message);
+				}
+
+				if (!socket.Connected)
+				{
+					socket.Close();
+					System.Threading.Thread.Sleep(500);
+					Connect();
+					return;
+				}
+
+				socket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, OnSend, null);
+			}
+
+			void OnSend(IAsyncResult ar)
+			{
+				try
+				{
+					socket.EndSend(ar);
+					socket.Shutdown(SocketShutdown.Both);
+					socket.Close();
+				}
+				catch (ObjectDisposedException)
+				{
+					return;
+				}
+				catch (Exception ex)
+				{
+					Assert.Null(ex.Message);
+				}
+			}
+
+			public void Dispose()
+			{
+				socket.Dispose();
+			}
+		}
+
 		class UdpSender : UdpClient
 		{
 			byte[] buffer;
@@ -43,15 +120,14 @@ namespace Peach.Core.Test.Monitors
 					Client.Bind(new IPEndPoint(remoteEP.Address, 0));
 				}
 
-				OnSend(null);
+				BeginSend(buffer, buffer.Length, remoteEP, OnSend, null);
 			}
 
 			void OnSend(IAsyncResult ar)
 			{
 				try
 				{
-					if (ar != null)
-						EndSend(ar);
+					EndSend(ar);
 				}
 				catch (ObjectDisposedException)
 				{
@@ -221,7 +297,10 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual("SocketMonitor", faults[1].detectionSource);
 			Assert.AreEqual(FaultType.Data, faults[1].type);
-			Assert.AreEqual("Monitoring [::1]:8080", faults[1].title);
+			if (Platform.GetOS() == Platform.OS.Windows)
+				Assert.AreEqual("Monitoring [::1]:8080", faults[1].title);
+			else
+				Assert.AreEqual("Monitoring ::0.0.0.1:8080", faults[1].title);
 
 			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" } });
 			Assert.NotNull(faults);
@@ -260,11 +339,9 @@ namespace Peach.Core.Test.Monitors
 		{
 			// receive connection, FaultOnSuccess = true results in no fault
 			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
-			string desc;
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
-				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
 				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
 			}
 
@@ -326,10 +403,32 @@ namespace Peach.Core.Test.Monitors
 		}
 
 		[Test]
-		[Ignore]
 		public void TestTcpHost()
 		{
 			// Only accept TCP connections from specified host
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
+			{
+				Run(new Params { { "Host", "127.0.0.2" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.Null(faults);
+
+			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.socket.LocalEndPoint);
+				Run(new Params { { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
 		[Test]
@@ -404,15 +503,45 @@ namespace Peach.Core.Test.Monitors
 		}
 
 		[Test]
-		[Ignore]
 		public void TestTcp4()
 		{
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.socket.LocalEndPoint);
+				Run(new Params { { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
 		[Test]
-		[Ignore]
 		public void TestTcp6()
 		{
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			string desc;
+
+			using (var sender = new TcpSender("::1", port, "Hello"))
+			{
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.socket.LocalEndPoint);
+				Run(new Params { { "Interface", "::1" }, { "Port", port.ToString() } });
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, faults[0].type);
+			Assert.AreEqual(desc, faults[0].description);
+			Assert.True(faults[0].collectedData.ContainsKey("Response"));
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 	}
 }

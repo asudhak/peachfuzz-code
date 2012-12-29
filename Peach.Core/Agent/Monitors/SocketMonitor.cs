@@ -26,6 +26,7 @@ namespace Peach.Core.Agent.Monitors
 		public int          Backlog        { get; private set; }
 		public bool         FaultOnSuccess { get; private set; }
 
+		private const int TcpBlockSize = 1024;
 		private const int MaxDgramSize = 65000;
 		private MemoryStream _recvBuffer = new MemoryStream();
 
@@ -155,6 +156,9 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_socket.Bind(new IPEndPoint(local, Port));
 			}
+
+			if (Protocol == Proto.Tcp)
+				_socket.Listen(Backlog);
 		}
 
 		private void CloseSocket()
@@ -166,44 +170,115 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
-		Tuple<IPEndPoint, byte[]> ReadSocket()
+		private Tuple<IPEndPoint, byte[]> ReadSocket()
 		{
+			IPEndPoint ep;
+
+			_recvBuffer.Seek(0, SeekOrigin.Begin);
+			_recvBuffer.SetLength(0);
+
+			if (Protocol == Proto.Udp)
+				ep = WaitForData(_socket, 1, MaxDgramSize, Recv);
+			else
+				ep = WaitForData(_socket, 1, MaxDgramSize, Accept);
+
+			_recvBuffer.Seek(0, SeekOrigin.Begin);
+
+			return ep == null ? null : new Tuple<IPEndPoint, byte[]>(ep, _recvBuffer.ToArray());
+		}
+
+		private delegate IPEndPoint IoFunc(Socket s, int blockSize);
+
+		private IPEndPoint WaitForData(Socket s, int maxReads, int blockSize, IoFunc read)
+		{
+			IPEndPoint ret = null;
 			int now = Environment.TickCount;
 			int expire = now + Timeout;
+			int cnt = 0;
 
-			if (_recvBuffer.Capacity < MaxDgramSize)
+			while ((maxReads < 0 || cnt < maxReads) && now <= expire)
 			{
-				_recvBuffer.Seek(MaxDgramSize - 1, SeekOrigin.Begin);
-				_recvBuffer.WriteByte(0);
-			}
+				int remain = expire - now;
 
-			for (; now <= expire; now = Environment.TickCount)
-			{
-				var fds = new List<Socket> { _socket };
-				Socket.Select(fds, null, null, (expire - now) * 1000);
+				var fds = new List<Socket> { s };
+				Socket.Select(fds, null, null, (remain) * 1000);
 
 				if (fds.Count == 0)
 					return null;
 
-				_recvBuffer.Seek(0, SeekOrigin.Begin);
-				_recvBuffer.SetLength(_recvBuffer.Capacity);
+				long len = _recvBuffer.Length;
 
-				byte[] buf = _recvBuffer.GetBuffer();
-				int offset = (int)_recvBuffer.Position;
-				int size = (int)_recvBuffer.Length;
+				var ep = read(s, blockSize);
 
-				EndPoint remoteEP = new IPEndPoint(_socket.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0);
-				int len = _socket.ReceiveFrom(buf, offset, size, SocketFlags.None, ref remoteEP);
-				_recvBuffer.SetLength(len);
+				now = Environment.TickCount;
 
-				if (!_multicast && Host != null && !Host.Equals(((IPEndPoint)remoteEP).Address))
-					continue;
+				if (ep != null)
+				{
+					ret = ep;
+					++cnt;
+					expire = now + Timeout;
 
-				var ret = new Tuple<IPEndPoint, byte[]>((IPEndPoint)remoteEP, _recvBuffer.ToArray());
-				return ret;
+					// EOF
+					if (_recvBuffer.Length == len)
+						break;
+				}
 			}
 
-			return null;
+			return ret;
+		}
+
+		private IPEndPoint Accept(Socket s, int blockSize)
+		{
+			using (Socket client = _socket.Accept())
+			{
+				IPEndPoint remoteEP = (IPEndPoint)client.RemoteEndPoint;
+
+				if (Host != null && !Host.Equals(remoteEP.Address))
+				{
+					client.Shutdown(SocketShutdown.Both);
+					return null;
+				}
+
+				// Indicate we have nothing to send
+				client.Shutdown(SocketShutdown.Send);
+
+				// Read client data
+				WaitForData(client, -1, TcpBlockSize, Recv);
+
+				return remoteEP;
+			}
+		}
+
+		private IPEndPoint Recv(Socket s, int blockSize)
+		{
+			_recvBuffer.Seek(blockSize - 1, SeekOrigin.Current);
+			_recvBuffer.WriteByte(0);
+			_recvBuffer.Seek(-blockSize, SeekOrigin.Current);
+
+			int pos = (int)_recvBuffer.Position;
+			byte[] buf = _recvBuffer.GetBuffer();
+
+			EndPoint remoteEP;
+			int len;
+
+			if (s.SocketType == SocketType.Stream)
+			{
+				remoteEP = new IPEndPoint(Host ?? IPAddress.Any, 0);
+				len = s.Receive(buf, pos, blockSize, SocketFlags.None);
+			}
+			else
+			{
+				remoteEP = new IPEndPoint(_socket.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0);
+				len = s.ReceiveFrom(buf, pos, blockSize, SocketFlags.None, ref remoteEP);
+			}
+
+			if (!_multicast && Host != null && !Host.Equals(((IPEndPoint)remoteEP).Address))
+				return null;
+
+			_recvBuffer.SetLength(_recvBuffer.Position + len);
+			_recvBuffer.Seek(0, SeekOrigin.End);
+
+			return (IPEndPoint)remoteEP;
 		}
 
 		private IPAddress GetLocalIp()
