@@ -94,6 +94,11 @@ namespace Peach.Core
 		/// </summary>
 		public Action CurrentAction { get; private set; }
 
+		/// <summary>
+		/// Get the result value (if any).
+		/// </summary>
+		public virtual string Result { get; private set; }
+
 		#endregion
 
 		#region Events

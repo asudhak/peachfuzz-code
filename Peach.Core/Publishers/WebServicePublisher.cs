@@ -40,6 +40,7 @@ namespace Peach.Core.Publishers
 		public int Throttle { get; set; }
         public string StatusCode = HttpStatusCode.OK.ToString();
 		public bool ErrorOnStatusCode { get; set; }
+		public override string Result { get { return StatusCode;} private set { StatusCode = value; } }
 
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
