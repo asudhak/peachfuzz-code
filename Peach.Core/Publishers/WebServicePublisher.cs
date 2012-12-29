@@ -79,7 +79,16 @@ namespace Peach.Core.Publishers
 			int count = 0;
 			foreach(var arg in args)
 			{
-                parameters[count] = GetVariantValue(arg.dataModel[0].InternalValue);
+				try
+				{
+					parameters[count] = GetVariantValue(arg.dataModel[0].InternalValue);
+				}
+				catch(Exception ex)
+				{
+					logger.Debug("OnCall: Warning, unable to get value for parameter #" + count + ".  Setting parameter to null.  Exception: " + ex.ToString());
+					parameters[count] = null;
+				}
+
 				count++;
 			}
 
@@ -97,6 +106,13 @@ namespace Peach.Core.Publishers
             }
             catch (Exception ex)
             {
+				if (ex.InnerException is ArgumentException &&
+					ex.InnerException.Message.IndexOf("surrogate") != -1)
+					throw new SoftException(ex.InnerException);
+				if (ex.InnerException is InvalidOperationException &&
+					ex.InnerException.Message.IndexOf("XML") != -1)
+					throw new SoftException(ex.InnerException);
+
                 if (!(ex.InnerException is WebException))
                     throw ex;
 

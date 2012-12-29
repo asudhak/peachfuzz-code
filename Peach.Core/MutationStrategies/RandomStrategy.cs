@@ -47,7 +47,7 @@ namespace Peach.Core.MutationStrategies
 	[MutationStrategy("Random", true)]
 	[MutationStrategy("RandomStrategy")]
 	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching.", "200")]
-	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once.", "7")]
+	[Parameter("MaxFieldsToMutate", typeof(int), "Maximum fields to mutate at once.", "6")]
 	public class RandomStrategy : MutationStrategy
 	{
 		class DataSetTracker
@@ -259,7 +259,7 @@ namespace Peach.Core.MutationStrategies
 				System.Diagnostics.Debug.Assert(ret != null);
 
 				// Remove our old mutators
-				_dataModels.Remove(action.origionalDataModel.fullName);
+				_dataModels.Remove(GetDataModelName(action));
 				List<DataElement> oldElements = new List<DataElement>();
 				RecursevlyGetElements(action.origionalDataModel, oldElements);
 				foreach (var item in oldElements)
@@ -306,7 +306,7 @@ namespace Peach.Core.MutationStrategies
 		{
 			if (action.dataModel != null)
 			{
-				if (_dataModels.Add(action.dataModel.fullName))
+				if (_dataModels.Add(GetDataModelName(action)))
 					GatherMutators(action.dataModel as DataElementContainer);
 			}
 			else if (action.parameters != null && action.parameters.Count > 0)
@@ -314,7 +314,7 @@ namespace Peach.Core.MutationStrategies
 				foreach (ActionParameter param in action.parameters)
 				{
 					if (param.dataModel != null)
-						if (_dataModels.Add(param.dataModel.fullName))
+						if (_dataModels.Add(GetDataModelName(action, param)))
 							GatherMutators(param.dataModel as DataElementContainer);
 				}
 			}
@@ -363,7 +363,9 @@ namespace Peach.Core.MutationStrategies
 			}
 
 			// Random.Next() Doesn't include max and we want it to
-			DataElement[] toMutate = Random.Sample(allElements, Random.Next(1, maxFieldsToMutate + 1));
+			var fieldsToMutate = Random.Next(1, maxFieldsToMutate + 1);
+			logger.Debug("ApplyMutation: fieldsToMutate: " + fieldsToMutate + "; max: " + maxFieldsToMutate + "; available: " + allElements.Count);
+			DataElement[] toMutate = Random.Sample(allElements, fieldsToMutate);
 			foreach (var item in toMutate)
 			{
 				if (_iterations.ContainsKey(item.fullName))
@@ -389,10 +391,16 @@ namespace Peach.Core.MutationStrategies
 			if (_targetDataModel == null)
 				_targetDataModel = Random.Choice(_dataModels);
 
-			if (action.dataModel != null && action.dataModel.fullName == _targetDataModel)
+			if (action.dataModel != null && GetDataModelName(action) == _targetDataModel)
 				ApplyMutation(action.dataModel);
-
-			// TODO: Why don't we mutate the action.parameters data model?
+			else if (action.parameters.Count != 0)
+			{
+				foreach (var param in action.parameters)
+				{
+					if (param.dataModel != null && GetDataModelName(action, param) == _targetDataModel)
+						ApplyMutation(param.dataModel);
+				}
+			}
 		}
 
 		/// <summary>

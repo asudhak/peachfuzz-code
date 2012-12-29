@@ -104,6 +104,40 @@ namespace Peach.Core
 			}
 		}
 
+		protected string GetDataModelName(Dom.Action action)
+		{
+			if (action.dataModel == null)
+				throw new ArgumentException();
+
+			StringBuilder sb = new StringBuilder();
+
+			sb.Append(action.parent.name);
+			sb.Append('.');
+			sb.Append(action.name);
+			sb.Append('.');
+			sb.Append(action.dataModel.name);
+
+			return sb.ToString();
+		}
+
+		protected string GetDataModelName(Dom.Action action, ActionParameter param)
+		{
+			if (param.dataModel == null)
+				throw new ArgumentException();
+
+			StringBuilder sb = new StringBuilder();
+
+			sb.Append(action.parent.name);
+			sb.Append('.');
+			sb.Append(action.name);
+			sb.Append('.');
+			sb.Append(action.parameters.IndexOf(param));
+			sb.Append('.');
+			sb.Append(param.dataModel.name);
+
+			return sb.ToString();
+		}
+
 		protected void SeedRandom()
 		{
 			_random = new Random(Seed + Iteration);
