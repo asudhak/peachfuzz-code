@@ -850,6 +850,8 @@ namespace Peach.Core.Analyzers
 
 					if (array.occurs > 0)
 						array.Add(elem);
+					else
+						elem.parent = array;
 
 					// Expand all occurances
 					for (int i = 1; i < array.occurs; ++i)
@@ -1372,6 +1374,25 @@ namespace Peach.Core.Analyzers
 			return data;
 		}
 
+		protected virtual List<string> handleMutators(XmlNode node)
+		{
+			var ret = new List<string>();
+
+			foreach (XmlNode child in node)
+			{
+				if (child.Name == "Mutator")
+				{
+					string name = child.getAttribute("class");
+					if (name == null)
+						throw new PeachException("Error, Mutator element is missing 'class' attribute");
+
+					ret.Add(name);
+				}
+			}
+
+			return ret;
+		}
+
 		protected virtual Test handleTest(XmlNode node, Dom.Dom parent)
 		{
 			Test test = new Test();
@@ -1393,21 +1414,33 @@ namespace Peach.Core.Analyzers
 				// Include
 				if (child.Name == "Include")
 				{
-					var xpath = child.getAttribute("xpath");
-					if (xpath == null)
-						xpath = "//*";
+					var attr = child.getAttribute("ref");
 
-					test.mutables.Add(new Tuple<bool, string>(true, xpath));
+					if (attr != null)
+						attr = string.Format("//{0} | //{0}/*", attr);
+					else
+						attr = child.getAttribute("xpath");
+
+					if (attr == null)
+						attr = "//*";
+
+					test.mutables.Add(new Tuple<bool, string>(true, attr));
 				}
 
 				// Exclude
 				if (child.Name == "Exclude")
 				{
-					var xpath = child.getAttribute("xpath");
-					if (xpath == null)
-						xpath = "//*";
+					var attr = child.getAttribute("ref");
 
-					test.mutables.Add(new Tuple<bool, string>(false, xpath));
+					if (attr != null)
+						attr = string.Format("//{0} | //{0}/*", attr);
+					else
+						attr = child.getAttribute("xpath");
+
+					if (attr == null)
+						attr = "//*";
+
+					test.mutables.Add(new Tuple<bool, string>(false, attr));
 				}
 
 				// Strategy
@@ -1481,9 +1514,25 @@ namespace Peach.Core.Analyzers
 				}
 
 				// Mutator
-				if (child.Name == "Mutator")
+				if (child.Name == "Mutators")
 				{
-					throw new NotImplementedException("Test.Mutator TODO");
+					string mode = child.getAttribute("mode");
+					if (mode == null)
+						throw new PeachException("Error, Mutators element must have a 'mode' attribute");
+
+					var list = handleMutators(child);
+
+					switch (mode.ToLower())
+					{
+						case "include":
+							test.includedMutators.AddRange(list);
+							break;
+						case "exclude":
+							test.excludedMutators.AddRange(list);
+							break;
+						default:
+							throw new PeachException("Error, Mutators element has invalid 'mode' attribute '{0}'", mode);
+					}
 				}
 			}
 

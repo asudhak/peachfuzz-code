@@ -94,8 +94,9 @@ namespace Peach.Core.Dom
 				sizedData = data.ReadBitsAsBitStream(size);
 			}
 
-			// Handle children
-			foreach (DataElement child in element)
+			// Handle children, iterate over a copy since cracking can modify the list
+			var children = _childrenList.ToArray();
+			foreach (DataElement child in children)
 			{
 				context.handleNode(child, sizedData);
 
@@ -168,6 +169,23 @@ namespace Peach.Core.Dom
 			catch
 			{
 				return null;
+			}
+		}
+
+		public override bool CacheValue
+		{
+			get
+			{
+				if (!base.CacheValue)
+					return false;
+
+				foreach (var elem in this)
+				{
+					if (!elem.CacheValue)
+						return false;
+				}
+
+				return true;
 			}
 		}
 

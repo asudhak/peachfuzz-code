@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+name = bld.env.DEST_OS is 'win32' and 'Peach.exe' or 'peach.exe'
+
 bld(
 	features = 'cs',
 	use = 'NLog.dll SharpPcap.dll Peach.Core.dll System.dll System.Xml.dll',
 	source = bld.path.ant_glob('**/*.cs'),
-	name = 'Peach.exe',
+	name = name,
 	ver_product = 'Peach Fuzzing Platfom',
 	install = bld.path.ant_glob('samples/* *.xml')
 )

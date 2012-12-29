@@ -301,12 +301,15 @@ namespace Peach.Core.Test.Publishers
 		[Test]
 		public void MulticastUdpTest()
 		{
+			ushort dstport = (ushort)((Environment.TickCount % 10000) + 20000);
+			ushort srcport = (ushort)(dstport + 1);
+
 			SocketEcho echo = new SocketEcho();
-			echo.SendOnly(IPAddress.Parse("234.5.6.7"), 12345);
+			echo.SendOnly(IPAddress.Parse("234.5.6.7"), dstport);
 
 			try
 			{
-				string xml = string.Format(template, "Udp", "234.5.6.7", "1000", "Hello World", "12345");
+				string xml = string.Format(template, "Udp", "234.5.6.7", srcport.ToString(), "Hello World", dstport.ToString());
 
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));

@@ -184,8 +184,8 @@ namespace Peach.Core.Dom
 				}
 
 				BitStream stream = commonAncestor.Value;
-				if (from != from.getRoot())
-					stream.DataElementPosition(from);
+				if (from != commonAncestor)
+					fromPosition = stream.DataElementPosition(from);
 				toPosition = stream.DataElementPosition(to);
 			}
 			else
@@ -239,6 +239,52 @@ namespace Peach.Core.Dom
 			}
 
 			return null;
+		}
+
+		[NonSerialized]
+		private string tempRelativeTo = null;
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			if (DataElement.DebugClone)
+				logger.Debug("Serializing relativeTo={0}", relativeTo);
+
+			if (string.IsNullOrEmpty(relativeTo))
+				return;
+
+			var from = _from;
+			if (_from == null)
+			{
+				if (_fromName != null)
+					from = parent.find(_fromName);
+				else
+					from = parent;
+			}
+
+			var elem = from.find(relativeTo);
+			if (elem == null && relativeTo == ctx.oldName)
+			{
+				tempRelativeTo = relativeTo;
+				relativeTo = ctx.newName;
+			}
+		}
+
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			if (tempRelativeTo != null)
+				relativeTo = tempRelativeTo;
+
+			tempRelativeTo = null;
 		}
 	}
 }

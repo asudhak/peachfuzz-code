@@ -71,6 +71,45 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Blob5", ((Choice)dom.dataModels[0][0])[0].name);
 			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
 		}
+
+		[Test]
+		public void MinOccurs0()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM_choice1"">
+		<Blob name=""smallData"" length=""2""/>
+		<Number size=""32"" token=""true"" value=""1""/>
+	</DataModel>
+
+	<DataModel name=""DM_choice2"">
+		<Blob name=""BigData"" length=""10""/>
+		<Number size=""32"" token=""true"" value=""2""/>
+	</DataModel>
+
+	<DataModel name=""DM"">
+		<Blob name=""Header"" length=""5""/>
+		<Choice name=""options"" minOccurs=""0"">
+			<Block ref=""DM_choice1""/>
+			<Block ref=""DM_choice2""/>
+		</Choice>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 11, 22, 33, 44, 55 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[2], data);
+
+			Assert.AreEqual(1, dom.dataModels[2].Count);
+			Assert.IsTrue(dom.dataModels[2][0] is Blob);
+		}
 	}
 }
 

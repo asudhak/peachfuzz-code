@@ -552,7 +552,11 @@ namespace Peach.Core
 				if (!prop.required)
 					value = string.Format(" default=\"{0}\"", prop.defaultValue.Replace("\r", "\\r").Replace("\n", "\\n"));
 
-				string type = string.Format("({0})", prop.type.Name);
+				string type;
+				if (prop.type.IsGenericType && prop.type.GetGenericTypeDefinition() == typeof(Nullable<>))
+					type = string.Format("({0}?)", prop.type.GetGenericArguments()[0].Name);
+				else
+					type = string.Format("({0})", prop.type.Name);
 
 				Console.WriteLine("    {0} {1} {2} {3}.{4}", prop.required ? "*" : "-",
 					prop.name.PadRight(24), type.PadRight(14), prop.description, value);

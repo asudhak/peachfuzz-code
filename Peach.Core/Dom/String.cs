@@ -67,9 +67,9 @@ namespace Peach.Core.Dom
 	[PitParsable("String")]
 	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[Parameter("name", typeof(string), "Element name", "")]
-	[Parameter("length", typeof(uint), "Length in data element", "")]
+	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(uint), "Scripting expression that evaluates to an integer", "")]
+	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("nullTerminated", typeof(bool), "Is string null terminated?", "false")]
 	[Parameter("type", typeof(StringType), "Type of string (encoding)", "ascii")]
 	[Parameter("value", typeof(string), "Default value", "")]
@@ -301,6 +301,9 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementAttributes(node, str);
 			context.handleCommonDataElementValue(node, str);
 			context.handleCommonDataElementChildren(node, str);
+
+			if (!node.hasAttribute("value"))
+				str.DefaultValue = new Variant("");
 
 			int test;
 			if (int.TryParse((string)str.DefaultValue, out test))

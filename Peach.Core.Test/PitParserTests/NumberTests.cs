@@ -48,7 +48,7 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<Defaults>" +
-				"		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"		<Number endian=\"big\" signed=\"true\"/>" +
 				"	</Defaults>" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Number name=\"TheNumber\" size=\"8\"/>" +

@@ -397,6 +397,91 @@ namespace Peach.Core.Test
 				Assert.AreEqual(count, i + 2);
 			}
 		}
+
+		[Test]
+		public void RelationInArray()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""ElemModel"">
+		<Number name=""length"" size=""16"" endian=""big"">
+			<Relation type=""size"" of=""data""/>
+		</Number>
+		<Blob name=""data""/>
+	</DataModel>
+
+	<DataModel name=""DM"">
+		<Number name=""tag"" size=""16"" endian=""big"" />
+		<Number name=""length"" size=""16"" endian=""big"">
+			<Relation type=""size"" of=""Elements""/>
+		</Number>
+		<Block name=""Elements"">
+			<Block name=""Elem"" minOccurs=""0"" maxOccurs=""999"">
+				<Block name=""Elem0"" ref=""ElemModel""/>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			BitStream data = new BitStream();
+			data.WriteBytes(new byte[] { 0x00, 0x10, 0x00, 0x06, 0x00, 0x04, 0xde, 0xad, 0xbe, 0xef });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(3, dom.dataModels[1].Count);
+
+			var tag = dom.dataModels[1][0] as Number;
+			var len = dom.dataModels[1][1] as Number;
+			var blk = dom.dataModels[1][2] as Block;
+
+			Assert.NotNull(tag);
+			Assert.NotNull(len);
+			Assert.NotNull(blk);
+			Assert.AreEqual(1, blk.Count);
+
+			var arr = blk[0] as Dom.Array;
+			Assert.NotNull(arr);
+			Assert.AreEqual(1, arr.Count);
+
+			var elm = arr[0] as Block;
+			Assert.NotNull(elm);
+			Assert.AreEqual(1, elm.Count);
+
+			var el0 = elm[0] as DataModel;
+			Assert.NotNull(el0);
+			Assert.AreEqual(2, el0.Count);
+
+			var length = el0[0] as Number;
+			var blob = el0[1] as Blob;
+
+			Assert.NotNull(length);
+			Assert.NotNull(blob);
+
+			Assert.AreEqual(16, (int)tag.DefaultValue);
+			Assert.AreEqual(6, (int)len.DefaultValue);
+			Assert.AreEqual(4, (int)length.DefaultValue);
+
+			var bs = (BitStream)blob.DefaultValue;
+			Assert.NotNull(bs);
+
+			MemoryStream ms = bs.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			Assert.AreEqual(4, ms.Length);
+
+			var buf = ms.GetBuffer();
+			Assert.AreEqual(0xde, buf[0]);
+			Assert.AreEqual(0xad, buf[1]);
+			Assert.AreEqual(0xbe, buf[2]);
+			Assert.AreEqual(0xef, buf[3]);
+		}
 	}
 }
 

@@ -266,8 +266,13 @@
     <Compile Include="Fixups\SHA256FixupTests.cs" />
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
+    <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
+    <Compile Include="Monitors\MemoryMonitorTests.cs" />
+    <Compile Include="Monitors\PingMonitorTests.cs" />
+    <Compile Include="Monitors\ProcessKillerMoniorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
+    <Compile Include="Monitors\SocketMonitorTests.cs" />
     <Compile Include="MutationStrategies\SequentialTest.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicTest.cs" />
     <Compile Include="Mutators\ArrayNumericalEdgeCasesMutatorTests.cs" />
@@ -277,6 +282,7 @@
     <Compile Include="Mutators\BlobBitFlipperMutatorTests.cs" />
     <Compile Include="Mutators\BlobDWORDSliderMutatorTests.cs" />
     <Compile Include="Mutators\BlobMutatorTests.cs" />
+    <Compile Include="Mutators\WordListMutatorTests.cs" />
     <Compile Include="Mutators\DataElementDuplicateMutatorTests.cs" />
     <Compile Include="Mutators\DataElementRemoveMutatorTests.cs" />
     <Compile Include="Mutators\DataElementSwapNearNodesMutatorTests.cs" />

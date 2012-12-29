@@ -129,6 +129,13 @@ namespace Peach.Core.IO
 			LittleEndian();
 		}
 
+#if PEACH
+		public void ClearElementPositions()
+		{
+			_elementPositions = new Dictionary<string, long[]>();
+		}
+#endif
+
 		protected BitStream(Stream stream, long pos, long len,
 			EndianBitConverter bitConverter, Dictionary<string, long[]> _elementPositions)
 		{
@@ -633,8 +640,7 @@ namespace Peach.Core.IO
 			long currentPos = TellBits();
 			foreach (var elem in bits._elementPositions)
 			{
-				elem.Value[0] += currentPos;
-				_elementPositions[elem.Key] = elem.Value;
+				_elementPositions.Add(elem.Key, new long[] { elem.Value[0] + currentPos, elem.Value[1] });
 			}
 
 			MarkStartOfElement(element, bits.LengthBits);

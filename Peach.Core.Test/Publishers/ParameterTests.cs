@@ -314,5 +314,76 @@ namespace Peach.Core.Test.Publishers
 			Assert.Throws<PeachException>(delegate() { ParameterParser.Parse(obj, onlyStr); });
 		}
 
+		[Publisher("NullablePlugin", true)]
+		[Parameter("num1", typeof(int?), "desc")]
+		[Parameter("num2", typeof(int?), "desc", "")]
+		[Parameter("num3", typeof(int?), "desc", "")]
+		class NullableTest
+		{
+			public NullableTest() { }
+			public int? num1 { get; set; }
+			public int? num2 { get; set; }
+			public int? num3 { get; set; }
+		}
+
+		[Test]
+		public void TestNullable()
+		{
+			var obj = new NullableTest();
+
+			var onlyNum = new Dictionary<string, Variant>();
+			onlyNum["num1"] = new Variant(10);
+			onlyNum["num2"] = new Variant(20);
+
+			ParameterParser.Parse(obj, onlyNum);
+
+			Assert.True(obj.num1.HasValue);
+			Assert.True(obj.num2.HasValue);
+			Assert.False(obj.num3.HasValue);
+
+			Assert.AreEqual(10, obj.num1.Value);
+			Assert.AreEqual(20, obj.num2.Value);
+		}
+
+		[Publisher("ArrayPlugin", true)]
+		[Parameter("num1", typeof(int[]), "desc", "")]
+		[Parameter("num2", typeof(int[]), "desc", "")]
+		[Parameter("str", typeof(string[]), "desc", "")]
+		class ArrayTest
+		{
+			public ArrayTest() { }
+			public int[] num1 { get; set; }
+			public int[] num2 { get; set; }
+			public string[] str { get; set; }
+		}
+
+		[Test]
+		public void TestArray()
+		{
+			// Test that we can parse array parameters, and we strip empty entries
+			var obj = new ArrayTest();
+
+			var onlyNum = new Dictionary<string, Variant>();
+			onlyNum["num1"] = new Variant("10,11,12");
+			onlyNum["str"] = new Variant("string 1,string2,,,,,,,,,,,string three");
+
+			ParameterParser.Parse(obj, onlyNum);
+
+			Assert.NotNull(obj.num1);
+			Assert.NotNull(obj.num2);
+			Assert.NotNull(obj.str);
+
+			Assert.AreEqual(3, obj.num1.Length);
+			Assert.AreEqual(0, obj.num2.Length);
+			Assert.AreEqual(3, obj.str.Length);
+
+			Assert.AreEqual(10, obj.num1[0]);
+			Assert.AreEqual(11, obj.num1[1]);
+			Assert.AreEqual(12, obj.num1[2]);
+
+			Assert.AreEqual("string 1", obj.str[0]);
+			Assert.AreEqual("string2", obj.str[1]);
+			Assert.AreEqual("string three", obj.str[2]);
+		}
 	}
 }

@@ -59,12 +59,14 @@ namespace PeachFuzzBang
 
 		Peach.Core.Dom.Dom userSelectedDom = null;
 		DataModel userSelectedDataModel = null;
+		bool hasPlatformAsm = false;
 
 		private void LoadPlatformAssembly()
 		{
 			try
 			{
 				Platform.LoadAssembly();
+				hasPlatformAsm = true;
 			}
 			catch (Exception ex)
 			{
@@ -126,8 +128,10 @@ namespace PeachFuzzBang
 						if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 							MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
 
+						string windbg = null;
 						Type t = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.Name == "WindowsDebugger");
-						string windbg = t.InvokeMember("FindWinDbg", BindingFlags.InvokeMethod, null, null, null) as string;
+						if (t != null)
+							windbg = t.InvokeMember("FindWinDbg", BindingFlags.InvokeMethod, null, null, null) as string;
 
 						if (windbg != null)
 							textBoxDebuggerPath.Text = windbg;
@@ -440,7 +444,7 @@ namespace PeachFuzzBang
 						{
 							config.range = true;
 							config.rangeStart = 0;
-							config.rangeStop = (uint)iter;
+							config.rangeStop = (uint)iter + 1;
 						}
 					}
 					catch
@@ -595,6 +599,12 @@ namespace PeachFuzzBang
 				return;
 
 			textBoxLogPath.Text = dialog.FileName;
+		}
+
+		private void FormMain_Load(object sender, EventArgs e)
+		{
+			if (!hasPlatformAsm)
+				Close();
 		}
 	}
 }
