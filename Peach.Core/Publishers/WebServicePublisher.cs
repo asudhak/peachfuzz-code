@@ -25,6 +25,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Url", typeof(string), "WebService URL")]
 	[Parameter("Service", typeof(string), "Service name")]
 	[Parameter("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", "")]
+	[Parameter("ErrorOnStatusCode", typeof(bool), "Error when status code isn't 200 (defaults to true)", "true")]
 	[Parameter("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
 	[Parameter("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
 	public class WebServicePublisher : Publisher
@@ -38,6 +39,7 @@ namespace Peach.Core.Publishers
 		public int Timeout { get; set; }
 		public int Throttle { get; set; }
         public string StatusCode = HttpStatusCode.OK.ToString();
+		public bool ErrorOnStatusCode { get; set; }
 
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
@@ -87,6 +89,9 @@ namespace Peach.Core.Publishers
 
                 StatusCode = HttpStatusCode.OK.ToString();
 
+				if (ret == null)
+					return null;
+
                 return new Variant(ret.ToString());
             }
             catch (Exception ex)
@@ -99,9 +104,17 @@ namespace Peach.Core.Publishers
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     StatusCode = response.StatusCode.ToString();
+					logger.Debug("OnCall: Warning: Status code was: " + StatusCode);
 
-                    var sex = new SoftException(ex); // Soft or ignore?
-                    throw sex;
+					if (ErrorOnStatusCode)
+					{
+						var sex = new SoftException(ex); // Soft or ignore?
+						throw sex;
+					}
+					else
+					{
+						return null;
+					}
                 }
 
                 throw ex;
