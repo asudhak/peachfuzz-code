@@ -97,7 +97,7 @@ namespace Peach.Core
 		/// <summary>
 		/// Get the result value (if any).
 		/// </summary>
-		public virtual string Result { get; private set; }
+		public virtual string Result { get; protected set; }
 
 		#endregion
 
