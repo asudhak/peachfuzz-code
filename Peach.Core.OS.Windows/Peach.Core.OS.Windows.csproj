@@ -321,6 +321,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Agent\Monitors\CleanupRegistry.cs" />
     <Compile Include="Agent\Monitors\PageHeap.cs" />
     <Compile Include="Agent\Monitors\PopupWatcher.cs" />
     <Compile Include="Agent\Monitors\WindowsDebuggerHybrid.cs" />
