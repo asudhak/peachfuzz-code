@@ -62,7 +62,7 @@ namespace Peach
 		{
 			string controlIteration = "";
 			if (context.controlIteration && context.controlRecordingIteration)
-				controlIteration = "CR";
+				controlIteration = "R";
 			else if (context.controlIteration)
 				controlIteration = "C";
 

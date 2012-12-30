@@ -326,6 +326,7 @@
     <Compile Include="Agent\Monitors\WindowsDebuggerHybrid.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\DebuggerInstance.cs" />
     <Compile Include="Agent\Monitors\WindowsDebug\SystemDebuggerInterface.cs" />
+    <Compile Include="Agent\Monitors\WindowsService.cs" />
     <Compile Include="Analysis\CoverageImpl.cs" />
     <Compile Include="Debuggers\DebugEngine\Const.cs" />
     <Compile Include="Debuggers\DebugEngine\Tlb\IDebugAdvanced.cs" />
