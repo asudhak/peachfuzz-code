@@ -239,6 +239,7 @@ namespace Peach.Core
 				uint iterationStart = 1;
 				uint iterationStop = Int32.MaxValue;
 				uint? iterationTotal = null;
+				uint lastControlIteration = 0;
 
 				uint redoCount = 0;
 
@@ -284,8 +285,25 @@ namespace Peach.Core
 					// Clear out or iteration based state store
 					context.iterationStateStore.Clear();
 
+					// Should we perform a control iteration?
+					if (test.controlIterationEvery > 0 && !context.reproducingFault)
+					{
+						if (iterationCount % test.controlIterationEvery == 0 && lastControlIteration != iterationCount)
+							context.controlIteration = true;
+					}
+
 					try
 					{
+						if (context.controlIteration && context.controlRecordingIteration)
+						{
+							context.controlRecordingActionsExecuted.Clear();
+							context.controlRecordingStatesExecuted.Clear();
+						}
+
+						context.controlActionsExecuted.Clear();
+						context.controlStatesExecuted.Clear();
+
+
 						if (context.config.singleIteration && !context.controlIteration && iterationCount == 1)
 						{
 							logger.Debug("runTest: context.config.singleIteration == true");
@@ -356,14 +374,22 @@ namespace Peach.Core
 							{
 								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
 								{
-									string description = @"The Peach control iteration performed failed
-to execute same as initial control.  Number of actions is different.";
+									string description = string.Format(@"The Peach control iteration performed failed
+to execute same as initial control.  Number of actions is different. {0} != {1}", 
+										context.controlRecordingActionsExecuted.Count,
+										context.controlActionsExecuted.Count);
+
+									logger.Debug(description);
 									OnControlFault(context, iterationCount, description);
 								}
 								else if (context.controlRecordingStatesExecuted.Count != context.controlStatesExecuted.Count)
 								{
-									string description = @"The Peach control iteration performed failed
-to execute same as initial control.  Number of states is different.";
+									string description = string.Format(@"The Peach control iteration performed failed
+to execute same as initial control.  Number of states is different. {0} != {1}",
+										context.controlRecordingStatesExecuted.Count,
+										context.controlStatesExecuted.Count);
+
+									logger.Debug(description);
 									OnControlFault(context, iterationCount, description);
 								}
 
@@ -375,6 +401,8 @@ to execute same as initial control.  Number of states is different.";
 										{
 											string description = @"The Peach control iteration performed failed
 to execute same as initial control.  Action " + action.name + " was not performed.";
+
+											logger.Debug(description);
 											OnControlFault(context, iterationCount, description);
 										}
 									}
@@ -388,6 +416,8 @@ to execute same as initial control.  Action " + action.name + " was not performe
 										{
 											string description = @"The Peach control iteration performed failed
 to execute same as initial control.  State " + state.name + "was not performed.";
+
+											logger.Debug(description);
 											OnControlFault(context, iterationCount, description);
 										}
 									}
@@ -531,6 +561,9 @@ to execute same as initial control.  State " + state.name + "was not performed."
 					}
 					finally
 					{
+						if (context.controlIteration)
+							lastControlIteration = iterationCount;
+
 						context.controlIteration = false;
 						context.controlRecordingIteration = false;
 					}

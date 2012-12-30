@@ -45,6 +45,7 @@ namespace Peach.Core.Dom
 	{
 		public string _name = null;
 		public object parent = null;
+		public int controlIterationEvery = 0;
 		
 		[NonSerialized]
 		public Logger logger = null;

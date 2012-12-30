@@ -1406,6 +1406,9 @@ namespace Peach.Core.Analyzers
 			if (node.hasAttribute("faultWaitTime"))
 				test.waitTime = decimal.Parse(node.getAttribute("faultWaitTime"));
 
+			if (node.hasAttribute("controlIteration"))
+				test.controlIterationEvery = int.Parse(node.getAttribute("controlIteration"));
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")
