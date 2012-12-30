@@ -576,6 +576,7 @@
     <Compile Include="Publishers\FilePerIterationPublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
     <Compile Include="Dom\StateModel.cs" />
+    <Compile Include="Publishers\HttpPublisher.cs" />
     <Compile Include="Publishers\RawIPv4Publisher.cs" />
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
