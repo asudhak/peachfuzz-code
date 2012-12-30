@@ -114,7 +114,11 @@ namespace Peach.Core.Publishers
 			Response = null;
 
 			// Send request with data as body.
-			var request = (HttpWebRequest)HttpWebRequest.Create(Url);
+			Uri url = new Uri(Url);
+			if (!string.IsNullOrWhiteSpace(Query))
+				url = new Uri(Url + "?" + Query);
+
+			var request = (HttpWebRequest)HttpWebRequest.Create(url);
 			request.Method = Method;
 
 			if(Cookies)
@@ -122,6 +126,9 @@ namespace Peach.Core.Publishers
 
 			if(credentials != null)
 				request.Credentials = credentials;
+
+			foreach (var header in Headers.Keys)
+				request.Headers[header] = Headers[header];
 
 			using (var sout = request.GetRequestStream())
 			{
