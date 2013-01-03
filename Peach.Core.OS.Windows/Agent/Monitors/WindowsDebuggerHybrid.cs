@@ -270,7 +270,6 @@ namespace Peach.Core.Agent.Monitors
 								return new Variant(0);
 
 							float cpu = GetProcessCpuUsage(proc);
-
 							if (cpu < 1.0)
 							{
 								_StopDebugger();
@@ -287,6 +286,7 @@ namespace Peach.Core.Agent.Monitors
 				catch (ArgumentException)
 				{
 					// Might get thrown if process has already died.
+					return new Variant(0);
 				}
 			}
 
