@@ -970,22 +970,22 @@ def exec_command_msvc(self, *k, **kw):
 	Change the command-line execution for msvc programs.
 	Instead of quoting all the paths and keep using the shell, we can just join the options msvc is interested in
 	"""
-	if self.env['CC_NAME'] == 'msvc':
-		if isinstance(k[0], list):
-			lst = []
-			carry = ''
-			for a in k[0]:
-				if a == '/Fo' or a == '/doc' or a[-1] == ':':
-					carry = a
-				else:
-					lst.append(carry + a)
-					carry = ''
-			k = [lst]
+	assert self.env['CC_NAME'] == 'msvc'
+	if isinstance(k[0], list):
+		lst = []
+		carry = ''
+		for a in k[0]:
+			if a == '/Fo' or a == '/doc' or a[-1] == ':':
+				carry = a
+			else:
+				lst.append(carry + a)
+				carry = ''
+		k = [lst]
 
-		if self.env['PATH']:
-			env = dict(self.env.env or os.environ)
-			env.update(PATH = ';'.join(self.env['PATH']))
-			kw['env'] = env
+	if self.env['PATH']:
+		env = dict(self.env.env or os.environ)
+		env.update(PATH = ';'.join(self.env['PATH']))
+		kw['env'] = env
 
 	bld = self.generator.bld
 	try:
@@ -999,11 +999,36 @@ def exec_command_msvc(self, *k, **kw):
 		ret = self.exec_mf()
 	return ret
 
+def wrap_class(class_name):
+	"""
+	Dynamically subclass the indicated task type, to guarantee correct
+	bubble-up method override behavior nomatter how many times the
+	msvc.py code is imported.
+	"""
+	cls = Task.classes.get(class_name, None)
+
+	if not cls:
+		return None
+
+	derived_class = type(class_name, (cls,), {})
+
+	def exec_command(self, *k, **kw):
+		if self.env['CC_NAME'] == 'msvc':
+			return exec_command_msvc(self, *k, **kw)
+		else:
+			return super(derived_class, self).exec_command(*k, **kw)
+
+	# Chain-up monkeypatch needed since exec_command() is in base class API
+	derived_class.exec_command = exec_command
+
+	# No chain-up behavior needed since the following methods aren't in
+	# base class API
+	derived_class.exec_response_command = exec_response_command
+	derived_class.quote_response_command = quote_response_command
+	derived_class.exec_mf = exec_mf
+
+	return derived_class
+
 for k in 'c cxx cprogram cxxprogram cshlib cxxshlib cstlib cxxstlib'.split():
-	cls = Task.classes.get(k, None)
-	if cls:
-		cls.exec_command = exec_command_msvc
-		cls.exec_response_command = exec_response_command
-		cls.quote_response_command = quote_response_command
-		cls.exec_mf = exec_mf
+	wrap_class(k)
 
