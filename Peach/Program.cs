@@ -434,7 +434,7 @@ namespace Peach
 			string syntax = @"This is the Peach Runtime.  The Peach Runtime is one of the many ways
 to use Peach XML files.  Currently this runtime is still in development
 but already exposes several abilities to the end-user such as performing
-simple fuzzer runs, converting WireShark captures into Peach XML and
+simple fuzzer runs, converting WireShark capture sinto Peach XML and
 performing parsing tests of Peach XML files.
 
 Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
