@@ -100,10 +100,18 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				if (_dbg == null)
 					return false;
 
-				using (var p = System.Diagnostics.Process.GetProcessById(_dbg.dwProcessId))
+				try
 				{
-					if (p != null && !p.HasExited)
-						return true;
+					using (var p = System.Diagnostics.Process.GetProcessById(_dbg.dwProcessId))
+					{
+						if (p != null && !p.HasExited)
+							return true;
+					}
+				}
+				catch (System.Runtime.InteropServices.COMException)
+				{
+					// Handle closed out from underneeth?
+					return true;
 				}
 
 				if (_caughtException && crashInfo == null)

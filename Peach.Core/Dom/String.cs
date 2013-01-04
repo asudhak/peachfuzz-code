@@ -133,6 +133,7 @@ namespace Peach.Core.Dom
 		public override void Crack(DataCracker context, BitStream data)
 		{
 			String element = this;
+			Variant defaultValue;
 
 			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
@@ -180,8 +181,14 @@ namespace Peach.Core.Dom
 
 				data.SeekBits(currentPos, System.IO.SeekOrigin.Begin);
 				byte[] value = data.ReadBytes(byteCount);
-				string strValue = ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(value);
-				element.DefaultValue = new Variant(strValue);
+				string strValue = Encoding.GetEncoding(element.stringType.ToString()).GetString(value);
+				defaultValue = new Variant(strValue);
+
+				if (element.isToken)
+					if (defaultValue != element.DefaultValue)
+						throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
+
+				element.DefaultValue = defaultValue;
 
 				// Now skip past nulls
 				if (twoNulls)
@@ -217,7 +224,7 @@ namespace Peach.Core.Dom
 					"' has length of '" + stringLength + "' but buffer only has '" +
 					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
-			var defaultValue = new Variant(
+			defaultValue = new Variant(
 				ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
 				data.ReadBytes((int)stringLength)));
 
