@@ -62,6 +62,13 @@ namespace Peach.Core
 		public uint rangeStop = 0;
 
 		/// <summary>
+		/// Controls parallel fuzzing
+		/// </summary>
+		public bool parallel = false;
+		public uint parallelNum = 0;
+		public uint parallelTotal = 0;
+
+		/// <summary>
 		/// Skip to a specific iteration
 		/// </summary>
 		public uint skipToIteration;

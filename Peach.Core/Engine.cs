@@ -61,10 +61,11 @@ namespace Peach.Core
 		public delegate void TestStartingEventHandler(RunContext context);
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
-        public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault [] faultData);
+		public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
+		public delegate void HaveParallelEventHandler(RunContext context, uint startIteration, uint stopIteration);
 
 		/// <summary>
 		/// Fired when a Test is starting.  This could be fired
@@ -94,9 +95,13 @@ namespace Peach.Core
 		/// </summary>
 		public event TestErrorEventHandler TestError;
 		/// <summary>
-		/// FIred when we know the count of iterations the Test will take.
+		/// Fired when we know the count of iterations the Test will take.
 		/// </summary>
 		public event HaveCountEventHandler HaveCount;
+		/// <summary>
+		/// Fired when we know the range of iterations the parallel Test will take.
+		/// </summary>
+		public event HaveParallelEventHandler HaveParallel;
 
 		public void OnTestStarting(RunContext context)
 		{
@@ -133,12 +138,17 @@ namespace Peach.Core
 			if (HaveCount != null)
 				HaveCount(context, totalIterations);
 		}
+		public void OnHaveParallel(RunContext context, uint startIteration, uint stopIteration)
+		{
+			if (HaveParallel != null)
+				HaveParallel(context, startIteration, stopIteration);
+		}
 
 		#endregion
 
 		public Engine(Watcher watcher)
 		{
-            this.watcher = watcher;
+			this.watcher = watcher;
 			context = new RunContext();
 			context.engine = this;
 		}
@@ -186,18 +196,18 @@ namespace Peach.Core
 				dom.context = context;
 
 				// Initialize any watchers and loggers
-                if (watcher != null)
-				    watcher.Initialize(this, context);
+				if (watcher != null)
+					watcher.Initialize(this, context);
 
-				if(context.test.logger != null)
+				if (context.test.logger != null)
 					context.test.logger.Initialize(this, context);
 
 				runTest(context.dom, context.test, context);
 			}
 			finally
 			{
-                if (watcher != null)
-				    watcher.Finalize(this, context);
+				if (watcher != null)
+					watcher.Finalize(this, context);
 			}
 		}
 
@@ -245,6 +255,9 @@ namespace Peach.Core
 
 				if (context.config.range)
 				{
+					if (context.config.parallel)
+						throw new NotSupportedException("range is not supported when parallel is used");
+
 					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);
 
@@ -253,7 +266,7 @@ namespace Peach.Core
 				}
 				else if (context.config.skipToIteration > 1)
 				{
-					logger.Debug("runTest: context.config.skipToIteration == " + 
+					logger.Debug("runTest: context.config.skipToIteration == " +
 						context.config.skipToIteration);
 
 					iterationStart = context.config.skipToIteration;
@@ -375,7 +388,7 @@ namespace Peach.Core
 								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
 								{
 									string description = string.Format(@"The Peach control iteration performed failed
-to execute same as initial control.  Number of actions is different. {0} != {1}", 
+to execute same as initial control.  Number of actions is different. {0} != {1}",
 										context.controlRecordingActionsExecuted.Count,
 										context.controlActionsExecuted.Count);
 
@@ -503,7 +516,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 						}
 
 						// Update our totals and stop based on new count
-						if (context.controlIteration && context.controlRecordingIteration)
+						if (context.controlIteration && context.controlRecordingIteration && !iterationTotal.HasValue)
 						{
 							if (context.config.countOnly)
 							{
@@ -515,11 +528,26 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							if (iterationTotal < iterationStop)
 								iterationStop = iterationTotal.Value;
 
+							if (context.config.parallel && iterationTotal != uint.MaxValue)
+							{
+								uint slice = iterationTotal.Value / context.config.parallelTotal;
+
+								iterationStop = context.config.parallelNum * slice;
+								iterationStart = iterationStop - slice + 1;
+
+								if (context.config.parallelNum == context.config.parallelTotal)
+									iterationStop += iterationTotal.Value % context.config.parallelTotal;
+
+								OnHaveParallel(context, iterationStart, iterationStop);
+
+								if (context.config.skipToIteration > iterationStart)
+									iterationStart = context.config.skipToIteration;
+							}
 						}
 
 						// Don't increment the iteration count if we are on a 
 						// control iteration
-						if(!context.controlIteration)
+						if (!context.controlIteration)
 							++iterationCount;
 
 						redoCount = 0;

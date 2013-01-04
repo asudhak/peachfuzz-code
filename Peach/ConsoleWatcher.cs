@@ -54,6 +54,15 @@ namespace Peach
 			Console.ForegroundColor = color;
 		}
 
+		protected override void Engine_HaveParallel(RunContext context, uint startIteration, uint stopIteration)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine("\n -- Machine {0} of {1} will run iterations {2} to {3} --\n",
+				context.config.parallelNum, context.config.parallelTotal, startIteration, stopIteration);
+			Console.ForegroundColor = color;
+		}
+
 		protected override void Engine_IterationFinished(RunContext context, uint currentIteration)
 		{
 		}

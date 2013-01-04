@@ -55,6 +55,7 @@ namespace Peach.Core
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 			engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
 			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
+			engine.HaveParallel += new Engine.HaveParallelEventHandler(Engine_HaveParallel);
 
 			MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
@@ -83,6 +84,10 @@ namespace Peach.Core
 		}
 
 		protected virtual void Engine_HaveCount(RunContext context, uint totalIterations)
+		{
+		}
+
+		protected virtual void Engine_HaveParallel(RunContext context, uint startIteration, uint stopIteration)
 		{
 		}
 

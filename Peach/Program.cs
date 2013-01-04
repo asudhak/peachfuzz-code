@@ -75,7 +75,6 @@ namespace Peach
 				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 
 				string analyzer = null;
-				string parallel = null;
 				bool test = false;
 				string agent = null;
 				string definedValuesFile = null;
@@ -126,7 +125,7 @@ namespace Peach
 					{ "c|count", v => config.countOnly = true},
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
 					{ "seed=", v => config.randomSeed = Convert.ToUInt32(v)},
-					{ "p|parallel=", v => parallel = v},
+					{ "p|parallel=", v => ParseParallel(config, v)},
 					{ "a|agent=", v => agent = v},
 					{ "D|define=", v => AddNewDefine(v) },
 					{ "definedvalues=", v => definedValuesFile = v },
@@ -284,12 +283,6 @@ namespace Peach
 				if (parseOnly)
 					return;
 
-				if (!string.IsNullOrEmpty(parallel))
-				{
-					ConsoleWatcher.WriteInfoMark();
-					Console.WriteLine("Warning, parallel fuzzing is supported yet.");
-				}
-
 				foreach (string arg in args)
 					config.commandLine += arg + " ";
 
@@ -346,9 +339,47 @@ namespace Peach
 				throw new PeachException("Invalid range stop iteration: " + parts[1]);
 			}
 
+			if (config.parallel)
+				throw new PeachException("--range is not supported when --parallel is specified");
+
 			config.range = true;
 		}
-		
+
+		private void ParseParallel(RunConfiguration config, string v)
+		{
+			string[] parts = v.Split(',');
+			if (parts.Length != 2)
+				throw new PeachException("Invalid parallel value: " + v);
+
+			try
+			{
+				config.parallelTotal = Convert.ToUInt32(parts[0]);
+
+				if (config.parallelTotal == 0)
+					throw new ArgumentOutOfRangeException();
+			}
+			catch
+			{
+				throw new PeachException("Invalid parallel machine total: " + parts[0]);
+			}
+
+			try
+			{
+				config.parallelNum = Convert.ToUInt32(parts[1]);
+				if (config.parallelNum == 0 || config.parallelNum > config.parallelTotal)
+					throw new ArgumentOutOfRangeException();
+			}
+			catch
+			{
+				throw new PeachException("Invalid parallel machine number: " + parts[1]);
+			}
+
+			if (config.range)
+				throw new PeachException("--parallel is not supported when --range is specified");
+
+			config.parallel = true;
+		}
+
 		private static bool shouldStop = false;
 		
 		private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
