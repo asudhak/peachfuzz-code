@@ -49,7 +49,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -98,7 +97,6 @@ namespace Peach.Core.Test.Mutators
             config.randomSeed = 100;
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -165,7 +163,6 @@ namespace Peach.Core.Test.Mutators
 			config.rangeStop = 2;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(3, iterStrategies.Count);
@@ -211,7 +208,6 @@ namespace Peach.Core.Test.Mutators
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			// 49 mutations of num and 49 mutations of str
@@ -254,7 +250,6 @@ namespace Peach.Core.Test.Mutators
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, strategies.Count);

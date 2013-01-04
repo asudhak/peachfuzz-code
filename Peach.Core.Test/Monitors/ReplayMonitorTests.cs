@@ -56,7 +56,6 @@ namespace Peach.Core.Test.Monitors
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values

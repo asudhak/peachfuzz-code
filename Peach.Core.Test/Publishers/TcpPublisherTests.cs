@@ -209,7 +209,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, actions.Count);
@@ -258,7 +257,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, actions.Count);
@@ -304,7 +302,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
 		}
 	}

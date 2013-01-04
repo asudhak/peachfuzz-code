@@ -60,7 +60,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -119,7 +118,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -188,7 +186,6 @@ namespace Peach.Core.Test.Mutators
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 		}
@@ -231,7 +228,6 @@ namespace Peach.Core.Test.Mutators
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.NotNull(mutations);

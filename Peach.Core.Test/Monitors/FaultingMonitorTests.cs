@@ -114,10 +114,9 @@ namespace Peach.Core.Test.Monitors
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
-            e.config.range = true;
-            e.config.rangeStart = 0;
-            e.config.rangeStop = iterations;
+            config.range = true;
+            config.rangeStart = 0;
+            config.rangeStop = iterations;
 
             if (OnFault != null)
             {

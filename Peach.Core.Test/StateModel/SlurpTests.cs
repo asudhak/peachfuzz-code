@@ -65,7 +65,6 @@ namespace Peach.Core.Test.StateModel
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			var stateModel = dom.tests[0].stateModel;

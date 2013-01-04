@@ -49,7 +49,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify first two values, last two values, and count (= 301)

@@ -247,7 +247,6 @@ namespace Peach.Core.Test
 			config.rangeStop = 9;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(10, dataModels.Count);
@@ -314,7 +313,6 @@ namespace Peach.Core.Test
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, dataModels.Count);

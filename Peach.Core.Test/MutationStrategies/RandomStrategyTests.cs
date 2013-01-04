@@ -345,7 +345,6 @@ namespace Peach.Core.Test.MutationStrategies
 			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(50, mutations.Count);
@@ -494,7 +493,6 @@ namespace Peach.Core.Test.MutationStrategies
 			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 		}
 
@@ -543,7 +541,6 @@ namespace Peach.Core.Test.MutationStrategies
 			config.randomSeed = 12345;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 		}
 	}

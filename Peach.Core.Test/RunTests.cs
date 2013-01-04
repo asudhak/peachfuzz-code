@@ -53,7 +53,6 @@ namespace Peach.Core.Test
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.IterationStarting += new Engine.IterationStartingEventHandler(e_IterationStarting);
 			e.IterationFinished += new Engine.IterationFinishedEventHandler(e_IterationFinished);
 			e.startFuzzing(dom, config);

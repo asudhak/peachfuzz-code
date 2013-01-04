@@ -60,7 +60,6 @@ namespace Peach.Core.Test.PitParserTests
 			config.runName = "TheTest";
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 		}

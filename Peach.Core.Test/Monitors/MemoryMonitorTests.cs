@@ -101,7 +101,6 @@ namespace Peach.Core.Test.Monitors
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.Fault += _Fault;
 			e.startFuzzing(dom, config);
 		}

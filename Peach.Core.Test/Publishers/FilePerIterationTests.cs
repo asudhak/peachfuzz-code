@@ -52,7 +52,6 @@ namespace Peach.Core.Test.Publishers
 			config.rangeStop = stop;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 		}
 

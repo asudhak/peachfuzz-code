@@ -60,7 +60,6 @@ namespace Peach.Core.Test.Monitors
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			if (OnIterStart != null)
 				e.IterationStarting += OnIterStart;
 			e.startFuzzing(dom, config);

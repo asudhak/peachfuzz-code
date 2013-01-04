@@ -53,7 +53,6 @@ namespace Peach.Core.Test.CrackingTests
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			BitStream val = dom.dataModels[0].Value;
@@ -147,7 +146,6 @@ namespace Peach.Core.Test.CrackingTests
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			BitStream val = dom.dataModels[0].Value;

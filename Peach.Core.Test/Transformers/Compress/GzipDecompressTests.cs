@@ -56,7 +56,6 @@ namespace Peach.Core.Test.Transformers.Compress
             config.singleIteration = true;
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
 			dataModel = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;

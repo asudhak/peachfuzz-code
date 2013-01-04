@@ -58,7 +58,6 @@ namespace Peach.Core.Test.StateModel
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, actions.Count);

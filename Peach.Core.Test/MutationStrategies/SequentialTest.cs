@@ -54,7 +54,6 @@ namespace Peach.Core.Test.MutationStrategies
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			// verify values
@@ -120,7 +119,6 @@ namespace Peach.Core.Test.MutationStrategies
 			dom.tests[0].includedMutators.Add("StringCaseMutator");
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 		}
 
