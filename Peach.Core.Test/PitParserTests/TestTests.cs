@@ -220,7 +220,7 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"	<Test name=\"Default\" waitTime=\"10.5\">" +
+				"	<Test name=\"Default\" waitTime=\"10.5\" faultWaitTime=\"99.9\">" +
 				"		<StateModel ref=\"TheStateModel\" />" +
 				"		<Publisher class=\"File\">" +
 				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
@@ -232,6 +232,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(10.5, dom.tests[0].waitTime);
+			Assert.AreEqual(99.9, dom.tests[0].faultWaitTime);
 		}
 	}
 }

@@ -1404,7 +1404,7 @@ namespace Peach.Core.Analyzers
 				test.waitTime = decimal.Parse(node.getAttribute("waitTime"));
 
 			if (node.hasAttribute("faultWaitTime"))
-				test.waitTime = decimal.Parse(node.getAttribute("faultWaitTime"));
+				test.faultWaitTime = decimal.Parse(node.getAttribute("faultWaitTime"));
 
 			if (node.hasAttribute("controlIteration"))
 				test.controlIterationEvery = int.Parse(node.getAttribute("controlIteration"));
