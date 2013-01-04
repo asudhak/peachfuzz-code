@@ -52,7 +52,6 @@ namespace Peach.Core
 		[NonSerialized]
 		public Watcher watcher = null;
 		public RunContext context = null;
-		public RunConfiguration config = null;
 		public Dom.Dom dom = null;
 		public Test test = null;
 
