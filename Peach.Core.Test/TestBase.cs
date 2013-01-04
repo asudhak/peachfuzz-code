@@ -17,10 +17,10 @@ using Peach.Core.Analyzers;
 using Peach.Core.Cracker;
 using Peach.Core.IO;
 
-namespace Peach.Core.Test
+namespace Peach
 {
 	[SetUpFixture]
-	class TestBase
+	public class TestBase
 	{
 		[SetUp]
 		public void Initialize()

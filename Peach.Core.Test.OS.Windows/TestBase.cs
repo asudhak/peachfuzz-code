@@ -9,10 +9,10 @@ using NLog.Targets;
 using NLog.Config;
 using NUnit.Framework;
 
-namespace Peach.Core.Test.OS.Windows
+namespace Peach
 {
 	[SetUpFixture]
-	class TestBase
+	public class TestBase
 	{
 		[SetUp]
 		public void Initialize()
