@@ -248,11 +248,20 @@ namespace Peach.Core.Dom
 			else
 				item = this[Count - 1];
 
+
+			var bs = new BitStream();
+			bs.Write(item.Value);
+			bs.ClearElementPositions();
+
+			var clone = item.Clone();
+			clone.MutatedValue = new Variant(bs);
+			clone.mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+
 			// Force the same element to be duplicated in the DataElementContainer
 			for (int i = Count; i < num; ++i)
 			{
-				_childrenList.Insert(i, item);
-				_childrenDict[item.name] = item;
+				_childrenList.Insert(i, clone);
+				_childrenDict[clone.name] = clone;
 			}
 
 			Invalidate();
