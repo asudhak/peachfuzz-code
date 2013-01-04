@@ -241,8 +241,22 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
+		private bool CommandExists()
+		{
+			using (var p = new Proc())
+			{
+				p.StartInfo = new ProcessStartInfo("which", "-s \"" + _command + "\"");
+				p.Start();
+				p.WaitForExit();
+				return p.ExitCode == 0;
+			}
+		}
+
 		private void _StartProcess()
 		{
+			if (!CommandExists())
+				throw new PeachException("CrashWrangler: Could not find command \"" + _command + "\"");
+
 			if (File.Exists(_cwPidFile))
 				File.Delete(_cwPidFile);
 
