@@ -16,9 +16,9 @@ namespace Peach.Core.Test.Monitors
 	{
 		class TcpSender : IDisposable
 		{
-			byte[] buffer;
-			IPEndPoint remoteEP;
-			IPEndPoint localEP;
+			public byte[] buffer;
+			public IPEndPoint remoteEP;
+			public IPEndPoint localEP;
 			public Socket socket;
 
 			public TcpSender(string ip, ushort port, string payload)
@@ -240,7 +240,9 @@ namespace Peach.Core.Test.Monitors
 		public void TestNoConnNoFault()
 		{
 			// No connections, no faults
-			Run(new Params { { "Timeout", "1" } });
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+
+			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
 			Assert.Null(faults);
 		}
 
@@ -250,7 +252,9 @@ namespace Peach.Core.Test.Monitors
 			// Different monitor faults, SocketMonitor returns FaultType.Data
 			faultIteration = 1;
 
-			Run(new Params { { "Timeout", "1" } });
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+
+			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -263,8 +267,10 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestNoConnFault()
 		{
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+
 			// No connection, FaultOnSuccess = true results in fault
-			Run(new Params { { "Timeout", "1" }, { "FaultOnSuccess", "true" } });
+			Run(new Params { { "Timeout", "1" }, { "FaultOnSuccess", "true" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
@@ -281,16 +287,18 @@ namespace Peach.Core.Test.Monitors
 
 			faultIteration = 1;
 
-			Run(new Params { { "Timeout", "1" } });
+			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+
+			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual("SocketMonitor", faults[1].detectionSource);
 			Assert.AreEqual(FaultType.Data, faults[1].type);
-			Assert.AreEqual("Monitoring 0.0.0.0:8080", faults[1].title);
+			Assert.AreEqual("Monitoring 0.0.0.0:" + port, faults[1].title);
 
-			Run(new Params { { "Timeout", "1" }, { "Host", "::1" } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "::1" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -298,18 +306,18 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[1].detectionSource);
 			Assert.AreEqual(FaultType.Data, faults[1].type);
 			if (Platform.GetOS() == Platform.OS.Windows)
-				Assert.AreEqual("Monitoring [::1]:8080", faults[1].title);
+				Assert.AreEqual("Monitoring [::1]:" + port, faults[1].title);
 			else
 				Assert.AreEqual("Monitoring ::0.0.0.1:8080", faults[1].title);
 
-			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual("SocketMonitor", faults[1].detectionSource);
 			Assert.AreEqual(FaultType.Data, faults[1].type);
-			Assert.AreEqual("Monitoring 127.0.0.1:8080", faults[1].title);
+			Assert.AreEqual("Monitoring 127.0.0.1:" + port, faults[1].title);
 
 			string addr = null;
 			using (var u = new System.Net.Sockets.UdpClient("1.1.1.1", 1))
@@ -317,14 +325,14 @@ namespace Peach.Core.Test.Monitors
 				addr = ((System.Net.IPEndPoint)u.Client.LocalEndPoint).Address.ToString();
 			}
 
-			Run(new Params { { "Timeout", "1" }, { "Host", "1.1.1.1" } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "1.1.1.1" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual("SocketMonitor", faults[1].detectionSource);
 			Assert.AreEqual(FaultType.Data, faults[1].type);
-			Assert.AreEqual("Monitoring " + addr + ":8080", faults[1].title);
+			Assert.AreEqual("Monitoring " + addr + ":" + port, faults[1].title);
 		}
 
 		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Could not start monitor \"SocketMonitor\".  Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
@@ -510,7 +518,7 @@ namespace Peach.Core.Test.Monitors
 
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
 			{
-				desc = string.Format("Received 5 bytes from '{0}'.", sender.socket.LocalEndPoint);
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.localEP);
 				Run(new Params { { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
 			}
 
@@ -531,7 +539,7 @@ namespace Peach.Core.Test.Monitors
 
 			using (var sender = new TcpSender("::1", port, "Hello"))
 			{
-				desc = string.Format("Received 5 bytes from '{0}'.", sender.socket.LocalEndPoint);
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.localEP);
 				Run(new Params { { "Interface", "::1" }, { "Port", port.ToString() } });
 			}
 
