@@ -13,12 +13,10 @@ deps = [
 	'System.ServiceProcess.dll',
 ]
 
-bld.read_csshlib('MSEC86.dll', paths=['Debuggers/DebugEngine'])
-bld.read_csshlib('MSEC64.dll', paths=['Debuggers/DebugEngine'])
-
 bld(
 	features = 'cs win',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.Core.OS.Windows.dll',
+	install = bld.path.ant_glob('Debuggers/DebugEngine/*.dll'),
 )
