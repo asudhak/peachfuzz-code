@@ -49,7 +49,7 @@ namespace Peach.Core.Test.Publishers
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
 			config.rangeStart = 1;
-			config.rangeStop = stop + 1;
+			config.rangeStop = stop;
 
 			Engine e = new Engine(null);
 			e.config = config;

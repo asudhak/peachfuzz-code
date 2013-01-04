@@ -80,7 +80,7 @@ namespace Peach.Core.MutationStrategies
 			{
 				// Starting to record
 				_iterations = new Iterations();
-				_count = 1;
+				_count = 0;
 			}
 		}
 
@@ -270,7 +270,7 @@ namespace Peach.Core.MutationStrategies
 		private void MutateDataModel(Core.Dom.Action action)
 		{
 			// MutateDataModel should only be called after ParseDataModel
-			System.Diagnostics.Debug.Assert(_count > 1);
+			System.Diagnostics.Debug.Assert(_count >= 1);
 			System.Diagnostics.Debug.Assert(_iteration > 0);
 			System.Diagnostics.Debug.Assert(!_context.controlIteration);
 

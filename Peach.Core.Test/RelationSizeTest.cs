@@ -244,7 +244,7 @@ namespace Peach.Core.Test
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
 			config.rangeStart = 0;
-			config.rangeStop = 10;
+			config.rangeStop = 9;
 
 			Engine e = new Engine(null);
 			e.config = config;

@@ -114,7 +114,7 @@ namespace Peach.Core.Test.Mutators
 			e.startFuzzing(dom, config);
 
 			// verify values
-			Assert.AreEqual(iterations - 1, mutations.Count);
+			Assert.AreEqual(iterations, mutations.Count);
 		}
 
 		[Test]

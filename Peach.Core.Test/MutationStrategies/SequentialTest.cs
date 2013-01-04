@@ -209,8 +209,8 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = 5;
 			config.rangeStop = 5;
 			FuzzSequential(config);
-			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(0, mutations.Count);
+			Assert.AreEqual(2, values.Count);
+			Assert.AreEqual(1, mutations.Count);
 		}
 
 		[Test]
@@ -221,8 +221,8 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = 5;
 			config.rangeStop = 10;
 			FuzzSequential(config);
-			Assert.AreEqual(6, values.Count);
-			Assert.AreEqual(5, mutations.Count);
+			Assert.AreEqual(7, values.Count);
+			Assert.AreEqual(6, mutations.Count);
 		}
 
 		[Test]

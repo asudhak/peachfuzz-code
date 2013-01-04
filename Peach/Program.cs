@@ -290,13 +290,6 @@ namespace Peach
 					Console.WriteLine("Warning, parallel fuzzing is supported yet.");
 				}
 
-				// The core uses 0 based iterations, users expect 1 based iterations
-				if (config.skipToIteration > 0)
-					--config.skipToIteration;
-
-				if (config.rangeStart > 0)
-					--config.rangeStart;
-
 				foreach (string arg in args)
 					config.commandLine += arg + " ";
 

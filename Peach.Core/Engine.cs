@@ -278,7 +278,7 @@ namespace Peach.Core
 
 				context.agentManager.SessionStarting();
 
-				while ((firstRun || iterationCount < iterationStop) && context.continueFuzzing)
+				while ((firstRun || iterationCount <= iterationStop) && context.continueFuzzing)
 				{
 					firstRun = false;
 

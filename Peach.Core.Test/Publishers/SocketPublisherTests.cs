@@ -411,7 +411,7 @@ namespace Peach.Core.Test.Publishers
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
 			config.rangeStart = 0;
-			config.rangeStop = 2;
+			config.rangeStop = 1;
 
 			Engine e = new Engine(null);
 			e.config = config;

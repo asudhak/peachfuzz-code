@@ -94,7 +94,7 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
             config.range = true;
             config.rangeStart = 0;
-            config.rangeStop = 1001;
+            config.rangeStop = 1000;
             config.randomSeed = 100;
 
             Engine e = new Engine(null);
@@ -162,7 +162,7 @@ namespace Peach.Core.Test.Mutators
 			config.range = true;
 			config.randomSeed = 1;
 			config.rangeStart = 0;
-			config.rangeStop = 3;
+			config.rangeStop = 2;
 
 			Engine e = new Engine(null);
 			e.config = config;

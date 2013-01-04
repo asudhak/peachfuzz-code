@@ -42,7 +42,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1000);
+			RunEngine(xml, 1, 999);
 
 			// verify values
 			Assert.AreEqual(999, mutations.Count);
@@ -82,7 +82,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1000);
+			RunEngine(xml, 1, 999);
 
 			// verify values
 			int dm1 = 0;
@@ -144,7 +144,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1001);
+			RunEngine(xml, 1, 1000);
 
 			// verify values
 			// 1000 mutations, control on iteration 1, 201, 401, 601, 801 = 1005 actions
@@ -203,7 +203,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1001);
+			RunEngine(xml, 1, 1000);
 
 			// Sanity check
 			// 1000 mutations, control on 1, 201, 401, 601, 801, 3 data models
@@ -215,7 +215,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Reset the DataModelCollector
 			ResetContainers();
 
-			RunEngine(xml, 1, 1001);
+			RunEngine(xml, 1, 1000);
 
 			// Verify
 			VerifySameResults(oldStrategies, oldActions);
@@ -271,7 +271,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunEngine(xml, 1, 1001);
+			RunEngine(xml, 1, 1000);
 
 			// Sanity check
 			// 1000 mutations, control on 1, 201, 401, 601, 801, 3 data models
@@ -283,7 +283,7 @@ namespace Peach.Core.Test.MutationStrategies
 			// Reset the DataModelCollector
 			ResetContainers();
 
-			RunEngine(xml, 501, 1001);
+			RunEngine(xml, 501, 1000);
 
 			// Sanity check
 			// 500 mutations, control on 501, 601, 801, 3 data models
@@ -340,7 +340,7 @@ namespace Peach.Core.Test.MutationStrategies
 
 			RunConfiguration config = new RunConfiguration();
 			config.rangeStart = 1;
-			config.rangeStop = 51;
+			config.rangeStop = 50;
 			config.range = true;
 			config.randomSeed = 12345;
 
@@ -427,7 +427,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"   </Test>" +
 				"</Peach>";
 
-			RunSwitchTest(xml, 1, 101);
+			RunSwitchTest(xml, 1, 100);
 			// 2 actions, 100 mutations, switch every 10
 			Assert.AreEqual((100 + 10) * 2, dataModels.Count);
 			Assert.AreEqual(100 * 2, mutatedDataModels.Count);
@@ -439,7 +439,7 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.AreEqual(0, dataModels.Count);
 			Assert.AreEqual(0, mutatedDataModels.Count);
 
-			RunSwitchTest(xml, 48, 101);
+			RunSwitchTest(xml, 48, 100);
 			// 2 actions, 53 mutations, control iterations at 48, 51, 61, 71, 81, 91
 			Assert.AreEqual((53 + 6) * 2, dataModels.Count);
 			Assert.AreEqual(53 * 2, mutatedDataModels.Count);

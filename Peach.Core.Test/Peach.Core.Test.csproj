@@ -282,6 +282,7 @@
     <Compile Include="Mutators\BlobBitFlipperMutatorTests.cs" />
     <Compile Include="Mutators\BlobDWORDSliderMutatorTests.cs" />
     <Compile Include="Mutators\BlobMutatorTests.cs" />
+    <Compile Include="Mutators\NoMutatorTests.cs" />
     <Compile Include="Mutators\WordListMutatorTests.cs" />
     <Compile Include="Mutators\DataElementDuplicateMutatorTests.cs" />
     <Compile Include="Mutators\DataElementRemoveMutatorTests.cs" />
