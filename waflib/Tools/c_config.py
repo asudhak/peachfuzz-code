@@ -159,6 +159,8 @@ def parse_flags(self, line, uselib_store, env=None, force_static=False):
 		elif st == '-L':
 			if not ot: ot = lst.pop(0)
 			appu('LIBPATH_' + uselib, [ot])
+		elif x.startswith('/LIBPATH:'):
+			appu('LIBPATH_' + uselib, [x.replace('/LIBPATH:', '')])
 		elif x == '-pthread' or x.startswith('+') or x.startswith('-std'):
 			app('CFLAGS_' + uselib, [x])
 			app('CXXFLAGS_' + uselib, [x])
@@ -182,7 +184,7 @@ def parse_flags(self, line, uselib_store, env=None, force_static=False):
 			app('CFLAGS_' + uselib, tmp)
 			app('CXXFLAGS_' + uselib, tmp)
 			app('LINKFLAGS_' + uselib, tmp)
-		elif x.endswith('.a') or x.endswith('.so') or x.endswith('.dylib'):
+		elif x.endswith('.a') or x.endswith('.so') or x.endswith('.dylib') or x.endswith('.lib'):
 			appu('LINKFLAGS_' + uselib, [x]) # not cool, #762
 
 @conf
