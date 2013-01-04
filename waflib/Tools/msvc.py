@@ -1001,9 +1001,8 @@ def exec_command_msvc(self, *k, **kw):
 
 def wrap_class(class_name):
 	"""
-	Dynamically subclass the indicated task type, to guarantee correct
-	bubble-up method override behavior nomatter how many times the
-	msvc.py code is imported.
+	Manifest file processing and @response file workaround for command-line length limits on Windows systems
+	The indicated task class is replaced by a subclass to prevent conflicts in case the class is wrapped more than once
 	"""
 	cls = Task.classes.get(class_name, None)
 
@@ -1014,7 +1013,7 @@ def wrap_class(class_name):
 
 	def exec_command(self, *k, **kw):
 		if self.env['CC_NAME'] == 'msvc':
-			return exec_command_msvc(self, *k, **kw)
+			return self.exec_command_msvc(*k, **kw)
 		else:
 			return super(derived_class, self).exec_command(*k, **kw)
 
@@ -1025,6 +1024,7 @@ def wrap_class(class_name):
 	# base class API
 	derived_class.exec_response_command = exec_response_command
 	derived_class.quote_response_command = quote_response_command
+	derived_class.exec_command_msvc = exec_command_msvc
 	derived_class.exec_mf = exec_mf
 
 	return derived_class
