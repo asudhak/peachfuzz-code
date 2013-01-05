@@ -235,12 +235,25 @@ namespace Peach.Core.Agent.Monitors
 
 				if (Host != null && !Host.Equals(remoteEP.Address))
 				{
-					client.Shutdown(SocketShutdown.Both);
+					try
+					{
+						client.Shutdown(SocketShutdown.Both);
+					}
+					catch
+					{
+					}
+
 					return null;
 				}
 
-				// Indicate we have nothing to send
-				client.Shutdown(SocketShutdown.Send);
+					try
+					{
+						// Indicate we have nothing to send
+						client.Shutdown(SocketShutdown.Send);
+					}
+					catch
+					{
+					}
 
 				// Read client data
 				WaitForData(client, -1, TcpBlockSize, Recv);

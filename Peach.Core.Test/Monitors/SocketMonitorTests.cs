@@ -307,7 +307,7 @@ namespace Peach.Core.Test.Monitors
 			if (Platform.GetOS() == Platform.OS.Windows)
 				Assert.AreEqual("Monitoring [::1]:" + port, faults[1].title);
 			else
-				Assert.AreEqual("Monitoring ::0.0.0.1:8080", faults[1].title);
+				Assert.AreEqual("Monitoring ::0.0.0.1:" + port, faults[1].title);
 
 			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
