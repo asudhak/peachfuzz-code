@@ -217,33 +217,7 @@ namespace Peach.Core.Agent.Monitors
 			return null;
 		}
 
-		PerformanceCounter _performanceCounter = null;
-		public float GetProcessCpuUsage(System.Diagnostics.Process proc)
-		{
-			try
-			{
-				if (_performanceCounter == null)
-				{
-					_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
-					_performanceCounter.NextValue();
-					if (_firstIteration)
-					{
-						_firstIteration = false;
-						System.Threading.Thread.Sleep(1000);
-					}
-					else
-					{
-						System.Threading.Thread.Sleep(100);
-					}
-				}
-
-				return _performanceCounter.NextValue();
-			}
-			catch
-			{
-				return 100;
-			}
-		}
+		long procLastTick = -1;
 
 		public override Variant Message(string name, Variant data)
 		{
@@ -259,33 +233,44 @@ namespace Peach.Core.Agent.Monitors
 				try
 				{
 					if (!_IsDebuggerRunning())
+					{
 						return new Variant(0);
+					}
 
 					try
 					{
+						// Note: Performance counters were used and removed due to speed issues.
+						//       monitoring the tick count is more reliable and less likely to cause
+						//       fuzzing slow-downs.
+
 						int pid = _debugger != null ? _debugger.ProcessId : _systemDebugger.ProcessId;
 						using (var proc = System.Diagnostics.Process.GetProcessById(pid))
 						{
 							if (proc == null || proc.HasExited)
+							{
 								return new Variant(0);
+							}
 
-							float cpu = GetProcessCpuUsage(proc);
-							if (cpu < 1.0)
+							if(proc.TotalProcessorTime.Ticks == procLastTick)
 							{
 								_StopDebugger();
 								return new Variant(0);
 							}
+
+							procLastTick = proc.TotalProcessorTime.Ticks;
 						}
 					}
 					catch
 					{
 					}
 
+					logger.Debug("Action.Call.IsRunning: 1");
 					return new Variant(1);
 				}
 				catch (ArgumentException)
 				{
 					// Might get thrown if process has already died.
+					logger.Debug("Action.Call.IsRunning: argument exception");
 					return new Variant(0);
 				}
 			}
@@ -436,6 +421,7 @@ namespace Peach.Core.Agent.Monitors
 
 		protected void _StartDebugger()
 		{
+			procLastTick = -1;
 			if (_hybrid)
 				_StartDebuggerHybrid();
 			else
@@ -626,12 +612,6 @@ namespace Peach.Core.Agent.Monitors
 			_debugger = null;
 			_systemDebugger = null;
 
-			if (_performanceCounter != null)
-			{
-				_performanceCounter.Close();
-				_performanceCounter = null;
-			}
-
 			if (_debuggerProcess != null)
 			{
 				try
@@ -660,11 +640,6 @@ namespace Peach.Core.Agent.Monitors
 				{
 				}
 
-				if (_performanceCounter != null)
-				{
-					_performanceCounter.Close();
-					_performanceCounter = null;
-				}
 			}
 
 			if (_debugger != null)
@@ -677,12 +652,6 @@ namespace Peach.Core.Agent.Monitors
 				}
 				catch
 				{
-				}
-
-				if (_performanceCounter != null)
-				{
-					_performanceCounter.Close();
-					_performanceCounter = null;
 				}
 			}
 		}
