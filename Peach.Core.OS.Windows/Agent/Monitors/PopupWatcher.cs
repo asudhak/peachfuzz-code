@@ -36,109 +36,117 @@ using System.Threading;
 namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("PopupWatcher", true)]
-	[Parameter("WindowNames", typeof(string), "Window names separated by a ';'.  Defaults to all.", "")]
-	[Parameter("Fault", typeof(bool), "Should we fault when a window is found?", "false")]
+	[Parameter("WindowNames", typeof(string[]), "Window names separated by a ','")]
+	[Parameter("Fault", typeof(bool), "Trigger fault when a window is found", "false")]
 	public class PopupWatcher : Monitor
 	{
-		delegate bool EnumDelegate(IntPtr hWnd, int lParam);
+		public string[] WindowNames { get; private set; }
+		public bool Fault { get; private set; }
 
+		#region P/Invokes
+
+		delegate bool EnumDelegate(IntPtr hWnd, IntPtr lParam);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		static extern int GetWindowTextLength(IntPtr hWnd);
 		[DllImport("user32", CharSet = CharSet.Auto, SetLastError = true)]
 		static extern int GetWindowText(IntPtr hWnd, [Out, MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpString, int nLen);
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern bool EnumWindows(EnumDelegate lpEnumFunc, IntPtr lParam);
 		[DllImport("user32.dll", SetLastError = true)]
-		static extern bool EnumChildWindows(IntPtr hWndParent, EnumDelegate lpEnumFunc, int lParam);
-		[DllImport("user32.Dll")]
-		static extern int PostMessage(IntPtr hWnd, UInt32 msg, int wParam, int lParam);
-		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-		static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
+		static extern bool EnumChildWindows(IntPtr hWndParent, EnumDelegate lpEnumFunc, IntPtr lParam);
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		static extern int PostMessage(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam);
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
-		private const UInt32 WM_CLOSE = 0x0010;
+		private const uint WM_CLOSE = 0x0010;
 
-		List<string> _windowNames = new List<string>();
-		bool _fault = false;
+		#endregion
+
 		Thread _worker = null;
-		bool _workerStop = false;
+		ManualResetEvent _event = null;
+
+		SortedSet<string> _closedWindows = new SortedSet<string>();
+		object _lock = new object();
+		bool _continue = true;
+		Fault _fault = null;
 
 		public PopupWatcher(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
-			_windowNames.AddRange(((string)args["WindowNames"]).Split(';'));
-
-			if (args.ContainsKey("Fault"))
-				_fault = ((string)args["Fault"]).ToLower() == "true";
+			ParameterParser.Parse(this, args);
 		}
 
-		bool EnumHandler(IntPtr hWnd, int lParam)
+		bool EnumHandler(IntPtr hWnd, IntPtr lParam)
 		{
-			try
-			{
-				StringBuilder strbTitle = new StringBuilder(255);
-				int nLength = GetWindowText(hWnd, strbTitle, strbTitle.Capacity);
-				string strTitle = strbTitle.ToString();
+			int nLength = GetWindowTextLength(hWnd);
+			if (nLength == 0)
+				return _continue;
 
-				foreach (string windowName in _windowNames)
+			StringBuilder strbTitle = new StringBuilder(nLength + 1);
+			nLength = GetWindowText(hWnd, strbTitle, strbTitle.Capacity);
+			if (nLength == 0)
+				return _continue;
+
+			string strTitle = strbTitle.ToString();
+
+			foreach (string windowName in WindowNames)
+			{
+				if (strTitle.IndexOf(windowName) > -1)
 				{
-					if (windowName.IndexOf("Fuzz Bang") > -1)
-						continue;
+					PostMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+					SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
 
-					if (strTitle.IndexOf(windowName) > -1)
+					lock (_lock)
 					{
-						PostMessage(hWnd, WM_CLOSE, 0, 0);
-						SendMessage(hWnd, WM_CLOSE, 0, 0);
-
-						return false;
+						_closedWindows.Add(strTitle);
 					}
+
+					_continue = false;
+					return _continue;
 				}
-
-				//if (lParam == 0)
-				//{
-				//    // Recursively check child windows
-				//    EnumChildWindows(hWnd, new EnumDelegate(EnumHandler), 1);
-				//}
-
-				return true;
 			}
-			catch
-			{
-				return false;
-			}
+
+			// Recursively check child windows
+			EnumChildWindows(hWnd, EnumHandler, IntPtr.Zero);
+
+			return _continue;
 		}
+
 
 		public void Work()
 		{
-			EnumDelegate filter = new EnumDelegate(EnumHandler);
-
-			while (_workerStop == false)
+			do
 			{
-				// Find top level windows
-				EnumWindows(filter, IntPtr.Zero);
+				// Reset continue for subsequent enum call
+				_continue = true;
 
-				// Lets not hog the cpu
-				Thread.Sleep(200);
+				// Find top level windows
+				EnumWindows(EnumHandler, IntPtr.Zero);
 			}
+			while (!_event.WaitOne(200));
 		}
 
 		public override void StopMonitor()
 		{
 			if (_worker != null)
 			{
-				_worker.Abort();
+				_event.Set();
+
 				_worker.Join();
 				_worker = null;
-				_workerStop = false;
+
+				_event.Close();
+				_event = null;
 			}
 		}
 
 		public override void SessionStarting()
 		{
-			if (_worker != null)
-			{
-				_worker.Abort();
-				_worker.Join();
-				_worker = null;
-				_workerStop = false;
-			}
+			StopMonitor();
+
+			_event = new ManualResetEvent(false);
 
 			_worker = new Thread(new ThreadStart(Work));
 			_worker.Start();
@@ -146,15 +154,12 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionFinished()
 		{
-			_workerStop = true;
-			_worker.Join();
-			_worker = null;
-			_workerStop = false;
+			StopMonitor();
 		}
 
 		public override bool DetectedFault()
 		{
-			return false;
+			return _fault != null && _fault.type == FaultType.Fault;
 		}
 
 
@@ -164,12 +169,28 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool IterationFinished()
 		{
+			_fault = null;
+
+			lock (_lock)
+			{
+				if (_closedWindows.Count > 0)
+				{
+					_fault = new Fault();
+					_fault.detectionSource = "PopupWatcher";
+					_fault.type = Fault ? FaultType.Fault : FaultType.Data;
+					_fault.title = string.Format("Closed {0} popup window{1}.", _closedWindows.Count, _closedWindows.Count > 1 ? "s" : "");
+					_fault.description = "Window Titles:" + Environment.NewLine + string.Join(Environment.NewLine, _closedWindows);
+				}
+
+				_closedWindows.Clear();
+			}
+
 			return false;
 		}
 
 		public override Fault GetMonitorData()
 		{
-            return null;
+			return _fault;
 		}
 
 		public override bool MustStop()

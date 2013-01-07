@@ -5,9 +5,11 @@ deps = [
 	'NLog.dll',
 	'System.dll',
 	'System.Core.dll',
+	'System.Windows.Forms.dll',
 	'Microsoft.CSharp.dll',
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
+	'Peach.Core.Test.dll',
 ]
 
 # Even though this should build via mono, this assembly causes mcs to segfault
