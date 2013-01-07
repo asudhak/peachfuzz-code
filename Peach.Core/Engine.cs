@@ -541,6 +541,8 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 								if (context.config.skipToIteration > iterationStart)
 									iterationStart = context.config.skipToIteration;
+
+								iterationCount = iterationStart;
 							}
 						}
 
