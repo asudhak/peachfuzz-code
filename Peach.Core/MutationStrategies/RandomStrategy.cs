@@ -224,58 +224,72 @@ namespace Peach.Core.MutationStrategies
 			if (val.fileNames.Count < 2)
 				return;
 
-			// Only pick the file name once so any given iteration is guranteed to be deterministic
-			string fileName = _randomDataSet.Choice(val.fileNames);
+			string fileName = null;
 			byte[] fileBytes = null;
 
-			for (int i = 0; i < 5; ++i)
+			// Some of our sample files may not crack.  Loop through them until we
+			// find a good sample file.
+			while (val.fileNames.Count > 0)
 			{
 				try
 				{
-					fileBytes = File.ReadAllBytes(fileName);
+					fileName = _randomDataSet.Choice(val.fileNames);
+
+					for (int i = 0; i < 5; ++i)
+					{
+						try
+						{
+							// Only pick the file name once so any given iteration is guranteed to be deterministic
+							fileBytes = File.ReadAllBytes(fileName);
+						}
+						catch
+						{
+							continue;
+						}
+
+						// Crack the file
+
+						// Note: We need to find the origional data model to use.  Re-using
+						// a data model that has been cracked into will fail in odd ways.
+
+						var referenceName = action.dataModel.referenceName;
+						if (referenceName == null)
+							referenceName = action.dataModel.name;
+						action.dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
+						action.dataModel.isReference = true;
+						action.dataModel.referenceName = referenceName;
+
+						DataCracker cracker = new DataCracker();
+						cracker.CrackData(action.dataModel, new BitStream(fileBytes));
+
+						// Generate all values;
+						var ret = action.dataModel.Value;
+						System.Diagnostics.Debug.Assert(ret != null);
+
+						// Remove our old mutators
+						_dataModels.Remove(GetDataModelName(action));
+						List<DataElement> oldElements = new List<DataElement>();
+						RecursevlyGetElements(action.origionalDataModel, oldElements);
+						foreach (var item in oldElements)
+							_iterations.Remove(item.fullName);
+
+						// Store copy of new origional data model
+						action.origionalDataModel = action.dataModel.Clone() as DataModel;
+
+						// Save our current state
+						val.iteration = switchIteration;
+
+						return;
+					}
 				}
-				catch
+				catch(Cracker.CrackingFailure)
 				{
-					continue;
+					logger.Debug("Removing " + fileName + " from sample list.  Unable to crack.");
+					val.fileNames.Remove(fileName);
 				}
-
-				// Crack the file
-
-				// Note: We need to find the origional data model to use.  Re-using
-				// a data model that has been cracked into will fail in odd ways.
-
-				var referenceName = action.dataModel.referenceName;
-				if (referenceName == null)
-					referenceName = action.dataModel.name;
-				action.dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
-				action.dataModel.isReference = true;
-				action.dataModel.referenceName = referenceName;
-
-				DataCracker cracker = new DataCracker();
-				cracker.CrackData(action.dataModel, new BitStream(fileBytes));
-
-				// Generate all values;
-				var ret = action.dataModel.Value;
-				System.Diagnostics.Debug.Assert(ret != null);
-
-				// Remove our old mutators
-				_dataModels.Remove(GetDataModelName(action));
-				List<DataElement> oldElements = new List<DataElement>();
-				RecursevlyGetElements(action.origionalDataModel, oldElements);
-				foreach (var item in oldElements)
-					_iterations.Remove(item.fullName);
-
-				// Store copy of new origional data model
-				action.origionalDataModel = action.dataModel.Clone() as DataModel;
-
-				// Save our current state
-				val.iteration = switchIteration;
-
-				return;
 			}
 
-			throw new PeachException("Error, RandomStrategy was unable to load data 5 times in" +
-			                         "a row for model \"" + action.dataModel.fullName + "\"");
+			throw new PeachException("Error, RandomStrategy was unable to load data for model \"" + action.dataModel.fullName + "\"");
 		}
 
 		private void GatherMutators(DataElementContainer cont)
