@@ -93,7 +93,7 @@ def cs_resource(self):
 	if 'exe' in self.cs_task.env.CSTYPE:
 		inst_to = getattr(self, 'install_path', '${BINDIR}')
 		cfg = self.path.find_or_declare('app.config')
-		self.bld.install_as('%s/%s.config' % (inst_to, base), cfg, env=self.env, chmod=Utils.O755)
+		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O755)
 
 @conf
 def clone_env(self, variant):
