@@ -73,7 +73,7 @@ class utest(Task.Task):
 		"""
 
 		filename = self.inputs[0].abspath()
-		self.ut_exec = getattr(self, 'ut_exec', [filename])
+		self.ut_exec = getattr(self.generator, 'ut_exec', [filename])
 		if getattr(self.generator, 'ut_fun', None):
 			self.generator.ut_fun(self)
 
