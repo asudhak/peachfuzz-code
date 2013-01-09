@@ -46,17 +46,17 @@ namespace Peach.Core.Dom
 		public string _name = null;
 		public object parent = null;
 		public int controlIterationEvery = 0;
-		
+
 		[NonSerialized]
-		public Logger logger = null;
+		public List<Logger> loggers = new List<Logger>();
 
 		public StateModel stateModel = null;
 
 		[NonSerialized]
 		public MutationStrategy strategy = null;
 		
-		[NonSerialized]
-		public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
+		//[NonSerialized]
+		//public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 
 		[NonSerialized]
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
@@ -294,33 +294,36 @@ namespace Peach.Core.Dom
       }
       #endregion
 
-      if (this.logger != null)
+      if (this.loggers != null)
       {
-        Type loggerType = this.logger.GetType();
-        List<object> attribs = new List<object>(loggerType.GetCustomAttributes(false));
-        LoggerAttribute loggerAttrib = (from o in attribs where (o is LoggerAttribute) && (((LoggerAttribute)o).IsDefault == true) select o).First() as LoggerAttribute;
-        List<ParameterAttribute> paramAttribs = (from o in attribs where (o is ParameterAttribute) select o as ParameterAttribute).ToList();
-        XmlNode eLogger = doc.CreateElement("Logger");
-        eLogger.AppendAttribute("class", loggerAttrib.Name);
+		  foreach (var logger in this.loggers)
+		  {
+			  Type loggerType = logger.GetType();
+			  List<object> attribs = new List<object>(loggerType.GetCustomAttributes(false));
+			  LoggerAttribute loggerAttrib = (from o in attribs where (o is LoggerAttribute) && (((LoggerAttribute)o).IsDefault == true) select o).First() as LoggerAttribute;
+			  List<ParameterAttribute> paramAttribs = (from o in attribs where (o is ParameterAttribute) select o as ParameterAttribute).ToList();
+			  XmlNode eLogger = doc.CreateElement("Logger");
+			  eLogger.AppendAttribute("class", loggerAttrib.Name);
 
-        foreach (ParameterAttribute paramAttrib in paramAttribs)
-        {
-          XmlNode eParam = doc.CreateElement("Param");
-          eParam.AppendAttribute("name", paramAttrib.name);
-          PropertyInfo pi = loggerType.GetProperty(paramAttrib.name);
-          if (pi != null)
-          {
-            object paramValue = pi.GetValue(this.logger, null);
-            eParam.AppendAttribute("value", paramValue.ToString());
-            eLogger.AppendChild(eParam);
-          }
-          else
-          {
-            throw new PeachException(System.String.Format("Can not find property '{0}' in class '{1}'", paramAttrib.name, loggerType.ToString()));
-          }
-        }
+			  foreach (ParameterAttribute paramAttrib in paramAttribs)
+			  {
+				  XmlNode eParam = doc.CreateElement("Param");
+				  eParam.AppendAttribute("name", paramAttrib.name);
+				  PropertyInfo pi = loggerType.GetProperty(paramAttrib.name);
+				  if (pi != null)
+				  {
+					  object paramValue = pi.GetValue(this.loggers, null);
+					  eParam.AppendAttribute("value", paramValue.ToString());
+					  eLogger.AppendChild(eParam);
+				  }
+				  else
+				  {
+					  throw new PeachException(System.String.Format("Can not find property '{0}' in class '{1}'", paramAttrib.name, loggerType.ToString()));
+				  }
+			  }
 
-        node.AppendChild(eLogger);
+			  node.AppendChild(eLogger);
+		  }
       }
 
       return node;

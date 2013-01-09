@@ -471,15 +471,15 @@ namespace Peach.Core.Analyzers
 
 			foreach (DataModel model in models)
 			{
-				logger.Debug("finalUpdateRelations: DataModel: " + model.name);
+				//logger.Debug("finalUpdateRelations: DataModel: " + model.name);
 
 				foreach (DataElement elem in model.EnumerateAllElements())
 				{
-					logger.Debug("finalUpdateRelations: " + elem.fullName);
+					//logger.Debug("finalUpdateRelations: " + elem.fullName);
 
 					foreach (Relation rel in elem.relations)
 					{
-						logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
+						//logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
 
 						try
 						{
@@ -1412,7 +1412,7 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")
-					test.logger = handlePlugin<Logger, LoggerAttribute>(child, null, false);
+					test.loggers.Add(handlePlugin<Logger, LoggerAttribute>(child, null, false));
 
 				// Include
 				if (child.Name == "Include")

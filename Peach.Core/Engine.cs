@@ -198,13 +198,17 @@ namespace Peach.Core
 				if (watcher != null)
 					watcher.Initialize(this, context);
 
-				if (context.test.logger != null)
-					context.test.logger.Initialize(this, context);
+				foreach(var logger in context.test.loggers)
+					logger.Initialize(this, context);
 
 				runTest(context.dom, context.test, context);
 			}
 			finally
 			{
+				if(context.test != null)
+					foreach (var logger in context.test.loggers)
+						logger.Finalize(this, context);
+
 				if (watcher != null)
 					watcher.Finalize(this, context);
 			}

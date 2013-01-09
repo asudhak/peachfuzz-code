@@ -130,6 +130,29 @@ namespace Peach.Core.Dom
 			_lengthType = LengthType.Bytes;
 		}
 
+		protected char ReadCharacter(BitStream data)
+		{
+			int maxBytes = UTF8Encoding.UTF8.GetMaxByteCount(1);
+			byte[] buff = new byte[maxBytes];
+			char[] chars = null;
+
+			for (int count = 0; count < maxBytes; count++)
+			{
+				buff[count] = data.ReadByte();
+				chars = UTF8Encoding.UTF8.GetChars(buff, 0, count+1);
+				
+				if (chars.Count() == 1)
+					return chars[0];
+			}
+
+			throw new CrackingFailure("Unable to read character from stream", this, data);
+		}
+
+		/// <summary>
+		/// TODO - Use ReadCharacter method when length is char length.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="data"></param>
 		public override void Crack(DataCracker context, BitStream data)
 		{
 			String element = this;
