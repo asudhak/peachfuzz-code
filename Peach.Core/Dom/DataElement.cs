@@ -132,11 +132,48 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		protected class CloneCache
+		{
+			private CloneContext additional;
+			private StreamingContext context;
+			private BinaryFormatter formatter;
+			private MemoryStream stream;
+			private DataElementContainer parent;
+
+			public CloneCache(DataElement element, string newName)
+			{
+				parent = element._parent;
+				stream = new MemoryStream();
+				additional = new CloneContext(element, newName);
+				context = new StreamingContext(StreamingContextStates.All, additional);
+				formatter = new BinaryFormatter(null, context);
+				formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+				formatter.Binder = new DataElementBinder();
+
+				element._parent = null;
+				formatter.Serialize(stream, element);
+				element._parent = parent;
+			}
+
+			public long Size
+			{
+				get { return stream.Length; }
+			}
+
+			public DataElement Get()
+			{
+				stream.Seek(0, SeekOrigin.Begin);
+				var copy = (DataElement)formatter.Deserialize(stream);
+				copy._parent = parent;
+				return copy;
+			}
+		}
+
 		/// <summary>
 		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
 		/// </summary>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public DataElement Clone()
+		public virtual DataElement Clone()
 		{
 			return Clone(name);
 		}
@@ -146,7 +183,7 @@ namespace Peach.Core.Dom
 		/// </summary>
 		/// <param name="newName">What name to set on the cloned DataElement</param>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public DataElement Clone(string newName)
+		public virtual DataElement Clone(string newName)
 		{
 			long size = 0;
 			return Clone(newName, ref size);
@@ -158,28 +195,15 @@ namespace Peach.Core.Dom
 		/// <param name="newName">What name to set on the cloned DataElement</param>
 		/// <param name="size">The size in bytes used when performing the copy. Useful for debugging statistics.</param>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public DataElement Clone(string newName, ref long size)
+		public virtual DataElement Clone(string newName, ref long size)
 		{
 			if (DataElement.DebugClone)
 				logger.Debug("Clone {0} as {1}", fullName, newName);
 
-			var parent = this._parent;
-			this._parent = null;
+			var cache = new CloneCache(this, newName);
+			var copy = cache.Get();
 
-			CloneContext additional = new CloneContext(this, newName);
-			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
-			BinaryFormatter formatter = new BinaryFormatter(null, context);
-			MemoryStream stream = new MemoryStream();
-			formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-			formatter.Binder = new DataElementBinder();
-			formatter.Serialize(stream, this);
-			stream.Seek(0, SeekOrigin.Begin);
-
-			DataElement copy = (DataElement)formatter.Deserialize(stream);
-			copy._parent = parent;
-			this._parent = parent;
-
-			size = stream.Length;
+			size = cache.Size;
 
 			if (DataElement.DebugClone)
 				logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);

@@ -78,6 +78,9 @@ namespace Peach.Core.Dom
 		[NonSerialized]
 		public Action action = null;
 
+		[NonSerialized]
+		private CloneCache cache = null;
+
 		public DataModel()
 		{
 		}
@@ -85,6 +88,23 @@ namespace Peach.Core.Dom
 		public DataModel(string name)
 			: base(name)
 		{
+		}
+
+		public override DataElement Clone()
+		{
+			if (cache == null)
+				cache = new CloneCache(this, this.name);
+
+			var ret = cache.Get() as DataModel;
+			ret.cache = this.cache;
+
+			return ret;
+		}
+
+		public override void Crack(Cracker.DataCracker context, IO.BitStream data)
+		{
+			cache = null;
+			base.Crack(context, data);
 		}
 
     public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
