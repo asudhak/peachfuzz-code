@@ -1299,8 +1299,8 @@ Global
 		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|Mixed Platforms.ActiveCfg = Debug - OS X|x64
 		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|Mixed Platforms.Build.0 = Debug - OS X|x64
 		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|Win32.ActiveCfg = Debug - OS X|x64
-		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|x64.ActiveCfg = Debug - OS X|x64
-		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|x64.Build.0 = Debug - OS X|x64
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|x64.ActiveCfg = Debug|x64
+		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|x64.Build.0 = Debug|x64
 		{21441695-C170-456D-911C-F8316B4B8309}.Debug - Windows|x86.ActiveCfg = Debug - OS X|x64
 		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{21441695-C170-456D-911C-F8316B4B8309}.Debug|Mixed Platforms.ActiveCfg = Debug|x64

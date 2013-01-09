@@ -65,7 +65,7 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(Stream data)
 		{
-			data.CopyTo(stream);
+			data.CopyTo(stream, 1024);
 		}
 	}
 }
