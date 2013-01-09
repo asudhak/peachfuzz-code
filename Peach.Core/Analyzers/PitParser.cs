@@ -1412,7 +1412,7 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")
-					test.logger = handlePlugin<Logger, LoggerAttribute>(child, null, false);
+					test.loggers.Add(handlePlugin<Logger, LoggerAttribute>(child, null, false));
 
 				// Include
 				if (child.Name == "Include")

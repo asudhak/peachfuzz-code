@@ -406,7 +406,7 @@ namespace PeachFuzzBang
 					logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
 				}
 
-				test.logger = logger;
+				test.loggers.Add(logger);
 
 				// START FUZZING!!!!!
 				thread = new Thread(new ParameterizedThreadStart(Run));
