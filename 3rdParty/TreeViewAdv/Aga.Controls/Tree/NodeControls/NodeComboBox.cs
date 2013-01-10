@@ -67,7 +67,7 @@ namespace Aga.Controls.Tree.NodeControls
 		protected override Control CreateEditor(TreeNodeAdv node)
 		{
 			Control c;
-			object value = GetValue(node);
+			GetValue(node);
 			if (IsCheckedListBoxRequired(node))
 				c = CreateCheckedListBox(node);
 			else

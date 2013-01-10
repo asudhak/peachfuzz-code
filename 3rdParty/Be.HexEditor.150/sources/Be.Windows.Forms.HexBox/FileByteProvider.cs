@@ -72,6 +72,7 @@ namespace Be.Windows.Forms
 		/// <param name="fileName"></param>
 		public FileByteProvider(string fileName)
 		{
+			System.Diagnostics.Debug.Assert(LengthChanged == null);
 			_fileName = fileName;
 
             try
