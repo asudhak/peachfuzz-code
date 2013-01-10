@@ -19,7 +19,10 @@ namespace PeachValidator
 {
 	public partial class MainForm : Form
 	{
-		string windowTitle = "Peach Validator v3.0 - {0}";
+		string windowTitle = "Peach Validator v3.0";
+		string windowTitlePit = "Peach Validator v3.0 - {0}";
+		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {0}";
+		string windowTitleSample = "Peach Validator v3.0 - None - {0}";
 		string sampleFileName = null;
 		string pitFileName = null;
 		string dataModel = null;
@@ -31,6 +34,18 @@ namespace PeachValidator
 			InitializeComponent();
 		}
 
+		protected void setTitle()
+		{
+			if (!string.IsNullOrEmpty(sampleFileName) && !string.IsNullOrEmpty(pitFileName))
+				Text = string.Format(windowTitlePitSample, pitFileName, sampleFileName);
+			else if (string.IsNullOrEmpty(sampleFileName) && !string.IsNullOrEmpty(pitFileName))
+				Text = string.Format(windowTitlePit, pitFileName);
+			else if (!string.IsNullOrEmpty(sampleFileName) && string.IsNullOrEmpty(pitFileName))
+				Text = string.Format(windowTitleSample, sampleFileName);
+			else
+				Text = windowTitle;
+		}
+
 		private void toolStripButtonOpenSample_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog ofd = new OpenFileDialog();
@@ -38,10 +53,13 @@ namespace PeachValidator
 				return;
 
 			sampleFileName = ofd.FileName;
+			setTitle();
 
 			DynamicFileByteProvider dynamicFileByteProvider;
 			dynamicFileByteProvider = new DynamicFileByteProvider(File.OpenRead(sampleFileName));
 			hexBox1.ByteProvider = dynamicFileByteProvider;
+
+			toolStripButtonRefreshSample_Click(null, null);
 		}
 
 		private void toolStripButtonRefreshSample_Click(object sender, EventArgs e)
@@ -74,6 +92,7 @@ namespace PeachValidator
 					DataCracker cracker = new DataCracker();
 					cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
 					cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
+					cracker.PlacementEvent += new PlacementEventHandler(cracker_PlacementEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
 				catch
@@ -101,10 +120,24 @@ namespace PeachValidator
 			}
 		}
 
+		void cracker_PlacementEvent(DataElement oldElement, DataElement newElement, DataElementContainer oldParent)
+		{
+			var currentModel = crackMap[oldElement];
+			var oldParentNode = crackMap[oldParent];
+			var newParentNode = crackMap[newElement.parent];
+				
+			oldParentNode.Children.Remove(currentModel);
+
+			currentModel = new CrackNode(currentModel.Model, newElement, currentModel.Position, currentModel.Length);
+			newParentNode.Children.Add(currentModel);
+			currentModel.Parent = newParentNode;
+		}
+
 		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
 		{
 			var currentModel = crackMap[element];
 			currentModel.Length = (int)((BitStream)currentModel.DataElement.Value).LengthBytes;
+			currentModel.Position = (int) (data.DataElementPosition(element)/8);
 
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
 				crackMap[element.parent].Children.Add(currentModel);
@@ -126,6 +159,7 @@ namespace PeachValidator
 				return;
 
 			pitFileName = ofd.FileName;
+			setTitle();
 
 			toolStripButtonRefreshPit_Click(null, null);
 		}
@@ -137,6 +171,9 @@ namespace PeachValidator
 				PitParser parser = new PitParser();
 				Dom dom;
 
+				if(!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
+					Directory.SetCurrentDirectory(Path.GetDirectoryName(pitFileName));
+
 				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
 
 				toolStripComboBoxDataModel.Items.Clear();
@@ -145,8 +182,6 @@ namespace PeachValidator
 
 				if(toolStripComboBoxDataModel.Items.Count > 0)
 					toolStripComboBoxDataModel.SelectedIndex = 0;
-
-				Text = string.Format(windowTitle, pitFileName);
 			}
 			catch (Exception ex)
 			{

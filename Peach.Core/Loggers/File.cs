@@ -196,8 +196,7 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(logpath))
 				Directory.CreateDirectory(logpath);
 
-			ourpath = System.IO.Path.Combine(logpath, context.config.pitFile.Replace(System.IO.Path.DirectorySeparatorChar, '_'));
-
+			ourpath = System.IO.Path.Combine(logpath, System.IO.Path.GetFileName(context.config.pitFile));
 			if (context.config.runName == "DefaultRun")
 				ourpath += "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
 			else
