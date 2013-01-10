@@ -169,7 +169,7 @@ namespace Peach.Core.Cracker
 				{
 					if (child.fixup == null)
 						continue;
-
+					
 					foreach (var item in child.fixup.references)
 					{
 						if (item.Item2 != element.name)
