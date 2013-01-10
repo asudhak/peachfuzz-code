@@ -1,0 +1,5 @@
+I removed the setup, because Visual Studio 2012 does not support the project type anymore. 
+
+If you want a setup, please post a Feature Request at https://sourceforge.net/projects/hexbox/
+
+Maybe, if some people request a setup, I will move the project to codeplex, that is supporting ClickOnce as a setup replacement.

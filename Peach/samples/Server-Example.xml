@@ -12,7 +12,7 @@
 	-->
 	
 	<DataModel name="TheDataModel">
-		<String isStatic="true" value="Hello from peachfuzzer.com!" />
+		<String value="Hello from peachfuzzer.com!" token="true" />
 	</DataModel>
 	
 	<StateModel name="State" initialState="State1">
@@ -27,7 +27,7 @@
 	</StateModel>
 	
 	<Test name="Default">
-		<StateModel ref="TestState" />
+		<StateModel ref="State" />
 		
 		<Publisher class="TcpListener">
 			<Param name="Interface" value="127.0.0.1"/>

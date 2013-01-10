@@ -49,7 +49,6 @@
 	</Agent>
 	
 	<Test name="Default">
- 	<Agent ref="LocalAgent" />
 		<Agent ref="RemoteAgent" />
 		
 		<StateModel ref="State"/>

@@ -33,7 +33,7 @@
 	<StateModel name="State" initialState="Initial">
 		<State name="Initial">
 			<Action type="output">
-				<DataModel ref="RelationCountTemplate" />
+				<DataModel ref="RelationSizeTemplate" />
 			</Action>
 		</State>
 	</StateModel>
