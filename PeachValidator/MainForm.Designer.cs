@@ -89,6 +89,7 @@
 			this.toolStripButtonOpenPit.Name = "toolStripButtonOpenPit";
 			this.toolStripButtonOpenPit.Size = new System.Drawing.Size(23, 22);
 			this.toolStripButtonOpenPit.Text = "toolStripButton2";
+			this.toolStripButtonOpenPit.ToolTipText = "Open Pit File";
 			this.toolStripButtonOpenPit.Click += new System.EventHandler(this.toolStripButtonOpenPit_Click);
 			// 
 			// toolStripButtonRefreshPit
@@ -99,6 +100,7 @@
 			this.toolStripButtonRefreshPit.Name = "toolStripButtonRefreshPit";
 			this.toolStripButtonRefreshPit.Size = new System.Drawing.Size(23, 22);
 			this.toolStripButtonRefreshPit.Text = "toolStripButton1";
+			this.toolStripButtonRefreshPit.ToolTipText = "Reload Pit File";
 			this.toolStripButtonRefreshPit.Click += new System.EventHandler(this.toolStripButtonRefreshPit_Click);
 			// 
 			// toolStripComboBoxDataModel
@@ -127,6 +129,7 @@
 			this.toolStripButtonOpenSample.Name = "toolStripButtonOpenSample";
 			this.toolStripButtonOpenSample.Size = new System.Drawing.Size(23, 22);
 			this.toolStripButtonOpenSample.Text = "toolStripButton3";
+			this.toolStripButtonOpenSample.ToolTipText = "Open Sample File";
 			this.toolStripButtonOpenSample.Click += new System.EventHandler(this.toolStripButtonOpenSample_Click);
 			// 
 			// toolStripButtonRefreshSample
@@ -137,6 +140,7 @@
 			this.toolStripButtonRefreshSample.Name = "toolStripButtonRefreshSample";
 			this.toolStripButtonRefreshSample.Size = new System.Drawing.Size(23, 22);
 			this.toolStripButtonRefreshSample.Text = "toolStripButton4";
+			this.toolStripButtonRefreshSample.ToolTipText = "Reload Sample File";
 			this.toolStripButtonRefreshSample.Click += new System.EventHandler(this.toolStripButtonRefreshSample_Click);
 			// 
 			// splitContainer1

@@ -44,7 +44,7 @@ namespace Peach.Core.Cracker
 	public delegate void EnterHandleNodeEventHandler(DataElement element, BitStream data);
 	public delegate void ExitHandleNodeEventHandler(DataElement element, BitStream data);
 	public delegate void ExceptionHandleNodeEventHandler(DataElement element, BitStream data, Exception e);
-
+	public delegate void PlacementEventHandler(DataElement oldElement, DataElement newElement, DataElementContainer oldParent);
 	#endregion
 
 	/// <summary>
@@ -106,6 +106,15 @@ namespace Peach.Core.Cracker
 				ExceptionHandleNodeEvent(element, data, e);
 		}
 
+		public event PlacementEventHandler PlacementEvent;
+		protected void OnPlacementEvent(DataElement oldElement, DataElement newElement, DataElementContainer oldParent)
+		{
+			if (IsLookAhead)
+				return;
+
+			if (PlacementEvent != null)
+				PlacementEvent(oldElement, newElement, oldParent);
+		}
 
 		#endregion
 
@@ -146,6 +155,7 @@ namespace Peach.Core.Cracker
 			foreach (DataElement element in elementsWithPlacement)
 			{
 				var fixups = new List<Tuple<Fixup, string>>();
+				DataElementContainer oldParent = element.parent;
 
 				// Ensure relations are resolved
 				foreach (Relation relation in element.relations)
@@ -198,6 +208,8 @@ namespace Peach.Core.Cracker
 				{
 					fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
 				}
+
+				OnPlacementEvent(element, newElem, oldParent);
 			}
 		}
 
