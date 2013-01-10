@@ -137,6 +137,9 @@ namespace PeachValidator
 				PitParser parser = new PitParser();
 				Dom dom;
 
+				if(!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
+					Directory.SetCurrentDirectory(Path.GetDirectoryName(pitFileName));
+
 				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
 
 				toolStripComboBoxDataModel.Items.Clear();
