@@ -1657,7 +1657,8 @@ Global
 		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|Mixed Platforms.ActiveCfg = Debug|x86
 		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|Mixed Platforms.Build.0 = Debug|x86
 		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|Win32.ActiveCfg = Debug|x86
-		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|x64.ActiveCfg = Debug|x86
+		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|x64.ActiveCfg = Debug|x64
+		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|x64.Build.0 = Debug|x64
 		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|x86.ActiveCfg = Debug|x86
 		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug - Windows|x86.Build.0 = Debug|x86
 		{06F6FC86-505E-407E-8740-1CB9265A4AC8}.Debug|Any CPU.ActiveCfg = Debug|x86
