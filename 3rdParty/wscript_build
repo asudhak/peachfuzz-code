@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
-bld.recurse('pin')
+subdirs = [
+	'pin',
+	'TreeViewAdv/Aga.Controls',
+	'Be.HexEditor.150/sources/Be.Windows.Forms.HexBox',
+]
+
+bld.recurse(subdirs)
 
 nlog = bld.env.CS_NAME == 'mono' and 'Mono 2.x' or '.NET Framework 4.0'
 
