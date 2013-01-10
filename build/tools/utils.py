@@ -73,6 +73,14 @@ def cs_helpers(self):
 def cs_resource(self):
 	base = os.path.splitext(self.gen)[0]
 
+	if getattr(self, 'unsafe', False):
+		self.env.append_value('CSFLAGS', ['/unsafe+'])
+
+	keyfile = self.to_nodes(getattr(self, 'keyfile', []))
+	self.cs_task.dep_nodes.extend(keyfile)
+	if keyfile:
+		self.env.append_value('CSFLAGS', '/keyfile:%s' % (keyfile[0].abspath()))
+
 	# add external resources to the dependency list and compilation command line
 	resources = self.to_nodes(getattr(self, 'resource', []))
 	self.cs_task.dep_nodes.extend(resources)
