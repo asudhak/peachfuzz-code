@@ -1,8 +1,0 @@
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\bin\Debug\Be.Windows.Forms.HexBox.dll
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\bin\Debug\Be.Windows.Forms.HexBox.pdb
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\bin\Debug\Be.Windows.Forms.HexBox.xml
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\obj\Debug\Be.Windows.Forms.HexBox.resources
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\obj\Debug\Be.Windows.Forms.Properties.Resources.resources
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\obj\Debug\Be.Windows.Forms.HexBox.csproj.GenerateResource.Cache
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\obj\Debug\Be.Windows.Forms.HexBox.dll
-C:\Peach3\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\obj\Debug\Be.Windows.Forms.HexBox.pdb
