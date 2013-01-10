@@ -1,7 +1,0 @@
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\bin\Debug\Aga.Controls.dll
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\bin\Debug\Aga.Controls.pdb
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\obj\Debug\Aga.Controls.Properties.Resources.resources
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\obj\Debug\Aga.Controls.Tree.TreeViewAdv.resources
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\obj\Debug\Aga.Controls.csproj.GenerateResource.Cache
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\obj\Debug\Aga.Controls.dll
-C:\Peach3\3rdParty\TreeViewAdv\Aga.Controls\obj\Debug\Aga.Controls.pdb
