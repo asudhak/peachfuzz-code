@@ -70,7 +70,6 @@ namespace Peach.Core.Agent.Monitors
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		string _name = null;
-		static bool _firstIteration = true;
 		string _commandLine = null;
 		string _processName = null;
 		string _kernelConnectionString = null;
