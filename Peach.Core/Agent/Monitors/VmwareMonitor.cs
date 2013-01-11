@@ -4,29 +4,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-
 using Peach.Core.Dom;
-
-using VixHandle = System.Int32;
 
 namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("VmwareMonitor", true)]
 	[Parameter("Vmx", typeof(string), "Path to virtual machine")]
 	[Parameter("Host", typeof(string), "Name of host machine", "")]
-	[Parameter("SnapshotIndex", typeof(int), "Name of host machine", "")]
-	[Parameter("SnapshotName", typeof(int), "Name of host machine", "")]
+	[Parameter("SnapshotIndex", typeof(int?), "VM snapshot index", "")]
+	[Parameter("SnapshotName", typeof(string), "VM snapshot name", "")]
+	[Parameter("ResetEveryIteration", typeof(bool), "Reset VM on every iteration", "false")]
+	[Parameter("WaitForToolsInGuest", typeof(bool), "Wait for tools to start in guest", "true")]
+	[Parameter("WaitTimeout", typeof(int), "How many seconds to wait for guest tools", "600")]
 	public class VmwareMonitor : Monitor
 	{
 		#region P/Invokes
 
-		const string VixDll = "VixAllProductsDyn.dll";
-		const VixHandle VixInvalidHandle = 0;
+		const string VixDll = "Vix64AllProductsDyn.dll";
 		const int VixApiVersion = -1;
+		static readonly IntPtr VixInvalidHandle = IntPtr.Zero;
 
-		delegate void VixEventProc(VixHandle handle,
+		delegate void VixEventProc(IntPtr handle,
 			VixEventType eventType,
-			VixHandle moreEventInfo,
+			IntPtr moreEventInfo,
 			IntPtr clientData);
 
 		enum VixEventType : int
@@ -478,119 +478,358 @@ namespace Peach.Core.Agent.Monitors
 		private static extern IntPtr Vix_GetErrorText(VixError err, string locale);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixError VixJob_Wait(VixHandle jobHandle,
+		private static extern VixHandleType Vix_GetHandleType(IntPtr handle);
+
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern VixError VixJob_Wait(IntPtr jobHandle,
 			VixPropertyID firstPropertyID);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixError VixJob_Wait(VixHandle jobHandle,
+		private static extern VixError VixJob_Wait(IntPtr jobHandle,
 			VixPropertyID firstPropertyID,
-			ref VixHandle firstProperty,
+			ref IntPtr firstProperty,
 			VixPropertyID secondPropertyID);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixHandle VixHost_Connect(int apiVersion,
+		private static extern IntPtr VixHost_Connect(int apiVersion,
 			VixServiceProvider hostType,
 			string hostName,
 			int hostPort,
 			string userName,
 			string password,
 			VixHostOptions options,
-			VixHandle propertyListHandle,
+			IntPtr propertyListHandle,
 			VixEventProc callbackProc,
 			IntPtr clientData);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern void VixHost_Disconnect(int hostHandle);
+		private static extern void VixHost_Disconnect(IntPtr hostHandle);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern void Vix_ReleaseHandle(VixHandle handle);
+		private static extern void Vix_ReleaseHandle(IntPtr handle);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixHandle VixHost_OpenVM(VixHandle hostHandle,
+		private static extern IntPtr VixHost_OpenVM(IntPtr hostHandle,
 			string vmxFilePathName,
 			VixVMOpenOptions options,
-			VixHandle propertyListHandle,
+			IntPtr propertyListHandle,
 			VixEventProc callbackProc,
 			IntPtr clientData);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixError VixVM_GetRootSnapshot(VixHandle vmHandle,
+		private static extern VixError VixVM_GetRootSnapshot(IntPtr vmHandle,
 			int index,
-			ref VixHandle snapshotHandle);
+			ref IntPtr snapshotHandle);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixError VixVM_GetCurrentSnapshot(VixHandle vmHandle,
-			ref VixHandle snapshotHandle);
+		private static extern VixError VixVM_GetCurrentSnapshot(IntPtr vmHandle,
+			ref IntPtr snapshotHandle);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixError VixVM_GetNamedSnapshot(VixHandle vmHandle,
+		private static extern VixError VixVM_GetNamedSnapshot(IntPtr vmHandle,
 			string name,
-			ref VixHandle snapshotHandle);
+			ref IntPtr snapshotHandle);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixHandle VixVM_PowerOff(VixHandle vmHandle,
+		private static extern IntPtr VixVM_PowerOn(IntPtr vmHandle,
+			VixVMPowerOpOptions powerOnOptions,
+			IntPtr propertyListHandle,
+			VixEventProc callbackProc,
+			IntPtr clientData);
+
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern IntPtr VixVM_PowerOff(IntPtr vmHandle,
 			VixVMPowerOpOptions powerOffOptions,
 			VixEventProc callbackProc,
 			IntPtr clientData);
 
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
-		private static extern VixHandle VixVM_RevertToSnapshot(VixHandle vmHandle,
-			VixHandle snapshotHandle,
+		private static extern IntPtr VixVM_RevertToSnapshot(IntPtr vmHandle,
+			IntPtr snapshotHandle,
 			VixVMPowerOpOptions options,
-			VixHandle propertyListHandle,
+			IntPtr propertyListHandle,
+			VixEventProc callbackProc,
+			IntPtr clientData);
+
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern VixError VixVM_GetNumRootSnapshots(IntPtr vmHandle,
+			ref int result);
+
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern IntPtr VixVM_WaitForToolsInGuest(IntPtr vmHandle,
+			int timeoutInSeconds,
 			VixEventProc callbackProc,
 			IntPtr clientData);
 
 		#endregion
 
+		#region P/Invoke Helpers
+
+		private static string GetErrorText(VixError err)
+		{
+			IntPtr buf = Vix_GetErrorText(err, null);
+			return Marshal.PtrToStringAnsi(buf);
+		}
+
+		private static void CheckError(VixError err, VixError ignore = VixError.VIX_OK)
+		{
+			if (err != VixError.VIX_OK && err != ignore)
+			{
+				string message = GetErrorText(err) + ".";
+				throw new PeachException(message);
+			}
+		}
+
+		private static void GetResult(IntPtr jobHandle, VixError ignore = VixError.VIX_OK)
+		{
+			VixError err = VixJob_Wait(jobHandle, VixPropertyID.VIX_PROPERTY_NONE);
+			CloseHandle(ref jobHandle);
+			CheckError(err, ignore);
+		}
+
+		private static IntPtr GetResultHandle(IntPtr jobHandle)
+		{
+			IntPtr resultHandle = VixInvalidHandle;
+
+			VixError err = VixJob_Wait(
+				jobHandle,
+				VixPropertyID.VIX_PROPERTY_JOB_RESULT_HANDLE,
+				ref resultHandle,
+				VixPropertyID.VIX_PROPERTY_NONE);
+
+			CloseHandle(ref jobHandle);
+
+			CheckError(err);
+
+			return resultHandle;
+		}
+
+		private static IntPtr Connect(string host)
+		{
+			IntPtr jobHandle = VixHost_Connect(
+				VixApiVersion,
+				VixServiceProvider.VIX_SERVICEPROVIDER_DEFAULT,
+				string.IsNullOrEmpty(host) ? null : host,
+				0,
+				null,
+				null,
+				VixHostOptions.VIX_HOSTOPTION_NONE,
+				VixInvalidHandle,
+				null,
+				IntPtr.Zero);
+
+			return GetResultHandle(jobHandle);
+		}
+
+		private static IntPtr OpenVM(IntPtr hostHandle, string vmx)
+		{
+			IntPtr jobHandle = VixHost_OpenVM(
+				hostHandle,
+				vmx,
+				VixVMOpenOptions.VIX_VMOPEN_NORMAL,
+				VixInvalidHandle,
+				null,
+				IntPtr.Zero);
+
+			return GetResultHandle(jobHandle);
+		}
+
+		private static IntPtr GetSnapshot(IntPtr vmHandle, string name)
+		{
+			IntPtr snapshotHandle = IntPtr.Zero;
+
+			VixError err = VixVM_GetNamedSnapshot(vmHandle, name, ref snapshotHandle);
+
+			CheckError(err);
+
+			return snapshotHandle;
+		}
+
+		private static IntPtr GetSnapshot(IntPtr vmHandle, int index)
+		{
+			IntPtr snapshotHandle = IntPtr.Zero;
+
+			VixError err = VixVM_GetRootSnapshot(vmHandle, index, ref snapshotHandle);
+
+			CheckError(err);
+
+			return snapshotHandle;
+		}
+
+		private static void RevertToSnapshot(IntPtr vmHandle, IntPtr snapshotHandle)
+		{
+			IntPtr jobHandle = VixVM_RevertToSnapshot(
+				vmHandle,
+				snapshotHandle,
+				VixVMPowerOpOptions.VIX_VMPOWEROP_NORMAL,
+				IntPtr.Zero,
+				null,
+				IntPtr.Zero);
+
+			GetResult(jobHandle);
+		}
+
+		private static void PowerOn(IntPtr vmHandle)
+		{
+			IntPtr jobHandle = VixVM_PowerOn(
+				vmHandle,
+				VixVMPowerOpOptions.VIX_VMPOWEROP_LAUNCH_GUI,
+				IntPtr.Zero,
+				null,
+				IntPtr.Zero);
+
+			GetResult(jobHandle, VixError.VIX_E_VM_IS_RUNNING);
+		}
+
+		private static void PowerOff(IntPtr vmHandle)
+		{
+			IntPtr jobHandle = VixVM_PowerOff(
+				vmHandle,
+				VixVMPowerOpOptions.VIX_VMPOWEROP_LAUNCH_GUI,
+				null,
+				IntPtr.Zero);
+
+			GetResult(jobHandle, VixError.VIX_E_VM_NOT_RUNNING);
+		}
+
+		private static void WaitForTools(IntPtr vmHandle, int timeoutInSeconds)
+		{
+			IntPtr jobHandle = VixVM_WaitForToolsInGuest(
+				vmHandle,
+				timeoutInSeconds,
+				null,
+				IntPtr.Zero);
+
+			GetResult(jobHandle);
+		}
+
+		private static void CloseHandle(ref IntPtr handle)
+		{
+			if (handle == VixInvalidHandle)
+				return;
+
+			var type = Vix_GetHandleType(handle);
+
+			switch (type)
+			{
+				case VixHandleType.VIX_HANDLETYPE_HOST:
+					VixHost_Disconnect(handle);
+					break;
+				case VixHandleType.VIX_HANDLETYPE_VM:
+					PowerOff(handle);
+					Vix_ReleaseHandle(handle);
+					break;
+				default:
+					Vix_ReleaseHandle(handle);
+					break;
+			}
+
+			handle = VixInvalidHandle;
+		}
+
+
+		#endregion
+
+		public bool WaitForToolsInGuest { get; private set; }
+		public bool ResetEveryIteration { get; private set; }
+		public int WaitTimeout { get; private set; }
+		public string Vmx { get; private set; }
+		public string Host { get; private set; }
+		public int? SnapshotIndex { get; private set; }
+		public string SnapshotName { get; private set; }
+
+		IntPtr hostHandle = VixInvalidHandle;
+		IntPtr vmHandle = VixInvalidHandle;
+		IntPtr snapshotHandle = VixInvalidHandle;
+		bool needReset = true;
+
+		void StartVM()
+		{
+			if (needReset || ResetEveryIteration)
+			{
+				RevertToSnapshot(vmHandle, snapshotHandle);
+				PowerOn(vmHandle);
+
+				if (WaitForToolsInGuest)
+					WaitForTools(vmHandle, WaitTimeout);
+
+				needReset = false;
+			}
+		}
+
 		public VmwareMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
+			ParameterParser.Parse(this, args);
+
+			if (!SnapshotIndex.HasValue && string.IsNullOrEmpty(SnapshotName))
+				throw new PeachException("Either SnapshotIndex or SnapshotName is required.");
+
+			if (SnapshotIndex.HasValue && !string.IsNullOrEmpty(SnapshotName))
+				throw new PeachException("Only specify SnapshotIndex or SnapshotName, not both.");
+
+			try
+			{
+				GetErrorText(VixError.VIX_OK);
+			}
+			catch (DllNotFoundException)
+			{
+				throw new PeachException("VMWare VIX library could not be found.");
+			}
 		}
 
-		public override void  StopMonitor()
+		public override void StopMonitor()
 		{
- 			throw new NotImplementedException();
+			CloseHandle(ref snapshotHandle);
+			CloseHandle(ref vmHandle);
+			CloseHandle(ref hostHandle);
 		}
 
-		public override void  SessionStarting()
+		public override void SessionStarting()
 		{
- 			throw new NotImplementedException();
+			hostHandle = Connect(Host);
+			vmHandle = OpenVM(hostHandle, Vmx);
+
+			if (SnapshotIndex.HasValue)
+				snapshotHandle = GetSnapshot(vmHandle, SnapshotIndex.Value);
+			else
+				snapshotHandle = GetSnapshot(vmHandle, SnapshotName);
 		}
 
-		public override void  SessionFinished()
+		public override void SessionFinished()
 		{
- 			throw new NotImplementedException();
 		}
 
-		public override void  IterationStarting(uint iterationCount, bool isReproduction)
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
- 			throw new NotImplementedException();
+			StartVM();
 		}
 
-		public override bool  IterationFinished()
+		public override bool IterationFinished()
 		{
- 			throw new NotImplementedException();
+			return false;
 		}
 
-		public override bool  DetectedFault()
+		public override bool DetectedFault()
 		{
- 			throw new NotImplementedException();
+			return false;
 		}
 
-		public override Fault  GetMonitorData()
+		public override Fault GetMonitorData()
 		{
- 			throw new NotImplementedException();
+			// This indicates a fault was detected and we should reset the VM.
+			needReset = true;
+			return null;
 		}
 
-		public override bool  MustStop()
+		public override bool MustStop()
 		{
- 			throw new NotImplementedException();
+			return false;
 		}
 
-		public override Variant  Message(string name, Variant data)
+		public override Variant Message(string name, Variant data)
 		{
- 			throw new NotImplementedException();
+			return null;
 		}
 	}
 }

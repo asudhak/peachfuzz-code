@@ -423,6 +423,7 @@
     <Compile Include="Agent\Monitors\SocketMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />
     <Compile Include="Agent\Monitors\TCPListenerMonitor.cs" />
+    <Compile Include="Agent\Monitors\VmwareMonitor.cs" />
     <Compile Include="Analysis\Coverage.cs" />
     <Compile Include="Analysis\CoverageImpl.cs" />
     <Compile Include="Analysis\Minset.cs" />
