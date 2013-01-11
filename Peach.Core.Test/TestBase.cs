@@ -22,6 +22,15 @@ namespace Peach
 	[SetUpFixture]
 	public class TestBase
 	{
+		public static ushort MakePort(ushort min, ushort max)
+		{
+			int pid = System.Diagnostics.Process.GetCurrentProcess().Id;
+			int seed = Environment.TickCount * pid;
+			var rng = new Peach.Core.Random((uint)seed);
+			var ret = (ushort)rng.Next(min, max);
+			return ret;
+		}
+
 		[SetUp]
 		public void Initialize()
 		{

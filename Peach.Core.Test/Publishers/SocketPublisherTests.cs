@@ -300,8 +300,8 @@ namespace Peach.Core.Test.Publishers
 		[Test]
 		public void MulticastUdpTest()
 		{
-			ushort dstport = (ushort)((Environment.TickCount % 10000) + 20000);
-			ushort srcport = (ushort)(dstport + 1);
+			ushort dstport = TestBase.MakePort(53000, 54000);
+			ushort srcport = TestBase.MakePort(54000, 55000);
 
 			SocketEcho echo = new SocketEcho();
 			echo.SendOnly(IPAddress.Parse("234.5.6.7"), dstport);
