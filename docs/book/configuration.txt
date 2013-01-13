@@ -178,7 +178,7 @@ out = 'build'
 
 def configure(ctx):
 	ctx.find_program('touch', var='TOUCH')
-	ctx.check_waf_version(mini='1.7.7')
+	ctx.check_waf_version(mini='1.7.9')
 	ctx.find_file('fstab', ['/opt', '/etc'])
 ---------------
 
@@ -394,7 +394,7 @@ Checking for program some_app            : not found
 
 $ cat build/config.log <2>
 # project  configured on Tue Jul 13 19:15:04 2010 by
-# waf 1.7.7 (abi 98, python 20605f0 on linux2)
+# waf 1.7.9 (abi 98, python 20605f0 on linux2)
 # using /home/waf/bin/waf configure
 #
 Checking for program some_app

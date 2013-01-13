@@ -1,7 +1,9 @@
 NEW IN WAF 1.7.9
 ----------------
-* Reverted the patch submitted in #1237 as it caused regressions
+* Improved the patch submitted in #1237 as it caused regressions
 * Reverted the patch submitted in #1212 as it caused regressions
+* Added a cache to waflib/extras/gccdeps.py #1244
+* Unit test ut_exec was not obtained properly #1245
 
 NEW IN WAF 1.7.8
 ----------------
