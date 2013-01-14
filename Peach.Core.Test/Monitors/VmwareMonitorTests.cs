@@ -60,6 +60,19 @@ namespace Peach.Core.Test.Monitors
 		}
 
 		[Test]
+		public void TestHost()
+		{
+			var args = new Dictionary<string, Variant>();
+			args["Host"] = new Variant("localhost");
+			args["Login"] = new Variant("username");
+			args["Password"] = new Variant("password");
+			args["HostType"] = new Variant("WorkstationShared");
+			args["Vmx"] = new Variant("[ha-datacenter/standard] Windows XP Professional (Peach)/Windows XP Professional.vmx");
+			args["SnapshotIndex"] = new Variant("0");
+			RunMonitor(args);
+		}
+
+		[Test]
 		public void TestBadHost()
 		{
 			var args = new Dictionary<string, Variant>();

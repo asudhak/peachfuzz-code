@@ -11,6 +11,10 @@ namespace Peach.Core.Agent.Monitors
 	[Monitor("VmwareMonitor", true)]
 	[Parameter("Vmx", typeof(string), "Path to virtual machine")]
 	[Parameter("Host", typeof(string), "Name of host machine", "")]
+	[Parameter("Login", typeof(string), "Username for authentication on the remote machine", "")]
+	[Parameter("Password", typeof(string), "Password for authentication on the remote machine", "")]
+	[Parameter("HostType", typeof(Provider), "Type of remote host", "Default")]
+	[Parameter("HostPort", typeof(int), "TCP/IP port on the remote host", "0")]
 	[Parameter("SnapshotIndex", typeof(int?), "VM snapshot index", "")]
 	[Parameter("SnapshotName", typeof(string), "VM snapshot name", "")]
 	[Parameter("ResetEveryIteration", typeof(bool), "Reset VM on every iteration", "false")]
@@ -18,6 +22,22 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("WaitTimeout", typeof(int), "How many seconds to wait for guest tools", "600")]
 	public class VmwareMonitor : Monitor
 	{
+		public enum Provider
+		{
+			// Default
+			Default = VixServiceProvider.VIX_SERVICEPROVIDER_DEFAULT,
+			// vCenter Server, ESX/ESXi hosts, VMWare Server 2.0
+			VIServer = VixServiceProvider.VIX_SERVICEPROVIDER_VMWARE_VI_SERVER,
+			// VMWare Workstation
+			Workstation = VixServiceProvider.VIX_SERVICEPROVIDER_VMWARE_WORKSTATION,
+			// VMWare Workstation (Shared Mode)
+			WorkstationShared = VixServiceProvider.VIX_SERVICEPROVIDER_VMWARE_WORKSTATION_SHARED,
+			// VMWare Player
+			Player = VixServiceProvider.VIX_SERVICEPROVIDER_VMWARE_PLAYER,
+			// VMWare Server 1.0.x
+			Server = VixServiceProvider.VIX_SERVICEPROVIDER_VMWARE_SERVER,
+		}
+
 		#region P/Invokes
 
 		const string VixDll = "Vix64AllProductsDyn.dll";
@@ -474,6 +494,12 @@ namespace Peach.Core.Agent.Monitors
 			VIX_VMPOWEROP_START_VM_PAUSED           = 0x1000,
 		}
 
+		enum VixFindItemType : int
+		{
+			VIX_FIND_RUNNING_VMS    = 1,
+			VIX_FIND_REGISTERED_VMS = 4,
+		}
+
 		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
 		private static extern IntPtr Vix_GetErrorText(VixError err, string locale);
 
@@ -499,6 +525,14 @@ namespace Peach.Core.Agent.Monitors
 			string password,
 			VixHostOptions options,
 			IntPtr propertyListHandle,
+			VixEventProc callbackProc,
+			IntPtr clientData);
+
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern IntPtr VixHost_FindItems(IntPtr hostHandle,
+			VixFindItemType searchType,
+			IntPtr searchCriteria,
+			int timeout,
 			VixEventProc callbackProc,
 			IntPtr clientData);
 
@@ -561,6 +595,15 @@ namespace Peach.Core.Agent.Monitors
 			VixEventProc callbackProc,
 			IntPtr clientData);
 
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern VixError Vix_GetProperties(IntPtr handle,
+			VixPropertyID firstPropertyID,
+			ref IntPtr firstProperty,
+			VixPropertyID secondPropertyID);
+
+		[DllImport(VixDll, CallingConvention = CallingConvention.Cdecl)]
+		private static extern void Vix_FreeBuffer(IntPtr p);
+
 		#endregion
 
 		#region P/Invoke Helpers
@@ -574,10 +617,7 @@ namespace Peach.Core.Agent.Monitors
 		private static void CheckError(VixError err, VixError ignore = VixError.VIX_OK)
 		{
 			if (err != VixError.VIX_OK && err != ignore)
-			{
-				string message = GetErrorText(err) + ".";
-				throw new PeachException(message);
-			}
+				throw new VMwareException(err);
 		}
 
 		private static void GetResult(IntPtr jobHandle, VixError ignore = VixError.VIX_OK)
@@ -604,15 +644,15 @@ namespace Peach.Core.Agent.Monitors
 			return resultHandle;
 		}
 
-		private static IntPtr Connect(string host)
+		private static IntPtr Connect(Provider type, string host, int port, string login, string password)
 		{
 			IntPtr jobHandle = VixHost_Connect(
 				VixApiVersion,
-				VixServiceProvider.VIX_SERVICEPROVIDER_DEFAULT,
-				string.IsNullOrEmpty(host) ? null : host,
-				0,
-				null,
-				null,
+				(VixServiceProvider)type,
+				host,
+				port,
+				login,
+				password,
 				VixHostOptions.VIX_HOSTOPTION_NONE,
 				VixInvalidHandle,
 				null,
@@ -632,6 +672,52 @@ namespace Peach.Core.Agent.Monitors
 				IntPtr.Zero);
 
 			return GetResultHandle(jobHandle);
+		}
+
+		private static void VixDiscoveryProc(IntPtr jobHandle, VixEventType eventType, IntPtr moreEventInfo, IntPtr clientData)
+		{
+			if (eventType != VixEventType.VIX_EVENTTYPE_FIND_ITEM)
+				return;
+
+			IntPtr ptr = IntPtr.Zero;
+			VixError err = Vix_GetProperties(
+				moreEventInfo,
+				VixPropertyID.VIX_PROPERTY_FOUND_ITEM_LOCATION,
+				ref ptr, VixPropertyID.VIX_PROPERTY_NONE);
+
+			if (err == VixError.VIX_OK)
+			{
+				GCHandle gch = GCHandle.FromIntPtr(clientData);
+				List<string> list = (List<string>)gch.Target;
+				list.Add(Marshal.PtrToStringAnsi(ptr));
+			}
+
+			Vix_FreeBuffer(ptr);
+		}
+
+		private static List<string> ListVMs(IntPtr hostHandle)
+		{
+			var vms = new List<string>();
+			GCHandle gch = GCHandle.Alloc(vms);
+
+			try
+			{
+				IntPtr jobHandle = VixHost_FindItems(
+					hostHandle,
+					VixFindItemType.VIX_FIND_REGISTERED_VMS,
+					VixInvalidHandle,
+					-1,
+					VixDiscoveryProc,
+					GCHandle.ToIntPtr(gch));
+
+				GetResult(jobHandle);
+
+				return vms;
+			}
+			finally
+			{
+				gch.Free();
+			}
 		}
 
 		private static IntPtr GetSnapshot(IntPtr vmHandle, string name)
@@ -727,6 +813,16 @@ namespace Peach.Core.Agent.Monitors
 			handle = VixInvalidHandle;
 		}
 
+		private class VMwareException : PeachException
+		{
+			public VixError Error { get; private set; }
+
+			public VMwareException(VixError err)
+				: base(GetErrorText(err) + " (error: " + (ulong)err + ").")
+			{
+				this.Error = err;
+			}
+		}
 
 		#endregion
 
@@ -735,6 +831,10 @@ namespace Peach.Core.Agent.Monitors
 		public int WaitTimeout { get; private set; }
 		public string Vmx { get; private set; }
 		public string Host { get; private set; }
+		public string Login { get; private set; }
+		public string Password { get; private set; }
+		public Provider HostType { get; private set; }
+		public int HostPort { get; private set; }
 		public int? SnapshotIndex { get; private set; }
 		public string SnapshotName { get; private set; }
 
@@ -787,8 +887,24 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
-			hostHandle = Connect(Host);
-			vmHandle = OpenVM(hostHandle, Vmx);
+			hostHandle = Connect(HostType, Host, HostPort, Login, Password);
+
+			try
+			{
+				vmHandle = OpenVM(hostHandle, Vmx);
+			}
+			catch (VMwareException ve)
+			{
+				// When not fount on a remote Host, we get error 43
+				if ((ulong)ve.Error != 43 || Host == null)
+					throw;
+
+				var vms = ListVMs(hostHandle);
+				string msg = string.Format("Could not find vmx '{0}' on host '{1}'.  Available vms are:", Vmx, Host);
+				vms.Insert(0, msg);
+				msg = string.Join(Environment.NewLine + "\t", vms);
+				throw new PeachException(msg);
+			}
 
 			if (SnapshotIndex.HasValue)
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotIndex.Value);
