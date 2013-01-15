@@ -46,8 +46,14 @@ namespace Peach.Core.Fixups.Libraries
 
 		public ushort ChecksumFinal()
 		{
-			uint final = _checksum + (ushort)(_checksum >> 16);
-			return (ushort)~final;
+			ushort final = (ushort)~(_checksum + (ushort)(_checksum >> 16));
+			if (BitConverter.IsLittleEndian)
+			{
+				byte[] endianArray = BitConverter.GetBytes(final);
+				Array.Reverse(endianArray);
+				final = BitConverter.ToUInt16(endianArray, 0);
+			}
+			return final;
 		}
 	}
 }
