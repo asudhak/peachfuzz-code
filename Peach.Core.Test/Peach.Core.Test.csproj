@@ -284,6 +284,8 @@
     <Compile Include="Fixups\SHA256FixupTests.cs" />
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
+    <Compile Include="Fixups\TCPChecksumFixupTests.cs" />
+    <Compile Include="Fixups\UDPChecksumFixupTests.cs" />
     <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
     <Compile Include="Monitors\MemoryMonitorTests.cs" />

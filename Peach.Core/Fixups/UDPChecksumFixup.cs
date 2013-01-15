@@ -1,5 +1,4 @@
-﻿
-//
+﻿//
 // Copyright (c) Michael Eddington
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -22,60 +21,53 @@
 //
 
 // Authors:
-//   Mick Ayzenberg (mick@dejavusecurity.com)
-
-// $Id$
+//  Jordyn Puryear (jordyn@dejavusecurity.com)
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
-using System.Linq;
 using Peach.Core.Fixups.Libraries;
 using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-	[Description("Standard ICMPv6 checksum.")]
-	[Fixup("IcmpV6ChecksumFixup", true)]
-	[Fixup("checksums.IcmpV6ChecksumFixup")]
-	[Parameter("ref", typeof(DataElement), "Reference to data element")]
-	[Parameter("src", typeof(string), "Reference to data element")]
-	[Parameter("dst", typeof(string), "Reference to data element")]
-	[Serializable]
-	public class IcmpV6ChecksumFixup : Fixup
-	{
-		public IcmpV6ChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
-			: base(parent, args, "ref")
-		{
-			if (!args.ContainsKey("src"))
-				throw new PeachException("Error, IcmpV6ChecksumFixup requires a 'src' argument!");
-			if (!args.ContainsKey("dst"))
-				throw new PeachException("Error, IcmpV6ChecksumFixup requires a 'dest' argument!");
-		}
+    [Description("Standard UDP checksum.")]
+    [Fixup("UDPChecksumFixup", true)]
+    [Fixup("checksums.UDPChecksumFixup")]
+    [Parameter("ref", typeof(DataElement), "Reference to data element")]
+    [Parameter("src", typeof(string), "Reference to data element")]
+    [Parameter("dst", typeof(string), "Reference to data element")]
+    [Serializable]
+    public class UDPChecksumFixup : Fixup
+    {
+        public UDPChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
+            : base(parent, args, "ref")
+        {
+            if (!args.ContainsKey("src"))
+                throw new PeachException("Error, UDPChecksumFixup requires a 'src' argument!");
+            if (!args.ContainsKey("dst"))
+                throw new PeachException("Error, UDPChecksumFixup requires a 'dst' argument!");
+        }
 
-		protected override Variant fixupImpl()
-		{
+        protected override Variant fixupImpl()
+        {
 			var elem = elements["ref"];
 			byte[] data = elem.Value.Value;
 
-			byte[] length = System.BitConverter.GetBytes((uint)data.Length);
+			byte[] protocol = new byte[] { 0, 0x11 };
+			byte[] tcpLength = BitConverter.GetBytes((ushort)data.Length);
 			if (System.BitConverter.IsLittleEndian)
-				System.Array.Reverse(length);
-			//length = new byte[] {0,0,0,(byte)data.Length};
-			byte[] next = new byte[] { 0, 0, 0, 58 };
+				System.Array.Reverse(tcpLength);
 
 			InternetFixup fixup = new InternetFixup();
 			fixup.ChecksumAddAddress((string)args["src"]);
 			fixup.ChecksumAddAddress((string)args["dst"]);
-			fixup.ChecksumAddPseudoHeader(length);
-			fixup.ChecksumAddPseudoHeader(next);
+			fixup.ChecksumAddPseudoHeader(protocol);
+			fixup.ChecksumAddPseudoHeader(tcpLength);
 			fixup.ChecksumAddPayload(data);
 
 			return new Variant(fixup.ChecksumFinal());
-
-		}
-	}
+        }
+    }
 }
-
-// end
