@@ -274,6 +274,7 @@
     <Compile Include="Fixups\ExpressionFixupTests.cs" />
     <Compile Include="Fixups\FixupRelationsTest.cs" />
     <Compile Include="Fixups\IcmpChecksumFixupTests.cs" />
+    <Compile Include="Fixups\IcmpV6ChecksumFixupTest.cs" />
     <Compile Include="Fixups\LRCFixupTests.cs" />
     <Compile Include="Fixups\MD5FixupTests.cs" />
     <Compile Include="Fixups\SequenceIncrementFixupTests.cs" />
