@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
 
 namespace Peach.Core.Fixups.Libraries
 {
@@ -22,6 +23,38 @@ namespace Peach.Core.Fixups.Libraries
 			if (BitConverter.IsLittleEndian)
 				return System.BitConverter.ToUInt16(value.Reverse().ToArray(), value.Length - sizeof(UInt16) - startIndex);
 	        return System.BitConverter.ToUInt16(value, startIndex);
+		}
+
+		public bool ChecksumAddAddress(string address)
+		{
+			byte[] addressBytes;
+			IPAddress addressObject;
+			if (IPAddress.TryParse(address, out addressObject))
+			{
+				addressBytes = addressObject.GetAddressBytes();
+			}
+			else
+			{
+				throw new PeachException(address + " is not a valid address and could not be parsed by the fixup.");
+			}
+
+			for (int i = 0; i < addressBytes.Length; i = i + 2)
+			{
+				_checksum += ChecksumConvertToUInt16(addressBytes, i);
+			}
+			return true;
+		}
+
+		public bool ChecksumAddPseudoHeader(byte[] data)
+		{
+			if (data.Length % 2 == 1)
+			{
+				throw new PeachException("All pseudo header values in InternetFixup must have an even number of bytes");
+			}
+			else
+			{
+				return ChecksumAddPayload(data);
+			}
 		}
 
 		public bool ChecksumAddPayload(byte[] data)
