@@ -447,7 +447,11 @@
     <Compile Include="Dom\INamed.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Fixups\HashFixup.cs" />
+    <Compile Include="Fixups\IcmpV6ChecksumFixup.cs" />
+    <Compile Include="Fixups\Libraries\InternetFixup.cs" />
     <Compile Include="Fixups\ScriptFixup.cs" />
+    <Compile Include="Fixups\TCPChecksumFixup.cs" />
+    <Compile Include="Fixups\UDPChecksumFixup.cs" />
     <Compile Include="IO\BitWriter.cs" />
     <Compile Include="IPitSerializable.cs" />
     <Compile Include="Dom\Monitor.cs" />

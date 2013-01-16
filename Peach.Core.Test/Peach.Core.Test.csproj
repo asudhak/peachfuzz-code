@@ -274,6 +274,7 @@
     <Compile Include="Fixups\ExpressionFixupTests.cs" />
     <Compile Include="Fixups\FixupRelationsTest.cs" />
     <Compile Include="Fixups\IcmpChecksumFixupTests.cs" />
+    <Compile Include="Fixups\IcmpV6ChecksumFixupTest.cs" />
     <Compile Include="Fixups\LRCFixupTests.cs" />
     <Compile Include="Fixups\MD5FixupTests.cs" />
     <Compile Include="Fixups\SequenceIncrementFixupTests.cs" />
@@ -283,6 +284,8 @@
     <Compile Include="Fixups\SHA256FixupTests.cs" />
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
+    <Compile Include="Fixups\TCPChecksumFixupTests.cs" />
+    <Compile Include="Fixups\UDPChecksumFixupTests.cs" />
     <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
