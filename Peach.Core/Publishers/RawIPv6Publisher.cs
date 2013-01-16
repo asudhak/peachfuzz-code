@@ -64,7 +64,6 @@ namespace Peach.Core.Publishers
 		protected override Socket OpenSocket(EndPoint remote)
 		{
 			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
-			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 0);
 			return s;
 		}
 	}
@@ -94,7 +93,7 @@ namespace Peach.Core.Publishers
 		protected override Socket OpenSocket(EndPoint remote)
 		{
 			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
-			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
+			s.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.HeaderIncluded, 1);
 			return s;
 		}
 	}

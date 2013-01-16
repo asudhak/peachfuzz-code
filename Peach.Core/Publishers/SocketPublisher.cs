@@ -152,7 +152,7 @@ namespace Peach.Core.Publishers
 			for (int i = 0; i < 10; ++i)
 			{
 				// Generate the internal mono fd tracking state
-				Socket temp = new Socket(af, SocketType.Raw, ProtocolType.Unspecified);
+				Socket temp = new Socket(af, SocketType.Raw, ProtocolType.Udp);
 
 				// Cleanup the object w/o releasing internal state
 				var info = temp.DuplicateAndClose(0);
@@ -164,7 +164,8 @@ namespace Peach.Core.Publishers
 				close(oldfd);
 
 				// Open a new file descriptor for the correct protocol
-				int fd = socket((int)af, (int)SocketType.Raw, protocol);
+				int family = af == AddressFamily.InterNetwork ? 2 : 10;
+				int fd = socket(family, (int)SocketType.Raw, protocol);
 
 				if (fd != oldfd)
 				{
