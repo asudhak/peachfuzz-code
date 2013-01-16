@@ -11,10 +11,12 @@ namespace Peach.Core.Fixups.Libraries
 
 
 		private uint _checksum;
+		private bool _IPv6;
 
 		public InternetFixup()
 		{
 			_checksum = 0;
+			_IPv6 = false;
 		}
 
 		private static ushort ChecksumConvertToUInt16(byte[] value, int startIndex)
@@ -25,12 +27,19 @@ namespace Peach.Core.Fixups.Libraries
 	        return System.BitConverter.ToUInt16(value, startIndex);
 		}
 
+		public bool isIPv6()
+		{
+			return _IPv6;
+		}
+
 		public bool ChecksumAddAddress(string address)
 		{
 			byte[] addressBytes;
 			IPAddress addressObject;
 			if (IPAddress.TryParse(address, out addressObject))
 			{
+				if (addressObject.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+					_IPv6 = true;
 				addressBytes = addressObject.GetAddressBytes();
 			}
 			else

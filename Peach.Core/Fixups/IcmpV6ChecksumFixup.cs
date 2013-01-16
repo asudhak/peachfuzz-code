@@ -62,7 +62,6 @@ namespace Peach.Core.Fixups
 			byte[] length = System.BitConverter.GetBytes((uint)data.Length);
 			if (System.BitConverter.IsLittleEndian)
 				System.Array.Reverse(length);
-			//length = new byte[] {0,0,0,(byte)data.Length};
 			byte[] next = new byte[] { 0, 0, 0, 58 };
 
 			InternetFixup fixup = new InternetFixup();

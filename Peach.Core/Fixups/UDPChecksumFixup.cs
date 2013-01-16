@@ -21,6 +21,7 @@
 //
 
 // Authors:
+//  Mick Ayzenberg (mick@dejavusecurity.com)
 //  Jordyn Puryear (jordyn@dejavusecurity.com)
 
 using System;
@@ -55,14 +56,26 @@ namespace Peach.Core.Fixups
 			var elem = elements["ref"];
 			byte[] data = elem.Value.Value;
 
-			byte[] protocol = new byte[] { 0, 0x11 };
-			byte[] tcpLength = BitConverter.GetBytes((ushort)data.Length);
-			if (System.BitConverter.IsLittleEndian)
-				System.Array.Reverse(tcpLength);
-
 			InternetFixup fixup = new InternetFixup();
 			fixup.ChecksumAddAddress((string)args["src"]);
 			fixup.ChecksumAddAddress((string)args["dst"]);
+
+			byte[] protocol;
+			byte[] tcpLength;
+			if (fixup.isIPv6())
+			{
+				protocol = new byte[] { 0, 0, 0, 0x11 };
+				tcpLength = BitConverter.GetBytes((uint)data.Length);
+			}
+			else
+			{
+				protocol = new byte[] { 0, 0x11 };
+				tcpLength = BitConverter.GetBytes((ushort)data.Length);
+			}
+
+			if (System.BitConverter.IsLittleEndian)
+				System.Array.Reverse(tcpLength);
+
 			fixup.ChecksumAddPseudoHeader(protocol);
 			fixup.ChecksumAddPseudoHeader(tcpLength);
 			fixup.ChecksumAddPayload(data);
