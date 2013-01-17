@@ -52,11 +52,11 @@ namespace Peach
 	/// </summary>
 	public class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			Peach.Core.AssertWriter.Register();
 
-			new Program(args);
+			return new Program(args).exitCode;
 		}
 
 		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
@@ -64,6 +64,8 @@ namespace Peach
 
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Dom dom;
+
+		public int exitCode = 1;
 
 		public Program(string[] args)
 		{
@@ -295,6 +297,8 @@ namespace Peach
 				}
 				else
 					e.startFuzzing(dom, config);
+
+				exitCode = 0;
 			}
 			catch (SyntaxException)
 			{
