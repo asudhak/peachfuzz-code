@@ -133,6 +133,24 @@ namespace Peach.Core.Publishers
 		[DllImport("libc", SetLastError=true)]
 		private static extern int close(int fd);
 
+		protected static int AF_INET = 2;
+		protected static int AF_INET6 = GetInet6();
+
+		static int GetInet6()
+		{
+			switch (Platform.GetOS())
+			{
+				case Platform.OS.Windows:
+					return (int)AddressFamily.InterNetworkV6;
+				case Platform.OS.Linux:
+					return 10;
+				case Platform.OS.OSX:
+					return 30;
+				default:
+					throw new NotSupportedException();
+			}
+		}
+
 		protected Socket OpenRawSocket(AddressFamily af, int protocol)
 		{
 			if (Platform.GetOS() == Platform.OS.Windows)
@@ -164,7 +182,7 @@ namespace Peach.Core.Publishers
 				close(oldfd);
 
 				// Open a new file descriptor for the correct protocol
-				int family = af == AddressFamily.InterNetwork ? 2 : 10;
+				int family = af == AddressFamily.InterNetwork ? AF_INET : AF_INET6;
 				int fd = socket(family, (int)SocketType.Raw, protocol);
 
 				if (fd != oldfd)
