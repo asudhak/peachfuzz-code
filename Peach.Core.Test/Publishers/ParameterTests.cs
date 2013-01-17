@@ -385,5 +385,67 @@ namespace Peach.Core.Test.Publishers
 			Assert.AreEqual("string2", obj.str[1]);
 			Assert.AreEqual("string three", obj.str[2]);
 		}
+
+		[Publisher("RefPlugin", true)]
+		[Parameter("ref", typeof(string), "desc")]
+		class RefPlugin
+		{
+			public RefPlugin() { }
+			public string _ref { get; set; }
+		}
+
+
+		[Test]
+		public void TestUnderscore()
+		{
+			// If property 'xxx' doesn't exist, look for property '_xxx'
+			var obj = new RefPlugin();
+			var args = new Dictionary<string, Variant>();
+			args["ref"] = new Variant("foo");
+
+			ParameterParser.Parse(obj, args);
+
+			Assert.AreEqual("foo", obj._ref);
+		}
+
+		class MyCustomType
+		{
+			public MyCustomType(string val)
+			{
+				this.val = val;
+			}
+
+			public string val;
+		}
+
+		abstract class MyBaseClass
+		{
+			static void Parse(string str, out MyCustomType val)
+			{
+				val = new MyCustomType(str);
+			}
+		}
+
+		[Publisher("InheritPlugin", true)]
+		[Parameter("arg", typeof(MyCustomType), "desc")]
+		class InheritPlugin : MyBaseClass
+		{
+			public MyCustomType arg { get; set; }
+		}
+
+		[Test]
+		public void TestConvertInherit()
+		{
+			// Look for base classes for static convert methods for custom types
+			var obj = new InheritPlugin();
+
+			var args = new Dictionary<string, Variant>();
+			args["arg"] = new Variant("description of my custom type");
+
+			ParameterParser.Parse(obj, args);
+
+			Assert.AreEqual("description of my custom type", obj.arg.val);
+		}
+
 	}
 }
