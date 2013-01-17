@@ -41,22 +41,11 @@ namespace Peach.Core.Fixups
 	[Fixup("checksums.IcmpChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
-	public class IcmpChecksumFixup : Fixup
+	public class IcmpChecksumFixup : InternetFixup
 	{
 		public IcmpChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args, "ref")
 		{
-		}
-
-		protected override Variant fixupImpl()
-		{
-			var elem = elements["ref"];
-			byte[] data = elem.Value.Value;
-			
-			InternetFixup fixup = new InternetFixup();
-			fixup.ChecksumAddPayload(data);
-
-			return new Variant(fixup.ChecksumFinal());
 		}
 	}
 }

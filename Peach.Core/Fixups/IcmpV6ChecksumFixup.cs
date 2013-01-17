@@ -33,6 +33,7 @@ using System.Net;
 using System.Linq;
 using Peach.Core.Fixups.Libraries;
 using Peach.Core.Dom;
+using System.Net.Sockets;
 
 namespace Peach.Core.Fixups
 {
@@ -40,39 +41,24 @@ namespace Peach.Core.Fixups
 	[Fixup("IcmpV6ChecksumFixup", true)]
 	[Fixup("checksums.IcmpV6ChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
-	[Parameter("src", typeof(string), "Reference to data element")]
-	[Parameter("dst", typeof(string), "Reference to data element")]
+	[Parameter("src", typeof(IPAddress), "Reference to data element")]
+	[Parameter("dst", typeof(IPAddress), "Reference to data element")]
 	[Serializable]
-	public class IcmpV6ChecksumFixup : Fixup
+	public class IcmpV6ChecksumFixup : InternetFixup
 	{
 		public IcmpV6ChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args, "ref")
 		{
-			if (!args.ContainsKey("src"))
-				throw new PeachException("Error, IcmpV6ChecksumFixup requires a 'src' argument!");
-			if (!args.ContainsKey("dst"))
-				throw new PeachException("Error, IcmpV6ChecksumFixup requires a 'dest' argument!");
 		}
 
-		protected override Variant fixupImpl()
+		protected override ushort Protocol
 		{
-			var elem = elements["ref"];
-			byte[] data = elem.Value.Value;
+			get { return (ushort)ProtocolType.IcmpV6; }
+		}
 
-			byte[] length = System.BitConverter.GetBytes((uint)data.Length);
-			if (System.BitConverter.IsLittleEndian)
-				System.Array.Reverse(length);
-			byte[] next = new byte[] { 0, 0, 0, 58 };
-
-			InternetFixup fixup = new InternetFixup();
-			fixup.ChecksumAddAddress((string)args["src"]);
-			fixup.ChecksumAddAddress((string)args["dst"]);
-			fixup.ChecksumAddPseudoHeader(length);
-			fixup.ChecksumAddPseudoHeader(next);
-			fixup.ChecksumAddPayload(data);
-
-			return new Variant(fixup.ChecksumFinal());
-
+		protected override bool AddLength
+		{
+			get { return true; }
 		}
 	}
 }

@@ -3,92 +3,94 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups.Libraries
 {
-	class InternetFixup
+	/// <summary>
+	/// Computes the checksum in Host order for an array of bytes
+	/// </summary>
+	class InternetChecksum
 	{
+		private uint sum = 0;
 
-
-		private uint _checksum;
-		private bool _IPv6;
-
-		public InternetFixup()
+		public InternetChecksum()
 		{
-			_checksum = 0;
-			_IPv6 = false;
 		}
 
-		private static ushort ChecksumConvertToUInt16(byte[] value, int startIndex)
+		public void Update(uint value)
 		{
-
-			if (BitConverter.IsLittleEndian)
-				return System.BitConverter.ToUInt16(value.Reverse().ToArray(), value.Length - sizeof(UInt16) - startIndex);
-	        return System.BitConverter.ToUInt16(value, startIndex);
+			sum += value;
 		}
 
-		public bool isIPv6()
+		public void Update(byte[] buf)
 		{
-			return _IPv6;
+			int i = 0;
+			for (; i < buf.Length - 1; i += 2)
+				sum += (uint)((buf[i] << 8) + buf[i + 1]);
+
+			if (i != buf.Length)
+				sum += (uint)(buf[buf.Length - 1] << 8);
 		}
 
-		public bool ChecksumAddAddress(string address)
+		public ushort Final()
 		{
-			byte[] addressBytes;
-			IPAddress addressObject;
-			if (IPAddress.TryParse(address, out addressObject))
-			{
-				if (addressObject.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-					_IPv6 = true;
-				addressBytes = addressObject.GetAddressBytes();
-			}
-			else
-			{
-				throw new PeachException(address + " is not a valid address and could not be parsed by the fixup.");
-			}
-
-			for (int i = 0; i < addressBytes.Length; i = i + 2)
-			{
-				_checksum += ChecksumConvertToUInt16(addressBytes, i);
-			}
-			return true;
-		}
-
-		public bool ChecksumAddPseudoHeader(byte[] data)
-		{
-			if (data.Length % 2 == 1)
-			{
-				throw new PeachException("All pseudo header values in InternetFixup must have an even number of bytes");
-			}
-			else
-			{
-				return ChecksumAddPayload(data);
-			}
-		}
-
-		public bool ChecksumAddPayload(byte[] data)
-		{
-			byte[] payload;
-			if (data.Length % 2 == 1)
-			{
-				payload = new byte[data.Length + 1];
-				data.CopyTo(payload, 0);
-				payload[data.Length] = 0;
-			}
-			else
-			{
-				payload = data;
-			}
-			for (int i = 0; i < payload.Length; i = i + 2)
-			{
-				_checksum += ChecksumConvertToUInt16(payload, i);
-			}
-			return true;
-		}
-
-		public ushort ChecksumFinal()
-		{
-			return (ushort)~(_checksum + (ushort)(_checksum >> 16));
+			sum = (sum >> 16) + (sum & 0xffff);
+			sum += (sum >> 16);
+			return (ushort)~sum;
 		}
 	}
+
+	/// <summary>
+	/// Base class for internet checksum fixups
+	/// </summary>
+	[Serializable]
+	public abstract class InternetFixup : Fixup
+	{
+		// Needed for ParameterParser to work
+		static void Parse(string str, out DataElement val)
+		{
+			val = null;
+		}
+
+		// Needed for ParameterParser to work
+		protected IPAddress src { get; set; }
+		protected IPAddress dst { get; set; }
+		protected DataElement _ref { get; set; }
+
+		protected byte[] srcAddress;
+		protected byte[] dstAddress;
+
+		protected virtual bool AddLength { get { return false; } }
+		protected virtual ushort Protocol { get { return 0; } }
+
+		public InternetFixup(DataElement parent, Dictionary<string, Variant> args, params string[] refs)
+			: base(parent, args, refs)
+		{
+			ParameterParser.Parse(this, args);
+
+			srcAddress = src != null ? src.GetAddressBytes() : new byte[0];
+			dstAddress = dst != null ? dst.GetAddressBytes() : new byte[0];
+		}
+
+		protected override Variant fixupImpl()
+		{
+			var elem = elements["ref"];
+			byte[] data = elem.Value.Value;
+
+			InternetChecksum sum = new InternetChecksum();
+
+			sum.Update(data);
+			sum.Update(srcAddress);
+			sum.Update(dstAddress);
+			sum.Update(Protocol);
+
+			if (AddLength)
+				sum.Update((uint)data.Length);
+
+			return new Variant(sum.Final());
+		}
+
+	}
+
 }

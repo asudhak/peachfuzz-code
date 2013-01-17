@@ -30,57 +30,32 @@ using System.Text;
 using System.Net;
 using Peach.Core.Fixups.Libraries;
 using Peach.Core.Dom;
+using System.Net.Sockets;
 
 namespace Peach.Core.Fixups
 {
-    [Description("Standard UDP checksum.")]
-    [Fixup("UDPChecksumFixup", true)]
-    [Fixup("checksums.UDPChecksumFixup")]
-    [Parameter("ref", typeof(DataElement), "Reference to data element")]
-    [Parameter("src", typeof(string), "Reference to data element")]
-    [Parameter("dst", typeof(string), "Reference to data element")]
-    [Serializable]
-    public class UDPChecksumFixup : Fixup
-    {
-        public UDPChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
-            : base(parent, args, "ref")
-        {
-            if (!args.ContainsKey("src"))
-                throw new PeachException("Error, UDPChecksumFixup requires a 'src' argument!");
-            if (!args.ContainsKey("dst"))
-                throw new PeachException("Error, UDPChecksumFixup requires a 'dst' argument!");
-        }
+	[Description("Standard UDP checksum.")]
+	[Fixup("UDPChecksumFixup", true)]
+	[Fixup("checksums.UDPChecksumFixup")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
+	[Parameter("src", typeof(IPAddress), "Source IP address")]
+	[Parameter("dst", typeof(IPAddress), "Destination IP address")]
+	[Serializable]
+	public class UDPChecksumFixup : InternetFixup
+	{
+		public UDPChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref")
+		{
+		}
 
-        protected override Variant fixupImpl()
-        {
-			var elem = elements["ref"];
-			byte[] data = elem.Value.Value;
+		protected override ushort Protocol
+		{
+			get { return (ushort)ProtocolType.Udp; }
+		}
 
-			InternetFixup fixup = new InternetFixup();
-			fixup.ChecksumAddAddress((string)args["src"]);
-			fixup.ChecksumAddAddress((string)args["dst"]);
-
-			byte[] protocol;
-			byte[] tcpLength;
-			if (fixup.isIPv6())
-			{
-				protocol = new byte[] { 0, 0, 0, 0x11 };
-				tcpLength = BitConverter.GetBytes((uint)data.Length);
-			}
-			else
-			{
-				protocol = new byte[] { 0, 0x11 };
-				tcpLength = BitConverter.GetBytes((ushort)data.Length);
-			}
-
-			if (System.BitConverter.IsLittleEndian)
-				System.Array.Reverse(tcpLength);
-
-			fixup.ChecksumAddPseudoHeader(protocol);
-			fixup.ChecksumAddPseudoHeader(tcpLength);
-			fixup.ChecksumAddPayload(data);
-
-			return new Variant(fixup.ChecksumFinal());
-        }
-    }
+		protected override bool AddLength
+		{
+			get { return true; }
+		}
+	}
 }
