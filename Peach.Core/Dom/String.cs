@@ -277,6 +277,9 @@ namespace Peach.Core.Dom
 			else if (context.hasDefaultAttribute(typeof(String), "nullTerminated"))
 				str.nullTerminated = context.getDefaultAttributeAsBool(typeof(String), "nullTerminated", false);
 
+			if (str.nullTerminated && node.hasAttribute("length"))
+				throw new PeachException("Error, String element '" + str.name + "' can have a length or be null terminated, but not both.");
+
 			string type = "ascii";
 			if (node.hasAttribute("type"))
 				type = node.getAttribute("type");

@@ -388,5 +388,22 @@ namespace Peach.Core.Test.PitParserTests
 				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 		}
+
+		[Test]
+		public void LengthAndNullTerminated()
+		{
+			string xml = "<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" nullTerminated=\"true\" length=\"4\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+		}
 	}
 }
