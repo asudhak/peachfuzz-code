@@ -368,12 +368,14 @@
     <Compile Include="Transformers\Compress\Bz2DecompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipCompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipDecompressTests.cs" />
+    <Compile Include="Transformers\Crypto\AES128Tests.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CvsScrambleTests.cs" />
     <Compile Include="Transformers\Crypto\HmacTests.cs" />
     <Compile Include="Transformers\Crypto\Md5Tests.cs" />
     <Compile Include="Transformers\Crypto\Sha1Tests.cs" />
+    <Compile Include="Transformers\Crypto\ThreeDESTests.cs" />
     <Compile Include="Transformers\Crypto\UnixMd5CryptTests.cs" />
     <Compile Include="Transformers\Encode\Base64DecodeTests.cs" />
     <Compile Include="Transformers\Encode\Base64EncodeTests.cs" />
@@ -407,6 +409,10 @@
     <Compile Include="Transformers\Type\StringToIntTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Peach.Core.OS.Windows\Peach.Core.OS.Windows.csproj">
+      <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
+      <Name>Peach.Core.OS.Windows</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>
