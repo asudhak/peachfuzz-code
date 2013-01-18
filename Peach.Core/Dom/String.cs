@@ -381,8 +381,6 @@ namespace Peach.Core.Dom
 
 					if (lenType == LengthType.Chars)
 					{
-						len /= 8;
-
 						if (NeedsExpand(final.Length, len, nullTerminated, final))
 						{
 							if (nullTerminated)
