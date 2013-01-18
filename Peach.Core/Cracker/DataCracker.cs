@@ -349,7 +349,7 @@ namespace Peach.Core.Cracker
 						logger.Trace("_isTokenNextRecursive: Skipping leaf {0}", element.fullName);
 					}
 				}
-				else if (next.length == 0)
+				else if (!next.hasLength)
 				{
 					// Found an unsised element before finding token, so bail
 					logger.Trace("_isTokenNextRecursive: Unsized {0}", next.fullName);

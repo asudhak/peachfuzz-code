@@ -87,7 +87,8 @@ namespace Peach.Core.Dom
 		protected StringType _type = StringType.ascii;
 		protected bool _nullTerminated = false;
 		protected char _padCharacter = '\0';
-		protected Encoding encoding = null;
+		protected Encoding encoding = Encoding.ASCII;
+		protected bool _fixedWidth = true;
 
 		public String()
 			: base()
@@ -247,9 +248,7 @@ namespace Peach.Core.Dom
 					"' has length of '" + stringLength + "' but buffer only has '" +
 					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
 
-			defaultValue = new Variant(
-				ASCIIEncoding.GetEncoding(element.stringType.ToString()).GetString(
-				data.ReadBytes((int)stringLength)));
+			defaultValue = new Variant(encoding.GetString(data.ReadBytes((int)stringLength)));
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
@@ -470,6 +469,14 @@ namespace Peach.Core.Dom
 			set { _type = value; }
 		}
 
+		public bool fixedWidthEncoding
+		{
+			get
+			{
+				return stringType == StringType.utf32 || stringType == StringType.ascii;
+			}
+		}
+
 		/// <summary>
 		/// Is string null terminated?  For ASCII strings this
 		/// is a single NULL characters, for WCHAR's, two NULL 
@@ -500,39 +507,41 @@ namespace Peach.Core.Dom
 
 		protected override BitStream InternalValueToBitStream()
 		{
-			byte[] value = null;
-
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			Variant v = InternalValue;
+			return new BitStream(encoding.GetBytes((string)InternalValue));
+		}
 
-			if (_type == StringType.ascii)
-				value = Encoding.ASCII.GetBytes((string)v);
+		public override bool hasLength
+		{
+			get
+			{
+				if (_lengthCalc != null)
+					return true;
 
-			else if (_type == StringType.utf7)
-				value = Encoding.UTF7.GetBytes((string)v);
+				if (isToken && DefaultValue != null)
+					return true;
 
-			else if (_type == StringType.utf8)
-				value = Encoding.UTF8.GetBytes((string)v);
+				if (_hasLength)
+				{
+					switch (_lengthType)
+					{
+						case LengthType.Bytes:
+							return true;
+						case LengthType.Bits:
+							return true;
+						case LengthType.Chars:
+							return fixedWidthEncoding;
+					}
+				}
 
-			else if (_type == StringType.utf16)
-				value = Encoding.Unicode.GetBytes((string)v);
-
-			else if (_type == StringType.utf16be)
-				value = Encoding.BigEndianUnicode.GetBytes((string)v);
-
-			else if (_type == StringType.utf32)
-				value = Encoding.UTF32.GetBytes((string)v);
-
-			else
-				throw new ApplicationException("String._type not set properly!");
-
-			return new BitStream(value);
+				return false;
+			}
 		}
 
 		/// <summary>
-		/// Length of element in bits.
+		/// Length of element in lengthType units.
 		/// </summary>
 		/// <remarks>
 		/// In the case that LengthType == "Calc" we will evaluate the
@@ -554,16 +563,14 @@ namespace Peach.Core.Dom
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return _length / 8;
+							return _length;
 						case LengthType.Bits:
 							return _length;
 						case LengthType.Chars:
 							return _length;
-						default:
-							throw new NotSupportedException("Error calculating length.");
 					}
 				}
-				else
+				else  if (isToken && DefaultValue != null)
 				{
 					switch (_lengthType)
 					{
@@ -572,35 +579,27 @@ namespace Peach.Core.Dom
 						case LengthType.Bits:
 							return Value.LengthBits;
 						case LengthType.Chars:
-							if (InternalValue.GetVariantType() == Variant.VariantType.String)
-							{
-								return ((string)InternalValue).Length;
-							}
-							else
-							{
-								// Assume byte length is greater or equal to string char count
-								return Value.LengthBytes;
-							}
-						default:
-							throw new NotSupportedException("Error calculating length.");
+							return ((string)InternalValue).Length;
 					}
-
 				}
-			}
 
+				throw new NotSupportedException("Error calculating length.");
+			}
 			set
 			{
 				switch (_lengthType)
 				{
 					case LengthType.Bytes:
-						_length = value * 8;
+						_length = value;
 						break;
 					case LengthType.Bits:
 						_length = value;
 						break;
 					case LengthType.Chars:
-						_length = value * 8;
+						_length = value;
 						break;
+					default:
+						throw new NotSupportedException("Error setting length.");
 				}
 
 				_hasLength = true;
@@ -614,6 +613,9 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
+				if (isToken && DefaultValue != null)
+					return Value.LengthBits;
+
 				switch (_lengthType)
 				{
 					case LengthType.Bytes:
@@ -621,7 +623,9 @@ namespace Peach.Core.Dom
 					case LengthType.Bits:
 						return length;
 					case LengthType.Chars:
-						return Value.LengthBits;
+						if (!fixedWidthEncoding)
+							throw new NotSupportedException("Variable length encoding and Chars lengthType.");
+						return length * encoding.GetMaxByteCount(1) * 8;
 					default:
 						throw new NotSupportedException("Error calculating length.");
 				}

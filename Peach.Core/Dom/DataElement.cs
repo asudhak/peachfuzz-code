@@ -583,6 +583,9 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
+				if (_lengthCalc != null)
+					return true;
+
 				if (isToken && DefaultValue != null)
 					return true;
 
@@ -591,7 +594,7 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
-		/// Length of element in bits.
+		/// Length of element in lengthType units.
 		/// </summary>
 		/// <remarks>
 		/// In the case that LengthType == "Calc" we will evaluate the
@@ -613,20 +616,14 @@ namespace Peach.Core.Dom
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return _length / 8;
+							return _length;
 						case LengthType.Bits:
 							return _length;
 						case LengthType.Chars:
 							throw new NotSupportedException("Length type of Chars not supported by DataElement.");
-						default:
-							throw new NotSupportedException("Error calculating length.");
 					}
 				}
-				else if (isToken && DefaultValue != null)
-				{
-					return Value.Value.Length;
-				}
-				else
+				else  if (isToken && DefaultValue != null)
 				{
 					switch (_lengthType)
 					{
@@ -636,25 +633,25 @@ namespace Peach.Core.Dom
 							return Value.LengthBits;
 						case LengthType.Chars:
 							throw new NotSupportedException("Length type of Chars not supported by DataElement.");
-						default:
-							throw new NotSupportedException("Error calculating length.");
 					}
-
 				}
-			}
 
+				throw new NotSupportedException("Error calculating length.");
+			}
 			set
 			{
 				switch (_lengthType)
 				{
 					case LengthType.Bytes:
-						_length = value * 8;
+						_length = value;
 						break;
 					case LengthType.Bits:
 						_length = value;
 						break;
 					case LengthType.Chars:
 						throw new NotSupportedException("Length type of Chars not supported by DataElement.");
+					default:
+						throw new NotSupportedException("Error setting length.");
 				}
 
 				_hasLength = true;
@@ -677,7 +674,7 @@ namespace Peach.Core.Dom
 					case LengthType.Chars:
 						throw new NotSupportedException("Length type of Chars not supported by DataElement.");
 					default:
-						throw new NotSupportedException("Error calculating length.");
+						throw new NotSupportedException("Error calculating lengthAsBits.");
 				}
 			}
 		}
