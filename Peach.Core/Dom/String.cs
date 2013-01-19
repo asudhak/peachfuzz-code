@@ -88,7 +88,6 @@ namespace Peach.Core.Dom
 		protected bool _nullTerminated = false;
 		protected char _padCharacter = '\0';
 		protected Encoding encoding = Encoding.ASCII;
-		protected bool _fixedWidth = true;
 
 		public String()
 			: base()
@@ -131,22 +130,54 @@ namespace Peach.Core.Dom
 			_lengthType = LengthType.Bytes;
 		}
 
-		protected char ReadCharacter(BitStream data)
+		protected string ReadCharacters(BitStream data, long maxCount, bool stopOnNull)
 		{
-			int maxBytes = UTF8Encoding.UTF8.GetMaxByteCount(1);
-			byte[] buff = new byte[maxBytes];
-			char[] chars = null;
+			if (maxCount == -1 && !stopOnNull)
+				throw new ArgumentException();
 
-			for (int count = 0; count < maxBytes; count++)
+			if (maxCount > -1 && stopOnNull)
+				throw new ArgumentException();
+
+			try
 			{
-				buff[count] = data.ReadByte();
-				chars = UTF8Encoding.UTF8.GetChars(buff, 0, count+1);
-				
-				if (chars.Count() == 1)
-					return chars[0];
-			}
+				StringBuilder sb = new StringBuilder();
+				byte[] buf = new byte[1];
+				char[] chars = new char[1];
+				var enc = Encoding.GetEncoding(encoding.BodyName, new EncoderExceptionFallback(), new DecoderExceptionFallback());
+				var dec = enc.GetDecoder();
 
-			throw new CrackingFailure("Unable to read character from stream", this, data);
+				while (maxCount == -1 || sb.Length < maxCount)
+				{
+					data.WantBytes(1);
+
+					if (data.TellBytes() >= data.LengthBytes)
+					{
+						string msg = "";
+						if (!stopOnNull)
+							msg = "' of '" + maxCount;
+
+						throw new CrackingFailure("String '" + fullName +
+								"' could only crack '" + sb.Length + msg + "' characters " +
+								"before exhausting the input buffer.", this, data);
+					}
+
+					buf[0] = data.ReadByte();
+
+					if (dec.GetChars(buf, 0, 1, chars, 0) == 0)
+						continue;
+
+					sb.Append(chars[0]);
+
+					if (stopOnNull && chars[0] == '\0')
+						break;
+				}
+
+				return sb.ToString();
+			}
+			catch (DecoderFallbackException)
+			{
+				throw new CrackingFailure("String '" + fullName + "' contains invalid bytes.", this, data);
+			}
 		}
 
 		/// <summary>
@@ -158,97 +189,45 @@ namespace Peach.Core.Dom
 		{
 			String element = this;
 			Variant defaultValue;
+			string stringValue;
 
 			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
 			if (element.nullTerminated)
 			{
-				// Locate NULL character in stream
-				bool foundNull = false;
-				bool twoNulls = element.stringType == StringType.utf16 || element.stringType == StringType.utf16be;
-				long currentPos = data.TellBits();
-
-				for (long i = data.TellBytes(); i < data.LengthBytes; i++)
-				{
-					if (data.ReadByte() == 0)
-					{
-						if (twoNulls)
-						{
-							if (data.ReadByte() == 0)
-							{
-								foundNull = true;
-								break;
-							}
-							else
-							{
-								data.SeekBits(-8, System.IO.SeekOrigin.Current);
-								continue;
-							}
-						}
-						else
-						{
-							foundNull = true;
-							break;
-						}
-					}
-				}
-
-				if (!foundNull)
-					throw new CrackingFailure("Did not locate NULL in data stream for String '" + element.fullName + "'.", element, data);
-
-				long endPos = data.TellBits();
-
-				// Do not include NULLs in our read.
-				long byteCount = ((endPos - currentPos) / 8) - 1;
-				if (twoNulls)
-					byteCount--;
-
-				data.SeekBits(currentPos, System.IO.SeekOrigin.Begin);
-				byte[] value = data.ReadBytes(byteCount);
-				string strValue = Encoding.GetEncoding(element.stringType.ToString()).GetString(value);
-				defaultValue = new Variant(strValue);
-
-				if (element.isToken)
-					if (defaultValue != element.DefaultValue)
-						throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-
-				element.DefaultValue = defaultValue;
-
-				// Now skip past nulls
-				if (twoNulls)
-					data.SeekBits(16, System.IO.SeekOrigin.Current);
-				else
-					data.SeekBits(8, System.IO.SeekOrigin.Current);
-
-				return;
+				stringValue = ReadCharacters(data, -1, true);
 			}
-
-			// String length in bytes
-			long? stringLength = null;
-
-			// TODO - Make both length and size for strings.  Length is always in chars.
-			if (stringLength == null && element.isToken)
+			else if (_hasLength && lengthType == LengthType.Chars)
 			{
-				if (element.DefaultValue == null)
-					throw new PeachException("Error, element \"" + element.fullName + "\" is a token but has no default value.");
+				stringValue = ReadCharacters(data, _length, false);
+			}
+			else
+			{
+				long? stringLength = (context.determineElementSize(element, data) / 8);
 
-				stringLength = ((string)element.DefaultValue).Length;
+				if (stringLength == null)
+					throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
+
+				data.WantBytes((long)stringLength);
+
+				if ((data.TellBytes() + stringLength) > data.LengthBytes)
+					throw new CrackingFailure("String '" + element.fullName +
+						"' has length of '" + stringLength + "' but buffer only has '" +
+						(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
+
+				byte[] buf = data.ReadBytes((int)stringLength);
+
+				try
+				{
+					stringValue = Utilities.BytesToString(buf, encoding);
+				}
+				catch (DecoderFallbackException)
+				{
+					throw new CrackingFailure("String '" + element.fullName + "' contains invalid bytes.", element, data);
+				}
 			}
 
-			if(stringLength == null)
-				stringLength = (context.determineElementSize(element, data) / 8);
-
-			if (stringLength == null)
-				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
-
-			data.WantBytes((long)stringLength);
-
-			if ((data.TellBytes() + stringLength) > data.LengthBytes)
-				throw new CrackingFailure("String '" + element.fullName +
-					"' has length of '" + stringLength + "' but buffer only has '" +
-					(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
-
-			defaultValue = new Variant(encoding.GetString(data.ReadBytes((int)stringLength)));
+			defaultValue = new Variant(stringValue);
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
@@ -256,11 +235,10 @@ namespace Peach.Core.Dom
 
 			element.DefaultValue = defaultValue;
 
-			string str = (string)defaultValue;
-			if(str.Length > 50)
-				str = str.Substring(0, 50);
+			if (stringValue.Length > 50)
+				stringValue = stringValue.Substring(0, 50);
 
-			logger.Debug("String's value is: " + str);
+			logger.Debug("String's value is: " + stringValue);
 
 		}
 
@@ -275,9 +253,6 @@ namespace Peach.Core.Dom
 				str.nullTerminated = node.getAttributeBool("nullTerminated", false);
 			else if (context.hasDefaultAttribute(typeof(String), "nullTerminated"))
 				str.nullTerminated = context.getDefaultAttributeAsBool(typeof(String), "nullTerminated", false);
-
-			if (str.nullTerminated && node.hasAttribute("length"))
-				throw new PeachException("Error, String element '" + str.name + "' can have a length or be null terminated, but not both.");
 
 			string type = "ascii";
 			if (node.hasAttribute("type"))
@@ -364,13 +339,20 @@ namespace Peach.Core.Dom
 
 				if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
 				{
-					byte[] val = (byte[])value;
-					final = encoding.GetString(val);
-					if (!val.SequenceEqual(encoding.GetBytes(final)))
-						throw new PeachException("String value contains invalid " + stringType + " bytes.");
+					try
+					{
+						final = Utilities.BytesToString((byte[])value, encoding);
+					}
+					catch (DecoderFallbackException)
+					{
+						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " bytes.");
+					}
 				}
 				else
 				{
+					if (!Utilities.StringIsValid((string)value, encoding))
+						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " characters.");
+
 					final = (string)value;
 				}
 
@@ -467,14 +449,6 @@ namespace Peach.Core.Dom
 			set { _type = value; }
 		}
 
-		public bool fixedWidthEncoding
-		{
-			get
-			{
-				return stringType == StringType.utf32 || stringType == StringType.ascii;
-			}
-		}
-
 		/// <summary>
 		/// Is string null terminated?  For ASCII strings this
 		/// is a single NULL characters, for WCHAR's, two NULL 
@@ -508,7 +482,10 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			return new BitStream(encoding.GetBytes((string)InternalValue));
+			if (!encoding.IsSingleByte)
+				return new BitStream(Utilities.StringToBytes((string)InternalValue, encoding));
+			else
+				return new BitStream(Utilities.StringToBytes((string)InternalValue, Utilities.ExtendedASCII));
 		}
 
 		public override bool hasLength
@@ -530,7 +507,7 @@ namespace Peach.Core.Dom
 						case LengthType.Bits:
 							return true;
 						case LengthType.Chars:
-							return fixedWidthEncoding;
+							return encoding.IsSingleByte;
 					}
 				}
 
@@ -621,9 +598,9 @@ namespace Peach.Core.Dom
 					case LengthType.Bits:
 						return length;
 					case LengthType.Chars:
-						if (!fixedWidthEncoding)
+						if (!encoding.IsSingleByte)
 							throw new NotSupportedException("Variable length encoding and Chars lengthType.");
-						return length * encoding.GetMaxByteCount(1) * 8;
+						return length * 8;
 					default:
 						throw new NotSupportedException("Error calculating length.");
 				}
