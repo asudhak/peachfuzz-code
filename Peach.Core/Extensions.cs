@@ -21,6 +21,33 @@ namespace Peach.Core
 		}
 	}
 
+	public static class ByteArrayExtensions
+	{
+		public static bool IsSame(this byte[] buffer, byte[] other)
+		{
+			return buffer.IsSame(other, 0, other.Length);
+		}
+
+		public static bool IsSame(this byte[] buffer, byte[] other, int offset, int count)
+		{
+			if (offset < 0)
+				throw new ArgumentOutOfRangeException("offset");
+			if (count < 0 || (offset + count) > other.Length)
+				throw new ArgumentOutOfRangeException("count");
+
+			if (buffer.Length != count)
+				return false;
+
+			for (int i = 0; i < buffer.Length; ++i)
+			{
+				if (buffer[i] != other[offset + i])
+					return false;
+			}
+
+			return true;
+		}
+	}
+
 	public static class XmlExtensions
 	{
 		/// <summary>

@@ -44,6 +44,107 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	class StringTests
 	{
+		static byte[] AppendByte(byte[] buf)
+		{
+			var list = buf.ToList();
+			list.Add(0xff);
+			return list.ToArray();
+		}
+
+		[Test]
+		public void TestEncodings()
+		{
+			Assert.True(Encoding.ASCII.IsSingleByte);
+			Assert.False(Encoding.BigEndianUnicode.IsSingleByte);
+			Assert.False(Encoding.Unicode.IsSingleByte);
+			Assert.False(Encoding.UTF7.IsSingleByte);
+			Assert.False(Encoding.UTF8.IsSingleByte);
+			Assert.False(Encoding.UTF32.IsSingleByte);
+
+			// Why???
+			if (Platform.GetOS() == Platform.OS.Windows)
+			{
+				Assert.AreEqual(2, Encoding.ASCII.GetMaxByteCount(1));
+				Assert.AreEqual(4, Encoding.BigEndianUnicode.GetMaxByteCount(1));
+				Assert.AreEqual(4, Encoding.Unicode.GetMaxByteCount(1));
+				Assert.AreEqual(5, Encoding.UTF7.GetMaxByteCount(1));
+				Assert.AreEqual(6, Encoding.UTF8.GetMaxByteCount(1));
+				Assert.AreEqual(8, Encoding.UTF32.GetMaxByteCount(1));
+			}
+			else
+			{
+				Assert.AreEqual(1, Encoding.ASCII.GetMaxByteCount(1));
+				Assert.AreEqual(2, Encoding.BigEndianUnicode.GetMaxByteCount(1));
+				Assert.AreEqual(2, Encoding.Unicode.GetMaxByteCount(1));
+				Assert.AreEqual(5, Encoding.UTF7.GetMaxByteCount(1));
+				Assert.AreEqual(4, Encoding.UTF8.GetMaxByteCount(1));
+				Assert.AreEqual(4, Encoding.UTF32.GetMaxByteCount(1));
+			}
+
+			Assert.Throws<EncoderFallbackException>(delegate()
+			{
+				Utilities.StringToBytes("\u00abX", Encoding.ASCII);
+			});
+
+			var buf = Utilities.StringToBytes("Hello", Encoding.ASCII);
+			Assert.AreEqual(5, buf.Length);
+			var buf16 = Utilities.StringToBytes("\u00abX", Encoding.Unicode);
+			Assert.AreEqual(4, buf16.Length);
+			var buf16be = Utilities.StringToBytes("\u00abX", Encoding.BigEndianUnicode);
+			Assert.AreEqual(4, buf16be.Length);
+			var buf32 = Utilities.StringToBytes("\u00abX", Encoding.UTF32);
+			Assert.AreEqual(8, buf32.Length);
+			var buf8 = Utilities.StringToBytes("\u00abX", Encoding.UTF8);
+			Assert.AreEqual(3, buf8.Length);
+			var buf7 = Utilities.StringToBytes("\u00abX", Encoding.UTF7);
+			Assert.AreEqual(6, buf7.Length);
+
+			string str;
+
+			str = Utilities.BytesToString(buf, Encoding.ASCII);
+			Assert.AreEqual("Hello", str);
+			str = Utilities.BytesToString(buf16, Encoding.Unicode);
+			Assert.AreEqual("\u00abX", str);
+			str = Utilities.BytesToString(buf16be, Encoding.BigEndianUnicode);
+			Assert.AreEqual("\u00abX", str);
+			str = Utilities.BytesToString(buf8, Encoding.UTF8);
+			Assert.AreEqual("\u00abX", str);
+			str = Utilities.BytesToString(buf7, Encoding.UTF7);
+			Assert.AreEqual("\u00abX", str);
+			str = Utilities.BytesToString(buf32, Encoding.UTF32);
+			Assert.AreEqual("\u00abX", str);
+
+			Assert.Throws<DecoderFallbackException>(delegate()
+			{
+				Utilities.BytesToString(AppendByte(buf), Encoding.ASCII);
+			});
+
+			Assert.Throws<DecoderFallbackException>(delegate()
+			{
+				Utilities.BytesToString(AppendByte(buf16), Encoding.Unicode);
+			});
+
+			Assert.Throws<DecoderFallbackException>(delegate()
+			{
+				Utilities.BytesToString(AppendByte(buf16be), Encoding.BigEndianUnicode);
+			});
+
+			Assert.Throws<DecoderFallbackException>(delegate()
+			{
+				Utilities.BytesToString(AppendByte(buf32), Encoding.UTF32);
+			});
+
+			Assert.Throws<DecoderFallbackException>(delegate()
+			{
+				Utilities.BytesToString(AppendByte(buf8), Encoding.UTF8);
+			});
+
+			Assert.Throws<DecoderFallbackException>(delegate()
+			{
+				Utilities.BytesToString(AppendByte(buf7), Encoding.UTF7);
+			});
+		}
+
 		[Test]
 		public void CrackString1()
 		{

@@ -569,6 +569,74 @@ namespace Peach.Core
 	/// </summary>
 	public class Utilities
 	{
+		/// <summary>
+		/// Converts a string to a byte array of the specified encoding.
+		/// Works around inconsistencies between Microsoft .NET and Mono so
+		/// errors are always provided
+		/// </summary>
+		/// <param name="str">String to convert</param>
+		/// <param name="enc">String encoding</param>
+		/// <returns>Byte array</returns>
+		public static byte[] StringToBytes(string str, Encoding enc)
+		{
+			enc = Encoding.GetEncoding(enc.BodyName, new EncoderExceptionFallback(), new DecoderExceptionFallback());
+			return enc.GetBytes(str.ToCharArray());
+		}
+
+		/// <summary>
+		/// Checks if a string is valid for the specified encoding.
+		/// Works around inconsistencies between Microsoft .NET and Mono so
+		/// errors are always provided
+		/// </summary>
+		/// <param name="str">String to check</param>
+		/// <param name="enc">String encoding</param>
+		public static bool StringIsValid(string str, Encoding enc)
+		{
+			if (!enc.IsSingleByte)
+				return true;
+
+			try
+			{
+				StringToBytes(str, enc);
+				return true;
+			}
+			catch (EncoderFallbackException)
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Converts a byte array to a string of the specified encoding.
+		/// Works around inconsistencies between Microsoft .NET and Mono so
+		/// errors are always provided
+		/// </summary>
+		/// <param name="str">Byte array to convert</param>
+		/// <param name="enc">String encoding</param>
+		/// <returns>String value</returns>
+		public static string BytesToString(byte[] buf, Encoding enc)
+		{
+			int min = 1;
+			if (enc is UnicodeEncoding)
+				min = 2;
+			else if (enc is UTF32Encoding)
+				min = 4;
+
+			if ((buf.Length % min) != 0)
+				throw new DecoderFallbackException();
+
+			enc = Encoding.GetEncoding(enc.BodyName, new EncoderExceptionFallback(), new DecoderExceptionFallback());
+			var chars = enc.GetChars(buf);
+
+			if (enc is UTF7Encoding)
+			{
+				if (!buf.IsSame(enc.GetBytes(chars)))
+					throw new DecoderFallbackException();
+			}
+
+			return new string(chars);
+		}
+
         public static string FormatAsPrettyHex(byte[] data, int startPos = 0, int length = -1)
         {
             StringBuilder sb = new StringBuilder();
