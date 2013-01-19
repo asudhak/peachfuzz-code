@@ -55,6 +55,7 @@ namespace Peach.Core.Test.CrackingTests
 		public void TestEncodings()
 		{
 			Assert.True(Encoding.ASCII.IsSingleByte);
+			Assert.True(Utilities.ExtendedASCII.IsSingleByte);
 			Assert.False(Encoding.BigEndianUnicode.IsSingleByte);
 			Assert.False(Encoding.Unicode.IsSingleByte);
 			Assert.False(Encoding.UTF7.IsSingleByte);
@@ -86,6 +87,15 @@ namespace Peach.Core.Test.CrackingTests
 				Utilities.StringToBytes("\u00abX", Encoding.ASCII);
 			});
 
+			Assert.Throws<EncoderFallbackException>(delegate()
+			{
+				Utilities.StringToBytes("\x80", Encoding.ASCII);
+			});
+
+			var bufD = Utilities.StringToBytes("\x80", Utilities.ExtendedASCII);
+			Assert.AreEqual(1, bufD.Length);
+			Assert.AreEqual(0x80, bufD[0]);
+
 			var buf = Utilities.StringToBytes("Hello", Encoding.ASCII);
 			Assert.AreEqual(5, buf.Length);
 			var buf16 = Utilities.StringToBytes("\u00abX", Encoding.Unicode);
@@ -103,6 +113,8 @@ namespace Peach.Core.Test.CrackingTests
 
 			str = Utilities.BytesToString(buf, Encoding.ASCII);
 			Assert.AreEqual("Hello", str);
+			str = Utilities.BytesToString(bufD, Utilities.ExtendedASCII);
+			Assert.AreEqual("\x80", str);
 			str = Utilities.BytesToString(buf16, Encoding.Unicode);
 			Assert.AreEqual("\u00abX", str);
 			str = Utilities.BytesToString(buf16be, Encoding.BigEndianUnicode);

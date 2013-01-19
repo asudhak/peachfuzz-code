@@ -569,6 +569,9 @@ namespace Peach.Core
 	/// </summary>
 	public class Utilities
 	{
+		private static Encoding _extendedAscii = Encoding.GetEncoding(1252);
+		public static Encoding ExtendedASCII { get { return _extendedAscii; } }
+
 		/// <summary>
 		/// Converts a string to a byte array of the specified encoding.
 		/// Works around inconsistencies between Microsoft .NET and Mono so
