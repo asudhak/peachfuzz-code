@@ -26,6 +26,8 @@ namespace Peach.Core.Transformers.Crypto
             : base(args)
         {
             ParameterParser.Parse(this, args);
+            if (IV.Length != 16)
+                throw new PeachException("The intialization vector must be 16 bytes long");
             key = System.Text.Encoding.ASCII.GetBytes(Key);
             iv = System.Text.Encoding.ASCII.GetBytes(IV);
         }
@@ -33,10 +35,18 @@ namespace Peach.Core.Transformers.Crypto
         protected override BitStream internalEncode(BitStream data)
         {
             Rijndael aes = Rijndael.Create();
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.Zeros;
-            aes.Key = key;
-            aes.IV = iv;
+
+            try
+            {
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.Zeros;
+                aes.Key = key;
+                aes.IV = iv;
+            }
+            catch (CryptographicException ex)
+            {
+                throw new PeachException("The specified secret key is a known weak key and cannot be used.", ex);
+            }
 
             ICryptoTransform ict = aes.CreateEncryptor();
             byte[] enc = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);

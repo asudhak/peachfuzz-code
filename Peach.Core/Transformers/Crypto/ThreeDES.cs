@@ -26,17 +26,28 @@ namespace Peach.Core.Transformers.Crypto
             : base(args)
         {
             ParameterParser.Parse(this, args);
+            if (IV.Length != 8)
+                throw new PeachException("The intialization vector must be 8 bytes long");
             key = System.Text.Encoding.ASCII.GetBytes(Key);
             iv = System.Text.Encoding.ASCII.GetBytes(IV);
         }
 
         protected override BitStream internalEncode(BitStream data)
         {
-            TripleDES tdes =  TripleDES.Create();
-            tdes.Mode = CipherMode.CBC;
-            tdes.Padding = PaddingMode.Zeros;
-            tdes.Key = key;
-            tdes.IV = iv;
+            TripleDES tdes = TripleDES.Create();
+
+            try
+            {
+                
+                tdes.Mode = CipherMode.CBC;
+                tdes.Padding = PaddingMode.Zeros;
+                tdes.Key = key;
+                tdes.IV = iv;
+            }
+            catch (CryptographicException ex)
+            {
+                throw new PeachException("The specified secret key is a known weak key and cannot be used.", ex);
+            }
 
             ICryptoTransform ict = tdes.CreateEncryptor();
             byte[] enc = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
