@@ -141,14 +141,14 @@ namespace Peach.Core.Dom
 			try
 			{
 				StringBuilder sb = new StringBuilder();
-				byte[] buf = new byte[1];
+				int bufLen = Utilities.EncodingMinBytes(encoding);
 				char[] chars = new char[1];
 				var enc = Encoding.GetEncoding(encoding.BodyName, new EncoderExceptionFallback(), new DecoderExceptionFallback());
 				var dec = enc.GetDecoder();
 
 				while (maxCount == -1 || sb.Length < maxCount)
 				{
-					data.WantBytes(1);
+					data.WantBytes(bufLen);
 
 					if (data.TellBytes() >= data.LengthBytes)
 					{
@@ -161,9 +161,9 @@ namespace Peach.Core.Dom
 								"before exhausting the input buffer.", this, data);
 					}
 
-					buf[0] = data.ReadByte();
+					var buf = data.ReadBytes(bufLen);
 
-					if (dec.GetChars(buf, 0, 1, chars, 0) == 0)
+					if (dec.GetChars(buf, 0, buf.Length, chars, 0) == 0)
 						continue;
 
 					sb.Append(chars[0]);

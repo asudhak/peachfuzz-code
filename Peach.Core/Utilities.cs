@@ -573,6 +573,22 @@ namespace Peach.Core
 		public static Encoding ExtendedASCII { get { return _extendedAscii; } }
 
 		/// <summary>
+		/// Returns the minimum number of bytes needed to decode
+		/// a character of the specified encodinf
+		/// </summary>
+		/// <param name="enc">String encoding</param>
+		/// <returns>Minimum bytes</returns>
+		public static int EncodingMinBytes(Encoding enc)
+		{
+			if (enc is UnicodeEncoding)
+				return 2;
+			else if (enc is UTF32Encoding)
+				return 4;
+			else
+				return 1;
+		}
+
+		/// <summary>
 		/// Converts a string to a byte array of the specified encoding.
 		/// Works around inconsistencies between Microsoft .NET and Mono so
 		/// errors are always provided
@@ -619,11 +635,7 @@ namespace Peach.Core
 		/// <returns>String value</returns>
 		public static string BytesToString(byte[] buf, Encoding enc)
 		{
-			int min = 1;
-			if (enc is UnicodeEncoding)
-				min = 2;
-			else if (enc is UTF32Encoding)
-				min = 4;
+			int min = EncodingMinBytes(enc);
 
 			if ((buf.Length % min) != 0)
 				throw new DecoderFallbackException();
