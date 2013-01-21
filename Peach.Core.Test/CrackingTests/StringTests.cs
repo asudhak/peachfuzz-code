@@ -473,6 +473,56 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackUtf16LengthCharsBefore()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf16\" length=\"5\" lengthType=\"chars\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.Unicode.GetBytes("12345"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("12345", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackUtf8LengthCharsBefore()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\" length=\"1\" lengthType=\"chars\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("\u30ab"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("\u30ab", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
 		public void CrackNullTermString()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
