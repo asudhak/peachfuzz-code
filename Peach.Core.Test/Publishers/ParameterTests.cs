@@ -447,5 +447,40 @@ namespace Peach.Core.Test.Publishers
 			Assert.AreEqual("description of my custom type", obj.arg.val);
 		}
 
+		[Publisher("HexString", true)]
+		[Parameter("arg", typeof(HexString), "desc")]
+		class HexPlugin
+		{
+			public HexString arg { get; set; }
+		}
+
+		[Test]
+		public void TestHexStringGood()
+		{
+			var obj = new HexPlugin();
+			var args = new Dictionary<string, Variant>();
+			args["arg"] = new Variant("000102030405");
+
+			ParameterParser.Parse(obj, args);
+
+			Assert.NotNull(obj.arg);
+			Assert.NotNull(obj.arg.Value);
+			Assert.AreEqual(6, obj.arg.Value.Length);
+
+			for (int i = 0; i < obj.arg.Value.Length; ++i)
+			{
+				Assert.AreEqual(obj.arg.Value[i], i);
+			}
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'HexString' could not set parameter 'arg'.  An invalid hex string was specified.")]
+		public void TestHexStringBad()
+		{
+			var obj = new HexPlugin();
+			var args = new Dictionary<string, Variant>();
+			args["arg"] = new Variant("Hello");
+
+			ParameterParser.Parse(obj, args);
+		}
 	}
 }

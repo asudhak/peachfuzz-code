@@ -564,6 +564,28 @@ namespace Peach.Core
 		}
 	}
 
+	public class HexString
+	{
+		public byte[] Value { get; private set; }
+
+		private HexString(byte[] value)
+		{
+			this.Value = value;
+		}
+
+		public static HexString Parse(string s)
+		{
+			if (s.Length % 2 == 0)
+			{
+				var array = Utilities.HexStringToArray(s);
+				if (array != null)
+					return new HexString(array);
+			}
+
+			throw new FormatException("An invalid hex string was specified.");
+		}
+	}
+
 	/// <summary>
 	/// Some utility methods that be usefull
 	/// </summary>
@@ -650,6 +672,37 @@ namespace Peach.Core
 			}
 
 			return new string(chars);
+		}
+
+		public static byte[] HexStringToArray(string s)
+		{
+			if (s.Length % 2 != 0)
+				throw new ArgumentException("s");
+
+			byte[] ret = new byte[s.Length / 2];
+
+			for (int i = 0; i < s.Length; i += 2)
+			{
+				int nibble1 = GetNibble(s[i]);
+				int nibble2 = GetNibble(s[i + 1]);
+
+				if (nibble1 < 0 || nibble1 > 0xF || nibble2 < 0 | nibble2 > 0xF)
+					return null;
+
+				ret[i / 2] = (byte)((nibble1 << 4) | nibble2);
+			}
+
+			return ret;
+		}
+
+		private static int GetNibble(char c)
+		{
+			if (c >= 'a')
+				return 0xA + (int)(c - 'a');
+			else if (c >= 'A')
+				return 0xA + (int)(c - 'A');
+			else
+				return (int)(c - '0');
 		}
 
         public static string FormatAsPrettyHex(byte[] data, int startPos = 0, int length = -1)
