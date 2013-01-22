@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("TCPListenerMonitor", true)]
+    [Monitor("TcpListener", true)]
     [Parameter("Host", typeof(string), "Interface to listen on defaults to 0.0.0.0", "0.0.0.0")]
     [Parameter("Port", typeof(int), "Port to listen on for connection default 8080", "8080")]
     [Parameter("Pattern", typeof(string), "Regex pattern to match if any (not yet implemented)", "")]
