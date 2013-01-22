@@ -100,9 +100,28 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.Null(faults);
 		}
 
+		class LameWindow : System.Windows.Forms.NativeWindow, IDisposable
+		{
+			public LameWindow(string windowTitle)
+			{
+				var cp = new System.Windows.Forms.CreateParams();
+				cp.Caption = windowTitle;
+				CreateHandle(cp);
+			}
+
+			public void Dispose()
+			{
+				DestroyHandle();
+			}
+		}
+
 		void ThreadProc(object windowTitle)
 		{
-			System.Windows.Forms.MessageBox.Show("Text", windowTitle.ToString());
+			using (var wnd = new LameWindow(windowTitle.ToString()))
+			{
+				System.Windows.Forms.Application.Run();
+				Console.WriteLine("Done!");
+			}
 		}
 
 		[Test]
@@ -119,7 +138,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			}
 			finally
 			{
-				th.Abort();
+				System.Windows.Forms.Application.Exit();
 				th.Join();
 			}
 
@@ -146,7 +165,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			}
 			finally
 			{
-				th.Abort();
+				System.Windows.Forms.Application.Exit();
 				th.Join();
 			}
 
@@ -171,7 +190,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			}
 			finally
 			{
-				th.Abort();
+				System.Windows.Forms.Application.Exit();
 				th.Join();
 			}
 

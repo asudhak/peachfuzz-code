@@ -2042,7 +2042,7 @@
 		</xs:annotation>
 		<xs:complexType>
 			<xs:choice minOccurs="0">
-				<xs:element ref="Param" />
+				<xs:element ref="Param" minOccurs="0" maxOccurs="unbounded"/>
 				<xs:element ref="Transformer" minOccurs="0" maxOccurs="1" />
 			</xs:choice>
 			<xs:attribute name="class">

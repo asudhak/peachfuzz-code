@@ -6,6 +6,12 @@
 /*/[Bb]in/
 /*/[Oo]bj/
 
+/3rdParty/TreeViewAdv/*/[Bb]in/
+/3rdParty/TreeViewAdv/*/[Oo]bj/
+/3rdParty/Be.HexEditor.150/sources/*/[Bb]in/
+/3rdParty/Be.HexEditor.150/sources/*/[Oo]bj/
+/3rdParty/Be.HexEditor.150/sources/*/*.xml
+
 # User-specific files
 *.user
 

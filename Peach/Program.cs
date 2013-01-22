@@ -52,11 +52,11 @@ namespace Peach
 	/// </summary>
 	public class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			Peach.Core.AssertWriter.Register();
 
-			new Program(args);
+			return new Program(args).exitCode;
 		}
 
 		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
@@ -65,8 +65,14 @@ namespace Peach
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Dom dom;
 
+		public int exitCode = 1;
+
 		public Program(string[] args)
 		{
+			RunConfiguration config = new RunConfiguration();
+			config.shouldStop = delegate() { return shouldStop; };
+			config.debug = false;
+
 			try
 			{
 				DefaultBackground = Console.BackgroundColor;
@@ -109,10 +115,6 @@ namespace Peach
 
 				if (args.Length == 0)
 					syntax();
-
-				RunConfiguration config = new RunConfiguration();
-				config.shouldStop = delegate() { return shouldStop; };
-				config.debug = false;
 
 				var p = new OptionSet()
 				{
@@ -295,6 +297,8 @@ namespace Peach
 				}
 				else
 					e.startFuzzing(dom, config);
+
+				exitCode = 0;
 			}
 			catch (SyntaxException)
 			{
@@ -302,7 +306,10 @@ namespace Peach
 			}
 			catch (PeachException ee)
 			{
-				Console.WriteLine(ee.Message + "\n");
+				if (config.debug)
+					Console.WriteLine(ee);
+				else
+					Console.WriteLine(ee.Message + "\n");
 			}
 			finally
 			{

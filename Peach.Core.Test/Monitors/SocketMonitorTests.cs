@@ -239,7 +239,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestNoConnNoFault()
 		{
 			// No connections, no faults
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(40000, 41000);
 
 			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
 			Assert.Null(faults);
@@ -251,7 +251,7 @@ namespace Peach.Core.Test.Monitors
 			// Different monitor faults, SocketMonitor returns FaultType.Data
 			faultIteration = 1;
 
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(41000, 42000);
 
 			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
@@ -266,7 +266,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestNoConnFault()
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(42000, 43000);
 
 			// No connection, FaultOnSuccess = true results in fault
 			Run(new Params { { "Timeout", "1" }, { "FaultOnSuccess", "true" }, { "Port", port.ToString() } });
@@ -286,7 +286,7 @@ namespace Peach.Core.Test.Monitors
 
 			faultIteration = 1;
 
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(43000, 44000);
 
 			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
 			Assert.NotNull(faults);
@@ -345,7 +345,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestConnNoFault()
 		{
 			// receive connection, FaultOnSuccess = true results in no fault
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(44000, 45000);
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
@@ -361,7 +361,7 @@ namespace Peach.Core.Test.Monitors
 			// receive connection, FaultOnSuccess = true results in fault data when other monitor faults
 			faultIteration = 1;
 
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(45000, 46000);
 			string desc;
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
@@ -383,7 +383,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestMulticast()
 		{
 			// Support 'Host' of 234.5.6.7
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(46000, 47000);
 			string host = "234.5.6.7";
 			string desc;
 
@@ -413,7 +413,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestTcpHost()
 		{
 			// Only accept TCP connections from specified host
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(47000, 48000);
 			string desc;
 
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
@@ -442,7 +442,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestUdpHost()
 		{
 			// Only accept UDP connections from specified host
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(48000, 49000);
 			string desc;
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
@@ -470,7 +470,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestUdp4()
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(49000, 50000);
 			string desc;
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
@@ -491,7 +491,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestUdp6()
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(50000, 51000);
 			string desc;
 
 			using (var sender = new UdpSender("::1", port, "Hello"))
@@ -512,7 +512,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestTcp4()
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(51000, 52000);
 			string desc;
 
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
@@ -533,7 +533,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestTcp6()
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 40000);
+			ushort port = TestBase.MakePort(52000, 53000);
 			string desc;
 
 			using (var sender = new TcpSender("::1", port, "Hello"))

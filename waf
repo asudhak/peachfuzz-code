@@ -8,6 +8,10 @@ if sys.platform == "cygwin":
         print 'waf must be run from cmd.exe'
         sys.exit(1)
 
+if os.getenv('DevEnvDir'):
+        print 'waf can not be run from a Visual Studio Command Prompt'
+        sys.exit(1)
+
 cwd = os.getcwd()
 build = os.path.join(cwd, 'build')
 wafdir = os.path.join(cwd, '3rdParty', 'waf')

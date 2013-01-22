@@ -807,6 +807,7 @@ namespace Aga.Controls
 
 			bgIndex = Read(); // background color index
 			pixelAspect = Read(); // pixel aspect ratio
+			pixelAspect &= 0xff; // suppress 'assigned but never used' warning
 		}
 
 		/**

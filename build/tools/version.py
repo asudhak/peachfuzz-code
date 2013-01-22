@@ -100,6 +100,9 @@ def apply_version(self, name, inputs, exts):
 @before_method('apply_cs')
 @after_method('cs_helpers')
 def apply_version_cs(self):
+	if not getattr(self, 'version', True):
+		return
+
 	asm = []
 	others = []
 	for x in self.to_nodes(self.source):

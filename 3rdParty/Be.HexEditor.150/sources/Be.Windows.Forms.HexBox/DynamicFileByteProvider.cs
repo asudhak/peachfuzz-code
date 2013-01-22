@@ -15,7 +15,7 @@ namespace Be.Windows.Forms
     {
         const int COPY_BLOCK_SIZE = 4096;
 
-        string _fileName;
+        string _fileName { get; set; }
         Stream _stream;
         DataMap _dataMap;
         long _totalLength;

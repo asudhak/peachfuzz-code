@@ -22,30 +22,43 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@dejavusecurity.com)
-//   Ross Salpino (rsal42@gmail.com)
-//   Mikhail Davidov (sirus@haxsys.net)
+//   Mick Ayzenberg (mick@dejavusecurity.com)
 
 // $Id$
 
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Peach.Core.Dom;
+using System.Net;
+using System.Linq;
 using Peach.Core.Fixups.Libraries;
+using Peach.Core.Dom;
+using System.Net.Sockets;
 
 namespace Peach.Core.Fixups
 {
-	[Description("Standard ICMP checksum.")]
-	[Fixup("IcmpChecksumFixup", true)]
-	[Fixup("checksums.IcmpChecksumFixup")]
+	[Description("Standard ICMPv6 checksum.")]
+	[Fixup("IcmpV6ChecksumFixup", true)]
+	[Fixup("checksums.IcmpV6ChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
+	[Parameter("src", typeof(IPAddress), "Reference to data element")]
+	[Parameter("dst", typeof(IPAddress), "Reference to data element")]
 	[Serializable]
-	public class IcmpChecksumFixup : InternetFixup
+	public class IcmpV6ChecksumFixup : InternetFixup
 	{
-		public IcmpChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
+		public IcmpV6ChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args, "ref")
 		{
+		}
+
+		protected override ushort Protocol
+		{
+			get { return (ushort)ProtocolType.IcmpV6; }
+		}
+
+		protected override bool AddLength
+		{
+			get { return true; }
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿
-//
+﻿//
 // Copyright (c) Michael Eddington
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -22,32 +21,42 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@dejavusecurity.com)
-//   Ross Salpino (rsal42@gmail.com)
-//   Mikhail Davidov (sirus@haxsys.net)
-
-// $Id$
+//  Mick Ayzenberg (mick@dejavusecurity.com)
+//  Jordyn Puryear (jordyn@dejavusecurity.com)
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using Peach.Core.Dom;
+using System.Net;
 using Peach.Core.Fixups.Libraries;
+using Peach.Core.Dom;
+using System.Net.Sockets;
 
 namespace Peach.Core.Fixups
 {
-	[Description("Standard ICMP checksum.")]
-	[Fixup("IcmpChecksumFixup", true)]
-	[Fixup("checksums.IcmpChecksumFixup")]
+	[Description("Standard TCP checksum.")]
+	[Fixup("TCPChecksumFixup", true)]
+	[Fixup("checksums.TCPChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
+	[Parameter("src", typeof(IPAddress), "Source IP address")]
+	[Parameter("dst", typeof(IPAddress), "Destination IP address")]
 	[Serializable]
-	public class IcmpChecksumFixup : InternetFixup
+	public class TCPChecksumFixup : InternetFixup
 	{
-		public IcmpChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
+		public TCPChecksumFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args, "ref")
 		{
 		}
+
+		protected override ushort Protocol
+		{
+			get { return (ushort)ProtocolType.Tcp; }
+		}
+
+		protected override bool AddLength
+		{
+			get { return true; }
+		}
 	}
 }
-
-// end
