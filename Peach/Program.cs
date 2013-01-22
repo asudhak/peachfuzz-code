@@ -69,6 +69,10 @@ namespace Peach
 
 		public Program(string[] args)
 		{
+			RunConfiguration config = new RunConfiguration();
+			config.shouldStop = delegate() { return shouldStop; };
+			config.debug = false;
+
 			try
 			{
 				DefaultBackground = Console.BackgroundColor;
@@ -111,10 +115,6 @@ namespace Peach
 
 				if (args.Length == 0)
 					syntax();
-
-				RunConfiguration config = new RunConfiguration();
-				config.shouldStop = delegate() { return shouldStop; };
-				config.debug = false;
 
 				var p = new OptionSet()
 				{
@@ -306,7 +306,10 @@ namespace Peach
 			}
 			catch (PeachException ee)
 			{
-				Console.WriteLine(ee.Message + "\n");
+				if (config.debug)
+					Console.WriteLine(ee);
+				else
+					Console.WriteLine(ee.Message + "\n");
 			}
 			finally
 			{
