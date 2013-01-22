@@ -15,57 +15,21 @@ namespace Peach.Core.Transformers.Crypto
     [Parameter("Key", typeof(string), "Secret Key")]
     [Parameter("IV", typeof(string), "Initialization Vector")]
     [Serializable]
-    public class AES128 : Transformer
+    public class AES128 : SymmetricAlgorithmTransformer
     {
-        public string Key { get; private set; }
-        public string IV { get; private set; }
-
-        byte[] key;
-        byte[] iv;
         public AES128(Dictionary<string, Variant> args)
             : base(args)
         {
-            ParameterParser.Parse(this, args);
-            if (IV.Length != 16)
-                throw new PeachException("The intialization vector must be 16 bytes long");
-            key = System.Text.Encoding.ASCII.GetBytes(Key);
-            iv = System.Text.Encoding.ASCII.GetBytes(IV);
         }
 
-        protected override BitStream internalEncode(BitStream data)
-        {
-            Rijndael aes = Rijndael.Create();
-
-            try
-            {
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.Zeros;
-                aes.Key = key;
-                aes.IV = iv;
-            }
-            catch (CryptographicException ex)
-            {
-                throw new PeachException("The specified secret key is a known weak key and cannot be used.", ex);
-            }
-
-            ICryptoTransform ict = aes.CreateEncryptor();
-            byte[] enc = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
-            
-            return new BitStream(enc);
-        }
-
-        protected override BitStream internalDecode(BitStream data)
+        protected override SymmetricAlgorithm GetEncryptionAlgorithm()
         {
             Rijndael aes = Rijndael.Create();
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.Zeros;
-            aes.Key = key;
-            aes.IV = iv;
-
-            ICryptoTransform ict = aes.CreateDecryptor();
-            byte[] dec = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
-
-            return new BitStream(dec);
+            aes.Key = System.Text.Encoding.ASCII.GetBytes(Key);
+            aes.IV = System.Text.Encoding.ASCII.GetBytes(IV);
+            return aes;
         }
     }
 }

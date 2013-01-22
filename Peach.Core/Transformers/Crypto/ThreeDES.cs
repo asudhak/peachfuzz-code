@@ -15,58 +15,21 @@ namespace Peach.Core.Transformers.Crypto
     [Parameter("Key", typeof(string), "Secret Key")]
     [Parameter("IV", typeof(string), "Initialization Vector")]
     [Serializable]
-    public class ThreeDES : Transformer
+    public class ThreeDES : SymmetricAlgorithmTransformer
     {
-        public string Key { get; private set; }
-        public string IV { get; private set; }
-
-        byte[] key;
-        byte[] iv;
         public ThreeDES(Dictionary<string, Variant> args)
             : base(args)
         {
-            ParameterParser.Parse(this, args);
-            if (IV.Length != 8)
-                throw new PeachException("The intialization vector must be 8 bytes long");
-            key = System.Text.Encoding.ASCII.GetBytes(Key);
-            iv = System.Text.Encoding.ASCII.GetBytes(IV);
         }
 
-        protected override BitStream internalEncode(BitStream data)
-        {
-            TripleDES tdes = TripleDES.Create();
-
-            try
-            {
-                
-                tdes.Mode = CipherMode.CBC;
-                tdes.Padding = PaddingMode.Zeros;
-                tdes.Key = key;
-                tdes.IV = iv;
-            }
-            catch (CryptographicException ex)
-            {
-                throw new PeachException("The specified secret key is a known weak key and cannot be used.", ex);
-            }
-
-            ICryptoTransform ict = tdes.CreateEncryptor();
-            byte[] enc = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
-            
-            return new BitStream(enc);
-        }
-
-        protected override BitStream internalDecode(BitStream data)
+        protected override SymmetricAlgorithm GetEncryptionAlgorithm()
         {
             TripleDES tdes = TripleDES.Create();
             tdes.Mode = CipherMode.CBC;
             tdes.Padding = PaddingMode.Zeros;
-            tdes.Key = key;
-            tdes.IV = iv;
-
-            ICryptoTransform ict = tdes.CreateDecryptor();
-            byte[] dec = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
-
-            return new BitStream(dec);
+            tdes.Key = System.Text.Encoding.ASCII.GetBytes(Key);
+            tdes.IV = System.Text.Encoding.ASCII.GetBytes(IV);
+            return tdes;
         }
     }
 }
