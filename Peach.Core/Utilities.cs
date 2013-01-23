@@ -192,22 +192,15 @@ namespace Peach.Core
 		{
 			if (s.Length % 2 == 0)
 			{
-				var array = Utilities.HexStringToArray(s);
+				var array = ToArray(s);
 				if (array != null)
 					return new HexString(array);
 			}
 
 			throw new FormatException("An invalid hex string was specified.");
 		}
-	}
 
-	/// <summary>
-	/// Some utility methods that be usefull
-	/// </summary>
-	public class Utilities
-	{
-
-		public static byte[] HexStringToArray(string s)
+		public static byte[] ToArray(string s)
 		{
 			if (s.Length % 2 != 0)
 				throw new ArgumentException("s");
@@ -237,7 +230,13 @@ namespace Peach.Core
 			else
 				return (int)(c - '0');
 		}
+	}
 
+	/// <summary>
+	/// Some utility methods that be usefull
+	/// </summary>
+	public class Utilities
+	{
         public static string FormatAsPrettyHex(byte[] data, int startPos = 0, int length = -1)
         {
             StringBuilder sb = new StringBuilder();

@@ -941,7 +941,7 @@ namespace Peach.Core.Analyzers
 						if (value.Length % 2 != 0)
 							value = "0" + value;
 
-						var array = Utilities.HexStringToArray(value);
+						var array = HexString.ToArray(value);
 
 						if (array == null)
 							throw new PeachException("Error, the value of element '{0}' is not a valid hex string.", elem.name);
