@@ -141,10 +141,9 @@ namespace Peach.Core.Dom
 			try
 			{
 				StringBuilder sb = new StringBuilder();
-				int bufLen = Utilities.EncodingMinBytes(encoding);
+				int bufLen = 1;
 				char[] chars = new char[1];
-				var enc = Encoding.GetEncoding(encoding.BodyName, new EncoderExceptionFallback(), new DecoderExceptionFallback());
-				var dec = enc.GetDecoder();
+				var dec = encoding.GetDecoder();
 
 				while (maxCount == -1 || sb.Length < maxCount)
 				{
@@ -219,7 +218,7 @@ namespace Peach.Core.Dom
 
 				try
 				{
-					stringValue = Utilities.BytesToString(buf, encoding);
+					stringValue = encoding.GetString(buf);
 				}
 				catch (DecoderFallbackException)
 				{
@@ -260,35 +259,12 @@ namespace Peach.Core.Dom
 			else if (context.hasDefaultAttribute(str.GetType(), "type"))
 				type = context.getDefaultAttribute(str.GetType(), "type");
 
-			switch (type.ToLower())
-			{
-				case "ascii":
-					str.stringType = StringType.ascii;
-					str.encoding = Encoding.ASCII;
-					break;
-				case "utf16":
-					str.stringType = StringType.utf16;
-					str.encoding = Encoding.Unicode;
-					break;
-				case "utf16be":
-					str.stringType = StringType.utf16be;
-					str.encoding = Encoding.BigEndianUnicode;
-					break;
-				case "utf32":
-					str.stringType = StringType.utf32;
-					str.encoding = Encoding.UTF32;
-					break;
-				case "utf7":
-					str.stringType = StringType.utf7;
-					str.encoding = Encoding.UTF7;
-					break;
-				case "utf8":
-					str.stringType = StringType.utf8;
-					str.encoding = Encoding.UTF8;
-					break;
-				default:
-					throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
-			}
+			StringType stringType;
+			if (!Enum.TryParse<StringType>(type, true, out stringType))
+				throw new PeachException("Error, unknown String type '" + type + "' on element '" + str.name + "'.");
+
+			str.stringType = stringType;
+			str.encoding = Encoding.GetEncoding(stringType.ToString());
 
 			if (node.hasAttribute("padCharacter"))
 			{
@@ -341,7 +317,7 @@ namespace Peach.Core.Dom
 				{
 					try
 					{
-						final = Utilities.BytesToString((byte[])value, encoding);
+						final = encoding.GetString((byte[])value);
 					}
 					catch (DecoderFallbackException)
 					{
@@ -350,8 +326,14 @@ namespace Peach.Core.Dom
 				}
 				else
 				{
-					if (!Utilities.StringIsValid((string)value, encoding))
+					try
+					{
+						encoding.GetBytes((string)value);
+					}
+					catch
+					{
 						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " characters.");
+					}
 
 					final = (string)value;
 				}
@@ -482,10 +464,10 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			if (!encoding.IsSingleByte)
-				return new BitStream(Utilities.StringToBytes((string)InternalValue, encoding));
+			if (encoding.IsSingleByte)
+				return new BitStream(Encoding.ISOLatin1.GetBytes((string)InternalValue));
 			else
-				return new BitStream(Utilities.StringToBytes((string)InternalValue, Utilities.ExtendedASCII));
+				return new BitStream(encoding.GetBytes((string)InternalValue));
 		}
 
 		public override bool hasLength
