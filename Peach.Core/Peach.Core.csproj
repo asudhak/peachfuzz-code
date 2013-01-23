@@ -644,6 +644,7 @@
     <Compile Include="Transformers\Type\NumberToString.cs" />
     <Compile Include="Transformers\Type\StringToFloat.cs" />
     <Compile Include="Transformers\Type\StringToInt.cs" />
+    <Compile Include="Usage.cs" />
     <Compile Include="Utilities.cs">
       <SubType>Component</SubType>
     </Compile>
