@@ -896,7 +896,7 @@ namespace Peach.Core
 		{
 			HexOutputFunc func = delegate(char[] line)
 			{
-				byte[] buf = Encoding.ASCII.GetBytes(line);
+				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
 				output.Write(buf, 0, buf.Length);
 			};
 

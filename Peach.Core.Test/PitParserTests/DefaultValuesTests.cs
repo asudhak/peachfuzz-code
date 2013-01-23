@@ -4,7 +4,6 @@ using System.Text;
 using System.IO;
 using NUnit.Framework;
 
-using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 
@@ -42,7 +41,7 @@ namespace Peach.Core.Test.PitParserTests
 
 			using (FileStream f = File.OpenWrite(pitFile))
 			{
-				using (StreamWriter sw = new StreamWriter(f, enc))
+				using (StreamWriter sw = new StreamWriter(f, System.Text.Encoding.GetEncoding(enc.CodePage)))
 				{
 					sw.Write(xml);
 				}

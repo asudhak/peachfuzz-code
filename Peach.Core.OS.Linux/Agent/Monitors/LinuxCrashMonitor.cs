@@ -75,7 +75,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 
 		public override void  SessionStarting()
 		{
-			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
+			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
 
 			if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) == -1)
 			{
@@ -88,9 +88,9 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				File.WriteAllText(
 					"/proc/sys/kernel/core_pattern",
 					corePat,
-					Encoding.ASCII);
+					System.Text.Encoding.ASCII);
 
-				var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
+				var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
 				if (checkWrite.IndexOf(linuxCrashHandlerExe) == -1)
 					throw new PeachException("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
 			}
@@ -120,7 +120,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			// only replace core_pattern if we updated it.
 			if (origionalCorePattern != null)
 			{
-				File.WriteAllText("/proc/sys/kernel/core_pattern", origionalCorePattern, Encoding.ASCII);
+				File.WriteAllText("/proc/sys/kernel/core_pattern", origionalCorePattern, System.Text.Encoding.ASCII);
 			}
 
 			// Remove folder
