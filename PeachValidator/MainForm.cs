@@ -109,7 +109,7 @@ namespace PeachValidator
 				crackModel.Root = crackMap.Values.First().Root;
 				treeViewAdv1.Model = crackModel;
 				treeViewAdv1.EndUpdate();
-				//treeViewAdv1.Refresh();
+				treeViewAdv1.Root.Children[0].Expand();
 
 				// No longer needed
 				crackMap.Clear();

@@ -1082,7 +1082,7 @@
 			<xs:enumeration value="calc">
 				<xs:annotation>
 					<xs:documentation>
-						Indicates the length value is actually a python expression
+						Indicates the length value is actually a scripting expression
 						that is evaulated to calculate the length value.  This expression will be evauluated
 						every time the length value is needed.  A special variable of "self" is available in the
 						expression which is the current object in the dom.

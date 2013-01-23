@@ -7,7 +7,7 @@ using Renci.SshNet;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("SSHMonitor", true)]
+    [Monitor("Ssh", true)]
     [Parameter("Host", typeof (string), "Host to ssh to.")]
     [Parameter("Username", typeof (string), "Username for ssh", "")]
 	[Parameter("Password", typeof(string), "Password for ssh account", "")]

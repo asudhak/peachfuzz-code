@@ -6,7 +6,7 @@ using System.Net.Sockets;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("PingMonitor", true)]
+	[Monitor("Ping", true)]
 	[Parameter("Host", typeof(string), "Host to ping")]
 	[Parameter("Timeout", typeof(int), "Ping timeout in milliseconds", "1000")]
 	[Parameter("Data", typeof(string), "Data to send", "")]

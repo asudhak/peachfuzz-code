@@ -41,7 +41,7 @@ using SharpPcap.AirPcap;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("PcapMonitor", true)]
+	[Monitor("Pcap", true)]
 	[Monitor("network.PcapMonitor")]
 	[Parameter("Device", typeof(string), "Device name for capturing on")]
 	[Parameter("Filter", typeof(string), "PCAP Style filter", "")]
