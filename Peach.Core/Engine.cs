@@ -261,6 +261,9 @@ namespace Peach.Core
 					if (context.config.parallel)
 						throw new NotSupportedException("range is not supported when parallel is used");
 
+					if (mutationStrategy.IsDeterministic)
+						throw new NotSupportedException("range is not supported when a non-deterministic mutation strategy is used");
+
 					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);
 
@@ -531,15 +534,15 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							if (iterationTotal < iterationStop)
 								iterationStop = iterationTotal.Value;
 
-							if (context.config.parallel && iterationTotal != uint.MaxValue)
+							if (context.config.parallel)
 							{
-								uint slice = iterationTotal.Value / context.config.parallelTotal;
+								if (iterationTotal > context.config.parallelTotal)
+									throw new PeachException("Error, {1} parallel machines is greater than the {0} total iterations.", iterationTotal, context.config.parallelTotal);
 
-								iterationStop = context.config.parallelNum * slice;
-								iterationStart = iterationStop - slice + 1;
+								var range = Utilities.SliceRange(1, iterationStop, context.config.parallelNum, context.config.parallelTotal);
 
-								if (context.config.parallelNum == context.config.parallelTotal)
-									iterationStop += iterationTotal.Value % context.config.parallelTotal;
+								iterationStart = range.Item1;
+								iterationStop = range.Item2;
 
 								OnHaveParallel(context, iterationStart, iterationStop);
 

@@ -132,6 +132,14 @@ namespace Peach.Core.MutationStrategies
 			return ret;
 		}
 
+		public override bool IsDeterministic
+		{
+			get
+			{
+				return false;
+			}
+		}
+
 		public override uint Iteration
 		{
 			get

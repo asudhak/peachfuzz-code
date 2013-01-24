@@ -406,6 +406,7 @@
     <Compile Include="Transformers\Type\NumberToStringTests.cs" />
     <Compile Include="Transformers\Type\StringToFloatTests.cs" />
     <Compile Include="Transformers\Type\StringToIntTests.cs" />
+    <Compile Include="UtilitiesTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">

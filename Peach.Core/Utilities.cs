@@ -333,6 +333,37 @@ namespace Peach.Core
 			return isAvailable;
 		}
 
+		/// <summary>
+		/// Compute the subrange resulting from diving a range into equal parts
+		/// </summary>
+		/// <param name="begin">Inclusive range begin</param>
+		/// <param name="end">Inclusive range end</param>
+		/// <param name="curSlice">The 1 based index of the current slice</param>
+		/// <param name="numSlices">The total number of slices</param>
+		/// <returns>Range of the current slice</returns>
+		public static Tuple<uint, uint> SliceRange(uint begin, uint end, uint curSlice, uint numSlices)
+		{
+			if (begin > end)
+				throw new ArgumentOutOfRangeException("begin");
+			if (curSlice == 0 || curSlice > numSlices)
+				throw new ArgumentOutOfRangeException("curSlice");
+
+			uint total = end - begin + 1;
+
+			if (numSlices == 0 || numSlices > total)
+				throw new ArgumentOutOfRangeException("numSlices");
+
+			uint slice = total / numSlices;
+
+			end = curSlice * slice + begin - 1;
+			begin = end - slice + 1;
+
+			if (curSlice == numSlices)
+				end += total % numSlices;
+
+			return new Tuple<uint, uint>(begin, end);
+		}
+
 		// Slightly tweaked from:
 		// http://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
 		private delegate void HexOutputFunc(char[] line);
