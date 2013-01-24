@@ -12,8 +12,8 @@ namespace Peach.Core.Transformers.Crypto
     [Serializable]
     public abstract class SymmetricAlgorithmTransformer : Transformer
     {
-        public string Key { get; protected set; }
-        public string IV { get; protected set; }
+        public HexString Key { get; protected set; }
+        public HexString IV { get; protected set; }
 
         protected abstract SymmetricAlgorithm GetEncryptionAlgorithm();
 

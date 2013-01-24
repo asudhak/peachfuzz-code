@@ -12,8 +12,8 @@ namespace Peach.Core.Transformers.Crypto
     [Description("TripleDes transform (hex & binary).")]
     [Transformer("TripleDes", true)]
     [Transformer("crypto.TripleDes")]
-    [Parameter("Key", typeof(string), "Secret Key")]
-    [Parameter("IV", typeof(string), "Initialization Vector")]
+    [Parameter("Key", typeof(HexString), "Secret Key")]
+    [Parameter("IV", typeof(HexString), "Initialization Vector")]
     [Serializable]
     public class TripleDes : SymmetricAlgorithmTransformer
     {
@@ -27,8 +27,8 @@ namespace Peach.Core.Transformers.Crypto
             TripleDES tdes = TripleDES.Create();
             tdes.Mode = CipherMode.CBC;
             tdes.Padding = PaddingMode.Zeros;
-            tdes.Key = System.Text.Encoding.ASCII.GetBytes(Key);
-            tdes.IV = System.Text.Encoding.ASCII.GetBytes(IV);
+            tdes.Key = Key.Value;
+            tdes.IV = IV.Value;
             return tdes;
         }
     }

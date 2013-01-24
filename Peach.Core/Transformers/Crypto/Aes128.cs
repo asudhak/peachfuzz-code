@@ -12,8 +12,8 @@ namespace Peach.Core.Transformers.Crypto
     [Description("Aes128 transform (hex & binary).")]
     [Transformer("Aes128", true)]
     [Transformer("crypto.Aes128")]
-    [Parameter("Key", typeof(string), "Secret Key")]
-    [Parameter("IV", typeof(string), "Initialization Vector")]
+    [Parameter("Key", typeof(HexString), "Secret Key")]
+    [Parameter("IV", typeof(HexString), "Initialization Vector")]
     [Serializable]
     public class Aes128 : SymmetricAlgorithmTransformer
     {
@@ -27,8 +27,8 @@ namespace Peach.Core.Transformers.Crypto
             Rijndael aes = Rijndael.Create();
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.Zeros;
-            aes.Key = System.Text.Encoding.ASCII.GetBytes(Key);
-            aes.IV = System.Text.Encoding.ASCII.GetBytes(IV);
+            aes.Key = Key.Value;
+            aes.IV = IV.Value;
             return aes;
         }
     }

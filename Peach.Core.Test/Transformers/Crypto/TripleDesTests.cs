@@ -13,19 +13,47 @@ namespace Peach.Core.Test.Transformers.Crypto
     [TestFixture]
     class TripleDesTests : DataModelCollector
     {
+        [Test]
+        public void KeySize128Test()
+        {
+            RunTest("ae1234567890aeaffeda214354647586fefdfaddefeeaf12", "aeaeaeaeaeaeaeae", new byte[] { 0x5d, 0xa5, 0x88, 0x82, 0x44, 0x24, 0x05, 0x67 });
+        }
 
         [Test]
-        public void Test1()
+        public void KeySize192Test()
+        {
+            RunTest("ae1234567890aeaffeda214354647586", "aeaeaeaeaeaeaeae", new byte[] { 0x95, 0x4d, 0x29, 0x9a, 0xbc, 0x9d, 0x07, 0x5e });
+        }
+
+        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.")]
+        public void WrongSizedKeyTest()
+        {
+            RunTest("aaaa", "aeaeaeaeaeaeaeae", new byte[]{});
+        }
+
+        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is a known weak key for 'TripleDES' and cannot be used.")]
+        public void WeakKeyTest()
+        {
+            RunTest("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aeaeaeaeaeaeaeae", new byte[] { });
+        }
+
+        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified initialization vector (IV) does not match the block size for this algorithm.")]
+        public void WrongSizedIV()
+        {
+            RunTest("ae1234567890aeaffeda214354647586", "aaaa", new byte[] { });
+        }
+
+        public void RunTest(string key, string iv, byte[] expected)
         {
             // standard test
 
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" + 
+                "   <DataModel name=\"TheDataModel\">" +
                 "        <Blob name=\"Data\" value=\"Hello\">" +
                 "           <Transformer class=\"TripleDes\">" +
-                "               <Param name=\"Key\" value=\"c89de1a4237def182afec153\"/>" +
-                "               <Param name=\"IV\" value=\"password\"/>" +           
+                "               <Param name=\"Key\" value=\"{0}\"/>" +
+                "               <Param name=\"IV\" value=\"{1}\"/>" +
                 "           </Transformer>" +
                 "        </Blob>" +
                 "   </DataModel>" +
@@ -43,7 +71,7 @@ namespace Peach.Core.Test.Transformers.Crypto
                 "       <Publisher class=\"Null\"/>" +
                 "   </Test>" +
                 "</Peach>";
-
+            xml = string.Format(xml, key, iv);
             PitParser parser = new PitParser();
 
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -56,87 +84,8 @@ namespace Peach.Core.Test.Transformers.Crypto
 
             // verify values
             // -- this is the pre-calculated result on the blob: "Hello"
-            byte[] precalcResult = new byte[] { 0xf6, 0xb6, 0x18, 0x6a, 0x4d, 0x6d, 0x4f, 0xa0 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
-        }
-
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.")]
-        public void WrongSizedKeyTest()
-        {
-            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-                "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" +
-                "        <Blob name=\"Data\" value=\"Hello\">" +
-                "           <Transformer class=\"TripleDes\">" +
-                "               <Param name=\"Key\" value=\"aaaa\"/>" +
-                "               <Param name=\"IV\" value=\"password\"/>" +
-                "           </Transformer>" +
-                "        </Blob>" +
-                "   </DataModel>" +
-
-                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-                "       <State name=\"Initial\">" +
-                "           <Action type=\"output\">" +
-                "               <DataModel ref=\"TheDataModel\"/>" +
-                "           </Action>" +
-                "       </State>" +
-                "   </StateModel>" +
-
-                "   <Test name=\"Default\">" +
-                "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Null\"/>" +
-                "   </Test>" +
-                "</Peach>";
-
-            PitParser parser = new PitParser();
-
-            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-
-            RunConfiguration config = new RunConfiguration();
-            config.singleIteration = true;
-
-            Engine e = new Engine(null);
-            e.startFuzzing(dom, config);
-        }
-
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is a known weak key for 'TripleDES' and cannot be used.")]
-        public void WeakKeyTest()
-        {
-            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-                "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" +
-                "        <Blob name=\"Data\" value=\"Hello\">" +
-                "           <Transformer class=\"TripleDes\">" +
-                "               <Param name=\"Key\" value=\"aaaaaaaaaaaaaaaaaaaaaaaa\"/>" +
-                "               <Param name=\"IV\" value=\"password\"/>" +
-                "           </Transformer>" +
-                "        </Blob>" +
-                "   </DataModel>" +
-
-                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-                "       <State name=\"Initial\">" +
-                "           <Action type=\"output\">" +
-                "               <DataModel ref=\"TheDataModel\"/>" +
-                "           </Action>" +
-                "       </State>" +
-                "   </StateModel>" +
-
-                "   <Test name=\"Default\">" +
-                "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Null\"/>" +
-                "   </Test>" +
-                "</Peach>";
-
-            PitParser parser = new PitParser();
-
-            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-
-            RunConfiguration config = new RunConfiguration();
-            config.singleIteration = true;
-
-            Engine e = new Engine(null);
-            e.startFuzzing(dom, config);
+            Assert.AreEqual(expected, values[0].Value);
         }
     }
 }
