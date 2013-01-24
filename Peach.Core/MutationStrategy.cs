@@ -80,6 +80,11 @@ namespace Peach.Core
 			set { _engine = value; }
 		}
 
+		public abstract bool IsDeterministic
+		{
+			get;
+		}
+
 		public abstract uint Count
 		{
 			get;

@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("SocketMonitor", true)]
+	[Monitor("Socket", true)]
 	[Parameter("Host", typeof(IPAddress), "IP address of remote host", "")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to listen on", "")]

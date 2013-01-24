@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Net.NetworkInformation;
 
 namespace Peach.Core.Publishers
 {
@@ -54,6 +55,44 @@ namespace Peach.Core.Publishers
 			}
 
 			throw new PeachException("Could not resolve the IP address of host \"{0}\".", Host);
+		}
+
+		/// <summary>
+		/// Resolves the ScopeId for a Link-Local IPv6 address
+		/// </summary>
+		/// <param name="ip"></param>
+		/// <returns></returns>
+		private static IPAddress GetScopeId(IPAddress ip)
+		{
+			if (!ip.IsIPv6LinkLocal || ip.ScopeId != 0)
+				throw new ArgumentException("ip");
+
+			var results = new List<Tuple<string, IPAddress>>();
+			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+			foreach (NetworkInterface adapter in nics)
+			{
+				foreach (var addr in adapter.GetIPProperties().UnicastAddresses)
+				{
+					if (!addr.Address.IsIPv6LinkLocal)
+						continue;
+
+					IPAddress candidate = new IPAddress(addr.Address.GetAddressBytes(), 0);
+					if (IPAddress.Equals(candidate, ip))
+					{
+						results.Add(new Tuple<string,IPAddress>(adapter.Name, addr.Address));
+					}
+				}
+			}
+
+			if (results.Count == 0)
+				throw new PeachException("Could not resolve scope id for interface with address '{0}'.", ip);
+
+			if (results.Count != 1)
+				throw new PeachException("Found multiple interfaces with address '{0}'.{1}\t{2}",
+					ip, Environment.NewLine,
+					string.Join(Environment.NewLine + "\t", results.Select( a => a.Item1.ToString() + " -> " + a.Item2.ToString())));
+
+			return results[0].Item2;
 		}
 
 		/// <summary>
@@ -231,6 +270,12 @@ namespace Peach.Core.Publishers
 				IPAddress local = Interface;
 				if (Interface == null)
 					local = GetLocalIp(ep);
+
+				if (local.IsIPv6LinkLocal && local.ScopeId == 0)
+				{
+					local = GetScopeId(local);
+					Logger.Trace("Resolved link-local interface IP for {0} socket to {1}.", _type, local);
+				}
 
 				_multicast = ep.Address.IsMulticast();
 

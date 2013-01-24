@@ -70,7 +70,7 @@ namespace Peach.Core.Publishers
 							_buffer.Position = pos;
 
 							if (Logger.IsDebugEnabled)
-								Logger.Debug("\n" + Utilities.FormatAsPrettyHex(_recvBuf, 0, len));
+								Logger.Debug("\n" + Utilities.HexDump(_buffer));
 						}
 
 						ScheduleRecv();

@@ -425,7 +425,7 @@ namespace Peach.Core.Test.Monitors
 
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
 			{
-				desc = string.Format("Received 5 bytes from '{0}'.", sender.socket.LocalEndPoint);
+				desc = string.Format("Received 5 bytes from '{0}'.", sender.localEP);
 				Run(new Params { { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
 			}
 

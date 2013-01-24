@@ -901,16 +901,6 @@ namespace Peach.Core.Analyzers
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
 
-		private static int GetNibble(char c)
-		{
-			if (c >= 'a')
-				return 0xA + (int)(c - 'a');
-			else if (c >= 'A')
-				return 0xA + (int)(c - 'A');
-			else
-				return (int)(c - '0');
-		}
-
 		public void handleCommonDataElementValue(XmlNode node, DataElement elem)
 		{
 			string value = null;
@@ -951,22 +941,12 @@ namespace Peach.Core.Analyzers
 						if (value.Length % 2 != 0)
 							value = "0" + value;
 
-						BitStream sout = new BitStream();
+						var array = HexString.ToArray(value);
 
-						for (int cnt = 0; cnt < value.Length; cnt += 2)
-						{
-							int nibble1 = GetNibble(value[cnt]);
-							int nibble2 = GetNibble(value[cnt + 1]);
+						if (array == null)
+							throw new PeachException("Error, the value of element '{0}' is not a valid hex string.", elem.name);
 
-							if (nibble1 < 0 || nibble1 > 0xF || nibble2 < 0 | nibble2 > 0xF)
-								throw new PeachException("Error, the value of element '{0}' is not a valid hex string.", elem.name);
-
-							sout.WriteByte((byte)((nibble1 << 4) | nibble2));
-						}
-
-						sout.SeekBits(0, SeekOrigin.Begin);
-
-						elem.DefaultValue = new Variant(sout.Value);
+						elem.DefaultValue = new Variant(array);
 						break;
 					case "literal":
 						throw new NotImplementedException("todo valueType");

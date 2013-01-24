@@ -175,19 +175,18 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (lengthType == LengthType.Bits)
-					return _length;
-				if (lengthType == LengthType.Bytes)
+				switch (_lengthType)
 				{
-					if (_length % 8 != 0)
-						throw new InvalidOperationException("Error, length is not power of 8, cannot return length in bytes.");
-
-					return _length / 8;
+					case LengthType.Bytes:
+						return _length;
+					case LengthType.Bits:
+						return _length;
+					case LengthType.Chars:
+						throw new NotSupportedException("Length type of Chars not supported by Number.");
+					default:
+						throw new NotSupportedException("Error calculating length.");
 				}
-
-				throw new NotSupportedException("Error, invalid LengthType for Number.");
 			}
-
 			set
 			{
 				if (value <= 0 || value > 64)

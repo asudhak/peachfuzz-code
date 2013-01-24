@@ -177,12 +177,12 @@ namespace Peach.Core.Publishers
 			if (sa.sll_ifindex == 0)
 				throw new ArgumentException("The interface \"" + Interface + "\" is not valid.");
 
-			int fd = socket(AF_PACKET, SOCK_RAW, sa.sll_protocol);
-			UnixMarshal.ThrowExceptionForLastErrorIf(fd);
+			int fd = -1, ret = -1;
 
 			try
 			{
-				int ret;
+				fd = socket(AF_PACKET, SOCK_RAW, sa.sll_protocol);
+				UnixMarshal.ThrowExceptionForLastErrorIf(fd);
 
 				ret = bind(fd, ref sa, Marshal.SizeOf(sa));
 				UnixMarshal.ThrowExceptionForLastErrorIf(ret);
@@ -195,9 +195,20 @@ namespace Peach.Core.Publishers
 
 				_socket = new UnixStream(fd);
 			}
+			catch (InvalidOperationException ex)
+			{
+				if (ex.InnerException != null)
+				{
+					var inner = ex.InnerException as UnixIOException;
+					if (inner != null && inner.ErrorCode == Errno.EPERM)
+						throw new PeachException("Access denied when opening the raw ethernet publisher.  Ensure the user has the appropriate permissions.");
+				}
+
+				throw;
+			}
 			finally
 			{
-				if (_socket == null)
+				if (_socket == null && fd != -1)
 					Syscall.close(fd);
 			}
 

@@ -134,29 +134,48 @@ namespace Peach.Core
 			{
 			}
 
-			// Find a converter on this type with the signature:
-			// static void Parse(string str, out "type" val)
-
-			BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-			Type[] types = new Type[] { typeof(string), destType.MakeByRefType() };
-			MethodInfo method = null;
-			Type level = ownerType;
-
-			do
+			// Look for a static Parse(string) on destType
+			MethodInfo method = destType.GetMethod("Parse", BindingFlags.Public | BindingFlags.Static, Type.DefaultBinder, new Type[] { typeof(string) }, null);
+			if (method != null)
 			{
-				method = level.GetMethod("Parse", bindingAttr, Type.DefaultBinder, types, null);
-				level = level.BaseType;
+				if (method.ReturnType != destType)
+					method = null;
 			}
-			while (method == null && level != null);
 
-			if (method == null || method.ReturnType != typeof(void) || !method.GetParameters()[1].IsOut)
-				throw new InvalidCastException("No suitable method exists for converting a string to " + destType.Name + ".");
+			if (method == null)
+			{
+				// Find a converter on this type with the signature:
+				// static void Parse(string str, out "type" val)
+				BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+				Type[] types = new Type[] { typeof(string), destType.MakeByRefType() };
+				Type level = ownerType;
+
+				do
+				{
+					method = level.GetMethod("Parse", bindingAttr, Type.DefaultBinder, types, null);
+					level = level.BaseType;
+
+					if (method != null && (method.ReturnType != typeof(void) || !method.GetParameters()[1].IsOut))
+						method = null;
+				}
+				while (method == null && level != null);
+
+				if (method == null)
+					throw new InvalidCastException("No suitable method exists for converting a string to " + destType.Name + ".");
+			}
 
 			try
 			{
-				object[] parameters = new object[] { value, null };
-				method.Invoke(null, parameters);
-				return parameters[1];
+				if (method.ReturnType == typeof(void))
+				{
+					object[] parameters = new object[] { value, null };
+					method.Invoke(null, parameters);
+					return parameters[1];
+				}
+				else
+				{
+					return method.Invoke(null, new object[] { value });
+				}
 			}
 			catch (TargetInvocationException ex)
 			{
