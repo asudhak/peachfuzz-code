@@ -9,15 +9,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [Description("AES128 transform (hex & binary).")]
-    [Transformer("AES128", true)]
-    [Transformer("crypto.AES128")]
+    [Description("Aes128 transform (hex & binary).")]
+    [Transformer("Aes128", true)]
+    [Transformer("crypto.Aes128")]
     [Parameter("Key", typeof(string), "Secret Key")]
     [Parameter("IV", typeof(string), "Initialization Vector")]
     [Serializable]
-    public class AES128 : SymmetricAlgorithmTransformer
+    public class Aes128 : SymmetricAlgorithmTransformer
     {
-        public AES128(Dictionary<string, Variant> args)
+        public Aes128(Dictionary<string, Variant> args)
             : base(args)
         {
         }

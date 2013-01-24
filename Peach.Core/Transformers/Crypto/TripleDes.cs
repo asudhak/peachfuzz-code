@@ -9,15 +9,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Crypto
 {
-    [Description("ThreeDES transform (hex & binary).")]
-    [Transformer("ThreeDES", true)]
-    [Transformer("crypto.ThreeDES")]
+    [Description("TripleDes transform (hex & binary).")]
+    [Transformer("TripleDes", true)]
+    [Transformer("crypto.TripleDes")]
     [Parameter("Key", typeof(string), "Secret Key")]
     [Parameter("IV", typeof(string), "Initialization Vector")]
     [Serializable]
-    public class ThreeDES : SymmetricAlgorithmTransformer
+    public class TripleDes : SymmetricAlgorithmTransformer
     {
-        public ThreeDES(Dictionary<string, Variant> args)
+        public TripleDes(Dictionary<string, Variant> args)
             : base(args)
         {
         }

@@ -603,9 +603,9 @@
     <Compile Include="Transformers\Compress\Bz2Compress.cs" />
     <Compile Include="Transformers\Compress\Bz2Decompress.cs" />
     <Compile Include="Transformers\Compress\GzipDecompress.cs" />
-    <Compile Include="Transformers\Crypto\AES128.cs" />
-	<Compile Include="Transformers\Crypto\SymmetricAlgorithmTransformer.cs" />
-    <Compile Include="Transformers\Crypto\ThreeDES.cs" />
+    <Compile Include="Transformers\Crypto\Aes128.cs" />
+    <Compile Include="Transformers\Crypto\SymmetricAlgorithmTransformer.cs" />
+    <Compile Include="Transformers\Crypto\TripleDes.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5Crypt.cs" />
     <Compile Include="Transformers\Crypto\Crypt.cs" />
     <Compile Include="Transformers\Crypto\CvsScramble.cs" />

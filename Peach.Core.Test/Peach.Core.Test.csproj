@@ -368,14 +368,14 @@
     <Compile Include="Transformers\Compress\Bz2DecompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipCompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipDecompressTests.cs" />
-    <Compile Include="Transformers\Crypto\AES128Tests.cs" />
+    <Compile Include="Transformers\Crypto\Aes128Tests.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CvsScrambleTests.cs" />
     <Compile Include="Transformers\Crypto\HmacTests.cs" />
     <Compile Include="Transformers\Crypto\Md5Tests.cs" />
     <Compile Include="Transformers\Crypto\Sha1Tests.cs" />
-    <Compile Include="Transformers\Crypto\ThreeDESTests.cs" />
+    <Compile Include="Transformers\Crypto\TripleDesTests.cs" />
     <Compile Include="Transformers\Crypto\UnixMd5CryptTests.cs" />
     <Compile Include="Transformers\Encode\Base64DecodeTests.cs" />
     <Compile Include="Transformers\Encode\Base64EncodeTests.cs" />

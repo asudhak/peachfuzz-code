@@ -11,7 +11,7 @@ using Peach.Core.Analyzers;
 namespace Peach.Core.Test.Transformers.Crypto
 {
     [TestFixture]
-    class AES128Tests : DataModelCollector
+    class Aes128Tests : DataModelCollector
     {
 
         [Test]
@@ -23,7 +23,7 @@ namespace Peach.Core.Test.Transformers.Crypto
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "        <Blob name=\"Data\" value=\"Hello\">" +
-                "           <Transformer class=\"AES128\">" +
+                "           <Transformer class=\"Aes128\">" +
                 "               <Param name=\"Key\" value=\"c89de1a4237def18\"/>" +
                 "               <Param name=\"IV\" value=\"passwordpassword\"/>" +
                 "           </Transformer>" +
@@ -61,14 +61,14 @@ namespace Peach.Core.Test.Transformers.Crypto
             Assert.AreEqual(precalcResult, values[0].Value);
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'AES128'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.")]
+        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.")]
         public void WrongSizedKeyTest()
         {
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
                 "        <Blob name=\"Data\" value=\"Hello\">" +
-                "           <Transformer class=\"AES128\">" +
+                "           <Transformer class=\"Aes128\">" +
                 "               <Param name=\"Key\" value=\"aaaa\"/>" +
                 "               <Param name=\"IV\" value=\"passwordpassword\"/>" +
                 "           </Transformer>" +
