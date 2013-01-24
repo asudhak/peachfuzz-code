@@ -264,9 +264,6 @@ namespace Peach.Core
 				case "latin1":
 					return ISOLatin1;
 
-				case "default":
-					return Default;
-
 				default:
 					throw new ArgumentException("Encoding name '" + name + "' not supported.", "name");
 			}
@@ -284,7 +281,6 @@ namespace Peach.Core
 		static volatile Encoding utf32Encoding;
 		static volatile Encoding bigEndianUTF32Encoding;
 		static volatile Encoding isoLatin1Encoding;
-		static volatile Encoding defaultEncoding;
 
 		static readonly object lockobj = new object();
 
@@ -440,25 +436,6 @@ namespace Peach.Core
 			}
 		}
 
-		public static Encoding Default
-		{
-			get
-			{
-				if (defaultEncoding == null)
-				{
-					lock (lockobj)
-					{
-						if (defaultEncoding == null)
-						{
-							defaultEncoding = new DefaultEncoding();
-						}
-					}
-				}
-
-				return defaultEncoding;
-			}
-		}
-
 		#endregion
 	}
 
@@ -536,19 +513,6 @@ namespace Peach.Core
 	{
 		public Latin1Encoding()
 			: base(System.Text.Encoding.GetEncoding("ISO-8859-1"), 1)
-		{
-		}
-	}
-
-	#endregion
-
-	#region DefaultEncoding
-
-	[Serializable]
-	public class DefaultEncoding : Encoding
-	{
-		public DefaultEncoding()
-			: base(System.Text.Encoding.GetEncoding(0), 1)
 		{
 		}
 	}
