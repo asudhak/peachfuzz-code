@@ -179,6 +179,7 @@ namespace Peach.Core
         }
     }
 
+    [Serializable]
 	public class HexString
 	{
 		public byte[] Value { get; private set; }
