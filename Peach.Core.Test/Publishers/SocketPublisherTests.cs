@@ -496,5 +496,97 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 		}
+
+		static IPAddress GetLinkLocalIPv6()
+		{
+			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+			foreach (NetworkInterface adapter in nics)
+			{
+				if (adapter.OperationalStatus != OperationalStatus.Up)
+					continue;
+
+				if (adapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
+					continue;
+
+				foreach (var ip in adapter.GetIPProperties().UnicastAddresses)
+				{
+					if (ip.Address.AddressFamily != AddressFamily.InterNetworkV6)
+						continue;
+
+					if (!ip.Address.IsIPv6LinkLocal)
+						continue;
+
+					return ip.Address;
+				}
+			}
+
+			return null;
+		}
+
+		private string udp6_xml_template = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String name=""str"" value=""Hello World""/>
+	</DataModel>
+
+	<StateModel name=""StateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Send"" type=""output"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+<Test name=""Default"">
+		<StateModel ref=""StateModel""/>
+		<Publisher class=""Udp"">
+			<Param name=""Host"" value=""{0}""/>
+			<Param name=""Port"" value=""8080""/>
+			<Param name=""Interface"" value=""{0}""/>
+		</Publisher>
+	</Test>
+</Peach>
+";
+
+		[Test]
+		public void TestUdp6Send()
+		{
+			IPAddress ip = GetLinkLocalIPv6();
+
+			if (ip == null)
+				Assert.Inconclusive("No interface with a link-locak IPv6 address was found.");
+
+			Assert.AreNotEqual(0, ip.ScopeId);
+			ip.ScopeId = 0;
+
+			string xml = string.Format(udp6_xml_template, ip);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(1, actions.Count);
+
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Could not resolve scope id for interface with address 'fe80::'.")]
+		public void TestBadUdp6Send()
+		{
+			string xml = string.Format(udp6_xml_template, "fe80::");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+		}
 	}
 }
