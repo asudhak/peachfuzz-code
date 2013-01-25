@@ -26,7 +26,7 @@ namespace Peach.Core.Test.PitParserTests
 					encoding = enc.HeaderName;
 			}
 
-			string val = string.IsNullOrEmpty(encoding) ? "encoding=\"" + encoding + "\"" : "";
+			string val = !string.IsNullOrEmpty(encoding) ? "encoding=\"" + encoding + "\"" : "";
 			string xml = "<?xml version=\"1.0\" " + val + "?>\r\n" +
 				"<Peach>\r\n" +
 				"	<DataModel name=\"##VAR1##\">\r\n" +
