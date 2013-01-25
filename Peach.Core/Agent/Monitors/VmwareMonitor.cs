@@ -8,7 +8,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("VmwareMonitor", true)]
+	[Monitor("Vmware", true)]
 	[Parameter("Vmx", typeof(string), "Path to virtual machine")]
 	[Parameter("Host", typeof(string), "Name of host machine", "")]
 	[Parameter("Login", typeof(string), "Username for authentication on the remote machine", "")]
@@ -40,7 +40,7 @@ namespace Peach.Core.Agent.Monitors
 
 		#region P/Invokes
 
-		const string VixDll = "Vix64AllProductsDyn.dll";
+		const string VixDll = "VixAllProducts.dll";
 		const int VixApiVersion = -1;
 		static readonly IntPtr VixInvalidHandle = IntPtr.Zero;
 
