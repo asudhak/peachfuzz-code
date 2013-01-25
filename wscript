@@ -145,6 +145,8 @@ def build(bld):
 	if not success:
 		raise Errors.WafError('"%s" is not a supported variant' % what)
 
+	# Suppress missing target warnings
+	bld.targets = '*'
 
 def go(bld):
 	bld.fun = 'build'
