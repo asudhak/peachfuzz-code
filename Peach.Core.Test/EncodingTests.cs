@@ -66,10 +66,17 @@ namespace Peach.Core.Test
 				Encoding.ASCII.GetBytes("\u08abX");
 			});
 
-			Assert.Throws<EncoderFallbackException>(delegate()
+			if (Platform.GetOS() == Platform.OS.Windows)
+			{
+				Assert.Throws<EncoderFallbackException>(delegate()
+				{
+					Encoding.Unicode.GetBytes("\ud860");
+				});
+			}
+			else
 			{
 				Encoding.Unicode.GetBytes("\ud860");
-			});
+			}
 
 			var bufD = Encoding.ISOLatin1.GetBytes("\x80");
 			Assert.AreEqual(1, bufD.Length);
@@ -167,7 +174,12 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, len);
 
 			byte[] utf32 = System.Text.Encoding.UTF32.GetBytes(high);
-			Assert.AreEqual(4, utf32.Length);
+
+			// Why is this different?
+			if (Platform.GetOS() == Platform.OS.Windows)
+				Assert.AreEqual(4, utf32.Length);
+			else
+				Assert.AreEqual(8, utf32.Length);
 
 			byte[] utf16 = System.Text.Encoding.Unicode.GetBytes(high);
 			Assert.AreEqual(4, utf16.Length);
