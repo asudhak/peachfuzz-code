@@ -197,7 +197,7 @@ namespace Peach.Core.Test.Monitors
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
 		</Monitor>
-		<Monitor class='SocketMonitor'>
+		<Monitor class='Socket'>
 {1}
 		</Monitor>
 	</Agent>
@@ -334,7 +334,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("Monitoring " + addr + ":" + port, faults[1].title);
 		}
 
-		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Could not start monitor \"SocketMonitor\".  Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
+		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Could not start monitor \"Socket\".  Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
 		public void TestBadHostInterface()
 		{
 			// Deal with IPv4/IPv6 mismatched Host & Interface parameters
@@ -402,7 +402,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
-		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"SocketMonitor\".  Multicast hosts are not supported with the tcp protocol.")]
+		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"Socket\".  Multicast hosts are not supported with the tcp protocol.")]
 		public void TestMulticastTcp()
 		{
 			// Multicast is not supported when Protocol is tcp

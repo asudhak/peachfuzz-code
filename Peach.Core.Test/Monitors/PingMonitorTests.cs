@@ -52,7 +52,7 @@ namespace Peach.Core.Test.Monitors
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
 		</Monitor>
-		<Monitor class='PingMonitor'>
+		<Monitor class='Ping'>
 {1}
 		</Monitor>
 	</Agent>
