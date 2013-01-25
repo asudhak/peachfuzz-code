@@ -30,16 +30,46 @@ namespace Peach.Core.Test.Transformers.Crypto
                 new byte[] { 0x2f, 0x1b, 0xe1, 0x64, 0xf7, 0x58, 0xe7, 0xe5, 0x0d, 0x73, 0x2e, 0x01, 0x38, 0x39, 0x1c, 0x2d });
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.")]
+        [Test, ExpectedException(typeof(PeachException))]
         public void WrongSizedKeyTest()
         {
-            RunTest("aaaa", "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae", new byte[] { });
+            string msg;
+
+            if (Platform.GetOS() == Platform.OS.Windows)
+                msg = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.";
+            else
+                msg = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: Key size not supported by algorithm";
+
+            try
+            {
+                RunTest("aaaa", "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae", new byte[] { });
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(msg, ex.Message);
+                throw;
+            }
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: Specified initialization vector (IV) does not match the block size for this algorithm.")]
+        [Test, ExpectedException(typeof(PeachException))]
         public void WrongSizedIV()
         {
-            RunTest("ae1234567890aeaffeda214354647586", "aaaa", new byte[] { });
+            string msg;
+
+            if (Platform.GetOS() == Platform.OS.Windows)
+                msg = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: Specified initialization vector (IV) does not match the block size for this algorithm.";
+            else
+                msg = "Error, unable to create instance of 'Transformer' named 'Aes128'.\nExtended error: Exception during object creation: IV length is different than block size";
+
+            try
+            {
+                RunTest("ae1234567890aeaffeda214354647586", "aaaa", new byte[] { });
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(msg, ex.Message);
+                throw;
+            }
         }
 
         public void RunTest(string key, string iv, byte[] expected)

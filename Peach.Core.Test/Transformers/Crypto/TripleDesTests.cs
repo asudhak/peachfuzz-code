@@ -25,22 +25,67 @@ namespace Peach.Core.Test.Transformers.Crypto
             RunTest("ae1234567890aeaffeda214354647586", "aeaeaeaeaeaeaeae", new byte[] { 0x95, 0x4d, 0x29, 0x9a, 0xbc, 0x9d, 0x07, 0x5e });
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.")]
+        [Test, ExpectedException(typeof(PeachException))]
         public void WrongSizedKeyTest()
         {
-            RunTest("aaaa", "aeaeaeaeaeaeaeae", new byte[]{});
+            string msg;
+
+            if (Platform.GetOS() == Platform.OS.Windows)
+                msg = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is not a valid size for this algorithm.";
+            else
+                msg = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Wrong Key Length";
+
+            try
+            {
+                RunTest("aaaa", "aeaeaeaeaeaeaeae", new byte[]{});
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(msg, ex.Message);
+                throw;
+            }
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is a known weak key for 'TripleDES' and cannot be used.")]
+        [Test, ExpectedException(typeof(PeachException))]
         public void WeakKeyTest()
         {
-            RunTest("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aeaeaeaeaeaeaeae", new byte[] { });
+            string msg;
+
+            if (Platform.GetOS() == Platform.OS.Windows)
+                msg = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified key is a known weak key for 'TripleDES' and cannot be used.";
+            else
+                msg = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Weak Key";
+
+            try
+            {
+                RunTest("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aeaeaeaeaeaeaeae", new byte[] { });
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(msg, ex.Message);
+                throw;
+            }
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified initialization vector (IV) does not match the block size for this algorithm.")]
+        [Test, ExpectedException(typeof(PeachException))]
         public void WrongSizedIV()
         {
-            RunTest("ae1234567890aeaffeda214354647586", "aaaa", new byte[] { });
+            string msg;
+
+            if (Platform.GetOS() == Platform.OS.Windows)
+                msg = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: Specified initialization vector (IV) does not match the block size for this algorithm.";
+            else
+                msg = "Error, unable to create instance of 'Transformer' named 'TripleDes'.\nExtended error: Exception during object creation: IV length is different than block size";
+
+            try
+            {
+                RunTest("ae1234567890aeaffeda214354647586", "aaaa", new byte[] { });
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(msg, ex.Message);
+                throw;
+            }
         }
 
         public void RunTest(string key, string iv, byte[] expected)
