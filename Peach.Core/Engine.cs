@@ -256,13 +256,13 @@ namespace Peach.Core
 
 				uint redoCount = 0;
 
+				if (context.config.parallel && !mutationStrategy.IsDeterministic)
+						throw new NotSupportedException("parallel is not supported when a non-deterministic mutation strategy is used");
+
 				if (context.config.range)
 				{
 					if (context.config.parallel)
 						throw new NotSupportedException("range is not supported when parallel is used");
-
-					if (mutationStrategy.IsDeterministic)
-						throw new NotSupportedException("range is not supported when a non-deterministic mutation strategy is used");
 
 					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);
