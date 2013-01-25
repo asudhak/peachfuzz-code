@@ -1,7 +1,7 @@
-import os.path
+import os.path, re
 from waflib.TaskGen import feature, before_method, after_method
 from waflib.Configure import conf
-from waflib import Utils, Logs, Task
+from waflib import Utils, Logs, Task, Context, Errors
 
 @feature('*')
 @before_method('process_source')
@@ -113,3 +113,21 @@ def clone_env(self, variant):
 	copy.BINDIR = self.env.BINDIR
 	copy.LIBDIR = self.env.LIBDIR
 	return copy
+
+@conf
+def ensure_version(self, tool, ver_exp):
+	env = self.env
+	environ = dict(self.environ)
+	environ.update(PATH = ';'.join(env['PATH']))
+	cmd = self.cmd_to_list(env[tool])
+	(out,err) = self.cmd_and_log(cmd + ['/help'], env=environ, output=Context.BOTH)
+	exe = os.path.split(cmd[0])[1].lower()
+	ver_re = re.compile('.*ersion (\d+\.\d+\.\d+\.\d+)')
+	m = ver_re.match(out)
+	if not m:
+		m = ver_re.match(err)
+	if not m:
+		raise Errors.WafError("Could not verify version of %s" % (exe))
+	ver = m.group(1)
+	if ver != ver_exp:
+		raise Errors.WafError("Requires %s %s but found version %s" % (exe, ver_exp, ver))

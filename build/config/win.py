@@ -90,6 +90,9 @@ def prepare(conf):
 	env['MCS'] = env['MCS_%s' % env.SUBARCH]
 
 def configure(conf):
+	conf.ensure_version('CXX', '16.00.40219.01')
+	conf.ensure_version('MCS', '4.0.30319.1')
+
 	env = conf.env
 
 	env.append_value('supported_features', [
