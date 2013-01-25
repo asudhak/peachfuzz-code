@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 using Enc = System.Text.Encoding;
+using System.Globalization;
 
 namespace Peach.Core.Test
 {
@@ -62,12 +63,12 @@ namespace Peach.Core.Test
 		{
 			Assert.Throws<EncoderFallbackException>(delegate()
 			{
-				Encoding.ASCII.GetBytes("\u00abX");
+				Encoding.ASCII.GetBytes("\u08abX");
 			});
 
 			Assert.Throws<EncoderFallbackException>(delegate()
 			{
-				Encoding.ASCII.GetBytes("\x80");
+				Encoding.Unicode.GetBytes("\ud860");
 			});
 
 			var bufD = Encoding.ISOLatin1.GetBytes("\x80");
@@ -154,54 +155,119 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
-		[Ignore]
+		public void TestHighSurrogate()
+		{
+			string high = char.ConvertFromUtf32(0x10ffff);
+			Assert.AreEqual(2, high.Length);
+
+			var it = StringInfo.GetTextElementEnumerator(high);
+			int len = 0;
+			while (it.MoveNext())
+				++len;
+			Assert.AreEqual(1, len);
+
+			byte[] utf32 = System.Text.Encoding.UTF32.GetBytes(high);
+			Assert.AreEqual(4, utf32.Length);
+
+			byte[] utf16 = System.Text.Encoding.Unicode.GetBytes(high);
+			Assert.AreEqual(4, utf16.Length);
+		}
+
+		[Test]
+		public void EncodeBadAscii()
+		{
+			string str = "\xff";
+			var bytes = Encoding.ASCII.GetRawBytes(str);
+			var expected = new byte[] { 0xff };
+			Assert.AreEqual(expected, bytes);
+		}
+
+		[Test]
 		public void EncodeBadUtf32()
 		{
-			string bad = "\ud860";
-			int val = (int)bad[0];
-			Assert.AreEqual(val, 0xd860);
-			var bytes = Encoding.UTF32.GetBytes(bad);
+			string str = "\ud860";
+			var bytes = Encoding.UTF32.GetRawBytes(str);
 			var expected = new byte[] { 0x60, 0xd8, 0, 0 };
 			Assert.AreEqual(expected, bytes);
+
+			// 0x64321
+			str = "\uD950\uDF21";
+			bytes = Encoding.UTF32.GetRawBytes(str);
+			expected = new byte[] { 0x21, 0x43, 0x6, 0 };
+			Assert.AreEqual(expected, bytes);
 		}
 
 		[Test]
-		[Ignore]
 		public void EncodeBadUtf16()
 		{
-			string bad = "\ud860";
-			int val = (int)bad[0];
-			Assert.AreEqual(val, 0xd860);
-			var bytes = Encoding.Unicode.GetBytes(bad);
+			string str = "\ud860";
+			var bytes = Encoding.Unicode.GetRawBytes(str);
 			var expected = new byte[] { 0x60, 0xd8 };
 			Assert.AreEqual(expected, bytes);
-		}
 
-		[Test]
-		[Ignore]
-		public void EncodeBadUtf16BE()
-		{
-			string bad = "\ud860";
-			int val = (int)bad[0];
-			Assert.AreEqual(val, 0xd860);
-			var bytes = Encoding.BigEndianUnicode.GetBytes(bad);
-			var expected = new byte[] { 0xd8, 0x60 };
+			str = "\uD950\uDF21";
+			bytes = Encoding.Unicode.GetRawBytes(str);
+			expected = new byte[] { 0x50, 0xd9, 0x21, 0xdf };
 			Assert.AreEqual(expected, bytes);
 		}
 
 		[Test]
-		[Ignore]
+		public void EncodeBadUtf16BE()
+		{
+			string str = "\ud860";
+			var bytes = Encoding.BigEndianUnicode.GetRawBytes(str);
+			var expected = new byte[] { 0xd8, 0x60};
+			Assert.AreEqual(expected, bytes);
+
+			str = "\uD950\uDF21";
+			bytes = Encoding.BigEndianUnicode.GetRawBytes(str);
+			expected = new byte[] { 0xd9, 0x50, 0xdf, 0x21 };
+			Assert.AreEqual(expected, bytes);
+		}
+
+		[Test]
 		public void EncodeBadUtf8()
 		{
 			// 0xd860
 			// 1110xxxx 10xxxxxx 10xxxxxx
 			//     1101   100001   100000
 			// 0xed     0xa1     0xa0
-			string bad = "\ud860";
-			int val = (int)bad[0];
-			Assert.AreEqual(val, 0xd860);
-			var bytes = Encoding.UTF8.GetBytes(bad);
+			string str = "\ud860";
+			var bytes = Encoding.UTF8.GetRawBytes(str);
 			var expected = new byte[] { 0xed, 0xa1, 0xa0 };
+			Assert.AreEqual(expected, bytes);
+
+			// 0x64321
+			// 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+			//      001   100100   001100   100001
+			// 0xf1     0xa4     0x8c     0xa1
+			str = "\uD950\uDF21";
+			bytes = Encoding.UTF8.GetRawBytes(str);
+			expected = new byte[] { 0xf1, 0xa4, 0x8c, 0xa1 };
+			Assert.AreEqual(expected, bytes);
+		}
+
+		[Test]
+		public void EncodeBadUtf7()
+		{
+			//   0xd860
+			//   1101 1000 0110 0000
+			//   110110 000110 0000**
+			//   0x36   0x06   0x00
+			//   '2'    'G'    'A'
+			string str = "\ud860";
+			var bytes = Encoding.UTF7.GetRawBytes(str);
+			var expected = new byte[] { (byte)'+', (byte)'2', (byte)'G', (byte)'A', (byte)'-' };
+			Assert.AreEqual(expected, bytes);
+
+			//   0xd950              0xdf21
+			//   1101 1001 0101 0000 1101 1111 0010 0001
+			//   110110 010101 000011 011111 001000 01****
+			//   0x36   0x15   0x03   0x1f   0x08   0x10
+			//   '2'    'V'    'D'    'f'    'I'    'Q'
+			str = "\uD950\uDF21";
+			bytes = Encoding.UTF7.GetRawBytes(str);
+			expected = new byte[] { (byte)'+', (byte)'2', (byte)'V', (byte)'D', (byte)'f', (byte)'I', (byte)'Q', (byte)'-' };
 			Assert.AreEqual(expected, bytes);
 		}
 	}

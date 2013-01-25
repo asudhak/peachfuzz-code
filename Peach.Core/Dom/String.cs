@@ -464,10 +464,7 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			if (encoding.IsSingleByte)
-				return new BitStream(Encoding.ISOLatin1.GetBytes((string)InternalValue));
-			else
-				return new BitStream(encoding.GetBytes((string)InternalValue));
+			return new BitStream(encoding.GetRawBytes((string)InternalValue));
 		}
 
 		public override bool hasLength
