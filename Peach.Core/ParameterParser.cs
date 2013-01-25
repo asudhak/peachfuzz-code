@@ -99,7 +99,7 @@ namespace Peach.Core
 				}
 				catch (Exception ex)
 				{
-					RaiseError(pluginType, "could not set parameter '{0}'.  {1}", name, ex.Message);
+					RaiseError(ex, pluginType, "could not set parameter '{0}'.  {1}", name, ex.Message);
 				}
 			}
 
@@ -189,12 +189,17 @@ namespace Peach.Core
 
 		private static void RaiseError(Type type, string fmt, params string[] args)
 		{
+			RaiseError(null, type, fmt, args);
+		}
+
+		private static void RaiseError(Exception ex, Type type, string fmt, params string[] args)
+		{
 			var attrs = type.GetAttributes<PluginAttribute>(null);
 			var attr = attrs.FirstOrDefault(a => a.IsDefault == true);
 			if (attr == null) attr = attrs.First();
 
 			string msg = string.Format("{0} '{1}' {2}", attr.Type.Name, attr.Name, string.Format(fmt, args));
-			throw new PeachException(msg);
+			throw new PeachException(msg, ex);
 		}
 
 	}

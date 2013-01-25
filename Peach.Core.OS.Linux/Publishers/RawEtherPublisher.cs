@@ -201,7 +201,7 @@ namespace Peach.Core.Publishers
 				{
 					var inner = ex.InnerException as UnixIOException;
 					if (inner != null && inner.ErrorCode == Errno.EPERM)
-						throw new PeachException("Access denied when opening the raw ethernet publisher.  Ensure the user has the appropriate permissions.");
+						throw new PeachException("Access denied when opening the raw ethernet publisher.  Ensure the user has the appropriate permissions.", ex);
 				}
 
 				throw;

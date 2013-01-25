@@ -134,9 +134,9 @@ namespace Peach.Core.Dom
             object propertyValue = dataElement.GetParameter(parameterAttribute.name);
             eDataElement.AppendAttribute(parameterAttribute.name, propertyValue.ToString());
           }
-          catch (Exception ex)
+          catch
           {
-            throw ex;
+            throw;
           }
         }
         node.AppendChild(eDataElement);

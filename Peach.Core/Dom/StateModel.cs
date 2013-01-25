@@ -154,7 +154,7 @@ namespace Peach.Core.Dom
 									catch (Cracker.CrackingFailure ex)
 									{
 										throw new PeachException("Error, failed to crack \"" + fileName +
-											"\" into \"" + action.dataModel.fullName + "\": " + ex.Message);
+											"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
 									}
 								}
 								else if (data.DataType == DataType.Files)
@@ -231,7 +231,7 @@ namespace Peach.Core.Dom
 											catch (Cracker.CrackingFailure ex)
 											{
 												throw new PeachException("Error, failed to crack \"" + fileName + 
-													"\" into \"" + action.dataModel.fullName + "\": " + ex.Message);
+													"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
 											}
 										}
 									}

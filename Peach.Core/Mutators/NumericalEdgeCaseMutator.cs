@@ -170,9 +170,9 @@ namespace Peach.Core.Mutators
                     {
                         n = Int32.Parse(h.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
                     }
                 }
             }

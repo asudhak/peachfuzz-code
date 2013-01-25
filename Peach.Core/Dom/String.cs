@@ -358,7 +358,7 @@ namespace Peach.Core.Dom
 						if (lenType == LengthType.Bits)
 						{
 							if ((len % 8) != 0)
-								throw new PeachException("Error, {2} string '{0}' has invalid length of {1} bits.", name, len, stringType);
+								throw new PeachException(string.Format("Error, {2} string '{0}' has invalid length of {1} bits.", name, len, stringType));
 
 							len = len / 8;
 							lenType = LengthType.Bytes;
@@ -379,8 +379,8 @@ namespace Peach.Core.Dom
 								grow -= nullLen;
 
 							if (grow < 0 || (grow % padLen) != 0)
-								throw new PeachException("Error, can not satisfy length requirement of {1} {2} when padding {3} string '{0}'.",
-									name, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType);
+								throw new PeachException(string.Format("Error, can not satisfy length requirement of {1} {2} when padding {3} string '{0}'.",
+									name, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType));
 
 							final += MakePad(grow / padLen);
 						}
@@ -406,14 +406,14 @@ namespace Peach.Core.Dom
 		private bool NeedsExpand(int actual, long desired, bool nullTerm, string value)
 		{
 			if (actual > desired)
-				throw new PeachException("Error, value of {3} string '{0}' is longer than the specified length of {1} {2}.",
-					name, lengthType == LengthType.Bits ? desired * 8 : desired, lengthType.ToString().ToLower(), stringType);
+				throw new PeachException(string.Format("Error, value of {3} string '{0}' is longer than the specified length of {1} {2}.",
+					name, lengthType == LengthType.Bits ? desired * 8 : desired, lengthType.ToString().ToLower(), stringType));
 
 			if (actual == desired)
 			{
 				if (nullTerm && !value.EndsWith("\0"))
-					throw new PeachException("Error, adding null terminator to {3} string '{0}' makes it longer than the specified length of {1} {2}.",
-						name, lengthType == LengthType.Bits ? desired * 8 : desired, lengthType.ToString().ToLower(), stringType);
+					throw new PeachException(string.Format("Error, adding null terminator to {3} string '{0}' makes it longer than the specified length of {1} {2}.",
+						name, lengthType == LengthType.Bits ? desired * 8 : desired, lengthType.ToString().ToLower(), stringType));
 
 				return false;
 			}

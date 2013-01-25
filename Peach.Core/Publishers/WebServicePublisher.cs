@@ -114,7 +114,7 @@ namespace Peach.Core.Publishers
 					throw new SoftException(ex.InnerException);
 
                 if (!(ex.InnerException is WebException))
-                    throw ex;
+                    throw;
 
                 var webEx = ex.InnerException as WebException;
                 var response = webEx.Response as HttpWebResponse;
@@ -134,7 +134,7 @@ namespace Peach.Core.Publishers
 					}
                 }
 
-                throw ex;
+                throw;
             }
 		}
 	}

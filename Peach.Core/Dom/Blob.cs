@@ -162,7 +162,7 @@ namespace Peach.Core.Dom
 			{
 				BitStream bs = (BitStream)blob.DefaultValue;
 				if (bs.LengthBits > blob.lengthAsBits)
-					throw new PeachException("Error, value of element \"{0}\" is longer than specified length.", blob.name);
+					throw new PeachException("Error, value of element \"" + blob.name + "\" is longer than specified length.");
 				else if (bs.LengthBits < blob.lengthAsBits)
 					ExpandDefaultValue(blob, bs);
 			}
