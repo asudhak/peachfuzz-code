@@ -30,7 +30,7 @@ def config_uselib(conf, var, name, ext):
 	value = ext.get(var)
 	if value:
 		conf.env[uselib] = value
-	
+
 def config_external(conf, name, ext):
 	paths = ext.get('INCLUDES', conf.env['INCLUDES'])
 	for x in ext.get('HEADERS', []):
@@ -54,7 +54,7 @@ def config_external(conf, name, ext):
 	config_uselib(conf, 'CPPFLAGS', name, ext)
 	config_uselib(conf, 'CXXFLAGS', name, ext)
 	config_uselib(conf, 'LINKFLAGS', name, ext)
-	
+
 def configure(conf):
 	exts = conf.env['EXTERNALS']
 	for k in exts:

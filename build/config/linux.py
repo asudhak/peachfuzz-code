@@ -106,7 +106,7 @@ def configure(conf):
 	env.append_value('CSFLAGS_debug', [
 		'/define:DEBUG,TRACE',
 	])
-	
+
 	env.append_value('CSFLAGS_release', [
 		'/define:TRACE',
 		'/optimize+',
@@ -123,7 +123,7 @@ def configure(conf):
 		'-Werror',
 		'-Wno-unused',
 	]
-	
+
 	cppflags_debug = [
 		'-ggdb',
 	]
