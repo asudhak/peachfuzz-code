@@ -24,7 +24,7 @@ namespace Peach.Core
 		ProcessInfo Snapshot(Process p);
 	}
 
-	public class ProcessInfo : PlatformFactory<IProcessInfo>
+	public class ProcessInfo : StaticPlatformFactory<IProcessInfo>
 	{
 		public int Id;
 		public string ProcessName;
