@@ -868,5 +868,21 @@ namespace Peach.Core.Test
 			Buffer.BlockCopy(w2.Stream.GetBuffer(), 0, act3, 0, 1);
 			Assert.AreEqual(exp3, act3);
 		}
+
+		[Test]
+		public void ReadBitStream()
+		{
+			var bs = new BitStream();
+			bs.WriteBytes(new byte[] { 0x11, 0x27, 0x33, 0x44, 0x55 });
+			bs.SeekBits(0, SeekOrigin.Begin);
+			BitStream in1 = bs.ReadBitsAsBitStream(8 + 4);
+			BitStream in2 = bs.ReadBitsAsBitStream(2);
+			BitStream in3 = bs.ReadBitsAsBitStream(2 + 16 + 4);
+
+			Assert.AreEqual(new byte[] { 0x11, 0x20 }, in1.Value);
+			Assert.AreEqual(new byte[] { 0x40 }, in2.Value);
+			Assert.AreEqual(new byte[] { 0xcc, 0xd1, 0x14 }, in3.Value);
+		}
+
 	}
 }
