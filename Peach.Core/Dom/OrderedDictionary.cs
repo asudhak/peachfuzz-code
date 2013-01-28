@@ -700,7 +700,7 @@ namespace Peach.Core
 
 		public bool TryGetValue(TKey key, out TValue value)
 		{
-			throw new NotImplementedException();
+			return _dictionary.TryGetValue(key, out value);
 		}
 
 		public ICollection<TValue> Values

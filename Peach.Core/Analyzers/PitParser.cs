@@ -242,8 +242,14 @@ namespace Peach.Core.Analyzers
 						nsObj.parent = dom;
 						nsObj.name = ns;
 
-						if (xmldoc.FirstChild.Name == "Peach")
-							handlePeach(xmldoc.FirstChild, nsObj);
+						foreach (XmlNode item in xmldoc.ChildNodes)
+						{
+							if (item.Name == "Peach")
+							{
+								handlePeach(item, nsObj);
+								break;
+							}
+						}
 
 						dom.ns[ns] = nsObj;
 						break;
@@ -420,13 +426,14 @@ namespace Peach.Core.Analyzers
 		{
 			if (name.IndexOf(':') > -1)
 			{
-				string ns = name.Substring(0, name.IndexOf(':') - 1);
+				string ns = name.Substring(0, name.IndexOf(':'));
 
-				if (!dom.ns.Keys.Contains(ns))
+				Dom.DomNamespace other;
+				if (!dom.ns.TryGetValue(ns, out other))
 					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + name + "'.");
 
-				name = name.Substring(name.IndexOf(':'));
-				dom = dom.ns["name"];
+				name = name.Substring(name.IndexOf(':') + 1);
+				dom = other;
 			}
 
 			if (container != null)

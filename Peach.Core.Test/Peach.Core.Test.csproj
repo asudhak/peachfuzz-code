@@ -338,6 +338,7 @@
     <Compile Include="PitParserTests\DefaultValuesTests.cs" />
     <Compile Include="PitParserTests\FlagTests.cs" />
     <Compile Include="PitParserTests\GeneralTests.cs" />
+    <Compile Include="PitParserTests\IncludeTests.cs" />
     <Compile Include="PitParserTests\MiscTests.cs" />
     <Compile Include="PitParserTests\NumberTests.cs" />
     <Compile Include="PitParserTests\PaddingTests.cs" />
