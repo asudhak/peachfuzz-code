@@ -42,7 +42,7 @@ namespace Peach.Core.Publishers
 			catch (Exception ex)
 			{
 				throw new PeachException("Error, unable to bind to interface " +
-					Interface + " on port " + Port + ": " + ex.Message);
+					Interface + " on port " + Port + ": " + ex.Message, ex);
 			}
 
 			base.OnStart();
@@ -73,7 +73,7 @@ namespace Peach.Core.Publishers
 			}
 			catch (Exception ex)
 			{
-				throw new SoftException(new PeachException("Error, unable to accept incoming connection: " + ex.Message));
+				throw new SoftException(ex);
 			}
 
 			// Start receiving on the client

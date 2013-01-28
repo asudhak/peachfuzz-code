@@ -38,7 +38,7 @@ namespace Peach.Core.Agent.Monitors
 					return true;
 				}
 			}
-			catch (Exception)
+			catch
 			{
 				return false;
 			}
@@ -60,7 +60,7 @@ namespace Peach.Core.Agent.Monitors
 				const int maxLen = 100 - 20 - 8;
 				int len = Encoding.ASCII.GetByteCount(Data ?? "");
 				if (len > maxLen)
-					throw new PeachException("Error, the value of parameter 'Data' is longer than the maximum length of {0}.", maxLen);
+					throw new PeachException("Error, the value of parameter 'Data' is longer than the maximum length of " + maxLen + ".");
 			}
 		}
 

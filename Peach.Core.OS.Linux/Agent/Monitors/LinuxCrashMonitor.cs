@@ -106,7 +106,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, LinuxCrashMonitor was unable to create the log directory.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashMonitor was unable to create the log directory.  " + ex.Message, ex);
 			}
 
 			logFolderCreated = true;
@@ -138,7 +138,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, LinuxCrashMonitor was unable to clear the log directory.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashMonitor was unable to clear the log directory.  " + ex.Message, ex);
 			}
 		}
 
@@ -208,7 +208,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				}
 				catch (UnauthorizedAccessException ex)
 				{
-					throw new PeachException("Error, LinuxCrashMonitor was unable to read the crash log.  {0}", ex.Message);
+					throw new PeachException("Error, LinuxCrashMonitor was unable to read the crash log.  " + ex.Message, ex);
 				}
 			}
 
@@ -235,7 +235,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			{
 				int err = Marshal.GetLastWin32Error();
 				Win32Exception ex = new Win32Exception(err);
-				throw new PeachException("Error, LinuxCrashHandler could not query the core size resource limit.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashHandler could not query the core size resource limit.  " + ex.Message, ex);
 			}
 
 			rlim.rlim_curr = rlim.rlim_max;
@@ -244,7 +244,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			{
 				int err = Marshal.GetLastWin32Error();
 				Win32Exception ex = new Win32Exception(err);
-				throw new PeachException("Error, LinuxCrashHandler could not set the core size resource limit.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashHandler could not set the core size resource limit.  " + ex.Message, ex);
 			}
 		}
 

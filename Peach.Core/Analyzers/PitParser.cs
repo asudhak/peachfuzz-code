@@ -330,7 +330,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Data")
 				{
-					throw new NotImplementedException("Data");
+					throw new NotImplementedException();
 				}
 			}
 
@@ -726,7 +726,7 @@ namespace Peach.Core.Analyzers
 				}
 				catch (Exception e)
 				{
-					throw new PeachException("Error, parsing length on '" + element.name + "': " + e.Message);
+					throw new PeachException("Error, parsing length on '" + element.name + "': " + e.Message, e);
 				}
 			}
 
@@ -944,7 +944,7 @@ namespace Peach.Core.Analyzers
 						var array = HexString.ToArray(value);
 
 						if (array == null)
-							throw new PeachException("Error, the value of element '{0}' is not a valid hex string.", elem.name);
+							throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
 
 						elem.DefaultValue = new Variant(array);
 						break;
@@ -1102,7 +1102,7 @@ namespace Peach.Core.Analyzers
 				throw new PeachException(string.Format(
 					"Error, unable to create instance of '{0}' named '{1}'.\nExtended error: Exception during object creation: {2}",
 					pluginType, cls, e.InnerException.Message
-				));
+				), e);
 			}
 		}
 
@@ -1440,9 +1440,9 @@ namespace Peach.Core.Analyzers
 					{
 						test.agents.Add(refName, parent.agents[refName]);
 					}
-					catch
+					catch (Exception ex)
 					{
-						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found");
+						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found", ex);
 					}
 
 					var platform = child.getAttribute("platform");
@@ -1514,7 +1514,7 @@ namespace Peach.Core.Analyzers
 							test.excludedMutators.AddRange(list);
 							break;
 						default:
-							throw new PeachException("Error, Mutators element has invalid 'mode' attribute '{0}'", mode);
+							throw new PeachException("Error, Mutators element has invalid 'mode' attribute '" + mode + "'");
 					}
 				}
 			}

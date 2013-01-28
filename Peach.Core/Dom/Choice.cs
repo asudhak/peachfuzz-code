@@ -99,7 +99,7 @@ namespace Peach.Core.Dom
 					context._sizedBlockStack.Add(element);
 					context._sizedBlockMap[element] = size;
 
-					sizedData = new BitStream(data.ReadBytes(size));
+					sizedData = data.ReadBitsAsBitStream(size);
 					sizeRelation = null;
 				}
 			}
@@ -109,7 +109,7 @@ namespace Peach.Core.Dom
 				context._sizedBlockStack.Add(element);
 				context._sizedBlockMap[element] = size;
 
-				sizedData = new BitStream(data.ReadBytes(size));
+				sizedData = data.ReadBitsAsBitStream(size);
 			}
 
 			long startPosition = sizedData.TellBits();

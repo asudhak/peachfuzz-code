@@ -554,9 +554,9 @@ namespace Peach.Core.Dom
 				DataCracker cracker = new DataCracker();
 				cracker.CrackData(dataModel, new IO.BitStream(publisher));
 			}
-			catch (CrackingFailure)
+			catch (CrackingFailure ex)
 			{
-				throw new SoftException();
+				throw new SoftException(ex);
 			}
 		}
 

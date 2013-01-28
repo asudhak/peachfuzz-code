@@ -127,14 +127,15 @@ namespace Peach.Core.Test.Agent.Monitors
 		[Test]
 		public void TestWindow()
 		{
+			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
-			th.Start("PopupWatcherTest");
+			th.Start(windowName);
 
 			faultIteration = 1;
 
 			try
 			{
-				Run(new Params { { "WindowNames", "PopupWatcherTest" } });
+				Run(new Params { { "WindowNames", windowName } });
 			}
 			finally
 			{
@@ -154,14 +155,15 @@ namespace Peach.Core.Test.Agent.Monitors
 		[Test]
 		public void TestWindowList()
 		{
+			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
-			th.Start("PopupWatcherTest");
+			th.Start(windowName);
 
 			faultIteration = 1;
 
 			try
 			{
-				Run(new Params { { "WindowNames", "Window1,Window2,PopupWatcherTest" } });
+				Run(new Params { { "WindowNames", "Window1,Window2," + windowName } });
 			}
 			finally
 			{
@@ -174,19 +176,21 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
 			Assert.AreEqual("PopupWatcher", faults[1].detectionSource);
 			Assert.AreEqual("Closed 1 popup window.", faults[1].title);
-			Assert.True(faults[1].description.Contains("PopupWatcherTest"));
+			Assert.True(faults[1].description.Contains(windowName));
 			Assert.AreEqual(FaultType.Data, faults[1].type);
 		}
 
 		[Test]
 		public void TestFault()
 		{
+			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
+
 			var th = new Thread(ThreadProc);
-			th.Start("PopupWatcherTest");
+			th.Start(windowName);
 
 			try
 			{
-				Run(new Params { { "WindowNames", "PopupWatcherTest" }, { "Fault", "true" } });
+				Run(new Params { { "WindowNames", windowName }, { "Fault", "true" } });
 			}
 			finally
 			{
@@ -198,7 +202,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("PopupWatcher", faults[0].detectionSource);
 			Assert.AreEqual("Closed 1 popup window.", faults[0].title);
-			Assert.True(faults[0].description.Contains("PopupWatcherTest"));
+			Assert.True(faults[0].description.Contains(windowName));
 		}
 	}
 }

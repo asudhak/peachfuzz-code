@@ -120,7 +120,7 @@ namespace Peach.Core.Dom
 		public virtual string name
 		{
 			get { return "root"; }
-			set { throw new Exception("Error, Dom.name is static and cannot be set"); }
+			set { throw new NotSupportedException("Error, Dom.name is static and cannot be set"); }
 		}
 
 		#endregion

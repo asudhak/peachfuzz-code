@@ -332,18 +332,18 @@ namespace Peach
 			{
 				config.rangeStart = Convert.ToUInt32(parts[0]);
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Invalid range start iteration: " + parts[0]);
+				throw new PeachException("Invalid range start iteration: " + parts[0], ex);
 			}
 
 			try
 			{
 				config.rangeStop = Convert.ToUInt32(parts[1]);
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Invalid range stop iteration: " + parts[1]);
+				throw new PeachException("Invalid range stop iteration: " + parts[1], ex);
 			}
 
 			if (config.parallel)
@@ -365,9 +365,9 @@ namespace Peach
 				if (config.parallelTotal == 0)
 					throw new ArgumentOutOfRangeException();
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Invalid parallel machine total: " + parts[0]);
+				throw new PeachException("Invalid parallel machine total: " + parts[0], ex);
 			}
 
 			try
@@ -376,9 +376,9 @@ namespace Peach
 				if (config.parallelNum == 0 || config.parallelNum > config.parallelTotal)
 					throw new ArgumentOutOfRangeException();
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Invalid parallel machine number: " + parts[1]);
+				throw new PeachException("Invalid parallel machine number: " + parts[1], ex);
 			}
 
 			if (config.range)

@@ -54,7 +54,7 @@ namespace Peach.Core.Publishers
 				return new IPEndPoint(ip, Port);
 			}
 
-			throw new PeachException("Could not resolve the IP address of host \"{0}\".", Host);
+			throw new PeachException("Could not resolve the IP address of host \"" + Host + "\".");
 		}
 
 		/// <summary>
@@ -85,12 +85,12 @@ namespace Peach.Core.Publishers
 			}
 
 			if (results.Count == 0)
-				throw new PeachException("Could not resolve scope id for interface with address '{0}'.", ip);
+				throw new PeachException("Could not resolve scope id for interface with address '" + ip + "'.");
 
 			if (results.Count != 1)
-				throw new PeachException("Found multiple interfaces with address '{0}'.{1}\t{2}",
+				throw new PeachException(string.Format("Found multiple interfaces with address '{0}'.{1}\t{2}",
 					ip, Environment.NewLine,
-					string.Join(Environment.NewLine + "\t", results.Select( a => a.Item1.ToString() + " -> " + a.Item2.ToString())));
+					string.Join(Environment.NewLine + "\t", results.Select( a => a.Item1.ToString() + " -> " + a.Item2.ToString()))));
 
 			return results[0].Item2;
 		}
@@ -162,7 +162,7 @@ namespace Peach.Core.Publishers
 				case 255: // Raw IP packets
 					return (ProtocolType)protocol;
 				default:
-					throw new PeachException("Error, the {0} publisher does not support protocol type 0x{1:X2}.", _type, protocol);
+					throw new PeachException(string.Format("Error, the {0} publisher does not support protocol type 0x{1:X2}.", _type, protocol));
 			}
 		}
 
@@ -241,7 +241,7 @@ namespace Peach.Core.Publishers
 				return new Socket(info);
 			}
 
-			throw new PeachException("{0} publisher could not open raw socket", _type);
+			throw new PeachException(_type + " publisher could not open raw socket.");
 		}
 
 		protected virtual void FilterInput(MemoryStream ms)
@@ -263,7 +263,7 @@ namespace Peach.Core.Publishers
 				ep = ResolveHost();
 
 				if (!AddressFamilySupported(ep.AddressFamily))
-					throw new PeachException("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type);
+					throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
 
 				_socket = OpenSocket(ep);
 
@@ -306,7 +306,7 @@ namespace Peach.Core.Publishers
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
 					{
-						throw new PeachException("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface);
+						throw new PeachException(string.Format("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface));
 					}
 				}
 				else
@@ -324,7 +324,7 @@ namespace Peach.Core.Publishers
 
 				SocketException se = ex as SocketException;
 				if (se != null && se.SocketErrorCode == SocketError.AccessDenied)
-					throw new PeachException("Access denied when trying open a {0} socket.  Ensure the user has the appropriate permissions.", _type);
+					throw new PeachException(string.Format("Access denied when trying open a {0} socket.  Ensure the user has the appropriate permissions.", _type), ex);
 
 				Logger.Error("Unable to open {0} socket to {1}:{2}. {3}.", _type, Host, Port, ex.Message);
 

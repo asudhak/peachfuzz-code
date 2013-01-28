@@ -83,9 +83,9 @@ namespace Peach.Core.Agent.Monitors
 			{
 				return CaptureDeviceList.New();
 			}
-			catch (System.DllNotFoundException)
+			catch (DllNotFoundException ex)
 			{
-				throw new PeachException("Error, PcapMonitor was unable to get the device list.  Ensure libpcap is installed and try again.");
+				throw new PeachException("Error, PcapMonitor was unable to get the device list.  Ensure libpcap is installed and try again.", ex);
 			}
 		}
 
@@ -98,9 +98,7 @@ namespace Peach.Core.Agent.Monitors
 		public override void SessionStarting()
 		{
 			if (_deviceName == null)
-			{
 				throw new PeachException("Error, PcapMonitor requires a device name.");
-			}
 
 			// Retrieve all capture devices
 			// Don't use the singlton interface so we can support multiple
@@ -142,9 +140,9 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_device.Filter = _filter;
 			}
-			catch (PcapException)
+			catch (PcapException ex)
 			{
-				throw new PeachException("Error, PcapMonitor was unable to set the filter '" + _filter + "'.");
+				throw new PeachException("Error, PcapMonitor was unable to set the filter '" + _filter + "'.", ex);
 			}
 
 			_device.StartCapture();

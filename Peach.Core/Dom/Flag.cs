@@ -154,7 +154,7 @@ namespace Peach.Core.Dom
 				throw new PeachException("Error, " + flag.name + " size attribute is not valid number.");
 
 			if (position < 0 || size < 0 || (position + size) > parent.size)
-				throw new PeachException("Error, flag {0} is placed outside its parent.", flag.name);
+				throw new PeachException("Error, flag " + flag.name + " is placed outside its parent.");
 
 			if (parent.LittleEndian)
 				position = parent.size - size - position;
@@ -162,7 +162,7 @@ namespace Peach.Core.Dom
 			foreach (Flag other in parent)
 			{
 				if (other.Overlapps(position, size))
-					throw new PeachException("Error, flag {0} overlapps with flag {1}.", flag.name, other.name);
+					throw new PeachException("Error, flag " + flag.name + " overlapps with flag " + other.name + ".");
 			}
 
 			flag.size = (int)size;

@@ -171,7 +171,7 @@ namespace Peach.Core.Dom
 				{
 					DataElement relative = from.find(relativeTo);
 					if (relative == null)
-						throw new PeachException("Error, offset relation from element '{0}' couldn't locate relative to element '{1}'.", from.fullName, relativeTo);
+						throw new PeachException(string.Format("Error, offset relation from element '{0}' couldn't locate relative to element '{1}'.", from.fullName, relativeTo));
 					from = relative;
 				}
 

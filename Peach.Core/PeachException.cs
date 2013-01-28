@@ -38,8 +38,13 @@ namespace Peach.Core
 	/// </summary>
 	public class PeachException : ApplicationException
 	{
-		public PeachException(string message, params object[] args)
-			: base(string.Format(message, args))
+		public PeachException(string message)
+			: base(message)
+		{
+		}
+
+		public PeachException(string message, Exception innerException)
+			: base(message, innerException)
 		{
 		}
 	}
@@ -57,14 +62,10 @@ namespace Peach.Core
 	/// </summary>
 	public class SoftException : ApplicationException
 	{
-        public SoftException()
-            : base()
-        {
-        }
-
-        public SoftException(Exception innerException) : base("SoftExeption", innerException)
-        {
-        }
+		public SoftException(Exception innerException)
+			: base(innerException.Message, innerException)
+		{
+		}
 	}
 
 	/// <summary>

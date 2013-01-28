@@ -415,7 +415,7 @@ namespace PeachFuzzBang
 			catch(Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
-				throw ex;
+				throw;
 			}
 		}
 
@@ -460,7 +460,7 @@ namespace PeachFuzzBang
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
-				throw ex;
+				throw;
 			}
 		}
 

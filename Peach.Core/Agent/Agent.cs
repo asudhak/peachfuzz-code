@@ -208,7 +208,7 @@ namespace Peach.Core.Agent
 			}
 			catch (TargetInvocationException ex)
 			{
-				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message);
+				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message, ex);
 			}
 
 		}

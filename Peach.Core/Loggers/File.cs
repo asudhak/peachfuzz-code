@@ -208,7 +208,7 @@ namespace Peach.Core.Loggers
 			}
 			catch (Exception e)
 			{
-				throw new PeachException(e.Message);
+				throw new PeachException(e.Message, e);
 			}
 
 			log = File.CreateText(System.IO.Path.Combine(ourpath, "status.txt"));

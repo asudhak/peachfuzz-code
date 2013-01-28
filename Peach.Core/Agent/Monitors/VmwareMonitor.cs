@@ -872,9 +872,9 @@ namespace Peach.Core.Agent.Monitors
 			{
 				GetErrorText(VixError.VIX_OK);
 			}
-			catch (DllNotFoundException)
+			catch (DllNotFoundException ex)
 			{
-				throw new PeachException("VMWare VIX library could not be found.");
+				throw new PeachException("VMWare VIX library could not be found.", ex);
 			}
 		}
 
@@ -903,7 +903,7 @@ namespace Peach.Core.Agent.Monitors
 				string msg = string.Format("Could not find vmx '{0}' on host '{1}'.  Available vms are:", Vmx, Host);
 				vms.Insert(0, msg);
 				msg = string.Join(Environment.NewLine + "\t", vms);
-				throw new PeachException(msg);
+				throw new PeachException(msg, ve);
 			}
 
 			if (SnapshotIndex.HasValue)
