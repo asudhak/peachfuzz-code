@@ -124,7 +124,8 @@ namespace Peach.Core.Dom
 			if (blobLength == null)
 				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
 
-			data.WantBytes((long)blobLength);
+			// Round up bits to next byte
+			data.WantBytes((long)(blobLength + 7 / 8));
 
 			if ((data.TellBits() + blobLength) > data.LengthBits)
 				throw new CrackingFailure("Blob '" + element.fullName +

@@ -196,9 +196,9 @@ namespace Peach.Core.Dom
 			{
 				stringValue = ReadCharacters(data, -1, true);
 			}
-			else if (_hasLength && lengthType == LengthType.Chars)
+			else if (lengthType == LengthType.Chars && (_hasLength || _lengthCalc != null))
 			{
-				stringValue = ReadCharacters(data, _length, false);
+				stringValue = ReadCharacters(data, length, false);
 			}
 			else
 			{
@@ -207,7 +207,8 @@ namespace Peach.Core.Dom
 				if (stringLength == null)
 					throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 
-				data.WantBytes((long)stringLength);
+				// Round up bits to next byte
+				data.WantBytes((long)(stringLength + 7 / 8));
 
 				if ((data.TellBytes() + stringLength) > data.LengthBytes)
 					throw new CrackingFailure("String '" + element.fullName +
@@ -472,7 +473,7 @@ namespace Peach.Core.Dom
 			get
 			{
 				if (_lengthCalc != null)
-					return true;
+					return _lengthType != LengthType.Chars || encoding.IsSingleByte;
 
 				if (isToken && DefaultValue != null)
 					return true;

@@ -258,6 +258,7 @@
     <Compile Include="CrackingTests\ContraintTests.cs" />
     <Compile Include="CrackingTests\CountRelationTests.cs" />
     <Compile Include="CrackingTests\FlagsTests.cs" />
+    <Compile Include="CrackingTests\LengthTests.cs" />
     <Compile Include="CrackingTests\NumberTests.cs" />
     <Compile Include="CrackingTests\OffsetRelationTests.cs" />
     <Compile Include="CrackingTests\PaddingTests.cs" />

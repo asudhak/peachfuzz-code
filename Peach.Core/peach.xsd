@@ -403,10 +403,14 @@
 				<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+		<xs:attribute name="lengthCalc" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 		<xs:attribute name="length" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Specify static length of string. Default is
-					unbounded.</xs:documentation>
+				<xs:documentation>[Optional] Specify length of block.  Default is unbounded.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -483,6 +487,21 @@
 			</xs:choice>
 			<xs:attributeGroup ref="peachCommonAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
+			<xs:attribute name="lengthType" type="tLengthType">
+				<xs:annotation>
+					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="lengthCalc" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="length" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>[Optional] Specify length of choice.  Default is unbounded.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
 		</xs:complexType>
 		<xs:unique name="ChoiceKey1">
 			<xs:selector xpath="." />
@@ -622,6 +641,11 @@
 				<xs:annotation>
 					<xs:documentation>Specify static length of string. Default is
 						unbounded.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="lengthCalc" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="tokens" type="xs:string">
@@ -1121,6 +1145,11 @@
 			<xs:attribute name="length" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>[Optional] Specify length of blob.  Default is unbounded.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="lengthCalc" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="signed" type="xs:boolean">
