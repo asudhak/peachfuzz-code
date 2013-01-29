@@ -67,8 +67,9 @@ namespace Peach.Core.MutationStrategies
 		/// container also contains states if we have mutations
 		/// we can apply to them.  State names are prefixed with "STATE_" to avoid
 		/// conflicting with data model names.
+		/// Use a list to maintain the order this strategy learns about data models
 		/// </summary>
-		SortedSet<string> _dataModels;
+		List<string> _dataModels;
 		string _targetDataModel;
 		uint _iteration;
 		Random _randomDataSet;
@@ -109,7 +110,7 @@ namespace Peach.Core.MutationStrategies
 			if (context.controlIteration && context.controlRecordingIteration)
 			{
 				_iterations = new Iterations();
-				_dataModels = new SortedSet<string>();
+				_dataModels = new List<string>();
 				_dataSets = new Dictionary<string, DataSetTracker>();
 			}
 		}
@@ -191,7 +192,8 @@ namespace Peach.Core.MutationStrategies
 			if (!_context.controlIteration || !_context.controlRecordingIteration)
 				return;
 
-			if (_dataModels.Contains("STATE_" + state.name))
+			string name = "STATE_" + state.name;
+			if (_dataModels.Exists(a => a == name))
 				return;
 
 			List<Mutator> mutators = new List<Mutator>();
@@ -208,8 +210,8 @@ namespace Peach.Core.MutationStrategies
 
 			if (mutators.Count > 0)
 			{
-				_dataModels.Add("STATE_" + state.name);
-				_iterations["STATE_" + state.name] = mutators;
+				_dataModels.Add(name);
+				_iterations[name] = mutators;
 			}
 		}
 
@@ -328,16 +330,26 @@ namespace Peach.Core.MutationStrategies
 		{
 			if (action.dataModel != null)
 			{
-				if (_dataModels.Add(GetDataModelName(action)))
+				string name = GetDataModelName(action);
+				if (!_dataModels.Exists(a => a == name))
+				{
+					_dataModels.Add(name);
 					GatherMutators(action.dataModel as DataElementContainer);
+				}
 			}
 			else if (action.parameters != null && action.parameters.Count > 0)
 			{
 				foreach (ActionParameter param in action.parameters)
 				{
 					if (param.dataModel != null)
-						if (_dataModels.Add(GetDataModelName(action, param)))
+					{
+						string name = GetDataModelName(action, param);
+						if (!_dataModels.Exists(a => a == name))
+						{
+							_dataModels.Add(name);
 							GatherMutators(param.dataModel as DataElementContainer);
+						}
+					}
 				}
 			}
 		}
