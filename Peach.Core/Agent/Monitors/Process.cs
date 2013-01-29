@@ -99,6 +99,8 @@ namespace Peach.Core.Agent.Monitors
 
 				_process = new System.Diagnostics.Process();
 				_process.StartInfo.FileName = _executable;
+				_process.StartInfo.UseShellExecute = false;
+
 				if (!string.IsNullOrEmpty(_arguments))
 					_process.StartInfo.Arguments = _arguments;
 
