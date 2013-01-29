@@ -72,11 +72,11 @@ namespace Peach.Core
 
 		public static void LoadAssembly()
 		{
-			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
-				throw new PeachException("Error: Cannot use the 32bit version of Peach 3 on a 64bit operating system.");
+			//if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+			//	throw new PeachException("Error: Cannot use the 32bit version of Peach 3 on a 64bit operating system.");
 
-			if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
-				throw new PeachException("Error: Cannot use the 64bit version of Peach 3 on a 32bit operating system.");
+			//if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
+			//	throw new PeachException("Error: Cannot use the 64bit version of Peach 3 on a 32bit operating system.");
 
 			string osAssembly = null;
 
