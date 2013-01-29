@@ -353,6 +353,7 @@
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\FilePerIterationTests.cs" />
     <Compile Include="Publishers\FilePublisherTests.cs" />
+    <Compile Include="Publishers\HttpPublisherTests.cs" />
     <Compile Include="Publishers\ParameterTests.cs" />
     <Compile Include="Publishers\RemotePubilsherTests.cs" />
     <Compile Include="Publishers\SocketPublisherTests.cs" />
