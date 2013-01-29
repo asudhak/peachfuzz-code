@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace Peach.Core
 {
@@ -36,6 +37,7 @@ namespace Peach.Core
 	/// Unrecoverable error.  Causes Peach to exit with an error
 	/// message, but no stack trace.
 	/// </summary>
+	[Serializable]
 	public class PeachException : ApplicationException
 	{
 		public PeachException(string message)
@@ -45,6 +47,11 @@ namespace Peach.Core
 
 		public PeachException(string message, Exception innerException)
 			: base(message, innerException)
+		{
+		}
+
+		protected PeachException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
 		{
 		}
 	}
