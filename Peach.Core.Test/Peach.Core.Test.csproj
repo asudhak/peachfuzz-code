@@ -293,6 +293,7 @@
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
     <Compile Include="Monitors\PingMonitorTests.cs" />
     <Compile Include="Monitors\ProcessKillerMoniorTests.cs" />
+    <Compile Include="Monitors\ProcessMonitorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
     <Compile Include="Monitors\SocketMonitorTests.cs" />
     <Compile Include="Monitors\VmwareMonitorTests.cs" />

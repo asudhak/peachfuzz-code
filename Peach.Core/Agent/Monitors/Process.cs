@@ -103,7 +103,16 @@ namespace Peach.Core.Agent.Monitors
 					_process.StartInfo.Arguments = _arguments;
 
 				logger.Debug("_Start(): Starting process");
-				_process.Start();
+
+				try
+				{
+					_process.Start();
+				}
+				catch (Exception ex)
+				{
+					_process = null;
+					throw new PeachException("Could not start process '" + _executable + "'.  " + ex.Message + ".", ex);
+				}
 
 				_totalProcessorTime = 0;
 			}
