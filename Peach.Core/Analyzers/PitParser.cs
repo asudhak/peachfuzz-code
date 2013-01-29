@@ -158,10 +158,18 @@ namespace Peach.Core.Analyzers
 			var doc = new XmlDocument();
 			doc.Schemas = set;
 			// Mono has issues reading utf-32 BOM when just calling doc.Load(data)
-			string xmlData = new StreamReader(data).ReadToEnd();
-			doc.LoadXml(xmlData);
 
-			// Right now XSD validation is disabled on Mono :(
+            try
+            {
+                string xmlData = new StreamReader(data).ReadToEnd();
+                doc.LoadXml(xmlData);
+            }
+            catch(XmlException ex)
+            {
+               throw new PeachException("Error: XML Failed to load: " + ex.Message, ex); 
+            }
+
+		    // Right now XSD validation is disabled on Mono :(
 			// Still load the doc to verify well formed xml
 			Type t = Type.GetType("Mono.Runtime");
 			if (t != null)
