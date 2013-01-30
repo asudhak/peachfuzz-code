@@ -105,16 +105,13 @@ namespace Peach.Core.Publishers
 			return null;
 		}
 
-		//protected override void OnInput()
-		//{
-		//    lock (_clientLock)
-		//    {
-		//        if (_client == null)
-		//            OpenClient();
-		//    }
+		protected override void OnInput()
+		{
+			if (Response == null)
+				CreateClient(null);
 
-		//    base.OnInput();
-		//}
+			base.OnInput();
+		}
 
 		/// <summary>
 		/// Send data
@@ -128,6 +125,11 @@ namespace Peach.Core.Publishers
 					CloseClient();
 			}
 
+			CreateClient(data);
+		}
+
+		private void CreateClient(Stream data)
+		{
 			if (Response != null)
 			{
 				Response.Close();
@@ -142,29 +144,43 @@ namespace Peach.Core.Publishers
 			var request = (HttpWebRequest)HttpWebRequest.Create(url);
 			request.Method = Method;
 
-			if(Cookies)
+			if (Cookies)
 				request.CookieContainer = CookieJar;
 
-			if(credentials != null)
+			if (credentials != null)
 				request.Credentials = credentials;
 
 			foreach (var header in Headers.Keys)
 				request.Headers[header] = Headers[header];
 
-			try
+			if (data != null)
 			{
-				using (var sout = request.GetRequestStream())
+				try
 				{
-					data.Position = 0;
-					data.CopyTo(sout);
+					using (var sout = request.GetRequestStream())
+					{
+						data.Position = 0;
+						data.CopyTo(sout);
+					}
+				}
+				catch (ProtocolViolationException ex)
+				{
+					throw new SoftException(ex);
 				}
 			}
-			catch (ProtocolViolationException ex)
+			else
+			{
+				request.ContentLength = 0;
+			}
+
+			try
+			{
+				Response = (HttpWebResponse)request.GetResponse();
+			}
+			catch (WebException ex)
 			{
 				throw new SoftException(ex);
 			}
-
-			Response = (HttpWebResponse) request.GetResponse();
 
 			_client = Response.GetResponseStream();
 			_clientName = url.ToString();

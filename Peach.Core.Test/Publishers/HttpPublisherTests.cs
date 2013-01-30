@@ -52,10 +52,17 @@ namespace Peach.Core.Test.Publishers
 					HttpListenerContext context = listener.GetContext();
 					HttpListenerRequest request = context.Request;
 					// Obtain a response object.
+
+					if (request.ContentLength64 > 0)
+					{
+						byte[] buf = new byte[request.ContentLength64];
+						request.InputStream.Read(buf, 0, buf.Length);
+					}
+
 					HttpListenerResponse response = context.Response;
 
 					// Construct a response. 
-					string responseString = request.HttpMethod + " Hello World Too";
+					string responseString = request.HttpMethod + " Hello World Too = " + request.ContentLength64;
 					byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
 					// Get a response stream and write the response to it.
 					response.ContentLength64 = buffer.Length;
@@ -63,6 +70,7 @@ namespace Peach.Core.Test.Publishers
 					output.Write(buffer, 0, buffer.Length);
 					// You must close the output stream.
 					output.Close();
+					response.Close();
 				}
 				catch
 				{
@@ -75,7 +83,7 @@ namespace Peach.Core.Test.Publishers
 
 
 	[TestFixture]
-	class HttpPublisherTests : DataModelCollector
+	public class HttpPublisherTests : DataModelCollector
 	{
 		public string send_recv_template = @"
 <Peach>
@@ -84,7 +92,7 @@ namespace Peach.Core.Test.Publishers
 	</DataModel>
 
 	<DataModel name=""TheDataModel2"">
-		<String name=""str"" value=""Hello World Too""/>
+		<String name=""str""/>
 	</DataModel>
 
 	<StateModel name=""ClientState"" initialState=""InitialState"">
@@ -108,8 +116,33 @@ namespace Peach.Core.Test.Publishers
 
 </Peach>
 ";
+
+		public string recv_template = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String name=""str""/>
+	</DataModel>
+
+	<StateModel name=""ClientState"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+<Test name=""Default"">
+		<StateModel ref=""ClientState""/>
+		<Publisher class=""Http"">
+			<Param name=""Method"" value=""{0}""/>
+			<Param name=""Url"" value=""{1}""/>
+		</Publisher>
+	</Test>
+
+</Peach>
+";
 		
-		public void HttpClient(string template, string method)
+		public void HttpClient(bool send_recv, string method)
 		{
 			ushort port = TestBase.MakePort(56000, 57000);
 			string url = "http://localhost:" + port.ToString() + "/";
@@ -121,7 +154,7 @@ namespace Peach.Core.Test.Publishers
 			lThread.Start();
 			try
 			{
-				string xml = string.Format(template, method, url);
+				string xml = string.Format(send_recv ? send_recv_template : recv_template, method, url);
 
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -132,18 +165,31 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.startFuzzing(dom, config);
 
-				Assert.AreEqual(2, actions.Count);
+				if (send_recv)
+				{
+					Assert.AreEqual(2, actions.Count);
 
-				var de1 = actions[0].dataModel.find("TheDataModel.str");
-				Assert.NotNull(de1);
-				var de2 = actions[1].dataModel.find("TheDataModel2.str");
-				Assert.NotNull(de2);
+					var de1 = actions[0].dataModel.find("TheDataModel.str");
+					Assert.NotNull(de1);
+					var de2 = actions[1].dataModel.find("TheDataModel2.str");
+					Assert.NotNull(de2);
 
-				string send = (string)de1.DefaultValue;
-				string recv = (string)de2.DefaultValue;
+					string send = (string)de1.DefaultValue;
+					string recv = (string)de2.DefaultValue;
 
-				Assert.AreEqual("Hello World", send);
-				Assert.AreEqual(method + " Hello World Too", recv);
+					Assert.AreEqual("Hello World", send);
+					Assert.AreEqual(method + " Hello World Too = 11", recv);
+				}
+				else
+				{
+					Assert.AreEqual(1, actions.Count);
+					var de1 = actions[0].dataModel.find("TheDataModel.str");
+					Assert.NotNull(de1);
+
+					string recv = (string)de1.DefaultValue;
+
+					Assert.AreEqual(method + " Hello World Too = 0", recv);
+				}
 			}
 			finally
 			{
@@ -156,14 +202,26 @@ namespace Peach.Core.Test.Publishers
 		public void HttpClientSendGet()
 		{
 			// Http publisher does not support sending data when the GET method is used
-			HttpClient(send_recv_template, "GET");
+			HttpClient(true, "GET");
+		}
+
+		[Test]
+		public void HttpClientRecvGet()
+		{
+			// Http publisher does not support sending data when the GET method is used
+			HttpClient(false, "GET");
 		}
 
 		[Test]
 		public void HttpClientSendPost()
 		{
-			HttpClient(send_recv_template, "POST");
+			HttpClient(true, "POST");
 		}
 
+		[Test]
+		public void HttpClientRecvPost()
+		{
+			HttpClient(false, "POST");
+		}
 	}
 }
