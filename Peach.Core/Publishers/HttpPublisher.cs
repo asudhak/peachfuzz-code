@@ -49,7 +49,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Domain", typeof(string), "Optional domain for authentication", "")]
 	[Parameter("Cookies", typeof(bool), "Track cookies (defaults to true)", "true")]
 	[Parameter("CookiesAcrossIterations", typeof(bool), "Track cookies across iterations (defaults to false)", "false")]
-	public class HttpPublisher : StreamPublisher
+	public class HttpPublisher : BufferedStreamPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
@@ -105,13 +105,34 @@ namespace Peach.Core.Publishers
 			return null;
 		}
 
+		//protected override void OnInput()
+		//{
+		//    lock (_clientLock)
+		//    {
+		//        if (_client == null)
+		//            OpenClient();
+		//    }
+
+		//    base.OnInput();
+		//}
+
 		/// <summary>
 		/// Send data
 		/// </summary>
 		/// <param name="data">Data to send/write</param>
 		protected override void OnOutput(Stream data)
 		{
-			Response = null;
+			lock (_clientLock)
+			{
+				if (_client != null)
+					CloseClient();
+			}
+
+			if (Response != null)
+			{
+				Response.Close();
+				Response = null;
+			}
 
 			// Send request with data as body.
 			Uri url = new Uri(Url);
@@ -130,26 +151,40 @@ namespace Peach.Core.Publishers
 			foreach (var header in Headers.Keys)
 				request.Headers[header] = Headers[header];
 
-			using (var sout = request.GetRequestStream())
+			try
 			{
-				data.Position = 0;
-				data.CopyTo(sout);
+				using (var sout = request.GetRequestStream())
+				{
+					data.Position = 0;
+					data.CopyTo(sout);
+				}
+			}
+			catch (ProtocolViolationException ex)
+			{
+				throw new SoftException(ex);
 			}
 
 			Response = (HttpWebResponse) request.GetResponse();
-			stream = Response.GetResponseStream();
+
+			_client = Response.GetResponseStream();
+			_clientName = url.ToString();
+
+			StartClient();
 		}
 
 		protected override void OnClose()
 		{
+			base.OnClose();
+
 			if (Cookies && !CookiesAcrossIterations)
 				CookieJar = new CookieContainer();
 
-			if (Response != null && stream != null)
-				stream.Dispose();
+			if (Response != null)
+			{
+				Response.Close();
+				Response = null;
+			}
 
-			Response = null;
-			stream = null;
 			Query = null;
 			Headers.Clear();
 		}

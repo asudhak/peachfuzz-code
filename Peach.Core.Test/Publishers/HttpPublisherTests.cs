@@ -16,22 +16,28 @@ namespace Peach.Core.Test.Publishers
 
 	class SimpleHttpListener
 	{
+		public SimpleHttpListener()
+		{
+			Assert.True(HttpListener.IsSupported);
+		}
+
+		HttpListener listener;
+
+		public void Stop()
+		{
+			listener.Stop();
+		}
 
 		// This example requires the System and System.Net namespaces. 
 		public void Listen(string[] prefixes)
 		{
-			if (!HttpListener.IsSupported)
-			{
-				Console.WriteLine("HttpListener Class is not Supported.");
-				return;
-			}
 			// URI prefixes are required, 
 			// for example "http://localhost:8080/index/".
 			if (prefixes == null || prefixes.Length == 0)
 				throw new ArgumentException("prefixes");
 
 			// Create a listener.
-			HttpListener listener = new HttpListener();
+			listener = new HttpListener();
 			// Add the prefixes. 
 			foreach (string s in prefixes)
 			{
@@ -49,7 +55,7 @@ namespace Peach.Core.Test.Publishers
 					HttpListenerResponse response = context.Response;
 
 					// Construct a response. 
-					string responseString = "Hello World Too";
+					string responseString = request.HttpMethod + " Hello World Too";
 					byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
 					// Get a response stream and write the response to it.
 					response.ContentLength64 = buffer.Length;
@@ -58,9 +64,9 @@ namespace Peach.Core.Test.Publishers
 					// You must close the output stream.
 					output.Close();
 				}
-				catch (ThreadInterruptedException e)
+				catch
 				{
-					listener.Stop();
+					return;
 				}
 
 			}
@@ -71,7 +77,7 @@ namespace Peach.Core.Test.Publishers
 	[TestFixture]
 	class HttpPublisherTests : DataModelCollector
 	{
-		public string template = @"
+		public string send_recv_template = @"
 <Peach>
 	<DataModel name=""TheDataModel"">
 		<String name=""str"" value=""Hello World""/>
@@ -103,7 +109,7 @@ namespace Peach.Core.Test.Publishers
 </Peach>
 ";
 		
-		public void HttpClient(string method)
+		public void HttpClient(string template, string method)
 		{
 			ushort port = TestBase.MakePort(56000, 57000);
 			string url = "http://localhost:" + port.ToString() + "/";
@@ -137,27 +143,26 @@ namespace Peach.Core.Test.Publishers
 				string recv = (string)de2.DefaultValue;
 
 				Assert.AreEqual("Hello World", send);
-				Assert.AreEqual("Hello World Too", recv);
+				Assert.AreEqual(method + " Hello World Too", recv);
 			}
 			finally
 			{
-				if (lThread.IsAlive)
-					lThread.Interrupt();
+				listener.Stop();
+				lThread.Join();
 			}
 		}
 
-		[Test]
-		public void HttpClientGet()
+		[Test, ExpectedException(typeof(PeachException))]
+		public void HttpClientSendGet()
 		{
-			// Test TcpClient deals with itself initiating shutdown
-			HttpClient("GET");
+			// Http publisher does not support sending data when the GET method is used
+			HttpClient(send_recv_template, "GET");
 		}
 
 		[Test]
-		public void HttpClientPost()
+		public void HttpClientSendPost()
 		{
-			// Test TcpListener deals with client initiating shutdown
-			HttpClient("POST");
+			HttpClient(send_recv_template, "POST");
 		}
 
 	}
