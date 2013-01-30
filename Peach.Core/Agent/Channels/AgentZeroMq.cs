@@ -26,6 +26,8 @@
 
 // $Id$
 
+#if ZEROMQ
+
 using System;
 using System.IO;
 using System.Collections;
@@ -540,3 +542,5 @@ namespace Peach.Core.Agent.Channels
 }
 
 // end
+
+#endif
