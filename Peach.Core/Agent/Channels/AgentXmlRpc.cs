@@ -55,6 +55,11 @@ namespace Peach.Core.Agent.Channels
 		{
 		}
 
+		public AgentClientXmlRpc(string name, string uri, string password)
+		{
+		}
+
+
 		public override bool SupportedProtocol(string protocol)
 		{
 			protocol = protocol.ToLower();
@@ -71,6 +76,8 @@ namespace Peach.Core.Agent.Channels
 
 			proxy = (IAgentClientXmlRpc)XmlRpcProxyGen.Create(typeof(IAgentClientXmlRpc));
 			proxy.Url = url;
+			if (password == null)
+				password = "";
 			proxy.AgentConnect(password);
 		}
 
@@ -80,7 +87,7 @@ namespace Peach.Core.Agent.Channels
 			proxy = null;
 		}
 
-		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			proxy.StartMonitor(name, cls, args);
 		}
@@ -162,7 +169,7 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[XmlRpcMethod("StartMonitor")]
-		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			agent.StartMonitor(name, cls, args);
 		}
@@ -242,7 +249,7 @@ namespace Peach.Core.Agent.Channels
 		void AgentDisconnect();
 
 		[XmlRpcMethod("StartMonitor")]
-		void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
+		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
 		[XmlRpcMethod("StopMonitor")]
 		void StopMonitor(string name);
 		[XmlRpcMethod("StopAllMonitors")]
@@ -275,8 +282,8 @@ namespace Peach.Core.Agent.Channels
 		HttpListenerController _controller = null;
 
 		public string[] prefixes = new string[] {
-					"http://*:9001/"
-					};
+                    "http://*:9001/"
+                    };
 
 		#region IAgentServer Members
 

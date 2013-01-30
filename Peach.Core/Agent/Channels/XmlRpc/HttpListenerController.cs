@@ -94,6 +94,7 @@ namespace Peach.Core.Agent.Channels.XmlRpc
 			}
 			catch (Exception ex)
 			{
+				Console.WriteLine(ex.ToString());
 				EventLog myLog = new EventLog();
 				myLog.Source = "HttpListenerController";
 				if (null != ex.InnerException)

@@ -44,7 +44,7 @@ namespace Peach.Core.Dom
 	{
 		public string cls;
 		public string name { get; set; }
-		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
+		public SerializableDictionary<string, Variant> parameters = new SerializableDictionary<string, Variant>();
 
 		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
 		{

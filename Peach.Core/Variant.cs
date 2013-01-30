@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using Peach.Core.IO;
 
 namespace Peach.Core
@@ -48,7 +49,7 @@ namespace Peach.Core
 	/// TODO: Investigate deligates for type -> byte[] conversion.
 	/// </summary>
 	[Serializable]
-	public class Variant
+	public class Variant : IXmlSerializable
 	{
 		public enum VariantType
 		{
@@ -59,17 +60,21 @@ namespace Peach.Core
 			String,
 			ByteString,
 			BitStream,
-      Boolean
+			Boolean
 		}
 
 		VariantType _type = VariantType.Unknown;
-    bool? _valueBool;
+		bool? _valueBool;
 		int? _valueInt;
 		long? _valueLong;
 		ulong? _valueULong;
 		string _valueString;
 		byte[] _valueByteArray;
 		BitStream _valueBitStream = null;
+
+		public Variant()
+		{
+		}
 
 		public Variant(int v)
 		{
@@ -91,23 +96,23 @@ namespace Peach.Core
 			SetValue(v);
 		}
 
-    public Variant(string v, string type)
-    {
-      switch (type.ToLower())
-      {
-        case "system.int32":
-          SetValue(Int32.Parse(v));
-          break;
-        case "system.string":
-          SetValue(v);
-          break;
-        case "system.boolean":
-          SetValue(bool.Parse(v));
-          break;
-        default:
-          throw new NotImplementedException("Value Type not implemented: " + type);
-      }
-    }
+		public Variant(string v, string type)
+		{
+			switch (type.ToLower())
+			{
+				case "system.int32":
+					SetValue(Int32.Parse(v));
+					break;
+				case "system.string":
+					SetValue(v);
+					break;
+				case "system.boolean":
+					SetValue(bool.Parse(v));
+					break;
+				default:
+					throw new NotImplementedException("Value Type not implemented: " + type);
+			}
+		}
 
 		public Variant(byte[] v)
 		{
@@ -175,13 +180,13 @@ namespace Peach.Core
 			_valueByteArray = null;
 		}
 
-    public void SetValue(bool v)
-    {
-      _type = VariantType.Boolean;
-      _valueBool = v;
-      _valueString = null;
-      _valueByteArray = null;
-    }
+		public void SetValue(bool v)
+		{
+			_type = VariantType.Boolean;
+			_valueBool = v;
+			_valueString = null;
+			_valueByteArray = null;
+		}
 
 		/// <summary>
 		/// Access variant as an int value.
@@ -200,12 +205,12 @@ namespace Peach.Core
 						return (int)v._valueInt;
 					case VariantType.Long:
 						if (v._valueLong > int.MaxValue || v._valueLong < int.MinValue)
-							throw new ApplicationException("Converting this long to an int would cause loss of data [" + v._valueLong+"]");
+							throw new ApplicationException("Converting this long to an int would cause loss of data [" + v._valueLong + "]");
 
 						return (int)v._valueLong;
 					case VariantType.ULong:
 						if (v._valueULong > int.MaxValue)
-							throw new ApplicationException("Converting this ulong to an int would cause loss of data ["+v._valueULong+"]");
+							throw new ApplicationException("Converting this ulong to an int would cause loss of data [" + v._valueULong + "]");
 
 						return (int)v._valueULong;
 					case VariantType.String:
@@ -413,9 +418,9 @@ namespace Peach.Core
 					return Convert.ToString(v._valueULong);
 				case VariantType.String:
 					return v._valueString;
-        case VariantType.Boolean:
-          return Convert.ToString(v._valueBool);
-        case VariantType.ByteString:
+				case VariantType.Boolean:
+					return Convert.ToString(v._valueBool);
+				case VariantType.ByteString:
 					throw new NotSupportedException("Unable to convert byte[] to string type.");
 				case VariantType.BitStream:
 					throw new NotSupportedException("Unable to convert BitStream to string type.");
@@ -481,14 +486,14 @@ namespace Peach.Core
 			}
 		}
 
-		public static bool operator == (Variant a, Variant b)
+		public static bool operator ==(Variant a, Variant b)
 		{
 			if (((object)a == null) && ((object)b == null))
 				return true;
 
 			if (((object)a == null) || ((object)b == null))
 				return false;
-				
+
 			try
 			{
 				string stra = (string)a;
@@ -575,25 +580,107 @@ namespace Peach.Core
 			}
 		}
 
-    public override string ToString()
-    {
-      switch (_type)
-      {
-        case VariantType.Int:
-          return this._valueInt.ToString();
-        case VariantType.Long:
-          return this._valueLong.ToString();
-        case VariantType.ULong:
-          return this._valueULong.ToString();
-        case VariantType.String:
-          return this._valueString.ToString();
-        case VariantType.ByteString:
-          return _valueByteArray.ToString();
-        case VariantType.BitStream:
-          return _valueBitStream.ToString();
-        default:
-          return base.ToString();
-      }
-    }
+		public override string ToString()
+		{
+			switch (_type)
+			{
+				case VariantType.Int:
+					return this._valueInt.ToString();
+				case VariantType.Long:
+					return this._valueLong.ToString();
+				case VariantType.ULong:
+					return this._valueULong.ToString();
+				case VariantType.String:
+					return this._valueString.ToString();
+				case VariantType.ByteString:
+					return _valueByteArray.ToString();
+				case VariantType.BitStream:
+					return _valueBitStream.ToString();
+				default:
+					return base.ToString();
+			}
+		}
+
+		public System.Xml.Schema.XmlSchema GetSchema()
+		{
+			return null;
+		}
+
+		public void ReadXml(System.Xml.XmlReader reader)
+		{
+			XmlSerializer serializer;
+
+			if (!reader.Read())
+				return;
+
+			reader.ReadStartElement("type");
+			_type = (VariantType) reader.ReadContentAsInt();
+			reader.ReadEndElement();
+
+			reader.ReadStartElement("value");
+			
+			switch (_type)
+			{
+				case VariantType.Int:
+					_valueInt = reader.ReadContentAsInt();
+					break;
+				case VariantType.Long:
+					_valueLong = reader.ReadContentAsLong();
+					break;
+				case VariantType.ULong:
+					_valueULong = (ulong) reader.ReadContentAsLong();
+					break;
+				case VariantType.String:
+					_valueString = reader.ReadContentAsString();
+					break;
+				case VariantType.ByteString:
+					serializer = new XmlSerializer(typeof(byte[]));
+					_valueByteArray = (byte[])serializer.Deserialize(reader);
+					break;
+				case VariantType.BitStream:
+					serializer = new XmlSerializer(typeof(BitStream));
+					_valueBitStream = (BitStream) serializer.Deserialize(reader);
+					break;
+			}
+
+			reader.ReadEndElement();
+		}
+
+		public void WriteXml(System.Xml.XmlWriter writer)
+		{
+			XmlSerializer serializer;
+
+			writer.WriteStartElement("type");
+			writer.WriteValue((int)_type);
+			writer.WriteEndElement();
+
+			writer.WriteStartElement("value");
+
+			switch (_type)
+			{
+				case VariantType.Int:
+					writer.WriteValue(_valueInt);
+					break;
+				case VariantType.Long:
+					writer.WriteValue(_valueLong);
+					break;
+				case VariantType.ULong:
+					writer.WriteValue(_valueULong);
+					break;
+				case VariantType.String:
+					writer.WriteValue(_valueString);
+					break;
+				case VariantType.ByteString:
+					serializer = new XmlSerializer(typeof(byte[]));
+					serializer.Serialize(writer, _valueByteArray);
+					break;
+				case VariantType.BitStream:
+					serializer = new XmlSerializer(typeof(BitStream));
+					serializer.Serialize(writer, _valueBitStream);
+					break;
+			}
+
+			writer.WriteEndElement();
+		}
 	}
 }

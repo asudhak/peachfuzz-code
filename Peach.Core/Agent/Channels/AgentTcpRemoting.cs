@@ -93,7 +93,7 @@ namespace Peach.Core.Agent.Channels
 			proxy = null;
 		}
 
-		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
@@ -197,7 +197,7 @@ namespace Peach.Core.Agent.Channels
 			agent.AgentDisconnect();
 		}
 
-		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 			agent.StartMonitor(name, cls, args);
