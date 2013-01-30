@@ -16,8 +16,6 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CheckValue", typeof(string), "Value to look for in response", "")]
     [Parameter("Fetch", typeof(bool), "Download the remote file that is output of the ssh command", "false")]
     [Parameter("Remove", typeof(bool), "Remove the remote file after download", "false")]
-    [Parameter("GDBAnalyze", typeof(bool), "Analyze the core file in GDB (not implemented)", "false")]
-    [Parameter("GDBPath", typeof(string), "Path to GDB (not implemented)", "gdb")]
     public class SSHMonitor : Peach.Core.Agent.Monitor
     {
         protected string Host       = "";
@@ -59,9 +57,9 @@ namespace Peach.Core.Agent.Monitors
                 CheckValue = (string) args["CheckValue"];
 
             if (args.ContainsKey("Fetch"))
-                Fetch = ((string) args["Fetch"]).ToLower() == "true"; 
+                Fetch = ((string) args["Fetch"]).ToLower() == "true";
 
-            if(args.ContainsKey("Fetch"))
+			if (args.ContainsKey("Remove"))
                 Remove = ((string) args["Remove"]).ToLower() == "true"; 
 
             _sshClient = new SshClient(Host, Username, Password);

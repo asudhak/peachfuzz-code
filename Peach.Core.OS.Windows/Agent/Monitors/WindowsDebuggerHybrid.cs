@@ -59,12 +59,12 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", "")]
 	[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", "")]
 	[Parameter("Service", typeof(string), "Name of Windows Service to attach to.  Service will be started if stopped or crashes.", "")]
-	[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", "")]
+	[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", "SRV*http://msdl.microsoft.com/download/symbols")]
 	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", "")]
 	[Parameter("StartOnCall", typeof(string), "Indicate the debugger should wait to start or attach to process until notified by state machine.", "")]
-	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "")]
-	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "")]
-	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", "")]
+	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
+	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
+	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", "false")]
 	public class WindowsDebuggerHybrid : Monitor
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();

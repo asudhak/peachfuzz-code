@@ -43,7 +43,7 @@ namespace Peach.Core.Agent
 
 	public delegate void AgentConnectEventHandler(Agent agent);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
-	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, Dictionary<string, Variant> args);
+	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StopMonitorEventHandler(Agent agent, string name);
 	public delegate void StopAllMonitorsEventHandler(Agent agent);
 	public delegate void SessionStartingEventHandler(Agent agent);
@@ -84,7 +84,7 @@ namespace Peach.Core.Agent
 		}
 
 		public event StartMonitorEventHandler StartMonitorEvent;
-		protected void OnStartMonitorEvent(string name, string cls, Dictionary<string, Variant> args)
+		protected void OnStartMonitorEvent(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			if (StartMonitorEvent != null)
 				StartMonitorEvent(this, name, cls, args);
@@ -192,7 +192,7 @@ namespace Peach.Core.Agent
 			monitors.Clear();
 		}
 
-		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
@@ -372,7 +372,7 @@ namespace Peach.Core.Agent
 	{
 		void AgentConnect(string password);
 		void AgentDisconnect();
-		void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
+		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
 		void StopMonitor(string name);
 		void StopAllMonitors();
 		void SessionStarting();

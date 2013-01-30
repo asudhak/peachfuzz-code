@@ -332,6 +332,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="clrzmq">
+      <HintPath>..\packages\clrzmq.3.0.0-rc1\lib\net40\clrzmq.dll</HintPath>
+    </Reference>
     <Reference Include="IronPython">
       <HintPath>..\3rdParty\IronPython-2.7.1\IronPython.dll</HintPath>
     </Reference>
@@ -375,9 +378,6 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
-    <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
-    </Reference>
     <Reference Include="Ionic.Zip">
       <HintPath>..\3rdParty\DotNetZipLib-v1.9\zip-v1.9\Ionic.Zip.dll</HintPath>
     </Reference>
@@ -406,6 +406,7 @@
     <Compile Include="Agent\AgentServer.cs" />
     <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
     <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
+    <Compile Include="Agent\Channels\AgentZeroMq.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
     <Compile Include="Agent\Monitors\CleanupFolderMonitor.cs" />
@@ -685,6 +686,15 @@
     <EmbeddedResource Include="xmltests.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\3rdParty\xml-rpc.net-2.5.0\src\xmlrpc.csproj">
+      <Project>{1B4B0A58-0AFB-4090-91DD-18912CC7DE65}</Project>
+      <Name>xmlrpc</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

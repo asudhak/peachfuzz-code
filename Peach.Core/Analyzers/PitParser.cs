@@ -602,7 +602,7 @@ namespace Peach.Core.Analyzers
 
 					monitor.cls = child.getAttribute("class");
 					monitor.name = child.getAttribute("name");
-					monitor.parameters = handleParams(child);
+					monitor.parameters = handleParamsOrdered(child);
 
 					agent.monitors.Add(monitor);
 				}
@@ -1077,7 +1077,12 @@ namespace Peach.Core.Analyzers
 				throw new PeachException(string.Format("{0} element has no 'class' attribute [{1}]", pluginType, node.OuterXml));
 
 			var cls = node.getAttribute("class");
-			var arg = handleParams(node);
+			IDictionary<string,Variant> arg;
+
+			if (typeof(T) == typeof(Monitor))
+				arg = handleParamsOrdered(node);
+			else
+				arg = handleParams(node);
 
 			var type = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == cls);
 			if (type == null)
@@ -1090,19 +1095,34 @@ namespace Peach.Core.Analyzers
 			{
 				if (useParent)
 				{
-					return Activator.CreateInstance(type, parent, arg) as T;
+					if (arg is Dictionary<string, Variant>)
+						return Activator.CreateInstance(type, parent, (Dictionary<string, Variant>)arg) as T;
+					else
+						return Activator.CreateInstance(type, parent, (SerializableDictionary<string, Variant>)arg) as T;
 				}
 				else
 				{
-					return Activator.CreateInstance(type, arg) as T;
+					if (arg is Dictionary<string, Variant>)
+						return Activator.CreateInstance(type, (Dictionary<string, Variant>) arg) as T;
+					else
+						return Activator.CreateInstance(type, (SerializableDictionary<string, Variant>)arg) as T;
 				}
 			}
 			catch (Exception e)
 			{
+				if (e.InnerException != null)
+				{
+					throw new PeachException(string.Format(
+						"Error, unable to create instance of '{0}' named '{1}'.\nExtended error: Exception during object creation: {2}",
+						pluginType, cls, e.InnerException.Message
+					));
+				}
+
 				throw new PeachException(string.Format(
 					"Error, unable to create instance of '{0}' named '{1}'.\nExtended error: Exception during object creation: {2}",
-					pluginType, cls, e.InnerException.Message
+					pluginType, cls, e.Message
 				));
+
 			}
 		}
 
@@ -1536,7 +1556,7 @@ namespace Peach.Core.Analyzers
 		public static uint _uniquePublisherName = 0;
 
 		protected void validateParameterAttributes(string type, string name, IEnumerable<ParameterAttribute> publisherParameters,
-			Dictionary<string, Variant> xmlParameters)
+			IDictionary<string, Variant> xmlParameters)
 		{
 			foreach (ParameterAttribute p in publisherParameters)
 			{
@@ -1609,6 +1629,30 @@ namespace Peach.Core.Analyzers
 				}
 				//throw new NotImplementedException("TODO Handle ValueType");
 
+			}
+
+			return ret;
+		}
+
+		protected SerializableDictionary<string, Variant> handleParamsOrdered(XmlNode node)
+		{
+			SerializableDictionary<string, Variant> ret = new SerializableDictionary<string, Variant>();
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name != "Param")
+					continue;
+
+				string name = child.getAttribute("name");
+				string value = child.getAttribute("value");
+
+				if (child.hasAttribute("valueType"))
+				{
+					ret.Add(name, new Variant(value, child.getAttribute("valueType")));
+				}
+				else
+				{
+					ret.Add(name, new Variant(value));
+				}
 			}
 
 			return ret;

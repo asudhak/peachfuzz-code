@@ -12,7 +12,6 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to listen on", "")]
 	[Parameter("Protocol", typeof(Proto), "Protocol type to listen for", "tcp")]
 	[Parameter("Port", typeof(ushort), "Port to listen on", "8080")]
-	[Parameter("Backlog", typeof(int), "Maximum number of pending TCP connections.", "100")]
 	[Parameter("FaultOnSuccess", typeof(bool), "Fault if no connection is recorded", "false")]
 	public class SocketMonitor : Peach.Core.Agent.Monitor
 	{

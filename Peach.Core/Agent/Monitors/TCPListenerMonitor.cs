@@ -9,8 +9,6 @@ namespace Peach.Core.Agent.Monitors
     [Monitor("TcpListener", true)]
     [Parameter("Host", typeof(string), "Interface to listen on defaults to 0.0.0.0", "0.0.0.0")]
     [Parameter("Port", typeof(int), "Port to listen on for connection default 8080", "8080")]
-    [Parameter("Pattern", typeof(string), "Regex pattern to match if any (not yet implemented)", "")]
-    [Parameter("Backlog", typeof(int), "Backlog number of sockets to accept default 100", "100")]
     [Parameter("Delay", typeof(int), "Length of time to wait before checking if connections was accepted default 1000 ms", "1000")]
     public class TCPListenerMonitor : Peach.Core.Agent.Monitor
     {
@@ -29,7 +27,6 @@ namespace Peach.Core.Agent.Monitors
             public const int BufferSize = 1024; 
             public byte[] Buffer = new byte[BufferSize];
             public StringBuilder StringBuffer = new StringBuilder();
-
         }
 
         private static StateObject _State = new StateObject();
