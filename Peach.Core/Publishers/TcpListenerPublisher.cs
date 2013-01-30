@@ -69,7 +69,7 @@ namespace Peach.Core.Publishers
 				var ar = _listener.BeginAcceptTcpClient(null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
-				_client = _listener.EndAcceptTcpClient(ar);
+				_tcp = _listener.EndAcceptTcpClient(ar);
 			}
 			catch (Exception ex)
 			{

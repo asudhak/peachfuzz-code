@@ -578,6 +578,7 @@
     <Compile Include="Proxy\Web\HttpResponse.cs" />
     <Compile Include="Proxy\Web\WebProxy.cs" />
     <Compile Include="Publisher.cs" />
+    <Compile Include="Publishers\BufferedStreamPublisher.cs" />
     <Compile Include="Publishers\ConsolePublisher.cs" />
     <Compile Include="Publishers\FilePerIterationPublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
