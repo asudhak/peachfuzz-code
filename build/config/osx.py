@@ -42,7 +42,7 @@ def prepare(conf):
 		'/Developer/SDKs',
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
-	
+
 	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
 
 	env['EXTERNALS'] = {
@@ -107,14 +107,14 @@ def configure(conf):
 	env.append_value('CSFLAGS_debug', [
 		'/define:DEBUG,TRACE',
 	])
-	
+
 	env.append_value('CSFLAGS_release', [
 		'/define:TRACE',
 		'/optimize+',
 	])
 
 	env['CSPLATFORM'] = 'anycpu'
-	
+
 	arch_flags = [
 		'-mmacosx-version-min=10.6',
 		'-isysroot',
@@ -124,13 +124,13 @@ def configure(conf):
 		'-arch',
 		'x86_64',
 	]
-	
+
 	cppflags = [
 		'-pipe',
 		'-Werror',
 		'-Wno-unused',
 	]
-	
+
 	cppflags_debug = [
 		'-g',
 	]
@@ -142,7 +142,7 @@ def configure(conf):
 	env.append_value('CPPFLAGS', arch_flags + cppflags)
 	env.append_value('CPPFLAGS_debug', cppflags_debug)
 	env.append_value('CPPFLAGS_release', cppflags_release)
-	
+
 	env.append_value('LINKFLAGS', arch_flags)
 
 	env.append_value('DEFINES_debug', ['DEBUG'])

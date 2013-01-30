@@ -51,7 +51,7 @@ namespace Peach.Core.Fixups
 			{
 				logger.Debug("class: " + (string)args["class"]);
 				logger.Error(ex.Message);
-				throw ex;
+				throw;
 			}
 		}
 

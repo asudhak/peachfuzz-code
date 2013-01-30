@@ -386,20 +386,20 @@ namespace Peach.Core.Test.MutationStrategies
 			string temp3 = Path.GetTempFileName();
 			string temp4 = Path.GetTempFileName();
 
-			File.WriteAllBytes(temp1, Encoding.ASCII.GetBytes("Foo\u0000"));
-			File.WriteAllBytes(temp2, Encoding.ASCII.GetBytes("Foo\u0000Bar\u0000"));
-			File.WriteAllBytes(temp3, Encoding.ASCII.GetBytes("Foo\u0000Bar\u0000Baz\u0000"));
-			File.WriteAllBytes(temp4, Encoding.ASCII.GetBytes("Foo\u0000Bar\u0000Baz\u0000Qux\u0000"));
+			File.WriteAllBytes(temp1, Encoding.ASCII.GetBytes("Foo1"));
+			File.WriteAllBytes(temp2, Encoding.ASCII.GetBytes("Foo2Bar2"));
+			File.WriteAllBytes(temp3, Encoding.ASCII.GetBytes("Foo3Bar3Baz3"));
+			File.WriteAllBytes(temp4, Encoding.ASCII.GetBytes("Foo4Bar4Baz4Qux4"));
 
 			// Test loading a dataset from a file
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
 				"   <DataModel name=\"TheDataModel1\">" +
-				"       <String name=\"str1\" value=\"Initial\" maxOccurs=\"100\" nullTerminated=\"true\"/>" +
+				"       <String name=\"str1\" value=\"Init\" maxOccurs=\"100\" lengthType=\"chars\" length=\"4\"/>" +
 				"   </DataModel>" +
 
 				"   <DataModel name=\"TheDataModel2\">" +
-				"       <String name=\"str1\" value=\"Initial\" maxOccurs=\"100\" nullTerminated=\"true\"/>" +
+				"       <String name=\"str1\" value=\"Init\" maxOccurs=\"100\" lengthType=\"chars\" length=\"4\"/>" +
 				"   </DataModel>" +
 
 				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +

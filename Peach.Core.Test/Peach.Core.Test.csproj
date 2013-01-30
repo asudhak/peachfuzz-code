@@ -258,6 +258,7 @@
     <Compile Include="CrackingTests\ContraintTests.cs" />
     <Compile Include="CrackingTests\CountRelationTests.cs" />
     <Compile Include="CrackingTests\FlagsTests.cs" />
+    <Compile Include="CrackingTests\LengthTests.cs" />
     <Compile Include="CrackingTests\NumberTests.cs" />
     <Compile Include="CrackingTests\OffsetRelationTests.cs" />
     <Compile Include="CrackingTests\PaddingTests.cs" />
@@ -292,6 +293,7 @@
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
     <Compile Include="Monitors\PingMonitorTests.cs" />
     <Compile Include="Monitors\ProcessKillerMoniorTests.cs" />
+    <Compile Include="Monitors\ProcessMonitorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
     <Compile Include="Monitors\SocketMonitorTests.cs" />
     <Compile Include="Monitors\VmwareMonitorTests.cs" />
@@ -337,6 +339,7 @@
     <Compile Include="PitParserTests\DefaultValuesTests.cs" />
     <Compile Include="PitParserTests\FlagTests.cs" />
     <Compile Include="PitParserTests\GeneralTests.cs" />
+    <Compile Include="PitParserTests\IncludeTests.cs" />
     <Compile Include="PitParserTests\MiscTests.cs" />
     <Compile Include="PitParserTests\NumberTests.cs" />
     <Compile Include="PitParserTests\PaddingTests.cs" />
@@ -350,7 +353,9 @@
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\FilePerIterationTests.cs" />
     <Compile Include="Publishers\FilePublisherTests.cs" />
+    <Compile Include="Publishers\HttpPublisherTests.cs" />
     <Compile Include="Publishers\ParameterTests.cs" />
+    <Compile Include="Publishers\RemotePubilsherTests.cs" />
     <Compile Include="Publishers\SocketPublisherTests.cs" />
     <Compile Include="Publishers\TcpPublisherTests.cs" />
     <Compile Include="RandomTest.cs" />
@@ -369,12 +374,14 @@
     <Compile Include="Transformers\Compress\Bz2DecompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipCompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipDecompressTests.cs" />
+    <Compile Include="Transformers\Crypto\Aes128Tests.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CvsScrambleTests.cs" />
     <Compile Include="Transformers\Crypto\HmacTests.cs" />
     <Compile Include="Transformers\Crypto\Md5Tests.cs" />
     <Compile Include="Transformers\Crypto\Sha1Tests.cs" />
+    <Compile Include="Transformers\Crypto\TripleDesTests.cs" />
     <Compile Include="Transformers\Crypto\UnixMd5CryptTests.cs" />
     <Compile Include="Transformers\Encode\Base64DecodeTests.cs" />
     <Compile Include="Transformers\Encode\Base64EncodeTests.cs" />

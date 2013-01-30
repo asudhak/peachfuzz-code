@@ -33,7 +33,7 @@ class PkgContext(InstallContext):
 		Logs.warn('Creating archive: %s' % arch_name)
 
 		node = self.path.make_node(arch_name)
-		
+
 		try:
 			node.delete()
 		except Exception:
@@ -54,7 +54,7 @@ class PkgContext(InstallContext):
 				sys.stdout.write('.')
 				sys.stdout.flush()
 			zip.write(n.abspath(), archive_name, zipfile.ZIP_DEFLATED)
-		
+
 		zip.close()
 
 

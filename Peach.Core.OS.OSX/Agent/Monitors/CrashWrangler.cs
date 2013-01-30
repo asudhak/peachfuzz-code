@@ -291,7 +291,7 @@ namespace Peach.Core.Agent.Monitors
 			{
 
 				string err = GetLastError(ex.NativeErrorCode);
-				throw new PeachException(string.Format("CrashWrangler: Could not start handler \"{0}\" - {1}", _execHandler, err));
+				throw new PeachException(string.Format("CrashWrangler: Could not start handler \"{0}\" - {1}", _execHandler, err), ex);
 			}
 
 			_totalProcessorTime = 0;
@@ -307,17 +307,17 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_procCommand = Proc.GetProcessById(pid);
 			}
-			catch (ArgumentException)
+			catch (ArgumentException ex)
 			{
 				if (!_procHandler.HasExited)
-					throw new PeachException("CrashWrangler: Could not open handle to command \"" + _command + "\" with pid \"" + pid + "\"");
+					throw new PeachException("CrashWrangler: Could not open handle to command \"" + _command + "\" with pid \"" + pid + "\"", ex);
 
 				var ret = _procHandler.ExitCode;
 				var log = File.Exists(_cwLogFile);
 
 				// If the exit code non-zero and no log means it was unable to run the command
 				if (ret != 0 && !log)
-					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"");
+					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"", ex);
 
 				// If the exit code is 0 or there is a log, the program ran to completion
 				if (_procCommand != null)

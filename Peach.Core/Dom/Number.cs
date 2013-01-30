@@ -245,19 +245,19 @@ namespace Peach.Core.Dom
 					return value;
 			}
 
-			throw new PeachException("Error,  {0} value \"{1}\" could not be converted to a {2}-bit {3} number.", name, str, lengthAsBits, Signed ? "signed" : "unsigned");
+			throw new PeachException(string.Format("Error,  {0} value \"{1}\" could not be converted to a {2}-bit {3} number.", name, str, lengthAsBits, Signed ? "signed" : "unsigned"));
 		}
 
 		private dynamic SanitizeStream(BitStream bs)
 		{
 			if (bs.LengthBytes != ((lengthAsBits + 7) / 8))
-				throw new PeachException("Error,  {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", name, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8);
+				throw new PeachException(string.Format("Error,  {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", name, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8));
 
 			if (bs.LengthBits > lengthAsBits)
 			{
 				ulong extra = bs.ReadBits((int)(bs.LengthBits - lengthAsBits));
 				if (extra != 0)
-					throw new PeachException("Error,  {0} value has an invalid bytes for a {1}-bit {2} number.", name, lengthAsBits, Signed ? "signed" : "unsigned");
+					throw new PeachException(string.Format("Error,  {0} value has an invalid bytes for a {1}-bit {2} number.", name, lengthAsBits, Signed ? "signed" : "unsigned"));
 			}
 
 			return FromBitstream(bs);
@@ -308,9 +308,9 @@ namespace Peach.Core.Dom
 			}
 
 			if (value < 0 && (long)value < MinValue)
-				throw new PeachException("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
+				throw new PeachException(string.Format("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned"));
 			if (value > 0 && (ulong)value > MaxValue)
-				throw new PeachException("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
+				throw new PeachException(string.Format("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned"));
 
 			if (Signed)
 				return new Variant((long)value);

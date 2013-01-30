@@ -218,7 +218,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -231,7 +231,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -244,7 +244,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"Some Unknown Device\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -257,7 +257,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"		</Monitor>" +
 				"	</Agent>";
 
@@ -269,7 +269,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"bad filter string\"/>" +
 				"		</Monitor>" +
@@ -283,15 +283,15 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon0\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon0\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"ip src 255.255.255.255\"/>" +
 				"		</Monitor>" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon1\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon1\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"udp port {2}\"/>" +
 				"		</Monitor>" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon2\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon2\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"udp port {3}\"/>" +
 				"		</Monitor>" +

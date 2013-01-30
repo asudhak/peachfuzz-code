@@ -124,7 +124,8 @@ namespace Peach.Core.Dom
 			if (blobLength == null)
 				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
 
-			data.WantBytes((long)blobLength);
+			// Round up bits to next byte
+			data.WantBytes((long)(blobLength + 7 / 8));
 
 			if ((data.TellBits() + blobLength) > data.LengthBits)
 				throw new CrackingFailure("Blob '" + element.fullName +
@@ -162,7 +163,7 @@ namespace Peach.Core.Dom
 			{
 				BitStream bs = (BitStream)blob.DefaultValue;
 				if (bs.LengthBits > blob.lengthAsBits)
-					throw new PeachException("Error, value of element \"{0}\" is longer than specified length.", blob.name);
+					throw new PeachException("Error, value of element \"" + blob.name + "\" is longer than specified length.");
 				else if (bs.LengthBits < blob.lengthAsBits)
 					ExpandDefaultValue(blob, bs);
 			}

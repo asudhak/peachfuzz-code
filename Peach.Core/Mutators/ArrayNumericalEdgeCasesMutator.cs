@@ -83,9 +83,9 @@ namespace Peach.Core.Mutators
                     {
                         n = Int32.Parse(h.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
                     }
                 }
             }
@@ -176,9 +176,9 @@ namespace Peach.Core.Mutators
                     objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
                     objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    throw new OutOfMemoryException();
+                    throw new OutOfMemoryException("Out of memory", ex);
                 }
             }
         }

@@ -5,6 +5,14 @@ using System.Xml;
 
 namespace Peach.Core
 {
+	public static class StringExtensions
+	{
+		public static string Format(this string format, params object[] args)
+		{
+			return string.Format(format, args);
+		}
+	}
+
 	public static class IpAddressExtensions
 	{
 		public static bool IsMulticast(this System.Net.IPAddress ip)

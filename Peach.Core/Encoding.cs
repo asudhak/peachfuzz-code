@@ -85,10 +85,6 @@ namespace Peach.Core
 			this.encoding.DecoderFallback = new DecoderExceptionFallback();
 			this.encoding.EncoderFallback = new EncoderExceptionFallback();
 
-			// TODO: Enable fallback exception once EncodingTests.EncodeBadUtf* tests pass
-			if (!encoding.IsSingleByte)
-				this.encoding.EncoderFallback = new EncoderReplacementFallback();
-
 			this.minBytesPerChar = minBytesPerChar;
 		}
 
@@ -98,6 +94,43 @@ namespace Peach.Core
 				throw new ArgumentOutOfRangeException("index");
 			if (count < 0 || (index + count) > array.Length)
 				throw new ArgumentOutOfRangeException("count");
+		}
+
+		protected static void CheckCodePoint(int ch, int index, int max)
+		{
+			if (ch > max)
+			{
+				string chr_fmt = ch > ushort.MaxValue ? "X8" : "X4";
+				string msg_fmt = "Unable to translate Unicode character \\u{0} at index {1} to the specified code page";
+				string msg = string.Format(msg_fmt, ((int)ch).ToString(chr_fmt), index);
+				throw new EncoderFallbackException(msg);
+			}
+		}
+
+		// Returns the next char in the array.  If the character is a surrogate
+		// and the next character is a surrogate, they are combined approperiately.
+		// Otherwise, the raw surrogate value is returned.
+		protected static int GetRawChar(char[] chars, ref int index, ref int count)
+		{
+			char ch1 = chars[index];
+
+			++index;
+			--count;
+
+			if (char.IsSurrogate(ch1) && count > 0)
+			{
+				char ch2 = chars[index];
+				if (char.IsSurrogate(ch2))
+				{
+					++index;
+					--count;
+
+					int val = 0x400 * (ch1 - 0xd800) + 0x10000 + ch2 - 0xdc00;
+					return val;
+				}
+			}
+
+			return ch1;
 		}
 
 		protected System.Text.Encoding encoding;
@@ -148,6 +181,10 @@ namespace Peach.Core
 			CheckParams(bytes, index, count);
 			return encoding.GetCharCount(bytes, index, count);
 		}
+
+		public abstract byte[] GetRawBytes(char[] chars, int index, int count);
+
+		public abstract int GetRawByteCount(char[] chars, int index, int count);
 
 		#endregion
 
@@ -202,6 +239,16 @@ namespace Peach.Core
 			return GetBytes(s.ToCharArray());
 		}
 
+		public byte[] GetRawBytes(char[] chars)
+		{
+			return GetRawBytes(chars, 0, chars.Length);
+		}
+
+		public byte[] GetRawBytes(string s)
+		{
+			return GetRawBytes(s.ToCharArray());
+		}
+
 		public int GetByteCount(char[] chars)
 		{
 			return GetByteCount(chars, 0, chars.Length);
@@ -210,6 +257,16 @@ namespace Peach.Core
 		public int GetByteCount(string s)
 		{
 			return GetByteCount(s.ToCharArray());
+		}
+
+		public int GetRawByteCount(char[] chars)
+		{
+			return GetRawByteCount(chars, 0, chars.Length);
+		}
+
+		public int GetRawByteCount(string s)
+		{
+			return GetRawByteCount(s.ToCharArray());
 		}
 
 		public int GetCharCount(byte[] bytes)
@@ -264,9 +321,6 @@ namespace Peach.Core
 				case "latin1":
 					return ISOLatin1;
 
-				case "default":
-					return Default;
-
 				default:
 					throw new ArgumentException("Encoding name '" + name + "' not supported.", "name");
 			}
@@ -284,7 +338,6 @@ namespace Peach.Core
 		static volatile Encoding utf32Encoding;
 		static volatile Encoding bigEndianUTF32Encoding;
 		static volatile Encoding isoLatin1Encoding;
-		static volatile Encoding defaultEncoding;
 
 		static readonly object lockobj = new object();
 
@@ -440,25 +493,6 @@ namespace Peach.Core
 			}
 		}
 
-		public static Encoding Default
-		{
-			get
-			{
-				if (defaultEncoding == null)
-				{
-					lock (lockobj)
-					{
-						if (defaultEncoding == null)
-						{
-							defaultEncoding = new DefaultEncoding();
-						}
-					}
-				}
-
-				return defaultEncoding;
-			}
-		}
-
 		#endregion
 	}
 
@@ -469,9 +503,34 @@ namespace Peach.Core
 	[Serializable]
 	public class ASCIIEncoding : Encoding
 	{
+		const int BytesPerChar = 1;
+		const int MaxCodePoint = byte.MaxValue;
+
 		public ASCIIEncoding()
-			: base(new System.Text.ASCIIEncoding(), 1)
+			: base(new System.Text.ASCIIEncoding(), BytesPerChar)
 		{
+		}
+
+		public override int GetRawByteCount(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+			return count * BytesPerChar;
+		}
+
+		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+
+			for (int i = index, j = 0; i < index + count; ++i)
+			{
+				char ch = chars[i];
+				CheckCodePoint(ch, i, MaxCodePoint);
+				ret[j++] = (byte)ch;
+			}
+
+			return ret;
 		}
 	}
 
@@ -486,6 +545,16 @@ namespace Peach.Core
 			: base(new System.Text.UTF7Encoding(true), 1)
 		{
 		}
+
+		public override int GetRawByteCount(char[] chars, int index, int count)
+		{
+			return GetByteCount(chars, index, count);
+		}
+
+		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			return GetBytes(chars, index, count);
+		}
 	}
 
 	#endregion
@@ -495,9 +564,90 @@ namespace Peach.Core
 	[Serializable]
 	public class UTF8Encoding : Encoding
 	{
+		const int MinBytesPerChar = 1;
+
 		public UTF8Encoding()
-			: base(new System.Text.UTF8Encoding(false, true), 1)
+			: base(new System.Text.UTF8Encoding(false, true), MinBytesPerChar)
 		{
+		}
+
+		public override int GetRawByteCount(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			int i = 0;
+			while (count > 0)
+			{
+				int ch = GetRawChar(chars, ref index, ref count);
+
+				if (ch <= 0x7f)
+					i += 1;
+				else if (ch <= 0x7ff)
+					i += 2;
+				else if (ch <= 0xffff)
+					i += 3;
+				else if (ch <= 0x1fffff)
+					i += 4;
+				else if (ch <= 0x3ffffff)
+					i += 5;
+				else if (ch <= 0x7fffffff)
+					i += 6;
+			}
+			return i;
+		}
+
+		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+
+			for (int i = 0; count > 0; )
+			{
+				int ch = GetRawChar(chars, ref index, ref count);
+
+				if (ch <= 0x7f)
+				{
+					ret[i++] = (byte)ch;
+				}
+				else if (ch <= 0x7ff)
+				{
+					ret[i++] = (byte)(0xc0 | (ch >> 6));
+					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+				}
+				else if (ch <= 0xffff)
+				{
+					ret[i++] = (byte)(0xe0 | (ch >> 12));
+					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+				}
+				else if (ch <= 0x1fffff)
+				{
+					ret[i++] = (byte)(0xf0 | (ch >> 18));
+					ret[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
+					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+				}
+				else if (ch <= 0x3ffffff)
+				{
+					ret[i++] = (byte)(0xf8 | (ch >> 24));
+					ret[i++] = (byte)(0x80 | ((ch >> 18) & 0x3f));
+					ret[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
+					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+				}
+				else if (ch <= 0x7fffffff)
+				{
+					ret[i++] = (byte)(0xfc | (ch >> 30));
+					ret[i++] = (byte)(0x80 | ((ch >> 24) & 0x3f));
+					ret[i++] = (byte)(0x80 | ((ch >> 18) & 0x3f));
+					ret[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
+					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+				}
+			}
+
+			return ret;
 		}
 	}
 
@@ -508,9 +658,47 @@ namespace Peach.Core
 	[Serializable]
 	public class UnicodeEncoding : Encoding
 	{
+		const int BytesPerChar = 2;
+		const int MaxCodePoint = ushort.MaxValue;
+
+		private bool bigEndian;
+
 		public UnicodeEncoding(bool bigEndian)
-			: base(new System.Text.UnicodeEncoding(bigEndian, false, true), 2)
+			: base(new System.Text.UnicodeEncoding(bigEndian, false, true), BytesPerChar)
 		{
+			this.bigEndian = bigEndian;
+		}
+
+		public override int GetRawByteCount(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+			return count * BytesPerChar;
+		}
+
+		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+
+			for (int i = index, j = 0; i < index + count; ++i)
+			{
+				char ch = chars[i];
+				CheckCodePoint(ch, i, MaxCodePoint);
+
+				if (bigEndian)
+				{
+					ret[j++] = (byte)(ch >> 8);
+					ret[j++] = (byte)ch;
+				}
+				else
+				{
+					ret[j++] = (byte)ch;
+					ret[j++] = (byte)(ch >> 8);
+				}
+			}
+
+			return ret;
 		}
 	}
 
@@ -521,9 +709,57 @@ namespace Peach.Core
 	[Serializable]
 	public class UTF32Encoding : Encoding
 	{
+		const int BytesPerChar = 4;
+		const int MaxCodePoint = int.MaxValue;
+
+		private bool bigEndian;
+
 		public UTF32Encoding(bool bigEndian)
-			: base(new System.Text.UTF32Encoding(bigEndian, false, true), 4)
+			: base(new System.Text.UTF32Encoding(bigEndian, false, true), BytesPerChar)
 		{
+			this.bigEndian = bigEndian;
+		}
+
+		public override int GetRawByteCount(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			int i = 0;
+			while (count > 0)
+			{
+				GetRawChar(chars, ref index, ref count);
+				i += BytesPerChar;
+			}
+			return i;
+		}
+
+		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+
+			for (int i = 0; count > 0; )
+			{
+				int ch = GetRawChar(chars, ref index, ref count);
+
+				if (bigEndian)
+				{
+					ret[i++] = (byte)(ch >> 24);
+					ret[i++] = (byte)(ch >> 16);
+					ret[i++] = (byte)(ch >> 8);
+					ret[i++] = (byte)ch;
+				}
+				else
+				{
+					ret[i++] = (byte)ch;
+					ret[i++] = (byte)(ch >> 8);
+					ret[i++] = (byte)(ch >> 16);
+					ret[i++] = (byte)(ch >> 24);
+				}
+			}
+
+			return ret;
 		}
 	}
 
@@ -534,22 +770,34 @@ namespace Peach.Core
 	[Serializable]
 	public class Latin1Encoding : Encoding
 	{
+		const int BytesPerChar = 1;
+		const int MaxCodePoint = byte.MaxValue;
+
 		public Latin1Encoding()
 			: base(System.Text.Encoding.GetEncoding("ISO-8859-1"), 1)
 		{
 		}
-	}
 
-	#endregion
-
-	#region DefaultEncoding
-
-	[Serializable]
-	public class DefaultEncoding : Encoding
-	{
-		public DefaultEncoding()
-			: base(System.Text.Encoding.GetEncoding(0), 1)
+		public override int GetRawByteCount(char[] chars, int index, int count)
 		{
+			CheckParams(chars, index, count);
+			return count * BytesPerChar;
+		}
+
+		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+
+			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+
+			for (int i = index, j = 0; i < index + count; ++i)
+			{
+				char ch = chars[i];
+				CheckCodePoint(ch, i, MaxCodePoint);
+				ret[j++] = (byte)ch;
+			}
+
+			return ret;
 		}
 	}
 

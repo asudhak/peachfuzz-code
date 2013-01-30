@@ -158,10 +158,18 @@ namespace Peach.Core.Analyzers
 			var doc = new XmlDocument();
 			doc.Schemas = set;
 			// Mono has issues reading utf-32 BOM when just calling doc.Load(data)
-			string xmlData = new StreamReader(data).ReadToEnd();
-			doc.LoadXml(xmlData);
 
-			// Right now XSD validation is disabled on Mono :(
+            try
+            {
+                string xmlData = new StreamReader(data).ReadToEnd();
+                doc.LoadXml(xmlData);
+            }
+            catch(XmlException ex)
+            {
+               throw new PeachException("Error: XML Failed to load: " + ex.Message, ex); 
+            }
+
+		    // Right now XSD validation is disabled on Mono :(
 			// Still load the doc to verify well formed xml
 			Type t = Type.GetType("Mono.Runtime");
 			if (t != null)
@@ -242,8 +250,14 @@ namespace Peach.Core.Analyzers
 						nsObj.parent = dom;
 						nsObj.name = ns;
 
-						if (xmldoc.FirstChild.Name == "Peach")
-							handlePeach(xmldoc.FirstChild, nsObj);
+						foreach (XmlNode item in xmldoc.ChildNodes)
+						{
+							if (item.Name == "Peach")
+							{
+								handlePeach(item, nsObj);
+								break;
+							}
+						}
 
 						dom.ns[ns] = nsObj;
 						break;
@@ -330,7 +344,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Data")
 				{
-					throw new NotImplementedException("Data");
+					throw new NotImplementedException();
 				}
 			}
 
@@ -420,13 +434,14 @@ namespace Peach.Core.Analyzers
 		{
 			if (name.IndexOf(':') > -1)
 			{
-				string ns = name.Substring(0, name.IndexOf(':') - 1);
+				string ns = name.Substring(0, name.IndexOf(':'));
 
-				if (!dom.ns.Keys.Contains(ns))
+				Dom.DomNamespace other;
+				if (!dom.ns.TryGetValue(ns, out other))
 					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + name + "'.");
 
-				name = name.Substring(name.IndexOf(':'));
-				dom = dom.ns["name"];
+				name = name.Substring(name.IndexOf(':') + 1);
+				dom = other;
 			}
 
 			if (container != null)
@@ -726,7 +741,7 @@ namespace Peach.Core.Analyzers
 				}
 				catch (Exception e)
 				{
-					throw new PeachException("Error, parsing length on '" + element.name + "': " + e.Message);
+					throw new PeachException("Error, parsing length on '" + element.name + "': " + e.Message, e);
 				}
 			}
 
@@ -944,7 +959,7 @@ namespace Peach.Core.Analyzers
 						var array = HexString.ToArray(value);
 
 						if (array == null)
-							throw new PeachException("Error, the value of element '{0}' is not a valid hex string.", elem.name);
+							throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
 
 						elem.DefaultValue = new Variant(array);
 						break;
@@ -1120,9 +1135,14 @@ namespace Peach.Core.Analyzers
 
 				throw new PeachException(string.Format(
 					"Error, unable to create instance of '{0}' named '{1}'.\nExtended error: Exception during object creation: {2}",
+<<<<<<< HEAD
 					pluginType, cls, e.Message
 				));
 
+=======
+					pluginType, cls, e.InnerException.Message
+				), e);
+>>>>>>> 6ab31c0f00e9d7b85d8a6be37118eb4d8b0267a4
 			}
 		}
 
@@ -1460,9 +1480,9 @@ namespace Peach.Core.Analyzers
 					{
 						test.agents.Add(refName, parent.agents[refName]);
 					}
-					catch
+					catch (Exception ex)
 					{
-						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found");
+						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found", ex);
 					}
 
 					var platform = child.getAttribute("platform");
@@ -1534,7 +1554,7 @@ namespace Peach.Core.Analyzers
 							test.excludedMutators.AddRange(list);
 							break;
 						default:
-							throw new PeachException("Error, Mutators element has invalid 'mode' attribute '{0}'", mode);
+							throw new PeachException("Error, Mutators element has invalid 'mode' attribute '" + mode + "'");
 					}
 				}
 			}

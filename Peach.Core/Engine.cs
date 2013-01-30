@@ -169,9 +169,9 @@ namespace Peach.Core
 			{
 				test = dom.tests[config.runName];
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Unable to locate test named '" + config.runName + "'.");
+				throw new PeachException("Unable to locate test named '" + config.runName + "'.", ex);
 			}
 
 			startFuzzing(dom, test, config);
@@ -256,13 +256,13 @@ namespace Peach.Core
 
 				uint redoCount = 0;
 
+				if (context.config.parallel && !mutationStrategy.IsDeterministic)
+						throw new NotSupportedException("parallel is not supported when a non-deterministic mutation strategy is used");
+
 				if (context.config.range)
 				{
 					if (context.config.parallel)
 						throw new NotSupportedException("range is not supported when parallel is used");
-
-					if (mutationStrategy.IsDeterministic)
-						throw new NotSupportedException("range is not supported when a non-deterministic mutation strategy is used");
 
 					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);
@@ -361,8 +361,8 @@ namespace Peach.Core
 							{
 								logger.Debug("runTest: SoftException on control iteration");
 								if (se.InnerException != null)
-									throw new PeachException(se.InnerException.Message);
-								throw new PeachException(se.Message);
+									throw new PeachException(se.InnerException.Message, se);
+								throw new PeachException(se.Message, se);
 							}
 
 							logger.Debug("runTest: SoftException, skipping to next iteration");
@@ -537,7 +537,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							if (context.config.parallel)
 							{
 								if (iterationTotal > context.config.parallelTotal)
-									throw new PeachException("Error, {1} parallel machines is greater than the {0} total iterations.", iterationTotal, context.config.parallelTotal);
+									throw new PeachException(string.Format("Error, {1} parallel machines is greater than the {0} total iterations.", iterationTotal, context.config.parallelTotal));
 
 								var range = Utilities.SliceRange(1, iterationStop, context.config.parallelNum, context.config.parallelTotal);
 
@@ -591,7 +591,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 						// we have already retried 3 times.
 
 						if (redoCount >= 3)
-							throw new PeachException(rte.Message);
+							throw new PeachException(rte.Message, rte);
 
 						redoCount++;
 					}

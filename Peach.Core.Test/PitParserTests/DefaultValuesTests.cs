@@ -14,11 +14,19 @@ namespace Peach.Core.Test.PitParserTests
 	{
 		public void TestEncoding(Encoding enc, bool defaultArgs)
 		{
-			string encoding = enc.HeaderName;
-			if (enc is UnicodeEncoding)
-				encoding = Encoding.Unicode.HeaderName;
+			int codepage = 0;
+			string encoding = "";
 
-			string val = (enc != Encoding.Default) ? "encoding=\"" + encoding + "\"" : "";
+			if (enc != null)
+			{
+				codepage = enc.CodePage;
+				if (enc is UnicodeEncoding)
+					encoding = Encoding.Unicode.HeaderName;
+				else
+					encoding = enc.HeaderName;
+			}
+
+			string val = !string.IsNullOrEmpty(encoding) ? "encoding=\"" + encoding + "\"" : "";
 			string xml = "<?xml version=\"1.0\" " + val + "?>\r\n" +
 				"<Peach>\r\n" +
 				"	<DataModel name=\"##VAR1##\">\r\n" +
@@ -41,7 +49,7 @@ namespace Peach.Core.Test.PitParserTests
 
 			using (FileStream f = File.OpenWrite(pitFile))
 			{
-				using (StreamWriter sw = new StreamWriter(f, System.Text.Encoding.GetEncoding(enc.CodePage)))
+				using (StreamWriter sw = new StreamWriter(f, System.Text.Encoding.GetEncoding(codepage)))
 				{
 					sw.Write(xml);
 				}
@@ -68,8 +76,8 @@ namespace Peach.Core.Test.PitParserTests
 		[Test]
 		public void TestDefault()
 		{
-			TestEncoding(Encoding.Default, true);
-			TestEncoding(Encoding.Default, false);
+			TestEncoding(null, true);
+			TestEncoding(null, false);
 		}
 
 		[Test]

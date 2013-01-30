@@ -101,7 +101,7 @@ namespace Peach.Core.Agent.Monitors
             }
             catch (Exception e)
             {
-                throw new PeachException(e.Message);
+                throw new PeachException(e.Message, e);
             }
 
             //TODO change to regex
@@ -135,7 +135,7 @@ namespace Peach.Core.Agent.Monitors
                 }
                 catch (Exception e)
                 {
-                    throw new PeachException(e.Message);
+                    throw new PeachException(e.Message, e);
                 }
             }
 
@@ -155,7 +155,7 @@ namespace Peach.Core.Agent.Monitors
                 }
                 catch(Exception e)
                 {
-                 throw new PeachException(e.Message);                    
+                 throw new PeachException(e.Message, e);
                 }
 
                 fault.collectedData["gdbAnalyze"] = Encoding.ASCII.GetBytes(gdbOutput);  
@@ -174,7 +174,7 @@ namespace Peach.Core.Agent.Monitors
                 }
                 catch (Exception e)
                 {
-                    throw new PeachException(e.Message);
+                    throw new PeachException(e.Message, e);
                 }
            }
 

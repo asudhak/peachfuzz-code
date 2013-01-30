@@ -12,7 +12,7 @@ def find_program(self, filename, **kw):
 	if not path_list:
 		path_list = self.env['PATH']
 	kw['path_list'] = path_list
-	
+
 	var = kw.get('var', '')
 	filename = self.env[var] or filename
 	self.env[var] = None
@@ -30,7 +30,7 @@ def add_to_group(self, tgen, group=None):
 	features = set(Utils.to_list(getattr(tgen, 'features', [])))
 	available = set(Utils.to_list(tgen.env['supported_features']))
 	intersect = features & available
-	
+
 	if intersect == features:
 		self.base_add_to_group(tgen, group)
 	elif Logs.verbose > 0:

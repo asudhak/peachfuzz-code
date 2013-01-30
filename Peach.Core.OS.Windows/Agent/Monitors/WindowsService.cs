@@ -118,17 +118,17 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 
 				_serviceController.WaitForStatus(ServiceControllerStatus.Running, new TimeSpan(0, _startTimeout, 0));
 			}
-			catch (System.ServiceProcess.TimeoutException)
+			catch (System.ServiceProcess.TimeoutException ex)
 			{
 				if (_machineName == null)
 				{
 					logger.Debug("StartService: Timeout starting service [" + _service + "].");
-					throw new PeachException("Error, WindowsService monitor was unable to start service [" + _service + "].");
+					throw new PeachException("Error, WindowsService monitor was unable to start service [" + _service + "].", ex);
 				}
 				else
 				{
 					logger.Debug("StartService: Timeout starting service [" + _service + "] on computer ["+ _machineName +"].");
-					throw new PeachException("Error, WindowsService monitor was unable to start service [" + _service + "] on computer [" + _machineName + "].");
+					throw new PeachException("Error, WindowsService monitor was unable to start service [" + _service + "] on computer [" + _machineName + "].", ex);
 				}
 			}
 		}
@@ -170,17 +170,17 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 
 				_serviceController.WaitForStatus(ServiceControllerStatus.Stopped, new TimeSpan(0, _startTimeout, 0));
 			}
-			catch (System.ServiceProcess.TimeoutException)
+			catch (System.ServiceProcess.TimeoutException ex)
 			{
 				if (_machineName == null)
 				{
 					logger.Debug("StartService: Timeout stopping service [" + _service + "].");
-					throw new PeachException("Error, WindowsService monitor was unable to stop service [" + _service + "].");
+					throw new PeachException("Error, WindowsService monitor was unable to stop service [" + _service + "].", ex);
 				}
 				else
 				{
 					logger.Debug("StartService: Timeout stopping service [" + _service + "] on computer [" + _machineName + "].");
-					throw new PeachException("Error, WindowsService monitor was unable to stop service [" + _service + "] on computer [" + _machineName + "].");
+					throw new PeachException("Error, WindowsService monitor was unable to stop service [" + _service + "] on computer [" + _machineName + "].", ex);
 				}
 			}
 		}

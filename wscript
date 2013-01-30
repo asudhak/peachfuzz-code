@@ -81,6 +81,7 @@ def configure(ctx):
 
 				ctx.setenv(name, env=base_env)
 				arch_env = ctx.get_env()
+				arch_env.BASENAME = name;
 				arch_env.TARGET = tgt;
 				arch_env.SUBARCH = arch;
 				arch_env.PREFIX = os.path.join(base_env.PREFIX, name)
@@ -145,6 +146,8 @@ def build(bld):
 	if not success:
 		raise Errors.WafError('"%s" is not a supported variant' % what)
 
+	# Suppress missing target warnings
+	bld.targets = '*'
 
 def go(bld):
 	bld.fun = 'build'

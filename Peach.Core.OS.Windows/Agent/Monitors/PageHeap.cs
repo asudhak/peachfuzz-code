@@ -83,7 +83,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 			catch (Win32Exception exception)
 			{
-				throw new PeachException("Error, Enable PageHeap: " + exception.Message);
+				throw new PeachException("Error, Enable PageHeap: " + exception.Message, exception);
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 			catch (Win32Exception exception)
 			{
-				throw new PeachException("Error, Disable PageHeap: " + exception.Message);
+				throw new PeachException("Error, Disable PageHeap: " + exception.Message, exception);
 			}
 		}
 

@@ -35,7 +35,7 @@ namespace Peach.Core.Test.Monitors
                 "   </StateModel>" +
 
                 "   <Agent name=\"LocalAgent\">" +
-                "       <Monitor class=\"ReplayMonitor\">" +
+                "       <Monitor class=\"Replay\">" +
                 "           <Param name=\"Name\" value=\"ReplayMonitor1\"/>" +
                 "       </Monitor>" +
                 "   </Agent>" +

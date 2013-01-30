@@ -96,8 +96,8 @@ namespace Peach.Core.Test.Monitors
 			byte[] buffer;
 			IPEndPoint remoteEP;
 
-			public UdpSender(string ip, ushort port, string payload)
-				: base(IPAddress.Parse(ip).AddressFamily)
+			public UdpSender(IPAddress localIp, string ip, ushort port, string payload)
+				: base(localIp.AddressFamily)
 			{
 				remoteEP = new IPEndPoint(IPAddress.Parse(ip), port);
 				buffer = Encoding.ASCII.GetBytes(payload);
@@ -106,21 +106,25 @@ namespace Peach.Core.Test.Monitors
 				{
 					if (remoteEP.Address.AddressFamily == AddressFamily.InterNetwork)
 					{
-						Client.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-						Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, IPAddress.Loopback.GetAddressBytes());
+						Client.Bind(new IPEndPoint(localIp, 0));
+						Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, localIp.GetAddressBytes());
 					}
 					else
 					{
-						Client.Bind(new IPEndPoint(IPAddress.IPv6Loopback, 0));
-						Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastInterface, IPAddress.IPv6Loopback.GetAddressBytes());
+						throw new NotSupportedException();
 					}
 				}
 				else
 				{
-					Client.Bind(new IPEndPoint(remoteEP.Address, 0));
+					Client.Bind(new IPEndPoint(localIp, 0));
 				}
 
 				BeginSend(buffer, buffer.Length, remoteEP, OnSend, null);
+			}
+
+			public UdpSender(string ip, ushort port, string payload)
+				: this(IPAddress.Parse(ip), ip, port, payload)
+			{
 			}
 
 			void OnSend(IAsyncResult ar)
@@ -197,7 +201,7 @@ namespace Peach.Core.Test.Monitors
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
 		</Monitor>
-		<Monitor class='SocketMonitor'>
+		<Monitor class='Socket'>
 {1}
 		</Monitor>
 	</Agent>
@@ -334,7 +338,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("Monitoring " + addr + ":" + port, faults[1].title);
 		}
 
-		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Could not start monitor \"SocketMonitor\".  Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
+		[Test, ExpectedException(ExpectedException=typeof(PeachException), ExpectedMessage="Could not start monitor \"Socket\".  Interface '::' is not compatible with the address family for Host '1.1.1.1'.")]
 		public void TestBadHostInterface()
 		{
 			// Deal with IPv4/IPv6 mismatched Host & Interface parameters
@@ -382,15 +386,23 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestMulticast()
 		{
+			IPAddress addr;
+
+			using (Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
+			{
+				s.Connect(new IPEndPoint(IPAddress.Parse("1.1.1.1"), 80));
+				addr = ((IPEndPoint)s.LocalEndPoint).Address;
+			}
+
 			// Support 'Host' of 234.5.6.7
 			ushort port = TestBase.MakePort(46000, 47000);
 			string host = "234.5.6.7";
 			string desc;
 
-			using (var sender = new UdpSender(host, port, "Hello"))
+			using (var sender = new UdpSender(addr, host, port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
-				Run(new Params { { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Host", host }, { "Port", port.ToString() } });
+				Run(new Params { { "Protocol", "udp" }, { "Interface", addr.ToString() }, { "Host", host }, { "Port", port.ToString() } });
 			}
 
 			Assert.NotNull(faults);
@@ -402,7 +414,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
 		}
 
-		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"SocketMonitor\".  Multicast hosts are not supported with the tcp protocol.")]
+		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"Socket\".  Multicast hosts are not supported with the tcp protocol.")]
 		public void TestMulticastTcp()
 		{
 			// Multicast is not supported when Protocol is tcp

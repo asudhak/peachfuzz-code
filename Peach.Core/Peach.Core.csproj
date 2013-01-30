@@ -423,7 +423,6 @@
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
     <Compile Include="Agent\Monitors\SocketMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />
-    <Compile Include="Agent\Monitors\TCPListenerMonitor.cs" />
     <Compile Include="Agent\Monitors\VmwareMonitor.cs" />
     <Compile Include="Analysis\Coverage.cs" />
     <Compile Include="Analysis\CoverageImpl.cs" />
@@ -588,6 +587,7 @@
     <Compile Include="Publishers\RawIPv4Publisher.cs" />
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
+    <Compile Include="Publishers\RemotePublisher.cs" />
     <Compile Include="Publishers\SocketPublisher.cs" />
     <Compile Include="Publishers\StreamPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
@@ -601,11 +601,15 @@
     <Compile Include="RunContext.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="SerializableDictionary.cs" />
+    <Compile Include="SingleInstance.cs" />
     <Compile Include="TinyMT32.cs" />
     <Compile Include="Transformer.cs" />
     <Compile Include="Transformers\Compress\Bz2Compress.cs" />
     <Compile Include="Transformers\Compress\Bz2Decompress.cs" />
     <Compile Include="Transformers\Compress\GzipDecompress.cs" />
+    <Compile Include="Transformers\Crypto\Aes128.cs" />
+    <Compile Include="Transformers\Crypto\SymmetricAlgorithmTransformer.cs" />
+    <Compile Include="Transformers\Crypto\TripleDes.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5Crypt.cs" />
     <Compile Include="Transformers\Crypto\Crypt.cs" />
     <Compile Include="Transformers\Crypto\CvsScramble.cs" />

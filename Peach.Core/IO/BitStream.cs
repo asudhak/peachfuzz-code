@@ -981,7 +981,7 @@ namespace Peach.Core.IO
 		{
 			BitStream newStream = new BitStream();
 
-			while (pos % 8 == 0 && bits > 0)
+			while (pos % 8 > 0 && bits > 0)
 			{
 				bits--;
 				newStream.WriteBit(ReadBit());

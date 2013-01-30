@@ -4,6 +4,7 @@ subdirs = [
 	'pin',
 	'TreeViewAdv/Aga.Controls',
 	'Be.HexEditor.150/sources/Be.Windows.Forms.HexBox',
+	'VMware-VIX-1.12.1-894247',
 ]
 
 bld.recurse(subdirs)
