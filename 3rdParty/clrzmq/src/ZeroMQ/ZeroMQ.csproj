@@ -107,14 +107,14 @@
     <Compile Include="ZmqVersionException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <Import Project="$(SolutionDir)CustomTasks.targets" />
+  <!--Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
+  <Import Project="$(SolutionDir)CustomTasks.targets" /-->
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   -->
-  <Target Name="AfterBuild">
+  <!--Target Name="AfterBuild">
     <FindLastDirectory Path="$(PackagesDir)" Pattern="libzmq.*">
       <Output TaskParameter="Dir" PropertyName="LibzmqDir" />
     </FindLastDirectory>
@@ -123,5 +123,5 @@
       <LibFiles Include="@(LibzmqFiles->'$(SolutionDir)..\lib\%(RecursiveDir)%(FileName)%(Extension)')" />
     </ItemGroup>
     <Copy Condition="'$(UseCustomLibzmq)' != 'true'" SourceFiles="@(LibzmqFiles)" DestinationFiles="@(LibFiles)" SkipUnchangedFiles="true" />
-  </Target>
+  </Target-->
 </Project>
