@@ -101,7 +101,7 @@ def configure(conf):
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',
-		'/define:PEACH',
+		'/define:PEACH,UNIX,MONO',
 	])
 
 	env.append_value('CSFLAGS_debug', [
