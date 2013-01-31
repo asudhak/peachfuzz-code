@@ -332,9 +332,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="clrzmq">
-      <HintPath>..\packages\clrzmq.3.0.0-rc1\lib\net40\clrzmq.dll</HintPath>
-    </Reference>
     <Reference Include="IronPython">
       <HintPath>..\3rdParty\IronPython-2.7.1\IronPython.dll</HintPath>
     </Reference>
@@ -693,6 +690,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\3rdParty\clrzmq\src\ZeroMQ\ZeroMQ.csproj">
+      <Project>{6FFD872F-A4A4-4EFA-9B4D-4342BA6CF250}</Project>
+      <Name>ZeroMQ</Name>
+    </ProjectReference>
     <ProjectReference Include="..\3rdParty\xml-rpc.net-2.5.0\src\xmlrpc.csproj">
       <Project>{1B4B0A58-0AFB-4090-91DD-18912CC7DE65}</Project>
       <Name>xmlrpc</Name>
