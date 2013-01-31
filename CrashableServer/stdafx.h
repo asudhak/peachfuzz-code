@@ -7,9 +7,11 @@
 #endif						
 
 #include <stdio.h>
+#include <winsock2.h>
 #include <tchar.h>
 #include <windows.h>
-#include <winsock2.h>
+
+typedef int socklen_t;
 
 #else
 

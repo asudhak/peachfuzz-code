@@ -3,7 +3,7 @@
 bld(
 	features = 'cxx cxxprogram debug',
 	use = 'winsock',
-	source = 'CrashableServer.cpp main.cpp ws-util.cpp',
+	source = 'CrashableServer.cpp',
 	target='CrashableServer',
 )
 
