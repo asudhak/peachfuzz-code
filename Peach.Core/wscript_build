@@ -4,6 +4,7 @@ deps = [
 	'NLog.dll',
 	'CookComputing.XmlRpcV2.dll',
 	'SharpPcap.dll',
+	'ZeroMQ.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',
