@@ -12,6 +12,13 @@
 /3rdParty/Be.HexEditor.150/sources/*/[Oo]bj/
 /3rdParty/Be.HexEditor.150/sources/*/*.xml
 
+/3rdParty/xml-rpc.net-2.5.0/[Bb]in/
+/3rdParty/xml-rpc.net-2.5.0/[Oo]bj/
+/3rdParty/xml-rpc.net-2.5.0/*/[Bb]in/
+/3rdParty/xml-rpc.net-2.5.0/*/[Oo]bj/
+/3rdParty/xml-rpc.net-2.5.0/samples/*/[Bb]in/
+/3rdParty/xml-rpc.net-2.5.0/samples/*/[Oo]bj/
+
 # User-specific files
 *.user
 
