@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+deps = [
+	'System.dll',
+	'System.Data.dll',
+	'System.Web.dll',
+#	'System.Design.dll',
+#	'System.Drawing.dll',
+#	'System.Windows.Forms.dll',
+	'System.Xml.dll',
+]
+
+bld(
+	features = 'cs',
+	use = deps,
+	source = bld.path.ant_glob('src/**/*.cs', excl='src/AssemblyDescFX1_0.cs'),
+	name = 'CookComputing.XmlRpcV2.dll',
+	csflags = [ '/nowarn:0649,0618,0219' ],
+	version = False,
+)
+
