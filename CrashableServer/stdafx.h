@@ -1,9 +1,6 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
 #pragma once
+
+#ifdef WIN32
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
@@ -11,7 +8,33 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <windows.h>
+#include <winsock2.h>
 
+#else
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
-// TODO: reference additional headers your program requires here
+typedef int SOCKET;
+
+struct WSAData {};
+
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+#define _tmain main
+
+#define MAKEDWORD(a,b) (0)
+#define WSAStartup(a,b) (0)
+
+inline int closesocket(int s) { return close(s); }
+inline void WSACleanup() {}
+inline int WSAGetLastError() { return errno; }
+
+#endif

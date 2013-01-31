@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 bld(
-	features = 'cxx cxxprogram debug win',
-	lib = 'ws2_32',
+	features = 'cxx cxxprogram debug',
+	use = 'winsock',
 	source = 'CrashableServer.cpp main.cpp ws-util.cpp',
 	target='CrashableServer',
 )

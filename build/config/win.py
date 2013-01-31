@@ -179,6 +179,8 @@ def configure(conf):
 	])
 
 	env['VARIANTS'] = [ 'debug', 'release' ]
+	
+	env['STLIB_winsock'] = ['ws2_32'];
 
 def debug(env):
 	env.CSDEBUG = 'full'

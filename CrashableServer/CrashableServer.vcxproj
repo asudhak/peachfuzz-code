@@ -501,7 +501,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CrashableServer.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -516,11 +515,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - OS X|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug - Linux|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ws-util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="ws-util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
