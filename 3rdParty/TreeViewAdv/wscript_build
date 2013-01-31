@@ -9,13 +9,16 @@ deps = [
 	'System.Xml.dll',
 ]
 
+root = bld.path.find_dir('Aga.Controls')
+
 bld(
 	features = 'cs',
 	use = deps,
-	source = bld.path.ant_glob('**/*.cs **/*.resx'),
-	name = 'Be.Windows.Forms.HexBox.dll',
-	resource = 'HexBox.bmp',
-	keyfile = 'HexBox.snk',
+	path = root,
+	source = root.ant_glob('**/*.cs **/*.resx'),
+	name = 'Aga.Controls.dll',
+	unsafe = True,
+	keyfile = 'key.snk',
 	version = False,
 )
 
