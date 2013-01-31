@@ -61,6 +61,11 @@ def cs_helpers(self):
 	if not getattr(self, 'gen', None):
 		setattr(self, 'gen', self.name)
 
+	# add optional csflags
+	csflags = getattr(self, 'csflags', [])
+	if csflags:
+		self.env.append_value('CSFLAGS', csflags)
+
 	# ensure the appropriate platform is being set on the command line
 	setattr(self, 'platform', self.env.CSPLATFORM)
 
