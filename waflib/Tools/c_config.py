@@ -24,8 +24,9 @@ cfg_ver = {
 }
 
 SNIP_FUNCTION = '''
-	int main() {
+int main(int argc, char **argv) {
 	void *p;
+	(void)argc; (void)argv;
 	p=(void*)(%s);
 	return 0;
 }
@@ -33,22 +34,26 @@ SNIP_FUNCTION = '''
 """Code template for checking for functions"""
 
 SNIP_TYPE = '''
-int main() {
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
 	if ((%(type_name)s *) 0) return 0;
 	if (sizeof (%(type_name)s)) return 0;
+	return 1;
 }
 '''
 """Code template for checking for types"""
 
 SNIP_EMPTY_PROGRAM = '''
-int main() {
+int main(int argc, char **argv) {
+	(void)argc; (void)argv;
 	return 0;
 }
 '''
 
 SNIP_FIELD = '''
-int main() {
+int main(int argc, char **argv) {
 	char *off;
+	(void)argc; (void)argv;
 	off = (char*) &((%(type_name)s*)0)->%(field_name)s;
 	return (size_t) off < sizeof(%(type_name)s);
 }
@@ -78,14 +83,23 @@ MACRO_TO_DESTOS = {
 
 MACRO_TO_DEST_CPU = {
 '__x86_64__'  : 'x86_64',
+'__amd64__'   : 'x86_64',
 '__i386__'    : 'x86',
 '__ia64__'    : 'ia',
 '__mips__'    : 'mips',
 '__sparc__'   : 'sparc',
 '__alpha__'   : 'alpha',
+'__aarch64__' : 'aarch64',
+'__thumb__'   : 'thumb',
 '__arm__'     : 'arm',
 '__hppa__'    : 'hppa',
 '__powerpc__' : 'powerpc',
+'__ppc__'     : 'powerpc',
+'__convex__'  : 'convex',
+'__m68k__'    : 'm68k',
+'__s390x__'   : 's390x',
+'__s390__'    : 's390',
+'__sh__'      : 'sh',
 }
 
 @conf
@@ -145,6 +159,8 @@ def parse_flags(self, line, uselib_store, env=None, force_static=False):
 		elif st == '-L':
 			if not ot: ot = lst.pop(0)
 			appu('LIBPATH_' + uselib, [ot])
+		elif x.startswith('/LIBPATH:'):
+			appu('LIBPATH_' + uselib, [x.replace('/LIBPATH:', '')])
 		elif x == '-pthread' or x.startswith('+') or x.startswith('-std'):
 			app('CFLAGS_' + uselib, [x])
 			app('CXXFLAGS_' + uselib, [x])
@@ -168,7 +184,7 @@ def parse_flags(self, line, uselib_store, env=None, force_static=False):
 			app('CFLAGS_' + uselib, tmp)
 			app('CXXFLAGS_' + uselib, tmp)
 			app('LINKFLAGS_' + uselib, tmp)
-		elif x.endswith('.a') or x.endswith('.so') or x.endswith('.dylib'):
+		elif x.endswith('.a') or x.endswith('.so') or x.endswith('.dylib') or x.endswith('.lib'):
 			appu('LINKFLAGS_' + uselib, [x]) # not cool, #762
 
 @conf
@@ -252,6 +268,9 @@ def exec_cfg(self, kw):
 	:type define_variable: dict(string: string)
 	"""
 
+	def define_it():
+		self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
+
 	# pkg-config version
 	if 'atleast_pkgconfig_version' in kw:
 		cmd = [kw['path'], '--atleast-pkgconfig-version=%s' % kw['atleast_pkgconfig_version']]
@@ -267,7 +286,7 @@ def exec_cfg(self, kw):
 			self.cmd_and_log([kw['path'], '--%s=%s' % (x, kw[y]), kw['package']])
 			if not 'okmsg' in kw:
 				kw['okmsg'] = 'yes'
-			self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
+			define_it()
 			break
 
 	# retrieving the version of a module
@@ -312,7 +331,7 @@ def exec_cfg(self, kw):
 	if not 'okmsg' in kw:
 		kw['okmsg'] = 'yes'
 
-	self.define(self.have_define(kw.get('uselib_store', kw['package'])), 1, 0)
+	define_it()
 	self.parse_flags(ret, kw.get('uselib_store', kw['package'].upper()), kw.get('env', self.env), force_static=static)
 	return ret
 
@@ -1094,7 +1113,10 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 			ver = k['__INTEL_COMPILER']
 			conf.env['CC_VERSION'] = (ver[:-2], ver[-2], ver[-1])
 		else:
-			conf.env['CC_VERSION'] = (k['__GNUC__'], k['__GNUC_MINOR__'], k['__GNUC_PATCHLEVEL__'])
+			if isD('__clang__'):
+				conf.env['CC_VERSION'] = (k['__clang_major__'], k['__clang_minor__'], k['__clang_patchlevel__'])
+			else:
+				conf.env['CC_VERSION'] = (k['__GNUC__'], k['__GNUC_MINOR__'], k['__GNUC_PATCHLEVEL__'])
 	return k
 
 @conf
@@ -1108,7 +1130,7 @@ def get_xlc_version(conf, cc):
 		conf.fatal('Could not find xlc %r' % cmd)
 
 	# the intention is to catch the 8.0 in "IBM XL C/C++ Enterprise Edition V8.0 for AIX..."
-	for v in (r"IBM XL C/C\+\+.* V(?P<major>\d*)\.(?P<minor>\d*)"):
+	for v in (r"IBM XL C/C\+\+.* V(?P<major>\d*)\.(?P<minor>\d*)",):
 		version_re = re.compile(v, re.I).search
 		match = version_re(out or err)
 		if match:

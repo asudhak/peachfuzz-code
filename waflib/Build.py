@@ -152,6 +152,35 @@ class BuildContext(Context.Context):
 		self.task_gen_cache_names = {} # reset the cache, each time
 		self.add_to_group(ret, group=kw.get('group', None))
 		return ret
+	
+	def rule(self, *k, **kw):
+		"""
+		Wrapper for creating a task generator using the decorator notation.
+
+
+		The the following code:
+
+			@bld.rule(
+				target = "foo"
+			)
+			def _(tsk):
+				print("bar")
+
+		is equivalent to:
+
+			def bar(tsk):
+				print("bar")
+
+			bld(
+				target = "foo",
+				rule = bar,
+			)
+		"""
+		def f(rule):
+			ret = self(*k, **kw)
+			ret.rule = rule
+			return ret
+		return f
 
 	def __copy__(self):
 		"""Implemented to prevents copies of build contexts (raises an exception)"""
@@ -273,7 +302,7 @@ class BuildContext(Context.Context):
 				f = open(dbfn, 'rb')
 			except (IOError, EOFError):
 				# handle missing file/empty file
-				Logs.debug('build: could not load the build cache %s (missing)' % dbfn)
+				Logs.debug('build: Could not load the build cache %s (missing)' % dbfn)
 			else:
 				try:
 					waflib.Node.pickle_lock.acquire()
@@ -281,7 +310,7 @@ class BuildContext(Context.Context):
 					try:
 						data = cPickle.load(f)
 					except Exception as e:
-						Logs.debug('build: could not pickle the build cache %s: %r' % (dbfn, e))
+						Logs.debug('build: Could not pickle the build cache %s: %r' % (dbfn, e))
 					else:
 						for x in SAVED_ATTRS:
 							setattr(self, x, data[x])
@@ -797,7 +826,7 @@ class BuildContext(Context.Context):
 
 class inst(Task.Task):
 	"""
-    Special task used for installing files and symlinks, it behaves both like a task
+	Special task used for installing files and symlinks, it behaves both like a task
 	and like a task generator
 	"""
 	color = 'CYAN'
@@ -827,7 +856,7 @@ class inst(Task.Task):
 						if y:
 							break
 					else:
-						raise Errors.WafError('could not find %r in %r' % (x, self.path))
+						raise Errors.WafError('Could not find %r in %r' % (x, self.path))
 			buf.append(y)
 		self.inputs = buf
 
@@ -886,7 +915,10 @@ class inst(Task.Task):
 		Predefined method for installing a symlink
 		"""
 		destfile = self.get_install_path()
-		self.generator.bld.do_link(self.link, destfile)
+		src = self.link
+		if self.relative_trick:
+			src = os.path.relpath(src, os.path.dirname(destfile))
+		self.generator.bld.do_link(src, destfile)
 
 class InstallContext(BuildContext):
 	'''installs the targets on the system'''
@@ -1064,7 +1096,7 @@ class InstallContext(BuildContext):
 		self.run_task_now(tsk, postpone)
 		return tsk
 
-	def symlink_as(self, dest, src, env=None, cwd=None, add=True, postpone=True):
+	def symlink_as(self, dest, src, env=None, cwd=None, add=True, postpone=True, relative_trick=False):
 		"""
 		Create a task to install a symlink::
 
@@ -1081,6 +1113,8 @@ class InstallContext(BuildContext):
 		:type add: bool
 		:param postpone: execute the task immediately to perform the installation
 		:type postpone: bool
+		:param relative_trick: make the symlink relative (default: ``False``)
+		:type relative_trick: bool
 		"""
 
 		if Utils.is_win32:
@@ -1093,6 +1127,7 @@ class InstallContext(BuildContext):
 		tsk.path = cwd or self.path
 		tsk.source = []
 		tsk.link = src
+		tsk.relative_trick = relative_trick
 		tsk.exec_task = tsk.exec_symlink_as
 		if add: self.add_to_group(tsk)
 		self.run_task_now(tsk, postpone)
@@ -1120,7 +1155,7 @@ class UninstallContext(InstallContext):
 					self.uninstall_error = True
 					Logs.warn('build: some files could not be uninstalled (retry with -vv to list them)')
 				if Logs.verbose > 1:
-					Logs.warn('could not remove %s (error code %r)' % (e.filename, e.errno))
+					Logs.warn('Could not remove %s (error code %r)' % (e.filename, e.errno))
 
 		# TODO ita refactor this into a post build action to uninstall the folders (optimization)
 		while tgt:
@@ -1185,7 +1220,9 @@ class CleanContext(BuildContext):
 
 		if self.bldnode != self.srcnode:
 			# would lead to a disaster if top == out
-			lst = [self.root.find_or_declare(f) for f in self.env[CFG_FILES]]
+			lst=[]
+			for e in self.all_envs.values():
+				lst.extend(self.root.find_or_declare(f) for f in e[CFG_FILES])
 			for n in self.bldnode.ant_glob('**/*', excl='.lock* *conf_check_*/** config.log c4che/*', quiet=True):
 				if n in lst:
 					continue

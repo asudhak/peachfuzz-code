@@ -31,6 +31,16 @@ def build(bld):
 	# if you want a file copy, pass "is_copy=True"
 	bld(features='subst', source='wscript', target='wscript', is_copy=True)
 
+	# same thing with a simple function
+	def fun(task, text):
+		return text
+	bld(features='subst', subst_fun=fun, source='wscript', target='wscript2')
+
 	# this one is just a reminder that simple files can be created (and a test too)
 	#bld(rule='echo "การไฟ่" > ${TGT}', target='foo.txt')
+
+	# and this is an alternate syntax
+	#@bld.rule(source='wscript', target='wscript2')
+	#def _(tsk):
+	#	tsk.outputs[0].write(tsk.inputs[0].read())
 

@@ -10,7 +10,7 @@ To add a tool that does not exist in the folder compat15, pass an absolute path:
 """
 
 
-VERSION="1.7.2"
+VERSION="1.7.9"
 APPNAME='waf'
 REVISION=''
 
@@ -51,6 +51,11 @@ def sub_file(fname, lst):
 	finally:
 		f.close()
 
+def to_bytes(x):
+	if sys.hexversion>0x300000f:
+		return x.encode()
+	return x
+
 print("------> Executing code from the top-level wscript <-----")
 def init(ctx):
 	if Options.options.setver: # maintainer only (ita)
@@ -65,8 +70,7 @@ def init(ctx):
 		pats.append(('^HEXVERSION(.*)', 'HEXVERSION=%s' % hexver))
 
 		try:
-			#rev = k[0].cmd_and_log('git log | grep "^commit" | wc -l', quiet=0).strip()
-			rev = k[0].cmd_and_log("git rev-parse HEAD").strip()
+			rev = ctx.cmd_and_log("git rev-parse HEAD").strip()
 			pats.append(('^WAFREVISION(.*)', 'WAFREVISION="%s"' % rev))
 		except Exception:
 			pass
@@ -124,7 +128,7 @@ def compute_revision():
 	sources.sort()
 	m = md5()
 	for source in sources:
-		f = file(source,'rb')
+		f = open(source,'rb')
 		readBytes = 100000
 		while (readBytes):
 			readString = f.read(readBytes)
@@ -333,9 +337,9 @@ def create_waf(*k, **kw):
 	f = open('waf', 'wb')
 	try:
 		f.write(ccc.encode())
-		f.write(b'#==>\n#')
+		f.write(to_bytes('#==>\n#'))
 		f.write(cnt)
-		f.write(b'\n#<==\n')
+		f.write(to_bytes('\n#<==\n'))
 	finally:
 		f.close()
 
