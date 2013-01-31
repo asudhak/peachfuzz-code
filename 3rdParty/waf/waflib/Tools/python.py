@@ -33,8 +33,9 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-int main()
+int main(int argc, char **argv)
 {
+   (void)argc; (void)argv;
    Py_Initialize();
    Py_Finalize();
    return 0;
@@ -145,7 +146,8 @@ def init_pyext(self):
 	if not 'PYEXT' in self.uselib:
 		self.uselib.append('PYEXT')
 	# override shlib_PATTERN set by the osx module
-	self.env['cshlib_PATTERN'] = self.env['cxxshlib_PATTERN'] = self.env['macbundle_PATTERN'] = self.env['pyext_PATTERN']
+	self.env.cshlib_PATTERN = self.env.cxxshlib_PATTERN = self.env.macbundle_PATTERN = self.env.pyext_PATTERN
+	self.env.fcshlib_PATTERN = self.env.dshlib_PATTERN = self.env.pyext_PATTERN
 
 	try:
 		if not self.install_path:

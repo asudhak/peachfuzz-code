@@ -78,10 +78,6 @@ def configure(conf):
 	env = conf.env
 	env.LIBDIR = env.BINDIR = []
 	env.EXEC_PREFIX = get_param('EXEC_PREFIX', env.PREFIX)
-	corner_case = False
-	if str(env.PREFIX) == '/usr': # Issue 722, corner case
-		corner_case = True
-		env.PREFIX = ''
 	env.PACKAGE = getattr(Context.g_module, 'APPNAME', None) or env.PACKAGE
 
 	complete = False
@@ -96,9 +92,6 @@ def configure(conf):
 					env[name] = Utils.subst_vars(get_param(name, default).replace('/', os.sep), env)
 				except TypeError:
 					complete = False
-
-	if corner_case:
-		env.PREFIX = '/usr'
 
 	if not complete:
 		lst = [name for name, _, _ in _options if not env[name.upper()]]

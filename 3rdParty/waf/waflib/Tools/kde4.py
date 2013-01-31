@@ -82,7 +82,7 @@ def configure(self):
 	self.env['LIB_KHTML']  = ['khtml']
 	self.env['LIB_KPARTS'] = ['kparts']
 
-	self.env['LIBPATH_KDECORE']  = [self.env['KDE4_LIB_INSTALL_DIR']]
+	self.env['LIBPATH_KDECORE']  = [os.path.join(self.env.KDE4_LIB_INSTALL_DIR, 'kde4', 'devel'), self.env.KDE4_LIB_INSTALL_DIR]
 	self.env['INCLUDES_KDECORE'] = [self.env['KDE4_INCLUDE_INSTALL_DIR']]
 	self.env.append_value('INCLUDES_KDECORE', [self.env['KDE4_INCLUDE_INSTALL_DIR']+ os.sep + 'KDE'])
 

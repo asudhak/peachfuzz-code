@@ -21,3 +21,4 @@ def configure(conf):
 	nasm = conf.find_program(['nasm', 'yasm'], var='AS')
 	conf.env.AS_TGT_F = ['-o']
 	conf.env.ASLNK_TGT_F = ['-o']
+	conf.load('asm')

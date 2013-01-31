@@ -178,7 +178,7 @@ class ConfigurationContext(Context.Context):
 		self.bldnode.mkdir()
 
 		if not os.path.isdir(self.bldnode.abspath()):
-			conf.fatal('could not create the build directory %s' % self.bldnode.abspath())
+			conf.fatal('Could not create the build directory %s' % self.bldnode.abspath())
 
 	def execute(self):
 		"""
@@ -254,7 +254,10 @@ class ConfigurationContext(Context.Context):
 		:param env: a ConfigSet, usually ``conf.env``
 		"""
 		if not env.PREFIX:
-			env.PREFIX = os.path.abspath(os.path.expanduser(Options.options.prefix))
+			if Options.options.prefix or Utils.is_win32:
+				env.PREFIX = os.path.abspath(os.path.expanduser(Options.options.prefix))
+			else:
+				env.PREFIX = ''
 		if not env.BINDIR:
 			env.BINDIR = Utils.subst_vars('${PREFIX}/bin', env)
 		if not env.LIBDIR:

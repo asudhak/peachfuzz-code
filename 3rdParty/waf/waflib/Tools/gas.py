@@ -15,3 +15,4 @@ def configure(conf):
 	conf.env.AS_TGT_F = ['-c', '-o']
 	conf.env.ASLNK_TGT_F = ['-o']
 	conf.find_ar()
+	conf.load('asm')

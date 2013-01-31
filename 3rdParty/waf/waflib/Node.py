@@ -99,7 +99,7 @@ class Node(object):
 	The Node objects are not thread safe in any way.
 	"""
 
-	__slots__ = ('name', 'sig', 'children', 'parent', 'cache_abspath', 'cache_isdir')
+	__slots__ = ('name', 'sig', 'children', 'parent', 'cache_abspath', 'cache_isdir', 'cache_sig')
 	def __init__(self, name, parent):
 		self.name = name
 		self.parent = parent
@@ -351,7 +351,7 @@ class Node(object):
 			def build(bld):
 				n1 = bld.path.find_node('foo/bar/xyz.txt')
 				n2 = bld.path.find_node('foo/stuff/')
-				n1.path_from(n2) # './bar/xyz.txt'
+				n1.path_from(n2) # '../bar/xyz.txt'
 
 		:param node: path to use as a reference
 		:type node: :py:class:`waflib.Node.Node`
@@ -788,18 +788,15 @@ class Node(object):
 		Node signature, assuming the file is in the build directory
 		"""
 		try:
-			ret = self.ctx.hash_cache[id(self)]
-		except KeyError:
-			pass
+			return self.cache_sig
 		except AttributeError:
-			self.ctx.hash_cache = {}
-		else:
-			return ret
+			pass
 
 		if not self.is_bld() or self.ctx.bldnode is self.ctx.srcnode:
 			self.sig = Utils.h_file(self.abspath())
-		self.ctx.hash_cache[id(self)] = ret = self.sig
+		self.cache_sig = ret = self.sig
 		return ret
+
 
 	# TODO Waf 1.8
 	search = search_node
