@@ -31,7 +31,8 @@
 
 	<Agent name="LocalAgent">
 		<Monitor class="Process">
-			<Param name="Command" value="samples/UnixCrashServer/unixcrash" />
+			<Param name="Executable" value="CrashableServer" />
+			<Param name="Arguments" value="127.0.0.1 4242" />
 		</Monitor>
 		<Monitor class="CrashReporter" />
 	</Agent>
