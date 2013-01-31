@@ -1,3 +1,0 @@
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\StateNameClient.exe
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\StateNameServer\client\obj\Release\ResolveAssemblyReference.cache
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\StateNameServer\client\obj\Release\StateNameClient.exe

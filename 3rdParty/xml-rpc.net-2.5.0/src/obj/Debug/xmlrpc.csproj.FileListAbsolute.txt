@@ -1,9 +1,0 @@
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.pdb
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\src\obj\Debug\ResolveAssemblyReference.cache
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\src\obj\Debug\CookComputing.XmlRpcV2.dll
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\src\obj\Debug\CookComputing.XmlRpcV2.pdb
-C:\Peach3\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll
-C:\Peach3\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.pdb
-C:\Peach3\3rdParty\xml-rpc.net-2.5.0\src\obj\Debug\CookComputing.XmlRpcV2.dll
-C:\Peach3\3rdParty\xml-rpc.net-2.5.0\src\obj\Debug\CookComputing.XmlRpcV2.pdb
