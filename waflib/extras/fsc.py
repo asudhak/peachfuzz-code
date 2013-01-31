@@ -60,7 +60,7 @@ def configure(conf):
 	conf.env.ASS_ST = '/r:%s'
 	conf.env.RES_ST = '/resource:%s'
 
-	conf.env.CS_NAME = 'fsc'
+	conf.env.FS_NAME = 'fsc'
 	if str(conf.env.FSC).lower().find('fsharpc') > -1:
-		conf.env.CS_NAME = 'mono'
+		conf.env.FS_NAME = 'mono'
 

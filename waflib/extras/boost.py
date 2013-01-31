@@ -227,9 +227,9 @@ def boost_get_libs(self, *k, **kw):
 		return None
 
 	def format_lib_name(name):
-		if name.startswith('lib'):
+		if name.startswith('lib') and self.env.CC_NAME != 'msvc':
 			name = name[3:]
-		return name.split('.')[0]
+		return name[:name.rfind('.')]
 
 	libs = []
 	for lib in Utils.to_list(k and k[0] or kw.get('lib', None)):

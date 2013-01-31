@@ -540,7 +540,7 @@ def process_rule(self):
 		return
 
 	# create the task class
-	name = str(getattr(self, 'name', None) or self.target or self.rule)
+	name = str(getattr(self, 'name', None) or self.target or getattr(self.rule, '__name__', self.rule))
 
 	# or we can put the class in a cache for performance reasons
 	try:
@@ -668,6 +668,12 @@ class subst_pc(Task.Task):
 
 		code = self.inputs[0].read(encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
 
+		if getattr(self.generator, 'subst_fun', None):
+			code = self.generator.subst_fun(self, code)
+			if code:
+				self.outputs[0].write(code, encoding=getattr(self.generator, 'encoding', 'ISO8859-1'))
+			return
+
 		# replace all % by %% to prevent errors by % signs
 		code = code.replace('%', '%%')
 
@@ -707,6 +713,9 @@ class subst_pc(Task.Task):
 		bld = self.generator.bld
 		env = self.env
 		upd = self.m.update
+
+		if getattr(self.generator, 'subst_fun', None):
+			upd(Utils.h_fun(self.generator.subst_fun).encode())
 
 		# raw_deps: persistent custom values returned by the scanner
 		vars = self.generator.bld.raw_deps.get(self.uid(), [])

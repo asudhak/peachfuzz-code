@@ -145,7 +145,9 @@ some text
 
 NOTE: More methods may be found in the http://docs.waf.googlecode.com/git/apidocs_17/index.html[API documentation]
 
-WARNING: These methods are not safe for concurrent access. The node class methods are not meant to be thread-safe.
+WARNING: The Node methods are not meant to be safe for concurrent access. The code executed in parallel (method run() of task objects for example) must avoid modifying the Node object data structure.
+
+WARNING: The Node methods read/write must be used to prevent file handle inheritance issues on win32 systems instead of plain open/read/write. Such problems arise when spawning processes during parallel builds.
 
 ==== Listing files and folders
 
@@ -325,6 +327,14 @@ def build(bld):
         source = bld.path.make_node('foo.txt'),
         target = bld.path.get_bld().make_node('foo.txt')
     )
+---------------
+
+In practice, it is easier to use a wrapper that conceals these details (more examples can be found in +demos/subst+):
+
+[source,python]
+---------------
+def build(bld):
+    bld(features='subst', source='wscript', target='wscript', is_copy=True)
 ---------------
 
 // ==== Serialization concerns
