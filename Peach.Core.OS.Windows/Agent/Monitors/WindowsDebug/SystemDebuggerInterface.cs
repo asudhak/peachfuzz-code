@@ -108,6 +108,10 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 							return true;
 					}
 				}
+				catch (ArgumentException)
+				{
+					return false;
+				}
 				catch (System.Runtime.InteropServices.COMException)
 				{
 					// Handle closed out from underneeth?
