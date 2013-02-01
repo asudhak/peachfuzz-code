@@ -49,30 +49,20 @@ namespace Peach.Core.ComContainer
 
 		#region IComContainer Members
 
-		public bool Intialize(string control)
+		public void Intialize(string control)
 		{
-			Type type = null;
-			type = Type.GetTypeFromProgID(control);
-			if (type == null)
-			{
-				try
-				{
-					type = Type.GetTypeFromCLSID(Guid.Parse(control));
-				}
-				catch
-				{
-				}
-			}
+			Type type = Type.GetTypeFromProgID(control);
 
 			if (type == null)
-				throw new Exception("Error, ComContainer was unable to create object from id '" + control + "'");
+				type = Type.GetTypeFromCLSID(Guid.Parse(control));
+
+			if (type == null)
+				throw new Exception("ComContainer was unable to create type from id '" + control + "'.");
 
 			comObject = Activator.CreateInstance(type);
 
 			if (comObject == null)
-				throw new Exception("Error, ComContainer was unable to create object from id '" + control + "'");
-
-			return true;
+				throw new Exception("Error, ComContainer was unable to create object from id '" + control + "'.");
 		}
 
 		void finalize()
@@ -119,7 +109,7 @@ namespace Peach.Core.ComContainer
 			Dictionary<string, object> state = new Dictionary<string, object>();
 			state["ComObject"] = comObject;
 
-			string cmd = "ComObject." + property;
+			string cmd = "getattr(ComObject, '" + property + "')";
 			return Peach.Core.Scripting.EvalExpression(cmd, state);
 		}
 
@@ -132,7 +122,7 @@ namespace Peach.Core.ComContainer
 			state["ComObject"] = comObject;
 			state["ComArg"] = value;
 
-			string cmd = "ComObject." + property + " = ComArg";
+			string cmd = "setattr(ComObject, '" + property + "', ComArg)";
 			Scripting.EvalExpression(cmd, state);
 		}
 

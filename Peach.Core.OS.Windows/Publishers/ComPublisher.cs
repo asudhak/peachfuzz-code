@@ -39,6 +39,7 @@ using System.Runtime.Remoting.Channels.Ipc;
 using Peach.Core.Dom;
 using Peach.Core.Publishers.Com;
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -61,6 +62,9 @@ namespace Peach.Core.Publishers
 
 		protected void startTcpRemoting()
 		{
+			if (_proxy != null)
+				return;
+
 			try
 			{
 				ChannelServices.RegisterChannel(new IpcChannel(), false);
@@ -72,36 +76,55 @@ namespace Peach.Core.Publishers
 			_proxy = (IComContainer)Activator.GetObject(typeof(IComContainer),
 				"ipc://Peach_Com_Container/PeachComContainer");
 
-			if (!_proxy.Intialize(clsid))
-				throw new PeachException("Error, ComPublisher was unable to create object from id '" + clsid + "'");
+			try
+			{
+				_proxy.Intialize(clsid);
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Error, ComPublisher was unable to create object.  " + ex.Message, ex);
+			}
 		}
 
 		protected void stopTcpRemoting()
 		{
-			// TODO - How do we stop this madnes?
 			_proxy = null;
 		}
 
-		protected override void OnStart()
+		protected static object GetObj(Variant v)
 		{
-			System.Diagnostics.Debug.Assert(_proxy == null);
-			startTcpRemoting();
-		}
-
-		protected override void OnStop()
-		{
-			System.Diagnostics.Debug.Assert(_proxy != null);
-			stopTcpRemoting();
+			switch (v.GetVariantType())
+			{
+				case Variant.VariantType.BitStream:
+					return ((BitStream)v).Value;
+				case Variant.VariantType.Boolean:
+					return (bool)v;
+				case Variant.VariantType.ByteString:
+					return (byte[])v;
+				case Variant.VariantType.Int:
+					return (int)v;
+				case Variant.VariantType.Long:
+					return (long)v;
+				case Variant.VariantType.String:
+					return (string)v;
+				case Variant.VariantType.ULong:
+					return (ulong)v;
+				case Variant.VariantType.Unknown:
+				default:
+					throw new NotImplementedException();
+			}
 		}
 
 		protected override Variant OnCall(string method, List<ActionParameter> args)
 		{
 			try
 			{
+				startTcpRemoting();
+
 				List<object> parameters = new List<object>();
 
 				foreach(ActionParameter arg in args)
-					parameters.Add((string)((DataElementContainer)arg.dataModel)[0].InternalValue);
+					parameters.Add(GetObj(arg.dataModel[0].InternalValue));
 
 				object value = _proxy.CallMethod(method, parameters.ToArray());
 
@@ -110,7 +133,8 @@ namespace Peach.Core.Publishers
 			}
 			catch(Exception ex)
 			{
-				logger.Error("Ignoring exception: " + ex.Message);
+				stopTcpRemoting();
+				throw new SoftException(ex);
 			}
 
 			return null;
@@ -120,11 +144,14 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_proxy.SetProperty(property, (string)value);
+				startTcpRemoting();
+
+				_proxy.SetProperty(property, GetObj(value));
 			}
 			catch (Exception ex)
 			{
-				logger.Error("Ignoring exception: " + ex.Message);
+				stopTcpRemoting();
+				throw new SoftException(ex);
 			}
 		}
 
@@ -132,6 +159,8 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
+				startTcpRemoting();
+
 				object value = _proxy.GetProperty(property);
 
 				if (value != null)
@@ -139,7 +168,8 @@ namespace Peach.Core.Publishers
 			}
 			catch (Exception ex)
 			{
-				logger.Error("Ignoring exception: " + ex.Message);
+				stopTcpRemoting();
+				throw new SoftException(ex);
 			}
 
 			return null;
