@@ -280,7 +280,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
-						Scripting.Paths.Add(child.getAttribute("import"));
+						Scripting.Paths.Add(child.getAttribute("path"));
 						isScriptingLanguageSet = true;
 						break;
 
