@@ -251,5 +251,45 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.True( dm.mutable("TheDataModel.block.subblock.subnum"));
 			Assert.False(dm.mutable("TheDataModel.block.num"));
 		}
+
+		[Test]
+		public void TopDataElement()
+		{
+			string temp1 = Path.GetTempFileName();
+			File.WriteAllBytes(temp1, Encoding.ASCII.GetBytes("Hello World"));
+
+			string xml = 
+@"<Peach>
+	<Data name='data' fileName='{0}'/>
+
+	<DataModel name='TheDataModel'>
+		<String name='str' value='Hello World!'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+				<Data ref='data'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			xml = string.Format(xml, temp1);
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			var ds = dom.stateModels[0].states["Initial"].actions[0].dataSet;
+			Assert.NotNull(ds);
+			Assert.AreEqual(1, ds.Datas.Count);
+			Assert.AreEqual(temp1, ds.Datas[0].FileName);
+		}
 	}
 }

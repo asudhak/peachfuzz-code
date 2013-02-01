@@ -50,6 +50,7 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
+		public OrderedDictionary<string, Data> datas = new OrderedDictionary<string, Data>();
 
 		public Dom()
 		{

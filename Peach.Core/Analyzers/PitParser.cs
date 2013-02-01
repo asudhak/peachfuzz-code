@@ -344,7 +344,12 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Data")
 				{
-					throw new NotImplementedException();
+					var data = handleData(child, false);
+
+					if (dom.datas.ContainsKey(data.name))
+						throw new PeachException("Error, a Data element named '" + data.name + "' already exists.");
+
+					dom.datas.Add(data.name, data);
 				}
 			}
 
@@ -1318,7 +1323,7 @@ namespace Peach.Core.Analyzers
 				{
 					if (action.dataSet == null)
 						action.dataSet = new DataSet();
-					action.dataSet.Datas.Add(handleData(child));
+					action.dataSet.Datas.Add(handleData(child, true));
 				}
 			}
 
@@ -1335,15 +1340,30 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "DataModel")
 					param.dataModel = dom.dataModels[child.getAttribute("ref")];
 				if (child.Name == "Data")
-					param.data = handleData(child);
+					param.data = handleData(child, true);
 			}
 
 			return param;
 		}
 
-		protected virtual Data handleData(XmlNode node)
+		protected virtual Data handleData(XmlNode node, bool resolveRefs)
 		{
-			Data data = new Data();
+			Data data = null;
+
+			string refName = node.getAttribute("ref");
+
+			if (!string.IsNullOrEmpty(refName))
+			{
+				if (!resolveRefs)
+					throw new PeachException("Error, the ref attribute is not valid on top level Data elements.");
+
+				if (!_dom.datas.TryGetValue(refName, out data))
+					throw new PeachException("Error, could not resolve Data element ref attribute value '" + refName + "'.");
+
+				return data;
+			}
+
+			data = new Data();
 			data.name = node.getAttribute("name");
 			string dataFileName = node.getAttribute("fileName");
 

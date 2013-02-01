@@ -42,7 +42,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Data : INamed
 	{
-		string _name = null;
+		static int nameNum = 0;
+		string _name = "Unknown Data " + (++nameNum);
 
 		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
 
