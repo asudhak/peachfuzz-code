@@ -44,7 +44,14 @@ int _tmain(int argc, char* argv[])
 		return 0;
 	}
 
-	Function1(fd);
+	__try
+	{
+		Function1(fd);
+	}
+	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+	{
+		fprintf(stderr, "Caught AV exception.\n");
+	}
 
 	fclose(fd);
 

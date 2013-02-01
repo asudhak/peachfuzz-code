@@ -14,6 +14,8 @@
 #else
 #define _tmain main
 #define _TCHAR char
+#define __try if(1)
+#define __except(a) if(0)
 #endif
 
 

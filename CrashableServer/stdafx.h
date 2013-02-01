@@ -34,6 +34,8 @@ struct WSAData {};
 
 #define MAKEDWORD(a,b) (0)
 #define WSAStartup(a,b) (0)
+#define __try if(1)
+#define __except(a) if(0)
 
 inline int closesocket(int s) { return close(s); }
 inline void WSACleanup() {}

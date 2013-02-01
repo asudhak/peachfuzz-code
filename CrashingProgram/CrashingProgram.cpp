@@ -45,7 +45,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	argv;
 
 	fprintf(stderr, "Crashing Program v0.1\n");
-	Bar();
+
+	__try
+	{
+		Bar();
+	}
+	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+	{
+		fprintf(stderr, "Caught AV exception.\n");
+	}
 
 	fprintf(stderr, "done...\n");
 

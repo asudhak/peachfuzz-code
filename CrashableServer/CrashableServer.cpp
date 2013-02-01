@@ -35,7 +35,14 @@ int main(int argc, char* argv[])
 		return 255;
 	}
 
-	int retval = Run(host, port);
+	__try
+	{
+		retval = Run(host, port);
+	}
+	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+	{
+		fprintf(stderr, "Caught AV exception.\n");
+	}
 
 	WSACleanup();
 	return retval;
