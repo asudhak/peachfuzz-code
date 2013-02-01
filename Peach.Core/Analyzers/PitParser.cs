@@ -1357,13 +1357,17 @@ namespace Peach.Core.Analyzers
 				if (!resolveRefs)
 					throw new PeachException("Error, the ref attribute is not valid on top level Data elements.");
 
-				if (!_dom.datas.TryGetValue(refName, out data))
+				Data other;
+				if (!_dom.datas.TryGetValue(refName, out other))
 					throw new PeachException("Error, could not resolve Data element ref attribute value '" + refName + "'.");
 
-				return data;
+				data = ObjectCopier.Clone(other);
+			}
+			else
+			{
+				data = new Data();
 			}
 
-			data = new Data();
 			data.name = node.getAttribute("name");
 			string dataFileName = node.getAttribute("fileName");
 
