@@ -2568,7 +2568,7 @@
 									</xs:attribute>
 									<xs:attribute name="property" type="xs:string">
 										<xs:annotation>
-											<xs:documentation>Property to invoke.  Only used when type is setprop or getprop.</xs:documentation>
+											<xs:documentation>Property to invoke.  Only used when type is setProperty or getProperty.</xs:documentation>
 										</xs:annotation>
 									</xs:attribute>
 									<xs:attribute name="setXpath" type="xs:string">
@@ -2634,12 +2634,12 @@
 														<xs:documentation>Perform a call using specified parameters.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
-												<xs:enumeration value="getprop">
+												<xs:enumeration value="getProperty">
 													<xs:annotation>
 														<xs:documentation>Get value from property.  Not all publishers support this (COM does).  Requires a Result child element.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
-												<xs:enumeration value="setprop">
+												<xs:enumeration value="setProperty">
 													<xs:annotation>
 														<xs:documentation>Set value for property.  Not all publishers support this (COM does). Requires a single Param of type in.</xs:documentation>
 													</xs:annotation>
