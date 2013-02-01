@@ -75,5 +75,54 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
 		}
+
+		[Test]
+		public void PaddingTest3()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Blob name='header' length='10'/>
+		<Block name='blk'>
+			<Blob name='payload' length='10' valueType='hex' value='11 22 33 44 55 66 77 88 99 aa' />
+			<Padding aligned='true' name='padding' alignment='128'>
+				<Fixup class='FillValue'>
+					<Param name='ref' value='padding'/>
+					<Param name='start' value='1'/>
+					<Param name='stop' value='255'/>
+				</Fixup>
+			</Padding>
+			<Number name='len' size='8' signed='false'>
+				<Relation type='size' of='padding'/>
+			</Number>
+			<Number name='next' size='8' value='255' signed='false'/>
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value;
+			Assert.NotNull(val);
+
+			val.SeekBytes(0, SeekOrigin.Begin);
+			string str = Utilities.HexDump(val.Stream);
+			Assert.NotNull(str);
+
+			Assert.AreEqual(80 + 128, val.LengthBits);
+
+			byte[] expected = new byte[] {
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // header
+				0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, // payload
+				0x01, 0x02, 0x03, 0x04,                                     // padding
+				0x04,                                                       // length of padding
+				0xff                                                        // next
+			};
+
+			Assert.AreEqual(expected, val.Value);
+		}
+
 	}
 }
