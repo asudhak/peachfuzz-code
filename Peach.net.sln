@@ -1365,8 +1365,8 @@ Global
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|Mixed Platforms.ActiveCfg = Debug - OS X|x64
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|Mixed Platforms.Build.0 = Debug - OS X|x64
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|Win32.ActiveCfg = Debug - OS X|x64
-		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|x64.ActiveCfg = Debug - OS X|x64
-		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|x64.Build.0 = Debug - OS X|x64
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|x64.ActiveCfg = Debug|x64
+		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|x64.Build.0 = Debug|x64
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug - Windows|x86.ActiveCfg = Debug - OS X|x64
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{3C73B151-DBE6-40D9-9458-88C87BCF5922}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
@@ -1427,8 +1427,8 @@ Global
 		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|Mixed Platforms.ActiveCfg = Debug - OS X|x64
 		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|Mixed Platforms.Build.0 = Debug - OS X|x64
 		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|Win32.ActiveCfg = Debug - OS X|x64
-		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|x64.ActiveCfg = Debug - OS X|x64
-		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|x64.Build.0 = Debug - OS X|x64
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|x64.ActiveCfg = Debug|x64
+		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|x64.Build.0 = Debug|x64
 		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug - Windows|x86.ActiveCfg = Debug - OS X|x64
 		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{ABA857FF-840B-4839-BE6D-61EA8B292B62}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
@@ -1489,8 +1489,8 @@ Global
 		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|Mixed Platforms.ActiveCfg = Debug - OS X|x64
 		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|Mixed Platforms.Build.0 = Debug - OS X|x64
 		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|Win32.ActiveCfg = Debug - OS X|x64
-		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|x64.ActiveCfg = Debug - OS X|x64
-		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|x64.Build.0 = Debug - OS X|x64
+		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|x64.ActiveCfg = Debug|x64
+		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|x64.Build.0 = Debug|x64
 		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug - Windows|x86.ActiveCfg = Debug - OS X|x64
 		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{F8C28C52-C17D-44F0-BE88-691C463482B8}.Debug|Mixed Platforms.ActiveCfg = Debug|x64

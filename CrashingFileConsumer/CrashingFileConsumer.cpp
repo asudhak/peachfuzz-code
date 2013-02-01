@@ -1,7 +1,17 @@
-// CrashingFileConsumer.cpp : Defines the entry point for the console application.
-//
+#ifdef WIN32
 
-#include "stdafx.h"
+#include <SDKDDKVer.h>
+#include <tchar.h>
+#include <windows.h>
+
+#else
+
+#define _tmain main
+#define __try if(1)
+#define __except(a) if(0)
+
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
