@@ -486,6 +486,32 @@ namespace Peach.Core
 			}
 		}
 
+		public static explicit operator bool(Variant v)
+		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+
+			switch (v._type)
+			{
+				case VariantType.Boolean:
+					return v._valueBool.Value;
+				case VariantType.Int:
+					throw new NotSupportedException("Unable to convert int to bool type.");
+				case VariantType.Long:
+					throw new NotSupportedException("Unable to convert long to bool type.");
+				case VariantType.ULong:
+					throw new NotSupportedException("Unable to convert ulong to bool type.");
+				case VariantType.String:
+					throw new NotSupportedException("Unable to convert string to bool type.");
+				case VariantType.ByteString:
+					throw new NotSupportedException("Unable to convert byte[] to bool type.");
+				case VariantType.BitStream:
+					throw new NotSupportedException("Unable to convert BitStream to bool type.");
+				default:
+					throw new NotSupportedException("Unable to convert unknown to bool type.");
+			}
+		}
+
 		public static bool operator ==(Variant a, Variant b)
 		{
 			if (((object)a == null) && ((object)b == null))
