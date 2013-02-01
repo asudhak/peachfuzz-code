@@ -210,9 +210,9 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - OSX|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - OS X|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug - OSX\</OutputPath>
+    <OutputPath>bin\x64\Debug - OS X\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -224,9 +224,9 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - OSX|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - OS X|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug - OSX\</OutputPath>
+    <OutputPath>bin\Debug - OS X\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -240,9 +240,9 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - OSX|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - OS X|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug - OSX\</OutputPath>
+    <OutputPath>bin\x86\Debug - OS X\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -257,8 +257,8 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OSX|x64'">
-    <OutputPath>bin\x64\Release - OSX\</OutputPath>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - OS X|x64' ">
+    <OutputPath>bin\x64\Release - OS X\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -271,8 +271,8 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OSX|AnyCPU'">
-    <OutputPath>bin\Release - OSX\</OutputPath>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - OS X|AnyCPU' ">
+    <OutputPath>bin\Release - OS X\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -287,8 +287,8 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OSX|x86'">
-    <OutputPath>bin\x86\Release - OSX\</OutputPath>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - OS X|x86' ">
+    <OutputPath>bin\x86\Release - OS X\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -314,7 +314,6 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -366,7 +365,7 @@
       <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
       <Name>Peach.Core.OS.Windows</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Configuration)' == 'Release - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
       <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
       <Name>Peach.Core.OS.Linux</Name>
     </ProjectReference>
@@ -374,11 +373,11 @@
       <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
       <Name>Peach.Core.OS.Linux</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Configuration)' == 'Release - OSX'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
       <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
       <Name>Peach.Core.OS.OSX</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Configuration)' == 'Release - OSX'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+    <ProjectReference Condition="'$(Configuration)' == 'Release - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
       <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
       <Name>Peach.Core.OS.OSX</Name>
     </ProjectReference>

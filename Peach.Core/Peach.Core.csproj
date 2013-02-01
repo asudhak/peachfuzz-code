@@ -369,10 +369,10 @@
     <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - Linux'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - OSX'">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - OS X'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - OSX'">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - OS X'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
     <Reference Include="Renci.SshNet">

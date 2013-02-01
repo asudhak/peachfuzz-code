@@ -335,10 +335,10 @@
     <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - Linux'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - OSX'">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - OS X'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - OSX'">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - OS X'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -529,7 +529,7 @@
       <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
       <Name>Peach.Core.OS.Windows</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Configuration)' == 'Release - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
       <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
       <Name>Peach.Core.OS.Linux</Name>
     </ProjectReference>
@@ -537,11 +537,11 @@
       <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
       <Name>Peach.Core.OS.Linux</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Configuration)' == 'Release - OSX'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
       <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
       <Name>Peach.Core.OS.OSX</Name>
     </ProjectReference>
-    <ProjectReference Condition="'$(Configuration)' == 'Release - OSX'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+    <ProjectReference Condition="'$(Configuration)' == 'Release - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
       <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
       <Name>Peach.Core.OS.OSX</Name>
     </ProjectReference>
