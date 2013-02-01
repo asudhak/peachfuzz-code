@@ -77,41 +77,9 @@ namespace Peach.Core.Dom
 		/// Create a padding element.
 		/// </summary>
 		/// <param name="name">Name of padding element</param>
-		/// <param name="aligned">Align data to a byte boundry</param>
-		/// <param name="alignment">Byte boundry for alignment (8, 16, etc)</param>
-		/// <param name="alignedTo">Align to another element (default is parent)</param>
-		public Padding(string name, bool aligned = true, int alignment = 8, DataElement alignedTo = null)
+		public Padding(string name)
 			: base(name)
 		{
-			this._aligned = aligned;
-			this._alignment = alignment;
-			this._alignedTo = alignedTo;
-
-			_defaultValue = new Variant(new byte[] { });
-		}
-
-		/// <summary>
-		/// Create a padding element.
-		/// </summary>
-		/// <param name="aligned">Align data to a byte boundry</param>
-		/// <param name="alignment">Byte boundry for alignment (8, 16, etc)</param>
-		/// <param name="alignedTo">Align to another element (default is parent)</param>
-		public Padding(bool aligned = true, int alignment = 8, DataElement alignedTo = null)
-		{
-			this._aligned = aligned;
-			this._alignment = alignment;
-			this._alignedTo = alignedTo;
-
-			_defaultValue = new Variant(new byte[] { });
-		}
-
-		/// <summary>
-		/// Create a padding element.
-		/// </summary>
-		/// <param name="lengthCalc">Scripting expression that calculates pad amount</param>
-		public Padding(string lengthCalc)
-		{
-			this.lengthCalc = lengthCalc;
 			_defaultValue = new Variant(new byte[] { });
 		}
 
