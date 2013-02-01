@@ -50,6 +50,9 @@
     <Reference Include="nunit.framework">
       <HintPath>..\3rdParty\NUnit-2.6.0.12051\bin\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
