@@ -15,6 +15,7 @@ tools = [
 	'externals',
 	'test',
 	'version',
+	'misc',
 ]
 
 def find_directory(dirname, paths):
@@ -97,6 +98,9 @@ def configure(conf):
 		'test',
 		'debug',
 		'release',
+		'emit',
+		'vnum',
+		'subst',
 	])
 
 	env.append_value('CSFLAGS', [

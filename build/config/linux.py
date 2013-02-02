@@ -16,6 +16,7 @@ tools = [
 	'test',
 	'version',
 	'xcompile',
+	'misc',
 ]
 
 def prepare(conf):
@@ -93,6 +94,9 @@ def prepare(conf):
 		'test',
 		'debug',
 		'release',
+		'emit',
+		'vnum',
+		'subst',
 	])
 
 def configure(conf):

@@ -15,6 +15,7 @@ tools = [
 	'externals',
 	'test',
 	'version',
+	'misc',
 ]
 
 def prepare(conf):
@@ -110,6 +111,9 @@ def configure(conf):
 		'test',
 		'debug',
 		'release',
+		'emit',
+		'vnum',
+		'subst',
 	])
 
 	cppflags = [
