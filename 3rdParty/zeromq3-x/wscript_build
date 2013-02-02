@@ -38,25 +38,31 @@ template = '''
 
 cfg = {
 	'win' : {
-		'defines' : [ 'DLL_EXPORT', 'FD_SETSIZE=1024' ],
-		'config'  : template % config_linux,
-		'stlib'   : [],
-		'cflags'  : [ '/wd4244' ],
-		'src'     : [ 'src/version.rc' ],
+		'target'   : 'libzmq',
+		'vnum'     : None,
+		'defines'  : [ 'DLL_EXPORT', 'FD_SETSIZE=1024' ],
+		'config'   : template % config_win,
+		'stlib'    : [ 'ws2_32', 'advapi32' ],
+		'cflags'   : [ '/wd4512', '/wd4244', '/wd4127', '/wd4099', '/wd4267', '/wd4800', '/wd4245', '/wd4100', '/wd4121' ],
+		'src'      : [ 'src/version.rc' ],
 	},
 	'linux' : {
-		'defines' : [ '_GNU_SOURCE', '_REENTRANT', '_THREAD_SAFE', 'ZMQ_FORCE_EPOLL' ],
-		'config'  : template % config_linux,
-		'stlib'   : [],
-		'cflags'  : [],
-		'src'     : [],
+		'target'   : 'zmq',
+		'vnum' : '.'.join(zmq_version),
+		'defines'  : [ '_GNU_SOURCE', '_REENTRANT', '_THREAD_SAFE', 'ZMQ_FORCE_EPOLL' ],
+		'config'   : template % config_linux,
+		'stlib'    : [],
+		'cflags'   : [],
+		'src'      : [],
 	},
 	'osx' : {
-		'defines' : [ '_DARWIN_C_SOURCE', '_REENTRANT', '_THREAD_SAFE', 'ZMQ_FORCE_KQUEUE' ],
-		'config'  : template % config_osx,
-		'stlib'   : [],
-		'cflags'  : [],
-		'src'     : [],
+		'target'   : 'zmq',
+		'vnum' : '.'.join(zmq_version),
+		'defines'  : [ '_DARWIN_C_SOURCE', '_REENTRANT', '_THREAD_SAFE', 'ZMQ_FORCE_KQUEUE' ],
+		'config'   : template % config_osx,
+		'stlib'    : [],
+		'cflags'   : [],
+		'src'      : [],
 	},
 }
 
@@ -68,31 +74,32 @@ cfg['linux_x86_64'] = cfg['linux']
 var = bld.env['BASENAME']
 
 bld(
-	features = 'cxx cxxshlib vnum',
-	vnum = '.'.join(zmq_version),
-	includes = [ bld.path.get_bld(), 'include' ],
-	export_includes = [ 'include' ],
-	source = bld.path.ant_glob('src/*.cpp') + cfg[var]['src'],
-	defines = cfg[var]['defines'],
-	stlib = cfg[var]['stlib'],
-	cflags = cfg[var]['cflags'],
-	target = 'zmq',
-	version = False,
-)
-
-bld(
-	name = 'zmq',
+	name     = 'zmq',
 	features = 'emit',
-	source = cfg[var]['config'],
-	target = 'platform.hpp',
+	source   = cfg[var]['config'],
+	target   = 'platform.hpp',
 )
 
 bld(
-	name = 'zmq',
-	features = 'subst win',
-	source = 'src/version.rc.in',
-	target = 'src/version.rc',
+	name              = 'zmq',
+	features          = 'subst win',
+	source            = 'src/version.rc.in',
+	target            = 'src/version.rc',
 	ZMQ_VERSION_MAJOR = zmq_version[0],
 	ZMQ_VERSION_MINOR = zmq_version[1],
 	ZMQ_VERSION_PATCH = zmq_version[2],
+)
+
+bld(
+	name            = 'zmq',
+	features        = 'cxx cxxshlib vnum',
+	vnum            = cfg[var]['vnum'],
+	includes        = [ '.', 'include' ],
+	export_includes = [ 'include' ],
+	source          = bld.path.ant_glob('src/*.cpp') + cfg[var]['src'],
+	defines         = cfg[var]['defines'],
+	stlib           = cfg[var]['stlib'],
+	cxxflags        = cfg[var]['cflags'],
+	target          = cfg[var]['target'],
+	version         = False,
 )
