@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+'''
+Windows:
+/DDLL_EXPORT /DFD_SETSIZE=1024 /ws4244
+
+#define ZMQ_HAVE_WINDOWS
+
+version.rc.in
+
+Linux:
+-pedantic -Werror -Wall -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE  -DZMQ_FORCE_EPOLL
+
+#define ZMQ_HAVE_EVENTFD 1
+#define ZMQ_HAVE_IFADDRS 1
+#define ZMQ_HAVE_LINUX 1
+#define ZMQ_HAVE_SOCK_CLOEXEC 1
+#define ZMQ_HAVE_SO_KEEPALIVE 1
+#define ZMQ_HAVE_TCP_KEEPCNT 1
+#define ZMQ_HAVE_TCP_KEEPIDLE 1
+#define ZMQ_HAVE_TCP_KEEPINTVL 1
+#define ZMQ_HAVE_UIO 1
+
+OSX:
+-Wall -Wno-uninitialized -D_DARWIN_C_SOURCE -D_REENTRANT -D_THREAD_SAFE  -DZMQ_FORCE_KQUEUE
+
+#define ZMQ_HAVE_IFADDRS 1
+#define ZMQ_HAVE_OSX 1
+#define ZMQ_HAVE_SO_KEEPALIVE 1
+#define ZMQ_HAVE_TCP_KEEPALIVE 1
+#define ZMQ_HAVE_UIO 1
+
+'''
+bld(
+	features = 'cxx cxxshlib',
+	use = '',
+	includes = [ 'include' ],
+	export_includes = [ 'include' ],
+	source = bld.path.ant_glob('src/*.cpp'),
+	target = 'zmq',
+	version = False,
+)
+
