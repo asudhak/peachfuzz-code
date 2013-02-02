@@ -136,3 +136,20 @@ def ensure_version(self, tool, ver_exp):
 	ver = m.group(1)
 	if ver != ver_exp:
 		raise Errors.WafError("Requires %s %s but found version %s" % (exe, ver_exp, ver))
+
+@feature('emit')
+@before_method('process_source')
+def apply_emit(self):
+	self.env.EMIT_SOURCE = self.source
+	self.meths.remove('process_source')
+	outputs = [ self.path.find_or_declare(self.target) ]
+	self.create_task('emit', None, outputs)
+
+class emit(Task.Task):
+	color = 'PINK'
+
+	vars = [ 'EMIT_SOURCE' ]
+
+	def run(self):
+		text = self.env['EMIT_SOURCE']
+		self.outputs[0].write(text)
