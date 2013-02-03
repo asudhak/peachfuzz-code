@@ -140,7 +140,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Hello World\0", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual("Foo Bar", (string)dom.dataModels[0][1].DefaultValue);
 		}
 
@@ -234,6 +234,36 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3111, (int)((DataElementContainer)dom.dataModels[0][1])[0].DefaultValue);
 			Assert.AreEqual(3112, (int)((DataElementContainer)dom.dataModels[0][2])[0].DefaultValue);
 			Assert.AreEqual(3113, (int)((DataElementContainer)dom.dataModels[0][3])[0].DefaultValue);
+		}
+
+
+		[Test]
+		public void CrackString8()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String nullTerminated=\"true\" length=\"8\" value=\"Foo\" />" +
+				"		<String />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello"));
+			data.WriteByte(0);
+			data.WriteByte(0);
+			data.WriteByte(0);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Foo Bar"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello\0\0\0", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Foo Bar", (string)dom.dataModels[0][1].DefaultValue);
 		}
 
 		[Test]
@@ -410,6 +440,30 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackNullTermToken()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"Hello\" token=\"true\" nullTerminated=\"true\" />" +
+				"		<String value=\"World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello\0World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
 		public void CrackNullTermString()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -430,7 +484,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("\u00abX\u00abX\0", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("\u00abX\u00abX", (string)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
 		}
 

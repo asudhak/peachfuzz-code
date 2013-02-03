@@ -304,7 +304,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(1, array.Count);
 			string str = (string)array[0].InternalValue;
 
-			Assert.AreEqual("Hello\0", str);
+			Assert.AreEqual("Hello", str);
 		}
 
 		[Test]

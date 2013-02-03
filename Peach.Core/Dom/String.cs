@@ -165,10 +165,10 @@ namespace Peach.Core.Dom
 					if (dec.GetChars(buf, 0, buf.Length, chars, 0) == 0)
 						continue;
 
-					sb.Append(chars[0]);
-
 					if (stopOnNull && chars[0] == '\0')
 						break;
+
+					sb.Append(chars[0]);
 				}
 
 				return sb.ToString();
@@ -192,7 +192,7 @@ namespace Peach.Core.Dom
 
 			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
 
-			if (element.nullTerminated)
+			if (!_hasLength && element.nullTerminated)
 			{
 				stringValue = ReadCharacters(data, -1, true);
 			}
@@ -383,10 +383,6 @@ namespace Peach.Core.Dom
 						}
 					}
 				}
-				else if (nullTerminated && !final.EndsWith("\0"))
-				{
-					final += "\0";
-				}
 
 				base.DefaultValue = new Variant(final);
 			}
@@ -461,7 +457,16 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			return new BitStream(encoding.GetRawBytes((string)InternalValue));
+			var bs = new BitStream(encoding.GetRawBytes((string)InternalValue));
+
+			if (!_hasLength && nullTerminated)
+			{
+				bs.SeekBits(0, System.IO.SeekOrigin.End);
+				bs.WriteBytes(encoding.GetRawBytes("\0"));
+				bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+			}
+
+			return bs;
 		}
 
 		public override bool hasLength
