@@ -74,7 +74,7 @@ zmq = bld(
 	features = 'cxx cxxshlib vnum',
 	target   = 'zmq',
 	name     = 'zmq',
-	vnum     = '.'.join(zmq_version),
+#	vnum     = '.'.join(zmq_version),
 	includes = [ '.', 'include' ],
 	source   = bld.path.ant_glob('src/*.cpp'),
 	defines  = cfg[tgt]['defs'],
@@ -84,6 +84,6 @@ zmq = bld(
 if 'win' == tgt:
 	zmq.source.append('src/version.rc')
 	zmq.target = 'libzmq'
-	zmq.vnum = None
+#	zmq.vnum = None
 	zmq.cxxflags = [ '/wd4512', '/wd4244', '/wd4127', '/wd4099', '/wd4267', '/wd4800', '/wd4245', '/wd4100', '/wd4121' ]
 	zmq.stlib = [ 'ws2_32', 'advapi32' ]
