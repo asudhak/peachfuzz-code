@@ -56,6 +56,15 @@ namespace Peach.Core.Dom
 		string _attributeName = null;
 		string _ns = null;
 
+		public XmlAttribute()
+		{
+		}
+
+		public XmlAttribute(string name)
+			: base(name)
+		{
+		}
+
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
 			if (node.Name != "XmlAttribute" || !(parent is XmlElement))

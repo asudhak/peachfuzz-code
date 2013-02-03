@@ -130,18 +130,36 @@ namespace Peach.Core.Dom
 				if (child is XmlAttribute)
 				{
 					XmlAttribute attrib = child as XmlAttribute;
+					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					{
+						// Happend when data element is duplicated.  Duplicate attributes are invalid so ignore.
+						continue;
+					}
+
 					if (attrib.Count > 0)
+					{
 						xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
+					}
 				}
 				else if (child is String)
 				{
 					var fullName = child.fullName;
 					xmlNode.InnerText = "|||" + fullName + "|||";
-					doc.values.Add(xmlNode.InnerText, child.InternalValue);
+					doc.values.Add(xmlNode.InnerText, new Variant(child.Value));
 				}
 				else if (child is XmlElement)
 				{
-					xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
+					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					{
+						var key = "|||" + child.fullName + "|||";
+						var text = doc.doc.CreateTextNode(key);
+						xmlNode.AppendChild(text);
+						doc.values.Add(key, child.InternalValue);
+					}
+					else
+					{
+						xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
+					}
 				}
 				else
 				{
@@ -154,6 +172,9 @@ namespace Peach.Core.Dom
 
 		public override Variant GenerateInternalValue()
 		{
+			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+				return MutatedValue;
+
 			PeachXmlDoc doc = new PeachXmlDoc();
 			doc.doc.AppendChild(GenerateXmlNode(doc, null));
 			string template = doc.doc.OuterXml;
@@ -175,11 +196,11 @@ namespace Peach.Core.Dom
 					else if (type == Variant.VariantType.ByteString)
 						toWrite = new BitStream((byte[])var);
 					else
-						toWrite = new BitStream(Encoding.ASCII.GetBytes((string)var));
+						toWrite = new BitStream(Encoding.ASCII.GetRawBytes((string)var));
 				}
 				else
 				{
-					toWrite = new BitStream(Encoding.ASCII.GetBytes(item));
+					toWrite = new BitStream(Encoding.ASCII.GetRawBytes(item));
 				}
 
 				bs.Write(toWrite);

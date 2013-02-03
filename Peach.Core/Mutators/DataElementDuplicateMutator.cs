@@ -113,7 +113,7 @@ namespace Peach.Core.Mutators
 				while (obj.parent.ContainsKey(newName))
 					newName += "_" + i;
 
-				var newElem = new Blob(newName);
+				DataElement newElem = Activator.CreateInstance(obj.GetType(), new object[] { newName }) as DataElement;
 				newElem.MutatedValue = mutatedValue;
 				newElem.mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
