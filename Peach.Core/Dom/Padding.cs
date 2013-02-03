@@ -107,14 +107,14 @@ namespace Peach.Core.Dom
 
 			var padding = DataElement.Generate<Padding>(node);
 
-			padding.aligned = node.getAttributeBool("aligned", false);
+			if (node.hasAttr("alignment"))
+				padding.alignment = node.getAttrInt("alignment");
+			if (node.hasAttr("aligned"))
+				padding.aligned = node.getAttrBool("aligned");
 
-			if (node.hasAttribute("alignment"))
-				padding.alignment = int.Parse(node.getAttribute("alignment"));
-
-			string strTo = node.getAttribute("alignedTo");
-			if (strTo != null)
+			if (node.hasAttr("alignedTo"))
 			{
+				string strTo = node.getAttrString("alignedTo");
 				padding.alignedTo = parent.find(strTo);
 				if (padding.alignedTo == null)
 					throw new PeachException("Error, unable to resolve alignedTo '" + strTo + "'.");

@@ -78,15 +78,17 @@ namespace Peach.Core.Dom
 				return null;
 
 			Block block = null;
-			string refName = node.getAttribute("ref");
 
-			if (refName != null)
+			if (node.hasAttr("ref"))
 			{
+				string refName = node.getAttrString("ref");
 				Block refObj = Analyzers.PitParser.getReference(context._dom, refName, parent) as Block;
 				if (refObj == null)
 					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
-				string name = node.getAttribute("name");
+				string name = null;
+				if (node.hasAttr("name"))
+					name = node.getAttrString("name");
 				if (string.IsNullOrEmpty(name))
 					name = new Block().name;
 

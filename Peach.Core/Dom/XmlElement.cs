@@ -83,11 +83,10 @@ namespace Peach.Core.Dom
 
 			var xmlElement = DataElement.Generate<XmlElement>(node);
 
-			xmlElement.elementName = node.getAttribute("elementName");
-			xmlElement.ns = node.getAttribute("ns");
+			xmlElement.elementName = node.getAttrString("elementName");
 
-			if (xmlElement.elementName == null)
-				throw new PeachException("Error, elementName is a required attribute for XmlElement: " + xmlElement.name);
+			if (node.hasAttr("ns"))
+				xmlElement.ns = node.getAttrString("ns");
 
 			context.handleCommonDataElementAttributes(node, xmlElement);
 			context.handleCommonDataElementChildren(node, xmlElement);

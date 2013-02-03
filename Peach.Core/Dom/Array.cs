@@ -200,21 +200,18 @@ namespace Peach.Core.Dom
 		{
 			var array = DataElement.Generate<Array>(node);
 
-			string strMinOccurs = node.getAttribute("minOccurs");
-			if (strMinOccurs != null)
+			if (node.hasAttr("minOccurs"))
 			{
-				array.minOccurs = int.Parse(strMinOccurs);
+				array.minOccurs = node.getAttrInt("minOccurs");
 				array.maxOccurs = -1;
 				array.occurs = array.minOccurs;
 			}
 
-			string strMaxOccurs = node.getAttribute("maxOccurs");
-			if (strMaxOccurs != null)
-				array.maxOccurs = int.Parse(strMaxOccurs);
+			if (node.hasAttr("maxOccurs"))
+				array.maxOccurs = node.getAttrInt("maxOccurs");
 
-			string strOccurs = node.getAttribute("occurs");
-			if (strOccurs != null)
-				array.occurs = int.Parse(strOccurs);
+			if (node.hasAttr("occurs"))
+				array.occurs = node.getAttrInt("occurs");
 
 			return array;
 		}

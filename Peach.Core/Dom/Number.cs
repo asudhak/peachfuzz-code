@@ -121,29 +121,27 @@ namespace Peach.Core.Dom
 
 			var num = DataElement.Generate<Number>(node);
 
-			if (node.hasAttribute("signed"))
-				num.Signed = node.getAttributeBool("signed", false);
+			if (node.hasAttr("signed"))
+				num.Signed = node.getAttrBool("signed");
 			else
-				num.Signed = context.getDefaultAttributeAsBool(typeof(Number), "signed", false);
+				num.Signed = context.getDefaultAttr(typeof(Number), "signed", num.Signed);
 
-			string strSize = node.getAttribute("size");
-			if (strSize != null)
+			if (node.hasAttr("size"))
 			{
-				int size;
-			
-				if (!int.TryParse(strSize, out size))
-					throw new PeachException("Error, " + num.name + " size attribute is not valid number.");
+				int size = node.getAttrInt("size");
 
 				if (size < 1 || size > 64)
-					throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, num.name));
+					throw new PeachException(string.Format("Error, unsupported size '{0}' for Number element '{1}'.", size, num.name));
 
 				num.lengthType = LengthType.Bits;
 				num.length = size;
 			}
 
-			string strEndian = node.getAttribute("endian");
+			string strEndian = null;
+			if (node.hasAttr("endian"))
+				strEndian = node.getAttrString("endian");
 			if (strEndian == null)
-				strEndian = context.getDefaultAttribute(typeof(Number), "endian");
+				strEndian = context.getDefaultAttr(typeof(Number), "endian", null);
 
 			if (strEndian != null)
 			{
@@ -192,7 +190,7 @@ namespace Peach.Core.Dom
 				if (value <= 0 || value > 64)
 					throw new ArgumentOutOfRangeException("Error, value must be greater than 0 and less than 65.");
 
-				_length = value;
+				base.length = value;
 
 				if (_signed)
 				{

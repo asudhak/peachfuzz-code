@@ -406,7 +406,9 @@ namespace Peach.Core.Dom
 
 		public static T Generate<T>(XmlNode node) where T : DataElement, new()
 		{
-			string name = node.getAttribute("name");
+			string name = null;
+			if (node.hasAttr("name"))
+				name = node.getAttrString("name");
 
 			if (string.IsNullOrEmpty(name))
 			{

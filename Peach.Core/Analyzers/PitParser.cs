@@ -222,8 +222,8 @@ namespace Peach.Core.Analyzers
 				switch (child.Name)
 				{
 					case "Include":
-						string ns = child.getAttribute("ns");
-						string fileName = child.getAttribute("src");
+						string ns = child.getAttrString("ns");
+						string fileName = child.getAttrString("src");
 						fileName = fileName.Replace("file:", "");
 
 						if (!File.Exists(fileName))
@@ -263,14 +263,14 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Require":
-						Scripting.Imports.Add(child.getAttribute("require"));
+						Scripting.Imports.Add(child.getAttrString("require"));
 						break;
 
 					case "Import":
-						if (child.hasAttribute("from"))
+						if (child.hasAttr("from"))
 							throw new PeachException("Error, This version of Peach does not support the 'from' attribute for 'Import' elements.");
 
-						Scripting.Imports.Add(child.getAttribute("import"));
+						Scripting.Imports.Add(child.getAttrString("import"));
 						break;
 
 					case "PythonPath":
@@ -280,7 +280,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
-						Scripting.Paths.Add(child.getAttribute("path"));
+						Scripting.Paths.Add(child.getAttrString("path"));
 						isScriptingLanguageSet = true;
 						break;
 
@@ -291,7 +291,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Ruby;
-						Scripting.Paths.Add(child.getAttribute("require"));
+						Scripting.Paths.Add(child.getAttrString("require"));
 						isScriptingLanguageSet = true;
 						break;
 
@@ -302,7 +302,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Python;
-						Scripting.Exec(child.getAttribute("code"), new Dictionary<string, object>());
+						Scripting.Exec(child.getAttrString("code"), new Dictionary<string, object>());
 						isScriptingLanguageSet = true;
 						break;
 
@@ -313,7 +313,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, cannot mix Python and Ruby!");
 						}
 						Scripting.DefaultScriptingEngine = ScriptingEngines.Ruby;
-						Scripting.Exec(child.getAttribute("code"), new Dictionary<string, object>());
+						Scripting.Exec(child.getAttrString("code"), new Dictionary<string, object>());
 						isScriptingLanguageSet = true;
 						break;
 
@@ -558,42 +558,42 @@ namespace Peach.Core.Analyzers
 				switch (child.Name)
 				{
 					case "Number":
-						if (child.hasAttribute("endian"))
-							args["endian"] = child.getAttribute("endian");
-						if (child.hasAttribute("signed"))
-							args["signed"] = child.getAttribute("signed");
-						if (child.hasAttribute("valueType"))
-							args["valueType"] = child.getAttribute("valueType");
+						if (child.hasAttr("endian"))
+							args["endian"] = child.getAttrString("endian");
+						if (child.hasAttr("signed"))
+							args["signed"] = child.getAttrString("signed");
+						if (child.hasAttr("valueType"))
+							args["valueType"] = child.getAttrString("valueType");
 
 						dataElementDefaults[typeof(Number)] = args;
 						break;
 					case "String":
-						if (child.hasAttribute("lengthType"))
-							args["lengthType"] = child.getAttribute("lengthType");
-						if (child.hasAttribute("padCharacter"))
-							args["padCharacter"] = child.getAttribute("padCharacter");
-						if (child.hasAttribute("type"))
-							args["type"] = child.getAttribute("type");
-						if (child.hasAttribute("nullTerminated"))
-							args["nullTerminated"] = child.getAttribute("nullTerminated");
-						if (child.hasAttribute("valueType"))
-							args["valueType"] = child.getAttribute("valueType");
+						if (child.hasAttr("lengthType"))
+							args["lengthType"] = child.getAttrString("lengthType");
+						if (child.hasAttr("padCharacter"))
+							args["padCharacter"] = child.getAttrString("padCharacter");
+						if (child.hasAttr("type"))
+							args["type"] = child.getAttrString("type");
+						if (child.hasAttr("nullTerminated"))
+							args["nullTerminated"] = child.getAttrString("nullTerminated");
+						if (child.hasAttr("valueType"))
+							args["valueType"] = child.getAttrString("valueType");
 
 						dataElementDefaults[typeof(Dom.String)] = args;
 						break;
 					case "Flags":
-						if (child.hasAttribute("endian"))
-							args["endian"] = child.getAttribute("endian");
-						if (child.hasAttribute("size"))
-							args["size"] = child.getAttribute("size");
+						if (child.hasAttr("endian"))
+							args["endian"] = child.getAttrString("endian");
+						if (child.hasAttr("size"))
+							args["size"] = child.getAttrString("size");
 
 						dataElementDefaults[typeof(Flags)] = args;
 						break;
 					case "Blob":
-						if (child.hasAttribute("lengthType"))
-							args["lengthType"] = child.getAttribute("lengthType");
-						if (child.hasAttribute("valueType"))
-							args["valueType"] = child.getAttribute("valueType");
+						if (child.hasAttr("lengthType"))
+							args["lengthType"] = child.getAttrString("lengthType");
+						if (child.hasAttr("valueType"))
+							args["valueType"] = child.getAttrString("valueType");
 
 						dataElementDefaults[typeof(Blob)] = args;
 						break;
@@ -607,9 +607,9 @@ namespace Peach.Core.Analyzers
 		{
 			Dom.Agent agent = new Dom.Agent();
 
-			agent.name = node.getAttribute("name");
-			agent.url = node.getAttribute("location");
-			agent.password = node.getAttribute("password");
+			agent.name = node.getAttrString("name");
+			agent.url = node.getAttr("location", null);
+			agent.password = node.getAttr("password", null);
 
 			if (agent.url == null)
 				agent.url = "local://";
@@ -620,8 +620,8 @@ namespace Peach.Core.Analyzers
 				{
 					Dom.Monitor monitor = new Monitor();
 
-					monitor.cls = child.getAttribute("class");
-					monitor.name = child.getAttribute("name");
+					monitor.cls = child.getAttrString("class");
+					monitor.name = child.getAttr("name", null);
 					monitor.parameters = handleParamsOrdered(child);
 
 					agent.monitors.Add(monitor);
@@ -636,8 +636,8 @@ namespace Peach.Core.Analyzers
 		protected DataModel handleDataModel(XmlNode node)
 		{
 			DataModel dataModel = null;
-			string name = node.getAttribute("name");
-			string refName = node.getAttribute("ref");
+			string name = node.getAttr("name", null);
+			string refName = node.getAttr("ref", null);
 
 			if (refName != null)
 			{
@@ -669,7 +669,7 @@ namespace Peach.Core.Analyzers
 
 		protected bool IsArray(XmlNode node)
 		{
-			if (node.hasAttribute("minOccurs") || node.hasAttribute("maxOccurs") || node.hasAttribute("occurs"))
+			if (node.hasAttr("minOccurs") || node.hasAttr("maxOccurs") || node.hasAttr("occurs"))
 				return true;
 
 			return false;
@@ -689,68 +689,61 @@ namespace Peach.Core.Analyzers
 		/// <param name="element">Element to set attributes on</param>
 		public void handleCommonDataElementAttributes(XmlNode node, DataElement element)
 		{
-			if (node.hasAttribute("token"))
-				element.isToken = true;
+			if (node.hasAttr("token"))
+				element.isToken = node.getAttrBool("token");
 
-			if (node.hasAttribute("mutable"))
-				element.isMutable = false;
+			if (node.hasAttr("mutable"))
+				element.isMutable = node.getAttrBool("mutable");
 
-			if (node.hasAttribute("constraint"))
-				element.constraint = node.getAttribute("constraint");
+			if (node.hasAttr("constraint"))
+				element.constraint = node.getAttrString("constraint");
 
-			if (node.hasAttribute("pointer"))
+			if (node.hasAttr("pointer"))
 				throw new NotSupportedException("Implement pointer attribute");
 
-			if (node.hasAttribute("pointerDepth"))
+			if (node.hasAttr("pointerDepth"))
 				throw new NotSupportedException("Implement pointerDepth attribute");
 
-			if (node.hasAttribute("lengthType"))
+			string strLenType = null;
+			if (node.hasAttr("lengthType"))
+				strLenType = node.getAttrString("lengthType");
+			else
+				strLenType = getDefaultAttr(element.GetType(), "lengthType", null);
+
+			switch (strLenType)
 			{
-				switch (node.getAttribute("lengthType"))
-				{
-					case "bytes":
-						element.lengthType = LengthType.Bytes;
-						break;
-					case "bits":
-						element.lengthType = LengthType.Bits;
-						break;
-					case "chars":
-						element.lengthType = LengthType.Chars;
-						break;
-					default:
-						throw new PeachException("Error, parsing lengthType on '" + element.name +
-							"', unknown value: '" + node.getAttribute("lengthType") + "'.");
-				}
-			}
-			else if (hasDefaultAttribute(element.GetType(), "lengthType"))
-			{
-				switch ((string)getDefaultAttribute(element.GetType(), "lengthType"))
-				{
-					case "bytes":
-						element.lengthType = LengthType.Bytes;
-						break;
-					case "bits":
-						element.lengthType = LengthType.Bits;
-						break;
-					case "chars":
-						element.lengthType = LengthType.Chars;
-						break;
-				}
+				case null:
+					break;
+				case "bytes":
+					element.lengthType = LengthType.Bytes;
+					break;
+				case "bits":
+					element.lengthType = LengthType.Bits;
+					break;
+				case "chars":
+					element.lengthType = LengthType.Chars;
+					break;
+				default:
+					throw new PeachException("Error, parsing lengthType on '" + element.name +
+						"', unknown value: '" + strLenType + "'.");
 			}
 
-			if (node.hasAttribute("length"))
+			if (node.hasAttr("length"))
 			{
+				int length = node.getAttrInt("length");
+
 				try
 				{
-					element.length = Int32.Parse(node.getAttribute("length"));
+					element.length = length;
 				}
 				catch (Exception e)
 				{
-					throw new PeachException("Error, parsing length on '" + element.name + "': " + e.Message, e);
+					throw new PeachException("Error, setting length on element '" + element.name + "'.  " + e.Message, e);
 				}
 			}
 
-			element.lengthCalc = node.getAttribute("lengthCalc");
+			if (node.hasAttr("lengthCalc"))
+				element.lengthCalc = node.getAttrString("lengthCalc");
 		}
 
 		/// <summary>
@@ -798,7 +791,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="element">Element to add items to</param>
 		protected void handleHint(XmlNode node, DataElement element)
 		{
-			var hint = new Hint(node.getAttribute("name"), node.getAttribute("value"));
+			var hint = new Hint(node.getAttrString("name"), node.getAttrString("value"));
 			element.Hints.Add(hint.Name, hint);
 		}
 
@@ -806,10 +799,10 @@ namespace Peach.Core.Analyzers
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 
-			if (node.hasAttribute("after"))
-				args["after"] = new Variant(node.getAttribute("after"));
-			else if (node.hasAttribute("before"))
-				args["before"] = new Variant(node.getAttribute("before"));
+			if (node.hasAttr("after"))
+				args["after"] = new Variant(node.getAttrString("after"));
+			else if (node.hasAttr("before"))
+				args["before"] = new Variant(node.getAttrString("before"));
 			else
 				throw new PeachException("Error, Placement on element \"" + element.name + "\" is missing 'after' or 'before' attribute.");
 
@@ -847,7 +840,10 @@ namespace Peach.Core.Analyzers
 				PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
 				// Prevent dots from being in the name for element construction, they get resolved afterwards
-				var childName = child.getAttribute("name");
+				string childName = null;
+				if (child.hasAttr("name"))
+					childName = child.getAttrString("name");
+
 				if (element.isReference && !string.IsNullOrEmpty(childName))
 				{
 					var refname = childName.Split('.');
@@ -923,91 +919,84 @@ namespace Peach.Core.Analyzers
 
 		public void handleCommonDataElementValue(XmlNode node, DataElement elem)
 		{
-			string value = null;
+			if (!node.hasAttr("value"))
+				return;
 
-			if (node.hasAttribute("value"))
-			{
-				value = node.getAttribute("value");
+			string value = node.getAttrString("value");
 
-				value = value.Replace("\\\\", "\\");
-				value = value.Replace("\\n", "\n");
-				value = value.Replace("\\r", "\r");
-				value = value.Replace("\\t", "\t");
-			}
+			value = value.Replace("\\\\", "\\");
+			value = value.Replace("\\n", "\n");
+			value = value.Replace("\\r", "\r");
+			value = value.Replace("\\t", "\t");
 
 			string valueType = null;
 
-			if (node.hasAttribute("valueType"))
-				valueType = node.getAttribute("valueType");
-			else if (hasDefaultAttribute(elem.GetType(), "valueType"))
-				valueType = getDefaultAttribute(elem.GetType(), "valueType");
+			if (node.hasAttr("valueType"))
+				valueType = node.getAttrString("valueType");
+			else
+				valueType = getDefaultAttr(elem.GetType(), "valueType", "string");
 
-			if (valueType != null && value != null)
+			switch (valueType.ToLower())
 			{
-				switch (valueType.ToLower())
-				{
-					case "hex":
-						// Handle hex data.
+				case "hex":
+					// Handle hex data.
 
-						// 1. Remove white space
-						value = _hexWhiteSpace.Replace(value, "");
+					// 1. Remove white space
+					value = _hexWhiteSpace.Replace(value, "");
 
-						// 3. Remove 0x
-						value = value.Replace("0x", "");
+					// 3. Remove 0x
+					value = value.Replace("0x", "");
 
-						// 4. remove \x
-						value = value.Replace("\\x", "");
+					// 4. remove \x
+					value = value.Replace("\\x", "");
 
-						if (value.Length % 2 != 0)
-							value = "0" + value;
+					if (value.Length % 2 != 0)
+						value = "0" + value;
 
-						var array = HexString.ToArray(value);
+					var array = HexString.ToArray(value);
 
-						if (array == null)
-							throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
+					if (array == null)
+						throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
 
-						elem.DefaultValue = new Variant(array);
-						break;
-					case "literal":
-						throw new NotImplementedException("todo valueType");
-					case "string":
-						// No action requried, default behaviour
-						elem.DefaultValue = new Variant(value);
-						break;
-					default:
-						throw new PeachException("Error, invalid value for 'valueType' attribute: " + node.getAttribute("valueType"));
-				}
+					elem.DefaultValue = new Variant(array);
+					break;
+				case "literal":
+					throw new NotImplementedException("todo valueType");
+				case "string":
+					// No action requried, default behaviour
+					elem.DefaultValue = new Variant(value);
+					break;
+				default:
+					throw new PeachException("Error, invalid value for 'valueType' attribute: " + valueType);
 			}
-			else if (value != null)
-				elem.DefaultValue = new Variant(value);
-
 		}
 
-		public bool hasDefaultAttribute(Type type, string key)
+		private static string getDefaultError(Type type, string key)
 		{
-			if (dataElementDefaults.ContainsKey(type))
-				return dataElementDefaults[type].ContainsKey(key);
-			return false;
+			return string.Format("Error, element '{0}' has an invalid default value for attribute '{1}'.", type.Name, key);
 		}
 
-		public string getDefaultAttribute(Type type, string key)
+		public string getDefaultAttr(Type type, string key, string defaultValue)
 		{
 			Dictionary<string, string> defaults = null;
 			if (!dataElementDefaults.TryGetValue(type, out defaults))
-				return null;
+				return defaultValue;
 
 			string value = null;
 			if (!defaults.TryGetValue(key, out value))
-				return null;
+				return defaultValue;
 
 			return value;
 		}
 
-		public bool getDefaultAttributeAsBool(Type type, string key, bool defaultValue)
+		public bool getDefaultAttr(Type type, string key, bool defaultValue)
 		{
-			string value = getDefaultAttribute(type, key);
+			string value = getDefaultAttr(type, key, null);
+
 			switch (value)
 			{
+				case null:
+					return defaultValue;
 				case "1":
 				case "true":
 					return true;
@@ -1015,25 +1004,51 @@ namespace Peach.Core.Analyzers
 				case "false":
 					return false;
 				default:
-					return defaultValue;
+					throw new PeachException(getDefaultError(type, key) + "  Could not convert value '" + value + "' to a boolean.");
 			}
+		}
+
+		public int getDefaultAttr(Type type, string key, int defaultValue)
+		{
+			string value = getDefaultAttr(type, key, null);
+			if (value == null)
+				return defaultValue;
+
+			int ret;
+			if (!int.TryParse(value, out ret))
+				throw new PeachException(getDefaultError(type, key) + "  Could not convert value '" + value + "' to an integer.");
+
+			return ret;
+		}
+
+		public char getDefaultAttr(Type type, string key, char defaultValue)
+		{
+			string value = getDefaultAttr(type, key, null);
+			if (value == null)
+				return defaultValue;
+
+			if (value.Length != 1)
+				throw new PeachException(getDefaultError(type, key) + "  Could not convert value '" + value + "' to a character.");
+
+			return value[0];
 		}
 
 		protected void handleRelation(XmlNode node, DataElement parent)
 		{
-			switch (node.getAttribute("type"))
+			string value = node.getAttrString("type");
+			switch (value)
 			{
 				case "size":
-					if (node.hasAttribute("of"))
+					if (node.hasAttr("of"))
 					{
 						SizeRelation rel = new SizeRelation();
-						rel.OfName = node.getAttribute("of");
+						rel.OfName = node.getAttrString("of");
 
-						if (node.hasAttribute("expressionGet"))
-							rel.ExpressionGet = node.getAttribute("expressionGet");
+						if (node.hasAttr("expressionGet"))
+							rel.ExpressionGet = node.getAttrString("expressionGet");
 
-						if (node.hasAttribute("expressionSet"))
-							rel.ExpressionSet = node.getAttribute("expressionSet");
+						if (node.hasAttr("expressionSet"))
+							rel.ExpressionSet = node.getAttrString("expressionSet");
 
 						parent.relations.Add(rel);
 					}
@@ -1041,40 +1056,40 @@ namespace Peach.Core.Analyzers
 					break;
 
 				case "count":
-					if (node.hasAttribute("of"))
+					if (node.hasAttr("of"))
 					{
 						CountRelation rel = new CountRelation();
-						rel.OfName = node.getAttribute("of");
+						rel.OfName = node.getAttrString("of");
 
-						if (node.hasAttribute("expressionGet"))
-							rel.ExpressionGet = node.getAttribute("expressionGet");
+						if (node.hasAttr("expressionGet"))
+							rel.ExpressionGet = node.getAttrString("expressionGet");
 
-						if (node.hasAttribute("expressionSet"))
-							rel.ExpressionSet = node.getAttribute("expressionSet");
+						if (node.hasAttr("expressionSet"))
+							rel.ExpressionSet = node.getAttrString("expressionSet");
 
 						parent.relations.Add(rel);
 					}
 					break;
 
 				case "offset":
-					if (node.hasAttribute("of"))
+					if (node.hasAttr("of"))
 					{
 						OffsetRelation rel = new OffsetRelation();
-						rel.OfName = node.getAttribute("of");
+						rel.OfName = node.getAttrString("of");
 
-						if (node.hasAttribute("expressionGet"))
-							rel.ExpressionGet = node.getAttribute("expressionGet");
+						if (node.hasAttr("expressionGet"))
+							rel.ExpressionGet = node.getAttrString("expressionGet");
 
-						if (node.hasAttribute("expressionSet"))
-							rel.ExpressionSet = node.getAttribute("expressionSet");
+						if (node.hasAttr("expressionSet"))
+							rel.ExpressionSet = node.getAttrString("expressionSet");
 
-						if (node.hasAttribute("relative"))
+						if (node.hasAttr("relative"))
 							rel.isRelativeOffset = true;
 
-						if (node.hasAttribute("relativeTo"))
+						if (node.hasAttr("relativeTo"))
 						{
 							rel.isRelativeOffset = true;
-							rel.relativeTo = node.getAttribute("relativeTo");
+							rel.relativeTo = node.getAttrString("relativeTo");
 						}
 
 						parent.relations.Add(rel);
@@ -1082,8 +1097,7 @@ namespace Peach.Core.Analyzers
 					break;
 
 				default:
-					throw new ApplicationException("Unknown relation type found '" +
-						node.getAttribute("type") + "'.");
+					throw new PeachException("Error, element '" + parent.name + "' has nknown relation type '" + value + "'.");
 			}
 		}
 
@@ -1093,10 +1107,7 @@ namespace Peach.Core.Analyzers
 		{
 			var pluginType = typeof(T).Name;
 
-			if (!node.hasAttribute("class"))
-				throw new PeachException(string.Format("{0} element has no 'class' attribute [{1}]", pluginType, node.OuterXml));
-
-			var cls = node.getAttribute("class");
+			var cls = node.getAttrString("class");
 			IDictionary<string,Variant> arg;
 
 			if (typeof(T) == typeof(Monitor))
@@ -1151,8 +1162,8 @@ namespace Peach.Core.Analyzers
 
 		protected virtual StateModel handleStateModel(XmlNode node, Dom.Dom parent)
 		{
-			string name = node.getAttribute("name");
-			string initialState = node.getAttribute("initialState");
+			string name = node.getAttrString("name");
+			string initialState = node.getAttrString("initialState");
 			StateModel stateModel = new StateModel();
 			stateModel.name = name;
 			stateModel.parent = parent;
@@ -1178,7 +1189,7 @@ namespace Peach.Core.Analyzers
 		{
 			State state = new State();
 			state.parent = parent;
-			state.name = node.getAttribute("name");
+			state.name = node.getAttrString("name");
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -1197,18 +1208,19 @@ namespace Peach.Core.Analyzers
 			Core.Dom.Action action = new Core.Dom.Action();
 			action.parent = parent;
 
-			if (node.hasAttribute("name"))
-				action.name = node.getAttribute("name");
+			if (node.hasAttr("name"))
+				action.name = node.getAttrString("name");
 
-			if (node.hasAttribute("when"))
-				action.when = node.getAttribute("when");
+			if (node.hasAttr("when"))
+				action.when = node.getAttrString("when");
 
-			if (node.hasAttribute("publisher"))
-				action.publisher = node.getAttribute("publisher");
+			if (node.hasAttr("publisher"))
+				action.publisher = node.getAttrString("publisher");
 
-			if (node.hasAttribute("type"))
+			if (node.hasAttr("type"))
 			{
-				switch (node.getAttribute("type").ToLower())
+				string type = node.getAttrString("type");
+				switch (type.ToLower())
 				{
 					case "accept":
 						action.type = ActionType.Accept;
@@ -1250,62 +1262,62 @@ namespace Peach.Core.Analyzers
 						action.type = ActionType.Stop;
 						break;
 					default:
-						throw new PeachException("Error, action of type '" + node.getAttribute("type") + "' is not valid.");
+						throw new PeachException("Error, state '" + parent.name + "' has an invalid action type '" + type + "'.");
 				}
 			}
 
-			if (node.hasAttribute("onStart"))
-				action.onStart = node.getAttribute("onStart");
+			if (node.hasAttr("onStart"))
+				action.onStart = node.getAttrString("onStart");
 
-			if (node.hasAttribute("onComplete"))
-				action.onComplete = node.getAttribute("onComplete");
+			if (node.hasAttr("onComplete"))
+				action.onComplete = node.getAttrString("onComplete");
 
-			if (node.hasAttribute("ref"))
+			if (node.hasAttr("ref"))
 			{
-				if (action.type == ActionType.ChangeState)
-					action.reference = node.getAttribute("ref");
-				else
+				if (action.type != ActionType.ChangeState)
 					throw new PeachException("Error, only Actions of type ChangeState are allowed to use the 'ref' attribute");
+
+				action.reference = node.getAttrString("ref");
 			}
 
-			if (node.hasAttribute("method"))
+			if (node.hasAttr("method"))
 			{
 				if (action.type != ActionType.Call)
 					throw new PeachException("Error, only Actions of type Call are allowed to use the 'method' attribute");
 
-				action.method = node.getAttribute("method");
+				action.method = node.getAttrString("method");
 			}
 
-			if (node.hasAttribute("property"))
+			if (node.hasAttr("property"))
 			{
 				if (action.type != ActionType.GetProperty && action.type != ActionType.SetProperty)
 					throw new PeachException("Error, only Actions of type GetProperty and SetProperty are allowed to use the 'property' attribute");
 
-				action.property = node.getAttribute("property");
+				action.property = node.getAttrString("property");
 			}
 
-			if (node.hasAttribute("setXpath"))
+			if (node.hasAttr("setXpath"))
 			{
 				if (action.type != ActionType.Slurp)
 					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'setXpath' attribute");
 
-				action.setXpath = node.getAttribute("setXpath");
+				action.setXpath = node.getAttrString("setXpath");
 			}
 
-			if (node.hasAttribute("valueXpath"))
+			if (node.hasAttr("valueXpath"))
 			{
 				if (action.type != ActionType.Slurp)
 					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'valueXpath' attribute");
 
-				action.valueXpath = node.getAttribute("valueXpath");
+				action.valueXpath = node.getAttrString("valueXpath");
 			}
 
-			//if (node.hasAttribute("value"))
+			//if (node.hasAttr("value"))
 			//{
 			//    if (action.type != ActionType.Slurp)
 			//        throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'value' attribute");
 
-			//    action.value = node.getAttribute("value");
+			//    action.value = node.getAttrString("value");
 			//}
 
 			foreach (XmlNode child in node.ChildNodes)
@@ -1338,7 +1350,7 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "DataModel")
-					param.dataModel = dom.dataModels[child.getAttribute("ref")];
+					param.dataModel = dom.dataModels[child.getAttrString("ref")];
 				if (child.Name == "Data")
 					param.data = handleData(child, true);
 			}
@@ -1350,12 +1362,12 @@ namespace Peach.Core.Analyzers
 		{
 			Data data = null;
 
-			string refName = node.getAttribute("ref");
-
-			if (!string.IsNullOrEmpty(refName))
+			if (node.hasAttr("ref"))
 			{
 				if (!resolveRefs)
 					throw new PeachException("Error, the ref attribute is not valid on top level Data elements.");
+
+				string refName = node.getAttrString("ref");
 
 				Data other;
 				if (!_dom.datas.TryGetValue(refName, out other))
@@ -1368,11 +1380,14 @@ namespace Peach.Core.Analyzers
 				data = new Data();
 			}
 
-			data.name = node.getAttribute("name");
-			string dataFileName = node.getAttribute("fileName");
+			if (node.hasAttr("name"))
+				data.name = node.getAttrString("name");
 
-			if (dataFileName != null)
+
+			if (node.hasAttr("fileName"))
 			{
+				string dataFileName = node.getAttrString("fileName");
+
 				if (Directory.Exists(dataFileName))
 				{
 					List<string> files = new List<string>();
@@ -1405,7 +1420,7 @@ namespace Peach.Core.Analyzers
 					Blob tmp = new Blob();
 					handleCommonDataElementValue(child, tmp);
 
-					data.fields.Add(child.getAttribute("name"), tmp.DefaultValue);
+					data.fields.Add(child.getAttrString("name"), tmp.DefaultValue);
 				}
 			}
 
@@ -1420,10 +1435,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Mutator")
 				{
-					string name = child.getAttribute("class");
-					if (name == null)
-						throw new PeachException("Error, Mutator element is missing 'class' attribute");
-
+					string name = child.getAttrString("class");
 					ret.Add(name);
 				}
 			}
@@ -1436,16 +1448,16 @@ namespace Peach.Core.Analyzers
 			Test test = new Test();
 			test.parent = parent;
 
-			test.name = node.getAttribute("name");
+			test.name = node.getAttrString("name");
 
-			if (node.hasAttribute("waitTime"))
-				test.waitTime = decimal.Parse(node.getAttribute("waitTime"));
+			if (node.hasAttr("waitTime"))
+				test.waitTime = decimal.Parse(node.getAttrString("waitTime"));
 
-			if (node.hasAttribute("faultWaitTime"))
-				test.faultWaitTime = decimal.Parse(node.getAttribute("faultWaitTime"));
+			if (node.hasAttr("faultWaitTime"))
+				test.faultWaitTime = decimal.Parse(node.getAttrString("faultWaitTime"));
 
-			if (node.hasAttribute("controlIteration"))
-				test.controlIterationEvery = int.Parse(node.getAttribute("controlIteration"));
+			if (node.hasAttr("controlIteration"))
+				test.controlIterationEvery = int.Parse(node.getAttrString("controlIteration"));
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -1455,12 +1467,12 @@ namespace Peach.Core.Analyzers
 				// Include
 				if (child.Name == "Include")
 				{
-					var attr = child.getAttribute("ref");
+					var attr = child.getAttr("ref", null);
 
 					if (attr != null)
 						attr = string.Format("//{0} | //{0}/*", attr);
 					else
-						attr = child.getAttribute("xpath");
+						attr = child.getAttr("xpath", null);
 
 					if (attr == null)
 						attr = "//*";
@@ -1471,12 +1483,12 @@ namespace Peach.Core.Analyzers
 				// Exclude
 				if (child.Name == "Exclude")
 				{
-					var attr = child.getAttribute("ref");
+					var attr = child.getAttr("ref", null);
 
 					if (attr != null)
 						attr = string.Format("//{0} | //{0}/*", attr);
 					else
-						attr = child.getAttribute("xpath");
+						attr = child.getAttr("xpath", null);
 
 					if (attr == null)
 						attr = "//*";
@@ -1493,7 +1505,7 @@ namespace Peach.Core.Analyzers
 				// Agent
 				if (child.Name == "Agent")
 				{
-					string refName = child.getAttribute("ref");
+					string refName = child.getAttrString("ref");
 					try
 					{
 						test.agents.Add(refName, parent.agents[refName]);
@@ -1503,7 +1515,7 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found", ex);
 					}
 
-					var platform = child.getAttribute("platform");
+					var platform = child.getAttr("platform", null);
 					if (platform != null)
 					{
 						switch (platform.ToLower())
@@ -1525,17 +1537,12 @@ namespace Peach.Core.Analyzers
 				// StateModel
 				if (child.Name == "StateModel")
 				{
-					if (!child.hasAttribute("ref"))
-						throw new PeachException("Error, StateModel element must have a 'ref' attribute when used as a child of Test");
+					string strRef = child.getAttrString("ref");
 
-					try
-					{
-						test.stateModel = parent.stateModels[child.getAttribute("ref")];
-					}
-					catch
+					if (!parent.stateModels.TryGetValue(strRef, out test.stateModel))
 					{
 						throw new PeachException("Error, could not locate StateModel named '" +
-							child.getAttribute("ref") + "' for Test '" + test.name + "'.");
+							strRef + "' for Test '" + test.name + "'.");
 					}
 				}
 
@@ -1543,13 +1550,13 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Publisher")
 				{
 					string name;
-					if (!child.hasAttribute("name"))
+					if (!child.hasAttr("name"))
 					{
 						name = "Pub_" + _uniquePublisherName;
 						_uniquePublisherName++;
 					}
 					else
-						name = child.getAttribute("name");
+						name = child.getAttrString("name");
 
 					test.publishers.Add(name, handlePlugin<Publisher, PublisherAttribute>(child, null, false));
 				}
@@ -1557,9 +1564,7 @@ namespace Peach.Core.Analyzers
 				// Mutator
 				if (child.Name == "Mutators")
 				{
-					string mode = child.getAttribute("mode");
-					if (mode == null)
-						throw new PeachException("Error, Mutators element must have a 'mode' attribute");
+					string mode = child.getAttrString("mode");
 
 					var list = handleMutators(child);
 
@@ -1654,19 +1659,17 @@ namespace Peach.Core.Analyzers
 				if (child.Name != "Param")
 					continue;
 
-				string name = child.getAttribute("name");
-				string value = child.getAttribute("value");
+				string name = child.getAttrString("name");
+				string value = child.getAttrString("value");
 
-				if (child.hasAttribute("valueType"))
+				if (child.hasAttr("valueType"))
 				{
-					ret.Add(name, new Variant(value, child.getAttribute("valueType")));
+					ret.Add(name, new Variant(value, child.getAttrString("valueType")));
 				}
 				else
 				{
 					ret.Add(name, new Variant(value));
 				}
-				//throw new NotImplementedException("TODO Handle ValueType");
-
 			}
 
 			return ret;
@@ -1680,12 +1683,12 @@ namespace Peach.Core.Analyzers
 				if (child.Name != "Param")
 					continue;
 
-				string name = child.getAttribute("name");
-				string value = child.getAttribute("value");
+				string name = child.getAttrString("name");
+				string value = child.getAttrString("value");
 
-				if (child.hasAttribute("valueType"))
+				if (child.hasAttr("valueType"))
 				{
-					ret.Add(name, new Variant(value, child.getAttribute("valueType")));
+					ret.Add(name, new Variant(value, child.getAttrString("valueType")));
 				}
 				else
 				{

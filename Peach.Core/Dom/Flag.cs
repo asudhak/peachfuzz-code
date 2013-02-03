@@ -137,21 +137,8 @@ namespace Peach.Core.Dom
 
 			var flag = DataElement.Generate<Flag>(node);
 
-			string strPos = node.getAttribute("position");
-			if (strPos == null)
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-
-			string strSize = node.getAttribute("size");
-			if (strSize == null)
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-
-			int position;
-			if (!int.TryParse(strPos, out position))
-				throw new PeachException("Error, " + flag.name + " position attribute is not valid number.");
-
-			int size;
-			if (!int.TryParse(strSize, out size))
-				throw new PeachException("Error, " + flag.name + " size attribute is not valid number.");
+			int position = node.getAttrInt("position");
+			int size = node.getAttrInt("size");
 
 			if (position < 0 || size < 0 || (position + size) > parent.size)
 				throw new PeachException("Error, flag " + flag.name + " is placed outside its parent.");

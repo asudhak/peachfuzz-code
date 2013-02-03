@@ -249,16 +249,16 @@ namespace Peach.Core.Dom
 
 			var str = DataElement.Generate<String>(node);
 
-			if (node.hasAttribute("nullTerminated"))
-				str.nullTerminated = node.getAttributeBool("nullTerminated", false);
-			else if (context.hasDefaultAttribute(typeof(String), "nullTerminated"))
-				str.nullTerminated = context.getDefaultAttributeAsBool(typeof(String), "nullTerminated", false);
+			if (node.hasAttr("nullTerminated"))
+				str.nullTerminated = node.getAttrBool("nullTerminated");
+			else
+				str.nullTerminated = context.getDefaultAttr(typeof(String), "nullTerminated", str.nullTerminated);
 
 			string type = "ascii";
-			if (node.hasAttribute("type"))
-				type = node.getAttribute("type");
-			else if (context.hasDefaultAttribute(str.GetType(), "type"))
-				type = context.getDefaultAttribute(str.GetType(), "type");
+			if (node.hasAttr("type"))
+				type = node.getAttrString("type");
+			else
+				type = context.getDefaultAttr(typeof(String), "type", type);
 
 			StringType stringType;
 			if (!Enum.TryParse<StringType>(type, true, out stringType))
@@ -267,26 +267,22 @@ namespace Peach.Core.Dom
 			str.stringType = stringType;
 			str.encoding = Encoding.GetEncoding(stringType.ToString());
 
-			if (node.hasAttribute("padCharacter"))
-			{
-				str.padCharacter = node.getAttribute("padCharacter")[0];
-			}
-			else if (context.hasDefaultAttribute(str.GetType(), "padCharacter"))
-			{
-				str.padCharacter = context.getDefaultAttribute(str.GetType(), "padCharacter")[0];
-			}
+			if (node.hasAttr("padCharacter"))
+				str.padCharacter = node.getAttrChar("padCharacter");
+			else
+				str.padCharacter = context.getDefaultAttr(typeof(String), "padCharacter", str.padCharacter);
 
-			if (node.hasAttribute("tokens")) // This item has a default!
+			if (node.hasAttr("tokens")) // This item has a default!
 				throw new NotSupportedException("Tokens attribute is depricated in Peach 3.  Use parameter to StringToken analyzer isntead.");
 
-			if (node.hasAttribute("analyzer")) // this should be passed via a child element me things!
+			if (node.hasAttr("analyzer")) // this should be passed via a child element me things!
 				throw new NotSupportedException("Analyzer attribute is depricated in Peach 3.  Use a child element instead.");
 
 			context.handleCommonDataElementAttributes(node, str);
 			context.handleCommonDataElementValue(node, str);
 			context.handleCommonDataElementChildren(node, str);
 
-			if (!node.hasAttribute("value"))
+			if (!node.hasAttr("value"))
 				str.DefaultValue = new Variant("");
 
 			int test;

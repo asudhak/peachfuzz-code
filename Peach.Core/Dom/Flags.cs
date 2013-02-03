@@ -106,10 +106,11 @@ namespace Peach.Core.Dom
 
 			var flags = DataElement.Generate<Flags>(node);
 
-
-			string strSize = node.getAttribute("size");
+			string strSize = null;
+			if (node.hasAttr("size"))
+				strSize = node.getAttrString("size");
 			if (strSize == null)
-				strSize = context.getDefaultAttribute(typeof(Flags), "size");
+				strSize = context.getDefaultAttr(typeof(Flags), "size", null);
 			if (strSize == null)
 				throw new PeachException("Error, Flags elements must have 'size' attribute!");
 
@@ -123,9 +124,11 @@ namespace Peach.Core.Dom
 
 			flags.size = size;
 
-			string strEndian = node.getAttribute("endian");
+			string strEndian = null;
+			if (node.hasAttr("endian"))
+				strEndian = node.getAttrString("endian");
 			if (strEndian == null)
-				strEndian = context.getDefaultAttribute(typeof(Flags), "endian");
+				strEndian = context.getDefaultAttr(typeof(Flags), "endian", null);
 
 			if (strEndian != null)
 			{
