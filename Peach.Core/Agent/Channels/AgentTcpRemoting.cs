@@ -39,6 +39,7 @@ using Peach.Core;
 using Peach.Core.Dom;
 using NLog;
 using Peach.Core.Agent;
+using System.Net.Sockets;
 
 namespace Peach.Core.Agent.Channels
 {
@@ -81,7 +82,17 @@ namespace Peach.Core.Agent.Channels
 			ChannelServices.RegisterChannel(chan, false); // Disable security for speed
 			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), url);
 			if (proxy == null)
-				throw new ApplicationException("Error, unable to connect to remote agent " + url);
+				throw new PeachException("Error, unable to create proxy for remote agent '" + url + "'.");
+
+			try
+			{
+				// No messages are sent until a method is called on the proxy
+				proxy.VerifyChannel();
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Error, unable to connect to remote agent '" + url + "'.  " + ex.Message);
+			}
 		}
 
 		public override void AgentDisconnect()
@@ -183,6 +194,11 @@ namespace Peach.Core.Agent.Channels
 		public AgentServiceTcpRemote()
 		{
 			agent = new Agent("AgentServiceTcpRemote");
+		}
+
+		// Remote function used to verify channel is working
+		public void VerifyChannel()
+		{
 		}
 
 		public void AgentConnect(string password)

@@ -76,7 +76,7 @@ namespace Peach.Core.Agent
             }
         }
 
-		public virtual void AddAgent(Dom.Agent agentDef)
+		private void AddAgent(Dom.Agent agentDef)
 		{
 			Uri uri = new Uri(agentDef.url);
 			var type = ClassLoader.FindTypeByAttribute<AgentAttribute>((x, y) => y.protocol == uri.Scheme);
@@ -88,14 +88,23 @@ namespace Peach.Core.Agent
 			_agentDefinitions[agentDef.name] = agentDef;
 		}
 
-		public virtual void AgentConnect(string name)
+		private void AgentConnect(string name)
 		{
 			logger.Trace("AgentConnect: {0}", name);
 
 			Dom.Agent def = _agentDefinitions[name];
 			AgentClient agent = _agents[name];
 
-			agent.AgentConnect(def.name, def.url, def.password);
+			try
+			{
+				agent.AgentConnect(def.name, def.url, def.password);
+			}
+			catch
+			{
+				_agents.Remove(name);
+				_agentDefinitions.Remove(name);
+				throw;
+			}
 
 			foreach (Dom.Monitor mon in def.monitors)
 			{
