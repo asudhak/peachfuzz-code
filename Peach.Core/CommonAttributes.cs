@@ -4,6 +4,21 @@ using System.Text;
 
 namespace Peach.Core
 {
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+	public class InheritParameterAttribute : Attribute
+	{
+		public string parameter { get; private set; }
+
+		/// <summary>
+		/// Inherit parameters from a different plugin.
+		/// </summary>
+		/// <param name="parameter">The name of the parameter on the decorated object that contains the name of the object to inherit parameters from.</param>
+		public InheritParameterAttribute(string parameter)
+		{
+			this.parameter = parameter;
+		}
+	}
+
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class ParameterAttribute : Attribute
 	{

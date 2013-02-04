@@ -12,12 +12,13 @@ using NLog;
 namespace Peach.Core.Publishers
 {
 	[Publisher("Remote", true)]
-	[Parameter("agent", typeof(string), "Name of agent to host the publisher")]
-	[Parameter("class", typeof(string), "Publisher to host")]
+	[Parameter("Agent", typeof(string), "Name of agent to host the publisher")]
+	[Parameter("Class", typeof(string), "Publisher to host")]
+	[InheritParameter("Class")]
 	public class RemotePublisher : Publisher
 	{
-		public string _agent { get; set; }
-		public string _class { get; set; }
+		public string Agent { get; set; }
+		public string Class { get; set; }
 
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
