@@ -16,6 +16,8 @@ namespace Peach.Core.Test.Publishers
 
 	class SimpleHttpListener
 	{
+		bool stop = false;
+
 		public SimpleHttpListener()
 		{
 			Assert.True(HttpListener.IsSupported);
@@ -25,6 +27,7 @@ namespace Peach.Core.Test.Publishers
 
 		public void Stop()
 		{
+			this.stop = true;
 			listener.Stop();
 		}
 
@@ -44,12 +47,18 @@ namespace Peach.Core.Test.Publishers
 				listener.Prefixes.Add(s);
 			}
 			listener.Start();
-			while(true)
+
+			IAsyncResult ar = listener.BeginGetContext(null, null);
+
+			while(!stop)
 			{
 				try
 				{
+					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1)))
+						continue;
+
 					// Note: The GetContext method blocks while waiting for a request. 
-					HttpListenerContext context = listener.GetContext();
+					HttpListenerContext context = listener.EndGetContext(ar);
 					HttpListenerRequest request = context.Request;
 					// Obtain a response object.
 
@@ -71,6 +80,8 @@ namespace Peach.Core.Test.Publishers
 					// You must close the output stream.
 					output.Close();
 					response.Close();
+
+					ar = listener.BeginGetContext(null, null);
 				}
 				catch
 				{
