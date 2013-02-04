@@ -134,7 +134,7 @@ def ensure_version(self, tool, ver_exp):
 	if not m:
 		raise Errors.WafError("Could not verify version of %s" % (exe))
 	ver = m.group(1)
-	if ver != ver_exp:
+	if not ver.startswith(ver_exp):
 		raise Errors.WafError("Requires %s %s but found version %s" % (exe, ver_exp, ver))
 
 @feature('emit')
