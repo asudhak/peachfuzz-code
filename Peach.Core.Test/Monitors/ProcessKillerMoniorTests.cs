@@ -14,6 +14,22 @@ namespace Peach.Core.Test.Monitors
 	[TestFixture]
 	class ProcessKillerMonitorTests
 	{
+		SingleInstance si;
+
+		[SetUp]
+		public void SetUp()
+		{
+			si = SingleInstance.CreateInstance("Peach.Core.Test.Monitors.ProcessKillerMonitorTests");
+			si.Lock();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			si.Dispose();
+			si = null;
+		}
+
 		string MakeXml(string folder)
 		{
 			string template = @"
