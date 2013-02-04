@@ -109,6 +109,7 @@
   <ItemGroup>
     <Compile Include="Agent\AgentPlatformAttributeTests.cs" />
     <Compile Include="Agent\Monitors\PopupWatcherTest.cs" />
+    <Compile Include="Agent\Monitors\WindowsDebuggerHybridTest.cs" />
     <Compile Include="Debuggers\WinDbgTestscs.cs" />
     <Compile Include="Debuggers\WinSystemTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
