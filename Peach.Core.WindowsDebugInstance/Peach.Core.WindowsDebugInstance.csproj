@@ -32,7 +32,7 @@
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -42,7 +42,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -138,8 +138,10 @@
   <PropertyGroup>
     <PostBuildEvent>mkdir $(SolutionDir)Peach\$(OutDir)
 mkdir $(SolutionDir)PeachFuzzBang\$(OutDir)
-copy /y $(TargetPath) $(SolutionDir)Peach\$(OutDir)
-copy /y $(TargetPath) $(SolutionDir)PeachFuzzBang\$(OutDir)</PostBuildEvent>
+mkdir $(SolutionDir)Peach.Core.Test.OS.Windows\$(OutDir)
+copy /y $(TargetDir)$(TargetName)* $(SolutionDir)Peach\$(OutDir)
+copy /y $(TargetDir)$(TargetName)* $(SolutionDir)PeachFuzzBang\$(OutDir)
+copy /y $(TargetDir)$(TargetName)* $(SolutionDir)Peach.Core.Test.OS.Windows\$(OutDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
