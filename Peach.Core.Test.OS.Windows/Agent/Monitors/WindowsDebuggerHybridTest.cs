@@ -21,6 +21,12 @@ namespace Peach.Core.Test.Agent.Monitors
 		public void SetUp()
 		{
 			faults = null;
+
+			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+				Assert.Inconclusive("Cannot run the 32bit version of this test on a 64bit operating system.");
+
+			if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
+				Assert.Inconclusive("Cannot run the 64bit version of this test on a 32bit operating system.");
 		}
 
 		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)
