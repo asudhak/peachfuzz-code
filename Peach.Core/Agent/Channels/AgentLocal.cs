@@ -70,6 +70,11 @@ namespace Peach.Core.Agent.Channels
 			agent.AgentDisconnect();
 		}
 
+		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			return agent.CreatePublisher(cls, args);
+		}
+
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			agent.StartMonitor(name, cls, args);

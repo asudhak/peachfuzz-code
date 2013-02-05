@@ -104,6 +104,13 @@ namespace Peach.Core.Agent.Channels
 			proxy = null;
 		}
 
+		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+			OnCreatePublisherEvent(cls, args);
+			return proxy.CreatePublisher(cls, args);
+		}
+
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
@@ -211,6 +218,12 @@ namespace Peach.Core.Agent.Channels
 		{
 			logger.Trace("AgentDisconnect");
 			agent.AgentDisconnect();
+		}
+
+		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+			return agent.CreatePublisher(cls, args);
 		}
 
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)

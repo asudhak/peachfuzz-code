@@ -87,6 +87,11 @@ namespace Peach.Core.Agent.Channels
 			proxy = null;
 		}
 
+		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			return proxy.CreatePublisher(cls, args);
+		}
+
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			proxy.StartMonitor(name, cls, args);
@@ -168,6 +173,12 @@ namespace Peach.Core.Agent.Channels
 			agent.AgentDisconnect();
 		}
 
+		[XmlRpcMethod("CreatePublisher")]
+		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			return agent.CreatePublisher(cls, args);
+		}
+
 		[XmlRpcMethod("StartMonitor")]
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
@@ -247,6 +258,9 @@ namespace Peach.Core.Agent.Channels
 		void AgentConnect(string password);
 		[XmlRpcMethod("AgentDisconnect")]
 		void AgentDisconnect();
+
+		[XmlRpcMethod("CreatePublisher")]
+		Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
 
 		[XmlRpcMethod("StartMonitor")]
 		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);

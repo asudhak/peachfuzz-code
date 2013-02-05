@@ -43,6 +43,7 @@ namespace Peach.Core.Agent
 
 	public delegate void AgentConnectEventHandler(Agent agent);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
+	public delegate void CreatePublisherEventHandler(Agent agent, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StopMonitorEventHandler(Agent agent, string name);
 	public delegate void StopAllMonitorsEventHandler(Agent agent);
@@ -81,6 +82,13 @@ namespace Peach.Core.Agent
 		{
 			if (AgentDisconnectEvent != null)
 				AgentDisconnectEvent(this);
+		}
+
+		public event CreatePublisherEventHandler CreatePublisherEvent;
+		protected void OnCreatePublisherEvent(string cls, SerializableDictionary<string, Variant> args)
+		{
+			if (CreatePublisherEvent != null)
+				CreatePublisherEvent(this, cls, args);
 		}
 
 		public event StartMonitorEventHandler StartMonitorEvent;
@@ -190,6 +198,26 @@ namespace Peach.Core.Agent
 			OnAgentDisconnectEvent();
 			StopAllMonitors();
 			monitors.Clear();
+		}
+
+		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+			OnCreatePublisherEvent(cls, args);
+
+			var type = ClassLoader.FindTypeByAttribute<PublisherAttribute>((x, y) => y.Name == cls);
+			if (type == null)
+				throw new PeachException("Error, unable to locate Pubilsher '" + cls + "'");
+
+			try
+			{
+				var pub = Activator.CreateInstance(type, args) as Publisher;
+				return pub;
+			}
+			catch (TargetInvocationException ex)
+			{
+				throw new PeachException("Could not start publisher \"" + cls + "\".  " + ex.InnerException.Message, ex);
+			}
 		}
 
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
@@ -372,6 +400,7 @@ namespace Peach.Core.Agent
 	{
 		void AgentConnect(string password);
 		void AgentDisconnect();
+		Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
 		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
 		void StopMonitor(string name);
 		void StopAllMonitors();
