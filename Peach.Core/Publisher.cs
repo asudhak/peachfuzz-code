@@ -41,17 +41,6 @@ using System.Net;
 
 namespace Peach.Core
 {
-	public delegate void StartEventHandler(Publisher publisher, Action action);
-	public delegate void StopEventHandler(Publisher publisher, Action action);
-	public delegate void AcceptEventHandler(Publisher publisher, Action action);
-	public delegate void OpenEventHandler(Publisher publisher, Action action);
-	public delegate void CloseEventHandler(Publisher publisher, Action action);
-	public delegate void InputEventHandler(Publisher publisher, Action action);
-	public delegate void OutputEventHandler(Publisher publisher, Action action, Stream data);
-	public delegate void CallEventHandler(Publisher publisher, Action action, string method, List<ActionParameter> aregs);
-	public delegate void SetPropertyEventHandler(Publisher publisher, Action action, string property, Variant value);
-	public delegate void GetPropertyEventHandler(Publisher publisher, Action action, string property);
-
 	/// <summary>
 	/// Publishers are I/O interfaces for Peach.  They glue the actions
 	/// in a state model to the target interface.  Publishers can be 
@@ -67,57 +56,37 @@ namespace Peach.Core
 	{
 		protected abstract NLog.Logger Logger { get; }
 
+		/// <summary>
+		/// Gets a value that indicates whether the publisher has been started.
+		/// </summary>
+		protected bool HasStarted { get; set; }
+
+		/// <summary>
+		/// Gets a value that indicates whether the publisher has been opened.
+		/// </summary>
+		protected bool IsOpen { get; set; }
+
 		#region Properties
 
 		/// <summary>
 		/// The top level test object.
 		/// </summary>
-		public Test Test { get; set; }
+		public virtual Test Test { get; set; }
 
 		/// <summary>
 		/// Gets/sets the current fuzzing iteration.
 		/// </summary>
-		public uint Iteration { get; set; }
+		public virtual uint Iteration { get; set; }
 
 		/// <summary>
 		/// Gets/sets if the current iteration is a control iteration.
 		/// </summary>
-		public bool IsControlIteration { get; set; }
-
-		/// <summary>
-		/// Gets a value that indicates whether the publisher has been started.
-		/// </summary>
-		public bool HasStarted { get; private set; }
-
-		/// <summary>
-		/// Gets a value that indicates whether the publisher has been opened.
-		/// </summary>
-		public bool IsOpen { get; private set; }
-
-		/// <summary>
-		/// Gets the most recent action that called the publisher.
-		/// </summary>
-		public Action CurrentAction { get; private set; }
+		public virtual bool IsControlIteration { get; set; }
 
 		/// <summary>
 		/// Get the result value (if any).
 		/// </summary>
 		public virtual string Result { get; protected set; }
-
-		#endregion
-
-		#region Events
-
-		public static event StartEventHandler StartEvent;
-		public static event StopEventHandler StopEvent;
-		public static event AcceptEventHandler AcceptEvent;
-		public static event OpenEventHandler OpenEvent;
-		public static event CloseEventHandler CloseEvent;
-		public static event InputEventHandler InputEvent;
-		public static event OutputEventHandler OutputEvent;
-		public static event CallEventHandler CallEvent;
-		public static event SetPropertyEventHandler SetPropertyEvent;
-		public static event GetPropertyEventHandler GetPropertyEvent;
 
 		#endregion
 
@@ -230,18 +199,12 @@ namespace Peach.Core
 		/// even if not specifically called.  This method will be called
 		/// once per fuzzing "Session", not on every iteration.
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public void start(Action action)
+		public void start()
 		{
 			if (HasStarted)
 				return;
 
-			CurrentAction = action;
-
-			if (StartEvent != null)
-				StartEvent(this, CurrentAction);
-
-			Logger.Debug("start({0})", action.name);
+			Logger.Debug("start()");
 			OnStart();
 
 			HasStarted = true;
@@ -252,18 +215,12 @@ namespace Peach.Core
 		/// even if not specifically called.  This method will be called
 		/// once per fuzzing "Session", not on every iteration.
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public void stop(Action action)
+		public void stop()
 		{
 			if (!HasStarted)
 				return;
 
-			CurrentAction = action;
-
-			if (StopEvent != null)
-				StopEvent(this, CurrentAction);
-
-			Logger.Debug("stop({0})", action == null ? "<null>" : action.name);
+			Logger.Debug("stop()");
 			OnStop();
 
 			HasStarted = false;
@@ -272,15 +229,9 @@ namespace Peach.Core
 		/// <summary>
 		/// Accept an incoming connection.
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public void accept(Action action)
+		public void accept()
 		{
-			CurrentAction = action;
-
-			if (AcceptEvent != null)
-				AcceptEvent(this, CurrentAction);
-
-			Logger.Debug("accept({0})", action.name);
+			Logger.Debug("accept()");
 			OnAccept();
 		}
 
@@ -288,18 +239,12 @@ namespace Peach.Core
 		/// Open or connect to a resource.  Will be called
 		/// automatically if not called specifically.
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public void open(Action action)
+		public void open()
 		{
 			if (IsOpen)
 				return;
 
-			CurrentAction = action;
-
-			if (OpenEvent != null)
-				OpenEvent(this, CurrentAction);
-
-			Logger.Debug("open({0})", action.name);
+			Logger.Debug("open()");
 			OnOpen();
 
 			IsOpen = true;
@@ -310,18 +255,12 @@ namespace Peach.Core
 		/// state model exists.  Can also be called explicitly when
 		/// needed.
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
-		public void close(Action action)
+		public void close()
 		{
 			if (!IsOpen)
 				return;
 
-			CurrentAction = action;
-
-			if (CloseEvent != null)
-				CloseEvent(this, CurrentAction);
-
-			Logger.Debug("close({0})", action == null ? "<null>" : action.name);
+			Logger.Debug("close()");
 			OnClose();
 
 			IsOpen = false;
@@ -330,68 +269,44 @@ namespace Peach.Core
 		/// <summary>
 		/// Call a method on the Publishers resource
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
 		/// <param name="method">Name of method to call</param>
 		/// <param name="args">Arguments to pass</param>
 		/// <returns>Returns resulting data</returns>
-		public Variant call(Action action, string method, List<ActionParameter> args)
+		public Variant call(string method, List<ActionParameter> args)
 		{
-			CurrentAction = action;
-
-			if (CallEvent != null)
-				CallEvent(this, CurrentAction, method, args);
-
-			Logger.Debug("call({0}, {1}, {2})", action.name, method, args);
+			Logger.Debug("call({0}, {1})", method, args);
 			return OnCall(method, args);
 		}
 
 		/// <summary>
 		/// Set a property on the Publishers resource.
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
 		/// <param name="property">Name of property to set</param>
 		/// <param name="value">Value to set on property</param>
-		public void setProperty(Action action, string property, Variant value)
+		public void setProperty(string property, Variant value)
 		{
-			CurrentAction = action;
-
-			if (SetPropertyEvent != null)
-				SetPropertyEvent(this, CurrentAction, property, value);
-
-			Logger.Debug("setProperty({0}, {1}, {2})", action.name, property, value);
+			Logger.Debug("setProperty({0}, {1})", property, value);
 			OnSetProperty(property, value);
 		}
 
 		/// <summary>
 		/// Get value of a property exposed by Publishers resource
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
 		/// <param name="property">Name of property</param>
 		/// <returns>Returns value of property</returns>
-		public Variant getProperty(Action action, string property)
+		public Variant getProperty(string property)
 		{
-			CurrentAction = action;
-
-			if (GetPropertyEvent != null)
-				GetPropertyEvent(this, CurrentAction, property);
-
-			Logger.Debug("getProperty({0}, {1})", action.name, property);
+			Logger.Debug("getProperty({0})", property);
 			return OnGetProperty(property);
 		}
 
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
 		/// <param name="data">Data to send/write</param>
-		public void output(Action action, Stream data)
+		public void output(Stream data)
 		{
-			CurrentAction = action;
-
-			if (OutputEvent != null)
-				OutputEvent(this, CurrentAction, data);
-
-			Logger.Debug("output({0}, {1} bytes)", action.name, data.Length);
+			Logger.Debug("output({0} bytes)", data.Length);
 
 			var pos = data.Position;
 			data.Seek(0, SeekOrigin.Begin);
@@ -402,16 +317,10 @@ namespace Peach.Core
 		/// <summary>
 		/// Read data
 		/// </summary>
-		/// <param name="action">Action calling publisher</param>
 		/// <param name="data">Minimum length of data to read</param>
-		public void input(Action action)
+		public void input()
 		{
-			CurrentAction = action;
-
-			if (InputEvent != null)
-				InputEvent(this, CurrentAction);
-
-			Logger.Debug("input({0})", action.name);
+			Logger.Debug("input()");
 			OnInput();
 		}
 

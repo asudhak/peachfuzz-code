@@ -287,7 +287,7 @@ namespace Peach.Core.Dom
 			finally
 			{
 				foreach (Publisher publisher in context.test.publishers.Values)
-					publisher.close(null);
+					publisher.close();
 
 				OnFinished();
 			}

@@ -616,7 +616,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 				{
 					try
 					{
-						publisher.stop(null);
+						publisher.stop();
 					}
 					catch
 					{

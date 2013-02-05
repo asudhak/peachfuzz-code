@@ -47,28 +47,23 @@ namespace Peach.Core.Publishers
 		protected override void OnStart()
 		{
 			_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
-			_publisher.start(this.CurrentAction);
 		}
 
 		protected override void OnStop()
 		{
-			_publisher.stop(this.CurrentAction);
 			_publisher = null;
 		}
 
 		protected override void OnOpen()
 		{
-			_publisher.open(this.CurrentAction);
 		}
 
 		protected override void OnClose()
 		{
-			_publisher.close(this.CurrentAction);
 		}
 
 		protected override void OnOutput(Stream data)
 		{
-			_publisher.output(this.CurrentAction, data);
 		}
 	}
 }
