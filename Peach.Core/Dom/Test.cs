@@ -90,9 +90,7 @@ namespace Peach.Core.Dom
 
 		public Test()
 		{
-			//loggers.AddEvent += new AddEventHandler<string, Logger>(loggers_AddEvent);
-			//publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
-			//agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
+			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
 
 			waitTime = 0;
 			faultWaitTime = 2;
@@ -100,20 +98,10 @@ namespace Peach.Core.Dom
 
 		#region OrderedDictionary AddEvent Handlers
 
-		//void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
-		//{
-		//    value.parent = this;
-		//}
-
-		//void publishers_AddEvent(OrderedDictionary<string, Publisher> sender, string key, Publisher value)
-		//{
-		//    value.parent = this;
-		//}
-
-		//void loggers_AddEvent(OrderedDictionary<string, Logger> sender, string key, Logger value)
-		//{
-		//    value.parent = this;
-		//}
+		void publishers_AddEvent(OrderedDictionary<string, Publisher> sender, string key, Publisher value)
+		{
+			value.Test = this;
+		}
 
 		#endregion
 

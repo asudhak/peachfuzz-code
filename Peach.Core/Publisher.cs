@@ -70,6 +70,11 @@ namespace Peach.Core
 		#region Properties
 
 		/// <summary>
+		/// The top level test object.
+		/// </summary>
+		public Test Test { get; set; }
+
+		/// <summary>
 		/// Gets/sets the current fuzzing iteration.
 		/// </summary>
 		public uint Iteration { get; set; }
