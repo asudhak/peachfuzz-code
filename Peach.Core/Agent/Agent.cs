@@ -211,7 +211,11 @@ namespace Peach.Core.Agent
 
 			try
 			{
-				var pub = Activator.CreateInstance(type, args) as Publisher;
+				Dictionary<string, Variant> copy = new Dictionary<string, Variant>();
+				foreach (var kv in args)
+					copy.Add(kv.Key, kv.Value);
+
+				var pub = Activator.CreateInstance(type, copy) as Publisher;
 				return pub;
 			}
 			catch (TargetInvocationException ex)
