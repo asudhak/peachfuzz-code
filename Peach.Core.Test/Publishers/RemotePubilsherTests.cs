@@ -27,10 +27,11 @@ namespace Peach.Core.Test.Publishers
 		</State>
 	</StateModel>
 
-	<Agent name=""LocalAgent""> 
+	<Agent name=""LocalAgent"">
 	</Agent>
 
 	<Test name=""Default"">
+		<Agent ref=""LocalAgent""/>
 		<StateModel ref=""TheStateModel""/>
 		<Publisher class=""Remote"">
 			<Param name=""Agent"" value=""LocalAgent""/>
@@ -47,6 +48,28 @@ namespace Peach.Core.Test.Publishers
 
 			PitParser parser = new PitParser();
 			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test]
+		public void TestRun()
+		{
+			string tempFile = Path.GetTempFileName();
+
+			string xml = string.Format(template, tempFile);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			string[] output = File.ReadAllLines(tempFile);
+
+			Assert.AreEqual(1, output.Length);
+			Assert.AreEqual("Hello", output[0]);
 		}
 	}
 }
