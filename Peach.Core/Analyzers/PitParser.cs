@@ -1609,7 +1609,7 @@ namespace Peach.Core.Analyzers
 
 				var otherType = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == otherClass);
 				if (otherType == null)
-					throw new PeachException(string.Format("Error, unable to locate {0} named '{1}', FindTypeByAttribute returned null.", pluginType, otherType));
+					return;
 
 				var otherParams = otherType.GetAttributes<ParameterAttribute>(null);
 				objParams = otherParams.Concat(objParams);
