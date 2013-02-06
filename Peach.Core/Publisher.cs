@@ -318,6 +318,12 @@ namespace Peach.Core
 			return OnGetProperty(property);
 		}
 
+		public void output(byte[] buffer, int offset, int count)
+		{
+			MemoryStream ms = new MemoryStream(buffer, offset, count);
+			output(ms);
+		}
+
 		/// <summary>
 		/// Send data
 		/// </summary>
