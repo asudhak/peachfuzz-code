@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import os.path
+import os.path, re
+from optparse import OptionValueError
 from waflib.TaskGen import feature, after_method, before_method
 from waflib.Build import InstallContext
 from waflib import Utils, Logs, Configure, Context, Options, Errors
@@ -20,6 +21,10 @@ class TestContext(InstallContext):
 		super(TestContext, self).__init__(**kw)
 		self.is_test = True
 
+def store_version(option, opt, value, parser):
+	if not re.match('^\d+\.\d+\.\d+(\.\d+)?$', value):
+		raise OptionValueError('%s option is not valid - must be <int>.<int>.<int>' % opt)
+	setattr(parser.values, option.dest, value)
 
 def options(opt):
 	opt.add_option('--variant',
@@ -27,9 +32,10 @@ def options(opt):
 	               default = None,
 	               help = 'Specifies the variant to build against')
 	opt.add_option('--buildtag',
-	               action = 'store',
-	               type = 'int',
-	               default = 0,
+	               action = 'callback',
+	               callback = store_version,
+	               type = 'string',
+	               default = '0.0.0',
 	               help = 'Specifies the buildtag to embed in the binaries')
 
 

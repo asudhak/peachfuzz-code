@@ -20,7 +20,7 @@ class PkgContext(InstallContext):
 
 	def archive(self):
 		env = self.env
-		version = '%s.%s' % (env.VER_VERSION, env.BUILDTAG)
+		version = '%s' % (env.BUILDTAG)
 		args = [ env.APPNAME, version, env.TARGET ]
 		if env.SUBARCH: args.append(env.SUBARCH)
 		if env.VARIANT: args.append(env.VARIANT)
