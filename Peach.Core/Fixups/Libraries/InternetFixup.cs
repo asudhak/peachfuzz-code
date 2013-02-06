@@ -10,20 +10,20 @@ namespace Peach.Core.Fixups.Libraries
 	/// <summary>
 	/// Computes the checksum in Host order for an array of bytes
 	/// </summary>
-	class InternetChecksum
+	public class InternetChecksum
 	{
-		private uint sum = 0;
+		protected uint sum = 0;
 
 		public InternetChecksum()
 		{
 		}
 
-		public void Update(uint value)
+		public virtual void Update(uint value)
 		{
 			sum += value;
 		}
 
-		public void Update(byte[] buf)
+		public virtual void Update(byte[] buf)
 		{
 			int i = 0;
 			for (; i < buf.Length - 1; i += 2)
@@ -33,7 +33,7 @@ namespace Peach.Core.Fixups.Libraries
 				sum += (uint)(buf[buf.Length - 1] << 8);
 		}
 
-		public ushort Final()
+		public virtual ushort Final()
 		{
 			sum = (sum >> 16) + (sum & 0xffff);
 			sum += (sum >> 16);
