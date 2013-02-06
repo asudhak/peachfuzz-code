@@ -56,37 +56,55 @@ namespace Peach.Core
 	{
 		protected abstract NLog.Logger Logger { get; }
 
-		/// <summary>
-		/// Gets a value that indicates whether the publisher has been started.
-		/// </summary>
-		protected bool HasStarted { get; set; }
+		#region Private Members
 
-		/// <summary>
-		/// Gets a value that indicates whether the publisher has been opened.
-		/// </summary>
-		protected bool IsOpen { get; set; }
+		[NonSerialized]
+		private Test _test;
+		private bool _hasStarted;
+		private bool _isOpen;
+		private uint _iteration;
+		private bool _isControlIteration;
+		private string _result;
+
+		#endregion
 
 		#region Properties
 
 		/// <summary>
 		/// The top level test object.
 		/// </summary>
-		public virtual Test Test { get; set; }
+		public virtual Test Test
+		{
+			get { return _test; }
+			set { _test = value; }
+		}
 
 		/// <summary>
 		/// Gets/sets the current fuzzing iteration.
 		/// </summary>
-		public virtual uint Iteration { get; set; }
+		public virtual uint Iteration
+		{
+			get { return _iteration; }
+			set { _iteration = value; }
+		}
 
 		/// <summary>
 		/// Gets/sets if the current iteration is a control iteration.
 		/// </summary>
-		public virtual bool IsControlIteration { get; set; }
+		public virtual bool IsControlIteration
+		{
+			get { return _isControlIteration; }
+			set { _isControlIteration = value; }
+		}
 
 		/// <summary>
 		/// Get the result value (if any).
 		/// </summary>
-		public virtual string Result { get; protected set; }
+		public virtual string Result
+		{
+			get { return _result; }
+			set { _result = value; }
+		}
 
 		#endregion
 
@@ -201,13 +219,13 @@ namespace Peach.Core
 		/// </summary>
 		public void start()
 		{
-			if (HasStarted)
+			if (_hasStarted)
 				return;
 
 			Logger.Debug("start()");
 			OnStart();
 
-			HasStarted = true;
+			_hasStarted = true;
 		}
 
 		/// <summary>
@@ -217,13 +235,13 @@ namespace Peach.Core
 		/// </summary>
 		public void stop()
 		{
-			if (!HasStarted)
+			if (!_hasStarted)
 				return;
 
 			Logger.Debug("stop()");
 			OnStop();
 
-			HasStarted = false;
+			_hasStarted = false;
 		}
 
 		/// <summary>
@@ -241,13 +259,13 @@ namespace Peach.Core
 		/// </summary>
 		public void open()
 		{
-			if (IsOpen)
+			if (_isOpen)
 				return;
 
 			Logger.Debug("open()");
 			OnOpen();
 
-			IsOpen = true;
+			_isOpen = true;
 		}
 
 		/// <summary>
@@ -257,13 +275,13 @@ namespace Peach.Core
 		/// </summary>
 		public void close()
 		{
-			if (!IsOpen)
+			if (!_isOpen)
 				return;
 
 			Logger.Debug("close()");
 			OnClose();
 
-			IsOpen = false;
+			_isOpen = false;
 		}
 
 		/// <summary>
