@@ -15,7 +15,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Agent", typeof(string), "Name of agent to host the publisher")]
 	[Parameter("Class", typeof(string), "Publisher to host")]
 	[InheritParameter("Class")]
-	public class RemotePublisher : Publisher
+	public class RemotePublisher : StreamPublisher
 	{
 		public string Agent { get; protected set; }
 		public string Class { get; protected set; }
@@ -33,6 +33,8 @@ namespace Peach.Core.Publishers
 
 			foreach (var kv in args)
 				this.Args.Add(kv.Key, kv.Value);
+
+			stream = new MemoryStream();
 		}
 
 		protected RunContext Context
@@ -144,62 +146,38 @@ namespace Peach.Core.Publishers
 		protected override void OnInput()
 		{
 			_publisher.input();
+
+			stream.Seek(0, SeekOrigin.Begin);
+			stream.SetLength(0);
+
+			ReadAllBytes();
 		}
 
 		public override void WantBytes(long count)
 		{
-			_publisher.WantBytes(count);
+			long need = count - (stream.Length - stream.Position);
+			if (need > 0)
+			{
+				_publisher.WantBytes(need);
+				ReadAllBytes();
+			}
 		}
 
-		public override bool CanRead
+		private void ReadAllBytes()
 		{
-			get { return _publisher.CanRead; }
-		}
+			long pos = stream.Position;
 
-		public override bool CanSeek
-		{
-			get { return _publisher.CanSeek; }
-		}
+			for (;;)
+			{
+				int b = _publisher.ReadByte();
+				if (b == -1)
+				{
+					stream.Seek(pos, SeekOrigin.Begin);
+					return;
+				}
 
-		public override bool CanWrite
-		{
-			get { return _publisher.CanWrite; }
-		}
-
-		public override void Flush()
-		{
-			_publisher.Flush();
-		}
-
-		public override long Length
-		{
-			get { throw new NotImplementedException(); }
-		}
-
-		public override long Position
-		{
-			get { return _publisher.Position; }
-			set { _publisher.Position = value; }
-		}
-
-		public override int Read(byte[] buffer, int offset, int count)
-		{
-			return _publisher.Read(buffer, offset, count);
-		}
-
-		public override long Seek(long offset, SeekOrigin origin)
-		{
-			return _publisher.Seek(offset, origin);
-		}
-
-		public override void SetLength(long value)
-		{
-			_publisher.SetLength(value);
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			_publisher.Write(buffer, offset, count);
+				stream.WriteByte((byte)b);
+			}
 		}
 	}
 }
