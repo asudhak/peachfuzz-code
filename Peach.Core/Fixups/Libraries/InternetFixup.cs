@@ -10,9 +10,9 @@ namespace Peach.Core.Fixups.Libraries
 	/// <summary>
 	/// Computes the checksum in Host order for an array of bytes
 	/// </summary>
-	class InternetChecksum
+	public class InternetChecksum
 	{
-		private uint sum = 0;
+		protected uint sum = 0;
 
 		public InternetChecksum()
 		{
