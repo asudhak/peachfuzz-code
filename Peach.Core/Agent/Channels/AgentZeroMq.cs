@@ -116,7 +116,7 @@ namespace Peach.Core.Agent.Channels
 		{
 			logger.Trace("CreatePublisher: {0}", cls);
 			OnCreatePublisherEvent(cls, args);
-			return (Publisher)Send("CreatePublisher", args, cls).Arguments[0];
+			throw new NotImplementedException();
 		}
 
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
@@ -277,8 +277,7 @@ namespace Peach.Core.Agent.Channels
 
 		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
 		{
-			logger.Trace("CreatePublisher: {0}", cls);
-			return agent.CreatePublisher(cls, args);
+			throw new NotImplementedException();
 		}
 
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)

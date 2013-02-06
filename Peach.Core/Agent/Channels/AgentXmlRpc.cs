@@ -89,7 +89,7 @@ namespace Peach.Core.Agent.Channels
 
 		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
 		{
-			return proxy.CreatePublisher(cls, args);
+			throw new NotImplementedException();
 		}
 
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
@@ -176,7 +176,7 @@ namespace Peach.Core.Agent.Channels
 		[XmlRpcMethod("CreatePublisher")]
 		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
 		{
-			return agent.CreatePublisher(cls, args);
+			throw new NotImplementedException();
 		}
 
 		[XmlRpcMethod("StartMonitor")]
