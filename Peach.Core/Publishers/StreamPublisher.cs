@@ -21,9 +21,9 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			data.CopyTo(this);
+			stream.Write(buffer, offset, count);
 		}
 
 		#region Stream

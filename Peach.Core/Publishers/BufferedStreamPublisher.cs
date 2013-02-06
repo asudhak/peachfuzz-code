@@ -204,15 +204,18 @@ namespace Peach.Core.Publishers
 			WantBytes(1);
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			try
+			lock (_clientLock)
 			{
-				data.CopyTo(this);
-			}
-			catch (Exception ex)
-			{
-				Logger.Error("output: Ignoring error during send.  " + ex.Message);
+				try
+				{
+					_client.Write(buffer, offset, count);
+				}
+				catch (Exception ex)
+				{
+					Logger.Error("output: Ignoring error during send.  " + ex.Message);
+				}
 			}
 		}
 

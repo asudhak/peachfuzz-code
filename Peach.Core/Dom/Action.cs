@@ -477,7 +477,7 @@ namespace Peach.Core.Dom
 					case ActionType.Output:
 						publisher.start();
 						publisher.open();
-						publisher.output(dataModel.Value.Stream);
+						handleOutput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 
@@ -536,6 +536,23 @@ namespace Peach.Core.Dom
 			{
 				throw new SoftException(ex);
 			}
+		}
+
+		protected void handleOutput(Publisher publisher)
+		{
+			Stream strm = dataModel.Value.Stream;
+			strm.Seek(0, SeekOrigin.Begin);
+
+			MemoryStream ms = strm as MemoryStream;
+			if (ms == null)
+			{
+				ms = new MemoryStream();
+				strm.CopyTo(ms);
+				ms.Seek(0, SeekOrigin.Begin);
+				strm.Seek(0, SeekOrigin.Begin);
+			}
+
+			publisher.output(ms.GetBuffer(), (int)ms.Position, (int)ms.Length);
 		}
 
 		protected void handleCall(Publisher publisher, RunContext context)

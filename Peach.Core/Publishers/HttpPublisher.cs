@@ -108,7 +108,7 @@ namespace Peach.Core.Publishers
 		protected override void OnInput()
 		{
 			if (Response == null)
-				CreateClient(null);
+				CreateClient(null, 0, 0);
 
 			base.OnInput();
 		}
@@ -117,7 +117,7 @@ namespace Peach.Core.Publishers
 		/// Send data
 		/// </summary>
 		/// <param name="data">Data to send/write</param>
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
 			lock (_clientLock)
 			{
@@ -125,10 +125,10 @@ namespace Peach.Core.Publishers
 					CloseClient();
 			}
 
-			CreateClient(data);
+			CreateClient(buffer, offset, count);
 		}
 
-		private void CreateClient(Stream data)
+		private void CreateClient(byte[] buffer, int offset, int count)
 		{
 			if (Response != null)
 			{
@@ -153,14 +153,13 @@ namespace Peach.Core.Publishers
 			foreach (var header in Headers.Keys)
 				request.Headers[header] = Headers[header];
 
-			if (data != null)
+			if (buffer != null)
 			{
 				try
 				{
 					using (var sout = request.GetRequestStream())
 					{
-						data.Position = 0;
-						data.CopyTo(sout);
+						sout.Write(buffer, offset, count);
 					}
 				}
 				catch (ProtocolViolationException ex)

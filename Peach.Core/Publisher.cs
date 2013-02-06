@@ -185,8 +185,8 @@ namespace Peach.Core
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="data">Data to send/write</param>
-		protected virtual void OnOutput(Stream data)
+		/// <param name="buffer">Data to send/write</param>
+		protected virtual void OnOutput(byte[] buffer, int offset, int count)
 		{
 			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
@@ -318,24 +318,14 @@ namespace Peach.Core
 			return OnGetProperty(property);
 		}
 
-		public void output(byte[] buffer, int offset, int count)
-		{
-			MemoryStream ms = new MemoryStream(buffer, offset, count);
-			output(ms);
-		}
-
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="data">Data to send/write</param>
-		public void output(Stream data)
+		/// <param name="buffer">Array of sata to send/write</param>
+		public void output(byte[] buffer, int offset, int count)
 		{
-			Logger.Debug("output({0} bytes)", data.Length);
-
-			var pos = data.Position;
-			data.Seek(0, SeekOrigin.Begin);
-			OnOutput(data);
-			data.Seek(pos, SeekOrigin.Begin);
+			Logger.Debug("output({0} bytes)", count);
+			OnOutput(buffer, offset, count);
 		}
 
 		/// <summary>

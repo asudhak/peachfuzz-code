@@ -136,11 +136,9 @@ namespace Peach.Core.Publishers
 			return _publisher.getProperty(property);
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			byte[] buffer = new byte[data.Length];
-			data.Read(buffer, 0, buffer.Length);
-			_publisher.output(buffer, 0, buffer.Length);
+			_publisher.output(buffer, offset, count);
 		}
 
 		protected override void OnInput()
