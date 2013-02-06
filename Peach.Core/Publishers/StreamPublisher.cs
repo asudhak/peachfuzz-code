@@ -44,14 +44,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override bool CanWrite
-		{
-			get
-			{
-				return stream.CanWrite;
-			}
-		}
-
 		public override void Flush()
 		{
 			stream.Flush();
@@ -90,11 +82,6 @@ namespace Peach.Core.Publishers
 		public override void SetLength(long value)
 		{
 			stream.SetLength(value);
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			stream.Write(buffer, offset, count);
 		}
 
 		#endregion

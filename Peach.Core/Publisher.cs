@@ -363,53 +363,53 @@ namespace Peach.Core
 
 		public override bool CanRead
 		{
-			get { throw new NotImplementedException(); }
+			get { return false; }
 		}
 
 		public override bool CanSeek
 		{
-			get { throw new NotImplementedException(); }
+			get { return false; }
 		}
 
 		public override bool CanWrite
 		{
-			get { throw new NotImplementedException(); }
+			get { return false; }
 		}
 
 		public override void Flush()
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		public override long Length
 		{
-			get { throw new NotImplementedException(); }
+			get { throw new NotSupportedException(); }
 		}
 
 		public override long Position
 		{
-			get { throw new NotImplementedException(); }
-			set { throw new NotImplementedException(); }
+			get { throw new NotSupportedException(); }
+			set { throw new NotSupportedException(); }
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		public override long Seek(long offset, SeekOrigin origin)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		public override void SetLength(long value)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		#endregion

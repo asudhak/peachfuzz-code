@@ -270,17 +270,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		public override bool CanWrite
-		{
-			get
-			{
-				lock (_clientLock)
-				{
-					return _client != null && _client.CanWrite;
-				}
-			}
-		}
-
 		public override void Flush()
 		{
 			lock (_clientLock)
@@ -342,17 +331,6 @@ namespace Peach.Core.Publishers
 			lock (_bufferLock)
 			{
 				_buffer.SetLength(value);
-			}
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			lock (_clientLock)
-			{
-				if (_client == null)
-					throw new NotSupportedException();
-
-				_client.Write(buffer, offset, count);
 			}
 		}
 
