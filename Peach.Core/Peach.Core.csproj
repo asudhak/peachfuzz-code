@@ -419,6 +419,7 @@
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
     <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
     <Compile Include="Agent\Monitors\SocketMonitor.cs" />
+    <Compile Include="Agent\Monitors\SshDownloaderMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />
     <Compile Include="Agent\Monitors\VmwareMonitor.cs" />
     <Compile Include="Analysis\Coverage.cs" />
