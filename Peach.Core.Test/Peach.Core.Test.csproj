@@ -247,7 +247,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Agent\RemoteAgentTests.cs" />
     <Compile Include="Analyzers\BinaryAnalyzerTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="Analyzers\XmlAnalyzerTests.cs" />
@@ -424,6 +423,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+		<Folder Include="Agent\" />
     <Folder Include="Debuggers\" />
   </ItemGroup>
   <ItemGroup>
