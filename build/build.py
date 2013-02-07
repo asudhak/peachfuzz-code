@@ -130,7 +130,7 @@ def configure(ctx):
 
 
 def build(bld):
-	subdirs = [ str(x.parent) for x in bld.path.ant_glob('*/wscript_build', maxdepth=1) ]
+	subdirs = [ x.parent.nice_path() for x in bld.path.ant_glob('**/wscript_build', maxdepth=1 ) ]
 	what = Options.options.variant or ''
 	variants = what.split(',')
 
