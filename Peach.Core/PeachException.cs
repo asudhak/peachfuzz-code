@@ -60,17 +60,28 @@ namespace Peach.Core
 	/// Thrown to cause the Peach Engine to re-run
 	/// the same test iteration.
 	/// </summary>
+	[Serializable]
 	public class RedoIterationException : ApplicationException
 	{
+		protected RedoIterationException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+		{
+		}
 	}
 
 	/// <summary>
 	/// Thrown to stop current iteration and move to next.
 	/// </summary>
+	[Serializable]
 	public class SoftException : ApplicationException
 	{
 		public SoftException(Exception innerException)
 			: base(innerException.Message, innerException)
+		{
+		}
+
+		protected SoftException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
 		{
 		}
 	}
@@ -79,8 +90,13 @@ namespace Peach.Core
 	/// Similar to SoftException but used by state model
 	/// path code.
 	/// </summary>
+	[Serializable]
 	public class PathException : ApplicationException
 	{
+		protected PathException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+		{
+		}
 	}
 }
 

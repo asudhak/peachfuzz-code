@@ -244,11 +244,11 @@ namespace Peach.Core.Publishers
 			throw new PeachException(_type + " publisher could not open raw socket.");
 		}
 
-		protected virtual void FilterInput(MemoryStream ms)
+		protected virtual void FilterInput(byte[] buffer, int offset, int count)
 		{
 		}
 
-		protected virtual void FilterOutput(MemoryStream ms)
+		protected virtual void FilterOutput(byte[] buffer, int offset, int count)
 		{
 		}
 
@@ -391,7 +391,7 @@ namespace Peach.Core.Publishers
 					}
 					else
 					{
-						FilterInput(_recvBuffer);
+						FilterInput(buf, offset, rxLen);
 
 						if (Logger.IsDebugEnabled)
 							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
@@ -424,23 +424,11 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buf, int offset, int count)
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 
-			var stream = data as MemoryStream;
-			if (stream == null)
-			{
-				stream = _sendBuffer;
-				stream.Seek(0, SeekOrigin.Begin);
-				stream.SetLength(0);
-				data.CopyTo(stream);
-				stream.Seek(0, SeekOrigin.Begin);
-			}
-
-			byte[] buf = stream.GetBuffer();
-			int offset = (int)stream.Position;
-			int size = (int)stream.Length;
+			int size = count;
 
 			if (size > MaxSendSize)
 			{
@@ -449,9 +437,9 @@ namespace Peach.Core.Publishers
 			}
 
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(stream));
+				Logger.Debug("\n\n" + Utilities.HexDump(buf, offset, count));
 
-			FilterOutput(stream);
+			FilterOutput(buf, offset, count);
 
 			try
 			{
@@ -460,8 +448,8 @@ namespace Peach.Core.Publishers
 					throw new TimeoutException();
 				var txLen = _socket.EndSendTo(ar);
 
-				if (data.Length != txLen)
-					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, data.Length));
+				if (count != txLen)
+					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, count));
 			}
 			catch (Exception ex)
 			{

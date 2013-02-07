@@ -368,14 +368,11 @@ namespace Peach.Core
 		// Slightly tweaked from:
 		// http://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
 		private delegate void HexOutputFunc(char[] line);
+		private delegate int HexInputFunc(byte[] buf, int max);
 
-		private static void HexDump(Stream data, HexOutputFunc output, int bytesPerLine = 16)
+		private static void HexDump(HexInputFunc input, HexOutputFunc output, int bytesPerLine = 16)
 		{
-			System.Diagnostics.Debug.Assert(data != null);
-			long pos = data.Position;
-			long bytesLength = data.Length - pos;
 			byte[] bytes = new byte[bytesPerLine];
-
 			char[] HexChars = "0123456789ABCDEF".ToCharArray();
 
 			int firstHexColumn =
@@ -393,8 +390,12 @@ namespace Peach.Core
 
 			char[] line = (new System.String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
 
-			for (int i = 0; i < bytesLength; i += bytesPerLine)
+			for (int i = 0; ; i += bytesPerLine)
 			{
+				int readLen = input(bytes, bytesPerLine);
+				if (readLen == 0)
+					break;
+
 				line[0] = HexChars[(i >> 28) & 0xF];
 				line[1] = HexChars[(i >> 24) & 0xF];
 				line[2] = HexChars[(i >> 20) & 0xF];
@@ -406,8 +407,6 @@ namespace Peach.Core
 
 				int hexColumn = firstHexColumn;
 				int charColumn = firstCharColumn;
-
-				int readLen = data.Read(bytes, 0, bytesPerLine);
 
 				for (int j = 0; j < bytesPerLine; j++)
 				{
@@ -432,25 +431,88 @@ namespace Peach.Core
 				output(line);
 			}
 
-			data.Seek(pos, SeekOrigin.Begin);
 		}
 
-		public static void HexDump(Stream data, Stream output, int bytesPerLine = 16)
+		public static void HexDump(Stream input, Stream output, int bytesPerLine = 16)
 		{
-			HexOutputFunc func = delegate(char[] line)
+			long pos = input.Position;
+			input.Seek(0, SeekOrigin.Begin);
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				return input.Read(buf, 0, max);
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
 			{
 				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
 				output.Write(buf, 0, buf.Length);
 			};
 
-			HexDump(data, func, bytesPerLine);
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			input.Seek(pos, SeekOrigin.Begin);
 		}
 
-		public static string HexDump(Stream data, int bytesPerLine = 16)
+		public static void HexDump(byte[] buffer, int offset, int count, Stream output, int bytesPerLine = 16)
+		{
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				int len = Math.Min(count, max);
+				Buffer.BlockCopy(buffer, offset, buf, 0, len);
+				offset += len;
+				count -= len;
+				return len;
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
+				output.Write(buf, 0, buf.Length);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+		}
+
+		public static string HexDump(Stream input, int bytesPerLine = 16)
 		{
 			StringBuilder sb = new StringBuilder();
-			HexOutputFunc func = delegate(char[] line) { sb.Append(line); };
-			HexDump(data, func, bytesPerLine);
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				return input.Read(buf, 0, max);
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				sb.Append(line);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			return sb.ToString();
+		}
+
+		public static string HexDump(byte[] buffer, int offset, int count, int bytesPerLine = 16)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				int len = Math.Min(count, max);
+				Buffer.BlockCopy(buffer, offset, buf, 0, len);
+				offset += len;
+				count -= len;
+				return len;
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				sb.Append(line);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
 			return sb.ToString();
 		}
 	}

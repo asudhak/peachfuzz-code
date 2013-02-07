@@ -292,30 +292,16 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buf, int offset, int count)
 		{
-			System.Diagnostics.Debug.Assert(_socket != null);
-
-			var stream = data as MemoryStream;
-			if (stream == null)
-			{
-				stream = _sendBuffer;
-				stream.Seek(0, SeekOrigin.Begin);
-				stream.SetLength(0);
-				data.CopyTo(stream);
-				stream.Seek(0, SeekOrigin.Begin);
-			}
-
-			byte[] buf = stream.GetBuffer();
-			int offset = (int)stream.Position;
-			int size = (int)stream.Length;
+			int size = count;
 
 			Pollfd[] fds = new Pollfd[1];
 			fds[0].fd = _socket.Handle;
 			fds[0].events = PollEvents.POLLOUT;
 
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(stream));
+				Logger.Debug("\n\n" + Utilities.HexDump(buf, offset, count));
 
 			int expires = Environment.TickCount + Timeout;
 			int wait = 0;

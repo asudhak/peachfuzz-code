@@ -437,95 +437,73 @@ namespace Peach.Core.Dom
 
 				OnStarting();
 
+				logger.Debug("ActionType.{0}", type.ToString());
+
 				switch (type)
 				{
 					case ActionType.Start:
-						publisher.start(this);
+						publisher.start();
 						break;
+
 					case ActionType.Stop:
-						publisher.stop(this);
+						publisher.stop();
 						break;
+
 					case ActionType.Open:
 					case ActionType.Connect:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
-						publisher.open(this);
+						publisher.start();
+						publisher.open();
 						break;
+
 					case ActionType.Close:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
-						publisher.close(this);
+						publisher.start();
+						publisher.close();
 						break;
 
 					case ActionType.Accept:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
-
-						publisher.accept(this);
+						publisher.start();
+						publisher.open();
+						publisher.accept();
 						break;
 
 					case ActionType.Input:
-						logger.Debug("ActionType.Input");
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
-
-						publisher.input(this);
+						publisher.start();
+						publisher.open();
+						publisher.input();
 						handleInput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
+
 					case ActionType.Output:
-						logger.Debug("ActionType.Output");
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
-
-						publisher.output(this, dataModel.Value.Stream);
+						publisher.start();
+						publisher.open();
+						handleOutput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.Call:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
+						publisher.start();
 						handleCall(publisher, context);
 						parent.parent.dataActions.Add(this);
 						break;
+
 					case ActionType.GetProperty:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
+						publisher.start();
 						handleGetProperty(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
+
 					case ActionType.SetProperty:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
+						publisher.start();
 						handleSetProperty(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.ChangeState:
-						logger.Debug("ActionType.ChangeState");
 						handleChangeState();
 						break;
+
 					case ActionType.Slurp:
-						logger.Debug("ActionType.Slurp");
 						handleSlurp(context);
 						break;
 
@@ -560,6 +538,23 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		protected void handleOutput(Publisher publisher)
+		{
+			Stream strm = dataModel.Value.Stream;
+			strm.Seek(0, SeekOrigin.Begin);
+
+			MemoryStream ms = strm as MemoryStream;
+			if (ms == null)
+			{
+				ms = new MemoryStream();
+				strm.CopyTo(ms);
+				ms.Seek(0, SeekOrigin.Begin);
+				strm.Seek(0, SeekOrigin.Begin);
+			}
+
+			publisher.output(ms.GetBuffer(), (int)ms.Position, (int)ms.Length);
+		}
+
 		protected void handleCall(Publisher publisher, RunContext context)
 		{
 			// Are we sending to Agents?
@@ -586,18 +581,18 @@ namespace Peach.Core.Dom
 				return;
 			}
 
-			publisher.call(this, method, parameters);
+			publisher.call(method, parameters);
 		}
 
 		protected void handleGetProperty(Publisher publisher)
 		{
-			Variant result = publisher.getProperty(this, property);
+			Variant result = publisher.getProperty(property);
 			this.dataModel.DefaultValue = result;
 		}
 
 		protected void handleSetProperty(Publisher publisher)
 		{
-			publisher.setProperty(this, property, this.dataModel.InternalValue);
+			publisher.setProperty(property, this.dataModel.InternalValue);
 		}
 
 		protected void handleChangeState()

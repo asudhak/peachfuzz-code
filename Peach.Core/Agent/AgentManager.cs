@@ -123,6 +123,15 @@ namespace Peach.Core.Agent
 
 		#region AgentServer
 
+		public virtual Publisher CreatePublisher(string agentName, string pubName, SerializableDictionary<string, Variant> args)
+		{
+			AgentClient agent;
+			if (!_agents.TryGetValue(agentName, out agent))
+				throw new KeyNotFoundException("Could not find agent named '" + agentName + "'.");
+
+			return agent.CreatePublisher(pubName, args);
+		}
+
 		public virtual void StopAllMonitors()
 		{
 			logger.Trace("StopAllMonitors");

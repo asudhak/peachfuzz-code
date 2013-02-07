@@ -34,6 +34,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
+using System.Linq;
 
 using NLog;
 
@@ -1119,8 +1120,7 @@ namespace Peach.Core.Analyzers
 			if (type == null)
 				throw new PeachException(string.Format("Error, unable to locate {0} named '{1}', FindTypeByAttribute returned null.", pluginType, cls));
 
-			var parameters = type.GetAttributes<ParameterAttribute>(null);
-			validateParameterAttributes(pluginType, cls, parameters, arg);
+			validateParameterAttributes<A>(type, pluginType, cls, arg);
 
 			try
 			{
@@ -1598,37 +1598,37 @@ namespace Peach.Core.Analyzers
 
 		public static uint _uniquePublisherName = 0;
 
-		protected void validateParameterAttributes(string type, string name, IEnumerable<ParameterAttribute> publisherParameters,
-			IDictionary<string, Variant> xmlParameters)
+		protected void validateParameterAttributes<A>(Type type, string pluginType, string name, IDictionary<string, Variant> xmlParameters) where A : PluginAttribute
 		{
-			foreach (ParameterAttribute p in publisherParameters)
+			var objParams = type.GetAttributes<ParameterAttribute>(null);
+
+			var inherit = type.GetAttributes<InheritParameterAttribute>(null).FirstOrDefault();
+			if (inherit != null)
 			{
-				if (p.required)
-				{
-					if (!xmlParameters.ContainsKey(p.name))
-						throw new PeachException(
-							string.Format("Error, {0} '{1}' is missing required parameter '{2}'.\n{3}",
-								type, name, p.name, formatParameterAttributes(publisherParameters)));
-				}
+				string otherClass = (string)xmlParameters[inherit.parameter];
+
+				var otherType = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == otherClass);
+				if (otherType == null)
+					return;
+
+				var otherParams = otherType.GetAttributes<ParameterAttribute>(null);
+				objParams = otherParams.Concat(objParams);
 			}
 
-			bool found = false;
-			foreach (string p in xmlParameters.Keys)
+			var missing = objParams.Where(a => a.required && !xmlParameters.ContainsKey(a.name)).Select(a => a.name).FirstOrDefault();
+			if (missing != null)
 			{
-				found = false;
+				throw new PeachException(
+					string.Format("Error, {0} '{1}' is missing required parameter '{2}'.\n{3}",
+						pluginType, name, missing, formatParameterAttributes(objParams)));
+			}
 
-				foreach (ParameterAttribute pa in publisherParameters)
-				{
-					if (pa.name == p)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-					throw new PeachException(string.Format("Error, {0} '{1}' has unknown parameter '{2}'.\n{3}",
-						type, name, p, formatParameterAttributes(publisherParameters)));
+			var extra = xmlParameters.Select(kv => kv.Key).Where(k => null == objParams.FirstOrDefault(a => a.name == k)).FirstOrDefault();
+			if (extra != null)
+			{
+				throw new PeachException(
+					string.Format("Error, {0} '{1}' has unknown parameter '{2}'.\n{3}",
+						pluginType, name, extra, formatParameterAttributes(objParams)));
 			}
 		}
 

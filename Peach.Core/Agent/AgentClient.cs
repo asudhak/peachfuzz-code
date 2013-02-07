@@ -41,6 +41,7 @@ namespace Peach.Core.Agent
 	public delegate void SupportedProtocolClientEventHandler(AgentClient agent, string protocol);
 	public delegate void AgentConnectClientEventHandler(AgentClient agent, string name, string url, string password);
 	public delegate void AgentDisconnectClientEventHandler(AgentClient agent);
+	public delegate void CreatePublisherClientEventHandler(AgentClient agent, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StartMonitorClientEventHandler(AgentClient agent, string name, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StopMonitorClientEventHandler(AgentClient agent, string name);
 	public delegate void StopAllMonitorsClientEventHandler(AgentClient agent);
@@ -83,6 +84,13 @@ namespace Peach.Core.Agent
 		{
 			if (AgentDisconnectEvent != null)
 				AgentDisconnectEvent(this);
+		}
+
+		public event CreatePublisherClientEventHandler CreatePublisherEvent;
+		protected void OnCreatePublisherEvent(string cls, SerializableDictionary<string, Variant> args)
+		{
+			if (CreatePublisherEvent != null)
+				CreatePublisherEvent(this, cls, args);
 		}
 
 		public event StartMonitorClientEventHandler StartMonitorEvent;
@@ -184,6 +192,14 @@ namespace Peach.Core.Agent
 		/// Disconnect from agent
 		/// </summary>
 		public abstract void AgentDisconnect();
+
+		/// <summary>
+		/// Creates a publisher on the remote agent
+		/// </summary>
+		/// <param name="cls">Class of publisher to create</param>
+		/// <param name="args">Arguments for publisher</param>
+		/// <returns>Instance of remote publisher</returns>
+		public abstract Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
 
 		/// <summary>
 		/// Start a specific monitor

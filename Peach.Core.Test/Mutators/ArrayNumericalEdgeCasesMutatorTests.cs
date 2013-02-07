@@ -147,7 +147,7 @@ namespace Peach.Core.Test.Mutators
 				stream = new MemoryStream(buffer);
 			}
 
-			protected override void OnOutput(Stream data)
+			protected override void OnOutput(byte[] buffer, int offset, int count)
 			{
 			}
 		}

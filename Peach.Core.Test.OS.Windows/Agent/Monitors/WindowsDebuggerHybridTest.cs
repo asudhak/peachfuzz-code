@@ -67,7 +67,7 @@ namespace Peach.Core.Test.Agent.Monitors
 	</Test>
 </Peach>";
 
-		[Test]
+		[Test, Ignore]
 		public void TestNoFault()
 		{
 			PitParser parser = new PitParser();
@@ -85,7 +85,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.Null(this.faults);
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void TestFault()
 		{
 			PitParser parser = new PitParser();

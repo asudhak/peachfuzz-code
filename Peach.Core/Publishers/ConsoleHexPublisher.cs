@@ -17,9 +17,9 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnOutput(System.IO.Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			Utilities.HexDump(data, stream, BytesPerLine);
+			Utilities.HexDump(buffer, offset, count, stream, BytesPerLine);
 		}
 	}
 }
