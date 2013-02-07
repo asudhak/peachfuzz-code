@@ -380,6 +380,7 @@
     <Compile Include="Fixups\EthernetChecksumFixupTests.cs" />
     <Compile Include="Fixups\ExpressionFixupTests.cs" />
     <Compile Include="Fixups\FixupRelationsTest.cs" />
+    <Compile Include="Fixups\HMACFixupTests.cs" />
     <Compile Include="Fixups\IcmpChecksumFixupTests.cs" />
     <Compile Include="Fixups\IcmpV6ChecksumFixupTest.cs" />
     <Compile Include="Fixups\LRCFixupTests.cs" />
@@ -551,7 +552,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Agent\" />
+		<Folder Include="Agent\" />
     <Folder Include="Debuggers\" />
   </ItemGroup>
   <ItemGroup>
