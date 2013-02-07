@@ -22,6 +22,8 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("WaitTimeout", typeof(int), "How many seconds to wait for guest tools", "600")]
 	public class VmwareMonitor : Monitor
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public enum Provider
 		{
 			// Default
@@ -887,6 +889,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
+			logger.Debug(">> SessionStarting()");
+
 			hostHandle = Connect(HostType, Host, HostPort, Login, Password);
 
 			try
@@ -910,6 +914,8 @@ namespace Peach.Core.Agent.Monitors
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotIndex.Value);
 			else
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotName);
+
+			StartVM();
 		}
 
 		public override void SessionFinished()
