@@ -473,6 +473,12 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 							OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
+							if (context.controlIteration)
+							{
+								logger.Debug("runTest: Fault detected on control iteration");
+								throw new PeachException("Fault detected on control iteration.");
+							}
+
 							if (context.reproducingFault)
 							{
 								// If we have moved less than 20 iterations, start fuzzing
