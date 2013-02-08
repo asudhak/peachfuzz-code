@@ -603,11 +603,14 @@ to execute same as initial control.  State " + state.name + "was not performed."
 					}
 					finally
 					{
-						if (context.controlIteration)
-							lastControlIteration = iterationCount;
+						if (!context.reproducingFault)
+						{
+							if (context.controlIteration)
+								lastControlIteration = iterationCount;
 
-						context.controlIteration = false;
-						context.controlRecordingIteration = false;
+							context.controlIteration = false;
+							context.controlRecordingIteration = false;
+						}
 					}
 				}
 			}
