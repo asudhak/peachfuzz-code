@@ -297,7 +297,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 				case UnsafeMethods.DebugEventType.EXIT_THREAD_DEBUG_EVENT:
 					// Display the thread's exit code. 
 
-					logger.Trace("EXIT_PROCESS_DEBUG_EVENT");
+					logger.Trace("EXIT_THREAD_DEBUG_EVENT");
 					dwContinueStatus = OnExitThreadDebugEvent(DebugEv);
 					break;
 
@@ -337,7 +337,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					break;
 
 				default:
-					logger.Trace("UNKNOWN DEBUG EVENT");
+					logger.Trace("UNKNOWN DEBUG EVENT: 0x" + DebugEv.dwDebugEventCode.ToString("X8"));
 					break;
 			}
 
@@ -571,7 +571,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 				case C_PLUS_PLUS_EXCEPTION:
 					return "C_PLUS_PLUS_EXCEPTION";
 				default:
-					return "UNKNOWN: 0x" + code.ToString("X8");
+					return "UNKNOWN EXCEPTION: 0x" + code.ToString("X8");
 			}
 		}
 	}
