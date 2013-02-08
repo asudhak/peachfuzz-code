@@ -95,13 +95,22 @@ namespace Peach.Core
 			if (!File.Exists(fullPath))
 				throw new FileNotFoundException("The file \"" + fullPath + "\" does not exist.");
 
-			// http://mikehadlow.blogspot.com/2011/07/detecting-and-changing-files-internet.html
-			var zone = Zone.CreateFromUrl(fullPath);
-			if (zone.SecurityZone > SecurityZone.MyComputer)
-				throw new SecurityException("The assemly is part of the " + zone.SecurityZone + " Security Zone and loading has been blocked.");
+			try
+			{
+				// Always try and load the assembly first. It will succeed regardless of security
+				// zone if it is directly referenced or loadFromRemoteSources is true.
+				Assembly asm = Assembly.LoadFrom(fullPath);
+				return asm;
+			}
+			catch (Exception ex)
+			{
+				// http://mikehadlow.blogspot.com/2011/07/detecting-and-changing-files-internet.html
+				var zone = Zone.CreateFromUrl(fullPath);
+				if (zone.SecurityZone > SecurityZone.MyComputer)
+					throw new SecurityException("The assemly is part of the " + zone.SecurityZone + " Security Zone and loading has been blocked.", ex);
 
-			Assembly asm = Assembly.LoadFrom(fullPath);
-			return asm;
+				throw;
+			}
 		}
 
 		static bool TryLoad(string fullPath)
