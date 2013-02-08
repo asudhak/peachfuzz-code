@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
 using NLog;
+using System.ComponentModel;
 
 namespace Peach.Core.Debuggers.WindowsSystem
 {
@@ -183,7 +184,10 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					null,			// lpCurrentDirectory 
 					ref startUpInfo, // lpStartupInfo 
 					out processInformation)) // lpProcessInformation 
-				throw new Exception("Failed to create new process and attach debugger.");
+			{
+				var ex = new Win32Exception(Marshal.GetLastWin32Error());
+				throw new Exception("Failed to create new process and attach debugger.  " + ex.Message, ex);
+			}
 
 			UnsafeMethods.CloseHandle(processInformation.hProcess);
 			UnsafeMethods.CloseHandle(processInformation.hThread);
@@ -244,9 +248,27 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 				uint dwContinueStatus = ProcessDebugEvent(ref debug_event);
 
-				if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId,
-									debug_event.dwThreadId, dwContinueStatus))
-					throw new Exception("ContinueDebugEvent failed");
+				for (;;)
+				{
+					try
+					{
+						if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId, debug_event.dwThreadId, dwContinueStatus))
+						{
+							var err = new Win32Exception(Marshal.GetLastWin32Error());
+							var ex = new Exception("Failed to continue debugging.  " + err.Message, err);
+							if (!processExit)
+								throw ex;
+
+							logger.Trace(ex.Message);
+						}
+
+						break;
+					}
+					catch (SEHException)
+					{
+						logger.Trace("SEH when continuing debugging. Trying again...");
+					}
+				}
 			}
 		}
 
