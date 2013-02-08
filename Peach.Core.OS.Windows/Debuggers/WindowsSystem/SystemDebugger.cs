@@ -206,6 +206,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public int dwProcessId = 0;
 		public bool processExit = false;
 		public bool verbose = false;
+		bool initialBreak = false;
 		UnsafeMethods.STARTUPINFO _startUpInfo;
 		UnsafeMethods.PROCESS_INFORMATION _processInformation;
 		public ManualResetEvent processStarted = new ManualResetEvent(false);
@@ -425,25 +426,10 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// when it first loads. You must DEBUG_CONTINUE this first breakpoint
 					// exception... if you DBG_EXCEPTION_NOT_HANDLED you will get the popup
 					// message box: The application failed to initialize properly (0x80000003).
-					return DBG_CONTINUE;
+					if (!initialBreak)
+						result = DBG_CONTINUE;
 
-				case EXCEPTION_DATATYPE_MISALIGNMENT:
-					// First chance: Pass this on to the system. 
-					// Last chance: Display an appropriate error. 
-					break;
-
-				case EXCEPTION_SINGLE_STEP:
-					// First chance: Update the display of the 
-					// current instruction and register values. 
-					break;
-
-				case DBG_CONTROL_C:
-					// First chance: Pass this on to the system. 
-					// Last chance: Display an appropriate error. 
-					break;
-
-				default:
-					// Handle other exceptions. 
+					initialBreak = true;
 					break;
 			}
 
