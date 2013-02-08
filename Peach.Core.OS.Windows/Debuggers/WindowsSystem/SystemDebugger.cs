@@ -146,6 +146,19 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public const uint EXCEPTION_INVALID_HANDLE = STATUS_INVALID_HANDLE;
 		public const uint EXCEPTION_POSSIBLE_DEADLOCK = STATUS_POSSIBLE_DEADLOCK;
 
+		// Win32 x86 Emulation Exceptions
+		public const uint STATUS_WX86_UNSIMULATE = 0x4000001C;
+		public const uint STATUS_WX86_CONTINUE = 0x4000001D;
+		public const uint STATUS_WX86_SINGLE_STEP = 0x4000001E;
+		public const uint STATUS_WX86_BREAKPOINT = 0x4000001F;
+		public const uint STATUS_WX86_EXCEPTION_CONTINUE = 0x40000020;
+		public const uint STATUS_WX86_EXCEPTION_LASTCHANCE = 0x40000021;
+		public const uint STATUS_WX86_EXCEPTION_CHAIN = 0x40000022;
+
+		// Exception code for a c++ exception
+		// http://support.microsoft.com/kb/185294
+		public const uint C_PLUS_PLUS_EXCEPTION = 0xE06D7363;
+
 		#endregion
 
 		public HandleAccessViolation HandleAccessViolation = null;
@@ -392,20 +405,20 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 			var Exception = DebugEv.u.Exception;
 
+			if (logger.IsTraceEnabled)
+				logger.Trace("  {0}", ExceptionToString(Exception));
+
 			switch (Exception.ExceptionRecord.ExceptionCode)
 			{
 				case EXCEPTION_ACCESS_VIOLATION:
 					// First chance: Pass this on to the system. 
 					// Last chance: Display an appropriate error. 
-
-					logger.Trace("EXCEPTION_ACCESS_VIOLATION");
 					if (DebugEv.dwProcessId == this.dwProcessId && HandleAccessViolation != null)
 						HandleAccessViolation(DebugEv);
 
 					break;
 
 				case EXCEPTION_BREAKPOINT:
-					logger.Trace("EXCEPTION_BREAKPOINT");
 					// From: http://stackoverflow.com/questions/3799294/im-having-problems-with-waitfordebugevent-exception-debug-event
 					// If launch a process and expect to debug it using the Windows API calls,
 					// you should know that Windows will send one EXCEPTION_BREAKPOINT (INT3)
@@ -415,25 +428,21 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					return DBG_CONTINUE;
 
 				case EXCEPTION_DATATYPE_MISALIGNMENT:
-					logger.Trace("EXCEPTION_DATATYPE_MISALIGNMENT");
 					// First chance: Pass this on to the system. 
 					// Last chance: Display an appropriate error. 
 					break;
 
 				case EXCEPTION_SINGLE_STEP:
-					logger.Trace("EXCEPTION_SINGLE_STEP");
 					// First chance: Update the display of the 
 					// current instruction and register values. 
 					break;
 
 				case DBG_CONTROL_C:
-					logger.Trace("DBG_CONTROL_C");
 					// First chance: Pass this on to the system. 
 					// Last chance: Display an appropriate error. 
 					break;
 
 				default:
-					logger.Trace("UNKNOWN");
 					// Handle other exceptions. 
 					break;
 			}
@@ -484,6 +493,92 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			return pszFilename.ToString();
 		}
 
+		private static string ExceptionToString(UnsafeMethods.EXCEPTION_DEBUG_INFO Exception)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append(ExceptionCodeToString(Exception.ExceptionRecord.ExceptionCode));
+
+			if (Exception.dwFirstChance != 0)
+				sb.Append(", First Chance");
+
+			if (Exception.ExceptionRecord.ExceptionCode != 0)
+				sb.Append(", Not Continuable");
+
+			return sb.ToString();
+		}
+
+		private static string ExceptionCodeToString(uint code)
+		{
+			switch (code)
+			{
+				case EXCEPTION_ACCESS_VIOLATION:
+					return "EXCEPTION_ACCESS_VIOLATION";
+				case EXCEPTION_BREAKPOINT:
+					return "EXCEPTION_BREAKPOINT";
+				case EXCEPTION_DATATYPE_MISALIGNMENT:
+					return "EXCEPTION_DATATYPE_MISALIGNMENT";
+				case EXCEPTION_SINGLE_STEP:
+					return "EXCEPTION_SINGLE_STEP";
+				case DBG_CONTROL_C:
+					return "DBG_CONTROL_C";
+				case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+					return "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+				case EXCEPTION_FLT_DENORMAL_OPERAND:
+					return "EXCEPTION_FLT_DENORMAL_OPERAND";
+				case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+					return "EXCEPTION_FLT_DIVIDE_BY_ZERO";
+				case EXCEPTION_FLT_INEXACT_RESULT:
+					return "EXCEPTION_FLT_INEXACT_RESULT";
+				case EXCEPTION_FLT_INVALID_OPERATION:
+					return "EXCEPTION_FLT_INVALID_OPERATION";
+				case EXCEPTION_FLT_OVERFLOW:
+					return "EXCEPTION_FLT_OVERFLOW";
+				case EXCEPTION_FLT_STACK_CHECK:
+					return "EXCEPTION_FLT_STACK_CHECK";
+				case EXCEPTION_FLT_UNDERFLOW:
+					return "EXCEPTION_FLT_UNDERFLOW";
+				case EXCEPTION_INT_DIVIDE_BY_ZERO:
+					return "EXCEPTION_INT_DIVIDE_BY_ZERO";
+				case EXCEPTION_INT_OVERFLOW:
+					return "EXCEPTION_INT_OVERFLOW";
+				case EXCEPTION_PRIV_INSTRUCTION:
+					return "EXCEPTION_PRIV_INSTRUCTION";
+				case EXCEPTION_IN_PAGE_ERROR:
+					return "EXCEPTION_IN_PAGE_ERROR";
+				case EXCEPTION_ILLEGAL_INSTRUCTION:
+					return "EXCEPTION_ILLEGAL_INSTRUCTION";
+				case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+					return "EXCEPTION_NONCONTINUABLE_EXCEPTION";
+				case EXCEPTION_STACK_OVERFLOW:
+					return "EXCEPTION_STACK_OVERFLOW";
+				case EXCEPTION_INVALID_DISPOSITION:
+					return "EXCEPTION_INVALID_DISPOSITION";
+				case EXCEPTION_GUARD_PAGE:
+					return "EXCEPTION_GUARD_PAGE";
+				case EXCEPTION_INVALID_HANDLE:
+					return "EXCEPTION_INVALID_HANDLE";
+				case EXCEPTION_POSSIBLE_DEADLOCK:
+					return "EXCEPTION_POSSIBLE_DEADLOCK";
+				case STATUS_WX86_UNSIMULATE:
+					return "STATUS_WX86_UNSIMULATE";
+				case STATUS_WX86_CONTINUE:
+					return "STATUS_WX86_CONTINUE";
+				case STATUS_WX86_SINGLE_STEP:
+					return "STATUS_WX86_SINGLE_STEP";
+				case STATUS_WX86_BREAKPOINT:
+					return "STATUS_WX86_BREAKPOINT";
+				case STATUS_WX86_EXCEPTION_CONTINUE:
+					return "STATUS_WX86_EXCEPTION_CONTINUE";
+				case STATUS_WX86_EXCEPTION_LASTCHANCE:
+					return "STATUS_WX86_EXCEPTION_LASTCHANCE";
+				case STATUS_WX86_EXCEPTION_CHAIN:
+					return "STATUS_WX86_EXCEPTION_CHAIN";
+				case C_PLUS_PLUS_EXCEPTION:
+					return "C_PLUS_PLUS_EXCEPTION";
+				default:
+					return "UNKNOWN: 0x" + code.ToString("X8");
+			}
+		}
 	}
 }
 
