@@ -403,18 +403,27 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			// chance exception for a process that we stopped wanting
 			// to monitor after processing a 1st chance exception. Or anytime
 			// the ContinueDebugging callback returns false before processExit is true.
-
+			uint result = DBG_EXCEPTION_NOT_HANDLED;
 			var Exception = DebugEv.u.Exception;
 
 			if (logger.IsTraceEnabled)
 				logger.Trace("  {0}", ExceptionToString(Exception));
+
+			bool notify = DebugEv.dwProcessId == this.dwProcessId && HandleAccessViolation != null;
+
+			if (Exception.dwFirstChance == 0 && notify)
+			{
+				HandleAccessViolation(DebugEv);
+				notify = false;
+				result = DBG_CONTINUE;
+			}
 
 			switch (Exception.ExceptionRecord.ExceptionCode)
 			{
 				case EXCEPTION_ACCESS_VIOLATION:
 					// First chance: Pass this on to the system. 
 					// Last chance: Display an appropriate error. 
-					if (DebugEv.dwProcessId == this.dwProcessId && HandleAccessViolation != null)
+					if (notify)
 						HandleAccessViolation(DebugEv);
 
 					break;
@@ -433,7 +442,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					break;
 			}
 
-			return DBG_EXCEPTION_NOT_HANDLED;
+			return result;
 		}
 
 		string GetFileNameFromHandle(IntPtr hFile)
