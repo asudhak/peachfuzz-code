@@ -500,10 +500,9 @@ to execute same as initial control.  State " + state.name + "was not performed."
 						}
 						else if (context.reproducingFault)
 						{
-							// Move back N iterations
-							iterationCount -= (uint)context.reproducingIterationJumpCount;
+							uint maxJump = (context.reproducingInitialIteration - iterationStart);
 
-							if (context.reproducingInitialIteration - iterationCount > context.reproducingMaxBacksearch)
+							if (context.reproducingIterationJumpCount >= (maxJump * 2) || context.reproducingIterationJumpCount > context.reproducingMaxBacksearch)
 							{
 								logger.Debug("runTest: Giving up reproducing fault, reached max backsearch.");
 
@@ -512,8 +511,11 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							}
 							else
 							{
+								uint delta = Math.Min(maxJump, context.reproducingIterationJumpCount);
+								iterationCount = (uint)context.reproducingInitialIteration - delta - 1;
+
 								logger.Debug("runTest: " +
-									"Moving backwards " + context.reproducingIterationJumpCount + " iterations to reproduce fault.");
+									"Moving backwards " + delta + " iterations to reproduce fault.");
 							}
 
 							// Make next jump larger
