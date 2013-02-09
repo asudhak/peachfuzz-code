@@ -117,7 +117,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		//   [In] ref STARTUPINFO lpStartupInfo,
 		//   out PROCESS_INFORMATION lpProcessInformation);
 
-		[DllImport("kernel32.dll")]
+		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool CreateProcess(
 			string lpApplicationName,
 			string lpCommandLine, 
@@ -139,7 +139,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool FlushInstructionCache(IntPtr hProcess, IntPtr lpBaseAddress, uint dwSize);
 
-		[DllImport("kernel32.dll")]
+		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool ContinueDebugEvent(uint dwProcessId, uint dwThreadId,
 		   uint dwContinueStatus);
 

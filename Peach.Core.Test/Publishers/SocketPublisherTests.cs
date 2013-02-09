@@ -554,7 +554,7 @@ namespace Peach.Core.Test.Publishers
 			IPAddress ip = GetLinkLocalIPv6();
 
 			if (ip == null)
-				Assert.Inconclusive("No interface with a link-locak IPv6 address was found.");
+				Assert.Ignore("No interface with a link-locak IPv6 address was found.");
 
 			Assert.AreNotEqual(0, ip.ScopeId);
 			ip.ScopeId = 0;

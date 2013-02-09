@@ -1,5 +1,4 @@
-
-Peach 3 - BETA 1
+Peach 3 - RC 1
 ================
 
 Welcome to Peach 3, a complete re-write of Peach using the 

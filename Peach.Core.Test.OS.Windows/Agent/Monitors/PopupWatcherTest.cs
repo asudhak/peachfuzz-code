@@ -74,7 +74,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			return ret;
 		}
 
-		void Run(Params parameters)
+		void Run(Params parameters, bool shouldFault)
 		{
 			string xml = MakeXml(parameters);
 
@@ -90,13 +90,28 @@ namespace Peach.Core.Test.Agent.Monitors
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
-			e.startFuzzing(dom, config);
+
+			if (!shouldFault)
+			{
+				e.startFuzzing(dom, config);
+				return;
+			}
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
 		}
 
 		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"PopupWatcher\".  Monitor 'PopupWatcher' is missing required parameter 'WindowNames'.")]
 		public void TestNoWindow()
 		{
-			Run(new Params());
+			Run(new Params(), false);
 			Assert.Null(faults);
 		}
 
@@ -115,10 +130,15 @@ namespace Peach.Core.Test.Agent.Monitors
 			}
 		}
 
+		private AutoResetEvent evt = new AutoResetEvent(false);
+
 		void ThreadProc(object windowTitle)
 		{
+			evt.Reset();
 			using (var wnd = new LameWindow(windowTitle.ToString()))
 			{
+				System.Windows.Forms.Application.DoEvents();
+				evt.Set();
 				System.Windows.Forms.Application.Run();
 				Console.WriteLine("Done!");
 			}
@@ -130,12 +150,13 @@ namespace Peach.Core.Test.Agent.Monitors
 			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
 			th.Start(windowName);
+			evt.WaitOne();
 
 			faultIteration = 1;
 
 			try
 			{
-				Run(new Params { { "WindowNames", windowName } });
+				Run(new Params { { "WindowNames", windowName } }, true);
 			}
 			finally
 			{
@@ -158,12 +179,13 @@ namespace Peach.Core.Test.Agent.Monitors
 			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
 			th.Start(windowName);
+			evt.WaitOne();
 
 			faultIteration = 1;
 
 			try
 			{
-				Run(new Params { { "WindowNames", "Window1,Window2," + windowName } });
+				Run(new Params { { "WindowNames", "Window1,Window2," + windowName } }, true);
 			}
 			finally
 			{
@@ -187,10 +209,11 @@ namespace Peach.Core.Test.Agent.Monitors
 
 			var th = new Thread(ThreadProc);
 			th.Start(windowName);
+			evt.WaitOne();
 
 			try
 			{
-				Run(new Params { { "WindowNames", windowName }, { "Fault", "true" } });
+				Run(new Params { { "WindowNames", windowName }, { "Fault", "true" } }, true);
 			}
 			finally
 			{

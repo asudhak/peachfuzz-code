@@ -88,7 +88,7 @@ namespace Peach.Core.Test.Monitors
 			return ret;
 		}
 
-		private void Run(Params parameters)
+		private void Run(Params parameters, bool shouldFault)
 		{
 			string xml = MakeXml(parameters);
 
@@ -102,13 +102,28 @@ namespace Peach.Core.Test.Monitors
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
-			e.startFuzzing(dom, config);
+
+			if (!shouldFault)
+			{
+				e.startFuzzing(dom, config);
+				return;
+			}
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
 		}
 
 		[Test]
 		public void TestBadPid()
 		{
-			Run(new Params { { "Pid", "2147483647" } });
+			Run(new Params { { "Pid", "2147483647" } }, true);
 
 			// verify values
 			Assert.NotNull(faults);
@@ -119,7 +134,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestBadProcName()
 		{
-			Run(new Params { { "ProcessName", "some_invalid_process" } });
+			Run(new Params { { "ProcessName", "some_invalid_process" } }, true);
 
 			// verify values
 			Assert.NotNull(faults);
@@ -130,20 +145,20 @@ namespace Peach.Core.Test.Monitors
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Could not start monitor \"Memory\".  Either pid or process name is required.")]
 		public void TestNoParams()
 		{
-			Run(new Params());
+			Run(new Params(), false);
 		}
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Could not start monitor \"Memory\".  Only specify pid or process name, not both.")]
 		public void TestAllParams()
 		{
-			Run(new Params { { "Pid", "1" }, { "ProcessName", "name" } });
+			Run(new Params { { "Pid", "1" }, { "ProcessName", "name" } }, false);
 		}
 
 		[Test]
 		public void TestNoFault()
 		{
 			// If no fault occurs, no data should be returned
-			Run(new Params { { "Pid", thisPid.ToString() } });
+			Run(new Params { { "Pid", thisPid.ToString() } }, false);
 
 			// verify values
 			Assert.Null(faults);
@@ -155,7 +170,7 @@ namespace Peach.Core.Test.Monitors
 			// If fault occurs, monitor should always return data
 			faultIteration = 1;
 
-			Run(new Params { { "Pid", thisPid.ToString() } });
+			Run(new Params { { "Pid", thisPid.ToString() } }, true);
 
 			// verify values
 			Assert.NotNull(faults);
@@ -170,7 +185,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestMemoryLimit()
 		{
 			// If memory limit is exceeded, monitor should generate a fault
-			Run(new Params { { "Pid", thisPid.ToString() }, { "MemoryLimit", "1" } });
+			Run(new Params { { "Pid", thisPid.ToString() }, { "MemoryLimit", "1" } }, true);
 
 			// verify values
 			Assert.NotNull(faults);
@@ -184,7 +199,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string proc = Platform.GetOS() == Platform.OS.Windows ? "explorer.exe" : "sshd";
 
-			Run(new Params { { "ProcessName", proc }, { "MemoryLimit", "1" } });
+			Run(new Params { { "ProcessName", proc }, { "MemoryLimit", "1" } }, true);
 
 			// verify values
 			Assert.NotNull(faults);

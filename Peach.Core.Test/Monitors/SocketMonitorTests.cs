@@ -220,7 +220,7 @@ namespace Peach.Core.Test.Monitors
 			return ret;
 		}
 
-		private void Run(Params parameters)
+		private void Run(Params parameters, bool shouldFault)
 		{
 			string xml = MakeXml(parameters);
 
@@ -236,7 +236,22 @@ namespace Peach.Core.Test.Monitors
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
-			e.startFuzzing(dom, config);
+
+			if (!shouldFault)
+			{
+				e.startFuzzing(dom, config);
+				return;
+			}
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
 		}
 
 		[Test]
@@ -245,7 +260,7 @@ namespace Peach.Core.Test.Monitors
 			// No connections, no faults
 			ushort port = TestBase.MakePort(40000, 41000);
 
-			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } }, false);
 			Assert.Null(faults);
 		}
 
@@ -257,7 +272,7 @@ namespace Peach.Core.Test.Monitors
 
 			ushort port = TestBase.MakePort(41000, 42000);
 
-			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -273,7 +288,7 @@ namespace Peach.Core.Test.Monitors
 			ushort port = TestBase.MakePort(42000, 43000);
 
 			// No connection, FaultOnSuccess = true results in fault
-			Run(new Params { { "Timeout", "1" }, { "FaultOnSuccess", "true" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "FaultOnSuccess", "true" }, { "Port", port.ToString() } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
@@ -292,7 +307,7 @@ namespace Peach.Core.Test.Monitors
 
 			ushort port = TestBase.MakePort(43000, 44000);
 
-			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "Port", port.ToString() } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -301,7 +316,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(FaultType.Data, faults[1].type);
 			Assert.AreEqual("Monitoring 0.0.0.0:" + port, faults[1].title);
 
-			Run(new Params { { "Timeout", "1" }, { "Host", "::1" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "::1" }, { "Port", port.ToString() } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -313,7 +328,7 @@ namespace Peach.Core.Test.Monitors
 			else
 				Assert.AreEqual("Monitoring ::0.0.0.1:" + port, faults[1].title);
 
-			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "127.0.0.2" }, { "Port", port.ToString() } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -328,7 +343,7 @@ namespace Peach.Core.Test.Monitors
 				addr = ((System.Net.IPEndPoint)u.Client.LocalEndPoint).Address.ToString();
 			}
 
-			Run(new Params { { "Timeout", "1" }, { "Host", "1.1.1.1" }, { "Port", port.ToString() } });
+			Run(new Params { { "Timeout", "1" }, { "Host", "1.1.1.1" }, { "Port", port.ToString() } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -342,7 +357,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestBadHostInterface()
 		{
 			// Deal with IPv4/IPv6 mismatched Host & Interface parameters
-			Run(new Params { { "Host", "1.1.1.1" }, { "Interface", "::" } });
+			Run(new Params { { "Host", "1.1.1.1" }, { "Interface", "::" } }, false);
 		}
 
 		[Test]
@@ -353,7 +368,7 @@ namespace Peach.Core.Test.Monitors
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
-				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, false);
 			}
 
 			Assert.Null(faults);
@@ -371,7 +386,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
-				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "FaultOnSuccess", "true" }, { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -402,7 +417,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new UdpSender(addr, host, port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
-				Run(new Params { { "Protocol", "udp" }, { "Interface", addr.ToString() }, { "Host", host }, { "Port", port.ToString() } });
+				Run(new Params { { "Protocol", "udp" }, { "Interface", addr.ToString() }, { "Host", host }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -418,7 +433,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestMulticastTcp()
 		{
 			// Multicast is not supported when Protocol is tcp
-			Run(new Params { { "Host", "234.5.6.7" } });
+			Run(new Params { { "Host", "234.5.6.7" } }, false);
 		}
 
 		[Test]
@@ -430,7 +445,7 @@ namespace Peach.Core.Test.Monitors
 
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
 			{
-				Run(new Params { { "Host", "127.0.0.2" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Host", "127.0.0.2" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, false);
 			}
 
 			Assert.Null(faults);
@@ -438,7 +453,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.localEP);
-				Run(new Params { { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -459,7 +474,7 @@ namespace Peach.Core.Test.Monitors
 
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
-				Run(new Params { { "Protocol", "udp" }, { "Host", "127.0.0.2" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Protocol", "udp" }, { "Host", "127.0.0.2" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, false);
 			}
 
 			Assert.Null(faults);
@@ -467,7 +482,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
-				Run(new Params { { "Protocol", "udp" }, { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Protocol", "udp" }, { "Host", "127.0.0.1" }, { "Timeout", "1000" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -488,7 +503,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new UdpSender("127.0.0.1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
-				Run(new Params { { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Protocol", "udp" }, { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -509,7 +524,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new UdpSender("::1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.Client.LocalEndPoint);
-				Run(new Params { { "Protocol", "udp" }, { "Interface", "::1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Protocol", "udp" }, { "Interface", "::1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -530,7 +545,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new TcpSender("127.0.0.1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.localEP);
-				Run(new Params { { "Interface", "127.0.0.1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Interface", "127.0.0.1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);
@@ -551,7 +566,7 @@ namespace Peach.Core.Test.Monitors
 			using (var sender = new TcpSender("::1", port, "Hello"))
 			{
 				desc = string.Format("Received 5 bytes from '{0}'.", sender.localEP);
-				Run(new Params { { "Interface", "::1" }, { "Port", port.ToString() } });
+				Run(new Params { { "Interface", "::1" }, { "Port", port.ToString() } }, true);
 			}
 
 			Assert.NotNull(faults);

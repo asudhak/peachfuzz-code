@@ -196,21 +196,28 @@ namespace Peach.Core.Test.Monitors
 			config.rangeStart = 1;
 			config.rangeStop = 1 + iterations;
 
-			if (OnFault != null)
+			if (OnFault == null)
 			{
-				e.Fault += OnFault;
+				e.startFuzzing(dom, config);
+				return;
 			}
 
-			e.startFuzzing(dom, config);
+			e.Fault += OnFault;
 
-			if (OnFault != null)
+			try
 			{
-				Assert.AreEqual(1, testResults.Count);
-				testResults.Clear();
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
 			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
+
+			Assert.AreEqual(1, testResults.Count);
+			testResults.Clear();
 
 			Assert.AreEqual(0, testResults.Count);
-
 		}
 
 		[Test]
