@@ -130,10 +130,15 @@ namespace Peach.Core.Test.Agent.Monitors
 			}
 		}
 
+		private AutoResetEvent evt = new AutoResetEvent(false);
+
 		void ThreadProc(object windowTitle)
 		{
+			evt.Reset();
 			using (var wnd = new LameWindow(windowTitle.ToString()))
 			{
+				System.Windows.Forms.Application.DoEvents();
+				evt.Set();
 				System.Windows.Forms.Application.Run();
 				Console.WriteLine("Done!");
 			}
@@ -145,6 +150,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
 			th.Start(windowName);
+			evt.WaitOne();
 
 			faultIteration = 1;
 
@@ -173,6 +179,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
 			th.Start(windowName);
+			evt.WaitOne();
 
 			faultIteration = 1;
 
@@ -202,6 +209,7 @@ namespace Peach.Core.Test.Agent.Monitors
 
 			var th = new Thread(ThreadProc);
 			th.Start(windowName);
+			evt.WaitOne();
 
 			try
 			{
