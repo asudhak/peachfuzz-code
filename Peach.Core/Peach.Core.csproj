@@ -402,7 +402,6 @@
     <Compile Include="Agent\AgentManager.cs" />
     <Compile Include="Agent\AgentServer.cs" />
     <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
-    <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
     <Compile Include="Agent\Channels\AgentZeroMq.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
@@ -415,9 +414,6 @@
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
     <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
-    <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
-    <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
-    <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
     <Compile Include="Agent\Monitors\SocketMonitor.cs" />
     <Compile Include="Agent\Monitors\SshDownloaderMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />
@@ -696,10 +692,6 @@
     <ProjectReference Include="..\3rdParty\clrzmq\src\ZeroMQ\ZeroMQ.csproj">
       <Project>{6FFD872F-A4A4-4EFA-9B4D-4342BA6CF250}</Project>
       <Name>ZeroMQ</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\3rdParty\xml-rpc.net-2.5.0\src\xmlrpc.csproj">
-      <Project>{1B4B0A58-0AFB-4090-91DD-18912CC7DE65}</Project>
-      <Name>xmlrpc</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,7 +6,6 @@ subdirs = [
 	'TreeViewAdv',
 	'Be.HexEditor.150',
 	'VMware-VIX-1.12.1-894247',
-	'xml-rpc.net-2.5.0',
 	'zeromq3-x',
 ]
 
