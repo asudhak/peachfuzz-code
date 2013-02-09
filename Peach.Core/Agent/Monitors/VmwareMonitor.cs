@@ -907,6 +907,9 @@ namespace Peach.Core.Agent.Monitors
 				string msg = string.Format("Could not find vmx '{0}' on host '{1}'.  Available vms are:", Vmx, Host);
 				vms.Insert(0, msg);
 				msg = string.Join(Environment.NewLine + "\t", vms);
+
+				logger.Error("SessionStarting: " + msg);
+
 				throw new PeachException(msg, ve);
 			}
 
