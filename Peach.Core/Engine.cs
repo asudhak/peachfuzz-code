@@ -292,10 +292,15 @@ namespace Peach.Core
 				{
 					// Only use agent if on correct platform
 					if ((agent.platform & Platform.GetOS()) != Platform.OS.None)
+					{
 						context.agentManager.AgentConnect(agent);
-				}
+						context.agentManager.GetAgent(agent.name).SessionStarting();
 
-				context.agentManager.SessionStarting();
+						// Note: We want to perfrom SessionStarting on each agent
+						//       in turn.  We do this incase the first agent starts
+						//       a virtual machine that contains the second agent.
+					}
+				}
 
 				while ((firstRun || iterationCount <= iterationStop) && context.continueFuzzing)
 				{

@@ -121,6 +121,11 @@ namespace Peach.Core.Agent
 			AgentConnect(agent.name);
 		}
 
+		public virtual AgentClient GetAgent(string name)
+		{
+			return _agents[name];
+		}
+
 		#region AgentServer
 
 		public virtual Publisher CreatePublisher(string agentName, string pubName, SerializableDictionary<string, Variant> args)

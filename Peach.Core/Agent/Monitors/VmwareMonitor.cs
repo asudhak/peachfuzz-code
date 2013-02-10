@@ -849,13 +849,39 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (needReset || ResetEveryIteration)
 			{
-				RevertToSnapshot(vmHandle, snapshotHandle);
-				PowerOn(vmHandle);
+				try
+				{
+					logger.Debug("Starting virtual machine \"" + Vmx + "\".");
 
-				if (WaitForToolsInGuest)
-					WaitForTools(vmHandle, WaitTimeout);
+					RevertToSnapshot(vmHandle, snapshotHandle);
+					PowerOn(vmHandle);
 
-				needReset = false;
+					if (WaitForToolsInGuest)
+					{
+						try
+						{
+							WaitForTools(vmHandle, WaitTimeout);
+						}
+						catch (VMwareException vmex)
+						{
+							if ((ulong)vmex.Error != 3025)
+								throw vmex;
+
+							// Note: This exception seems to occur sometimes with workstation + open source tools.
+							//       Doesn't happen with ESXi + open source tools in guest.
+							//  Also ignoring since this should mean the tools are up (??)
+
+							logger.Warn("Ignoring: The command is not recognized by VMware Tools exception.");
+						}
+					}
+
+					needReset = false;
+				}
+				catch (Exception ex)
+				{
+					logger.Error(ex.Message);
+					throw ex;
+				}
 			}
 		}
 
@@ -889,7 +915,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
-			logger.Debug(">> SessionStarting()");
+			logger.Debug(">> SessionStarting");
 
 			hostHandle = Connect(HostType, Host, HostPort, Login, Password);
 
@@ -919,6 +945,8 @@ namespace Peach.Core.Agent.Monitors
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotName);
 
 			StartVM();
+
+			logger.Debug("<< SessionStarting");
 		}
 
 		public override void SessionFinished()

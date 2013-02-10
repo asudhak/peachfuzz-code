@@ -24,7 +24,7 @@ namespace Peach.Core.Publishers
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
 
-		private Publisher _publisher;
+		private Publisher _publisher = null;
 
 		public RemotePublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -52,6 +52,16 @@ namespace Peach.Core.Publishers
 			set { base.Test = value; }
 		}
 
+		protected void RestartRemotePublisher()
+		{
+			logger.Debug("Restarting remote publisher");
+
+			_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
+			_publisher.Iteration = Iteration;
+			_publisher.IsControlIteration = IsControlIteration;
+			_publisher.start();
+		}
+
 		public override uint Iteration
 		{
 			get
@@ -63,7 +73,16 @@ namespace Peach.Core.Publishers
 				base.Iteration = value;
 
 				if (_publisher != null)
-					_publisher.Iteration = value;
+				{
+					try
+					{
+						_publisher.Iteration = value;
+					}
+					catch (System.Runtime.Remoting.RemotingException)
+					{
+						RestartRemotePublisher();
+					}
+				}
 			}
 		}
 
@@ -78,7 +97,16 @@ namespace Peach.Core.Publishers
 				base.IsControlIteration = value;
 
 				if (_publisher != null)
-					_publisher.IsControlIteration = value;
+				{
+					try
+					{
+						_publisher.IsControlIteration = value;
+					}
+					catch (System.Runtime.Remoting.RemotingException)
+					{
+						RestartRemotePublisher();
+					}
+				}
 			}
 		}
 
@@ -96,6 +124,7 @@ namespace Peach.Core.Publishers
 
 		protected override void OnStart()
 		{
+			logger.Debug(">> OnStart");
 			_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
 			_publisher.Iteration = Iteration;
 			_publisher.IsControlIteration = IsControlIteration;
@@ -104,38 +133,93 @@ namespace Peach.Core.Publishers
 
 		protected override void OnStop()
 		{
-			_publisher.stop();
+			try
+			{
+				_publisher.stop();
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+			}
+
 			_publisher = null;
 		}
 
 		protected override void OnOpen()
 		{
-			_publisher.open();
+			try
+			{
+				_publisher.open();
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				RestartRemotePublisher();
+				_publisher.open();
+			}
 		}
 
 		protected override void OnClose()
 		{
-			_publisher.close();
+			try
+			{
+				_publisher.close();
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				RestartRemotePublisher();
+				_publisher.close();
+			}
 		}
 
 		protected override void OnAccept()
 		{
-			_publisher.accept();
+			try
+			{
+				_publisher.accept();
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				RestartRemotePublisher();
+				_publisher.accept();
+			}
 		}
 
 		protected override Variant OnCall(string method, List<ActionParameter> args)
 		{
-			return _publisher.call(method, args);
+			try
+			{
+				return _publisher.call(method, args);
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				RestartRemotePublisher();
+				return _publisher.call(method, args);
+			}
 		}
 
 		protected override void OnSetProperty(string property, Variant value)
 		{
-			_publisher.setProperty(property, value);
+			try
+			{
+				_publisher.setProperty(property, value);
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				RestartRemotePublisher();
+				_publisher.setProperty(property, value);
+			}
 		}
 
 		protected override Variant OnGetProperty(string property)
 		{
-			return _publisher.getProperty(property);
+			try
+			{
+				return _publisher.getProperty(property);
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				RestartRemotePublisher();
+				return _publisher.getProperty(property);
+			}
 		}
 
 		protected override void OnOutput(byte[] buffer, int offset, int count)
