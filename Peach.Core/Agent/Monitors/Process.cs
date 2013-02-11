@@ -302,6 +302,9 @@ namespace Peach.Core.Agent.Monitors
 						var lastTime = _totalProcessorTime;
 						_totalProcessorTime = pi.TotalProcessorTicks;
 
+						logger.Debug("Message(Action.Call.IsRunning): Old Ticks={0}, New Ticks={1}",
+							lastTime, _totalProcessorTime);
+
 						if (_totalProcessorTime > 0 && lastTime == _totalProcessorTime)
 						{
 							logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
