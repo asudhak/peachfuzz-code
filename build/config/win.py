@@ -154,6 +154,7 @@ def configure(conf):
 		'/warn:4',
 		'/define:PEACH',
 		'/errorreport:prompt',
+		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [
@@ -177,6 +178,7 @@ def configure(conf):
 	])
 
 	env['CSPLATFORM'] = env.SUBARCH
+	env['CSDOC'] = True
 
 	env.append_value('MIDLFLAGS', [
 		'/%s' % ('x86' in env.SUBARCH and 'win32' or 'amd64'),

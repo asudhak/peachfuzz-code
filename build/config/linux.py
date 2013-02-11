@@ -105,6 +105,7 @@ def configure(conf):
 	env.append_value('CSFLAGS', [
 		'/warn:4',
 		'/define:PEACH,UNIX,MONO',
+		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [
@@ -117,6 +118,7 @@ def configure(conf):
 	])
 
 	env['CSPLATFORM'] = 'anycpu'
+	env['CSDOC'] = True
 
 	env.append_value('DEFINES_debug', [
 		'DEBUG',
