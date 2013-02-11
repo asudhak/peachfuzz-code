@@ -66,6 +66,7 @@ namespace Peach.Core.Agent.Monitors
 		bool _cpuKill = false;
 		bool _firstIteration = true;
 		ulong _totalProcessorTime = 0;
+		bool _firstCpuTimeSample = false;
 		int _waitForExitTimeout = 0;
 		bool _waitForExitFault = false;
 
@@ -117,6 +118,7 @@ namespace Peach.Core.Agent.Monitors
 				}
 
 				_totalProcessorTime = 0;
+				_firstCpuTimeSample = false;
 			}
 			else
 			{
@@ -305,12 +307,14 @@ namespace Peach.Core.Agent.Monitors
 						logger.Debug("Message(Action.Call.IsRunning): Old Ticks={0}, New Ticks={1}",
 							lastTime, _totalProcessorTime);
 
-						if (_totalProcessorTime > 0 && lastTime == _totalProcessorTime)
+						if (_firstCpuTimeSample && lastTime == _totalProcessorTime)
 						{
 							logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
 							_Stop();
 							return new Variant(0);
 						}
+
+						_firstCpuTimeSample = true;
 					}
 
 					return new Variant(1);
