@@ -20,5 +20,6 @@ bld(
 	unsafe = True,
 	keyfile = 'key.snk',
 	version = False,
+	csdoc = False,
 )
 

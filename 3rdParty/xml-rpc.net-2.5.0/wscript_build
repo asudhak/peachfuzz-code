@@ -17,5 +17,6 @@ bld(
 	name = 'CookComputing.XmlRpcV2.dll',
 	csflags = [ '/nowarn:0649,0618,0219' ],
 	version = False,
+	csdoc = False,
 )
 

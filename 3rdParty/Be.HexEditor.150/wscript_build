@@ -20,5 +20,6 @@ bld(
 	resource = 'HexBox.bmp',
 	keyfile = 'HexBox.snk',
 	version = False,
+	csdoc = False,
 )
 

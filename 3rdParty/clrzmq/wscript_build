@@ -18,6 +18,8 @@ bld(
 	path = root,
 	source = root.ant_glob('Shared/**/*.cs ZeroMQ/**/*.cs'),
 	name = 'ZeroMQ.dll',
+	csflags = [ '/nowarn:1635' ],
 	version = False,
+	csdoc = False,
 )
 
