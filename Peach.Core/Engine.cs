@@ -299,20 +299,6 @@ namespace Peach.Core
 
 				while ((firstRun || iterationCount <= iterationStop) && context.continueFuzzing)
 				{
-					if (!firstRun)
-					{
-						long before = GC.GetTotalMemory(false);
-
-						GC.Collect();
-						GC.WaitForPendingFinalizers();
-						GC.Collect();
-
-						long after = GC.GetTotalMemory(true);
-
-						logger.Debug("runTest: Reclaimed {2}. Memory usage before was {0}, memory usage now is {1}.",
-							PrettyBytes(before), PrettyBytes(after), PrettyBytes(before - after));
-					}
-
 					firstRun = false;
 
 					// Clear out or iteration based state store
