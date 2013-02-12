@@ -52,10 +52,15 @@ namespace Peach.Core.Test.OS.Linux
 		[Test]
 		public void TestProcess()
 		{
+			MakeProcesses(10000);
+		}
+
+		public void MakeProcesses(int max)
+		{
 			int i = 0;
 			try
 			{
-				for (; i < 10000; ++i)
+				for (; i < max; ++i)
 				{
 					if ((i % 500) == 0)
 						logger.Debug("Starting Process #{0}", i + 1);
@@ -72,17 +77,33 @@ namespace Peach.Core.Test.OS.Linux
 			}
 			finally
 			{
-				Assert.AreEqual(10000, i);
+				Assert.AreEqual(max, i);
 			}
 		}
 
 		[Test]
 		public void TestOutOfMemory()
 		{
+			// MONO_GC_PARAMS=max-heap-size=1g
+
+			for (int i = 0; i < 10; ++i)
+			{
+				logger.Debug("-------------------> Pass #{0}", i);
+
+				TriggerOutOfMemory();
+
+				MakeProcesses(5000);
+			}
+		}
+
+		private static void TriggerOutOfMemory()
+		{
+			long len = 0;
+
 			MemoryStream src = new MemoryStream();
 			MemoryStream dst = new MemoryStream();
 
-			byte[] b = new byte[1024*1024];
+			byte[] b = new byte[1024 * 1024];
 			src.Write(b, 0, b.Length);
 
 			try
@@ -91,33 +112,14 @@ namespace Peach.Core.Test.OS.Linux
 				{
 					src.Seek(0, SeekOrigin.Begin);
 					src.CopyTo(dst, (int)src.Length);
+
+					len += src.Length;
 				}
 			}
 			catch (OutOfMemoryException ex)
 			{
-				logger.Info("Out Of Memory: {0}", ex);
+				logger.Info("-------------------> Out Of Memory: Wrote {1}, {0}", ex, Utilities.PrettyBytes(len));
 			}
-
-			logger.Debug("Memory before: {0}", GC.GetTotalMemory(true));
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			logger.Debug("Memory after: {0}", GC.GetTotalMemory(true));
-
-			src = null;
-			dst = null;
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			logger.Debug("Memory final: {0}", GC.GetTotalMemory(true));
-
-			TestProcess();
 		}
-
-
 	}
 }
