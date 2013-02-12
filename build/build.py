@@ -123,10 +123,19 @@ def configure(ctx):
 				if Logs.verbose == 0:
 					Logs.pprint('YELLOW', 'Not Available - %s' % e)
 				else:
+					if str(e).startswith('msvc:'):
+						Logs.warn('Could not find %s: %s' % (ctx.env['MSVC_VERSIONS'][0], ctx.env['MSVC_TARGETS'][0]))
+						Logs.warn('Available compilers:')
+						for msvc_ver,msvc_tgts in ctx.env['MSVC_INSTALLED_VERSIONS']:
+							msvs_tgt = ' '.join([ k for k,v in msvc_tgts])
+							Logs.warn("\t%s: %s" % (msvc_ver, msvs_tgt))
 					if Logs.verbose > 1:
 						import traceback
 						traceback.print_exc()
 					Logs.warn('%s is not available: %s' % (name, e))
+
+	if not base_env.variants and Logs.verbose == 0:
+		Logs.warn('No available variants detected. Re-run configure with the \'-v\' option for more info.')
 
 
 def build(bld):
