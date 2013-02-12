@@ -299,6 +299,20 @@ namespace Peach.Core
 
 				while ((firstRun || iterationCount <= iterationStop) && context.continueFuzzing)
 				{
+					if (!firstRun)
+					{
+						long before = GC.GetTotalMemory(false);
+
+						GC.Collect();
+						GC.WaitForPendingFinalizers();
+						GC.Collect();
+
+						long after = GC.GetTotalMemory(true);
+
+						logger.Debug("runTest: Reclaimed {2}. Memory usage before was {0}, memory usage now is {1}.",
+							PrettyBytes(before), PrettyBytes(after), PrettyBytes(before - after));
+					}
+
 					firstRun = false;
 
 					// Clear out or iteration based state store
@@ -658,6 +672,17 @@ to execute same as initial control.  State " + state.name + "was not performed."
 			fault.folderName = "ControlIteration";
 			fault.type = FaultType.Fault;
 			context.faults.Add(fault);
+		}
+
+		private static string PrettyBytes(long len)
+		{
+			if (len > (1024 * 1024 * 1024))
+				return (len / (1024 * 1024 * 1024.0)).ToString("0.###") + " Gbytes";
+			if (len > (1024 * 1024))
+				return (len / (1024 * 1024.0)).ToString("0.###") + " Mbytes";
+			if (len > 1024)
+				return (len / 1024.0).ToString("0.###") + " Kbytes";
+			return len.ToString() + " Bytes";
 		}
 	}
 
