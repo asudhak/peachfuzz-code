@@ -96,7 +96,7 @@ namespace Peach.Core.Agent.Monitors
 			if (_process == null || _process.HasExited)
 			{
 				if (_process != null)
-					_process.Dispose();
+					_process.Close();
 
 				_process = new System.Diagnostics.Process();
 				_process.StartInfo.FileName = _executable;
@@ -137,17 +137,19 @@ namespace Peach.Core.Agent.Monitors
 				{
 					_process.Kill();
 					_process.WaitForExit();
-					_process.Dispose();
+					_process.Close();
 					_process = null;
 				}
-				catch
+				catch (Exception ex)
 				{
+					logger.Error("_Stop(): {0}", ex.Message);
 				}
 			}
 
 			if (_process != null)
 			{
-				_process.Dispose();
+				logger.Debug("_Stop(): Closing process handle");
+				_process.Close();
 				_process = null;
 			}
 			else
