@@ -659,17 +659,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 			fault.type = FaultType.Fault;
 			context.faults.Add(fault);
 		}
-
-		private static string PrettyBytes(long len)
-		{
-			if (len > (1024 * 1024 * 1024))
-				return (len / (1024 * 1024 * 1024.0)).ToString("0.###") + " Gbytes";
-			if (len > (1024 * 1024))
-				return (len / (1024 * 1024.0)).ToString("0.###") + " Mbytes";
-			if (len > 1024)
-				return (len / 1024.0).ToString("0.###") + " Kbytes";
-			return len.ToString() + " Bytes";
-		}
 	}
 
 	public class RedoTestException : Exception

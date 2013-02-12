@@ -515,6 +515,20 @@ namespace Peach.Core
 
 			return sb.ToString();
 		}
+
+		public static string PrettyBytes(long bytes)
+		{
+			if (bytes < 0)
+				throw new ArgumentOutOfRangeException("bytes");
+
+			if (bytes > (1024 * 1024 * 1024))
+				return (bytes / (1024 * 1024 * 1024.0)).ToString("0.###") + " Gbytes";
+			if (bytes > (1024 * 1024))
+				return (bytes / (1024 * 1024.0)).ToString("0.###") + " Mbytes";
+			if (bytes > 1024)
+				return (bytes / 1024.0).ToString("0.###") + " Kbytes";
+			return bytes.ToString() + " Bytes";
+		}
 	}
 
 	/// <summary>
