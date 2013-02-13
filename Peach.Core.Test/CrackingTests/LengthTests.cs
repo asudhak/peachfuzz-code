@@ -22,7 +22,7 @@ namespace Peach.Core.Test.CrackingTests
 		<{0} lengthType=""{1}"" {2}=""{3}"">
 			<Blob/>
 		</{0}>
-		<Number name=""num1"" size=""8"" value=""3"" />
+		<Number name=""num1"" size=""8"" value=""5"" />
 		<Number name=""num2"" size=""8"">
 			<Relation type=""size"" of=""num1"" />
 		</Number>
@@ -33,7 +33,7 @@ namespace Peach.Core.Test.CrackingTests
 <Peach>
 	<DataModel name=""TheDataModel"">
 		<{0} lengthType=""{1}"" {2}=""{3}""/>
-		<Number name=""num1"" size=""8"" value=""3"" />
+		<Number name=""num1"" size=""8"" value=""5"" />
 		<Number name=""num2"" size=""8"">
 			<Relation type=""size"" of=""num1"" />
 		</Number>
@@ -252,6 +252,33 @@ namespace Peach.Core.Test.CrackingTests
 		{
 			var bs = CrackElement("String type=\"utf16\"", "bits", "lengthCalc", "8 * 4");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
+		}
+
+		// Added tests to check lengthcalc referencing the datamodel
+
+		[Test]
+		public void BlobCalcRefBytes1()
+		{
+			var bs = CrackElement("Blob", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+		}
+		[Test]
+		public void BlobCalcRefBytes2()
+		{
+			var bs = CrackElement("Blob", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
+		}
+		[Test]
+		public void BlockCalcRefBytes1()
+		{
+			var bs = CrackContainer("Block", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+		}
+		[Test]
+		public void BlockCalcRefBytes2()
+		{
+			var bs = CrackContainer("Block", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
 		}
 	}
 }
