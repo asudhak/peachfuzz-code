@@ -16,19 +16,27 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	public class LengthTests
 	{
-		string elem_template = @"
-<Peach>
-	<DataModel name=""TheDataModel"">
-		<{0} lengthType=""{1}"" {2}=""{3}""/>
-	</DataModel>
-</Peach>";
-
 		string cont_template = @"
 <Peach>
 	<DataModel name=""TheDataModel"">
 		<{0} lengthType=""{1}"" {2}=""{3}"">
 			<Blob/>
 		</{0}>
+		<Number name=""num1"" size=""8"" value=""3"" />
+		<Number name=""num2"" size=""8"">
+			<Relation type=""size"" of=""num1"" />
+		</Number>
+	</DataModel>
+</Peach>";
+
+		string elem_template = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<{0} lengthType=""{1}"" {2}=""{3}""/>
+		<Number name=""num1"" size=""8"" value=""3"" />
+		<Number name=""num2"" size=""8"">
+			<Relation type=""size"" of=""num1"" />
+		</Number>
 	</DataModel>
 </Peach>";
 
@@ -40,15 +48,14 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			BitStream data = new BitStream();
 			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 });
+			data.WriteBytes(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC });
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(1, dom.dataModels.Count);
-			Assert.AreEqual(1, dom.dataModels[0].Count);
-
+			Assert.AreEqual(3, dom.dataModels[0].Count);
 			var de = dom.dataModels[0][0];
 
 			var cont = de as DataElementContainer;
@@ -91,6 +98,7 @@ namespace Peach.Core.Test.CrackingTests
 			var bs = CrackElement("Blob", "bytes", "lengthCalc", "10 - 5");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
 		}
+
 
 		[Test]
 		public void BlobBits()
