@@ -11,11 +11,11 @@ tools = [
 	'gxx',
 	'cs',
 	'resx',
-	'utils',
-	'externals',
-	'test',
-	'version',
 	'misc',
+	'tools.utils',
+	'tools.externals',
+	'tools.test',
+	'tools.version',
 ]
 
 def find_directory(dirname, paths):
@@ -44,7 +44,8 @@ def prepare(conf):
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
 
-	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
+	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
+	pin = j(pin_root, 'pin-2.12-54730-clang.3.0-mac')
 
 	env['EXTERNALS'] = {
 		'pin' : {

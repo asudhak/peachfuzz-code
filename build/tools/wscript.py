@@ -7,12 +7,7 @@ from waflib.Build import InstallContext
 from waflib import Utils, Logs, Configure, Context, Options, Errors
 from tools import pkg, hooks
 
-out = 'slag'
-inst = 'output'
-appname = 'peach'
-
 targets = [ 'win', 'linux', 'osx', 'foo' ]
-
 
 class TestContext(InstallContext):
 	cmd = 'test'
@@ -52,13 +47,16 @@ def configure(ctx):
 			raise self.errors.ConfigurationError(msg, ex)
 		setattr(Configure.ConfigurationContext, 'fatal', null_fatal)
 
+	out = getattr(Context.g_module, 'out')
+	inst = getattr(Context.g_module, 'inst')
+	appname = getattr(Context.g_module, 'appname')
+
 	base_env = ctx.env
 	base_env.APPNAME = appname
 	base_env.OUTPUT = base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = inst
 	base_env.BUILDTAG = Options.options.buildtag
 
 	tool_dir =  [
-		os.path.join(ctx.path.abspath(), 'build', 'tools'),
 		os.path.join(Context.waf_dir, 'waflib', 'Tools'),
 		os.path.join(Context.waf_dir, 'waflib', 'extras'),
 	]
@@ -67,7 +65,7 @@ def configure(ctx):
 
 	for tgt in targets:
 		try:
-			config = Context.load_tool(tgt, [os.path.join('build', 'config')])
+			config = Context.load_tool('config.%s' % tgt)
 			ctx.msg("Loading '%s' config" % tgt, config.__file__)
 		except:
 			ctx.msg("Loading '%s' config" % tgt, 'not found', color='YELLOW')
@@ -94,7 +92,7 @@ def configure(ctx):
 				arch_env.BINDIR = os.path.join(base_env.BINDIR, name)
 				arch_env.LIBDIR = os.path.join(base_env.LIBDIR, name)
 				config.prepare(ctx)
-				
+
 				for tool in getattr(config, 'tools', []):
 					ctx.load(tool, tool_dir)
 
@@ -115,10 +113,10 @@ def configure(ctx):
 					cfg_func = getattr(config, cfg)
 					cfg_func(cfg_env)
 					base_env.append_value('variants', variant)
-					
+
 				if Logs.verbose == 0:
 					Logs.pprint('GREEN', 'Available')
-				
+
 			except Exception, e:
 				if Logs.verbose == 0:
 					Logs.pprint('YELLOW', 'Not Available - %s' % e)
@@ -139,7 +137,14 @@ def configure(ctx):
 
 
 def build(bld):
-	subdirs = [ x.parent.nice_path() for x in bld.path.ant_glob('**/wscript_build', maxdepth=1 ) ]
+	subdirs = getattr(bld, 'subdirs', None)
+
+	if subdirs:
+		bld.recurse(subdirs)
+		return
+
+	maxdepth = getattr(Context.g_module, 'maxdepth', 1)
+	subdirs = [ x.parent.nice_path() for x in bld.path.ant_glob('**/wscript_build', maxdepth=maxdepth ) ]
 	what = Options.options.variant or ''
 	variants = what.split(',')
 
@@ -151,7 +156,7 @@ def build(bld):
 
 			ctx = Context.create_context(bld.cmd)
 			ctx.cmd = bld.cmd
-			ctx.fun = 'go'
+			ctx.fun = 'build'
 			ctx.subdirs = subdirs
 			ctx.options = Options.options
 			ctx.variant = variant
@@ -163,9 +168,3 @@ def build(bld):
 
 	# Suppress missing target warnings
 	bld.targets = '*'
-
-def go(bld):
-	bld.fun = 'build'
-	bld.recurse(bld.subdirs)
-
-

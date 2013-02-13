@@ -11,11 +11,11 @@ tools = [
 	'cs',
 	'resx',
 	'midl',
-	'utils',
-	'externals',
-	'test',
-	'version',
 	'misc',
+	'tools.utils',
+	'tools.externals',
+	'tools.test',
+	'tools.version',
 ]
 
 def prepare(conf):
@@ -26,7 +26,8 @@ def prepare(conf):
 	env['MSVC_VERSIONS'] = ['msvc 10.0']
 	env['MSVC_TARGETS']  = [ env.SUBARCH ]
 
-	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-msvc10-windows')
+	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
+	pin = j(pin_root, 'pin-2.12-54730-msvc10-windows')
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
