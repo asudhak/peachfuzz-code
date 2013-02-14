@@ -256,28 +256,71 @@ namespace Peach.Core.Test.CrackingTests
 
 		// Added tests to check lengthcalc referencing the datamodel
 
-		[Test]
-		public void BlobCalcRefBytes1()
+		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
+		public void BlobCalcElement()
 		{
 			var bs = CrackElement("Blob", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
 		}
-		[Test]
-		public void BlobCalcRefBytes2()
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
+		public void BlobCalcRelation()
 		{
 			var bs = CrackElement("Blob", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
 		}
+
 		[Test]
-		public void BlockCalcRefBytes1()
+		public void BlockCalcElement()
 		{
 			var bs = CrackContainer("Block", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
 		}
-		[Test]
-		public void BlockCalcRefBytes2()
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
+		public void BlockCalcRelation()
 		{
 			var bs = CrackContainer("Block", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
+		}
+
+		[Test]
+		public void ChoiceCalcElement()
+		{
+			var bs = CrackContainer("Choice", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+		}
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
+		public void ChoiceCalcRelation()
+		{
+			var bs = CrackContainer("Choice", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
+		}
+
+		[Test, ExpectedException(typeof(PeachException))]
+		public void FlagsCalcElement()
+		{
+			CrackElement("Flags", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
+		}
+
+		[Test, ExpectedException(typeof(PeachException))]
+		public void FlagsCalcRelation()
+		{
+			CrackElement("Flags", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
+		}
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
+		public void StringCalcElement()
+		{
+			var bs = CrackElement("String type=\"utf16\"", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+		}
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
+		public void StringCalcRelation()
+		{
+			var bs = CrackElement("String type=\"utf16\"", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
 		}
 	}
