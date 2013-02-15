@@ -190,7 +190,7 @@ namespace Peach.Core.Cracker
 				{
 					var after = element.find(element.placement.after);
 					if (after == null)
-						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name +
+						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.fullName +
 							"' with 'after' == '" + element.placement.after + "'.", element, data);
 					newElem = element.MoveAfter(after);
 				}
@@ -198,7 +198,7 @@ namespace Peach.Core.Cracker
 				{
 					DataElement before = element.find(element.placement.before);
 					if (before == null)
-						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.name +
+						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.fullName +
 							"' with 'after' == '" + element.placement.after + "'.", element, data);
 					newElem = element.MoveBefore(before);
 				}

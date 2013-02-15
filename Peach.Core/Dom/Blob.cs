@@ -122,7 +122,7 @@ namespace Peach.Core.Dom
 				blobLength = ((BitStream)element.DefaultValue).LengthBits;
 
 			if (blobLength == null)
-				throw new CrackingFailure("Unable to crack Blob '" + element + "'.", element, data);
+				throw new CrackingFailure("Unable to crack Blob '" + element.fullName + "'.", element, data);
 
 			// Round up bits to next byte
 			data.WantBytes((long)(blobLength + 7 / 8));
@@ -139,7 +139,7 @@ namespace Peach.Core.Dom
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Blob '" + element.name + "' marked as token, values did not match '" +
+					throw new CrackingFailure("Blob '" + element.fullName + "' marked as token, values did not match '" +
 						defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
 
 			element.DefaultValue = defaultValue;
