@@ -252,7 +252,7 @@ namespace Peach.Core.Cracker
 			while (true)
 			{
 				currentElement = oldElement.nextSibling();
-				if (currentElement == null && (oldElement.parent == null || oldElement.parent.transformer != null || oldElement.parent.hasLength))
+				if (currentElement == null && (oldElement.parent == null || oldElement.parent.transformer != null || this._sizedBlockMap.ContainsKey(oldElement.parent)))
 					break;
 				else if (currentElement == null)
 					currentElement = oldElement.parent;
