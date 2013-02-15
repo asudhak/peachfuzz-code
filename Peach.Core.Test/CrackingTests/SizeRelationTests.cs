@@ -226,6 +226,43 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackSizeOfBlockReference()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""Base"">
+		<Number size=""8"" name=""blocksize"">
+			<Relation type=""size"" of=""smallData"" />
+		</Number>
+		<Blob name=""smallData""/>
+	</DataModel>
+
+	<DataModel name=""DM"">
+		<Blob name=""Header"" length=""1""/>
+		<Block name=""Base1"" ref=""Base"" />
+		<Blob name=""Footer"" valueType=""hex"" value=""0"" length=""1"" token=""true"" />
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x01, 0x02, 0x33, 0x44, 0x00 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(3, dom.dataModels[1].Count);
+			Assert.AreEqual(new byte[] { 0x01 }, dom.dataModels[1][0].Value.Value);
+			Assert.AreEqual(new byte[] { 0x02 }, ((Block)dom.dataModels[1][1])[0].Value.Value);
+			Assert.AreEqual(new byte[] { 0x33, 0x44 }, ((Block)dom.dataModels[1][1])[1].Value.Value);
+			Assert.AreEqual(new byte[] { 0x00 }, dom.dataModels[1][2].Value.Value);
+		}
+
+		[Test]
 		public void CrackSizeParent()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
