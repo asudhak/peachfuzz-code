@@ -100,7 +100,5 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.AreEqual("Hello World!", (string)dom.dataModels[0].find("FooString").DefaultValue);
 		}
-
-
 	}
 }

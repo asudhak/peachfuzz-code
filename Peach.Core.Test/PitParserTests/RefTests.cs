@@ -250,10 +250,14 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(3, dom.dataModels[0].Count);
 			Assert.AreEqual(1, dom.dataModels[1].Count);
-			Assert.AreEqual(3, ((Block)dom.dataModels[1][0]).Count);
-			Assert.AreEqual("Str1", ((Block)dom.dataModels[1][0])[0].name);
-			Assert.AreEqual("Str2", ((Block)dom.dataModels[1][0])[1].name);
-			Assert.AreEqual("Str3", ((Block)dom.dataModels[1][0])[2].name);
+			Peach.Core.Dom.Array BlockArray = dom.dataModels[1][0] as Peach.Core.Dom.Array;
+			Assert.NotNull(BlockArray);
+
+			Block ReferencedBlock = ((Block)BlockArray.origionalElement);
+			Assert.AreEqual(3, ReferencedBlock.Count);
+			Assert.AreEqual("Str1", ReferencedBlock[0].name);
+			Assert.AreEqual("Str2", ReferencedBlock[1].name);
+			Assert.AreEqual("Str3", ReferencedBlock[2].name);
 		}
 
 	}
