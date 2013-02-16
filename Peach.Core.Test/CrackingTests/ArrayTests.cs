@@ -369,6 +369,36 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3, numArray.Count);
 		}
 
+		[Test, Ignore("Failure Expected. Referenced in Issue #282")]
+		public void CrackArrayWithTokenSibling()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block minOccurs=\"0\">" +
+				"			<Number name=\"num1\" size=\"8\" constraint=\"str(element.DefaultValue) != '0'\" />" +
+				"		</Block>" +
+				"		<Number name=\"zero\" size=\"8\" valueType=\"hex\" value=\"0\" token=\"true\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x01, 0x02, 0x03, 0x00});
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			Dom.Array blockArray = dom.dataModels[0][0] as Dom.Array;
+			Assert.NotNull(blockArray);
+			Assert.AreEqual(3, blockArray.Count);
+
+		}
+
 		[Test]
 		public void CrackArrayParentName()
 		{
