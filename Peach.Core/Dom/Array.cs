@@ -139,7 +139,7 @@ namespace Peach.Core.Dom
 				logger.Debug("Crack: {0} Done!", element.fullName);
 			}
 
-			else if (maxOccurs > 1 || maxOccurs == -1)
+			else if (maxOccurs != 0)
 			{
 				int cnt = 0;
 				for (cnt = 0; maxOccurs == -1 || cnt < maxOccurs; cnt++)
