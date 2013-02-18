@@ -153,7 +153,10 @@ namespace Peach.Core.Publishers
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
 
-		private static int EthernetHeaderSize = 14;
+		private const uint EthernetHeaderSize = 14;
+
+		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header
+		private const uint MaxMtu = 70000;
 
 		private UnixStream _socket = null;
 		private MemoryStream _recvBuffer = null;
@@ -191,7 +194,10 @@ namespace Peach.Core.Publishers
 				ret = ioctl(fd, SIOCGIFMTU, ref ifr);
 				UnixMarshal.ThrowExceptionForLastErrorIf(ret);
 
-				_mtu = (int)ifr.ifru_mtu + EthernetHeaderSize;
+				if (ifr.ifru_mtu > (MaxMtu - EthernetHeaderSize))
+					_mtu = (int)MaxMtu;
+				else
+					_mtu = (int)(ifr.ifru_mtu + EthernetHeaderSize);
 
 				_socket = new UnixStream(fd);
 			}

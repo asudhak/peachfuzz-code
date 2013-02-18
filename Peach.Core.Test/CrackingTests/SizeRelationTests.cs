@@ -162,6 +162,70 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackSizeOf5()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"size\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<Block name=\"Data\">" +
+				"			<Blob name=\"inner\"/>" +
+				"		</Block>" +
+				"		<Blob name=\"outer\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			data.WriteInt8((sbyte)"Hello World".Length);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])((DataElementContainer)dom.dataModels[0][1])[0].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"), (byte[])dom.dataModels[0][2].DefaultValue);
+		}
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #280")]
+		public void CrackSizeOf6()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"size\" of=\"Second\" />" +
+				"		</Number>" +
+				"		<Blob name=\"First\"/>" +
+				"		<Blob name=\"Second\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			data.WriteInt8((sbyte)"Hello World".Length);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"), (byte[])dom.dataModels[0][2].DefaultValue);
+		}
+
+		[Test]
 		public void CrackSizeParent()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +

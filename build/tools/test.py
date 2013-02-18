@@ -81,7 +81,9 @@ def make_test(self):
 		if self.gen.endswith('.dll'):
 			self.ut_nunit = True
 			self.ut_fun = prepare_nunit_test
-			outputs = [ inputs[0].change_ext('.xml'), inputs[0].change_ext('.log') ]
+			name = os.path.splitext(inputs[0].name)[0]
+			xml = inputs[0].parent.find_or_declare('utest/%s.xml' % name)
+			outputs = [ xml, xml.change_ext('.log') ]
 
 	if not inputs:
 		raise Errors.WafError('No test to run at: %r' % self)
@@ -168,6 +170,7 @@ class utest(Task.Task):
 			testlock.release()
 
 def configure(conf):
-	nunit_path = os.path.join(conf.path.abspath(), '3rdParty', 'NUnit-2.6.0.12051', 'bin')
+	root = conf.path.abspath()
+	nunit_path = conf.env['NUNIT_PATH'] or os.path.join(root, '3rdParty', 'NUnit-2.6.0.12051', 'bin')
 	nunit_name = '64' in conf.env.SUBARCH and 'nunit-console' or 'nunit-console-x86'
 	conf.find_program([nunit_name], var='NUNIT', exts='.exe', path_list=[nunit_path])

@@ -507,17 +507,6 @@
     <Compile Include="IO\Conversion\Endianness.cs" />
     <Compile Include="IO\Conversion\LittleEndianBitConverter.cs" />
     <Compile Include="IWeighted.cs" />
-    <Compile Include="Language\DotNet\AssemblyFuzzer.cs" />
-    <Compile Include="Language\DotNet\Generators\ClassGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\CtorGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\Generator.cs" />
-    <Compile Include="Language\DotNet\Generators\MethodGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\ObjectGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\PropertyGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\TypeGenerators.cs" />
-    <Compile Include="Language\DotNet\Groups.cs" />
-    <Compile Include="Language\DotNet\ObjectFuzzer.cs" />
-    <Compile Include="Language\DotNet\PeachData.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicStrategy.cs" />

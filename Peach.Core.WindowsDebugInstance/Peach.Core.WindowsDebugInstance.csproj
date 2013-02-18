@@ -136,12 +136,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir $(SolutionDir)Peach\$(OutDir)
-mkdir $(SolutionDir)PeachFuzzBang\$(OutDir)
-mkdir $(SolutionDir)Peach.Core.Test.OS.Windows\$(OutDir)
-copy /y $(TargetDir)$(TargetName)* $(SolutionDir)Peach\$(OutDir)
-copy /y $(TargetDir)$(TargetName)* $(SolutionDir)PeachFuzzBang\$(OutDir)
-copy /y $(TargetDir)$(TargetName)* $(SolutionDir)Peach.Core.Test.OS.Windows\$(OutDir)</PostBuildEvent>
+    <PostBuildEvent>mkdir $(ProjectDir)..\Peach\$(OutDir)
+mkdir $(ProjectDir)..\PeachFuzzBang\$(OutDir)
+mkdir $(ProjectDir)..\Peach.Core.Test.OS.Windows\$(OutDir)
+copy /y $(TargetDir)$(TargetName)* $(ProjectDir)..\Peach\$(OutDir)
+copy /y $(TargetDir)$(TargetName)* $(ProjectDir)..\PeachFuzzBang\$(OutDir)
+copy /y $(TargetDir)$(TargetName)* $(ProjectDir)..\Peach.Core.Test.OS.Windows\$(OutDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

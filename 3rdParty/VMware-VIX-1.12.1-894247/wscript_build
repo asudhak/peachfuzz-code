@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-dll = bld.env['cshlib_PATTERN'] % '*'
-src = bld.path.find_dir(bld.env['BASENAME']).ant_glob(dll)[0]
-dst = bld.env['cshlib_PATTERN'] % 'VixAllProducts'
+if 'cshlib' in bld.env['supported_features']:
+	dll = bld.env['cshlib_PATTERN'] % '*'
+	src = bld.path.find_dir(bld.env['BASENAME']).ant_glob(dll)[0]
+	dst = bld.env['cshlib_PATTERN'] % 'VixAllProducts'
 
-bld.install_as('${BINDIR}/%s' % dst, src, chmod=Utils.O755)
+	bld.install_as('${BINDIR}/%s' % dst, src, chmod=Utils.O755)

@@ -66,6 +66,7 @@ namespace Peach.Core.Agent.Monitors
 		bool _cpuKill = false;
 		bool _firstIteration = true;
 		ulong _totalProcessorTime = 0;
+		bool _firstCpuTimeSample = false;
 		int _waitForExitTimeout = 0;
 		bool _waitForExitFault = false;
 
@@ -95,7 +96,7 @@ namespace Peach.Core.Agent.Monitors
 			if (_process == null || _process.HasExited)
 			{
 				if (_process != null)
-					_process.Dispose();
+					_process.Close();
 
 				_process = new System.Diagnostics.Process();
 				_process.StartInfo.FileName = _executable;
@@ -117,6 +118,7 @@ namespace Peach.Core.Agent.Monitors
 				}
 
 				_totalProcessorTime = 0;
+				_firstCpuTimeSample = false;
 			}
 			else
 			{
@@ -135,17 +137,19 @@ namespace Peach.Core.Agent.Monitors
 				{
 					_process.Kill();
 					_process.WaitForExit();
-					_process.Dispose();
+					_process.Close();
 					_process = null;
 				}
-				catch
+				catch (Exception ex)
 				{
+					logger.Error("_Stop(): {0}", ex.Message);
 				}
 			}
 
 			if (_process != null)
 			{
-				_process.Dispose();
+				logger.Debug("_Stop(): Closing process handle");
+				_process.Close();
 				_process = null;
 			}
 			else
@@ -302,12 +306,17 @@ namespace Peach.Core.Agent.Monitors
 						var lastTime = _totalProcessorTime;
 						_totalProcessorTime = pi.TotalProcessorTicks;
 
-						if (_totalProcessorTime > 0 && lastTime == _totalProcessorTime)
+						logger.Debug("Message(Action.Call.IsRunning): Old Ticks={0}, New Ticks={1}",
+							lastTime, _totalProcessorTime);
+
+						if (_firstCpuTimeSample && lastTime == _totalProcessorTime)
 						{
 							logger.Debug("Message(Action.Call.IsRunning): Stopping process.");
 							_Stop();
 							return new Variant(0);
 						}
+
+						_firstCpuTimeSample = true;
 					}
 
 					return new Variant(1);

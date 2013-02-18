@@ -53,10 +53,15 @@ cfg = {
 
 tgt = bld.env['TARGET']
 
+def getcfg(arg):
+	if not cfg.has_key(tgt):
+		return None
+	return cfg[tgt][arg]
+
 bld(
 	name     = 'zmq_cfg',
-	features = 'emit',
-	source   = cfg[tgt]['cfg'],
+	features = 'emit cxx',
+	source   = getcfg('cfg'),
 	target   = 'platform.hpp',
 )
 
@@ -77,7 +82,7 @@ zmq = bld(
 #	vnum     = '.'.join(zmq_version),
 	includes = [ '.', 'include' ],
 	source   = bld.path.ant_glob('src/*.cpp'),
-	defines  = cfg[tgt]['defs'],
+	defines  = getcfg('defs'),
 	version  = False,
 )
 

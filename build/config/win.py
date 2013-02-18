@@ -11,11 +11,11 @@ tools = [
 	'cs',
 	'resx',
 	'midl',
-	'utils',
-	'externals',
-	'test',
-	'version',
 	'misc',
+	'tools.utils',
+	'tools.externals',
+	'tools.test',
+	'tools.version',
 ]
 
 def prepare(conf):
@@ -26,7 +26,8 @@ def prepare(conf):
 	env['MSVC_VERSIONS'] = ['msvc 10.0']
 	env['MSVC_TARGETS']  = [ env.SUBARCH ]
 
-	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-msvc10-windows')
+	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
+	pin = j(pin_root, 'pin-2.12-54730-msvc10-windows')
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
@@ -154,6 +155,7 @@ def configure(conf):
 		'/warn:4',
 		'/define:PEACH',
 		'/errorreport:prompt',
+		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [
@@ -177,6 +179,7 @@ def configure(conf):
 	])
 
 	env['CSPLATFORM'] = env.SUBARCH
+	env['CSDOC'] = True
 
 	env.append_value('MIDLFLAGS', [
 		'/%s' % ('x86' in env.SUBARCH and 'win32' or 'amd64'),

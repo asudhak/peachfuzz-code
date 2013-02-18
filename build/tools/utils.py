@@ -117,6 +117,7 @@ def clone_env(self, variant):
 	copy.PREFIX = self.env.PREFIX
 	copy.BINDIR = self.env.BINDIR
 	copy.LIBDIR = self.env.LIBDIR
+	copy.DOCDIR = self.env.DOCDIR
 	return copy
 
 @conf
@@ -138,9 +139,10 @@ def ensure_version(self, tool, ver_exp):
 		raise Errors.WafError("Requires %s %s but found version %s" % (exe, ver_exp, ver))
 
 @feature('emit')
-@before_method('process_source')
+@before_method('process_rule')
 def apply_emit(self):
 	self.env.EMIT_SOURCE = self.source
+	self.source = []
 	self.meths.remove('process_source')
 	outputs = [ self.path.find_or_declare(self.target) ]
 	self.create_task('emit', None, outputs)
