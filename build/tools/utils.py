@@ -117,6 +117,7 @@ def clone_env(self, variant):
 	copy.PREFIX = self.env.PREFIX
 	copy.BINDIR = self.env.BINDIR
 	copy.LIBDIR = self.env.LIBDIR
+	copy.DOCDIR = self.env.DOCDIR
 	return copy
 
 @conf
