@@ -6,8 +6,8 @@ def configure(conf):
 	#conf.find_program('a2x', var='A2X')
 	#conf.find_program('dia', var='DIA')
 	#conf.find_program('convert', var='CONVERT')
-	#conf.find_program('source-highlight', var='SOURCE_HIGHLIGHT')
 	#conf.find_program('dot')
+	conf.find_program('source-highlight', var='SOURCE_HIGHLIGHT')
 	conf.find_program('asciidoc', var='ADOC')
 	conf.env['ADOCOPTS'] = [ '--backend=xhtml11' ]
 
