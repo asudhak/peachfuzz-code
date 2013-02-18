@@ -205,6 +205,61 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Str2", ((Block)((Block)dom.dataModels[0][1])[0])[1].name);
 			Assert.AreEqual("Str3", ((Block)dom.dataModels[0][1])[1].name);
 		}
+
+		[Test]
+		public void BlockTest1()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel1\">" +
+				"		<String name=\"Str1\" />" +
+				"		<String name=\"Str2\" />" +
+				"		<String name=\"Str3\" />" +
+				"	</DataModel>" +
+				"	<DataModel name=\"TheDataModel2\">" +
+				"		<Block name=\"TheBlock1\" ref=\"TheDataModel1\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual(1, dom.dataModels[1].Count);
+			Assert.AreEqual(3, ((Block)dom.dataModels[1][0]).Count);
+			Assert.AreEqual("Str1", ((Block)dom.dataModels[1][0])[0].name);
+			Assert.AreEqual("Str2", ((Block)dom.dataModels[1][0])[1].name);
+			Assert.AreEqual("Str3", ((Block)dom.dataModels[1][0])[2].name);
+		}
+
+		[Test]
+		public void BlockMinMaxTest1()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel1\">" +
+				"		<String name=\"Str1\" />" +
+				"		<String name=\"Str2\" />" +
+				"		<String name=\"Str3\" />" +
+				"	</DataModel>" +
+				"	<DataModel name=\"TheDataModel2\">" +
+				"		<Block name=\"TheBlock1\" minOccurs=\"0\" maxOccurs=\"1\" ref=\"TheDataModel1\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual(1, dom.dataModels[1].Count);
+			Peach.Core.Dom.Array BlockArray = dom.dataModels[1][0] as Peach.Core.Dom.Array;
+			Assert.NotNull(BlockArray);
+
+			Block ReferencedBlock = ((Block)BlockArray.origionalElement);
+			Assert.AreEqual(3, ReferencedBlock.Count);
+			Assert.AreEqual("Str1", ReferencedBlock[0].name);
+			Assert.AreEqual("Str2", ReferencedBlock[1].name);
+			Assert.AreEqual("Str3", ReferencedBlock[2].name);
+		}
+
 	}
 }
 
