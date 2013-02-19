@@ -400,7 +400,7 @@ namespace Peach.Core.Cracker
 					if (sibling == null)
 					{
 						var parent = next.parent;
-						while (sibling == null && parent != null && parent.transformer == null)
+						while (sibling == null && parent != null && parent.transformer == null && !this._sizedBlockMap.ContainsKey(parent))
 						{
 							sibling = parent.nextSibling();
 							parent = parent.parent;
