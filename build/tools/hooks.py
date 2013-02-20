@@ -2,7 +2,7 @@ from waflib.Build import BuildContext, InstallContext
 from waflib.Configure import ConfigurationContext
 from waflib.Context import Context
 from waflib.Task import TaskBase
-from waflib import Build, Utils, Logs
+from waflib import Build, Utils, Logs, Errors
 import os.path
 import sys
 
