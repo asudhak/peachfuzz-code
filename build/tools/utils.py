@@ -54,8 +54,8 @@ def install_csshlib(self):
 		if config:
 			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
 
-@feature('cs')
-@before_method('apply_cs')
+@feature('cs', 'msbuild')
+@before_method('apply_cs', 'apply_mbuild')
 def cs_helpers(self):
 	# set self.gen based off self.name since they are usually the same
 	if not getattr(self, 'gen', None):

@@ -12,6 +12,7 @@ tools = [
 	'resx',
 	'midl',
 	'misc',
+	'tools.msbuild',
 	'tools.utils',
 	'tools.externals',
 	'tools.test',
@@ -115,6 +116,7 @@ def configure(conf):
 		'emit',
 		'vnum',
 		'subst',
+		'msbuild',
 	])
 
 	cppflags = [
