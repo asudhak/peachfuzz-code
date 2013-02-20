@@ -287,6 +287,60 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 		}
+
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage="Unable to crack 'TheDataModel.block'.  Size relation from 'TheDataModel.block.num' is 16 bits but already cracked 32 bits.")]
+		public void CrackBadSizeParent()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block name='block'>
+			<Number name='num' signed='false' endian='big' size='32'>
+				<Relation type='size' of='block'/>
+			</Number>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			data.WriteBytes(new byte[] { 0, 0, 0, 2 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
+
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "Unable to crack 'TheDataModel.block'.  Size relation from 'TheDataModel.block.inner.num' is 16 bits but already cracked 32 bits.")]
+		public void CrackBadSizeBlockParent()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block name='block'>
+			<Block name='inner'>
+				<Number name='num' signed='false' endian='big' size='32'>
+					<Relation type='size' of='block'/>
+				</Number>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			data.WriteBytes(new byte[] { 0, 0, 0, 2 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
 	}
 }
 

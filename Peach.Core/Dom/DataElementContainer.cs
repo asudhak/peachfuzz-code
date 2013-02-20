@@ -104,30 +104,22 @@ namespace Peach.Core.Dom
 				// can use it then re-size our data.
 				if (sizeRelation != null)
 				{
-					if (child is DataElementContainer &&
-						((DataElementContainer)child).isParentOf(sizeRelation.From))
+					if (child == sizeRelation.From || (child is DataElementContainer &&
+						((DataElementContainer)child).isParentOf(sizeRelation.From)))
 					{
 						long size = (long)sizeRelation.GetValue();
 						context._sizedBlockStack.Add(element);
 						context._sizedBlockMap[element] = size;
 
 						// update size based on what we have currently read
-						size -= data.TellBits() - startPosition;
+						long read = data.TellBits() - startPosition;
 
-						sizedData = data.ReadBitsAsBitStream(size);
-						sizeRelation = null;
-					}
-					else if (child == sizeRelation.From)
-					{
-						long size = (long)sizeRelation.GetValue();
-						context._sizedBlockStack.Add(element);
-						context._sizedBlockMap[element] = size;
+						if (size < read)
+							throw new CrackingFailure("Unable to crack '" + element.fullName +
+								"'.  Size relation from '" + sizeRelation.From.fullName + "' is " + size +
+								" bits but already cracked " + read + " bits.", element, data);
 
-						// update size based on what we have currently read
-						size -= data.TellBits() - startPosition;
-
-						if (size < 0)
-							throw new CrackingFailure("Relation of container too small.", child, data);
+						size -= read;
 
 						sizedData = data.ReadBitsAsBitStream(size);
 						sizeRelation = null;
