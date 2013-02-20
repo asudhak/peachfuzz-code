@@ -15,12 +15,14 @@ msbuild_fmt = '''<?xml version="1.0" encoding="utf-8"?>
 {PROPERTIES}
 	</PropertyGroup>
 
+
 {SOURCES}
 
 	<ItemGroup>
 {REFERENCES}
 {REF_HINTS}
 	</ItemGroup>
+
 
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
@@ -29,7 +31,9 @@ msbuild_fmt = '''<?xml version="1.0" encoding="utf-8"?>
 
 # Compile, EmbeddedResource, Page, Resource
 src_fmt = '''	<ItemGroup>
-		<{1} Include="{0}"/>
+		<{1} Include="{0}">
+			<Link>{2}</Link>
+		</{1}>
 	</ItemGroup>'''
 
 ref_fmt = '''		<Reference Include="{0}">
@@ -47,7 +51,13 @@ def get_source_type(name):
 			return 'Page'
 		if name.endswith('.resx'):
 			return 'EmbeddedResource'
-		raise Errors.WafError('Error, no msbuild mapping for file "%s"' % str(x))
+		raise Errors.WafError('No source type mapping for "%s"' % name)
+
+def get_link_path(self, node):
+	if node.is_src():
+		return str(node.path_from(self.path))
+	else:
+		return str(node.path_from(self.path.get_bld()))
 
 @feature('msbuild')
 @before_method('process_source')
@@ -59,6 +69,7 @@ def apply_msbuild(self):
 
 	cfg['OutputType'] = bintype
 	cfg['AssemblyName'] = os.path.splitext(self.gen)[0]
+	cfg['RootNamespace'] = getattr(self, 'namespace', cfg['AssemblyName'])
 	cfg['TargetFrameworkVersion'] = 'v4.0'
 	cfg['PlatformTarget'] = getattr(self, 'platform', 'anycpu')
 	cfg['IntermediateOutputPath'] = 'obj'
@@ -66,23 +77,29 @@ def apply_msbuild(self):
 	cfg['UseCommonOutputDirectory'] = 'true'
 	cfg['WarningLevel'] = '4'
 
-	cfg['Optimize'] = 'false'
-	cfg['DefineConstants'] = 'DEBUG;TRACE'
-
 	self.gen_task = self.create_task('genproj', [], asm.change_ext('.proj'))
 	self.cs_task = self.create_task('msbuild', self.gen_task.outputs, asm)
 
-	deps = []
-	srcs = []
-	for x in self.to_nodes(self.source):
-		deps.append(x)
-		s = x.abspath()
-		srcs.append( (s, get_source_type(s)) )
+	main = self.to_nodes(getattr(self, 'main', []))
+	source = self.to_nodes(getattr(self, 'source', []))
+	resource = self.to_nodes(getattr(self, 'resource', []))
+	icon = self.to_nodes(getattr(self, 'icon', []))
 
-	for x in self.to_nodes(getattr(self, 'resource', [])):
-		deps.append(x)
-		s = x.abspath()
-		srcs.append( (s, 'Resource') )
+	srcs = []
+
+	for x in main:
+		srcs.append( (x.abspath(), 'ApplicationDefinition', get_link_path(self, x)) )
+		if x in source:
+			source.remove(x)
+
+	for x in source:
+		srcs.append( (x.abspath(), get_source_type(x.name), get_link_path(self, x)) )
+
+	for x in resource:
+		srcs.append( (x.abspath(), 'Resource', get_link_path(self, x)) )
+
+	if icon:
+		cfg['ApplicationIcon'] = icon[0].abspath()
 
 	self.gen_task.env.MSBUILD_FMT = msbuild_fmt
 	self.gen_task.env.MSBUILD_CFG = cfg
@@ -90,15 +107,20 @@ def apply_msbuild(self):
 	self.gen_task.env.MSBUILD_REF = []
 	self.gen_task.env.MSBUILD_USE = []
 
-	self.cs_task.dep_nodes.extend(deps)
+	self.cs_task.dep_nodes.extend(main + source + resource + icon)
 
 	self.source = []
-
+	x.y = 1
 	inst_to = getattr(self, 'install_path', bintype=='exe' and '${BINDIR}' or '${LIBDIR}')
 	if inst_to:
 		# note: we are making a copy, so the files added to cs_task.outputs won't be installed automatically
 		mod = getattr(self, 'chmod', bintype=='exe' and Utils.O755 or Utils.O644)
 		self.install_task = self.bld.install_files(inst_to, self.cs_task.outputs[:], env=self.env, chmod=mod)
+
+		# if this is an exe, look for app.config and install to ${BINDIR}
+		if 'exe' in bintype:
+			cfg = self.path.find_or_declare('app.config')
+			self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O755)
 
 @feature('msbuild')
 @after_method('propagate_uselib_vars')
@@ -114,13 +136,6 @@ def uselib_msbuild(self):
 @feature('msbuild')
 @after_method('apply_msbuild')
 def use_msbuild(self):
-	"""
-	C# applications honor the **use** keyword::
-
-		def build(bld):
-			bld(features='cs', source='My.cs', bintype='library', gen='my.dll', name='mylib')
-			bld(features='cs', source='Hi.cs', includes='.', bintype='exe', gen='hi.exe', use='mylib', name='hi')
-	"""
 	names = self.to_list(getattr(self, 'use', []))
 	get = self.bld.get_tgen_by_name
 	for x in names:
@@ -137,18 +152,11 @@ def use_msbuild(self):
 		self.cs_task.dep_nodes.extend(tsk.outputs) # dependency
 		self.cs_task.set_run_after(tsk) # order (redundant, the order is infered from the nodes inputs/outputs)
 		f = tsk.outputs[0]
-		self.gen_task.env.MSBUILD_REF.append( (os.path.splitext(f.name)[0], f.abspath()) )
+		self.gen_task.env.MSBUILD_REF.append( (f.abspath(), os.path.splitext(f.name)[0]) )
 
 @feature('msbuild')
 @after_method('apply_msbuild', 'use_msbuild')
 def debug_msbuild(self):
-	"""
-	The C# targets may create .mdb or .pdb files::
-
-		def build(bld):
-			bld(features='cs', source='My.cs', bintype='library', gen='my.dll', csdebug='full')
-			# csdebug is a value in [True, 'full', 'pdbonly']
-	"""
 	csdebug = getattr(self, 'csdebug', self.env.CSDEBUG)
 	if not csdebug:
 		return
@@ -178,13 +186,6 @@ def debug_msbuild(self):
 @feature('msbuild')
 @after_method('apply_msbuild', 'use_msbuild')
 def doc_msbuild(self):
-	"""
-	The C# targets may create .xml documentation files::
-
-		def build(bld):
-			bld(features='cs', source='My.cs', bintype='library', gen='my.dll', csdoc=True)
-			# csdoc is a boolean value
-	"""
 	csdoc = getattr(self, 'csdoc', self.env.CSDOC)
 	if not csdoc:
 		return
@@ -216,8 +217,8 @@ class genproj(Task.Task):
 
 	def run(self):
 		cfg = '\n'.join([ cfg_fmt.format(k, v) for k,v in self.env.MSBUILD_CFG.items()])
-		src = '\n'.join([ src_fmt.format(k, v) for k,v in self.env.MSBUILD_SRC])
-		ref = '\n'.join([ ref_fmt.format(k, v) for k,v in self.env.MSBUILD_REF])
+		src = '\n'.join([ src_fmt.format(n, t, l) for n,t,l in self.env.MSBUILD_SRC])
+		ref = '\n'.join([ ref_fmt.format(p, n) for p,n in self.env.MSBUILD_REF])
 		use = '\n'.join([ use_fmt.format(i) for i in self.env.MSBUILD_USE])
 
 		fmt = {
@@ -228,7 +229,5 @@ class genproj(Task.Task):
 		}
 
 		txt = self.env.MSBUILD_FMT.format(**fmt)
-
-		print txt
-
+		#print txt
 		self.outputs[0].write(txt)
