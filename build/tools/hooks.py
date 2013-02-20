@@ -112,7 +112,7 @@ def display(self):
 
 # InstallContext
 def do_install(self, src, tgt, chmod=Utils.O644):
-	if Logs.verbose == 0 and self.progress_bar == 0:
+	if Logs.verbose <= 1 and self.progress_bar == 0:
 		self.progress_bar = -1;
 
 	ret = self.base_do_install(src, tgt, chmod)
