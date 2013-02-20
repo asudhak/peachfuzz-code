@@ -75,6 +75,16 @@ namespace Peach.Core
 	[Serializable]
 	public class SoftException : ApplicationException
 	{
+		public SoftException(string message, Exception innerException)
+			: base(message, innerException)
+		{
+		}
+
+		public SoftException(string message)
+			: base(message)
+		{
+		}
+
 		public SoftException(Exception innerException)
 			: base(innerException.Message, innerException)
 		{

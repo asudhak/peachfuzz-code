@@ -21,7 +21,7 @@ namespace PeachValidator
 	{
 		string windowTitle = "Peach Validator v3.0";
 		string windowTitlePit = "Peach Validator v3.0 - {0}";
-		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {0}";
+		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {1}";
 		string windowTitleSample = "Peach Validator v3.0 - None - {0}";
 		string sampleFileName = null;
 		string pitFileName = null;
@@ -37,11 +37,11 @@ namespace PeachValidator
 		protected void setTitle()
 		{
 			if (!string.IsNullOrEmpty(sampleFileName) && !string.IsNullOrEmpty(pitFileName))
-				Text = string.Format(windowTitlePitSample, pitFileName, sampleFileName);
+				Text = string.Format(windowTitlePitSample, Path.GetFileName(pitFileName), Path.GetFileName(sampleFileName));
 			else if (string.IsNullOrEmpty(sampleFileName) && !string.IsNullOrEmpty(pitFileName))
-				Text = string.Format(windowTitlePit, pitFileName);
+				Text = string.Format(windowTitlePit, Path.GetFileName(pitFileName));
 			else if (!string.IsNullOrEmpty(sampleFileName) && string.IsNullOrEmpty(pitFileName))
-				Text = string.Format(windowTitleSample, sampleFileName);
+				Text = string.Format(windowTitleSample, Path.GetFileName(sampleFileName));
 			else
 				Text = windowTitle;
 		}
@@ -56,7 +56,7 @@ namespace PeachValidator
 			setTitle();
 
 			DynamicFileByteProvider dynamicFileByteProvider;
-			dynamicFileByteProvider = new DynamicFileByteProvider(File.OpenRead(sampleFileName));
+			dynamicFileByteProvider = new DynamicFileByteProvider(new FileStream(sampleFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 			hexBox1.ByteProvider = dynamicFileByteProvider;
 
 			toolStripButtonRefreshSample_Click(null, null);
@@ -64,13 +64,16 @@ namespace PeachValidator
 
 		private void toolStripButtonRefreshSample_Click(object sender, EventArgs e)
 		{
+			var cursor = Cursor.Current;
+			Cursor.Current = Cursors.WaitCursor;
+
 			try
 			{
 				if (string.IsNullOrEmpty(dataModel) || string.IsNullOrEmpty(sampleFileName) || string.IsNullOrEmpty(pitFileName))
 					return;
 
 				byte[] buff;
-				using (Stream sin = File.OpenRead(sampleFileName))
+				using (Stream sin = new FileStream(sampleFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				{
 					buff = new byte[sin.Length];
 					sin.Read(buff, 0, buff.Length);
@@ -85,7 +88,7 @@ namespace PeachValidator
 				treeViewAdv1.BeginUpdate();
 				treeViewAdv1.Model = null;
 				crackModel = new CrackModel();
-				
+
 				try
 				{
 					BitStream data = new BitStream(buff);
@@ -95,8 +98,9 @@ namespace PeachValidator
 					cracker.PlacementEvent += new PlacementEventHandler(cracker_PlacementEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
-				catch
+				catch (CrackingFailure ex)
 				{
+					MessageBox.Show("Error cracking \"" + ex.element.fullName + "\".\n" + ex.Message, "Error Cracking");
 					crackMap[dom.dataModels[dataModel]].Error = true;
 				}
 
@@ -117,6 +121,10 @@ namespace PeachValidator
 			catch (Exception ex)
 			{
 				MessageBox.Show("Error cracking file: " + ex.ToString());
+			}
+			finally
+			{
+				Cursor.Current = cursor;
 			}
 		}
 
@@ -145,6 +153,14 @@ namespace PeachValidator
 			{
 				// TODO -- Need to handle this case!
 			}
+
+			// Figure out if we are relative to prent and mark as such.
+			if (currentModel.Position == 0 && currentModel.Parent != null &&
+				currentModel.Parent.Position > 0)
+			{
+				currentModel.Parent.MarkChildrenRelativeToParent();
+			}
+
 		}
 
 		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
@@ -182,6 +198,12 @@ namespace PeachValidator
 
 				if(toolStripComboBoxDataModel.Items.Count > 0)
 					toolStripComboBoxDataModel.SelectedIndex = 0;
+
+				treeViewAdv1.BeginUpdate();
+				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[0]);
+				treeViewAdv1.Model = crackModel;
+				treeViewAdv1.EndUpdate();
+				treeViewAdv1.Root.Children[0].Expand();
 			}
 			catch (Exception ex)
 			{
@@ -194,6 +216,15 @@ namespace PeachValidator
 			try
 			{
 				dataModel = toolStripComboBoxDataModel.SelectedItem as string;
+
+				PitParser parser = new PitParser();
+				Dom dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+
+				treeViewAdv1.BeginUpdate();
+				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[dataModel]);
+				treeViewAdv1.Model = crackModel;
+				treeViewAdv1.EndUpdate();
+				treeViewAdv1.Root.Children[0].Expand();
 			}
 			catch
 			{
