@@ -74,6 +74,20 @@ namespace PeachValidator
 			Error = false;
 		}
 
+		public bool RelativeToParent
+		{
+			get;
+			set;
+		}
+
+		public void MarkChildrenRelativeToParent()
+		{
+			foreach (var child in Children)
+			{
+				child.RelativeToParent = true;
+			}
+		}
+
 		public CrackNode Root
 		{
 			get
@@ -108,8 +122,6 @@ namespace PeachValidator
 		{
 			get
 			{
-				//var stuff = System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceNames();
-
 				return new Bitmap(
 				  System.Reflection.Assembly.GetEntryAssembly().
 					GetManifestResourceStream(IconName));
@@ -117,7 +129,20 @@ namespace PeachValidator
 			}
 		}
 
-		public CrackNode Parent { get; set; }
+		protected CrackNode parent = null;
+		public CrackNode Parent
+		{
+			get { return parent; }
+			set
+			{
+				parent = value;
+
+				if (Position == 0 && Length > 0 && Parent != null && Parent.Position > 0)
+				{
+					Parent.MarkChildrenRelativeToParent();
+				}
+			}
+		}
 
 		public DataElement DataElement
 		{
@@ -125,10 +150,26 @@ namespace PeachValidator
 			set;
 		}
 
+		protected int position;
 		public int Position
 		{
-			get;
-			set;
+			get
+			{
+				if (RelativeToParent)
+					return position + Parent.Position;
+
+				return position;
+			}
+
+			set
+			{
+				position = value;
+
+				if (Position == 0 && Parent != null && Parent.Position > 0)
+				{
+					Parent.MarkChildrenRelativeToParent();
+				}
+			}
 		}
 
 		public int Length
@@ -197,6 +238,7 @@ namespace PeachValidator
 		{
 			child.Parent = this;
 			Children.Add(child);
+
 			Model.OnNodesChanged(this);
 		}
 

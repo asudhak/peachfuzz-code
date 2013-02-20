@@ -56,7 +56,7 @@ namespace PeachValidator
 			setTitle();
 
 			DynamicFileByteProvider dynamicFileByteProvider;
-			dynamicFileByteProvider = new DynamicFileByteProvider(File.OpenRead(sampleFileName));
+			dynamicFileByteProvider = new DynamicFileByteProvider(new FileStream(sampleFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
 			hexBox1.ByteProvider = dynamicFileByteProvider;
 
 			toolStripButtonRefreshSample_Click(null, null);
@@ -64,13 +64,16 @@ namespace PeachValidator
 
 		private void toolStripButtonRefreshSample_Click(object sender, EventArgs e)
 		{
+			var cursor = Cursor.Current;
+			Cursor.Current = Cursors.WaitCursor;
+
 			try
 			{
 				if (string.IsNullOrEmpty(dataModel) || string.IsNullOrEmpty(sampleFileName) || string.IsNullOrEmpty(pitFileName))
 					return;
 
 				byte[] buff;
-				using (Stream sin = File.OpenRead(sampleFileName))
+				using (Stream sin = new FileStream(sampleFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				{
 					buff = new byte[sin.Length];
 					sin.Read(buff, 0, buff.Length);
@@ -85,7 +88,7 @@ namespace PeachValidator
 				treeViewAdv1.BeginUpdate();
 				treeViewAdv1.Model = null;
 				crackModel = new CrackModel();
-				
+
 				try
 				{
 					BitStream data = new BitStream(buff);
@@ -95,8 +98,10 @@ namespace PeachValidator
 					cracker.PlacementEvent += new PlacementEventHandler(cracker_PlacementEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
-				catch
+				catch (CrackingFailure ex)
 				{
+					MessageBox.Show("Error cracking \"" + ex.element.fullName + "\".\n" + ex.Message, "Error Cracking");
+
 					crackMap[dom.dataModels[dataModel]].Error = true;
 				}
 
@@ -117,6 +122,10 @@ namespace PeachValidator
 			catch (Exception ex)
 			{
 				MessageBox.Show("Error cracking file: " + ex.ToString());
+			}
+			finally
+			{
+				Cursor.Current = cursor;
 			}
 		}
 
@@ -145,6 +154,14 @@ namespace PeachValidator
 			{
 				// TODO -- Need to handle this case!
 			}
+
+			// Figure out if we are relative to prent and mark as such.
+			if (currentModel.Position == 0 && currentModel.Parent != null &&
+				currentModel.Parent.Position > 0)
+			{
+				currentModel.Parent.MarkChildrenRelativeToParent();
+			}
+
 		}
 
 		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
