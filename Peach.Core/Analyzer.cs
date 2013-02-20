@@ -69,7 +69,9 @@ namespace Peach.Core
 			{
 				using(Stream fin = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				{
-					return asParser(args, fin);
+					Dom.Dom ret = asParser(args, fin);
+					ret.fileName = fileName;
+					return ret;
 				}
 			}
 			catch (FileNotFoundException fileNotFoundException)

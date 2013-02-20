@@ -436,7 +436,6 @@
     <Compile Include="Dom\Data.cs" />
     <Compile Include="Dom\DataElementContainer.cs" />
     <Compile Include="Dom\DataSet.cs" />
-    <Compile Include="Dom\DomNamespace.cs" />
     <Compile Include="Dom\Flag.cs" />
     <Compile Include="Dom\Hint.cs" />
     <Compile Include="Dom\INamed.cs" />

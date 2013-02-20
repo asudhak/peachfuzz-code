@@ -82,7 +82,7 @@ namespace Peach.Core.Dom
 			if (node.hasAttr("ref"))
 			{
 				string refName = node.getAttrString("ref");
-				Block refObj = Analyzers.PitParser.getReference(context._dom, refName, parent) as Block;
+				Block refObj = context.getReference(refName, parent) as Block;
 				if (refObj == null)
 					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 

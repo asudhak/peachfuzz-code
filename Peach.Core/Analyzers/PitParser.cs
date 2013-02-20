@@ -59,7 +59,7 @@ namespace Peach.Core.Analyzers
 
 		static readonly string PEACH_NAMESPACE_URI = "http://peachfuzzer.com/2012/Peach";
 
-		public Dom.Dom _dom = null;
+		Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
 
 		/// <summary>
@@ -120,12 +120,13 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Peach")
 				{
-					handlePeach(child, _dom);
+					handlePeach(child, args);
 					break;
 				}
 			}
 
-            _dom.evaulateDataModelAnalyzers();
+			_dom.evaulateDataModelAnalyzers();
+
 			return _dom;
 		}
 
@@ -208,10 +209,10 @@ namespace Peach.Core.Analyzers
 		/// Handle parsing the top level Peach node.
 		/// </summary>
 		/// <param name="node">XmlNode to parse</param>
-		/// <param name="dom">DOM to fill</param>
 		/// <returns>Returns the parsed Dom object.</returns>
-		protected virtual Dom.Dom handlePeach(XmlNode node, Dom.Dom dom)
+		protected virtual void handlePeach(XmlNode node, Dictionary<string, object> args)
 		{
+			Dom.Dom dom = _dom;
 
 			// Pass 0 - Basic check if Peach 2.3 ns  
 			if (node.NamespaceURI.Contains("2008"))
@@ -242,25 +243,10 @@ namespace Peach.Core.Analyzers
 							fileName = newFileName;
 						}
 
-						validatePit(File.OpenRead(fileName));
-
-						XmlDocument xmldoc = new XmlDocument();
-						xmldoc.Load(fileName);
-
-						Dom.DomNamespace nsObj = new Dom.DomNamespace();
-						nsObj.parent = dom;
-						nsObj.name = ns;
-
-						foreach (XmlNode item in xmldoc.ChildNodes)
-						{
-							if (item.Name == "Peach")
-							{
-								handlePeach(item, nsObj);
-								break;
-							}
-						}
-
-						dom.ns[ns] = nsObj;
+						var newParser = new PitParser();
+						Dom.Dom newDom = newParser.asParser(args, fileName);
+						newDom.name = ns;
+						dom.ns[ns] = newDom;
 						break;
 
 					case "Require":
@@ -388,8 +374,6 @@ namespace Peach.Core.Analyzers
 			{
 				test.markMutableElements();
 			}
-
-			return dom;
 		}
 
 		public static void displayDataModel(DataElement elem, int indent = 0)
@@ -433,16 +417,17 @@ namespace Peach.Core.Analyzers
 		/// Resolve a 'ref' attribute.  Will throw a PeachException if
 		/// namespace is given, but not found.
 		/// </summary>
-		/// <param name="dom">DOM to use for resolving ref.</param>
 		/// <param name="name">Ref name to resolve.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
-		public static DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
+		public DataElement getReference(string name, DataElementContainer container)
 		{
+			Dom.Dom dom = _dom;
+
 			if (name.IndexOf(':') > -1)
 			{
 				string ns = name.Substring(0, name.IndexOf(':'));
 
-				Dom.DomNamespace other;
+				Dom.Dom other;
 				if (!dom.ns.TryGetValue(ns, out other))
 					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + name + "'.");
 
@@ -642,7 +627,7 @@ namespace Peach.Core.Analyzers
 
 			if (refName != null)
 			{
-				DataModel refObj = getReference(_dom, refName, null) as DataModel;
+				DataModel refObj = getReference(refName, null) as DataModel;
 				if (refObj == null)
 					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
