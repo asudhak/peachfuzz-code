@@ -21,7 +21,7 @@ namespace PeachValidator
 	{
 		string windowTitle = "Peach Validator v3.0";
 		string windowTitlePit = "Peach Validator v3.0 - {0}";
-		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {0}";
+		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {1}";
 		string windowTitleSample = "Peach Validator v3.0 - None - {0}";
 		string sampleFileName = null;
 		string pitFileName = null;
@@ -37,11 +37,11 @@ namespace PeachValidator
 		protected void setTitle()
 		{
 			if (!string.IsNullOrEmpty(sampleFileName) && !string.IsNullOrEmpty(pitFileName))
-				Text = string.Format(windowTitlePitSample, pitFileName, sampleFileName);
+				Text = string.Format(windowTitlePitSample, Path.GetFileName(pitFileName), Path.GetFileName(sampleFileName));
 			else if (string.IsNullOrEmpty(sampleFileName) && !string.IsNullOrEmpty(pitFileName))
-				Text = string.Format(windowTitlePit, pitFileName);
+				Text = string.Format(windowTitlePit, Path.GetFileName(pitFileName));
 			else if (!string.IsNullOrEmpty(sampleFileName) && string.IsNullOrEmpty(pitFileName))
-				Text = string.Format(windowTitleSample, sampleFileName);
+				Text = string.Format(windowTitleSample, Path.GetFileName(sampleFileName));
 			else
 				Text = windowTitle;
 		}
@@ -101,7 +101,6 @@ namespace PeachValidator
 				catch (CrackingFailure ex)
 				{
 					MessageBox.Show("Error cracking \"" + ex.element.fullName + "\".\n" + ex.Message, "Error Cracking");
-
 					crackMap[dom.dataModels[dataModel]].Error = true;
 				}
 
@@ -199,6 +198,12 @@ namespace PeachValidator
 
 				if(toolStripComboBoxDataModel.Items.Count > 0)
 					toolStripComboBoxDataModel.SelectedIndex = 0;
+
+				treeViewAdv1.BeginUpdate();
+				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[0]);
+				treeViewAdv1.Model = crackModel;
+				treeViewAdv1.EndUpdate();
+				treeViewAdv1.Root.Children[0].Expand();
 			}
 			catch (Exception ex)
 			{
@@ -211,6 +216,15 @@ namespace PeachValidator
 			try
 			{
 				dataModel = toolStripComboBoxDataModel.SelectedItem as string;
+
+				PitParser parser = new PitParser();
+				Dom dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+
+				treeViewAdv1.BeginUpdate();
+				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[dataModel]);
+				treeViewAdv1.Model = crackModel;
+				treeViewAdv1.EndUpdate();
+				treeViewAdv1.Root.Children[0].Expand();
 			}
 			catch
 			{

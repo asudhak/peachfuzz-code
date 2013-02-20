@@ -61,6 +61,56 @@ namespace PeachValidator
 		public event EventHandler<TreeModelEventArgs> NodesInserted;
 		public event EventHandler<TreeModelEventArgs> NodesRemoved;
 		public event EventHandler<TreePathEventArgs> StructureChanged;
+
+		public static CrackModel CreateModelFromPit(DataModel dataModel)
+		{
+			CrackModel model = new CrackModel();
+			model.Root = BuildFromElement(model, dataModel);
+
+			return model;
+		}
+
+		public static CrackNode BuildFromElement(CrackModel model, DataElementContainer container)
+		{
+			CrackNode node = new CrackNode(model, container, 0, 0);
+
+			if (container is Choice)
+			{
+				foreach (var child in ((Choice)container).choiceElements.Values)
+				{
+					if (child is DataElementContainer)
+					{
+						var childNode = BuildFromElement(model, child as DataElementContainer);
+						childNode.Parent = node;
+						node.Children.Add(childNode);
+					}
+					else
+					{
+						var childNode = new CrackNode(model, child, 0, 0);
+						childNode.Parent = node;
+						node.Children.Add(childNode);
+					}
+				}
+			}
+
+			foreach (var child in container)
+			{
+				if (child is DataElementContainer)
+				{
+					var childNode = BuildFromElement(model, child as DataElementContainer);
+					childNode.Parent = node;
+					node.Children.Add(childNode);
+				}
+				else
+				{
+					var childNode = new CrackNode(model, child, 0, 0);
+					childNode.Parent = node;
+					node.Children.Add(childNode);
+				}
+			}
+
+			return node;
+		}
 	}
 
 	public class CrackNode
