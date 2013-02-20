@@ -422,6 +422,11 @@ namespace Peach.Core.Dom
 				m.of = _of;
 				_of = null;
 			}
+			else if (_ofName == ctx.oldName && parent.find(_ofName) == null)
+			{
+				m.ofName = _ofName;
+				_ofName = ctx.newName;
+			}
 
 			if (ctx.rename.Contains(_from))
 			{
@@ -434,6 +439,11 @@ namespace Peach.Core.Dom
 				ctx.elements[_fullNames.from] = _from;
 				m.from = _from;
 				_from = null;
+			}
+			else if (_fromName == ctx.oldName && parent.find(_fromName) == null)
+			{
+				m.fromName = _fromName;
+				_fromName = ctx.newName;
 			}
 
 			if (ctx.rename.Contains(_parent))
