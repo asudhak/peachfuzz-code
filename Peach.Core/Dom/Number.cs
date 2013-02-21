@@ -230,16 +230,25 @@ namespace Peach.Core.Dom
 
 		private dynamic SanitizeString(string str)
 		{
+			string conv = str;
+			NumberStyles style = NumberStyles.AllowLeadingSign;
+
+			if (str.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
+			{
+				conv = str.Substring(2);
+				style = NumberStyles.AllowHexSpecifier;
+			}
+
 			if (Signed)
 			{
 				long value;
-				if (long.TryParse(str, out value))
+				if (long.TryParse(conv, style, CultureInfo.InvariantCulture, out value))
 					return value;
 			}
 			else
 			{
 				ulong value;
-				if (ulong.TryParse(str, out value))
+				if (ulong.TryParse(conv, style, CultureInfo.InvariantCulture, out value))
 					return value;
 			}
 
