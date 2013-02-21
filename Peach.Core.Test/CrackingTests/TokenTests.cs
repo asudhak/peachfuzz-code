@@ -393,6 +393,74 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 		}
 
+		public Dom.Dom DoCrackArrayToken(string value)
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str1\"/>" +
+				"		<Block minOccurs=\"0\">" +
+				"			<String value=\"+\" token=\"true\"/>" +
+				"			<String name=\"str2\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void CrackArrayZeroToken()
+		{
+			Dom.Dom dom;
+			Dom.String str;
+			Dom.Array array;
+
+			dom = DoCrackArrayToken("Hello");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			str = dom.dataModels[0][0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+
+			dom = DoCrackArrayToken("Hello+World");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			str = dom.dataModels[0][0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("World", (string)((Dom.Block)array[0])[1].DefaultValue);
+
+			dom = DoCrackArrayToken("Hello+World+More+Data");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			str = dom.dataModels[0][0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("World", (string)((Dom.Block)array[0])[1].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[1])[0].DefaultValue);
+			Assert.AreEqual("More", (string)((Dom.Block)array[1])[1].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[2])[0].DefaultValue);
+			Assert.AreEqual("Data", (string)((Dom.Block)array[2])[1].DefaultValue);
+		}
+
         [Test]
         public void SizedByToken()
         {
