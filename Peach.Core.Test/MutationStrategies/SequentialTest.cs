@@ -255,5 +255,88 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.IsNotNull(strategy);
 			Assert.IsInstanceOf<Sequential>(strategy);
 		}
+
+		public uint GetMutationCount(string data)
+		{
+			string template = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<Defaults>
+		<Number endian='big'/>
+	</Defaults>
+
+	<DataModel name='choice_string'>
+		<Number name='string_type' size='8' token='true' value='1'/>
+		<Number name='string_size' size='32'>
+			<Relation type='size' of='string_data' />
+		</Number>
+		<String name='string_data'/>
+	</DataModel>
+
+	<DataModel name='choice_blob'>
+		<Number name='blob_type' size='8' token='true' value='2'/>
+		<Number name='blob_size' size='32'>
+			<Relation type='size' of='blob_data' />
+		</Number>
+		<Blob name='blob_data'/>
+	</DataModel>
+
+	<DataModel name='choice_number'>
+		<Number name='num_type' size='8' token='true' value='3'/>
+		<Number name='num_data' size='32'/>
+	</DataModel>
+
+	<DataModel name='TheDataModel'>
+		<Choice name='choice'>
+			<Block name='choice_string' ref='choice_string'/>
+			<Block name='choice_blob' ref='choice_blob'/>
+			<Block name='choice_number' ref='choice_number'/>
+		</Choice>
+		<String name='str' value='Hello World!'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+				<Data fileName='{0}'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>";
+
+			string tempFile = Path.GetTempFileName();
+			File.WriteAllBytes(tempFile, Encoding.ASCII.GetBytes(data));
+
+			string xml = string.Format(template, tempFile);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			return dom.tests[0].strategy.Count;
+		}
+
+		[Test]
+		public void TestChoice()
+		{
+			uint str = GetMutationCount("\x01\x00\x00\x00\x05Hello");
+			uint blob = GetMutationCount("\x02\x00\x00\x00\x05Hello");
+			uint num = GetMutationCount("\x03\x00\x01\x02\x03");
+
+			Assert.AreNotEqual(str, blob);
+			Assert.AreNotEqual(str, num);
+			Assert.AreNotEqual(blob, num);
+		}
+
 	}
 }
