@@ -107,6 +107,38 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
 		}
 
+		[Test, Ignore("Failure Expected. Referenced in Issue #294")]
+		public void Basic3Offset()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"offset\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<Blob name=\"Middle\"/>" +
+				"		<Blob name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+			BitStream data = new BitStream();
+			data.WriteInt8((sbyte)(offsetdata.Length + 1));
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(offsetdata.Length + 1, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
+		}
+
 		[Test]
 		public void RelativeOffset()
 		{
