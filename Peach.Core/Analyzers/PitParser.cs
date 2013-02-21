@@ -1390,6 +1390,25 @@ namespace Peach.Core.Analyzers
 					data.DataType = DataType.File;
 					data.FileName = dataFileName;
 				}
+				else if (dataFileName.Contains('*'))
+				{
+					string pattern = Path.GetFileName(dataFileName);
+					string dir = dataFileName.Substring(0, dataFileName.Length - pattern.Length);
+
+					if (dir == "")
+						dir = ".";
+
+					if (!dir.Contains('*'))
+					{
+						string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
+						data.Files.AddRange(files);
+					}
+
+					if (data.Files.Count == 0)
+						throw new PeachException("Error parsing Data element, no matching files found: " + dataFileName);
+
+					data.DataType = DataType.Files;
+				}
 				else
 				{
 					throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
