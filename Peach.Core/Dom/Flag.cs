@@ -188,21 +188,6 @@ namespace Peach.Core.Dom
 				Invalidate();
 			}
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "position":
-          return this.position;
-        case "size":
-          return this.size;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flag", parameterName));
-      }
-    }
 	}
 }
 

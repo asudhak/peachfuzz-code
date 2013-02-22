@@ -43,7 +43,7 @@ namespace Peach.Core.Dom
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
 	[Serializable]
-	public class State : INamed, IPitSerializable
+	public class State : INamed
 	{
 		static int nameNum = 0;
 		public string _name = "Unknown State " + (++nameNum);
@@ -145,21 +145,6 @@ namespace Peach.Core.Dom
 
 				return null;
 			}
-		}
-
-		public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-		{
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "State", null);
-
-			node.AppendAttribute("name", this.name);
-
-			foreach (Action action in actions)
-			{
-				node.AppendChild(action.pitSerialize(doc, node));
-			}
-
-
-			return node;
 		}
 	}
 }

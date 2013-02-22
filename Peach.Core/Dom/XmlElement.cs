@@ -215,21 +215,6 @@ namespace Peach.Core.Dom
 
 			return new BitStream(((BitStream)InternalValue).Stream);
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "elementName":
-          return this.elementName;
-        case "ns":
-          return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlElement", parameterName));
-      }
-    }
 	}
 }
 

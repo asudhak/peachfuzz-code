@@ -204,21 +204,6 @@ namespace Peach.Core.Dom
 
 			return new Variant(bits);
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "size":
-          return this.size;
-        case "endian":
-          return this.LittleEndian ? "little" : "big";
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flags", parameterName));
-      }
-    }
 	}
 }
 

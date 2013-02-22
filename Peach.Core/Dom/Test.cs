@@ -41,7 +41,7 @@ using System.Linq;
 namespace Peach.Core.Dom
 {
 	[Serializable]
-	public class Test : INamed, IPitSerializable
+	public class Test : INamed
 	{
 		public string _name = null;
 		public object parent = null;
@@ -54,7 +54,7 @@ namespace Peach.Core.Dom
 
 		[NonSerialized]
 		public MutationStrategy strategy = null;
-		
+
 		//[NonSerialized]
 		//public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 
@@ -155,168 +155,6 @@ namespace Peach.Core.Dom
 				}
 			}
 		}
-
-    public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Test", null);
-
-      node.AppendAttribute("name", this.name);
-
-      #region Include
-      if (this.includedMutators != null)
-      {
-        foreach (string s in includedMutators)
-        {
-          XmlNode eInclude = doc.CreateElement("Include");
-          eInclude.AppendAttribute("name", s);
-          node.AppendChild(eInclude);
-        }
-      }
-      #endregion
-
-      #region Exclude
-      if (this.excludedMutators != null)
-      {
-        foreach (string s in this.excludedMutators)
-        {
-          XmlNode eExclude = doc.CreateElement("Exclude");
-          eExclude.AppendAttribute("name", s);
-          node.AppendChild(eExclude);
-        }
-      }
-      #endregion
-
-      #region Strategy
-      if (this.strategy != null)
-      {
-        Type t = this.strategy.GetType();
-        object[] attribs = t.GetCustomAttributes(true);
-        foreach (object attrib in attribs)
-        {
-          if (attrib is MutationStrategyAttribute)
-          {
-            XmlNode eStrategy = doc.CreateElement("Strategy");
-            eStrategy.AppendAttribute("class", ((MutationStrategyAttribute)attrib).Name);
-            node.AppendChild(eStrategy);
-            break;
-          }
-        }
-      }
-      #endregion
-
-      #region StateModel
-      if (this.stateModel != null)
-      {
-        XmlNode eStateModel = doc.CreateElement("StateModel");
-        eStateModel.AppendAttribute("ref", this.stateModel.name);
-        node.AppendChild(eStateModel);
-      }
-      #endregion
-
-      #region Agents
-      if (this.agents != null)
-      {
-        foreach (Agent agent in this.agents.Values)
-        {
-          XmlNode eAgent = doc.CreateElement("Agent");
-          eAgent.AppendAttribute("ref", agent.name);
-          node.AppendChild(eAgent);
-        }
-      }
-      #endregion
-
-      #region Publisher
-      if (this.publishers != null)
-      {
-        foreach (Publisher publisher in this.publishers.Values)
-        {
-          bool skip = false;
-          Type publisherType = publisher.GetType();
-          object[] attribs = publisherType.GetCustomAttributes(true);
-          XmlNode ePublisher = doc.CreateElement("Publisher");
-          string className = System.String.Empty;
-
-          if (skip == false)
-          {
-            foreach (object attrib in attribs)
-            {
-              if (attrib is PublisherAttribute)
-              {
-                if (((PublisherAttribute)attrib).IsDefault)
-                {
-                  className = ((PublisherAttribute)attrib).Name;
-                  ePublisher.AppendAttribute("class", className);
-                  break;
-                }
-              }
-            }
-
-            if (System.String.IsNullOrEmpty(className) == false)
-            {
-              foreach (object attrib in attribs)
-              {
-                if (attrib is ParameterAttribute)
-                {
-
-                    XmlNode eParam = doc.CreateElement("Param", null);
-                    string paramName = ((ParameterAttribute)attrib).name;
-                    eParam.AppendAttribute("name", paramName);
-                    eParam.AppendAttribute("valueType", ((ParameterAttribute)attrib).type.ToString());
-                    PropertyInfo pi = publisherType.GetProperty(paramName);
-                    if (pi != null)
-                    {
-                      object propertyValue = pi.GetValue(publisher, null);
-                      eParam.AppendAttribute("value", propertyValue.ToString());
-                      ePublisher.AppendChild(eParam);
-                    }
-                    else
-                    {
-                      throw new PeachException(System.String.Format("Can not find property '{0}' in class '{1}'", paramName, publisherType.ToString()));
-                    }
-                }
-              }
-              node.AppendChild(ePublisher);
-            }
-          }
-        }
-      }
-      #endregion
-
-      if (this.loggers != null)
-      {
-		  foreach (var logger in this.loggers)
-		  {
-			  Type loggerType = logger.GetType();
-			  List<object> attribs = new List<object>(loggerType.GetCustomAttributes(false));
-			  LoggerAttribute loggerAttrib = (from o in attribs where (o is LoggerAttribute) && (((LoggerAttribute)o).IsDefault == true) select o).First() as LoggerAttribute;
-			  List<ParameterAttribute> paramAttribs = (from o in attribs where (o is ParameterAttribute) select o as ParameterAttribute).ToList();
-			  XmlNode eLogger = doc.CreateElement("Logger");
-			  eLogger.AppendAttribute("class", loggerAttrib.Name);
-
-			  foreach (ParameterAttribute paramAttrib in paramAttribs)
-			  {
-				  XmlNode eParam = doc.CreateElement("Param");
-				  eParam.AppendAttribute("name", paramAttrib.name);
-				  PropertyInfo pi = loggerType.GetProperty(paramAttrib.name);
-				  if (pi != null)
-				  {
-					  object paramValue = pi.GetValue(this.loggers, null);
-					  eParam.AppendAttribute("value", paramValue.ToString());
-					  eLogger.AppendChild(eParam);
-				  }
-				  else
-				  {
-					  throw new PeachException(System.String.Format("Can not find property '{0}' in class '{1}'", paramAttrib.name, loggerType.ToString()));
-				  }
-			  }
-
-			  node.AppendChild(eLogger);
-		  }
-      }
-
-      return node;
-    }
-  }
+	}
 }
-
 // END

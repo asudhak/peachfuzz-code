@@ -46,7 +46,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[Serializable]
 	[DebuggerDisplay("Of={_ofName} From={_fromName}")]
-	public abstract class Relation : IPitSerializable
+	public abstract class Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -538,22 +538,6 @@ namespace Peach.Core.Dom
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
 			_fullNames = null;
-		}
-
-		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
-		{
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
-			//type, of, from, when, expressionGet, expressionSet, relative, relativeTo
-
-			node.AppendAttribute("type", this.GetType().ToString());
-			node.AppendAttribute("of", this.OfName);
-			node.AppendAttribute("from", this.FromName);
-			//node.AppendAttribute("when", this.when);
-			node.AppendAttribute("expressionGet", this.ExpressionGet);
-			node.AppendAttribute("expressionSet", this.ExpressionSet);
-			//node.AppendAttribute("relative", this.relative);
-			//node.AppendAttribute("relativeTo", this.relativeTo);
-			return node;
 		}
 	}
 

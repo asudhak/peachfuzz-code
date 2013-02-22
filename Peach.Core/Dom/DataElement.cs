@@ -1172,8 +1172,6 @@ namespace Peach.Core.Dom
 			yield break;
 		}
 
-    public abstract object GetParameter(string parameterName);
-
 		/// <summary>
 		/// Fixup for this data element.  Can be null.
 		/// </summary>

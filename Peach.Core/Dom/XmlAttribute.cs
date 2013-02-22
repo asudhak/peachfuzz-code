@@ -125,21 +125,6 @@ namespace Peach.Core.Dom
 			doc.values.Add(xmlAttrib.Value, elem.InternalValue);
 			return xmlAttrib;
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "attributeName":
-          return this.attributeName;
-        case "ns":
-          return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
-      }
-    }
 	}
 }
 

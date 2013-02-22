@@ -390,23 +390,6 @@ namespace Peach.Core.Dom
 			bs.WriteBits(bits, (int)lengthAsBits);
 			return bs;
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "size":
-          return this.length;
-        case "signed":
-          return Signed;
-        case "endian":
-          return this.LittleEndian ? "little" : "big";
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Number", parameterName));
-      }
-    }
 	}
 
 	public enum ByteOrder

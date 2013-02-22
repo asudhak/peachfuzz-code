@@ -213,22 +213,6 @@ namespace Peach.Core.Dom
 				throw new InvalidOperationException("DefaultValue cannot be set on Padding element!");
 			}
 		}
-
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "alignment":
-          return this.alignment;
-        case "alignedTo":
-          return this.alignedTo.name;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Padding", parameterName));
-      }
-    }
 	}
 }
 

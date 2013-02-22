@@ -169,19 +169,6 @@ namespace Peach.Core.Dom
 			bs.SeekBits(0, SeekOrigin.Begin);
 			blob.DefaultValue = new Variant(bs);
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "length":
-          return this.length;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
-      }
-    }
 	}
 }
 

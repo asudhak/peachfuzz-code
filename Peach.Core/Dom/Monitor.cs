@@ -40,29 +40,11 @@ namespace Peach.Core.Dom
 	/// A dom element to hold Monitor config information
 	/// </summary>
 	[Serializable]
-	public class Monitor : INamed, IPitSerializable
+	public class Monitor : INamed
 	{
 		public string cls;
 		public string name { get; set; }
 		public SerializableDictionary<string, Variant> parameters = new SerializableDictionary<string, Variant>();
-
-		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
-		{
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Monitor", null);
-
-			node.AppendAttribute("name", this.name);
-			node.AppendAttribute("class", this.cls);
-
-			foreach (KeyValuePair<string, Variant> pair in parameters)
-			{
-				XmlNode eParam = doc.CreateElement("Param");
-				eParam.AppendAttribute("name", pair.Key);
-				eParam.AppendAttribute("value", pair.Value.ToString());
-				node.AppendChild(eParam);
-			}
-
-			return node;
-		}
 	}
 
 }

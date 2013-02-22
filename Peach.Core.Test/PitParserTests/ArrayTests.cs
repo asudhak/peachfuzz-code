@@ -53,11 +53,6 @@ namespace Peach.Core.Test.PitParserTests
 			{
 				throw new NotImplementedException();
 			}
-
-			public override object GetParameter(string parameterName)
-			{
-				throw new NotImplementedException();
-			}
 		}
 
 		[Test]
