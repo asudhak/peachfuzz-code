@@ -1171,11 +1171,6 @@
 			<xs:attributeGroup ref="peachCommonAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
 			<xs:attributeGroup ref="ValueAttributes" />
-			<xs:attribute name="aligned" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>Align to a specified byte boundry?  Default is false.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="alignment" type="xs:int">
 				<xs:annotation>
 					<xs:documentation>Bit boundry to align to. Default is 8 bits (1 byte).</xs:documentation>
