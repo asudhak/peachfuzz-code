@@ -86,7 +86,7 @@ namespace Peach.Core.Test
 		/// <summary>
 		/// Reported by Sirus
 		/// </summary>
-		[Test]
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "Block 'GeneratedModel.0.2' has length of 5381942480 bits, already read 64 bits, but buffer only has 40 bits left.")]
 		public void CrackExplode()
 		{
 			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -126,6 +126,51 @@ namespace Peach.Core.Test
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
+		}
+
+		/// <summary>
+		/// Proper data bytes for model of CrackExplode
+		/// </summary>
+		[Test]
+		public void CrackNoExplode()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+<DataModel name=""GeneratedModel"">
+            <Block name=""0"">
+                <Number name=""1"" size=""32""/>
+                <Block name=""2"">
+                    <Relation type=""size"" from=""4""/>
+                    <Number name=""3"" size=""32""/>
+                    <Number name=""4"" size=""32"">
+                        <Relation type=""size"" of=""2""/>
+                    </Number>
+                </Block>
+            </Block>
+    </DataModel>
+</Peach>
+";
+			byte[] dataBytes = new byte[] { 
+						0x5f,						0xfa,
+						0x8a,						0x68,
+						0x9a,						0x3d,
+						0x19,						0x28,
+						0x09,						0x00,
+						0x00,						0x00,
+						0xc7,						0x1c,
+						0x03,						0x9a,
+						0xa6 };
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(dataBytes);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.NotNull(dom);
 
@@ -137,7 +182,7 @@ namespace Peach.Core.Test
 		/// <summary>
 		/// Reported by Sirus
 		/// </summary>
-		[Test]
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "Block 'GeneratedModel.0.1' has length of 8 bits but already read 64 bits.")]
 		public void CrackExplode2()
 		{
 			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -174,16 +219,8 @@ namespace Peach.Core.Test
 			data.WriteBytes(dataBytes);
 			data.SeekBits(0, SeekOrigin.Begin);
 
-			try
-			{
-				DataCracker cracker = new DataCracker();
-				cracker.CrackData(dom.dataModels[0], data);
-				Assert.IsTrue(false);
-			}
-			catch (CrackingFailure)
-			{
-				Assert.IsTrue(true);
-			}
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
 		}
 	}
 }

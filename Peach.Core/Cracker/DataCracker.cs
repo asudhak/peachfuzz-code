@@ -495,18 +495,21 @@ namespace Peach.Core.Cracker
 				//    throw new CrackingFailure("'" + element.fullName +
 				//        "' could not be cracked sinze buffer has zero bytes left.", element, data);
 
-                if (element.transformer != null)
-                {
-                    long? size = determineElementSize(element, data);
+				if (element.transformer != null)
+				{
+					long? size = determineElementSize(element, data);
 
-                    if (size == null)
-                        throw new CrackingFailure("Could not determine size for transformer!", element, data);
+					if (size == null)
+						throw new CrackingFailure("Could not determine size for transformer!", element, data);
 
-                    var decodedData = element.transformer.decode(data.ReadBitsAsBitStream(size.Value));
-                    element.Crack(this, decodedData);
-                }
-                else
-				element.Crack(this, data);
+					var sizedData = element.ReadSizedData(data, size.Value);
+					var decodedData = element.transformer.decode(sizedData);
+					element.Crack(this, decodedData);
+				}
+				else
+				{
+					element.Crack(this, data);
+				}
 
 				if (element.constraint != null)
 				{

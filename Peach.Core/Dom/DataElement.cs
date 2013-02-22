@@ -1335,6 +1335,48 @@ namespace Peach.Core.Dom
 				child.ClearRelations();
 		}
 
+		public string elementType
+		{
+			get
+			{
+				return GetType().GetAttributes<DataElementAttribute>(null).First().elementName;
+			}
+		}
+
+		/// <summary>
+		/// Helper fucntion to obtain a bitstream sized for this element
+		/// </summary>
+		/// <param name="data">Source BitStream</param>
+		/// <param name="size">Length of this element</param>
+		/// <param name="size">Length of bits already read of this element</param>
+		/// <returns>BitStream of length 'size - read'</returns>
+		public BitStream ReadSizedData(BitStream data, long size, long read = 0)
+		{
+			if (size < read)
+			{
+				string msg = "{0} '{1}' has length of {2} bits but already read {3} bits.".Fmt(
+					elementType, fullName, size, read);
+				throw new CrackingFailure(msg, this, data);
+			}
+
+			long needed = size - read;
+			data.WantBytes((needed + 7) / 8);
+			long remain = data.LengthBits - data.TellBits();
+
+			if (needed > remain)
+			{
+				string msg = "{0} '{1}' has length of {2} bits{3}but buffer only has {4} bits left.".Fmt(
+					elementType, fullName, size,
+					read == 0 ? " " : ", already read " + read + " bits, ", remain);
+				throw new CrackingFailure(msg, this, data);
+			}
+
+			var ret = data.ReadBitsAsBitStream(needed);
+			System.Diagnostics.Debug.Assert(ret != null);
+
+			return ret;
+		}
+
 		/// <summary>
 		/// Determines whether or not a DataElement is a child of this DataElement.
 		/// Computes the relative name from 'this' to 'dataElement'.  If 'dataElement'

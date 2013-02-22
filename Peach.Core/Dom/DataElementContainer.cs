@@ -82,7 +82,7 @@ namespace Peach.Core.Dom
 				context._sizedBlockStack.Add(element);
 				context._sizedBlockMap[element] = size;
 
-				sizedData = data.ReadBitsAsBitStream(size);
+				sizedData = ReadSizedData(data, size);
 				sizeRelation = null;
 			}
 			else if (element.hasLength)
@@ -91,7 +91,7 @@ namespace Peach.Core.Dom
 				context._sizedBlockStack.Add(element);
 				context._sizedBlockMap[element] = size;
 
-				sizedData = data.ReadBitsAsBitStream(size);
+				sizedData = ReadSizedData(data, size);
 			}
 
 			// Handle children, iterate over a copy since cracking can modify the list
@@ -114,14 +114,7 @@ namespace Peach.Core.Dom
 						// update size based on what we have currently read
 						long read = data.TellBits() - startPosition;
 
-						if (size < read)
-							throw new CrackingFailure("Unable to crack '" + element.fullName +
-								"'.  Size relation from '" + sizeRelation.From.fullName + "' is " + size +
-								" bits but already cracked " + read + " bits.", element, data);
-
-						size -= read;
-
-						sizedData = data.ReadBitsAsBitStream(size);
+						sizedData = ReadSizedData(data, size, read);
 						sizeRelation = null;
 					}
 				}

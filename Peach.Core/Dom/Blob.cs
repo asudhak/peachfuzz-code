@@ -124,18 +124,10 @@ namespace Peach.Core.Dom
 			if (blobLength == null)
 				throw new CrackingFailure("Unable to crack Blob '" + element.fullName + "'.", element, data);
 
-			// Round up bits to next byte
-			data.WantBytes((long)(blobLength + 7 / 8));
-
-			if ((data.TellBits() + blobLength) > data.LengthBits)
-				throw new CrackingFailure("Blob '" + element.fullName +
-					"' has length of '" + blobLength + "' bits but buffer only has '" +
-					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
-
 			Variant defaultValue = new Variant(new byte[0]);
 
 			if (blobLength > 0)
-				defaultValue = new Variant(data.ReadBitsAsBitStream((long)blobLength));
+				defaultValue = new Variant(ReadSizedData(data, blobLength.Value));
 
 			if (element.isToken)
 				if (defaultValue != element.DefaultValue)
