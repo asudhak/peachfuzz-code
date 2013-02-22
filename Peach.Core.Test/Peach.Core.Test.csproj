@@ -375,6 +375,7 @@
     <Compile Include="DataModelCollector.cs" />
     <Compile Include="DomGeneralTests.cs" />
     <Compile Include="EncodingTests.cs" />
+    <Compile Include="FixupCloneTests.cs" />
     <Compile Include="Fixups\Crc32DualFixupTests.cs" />
     <Compile Include="Fixups\Crc32FixupTests.cs" />
     <Compile Include="Fixups\EthernetChecksumFixupTests.cs" />
