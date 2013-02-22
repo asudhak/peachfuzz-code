@@ -92,26 +92,12 @@ namespace Peach.Core.Analyzers
 
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
+			string xml = readWithDefines(args, data);
+
 			if (doValidatePit)
-				validatePit(data);
+				validatePit(xml);
 
 			XmlDocument xmldoc = new XmlDocument();
-			data.Position = 0;
-			string xml = new StreamReader(data).ReadToEnd();
-
-			if (args != null && args.ContainsKey(DEFINED_VALUES))
-			{
-				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
-				var sb = new StringBuilder(xml);
-
-				foreach (string key in definedValues.Keys)
-				{
-					sb.Replace("##" + key + "##", definedValues[key]);
-				}
-
-				xml = sb.ToString();
-			}
-
 			xmldoc.LoadXml(xml);
 
 			_dom = new Dom.Dom();
@@ -130,9 +116,31 @@ namespace Peach.Core.Analyzers
 			return _dom;
 		}
 
-		public override void asParserValidation(Dictionary<string, string> args, Stream data)
+		private static string readWithDefines(Dictionary<string, object> args, Stream data)
 		{
-			validatePit(data);
+			data.Position = 0;
+			string xml = new StreamReader(data).ReadToEnd();
+
+			if (args != null && args.ContainsKey(DEFINED_VALUES))
+			{
+				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
+				var sb = new StringBuilder(xml);
+
+				foreach (string key in definedValues.Keys)
+				{
+					sb.Replace("##" + key + "##", definedValues[key]);
+				}
+
+				xml = sb.ToString();
+			}
+
+			return xml;
+		}
+
+		public override void asParserValidation(Dictionary<string, object> args, Stream data)
+		{
+			string xml = readWithDefines(args, data);
+			validatePit(xml);
 		}
 
 		static protected void populateDataElementPitParsable()
@@ -148,7 +156,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="fileName">Pit file to validate</param>
 		/// <param name="schema">Peach XML Schema file</param>
-		public void validatePit(Stream data)
+		private void validatePit(string xmlData)
 		{
 			XmlSchemaSet set = new XmlSchemaSet();
 			var xsd = Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd");
@@ -161,17 +169,16 @@ namespace Peach.Core.Analyzers
 			doc.Schemas = set;
 			// Mono has issues reading utf-32 BOM when just calling doc.Load(data)
 
-            try
-            {
-                string xmlData = new StreamReader(data).ReadToEnd();
-                doc.LoadXml(xmlData);
-            }
-            catch(XmlException ex)
-            {
-               throw new PeachException("Error: XML Failed to load: " + ex.Message, ex); 
-            }
+			try
+			{
+				doc.LoadXml(xmlData);
+			}
+			catch (XmlException ex)
+			{
+				throw new PeachException("Error: XML Failed to load: " + ex.Message, ex);
+			}
 
-		    // Right now XSD validation is disabled on Mono :(
+			// Right now XSD validation is disabled on Mono :(
 			// Still load the doc to verify well formed xml
 			Type t = Type.GetType("Mono.Runtime");
 			if (t != null)

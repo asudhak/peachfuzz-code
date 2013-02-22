@@ -113,7 +113,7 @@ namespace Peach.Core
 		/// <param name="args">Arguments</param>
 		/// <param name="fileName">Filename to test</param>
 		/// <returns>Throws PeachException on error.</returns>
-		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
+		public virtual void asParserValidation(Dictionary<string, object> args, string fileName)
 		{
 			try
 			{
@@ -129,7 +129,7 @@ namespace Peach.Core
 			}
 		}
 
-		public virtual void asParserValidation(Dictionary<string, string> args, Stream data)
+		public virtual void asParserValidation(Dictionary<string, object> args, Stream data)
 		{
 			throw new NotImplementedException();
 		}
