@@ -15,7 +15,6 @@ msbuild_fmt = '''<?xml version="1.0" encoding="utf-8"?>
 {PROPERTIES}
 	</PropertyGroup>
 
-
 {SOURCES}
 
 	<ItemGroup>
@@ -49,9 +48,7 @@ def get_source_type(name):
 			return 'Compile'
 		if name.endswith('.xaml'):
 			return 'Page'
-		if name.endswith('.resx'):
-			return 'EmbeddedResource'
-		raise Errors.WafError('No source type mapping for "%s"' % name)
+		return 'EmbeddedResource'
 
 def get_link_path(self, node):
 	if node.is_src():
@@ -218,7 +215,7 @@ class genproj(Task.Task):
 	def run(self):
 		cfg = '\n'.join([ cfg_fmt.format(k, v) for k,v in self.env.MSBUILD_CFG.items()])
 		src = '\n'.join([ src_fmt.format(n, t, l) for n,t,l in self.env.MSBUILD_SRC])
-		ref = '\n'.join([ ref_fmt.format(p, n) for p,n in self.env.MSBUILD_REF])
+		ref = '\n'.join([ ref_fmt.format(n, p) for p,n in self.env.MSBUILD_REF])
 		use = '\n'.join([ use_fmt.format(i) for i in self.env.MSBUILD_USE])
 
 		fmt = {
