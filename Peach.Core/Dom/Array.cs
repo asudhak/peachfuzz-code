@@ -120,9 +120,14 @@ namespace Peach.Core.Dom
 					logger.Debug("Crack: ======================");
 					logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
 
-					string name = element.origionalElement.name + "_" + i;
-					System.Diagnostics.Debug.Assert(!element.ContainsKey(name));
-					var clone = element.origionalElement.Clone(name);
+					var clone = element.origionalElement;
+
+					if (i == 0)
+						element.origionalElement = clone.Clone();
+					else
+						clone = clone.Clone(clone.name + "_" + i);
+
+					System.Diagnostics.Debug.Assert(!element.ContainsKey(clone.name));
 					element.Add(clone);
 
 					try
@@ -149,9 +154,14 @@ namespace Peach.Core.Dom
 
 					long pos = data.TellBits();
 
-					string name = element.origionalElement.name + "_" + cnt;
-					System.Diagnostics.Debug.Assert(!element.ContainsKey(name));
-					var clone = element.origionalElement.Clone(name);
+					var clone = element.origionalElement;
+
+					if (cnt == 0)
+						element.origionalElement = clone.Clone();
+					else
+						clone = clone.Clone(clone.name + "_" + cnt);
+
+					System.Diagnostics.Debug.Assert(!element.ContainsKey(clone.name));
 					element.Add(clone);
 
 					try

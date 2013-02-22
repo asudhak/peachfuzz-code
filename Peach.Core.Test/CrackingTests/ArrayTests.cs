@@ -424,7 +424,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, array.Count);
 			Assert.AreEqual("TheDataModel.str1", array.fullName);
 			Assert.AreEqual("TheDataModel.str1.str1", array.origionalElement.fullName);
-			Assert.AreEqual("TheDataModel.str1.str1_0", array[0].fullName);
+			Assert.AreEqual("TheDataModel.str1.str1", array[0].fullName);
 			Assert.AreEqual("TheDataModel.str1.str1_1", array[1].fullName);
 		}
 	}

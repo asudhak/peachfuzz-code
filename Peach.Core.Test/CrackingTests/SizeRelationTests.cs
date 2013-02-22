@@ -341,6 +341,37 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 		}
+
+		[Test]
+		public void CrackSizeParentArray()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block name='block'>
+			<Number occurs='1' name='num' signed='false' endian='big' size='32'>
+				<Relation type='size' of='block'/>
+			</Number>
+			<Blob name='blob'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			data.WriteBytes(new byte[] { 0, 0, 0, 6, 0, 0 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			var elem = dom.dataModels[0].find("TheDataModel.block.blob");
+			Assert.NotNull(elem);
+			Assert.AreEqual(16, elem.Value.LengthBits);
+		}
 	}
 }
 
