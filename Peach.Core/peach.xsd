@@ -403,11 +403,6 @@
 				<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="lengthCalc" type="xs:string">
-			<xs:annotation>
-				<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
 		<xs:attribute name="length" type="xs:string">
 			<xs:annotation>
 				<xs:documentation>[Optional] Specify length of block.  Default is unbounded.</xs:documentation>
@@ -490,11 +485,6 @@
 			<xs:attribute name="lengthType" type="tLengthType">
 				<xs:annotation>
 					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="lengthCalc" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="length" type="xs:string">
@@ -641,11 +631,6 @@
 				<xs:annotation>
 					<xs:documentation>Specify static length of string. Default is
 						unbounded.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="lengthCalc" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="tokens" type="xs:string">
@@ -1147,11 +1132,6 @@
 					<xs:documentation>[Optional] Specify length of blob.  Default is unbounded.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
-			<xs:attribute name="lengthCalc" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Scripting expression that evaluates to an integer that specifies the length in units of lengthType.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="signed" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Is blob signed. Defaults to true.</xs:documentation>
@@ -1179,11 +1159,6 @@
 			<xs:attribute name="alignedTo" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>Align to a specific element.  Default is parent element.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="lengthCalc" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>If aligned=false provide an expression to calculate padding amount.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>

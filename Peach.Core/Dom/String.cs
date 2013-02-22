@@ -69,7 +69,6 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("nullTerminated", typeof(bool), "Is string null terminated?", "false")]
 	[Parameter("type", typeof(StringType), "Type of string (encoding)", "ascii")]
 	[Parameter("value", typeof(string), "Default value", "")]
@@ -196,7 +195,7 @@ namespace Peach.Core.Dom
 			{
 				stringValue = ReadCharacters(data, -1, true);
 			}
-			else if (lengthType == LengthType.Chars && (_hasLength || _lengthCalc != null))
+			else if (lengthType == LengthType.Chars && _hasLength)
 			{
 				stringValue = ReadCharacters(data, length, false);
 			}
@@ -472,9 +471,6 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (_lengthCalc != null)
-					return _lengthType != LengthType.Chars || encoding.IsSingleByte;
-
 				if (isToken && DefaultValue != null)
 					return true;
 
@@ -506,13 +502,6 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (_lengthCalc != null)
-				{
-					Dictionary<string, object> scope = new Dictionary<string, object>();
-					scope["self"] = this;
-					return (int)Scripting.EvalExpression(_lengthCalc, scope);
-				}
-
 				if (_hasLength)
 				{
 					switch (_lengthType)

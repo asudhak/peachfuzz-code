@@ -293,11 +293,6 @@ namespace Peach.Core.Dom
 		/// </summary>
 		protected LengthType _lengthType = LengthType.Bytes;
 
-		/// <summary>
-		/// Contains the calculation if any
-		/// </summary>
-		protected string _lengthCalc = null;
-
 		protected string _constraint = null;
 
 		#region Events
@@ -585,9 +580,6 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (_lengthCalc != null)
-					return true;
-
 				if (isToken && DefaultValue != null)
 					return true;
 
@@ -606,13 +598,6 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (_lengthCalc != null)
-				{
-					Dictionary<string, object> scope = new Dictionary<string, object>();
-					scope["self"] = this;
-					return (int)Scripting.EvalExpression(_lengthCalc, scope);
-				}
-
 				if (_hasLength)
 				{
 					switch (_lengthType)
@@ -682,24 +667,10 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
-		/// Length expression.  This expression is used
-		/// to calculate the length of this element.
-		/// </summary>
-		public virtual string lengthCalc
-		{
-			get { return _lengthCalc; }
-			set { _lengthCalc= value; }
-		}
-
-		/// <summary>
 		/// Type of length.
 		/// </summary>
 		/// <remarks>
 		/// Not all DataElement implementations support "Chars".
-		/// 
-		/// Note: A breaking change between Peach 2.3 and Peach 3 is 
-		/// the removal of the "calc" length type.  Instead use the
-		/// "lengthCalc" property.
 		/// </remarks>
 		public virtual LengthType lengthType
 		{

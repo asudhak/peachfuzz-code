@@ -57,7 +57,6 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]

@@ -93,24 +93,9 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		public void BlobCalcBytes()
-		{
-			var bs = CrackElement("Blob", "bytes", "lengthCalc", "10 - 5");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-
-		[Test]
 		public void BlobBits()
 		{
 			var bs = CrackElement("Blob", "bits", "length", "36");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
-		}
-
-		[Test]
-		public void BlobCalcBits()
-		{
-			var bs = CrackElement("Blob", "bits", "lengthCalc", "(3 * 10) + 6");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
 		}
 
@@ -128,23 +113,9 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		public void BlockCalcBytes()
-		{
-			var bs = CrackContainer("Block", "bytes", "lengthCalc", "(5 * 2) - 5");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-		[Test]
 		public void BlockBits()
 		{
 			var bs = CrackContainer("Block", "bits", "length", "36");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
-		}
-
-		[Test]
-		public void BlockCalcBits()
-		{
-			var bs = CrackContainer("Block", "bits", "lengthCalc", "(3 * 10) + 6");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
 		}
 
@@ -162,23 +133,9 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		public void ChoiceCalcBytes()
-		{
-			var bs = CrackContainer("Choice", "bytes", "lengthCalc", "(5 * 2) - 5");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-		[Test]
 		public void ChoiceBits()
 		{
 			var bs = CrackContainer("Choice", "bits", "length", "36");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
-		}
-
-		[Test]
-		public void ChoiceCalcBits()
-		{
-			var bs = CrackContainer("Choice", "bits", "lengthCalc", "(3 * 10) + 6");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
 		}
 
@@ -195,34 +152,15 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test, ExpectedException(typeof(PeachException))]
-		public void FlagsCalcBytes()
-		{
-			CrackElement("Flags", "bytes", "lengthCalc", "(5 * 2) - 8");
-		}
-
-		[Test, ExpectedException(typeof(PeachException))]
 		public void FlagsBits()
 		{
 			CrackElement("Flags", "bits", "length", "16");
-		}
-
-		[Test, ExpectedException(typeof(PeachException))]
-		public void FlagsCalcBits()
-		{
-			CrackElement("Flags", "bits", "lengthCalc", "(3 * 10) - 14");
 		}
 
 		[Test]
 		public void StringChars()
 		{
 			var bs = CrackElement("String type=\"utf16\"", "chars", "length", "2");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
-		}
-
-		[Test]
-		public void StringCalcChars()
-		{
-			var bs = CrackElement("String type=\"utf16\"", "chars", "lengthCalc", "1 + 1");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
 		}
 
@@ -234,94 +172,10 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		public void StringCalcBytes()
-		{
-			var bs = CrackElement("String type=\"utf16\"", "bytes", "lengthCalc", "(1 + 1) * 2");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
-		}
-
-		[Test]
 		public void StringBits()
 		{
 			var bs = CrackElement("String type=\"utf16\"", "bits", "length", "32");
 			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
-		}
-
-		[Test]
-		public void StringCalcBits()
-		{
-			var bs = CrackElement("String type=\"utf16\"", "bits", "lengthCalc", "8 * 4");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
-		}
-
-		// Added tests to check lengthcalc referencing the datamodel
-
-		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
-		public void BlobCalcElement()
-		{
-			var bs = CrackElement("Blob", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
-		public void BlobCalcRelation()
-		{
-			var bs = CrackElement("Blob", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
-		}
-
-		[Test]
-		public void BlockCalcElement()
-		{
-			var bs = CrackContainer("Block", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
-		public void BlockCalcRelation()
-		{
-			var bs = CrackContainer("Block", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
-		}
-
-		[Test]
-		public void ChoiceCalcElement()
-		{
-			var bs = CrackContainer("Choice", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
-		public void ChoiceCalcRelation()
-		{
-			var bs = CrackContainer("Choice", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
-		}
-
-		[Test, ExpectedException(typeof(PeachException))]
-		public void FlagsCalcElement()
-		{
-			CrackElement("Flags", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
-		}
-
-		[Test, ExpectedException(typeof(PeachException))]
-		public void FlagsCalcRelation()
-		{
-			CrackElement("Flags", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
-		}
-
-		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
-		public void StringCalcElement()
-		{
-			var bs = CrackElement("String type=\"utf16\"", "bytes", "lengthCalc", "int(self.parent.find('num1').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
-		}
-
-		[Test, Ignore("Failure Expected. Referenced in Issue #273")]
-		public void StringCalcRelation()
-		{
-			var bs = CrackElement("String type=\"utf16\"", "bytes", "lengthCalc", "int(self.parent.find('num2').InternalValue)");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }, bs.Value);
 		}
 	}
 }

@@ -734,9 +734,6 @@ namespace Peach.Core.Analyzers
 					throw new PeachException("Error, setting length on element '" + element.name + "'.  " + e.Message, e);
 				}
 			}
-
-			if (node.hasAttr("lengthCalc"))
-				element.lengthCalc = node.getAttrString("lengthCalc");
 		}
 
 		/// <summary>
