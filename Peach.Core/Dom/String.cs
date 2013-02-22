@@ -207,8 +207,7 @@ namespace Peach.Core.Dom
 				if (stringLength == null)
 					throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
 
-				// Round up bits to next byte
-				data.WantBytes((long)(stringLength + 7 / 8));
+				data.WantBytes(stringLength.Value);
 
 				if ((data.TellBytes() + stringLength) > data.LengthBytes)
 					throw new CrackingFailure("String '" + element.fullName +
