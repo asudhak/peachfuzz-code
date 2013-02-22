@@ -76,7 +76,7 @@ def cs_helpers(self):
 @feature('cs')
 @after_method('apply_cs')
 def cs_resource(self):
-	base = os.path.splitext(self.gen)[0]
+	base = getattr(self, 'namespace', os.path.splitext(self.gen)[0])
 
 	if getattr(self, 'unsafe', False):
 		self.env.append_value('CSFLAGS', ['/unsafe+'])
