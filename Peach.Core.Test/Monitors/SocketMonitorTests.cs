@@ -75,6 +75,11 @@ namespace Peach.Core.Test.Monitors
 					socket.Shutdown(SocketShutdown.Both);
 					socket.Close();
 				}
+				catch (SocketException se)
+				{
+					if (se.SocketErrorCode != SocketError.ConnectionReset)
+						Assert.Null(se.Message);
+				}
 				catch (ObjectDisposedException)
 				{
 					return;
