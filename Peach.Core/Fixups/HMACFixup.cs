@@ -41,6 +41,7 @@ namespace Peach.Core.Fixups
     [Parameter("ref", typeof(DataElement), "Reference to data element")]
     [Parameter("Key", typeof(HexString), "Key used in the hash algorithm")]
     [Parameter("Hash", typeof(Algorithms), "Hash algorithm to use", "HMACSHA1")]
+    [Parameter("Length", typeof(int), "Length in bytes to return", "20")]
     [Serializable]
     public class HMACFixup : Fixup
     {
@@ -51,6 +52,7 @@ namespace Peach.Core.Fixups
 
         public HexString Key { get; protected set; }
         public Algorithms Hash { get; protected set; }
+        public int Length { get; protected set; }
         protected DataElement _ref { get; set; }
 
         public enum Algorithms { HMACSHA1, HMACMD5, HMACRIPEMD160, HMACSHA256, HMACSHA384, HMACSHA512, MACTripleDES  };
@@ -67,8 +69,11 @@ namespace Peach.Core.Fixups
 			byte[] data = from.Value.Value;
 			HMAC hashTool = HMAC.Create(Hash.ToString());
             hashTool.Key = Key.Value;
-
-			return new Variant(hashTool.ComputeHash(data));
+            byte[] hash = hashTool.ComputeHash(data);
+            int trunc = 20 - Length;
+            byte[] truncHash = new byte[20 - trunc];
+            System.Array.Copy(hash, truncHash, hash.Length - trunc);
+			return new Variant(truncHash);
 		}
     }
 }
