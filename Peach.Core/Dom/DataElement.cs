@@ -1311,8 +1311,8 @@ namespace Peach.Core.Dom
 
 			if (needed > remain)
 			{
-				string msg = "{0} '{1}' has length of {2} bits{3}but buffer only has {4} bits left.".Fmt(
-					elementType, fullName, size,
+				string msg = "{0} has length of {1} bits{2}but buffer only has {3} bits left.".Fmt(
+					debugName, size,
 					read == 0 ? " " : ", already read " + read + " bits, ", remain);
 				throw new CrackingFailure(msg, this, data);
 			}

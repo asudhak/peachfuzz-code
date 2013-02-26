@@ -449,20 +449,21 @@ namespace Peach.Core.Cracker
 		{
 			try
 			{
-				if(element == null || data == null)
-					throw new CrackingFailure(element, data);
+				if(element == null)
+					throw new ArgumentNullException("element");
+				if (data == null)
+					throw new ArgumentNullException("data");
 
 				logger.Debug("handleNode ------------------------------------");
-				logger.Debug("handleNode: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
+				logger.Debug("handleNode: {0} '{1}' {2}", element.elementType, element.fullName, data.Progress);
+
 				OnEnterHandleNodeEvent(element, data);
 
 				long startingPosition = data.TellBits();
-				bool hasOffsetRelation = false;
+				bool hasOffsetRelation = element.relations.hasOfOffsetRelation;
 
-				// Offset relation
-				if (element.relations.hasOfOffsetRelation)
+				if (hasOffsetRelation)
 				{
-					hasOffsetRelation = true;
 					OffsetRelation rel = element.relations.getOfOffsetRelation();
 					long offset = (long)rel.GetValue();
 
@@ -489,17 +490,11 @@ namespace Peach.Core.Cracker
 				}
 
 				data.MarkStartOfElement(element);
-				
-				// If we have a data.stream == Publisher this is OK
-				//if (data.TellBytes() == data.LengthBytes)
-				//    throw new CrackingFailure("'" + element.fullName +
-				//        "' could not be cracked sinze buffer has zero bytes left.", element, data);
 
 				if (element.transformer != null)
 				{
 					long? size = determineElementSize(element, data);
-
-					if (size == null)
+					if (!size.HasValue)
 						throw new CrackingFailure("Could not determine size for transformer!", element, data);
 
 					var sizedData = element.ReadSizedData(data, size.Value);
@@ -546,7 +541,12 @@ namespace Peach.Core.Cracker
 			}
 			catch (CrackingFailure ex)
 			{
-				logger.Debug("handleNode: Cracking failed: {0}", ex.Message);
+				if (!ex.logged)
+				{
+					ex.logged = true;
+					logger.Debug("handleNode: Cracking failed: {0}", ex.Message);
+				}
+
 				throw;
 			}
 			catch (Exception e)
@@ -567,7 +567,7 @@ namespace Peach.Core.Cracker
 		/// <returns>Returns size in bits</returns>
 		public long? determineElementSize(DataElement element, BitStream data)
 		{
-			logger.Debug("determineElementSize: {0} data.TellBits: {1}/{2}", element.fullName, data.TellBits(), data.TellBytes());
+			logger.Debug("determineElementSize: {0}", element.debugName);
 
 			// Size in bits
 			long? size = null;
@@ -616,11 +616,8 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			if(size == null)
-				logger.Debug("determineElementSize: Returning: null (could not determine size)");
-			else
-				logger.Debug("determineElementSize: Returning: " + size);
 
+			logger.Debug("determineElementSize: Returning: {0}", size.HasValue ? size.ToString() : "<null>");
 			return size;
 		}
 

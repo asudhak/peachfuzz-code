@@ -112,36 +112,32 @@ namespace Peach.Core.Dom
 			}
 
 			long startPosition = sizedData.TellBits();
-			bool foundElement = false;
 
-			foreach (DataElement child in element.choiceElements.Values)
+			foreach (DataElement child in choiceElements.Values)
 			{
 				try
 				{
-					logger.Debug("handleChoice: Trying next child: " + child.fullName);
+					logger.Debug("handleChoice: Trying child: " + child.debugName);
 
-					child.parent = element;
 					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
 					context.handleNode(child, sizedData);
-					element.SelectedElement = child;
-					foundElement = true;
+					SelectedElement = child;
 
-					logger.Debug("handleChoice: Keeping child!");
-					break;
+					logger.Debug("handleChoice: Keeping child: " + child.debugName);
+
+					return;
 				}
 				catch (CrackingFailure)
 				{
-					logger.Debug("handleChoice: Child failed to crack: " + child.fullName);
-					foundElement = false;
+					logger.Debug("handleChoice: Failed to crack child: " + child.debugName);
 				}
 				catch (Exception ex)
 				{
-					logger.Debug("handleChoice: Child threw exception: " + child.fullName + ": " + ex.Message);
+					logger.Debug("handleChoice: Child threw exception: " + child.debugName + ": " + ex.Message);
 				}
 			}
 
-			if (!foundElement)
-				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
+			throw new CrackingFailure("Unable to crack " + debugName + ".", this, data);
 		}
 
 		public void SelectDefault()

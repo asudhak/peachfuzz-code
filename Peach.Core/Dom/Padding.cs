@@ -67,7 +67,6 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public Padding()
 		{
-			_defaultValue = new Variant(new byte[] { });
 		}
 
 		/// <summary>
@@ -77,7 +76,6 @@ namespace Peach.Core.Dom
 		public Padding(string name)
 			: base(name)
 		{
-			_defaultValue = new Variant(new byte[] { });
 		}
 
 		public override void Crack(DataCracker context, BitStream data)
@@ -176,7 +174,7 @@ namespace Peach.Core.Dom
 			get
 			{
 				if (_inDefaultValue)
-					return new Variant(new byte[] { });
+					return new Variant(new byte[0]);
 
 				// Prevent recursion
 				_inDefaultValue = true;

@@ -143,7 +143,7 @@ namespace Peach.Core.Dom
 			}
 			catch (DecoderFallbackException)
 			{
-				throw new CrackingFailure("String '" + fullName + "' contains invalid bytes.", this, data);
+				throw new CrackingFailure(debugName + " contains invalid bytes.", this, data);
 			}
 		}
 
