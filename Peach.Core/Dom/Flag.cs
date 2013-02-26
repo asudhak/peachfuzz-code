@@ -57,7 +57,6 @@ namespace Peach.Core.Dom
 	public class Flag : Number
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		protected int _size = 0;
 		protected int _position = 0;
 
 		public Flag()
@@ -67,19 +66,6 @@ namespace Peach.Core.Dom
 		public Flag(string name)
 			: base(name)
 		{
-		}
-
-		public Flag(string name, int size, int position)
-			: base(name)
-		{
-			this.size = size;
-			this.position = position;
-		}
-
-		public Flag(int size, int position)
-		{
-			this.size = size;
-			this.position = position;
 		}
 
 		public override void Crack(DataCracker context, BitStream data)
@@ -117,7 +103,7 @@ namespace Peach.Core.Dom
 		{
 			if (position >= this.position)
 			{
-				if (position < (this.position + this.size))
+				if (position < (this.position + this.lengthAsBits))
 					return true;
 			}
 			else
@@ -140,22 +126,21 @@ namespace Peach.Core.Dom
 			int position = node.getAttrInt("position");
 			int size = node.getAttrInt("size");
 
-			if (position < 0 || size < 0 || (position + size) > parent.size)
-				throw new PeachException("Error, flag " + flag.name + " is placed outside its parent.");
+			if (position < 0 || size < 0 || (position + size) > parent.lengthAsBits)
+				throw new PeachException("Error, " + flag.debugName + " is placed outside its parent.");
 
 			if (parent.LittleEndian)
-				position = parent.size - size - position;
+				position = (int)parent.lengthAsBits - size - position;
 
 			foreach (Flag other in parent)
 			{
 				if (other.Overlapps(position, size))
-					throw new PeachException("Error, flag " + flag.name + " overlapps with flag " + other.name + ".");
+					throw new PeachException("Error, " + flag.debugName + " overlapps with " + other.debugName + ".");
 			}
 
-			flag.size = (int)size;
+			flag.position = position;
 			flag.lengthType = LengthType.Bits;
 			flag.length = size;
-			flag.position = (int)position;
 			flag.LittleEndian = parent.LittleEndian;
 
 			context.handleCommonDataElementAttributes(node, flag);
@@ -165,25 +150,11 @@ namespace Peach.Core.Dom
 			return flag;
 		}
 
-		public int size
-		{
-			get { return _size; }
-			set
-			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("Should not be null");
-				_size = value;
-				Invalidate();
-			}
-		}
-
 		public int position
 		{
 			get { return _position; }
 			set
 			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("Should not be null");
 				_position = value;
 				Invalidate();
 			}

@@ -62,7 +62,7 @@ namespace Peach.Core.Dom
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected int _size = 0;
-		protected bool _littleEndian = true;
+		protected bool _isLittleEndian = true;
 
 		public Flags()
 		{
@@ -122,7 +122,8 @@ namespace Peach.Core.Dom
 			if (size < 1 || size > 64)
 				throw new PeachException(string.Format("Error, unsupported size '{0}' for {1}.", size, flags.debugName));
 
-			flags.size = size;
+			flags.lengthType = LengthType.Bits;
+			flags.length = size;
 
 			string strEndian = null;
 			if (node.hasAttr("endian"))
@@ -166,20 +167,10 @@ namespace Peach.Core.Dom
 
 		public bool LittleEndian
 		{
-			get { return _littleEndian; }
+			get { return _isLittleEndian; }
 			set
 			{
-				_littleEndian = value;
-				Invalidate();
-			}
-		}
-
-		public int size
-		{
-			get { return _size; }
-			set
-			{
-				_size = value;
+				_isLittleEndian = value;
 				Invalidate();
 			}
 		}
@@ -189,7 +180,7 @@ namespace Peach.Core.Dom
 			BitStream bits = new BitStream();
 
 			// Expand to 'size' bits
-			bits.WriteBits(0, size);
+			bits.WriteBits(0, (int)lengthAsBits);
 
 			foreach (DataElement child in this)
 			{

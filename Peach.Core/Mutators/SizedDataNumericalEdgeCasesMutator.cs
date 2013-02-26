@@ -67,13 +67,9 @@ namespace Peach.Core.Mutators
         {
             int size = 0;
 
-            if (obj is Number)
+            if (obj is Number || obj is Flag)
             {
-                size = (int)((Number)obj).lengthAsBits;
-            }
-            else if (obj is Flag)
-            {
-                size = ((Flag)obj).size;
+                size = (int)obj.lengthAsBits;
             }
             else
             {
