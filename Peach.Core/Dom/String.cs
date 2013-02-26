@@ -91,42 +91,11 @@ namespace Peach.Core.Dom
 		public String()
 			: base()
 		{
-			DefaultValue = new Variant("");
 		}
 
 		public String(string name)
 			: base(name)
 		{
-			DefaultValue = new Variant("");
-		}
-
-		public String(string name, string defaultValue)
-			: base(name)
-		{
-			DefaultValue = new Variant(defaultValue);
-		}
-
-		public String(string name, Variant defaultValue)
-		{
-			DefaultValue = defaultValue;
-		}
-
-		public String(string name, string defaultValue, StringType type, bool nullTerminated)
-			: base(name)
-		{
-			DefaultValue = new Variant(defaultValue);
-			_type = type;
-			_nullTerminated = nullTerminated;
-		}
-
-		public String(string name, string defaultValue, StringType type, bool nullTerminated, int length)
-			: base(name)
-		{
-			DefaultValue = new Variant(defaultValue);
-			_type = type;
-			_nullTerminated = nullTerminated;
-			_length = length;
-			_lengthType = LengthType.Bytes;
 		}
 
 		protected string ReadCharacters(BitStream data, long maxCount, bool stopOnNull)

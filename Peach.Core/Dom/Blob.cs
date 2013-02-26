@@ -68,46 +68,13 @@ namespace Peach.Core.Dom
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public Blob()
 		{
-			_defaultValue = new Variant(new byte[] { });
 		}
 		
 		public Blob(string name)
 			: base(name)
 		{
-			_defaultValue = new Variant(new byte[] { });
 		}
 		
-		public Blob(string name, int length)
-			: base(name)
-		{
-			this.length = length;
-			_defaultValue = new Variant(new byte[] { });
-		}
-		
-		public Blob(string name, int length, Variant defaultValue)
-			: base(name)
-		{
-			this.length = length;
-			_defaultValue = defaultValue;
-		}
-		
-		public Blob(int length)
-		{
-			_defaultValue = new Variant(new byte[] { });
-			this.length = length;
-		}
-		
-		public Blob(int length, Variant defaultValue)
-		{
-			this.length = length;
-			_defaultValue = defaultValue;
-		}
-
-		public Blob(Variant defaultValue)
-		{
-			_defaultValue = defaultValue;
-		}
-
 		public override void Crack(DataCracker context, BitStream data)
 		{
 			Blob element = this;
@@ -146,6 +113,9 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementAttributes(node, blob);
 			context.handleCommonDataElementChildren(node, blob);
 			context.handleCommonDataElementValue(node, blob);
+
+			if (blob.DefaultValue == null)
+				blob.DefaultValue = new Variant(new byte[0]);
 
 			if (blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
 				blob.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
