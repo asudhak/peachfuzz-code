@@ -550,26 +550,43 @@ namespace Peach.Core
 			return !(a == b);
 		}
 
-		public string ToHex(int maxBytes = 0)
+		private static string BitsToString(BitStream bs)
 		{
-			byte[] data = (byte[])this;
+			long end = Math.Min(32, bs.LengthBytes);
+			if (end == 0)
+				return "";
+
+			long pos = bs.TellBits();
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+			byte[] buf = bs.ReadBitsAsBytes(end * 8);
+			bs.SeekBits(pos, System.IO.SeekOrigin.Begin);
+
 			StringBuilder ret = new StringBuilder();
+			ret.AppendFormat("{0:x2}", buf[0]);
 
-			for (int cnt = 0; cnt < data.Length; cnt++)
-			{
-				if (cnt > 0 && cnt % 8 == 0)
-					ret.Append(" ");
-				if (cnt > 0 && cnt % 16 == 0)
-					ret.Append("\n");
+			for (long i = 1; i < end; ++i)
+				ret.AppendFormat(" {0:x2}", buf[i]);
 
-				ret.AppendFormat("{0:x2} ", data[cnt]);
+			if (end != bs.LengthBytes)
+				ret.AppendFormat(".. (Len: {0} bits)", bs.LengthBits);
 
-				if (maxBytes > 0 && cnt > maxBytes)
-				{
-					ret.Append("[cut]");
-					break;
-				}
-			}
+			return ret.ToString();
+		}
+
+		private static string BytesToString(byte[] buf)
+		{
+			if (buf.Length == 0)
+				return "";
+
+			StringBuilder ret = new StringBuilder();
+			ret.AppendFormat("{0:x2}", buf[0]);
+
+			int end = Math.Min(32, buf.Length);
+			for (int i = 1; i < end; ++i)
+				ret.AppendFormat(" {0:x2}", buf[i]);
+
+			if (end != buf.Length)
+				ret.AppendFormat(".. (Len: {0} bytes)", buf.Length);
 
 			return ret.ToString();
 		}
@@ -617,11 +634,13 @@ namespace Peach.Core
 				case VariantType.ULong:
 					return this._valueULong.ToString();
 				case VariantType.String:
-					return this._valueString.ToString();
+					if (this._valueString.Length <= 80)
+						return this._valueString.ToString();
+					return _valueString.Substring(0, 64) + ".. (Len: " + _valueString.Length + " chars)";
 				case VariantType.ByteString:
-					return _valueByteArray.ToString();
+					return BytesToString(_valueByteArray);
 				case VariantType.BitStream:
-					return _valueBitStream.ToString();
+					return BitsToString(_valueBitStream);
 				default:
 					return base.ToString();
 			}

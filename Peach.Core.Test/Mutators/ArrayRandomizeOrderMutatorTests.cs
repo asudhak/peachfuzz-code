@@ -164,7 +164,7 @@ namespace Peach.Core.Test.Mutators
             int numSame = 0;
             for (int i = 0; i < 50; ++i)
             {
-                Assert.AreEqual(mutations[i].ToHex(), oldMutations[i].ToHex());
+                Assert.AreEqual(mutations[i], oldMutations[i]);
                 for (int j = (i+1); j < 50; ++j)
                 {
                     if (((byte[])mutations[i]).SequenceEqual((byte[])mutations[j]))
