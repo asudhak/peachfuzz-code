@@ -517,16 +517,17 @@ namespace Peach.Core.Cracker
 
 					Dictionary<string, object> scope = new Dictionary<string,object>();
 					scope["element"] = element;
-					
-					try
+
+					var iv = element.InternalValue;
+					if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
 					{
-						scope["value"] = (string)element.InternalValue;
-						logger.Debug("Constraint, value=[" + (string)element.InternalValue + "].");
-					}
-					catch
-					{
-						scope["value"] = (byte[])element.InternalValue;
+						scope["value"] = (byte[])iv;
 						logger.Debug("Constraint, value=byte array.");
+					}
+					else
+					{
+						scope["value"] = (string)iv;
+						logger.Debug("Constraint, value=[" + (string)iv + "].");
 					}
 
 					object oReturn = Scripting.EvalExpression(element.constraint, scope);
