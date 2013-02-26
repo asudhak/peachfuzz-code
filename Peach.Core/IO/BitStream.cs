@@ -167,6 +167,14 @@ namespace Peach.Core.IO
 			throw new ApplicationException("Error, unable to clone stream.");
 		}
 
+		public string Progress
+		{
+			get
+			{
+				return "Bytes: {0}/{1} Bits: {2}/{3}".Fmt(TellBytes(), LengthBytes, TellBits(), LengthBits);
+			}
+		}
+
 		/// <summary>
 		/// Length in bits of buffer
 		/// </summary>
