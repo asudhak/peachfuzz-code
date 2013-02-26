@@ -339,37 +339,6 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-		public static OrderedDictionary<string, Type> dataElements = new OrderedDictionary<string, Type>();
-		public static void loadDataElements(Assembly assembly)
-		{
-			foreach (Type type in assembly.GetTypes())
-			{
-				if (type.IsClass && !type.IsAbstract)
-				{
-					var attr = type.GetAttributes<DataElementAttribute>(null).First();
-					if (!dataElements.ContainsKey(attr.elementName))
-					{
-						dataElements.Add(attr.elementName, type);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Recursively returns elements of a specific type.  Will not
-		/// return elements of our partent.
-		/// </summary>
-		/// <param name="type">Type of elements to locate and return</param>
-		/// <returns>Returns elements of a specific type</returns>
-		public IEnumerable<DataElement> getElementsByType(Type type)
-		{
-			foreach(DataElement element in EnumerateAllElements())
-			{
-				if(element.GetType() == type)
-					yield return element;
-			}
-		}
-
 		/// <summary>
 		/// Dynamic properties
 		/// </summary>
