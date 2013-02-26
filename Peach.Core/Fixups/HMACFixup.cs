@@ -41,6 +41,7 @@ namespace Peach.Core.Fixups
     [Parameter("ref", typeof(DataElement), "Reference to data element")]
     [Parameter("Key", typeof(HexString), "Key used in the hash algorithm")]
     [Parameter("Hash", typeof(Algorithms), "Hash algorithm to use", "HMACSHA1")]
+    [Parameter("Length", typeof(int), "Length in bytes to return (Value of 0 means don't truncate)", "0")]
     [Serializable]
     public class HMACFixup : Fixup
     {
@@ -51,6 +52,7 @@ namespace Peach.Core.Fixups
 
         public HexString Key { get; protected set; }
         public Algorithms Hash { get; protected set; }
+        public int Length { get; protected set; }
         protected DataElement _ref { get; set; }
 
         public enum Algorithms { HMACSHA1, HMACMD5, HMACRIPEMD160, HMACSHA256, HMACSHA384, HMACSHA512, MACTripleDES  };
@@ -59,6 +61,11 @@ namespace Peach.Core.Fixups
             : base(parent, args, "ref")
 		{
             ParameterParser.Parse(this, args);
+            HMAC hashSizeTest = HMAC.Create(Hash.ToString());
+            if (Length > (hashSizeTest.HashSize / 8))
+                throw new PeachException("The truncate length is greater than the hash size for the specified algorithm.");
+            if (Length < 0)
+                throw new PeachException("The truncate length must be greater than or equal to 0.");
 		}
 
 		protected override Variant fixupImpl()
@@ -67,8 +74,20 @@ namespace Peach.Core.Fixups
 			byte[] data = from.Value.Value;
 			HMAC hashTool = HMAC.Create(Hash.ToString());
             hashTool.Key = Key.Value;
+            byte[] hash = hashTool.ComputeHash(data);
 
-			return new Variant(hashTool.ComputeHash(data));
+            byte[] truncatedHash;
+            if (Length == 0)
+            {
+                truncatedHash = hash;
+            }
+            else
+            {
+                truncatedHash = new byte[Length];
+                System.Array.Copy(hash, truncatedHash, Length);
+            }
+
+			return new Variant(truncatedHash);
 		}
     }
 }
