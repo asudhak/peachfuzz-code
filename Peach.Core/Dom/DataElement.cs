@@ -94,8 +94,8 @@ namespace Peach.Core.Dom
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	[DebuggerDisplay("{fullName}")]
-	public abstract class DataElement : INamed, ICrackable
+	[DebuggerDisplay("{debugName}")]
+	public abstract class DataElement : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public static bool DebugClone = false;
@@ -419,6 +419,22 @@ namespace Peach.Core.Dom
 				{
 					throw ex.InnerException;
 				}
+			}
+		}
+
+		public string elementType
+		{
+			get
+			{
+				return GetType().GetAttributes<DataElementAttribute>(null).First().elementName;
+			}
+		}
+
+		public string debugName
+		{
+			get
+			{
+				return "{0} '{1}'".Fmt(elementType, fullName);
 			}
 		}
 
@@ -1304,14 +1320,6 @@ namespace Peach.Core.Dom
 				child.ClearRelations();
 		}
 
-		public string elementType
-		{
-			get
-			{
-				return GetType().GetAttributes<DataElementAttribute>(null).First().elementName;
-			}
-		}
-
 		/// <summary>
 		/// Helper fucntion to obtain a bitstream sized for this element
 		/// </summary>
@@ -1323,8 +1331,8 @@ namespace Peach.Core.Dom
 		{
 			if (size < read)
 			{
-				string msg = "{0} '{1}' has length of {2} bits but already read {3} bits.".Fmt(
-					elementType, fullName, size, read);
+				string msg = "{0} has length of {1} bits but already read {2} bits.".Fmt(
+					debugName, size, read);
 				throw new CrackingFailure(msg, this, data);
 			}
 

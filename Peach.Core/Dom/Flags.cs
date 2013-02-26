@@ -120,7 +120,7 @@ namespace Peach.Core.Dom
 				throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
 
 			if (size < 1 || size > 64)
-				throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, flags.name));
+				throw new PeachException(string.Format("Error, unsupported size '{0}' for {1}.", size, flags.debugName));
 
 			flags.size = size;
 
@@ -145,7 +145,7 @@ namespace Peach.Core.Dom
 						break;
 					default:
 						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", strEndian, flags.name));
+							string.Format("Error, unsupported value '{0}' for 'endian' attribute on {1}.", strEndian, flags.debugName));
 				}
 			}
 

@@ -123,8 +123,8 @@ namespace Peach.Core.Dom
 						if (!stopOnNull)
 							msg = "' of '" + maxCount;
 
-						throw new CrackingFailure("String '" + fullName +
-								"' could only crack '" + sb.Length + msg + "' characters " +
+						throw new CrackingFailure(debugName +
+								" could only crack '" + sb.Length + msg + "' characters " +
 								"before exhausting the input buffer.", this, data);
 					}
 
@@ -275,84 +275,91 @@ namespace Peach.Core.Dom
 			}
 			set
 			{
-				string final = null;
+				base.DefaultValue = new Variant(Sanitize(value));
+			}
+		}
 
-				if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
+		#region Sanitize
+
+		private string Sanitize(Variant value)
+		{
+			string final = null;
+
+			if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
+			{
+				try
 				{
-					try
+					final = encoding.GetString((byte[])value);
+				}
+				catch (DecoderFallbackException)
+				{
+					throw new PeachException("Error, " + debugName + " value contains invalid " + stringType + " bytes.");
+				}
+			}
+			else
+			{
+				try
+				{
+					encoding.GetBytes((string)value);
+				}
+				catch
+				{
+					throw new PeachException("Error, " + debugName + " value contains invalid " + stringType + " characters.");
+				}
+
+				final = (string)value;
+			}
+
+			if (_hasLength)
+			{
+				var lenType = lengthType;
+				var len = length;
+
+				if (lenType == LengthType.Chars)
+				{
+					if (NeedsExpand(final.Length, len, nullTerminated, final))
 					{
-						final = encoding.GetString((byte[])value);
-					}
-					catch (DecoderFallbackException)
-					{
-						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " bytes.");
+						if (nullTerminated)
+							len -= 1;
+
+						final += MakePad((int)len - final.Length);
 					}
 				}
 				else
 				{
-					try
+					if (lenType == LengthType.Bits)
 					{
-						encoding.GetBytes((string)value);
+						if ((len % 8) != 0)
+							throw new PeachException("Error, " + debugName + " has invalid length of " + len + " bits.");
+
+						len = len / 8;
+						lenType = LengthType.Bytes;
 					}
-					catch
+
+					System.Diagnostics.Debug.Assert(lenType == LengthType.Bytes);
+
+					int actual = encoding.GetByteCount(final);
+
+					if (NeedsExpand(actual, len, nullTerminated, final))
 					{
-						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " characters.");
-					}
+						int nullLen = encoding.GetByteCount("\0");
+						int padLen = encoding.GetByteCount(new char[1] { padCharacter });
 
-					final = (string)value;
-				}
+						int grow = (int)len - actual;
 
-				if (_hasLength)
-				{
-					var lenType = lengthType;
-					var len = length;
+						if (nullTerminated)
+							grow -= nullLen;
 
-					if (lenType == LengthType.Chars)
-					{
-						if (NeedsExpand(final.Length, len, nullTerminated, final))
-						{
-							if (nullTerminated)
-								len -= 1;
+						if (grow < 0 || (grow % padLen) != 0)
+							throw new PeachException(string.Format("Error, can not satisfy length requirement of {1} {2} when padding {3} {0}.",
+								debugName, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType));
 
-							final += MakePad((int)len - final.Length);
-						}
-					}
-					else
-					{
-						if (lenType == LengthType.Bits)
-						{
-							if ((len % 8) != 0)
-								throw new PeachException(string.Format("Error, {2} string '{0}' has invalid length of {1} bits.", name, len, stringType));
-
-							len = len / 8;
-							lenType = LengthType.Bytes;
-						}
-
-						System.Diagnostics.Debug.Assert(lenType == LengthType.Bytes);
-
-						int actual = encoding.GetByteCount(final);
-
-						if (NeedsExpand(actual, len, nullTerminated, final))
-						{
-							int nullLen = encoding.GetByteCount("\0");
-							int padLen = encoding.GetByteCount(new char[1] { padCharacter });
-
-							int grow = (int)len - actual;
-
-							if (nullTerminated)
-								grow -= nullLen;
-
-							if (grow < 0 || (grow % padLen) != 0)
-								throw new PeachException(string.Format("Error, can not satisfy length requirement of {1} {2} when padding {3} string '{0}'.",
-									name, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType));
-
-							final += MakePad(grow / padLen);
-						}
+						final += MakePad(grow / padLen);
 					}
 				}
-
-				base.DefaultValue = new Variant(final);
 			}
+
+			return final;
 		}
 
 		private string MakePad(int numPadChars)
@@ -380,6 +387,8 @@ namespace Peach.Core.Dom
 
 			return true;
 		}
+
+		#endregion
 
 		/// <summary>
 		/// String type/encoding to be used.  Default is 
