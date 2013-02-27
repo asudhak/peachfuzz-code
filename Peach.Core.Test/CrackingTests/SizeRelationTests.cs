@@ -400,7 +400,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			BitStream data = new BitStream();
 
-			data.WriteBytes(new byte[] { 0, 0, 0, 6, 0, 0 });
+			data.WriteBytes(new byte[] { 0, 0, 0, 6, 0, 0, 1 });
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
