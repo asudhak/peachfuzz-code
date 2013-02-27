@@ -44,6 +44,54 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	public class OffsetRelationTests
 	{
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.Data' has offset of 160 bits but buffer only has 96 bits.")]
+		public void TooBigOffset()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"offset\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<String name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteInt8((sbyte)20);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
+
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.Data' has offset of 0 bits but already read 8 bits.")]
+		public void TooSmallOffset()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"offset\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<String name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteInt8((sbyte)0);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
+
 		[Test]
 		public void BasicOffset()
 		{
@@ -140,6 +188,87 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void OffsetInSizedBlock()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+
+		<Number name='offset' size='8'>
+			<Relation type='offset' of='Data'/>
+		</Number>
+
+		<Block name='block'>
+			<Number name='size' size='8'>
+				<Relation type='size' of='block'/>
+			</Number>
+
+			<String name='Data'/>
+		</Block>
+
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
+			byte[] payload = ASCIIEncoding.ASCII.GetBytes("Hello World");
+
+			BitStream data = new BitStream();
+			data.WriteByte((byte)(1 + 1 + offsetdata.Length));
+			data.WriteByte((byte)(1 + offsetdata.Length + payload.Length));
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(payload);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0].find("block.Data").DefaultValue);
+		}
+
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.block.Data' has offset of 240 bits but buffer only has 184 bits.")]
+		public void BadOffsetInSizedBlock()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+
+		<Number name='offset' size='8'>
+			<Relation type='offset' of='Data'/>
+		</Number>
+
+		<Block name='block'>
+			<Number name='size' size='8'>
+				<Relation type='size' of='block'/>
+			</Number>
+
+			<String name='Data'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
+			byte[] payload = ASCIIEncoding.ASCII.GetBytes("Hello World");
+
+			BitStream data = new BitStream();
+			data.WriteByte((byte)30);
+			data.WriteByte((byte)(1 + offsetdata.Length + payload.Length));
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(payload);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0].find("block.Data").DefaultValue);
+		}
+
+		[Test]
 		public void RelativeOffset()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -177,13 +306,13 @@ namespace Peach.Core.Test.CrackingTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Blob length=\"5\"/>" +
+				"		<String length=\"5\"/>" +
 				"		<Number name=\"Size\" size=\"8\">" +
 				"			<Relation type=\"offset\" of=\"Data\" relative=\"true\" relativeTo=\"RelData\" />" +
 				"		</Number>" +
-				"		<Blob length=\"5\"/>" +
-				"		<Blob name=\"RelData\" length=\"5\"/>" +
-				"		<Blob name=\"Data\" />" +
+				"		<String length=\"5\"/>" +
+				"		<String name=\"RelData\" length=\"5\"/>" +
+				"		<String name=\"Data\" />" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -206,7 +335,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(offsetdata.Length + otherdata.Length, (int)dom.dataModels[0]["Size"].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0]["Data"].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0]["Data"].DefaultValue);
 		}
 
 		[Test]
@@ -261,7 +390,7 @@ namespace Peach.Core.Test.CrackingTests
 			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
 
 			BitStream data = new BitStream();
-			data.WriteByte((byte)(offsetdata.Length + 1));
+			data.WriteByte((byte)(offsetdata.Length));
 			data.WriteBytes(offsetdata);
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.SeekBits(0, SeekOrigin.Begin);
@@ -341,9 +470,9 @@ namespace Peach.Core.Test.CrackingTests
 			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
 
 			BitStream data = new BitStream();
-			data.WriteByte(7);
+			data.WriteByte((byte)(1 + otherdata.Length + 1));
 			data.WriteBytes(otherdata);
-			data.WriteByte(15);
+			data.WriteByte((byte)offsetdata.Length);
 			data.WriteBytes(offsetdata);
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.SeekBits(0, SeekOrigin.Begin);
@@ -364,15 +493,15 @@ namespace Peach.Core.Test.CrackingTests
 			<Number size='8'>
 				<Relation type='size' of='blk' />
 			</Number>
-			<Block name='inner' />
-				<Blob/>
-				<Blob name='off' length='1'/>
+			<Block name='inner'>
+				<String/>
+				<String name='off' length='1'/>
 				<Number size='8'>
 					<Relation type='offset' of='Data' relativeTo='off'/>
 				</Number>
 			</Block>
 		</Block>
-		<Blob name='Data'/>
+		<String name='Data'/>
 	</DataModel>
 </Peach>";
 
@@ -383,9 +512,9 @@ namespace Peach.Core.Test.CrackingTests
 			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
 
 			BitStream data = new BitStream();
-			data.WriteByte(7);
+			data.WriteByte((byte)(1 + otherdata.Length + 1));
 			data.WriteBytes(otherdata);
-			data.WriteByte(10);
+			data.WriteByte((byte)(1 + 1 + offsetdata.Length));
 			data.WriteBytes(offsetdata);
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.SeekBits(0, SeekOrigin.Begin);
@@ -393,8 +522,67 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0]["Data"].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0]["Data"].DefaultValue);
 		}
+
+		[Test]
+		public void Sample()
+		{
+			string xml = @"
+<Peach>
+    <DataModel name='TheDataModel'>
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset0' />
+        </String>
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset1' />
+        </String>
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset2' />
+        </String>
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset3' />
+        </String>
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset4' />
+        </String>
+
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset5' />
+        </String>
+
+        <String length='4' padCharacter=' '>
+                <Relation type='offset' of='Offset6' />
+        </String>
+
+        <Block>
+                <Block name='Offset0'>
+                        <Block>
+                                <String name='Offset1' value='CRAZY STRING!' />
+                                <String value='aslkjalskdjas' />
+                                <String value='aslkdjalskdjasdkjasdlkjasd' />
+                        </Block>
+                        <String name='Offset2' value='ALSKJDALKSJD' />
+                        <Block>
+                                <String name='Offset3' value='1' />
+                                <String name='Offset4' value='' />
+                                <String name='Offset5' value='1293812093' />
+                        </Block>
+                </Block>
+        </Block>
+
+        <String name='Offset6' value='aslkdjalskdjas' />
+
+    </DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var final = dom.dataModels[0].Value;
+			string str = Encoding.ASCII.GetString(final.Value);
+		}
+
 	}
 }
 
