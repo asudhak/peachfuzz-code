@@ -208,6 +208,193 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(offsetdata.Length + otherdata.Length, (int)dom.dataModels[0]["Size"].DefaultValue);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0]["Data"].DefaultValue);
 		}
+
+		[Test]
+		public void RelativeOffsetBlock()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block length='5'>
+			<Number size='8'>
+				<Relation type='offset' of='Data' relative='true' />
+			</Number>
+		</Block>
+		<String name='Data'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
+
+			BitStream data = new BitStream();
+			data.WriteByte((byte)(offsetdata.Length));
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0]["Data"].DefaultValue);
+		}
+
+		[Test]
+		public void RelativeOffsetSpace()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Number size='8'>
+			<Relation type='offset' of='Data' relative='true' />
+		</Number>
+		<String length='5'/>
+		<String name='Data'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
+
+			BitStream data = new BitStream();
+			data.WriteByte((byte)(offsetdata.Length + 1));
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0]["Data"].DefaultValue);
+		}
+
+		[Test]
+		public void NonChildOffset()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block name='blk'>
+			<Number size='8'>
+				<Relation type='size' of='blk' />
+			</Number>
+			<Block>
+				<Blob/>
+				<Number size='8'>
+					<Relation type='offset' of='Data'/>
+				</Number>
+			</Block>
+		</Block>
+		<Blob name='Data'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("abcde");
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
+
+			BitStream data = new BitStream();
+			data.WriteByte(7);
+			data.WriteBytes(otherdata);
+			data.WriteByte(16);
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0]["Data"].DefaultValue);
+		}
+
+		[Test]
+		public void NonChildRelativeOffset()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block name='blk'>
+			<Number size='8'>
+				<Relation type='size' of='blk' />
+			</Number>
+			<Block>
+				<Blob/>
+				<Number size='8'>
+					<Relation type='offset' relative='true' of='Data'/>
+				</Number>
+			</Block>
+		</Block>
+		<String name='Data'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("abcde");
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
+
+			BitStream data = new BitStream();
+			data.WriteByte(7);
+			data.WriteBytes(otherdata);
+			data.WriteByte(15);
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0]["Data"].DefaultValue);
+		}
+
+		[Test]
+		public void NonChildRelativeToOffset()
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Block name='blk'>
+			<Number size='8'>
+				<Relation type='size' of='blk' />
+			</Number>
+			<Block name='inner' />
+				<Blob/>
+				<Blob name='off' length='1'/>
+				<Number size='8'>
+					<Relation type='offset' of='Data' relativeTo='off'/>
+				</Number>
+			</Block>
+		</Block>
+		<Blob name='Data'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("abcde");
+			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
+
+			BitStream data = new BitStream();
+			data.WriteByte(7);
+			data.WriteBytes(otherdata);
+			data.WriteByte(10);
+			data.WriteBytes(offsetdata);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0]["Data"].DefaultValue);
+		}
 	}
 }
 
