@@ -152,7 +152,7 @@ namespace Peach.Core.Test.Fixups
             e.startFuzzing(dom, config);
         }
 
-        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Fixup' named 'HMAC'.\nExtended error: Exception during object creation: The truncate length must be greater than 0.")]
+        [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Fixup' named 'HMAC'.\nExtended error: Exception during object creation: The truncate length must be greater than or equal to 0.")]
         public void LengthLessThanZeroTest()
         {
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
