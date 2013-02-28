@@ -42,6 +42,7 @@ using System.Security.Cryptography;
 
 #if PEACH
 using Peach.Core.IO.Conversion;
+using System.Diagnostics;
 #endif
 
 namespace Peach.Core.IO
@@ -53,6 +54,7 @@ namespace Peach.Core.IO
 	/// bytes.
 	/// </summary>
 	[Serializable]
+	[DebuggerDisplay("{Progress}")]
 	public class BitStream : IDisposable
 	{
 #if PEACH
@@ -171,7 +173,7 @@ namespace Peach.Core.IO
 		{
 			get
 			{
-				return "Bytes: {0}/{1} Bits: {2}/{3}".Fmt(TellBytes(), LengthBytes, TellBits(), LengthBits);
+				return "Bytes: {0}/{1}, Bits: {2}/{3}".Fmt(TellBytes(), LengthBytes, TellBits(), LengthBits);
 			}
 		}
 
