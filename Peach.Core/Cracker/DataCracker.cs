@@ -277,7 +277,16 @@ namespace Peach.Core.Cracker
 					currentElement = oldElement.parent;
 				else
 				{
-					if (currentElement.hasLength)
+					var sizeRel = currentElement.relations.getOfSizeRelation();
+					if (sizeRel != null)
+					{
+						if (!_sizedElements.ContainsKey(sizeRel.From))
+							return false;
+
+						size += sizeRel.GetValue();
+					}
+
+					else if (currentElement.hasLength)
 						size += currentElement.lengthAsBits;
 
 					else if (currentElement is DataElementContainer)
@@ -316,6 +325,16 @@ namespace Peach.Core.Cracker
 		{
 			if (elem == null)
 				return false;
+
+			var sizeRel = elem.relations.getOfSizeRelation();
+			if (sizeRel != null)
+			{
+				if (!_sizedElements.ContainsKey(sizeRel.From))
+					return false;
+
+				size += sizeRel.GetValue();
+				return true;
+			}
 
 			if (elem.hasLength)
 			{
