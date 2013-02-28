@@ -246,6 +246,36 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackZeroArray()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"Item\" minOccurs=\"0\" token=\"true\" />" +
+				"		<Blob name=\"Rest\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5, 6 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+
+			Assert.AreEqual(0, array.Count);
+
+			Blob rest = (Blob)dom.dataModels[0].find("Rest");
+
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6 }, (byte[])rest.InternalValue);
+		}
+
+		[Test]
 		public void CrackArrayRelation()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +

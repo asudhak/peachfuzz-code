@@ -107,8 +107,10 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[2], data);
 
-			Assert.AreEqual(1, dom.dataModels[2].Count);
+			Assert.AreEqual(2, dom.dataModels[2].Count);
 			Assert.IsTrue(dom.dataModels[2][0] is Blob);
+			Assert.IsTrue(dom.dataModels[2][1] is Dom.Array);
+			Assert.AreEqual(0, ((Dom.Array)dom.dataModels[2][1]).Count);
 		}
 	}
 }
