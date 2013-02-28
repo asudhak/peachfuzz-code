@@ -91,12 +91,14 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			Array element = this;
+			logger.Debug("Crack: {0} Type: {1}", debugName, origionalElement.elementType);
 
-			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-			logger.Debug("Crack: {0} type: {1}", element.fullName, element.origionalElement.GetType());
+			Array element = this;
+			var origData = data;
+			var origPos = origData.TellBits();
+			data = ReadSizedData(data, size);
 
 			if (this.Count > 0)
 			{
@@ -133,7 +135,7 @@ namespace Peach.Core.Dom
 
 					try
 					{
-						context.handleNode(clone, data);
+						context.CrackData(clone, data);
 					}
 					catch
 					{
@@ -167,17 +169,17 @@ namespace Peach.Core.Dom
 
 					try
 					{
-						context.handleNode(clone, data);
+						context.CrackData(clone, data);
 					}
 					catch
 					{
 						logger.Debug("Crack: {0} Failed on #{1}", element.fullName, cnt.ToString());
-						element.Remove(clone);
+						element.RemoveAt(clone.parent.IndexOf(clone));
 						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
 						break;
 					}
 
-					if (cnt == 0 && minOccurs == 0 && !context.lookAhead(this, data))
+					if (cnt == 0 && minOccurs == 0 && false)//!context.lookAhead(this, data))
 					{
 						// Broke our look ahead, must be only zero elements in this array.
 						logger.Debug("Crack: {0}, minOccurs = 0, our look ahead failed, must be zero elements in this array.",
@@ -204,7 +206,11 @@ namespace Peach.Core.Dom
 						string.Format("Crack: {0} Failed on #{1}. Not enough data to meet minOccurs value of {2}", element.fullName, cnt.ToString(), minOccurs),
 						element, data);
 				}
+
 			}
+
+			if (data != origData)
+				origData.SeekBits(origPos + data.TellBits(), System.IO.SeekOrigin.Begin);
 		}
 
 		public new static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

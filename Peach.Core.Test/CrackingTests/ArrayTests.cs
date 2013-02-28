@@ -399,7 +399,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3, numArray.Count);
 		}
 
-		[Test, Ignore("Failure Expected. Referenced in Issue #282")]
+		[Test]
 		public void CrackArrayWithTokenSibling()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +

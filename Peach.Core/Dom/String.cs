@@ -149,66 +149,32 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		/// <summary>
-		/// TODO - Use ReadCharacter method when length is char length.
-		/// </summary>
-		/// <param name="context"></param>
-		/// <param name="data"></param>
-		public override void Crack(DataCracker context, BitStream data)
+		public bool readCharacters
 		{
-			String element = this;
-			Variant defaultValue;
-			string stringValue;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (!_hasLength && element.nullTerminated)
+			get
 			{
-				stringValue = ReadCharacters(data, -1, true);
+				if (!_hasLength && nullTerminated)
+					return true;
+
+				if (lengthType == LengthType.Chars && _hasLength)
+					return true;
+
+				return false;
 			}
-			else if (lengthType == LengthType.Chars && _hasLength)
+		}
+
+		protected override Variant GetDefaultValue(BitStream data, long? size)
+		{
+			if (!size.HasValue)
 			{
-				stringValue = ReadCharacters(data, length, false);
-			}
-			else
-			{
-				long? stringLength = (context.determineElementSize(element, data) / 8);
+				if (!_hasLength && nullTerminated)
+					return new Variant(ReadCharacters(data, -1, true));
 
-				if (stringLength == null)
-					throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
-
-				data.WantBytes(stringLength.Value);
-
-				if ((data.TellBytes() + stringLength) > data.LengthBytes)
-					throw new CrackingFailure("String '" + element.fullName +
-						"' has length of '" + stringLength + "' but buffer only has '" +
-						(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
-
-				byte[] buf = data.ReadBytes((int)stringLength);
-
-				try
-				{
-					stringValue = encoding.GetString(buf);
-				}
-				catch (DecoderFallbackException)
-				{
-					throw new CrackingFailure("String '" + element.fullName + "' contains invalid bytes.", element, data);
-				}
+				if (lengthType == LengthType.Chars && _hasLength)
+					return new Variant(ReadCharacters(data, length, false));
 			}
 
-			defaultValue = new Variant(stringValue);
-
-			if (element.isToken)
-				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-
-			element.DefaultValue = defaultValue;
-
-			if (stringValue.Length > 50)
-				stringValue = stringValue.Substring(0, 50);
-
-			logger.Debug("String's value is: " + stringValue);
-
+			return base.GetDefaultValue(data, size);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

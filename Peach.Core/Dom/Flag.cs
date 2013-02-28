@@ -56,7 +56,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Flag : Number
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected int _position = 0;
 
 		public Flag()
@@ -66,31 +65,6 @@ namespace Peach.Core.Dom
 		public Flag(string name)
 			: base(name)
 		{
-		}
-
-		public override void Crack(DataCracker context, BitStream data)
-		{
-			Flag element = this;
-
-			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
-				throw new CrackingFailure("Failed cracking Flag '" + element.fullName + "'.", element, data);
-
-			Variant defaultValue = new Variant(FromBitstream(data));
-
-			logger.Debug("Flag's value is: {0}", defaultValue);
-
-			if (element.isToken)
-			{
-				if (defaultValue != element.DefaultValue)
-				{
-					logger.Debug("Flag marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.");
-					throw new CrackingFailure("Flag marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-				}
-			}
-
-			element.DefaultValue = defaultValue;
 		}
 
 		/// <summary>

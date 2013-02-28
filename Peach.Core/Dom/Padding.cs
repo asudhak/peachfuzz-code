@@ -78,21 +78,10 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			Padding element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			// Length in bits
-			long paddingLength = element.Value.LengthBits;
-
-			if ((data.TellBits() + paddingLength) > data.LengthBits)
-				throw new CrackingFailure("Placement '" + element.fullName +
-					"' has length of '" + paddingLength + "' bits but buffer only has '" +
-					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
-
-			data.SeekBits(paddingLength, System.IO.SeekOrigin.Current);
+			// Consume padding bytes
+			ReadSizedData(data, size);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

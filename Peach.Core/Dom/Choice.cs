@@ -78,39 +78,9 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			Choice element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			BitStream sizedData = data;
-			SizeRelation sizeRelation = null;
-
-			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation)
-			{
-				sizeRelation = element.relations.getOfSizeRelation();
-
-				if (!element.isParentOf(sizeRelation.From))
-				{
-					int size = (int)sizeRelation.GetValue();
-					context._sizedBlockStack.Add(element);
-					context._sizedBlockMap[element] = size;
-
-					sizedData = ReadSizedData(data, size);
-					sizeRelation = null;
-				}
-			}
-			else if (element.hasLength)
-			{
-				long size = element.lengthAsBits;
-				context._sizedBlockStack.Add(element);
-				context._sizedBlockMap[element] = size;
-
-				sizedData = ReadSizedData(data, size);
-			}
-
+			BitStream sizedData = ReadSizedData(data, size);
 			long startPosition = sizedData.TellBits();
 
 			foreach (DataElement child in choiceElements.Values)
@@ -120,11 +90,10 @@ namespace Peach.Core.Dom
 					logger.Debug("handleChoice: Trying child: " + child.debugName);
 
 					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
-					context.handleNode(child, sizedData);
+					context.CrackData(child, sizedData);
 					SelectedElement = child;
 
 					logger.Debug("handleChoice: Keeping child: " + child.debugName);
-
 					return;
 				}
 				catch (CrackingFailure)
@@ -137,7 +106,7 @@ namespace Peach.Core.Dom
 				}
 			}
 
-			throw new CrackingFailure("Unable to crack " + debugName + ".", this, data);
+			throw new CrackingFailure(debugName + " has no valid children.", this, data);
 		}
 
 		public void SelectDefault()

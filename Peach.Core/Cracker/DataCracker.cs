@@ -54,20 +54,25 @@ namespace Peach.Core.Cracker
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		/// <summary>
-		/// Are we looking ahead to see what will happen?
-		/// </summary>
-		public bool IsLookAhead { get; set; }
+		class Position
+		{
+			public long begin;
+			public long end;
+			public long? size;
 
-		/// <summary>
-		/// A stack of sized DataElement containers.
-		/// </summary>
-		public List<DataElement> _sizedBlockStack = new List<DataElement>();
-		/// <summary>
-		/// Mapping of elements from _sizedBlockStack to there lengths.  All lengths are in
-		/// BITS!
-		/// </summary>
-		public Dictionary<DataElement, long> _sizedBlockMap = new Dictionary<DataElement, long>();
+			public override string ToString()
+			{
+				return "Begin: {0}, Size: {1}, End: {2}".Fmt(
+					begin,
+					size.HasValue ? size.Value.ToString() : "<null>",
+					end);
+			}
+		}
+
+		OrderedDictionary<DataElement, Position> _sizedElements;
+		List<SizeRelation> _sizeRelations;
+
+		List<BitStream> _dataStack = new List<BitStream>();
 
 		/// <summary>
 		/// Elements that have analyzers attached.  We run them all post-crack.
@@ -79,9 +84,6 @@ namespace Peach.Core.Cracker
 		public event EnterHandleNodeEventHandler EnterHandleNodeEvent;
 		protected void OnEnterHandleNodeEvent(DataElement element, BitStream data)
 		{
-			if (IsLookAhead)
-				return;
-
 			if(EnterHandleNodeEvent != null)
 				EnterHandleNodeEvent(element, data);
 		}
@@ -89,9 +91,6 @@ namespace Peach.Core.Cracker
 		public event ExitHandleNodeEventHandler ExitHandleNodeEvent;
 		protected void OnExitHandleNodeEvent(DataElement element, BitStream data)
 		{
-			if (IsLookAhead)
-				return;
-
 			if (ExitHandleNodeEvent != null)
 				ExitHandleNodeEvent(element, data);
 		}
@@ -99,9 +98,6 @@ namespace Peach.Core.Cracker
 		public event ExceptionHandleNodeEventHandler ExceptionHandleNodeEvent;
 		protected void OnExceptionHandleNodeEvent(DataElement element, BitStream data, Exception e)
 		{
-			if (IsLookAhead)
-				return;
-
 			if (ExceptionHandleNodeEvent != null)
 				ExceptionHandleNodeEvent(element, data, e);
 		}
@@ -109,14 +105,13 @@ namespace Peach.Core.Cracker
 		public event PlacementEventHandler PlacementEvent;
 		protected void OnPlacementEvent(DataElement oldElement, DataElement newElement, DataElementContainer oldParent)
 		{
-			if (IsLookAhead)
-				return;
-
 			if (PlacementEvent != null)
 				PlacementEvent(oldElement, newElement, oldParent);
 		}
 
 		#endregion
+
+		#region Public Methods
 
 		/// <summary>
 		/// Main entry method that will take a data stream and parse it into a data model.
@@ -126,24 +121,68 @@ namespace Peach.Core.Cracker
 		/// </remarks>
 		/// <param name="model">DataModel to import data into</param>
 		/// <param name="data">Data stream to read data from</param>
-		public void CrackData(DataModel model, BitStream data)
+		public void CrackData(DataElement element, BitStream data)
 		{
-			_sizedBlockStack = new List<DataElement>();
-			_sizedBlockMap = new Dictionary<DataElement, long>();
+			try
+			{
+				_dataStack.Insert(0, data);
 
-			IsLookAhead = false;
+				if (_dataStack.Count == 1)
+					handleRoot(element, data);
+				else
+					handleNode(element, data);
+			}
+			finally
+			{
+				_dataStack.RemoveAt(0);
+			}
 
-			handleNode(model, data);
+		}
+
+		public long? GetElementSize(DataElement elem)
+		{
+			return _sizedElements[elem].size;
+		}
+
+		/// <summary>
+		/// Perform optimizations of data model for cracking
+		/// </summary>
+		/// <remarks>
+		/// Optimization can be performed once on a data model and used
+		/// for any clones made.  Optimizations will increase the speed
+		/// of data cracking.
+		/// </remarks>
+		/// <param name="model">DataModel to optimize</param>
+		public void OptimizeDataModel(DataModel model)
+		{
+			foreach (var element in model.EnumerateElementsUpTree())
+			{
+				if (element is Choice)
+				{
+					// TODO - Fast CACHE IT!
+				}
+			}
+		}
+
+		#endregion
+
+		private void handleRoot(DataElement element, BitStream data)
+		{
+			_sizedElements = new OrderedDictionary<DataElement, Position>();
+			_sizeRelations = new List<SizeRelation>();
+
+			// Crack the model
+			handleNode(element, data);
 
 			// Handle any Placement's
-			handlePlacement(model, data);
+			handlePlacement(element, data);
 
 			// Handle any analyzers
 			foreach (DataElement elem in _elementsWithAnalyzer)
 				elem.analyzer.asDataElement(elem, null);
 		}
 
-		protected void handlePlacement(DataModel model, BitStream data)
+		protected void handlePlacement(DataElement model, BitStream data)
 		{
 			List<DataElement> elementsWithPlacement = new List<DataElement>();
 			foreach (DataElement element in model.EnumerateAllElements())
@@ -214,26 +253,6 @@ namespace Peach.Core.Cracker
 		}
 
 		/// <summary>
-		/// Perform optimizations of data model for cracking
-		/// </summary>
-		/// <remarks>
-		/// Optimization can be performed once on a data model and used
-		/// for any clones made.  Optimizations will increase the speed
-		/// of data cracking.
-		/// </remarks>
-		/// <param name="model">DataModel to optimize</param>
-		public void OptimizeDataModel(DataModel model)
-		{
-			foreach (var element in model.EnumerateElementsUpTree())
-			{
-				if (element is Choice)
-				{
-					// TODO - Fast CACHE IT!
-				}
-			}
-		}
-
-		/// <summary>
 		/// Is element last unsized element in currently sized area.  If not
 		/// then 'size' is set to the number of bytes from element to ened of
 		/// the sized data.
@@ -252,7 +271,7 @@ namespace Peach.Core.Cracker
 			while (true)
 			{
 				currentElement = oldElement.nextSibling();
-				if (currentElement == null && (oldElement.parent == null || oldElement.parent.transformer != null || this._sizedBlockMap.ContainsKey(oldElement.parent)))
+				if (currentElement == null && (oldElement.parent == null || oldElement.parent.transformer != null || GetElementSize(oldElement.parent).HasValue))
 					break;
 				else if (currentElement == null)
 					currentElement = oldElement.parent;
@@ -400,7 +419,7 @@ namespace Peach.Core.Cracker
 					if (sibling == null)
 					{
 						var parent = next.parent;
-						while (sibling == null && parent != null && parent.transformer == null && !this._sizedBlockMap.ContainsKey(parent))
+						while (sibling == null && parent != null && parent.transformer == null && !GetElementSize(parent).HasValue)
 						{
 							sibling = parent.nextSibling();
 							parent = parent.parent;
@@ -438,6 +457,132 @@ namespace Peach.Core.Cracker
 				return false;
 		}
 
+		void handleOffset(DataElement element, BitStream data)
+		{
+			OffsetRelation rel = element.relations.getOfOffsetRelation();
+
+			if (rel == null)
+				return;
+
+			// Offset is in bytes
+			long offset = (long)rel.GetValue() * 8;
+
+			if (rel.isRelativeOffset)
+			{
+				DataElement from = rel.From;
+
+				if (rel.relativeTo != null)
+					from = from.find(rel.relativeTo);
+
+				if (from == null)
+					throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to " +
+						rel.From.debugName + "'.", element, data);
+
+				// If relativeTo, offset is from beginning of relativeTo element
+				// Otherwise, offset is after the From element
+				var pos = _sizedElements[from];
+				offset += rel.relativeTo != null ? pos.begin : pos.end;
+			}
+
+			// Handle case where data is a slice from the root BitStream
+			offset -= getDataOffset();
+
+			if (offset < data.TellBits())
+			{
+				string msg = "{0} has offset of {1} bits but already read {2} bits.".Fmt(
+					element.debugName, offset, data.TellBits());
+				throw new CrackingFailure(msg, element, data);
+			}
+
+			if (offset > data.LengthBits)
+				data.WantBytes((offset + 7 - data.LengthBits) / 8);
+
+			if (offset > data.LengthBits)
+			{
+				string msg = "{0} has offset of {1} bits but buffer only has {2} bits.".Fmt(
+					element.debugName, offset, data.LengthBits);
+				throw new CrackingFailure(msg, element, data);
+			}
+
+			data.SeekBits(offset, System.IO.SeekOrigin.Begin);
+		}
+
+		private long getDataOffset()
+		{
+			var curr = _dataStack.First();
+			var root = _dataStack.Last();
+
+			if (curr == root)
+				return 0;
+
+			long offset = root.TellBits() - curr.LengthBits;
+			System.Diagnostics.Debug.Assert(offset >= 0);
+			return offset;
+		}
+
+		private Position beginElement(DataElement elem, BitStream data)
+		{
+			OnEnterHandleNodeEvent(elem, data);
+
+			handleOffset(elem, data);
+
+			System.Diagnostics.Debug.Assert(!_sizedElements.ContainsKey(elem));
+
+			long? size = determineElementSize(elem, data);
+
+			var pos = new Position();
+			pos.begin = data.TellBits() + getDataOffset();
+			pos.size = size;
+
+			_sizedElements.Add(elem, pos);
+
+			// If this element does not have a size but has a size relation,
+			// keep track of the relation for evaluation in the future
+			if (!size.HasValue)
+			{
+				SizeRelation rel = elem.relations.getOfSizeRelation();
+				if (rel != null)
+					_sizeRelations.Add(rel);
+			}
+
+			return pos;
+		}
+
+		private void endElement(DataElement elem, BitStream data, Position pos)
+		{
+			// Completing this element might allow us to evaluate
+			// outstanding size reation computations.
+			for (int i = _sizeRelations.Count - 1; i >= 0; --i)
+			{
+				var rel = _sizeRelations[i];
+
+				if (elem == rel.From || (elem is DataElementContainer &&
+					((DataElementContainer)elem).isParentOf(rel.From)))
+				{
+					var other = _sizedElements[rel.Of];
+					System.Diagnostics.Debug.Assert(!other.size.HasValue);
+					other.size = rel.GetValue();
+					_sizeRelations.RemoveAt(i);
+
+					logger.Debug("Size relation of {0} cracked. Updating size: {1}",
+						rel.Of.debugName, other.size);
+				}
+			}
+
+			// Mark the end position of this element
+			pos.end = data.TellBits() + getDataOffset();
+
+			OnExitHandleNodeEvent(elem, data);
+		}
+
+		private void handleCrack(DataElement elem, BitStream data, long? size)
+		{
+			logger.Debug("Crack: {0} Size: {1}, {2}", elem.debugName,
+				size.HasValue ? size.ToString() : "<null>", data.Progress);
+
+			elem.Crack(this, data, size);
+		}
+
 		/// <summary>
 		/// Called to crack a DataElement based on an input stream.  This method
 		/// will hand cracking off to a more specific method after performing
@@ -445,118 +590,94 @@ namespace Peach.Core.Cracker
 		/// </summary>
 		/// <param name="element">DataElement to crack</param>
 		/// <param name="data">Input stream to use for data</param>
-		public void handleNode(DataElement element, BitStream data)
+		private void handleNode(DataElement elem, BitStream data)
 		{
 			try
 			{
-				if(element == null)
-					throw new ArgumentNullException("element");
+				if (elem == null)
+					throw new ArgumentNullException("elem");
 				if (data == null)
 					throw new ArgumentNullException("data");
 
-				logger.Debug("handleNode ------------------------------------");
-				logger.Debug("handleNode: {0} '{1}' {2}", element.elementType, element.fullName, data.Progress);
+				logger.Debug("------------------------------------");
+				logger.Debug("{0} {1}", elem.debugName, data.Progress);
 
-				OnEnterHandleNodeEvent(element, data);
+				var pos = beginElement(elem, data);
 
-				long startingPosition = data.TellBits();
-				bool hasOffsetRelation = element.relations.hasOfOffsetRelation;
-
-				if (hasOffsetRelation)
+				if (elem.transformer != null)
 				{
-					OffsetRelation rel = element.relations.getOfOffsetRelation();
-					long offset = (long)rel.GetValue();
+					var sizedData = elem.ReadSizedData(data, pos.size);
+					var decodedData = elem.transformer.decode(sizedData);
 
-					if (!rel.isRelativeOffset)
-					{
-						// Relative from start of data
-						data.SeekBytes((int)offset, System.IO.SeekOrigin.Begin);
-					}
-					else if (rel.relativeTo == null)
-					{
-						data.SeekBytes((int)offset, System.IO.SeekOrigin.Current);
-					}
-					else
-					{
-						DataElement relativeTo = rel.From.find(rel.relativeTo);
-						if (relativeTo == null)
-							throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to '" +
-								rel.From.fullName + "'.", element, data);
-
-						long relativePosition = data.DataElementPosition(relativeTo);
-						data.SeekBits((int)relativePosition, System.IO.SeekOrigin.Begin);
-						data.SeekBytes((int)offset, System.IO.SeekOrigin.Current);
-					}
-				}
-
-				data.MarkStartOfElement(element);
-
-				if (element.transformer != null)
-				{
-					long? size = determineElementSize(element, data);
-					if (!size.HasValue)
-						throw new CrackingFailure("Could not determine size for transformer!", element, data);
-
-					var sizedData = element.ReadSizedData(data, size.Value);
-					var decodedData = element.transformer.decode(sizedData);
-					element.Crack(this, decodedData);
+					// Use the size of the transformed data as the new size of the element
+					handleCrack(elem, decodedData, decodedData.LengthBits);
 				}
 				else
 				{
-					element.Crack(this, data);
+					handleCrack(elem, data, pos.size);
 				}
 
-				if (element.constraint != null)
-				{
-					logger.Debug("Running constraint [" + element.constraint + "]");
+				if (elem.constraint != null)
+					handleConstraint(elem, data);
 
-					Dictionary<string, object> scope = new Dictionary<string,object>();
-					scope["element"] = element;
+				if (elem.analyzer != null)
+					_elementsWithAnalyzer.Add(elem);
 
-					var iv = element.InternalValue;
-					if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
-					{
-						scope["value"] = (byte[])iv;
-						logger.Debug("Constraint, value=byte array.");
-					}
-					else
-					{
-						scope["value"] = (string)iv;
-						logger.Debug("Constraint, value=[" + (string)iv + "].");
-					}
-
-					object oReturn = Scripting.EvalExpression(element.constraint, scope);
-
-					if (!((bool)oReturn))
-						throw new CrackingFailure("Constraint failed.", element, data);
-				}
-
-				if (element.analyzer != null)
-					_elementsWithAnalyzer.Add(element);
-
-				if (hasOffsetRelation)
-					data.SeekBits(startingPosition, System.IO.SeekOrigin.Begin);
-
-				OnExitHandleNodeEvent(element, data);
-			}
-			catch (CrackingFailure ex)
-			{
-				if (!ex.logged)
-				{
-					ex.logged = true;
-					logger.Debug("handleNode: Cracking failed: {0}", ex.Message);
-				}
-
-				throw;
+				endElement(elem, data, pos);
 			}
 			catch (Exception e)
 			{
-				logger.Debug("handleNode: Exception occured: {0}", e.ToString());
-				OnExceptionHandleNodeEvent(element, data, e);
-
-				// Rethrow
+				handleException(elem, data, e);
 				throw;
 			}
+		}
+
+		private void handleException(DataElement elem, BitStream data, Exception e)
+		{
+			_sizedElements.Remove(elem);
+			_sizeRelations.RemoveAll(r => r.Of == elem);
+
+			CrackingFailure ex = e as CrackingFailure;
+			if (ex != null)
+			{
+				if (!ex.logged)
+					logger.Debug("{0} failed to crack. {1}", elem.debugName, ex.Message);
+				else
+					logger.Debug("{0} failed to crack.", elem.debugName);
+
+				ex.logged = true;
+			}
+			else
+			{
+				logger.Debug("Exception occured: {0}", e.ToString());
+			}
+
+			OnExceptionHandleNodeEvent(elem, data, e);
+		}
+
+		private void handleConstraint(DataElement element, BitStream data)
+		{
+			logger.Debug("Running constraint [" + element.constraint + "]");
+
+			Dictionary<string, object> scope = new Dictionary<string, object>();
+			scope["element"] = element;
+
+			var iv = element.InternalValue;
+			if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
+			{
+				scope["value"] = (byte[])iv;
+				logger.Debug("Constraint, value=byte array.");
+			}
+			else
+			{
+				scope["value"] = (string)iv;
+				logger.Debug("Constraint, value=[" + (string)iv + "].");
+			}
+
+			object oReturn = Scripting.EvalExpression(element.constraint, scope);
+
+			if (!((bool)oReturn))
+				throw new CrackingFailure("Constraint failed.", element, data);
 		}
 
 		/// <summary>
@@ -565,24 +686,45 @@ namespace Peach.Core.Cracker
 		/// <param name="element"></param>
 		/// <param name="data"></param>
 		/// <returns>Returns size in bits</returns>
-		public long? determineElementSize(DataElement element, BitStream data)
+		private long? determineElementSize(DataElement element, BitStream data)
 		{
 			logger.Debug("determineElementSize: {0}", element.debugName);
 
 			// Size in bits
 			long? size = null;
 
+			SizeRelation sizeRelation = element.relations.getOfSizeRelation();
+			if (sizeRelation != null)
+			{
+				if (_sizedElements.ContainsKey(sizeRelation.From))
+					size = sizeRelation.GetValue();
+
+				logger.Debug("determineElementSize: Size relation from {0} {1} cracked. Returning: {2}",
+					sizeRelation.From.debugName,
+					size.HasValue ? "already" : "not",
+					size.HasValue ? size.ToString() : "<null>");
+
+//				return size;
+			}
+
 			// Check for relation and/or size
-			if (element.hasLength)
+			else if (element is Dom.String && ((Dom.String)element).readCharacters)
+			{
+				return size;
+			}
+			else if (element.hasLength)
 			{
 				size = element.lengthAsBits;
 			}
-			else if(element.relations.hasOfSizeRelation)
+			if (!size.HasValue)//(element is DataElementContainer))
 			{
-				size = element.relations.getOfSizeRelation().GetValue();
-			}
-			else
-			{
+				/*
+				 * string:
+				 * 
+				 * if (!_hasLength && nullTerminated)
+				 * if (lengthType == LengthType.Chars && _hasLength)
+				 */
+
 				long nextSize = 0;
 				DataElement token = null;
 
@@ -610,58 +752,16 @@ namespace Peach.Core.Cracker
 
 					}
 				}
-				else if (isLastUnsizedElement(element, ref nextSize))
+
+				if (!size.HasValue && isLastUnsizedElement(element, ref nextSize))
 				{
-					size = data.LengthBits - (data.TellBits() + nextSize);
+					if (nextSize != 0 || !(element is DataElementContainer))
+						size = data.LengthBits - (data.TellBits() + nextSize);
 				}
 			}
-
 
 			logger.Debug("determineElementSize: Returning: {0}", size.HasValue ? size.ToString() : "<null>");
 			return size;
-		}
-
-		/// <summary>
-		/// Parse ahead and verify if things work out OKAY.
-		/// </summary>
-		/// <param name="element"></param>
-		/// <param name="data"></param>
-		/// <returns></returns>
-		public bool lookAhead(DataElement element, BitStream data)
-		{
-			try
-			{
-				IsLookAhead = true;
-
-
-				var root = element.getRoot().Clone() as DataElementContainer;
-				var node = root.find(element.fullName);
-				var sibling = node.nextSibling();
-
-				if (sibling == null)
-					return true;
-
-				long position = data.TellBits();
-
-				try
-				{
-					handleNode(sibling, data);
-				}
-				catch (Exception)
-				{
-					return false;
-				}
-				finally
-				{
-					data.SeekBits(position, System.IO.SeekOrigin.Begin);
-				}
-
-				return true;
-			}
-			finally
-			{
-				IsLookAhead = false;
-			}
 		}
 	}
 }

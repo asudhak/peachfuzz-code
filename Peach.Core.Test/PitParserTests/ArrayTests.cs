@@ -49,7 +49,7 @@ namespace Peach.Core.Test.PitParserTests
 				DataElement._uniqueName = 0;
 			}
 
-			public override void Crack(Cracker.DataCracker context, IO.BitStream data)
+			public override void Crack(Cracker.DataCracker context, IO.BitStream data, long? size)
 			{
 				throw new NotImplementedException();
 			}

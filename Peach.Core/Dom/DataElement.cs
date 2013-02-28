@@ -306,7 +306,40 @@ namespace Peach.Core.Dom
 			remove { _invalidatedEvent -= value; }
 		}
 
-		public abstract void Crack(DataCracker context, BitStream data);
+		protected virtual Variant GetDefaultValue(BitStream data, long? size)
+		{
+			if (size.HasValue && size.Value == 0)
+				return new Variant(new byte[0]);
+
+			var sizedData = ReadSizedData(data, size);
+			return new Variant(sizedData);
+		}
+
+		public virtual void Crack(DataCracker context, BitStream data, long? size)
+		{
+			var oldDefalut = DefaultValue;
+
+			try
+			{
+				DefaultValue = GetDefaultValue(data, size);
+			}
+			catch (PeachException pe)
+			{
+				throw new CrackingFailure(pe.Message, this, data);
+			}
+
+			logger.Debug("{0} value is: {1}", debugName, DefaultValue);
+
+			if (isToken && oldDefalut != DefaultValue)
+			{
+				var newDefault = DefaultValue;
+				DefaultValue = oldDefalut;
+				var msg = "{0} marked as token, values did not match '{1}' vs. '{2}'.";
+				msg = msg.Fmt(debugName, newDefault, oldDefalut);
+				logger.Debug(msg);
+				throw new CrackingFailure(msg, this, data);
+			}
+		}
 
 		protected void OnInvalidated(EventArgs e)
 		{
@@ -1294,26 +1327,28 @@ namespace Peach.Core.Dom
 		/// </summary>
 		/// <param name="data">Source BitStream</param>
 		/// <param name="size">Length of this element</param>
-		/// <param name="size">Length of bits already read of this element</param>
+		/// <param name="read">Length of bits already read of this element</param>
 		/// <returns>BitStream of length 'size - read'</returns>
-		public BitStream ReadSizedData(BitStream data, long size, long read = 0)
+		public virtual BitStream ReadSizedData(BitStream data, long? size, long read = 0)
 		{
-			if (size < read)
+			if (!size.HasValue)
+				throw new CrackingFailure(debugName + " is unsized.", this, data);
+
+			if (size.Value < read)
 			{
 				string msg = "{0} has length of {1} bits but already read {2} bits.".Fmt(
-					debugName, size, read);
+					debugName, size.Value, read);
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			long needed = size - read;
+			long needed = size.Value - read;
 			data.WantBytes((needed + 7) / 8);
 			long remain = data.LengthBits - data.TellBits();
 
 			if (needed > remain)
 			{
 				string msg = "{0} has length of {1} bits{2}but buffer only has {3} bits left.".Fmt(
-					debugName, size,
-					read == 0 ? " " : ", already read " + read + " bits, ", remain);
+					debugName, size.Value, read == 0 ? " " : ", already read " + read + " bits, ", remain);
 				throw new CrackingFailure(msg, this, data);
 			}
 

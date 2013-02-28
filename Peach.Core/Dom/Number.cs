@@ -89,31 +89,6 @@ namespace Peach.Core.Dom
 			DefaultValue = new Variant(0);
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
-		{
-			Number element = this;
-
-			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
-				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
-
-			Variant defaultValue = new Variant(FromBitstream(data));
-
-			logger.Debug("Number's value is: {0}", defaultValue);
-
-			if (element.isToken)
-			{
-				if (defaultValue != element.DefaultValue)
-				{
-					logger.Debug("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.");
-					throw new CrackingFailure("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-				}
-			}
-
-			element.DefaultValue = defaultValue;
-		}
-
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
 			if (node.Name != "Number")
