@@ -91,11 +91,13 @@ namespace Peach.Core.Dom
 		public String()
 			: base()
 		{
+			_defaultValue = new Variant("");
 		}
 
 		public String(string name)
 			: base(name)
 		{
+			_defaultValue = new Variant("");
 		}
 
 		protected string ReadCharacters(BitStream data, long maxCount, bool stopOnNull)

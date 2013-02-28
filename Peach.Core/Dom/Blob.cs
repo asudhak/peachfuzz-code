@@ -68,11 +68,13 @@ namespace Peach.Core.Dom
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public Blob()
 		{
+			_defaultValue = new Variant(new byte[0]);
 		}
 		
 		public Blob(string name)
 			: base(name)
 		{
+			_defaultValue = new Variant(new byte[0]);
 		}
 		
 		public override void Crack(DataCracker context, BitStream data)
