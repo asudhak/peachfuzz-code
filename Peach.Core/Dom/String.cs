@@ -149,7 +149,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public bool readCharacters
+		public override bool isDeterministic
 		{
 			get
 			{
@@ -159,7 +159,7 @@ namespace Peach.Core.Dom
 				if (lengthType == LengthType.Chars && _hasLength)
 					return true;
 
-				return false;
+				return base.isDeterministic;
 			}
 		}
 
@@ -174,7 +174,20 @@ namespace Peach.Core.Dom
 					return new Variant(ReadCharacters(data, length, false));
 			}
 
-			return base.GetDefaultValue(data, size);
+			Variant ret = base.GetDefaultValue(data, size);
+
+			// If we dont have a length and are nullTerminated, we need to strip the null.
+			// This is because the default does not contain the null, it
+			// is added when generating the internal value.
+			if (!_hasLength && nullTerminated)
+			{
+				string str = Sanitize(ret);
+				if (str.Length > 0 && str[str.Length - 1] == '\0')
+					str = str.Remove(str.Length - 1);
+				ret = new Variant(str);
+			}
+
+			return ret;
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

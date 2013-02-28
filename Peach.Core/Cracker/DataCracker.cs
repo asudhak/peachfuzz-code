@@ -450,13 +450,13 @@ namespace Peach.Core.Cracker
 			}
 
 			// Check for relation and/or size
-			else if (element is Dom.String && ((Dom.String)element).readCharacters)
-			{
-				return size;
-			}
 			else if (element.hasLength)
 			{
 				size = element.lengthAsBits;
+			}
+			else if (element.isDeterministic)
+			{
+				return size;
 			}
 			if (!size.HasValue)//(element is DataElementContainer))
 			{

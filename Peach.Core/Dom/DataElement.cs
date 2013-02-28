@@ -98,6 +98,9 @@ namespace Peach.Core.Dom
 	public abstract class DataElement : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		#region Clone
+
 		public static bool DebugClone = false;
 
 		public class CloneContext
@@ -210,6 +213,8 @@ namespace Peach.Core.Dom
 
 			return copy;
 		}
+
+		#endregion
 
 		/// <summary>
 		/// Mutated vale override's fixupImpl
@@ -602,6 +607,20 @@ namespace Peach.Core.Dom
 					return true;
 
 				return _hasLength;
+			}
+		}
+
+		/// <summary>
+		/// Is the length of the element deterministic.
+		/// This is the case if the element hasLength or
+		/// if the element has a specific end. For example,
+		/// a null terminated string.
+		/// </summary>
+		public virtual bool isDeterministic
+		{
+			get
+			{
+				return hasLength;
 			}
 		}
 
