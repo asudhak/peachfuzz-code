@@ -5,6 +5,19 @@ using System.Xml;
 
 namespace Peach.Core
 {
+	public static class ListExtensions
+	{
+		public static T First<T>(this List<T> list)
+		{
+			return list[0];
+		}
+
+		public static T Last<T>(this List<T> list)
+		{
+			return list[list.Count - 1];
+		}
+	}
+
 	public static class StringExtensions
 	{
 		public static string Fmt(this string format, params object[] args)
