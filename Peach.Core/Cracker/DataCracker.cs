@@ -670,43 +670,15 @@ namespace Peach.Core.Cracker
 
 		void handleOffsetRelation(DataElement element, BitStream data)
 		{
-			OffsetRelation rel = element.relations.getOfOffsetRelation();
+			long? offset = getRelativeOffset(element, data, 0);
 
-			if (rel == null)
+			if (!offset.HasValue)
 				return;
 
-			// Offset is in bytes
-			long offset = (long)rel.GetValue() * 8;
-
-			if (rel.isRelativeOffset)
-			{
-				DataElement from = rel.From;
-
-				if (rel.relativeTo != null)
-					from = from.find(rel.relativeTo);
-
-				if (from == null)
-					throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to " +
-						rel.From.debugName + "'.", element, data);
-
-				// If relativeTo, offset is from beginning of relativeTo element
-				// Otherwise, offset is after the From element
-				var pos = _sizedElements[from];
-				offset += rel.relativeTo != null ? pos.begin : pos.end;
-			}
-
-			// Handle case where data is a slice from the root BitStream
-			offset -= getDataOffset();
-
-			if (offset < data.TellBits())
-			{
-				string msg = "{0} has offset of {1} bits but already read {2} bits.".Fmt(
-					element.debugName, offset, data.TellBits());
-				throw new CrackingFailure(msg, element, data);
-			}
+			offset += data.TellBits();
 
 			if (offset > data.LengthBits)
-				data.WantBytes((offset + 7 - data.LengthBits) / 8);
+				data.WantBytes((offset.Value + 7 - data.LengthBits) / 8);
 
 			if (offset > data.LengthBits)
 			{
@@ -715,7 +687,7 @@ namespace Peach.Core.Cracker
 				throw new CrackingFailure(msg, element, data);
 			}
 
-			data.SeekBits(offset, System.IO.SeekOrigin.Begin);
+			data.SeekBits(offset.Value, System.IO.SeekOrigin.Begin);
 		}
 
 		void handleException(DataElement elem, BitStream data, Exception e)
@@ -835,6 +807,66 @@ namespace Peach.Core.Cracker
 
 		#region Calculate Element Size
 
+		long? getRelativeOffset(DataElement elem, BitStream data, long minOffset = 0)
+		{
+			OffsetRelation rel = elem.relations.getOfOffsetRelation();
+
+			if (rel == null)
+				return null;
+
+			// Ensure we have cracked the from half of the relation
+			if (!_sizedElements.ContainsKey(rel.From))
+				return null;
+
+			// Offset is in bytes
+			long offset = (long)rel.GetValue() * 8;
+
+			if (rel.isRelativeOffset)
+			{
+				DataElement from = rel.From;
+
+				if (rel.relativeTo != null)
+					from = from.find(rel.relativeTo);
+
+				if (from == null)
+					throw new CrackingFailure("Unable to locate 'relativeTo' element in relation attached to " +
+						elem.debugName + "'.", elem, data);
+
+				// Get the position we are related to
+				Position pos;
+				if (!_sizedElements.TryGetValue(from, out pos))
+					return null;
+
+				// If relativeTo, offset is from beginning of relativeTo element
+				// Otherwise, offset is after the From element
+				offset += rel.relativeTo != null ? pos.begin : pos.end;
+			}
+
+			// Adjust offset to be relative to the current BitStream
+			offset -= getDataOffset();
+
+			// Ensure the offset is not before our current position
+			if (offset < data.TellBits())
+			{
+				string msg = "{0} has offset of {1} bits but already read {2} bits.".Fmt(
+					elem.debugName, offset, data.TellBits());
+				throw new CrackingFailure(msg, elem, data);
+			}
+
+			// Make offset relative to current position
+			offset -= data.TellBits();
+
+			// Ensure the offset satisfies the minimum
+			if (offset < minOffset)
+			{
+				string msg = "{0} has offset of {1} bits but must be at least {2} bits.".Fmt(
+					elem.debugName, offset, minOffset);
+				throw new CrackingFailure(msg, elem, data);
+			}
+
+			return offset;
+		}
+
 		long? findToken(BitStream data, BitStream token, long offset)
 		{
 			while (true)
@@ -853,12 +885,20 @@ namespace Peach.Core.Cracker
 			}
 		}
 
-		bool recurseSize(DataElement elem, ref long offset, ref BitStream token)
+		bool recurseSize(DataElement elem, ref long offset, ref long end, ref BitStream token)
 		{
 			if (elem.isToken)
 			{
-				logger.Debug("recurseSize: {0} -> Found token at offset {1}", elem.debugName, offset);
 				token = elem.Value;
+				logger.Debug("recurseSize: {0} -> Found token, current offset is {1}", elem.debugName, offset);
+				return true;
+			}
+
+			long? rel = getRelativeOffset(elem, _dataStack.First(), offset);
+			if (rel.HasValue)
+			{
+				end = rel.Value;
+				logger.Debug("recurseSize: {0} -> Found offset relation ending at {1}, current offset is {2}", elem.debugName, end, offset);
 				return true;
 			}
 
@@ -883,20 +923,21 @@ namespace Peach.Core.Cracker
 			foreach (var child in cont)
 			{
 				// Descend into child
-				if (!recurseSize(child, ref offset, ref token))
+				if (!recurseSize(child, ref offset, ref end, ref token))
 					return false;
 
 				// If we found a token or end marker we are done
-				if (token != null)
+				if (token != null || end >= 0)
 					break;
 			}
 
 			return true;
 		}
 
-		bool scanForEnd(DataElement elem, out long offset, out BitStream token)
+		bool scanForEnd(DataElement elem, out long offset, out long end, out BitStream token)
 		{
 			offset = 0;
+			end = -1;
 			token = null;
 
 			// Ensure all elements are sized until we reach either
@@ -914,11 +955,11 @@ namespace Peach.Core.Cracker
 				if (curr != null)
 				{
 					// Descend into next sibling
-					if (!recurseSize(curr, ref offset, ref token))
+					if (!recurseSize(curr, ref offset, ref end, ref token))
 						return false;
 
 					// If we found a token or end marker we are done
-					if (token != null)
+					if (token != null || end >= 0)
 						break;
 				}
 				else if (prev.parent == null)
@@ -961,9 +1002,10 @@ namespace Peach.Core.Cracker
 
 		long? determineSize(DataElement elem, BitStream data)
 		{
-			string method = null;
-			BitStream token = null;
-			long offset = 0;
+			long offset;
+			long end;
+			BitStream token;
+			string method = "";
 			long? size = getSize(elem);
 
 			if (size.HasValue)
@@ -974,12 +1016,17 @@ namespace Peach.Core.Cracker
 			{
 				method = "Determinstic: ";
 			}
-			else if (scanForEnd(elem, out offset, out token))
+			else if (scanForEnd(elem, out offset, out end, out token))
 			{
 				if (token != null)
 				{
 					method = "Token: ";
 					size = findToken(data, token, offset);
+				}
+				else if (end >= 0)
+				{
+					method = "Offset Relation: ";
+					size = end - offset;
 				}
 				else if (offset != 0 || !(elem is DataElementContainer))
 				{

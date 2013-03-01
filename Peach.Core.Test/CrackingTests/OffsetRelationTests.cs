@@ -155,7 +155,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
 		}
 
-		[Test, Ignore("Failure Expected. Referenced in Issue #294")]
+		[Test]
 		public void Basic3Offset()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -163,29 +163,100 @@ namespace Peach.Core.Test.CrackingTests
 				"		<Number size=\"8\">" +
 				"			<Relation type=\"offset\" of=\"Data\" />" +
 				"		</Number>" +
-				"		<Blob name=\"Middle\"/>" +
-				"		<Blob name=\"Data\" />" +
+				"		<String name=\"Middle\"/>" +
+				"		<String name=\"Data\" />" +
 				"	</DataModel>" +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			string target = "Hello World";
 
 			BitStream data = new BitStream();
 			data.WriteInt8((sbyte)(offsetdata.Length + 1));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.WriteBytes(Encoding.ASCII.GetBytes(offsetdata));
+			data.WriteBytes(Encoding.ASCII.GetBytes(target));
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(offsetdata.Length + 1, (int)dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), (byte[])dom.dataModels[0][1].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(offsetdata, (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(target, (string)dom.dataModels[0][2].DefaultValue);
 		}
+
+		[Test]
+		public void Basic4Offset()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"offset\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<String name=\"Middle\"/>" +
+				"		<String name=\"Sized\" length=\"5\"/>" +
+				"		<String name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			string sizeddata = "12345";
+			string target = "Hello World";
+
+			BitStream data = new BitStream();
+			data.WriteInt8((sbyte)(sizeddata.Length + offsetdata.Length + 1));
+			data.WriteBytes(Encoding.ASCII.GetBytes(offsetdata));
+			data.WriteBytes(Encoding.ASCII.GetBytes(sizeddata));
+			data.WriteBytes(Encoding.ASCII.GetBytes(target));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(sizeddata.Length + offsetdata.Length + 1, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(offsetdata, (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(sizeddata, (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(target, (string)dom.dataModels[0][3].DefaultValue);
+		}
+
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.Data' has offset of 16 bits but must be at least 40 bits.")]
+		public void BadOffset()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"offset\" of=\"Data\" />" +
+				"		</Number>" +
+				"		<String name=\"Middle\"/>" +
+				"		<String name=\"Sized\" length=\"5\"/>" +
+				"		<String name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			string sizeddata = "12345";
+			string target = "Hello World";
+
+			BitStream data = new BitStream();
+			data.WriteInt8((sbyte)3);
+			data.WriteBytes(Encoding.ASCII.GetBytes(offsetdata));
+			data.WriteBytes(Encoding.ASCII.GetBytes(sizeddata));
+			data.WriteBytes(Encoding.ASCII.GetBytes(target));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
+
 
 		[Test]
 		public void OffsetInSizedBlock()
