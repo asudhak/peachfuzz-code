@@ -774,7 +774,7 @@ namespace Peach.Core.Cracker
 
 			System.Diagnostics.Debug.Assert(!_sizedElements.ContainsKey(elem));
 
-			long? size = determineElementSize(elem, data);
+			long? size = determineSize(elem, data);
 
 			var pos = new Position();
 			pos.begin = data.TellBits() + getDataOffset();
@@ -830,6 +830,167 @@ namespace Peach.Core.Cracker
 		}
 
 		#endregion
+
+		#endregion
+
+		#region Calculate Element Size
+
+		long? findToken(BitStream data, BitStream token, long offset)
+		{
+			while (true)
+			{
+				long start = data.TellBits();
+				long end = data.IndexOf(token, start + offset);
+
+				if (end >= 0)
+					return end - start - offset;
+
+				long dataLen = data.LengthBytes;
+				data.WantBytes(token.LengthBytes);
+
+				if (dataLen == data.LengthBytes)
+					return null;
+			}
+		}
+
+		bool recurseSize(DataElement elem, ref long offset, ref BitStream token)
+		{
+			if (elem.isToken)
+			{
+				logger.Debug("recurseSize: {0} -> Found token at offset {1}", elem.debugName, offset);
+				token = elem.Value;
+				return true;
+			}
+
+			long? size = getSize(elem);
+			if (size.HasValue)
+			{
+				offset += size.Value;
+				logger.Debug("recurseSize: {0} -> Adding {1}, current offset is {2}", elem.debugName, size, offset);
+				return true;
+			}
+
+			// If we are unsized, see if we are a container
+			var cont = elem as DataElementContainer;
+			if (cont == null)
+			{
+				logger.Debug("recurseSize: {0} is unsized", elem.debugName);
+				return false;
+			}
+
+			logger.Debug("recurseSize: {0}", elem.debugName);
+
+			foreach (var child in cont)
+			{
+				// Descend into child
+				if (!recurseSize(child, ref offset, ref token))
+					return false;
+
+				// If we found a token or end marker we are done
+				if (token != null)
+					break;
+			}
+
+			return true;
+		}
+
+		bool scanForEnd(DataElement elem, out long offset, out BitStream token)
+		{
+			offset = 0;
+			token = null;
+
+			// Ensure all elements are sized until we reach either
+			// 1) A token
+			// 2) An offset relation we have cracked that can be satisfied
+			// 3) The end of the data model
+
+			DataElement prev = elem;
+
+			while (true)
+			{
+				// Get the next sibling
+				var curr = prev.nextSibling();
+
+				if (curr != null)
+				{
+					// Descend into next sibling
+					if (!recurseSize(curr, ref offset, ref token))
+						return false;
+
+					// If we found a token or end marker we are done
+					if (token != null)
+						break;
+				}
+				else if (prev.parent == null)
+				{
+					// hit the top
+					break;
+				}
+				else if (GetElementSize(prev.parent).HasValue)
+				{
+					// Parent is bound by size
+					break;
+				}
+				else
+				{
+					// no more siblings, ascend
+					curr = prev.parent;
+				}
+
+				prev = curr;
+			}
+
+			return true;
+		}
+
+		long? getSize(DataElement elem)
+		{
+			SizeRelation rel = elem.relations.getOfSizeRelation();
+			if (rel != null)
+			{
+				if (_sizedElements.ContainsKey(rel.From))
+					return rel.GetValue();
+			}
+			else if (elem.hasLength)
+			{
+				return elem.lengthAsBits;
+			}
+
+			return null;
+		}
+
+		long? determineSize(DataElement elem, BitStream data)
+		{
+			string method = null;
+			BitStream token = null;
+			long offset = 0;
+			long? size = getSize(elem);
+
+			if (size.HasValue)
+			{
+				method = "Length: ";
+			}
+			else if (elem.isDeterministic)
+			{
+				method = "Determinstic: ";
+			}
+			else if (scanForEnd(elem, out offset, out token))
+			{
+				if (token != null)
+				{
+					method = "Token: ";
+					size = findToken(data, token, offset);
+				}
+				else if (offset != 0 || !(elem is DataElementContainer))
+				{
+					method = "Last Unsized: ";
+					size = data.LengthBits - (data.TellBits() + offset);
+				}
+			}
+
+			logger.Debug("determineSize: {0} -> {1}{2}", elem.debugName, method, size.HasValue ? size.ToString() : "<null>");
+			return size;
+		}
 
 		#endregion
 	}
