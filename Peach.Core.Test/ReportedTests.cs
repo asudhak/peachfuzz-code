@@ -267,6 +267,33 @@ namespace Peach.Core.Test
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+			Assert.AreEqual("START_MARKER", (string)dom.dataModels[0][0].DefaultValue);
+
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(FILENAME.Length, (int)array[0].DefaultValue);
+
+			array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(OBJECT.Length, (int)array[0].DefaultValue);
+
+			array = dom.dataModels[0][3] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("sample_mpeg4.mp4", (string)array[0].DefaultValue);
+
+			array = dom.dataModels[0][4] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(1, block.Count);
+			Assert.AreEqual("END_MARKER", (string)block[0].DefaultValue);
+
 		}
 	}
 }
