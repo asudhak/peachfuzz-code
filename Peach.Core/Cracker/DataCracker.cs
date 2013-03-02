@@ -573,25 +573,45 @@ namespace Peach.Core.Cracker
 			}
 		}
 
-		bool checkArray(DataElementContainer cont, long offset, ref long end)
+		bool checkArray(DataElementContainer cont, ref long offset, ref long end, bool checkSize, bool checkToken)
 		{
 			var array = cont as Dom.Array;
 			if (array == null)
 				return false;
 
-			// Array is fully cracked
-			if (array.maxOccurs != -1 && array.Count >= array.maxOccurs)
-				return false;
+			logger.Debug("checkArray: {0}", cont.debugName);
 
 			BitStream token = null;
 			long arrayOffset = 0;
-			long arrayEnd = 0;
+			long arrayEnd = -1;
 
-			logger.Debug("checkArray: {0}", cont.debugName);
+			if (scan(array.origionalElement, ref arrayOffset, ref arrayEnd, ref token, false, checkToken) && checkSize)
+			{
+				var rel = array.relations.getOfCountRelation();
+				if (rel != null && _sizedElements.ContainsKey(rel.From))
+				{
+					arrayOffset *= rel.GetValue();
+					offset += arrayOffset;
+					logger.Debug("checkArray: {0} -> Count Relation: {1}, Size: {2}",
+						cont.debugName, rel.GetValue(), arrayOffset);
+					return true;
+				}
+				else if (array.minOccurs == 1 && array.maxOccurs == 1)
+				{
+					arrayOffset *= array.occurs;
+					offset += arrayOffset;
+					logger.Debug("checkArray: {0} -> Occurs: {1}, Size: {2}",
+						cont.debugName, array.occurs, arrayOffset);
+					return true;
+				}
+			}
 
-			scan(array.origionalElement, ref offset, ref arrayEnd, ref token, false, true);
+			// If we aren't scanning for a token or we didn't find one, we are done
+			if (!checkToken || token == null)
+				return false;
 
-			if (token == null)
+			// Array is fully cracked
+			if (array.maxOccurs != -1 && array.Count >= array.maxOccurs)
 				return false;
 
 			// try and find token
@@ -664,7 +684,7 @@ namespace Peach.Core.Cracker
 			logger.Debug("scan: {0}", elem.debugName);
 
 			// If we are scanning for tokens, see if a token occurs in the array
-			if (checkToken && checkArray(cont, offset, ref end))
+			if (checkArray(cont, ref offset, ref end, true, checkToken))
 				return true;
 
 			if (cont.transformer != null || cont is Dom.Array || cont is Dom.Choice)
@@ -686,6 +706,10 @@ namespace Peach.Core.Cracker
 
 		long? getSize(DataElement elem, BitStream data)
 		{
+			// Quick optimiation
+			if (elem is DataModel)
+				return null;
+
 			long offset = 0;
 			long size = 0;
 			long end = -1;
@@ -742,7 +766,7 @@ namespace Peach.Core.Cracker
 					// Parent is bound by size
 					break;
 				}
-				else if (!(elem is DataElementContainer) && checkArray(prev.parent, offset, ref end))
+				else if (!(elem is DataElementContainer) && checkArray(prev.parent, ref offset, ref end, false, true))
 				{
 					// Parent is array and matched token in array element
 					break;
