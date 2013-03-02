@@ -505,6 +505,45 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
 			Assert.AreEqual(0, array.Count);
 		}
+
+		[Test]
+		public void TokenAfterArray()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Block name=""A"">
+			<Block name=""block1"" minOccurs=""0"">
+				<Number size=""8"" value=""11"" token=""true""/> 
+				<Number size=""8"" constraint=""str(element.DefaultValue) != '0'""/> 
+			</Block>
+			<Block name=""block2"">
+				<Number size=""8"" value=""11"" token=""true""/> 
+			</Block>
+			<Number name=""end"" size=""8"" value=""0""/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 11, 1, 11, 2, 11, 3, 11, 0 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			var block = dom.dataModels[0][0] as Dom.Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(3, block.Count);
+			var array = block[0] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
+		}
 	}
 }
 
