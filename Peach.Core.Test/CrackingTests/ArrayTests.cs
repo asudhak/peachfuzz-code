@@ -457,6 +457,50 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("TheDataModel.str1.str1", array[0].fullName);
 			Assert.AreEqual("TheDataModel.str1.str1_1", array[1].fullName);
 		}
+
+		[Test]
+		public void CrackArrayEmptyElement()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block minOccurs=\"10\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+			Assert.AreEqual(10, array.Count);
+		}
+
+		[Test]
+		public void CrackArrayEmptyElementMin()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block minOccurs=\"0\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+			Assert.AreEqual(0, array.Count);
+		}
 	}
 }
 

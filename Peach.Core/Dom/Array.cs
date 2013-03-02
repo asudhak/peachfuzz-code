@@ -131,6 +131,13 @@ namespace Peach.Core.Dom
 				try
 				{
 					context.CrackData(clone, sizedData);
+
+					// If we used 0 bytes and met the minimum, we are done
+					if (pos == data.TellBits() && i == min)
+					{
+						RemoveAt(clone.parent.IndexOf(clone));
+						break;
+					}
 				}
 				catch (CrackingFailure)
 				{
