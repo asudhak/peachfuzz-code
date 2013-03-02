@@ -83,7 +83,7 @@ namespace Peach.Core.Dom
 				if (!(child is Flag))
 					throw new CrackingFailure("Found non-Flag child.", this, data);
 
-				data.SeekBits(((Flag)child).position + pos, System.IO.SeekOrigin.Begin);
+				sizedData.SeekBits(((Flag)child).position + pos, System.IO.SeekOrigin.Begin);
 				context.CrackData(child, sizedData);
 			}
 		}
