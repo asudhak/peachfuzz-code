@@ -76,14 +76,15 @@ namespace Peach.Core.Dom
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
 			BitStream sizedData = ReadSizedData(data, size);
+			long pos = sizedData.TellBits();
 
 			foreach (DataElement child in this)
 			{
 				if (!(child is Flag))
 					throw new CrackingFailure("Found non-Flag child.", this, data);
 
-				data.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Begin);
-				context.CrackData(child, data);
+				data.SeekBits(((Flag)child).position + pos, System.IO.SeekOrigin.Begin);
+				context.CrackData(child, sizedData);
 			}
 		}
 
