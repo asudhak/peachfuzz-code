@@ -386,11 +386,9 @@ namespace Peach.Core.Cracker
 			CrackingFailure ex = e as CrackingFailure;
 			if (ex != null)
 			{
+				logger.Debug("{0} failed to crack.", elem.debugName);
 				if (!ex.logged)
-					logger.Debug("{0} failed to crack. {1}", elem.debugName, ex.Message);
-				else
-					logger.Debug("{0} failed to crack.", elem.debugName);
-
+					logger.Debug(ex.Message);
 				ex.logged = true;
 			}
 			else
