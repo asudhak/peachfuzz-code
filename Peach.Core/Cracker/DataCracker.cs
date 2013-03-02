@@ -885,6 +885,40 @@ namespace Peach.Core.Cracker
 			}
 		}
 
+		bool checkArray(DataElementContainer cont, long offset, ref long end)
+		{
+			var array = cont as Dom.Array;
+			if (array == null)
+				return false;
+
+			// Array is fully cracked
+			if (array.maxOccurs != -1 && array.Count >= array.maxOccurs)
+				return false;
+
+			BitStream token = null;
+			long arrayOffset = 0;
+			long arrayEnd = 0;
+
+			logger.Debug("checkArray: {0}", cont.debugName);
+
+			recurseSize(array.origionalElement, ref offset, ref arrayEnd, ref token);
+
+			if (token == null)
+				return false;
+
+			// try and find token
+			long? where = findToken(_dataStack.First(), token, offset + arrayOffset);
+			if (!where.HasValue)
+			{
+				logger.Debug("checkArray: {0} -> No token found", cont.debugName);
+				return false;
+			}
+
+			end = where.Value;
+			logger.Debug("checkArray: {0} -> Found token, setting end to {1}", cont.debugName, end);
+			return true;
+		}
+
 		bool recurseSize(DataElement elem, ref long offset, ref long end, ref BitStream token)
 		{
 			if (elem.isToken)
@@ -920,6 +954,9 @@ namespace Peach.Core.Cracker
 
 			logger.Debug("recurseSize: {0}", elem.debugName);
 
+			if (checkArray(cont, offset, ref end))
+				return true;
+
 			foreach (var child in cont)
 			{
 				// Descend into child
@@ -949,6 +986,8 @@ namespace Peach.Core.Cracker
 
 			while (true)
 			{
+				logger.Debug("scanForEnd: {0}", prev.debugName);
+
 				// Get the next sibling
 				var curr = prev.nextSibling();
 
@@ -970,6 +1009,11 @@ namespace Peach.Core.Cracker
 				else if (GetElementSize(prev.parent).HasValue)
 				{
 					// Parent is bound by size
+					break;
+				}
+				else if (!(elem is DataElementContainer) && checkArray(prev.parent, offset, ref end))
+				{
+					// Parent is array and matched token in array element
 					break;
 				}
 				else
@@ -1025,7 +1069,7 @@ namespace Peach.Core.Cracker
 				}
 				else if (end >= 0)
 				{
-					method = "Offset Relation: ";
+					method = "End: ";
 					size = end - offset;
 				}
 				else if (offset != 0 || !(elem is DataElementContainer))
@@ -1035,7 +1079,7 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			logger.Debug("determineSize: {0} -> {1}{2}", elem.debugName, method, size.HasValue ? size.ToString() : "<null>");
+			logger.Debug("determineSize: {0} -> {1}{2}", elem.debugName, method, size.HasValue ? size.ToString() : "<unknown>");
 			return size;
 		}
 

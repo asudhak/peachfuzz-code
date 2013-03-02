@@ -419,7 +419,6 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		[Ignore("Fails. See issue #286")]
 		public void CrackArrayZeroToken()
 		{
 			Dom.Dom dom;
@@ -428,10 +427,13 @@ namespace Peach.Core.Test.CrackingTests
 
 			dom = DoCrackArrayToken("Hello");
 			Assert.AreEqual(1, dom.dataModels.Count);
-			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
 			str = dom.dataModels[0][0] as Dom.String;
 			Assert.NotNull(str);
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
 
 			dom = DoCrackArrayToken("Hello+World");
 			Assert.AreEqual(1, dom.dataModels.Count);

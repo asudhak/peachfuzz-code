@@ -124,8 +124,13 @@ namespace Peach.Core.Dom
 				logger.Debug("Crack: {0} Trying #{1}", origionalElement.debugName, i+1);
 
 				long pos = sizedData.TellBits();
-				var clone = makeElement(i);
+				if (pos == sizedData.LengthBits)
+				{
+					logger.Debug("Crack: Consumed all bytes. {0}", sizedData.Progress);
+					break;
+				}
 
+				var clone = makeElement(i);
 				Add(clone);
 
 				try
@@ -151,6 +156,12 @@ namespace Peach.Core.Dom
 					sizedData.SeekBits(pos, System.IO.SeekOrigin.Begin);
 					break;
 				}
+			}
+
+			if (this.Count < min)
+			{
+				string msg = "{0} only cracked {1} of {2} elements.".Fmt(debugName, Count, min);
+				throw new CrackingFailure(msg, this, data);
 			}
 
 			if (size.HasValue)
