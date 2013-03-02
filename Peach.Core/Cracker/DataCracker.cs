@@ -589,7 +589,7 @@ namespace Peach.Core.Cracker
 
 			logger.Debug("checkArray: {0}", cont.debugName);
 
-			recurseSize(array.origionalElement, ref offset, ref arrayEnd, ref token);
+			recursiveScan(array.origionalElement, ref offset, ref arrayEnd, ref token);
 
 			if (token == null)
 				return false;
@@ -607,12 +607,12 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
-		bool recurseSize(DataElement elem, ref long offset, ref long end, ref BitStream token)
+		bool recursiveScan(DataElement elem, ref long offset, ref long end, ref BitStream token)
 		{
 			if (elem.isToken)
 			{
 				token = elem.Value;
-				logger.Debug("recurseSize: {0} -> Found token, current offset is {1}", elem.debugName, offset);
+				logger.Debug("recursiveScan: {0} -> Found token, current offset is {1}", elem.debugName, offset);
 				return true;
 			}
 
@@ -620,7 +620,7 @@ namespace Peach.Core.Cracker
 			if (rel.HasValue)
 			{
 				end = rel.Value;
-				logger.Debug("recurseSize: {0} -> Found offset relation ending at {1}, current offset is {2}", elem.debugName, end, offset);
+				logger.Debug("recursiveScan: {0} -> Found offset relation ending at {1}, current offset is {2}", elem.debugName, end, offset);
 				return true;
 			}
 
@@ -628,7 +628,7 @@ namespace Peach.Core.Cracker
 			if (size.HasValue)
 			{
 				offset += size.Value;
-				logger.Debug("recurseSize: {0} -> Adding {1}, current offset is {2}", elem.debugName, size, offset);
+				logger.Debug("recurseScan: {0} -> Adding {1}, current offset is {2}", elem.debugName, size, offset);
 				return true;
 			}
 
@@ -636,11 +636,11 @@ namespace Peach.Core.Cracker
 			var cont = elem as DataElementContainer;
 			if (cont == null)
 			{
-				logger.Debug("recurseSize: {0} is unsized", elem.debugName);
+				logger.Debug("recursiveScan: {0} is unsized element", elem.debugName);
 				return false;
 			}
 
-			logger.Debug("recurseSize: {0}", elem.debugName);
+			logger.Debug("recursiveScan: {0}", elem.debugName);
 
 			if (checkArray(cont, offset, ref end))
 				return true;
@@ -648,7 +648,7 @@ namespace Peach.Core.Cracker
 			foreach (var child in cont)
 			{
 				// Descend into child
-				if (!recurseSize(child, ref offset, ref end, ref token))
+				if (!recursiveScan(child, ref offset, ref end, ref token))
 					return false;
 
 				// If we found a token or end marker we are done
@@ -682,7 +682,7 @@ namespace Peach.Core.Cracker
 				if (curr != null)
 				{
 					// Descend into next sibling
-					if (!recurseSize(curr, ref offset, ref end, ref token))
+					if (!recursiveScan(curr, ref offset, ref end, ref token))
 						return false;
 
 					// If we found a token or end marker we are done
