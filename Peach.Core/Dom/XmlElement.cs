@@ -146,6 +146,11 @@ namespace Peach.Core.Dom
 					xmlNode.InnerText = "|||" + fullName + "|||";
 					doc.values.Add(xmlNode.InnerText, new Variant(child.Value));
 				}
+				else if (child is Number)
+				{
+					var fullName = child.fullName;
+					xmlNode.InnerText = (string)child.InternalValue;
+				}
 				else if (child is XmlElement)
 				{
 					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
@@ -162,7 +167,7 @@ namespace Peach.Core.Dom
 				}
 				else
 				{
-					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single String element.");
+					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single Number or String element.");
 				}
 			}
 
