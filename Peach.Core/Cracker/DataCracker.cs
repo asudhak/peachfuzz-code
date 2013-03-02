@@ -434,7 +434,7 @@ namespace Peach.Core.Cracker
 
 			System.Diagnostics.Debug.Assert(!_sizedElements.ContainsKey(elem));
 
-			long? size = determineSize(elem, data);
+			long? size = getSize(elem, data);
 
 			var pos = new Position();
 			pos.begin = data.TellBits() + getDataOffset();
@@ -589,7 +589,7 @@ namespace Peach.Core.Cracker
 
 			logger.Debug("checkArray: {0}", cont.debugName);
 
-			recursiveScan(array.origionalElement, ref offset, ref arrayEnd, ref token, false, true);
+			scan(array.origionalElement, ref offset, ref arrayEnd, ref token, false, true);
 
 			if (token == null)
 				return false;
@@ -607,44 +607,63 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
-		bool recursiveScan(DataElement elem, ref long offset, ref long end, ref BitStream token, bool checkEnd, bool checkToken)
+		bool scan(DataElement elem, ref long offset, ref long end, ref BitStream token, bool checkEnd, bool checkToken)
 		{
 			if (checkToken && elem.isToken)
 			{
 				token = elem.Value;
-				logger.Debug("recursiveScan: {0} -> Found token, current offset is {1}", elem.debugName, offset);
+				logger.Debug("scan: {0} -> Offset: {1}, Token!", elem.debugName, offset);
 				return true;
 			}
 
-			long? rel = checkEnd ? getRelativeOffset(elem, _dataStack.First(), offset) : null;
-			if (rel.HasValue)
+			if (checkEnd)
 			{
-				end = rel.Value;
-				logger.Debug("recursiveScan: {0} -> Found offset relation ending at {1}, current offset is {2}", elem.debugName, end, offset);
-				return true;
+				long? offRel = getRelativeOffset(elem, _dataStack.First(), offset);
+				if (offRel.HasValue)
+				{
+					end = offRel.Value;
+					logger.Debug("scan: {0} -> Offset: {1}, Offset relation: {2}", elem.debugName, offset, end);
+					return true;
+				}
 			}
 
-			long? size = getSize(elem);
-			if (size.HasValue)
+			// See if we have a size relation
+			SizeRelation sizeRel = elem.relations.getOfSizeRelation();
+			if (sizeRel != null)
 			{
-				offset += size.Value;
-				logger.Debug("recurseScan: {0} -> Adding {1}, current offset is {2}", elem.debugName, size, offset);
-				return true;
+				if (_sizedElements.ContainsKey(sizeRel.From))
+				{
+					offset += sizeRel.GetValue();
+					logger.Debug("scan: {0} -> Offset: {1}, Size relation: {2}", elem.debugName, offset, sizeRel.GetValue());
+					return true;
+				}
+				else
+				{
+					logger.Debug("scan: {0} -> Offset: {1}, Size relation: ???", elem.debugName, offset);
+					return false;
+				}
 			}
 
-			if (elem.relations.getOfSizeRelation() != null)
-				return false;
+			// See if our length is defined
+			if (elem.hasLength)
+			{
+				offset += elem.lengthAsBits;
+				logger.Debug("scan: {0} -> Offset: {1}, Length: {2}", elem.debugName, offset, elem.lengthAsBits);
+				return true;
+			}
 
 			// If we are unsized, see if we are a container
 			var cont = elem as DataElementContainer;
 			if (cont == null)
 			{
-				logger.Debug("recursiveScan: {0} is unsized element", elem.debugName);
+				logger.Debug("scan: {0} -> Offset: {1}, {2}", elem.debugName, offset,
+					elem.isDeterministic ? "Determinstic" : "Unsized");
 				return false;
 			}
 
-			logger.Debug("recursiveScan: {0}", elem.debugName);
+			logger.Debug("scan: {0}", elem.debugName);
 
+			// If we are scanning for tokens, see if a token occurs in the array
 			if (checkToken && checkArray(cont, offset, ref end))
 				return true;
 
@@ -654,7 +673,7 @@ namespace Peach.Core.Cracker
 			foreach (var child in cont)
 			{
 				// Descend into child
-				if (!recursiveScan(child, ref offset, ref end, ref token, checkEnd, checkToken))
+				if (!scan(child, ref offset, ref end, ref token, checkEnd, checkToken))
 					return false;
 
 				// If we found a token or end marker we are done
@@ -665,22 +684,26 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
-		bool scanForEnd(DataElement elem, out long offset, out long end, out BitStream token)
+		long? getSize(DataElement elem, BitStream data)
 		{
-			offset = 0;
-			end = -1;
-			token = null;
+			long offset = 0;
+			long size = 0;
+			long end = -1;
+			BitStream token = null;
 
 			// First, check and see if this element is sized
-			if (recursiveScan(elem, ref offset, ref end, ref token, false, false))
+			if (scan(elem, ref size, ref end, ref token, false, false))
 			{
-				logger.Debug("scanForEnd: {0} has size of {1}", elem.debugName, offset);
-				end = offset;
-				offset = 0;
-				return true;
+				logger.Debug("getSize: {0} -> Size: {1}", elem.debugName, size);
+				return size;
 			}
 
-			offset = 0;
+			// If is unsized but determistic, return unsized
+			if (elem.isDeterministic)
+			{
+				logger.Debug("getSize: {0} -> Deterministic: ???", elem.debugName);
+				return null;
+			}
 
 			// Ensure all elements are sized until we reach either
 			// 1) A token
@@ -691,7 +714,7 @@ namespace Peach.Core.Cracker
 
 			while (true)
 			{
-				logger.Debug("scanForEnd: {0}", prev.debugName);
+				logger.Debug("getSize: {0} -> Scanning", prev.debugName);
 
 				// Get the next sibling
 				var curr = prev.nextSibling();
@@ -699,8 +722,11 @@ namespace Peach.Core.Cracker
 				if (curr != null)
 				{
 					// Descend into next sibling
-					if (!recursiveScan(curr, ref offset, ref end, ref token, true, true))
-						return false;
+					if (!scan(curr, ref offset, ref end, ref token, true, true))
+					{
+						logger.Debug("getSize: {0} -> Not Last Unsized: ???", elem.debugName);
+						return null;
+					}
 
 					// If we found a token or end marker we are done
 					if (token != null || end >= 0)
@@ -730,62 +756,32 @@ namespace Peach.Core.Cracker
 				prev = curr;
 			}
 
-			return true;
-		}
+			// Turn the offset to a marker into the element size
+			long? ret = null;
 
-		long? getSize(DataElement elem)
-		{
-			SizeRelation rel = elem.relations.getOfSizeRelation();
-			if (rel != null)
+			if (token != null)
 			{
-				if (_sizedElements.ContainsKey(rel.From))
-					return rel.GetValue();
+				ret = findToken(data, token, offset);
+				logger.Debug("getSize: {0} -> Token: {1}", elem.debugName,
+					ret.HasValue ? ret.ToString() : "???");
+				return ret;
 			}
-			else if (elem.hasLength)
+			else if (end >= 0)
 			{
-				return elem.lengthAsBits;
+				ret = end - offset;
+				logger.Debug("getSize: {0} -> End: {1}", elem.debugName, ret);
 			}
-
-			return null;
-		}
-
-		long? determineSize(DataElement elem, BitStream data)
-		{
-			long offset;
-			long end;
-			BitStream token;
-			string method = "";
-			long? size = getSize(elem);
-
-			if (size.HasValue)
+			else if (offset != 0 || !(elem is DataElementContainer))
 			{
-				method = "Length: ";
+				ret = data.LengthBits - (data.TellBits() + offset);
+				logger.Debug("getSize: {0} -> Last Unsized: {1}", elem.debugName, ret);
 			}
-			else if (elem.isDeterministic)
+			else
 			{
-				method = "Determinstic: ";
-			}
-			else if (scanForEnd(elem, out offset, out end, out token))
-			{
-				if (token != null)
-				{
-					method = "Token: ";
-					size = findToken(data, token, offset);
-				}
-				else if (end >= 0)
-				{
-					method = "End: ";
-					size = end - offset;
-				}
-				else if (offset != 0 || !(elem is DataElementContainer))
-				{
-					method = "Last Unsized: ";
-					size = data.LengthBits - (data.TellBits() + offset);
-				}
+				logger.Debug("getSize: {0} -> Last Unsized: ???", elem.debugName);
 			}
 
-			logger.Debug("determineSize: {0} -> {1}{2}", elem.debugName, method, size.HasValue ? size.ToString() : "<unknown>");
-			return size;
+			return ret;
 		}
 
 		#endregion
