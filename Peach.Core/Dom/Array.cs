@@ -93,124 +93,61 @@ namespace Peach.Core.Dom
 
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			logger.Debug("Crack: {0} Type: {1}", debugName, origionalElement.elementType);
-
-			Array element = this;
-			var origData = data;
-			var origPos = origData.TellBits();
-			data = ReadSizedData(data, size);
+			long startPos = data.TellBits();
+			BitStream sizedData = ReadSizedData(data, size);
 
 			if (this.Count > 0)
 			{
-				element.origionalElement = element[0];
-				element.Clear(false);
+				origionalElement = this[0];
+				Clear(false);
 			}
 
-			if (element.relations.hasOfCountRelation || (minOccurs == 1 && maxOccurs == 1))
+			long min = minOccurs;
+			long max = maxOccurs;
+
+			var rel = relations.getOfCountRelation();
+			if (rel != null)
+				min = max = rel.GetValue();
+			else if (minOccurs == 1 && maxOccurs == 1)
+				min = max = occurs;
+
+			if (((min > maxOccurs && maxOccurs != -1) || (min < minOccurs)) && min != occurs)
 			{
-				long count = element.relations.hasOfCountRelation ? element.relations.getOfCountRelation().GetValue() : occurs;
+				string msg = "{0} has invalid count of {1} (minOccurs={2}, maxOccurs={3}, occurs={4}).".Fmt(
+				    debugName, min, minOccurs, maxOccurs, occurs);
+				throw new CrackingFailure(msg, this, data);
+			}
 
-				logger.Debug("Crack: {0} found count relation/occurs. Count = {1}", element.fullName, count);
+			for (int i = 0; max == -1 || i < max; ++i)
+			{
+				logger.Debug("Crack: ======================");
+				logger.Debug("Crack: {0} Trying #{1}", origionalElement.debugName, i+1);
 
-				if (count < 0)
-					throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count relation negative: " + count, element, data);
-				if (((count > maxOccurs && maxOccurs != -1) || count < minOccurs) && count != occurs)
-					throw new CrackingFailure("Unable to crack Array '" + element.fullName + "'. Count outside of bounds of minOccurs='" +
-						minOccurs + "' and maxOccurs='" + maxOccurs + "'. (Count = " + count + ")", element, data);
+				long pos = sizedData.TellBits();
+				var clone = makeElement(i);
 
-				for (int i = 0; i < count; i++)
+				Add(clone);
+
+				try
 				{
-					logger.Debug("Crack: ======================");
-					logger.Debug("Crack: {0} Trying #{1}", element, i.ToString());
+					context.CrackData(clone, sizedData);
+				}
+				catch (CrackingFailure)
+				{
+					logger.Debug("Crack: {0} Failed on #{1}", debugName, i+1);
 
-					var clone = element.origionalElement;
-
-					if (i == 0)
-						element.origionalElement = clone.Clone();
-					else
-						clone = clone.Clone(clone.name + "_" + i);
-
-					System.Diagnostics.Debug.Assert(!element.ContainsKey(clone.name));
-					element.Add(clone);
-
-					try
-					{
-						context.CrackData(clone, data);
-					}
-					catch
-					{
-						logger.Debug("Crack: {0} Failed on #{1}", element.fullName, i.ToString());
+					// If we couldn't satisfy the minimum propigate failure
+					if (i < min)
 						throw;
-					}
-				}
 
-				logger.Debug("Crack: {0} Done!", element.fullName);
+					RemoveAt(clone.parent.IndexOf(clone));
+					sizedData.SeekBits(pos, System.IO.SeekOrigin.Begin);
+					break;
+				}
 			}
 
-			else if (maxOccurs != 0)
-			{
-				int cnt = 0;
-				for (cnt = 0; maxOccurs == -1 || cnt < maxOccurs; cnt++)
-				{
-					logger.Debug("Crack: ======================");
-					logger.Debug("Crack: {0} Trying #{1}", element.fullName, cnt.ToString());
-
-					long pos = data.TellBits();
-
-					var clone = element.origionalElement;
-
-					if (cnt == 0)
-						element.origionalElement = clone.Clone();
-					else
-						clone = clone.Clone(clone.name + "_" + cnt);
-
-					System.Diagnostics.Debug.Assert(!element.ContainsKey(clone.name));
-					element.Add(clone);
-
-					try
-					{
-						context.CrackData(clone, data);
-					}
-					catch
-					{
-						logger.Debug("Crack: {0} Failed on #{1}", element.fullName, cnt.ToString());
-						element.RemoveAt(clone.parent.IndexOf(clone));
-						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
-						break;
-					}
-
-					if (cnt == 0 && minOccurs == 0 && false)//!context.lookAhead(this, data))
-					{
-						// Broke our look ahead, must be only zero elements in this array.
-						logger.Debug("Crack: {0}, minOccurs = 0, our look ahead failed, must be zero elements in this array.",
-							element.fullName, cnt.ToString());
-
-						element.RemoveAt(clone.parent.IndexOf(clone));
-						data.SeekBits(pos, System.IO.SeekOrigin.Begin);
-
-						break;
-					}
-
-					if (data.TellBits() == data.LengthBits)
-					{
-						logger.Debug("Crack: {0} Found EOF, all done!", element.fullName);
-						// Include this successful crack in the count
-						cnt++;
-						break;
-					}
-				}
-
-				if (cnt < minOccurs)
-				{
-					throw new CrackingFailure(
-						string.Format("Crack: {0} Failed on #{1}. Not enough data to meet minOccurs value of {2}", element.fullName, cnt.ToString(), minOccurs),
-						element, data);
-				}
-
-			}
-
-			if (data != origData)
-				origData.SeekBits(origPos + data.TellBits(), System.IO.SeekOrigin.Begin);
+			if (size.HasValue)
+				data.SeekBits(startPos + sizedData.TellBits(), System.IO.SeekOrigin.Begin);
 		}
 
 		public new static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -231,6 +168,20 @@ namespace Peach.Core.Dom
 				array.occurs = node.getAttrInt("occurs");
 
 			return array;
+		}
+
+		private DataElement makeElement(int index)
+		{
+			var clone = origionalElement;
+
+			if (index == 0)
+				origionalElement = clone.Clone();
+			else
+				clone = clone.Clone(clone.name + "_" + index);
+
+			System.Diagnostics.Debug.Assert(!ContainsKey(clone.name));
+
+			return clone;
 		}
 
 		[OnSerializing]
