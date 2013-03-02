@@ -421,39 +421,43 @@ namespace Peach.Core.Test.CrackingTests
 		[Test]
 		public void CrackArrayZeroToken()
 		{
-			Dom.Dom dom;
-			Dom.String str;
-			Dom.Array array;
-
-			dom = DoCrackArrayToken("Hello");
+			var dom = DoCrackArrayToken("Hello");
 			Assert.AreEqual(1, dom.dataModels.Count);
 			Assert.AreEqual(2, dom.dataModels[0].Count);
-			str = dom.dataModels[0][0] as Dom.String;
+			var str = dom.dataModels[0][0] as Dom.String;
 			Assert.NotNull(str);
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
-			array = dom.dataModels[0][1] as Dom.Array;
+			var array = dom.dataModels[0][1] as Dom.Array;
 			Assert.NotNull(array);
 			Assert.AreEqual(0, array.Count);
+		}
 
-			dom = DoCrackArrayToken("Hello+World");
+		[Test]
+		public void CrackArrayOneToken()
+		{
+			var dom = DoCrackArrayToken("Hello+World");
 			Assert.AreEqual(1, dom.dataModels.Count);
 			Assert.AreEqual(2, dom.dataModels[0].Count);
-			str = dom.dataModels[0][0] as Dom.String;
+			var str = dom.dataModels[0][0] as Dom.String;
 			Assert.NotNull(str);
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
-			array = dom.dataModels[0][1] as Dom.Array;
+			var array = dom.dataModels[0][1] as Dom.Array;
 			Assert.NotNull(array);
 			Assert.AreEqual(1, array.Count);
 			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
 			Assert.AreEqual("World", (string)((Dom.Block)array[0])[1].DefaultValue);
+		}
 
-			dom = DoCrackArrayToken("Hello+World+More+Data");
+		[Test]
+		public void CrackArrayManyToken()
+		{
+			var dom = DoCrackArrayToken("Hello+World+More+Data");
 			Assert.AreEqual(1, dom.dataModels.Count);
 			Assert.AreEqual(2, dom.dataModels[0].Count);
-			str = dom.dataModels[0][0] as Dom.String;
+			var str = dom.dataModels[0][0] as Dom.String;
 			Assert.NotNull(str);
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
-			array = dom.dataModels[0][1] as Dom.Array;
+			var array = dom.dataModels[0][1] as Dom.Array;
 			Assert.NotNull(array);
 			Assert.AreEqual(3, array.Count);
 			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
