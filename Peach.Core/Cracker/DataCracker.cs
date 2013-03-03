@@ -432,7 +432,7 @@ namespace Peach.Core.Cracker
 
 			System.Diagnostics.Debug.Assert(!_sizedElements.ContainsKey(elem));
 
-			long? size = getSize(elem, data);
+			long? size = getSize2(elem, data);
 
 			var pos = new Position();
 			pos.begin = data.TellBits() + getDataOffset();
@@ -571,6 +571,42 @@ namespace Peach.Core.Cracker
 			}
 		}
 
+		bool? scanArray(Dom.Array array, ref long pos)
+		{
+			long arrayPos = 0;
+			var ret = scan2(array.origionalElement, ref arrayPos, null, null, Until.FirstUnsized);
+
+			if (!ret.HasValue || !ret.Value)
+			{
+				logger.Debug("scanArray: {0} -> {1}", array.debugName,
+					ret.HasValue ? "Deterministic" : "Unsized");
+				return ret;
+			}
+
+			var rel = array.relations.getOfCountRelation();
+			if (rel != null && _sizedElements.ContainsKey(rel.From))
+			{
+				arrayPos *= rel.GetValue();
+				pos += arrayPos;
+				logger.Debug("scanArray: {0} -> Count Relation: {1}, Size: {2}",
+					array.debugName, rel.GetValue(), arrayPos);
+				return true;
+			}
+			else if (array.minOccurs == 1 && array.maxOccurs == 1)
+			{
+				arrayPos *= array.occurs;
+				pos += arrayPos;
+				logger.Debug("scanArray: {0} -> Occurs: {1}, Size: {2}",
+					array.debugName, array.occurs, arrayPos);
+				return true;
+			}
+
+			// If there is a token in the array and we find said token, set our end to there
+
+			logger.Debug("scanArray: {0} -> Count Unknown", array.debugName);
+			return null;
+		}
+
 		bool checkArray(DataElementContainer cont, ref long offset, ref long end, bool checkSize, bool checkToken)
 		{
 			var array = cont as Dom.Array;
@@ -702,12 +738,219 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
+		class Mark
+		{
+			public DataElement Element { get; set; }
+			public long Position { get; set; }
+		}
+
+		enum Until { FirstSized, FirstUnsized };
+
+		bool? scan2(DataElement elem, ref long pos, Mark token, Mark end, Until until)
+		{
+			if (token != null && token.Element == null && elem.isToken)
+			{
+				token.Element = elem;
+				token.Position = pos;
+				logger.Debug("scan: {0} -> Pos: {1}, Saving Token", elem.debugName, pos);
+			}
+
+			if (end != null)
+			{
+				long? offRel = getRelativeOffset(elem, _dataStack.First(), pos);
+				if (offRel.HasValue)
+				{
+					end.Element = elem;
+					end.Position = offRel.Value;
+					logger.Debug("scan: {0} -> Pos: {1}, Offset relation: {2}", elem.debugName, pos, end.Position);
+					return true;
+				}
+			}
+
+			// See if we have a size relation
+			SizeRelation sizeRel = elem.relations.getOfSizeRelation();
+			if (sizeRel != null)
+			{
+				if (_sizedElements.ContainsKey(sizeRel.From))
+				{
+					pos += sizeRel.GetValue();
+					logger.Debug("scan: {0} -> Pos: {1}, Size relation: {2}", elem.debugName, pos, sizeRel.GetValue());
+					return true;
+				}
+				else
+				{
+					logger.Debug("scan: {0} -> Pos: {1}, Size relation: ???", elem.debugName, pos);
+					return false;
+				}
+			}
+
+			// See if our length is defined
+			if (elem.hasLength)
+			{
+				pos += elem.lengthAsBits;
+				logger.Debug("scan: {0} -> Pos: {1}, Length: {2}", elem.debugName, pos, elem.lengthAsBits);
+				return true;
+			}
+
+			// See if our length is determinstic, size is determined by cracking
+			if (elem.isDeterministic)
+			{
+				logger.Debug("scan: {0} -> Pos: {1}, Determinstic", elem.debugName, pos);
+				return false;
+			}
+
+			// If we are unsized, see if we are a container
+			var cont = elem as DataElementContainer;
+			if (cont == null)
+			{
+				logger.Debug("scan: {0} -> Offset: {1}, Unsized element", elem.debugName, pos);
+				return null;
+			}
+
+			// Elements with transformers require a size
+			if (cont.transformer != null)
+			{
+				logger.Debug("scan: {0} -> Offset: {1}, Unsized transformer", elem.debugName, pos);
+				return null;
+			}
+
+			// Treat choices as unsized
+			if (cont is Dom.Choice)
+			{
+				logger.Debug("scan: {0} -> Offset: {1}, Unsized choice", elem.debugName, pos);
+				return null;
+			}
+
+			if (cont is Dom.Array)
+			{
+				return scanArray((Dom.Array)cont, ref pos);
+			}
+
+			logger.Debug("scan: {0}", elem.debugName);
+
+			foreach (var child in cont)
+			{
+				bool? ret = scan2(child, ref pos, token, end, until);
+
+				// An unsized element was found
+				if (!ret.HasValue)
+					return ret;
+
+				// Aa unsized but deterministic element was found
+				if (ret.Value == false)
+					return ret;
+
+				// Element is sized, but we are looking for the first unsized element
+				if (until == Until.FirstSized)
+					return false;
+			}
+
+			// All children are sized, so we are sized
+			return true;
+		}
+
+		long? getSize2(DataElement elem, BitStream data)
+		{
+			long pos = 0;
+
+			var ret = scan2(elem, ref pos, null, null, Until.FirstSized);
+
+			if (ret.HasValue)
+			{
+				if (ret.Value)
+				{
+					return pos;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+			var token = new Mark();
+			var end = new Mark();
+
+			ret = lookahead(elem, ref pos, token, end);
+
+			// 1st priority, end placement
+			if (end.Element != null)
+				return end.Position - pos;
+
+			// 2nd priority, last unsized element
+			if (ret.HasValue)
+			{
+				if (!ret.Value)
+					return null;
+
+				if (pos != 0 || !(elem is DataElementContainer))
+				{
+					return data.LengthBits - (data.TellBits() + pos);
+				}
+
+				return null;
+			}
+
+			// 3rd priority, token scan
+			if (token.Element != null)
+			{
+				return findToken(data, token.Element.Value, token.Position);
+			}
+
+			return null;
+		}
+
+		bool? lookahead(DataElement elem, ref long pos, Mark token, Mark end)
+		{
+			// Ensure all elements are sized until we reach either
+			// 1) A token
+			// 2) An offset relation we have cracked that can be satisfied
+			// 3) The end of the data model
+
+			DataElement prev = elem;
+
+			while (true)
+			{
+				// Get the next sibling
+				var curr = prev.nextSibling();
+
+				if (curr != null)
+				{
+					var ret = scan2(curr, ref pos, token, end, Until.FirstUnsized);
+					if (!ret.HasValue || ret.Value == false)
+						return ret;
+
+					if (end.Element != null)
+						return true;
+				}
+				else if (prev.parent == null)
+				{
+					// hit the top
+					break;
+				}
+				else if (GetElementSize(prev.parent).HasValue)
+				{
+					// Parent is bound by size
+					break;
+				}
+				//else if (!(elem is DataElementContainer) && checkArray(prev.parent, ref offset, ref end, false, true))
+				//{
+				//    // Parent is array and matched token in array element
+				//    break;
+				//}
+				else
+				{
+					// no more siblings, ascend
+					curr = prev.parent;
+				}
+
+				prev = curr;
+			}
+
+			return true;
+		}
+
 		long? getSize(DataElement elem, BitStream data)
 		{
-			// Quick optimiation
-			if (elem is DataModel)
-				return null;
-
 			long offset = 0;
 			long size = 0;
 			long end = -1;
