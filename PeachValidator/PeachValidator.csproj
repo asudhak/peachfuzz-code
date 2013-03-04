@@ -431,7 +431,6 @@
     <EmbeddedResource Include="icons\node-data.png" />
     <EmbeddedResource Include="icons\node-datamodel.png" />
     <EmbeddedResource Include="icons\node-error.png" />
-    <EmbeddedResource Include="icons\node-flags.gif" />
     <EmbeddedResource Include="icons\node-flags.png" />
     <EmbeddedResource Include="icons\node-generator.png" />
     <EmbeddedResource Include="icons\node-import.png" />
@@ -477,6 +476,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\node-flag.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
