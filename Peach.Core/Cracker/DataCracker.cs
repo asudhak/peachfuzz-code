@@ -40,9 +40,9 @@ namespace Peach.Core.Cracker
 {
 	#region Event Delegates
 
-	public delegate void EnterHandleNodeEventHandler(DataElement element, BitStream data);
-	public delegate void ExitHandleNodeEventHandler(DataElement element, BitStream data);
-	public delegate void ExceptionHandleNodeEventHandler(DataElement element, BitStream data, Exception e);
+	public delegate void EnterHandleNodeEventHandler(DataElement element, long position);
+	public delegate void ExitHandleNodeEventHandler(DataElement element, long position);
+	public delegate void ExceptionHandleNodeEventHandler(DataElement element, long position, Exception e);
 	public delegate void PlacementEventHandler(DataElement oldElement, DataElement newElement, DataElementContainer oldParent);
 
 	#endregion
@@ -105,24 +105,24 @@ namespace Peach.Core.Cracker
 		#region Events
 
 		public event EnterHandleNodeEventHandler EnterHandleNodeEvent;
-		protected void OnEnterHandleNodeEvent(DataElement element, BitStream data)
+		protected void OnEnterHandleNodeEvent(DataElement element, long position)
 		{
 			if(EnterHandleNodeEvent != null)
-				EnterHandleNodeEvent(element, data);
+				EnterHandleNodeEvent(element, position);
 		}
 		
 		public event ExitHandleNodeEventHandler ExitHandleNodeEvent;
-		protected void OnExitHandleNodeEvent(DataElement element, BitStream data)
+		protected void OnExitHandleNodeEvent(DataElement element, long position)
 		{
 			if (ExitHandleNodeEvent != null)
-				ExitHandleNodeEvent(element, data);
+				ExitHandleNodeEvent(element, position);
 		}
 
 		public event ExceptionHandleNodeEventHandler ExceptionHandleNodeEvent;
-		protected void OnExceptionHandleNodeEvent(DataElement element, BitStream data, Exception e)
+		protected void OnExceptionHandleNodeEvent(DataElement element, long position, Exception e)
 		{
 			if (ExceptionHandleNodeEvent != null)
-				ExceptionHandleNodeEvent(element, data, e);
+				ExceptionHandleNodeEvent(element, position, e);
 		}
 
 		public event PlacementEventHandler PlacementEvent;
@@ -396,7 +396,7 @@ namespace Peach.Core.Cracker
 				logger.Debug("Exception occured: {0}", e.ToString());
 			}
 
-			OnExceptionHandleNodeEvent(elem, data, e);
+			OnExceptionHandleNodeEvent(elem, data.TellBits(), e);
 		}
 
 		void handleConstraint(DataElement element, BitStream data)
@@ -426,8 +426,6 @@ namespace Peach.Core.Cracker
 
 		Position handleNodeBegin(DataElement elem, BitStream data)
 		{
-			OnEnterHandleNodeEvent(elem, data);
-
 			handleOffsetRelation(elem, data);
 
 			System.Diagnostics.Debug.Assert(!_sizedElements.ContainsKey(elem));
@@ -448,6 +446,8 @@ namespace Peach.Core.Cracker
 				if (rel != null)
 					_sizeRelations.Add(rel);
 			}
+
+			OnEnterHandleNodeEvent(elem, pos.begin);
 
 			return pos;
 		}
@@ -476,7 +476,7 @@ namespace Peach.Core.Cracker
 			// Mark the end position of this element
 			pos.end = data.TellBits() + getDataOffset();
 
-			OnExitHandleNodeEvent(elem, data);
+			OnExitHandleNodeEvent(elem, pos.end);
 		}
 
 		void handleCrack(DataElement elem, BitStream data, long? size)
