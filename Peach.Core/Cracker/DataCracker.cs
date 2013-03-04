@@ -571,17 +571,29 @@ namespace Peach.Core.Cracker
 			}
 		}
 
-		bool? scanArray(Dom.Array array, ref long pos)
+		bool? scanArray(Dom.Array array, ref long pos, List<Mark> tokens, Until until)
 		{
-			long arrayPos = 0;
-			var ret = scan2(array.origionalElement, ref arrayPos, null, null, Until.FirstUnsized);
+			logger.Debug("scanArray: {0}", array.debugName);
 
-			if (!ret.HasValue || !ret.Value)
+			int tokenCount = tokens.Count;
+			long arrayPos = 0;
+			var ret = scan2(array.origionalElement, ref arrayPos, tokens, null, until);
+
+			for (int i = tokenCount; i < tokens.Count; ++i)
+			{
+				tokens[i].Optional = array.minOccurs == 0;
+				tokens[i].Position += pos;
+			}
+
+			if (!ret.HasValue || !ret.HasValue)
 			{
 				logger.Debug("scanArray: {0} -> {1}", array.debugName,
 					ret.HasValue ? "Deterministic" : "Unsized");
 				return ret;
 			}
+
+			if (until == Until.FirstSized)
+				ret = false;
 
 			var rel = array.relations.getOfCountRelation();
 			if (rel != null && _sizedElements.ContainsKey(rel.From))
@@ -590,7 +602,7 @@ namespace Peach.Core.Cracker
 				pos += arrayPos;
 				logger.Debug("scanArray: {0} -> Count Relation: {1}, Size: {2}",
 					array.debugName, rel.GetValue(), arrayPos);
-				return true;
+				return ret;
 			}
 			else if (array.minOccurs == 1 && array.maxOccurs == 1)
 			{
@@ -598,10 +610,8 @@ namespace Peach.Core.Cracker
 				pos += arrayPos;
 				logger.Debug("scanArray: {0} -> Occurs: {1}, Size: {2}",
 					array.debugName, array.occurs, arrayPos);
-				return true;
+				return ret;
 			}
-
-			// If there is a token in the array and we find said token, set our end to there
 
 			logger.Debug("scanArray: {0} -> Count Unknown", array.debugName);
 			return null;
@@ -742,16 +752,16 @@ namespace Peach.Core.Cracker
 		{
 			public DataElement Element { get; set; }
 			public long Position { get; set; }
+			public bool Optional { get; set; }
 		}
 
 		enum Until { FirstSized, FirstUnsized };
 
-		bool? scan2(DataElement elem, ref long pos, Mark token, Mark end, Until until)
+		bool? scan2(DataElement elem, ref long pos, List<Mark> tokens, Mark end, Until until)
 		{
-			if (token != null && token.Element == null && elem.isToken)
+			if (elem.isToken)
 			{
-				token.Element = elem;
-				token.Position = pos;
+				tokens.Add(new Mark() { Element = elem, Position = pos, Optional = false });
 				logger.Debug("scan: {0} -> Pos: {1}, Saving Token", elem.debugName, pos);
 			}
 
@@ -823,14 +833,14 @@ namespace Peach.Core.Cracker
 
 			if (cont is Dom.Array)
 			{
-				return scanArray((Dom.Array)cont, ref pos);
+				return scanArray((Dom.Array)cont, ref pos, tokens, until);
 			}
 
 			logger.Debug("scan: {0}", elem.debugName);
 
 			foreach (var child in cont)
 			{
-				bool? ret = scan2(child, ref pos, token, end, until);
+				bool? ret = scan2(child, ref pos, tokens, end, until);
 
 				// An unsized element was found
 				if (!ret.HasValue)
@@ -840,7 +850,8 @@ namespace Peach.Core.Cracker
 				if (ret.Value == false)
 					return ret;
 
-				// Element is sized, but we are looking for the first unsized element
+				// If we are looking for the first sized element than this
+				// element size is determined by cracking all the children
 				if (until == Until.FirstSized)
 					return false;
 			}
@@ -851,56 +862,80 @@ namespace Peach.Core.Cracker
 
 		long? getSize2(DataElement elem, BitStream data)
 		{
+			logger.Debug("getSize: -----> {0}", elem.debugName);
+
 			long pos = 0;
 
-			var ret = scan2(elem, ref pos, null, null, Until.FirstSized);
+			var ret = scan2(elem, ref pos, new List<Mark>(), null, Until.FirstSized);
 
 			if (ret.HasValue)
 			{
 				if (ret.Value)
 				{
+					logger.Debug("getSize: <----- Size: {0}", pos);
 					return pos;
 				}
-				else
-				{
-					return null;
-				}
+
+				logger.Debug("getSize: <----- Deterministic: ???");
+				return null;
 			}
 
-			var token = new Mark();
+			var tokens = new List<Mark>();
 			var end = new Mark();
 
-			ret = lookahead(elem, ref pos, token, end);
+			ret = lookahead(elem, ref pos, tokens, end);
 
 			// 1st priority, end placement
 			if (end.Element != null)
-				return end.Position - pos;
+			{
+				pos = end.Position - pos;
+				logger.Debug("getSize: <----- Placement: {0}", pos);
+				return pos;
+			}
 
 			// 2nd priority, last unsized element
 			if (ret.HasValue)
 			{
-				if (!ret.Value)
-					return null;
-
-				if (pos != 0 || !(elem is DataElementContainer))
+				if (ret.Value && (pos != 0 || !(elem is DataElementContainer)))
 				{
-					return data.LengthBits - (data.TellBits() + pos);
+					pos = data.LengthBits - (data.TellBits() + pos);
+					logger.Debug("getSize: <----- Last Unsized: {0}", pos);
+					return pos;
 				}
 
+				logger.Debug("getSize: <----- Last Unsized: ???");
 				return null;
 			}
 
 			// 3rd priority, token scan
-			if (token.Element != null)
+			foreach (var token in tokens)
 			{
-				return findToken(data, token.Element.Value, token.Position);
+				long? where = findToken(data, token.Element.Value, token.Position);
+				if (where.HasValue || !token.Optional)
+				{
+					logger.Debug("getSize: <----- {0}{1} Token: {2}",
+						where.HasValue ? "" : "Missing ",
+						token.Optional ? "Optional" : "Required",
+						where.HasValue ? where.ToString() : "???");
+					return where;
+				}
 			}
 
+			if (tokens.Count > 0)
+			{
+				pos = data.LengthBits - (data.TellBits() + pos);
+				logger.Debug("getSize: <----- Missing Optional Token: {0}", pos);
+				return pos;
+			}
+
+			logger.Debug("getSize: <----- Not Last Unsized: ???");
 			return null;
 		}
 
-		bool? lookahead(DataElement elem, ref long pos, Mark token, Mark end)
+		bool? lookahead(DataElement elem, ref long pos, List<Mark> tokens, Mark end)
 		{
+			logger.Debug("lookahead: {0}", elem.debugName);
+
 			// Ensure all elements are sized until we reach either
 			// 1) A token
 			// 2) An offset relation we have cracked that can be satisfied
@@ -915,7 +950,7 @@ namespace Peach.Core.Cracker
 
 				if (curr != null)
 				{
-					var ret = scan2(curr, ref pos, token, end, Until.FirstUnsized);
+					var ret = scan2(curr, ref pos, tokens, end, Until.FirstUnsized);
 					if (!ret.HasValue || ret.Value == false)
 						return ret;
 
@@ -932,13 +967,16 @@ namespace Peach.Core.Cracker
 					// Parent is bound by size
 					break;
 				}
-				//else if (!(elem is DataElementContainer) && checkArray(prev.parent, ref offset, ref end, false, true))
-				//{
-				//    // Parent is array and matched token in array element
-				//    break;
-				//}
 				else
 				{
+					if (!(elem is DataElementContainer) && (prev.parent is Dom.Array))
+					{
+						long arrayPos = pos;
+						var ret = scanArray((Dom.Array)prev.parent, ref arrayPos, tokens, Until.FirstUnsized);
+						if (!ret.HasValue || ret.Value == false)
+							return ret;
+					}
+
 					// no more siblings, ascend
 					curr = prev.parent;
 				}
