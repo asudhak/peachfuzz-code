@@ -553,6 +553,13 @@ namespace Peach.Core.Cracker
 			return offset;
 		}
 
+		/// <summary>
+		/// Searches data for the first occurance of token starting at offset.
+		/// </summary>
+		/// <param name="data">BitStream to search in.</param>
+		/// <param name="token">BitStream to search for.</param>
+		/// <param name="offset">How many bits after the current position of data to start searching.</param>
+		/// <returns>The location of the token in data from the current position or null.</returns>
 		long? findToken(BitStream data, BitStream token, long offset)
 		{
 			while (true)
@@ -626,6 +633,23 @@ namespace Peach.Core.Cracker
 
 		enum Until { FirstSized, FirstUnsized };
 
+		/// <summary>
+		/// Scan elem and all children looking for a target element.
+		/// The target can either be the first sized element or the first unsized element.
+		/// If an unsized element is found, keep track of the determinism of the element.
+		/// An element is determinstic if its size is unknown, but can be determined by calling
+		/// crack(). Examples are a container with sized children or a null terminated string.
+		/// </summary>
+		/// <param name="elem">Element to start scanning at.</param>
+		/// <param name="pos">The position of the scanner when 'until' occurs.</param>
+		/// <param name="tokens">List of tokens found when scanning.</param>
+		/// <param name="end">If non-null and an element with an offset relation is detected,
+		/// record the element's absolute position and stop scanning.</param>
+		/// <param name="until">When to stop scanning.
+		/// Either first sized element or first unsized element.</param>
+		/// <returns>Null if an unsized element was found.
+		/// False if a deterministic element was found.
+		/// True if all elements are sized.</returns>
 		bool? scan(DataElement elem, ref long pos, List<Mark> tokens, Mark end, Until until)
 		{
 			if (elem.isToken)
@@ -729,6 +753,12 @@ namespace Peach.Core.Cracker
 			return true;
 		}
 
+		/// <summary>
+		/// Get the size of the data element.
+		/// </summary>
+		/// <param name="elem">Element to size</param>
+		/// <param name="data">Bits to crack</param>
+		/// <returns>Null if size is unknown or the size in bits.</returns>
 		long? getSize(DataElement elem, BitStream data)
 		{
 			logger.Debug("getSize: -----> {0}", elem.debugName);
@@ -801,6 +831,21 @@ namespace Peach.Core.Cracker
 			return null;
 		}
 
+		/// <summary>
+		/// Scan all elements after elem looking for the first unsized element.
+		/// If an unsized element is found, keep track of the determinism of the element.
+		/// An element is determinstic if its size is unknown, but can be determined by calling
+		/// crack(). Examples are a container with sized children or a null terminated string.
+		/// </summary>
+		/// <param name="elem">Start scanning at this element's next sibling.</param>
+		/// <param name="pos">The position of the scanner when 'until' occurs.</param>
+		/// <param name="tokens">List of tokens found when scanning.</param>
+		/// <param name="end">If non-null and an element with an offset relation is detected,
+		/// record the element's absolute position and stop scanning.</param>
+		/// Either first sized element or first unsized element.</param>
+		/// <returns>Null if an unsized element was found.
+		/// False if a deterministic element was found.
+		/// True if all elements are sized.</returns>
 		bool? lookahead(DataElement elem, ref long pos, List<Mark> tokens, Mark end)
 		{
 			logger.Debug("lookahead: {0}", elem.debugName);
