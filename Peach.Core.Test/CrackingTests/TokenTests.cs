@@ -393,6 +393,74 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 		}
 
+		public Dom.Dom TokenAfterArrayToken(string value)
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"A\"/>" +
+				"		<String name=\"T1\" value=\" \" token=\"true\"/>" +
+				"		<String name=\"B\"/>" +
+				"		<String name=\"T2\" value=\"-\" minOccurs=\"0\" token=\"true\"/>" +
+				"		<String name=\"T3\" value=\" \" token=\"true\"/>" +
+				"		<String name=\"C\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void ZeroTokenAfterArrayToken()
+		{
+			var dom = TokenAfterArrayToken("aaa bbb ccc");
+
+			Assert.AreEqual(6, dom.dataModels[0].Count);
+			Assert.AreEqual("aaa", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("bbb", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(0, ((Dom.Array)dom.dataModels[0][3]).Count);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][4].DefaultValue);
+			Assert.AreEqual("ccc", (string)dom.dataModels[0][5].DefaultValue);
+		}
+
+		[Test]
+		public void OneTokenAfterArrayToken()
+		{
+			var dom = TokenAfterArrayToken("aaa bbb- ccc");
+
+			Assert.AreEqual(6, dom.dataModels[0].Count);
+			Assert.AreEqual("aaa", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("bbb", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(1, ((Dom.Array)dom.dataModels[0][3]).Count);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][4].DefaultValue);
+			Assert.AreEqual("ccc", (string)dom.dataModels[0][5].DefaultValue);
+		}
+
+		[Test]
+		public void ManyTokenAfterArrayToken()
+		{
+			var dom = TokenAfterArrayToken("aaa bbb-------------- ccc");
+
+			Assert.AreEqual(6, dom.dataModels[0].Count);
+			Assert.AreEqual("aaa", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("bbb", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(14, ((Dom.Array)dom.dataModels[0][3]).Count);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][4].DefaultValue);
+			Assert.AreEqual("ccc", (string)dom.dataModels[0][5].DefaultValue);
+		}
+
 		public Dom.Dom DoCrackArrayToken(string value)
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +

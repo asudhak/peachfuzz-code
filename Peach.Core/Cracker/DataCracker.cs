@@ -620,6 +620,16 @@ namespace Peach.Core.Cracker
 				return ret;
 			}
 
+			for (int i = tokenCount; i < tokens.Count; ++i)
+			{
+				long? where = findToken(_dataStack.First(), tokens[i].Element.Value, tokens[i].Position);
+				if (!where.HasValue && tokens[i].Optional)
+				{
+					logger.Debug("scanArray: {0} -> Missing Token, minOccurs==0", array.debugName);
+					return true;
+				}
+			}
+
 			logger.Debug("scanArray: {0} -> Count Unknown", array.debugName);
 			return null;
 		}
