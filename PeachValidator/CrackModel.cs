@@ -202,7 +202,7 @@ namespace PeachValidator
 
 		public int Length
 		{
-			get { return StopBits == 0 ? 0 : (int)((StopBits - StartBits) / 8); }
+			get { return StopBits == 0 ? 0 : (int)((StopBits - StartBits + 7) / 8); }
 		}
 
 		public bool Error
