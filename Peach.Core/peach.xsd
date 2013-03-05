@@ -733,7 +733,7 @@
 							Dots need to be tested for in the parser because they are valid when they are used in a reference.
 						</xs:documentation>
 					</xs:annotation>
-					<xs:pattern value="[^ \t\r\n\v\f]+"/>
+					<xs:pattern value="[\w\._#]+"/>
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
