@@ -164,7 +164,7 @@ namespace Peach.Core.Dom
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			if (size.HasValue)
+			if (size.HasValue && data != sizedData)
 				data.SeekBits(startPos + sizedData.TellBits(), System.IO.SeekOrigin.Begin);
 		}
 
