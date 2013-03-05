@@ -141,11 +141,10 @@ namespace PeachValidator
 			currentModel.Parent = newParentNode;
 		}
 
-		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
+		void cracker_ExitHandleNodeEvent(DataElement element, long position)
 		{
 			var currentModel = crackMap[element];
-			currentModel.Length = (int)((BitStream)currentModel.DataElement.Value).LengthBytes;
-			currentModel.Position = (int) (data.DataElementPosition(element)/8);
+			currentModel.StopBits = position;
 
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
 				crackMap[element.parent].Children.Add(currentModel);
@@ -154,18 +153,11 @@ namespace PeachValidator
 				// TODO -- Need to handle this case!
 			}
 
-			// Figure out if we are relative to prent and mark as such.
-			if (currentModel.Position == 0 && currentModel.Parent != null &&
-				currentModel.Parent.Position > 0)
-			{
-				currentModel.Parent.MarkChildrenRelativeToParent();
-			}
-
 		}
 
-		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
+		void cracker_EnterHandleNodeEvent(DataElement element, long position)
 		{
-			crackMap[element] = new CrackNode(crackModel, element, (int)data.TellBytes(), 0);
+			crackMap[element] = new CrackNode(crackModel, element, position, 0);
 		}
 
 		private void toolStripButtonOpenPit_Click(object sender, EventArgs e)

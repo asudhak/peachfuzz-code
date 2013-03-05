@@ -107,13 +107,13 @@ namespace Peach.Core.Dom
 			return ret;
 		}
 
-		public override void Crack(Cracker.DataCracker context, IO.BitStream data)
+		public override void Crack(Cracker.DataCracker context, IO.BitStream data, long? size)
 		{
 			try
 			{
 				cache = null;
 				cracking = true;
-				base.Crack(context, data);
+				base.Crack(context, data, size);
 			}
 			finally
 			{

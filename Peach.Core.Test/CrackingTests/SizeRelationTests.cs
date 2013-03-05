@@ -194,7 +194,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"), (byte[])dom.dataModels[0][2].DefaultValue);
 		}
 
-		[Test, Ignore("Failure Expected. Referenced in Issue #280")]
+		[Test]
 		public void CrackSizeOf6()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -202,8 +202,8 @@ namespace Peach.Core.Test.CrackingTests
 				"		<Number size=\"8\">" +
 				"			<Relation type=\"size\" of=\"Second\" />" +
 				"		</Number>" +
-				"		<Blob name=\"First\"/>" +
-				"		<Blob name=\"Second\"/>" +
+				"		<String name=\"First\"/>" +
+				"		<String name=\"Second\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -213,16 +213,16 @@ namespace Peach.Core.Test.CrackingTests
 			BitStream data = new BitStream();
 
 			data.WriteInt8((sbyte)"Hello World".Length);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"), (byte[])dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("ABCDEFG", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][2].DefaultValue);
 		}
 
 		[Test]
@@ -256,6 +256,39 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])((Block)dom.dataModels[0][1])[0].DefaultValue);
 			Assert.AreEqual("ABCDEFG", (string)dom.dataModels[0][2].DefaultValue);
+		}
+
+		[Test]
+		public void CrackSizeOf8()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"size\" of=\"Second\" />" +
+				"		</Number>" +
+				"		<String name=\"First\"/>" +
+				"		<Block>" +
+				"			<String name=\"Second\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+
+			data.WriteInt8((sbyte)"Hello World".Length);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("ABCDEFG"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("ABCDEFG", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Hello World", (string)((Dom.Block)dom.dataModels[0][2])[0].DefaultValue);
 		}
 
 		[Test]
@@ -400,7 +433,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			BitStream data = new BitStream();
 
-			data.WriteBytes(new byte[] { 0, 0, 0, 6, 0, 0 });
+			data.WriteBytes(new byte[] { 0, 0, 0, 6, 0, 0, 1 });
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();

@@ -64,67 +64,29 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			DataElementContainer element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			BitStream sizedData = data;
-			SizeRelation sizeRelation = null;
+			BitStream sizedData = ReadSizedData(data, size);
 			long startPosition = data.TellBits();
-			sizeRelation = element.relations.getOfSizeRelation();
-
-			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation && !element.isParentOf(sizeRelation.From))
-			{
-				long size = sizeRelation.GetValue();
-				context._sizedBlockStack.Add(element);
-				context._sizedBlockMap[element] = size;
-
-				sizedData = ReadSizedData(data, size);
-				sizeRelation = null;
-			}
-			else if (element.hasLength)
-			{
-				long size = element.lengthAsBits;
-				context._sizedBlockStack.Add(element);
-				context._sizedBlockMap[element] = size;
-
-				sizedData = ReadSizedData(data, size);
-			}
 
 			// Handle children, iterate over a copy since cracking can modify the list
 			var children = _childrenList.ToArray();
 			foreach (DataElement child in children)
 			{
-				context.handleNode(child, sizedData);
+				context.CrackData(child, sizedData);
 
-				// If we have an unused size relation, wait until we
-				// can use it then re-size our data.
-				if (sizeRelation != null)
+				// If we are unsized, cracking a child can cause our size
+				// to be available.  If so, update and keep going.
+				if (!size.HasValue)
 				{
-					if (child == sizeRelation.From || (child is DataElementContainer &&
-						((DataElementContainer)child).isParentOf(sizeRelation.From)))
+					size = context.GetElementSize(this);
+
+					if (size.HasValue)
 					{
-						long size = (long)sizeRelation.GetValue();
-						context._sizedBlockStack.Add(element);
-						context._sizedBlockMap[element] = size;
-
-						// update size based on what we have currently read
 						long read = data.TellBits() - startPosition;
-
 						sizedData = ReadSizedData(data, size, read);
-						sizeRelation = null;
 					}
 				}
-			}
-
-			// Remove our element from the stack & map
-			if (sizedData != data)
-			{
-				context._sizedBlockStack.Remove(element);
-				context._sizedBlockMap.Remove(element);
 			}
 		}
 
@@ -155,6 +117,21 @@ namespace Peach.Core.Dom
 			{
 				return null;
 			}
+		}
+
+		public override BitStream  ReadSizedData(BitStream data, long? size, long read = 0)
+		{
+			if (!size.HasValue)
+				return data;
+
+			long needed = size.Value - read;
+			data.WantBytes((needed + 7) / 8);
+			long remain = data.LengthBits - data.TellBits();
+
+			if (needed == remain)
+				return data;
+
+			 return base.ReadSizedData(data, size, read);
 		}
 
 		public override bool CacheValue

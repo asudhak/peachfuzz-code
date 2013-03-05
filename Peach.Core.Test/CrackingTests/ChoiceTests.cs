@@ -107,8 +107,58 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[2], data);
 
-			Assert.AreEqual(1, dom.dataModels[2].Count);
+			Assert.AreEqual(2, dom.dataModels[2].Count);
 			Assert.IsTrue(dom.dataModels[2][0] is Blob);
+			Assert.IsTrue(dom.dataModels[2][1] is Dom.Array);
+			Assert.AreEqual(0, ((Dom.Array)dom.dataModels[2][1]).Count);
+		}
+
+		[Test]
+		public void ArrayOfChoice()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM_choice1"">
+		<Block>
+		<Number size=""8"" token=""true"" value=""1""/>
+		<Blob name=""smallData"" length=""2""/>
+		</Block>
+	</DataModel>
+
+	<DataModel name=""DM_choice2"">
+		<Block>
+		<Number size=""8"" token=""true"" value=""2""/>
+		<Blob name=""BigData"" length=""4""/>
+		</Block>
+	</DataModel>
+
+	<DataModel name=""DM"">
+		<Blob name=""Header"" length=""5""/>
+		<Choice name=""options"" minOccurs=""0"">
+			<Block ref=""DM_choice1""/>
+			<Block ref=""DM_choice2""/>
+		</Choice>
+		<Blob name=""extra"" length=""1""/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 11, 22, 33, 44, 55, 1, 9, 9, 2, 8, 8, 8, 8, 1, 7, 7, 0 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[2], data);
+
+			Assert.AreEqual(3, dom.dataModels[2].Count);
+			Assert.IsTrue(dom.dataModels[2][0] is Blob);
+			Assert.IsTrue(dom.dataModels[2][1] is Dom.Array);
+			var array = dom.dataModels[2][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
 		}
 	}
 }

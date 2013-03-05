@@ -308,6 +308,25 @@
     <Reference Include="Be.Windows.Forms.HexBox">
       <HintPath>..\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\bin\Debug\Be.Windows.Forms.HexBox.dll</HintPath>
     </Reference>
+    <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\IronPython-2.7.1\IronPython.dll</HintPath>
+    </Reference>
+    <Reference Include="IronPython.Modules">
+      <HintPath>..\3rdParty\IronPython-2.7.1\IronPython.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Scripting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.Metadata, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Scripting.Metadata.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -412,7 +431,6 @@
     <EmbeddedResource Include="icons\node-data.png" />
     <EmbeddedResource Include="icons\node-datamodel.png" />
     <EmbeddedResource Include="icons\node-error.png" />
-    <EmbeddedResource Include="icons\node-flags.gif" />
     <EmbeddedResource Include="icons\node-flags.png" />
     <EmbeddedResource Include="icons\node-generator.png" />
     <EmbeddedResource Include="icons\node-import.png" />
@@ -458,6 +476,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\node-flag.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

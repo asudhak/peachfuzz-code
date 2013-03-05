@@ -91,42 +91,13 @@ namespace Peach.Core.Dom
 		public String()
 			: base()
 		{
-			DefaultValue = new Variant("");
+			_defaultValue = new Variant("");
 		}
 
 		public String(string name)
 			: base(name)
 		{
-			DefaultValue = new Variant("");
-		}
-
-		public String(string name, string defaultValue)
-			: base(name)
-		{
-			DefaultValue = new Variant(defaultValue);
-		}
-
-		public String(string name, Variant defaultValue)
-		{
-			DefaultValue = defaultValue;
-		}
-
-		public String(string name, string defaultValue, StringType type, bool nullTerminated)
-			: base(name)
-		{
-			DefaultValue = new Variant(defaultValue);
-			_type = type;
-			_nullTerminated = nullTerminated;
-		}
-
-		public String(string name, string defaultValue, StringType type, bool nullTerminated, int length)
-			: base(name)
-		{
-			DefaultValue = new Variant(defaultValue);
-			_type = type;
-			_nullTerminated = nullTerminated;
-			_length = length;
-			_lengthType = LengthType.Bytes;
+			_defaultValue = new Variant("");
 		}
 
 		protected string ReadCharacters(BitStream data, long maxCount, bool stopOnNull)
@@ -154,8 +125,8 @@ namespace Peach.Core.Dom
 						if (!stopOnNull)
 							msg = "' of '" + maxCount;
 
-						throw new CrackingFailure("String '" + fullName +
-								"' could only crack '" + sb.Length + msg + "' characters " +
+						throw new CrackingFailure(debugName +
+								" could only crack '" + sb.Length + msg + "' characters " +
 								"before exhausting the input buffer.", this, data);
 					}
 
@@ -174,70 +145,49 @@ namespace Peach.Core.Dom
 			}
 			catch (DecoderFallbackException)
 			{
-				throw new CrackingFailure("String '" + fullName + "' contains invalid bytes.", this, data);
+				throw new CrackingFailure(debugName + " contains invalid bytes.", this, data);
 			}
 		}
 
-		/// <summary>
-		/// TODO - Use ReadCharacter method when length is char length.
-		/// </summary>
-		/// <param name="context"></param>
-		/// <param name="data"></param>
-		public override void Crack(DataCracker context, BitStream data)
+		public override bool isDeterministic
 		{
-			String element = this;
-			Variant defaultValue;
-			string stringValue;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (!_hasLength && element.nullTerminated)
+			get
 			{
-				stringValue = ReadCharacters(data, -1, true);
+				if (!_hasLength && nullTerminated)
+					return true;
+
+				if (lengthType == LengthType.Chars && _hasLength)
+					return true;
+
+				return base.isDeterministic;
 			}
-			else if (lengthType == LengthType.Chars && _hasLength)
+		}
+
+		protected override Variant GetDefaultValue(BitStream data, long? size)
+		{
+			if (!size.HasValue)
 			{
-				stringValue = ReadCharacters(data, length, false);
-			}
-			else
-			{
-				long? stringLength = (context.determineElementSize(element, data) / 8);
+				if (!_hasLength && nullTerminated)
+					return new Variant(ReadCharacters(data, -1, true));
 
-				if (stringLength == null)
-					throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
-
-				data.WantBytes(stringLength.Value);
-
-				if ((data.TellBytes() + stringLength) > data.LengthBytes)
-					throw new CrackingFailure("String '" + element.fullName +
-						"' has length of '" + stringLength + "' but buffer only has '" +
-						(data.LengthBytes - data.TellBytes()) + "' bytes left.", element, data);
-
-				byte[] buf = data.ReadBytes((int)stringLength);
-
-				try
-				{
-					stringValue = encoding.GetString(buf);
-				}
-				catch (DecoderFallbackException)
-				{
-					throw new CrackingFailure("String '" + element.fullName + "' contains invalid bytes.", element, data);
-				}
+				if (lengthType == LengthType.Chars && _hasLength)
+					return new Variant(ReadCharacters(data, length, false));
 			}
 
-			defaultValue = new Variant(stringValue);
+			Variant ret = base.GetDefaultValue(data, size);
 
-			if (element.isToken)
-				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("String marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
+			// If we dont have a length and are nullTerminated, we need to strip the null.
+			// This is because the default does not contain the null, it
+			// is added when generating the internal value.
+			if (!_hasLength && nullTerminated)
+			{
+				string str = Sanitize(ret);
+				if (str.Length > 0 && str[str.Length - 1] == '\0')
+					str = str.Remove(str.Length - 1);
+				ret = new Variant(str);
+			}
 
-			element.DefaultValue = defaultValue;
-
-			if (stringValue.Length > 50)
-				stringValue = stringValue.Substring(0, 50);
-
-			logger.Debug("String's value is: " + stringValue);
-
+			return ret;
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -306,84 +256,91 @@ namespace Peach.Core.Dom
 			}
 			set
 			{
-				string final = null;
+				base.DefaultValue = new Variant(Sanitize(value));
+			}
+		}
 
-				if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
+		#region Sanitize
+
+		private string Sanitize(Variant value)
+		{
+			string final = null;
+
+			if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
+			{
+				try
 				{
-					try
+					final = encoding.GetString((byte[])value);
+				}
+				catch (DecoderFallbackException)
+				{
+					throw new PeachException("Error, " + debugName + " value contains invalid " + stringType + " bytes.");
+				}
+			}
+			else
+			{
+				try
+				{
+					encoding.GetBytes((string)value);
+				}
+				catch
+				{
+					throw new PeachException("Error, " + debugName + " value contains invalid " + stringType + " characters.");
+				}
+
+				final = (string)value;
+			}
+
+			if (_hasLength)
+			{
+				var lenType = lengthType;
+				var len = length;
+
+				if (lenType == LengthType.Chars)
+				{
+					if (NeedsExpand(final.Length, len, nullTerminated, final))
 					{
-						final = encoding.GetString((byte[])value);
-					}
-					catch (DecoderFallbackException)
-					{
-						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " bytes.");
+						if (nullTerminated)
+							len -= 1;
+
+						final += MakePad((int)len - final.Length);
 					}
 				}
 				else
 				{
-					try
+					if (lenType == LengthType.Bits)
 					{
-						encoding.GetBytes((string)value);
+						if ((len % 8) != 0)
+							throw new PeachException("Error, " + debugName + " has invalid length of " + len + " bits.");
+
+						len = len / 8;
+						lenType = LengthType.Bytes;
 					}
-					catch
+
+					System.Diagnostics.Debug.Assert(lenType == LengthType.Bytes);
+
+					int actual = encoding.GetByteCount(final);
+
+					if (NeedsExpand(actual, len, nullTerminated, final))
 					{
-						throw new PeachException("String '" + fullName + "' value contains invalid " + stringType + " characters.");
-					}
+						int nullLen = encoding.GetByteCount("\0");
+						int padLen = encoding.GetByteCount(new char[1] { padCharacter });
 
-					final = (string)value;
-				}
+						int grow = (int)len - actual;
 
-				if (_hasLength)
-				{
-					var lenType = lengthType;
-					var len = length;
+						if (nullTerminated)
+							grow -= nullLen;
 
-					if (lenType == LengthType.Chars)
-					{
-						if (NeedsExpand(final.Length, len, nullTerminated, final))
-						{
-							if (nullTerminated)
-								len -= 1;
+						if (grow < 0 || (grow % padLen) != 0)
+							throw new PeachException(string.Format("Error, can not satisfy length requirement of {1} {2} when padding {3} {0}.",
+								debugName, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType));
 
-							final += MakePad((int)len - final.Length);
-						}
-					}
-					else
-					{
-						if (lenType == LengthType.Bits)
-						{
-							if ((len % 8) != 0)
-								throw new PeachException(string.Format("Error, {2} string '{0}' has invalid length of {1} bits.", name, len, stringType));
-
-							len = len / 8;
-							lenType = LengthType.Bytes;
-						}
-
-						System.Diagnostics.Debug.Assert(lenType == LengthType.Bytes);
-
-						int actual = encoding.GetByteCount(final);
-
-						if (NeedsExpand(actual, len, nullTerminated, final))
-						{
-							int nullLen = encoding.GetByteCount("\0");
-							int padLen = encoding.GetByteCount(new char[1] { padCharacter });
-
-							int grow = (int)len - actual;
-
-							if (nullTerminated)
-								grow -= nullLen;
-
-							if (grow < 0 || (grow % padLen) != 0)
-								throw new PeachException(string.Format("Error, can not satisfy length requirement of {1} {2} when padding {3} string '{0}'.",
-									name, lengthType == LengthType.Bits ? len * 8 : len, lengthType.ToString().ToLower(), stringType));
-
-							final += MakePad(grow / padLen);
-						}
+						final += MakePad(grow / padLen);
 					}
 				}
-
-				base.DefaultValue = new Variant(final);
 			}
+
+			return final;
 		}
 
 		private string MakePad(int numPadChars)
@@ -411,6 +368,8 @@ namespace Peach.Core.Dom
 
 			return true;
 		}
+
+		#endregion
 
 		/// <summary>
 		/// String type/encoding to be used.  Default is 

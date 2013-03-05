@@ -94,10 +94,13 @@ namespace Peach.Core.Dom
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	[DebuggerDisplay("{fullName}")]
-	public abstract class DataElement : INamed, ICrackable
+	[DebuggerDisplay("{debugName}")]
+	public abstract class DataElement : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		#region Clone
+
 		public static bool DebugClone = false;
 
 		public class CloneContext
@@ -211,6 +214,8 @@ namespace Peach.Core.Dom
 			return copy;
 		}
 
+		#endregion
+
 		/// <summary>
 		/// Mutated vale override's fixupImpl
 		///
@@ -306,7 +311,40 @@ namespace Peach.Core.Dom
 			remove { _invalidatedEvent -= value; }
 		}
 
-		public abstract void Crack(DataCracker context, BitStream data);
+		protected virtual Variant GetDefaultValue(BitStream data, long? size)
+		{
+			if (size.HasValue && size.Value == 0)
+				return new Variant(new byte[0]);
+
+			var sizedData = ReadSizedData(data, size);
+			return new Variant(sizedData);
+		}
+
+		public virtual void Crack(DataCracker context, BitStream data, long? size)
+		{
+			var oldDefalut = DefaultValue;
+
+			try
+			{
+				DefaultValue = GetDefaultValue(data, size);
+			}
+			catch (PeachException pe)
+			{
+				throw new CrackingFailure(pe.Message, this, data);
+			}
+
+			logger.Debug("{0} value is: {1}", debugName, DefaultValue);
+
+			if (isToken && oldDefalut != DefaultValue)
+			{
+				var newDefault = DefaultValue;
+				DefaultValue = oldDefalut;
+				var msg = "{0} marked as token, values did not match '{1}' vs. '{2}'.";
+				msg = msg.Fmt(debugName, newDefault, oldDefalut);
+				logger.Debug(msg);
+				throw new CrackingFailure(msg, this, data);
+			}
+		}
 
 		protected void OnInvalidated(EventArgs e)
 		{
@@ -338,37 +376,6 @@ namespace Peach.Core.Dom
 		}
 
 		#endregion
-
-		public static OrderedDictionary<string, Type> dataElements = new OrderedDictionary<string, Type>();
-		public static void loadDataElements(Assembly assembly)
-		{
-			foreach (Type type in assembly.GetTypes())
-			{
-				if (type.IsClass && !type.IsAbstract)
-				{
-					var attr = type.GetAttributes<DataElementAttribute>(null).First();
-					if (!dataElements.ContainsKey(attr.elementName))
-					{
-						dataElements.Add(attr.elementName, type);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Recursively returns elements of a specific type.  Will not
-		/// return elements of our partent.
-		/// </summary>
-		/// <param name="type">Type of elements to locate and return</param>
-		/// <returns>Returns elements of a specific type</returns>
-		public IEnumerable<DataElement> getElementsByType(Type type)
-		{
-			foreach(DataElement element in EnumerateAllElements())
-			{
-				if(element.GetType() == type)
-					yield return element;
-			}
-		}
 
 		/// <summary>
 		/// Dynamic properties
@@ -419,6 +426,22 @@ namespace Peach.Core.Dom
 				{
 					throw ex.InnerException;
 				}
+			}
+		}
+
+		public string elementType
+		{
+			get
+			{
+				return GetType().GetAttributes<DataElementAttribute>(null).First().elementName;
+			}
+		}
+
+		public string debugName
+		{
+			get
+			{
+				return "{0} '{1}'".Fmt(elementType, fullName);
 			}
 		}
 
@@ -584,6 +607,20 @@ namespace Peach.Core.Dom
 					return true;
 
 				return _hasLength;
+			}
+		}
+
+		/// <summary>
+		/// Is the length of the element deterministic.
+		/// This is the case if the element hasLength or
+		/// if the element has a specific end. For example,
+		/// a null terminated string.
+		/// </summary>
+		public virtual bool isDeterministic
+		{
+			get
+			{
+				return hasLength;
 			}
 		}
 
@@ -1304,39 +1341,33 @@ namespace Peach.Core.Dom
 				child.ClearRelations();
 		}
 
-		public string elementType
-		{
-			get
-			{
-				return GetType().GetAttributes<DataElementAttribute>(null).First().elementName;
-			}
-		}
-
 		/// <summary>
 		/// Helper fucntion to obtain a bitstream sized for this element
 		/// </summary>
 		/// <param name="data">Source BitStream</param>
 		/// <param name="size">Length of this element</param>
-		/// <param name="size">Length of bits already read of this element</param>
+		/// <param name="read">Length of bits already read of this element</param>
 		/// <returns>BitStream of length 'size - read'</returns>
-		public BitStream ReadSizedData(BitStream data, long size, long read = 0)
+		public virtual BitStream ReadSizedData(BitStream data, long? size, long read = 0)
 		{
-			if (size < read)
+			if (!size.HasValue)
+				throw new CrackingFailure(debugName + " is unsized.", this, data);
+
+			if (size.Value < read)
 			{
-				string msg = "{0} '{1}' has length of {2} bits but already read {3} bits.".Fmt(
-					elementType, fullName, size, read);
+				string msg = "{0} has length of {1} bits but already read {2} bits.".Fmt(
+					debugName, size.Value, read);
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			long needed = size - read;
+			long needed = size.Value - read;
 			data.WantBytes((needed + 7) / 8);
 			long remain = data.LengthBits - data.TellBits();
 
 			if (needed > remain)
 			{
-				string msg = "{0} '{1}' has length of {2} bits{3}but buffer only has {4} bits left.".Fmt(
-					elementType, fullName, size,
-					read == 0 ? " " : ", already read " + read + " bits, ", remain);
+				string msg = "{0} has length of {1} bits{2}but buffer only has {3} bits left.".Fmt(
+					debugName, size.Value, read == 0 ? " " : ", already read " + read + " bits, ", remain);
 				throw new CrackingFailure(msg, this, data);
 			}
 

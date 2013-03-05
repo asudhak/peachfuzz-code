@@ -22,10 +22,8 @@ namespace Peach.Core.Test.CrackingTests
 		<{0} lengthType=""{1}"" {2}=""{3}"">
 			<Blob/>
 		</{0}>
-		<Number name=""num1"" size=""8"" value=""5"" />
-		<Number name=""num2"" size=""8"">
-			<Relation type=""size"" of=""num1"" />
-		</Number>
+		<!-- ensure we don't fall into the isLastUnsizedElement case -->
+		<Blob />
 	</DataModel>
 </Peach>";
 
@@ -33,10 +31,8 @@ namespace Peach.Core.Test.CrackingTests
 <Peach>
 	<DataModel name=""TheDataModel"">
 		<{0} lengthType=""{1}"" {2}=""{3}""/>
-		<Number name=""num1"" size=""8"" value=""5"" />
-		<Number name=""num2"" size=""8"">
-			<Relation type=""size"" of=""num1"" />
-		</Number>
+		<!-- ensure we don't fall into the isLastUnsizedElement case -->
+		<Blob />
 	</DataModel>
 </Peach>";
 
@@ -55,7 +51,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(1, dom.dataModels.Count);
-			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
 			var de = dom.dataModels[0][0];
 
 			var cont = de as DataElementContainer;
