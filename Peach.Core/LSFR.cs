@@ -12,6 +12,22 @@ namespace Peach.Core
 		private int[] taps;
 		private int degree;
 
+		public LSFR(int degree, uint init, int[] taps)
+		{
+			if (degree <= 1 || degree > 32)
+				throw new ArgumentOutOfRangeException("degree");
+
+			foreach (int i in taps)
+			{
+				if (i > degree)
+					throw new ArgumentOutOfRangeException("taps");
+			}
+
+			this.degree = degree;
+			this.value = init;
+			this.taps = polynomials[degree];
+		}
+
 		public LSFR(int degree, uint init)
 		{
 			if (degree <= 1 || degree > 32)
