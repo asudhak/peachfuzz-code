@@ -39,6 +39,8 @@ namespace Peach.Core.MutationStrategies
 	[Serializable]
 	public class RandomDeterministicStrategy : Sequential
 	{
+		SequenceGenerator sequence = null;
+
 		public RandomDeterministicStrategy(Dictionary<string, Variant> args)
 			: base(args)
 		{
@@ -47,6 +49,26 @@ namespace Peach.Core.MutationStrategies
 		public override void Initialize(RunContext context, Engine engine)
 		{
 			base.Initialize(context, engine);
+		}
+
+		public override uint Iteration
+		{
+			get
+			{
+				return base.Iteration;
+			}
+			set
+			{
+				if (!_context.controlIteration)
+				{
+					sequence.Get(value);
+					base.Iteration = sequence.Value;
+				}
+				else
+				{
+					base.Iteration = value;
+				}
+			}
 		}
 
 		protected override void OnDataModelRecorded()
@@ -58,6 +80,9 @@ namespace Peach.Core.MutationStrategies
 			var elements = rng.Shuffle(_iterations.ToArray());
 			_iterations.Clear();
 			_iterations.AddRange(elements);
+
+			if (this.Count > 0)
+				sequence = new SequenceGenerator(this.Count);
 		}
 	}
 }
