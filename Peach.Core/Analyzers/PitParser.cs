@@ -61,6 +61,7 @@ namespace Peach.Core.Analyzers
 
 		Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
+		bool resolveRelations = true;
 
 		/// <summary>
 		/// Contains default attributes for DataElements
@@ -251,6 +252,7 @@ namespace Peach.Core.Analyzers
 						}
 
 						var newParser = new PitParser();
+						newParser.resolveRelations = false;
 						Dom.Dom newDom = newParser.asParser(args, fileName);
 						newDom.name = ns;
 						dom.ns[ns] = newDom;
@@ -329,8 +331,8 @@ namespace Peach.Core.Analyzers
 			}
 
 			// Pass 3.5 - Resolve all relations
-
-			finalUpdateRelations(dom.dataModels.Values);
+			if (resolveRelations)
+				finalUpdateRelations(dom.dataModels.Values);
 
 			// Pass 4 - Handle Data
 

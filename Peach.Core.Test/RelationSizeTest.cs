@@ -480,6 +480,47 @@ namespace Peach.Core.Test
 			Assert.AreEqual(0xbe, buf[2]);
 			Assert.AreEqual(0xef, buf[3]);
 		}
+
+		[Test]
+		public void IncludeRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Value'/>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
+
+			Assert.AreEqual(expected, final);
+		}
 	}
 }
 
