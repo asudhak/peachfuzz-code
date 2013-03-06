@@ -34,7 +34,7 @@ def install_extras(self):
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
 
-@feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin')
+@feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
 	# prevent warnings about features with unbound methods
 	pass
