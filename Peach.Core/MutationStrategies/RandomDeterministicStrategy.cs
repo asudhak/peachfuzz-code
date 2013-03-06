@@ -39,6 +39,7 @@ namespace Peach.Core.MutationStrategies
 	[Serializable]
 	public class RandomDeterministicStrategy : Sequential
 	{
+		uint _mapping = 0;
 		SequenceGenerator sequence = null;
 
 		public RandomDeterministicStrategy(Dictionary<string, Variant> args)
@@ -55,19 +56,16 @@ namespace Peach.Core.MutationStrategies
 		{
 			get
 			{
-				return base.Iteration;
+				return _mapping;
 			}
 			set
 			{
+				_mapping = value;
+
 				if (!_context.controlIteration)
-				{
-					sequence.Get(value);
-					base.Iteration = sequence.Value;
-				}
+					base.Iteration = sequence.Get(value);
 				else
-				{
 					base.Iteration = value;
-				}
 			}
 		}
 
