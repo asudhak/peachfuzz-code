@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 bld(
-	features = 'cxx cxxprogram debug',
-	use = 'winsock',
+	features = 'cxx cxxprogram debug network',
 	source = 'CrashableServer.cpp',
 	target='CrashableServer',
 )

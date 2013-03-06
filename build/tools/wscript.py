@@ -117,7 +117,10 @@ def configure(ctx):
 					base_env.append_value('variants', variant)
 
 				if Logs.verbose == 0:
-					Logs.pprint('GREEN', 'Available')
+					missing = cfg_env['missing_features'] or ''
+					if missing:
+						missing = ' - Missing Features: %s' % ','.join(missing)
+					Logs.pprint('GREEN', 'Available%s' % missing)
 
 			except Exception, e:
 				if Logs.verbose == 0:

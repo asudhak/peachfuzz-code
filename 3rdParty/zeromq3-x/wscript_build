@@ -60,14 +60,14 @@ def getcfg(arg):
 
 bld(
 	name     = 'zmq_cfg',
-	features = 'emit cxx',
+	features = 'emit cxx network',
 	source   = getcfg('cfg'),
 	target   = 'platform.hpp',
 )
 
 bld(
 	name              = 'zmq_ver',
-	features          = 'subst win',
+	features          = 'subst win network',
 	source            = 'src/version.rc.in',
 	target            = 'src/version.rc',
 	ZMQ_VERSION_MAJOR = zmq_version[0],
@@ -76,7 +76,7 @@ bld(
 )
 
 zmq = bld(
-	features = 'cxx cxxshlib vnum',
+	features = 'cxx cxxshlib vnum network',
 	target   = 'zmq',
 	name     = 'zmq',
 #	vnum     = '.'.join(zmq_version),

@@ -98,6 +98,7 @@ def prepare(conf):
 		'emit',
 		'vnum',
 		'subst',
+		'network',
 	])
 
 def configure(conf):
