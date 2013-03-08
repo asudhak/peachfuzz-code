@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using NLog;
 using Mono.Unix;
 using Mono.Unix.Native;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -104,6 +105,7 @@ namespace Peach.Core.Publishers
 		const int AF_PACKET  = 17;
 		const int SOCK_RAW   = 3;
 		const int SIOCGIFMTU = 0x8921;
+		const int SIOSGIFMTU = 0x8922;
 
 		[StructLayout(LayoutKind.Sequential)]
 		struct sockaddr_ll
@@ -156,12 +158,12 @@ namespace Peach.Core.Publishers
 		private const uint EthernetHeaderSize = 14;
 
 		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header
-		private const uint MaxMtu = 70000;
+		private const uint MaxMtu = 65535 * 2;
 
 		private UnixStream _socket = null;
 		private MemoryStream _recvBuffer = null;
-		private MemoryStream _sendBuffer = null;
-		private int _mtu = 0;
+		private int _bufferSize = 0;
+		private uint _mtu = 0;
 
 		public RawEtherPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -172,6 +174,16 @@ namespace Peach.Core.Publishers
 		{
 			System.Diagnostics.Debug.Assert(_socket == null);
 
+			_socket = OpenSocket(null);
+
+			System.Diagnostics.Debug.Assert(_socket != null);
+			System.Diagnostics.Debug.Assert(_bufferSize > 0);
+
+			Logger.Debug("Opened interface \"{0}\" with MTU {1}.", Interface, _bufferSize);
+		}
+
+		private UnixStream OpenSocket(uint? mtu)
+		{
 			sockaddr_ll sa = new sockaddr_ll();
 			sa.sll_family = AF_PACKET;
 			sa.sll_protocol = (ushort)IPAddress.HostToNetworkOrder((short)Protocol);
@@ -191,15 +203,31 @@ namespace Peach.Core.Publishers
 				UnixMarshal.ThrowExceptionForLastErrorIf(ret);
 
 				ifreq ifr = new ifreq(Interface);
+
+				if (mtu != null)
+				{
+					ifr.ifru_mtu = mtu.Value;
+					ret = ioctl(fd, SIOSGIFMTU, ref ifr);
+					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
+				}
+
 				ret = ioctl(fd, SIOCGIFMTU, ref ifr);
 				UnixMarshal.ThrowExceptionForLastErrorIf(ret);
 
-				if (ifr.ifru_mtu > (MaxMtu - EthernetHeaderSize))
-					_mtu = (int)MaxMtu;
-				else
-					_mtu = (int)(ifr.ifru_mtu + EthernetHeaderSize);
+				if (mtu != null && ifr.ifru_mtu != mtu.Value)
+					throw new PeachException("MTU change did not take effect.");
 
-				_socket = new UnixStream(fd);
+				_mtu = ifr.ifru_mtu;
+
+				if (ifr.ifru_mtu > (MaxMtu - EthernetHeaderSize))
+					_bufferSize = (int)MaxMtu;
+				else
+					_bufferSize = (int)(ifr.ifru_mtu + EthernetHeaderSize);
+
+				var stream = new UnixStream(fd);
+				fd = -1;
+
+				return stream;
 			}
 			catch (InvalidOperationException ex)
 			{
@@ -214,20 +242,9 @@ namespace Peach.Core.Publishers
 			}
 			finally
 			{
-				if (_socket == null && fd != -1)
+				if (fd != -1)
 					Syscall.close(fd);
 			}
-
-			System.Diagnostics.Debug.Assert(_socket != null);
-			System.Diagnostics.Debug.Assert(_mtu > 0);
-
-			if (_recvBuffer == null || _recvBuffer.Capacity < _mtu)
-				_recvBuffer = new MemoryStream(_mtu);
-
-			if (_sendBuffer == null || _sendBuffer.Capacity < _mtu)
-				_sendBuffer = new MemoryStream(_mtu);
-
-			Logger.Debug("Opened interface \"{0}\" with MTU {1}.", Interface, _mtu);
 		}
 
 		protected override void OnClose()
@@ -240,7 +257,9 @@ namespace Peach.Core.Publishers
 		protected override void OnInput()
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
-			System.Diagnostics.Debug.Assert(_recvBuffer != null);
+
+			if (_recvBuffer == null || _recvBuffer.Capacity < _bufferSize)
+				_recvBuffer = new MemoryStream(_bufferSize);
 
 			_recvBuffer.Seek(0, SeekOrigin.Begin);
 			_recvBuffer.SetLength(_recvBuffer.Capacity);
@@ -379,6 +398,44 @@ namespace Peach.Core.Publishers
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			return _recvBuffer.Read(buffer, offset, count);
+		}
+
+		protected override Variant OnGetProperty(string property)
+		{
+			if (property == "MTU")
+			{
+				if (_socket != null)
+				{
+					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
+					return new Variant(_mtu);
+				}
+
+				using (var sock = OpenSocket(null))
+				{
+					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
+					return new Variant(_mtu);
+				}
+			}
+
+			return null;
+		}
+
+		protected override void OnSetProperty(string property, Variant value)
+		{
+			if (property == "MTU")
+			{
+				System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
+				var bs = (BitStream)value;
+				bs.SeekBits(0, SeekOrigin.Begin);
+				int len = (int)Math.Min(bs.LengthBits, 32);
+				ulong bits = bs.ReadBits(len);
+				uint mtu = LittleBitWriter.GetUInt32(bits, len);
+
+				using (var sock = OpenSocket(mtu))
+				{
+					Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+				}
+			}
 		}
 
 		#endregion
