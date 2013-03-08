@@ -102,6 +102,7 @@ def configure(conf):
 		'emit',
 		'vnum',
 		'subst',
+		'network',
 	])
 
 	env.append_value('CSFLAGS', [

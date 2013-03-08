@@ -68,14 +68,7 @@ namespace Peach.Core.Mutators
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
-            else if (obj is Flag)
-            {
-                signed = false;
-                size = ((Flag)obj).size;
-                minValue = 0;
-                maxValue = UInt32.MaxValue;
-            }
-            else if (obj is Number)
+            else if (obj is Number || obj is Flag)
             {
                 size = (int)((Number)obj).lengthAsBits;
                 signed = ((Number)obj).Signed;

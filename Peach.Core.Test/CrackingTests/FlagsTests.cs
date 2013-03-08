@@ -109,6 +109,41 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackFlagsSecond()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Number size=""8""/>
+		<Flags size=""8"" endian=""big"">
+			<Flag position=""0"" size=""4""/>
+			<Flag position=""4"" size=""4""/>
+		</Flags>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x00, 0xff });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var flags = dom.dataModels[0][1] as Flags;
+			Assert.AreEqual(2, flags.Count);
+			var flag1 = flags[0] as Flag;
+			Assert.AreEqual(0xf, (int)flag1.DefaultValue);
+			var flag2 = flags[1] as Flag;
+			Assert.AreEqual(0xf, (int)flag2.DefaultValue);
+		}
+
+		[Test]
 		public void OutputFlag()
 		{
 			string xml = @"

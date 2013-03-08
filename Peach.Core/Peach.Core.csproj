@@ -507,6 +507,7 @@
     <Compile Include="IWeighted.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
+    <Compile Include="LSFR.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicStrategy.cs" />
     <Compile Include="MutationStrategies\RandomStrategy.cs" />
     <Compile Include="MutationStrategies\Sequential.cs" />

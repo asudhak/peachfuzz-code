@@ -37,8 +37,16 @@ namespace Peach.Core.Publishers
 		{
 			lock (_clientLock)
 			{
-				System.Diagnostics.Debug.Assert(_client != null);
-				ClientBeginRead(_recvBuf, 0, _recvBuf.Length, OnReadComplete, _client);
+				try
+				{
+					System.Diagnostics.Debug.Assert(_client != null);
+					ClientBeginRead(_recvBuf, 0, _recvBuf.Length, OnReadComplete, _client);
+				}
+				catch (Exception ex)
+				{
+					Logger.Debug("Unable to start reading data from {0}.  {1}", _clientName, ex.Message);
+					CloseClient();
+				}
 			}
 		}
 
@@ -79,7 +87,7 @@ namespace Peach.Core.Publishers
 				}
 				catch (Exception ex)
 				{
-					Logger.Debug("Unable to read data from {0}.  {1}", _clientName, ex.Message);
+					Logger.Debug("Unable to complete reading data from {0}.  {1}", _clientName, ex.Message);
 					CloseClient();
 				}
 			}
@@ -122,6 +130,11 @@ namespace Peach.Core.Publishers
 		protected virtual int ClientEndRead(IAsyncResult asyncResult)
 		{
 			return _client.EndRead(asyncResult);
+		}
+
+		protected virtual void ClientWrite(byte[] buffer, int offset, int count)
+		{
+			_client.Write(buffer, offset, count);
 		}
 
 		protected virtual void ClientShutdown()
@@ -210,7 +223,7 @@ namespace Peach.Core.Publishers
 			{
 				try
 				{
-					_client.Write(buffer, offset, count);
+					ClientWrite(buffer, offset, count);
 				}
 				catch (Exception ex)
 				{

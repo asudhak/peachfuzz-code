@@ -522,6 +522,7 @@
     <Compile Include="Transformers\Type\StringToFloatTests.cs" />
     <Compile Include="Transformers\Type\StringToIntTests.cs" />
     <Compile Include="UtilitiesTests.cs" />
+    <Compile Include="VariantTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Condition="'$(Configuration)' == 'Debug - Windows'" Include="..\Peach.Core.OS.Windows\Peach.Core.OS.Windows.csproj">

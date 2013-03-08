@@ -24,14 +24,15 @@ def prepare(conf):
 	env = conf.env
 	j = os.path.join
 
-	env['MSVC_VERSIONS'] = ['msvc 10.0']
-	env['MSVC_TARGETS']  = [ env.SUBARCH ]
+	env['MSVC_VERSIONS'] = ['msvc 10.0', 'msvc 11.0']
+	env['MSVC_TARGETS']  = 'x64' in env.SUBARCH and [ 'x64', 'x86_amd64' ] or [ 'x86' ]
 
 	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
 	pin = j(pin_root, 'pin-2.12-54730-msvc10-windows')
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
+			'MSVC'      : [ '10.0' ], 
 			'INCLUDES'  : [
 				j(pin, 'source', 'include'),
 				j(pin, 'source', 'include', 'gen'),
@@ -44,7 +45,7 @@ def prepare(conf):
 				j(pin, 'ia32', 'lib-ext'),
 				j(pin, 'extras', 'xed2-ia32', 'lib'),
 			],
-			'STLIB'       : [ 'pin', 'ntdll-32', 'pinvm', 'libxed' ],
+			'STLIB'     : [ 'pin', 'ntdll-32', 'pinvm', 'libxed' ],
 			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', '_SECURE_SCL=0', 'TARGET_WINDOWS', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
 			'CFLAGS'    : [ '/MT' ],
 			'CXXFLAGS'  : [ '/MT' ],
@@ -52,11 +53,16 @@ def prepare(conf):
 		},
 		'com' : {
 			'HEADERS' : [ 'atlbase.h' ],
-		}
+		},
+		'network' : {
+			'HEADERS' : [ 'winsock2.h' ],
+			'STLIB'   : [ 'ws2_32' ],
+		},
 	}
 
 	env['EXTERNALS_x64'] = {
 		'pin' : {
+			'MSVC'      : [ '10.0' ], 
 			'INCLUDES'  : [
 				j(pin, 'source', 'include'),
 				j(pin, 'source', 'include', 'gen'),
@@ -69,7 +75,7 @@ def prepare(conf):
 				j(pin, 'intel64', 'lib-ext'),
 				j(pin, 'extras', 'xed2-intel64', 'lib'),
 			],
-			'STLIB'       : [ 'pin', 'ntdll-64', 'pinvm', 'libxed' ],
+			'STLIB'     : [ 'pin', 'ntdll-64', 'pinvm', 'libxed' ],
 			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', '_SECURE_SCL=0', 'TARGET_WINDOWS', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
 			'CFLAGS'    : [ '/MT' ],
 			'CXXFLAGS'  : [ '/MT' ],
@@ -77,7 +83,11 @@ def prepare(conf):
 		},
 		'com' : {
 			'HEADERS' : [ 'atlbase.h' ],
-		}
+		},
+		'network' : {
+			'HEADERS' : [ 'winsock2.h' ],
+			'STLIB'   : [ 'ws2_32' ],
+		},
 	}
 
 	env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
@@ -85,7 +95,7 @@ def prepare(conf):
 	# This is lame, the resgen that vcvars for x64 finds is the .net framework 3.5 version.
 	# The .net 4 version is in the x86 search path.
 	if env.SUBARCH == 'x64':
-		env['RESGEN'] = 'c:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v7.0A\\bin\\NETFX 4.0 Tools\\resgen.exe'
+		env['RESGEN'] = getattr(conf.all_envs.get('win_x86'), 'RESGEN', None)
 
 	windir = os.getenv('WINDIR')
 	env['MCS_x86'] = os.path.join(windir, 'Microsoft.NET', 'Framework', 'v4.0.30319', 'csc.exe')
@@ -93,7 +103,7 @@ def prepare(conf):
 	env['MCS'] = env['MCS_%s' % env.SUBARCH]
 
 def configure(conf):
-	conf.ensure_version('CXX', '16.00.40219.01')
+	conf.ensure_version('CXX', ['16.00.40219.01', '17.00.50727.1'])
 	conf.ensure_version('MCS', '4.0.30319.1')
 
 	env = conf.env
@@ -188,8 +198,6 @@ def configure(conf):
 	])
 
 	env['VARIANTS'] = [ 'debug', 'release' ]
-	
-	env['STLIB_winsock'] = ['ws2_32'];
 
 def debug(env):
 	env.CSDEBUG = 'full'

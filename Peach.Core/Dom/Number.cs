@@ -89,31 +89,6 @@ namespace Peach.Core.Dom
 			DefaultValue = new Variant(0);
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
-		{
-			Number element = this;
-
-			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
-				throw new CrackingFailure("Failed cracking Number '" + element.fullName + "'.", element, data);
-
-			Variant defaultValue = new Variant(FromBitstream(data));
-
-			logger.Debug("Number's value is: {0}", defaultValue);
-
-			if (element.isToken)
-			{
-				if (defaultValue != element.DefaultValue)
-				{
-					logger.Debug("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.");
-					throw new CrackingFailure("Number marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-				}
-			}
-
-			element.DefaultValue = defaultValue;
-		}
-
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
 			if (node.Name != "Number")
@@ -131,7 +106,7 @@ namespace Peach.Core.Dom
 				int size = node.getAttrInt("size");
 
 				if (size < 1 || size > 64)
-					throw new PeachException(string.Format("Error, unsupported size '{0}' for Number element '{1}'.", size, num.name));
+					throw new PeachException(string.Format("Error, unsupported size '{0}' for {1}.", size, num.debugName));
 
 				num.lengthType = LengthType.Bits;
 				num.length = size;
@@ -158,7 +133,7 @@ namespace Peach.Core.Dom
 						break;
 					default:
 						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", strEndian, num.name));
+							string.Format("Error, unsupported value '{0}' for 'endian' attribute on {1}.", strEndian, num.debugName));
 				}
 			}
 
@@ -188,7 +163,7 @@ namespace Peach.Core.Dom
 			set
 			{
 				if (value <= 0 || value > 64)
-					throw new ArgumentOutOfRangeException("Error, value must be greater than 0 and less than 65.");
+					throw new ArgumentOutOfRangeException("value", value, "Value must be greater than 0 and less than 65.");
 
 				base.length = value;
 
@@ -228,6 +203,8 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		#region Sanitize
+
 		private dynamic SanitizeString(string str)
 		{
 			string conv = str;
@@ -252,25 +229,25 @@ namespace Peach.Core.Dom
 					return value;
 			}
 
-			throw new PeachException(string.Format("Error,  {0} value \"{1}\" could not be converted to a {2}-bit {3} number.", name, str, lengthAsBits, Signed ? "signed" : "unsigned"));
+			throw new PeachException(string.Format("Error, {0} value '{1}' could not be converted to a {2}-bit {3} number.", debugName, str, lengthAsBits, Signed ? "signed" : "unsigned"));
 		}
 
 		private dynamic SanitizeStream(BitStream bs)
 		{
 			if (bs.LengthBytes != ((lengthAsBits + 7) / 8))
-				throw new PeachException(string.Format("Error,  {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", name, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8));
+				throw new PeachException(string.Format("Error, {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", debugName, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8));
 
 			if (bs.LengthBits > lengthAsBits)
 			{
 				ulong extra = bs.ReadBits((int)(bs.LengthBits - lengthAsBits));
 				if (extra != 0)
-					throw new PeachException(string.Format("Error,  {0} value has an invalid bytes for a {1}-bit {2} number.", name, lengthAsBits, Signed ? "signed" : "unsigned"));
+					throw new PeachException(string.Format("Error, {0} value has an invalid bytes for a {1}-bit {2} number.", debugName, lengthAsBits, Signed ? "signed" : "unsigned"));
 			}
 
 			return FromBitstream(bs);
 		}
 
-		protected dynamic FromBitstream(BitStream bs)
+		private dynamic FromBitstream(BitStream bs)
 		{
 			ulong bits = bs.ReadBits((int)lengthAsBits);
 
@@ -315,15 +292,17 @@ namespace Peach.Core.Dom
 			}
 
 			if (value < 0 && (long)value < MinValue)
-				throw new PeachException(string.Format("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+				throw new PeachException(string.Format("Error, {0} value '{1}' is less than the minimum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
 			if (value > 0 && (ulong)value > MaxValue)
-				throw new PeachException(string.Format("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+				throw new PeachException(string.Format("Error, {0} value '{1}' is greater than the maximum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
 
 			if (Signed)
 				return new Variant((long)value);
 			else
 				return new Variant((ulong)value);
 		}
+
+		#endregion
 
 		public bool Signed
 		{
@@ -369,14 +348,14 @@ namespace Peach.Core.Dom
 
 			if (value > 0 && (ulong)value > MaxValue)
 			{
-				string msg = string.Format("Error,  {0} value \"{1}\" is greater than the maximum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
+				string msg = string.Format("Error, {0} value '{1}' is greater than the maximum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned");
 				var inner = new OverflowException(msg);
 				throw new SoftException(inner);
 			}
 
 			if (value < 0 && (long)value < MinValue)
 			{
-				string msg = string.Format("Error,  {0} value \"{1}\" is less than the minimum {2}-bit {3} number.", name, value, lengthAsBits, Signed ? "signed" : "unsigned");
+				string msg = string.Format("Error, {0} value '{1}' is less than the minimum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned");
 				var inner = new OverflowException(msg);
 				throw new SoftException(inner);
 			}
@@ -390,13 +369,6 @@ namespace Peach.Core.Dom
 			bs.WriteBits(bits, (int)lengthAsBits);
 			return bs;
 		}
-	}
-
-	public enum ByteOrder
-	{
-		little,
-		big,
-		network
 	}
 }
 

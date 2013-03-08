@@ -34,7 +34,7 @@ def install_extras(self):
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
 
-@feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin')
+@feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
 	# prevent warnings about features with unbound methods
 	pass
@@ -122,6 +122,7 @@ def clone_env(self, variant):
 
 @conf
 def ensure_version(self, tool, ver_exp):
+	ver_exp = Utils.to_list(ver_exp)
 	env = self.env
 	environ = dict(self.environ)
 	environ.update(PATH = ';'.join(env['PATH']))
@@ -135,7 +136,10 @@ def ensure_version(self, tool, ver_exp):
 	if not m:
 		raise Errors.WafError("Could not verify version of %s" % (exe))
 	ver = m.group(1)
-	if not ver.startswith(ver_exp):
+	found = False
+	for v in ver_exp:
+		found = ver.startswith(v) or found
+	if not found:
 		raise Errors.WafError("Requires %s %s but found version %s" % (exe, ver_exp, ver))
 
 @feature('emit')

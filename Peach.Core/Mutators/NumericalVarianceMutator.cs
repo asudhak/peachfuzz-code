@@ -173,7 +173,7 @@ namespace Peach.Core.Mutators
                     return true;
 
             if (obj is Flag && obj.isMutable)
-                if (((Flag)obj).size > 8)
+                if (((Flag)obj).lengthAsBits > 8)
                     return true;
 
             return false;

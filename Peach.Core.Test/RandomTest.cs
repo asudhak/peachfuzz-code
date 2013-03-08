@@ -191,5 +191,69 @@ namespace Peach.Core.Test
 				Assert.AreNotEqual(0, val);
 			}
 		}
+
+		void RunLSFR(int degree)
+		{
+			SortedSet<uint> results = new SortedSet<uint>();
+
+			long end = ((long)1 << degree) - 1;
+			var g = new LSFR(degree, 1);
+
+			for (long i = 0; i < end; ++i)
+			{
+				uint val = g.Next();
+				bool added = results.Add(val);
+				if (!added)
+					Assert.Fail("'{0}' already added. Iteration: {1}, Degree: {2}", val, i, degree);
+			}
+		}
+
+		[Test]
+		public void TestLSFR()
+		{
+			for (int i = 2; i <= 20; ++i)
+				RunLSFR(i);
+		}
+
+		public void DoTestSequence(uint max)
+		{
+			List<uint> vals = new List<uint>();
+			Dictionary<uint, object> pass1 = new Dictionary<uint, object>();
+			Dictionary<uint, object> pass2 = new Dictionary<uint, object>();
+
+			SequenceGenerator g = new SequenceGenerator(max);
+			for (uint i = 1; i <= max; ++i)
+			{
+				uint val = g.Get(i);
+				vals.Add(val);
+				if (pass1.ContainsKey(val))
+					Assert.Fail("Duplicate on iteration {0} of max {1}".Fmt(i, max));
+				pass1.Add(val, null);
+			}
+
+			for (uint i = 1; i <= max; ++i)
+			{
+				uint val = g.Get(vals[(int)(i-1)]);
+				if (pass2.ContainsKey(val))
+					Assert.Fail("Duplicate on jumping iteration {0} ({1}) of max {2}".Fmt(i, vals[(int)(i-1)], max));
+				pass2.Add(val, null);
+			}
+
+			Assert.AreEqual(pass1.Count, pass2.Count);
+		}
+
+		[Test]
+		public void TestSequence()
+		{
+			for (uint i = 1; i < 1000; ++i)
+				DoTestSequence(i);
+		}
+
+		[Test]
+		public void TestRandomSequence()
+		{
+			uint max = (uint)new Random((uint)Environment.TickCount).Next(1000, 10000);
+			DoTestSequence(max);
+		}
 	}
 }
