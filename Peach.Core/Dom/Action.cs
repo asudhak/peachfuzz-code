@@ -380,6 +380,8 @@ namespace Peach.Core.Dom
 			if (when != null)
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["context"] = context;
+				state["Context"] = context;
 				state["action"] = this;
 				state["Action"] = this;
 				state["state"] = this.parent;
