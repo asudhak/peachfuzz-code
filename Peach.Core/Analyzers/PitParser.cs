@@ -878,7 +878,7 @@ namespace Peach.Core.Analyzers
 				// notation.
 				if (element.isReference)
 				{
-					if (childName.IndexOf(".") > -1)
+					if (childName != null && childName.IndexOf(".") > -1)
 					{
 						DataElement parent = element.find(childName);
 						if (parent == null)

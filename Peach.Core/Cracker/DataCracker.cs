@@ -813,6 +813,18 @@ namespace Peach.Core.Cracker
 				return null;
 			}
 
+			if (elem is Dom.Array)
+			{
+				logger.Debug("getSize: <----- Array Not Last Unsized: ???");
+				return null;
+			}
+
+			if (elem is Dom.Choice)
+			{
+				logger.Debug("getSize: <----- Choice Not Last Unsized: ???");
+				return null;
+			}
+			
 			// 3rd priority, token scan
 			foreach (var token in tokens)
 			{
