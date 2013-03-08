@@ -70,9 +70,9 @@ namespace Peach.Core.Dom
 			long startPosition = data.TellBits();
 
 			// Handle children, iterate over a copy since cracking can modify the list
-			var children = _childrenList.ToArray();
-			foreach (DataElement child in children)
+			for (int i = 0; i < this.Count; )
 			{
+				var child = this[i];
 				context.CrackData(child, sizedData);
 
 				// If we are unsized, cracking a child can cause our size
@@ -87,6 +87,10 @@ namespace Peach.Core.Dom
 						sizedData = ReadSizedData(data, size, read);
 					}
 				}
+
+				int idx = IndexOf(child);
+				if (idx != -1)
+					i = idx + 1;
 			}
 		}
 

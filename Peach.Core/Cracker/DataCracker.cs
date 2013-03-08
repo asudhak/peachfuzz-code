@@ -98,7 +98,7 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// Elements that have analyzers attached.  We run them all post-crack.
 		/// </summary>
-		List<DataElement> _elementsWithAnalyzer = new List<DataElement>();
+		List<DataElement> _elementsWithAnalyzer;
 
 		#endregion
 
@@ -152,6 +152,8 @@ namespace Peach.Core.Cracker
 
 				if (_dataStack.Count == 1)
 					handleRoot(element, data);
+				else if (element.placement != null)
+					handlePlacelemt(element, data);
 				else
 					handleNode(element, data);
 			}
@@ -221,12 +223,10 @@ namespace Peach.Core.Cracker
 		{
 			_sizedElements = new OrderedDictionary<DataElement, Position>();
 			_sizeRelations = new List<SizeRelation>();
+			_elementsWithAnalyzer = new List<DataElement>();
 
 			// Crack the model
 			handleNode(element, data);
-
-			// Handle any Placement's
-			handlePlacement(element, data);
 
 			// Handle any analyzers
 			foreach (DataElement elem in _elementsWithAnalyzer)
@@ -282,74 +282,71 @@ namespace Peach.Core.Cracker
 			}
 		}
 
-		void handlePlacement(DataElement model, BitStream data)
+		void handlePlacelemt(DataElement element, BitStream data)
 		{
-			List<DataElement> elementsWithPlacement = new List<DataElement>();
-			foreach (DataElement element in model.EnumerateAllElements())
+			var fixups = new List<Tuple<Fixup, string>>();
+			DataElementContainer oldParent = element.parent;
+
+			// Ensure relations are resolved
+			foreach (Relation relation in element.relations)
 			{
-				if (element.placement != null)
-					elementsWithPlacement.Add(element);
+				if (relation.Of != element && relation.From != element)
+					throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.", element, data);
 			}
 
-			foreach (DataElement element in elementsWithPlacement)
+			// Locate relevant fixups
+			DataElementContainer root = element.getRoot() as DataElementContainer;
+			foreach (DataElement child in root.EnumerateAllElements())
 			{
-				var fixups = new List<Tuple<Fixup, string>>();
-				DataElementContainer oldParent = element.parent;
+				if (child.fixup == null)
+					continue;
 
-				// Ensure relations are resolved
-				foreach (Relation relation in element.relations)
+				foreach (var item in child.fixup.references)
 				{
-					if (relation.Of != element && relation.From != element)
-						throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.", element, data);
-				}
-
-				// Locate relevant fixups
-				foreach (DataElement child in model.EnumerateAllElements())
-				{
-					if (child.fixup == null)
+					if (item.Item2 != element.name)
 						continue;
 
-					foreach (var item in child.fixup.references)
-					{
-						if (item.Item2 != element.name)
-							continue;
+					var refElem = child.find(item.Item2);
+					if (refElem == null)
+						throw new CrackingFailure("Error, unable to resolve Fixup reference to match current element.", element, data);
 
-						var refElem = child.find(item.Item2);
-						if (refElem == null)
-							throw new CrackingFailure("Error, unable to resolve Fixup reference to match current element.", element, data);
-
-						if (refElem == element)
-							fixups.Add(new Tuple<Fixup, string>(child.fixup, item.Item1));
-					}
+					if (refElem == element)
+						fixups.Add(new Tuple<Fixup, string>(child.fixup, item.Item1));
 				}
-
-				DataElement newElem = null;
-
-				if (element.placement.after != null)
-				{
-					var after = element.find(element.placement.after);
-					if (after == null)
-						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.fullName +
-							"' with 'after' == '" + element.placement.after + "'.", element, data);
-					newElem = element.MoveAfter(after);
-				}
-				else if (element.placement.before != null)
-				{
-					DataElement before = element.find(element.placement.before);
-					if (before == null)
-						throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.fullName +
-							"' with 'after' == '" + element.placement.after + "'.", element, data);
-					newElem = element.MoveBefore(before);
-				}
-
-				// Update fixups
-				foreach (var fixup in fixups)
-				{
-					fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
-				}
-
-				OnPlacementEvent(element, newElem, oldParent);
 			}
+
+			string debugName = element.debugName;
+			DataElement newElem = null;
+
+			if (element.placement.after != null)
+			{
+				var after = element.find(element.placement.after);
+				if (after == null)
+					throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.fullName +
+						"' with 'after' == '" + element.placement.after + "'.", element, data);
+				newElem = element.MoveAfter(after);
+			}
+			else if (element.placement.before != null)
+			{
+				DataElement before = element.find(element.placement.before);
+				if (before == null)
+					throw new CrackingFailure("Error, unable to resolve Placement on element '" + element.fullName +
+						"' with 'after' == '" + element.placement.after + "'.", element, data);
+				newElem = element.MoveBefore(before);
+			}
+
+			// Update fixups
+			foreach (var fixup in fixups)
+			{
+				fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
+			}
+
+			// Clear placement now that it has occured
+			newElem.placement = null;
+
+			logger.Debug("handlePlacement: {0} -> {1}", debugName, newElem.fullName);
+
+			OnPlacementEvent(element, newElem, oldParent);
 		}
 
 		#endregion

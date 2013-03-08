@@ -95,7 +95,6 @@ namespace PeachValidator
 					DataCracker cracker = new DataCracker();
 					cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
 					cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
-					cracker.PlacementEvent += new PlacementEventHandler(cracker_PlacementEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
 				catch (CrackingFailure ex)
@@ -126,19 +125,6 @@ namespace PeachValidator
 			{
 				Cursor.Current = cursor;
 			}
-		}
-
-		void cracker_PlacementEvent(DataElement oldElement, DataElement newElement, DataElementContainer oldParent)
-		{
-			var currentModel = crackMap[oldElement];
-			var oldParentNode = crackMap[oldParent];
-			var newParentNode = crackMap[newElement.parent];
-				
-			oldParentNode.Children.Remove(currentModel);
-
-			currentModel = new CrackNode(currentModel.Model, newElement, currentModel.Position, currentModel.Length);
-			newParentNode.Children.Add(currentModel);
-			currentModel.Parent = newParentNode;
 		}
 
 		void cracker_ExitHandleNodeEvent(DataElement element, long position)

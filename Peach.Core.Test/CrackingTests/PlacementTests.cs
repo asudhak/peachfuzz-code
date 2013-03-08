@@ -77,11 +77,12 @@ namespace Peach.Core.Test.CrackingTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Block name=\"Block1\">" +
+				"		<Block name=\"Block\">" +
 				"			<Blob name=\"Data\">" +
 				"				<Placement before=\"Block1\"/>" +
 				"			</Blob>" +
 				"		</Block>" +
+				"		<Block name=\"Block1\"/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -96,8 +97,8 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Data", dom.dataModels[0][0].name);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Data", dom.dataModels[0][1].name);
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
 		}
 
 		[Test]
@@ -259,9 +260,9 @@ namespace Peach.Core.Test.CrackingTests
 				"			<String name=\"TheString\" length=\"2\">" +
 				"				<Relation type=\"size\" of=\"Data\"/>" +
 				"			</String>" +
-				"			<Blob name=\"Data\">" +
+				"			<String name=\"Data\">" +
 				"				<Placement before=\"Placement\"/>" +
-				"			</Blob>" +
+				"			</String>" +
 				"		</Block>" +
 				"		<Block name=\"Block1\">" +
 				"			<Number name=\"TheCRC\" size=\"32\">" +
@@ -272,9 +273,9 @@ namespace Peach.Core.Test.CrackingTests
 				"			<String name=\"TheString\" length=\"2\">" +
 				"				<Relation type=\"size\" of=\"Data\"/>" +
 				"			</String>" +
-				"			<Blob name=\"Data\">" +
+				"			<String name=\"Data\">" +
 				"				<Placement before=\"Placement\"/>" +
-				"			</Blob>" +
+				"			</String>" +
 				"		</Block>" +
 				"		<Block name=\"Placement\"/>" +
 				"	</DataModel>" +
@@ -285,7 +286,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			BitStream data = new BitStream();
 
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("000011Hello World000011hELLO wORLD"));
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("000011000011Hello WorldhELLO wORLD"));
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
@@ -328,6 +329,150 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("TheDataModel.Data_0", fixup1_first.Item2);
 		}
 
+		[Test]
+		public void ArrayAfterPlacement()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='NumPackets' size='8' >
+			<Relation type='count' of='Packets'/>
+		</Number>
+		<Block name='Wrapper'>
+			<Block name='Packets' maxOccurs='1024'>
+				<Number name='PacketLength' size='8'>
+					<Relation type='size' of='Packet'/>
+				</Number>
+				<String name='Packet'>
+					<Placement after='Wrapper'/>
+				</String>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// When using placement with after, the order gets reversed.  This is because
+			// each placement puts the element directly after the target.
+			var expected = Encoding.ASCII.GetBytes("\x02\x05\x07!fuzzerpeach");
+			BitStream data = new BitStream();
+			data.WriteBytes(expected);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			var final = dom.dataModels[0].Value.Value;
+			Assert.AreEqual(expected, final);
+
+			Assert.AreEqual(4, dom.dataModels[0].Count);
+			Assert.AreEqual("!fuzzer", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("peach", (string)dom.dataModels[0][3].DefaultValue);
+		}
+
+		[Test]
+		public void ArrayBeforePlacement()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='NumPackets' size='8' >
+			<Relation type='count' of='Packets'/>
+		</Number>
+		<Block name='Packets' maxOccurs='1024'>
+			<Number name='PacketLength' size='8'>
+				<Relation type='size' of='Packet'/>
+			</Number>
+			<String name='Packet'>
+				<Placement before='Marker'/>
+			</String>
+		</Block>
+		<Block name='Marker'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// When using placement with before, the order is maintained.  This is because
+			// each placement puts the element directly before the target.
+			var expected = Encoding.ASCII.GetBytes("\x02\x05\x07peach!fuzzer");
+			BitStream data = new BitStream();
+			data.WriteBytes(expected);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			var final = dom.dataModels[0].Value.Value;
+			Assert.AreEqual(expected, final);
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+			Assert.AreEqual("peach", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("!fuzzer", (string)dom.dataModels[0][3].DefaultValue);
+		}
+
+		[Test]
+		public void SizedArrayPlacement()
+		{
+			string xml = @"
+<Peach>
+	<Defaults>
+		<Number endian='big' signed='false'/>
+	</Defaults>
+			
+	<DataModel name='DM'>
+		<Number name='NumEntries' size='16'>
+			<Relation type='count' of='Entries'/>
+		</Number>
+		
+		<Block name='Entries' minOccurs='1'>
+			<Number name='Offset' size='16'>
+				<Relation type='offset' of='Data'/>
+			</Number>
+			<Number name='Size' size='16'>
+				<Relation type='size' of='Data'/>
+			</Number>
+			<String name='Data'>
+				<Placement before='Marker'/>
+			</String>
+		</Block>
+
+		<Block name='Marker'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.BigEndian();
+			data.WriteUInt16(2);
+			data.WriteUInt16(14);
+			data.WriteUInt16(5);
+			data.WriteUInt16(27);
+			data.WriteUInt16(7);
+			data.WriteBytes(Encoding.ASCII.GetBytes("junk"));
+			data.WriteBytes(Encoding.ASCII.GetBytes("peach"));
+			data.WriteBytes(Encoding.ASCII.GetBytes("morejunk"));
+			data.WriteBytes(Encoding.ASCII.GetBytes("!fuzzer"));
+			data.WriteBytes(Encoding.ASCII.GetBytes("evenmorejunk"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			var expected = data.Value;
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+			Assert.AreEqual("peach", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("!fuzzer", (string)dom.dataModels[0][3].DefaultValue);
+		}
 	}
 }
 
