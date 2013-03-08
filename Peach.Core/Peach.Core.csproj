@@ -573,6 +573,7 @@
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\RemotePublisher.cs" />
+    <Compile Include="Publishers\SerialPortPublisher.cs" />
     <Compile Include="Publishers\SocketPublisher.cs" />
     <Compile Include="Publishers\StreamPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
