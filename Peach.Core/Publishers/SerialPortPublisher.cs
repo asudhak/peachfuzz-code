@@ -49,8 +49,9 @@ namespace Peach.Core.Publishers
             }
             catch (Exception ex)
             {
-                Logger.Error("Unable to open SerialPort: {0}: .", PortName, ex.Message);
-                throw;
+                string msg = "Unable to open Serial Port {0}. {1}.".Fmt(PortName, ex.Message);
+                Logger.Error(msg);
+                throw new PeachException(msg, ex);
             }
            
             StartClient();
