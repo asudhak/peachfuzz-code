@@ -16,6 +16,7 @@ namespace Peach.Core.Publishers
     [Parameter("DataBits", typeof(int), "Standard length of data bits per byte.")]
     [Parameter("StopBits", typeof(StopBits), "The standard number of stopbits per byte.")]
     [Parameter("Handshake", typeof(Handshake), "The handshaking protocol for serial port transmission of data.", "None")]
+    [Parameter("Timeout", typeof(int), "How many milliseconds to wait for data (default 3000)", "3000")]
     public class SerialPortPublisher : BufferedStreamPublisher
     {
         private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
