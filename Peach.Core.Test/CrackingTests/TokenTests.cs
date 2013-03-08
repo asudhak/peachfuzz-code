@@ -593,6 +593,221 @@ namespace Peach.Core.Test.CrackingTests
 
             Assert.AreEqual("SUCCESS", (string)dom.dataModels[0].find("Data").DefaultValue);
         }
+
+
+
+
+		public Dom.Dom SharedTokensAfterChoiceWithSizedElements(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+			<Blob name='SecondToken' />
+		</DataModel>
+
+		<DataModel name='r2' ref='r1'>
+			<Blob name='SecondToken' value='32' valueType='hex' token='true'/>
+			<String length='3'/>
+		</DataModel>
+
+		<DataModel name='r3' ref='r1'>
+			<Blob name='SecondToken' value='33' valueType='hex' token='true'/>
+			<String/>
+		</DataModel>
+	
+		<DataModel name='r4'>
+			<Choice name='c1' minOccurs='0'>
+				<Block name='b2' ref='r2' />
+			</Choice>
+			<Block name='b3' ref='r3' />
+		</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[3], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneSharedTokensAfterChoiceWithSizedElements()
+		{
+			var dom = SharedTokensAfterChoiceWithSizedElements("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[3].Count);
+			var minoccursArray = (Dom.Array)dom.dataModels[3][0];
+			Assert.AreEqual(2, minoccursArray.Count);
+
+			var choiceref1 = (Dom.Choice)minoccursArray[0];
+			Assert.AreEqual(1, choiceref1.Count);
+			var blockref1 = (Dom.Block)choiceref1[0];
+			Assert.AreEqual(3, blockref1.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
+
+			var choiceref2 = (Dom.Choice)minoccursArray[1];
+			Assert.AreEqual(1, choiceref2.Count);
+			var blockref2 = (Dom.Block)choiceref2[0];
+			Assert.AreEqual(3, blockref2.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
+
+			var lastBlock = (Dom.Block)dom.dataModels[3][1];
+			Assert.AreEqual(3, lastBlock.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
+		}
+
+		public Dom.Dom SharedTokensAfterArrayWithUnsizedElements(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+			<Blob name='SecondToken' />
+			<String/>
+		</DataModel>
+
+		<DataModel name='r2' ref='r1'>
+			<Blob name='SecondToken' value='32' valueType='hex' token='true'/>
+		</DataModel>
+
+		<DataModel name='r3' ref='r1'>
+			<Blob name='SecondToken' value='33' valueType='hex' token='true'/>
+		</DataModel>
+	
+		<DataModel name='r4'>
+			<Block name='a2' minOccurs='0'>
+				<Block ref='r2' />
+			</Block>
+			<Block name='b3' ref='r3' />
+		</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[3], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneSharedTokensAfterArrayWithUnsizedElements()
+		{
+			var dom = SharedTokensAfterArrayWithUnsizedElements("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[3].Count);
+			var minoccursArray = (Dom.Array)dom.dataModels[3][0];
+			Assert.AreEqual(2, minoccursArray.Count);
+
+			var blockref1 = (Dom.Block)((Dom.Block)minoccursArray[0])[0];
+			Assert.AreEqual(3, blockref1.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
+
+			var blockref2 = (Dom.Block)((Dom.Block)minoccursArray[1])[0];
+			Assert.AreEqual(3, blockref2.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
+
+			var lastBlock = (Dom.Block)dom.dataModels[3][1];
+			Assert.AreEqual(3, lastBlock.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
+
+		}
+
+		public Dom.Dom SharedTokensAfterChoiceWithUnsizedElements(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+			<Blob name='SecondToken' />
+			<String />
+		</DataModel>
+
+		<DataModel name='r2' ref='r1'>
+			<Blob name='SecondToken' value='32' valueType='hex' token='true'/>
+		</DataModel>
+
+
+		<DataModel name='r3' ref='r1'>
+			<Blob name='SecondToken' value='33' valueType='hex' token='true'/>
+		</DataModel>
+	
+		<DataModel name='r4'>
+			<Choice minOccurs='0'>
+				<Block ref='r2' />
+			</Choice>
+			<Block ref='r3' />
+		</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[3], data);
+
+			return dom;
+		}
+
+		[Test, Ignore("Failure Expected. Referenced in Issue #305")]
+		public void OneSharedTokensAfterChoiceWithUnsizedElements()
+		{
+			var dom = SharedTokensAfterChoiceWithUnsizedElements("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[3].Count);
+			var minoccursArray = (Dom.Array)dom.dataModels[3][0];
+			Assert.AreEqual(2, minoccursArray.Count);
+
+			var blockref1 = (Dom.Block)((Dom.Choice)minoccursArray[0])[0];
+			Assert.AreEqual(3, blockref1.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
+
+			var blockref2 = (Dom.Block)((Dom.Choice)minoccursArray[1])[0];
+			Assert.AreEqual(3, blockref2.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
+
+			var lastBlock = (Dom.Block)dom.dataModels[3][1];
+			Assert.AreEqual(3, lastBlock.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
+		}
+
 	}
 }
 
