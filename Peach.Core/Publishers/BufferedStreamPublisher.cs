@@ -69,7 +69,7 @@ namespace Peach.Core.Publishers
 					}
 					else
 					{
-						Logger.Debug("Read {0} bytes from {0}", len, _clientName);
+						Logger.Debug("Read {0} bytes from {1}", len, _clientName);
 
 						lock (_bufferLock)
 						{
@@ -79,7 +79,7 @@ namespace Peach.Core.Publishers
 							_buffer.Position = pos;
 
 							if (Logger.IsDebugEnabled)
-								Logger.Debug("\n" + Utilities.HexDump(_buffer));
+								Logger.Debug("\n\n" + Utilities.HexDump(_buffer));
 						}
 
 						ScheduleRead();
@@ -223,6 +223,9 @@ namespace Peach.Core.Publishers
 			{
 				try
 				{
+                    if (Logger.IsDebugEnabled)
+                        Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
+
 					ClientWrite(buffer, offset, count);
 				}
 				catch (Exception ex)
