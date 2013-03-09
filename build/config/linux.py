@@ -17,6 +17,7 @@ tools = [
 	'tools.test',
 	'tools.version',
 	'tools.xcompile',
+	'tools.mdoc',
 ]
 
 def prepare(conf):

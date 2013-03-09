@@ -16,6 +16,13 @@ class TestContext(InstallContext):
 		super(TestContext, self).__init__(**kw)
 		self.is_test = True
 
+class MonoDocContext(InstallContext):
+	cmd = 'mdoc'
+
+	def __init__(self, **kw):
+		super(MonoDocContext, self).__init__(**kw)
+		self.is_mdoc = True
+
 def store_version(option, opt, value, parser):
 	if not re.match('^\d+\.\d+\.\d+(\.\d+)?$', value):
 		raise OptionValueError('%s option is not valid - must be <int>.<int>.<int>' % opt)
