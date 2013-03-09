@@ -92,6 +92,9 @@ namespace Peach.Core.Dom
 				if (idx != -1)
 					i = idx + 1;
 			}
+
+			if (size.HasValue && sizedData == data)
+				data.SeekBits(startPosition + size.Value, System.IO.SeekOrigin.Begin);
 		}
 
 		public override bool isLeafNode
