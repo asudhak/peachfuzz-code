@@ -48,6 +48,19 @@ namespace Aga.Controls
 			return (finish - start) / (double)freq;
 		}
 
+#if MONO
+		static bool QueryPerformanceCounter(ref Int64 performanceCount)
+		{
+			performanceCount = 0;
+			return true;
+		}
+
+		static bool QueryPerformanceFrequency(ref Int64 frequency)
+		{
+			frequency = 1;
+			return true;
+		}
+#else
 		[DllImport("Kernel32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool QueryPerformanceCounter(ref Int64 performanceCount);
@@ -55,5 +68,6 @@ namespace Aga.Controls
 		[DllImport("Kernel32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool QueryPerformanceFrequency(ref Int64 frequency);
+#endif
 	}
 }
