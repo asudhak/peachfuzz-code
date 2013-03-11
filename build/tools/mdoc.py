@@ -61,7 +61,7 @@ def make_mdoc(self):
 	if not html:
 		html = self.bld(name = 'monodoc')
 		print html.path.get_bld().abspath()
-		tsk = html.create_task('mdoc_html', [ out ], html.path.find_or_declare('mdoc/index.html'))
+		tsk = html.create_task('mdoc_html', [ out ], html.path.find_or_declare('apidoc/index.html'))
 		setattr(html, 'mdoc_tsk', tsk)
 		setattr(self.bld, 'mdoc_gen', html)
 	else:
