@@ -202,13 +202,17 @@ namespace Peach.Core.Cracker
 
 		long getDataOffset()
 		{
-			var curr = _dataStack.First();
-			var root = _dataStack.Last();
+			long offset = 0;
 
-			if (curr == root)
-				return 0;
+			for (int i = _dataStack.Count - 2, prev = i + 1; i >= 0; --i)
+			{
+				if (_dataStack[i] != _dataStack[prev])
+				{
+					offset += _dataStack[prev].TellBits() - _dataStack[i].LengthBits;
+					prev = i;
+				}
+			}
 
-			long offset = root.TellBits() - curr.LengthBits;
 			System.Diagnostics.Debug.Assert(offset >= 0);
 			return offset;
 		}
