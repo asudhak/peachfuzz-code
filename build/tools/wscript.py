@@ -10,6 +10,8 @@ from tools import pkg, hooks
 targets = [ 'win', 'linux', 'osx', 'doc' ]
 
 class TestContext(InstallContext):
+	'''runs the unit tests'''
+
 	cmd = 'test'
 
 	def __init__(self, **kw):
@@ -17,6 +19,8 @@ class TestContext(InstallContext):
 		self.is_test = True
 
 class MonoDocContext(InstallContext):
+	'''create api docs for .NET classes'''
+
 	cmd = 'mdoc'
 
 	def __init__(self, **kw):
