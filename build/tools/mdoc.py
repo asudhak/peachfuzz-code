@@ -61,9 +61,7 @@ def make_mdoc(self):
 	html = getattr(self.bld, 'mdoc_gen', None)
 	if not html:
 		html = self.bld(name = 'monodoc')
-		dest = Utils.subst_vars(self.env.MDOC_OUTPUT, self.env)
-		Utils.check_dir(os.path.join(html.path.abspath(), dest))
-		html.output_dir = html.path.find_dir(dest)
+		html.output_dir = html.path.find_or_declare('apidoc/index.html').parent
 		tsk = html.create_task('mdoc_html', [ out ], [ html.output_dir ] )
 		setattr(html, 'mdoc_tsk', tsk)
 		setattr(self.bld, 'mdoc_gen', html)
@@ -90,7 +88,7 @@ class mdoc_html(Task.Task):
 	Run msbuild
 	"""
 	color   = 'YELLOW'
-	run_str = '${MDOC} export-html -o ${TGT[0].abspath()} ${SRC}'
+	run_str = '${MDOC} export-html -o ${TGT} ${SRC}'
 
 	def runnable_status(self):
 		ret = Task.SKIP_ME
@@ -99,3 +97,13 @@ class mdoc_html(Task.Task):
 			ret = super(mdoc_html, self).runnable_status()
 
 		return ret
+
+	def post_run(self):
+		html = self.generator
+		nodes = html.output_dir.ant_glob('**/*', quiet=True)
+		print nodes[0:10]
+		for x in nodes:
+			x.sig = Utils.h_file(x.abspath())
+		self.outputs += nodes
+		html.bld.install_files(html.env.MDOC_OUTPUT, nodes, cwd=html.output_dir, relative_trick=True, postpone=False)
+		return Task.Task.post_run(self)
