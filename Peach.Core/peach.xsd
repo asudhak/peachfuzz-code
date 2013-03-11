@@ -1197,7 +1197,7 @@
 		</xs:attribute>
 		<xs:attribute name="constraint" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Provide a python expression that will contrain the accepted value.  Expression
+				<xs:documentation>Provide a python expression that will constrain the accepted value.  Expression
 					must evaulate to true or false.  The special variables 'self', and 'value' are available.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
