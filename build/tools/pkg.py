@@ -3,6 +3,8 @@ from waflib import Utils, Logs, Configure, Context, Options, Errors
 import os, zipfile, sys
 
 class PkgContext(InstallContext):
+	'''zip contents of output directory'''
+
 	cmd = 'pkg'
 
 	def __init__(self, **kw):

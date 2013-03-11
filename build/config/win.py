@@ -17,6 +17,7 @@ tools = [
 	'tools.externals',
 	'tools.test',
 	'tools.version',
+	'tools.mdoc',
 ]
 
 def prepare(conf):

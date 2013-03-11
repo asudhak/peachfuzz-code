@@ -46,7 +46,8 @@ namespace Peach.Core.MutationStrategies
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		[NonSerialized]
-		protected Iterations.Enumerator _enumerator;
+		protected IEnumerator<Tuple<string, Mutator>> _enumerator;
+
 		[NonSerialized]
 		protected Iterations _iterations = new Iterations();
 

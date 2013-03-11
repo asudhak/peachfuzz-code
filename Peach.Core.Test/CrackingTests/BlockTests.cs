@@ -242,5 +242,33 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("World", (string)dom.dataModels[0].find("b1_1.str2").DefaultValue);
 			Assert.AreEqual("!", (string)dom.dataModels[0].find("str3").DefaultValue);
 		}
+
+		[Test]
+		public void CrackBlock7()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"8\">" +
+				"			<Relation type=\"size\" of=\"b1\"/>" +
+				"		</Number>" +
+				"		<Block name=\"b1\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 2, 0, 0 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			// Ensure we actually advance the BitStream over sized blocks with no children
+			Assert.AreEqual(3, data.TellBytes());
+			Assert.AreEqual(24, data.TellBits());
+		}
 	}
 }

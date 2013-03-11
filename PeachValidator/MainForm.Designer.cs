@@ -51,7 +51,7 @@
 			this.nodeTextBoxLength = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.nodeTextBoxValue = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.toolStrip1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+			this.splitContainer1.BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
@@ -282,7 +282,7 @@
 			this.toolStrip1.PerformLayout();
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+			this.splitContainer1.EndInit();
 			this.splitContainer1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();

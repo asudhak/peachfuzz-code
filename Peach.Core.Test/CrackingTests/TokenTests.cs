@@ -808,6 +808,49 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
 		}
 
+
+		public Dom.Dom MinMaxZeroWithUnsized(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Block name='b1' minOccurs='1' maxOccurs='1'>
+				<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+				<String/>
+			</Block>
+			<String value='z' token='true' />
+		</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneMinMaxZeroWithUnsized()
+		{
+			var dom = MinMaxZeroWithUnsized("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var array = dom.dataModels[0][0] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual("2foo12bar13ba", (string)block[1].DefaultValue);
+
+		}
+
 	}
 }
 

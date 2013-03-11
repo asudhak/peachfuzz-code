@@ -160,6 +160,88 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.NotNull(array);
 			Assert.AreEqual(3, array.Count);
 		}
+
+		[Test]
+		public void PickChoice()
+		{
+			string temp = Path.GetTempFileName();
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM1'>
+		<String name='str' value='token1' token='true'/>
+	</DataModel>
+
+	<DataModel name='DM2'>
+		<String name='str' value='token2' token='true'/>
+	</DataModel>
+
+	<DataModel name='DM'>
+		<Choice name='choice'>
+			<Block name='token1' ref='DM1'/>
+			<Block name='token2' ref='DM2'/>
+		</Choice>
+	</DataModel>
+
+	<StateModel name='SM_In' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='input'>
+				<DataModel ref='DM' />
+				<Data DataModel='DM'>
+					<Field name='choice.token2' value='' />
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<StateModel name='SM_Out' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM' />
+				<Data DataModel='DM'>
+					<Field name='choice.token2' value='' />
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Input'>
+		<StateModel ref='SM_In' />
+		<Publisher class='File'>
+			<Param name='FileName' value='{0}'/>
+			<Param name='Overwrite' value='false'/>
+		</Publisher>
+	</Test>
+
+	<Test name='Output'>
+		<StateModel ref='SM_Out' />
+		<Publisher class='File'>
+			<Param name='FileName' value='{0}'/>
+			<Param name='Overwrite' value='true'/>
+		</Publisher>
+	</Test>
+
+</Peach>".Fmt(temp);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+			config.runName = "Output";
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var file = File.ReadAllText(temp);
+			Assert.AreEqual("token2", file);
+
+			config.runName = "Input";
+
+			dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			e = new Engine(null);
+			e.startFuzzing(dom, config);
+		}
 	}
 }
 

@@ -904,10 +904,14 @@ namespace Peach.Core.Cracker
 				{
 					if (!(elem is DataElementContainer) && (prev.parent is Dom.Array))
 					{
-						long arrayPos = pos;
-						var ret = scanArray((Dom.Array)prev.parent, ref arrayPos, tokens, Until.FirstUnsized);
-						if (!ret.HasValue || ret.Value == false)
-							return ret;
+						var array = (Dom.Array)prev.parent;
+						if (array.maxOccurs == -1 || array.Count < array.maxOccurs)
+						{
+							long arrayPos = pos;
+							var ret = scanArray(array, ref arrayPos, tokens, Until.FirstUnsized);
+							if (!ret.HasValue || ret.Value == false)
+								return ret;
+						}
 					}
 
 					// no more siblings, ascend
