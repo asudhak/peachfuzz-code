@@ -835,12 +835,19 @@ namespace Peach.Core.Test.CrackingTests
 			return dom;
 		}
 
-		[Test, Ignore("Failure Expected. Referenced in Issue #310")]
+		[Test]
 		public void OneMinMaxZeroWithUnsized()
 		{
 			var dom = MinMaxZeroWithUnsized("12foo12bar13baz");
 
 			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var array = dom.dataModels[0][0] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual("2foo12bar13ba", (string)block[1].DefaultValue);
 
 		}
 
