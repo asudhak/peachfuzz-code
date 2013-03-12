@@ -17,6 +17,7 @@ tools = [
 	'tools.test',
 	'tools.version',
 	'tools.xcompile',
+	'tools.mdoc',
 ]
 
 def prepare(conf):
@@ -98,6 +99,7 @@ def prepare(conf):
 		'emit',
 		'vnum',
 		'subst',
+		'network',
 	])
 
 def configure(conf):

@@ -55,7 +55,6 @@ namespace Peach.Core.Dom
 	[Parameter("ns", typeof(string), "XML Namespace", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
@@ -147,6 +146,11 @@ namespace Peach.Core.Dom
 					xmlNode.InnerText = "|||" + fullName + "|||";
 					doc.values.Add(xmlNode.InnerText, new Variant(child.Value));
 				}
+				else if (child is Number)
+				{
+					var fullName = child.fullName;
+					xmlNode.InnerText = (string)child.InternalValue;
+				}
 				else if (child is XmlElement)
 				{
 					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
@@ -163,7 +167,7 @@ namespace Peach.Core.Dom
 				}
 				else
 				{
-					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single String element.");
+					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single Number or String element.");
 				}
 			}
 
@@ -216,21 +220,6 @@ namespace Peach.Core.Dom
 
 			return new BitStream(((BitStream)InternalValue).Stream);
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "elementName":
-          return this.elementName;
-        case "ns":
-          return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlElement", parameterName));
-      }
-    }
 	}
 }
 

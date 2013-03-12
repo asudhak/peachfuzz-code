@@ -246,6 +246,36 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackZeroArray()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"Item\" minOccurs=\"0\" token=\"true\" />" +
+				"		<Blob name=\"Rest\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5, 6 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+
+			Assert.AreEqual(0, array.Count);
+
+			Blob rest = (Blob)dom.dataModels[0].find("Rest");
+
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6 }, (byte[])rest.InternalValue);
+		}
+
+		[Test]
 		public void CrackArrayRelation()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -369,7 +399,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3, numArray.Count);
 		}
 
-		[Test, Ignore("Failure Expected. Referenced in Issue #282")]
+		[Test]
 		public void CrackArrayWithTokenSibling()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -424,8 +454,95 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, array.Count);
 			Assert.AreEqual("TheDataModel.str1", array.fullName);
 			Assert.AreEqual("TheDataModel.str1.str1", array.origionalElement.fullName);
-			Assert.AreEqual("TheDataModel.str1.str1_0", array[0].fullName);
+			Assert.AreEqual("TheDataModel.str1.str1", array[0].fullName);
 			Assert.AreEqual("TheDataModel.str1.str1_1", array[1].fullName);
+		}
+
+		[Test]
+		public void CrackArrayEmptyElement()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block minOccurs=\"10\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteByte(0);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+			Assert.AreEqual(10, array.Count);
+		}
+
+		[Test]
+		public void CrackArrayEmptyElementMin()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block minOccurs=\"0\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteByte(0);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
+			Assert.AreEqual(0, array.Count);
+		}
+
+		[Test]
+		public void TokenAfterArray()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Block name=""A"">
+			<Block name=""block1"" minOccurs=""0"">
+				<Number size=""8"" value=""11"" token=""true""/> 
+				<Number size=""8"" constraint=""str(element.DefaultValue) != '0'""/> 
+			</Block>
+			<Block name=""block2"">
+				<Number size=""8"" value=""11"" token=""true""/> 
+			</Block>
+			<Number name=""end"" size=""8"" value=""0""/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 11, 1, 11, 2, 11, 3, 11, 0 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			var block = dom.dataModels[0][0] as Dom.Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(3, block.Count);
+			var array = block[0] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
 		}
 	}
 }

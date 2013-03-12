@@ -76,7 +76,7 @@ namespace Peach.Core.Dom
 	/// calling a method, etc.
 	/// </summary>
 	[Serializable]
-	public class Action : INamed, IPitSerializable
+	public class Action : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		static int nameNum = 0;
@@ -140,12 +140,12 @@ namespace Peach.Core.Dom
 				//}
 				//else
 				//{
-					_dataModel = value;
-					if (_dataModel != null)
-					{
-						_dataModel.action = this;
-						_dataModel.dom = null;
-					}
+				_dataModel = value;
+				if (_dataModel != null)
+				{
+					_dataModel.action = this;
+					_dataModel.dom = null;
+				}
 				//}
 			}
 		}
@@ -296,7 +296,7 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnStarting()
 		{
-			if(!string.IsNullOrEmpty(onStart))
+			if (!string.IsNullOrEmpty(onStart))
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["action"] = this;
@@ -380,6 +380,8 @@ namespace Peach.Core.Dom
 			if (when != null)
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["context"] = context;
+				state["Context"] = context;
 				state["action"] = this;
 				state["Action"] = this;
 				state["state"] = this.parent;
@@ -638,54 +640,7 @@ namespace Peach.Core.Dom
 			}
 			while (iter.MoveNext());
 		}
-
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Action", null);
-
-      node.AppendAttribute("name", this.name);
-      node.AppendAttribute("ref", this.reference);
-      node.AppendAttribute("method", this.method);
-      node.AppendAttribute("property", this.property);
-      node.AppendAttribute("setXpath", this.setXpath);
-      node.AppendAttribute("valueXpath", this.valueXpath);
-      node.AppendAttribute("type", this.type.ToString());
-      node.AppendAttribute("when", this.when);
-      node.AppendAttribute("publisher", this.publisher);
-      node.AppendAttribute("onStart", this.onStart);
-      node.AppendAttribute("onComplete", this.onComplete);
-
-      XmlSerializer xs;
-
-      if (this.dataModel != null)
-      {
-        XmlNode eDataModel = doc.CreateElement("DataModel");
-        eDataModel.AppendAttribute("ref", this.dataModel.name);
-        node.AppendChild(eDataModel);
-      }
-      
-      if (this.dataSet != null)
-      {
-        StringBuilder sb = new StringBuilder();
-        StringWriter writer = new StringWriter(sb);
-        xs = new XmlSerializer(typeof(DataSet));
-        xs.Serialize(writer, this.dataSet);
-
-        node.InnerXml = sb.ToString();
-      }
-      
-      if (this.parameters != null)
-      {
-        foreach (ActionParameter ap in this.parameters)
-        {
-          node.AppendChild(ap.pitSerialize(doc, node));
-        }
-      }
-      
-
-      return node;
-    }
-  }
+	}
 
 	public enum ActionParameterType
 	{
@@ -695,7 +650,7 @@ namespace Peach.Core.Dom
 	}
 
 	[Serializable]
-	public class ActionParameter : IPitSerializable
+	public class ActionParameter
 	{
 		[NonSerialized]
 		DataModel _origionalDataModel = null;
@@ -718,15 +673,10 @@ namespace Peach.Core.Dom
 				_dataModel = value;
 
 				if (_origionalDataModel == null)
-					_origionalDataModel =_dataModel.Clone() as DataModel;
+					_origionalDataModel = _dataModel.Clone() as DataModel;
 			}
 		}
-
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      throw new NotImplementedException();
-    }
-  }
+	}
 
 	[Serializable]
 	public class ActionResult

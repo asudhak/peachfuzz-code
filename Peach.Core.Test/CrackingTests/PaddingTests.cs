@@ -47,7 +47,7 @@ namespace Peach.Core.Test.CrackingTests
 		static string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 			"	<DataModel name=\"TheDataModel\">" +
 			"		<Blob name=\"blb\" length=\"1\" valueType=\"hex\" value=\"00\" />" +
-			"		<Padding aligned=\"true\" alignment=\"16\" /> " +
+			"		<Padding alignment=\"16\" /> " +
 			"	</DataModel>" +
 			"</Peach>";
 

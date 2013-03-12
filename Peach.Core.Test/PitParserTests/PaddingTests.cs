@@ -48,7 +48,7 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Padding aligned=\"true\" alignment=\"8\" />" +
+				"		<Padding alignment=\"8\" />" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -65,7 +65,7 @@ namespace Peach.Core.Test.PitParserTests
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Number size=\"8\" />"+
-				"		<Padding aligned=\"true\" alignment=\"16\" />" +
+				"		<Padding alignment=\"16\" />" +
 				"	</DataModel>" +
 				"</Peach>";
 
@@ -85,7 +85,7 @@ namespace Peach.Core.Test.PitParserTests
 		<Blob name='header' length='10'/>
 		<Block name='blk'>
 			<Blob name='payload' length='10' valueType='hex' value='11 22 33 44 55 66 77 88 99 aa' />
-			<Padding aligned='true' name='padding' alignment='128'>
+			<Padding name='padding' alignment='128'>
 				<Fixup class='FillValue'>
 					<Param name='ref' value='padding'/>
 					<Param name='start' value='1'/>

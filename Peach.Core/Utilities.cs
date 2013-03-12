@@ -436,7 +436,6 @@ namespace Peach.Core
 		public static void HexDump(Stream input, Stream output, int bytesPerLine = 16)
 		{
 			long pos = input.Position;
-			input.Seek(0, SeekOrigin.Begin);
 
 			HexInputFunc inputFunc = delegate(byte[] buf, int max)
 			{
@@ -477,6 +476,7 @@ namespace Peach.Core
 		public static string HexDump(Stream input, int bytesPerLine = 16)
 		{
 			StringBuilder sb = new StringBuilder();
+			long pos = input.Position;
 
 			HexInputFunc inputFunc = delegate(byte[] buf, int max)
 			{
@@ -489,6 +489,8 @@ namespace Peach.Core
 			};
 
 			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			input.Seek(pos, SeekOrigin.Begin);
 
 			return sb.ToString();
 		}

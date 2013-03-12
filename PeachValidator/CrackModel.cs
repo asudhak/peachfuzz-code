@@ -115,12 +115,12 @@ namespace PeachValidator
 
 	public class CrackNode
 	{
-		public CrackNode(CrackModel model, DataElement element, int position, int length)
+		public CrackNode(CrackModel model, DataElement element, long startBits, long stopBits)
 		{
 			Model = model;
 			DataElement = element;
-			Position = position;
-			Length = length;
+			StartBits = startBits;
+			StopBits = stopBits;
 			Error = false;
 		}
 
@@ -128,14 +128,6 @@ namespace PeachValidator
 		{
 			get;
 			set;
-		}
-
-		public void MarkChildrenRelativeToParent()
-		{
-			foreach (var child in Children)
-			{
-				child.RelativeToParent = true;
-			}
 		}
 
 		public CrackNode Root
@@ -179,19 +171,10 @@ namespace PeachValidator
 			}
 		}
 
-		protected CrackNode parent = null;
 		public CrackNode Parent
 		{
-			get { return parent; }
-			set
-			{
-				parent = value;
-
-				if (Position == 0 && Length > 0 && Parent != null && Parent.Position > 0)
-				{
-					Parent.MarkChildrenRelativeToParent();
-				}
-			}
+			get;
+			set;
 		}
 
 		public DataElement DataElement
@@ -200,32 +183,26 @@ namespace PeachValidator
 			set;
 		}
 
-		protected int position;
+		public long StartBits
+		{
+			get;
+			set;
+		}
+
+		public long StopBits
+		{
+			get;
+			set;
+		}
+
 		public int Position
 		{
-			get
-			{
-				if (RelativeToParent)
-					return position + Parent.Position;
-
-				return position;
-			}
-
-			set
-			{
-				position = value;
-
-				if (Position == 0 && Parent != null && Parent.Position > 0)
-				{
-					Parent.MarkChildrenRelativeToParent();
-				}
-			}
+			get { return (int)(StartBits / 8); }
 		}
 
 		public int Length
 		{
-			get;
-			set;
+			get { return StopBits == 0 ? 0 : (int)((StopBits - StartBits + 7) / 8); }
 		}
 
 		public bool Error
@@ -238,30 +215,7 @@ namespace PeachValidator
 		{
 			get
 			{
-				if (DataElement is DataElementContainer)
-					return "";
-
-				string ret;
-
-				try
-				{
-					ret = (string)this.DataElement.InternalValue;
-				}
-				catch
-				{
-					ret = ASCIIEncoding.ASCII.GetString((byte[])this.DataElement.InternalValue);
-				}
-
-				for (int i = 0; i < ret.Length; i++)
-				{
-					if (ret[i].CompareTo(' ') < 0)
-						ret = ret.Replace(ret[i], '.');
-
-					if (ret[i].CompareTo('~') > 0)
-						ret = ret.Replace(ret[i], '.');
-				}
-
-				return ret.Length > 20 ? ret.Substring(0, 20) : ret;
+				return DataElement.DefaultValue == null ? "" : DataElement.DefaultValue.ToString();
 			}
 		}
 

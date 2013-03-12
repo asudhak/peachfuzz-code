@@ -10,11 +10,22 @@ from tools import pkg, hooks
 targets = [ 'win', 'linux', 'osx', 'doc' ]
 
 class TestContext(InstallContext):
+	'''runs the unit tests'''
+
 	cmd = 'test'
 
 	def __init__(self, **kw):
 		super(TestContext, self).__init__(**kw)
 		self.is_test = True
+
+class MonoDocContext(InstallContext):
+	'''create api docs for .NET classes'''
+
+	cmd = 'mdoc'
+
+	def __init__(self, **kw):
+		super(MonoDocContext, self).__init__(**kw)
+		self.is_mdoc = True
 
 def store_version(option, opt, value, parser):
 	if not re.match('^\d+\.\d+\.\d+(\.\d+)?$', value):
@@ -117,7 +128,10 @@ def configure(ctx):
 					base_env.append_value('variants', variant)
 
 				if Logs.verbose == 0:
-					Logs.pprint('GREEN', 'Available')
+					missing = cfg_env['missing_features'] or ''
+					if missing:
+						missing = ' - Missing Features: %s' % ','.join(missing)
+					Logs.pprint('GREEN', 'Available%s' % missing)
 
 			except Exception, e:
 				if Logs.verbose == 0:

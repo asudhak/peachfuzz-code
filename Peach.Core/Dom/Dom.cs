@@ -39,13 +39,13 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Dom : INamed
 	{
-		public string fileName;
-		public string version;
-		public string author;
-		public string description;
+		public string fileName = "";
+		public string version = "";
+		public string author = "";
+		public string description = "";
 
 		public RunContext context = null;
-		public OrderedDictionary<string, DomNamespace> ns = new OrderedDictionary<string, DomNamespace>();
+		public OrderedDictionary<string, Dom> ns = new OrderedDictionary<string, Dom>();
 		public OrderedDictionary<string, DataModel> dataModels = new OrderedDictionary<string, DataModel>();
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
@@ -54,7 +54,8 @@ namespace Peach.Core.Dom
 
 		public Dom()
 		{
-			ns.AddEvent += new AddEventHandler<string, DomNamespace>(ns_AddEvent);
+			name = "";
+
 			dataModels.AddEvent += new AddEventHandler<string, DataModel>(dataModels_AddEvent);
 			stateModels.AddEvent += new AddEventHandler<string, StateModel>(stateModels_AddEvent);
 			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
@@ -80,11 +81,6 @@ namespace Peach.Core.Dom
 		void dataModels_AddEvent(OrderedDictionary<string, DataModel> sender, string key, DataModel value)
 		{
 			value.dom = this;
-		}
-
-		void ns_AddEvent(OrderedDictionary<string, DomNamespace> sender, string key, DomNamespace value)
-		{
-			value.parent = this;
 		}
 
 		#endregion
@@ -120,43 +116,10 @@ namespace Peach.Core.Dom
 
 		public virtual string name
 		{
-			get { return "root"; }
-			set { throw new NotSupportedException("Error, Dom.name is static and cannot be set"); }
+			get; set;
 		}
 
 		#endregion
-
-		public XmlDocument pitSerialize()
-		{
-
-			XmlDocument doc = new XmlDocument();
-
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Peach", "");
-
-			foreach (DataModel dataModel in dataModels.Values)
-			{
-				node.AppendChild(dataModel.pitSerialize(doc, node));
-			}
-
-			foreach (StateModel stateModel in stateModels.Values)
-			{
-				node.AppendChild(stateModel.pitSerialize(doc, node));
-			}
-
-			foreach (Agent agent in agents.Values)
-			{
-				node.AppendChild(agent.pitSerialize(doc, node));
-			}
-
-			foreach (Test test in tests.Values)
-			{
-				node.AppendChild(test.pitSerialize(doc, node));
-			}
-
-			doc.AppendChild(node);
-
-			return doc;
-		}
 	}
 }
 

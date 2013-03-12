@@ -260,11 +260,14 @@ namespace Peach
 					return;
 				}
 
+				Dictionary<string, object> parserArgs = new Dictionary<string, object>();
+				parserArgs[PitParser.DEFINED_VALUES] = this.DefinedValues;
+
 				if (test)
 				{
 					ConsoleWatcher.WriteInfoMark();
 					Console.Write("Validating file [" + extra[0] + "]... ");
-					Analyzer.defaultParser.asParserValidation(null, extra[0]);
+					Analyzer.defaultParser.asParserValidation(parserArgs, extra[0]);
 
 					if (Type.GetType("Mono.Runtime") != null)
 						Console.WriteLine("File parsed successfully, but XSD validation is not supported on the Mono runtime.");
@@ -273,9 +276,6 @@ namespace Peach
 
 					return;
 				}
-
-				Dictionary<string, object> parserArgs = new Dictionary<string, object>();
-				parserArgs[PitParser.DEFINED_VALUES] = this.DefinedValues;
 
 				Engine e = new Engine(new ConsoleWatcher());
 				dom = Analyzer.defaultParser.asParser(parserArgs, extra[0]);

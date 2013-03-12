@@ -54,7 +54,6 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("value", typeof(string), "Default value", "")]
 	[Parameter("valueType", typeof(ValueType), "Format of value attribute", "string")]
 	[Parameter("token", typeof(bool), "Is element a token", "false")]
@@ -66,83 +65,15 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Blob : DataElement
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public Blob()
 		{
-			_defaultValue = new Variant(new byte[] { });
+			_defaultValue = new Variant(new byte[0]);
 		}
 		
 		public Blob(string name)
 			: base(name)
 		{
-			_defaultValue = new Variant(new byte[] { });
-		}
-		
-		public Blob(string name, int length)
-			: base(name)
-		{
-			this.length = length;
-			_defaultValue = new Variant(new byte[] { });
-		}
-		
-		public Blob(string name, int length, Variant defaultValue)
-			: base(name)
-		{
-			this.length = length;
-			_defaultValue = defaultValue;
-		}
-		
-		public Blob(int length)
-		{
-			_defaultValue = new Variant(new byte[] { });
-			this.length = length;
-		}
-		
-		public Blob(int length, Variant defaultValue)
-		{
-			this.length = length;
-			_defaultValue = defaultValue;
-		}
-
-		public Blob(Variant defaultValue)
-		{
-			_defaultValue = defaultValue;
-		}
-
-		public override void Crack(DataCracker context, BitStream data)
-		{
-			Blob element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			// Length in bits
-			long? blobLength = context.determineElementSize(element, data);
-
-			if (blobLength == null && element.isToken)
-				blobLength = ((BitStream)element.DefaultValue).LengthBits;
-
-			if (blobLength == null)
-				throw new CrackingFailure("Unable to crack Blob '" + element.fullName + "'.", element, data);
-
-			// Round up bits to next byte
-			data.WantBytes((long)(blobLength + 7 / 8));
-
-			if ((data.TellBits() + blobLength) > data.LengthBits)
-				throw new CrackingFailure("Blob '" + element.fullName +
-					"' has length of '" + blobLength + "' bits but buffer only has '" +
-					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
-
-			Variant defaultValue = new Variant(new byte[0]);
-
-			if (blobLength > 0)
-				defaultValue = new Variant(data.ReadBitsAsBitStream((long)blobLength));
-
-			if (element.isToken)
-				if (defaultValue != element.DefaultValue)
-					throw new CrackingFailure("Blob '" + element.fullName + "' marked as token, values did not match '" +
-						defaultValue.ToHex(100) + "' vs. '" + element.DefaultValue.ToHex(100) + "'.", element, data);
-
-			element.DefaultValue = defaultValue;
+			_defaultValue = new Variant(new byte[0]);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -156,6 +87,9 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementChildren(node, blob);
 			context.handleCommonDataElementValue(node, blob);
 
+			if (blob.DefaultValue == null)
+				blob.DefaultValue = new Variant(new byte[0]);
+
 			if (blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
 				blob.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
 
@@ -163,7 +97,7 @@ namespace Peach.Core.Dom
 			{
 				BitStream bs = (BitStream)blob.DefaultValue;
 				if (bs.LengthBits > blob.lengthAsBits)
-					throw new PeachException("Error, value of element \"" + blob.name + "\" is longer than specified length.");
+					throw new PeachException("Error, value of " + blob.debugName + " is longer than specified length.");
 				else if (bs.LengthBits < blob.lengthAsBits)
 					ExpandDefaultValue(blob, bs);
 			}
@@ -178,19 +112,6 @@ namespace Peach.Core.Dom
 			bs.SeekBits(0, SeekOrigin.Begin);
 			blob.DefaultValue = new Variant(bs);
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "length":
-          return this.length;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Blob", parameterName));
-      }
-    }
 	}
 }
 

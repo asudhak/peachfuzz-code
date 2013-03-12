@@ -33,18 +33,25 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_localEp == null);
 			System.Diagnostics.Debug.Assert(_remoteEp == null);
 
-			_client = _tcp.GetStream();
-			_localEp = _tcp.Client.LocalEndPoint;
-			_remoteEp = _tcp.Client.RemoteEndPoint;
-			_clientName = _remoteEp.ToString();
+			try
+			{
+				_client = new MemoryStream();
+				_localEp = _tcp.Client.LocalEndPoint;
+				_remoteEp = _tcp.Client.RemoteEndPoint;
+				_clientName = _remoteEp.ToString();
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("open: Error, Unable to start tcp client reader. {0}.", ex.Message);
+				throw new SoftException(ex);
+			}
 
 			base.StartClient();
 		}
 
-		protected override void CloseClient()
+		protected override void ClientClose()
 		{
-			base.CloseClient();
-
+			_tcp.Close();
 			_tcp = null;
 			_remoteEp = null;
 			_localEp = null;
@@ -65,9 +72,9 @@ namespace Peach.Core.Publishers
 			_tcp.Client.Shutdown(SocketShutdown.Send);
 		}
 
-		protected override void ClientClose()
+		protected override void ClientWrite(byte[] buffer, int offset, int count)
 		{
-			_tcp.Close();
+			_tcp.Client.Send(buffer, offset, count, SocketFlags.None);
 		}
 	}
 }

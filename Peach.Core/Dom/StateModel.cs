@@ -43,8 +43,8 @@ namespace Peach.Core.Dom
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);
 
-    [Serializable]
-	public class StateModel : INamed, IPitSerializable
+	[Serializable]
+	public class StateModel : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -292,23 +292,7 @@ namespace Peach.Core.Dom
 				OnFinished();
 			}
 		}
-
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "StateModel", null);
-
-      node.AppendAttribute("name", this.name);
-      node.AppendAttribute("initialState", this.initialState.name);
-
-
-      foreach (State state in states.Values)
-      {
-        node.AppendChild(state.pitSerialize(doc, node));
-      }
-
-      return node;
-    }
-  }
+	}
 }
 
 // END

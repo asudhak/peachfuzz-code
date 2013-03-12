@@ -43,7 +43,7 @@ namespace Peach.Core.Agent.Monitors
 				_multicast = Host.IsMulticast();
 
 				if (Interface != null && Interface.AddressFamily != Host.AddressFamily)
-					throw new PeachException("Interface '{0}' is not compatible with the address family for Host '{1}'.".Format(Interface, Host));
+					throw new PeachException("Interface '" + Interface + "' is not compatible with the address family for Host '" + Host + "'.");
 
 				if (_multicast && Protocol != Proto.Udp)
 					throw new PeachException("Multicast hosts are not supported with the tcp protocol.");

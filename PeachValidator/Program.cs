@@ -5,6 +5,20 @@ using System.Windows.Forms;
 
 namespace PeachValidator
 {
+
+#if MONO
+	static class Extensions
+	{
+		public static void BeginInit(this SplitContainer cont)
+		{
+		}
+
+		public static void EndInit(this SplitContainer cont)
+		{
+		}
+	}
+#endif
+
 	static class Program
 	{
 		/// <summary>

@@ -69,7 +69,9 @@ namespace Peach.Core
 			{
 				using(Stream fin = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				{
-					return asParser(args, fin);
+					Dom.Dom ret = asParser(args, fin);
+					ret.fileName = fileName;
+					return ret;
 				}
 			}
 			catch (FileNotFoundException fileNotFoundException)
@@ -111,7 +113,7 @@ namespace Peach.Core
 		/// <param name="args">Arguments</param>
 		/// <param name="fileName">Filename to test</param>
 		/// <returns>Throws PeachException on error.</returns>
-		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
+		public virtual void asParserValidation(Dictionary<string, object> args, string fileName)
 		{
 			try
 			{
@@ -127,7 +129,7 @@ namespace Peach.Core
 			}
 		}
 
-		public virtual void asParserValidation(Dictionary<string, string> args, Stream data)
+		public virtual void asParserValidation(Dictionary<string, object> args, Stream data)
 		{
 			throw new NotImplementedException();
 		}

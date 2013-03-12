@@ -107,5 +107,27 @@ namespace Peach.Core.Test.PitParserTests
 			TestEncoding(Encoding.BigEndianUnicode, true);
 			TestEncoding(Encoding.BigEndianUnicode, false);
 		}
+
+		[Test]
+		public void DefinesBeforeValidate()
+		{
+			string xml = @"
+<Peach>
+	<Include ns='test' src='file:##FILE##'/>
+</Peach>
+";
+			string tempFile = Path.GetTempFileName();
+			File.WriteAllText(tempFile, "<Peach><DataModel name='DM'/></Peach>");
+
+			var defines = new Dictionary<string, string>();
+			defines["FILE"] = tempFile;
+
+			var args = new Dictionary<string, object>();
+			args[PitParser.DEFINED_VALUES] = defines;
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(args, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.NotNull(dom);
+		}
 	}
 }

@@ -334,5 +334,101 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(temp2, ds.Datas[0].FileName);
 			Assert.AreEqual(temp1, dom.datas[0].FileName);
 		}
+
+		[Test]
+		public void TopDataElementGlob()
+		{
+			string tempDir = Path.GetTempFileName() + "_d";
+
+			Directory.CreateDirectory(tempDir);
+			File.WriteAllText(Path.Combine(tempDir, "1.txt"), "");
+			File.WriteAllText(Path.Combine(tempDir, "2.txt"), "");
+			File.WriteAllText(Path.Combine(tempDir, "2a.txt"), "");
+			File.WriteAllText(Path.Combine(tempDir, "1.png"), "");
+			File.WriteAllText(Path.Combine(tempDir, "2.png"), "");
+			File.WriteAllText(Path.Combine(tempDir, "2a.png"), "");
+
+
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='*'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.AreEqual(1, dom.datas.Count);
+				Assert.True(dom.datas.ContainsKey("data"));
+				var ds = dom.datas["data"];
+				Assert.Greater(ds.Files.Count, 0);
+			}
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName=''/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='foo'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='*/foo'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			});
+
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='{0}/*'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.AreEqual(1, dom.datas.Count);
+				Assert.True(dom.datas.ContainsKey("data"));
+				var ds = dom.datas["data"];
+				Assert.AreEqual(6, ds.Files.Count);
+			}
+
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='{0}/*.txt'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.AreEqual(1, dom.datas.Count);
+				Assert.True(dom.datas.ContainsKey("data"));
+				var ds = dom.datas["data"];
+				Assert.AreEqual(3, ds.Files.Count);
+			}
+
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='{0}/1.*'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.AreEqual(1, dom.datas.Count);
+				Assert.True(dom.datas.ContainsKey("data"));
+				var ds = dom.datas["data"];
+				Assert.AreEqual(2, ds.Files.Count);
+			}
+
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='{0}/2*.txt'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.AreEqual(1, dom.datas.Count);
+				Assert.True(dom.datas.ContainsKey("data"));
+				var ds = dom.datas["data"];
+				Assert.AreEqual(2, ds.Files.Count);
+			}
+
+			{
+				string xml = string.Format("<Peach><Data name='data' fileName='{0}/*a.*'/></Peach>", tempDir);
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Assert.AreEqual(1, dom.datas.Count);
+				Assert.True(dom.datas.ContainsKey("data"));
+				var ds = dom.datas["data"];
+				Assert.AreEqual(2, ds.Files.Count);
+			}
+		}
 	}
 }

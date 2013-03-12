@@ -86,7 +86,7 @@ namespace Peach.Core.Test
 		/// <summary>
 		/// Reported by Sirus
 		/// </summary>
-		[Test]
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "Block 'GeneratedModel.0.2' has length of 5381942480 bits, already read 64 bits, but buffer only has 40 bits left.")]
 		public void CrackExplode()
 		{
 			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -126,6 +126,51 @@ namespace Peach.Core.Test
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
+		}
+
+		/// <summary>
+		/// Proper data bytes for model of CrackExplode
+		/// </summary>
+		[Test]
+		public void CrackNoExplode()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+<DataModel name=""GeneratedModel"">
+            <Block name=""0"">
+                <Number name=""1"" size=""32""/>
+                <Block name=""2"">
+                    <Relation type=""size"" from=""4""/>
+                    <Number name=""3"" size=""32""/>
+                    <Number name=""4"" size=""32"">
+                        <Relation type=""size"" of=""2""/>
+                    </Number>
+                </Block>
+            </Block>
+    </DataModel>
+</Peach>
+";
+			byte[] dataBytes = new byte[] { 
+						0x5f,						0xfa,
+						0x8a,						0x68,
+						0x9a,						0x3d,
+						0x19,						0x28,
+						0x09,						0x00,
+						0x00,						0x00,
+						0xc7,						0x1c,
+						0x03,						0x9a,
+						0xa6 };
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(dataBytes);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.NotNull(dom);
 
@@ -137,7 +182,7 @@ namespace Peach.Core.Test
 		/// <summary>
 		/// Reported by Sirus
 		/// </summary>
-		[Test]
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "Block 'GeneratedModel.0.1' has length of 8 bits but already read 64 bits.")]
 		public void CrackExplode2()
 		{
 			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -174,16 +219,81 @@ namespace Peach.Core.Test
 			data.WriteBytes(dataBytes);
 			data.SeekBits(0, SeekOrigin.Begin);
 
-			try
-			{
-				DataCracker cracker = new DataCracker();
-				cracker.CrackData(dom.dataModels[0], data);
-				Assert.IsTrue(false);
-			}
-			catch (CrackingFailure)
-			{
-				Assert.IsTrue(true);
-			}
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+		}
+
+
+		[Test]
+		public void BugUtf16Length()
+		{
+			string xml = @"<?xml version='1.0' encoding='UTF-8'?>
+<Peach>
+	<DataModel name='bug_utf16_length'>
+		<String name='signature' token='true' value='START_MARKER'/>
+
+		<Number name='FILENAME_LENGTH' endian='little' size='16' signed='false' occurs='1'>
+			<Relation of='FILENAME' type='size'/>
+		</Number>
+
+		<Number name='OBJECT_LENGTH' endian='little' size='32' signed='false' occurs='1'>
+			<Relation of='OBJECT' type='size'/>
+		</Number>
+
+		<String name='FILENAME' occurs='1' nullTerminated='false'>
+			<Transformer class='encode.Utf16'/>
+		</String>
+
+		<Block name='OBJECT' occurs='1'>
+			<String value='END_MARKER'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] FILENAME = Encoding.Unicode.GetBytes("sample_mpeg4.mp4");
+			byte[] OBJECT = Encoding.ASCII.GetBytes("END_MARKER");
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(Encoding.ASCII.GetBytes("START_MARKER"));
+			data.WriteInt16((short)FILENAME.Length);
+			data.WriteInt32(OBJECT.Length);
+			data.WriteBytes(FILENAME);
+			data.WriteBytes(OBJECT);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+			Assert.AreEqual("START_MARKER", (string)dom.dataModels[0][0].DefaultValue);
+
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(FILENAME.Length, (int)array[0].DefaultValue);
+
+			array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual(OBJECT.Length, (int)array[0].DefaultValue);
+
+			array = dom.dataModels[0][3] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("sample_mpeg4.mp4", (string)array[0].DefaultValue);
+
+			array = dom.dataModels[0][4] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(1, block.Count);
+			Assert.AreEqual("END_MARKER", (string)block[0].DefaultValue);
+
 		}
 	}
 }

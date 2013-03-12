@@ -99,9 +99,9 @@ def apply_version(self, name, inputs, exts):
 	tsk = self.create_task('version', inputs, outputs)
 	self.source = Utils.to_list(self.source) + tsk.outputs
 
-@feature('cs')
-@before_method('apply_cs')
-@after_method('cs_helpers')
+@feature('cs', 'msbuild')
+@before_method('apply_cs', 'apply_msbuild')
+@after_method('cs_helpers', 'msbuild_helpers')
 def apply_version_cs(self):
 	if not getattr(self, 'version', True):
 		return

@@ -436,7 +436,6 @@
     <Compile Include="Dom\Data.cs" />
     <Compile Include="Dom\DataElementContainer.cs" />
     <Compile Include="Dom\DataSet.cs" />
-    <Compile Include="Dom\DomNamespace.cs" />
     <Compile Include="Dom\Flag.cs" />
     <Compile Include="Dom\Hint.cs" />
     <Compile Include="Dom\INamed.cs" />
@@ -451,7 +450,6 @@
     <Compile Include="Fixups\TCPChecksumFixup.cs" />
     <Compile Include="Fixups\UDPChecksumFixup.cs" />
     <Compile Include="IO\BitWriter.cs" />
-    <Compile Include="IPitSerializable.cs" />
     <Compile Include="Dom\Monitor.cs" />
     <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />
@@ -509,6 +507,7 @@
     <Compile Include="IWeighted.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
+    <Compile Include="LSFR.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicStrategy.cs" />
     <Compile Include="MutationStrategies\RandomStrategy.cs" />
     <Compile Include="MutationStrategies\Sequential.cs" />
@@ -574,6 +573,7 @@
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\RemotePublisher.cs" />
+    <Compile Include="Publishers\SerialPortPublisher.cs" />
     <Compile Include="Publishers\SocketPublisher.cs" />
     <Compile Include="Publishers\StreamPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />

@@ -42,7 +42,7 @@ namespace Peach.Core.Dom
 	/// A dom element to hold Agent configuration information
 	/// </summary>
 	[Serializable]
-	public class Agent : IPitSerializable
+	public class Agent
 	{
 		/// <summary>
 		/// Name for agent
@@ -69,23 +69,7 @@ namespace Peach.Core.Dom
 		/// List of monitors Agent should spin up.
 		/// </summary>
 		public List<Monitor> monitors = new List<Monitor>();
-
-    public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Agent", null);
-
-      node.AppendAttribute("name", this.name);
-      node.AppendAttribute("password", this.password);
-
-      foreach (Monitor monitor in monitors)
-      {
-        node.AppendChild(monitor.pitSerialize(doc, node));
-      }
-
-      return node;
-    }
-  }
+	}
 }
-
 
 // END

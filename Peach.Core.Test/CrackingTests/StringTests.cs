@@ -45,6 +45,29 @@ namespace Peach.Core.Test.CrackingTests
 	class StringTests
 	{
 		[Test]
+		public void CrackSizedString()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String length=\"5\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+		}
+
+		[Test]
 		public void CrackString1()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -460,6 +483,30 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackNullTermLengthToken()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"Hello\" length=\"6\" nullTerminated=\"true\" token=\"true\" />" +
+				"		<String value=\"World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello\0World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello\0", (string)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual("World", (string)dom.dataModels[0][1].DefaultValue);
 		}
 

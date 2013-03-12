@@ -59,8 +59,9 @@ namespace Peach.Core.Analyzers
 
 		static readonly string PEACH_NAMESPACE_URI = "http://peachfuzzer.com/2012/Peach";
 
-		public Dom.Dom _dom = null;
+		Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
+		bool resolveRelations = true;
 
 		/// <summary>
 		/// Contains default attributes for DataElements
@@ -92,10 +93,32 @@ namespace Peach.Core.Analyzers
 
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
+			string xml = readWithDefines(args, data);
+
 			if (doValidatePit)
-				validatePit(data);
+				validatePit(xml);
 
 			XmlDocument xmldoc = new XmlDocument();
+			xmldoc.LoadXml(xml);
+
+			_dom = new Dom.Dom();
+
+			foreach (XmlNode child in xmldoc.ChildNodes)
+			{
+				if (child.Name == "Peach")
+				{
+					handlePeach(child, args);
+					break;
+				}
+			}
+
+			_dom.evaulateDataModelAnalyzers();
+
+			return _dom;
+		}
+
+		private static string readWithDefines(Dictionary<string, object> args, Stream data)
+		{
 			data.Position = 0;
 			string xml = new StreamReader(data).ReadToEnd();
 
@@ -112,26 +135,13 @@ namespace Peach.Core.Analyzers
 				xml = sb.ToString();
 			}
 
-			xmldoc.LoadXml(xml);
-
-			_dom = new Dom.Dom();
-
-			foreach (XmlNode child in xmldoc.ChildNodes)
-			{
-				if (child.Name == "Peach")
-				{
-					handlePeach(child, _dom);
-					break;
-				}
-			}
-
-            _dom.evaulateDataModelAnalyzers();
-			return _dom;
+			return xml;
 		}
 
-		public override void asParserValidation(Dictionary<string, string> args, Stream data)
+		public override void asParserValidation(Dictionary<string, object> args, Stream data)
 		{
-			validatePit(data);
+			string xml = readWithDefines(args, data);
+			validatePit(xml);
 		}
 
 		static protected void populateDataElementPitParsable()
@@ -147,7 +157,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="fileName">Pit file to validate</param>
 		/// <param name="schema">Peach XML Schema file</param>
-		public void validatePit(Stream data)
+		private void validatePit(string xmlData)
 		{
 			XmlSchemaSet set = new XmlSchemaSet();
 			var xsd = Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd");
@@ -160,17 +170,16 @@ namespace Peach.Core.Analyzers
 			doc.Schemas = set;
 			// Mono has issues reading utf-32 BOM when just calling doc.Load(data)
 
-            try
-            {
-                string xmlData = new StreamReader(data).ReadToEnd();
-                doc.LoadXml(xmlData);
-            }
-            catch(XmlException ex)
-            {
-               throw new PeachException("Error: XML Failed to load: " + ex.Message, ex); 
-            }
+			try
+			{
+				doc.LoadXml(xmlData);
+			}
+			catch (XmlException ex)
+			{
+				throw new PeachException("Error: XML Failed to load: " + ex.Message, ex);
+			}
 
-		    // Right now XSD validation is disabled on Mono :(
+			// Right now XSD validation is disabled on Mono :(
 			// Still load the doc to verify well formed xml
 			Type t = Type.GetType("Mono.Runtime");
 			if (t != null)
@@ -208,10 +217,10 @@ namespace Peach.Core.Analyzers
 		/// Handle parsing the top level Peach node.
 		/// </summary>
 		/// <param name="node">XmlNode to parse</param>
-		/// <param name="dom">DOM to fill</param>
 		/// <returns>Returns the parsed Dom object.</returns>
-		protected virtual Dom.Dom handlePeach(XmlNode node, Dom.Dom dom)
+		protected virtual void handlePeach(XmlNode node, Dictionary<string, object> args)
 		{
+			Dom.Dom dom = _dom;
 
 			// Pass 0 - Basic check if Peach 2.3 ns  
 			if (node.NamespaceURI.Contains("2008"))
@@ -242,25 +251,11 @@ namespace Peach.Core.Analyzers
 							fileName = newFileName;
 						}
 
-						validatePit(File.OpenRead(fileName));
-
-						XmlDocument xmldoc = new XmlDocument();
-						xmldoc.Load(fileName);
-
-						Dom.DomNamespace nsObj = new Dom.DomNamespace();
-						nsObj.parent = dom;
-						nsObj.name = ns;
-
-						foreach (XmlNode item in xmldoc.ChildNodes)
-						{
-							if (item.Name == "Peach")
-							{
-								handlePeach(item, nsObj);
-								break;
-							}
-						}
-
-						dom.ns[ns] = nsObj;
+						var newParser = new PitParser();
+						newParser.resolveRelations = false;
+						Dom.Dom newDom = newParser.asParser(args, fileName);
+						newDom.name = ns;
+						dom.ns[ns] = newDom;
 						break;
 
 					case "Require":
@@ -336,8 +331,8 @@ namespace Peach.Core.Analyzers
 			}
 
 			// Pass 3.5 - Resolve all relations
-
-			finalUpdateRelations(dom.dataModels.Values);
+			if (resolveRelations)
+				finalUpdateRelations(dom.dataModels.Values);
 
 			// Pass 4 - Handle Data
 
@@ -388,8 +383,6 @@ namespace Peach.Core.Analyzers
 			{
 				test.markMutableElements();
 			}
-
-			return dom;
 		}
 
 		public static void displayDataModel(DataElement elem, int indent = 0)
@@ -433,16 +426,17 @@ namespace Peach.Core.Analyzers
 		/// Resolve a 'ref' attribute.  Will throw a PeachException if
 		/// namespace is given, but not found.
 		/// </summary>
-		/// <param name="dom">DOM to use for resolving ref.</param>
 		/// <param name="name">Ref name to resolve.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
-		public static DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
+		public DataElement getReference(string name, DataElementContainer container)
 		{
+			Dom.Dom dom = _dom;
+
 			if (name.IndexOf(':') > -1)
 			{
 				string ns = name.Substring(0, name.IndexOf(':'));
 
-				Dom.DomNamespace other;
+				Dom.Dom other;
 				if (!dom.ns.TryGetValue(ns, out other))
 					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + name + "'.");
 
@@ -642,7 +636,7 @@ namespace Peach.Core.Analyzers
 
 			if (refName != null)
 			{
-				DataModel refObj = getReference(_dom, refName, null) as DataModel;
+				DataModel refObj = getReference(refName, null) as DataModel;
 				if (refObj == null)
 					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
@@ -742,9 +736,6 @@ namespace Peach.Core.Analyzers
 					throw new PeachException("Error, setting length on element '" + element.name + "'.  " + e.Message, e);
 				}
 			}
-
-			if (node.hasAttr("lengthCalc"))
-				element.lengthCalc = node.getAttrString("lengthCalc");
 		}
 
 		/// <summary>
@@ -887,7 +878,7 @@ namespace Peach.Core.Analyzers
 				// notation.
 				if (element.isReference)
 				{
-					if (childName.IndexOf(".") > -1)
+					if (childName != null && childName.IndexOf(".") > -1)
 					{
 						DataElement parent = element.find(childName);
 						if (parent == null)
@@ -1404,6 +1395,25 @@ namespace Peach.Core.Analyzers
 				{
 					data.DataType = DataType.File;
 					data.FileName = dataFileName;
+				}
+				else if (dataFileName.Contains('*'))
+				{
+					string pattern = Path.GetFileName(dataFileName);
+					string dir = dataFileName.Substring(0, dataFileName.Length - pattern.Length);
+
+					if (dir == "")
+						dir = ".";
+
+					if (!dir.Contains('*'))
+					{
+						string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
+						data.Files.AddRange(files);
+					}
+
+					if (data.Files.Count == 0)
+						throw new PeachException("Error parsing Data element, no matching files found: " + dataFileName);
+
+					data.DataType = DataType.Files;
 				}
 				else
 				{

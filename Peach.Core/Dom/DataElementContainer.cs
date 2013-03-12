@@ -64,83 +64,37 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			DataElementContainer element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			BitStream sizedData = data;
-			SizeRelation sizeRelation = null;
+			BitStream sizedData = ReadSizedData(data, size);
 			long startPosition = data.TellBits();
-			sizeRelation = element.relations.getOfSizeRelation();
-
-			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation && !element.isParentOf(sizeRelation.From))
-			{
-				long size = sizeRelation.GetValue();
-				context._sizedBlockStack.Add(element);
-				context._sizedBlockMap[element] = size;
-
-				sizedData = data.ReadBitsAsBitStream(size);
-				sizeRelation = null;
-			}
-			else if (element.hasLength)
-			{
-				long size = element.lengthAsBits;
-				context._sizedBlockStack.Add(element);
-				context._sizedBlockMap[element] = size;
-
-				sizedData = data.ReadBitsAsBitStream(size);
-			}
 
 			// Handle children, iterate over a copy since cracking can modify the list
-			var children = _childrenList.ToArray();
-			foreach (DataElement child in children)
+			for (int i = 0; i < this.Count; )
 			{
-				context.handleNode(child, sizedData);
+				var child = this[i];
+				context.CrackData(child, sizedData);
 
-				// If we have an unused size relation, wait until we
-				// can use it then re-size our data.
-				if (sizeRelation != null)
+				// If we are unsized, cracking a child can cause our size
+				// to be available.  If so, update and keep going.
+				if (!size.HasValue)
 				{
-					if (child is DataElementContainer &&
-						((DataElementContainer)child).isParentOf(sizeRelation.From))
+					size = context.GetElementSize(this);
+
+					if (size.HasValue)
 					{
-						long size = (long)sizeRelation.GetValue();
-						context._sizedBlockStack.Add(element);
-						context._sizedBlockMap[element] = size;
-
-						// update size based on what we have currently read
-						size -= data.TellBits() - startPosition;
-
-						sizedData = data.ReadBitsAsBitStream(size);
-						sizeRelation = null;
-					}
-					else if (child == sizeRelation.From)
-					{
-						long size = (long)sizeRelation.GetValue();
-						context._sizedBlockStack.Add(element);
-						context._sizedBlockMap[element] = size;
-
-						// update size based on what we have currently read
-						size -= data.TellBits() - startPosition;
-
-						if (size < 0)
-							throw new CrackingFailure("Relation of container too small.", child, data);
-
-						sizedData = data.ReadBitsAsBitStream(size);
-						sizeRelation = null;
+						long read = data.TellBits() - startPosition;
+						sizedData = ReadSizedData(data, size, read);
 					}
 				}
+
+				int idx = IndexOf(child);
+				if (idx != -1)
+					i = idx + 1;
 			}
 
-			// Remove our element from the stack & map
-			if (sizedData != data)
-			{
-				context._sizedBlockStack.Remove(element);
-				context._sizedBlockMap.Remove(element);
-			}
+			if (size.HasValue && sizedData == data)
+				data.SeekBits(startPosition + size.Value, System.IO.SeekOrigin.Begin);
 		}
 
 		public override bool isLeafNode
@@ -170,6 +124,21 @@ namespace Peach.Core.Dom
 			{
 				return null;
 			}
+		}
+
+		public override BitStream  ReadSizedData(BitStream data, long? size, long read = 0)
+		{
+			if (!size.HasValue)
+				return data;
+
+			long needed = size.Value - read;
+			data.WantBytes((needed + 7) / 8);
+			long remain = data.LengthBits - data.TellBits();
+
+			if (needed == remain)
+				return data;
+
+			 return base.ReadSizedData(data, size, read);
 		}
 
 		public override bool CacheValue

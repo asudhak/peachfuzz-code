@@ -95,7 +95,6 @@ namespace PeachValidator
 					DataCracker cracker = new DataCracker();
 					cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
 					cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
-					cracker.PlacementEvent += new PlacementEventHandler(cracker_PlacementEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
 				catch (CrackingFailure ex)
@@ -128,27 +127,14 @@ namespace PeachValidator
 			}
 		}
 
-		void cracker_PlacementEvent(DataElement oldElement, DataElement newElement, DataElementContainer oldParent)
-		{
-			var currentModel = crackMap[oldElement];
-			var oldParentNode = crackMap[oldParent];
-			var newParentNode = crackMap[newElement.parent];
-				
-			oldParentNode.Children.Remove(currentModel);
-
-			currentModel = new CrackNode(currentModel.Model, newElement, currentModel.Position, currentModel.Length);
-			newParentNode.Children.Add(currentModel);
-			currentModel.Parent = newParentNode;
-		}
-
-		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
+		void cracker_ExitHandleNodeEvent(DataElement element, long position, BitStream data)
 		{
 			var currentModel = crackMap[element];
 
 			try
 			{
-				currentModel.Length = (int)((BitStream)currentModel.DataElement.Value).LengthBytes;
-				currentModel.Position = (int)(data.DataElementPosition(element) / 8);
+				// Verify element is in data collection
+				long pos = data.DataElementPosition(element);
 			}
 			catch (ApplicationException ex)
 			{
@@ -161,25 +147,19 @@ namespace PeachValidator
 				}
 			}
 
+			currentModel.StopBits = position;
+
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
 				crackMap[element.parent].Children.Add(currentModel);
 			else
 			{
 				// TODO -- Need to handle this case!
 			}
-
-			// Figure out if we are relative to prent and mark as such.
-			if (currentModel.Position == 0 && currentModel.Parent != null &&
-				currentModel.Parent.Position > 0)
-			{
-				currentModel.Parent.MarkChildrenRelativeToParent();
-			}
-
 		}
 
-		void cracker_EnterHandleNodeEvent(DataElement element, BitStream data)
+		void cracker_EnterHandleNodeEvent(DataElement element, long position, BitStream data)
 		{
-			crackMap[element] = new CrackNode(crackModel, element, (int)data.TellBytes(), 0);
+			crackMap[element] = new CrackNode(crackModel, element, position, 0);
 		}
 
 		private void toolStripButtonOpenPit_Click(object sender, EventArgs e)

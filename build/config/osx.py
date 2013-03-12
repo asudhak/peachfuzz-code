@@ -16,6 +16,7 @@ tools = [
 	'tools.externals',
 	'tools.test',
 	'tools.version',
+	'tools.mdoc',
 ]
 
 def find_directory(dirname, paths):
@@ -102,6 +103,7 @@ def configure(conf):
 		'emit',
 		'vnum',
 		'subst',
+		'network',
 	])
 
 	env.append_value('CSFLAGS', [

@@ -2,7 +2,7 @@ from waflib.Build import BuildContext, InstallContext
 from waflib.Configure import ConfigurationContext
 from waflib.Context import Context
 from waflib.Task import TaskBase
-from waflib import Build, Utils, Logs
+from waflib import Build, Utils, Logs, Errors
 import os.path
 import sys
 
@@ -112,7 +112,7 @@ def display(self):
 
 # InstallContext
 def do_install(self, src, tgt, chmod=Utils.O644):
-	if self.progress_bar == 0:
+	if Logs.verbose <= 1 and self.progress_bar == 0:
 		self.progress_bar = -1;
 
 	ret = self.base_do_install(src, tgt, chmod)
