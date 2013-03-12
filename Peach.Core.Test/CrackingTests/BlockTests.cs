@@ -302,12 +302,12 @@ namespace Peach.Core.Test.CrackingTests
 
 			DataCracker cracker = new DataCracker();
 
-			cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(delegate(DataElement de, long pos)
+			cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(delegate(DataElement de, long pos, BitStream crackdata)
 			{
 				place.Add(de.fullName, pos.ToString());
 			});
 
-			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(delegate(DataElement de, long pos)
+			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(delegate(DataElement de, long pos, BitStream crackdata)
 			{
 				place[de.fullName] += "," + pos.ToString();
 			});
