@@ -430,5 +430,54 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(2, ds.Files.Count);
 			}
 		}
+
+		[Test]
+		public void AgentPlatform()
+		{
+			string xml =
+@"<Peach>
+	<DataModel name='TheDataModel'>
+		<String name='str' value='Hello World!'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Agent name='TheAgent'>
+		<Monitor class='FaultingMonitor'>
+			<Param name='Iteration' value='2'/>
+		</Monitor>
+	</Agent>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Agent ref='TheAgent' platform='{0}'/>
+		<Mutators mode='include'>
+			<Mutator class='StringCaseMutator'/>
+		</Mutators>
+	</Test>
+</Peach>";
+			xml = string.Format(xml, Platform.GetOS() == Platform.OS.Windows ? "linux" : "windows");
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.Fault += delegate(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faultData)
+			{
+				Assert.Fail("Fault should not be detected!");
+			};
+
+			e.startFuzzing(dom, config);
+		}
 	}
 }
