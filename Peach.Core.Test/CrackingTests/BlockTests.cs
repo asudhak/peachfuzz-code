@@ -270,5 +270,58 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3, data.TellBytes());
 			Assert.AreEqual(24, data.TellBits());
 		}
+
+		[Test]
+		public void CrackBlock8()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+			"			<Number name=\"n1\" size=\"8\">" +
+			"				<Relation type=\"size\" of=\"b1\"/>" +
+			"			</Number>" +
+			"			<Block name=\"b1\">" +
+			"				<Number name=\"n2\" size=\"8\">" +
+			"					<Relation type=\"size\" of=\"b2\"/>" +
+			"				</Number>" +
+				"			<Block name=\"b2\">" +
+				"				<Number name=\"n3\" size=\"8\"/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			Dictionary<string, string> place = new Dictionary<string, string>();
+
+			DataCracker cracker = new DataCracker();
+
+			cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(delegate(DataElement de, long pos)
+			{
+				place.Add(de.fullName, pos.ToString());
+			});
+
+			cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(delegate(DataElement de, long pos)
+			{
+				place[de.fullName] += "," + pos.ToString();
+			});
+
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(6, place.Count);
+			Assert.AreEqual("0,72", place["TheDataModel"]);
+			Assert.AreEqual("0,8", place["TheDataModel.n1"]);
+			Assert.AreEqual("8,72", place["TheDataModel.b1"]);
+			Assert.AreEqual("8,16", place["TheDataModel.b1.n2"]);
+			Assert.AreEqual("16,48", place["TheDataModel.b1.b2"]);
+			Assert.AreEqual("16,24", place["TheDataModel.b1.b2.n3"]);
+
+		}
 	}
 }

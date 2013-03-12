@@ -851,6 +851,75 @@ namespace Peach.Core.Test.CrackingTests
 
 		}
 
+		public Dom.Dom TokenAfterSizedArray(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='MealModel'>
+		<String name='Appetizer' />
+		<String value='/' token='true' />
+		<String name='Entree' />
+		<Block name='Dessert' minOccurs='0'>
+			<String value='/' token='true' />
+			<Choice name='DessertChoice'>
+				<String name='Pie' value='Pie' token='true' />
+				<String name='Cake' value='Cake' token='true' />
+			</Choice>
+		</Block>
+		<String name='Terminator' value=';' token='true' />
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void ZeroTokenAfterSizedArray()
+		{
+			var dom = TokenAfterSizedArray("Soup/Steak;");
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+
+			Assert.AreEqual("Soup", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("/", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Steak", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(";", (string)dom.dataModels[0][4].DefaultValue);
+			var array = dom.dataModels[0][3] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
+		}
+
+		[Test]
+		public void OneTokenAfterSizedArray()
+		{
+			var dom = TokenAfterSizedArray("Soup/Steak/Pie;");
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+
+			Assert.AreEqual("Soup", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("/", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Steak", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(";", (string)dom.dataModels[0][4].DefaultValue);
+			var array = dom.dataModels[0][3] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual("/", (string)block[0].DefaultValue);
+			var choice = block[1] as Choice;
+			Assert.AreEqual("Pie", (string)choice.SelectedElement.DefaultValue);
+		}
 	}
 }
 
