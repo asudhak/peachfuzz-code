@@ -105,7 +105,7 @@ namespace Peach.Core.Publishers
 		const int AF_PACKET  = 17;
 		const int SOCK_RAW   = 3;
 		const int SIOCGIFMTU = 0x8921;
-		const int SIOSGIFMTU = 0x8922;
+		const int SIOCSIFMTU = 0x8922;
 
 		[StructLayout(LayoutKind.Sequential)]
 		struct sockaddr_ll
@@ -157,13 +157,19 @@ namespace Peach.Core.Publishers
 
 		private const uint EthernetHeaderSize = 14;
 
-		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header
+		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header.
+		// In order to account for Jumbograms which are > 65535, max MTU is double 65535
+		// MinMTU is 128 so that IP info isn't lost if MTU is fuzzed
+		//
+		// These values should be made configurable at some point.
 		private const uint MaxMtu = 65535 * 2;
+		private const uint MinMtu = 128;
 
 		private UnixStream _socket = null;
 		private MemoryStream _recvBuffer = null;
 		private int _bufferSize = 0;
 		private uint _mtu = 0;
+		private uint orig_mtu = 0;
 
 		public RawEtherPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -204,10 +210,17 @@ namespace Peach.Core.Publishers
 
 				ifreq ifr = new ifreq(Interface);
 
+				if (orig_mtu == 0)
+				{
+					ret = ioctl(fd, SIOCGIFMTU, ref ifr);
+					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
+					orig_mtu = ifr.ifru_mtu;
+				}
+
 				if (mtu != null)
 				{
 					ifr.ifru_mtu = mtu.Value;
-					ret = ioctl(fd, SIOSGIFMTU, ref ifr);
+					ret = ioctl(fd, SIOCSIFMTU, ref ifr);
 					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
 				}
 
@@ -249,10 +262,21 @@ namespace Peach.Core.Publishers
 
 		protected override void OnClose()
 		{
+		        //this never happens....
+
 			System.Diagnostics.Debug.Assert(_socket != null);
+			if (orig_mtu != 0)
+			  OpenSocket(orig_mtu);
 			_socket.Close();
 			_socket = null;
 		}
+
+		protected override void OnStop()
+		{
+			if (orig_mtu != 0)
+			  OpenSocket(orig_mtu);
+		}
+
 
 		protected override void OnInput()
 		{
@@ -430,10 +454,12 @@ namespace Peach.Core.Publishers
 				int len = (int)Math.Min(bs.LengthBits, 32);
 				ulong bits = bs.ReadBits(len);
 				uint mtu = LittleBitWriter.GetUInt32(bits, len);
-
-				using (var sock = OpenSocket(mtu))
+				if (MaxMtu >= mtu && mtu >= MinMtu)
 				{
-					Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+				  using (var sock = OpenSocket(mtu))
+				  {
+				    Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+				  }
 				}
 			}
 		}
