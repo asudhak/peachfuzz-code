@@ -593,34 +593,43 @@ namespace Peach.Core.Cracker
 				tokens[i].Position += pos;
 			}
 
-			if (!ret.HasValue || !ret.HasValue)
+			if (ret.HasValue && ret.Value)
 			{
-				logger.Debug("scanArray: {0} -> {1}", array.debugName,
-					ret.HasValue ? "Deterministic" : "Unsized");
-				return ret;
+				if (until == Until.FirstSized)
+					ret = false;
+
+				var rel = array.relations.getOfCountRelation();
+				if (rel != null && _sizedElements.ContainsKey(rel.From))
+				{
+					arrayPos *= rel.GetValue();
+					pos += arrayPos;
+					logger.Debug("scanArray: {0} -> Count Relation: {1}, Size: {2}",
+						array.debugName, rel.GetValue(), arrayPos);
+					return ret;
+				}
+				else if (array.minOccurs == 1 && array.maxOccurs == 1)
+				{
+					arrayPos *= array.occurs;
+					pos += arrayPos;
+					logger.Debug("scanArray: {0} -> Occurs: {1}, Size: {2}",
+						array.debugName, array.occurs, arrayPos);
+					return ret;
+				}
+				else
+				{
+					// If the count is unknown, treat the array unsized
+					ret = null;
+
+					// If no tokens were found in the array, we are done
+					if (tokenCount == tokens.Count)
+					{
+						logger.Debug("scanArray: {0} -> Count Unknown", array.debugName);
+						return ret;
+					}
+				}
 			}
 
-			if (until == Until.FirstSized)
-				ret = false;
-
-			var rel = array.relations.getOfCountRelation();
-			if (rel != null && _sizedElements.ContainsKey(rel.From))
-			{
-				arrayPos *= rel.GetValue();
-				pos += arrayPos;
-				logger.Debug("scanArray: {0} -> Count Relation: {1}, Size: {2}",
-					array.debugName, rel.GetValue(), arrayPos);
-				return ret;
-			}
-			else if (array.minOccurs == 1 && array.maxOccurs == 1)
-			{
-				arrayPos *= array.occurs;
-				pos += arrayPos;
-				logger.Debug("scanArray: {0} -> Occurs: {1}, Size: {2}",
-					array.debugName, array.occurs, arrayPos);
-				return ret;
-			}
-
+			// Look for optional tokens, if none found and we are minOccurs==0, our size is 0
 			for (int i = tokenCount; i < tokens.Count; ++i)
 			{
 				long? where = findToken(_dataStack.First(), tokens[i].Element.Value, tokens[i].Position);
@@ -631,8 +640,10 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			logger.Debug("scanArray: {0} -> Count Unknown", array.debugName);
-			return null;
+			logger.Debug("scanArray: {0} -> {1}", array.debugName,
+				ret.HasValue ? "Deterministic" : "Unsized");
+
+			return ret;
 		}
 
 		class Mark
