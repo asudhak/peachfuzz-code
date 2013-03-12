@@ -47,7 +47,7 @@ namespace Peach.Core.Transformers.Encode
         protected override BitStream internalEncode(BitStream data)
         {
             string dataString = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-            string ue = System.Web.HttpUtility.UrlPathEncode(dataString);
+            string ue = System.Web.HttpUtility.UrlEncode(dataString);
 
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(ue));
         }
