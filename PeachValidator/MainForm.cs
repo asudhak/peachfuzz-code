@@ -144,8 +144,22 @@ namespace PeachValidator
 		void cracker_ExitHandleNodeEvent(DataElement element, BitStream data)
 		{
 			var currentModel = crackMap[element];
-			currentModel.Length = (int)((BitStream)currentModel.DataElement.Value).LengthBytes;
-			currentModel.Position = (int) (data.DataElementPosition(element)/8);
+
+			try
+			{
+				currentModel.Length = (int)((BitStream)currentModel.DataElement.Value).LengthBytes;
+				currentModel.Position = (int)(data.DataElementPosition(element) / 8);
+			}
+			catch (ApplicationException ex)
+			{
+				// When occurs = 0 (element removed)
+				if (ex.Message.IndexOf("Unknown DataElement") > -1)
+				{
+					if(currentModel.Parent != null)
+						currentModel.Parent.RemoveChild(currentModel);
+					return;
+				}
+			}
 
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
 				crackMap[element.parent].Children.Add(currentModel);
