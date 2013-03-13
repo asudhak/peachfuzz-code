@@ -485,6 +485,8 @@ namespace Peach.Core.Cracker
 			logger.Debug("Crack: {0} Size: {1}, {2}", elem.debugName,
 				size.HasValue ? size.ToString() : "<null>", data.Progress);
 
+			data.MarkStartOfElement(elem);
+
 			elem.Crack(this, data, size);
 		}
 
