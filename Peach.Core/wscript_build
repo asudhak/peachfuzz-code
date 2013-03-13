@@ -29,5 +29,6 @@ bld(
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	resource = 'peach.xsd xmltests.zip',
+	install = 'peach.xsd',
 	name = 'Peach.Core.dll',
 )
