@@ -36,6 +36,8 @@ using IronRuby.Hosting;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using Microsoft.Scripting.Math;
+using System.Reflection;
+using System.IO;
 
 namespace Peach.Core
 {
@@ -55,6 +57,7 @@ namespace Peach.Core
 		static public List<string> Imports = new List<string>();
 		static public List<string> Paths = new List<string>();
 		static public Dictionary<string, object> GlobalScope = new Dictionary<string, object>();
+		static public string StdLib = ClassLoader.FindFile("IronPython.StdLib.zip");
 
 		/// <summary>
 		/// Returns the correct scripting engine.
@@ -83,6 +86,8 @@ namespace Peach.Core
 			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
 			foreach(string path in Paths)
 				enginePaths.Add(path);
+			enginePaths.Add(StdLib);
+			scope.Engine.SetSearchPaths(enginePaths);
 
 			// Import any modules
 			foreach(string import in Imports)
@@ -118,6 +123,7 @@ namespace Peach.Core
 			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
 			foreach(string path in Paths)
 				enginePaths.Add(path);
+			enginePaths.Add(StdLib);
 			scope.Engine.SetSearchPaths(enginePaths);
 
 			// Import any modules

@@ -128,6 +128,27 @@ namespace Peach.Core
 			return true;
 		}
 
+		public static string FindFile(string fileName)
+		{
+			if (Path.IsPathRooted(fileName))
+			{
+				if (File.Exists(fileName))
+					return fileName;
+			}
+			else
+			{
+				foreach (string path in searchPath)
+				{
+					string fullPath = Path.Combine(path, fileName);
+
+					if (File.Exists(fullPath))
+						return fullPath;
+				}
+			}
+
+			throw new FileNotFoundException();
+		}
+
 		public static void LoadAssembly(string fileName)
 		{
 			if (Path.IsPathRooted(fileName))
