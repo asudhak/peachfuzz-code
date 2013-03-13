@@ -99,6 +99,8 @@ namespace Peach.Core.Agent.Monitors
 						sshClient.Connect();
 				}
 			}
+
+			logger.Debug("<< SessionStarting()");
 		}
 
 		public override void SessionFinished()
@@ -121,49 +123,67 @@ namespace Peach.Core.Agent.Monitors
 
 		public override Fault GetMonitorData()
 		{
-			var fault = new Fault();
-			fault.type = FaultType.Data;
-			fault.title = "SSH Downloader: " + File != null ? File : Folder;
-			fault.detectionSource = "SshDownloader";
-			fault.description = "";
-
-			using(var client = new SftpClient(connectionInfo))
+			try
 			{
-				client.Connect();
+				logger.Debug(">> GetMonitorData");
 
-				if (File != null)
+				var fault = new Fault();
+				fault.type = FaultType.Data;
+				fault.title = "SSH Downloader: " + File != null ? File : Folder;
+				fault.detectionSource = "SshDownloader";
+				fault.description = "";
+
+				using (var client = new SftpClient(connectionInfo))
 				{
-					using (var sout = new MemoryStream())
-					{
-						client.DownloadFile(File, sout);
-						if (Remove)
-							client.DeleteFile(File);
+					client.Connect();
 
-						sout.Position = 0;
-						fault.collectedData[Path.GetFileName(File)] = sout.ToArray();
+					if (!string.IsNullOrWhiteSpace(File))
+					{
+						using (var sout = new MemoryStream())
+						{
+							logger.Debug("Trying to download \"" + File + "\".");
+
+							client.DownloadFile(File, sout);
+							if (Remove)
+								client.DeleteFile(File);
+
+							sout.Position = 0;
+							fault.collectedData[Path.GetFileName(File)] = sout.ToArray();
+						}
+
+						fault.description = File;
+
+						return fault;
 					}
 
-					fault.description = File;
+					if (string.IsNullOrWhiteSpace(Folder))
+						return null;
+
+					logger.Debug("Downloading all files from \"" + Folder + "\".");
+					foreach (var file in client.ListDirectory(Folder))
+					{
+						logger.Debug("Trying to download \"" + file.FullName + "\".");
+
+						using (var sout = new MemoryStream((int)file.Length))
+						{
+							client.DownloadFile(file.FullName, sout);
+							if (Remove)
+								client.DeleteFile(file.FullName);
+
+							sout.Position = 0;
+							fault.collectedData[Path.GetFileName(file.FullName)] = sout.ToArray();
+
+							fault.description += file.FullName + "\n";
+						}
+					}
 
 					return fault;
 				}
-
-				foreach (var file in client.ListDirectory(Folder))
-				{
-					using (var sout = new MemoryStream((int)file.Length))
-					{
-						client.DownloadFile(file.FullName, sout);
-						if (Remove)
-							client.DeleteFile(file.FullName);
-
-						sout.Position = 0;
-						fault.collectedData[Path.GetFileName(file.FullName)] = sout.ToArray();
-
-						fault.description += file.FullName + "\n";
-					}
-				}
-
-				return fault;
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex.Message);
+				throw ex;
 			}
 		}
 
