@@ -32,11 +32,15 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core;
 using Peach.Core.Agent;
+using System.Diagnostics;
 
 namespace Peach
 {
 	public class ConsoleWatcher : Watcher
 	{
+		Stopwatch timer = new Stopwatch();
+		uint startIteration = 0;
+
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
 		{
 			var color = Console.ForegroundColor;
@@ -75,35 +79,48 @@ namespace Peach
 			else if (context.controlIteration)
 				controlIteration = "C";
 
-			if (totalIterations == null || totalIterations == int.MaxValue)
+			string strTotal = "-";
+			string strEta = "-";
+
+
+			if (!timer.IsRunning)
 			{
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("\n[");
-				Console.ForegroundColor = ConsoleColor.Gray;
-				Console.Write(string.Format("{1}{0},-,-", currentIteration, controlIteration));
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("] ");
-				Console.ForegroundColor = ConsoleColor.DarkGreen;
-				Console.WriteLine("Performing iteration");
-				Console.ForegroundColor = color;
+				timer.Start();
+				startIteration = currentIteration;
 			}
-			else
+
+			if (totalIterations != null && totalIterations < uint.MaxValue)
 			{
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("\n[");
-				Console.ForegroundColor = ConsoleColor.Gray;
-				if(totalIterations == uint.MaxValue)
-					Console.Write(string.Format("{2}{0},-,-", currentIteration, totalIterations, controlIteration));
+				strTotal = totalIterations.ToString();
+
+				var done = currentIteration - startIteration;
+				var total = totalIterations.Value - startIteration + 1;
+				var elapsed = timer.ElapsedMilliseconds;
+				TimeSpan remain;
+
+				if (done == 0)
+				{
+					remain = TimeSpan.FromMilliseconds(elapsed * total);
+				}
 				else
-					Console.Write(string.Format("{2}{0},{1},-", currentIteration, totalIterations, controlIteration));
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("] ");
-				Console.ForegroundColor = ConsoleColor.DarkGreen;
-				Console.WriteLine("Performing iteration");
-				Console.ForegroundColor = color;
+				{
+					remain = TimeSpan.FromMilliseconds((total * elapsed / done) - elapsed);
+				}
+
+				strEta = remain.ToString("g");
 			}
+
+
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("\n[");
+			Console.ForegroundColor = ConsoleColor.Gray;
+			Console.Write(string.Format("{0}{1},{2},{3}", controlIteration, currentIteration, strTotal, strEta));
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("] ");
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.WriteLine("Performing iteration");
+			Console.ForegroundColor = color;
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
