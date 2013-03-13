@@ -165,8 +165,15 @@ namespace Peach.Core.Publishers
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
-				RestartRemotePublisher();
-				_publisher.close();
+				try
+				{
+					RestartRemotePublisher();
+					_publisher.close();
+				}
+				catch (System.Runtime.Remoting.RemotingException)
+				{
+					logger.Warn("Ignoring remoting exception on OnClose");
+				}
 			}
 		}
 
@@ -191,8 +198,16 @@ namespace Peach.Core.Publishers
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
-				RestartRemotePublisher();
-				return _publisher.call(method, args);
+				try
+				{
+					RestartRemotePublisher();
+					return _publisher.call(method, args);
+				}
+				catch (System.Runtime.Remoting.RemotingException)
+				{
+					logger.Warn("Ignoring remoting exception on OnCall");
+					return null;
+				}
 			}
 		}
 
@@ -204,8 +219,15 @@ namespace Peach.Core.Publishers
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
-				RestartRemotePublisher();
-				_publisher.setProperty(property, value);
+				try
+				{
+					RestartRemotePublisher();
+					_publisher.setProperty(property, value);
+				}
+				catch (System.Runtime.Remoting.RemotingException)
+				{
+					logger.Warn("Ignoring remoting exception on OnSetProperty");
+				}
 			}
 		}
 
@@ -217,33 +239,62 @@ namespace Peach.Core.Publishers
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
-				RestartRemotePublisher();
-				return _publisher.getProperty(property);
+				try
+				{
+					RestartRemotePublisher();
+					return _publisher.getProperty(property);
+				}
+				catch (System.Runtime.Remoting.RemotingException)
+				{
+					logger.Warn("Ignoring remoting exception on OnGetProperty");
+					return null;
+				}
 			}
 		}
 
 		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			_publisher.output(buffer, offset, count);
+			try
+			{
+				_publisher.output(buffer, offset, count);
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				logger.Warn("Ignoring remoting exception on OnOutput");
+			}
 		}
 
 		protected override void OnInput()
 		{
-			_publisher.input();
+			try
+			{
+				_publisher.input();
 
-			stream.Seek(0, SeekOrigin.Begin);
-			stream.SetLength(0);
+				stream.Seek(0, SeekOrigin.Begin);
+				stream.SetLength(0);
 
-			ReadAllBytes();
+				ReadAllBytes();
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				logger.Warn("Ignoring remoting exception on OnInput");
+			}
 		}
 
 		public override void WantBytes(long count)
 		{
-			long need = count - (stream.Length - stream.Position);
-			if (need > 0)
+			try
 			{
-				_publisher.WantBytes(need);
-				ReadAllBytes();
+				long need = count - (stream.Length - stream.Position);
+				if (need > 0)
+				{
+					_publisher.WantBytes(need);
+					ReadAllBytes();
+				}
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				logger.Warn("Ignoring remoting exception on WantBytes");
 			}
 		}
 
@@ -251,16 +302,24 @@ namespace Peach.Core.Publishers
 		{
 			long pos = stream.Position;
 
-			for (;;)
+			try
 			{
-				int b = _publisher.ReadByte();
-				if (b == -1)
+				for (;;)
 				{
-					stream.Seek(pos, SeekOrigin.Begin);
-					return;
-				}
+					int b = _publisher.ReadByte();
+					if (b == -1)
+					{
+						stream.Seek(pos, SeekOrigin.Begin);
+						return;
+					}
 
-				stream.WriteByte((byte)b);
+					stream.WriteByte((byte)b);
+				}
+			}
+			catch (System.Runtime.Remoting.RemotingException)
+			{
+				logger.Warn("Ignoring remoting exception on ReadAllBytes");
+				stream.Seek(pos, SeekOrigin.Begin);
 			}
 		}
 	}
