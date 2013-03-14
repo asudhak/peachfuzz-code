@@ -430,8 +430,11 @@ namespace Peach.Core.Analyzers
 		/// <returns>DataElement for ref or null if not found.</returns>
 		public DataElement getReference(string name, DataElementContainer container)
 		{
-			Dom.Dom dom = _dom;
+			return getReference(_dom, name, container);
+		}
 
+		protected DataElement getReference(Dom.Dom dom, string name, DataElementContainer container)
+		{
 			if (name.IndexOf(':') > -1)
 			{
 				string ns = name.Substring(0, name.IndexOf(':'));
@@ -441,7 +444,8 @@ namespace Peach.Core.Analyzers
 					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + name + "'.");
 
 				name = name.Substring(name.IndexOf(':') + 1);
-				dom = other;
+
+				return getReference(other, name, container);
 			}
 
 			if (container != null)
@@ -465,6 +469,38 @@ namespace Peach.Core.Analyzers
 			}
 
 			return null;
+		}
+
+
+
+		/// <summary>
+		/// Find a referenced Dom element by name, taking into account namespace prefixes.
+		/// </summary>
+		/// <typeparam name="T">Type of Dom element.</typeparam>
+		/// <param name="refName">Name of reference</param>
+		/// <param name="predicate">Selector predicate that returns the element collection</param>
+		/// <returns></returns>
+		protected T getRef<T>(Dom.Dom dom, string refName, Func<Dom.Dom, OrderedDictionary<string, T>> predicate)
+		{
+			int i = refName.IndexOf(':');
+			if (i > -1)
+			{
+				string ns = refName.Substring(0, i);
+
+				Dom.Dom other;
+				if (!dom.ns.TryGetValue(ns, out other))
+					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + refName + "'.");
+
+				refName = refName.Substring(i + 1);
+
+				return getRef<T>(other, refName, predicate);
+			}
+
+			var dict = predicate(dom);
+			T value = default(T);
+			if (dict.TryGetValue(refName, out value))
+				return value;
+			return default(T);
 		}
 
 		#endregion
@@ -636,7 +672,7 @@ namespace Peach.Core.Analyzers
 
 			if (refName != null)
 			{
-				DataModel refObj = getReference(refName, null) as DataModel;
+				DataModel refObj = getRef<Dom.DataModel>(_dom, refName, a => a.dataModels);
 				if (refObj == null)
 					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
@@ -1341,7 +1377,7 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "DataModel")
-					param.dataModel = dom.dataModels[child.getAttrString("ref")];
+					param.dataModel = getRef<DataModel>(dom, child.getAttrString("ref"), a => a.dataModels);
 				if (child.Name == "Data")
 					param.data = handleData(child, true);
 			}
@@ -1360,8 +1396,8 @@ namespace Peach.Core.Analyzers
 
 				string refName = node.getAttrString("ref");
 
-				Data other;
-				if (!_dom.datas.TryGetValue(refName, out other))
+				Data other = getRef<Data>(_dom, refName, a => a.datas);
+				if (other == null)
 					throw new PeachException("Error, could not resolve Data element ref attribute value '" + refName + "'.");
 
 				data = ObjectCopier.Clone(other);
@@ -1516,14 +1552,12 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Agent")
 				{
 					string refName = child.getAttrString("ref");
-					try
-					{
-						test.agents.Add(refName, parent.agents[refName]);
-					}
-					catch (Exception ex)
-					{
-						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found", ex);
-					}
+
+					var agent = getRef<Dom.Agent>(parent, refName, a => a.agents);
+					if (agent == null)
+						throw new PeachException("Error, Test::" + test.name + " Agent name in ref attribute not found.");
+
+					test.agents.Add(refName, agent);
 
 					var platform = child.getAttr("platform", null);
 					if (platform != null)
@@ -1549,11 +1583,10 @@ namespace Peach.Core.Analyzers
 				{
 					string strRef = child.getAttrString("ref");
 
-					if (!parent.stateModels.TryGetValue(strRef, out test.stateModel))
-					{
+					test.stateModel = getRef<Dom.StateModel>(parent, strRef, a => a.stateModels);
+					if (test.stateModel == null)
 						throw new PeachException("Error, could not locate StateModel named '" +
 							strRef + "' for Test '" + test.name + "'.");
-					}
 				}
 
 				// Publisher

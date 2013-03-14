@@ -479,5 +479,105 @@ namespace Peach.Core.Test.PitParserTests
 
 			e.startFuzzing(dom, config);
 		}
+
+		[Test]
+		public void RefNamespace()
+		{
+			string tmp1 = Path.GetTempFileName();
+			string tmp2 = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Value'/>
+	</DataModel>
+
+	<Agent name='ThirdAgent'/>
+
+	<DataModel name='Random'>
+		<String value='Hello World'/>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='bar' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='bar:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+		</Block>
+	</DataModel>
+
+	<Agent name='SomeAgent'/>
+
+	<StateModel name='SM' initialState='InitialState'>
+		<State name='InitialState'>
+			<Action name='Action1' type='output'>
+				<DataModel ref='bar:Random'/>
+			</Action>
+		</State>
+	</StateModel>
+
+</Peach>".Fmt(tmp1);
+
+			string xml3 = @"
+<Peach>
+	<Include ns='foo' src='{0}'/>
+
+	<DataModel name='DM' ref='foo:DM'>
+		<Blob/>
+	</DataModel>
+
+	<DataModel name='DM2'>
+		<Block ref='foo:bar:Random'/>
+	</DataModel>
+
+	<StateModel name='TheStateModel' initialState='InitialState'>
+		<State name='InitialState'>
+			<Action name='Action1' type='output'>
+				<DataModel ref='foo:bar:Random'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheStateModel'/>
+		<Publisher class='Null'/>
+	</Test>
+
+	<Test name='Other'>
+		<StateModel ref='foo:SM'/>
+		<Publisher class='Null'/>
+	</Test>
+
+	<Test name='Third'>
+		<StateModel ref='TheStateModel'/>
+		<Agent ref='foo:SomeAgent' />
+		<Agent ref='foo:bar:ThirdAgent' />
+		<Publisher class='Null'/>
+	</Test>
+
+</Peach>".Fmt(tmp2);
+
+			File.WriteAllText(tmp1, xml1);
+			File.WriteAllText(tmp2, xml2);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml3)));
+
+			var final = dom.dataModels[1].Value.Value;
+			var expected = Encoding.ASCII.GetBytes("Hello World");
+
+			Assert.AreEqual(expected, final);
+		}
+
 	}
 }
