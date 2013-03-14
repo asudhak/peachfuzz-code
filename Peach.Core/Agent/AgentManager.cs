@@ -201,6 +201,10 @@ namespace Peach.Core.Agent
 					if (agent.IterationFinished())
 						ret = true;
 				}
+				catch (ReplayTestException)
+				{
+					throw;
+				}
 				catch (Exception ex)
 				{
 					logger.Warn("Exception calling IterationFinished on agent: " + ex.Message);
@@ -220,6 +224,10 @@ namespace Peach.Core.Agent
 				{
 					if (agent.DetectedFault())
 						ret = true;
+				}
+				catch (ReplayTestException)
+				{
+					throw;
 				}
 				catch (Exception ex)
 				{
@@ -242,6 +250,10 @@ namespace Peach.Core.Agent
 				{
 					faults[agent] = agent.GetMonitorData();
 				}
+				catch (ReplayTestException)
+				{
+					throw;
+				}
 				catch (Exception ex)
 				{
 					logger.Warn("Exception calling GetMonitorData on agent: " + ex.Message);
@@ -260,6 +272,10 @@ namespace Peach.Core.Agent
 				{
 					if (agent.MustStop())
 						ret = true;
+				}
+				catch (ReplayTestException)
+				{
+					throw;
 				}
 				catch (Exception ex)
 				{
@@ -284,6 +300,10 @@ namespace Peach.Core.Agent
 					tmp = agent.Message(name, data);
 					if (tmp != null)
 						ret = tmp;
+				}
+				catch (ReplayTestException)
+				{
+					throw;
 				}
 				catch (Exception ex)
 				{
