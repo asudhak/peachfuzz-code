@@ -617,7 +617,6 @@
     <Compile Include="Transformers\Encode\NetBiosEncode.cs" />
     <Compile Include="Transformers\Encode\SidStringToBytes.cs" />
     <Compile Include="Transformers\Encode\UrlEncode.cs" />
-    <Compile Include="Transformers\Encode\UrlEncodePlus.cs" />
     <Compile Include="Transformers\Encode\Utf16.cs" />
     <Compile Include="Transformers\Encode\Utf16Be.cs" />
     <Compile Include="Transformers\Encode\Utf16Le.cs" />

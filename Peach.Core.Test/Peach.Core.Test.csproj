@@ -508,7 +508,6 @@
     <Compile Include="Transformers\Encode\NetBiosDecodeTests.cs" />
     <Compile Include="Transformers\Encode\NetBiosEncodeTests.cs" />
     <Compile Include="Transformers\Encode\SidStringToBytesTests.cs" />
-    <Compile Include="Transformers\Encode\UrlEncodePlusTests.cs" />
     <Compile Include="Transformers\Encode\UrlEncodeTests.cs" />
     <Compile Include="Transformers\Encode\Utf16BeTests.cs" />
     <Compile Include="Transformers\Encode\Utf16LeTests.cs" />
