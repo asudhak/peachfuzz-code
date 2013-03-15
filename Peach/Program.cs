@@ -83,7 +83,7 @@ namespace Peach
 				string analyzer = null;
 				bool test = false;
 				string agent = null;
-				string definedValuesFile = null;
+				var definedValues = new List<string>();
 				bool parseOnly = false;
 
 				var color = Console.ForegroundColor;
@@ -130,7 +130,7 @@ namespace Peach
 					{ "p|parallel=", v => ParseParallel(config, v)},
 					{ "a|agent=", v => agent = v},
 					{ "D|define=", v => AddNewDefine(v) },
-					{ "definedvalues=", v => definedValuesFile = v },
+					{ "definedvalues=", v => definedValues.Add(v) },
 					{ "parseonly", v => parseOnly = true },
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
@@ -145,7 +145,7 @@ namespace Peach
 
 				Platform.LoadAssembly();
 
-				if (definedValuesFile != null)
+				foreach (var definedValuesFile in definedValues)
 				{
 					if (!File.Exists(definedValuesFile))
 						throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
