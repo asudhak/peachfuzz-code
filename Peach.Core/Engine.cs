@@ -250,7 +250,7 @@ namespace Peach.Core
 				mutationStrategy.Initialize(context, this);
 
 				uint iterationStart = 1;
-				uint iterationStop = Int32.MaxValue;
+				uint iterationStop = uint.MaxValue;
 				uint? iterationTotal = null;
 				uint lastControlIteration = 0;
 
