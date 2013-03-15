@@ -21,6 +21,9 @@ namespace Peach.Core.Test.PitParserTests
 <Peach>
 	<DataModel name=""HelloWorldTemplate"">
 		<String name=""str"" value=""Hello World!""/>
+		<String>
+			<Relation type=""size"" of=""HelloWorldTemplate""/>
+		</String>
 	</DataModel>
 </Peach>
 ";
@@ -32,7 +35,7 @@ namespace Peach.Core.Test.PitParserTests
 	<StateModel name=""State"" initialState=""Initial"">
 		<State name=""Initial"">
 			<Action type=""output"">
-				<DataModel ref=""example:HelloWorldTemplate"" />
+				<DataModel name=""foo"" ref=""example:HelloWorldTemplate"" />
 			</Action>
 		</State>
 	</StateModel>
@@ -67,7 +70,7 @@ namespace Peach.Core.Test.PitParserTests
 
 			string result = File.ReadAllText(output);
 
-			Assert.AreEqual("Hello World!", result);
+			Assert.AreEqual("Hello World!13", result);
 		}
 
 		[Test]

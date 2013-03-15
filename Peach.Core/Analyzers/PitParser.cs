@@ -332,7 +332,7 @@ namespace Peach.Core.Analyzers
 
 			// Pass 3.5 - Resolve all relations
 			if (resolveRelations)
-				finalUpdateRelations(dom.dataModels.Values);
+				finalUpdateRelations(dom);
 
 			// Pass 4 - Handle Data
 
@@ -516,11 +516,16 @@ namespace Peach.Core.Analyzers
 		/// After this, all relations will be bound to both from and of elements.
 		/// </remarks>
 		/// <param name="models"></param>
-		protected void finalUpdateRelations(ICollection<DataModel> models)
+		protected void finalUpdateRelations(Dom.Dom dom)
 		{
 			logger.Trace("finalUpdateRelations");
 
-			foreach (DataModel model in models)
+			foreach (var other in dom.ns.Values)
+			{
+				finalUpdateRelations(other);
+			}
+
+			foreach (DataModel model in dom.dataModels.Values)
 			{
 				//logger.Debug("finalUpdateRelations: DataModel: " + model.name);
 
