@@ -521,6 +521,54 @@ namespace Peach.Core.Test
 
 			Assert.AreEqual(expected, final);
 		}
+
+		[Test]
+		public void IncludeStateModelRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big' value='201'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TLV'/>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<Test name='Default'>
+		<StateModel ref='ns:TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+		}
 	}
 }
 

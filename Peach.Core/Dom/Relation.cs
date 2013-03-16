@@ -185,6 +185,15 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public void Reset()
+		{
+			if (_of != null)
+				_of.Invalidated -= OfInvalidated;
+
+			_of = null;
+			_from = null;
+		}
+
 		/// <summary>
 		/// DataElement used to generate our value.
 		/// </summary>

@@ -61,7 +61,6 @@ namespace Peach.Core.Analyzers
 
 		Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
-		bool resolveRelations = true;
 
 		/// <summary>
 		/// Contains default attributes for DataElements
@@ -252,7 +251,6 @@ namespace Peach.Core.Analyzers
 						}
 
 						var newParser = new PitParser();
-						newParser.resolveRelations = false;
 						Dom.Dom newDom = newParser.asParser(args, fileName);
 						newDom.name = ns;
 						dom.ns[ns] = newDom;
@@ -331,8 +329,7 @@ namespace Peach.Core.Analyzers
 			}
 
 			// Pass 3.5 - Resolve all relations
-			if (resolveRelations)
-				finalUpdateRelations(dom);
+			finalUpdateRelations(dom.dataModels.Values);
 
 			// Pass 4 - Handle Data
 
@@ -516,16 +513,11 @@ namespace Peach.Core.Analyzers
 		/// After this, all relations will be bound to both from and of elements.
 		/// </remarks>
 		/// <param name="models"></param>
-		protected void finalUpdateRelations(Dom.Dom dom)
+		protected void finalUpdateRelations(ICollection<DataModel> models)
 		{
 			logger.Trace("finalUpdateRelations");
 
-			foreach (var other in dom.ns.Values)
-			{
-				finalUpdateRelations(other);
-			}
-
-			foreach (DataModel model in dom.dataModels.Values)
+			foreach (DataModel model in models)
 			{
 				//logger.Debug("finalUpdateRelations: DataModel: " + model.name);
 
@@ -539,6 +531,8 @@ namespace Peach.Core.Analyzers
 
 						try
 						{
+							rel.Reset();
+
 							if (rel.From == elem)
 							{
 								rel.parent = elem;
@@ -1592,6 +1586,8 @@ namespace Peach.Core.Analyzers
 					if (test.stateModel == null)
 						throw new PeachException("Error, could not locate StateModel named '" +
 							strRef + "' for Test '" + test.name + "'.");
+
+					test.stateModel.parent = test.parent;
 				}
 
 				// Publisher
