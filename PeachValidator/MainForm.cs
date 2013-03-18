@@ -95,6 +95,8 @@ namespace PeachValidator
 					DataCracker cracker = new DataCracker();
 					cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
 					cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
+					cracker.AnalyzerEvent += new AnalyzerEventHandler(cracker_AnalyzerEvent);
+					cracker.ExceptionHandleNodeEvent += new ExceptionHandleNodeEventHandler(cracker_ExceptionHandleNodeEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
 				catch (CrackingFailure ex)
@@ -127,26 +129,27 @@ namespace PeachValidator
 			}
 		}
 
+		void RemoveElement(DataElement element)
+		{
+			var currentModel = crackMap[element];
+			if (element.parent != null && crackMap.ContainsKey(element.parent))
+				crackMap[element.parent].Children.Remove(currentModel);
+			crackMap.Remove(element);
+		}
+
+		void cracker_ExceptionHandleNodeEvent(DataElement element, long position, BitStream data, Exception e)
+		{
+			RemoveElement(element);
+		}
+
+		void cracker_AnalyzerEvent(DataElement element, BitStream data)
+		{
+			RemoveElement(element);
+		}
+
 		void cracker_ExitHandleNodeEvent(DataElement element, long position, BitStream data)
 		{
 			var currentModel = crackMap[element];
-
-			try
-			{
-				// Verify element is in data collection
-				long pos = data.DataElementPosition(element);
-			}
-			catch (ApplicationException ex)
-			{
-				// When occurs = 0 (element removed)
-				if (ex.Message.IndexOf("Unknown DataElement") > -1)
-				{
-					if(currentModel.Parent != null)
-						currentModel.Parent.RemoveChild(currentModel);
-					return;
-				}
-			}
-
 			currentModel.StopBits = position;
 
 			if (element.parent != null && crackMap.ContainsKey(element.parent))

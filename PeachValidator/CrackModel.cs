@@ -164,9 +164,12 @@ namespace PeachValidator
 		{
 			get
 			{
-				return new Bitmap(
-				  System.Reflection.Assembly.GetEntryAssembly().
-					GetManifestResourceStream(IconName));
+				var asm = System.Reflection.Assembly.GetEntryAssembly();
+
+				var strm = asm.GetManifestResourceStream(IconName);
+				if (strm == null)
+					strm = asm.GetManifestResourceStream("PeachValidator.icons.node-unknown.png");
+				return new Bitmap(strm);
 
 			}
 		}

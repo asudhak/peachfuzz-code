@@ -44,6 +44,7 @@ namespace Peach.Core.Cracker
 	public delegate void ExitHandleNodeEventHandler(DataElement element, long position, BitStream data);
 	public delegate void ExceptionHandleNodeEventHandler(DataElement element, long position, BitStream data, Exception e);
 	public delegate void PlacementEventHandler(DataElement oldElement, DataElement newElement, DataElementContainer oldParent);
+	public delegate void AnalyzerEventHandler(DataElement element, BitStream data);
 
 	#endregion
 
@@ -130,6 +131,13 @@ namespace Peach.Core.Cracker
 		{
 			if (PlacementEvent != null)
 				PlacementEvent(oldElement, newElement, oldParent);
+		}
+
+		public event AnalyzerEventHandler AnalyzerEvent;
+		protected void OnAnalyzerEvent(DataElement element, BitStream data)
+		{
+			if (AnalyzerEvent != null)
+				AnalyzerEvent(element, data);
 		}
 
 		#endregion
@@ -234,7 +242,15 @@ namespace Peach.Core.Cracker
 
 			// Handle any analyzers
 			foreach (DataElement elem in _elementsWithAnalyzer)
+			{
+				OnAnalyzerEvent(elem, data);
+
+				DataElementContainer parent = elem.parent;
 				elem.analyzer.asDataElement(elem, null);
+				var de = parent[elem.name];
+				long pos = _sizedElements[elem].begin;
+				addElements(de, data, ref pos);
+			}
 		}
 
 		/// <summary>
@@ -488,6 +504,24 @@ namespace Peach.Core.Cracker
 			data.MarkStartOfElement(elem);
 
 			elem.Crack(this, data, size);
+		}
+
+		void addElements(DataElement de, BitStream data, ref long pos)
+		{
+			OnEnterHandleNodeEvent(de, pos, data);
+
+			var cont = de as DataElementContainer;
+			if (cont != null)
+			{
+				foreach (var child in cont)
+					addElements(child, data, ref pos);
+			}
+			else
+			{
+				pos += de.Value.LengthBits;
+			}
+
+			OnExitHandleNodeEvent(de, pos, data);
 		}
 
 		#endregion
