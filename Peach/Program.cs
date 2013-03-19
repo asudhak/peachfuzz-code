@@ -472,8 +472,7 @@ namespace Peach
 			string syntax = @"This is the Peach Runtime.  The Peach Runtime is one of the many ways
 to use Peach XML files.  Currently this runtime is still in development
 but already exposes several abilities to the end-user such as performing
-simple fuzzer runs, converting WireShark capture sinto Peach XML and
-performing parsing tests of Peach XML files.
+simple fuzzer runs and performing parsing tests of Peach XML files.
 
 Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 
@@ -481,7 +480,6 @@ Syntax:
 
   peach -a channel
   peach -c peach_xml_file [test_name]
-  peach -g
   peach [--skipto #] peach_xml_flie [test_name]
   peach -p 10,2 [--skipto #] peach_xml_file [test_name]
   peach --range 100,200 peach_xml_file [test_name]
@@ -490,12 +488,18 @@ Syntax:
   -1                         Perform a single iteration
   -a,--agent                 Launch Peach Agent
   -c,--count                 Count test cases
-  -t,--test xml_file         Test parse a Peach XML file
+  -t,--test xml_file         Validate a Peach XML file
   -p,--parallel M,N          Parallel fuzzing.  Total of M machines, this
                              is machine N.
   --debug                    Enable debug messages. Usefull when debugging
                              your Peach XML file.  Warning: Messages are very
                              cryptic sometimes.
+  --seed N                   Sets the seed used by the random number generator
+  --parseonly                Test parse a Peach XML file
+  --showenv                  Print a list of all DataElements, Fixups, Monitors
+                             Publishers and their associated parameters.
+  --showdevices              Display the list of PCAP devices
+  --analyzer                 Launch Peach Analyzer
   --skipto N                 Skip to a specific test #.  This replaced -r
                              for restarting a Peach run.
   --range N,M                Provide a range of test #'s to be run.
@@ -506,7 +510,7 @@ Syntax:
 
 Peach Agent
 
-  Syntax: peach.py -a channel
+  Syntax: peach -a channel
   
   Starts up a Peach Agent instance on this current machine.  User must provide
   a channel/protocol name (e.g. tcp).
@@ -539,7 +543,7 @@ Performing A Parellel Fuzzing Run
 
 Validate Peach XML File
 
-  Syntax: peach.py -t peach_xml_file
+  Syntax: peach -t peach_xml_file
   
   This will perform a parsing pass of the Peach XML file and display any
   errors that are found.
