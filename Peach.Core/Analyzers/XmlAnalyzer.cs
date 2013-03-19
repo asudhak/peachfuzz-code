@@ -69,6 +69,9 @@ namespace Peach.Core.Analyzers
 
 			var strElement = parent as Dom.String;
 
+			if (string.IsNullOrEmpty((string)strElement.InternalValue))
+				return;
+
 			var doc = new XmlDocument();
 			try
 			{
