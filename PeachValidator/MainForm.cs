@@ -183,21 +183,30 @@ namespace PeachValidator
 			{
 				PitParser parser = new PitParser();
 				Dom dom;
+				string previouslySelectedModelName;
+				int newModelIndex;
 
-				if(!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
+				if (!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
 					Directory.SetCurrentDirectory(Path.GetDirectoryName(pitFileName));
 
 				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+
+				previouslySelectedModelName = (string)toolStripComboBoxDataModel.SelectedItem;
 
 				toolStripComboBoxDataModel.Items.Clear();
 				foreach (var model in dom.dataModels.Keys)
 					toolStripComboBoxDataModel.Items.Add(model);
 
-				if(toolStripComboBoxDataModel.Items.Count > 0)
-					toolStripComboBoxDataModel.SelectedIndex = 0;
+				if ((previouslySelectedModelName != null) && toolStripComboBoxDataModel.Items.Contains(previouslySelectedModelName))
+					newModelIndex = toolStripComboBoxDataModel.Items.IndexOf(previouslySelectedModelName);
+				else
+					newModelIndex = 0;
+
+				if (toolStripComboBoxDataModel.Items.Count > 0)
+					toolStripComboBoxDataModel.SelectedIndex = newModelIndex;
 
 				treeViewAdv1.BeginUpdate();
-				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[0]);
+				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[newModelIndex]);
 				treeViewAdv1.Model = crackModel;
 				treeViewAdv1.EndUpdate();
 				treeViewAdv1.Root.Children[0].Expand();
