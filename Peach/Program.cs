@@ -91,7 +91,7 @@ namespace Peach
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
-				Console.WriteLine("Peach v3.0 DEV");
+				Console.WriteLine("Peach v{0}", Assembly.GetExecutingAssembly().GetName().Version);
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
