@@ -4,7 +4,9 @@ import os.path
 
 def configure(conf):
 	try:
-		conf.find_program('mdoc')
+		root = conf.path.abspath()
+		mdoc_path = conf.env['MDOC_PATH'] or os.path.join(root, '3rdParty', 'mdoc-net-2010-01-04')
+		conf.find_program('mdoc', var='MDOC', exts='.exe', path_list=[mdoc_path])
 		conf.env.MDOC_ST = '--lib=%s'
 		conf.env.MDOC_OUTPUT = '${PREFIX}/apidoc'
 	except Exception, e:
