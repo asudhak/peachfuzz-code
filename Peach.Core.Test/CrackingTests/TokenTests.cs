@@ -780,7 +780,7 @@ namespace Peach.Core.Test.CrackingTests
 			return dom;
 		}
 
-		[Test, Ignore("Failure Expected. Referenced in Issue #305")]
+		[Test]
 		public void OneSharedTokensAfterChoiceWithUnsizedElements()
 		{
 			var dom = SharedTokensAfterChoiceWithUnsizedElements("12foo12bar13baz");

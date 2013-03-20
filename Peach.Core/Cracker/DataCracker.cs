@@ -774,7 +774,15 @@ namespace Peach.Core.Cracker
 			// Treat choices as unsized
 			if (cont is Dom.Choice)
 			{
+				var choice = (Dom.Choice)cont;
+				if (choice.choiceElements.Count == 1)
+					return scan(choice.choiceElements[0], ref pos, tokens, end, until);
+
 				logger.Debug("scan: {0} -> Offset: {1}, Unsized choice", elem.debugName, pos);
+
+				if (until == Until.FirstSized)
+					return false;
+
 				return null;
 			}
 
