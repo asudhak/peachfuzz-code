@@ -85,6 +85,62 @@ namespace Peach.Core.Analyzers
 
 		}
 
+		public static Dictionary<string, string> parseDefines(string definedValuesFile)
+		{
+			var ret = new Dictionary<string, string>();
+
+			if (!File.Exists(definedValuesFile))
+				throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
+
+			XmlDocument xmlDoc = new XmlDocument();
+			xmlDoc.Load(definedValuesFile);
+
+			var root = xmlDoc.FirstChild;
+			if (root.Name != "PitDefines")
+			{
+				root = xmlDoc.FirstChild.NextSibling;
+				if (root.Name != "PitDefines")
+					throw new PeachException("Error, definition file root element must be PitDefines.");
+			}
+
+			foreach (XmlNode node in root.ChildNodes)
+			{
+				if (node.hasAttr("platform"))
+				{
+					switch (node.getAttrString("platform").ToLower())
+					{
+						case "osx":
+							if (Platform.GetOS() != Platform.OS.OSX)
+								continue;
+							break;
+						case "linux":
+							if (Platform.GetOS() != Platform.OS.Linux)
+								continue;
+							break;
+						case "windows":
+							if (Platform.GetOS() != Platform.OS.Windows)
+								continue;
+							break;
+						default:
+							throw new PeachException("Error, unknown platform name \"" + node.getAttrString("platform") + "\" in definition file.");
+					}
+				}
+
+				foreach (XmlNode defNode in node.ChildNodes)
+				{
+					if (defNode is XmlComment)
+						continue;
+
+					if (!defNode.hasAttr("key") || !defNode.hasAttr("value"))
+						throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
+
+					ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
+				}
+			}
+
+			return ret;
+		}
+
 		public override Dom.Dom asParser(Dictionary<string, object> args, Stream data)
 		{
 			return asParser(args, data, true);

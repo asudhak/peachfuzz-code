@@ -147,58 +147,13 @@ namespace Peach
 
 				foreach (var definedValuesFile in definedValues)
 				{
-					if (!File.Exists(definedValuesFile))
-						throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
+					var defs = PitParser.parseDefines(definedValuesFile);
 
-					XmlDocument xmlDoc = new XmlDocument();
-					xmlDoc.Load(definedValuesFile);
-
-					var root = xmlDoc.FirstChild;
-					if (root.Name != "PitDefines")
+					foreach (var kv in defs)
 					{
-						root = xmlDoc.FirstChild.NextSibling;
-						if (root.Name != "PitDefines")
-							throw new PeachException("Error, definition file root element must be PitDefines.");
-					}
-
-					foreach (XmlNode node in root.ChildNodes)
-					{
-						if (hasXmlAttribute(node, "platform"))
-						{
-							switch (getXmlAttribute(node, "platform").ToLower())
-							{
-								case "osx":
-									if (Platform.GetOS() != Platform.OS.OSX)
-										continue;
-									break;
-								case "linux":
-									if (Platform.GetOS() != Platform.OS.Linux)
-										continue;
-									break;
-								case "windows":
-									if (Platform.GetOS() != Platform.OS.Windows)
-										continue;
-									break;
-								default:
-									throw new PeachException("Error, unknown platform name \""+ getXmlAttribute(node, "platform") + "\" in definition file.");
-							}
-						}
-
-						foreach (XmlNode defNode in node.ChildNodes)
-						{
-							if (defNode is XmlComment)
-								continue;
-
-							if (!hasXmlAttribute(defNode, "key") || !hasXmlAttribute(defNode, "value"))
-								throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
-
-							// Allow command line to override values in XML file.
-							if (!DefinedValues.ContainsKey(getXmlAttribute(defNode, "key")))
-							{
-								DefinedValues[getXmlAttribute(defNode, "key")] =
-									getXmlAttribute(defNode, "value");
-							}
-						}
+						// Allow command line to override values in XML file.
+						if (!DefinedValues.ContainsKey(kv.Key))
+							DefinedValues.Add(kv.Key, kv.Value);
 					}
 				}
 
@@ -405,66 +360,6 @@ namespace Peach
 
 			var kv = value.Split('=');
 			DefinedValues[kv[0]] = kv[1];
-		}
-
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns innerText or null.</returns>
-		public string getXmlAttribute(XmlNode node, string name)
-		{
-			System.Xml.XmlAttribute attr = node.Attributes.GetNamedItem(name) as System.Xml.XmlAttribute;
-			if (attr != null)
-			{
-				return attr.InnerText;
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <param name="defaultValue">Default value if attribute is missing</param>
-		/// <returns>Returns true/false or default value</returns>
-		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
-		{
-			string value = getXmlAttribute(node, name);
-			if (value == null)
-				return defaultValue;
-
-			switch (value.ToLower())
-			{
-				case "1":
-				case "true":
-					return true;
-				case "0":
-				case "false":
-					return false;
-				default:
-					throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
-			}
-		}
-
-		/// <summary>
-		/// Check to see if XmlNode has specific attribute.
-		/// </summary>
-		/// <param name="node">XmlNode to check</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns boolean true or false.</returns>
-		public bool hasXmlAttribute(XmlNode node, string name)
-		{
-			if (node.Attributes == null)
-				return false;
-
-			object o = node.Attributes.GetNamedItem(name);
-			return o != null;
 		}
 
 		public void syntax()
