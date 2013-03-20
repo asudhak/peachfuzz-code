@@ -107,7 +107,7 @@ namespace PeachValidator
 
 				foreach (var node in crackMap.Values)
 				{
-					if(node.DataElement.parent != null)
+					if (node.DataElement.parent != null)
 						node.Parent = crackMap[node.DataElement.parent];
 				}
 
@@ -135,6 +135,13 @@ namespace PeachValidator
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
 				crackMap[element.parent].Children.Remove(currentModel);
 			crackMap.Remove(element);
+
+			// Remove any elements that have 'element' as a parent
+			var res = crackMap.Select(kv => kv.Key).Where(k => k.parent == element).ToList();
+			foreach (var elem in res)
+			{
+				RemoveElement(elem);
+			}
 		}
 
 		void cracker_ExceptionHandleNodeEvent(DataElement element, long position, BitStream data, Exception e)
