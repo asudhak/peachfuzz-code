@@ -59,8 +59,7 @@ namespace Peach
 			return new Program(args).exitCode;
 		}
 
-		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
-		static ConsoleColor DefaultBackground = ConsoleColor.DarkRed;
+		static ConsoleColor DefaultForground = Console.ForegroundColor;
 
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Dom dom;
@@ -75,9 +74,6 @@ namespace Peach
 
 			try
 			{
-				DefaultBackground = Console.BackgroundColor;
-				DefaultForground = Console.ForegroundColor;
-
 				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 
 				string analyzer = null;
@@ -273,7 +269,6 @@ namespace Peach
 
 				// Reset console colors
 				Console.ForegroundColor = DefaultForground;
-				Console.BackgroundColor = DefaultBackground;
 			}
 		}
 
