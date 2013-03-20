@@ -14,6 +14,7 @@ using Peach.Core.Cracker;
 using Peach.Core.IO;
 using Peach.Core.Analyzers;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace PeachValidator
 {
@@ -26,6 +27,7 @@ namespace PeachValidator
 		string sampleFileName = null;
 		string pitFileName = null;
 		string dataModel = null;
+		Dictionary<string, object> parserArgs = new Dictionary<string, object>();
 		CrackModel crackModel = new CrackModel();
 		Dictionary<DataElement, CrackNode> crackMap = new Dictionary<DataElement, CrackNode>();
 
@@ -83,7 +85,7 @@ namespace PeachValidator
 				Dom dom;
 
 				parser = new PitParser();
-				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+				dom = parser.asParser(parserArgs, pitFileName);
 
 				treeViewAdv1.BeginUpdate();
 				treeViewAdv1.Model = null;
@@ -175,11 +177,24 @@ namespace PeachValidator
 		private void toolStripButtonOpenPit_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog ofd = new OpenFileDialog();
+			ofd.Title = "Selet PIT file";
+
 			if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
 				return;
 
 			pitFileName = ofd.FileName;
 			setTitle();
+
+			Regex re = new Regex("##\\w+##");
+			if (File.Exists(pitFileName) && re.IsMatch(File.ReadAllText(pitFileName)))
+			{
+				ofd.Title = "Selet PIT defines file";
+
+				if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+					return;
+
+				parserArgs[PitParser.DEFINED_VALUES] = PitParser.parseDefines(ofd.FileName);
+			}
 
 			toolStripButtonRefreshPit_Click(null, null);
 		}
@@ -196,7 +211,7 @@ namespace PeachValidator
 				if (!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
 					Directory.SetCurrentDirectory(Path.GetDirectoryName(pitFileName));
 
-				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+				dom = parser.asParser(parserArgs, pitFileName);
 
 				previouslySelectedModelName = (string)toolStripComboBoxDataModel.SelectedItem;
 
@@ -231,7 +246,7 @@ namespace PeachValidator
 				dataModel = toolStripComboBoxDataModel.SelectedItem as string;
 
 				PitParser parser = new PitParser();
-				Dom dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+				Dom dom = parser.asParser(parserArgs, pitFileName);
 
 				treeViewAdv1.BeginUpdate();
 				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[dataModel]);
