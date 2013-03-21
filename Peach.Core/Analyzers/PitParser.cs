@@ -105,6 +105,9 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode node in root.ChildNodes)
 			{
+				if (node is XmlComment)
+					continue;
+
 				if (node.hasAttr("platform"))
 				{
 					switch (node.getAttrString("platform").ToLower())
