@@ -69,7 +69,7 @@ namespace Peach
 		public Program(string[] args)
 		{
 			RunConfiguration config = new RunConfiguration();
-			config.shouldStop = delegate() { return shouldStop; };
+			config.shouldStop = delegate() { return stopCount > 0; };
 			config.debug = false;
 
 			try
@@ -337,15 +337,15 @@ namespace Peach
 			config.parallel = true;
 		}
 
-		private static bool shouldStop = false;
+		private static int stopCount = 0;
 		
 		private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
 		{
 			Console.WriteLine();
 			Console.WriteLine(" --- Ctrl+C Detected --- ");
-		
-			shouldStop = true;
-			e.Cancel = true;
+
+			if (++stopCount == 1)
+				e.Cancel = true;
 		}
 
 		public void AddNewDefine(string value)
