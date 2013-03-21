@@ -150,7 +150,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling StopAllMonitors on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling StopAllMonitors: " + ex.Message);
 				}
 			}
 		}
@@ -175,7 +175,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling SessionFinished on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling SessionFinished: " + ex.Message);
 				}
 			}
 		}
@@ -185,7 +185,18 @@ namespace Peach.Core.Agent
 			logger.Trace("IterationStarting");
 			foreach (AgentClient agent in _agents.Values)
 			{
-				agent.IterationStarting(iterationCount, isReproduction);
+				try
+				{
+					agent.IterationStarting(iterationCount, isReproduction);
+				}
+				catch (ReplayTestException)
+				{
+					throw;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring exception calling IterationStarting: " + ex.Message);
+				}
 			}
 		}
 
@@ -207,7 +218,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling IterationFinished on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling IterationFinished on agent: " + ex.Message);
 				}
 			}
 
@@ -231,7 +242,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling DetectedFault on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling DetectedFault: " + ex.Message);
 				}
 			}
 
@@ -256,7 +267,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling GetMonitorData on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling GetMonitorData: " + ex.Message);
 				}
 			}
 
@@ -266,6 +277,7 @@ namespace Peach.Core.Agent
 		public virtual bool MustStop()
 		{
 			bool ret = false;
+
 			foreach (AgentClient agent in _agents.Values)
 			{
 				try
@@ -279,7 +291,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling MustStop on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling MustStop: " + ex.Message);
 				}
 			}
 
@@ -307,7 +319,7 @@ namespace Peach.Core.Agent
 				}
 				catch (Exception ex)
 				{
-					logger.Warn("Exception calling Message on agent: " + ex.Message);
+					logger.Warn("Ignoring exception calling Message: " + ex.Message);
 				}
 			}
 

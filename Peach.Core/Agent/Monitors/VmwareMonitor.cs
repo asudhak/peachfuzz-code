@@ -18,6 +18,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("SnapshotIndex", typeof(int?), "VM snapshot index", "")]
 	[Parameter("SnapshotName", typeof(string), "VM snapshot name", "")]
 	[Parameter("ResetEveryIteration", typeof(bool), "Reset VM on every iteration", "false")]
+	[Parameter("ResetOnFaultBeforeCollection", typeof(bool), "Reset VM after we detect a fault during data collection", "false")]
 	[Parameter("WaitForToolsInGuest", typeof(bool), "Wait for tools to start in guest", "true")]
 	[Parameter("WaitTimeout", typeof(int), "How many seconds to wait for guest tools", "600")]
 	public class VmwareMonitor : Monitor
@@ -839,6 +840,7 @@ namespace Peach.Core.Agent.Monitors
 		public int HostPort { get; private set; }
 		public int? SnapshotIndex { get; private set; }
 		public string SnapshotName { get; private set; }
+		public bool ResetOnFaultBeforeCollection { get; private set; }
 
 		IntPtr hostHandle = VixInvalidHandle;
 		IntPtr vmHandle = VixInvalidHandle;
@@ -970,8 +972,14 @@ namespace Peach.Core.Agent.Monitors
 
 		public override Fault GetMonitorData()
 		{
+			logger.Debug(">> GetMonitorData");
 			// This indicates a fault was detected and we should reset the VM.
 			needReset = true;
+
+			if (ResetOnFaultBeforeCollection)
+				StartVM();
+
+			logger.Debug("<< GetMonitorData(null)");
 			return null;
 		}
 

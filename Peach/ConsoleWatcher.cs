@@ -30,24 +30,32 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
+
 using Peach.Core;
 using Peach.Core.Agent;
-using System.Diagnostics;
+
+using NLog;
 
 namespace Peach
 {
 	public class ConsoleWatcher : Watcher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		Stopwatch timer = new Stopwatch();
 		uint startIteration = 0;
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
 		{
+			logger.Debug(">> Engine_Fault");
+
 			var color = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
 			Console.ForegroundColor = color;
 
+			logger.Debug("<< Engine_Fault");
 		}
 
 		protected override void Engine_HaveCount(RunContext context, uint totalIterations)

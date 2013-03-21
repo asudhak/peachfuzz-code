@@ -162,21 +162,36 @@ namespace Peach.Core.Agent.Monitors
 					logger.Debug("Downloading all files from \"" + Folder + "\".");
 					foreach (var file in client.ListDirectory(Folder))
 					{
-						logger.Debug("Trying to download \"" + file.FullName + "\".");
+						if (file.FullName.EndsWith("/.") || file.FullName.EndsWith("/..") || file.FullName.EndsWith(@"\.") || file.FullName.EndsWith(@"\.."))
+						{
+							logger.Debug("Skipping \"" + file.FullName + "\".");
+							continue;
+						}
+
+						logger.Debug("Downloading \"" + file.FullName + "\".");
 
 						using (var sout = new MemoryStream((int)file.Length))
 						{
-							client.DownloadFile(file.FullName, sout);
-							if (Remove)
-								client.DeleteFile(file.FullName);
+							try
+							{
+								client.DownloadFile(file.FullName, sout);
+								if (Remove)
+									client.DeleteFile(file.FullName);
 
-							sout.Position = 0;
-							fault.collectedData[Path.GetFileName(file.FullName)] = sout.ToArray();
+								sout.Position = 0;
+								fault.collectedData[Path.GetFileName(file.FullName)] = sout.ToArray();
 
-							fault.description += file.FullName + "\n";
+								fault.description += file.FullName + "\n";
+							}
+							catch(Exception ex)
+							{
+								logger.Warn("Warning, could not d/l file [" + file.FullName + "]: " + ex.Message);
+								fault.description += "Warning, could not d/l file [" + file.FullName + "]\n";
+							}
 						}
 					}
 
+					logger.Debug("<< GetMonitorData");
 					return fault;
 				}
 			}

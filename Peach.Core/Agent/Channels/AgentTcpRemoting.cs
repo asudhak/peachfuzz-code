@@ -48,7 +48,8 @@ namespace Peach.Core.Agent.Channels
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		TcpChannel _channel = null;
+		int _remotingWaitTime = 1000 * 60 * 1;
+		TcpClientChannel _channel = null;
 		AgentServiceTcpRemote proxy = null;
 		string _url = null;
 
@@ -79,6 +80,40 @@ namespace Peach.Core.Agent.Channels
 		{
 		}
 
+		/// <summary>
+		/// Perform our remoting call with a forced timeout.
+		/// </summary>
+		/// <param name="method"></param>
+		protected void PerformRemoting(ThreadStart method)
+		{
+			Exception remotingException = null;
+
+			var thread = new System.Threading.Thread(delegate()
+			{
+				try
+				{
+					method();
+				}
+				catch (Exception ex)
+				{
+					remotingException = ex;
+				}
+			});
+
+			thread.Start();
+			if (thread.Join(_remotingWaitTime))
+			{
+				if (remotingException != null)
+				{
+					throw remotingException;
+				}
+			}
+			else
+			{
+				throw new System.Runtime.Remoting.RemotingException("Remoting call timed out.");
+			}
+		}
+
 		public override bool SupportedProtocol(string protocol)
 		{
 			logger.Trace("SupportedProtocol");
@@ -95,7 +130,11 @@ namespace Peach.Core.Agent.Channels
 		{
 			RemoveProxy();
 
-			_channel = new TcpChannel();
+			IDictionary props = new Hashtable() as IDictionary;
+			props["timeout"] = (uint)1000*60*1; // wait one minute max
+			props["connectionTimeout"] = (uint)1000*60*1; // wait one minute max
+
+			_channel = new TcpClientChannel(props, null);
 			ChannelServices.RegisterChannel(_channel, false); // Disable security for speed
 			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
 			if (proxy == null)
@@ -146,8 +185,7 @@ namespace Peach.Core.Agent.Channels
 			logger.Trace("AgentDisconnect");
 			OnAgentDisconnectEvent();
 
-			proxy.AgentDisconnect();
-
+			PerformRemoting(delegate() { proxy.AgentDisconnect(); });
 			RemoveProxy();
 		}
 
@@ -158,7 +196,7 @@ namespace Peach.Core.Agent.Channels
 		{
 			foreach (var moninfo in _monitors)
 			{
-				proxy.StartMonitor(moninfo.Item1, moninfo.Item2, moninfo.Item3);
+				PerformRemoting(delegate() { proxy.StartMonitor(moninfo.Item1, moninfo.Item2, moninfo.Item3); });
 			}
 		}
 
@@ -167,7 +205,11 @@ namespace Peach.Core.Agent.Channels
 			logger.Trace("CreatePublisher: {0}", cls);
 
 			OnCreatePublisherEvent(cls, args);
-			return proxy.CreatePublisher(cls, args);
+
+			Publisher ret = null;
+			PerformRemoting(delegate() { ret = proxy.CreatePublisher(cls, args); });
+
+			return ret;
 		}
 
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
@@ -177,35 +219,35 @@ namespace Peach.Core.Agent.Channels
 			_monitors.Add(new Tuple<string, string, SerializableDictionary<string, Variant>>(name, cls, args));
 
 			OnStartMonitorEvent(name, cls, args);
-			proxy.StartMonitor(name, cls, args);
+			PerformRemoting(delegate() { proxy.StartMonitor(name, cls, args); });
 		}
 
 		public override void StopMonitor(string name)
 		{
 			logger.Trace("AgentConnect: {0}", name);
 			OnStopMonitorEvent(name);
-			proxy.StopMonitor(name);
+			PerformRemoting(delegate() { proxy.StopMonitor(name); });
 		}
 
 		public override void StopAllMonitors()
 		{
 			logger.Trace("StopAllMonitors");
 			OnStopAllMonitorsEvent();
-			proxy.StopAllMonitors();
+			PerformRemoting(delegate() { proxy.StopAllMonitors(); });
 		}
 
 		public override void SessionStarting()
 		{
 			logger.Trace("SessionStarting");
 			OnSessionStartingEvent();
-			proxy.SessionStarting();
+			PerformRemoting(delegate() { proxy.SessionStarting(); });
 		}
 
 		public override void SessionFinished()
 		{
 			logger.Trace("SessionFinished");
 			OnSessionFinishedEvent();
-			proxy.SessionFinished();
+			PerformRemoting(delegate() { proxy.SessionFinished(); });
 		}
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
@@ -216,7 +258,7 @@ namespace Peach.Core.Agent.Channels
 
 			try
 			{
-				proxy.IterationStarting(iterationCount, isReproduction);
+				PerformRemoting(delegate() { proxy.IterationStarting(iterationCount, isReproduction); });
 			}
 			catch (SocketException)
 			{
@@ -237,14 +279,19 @@ namespace Peach.Core.Agent.Channels
 		{
 			logger.Trace("IterationFinished");
 			OnIterationFinishedEvent();
-			return proxy.IterationFinished();
+			bool ret = false;
+			PerformRemoting(delegate() { ret = proxy.IterationFinished(); });
+			return ret;
 		}
 
 		public override bool DetectedFault()
 		{
 			logger.Trace("DetectedFault");
 			OnDetectedFaultEvent();
-			return proxy.DetectedFault();
+			
+			bool ret = false;
+			PerformRemoting(delegate() { ret = proxy.DetectedFault(); });
+			return ret;
 		}
 
 		public override Fault[] GetMonitorData()
@@ -256,21 +303,30 @@ namespace Peach.Core.Agent.Channels
 			_restartAgent = true;
 
 			OnGetMonitorDataEvent();
-			return proxy.GetMonitorData();
+
+			Fault[] ret = null;
+			PerformRemoting(delegate() { ret = proxy.GetMonitorData(); });
+			return ret;
 		}
 
 		public override bool MustStop()
 		{
 			logger.Trace("MustStop");
 			OnMustStopEvent();
-			return proxy.MustStop();
+
+			bool ret = false;
+			PerformRemoting(delegate() { ret = proxy.MustStop(); });
+			return ret;
 		}
 
 		public override Variant Message(string name, Variant data)
 		{
 			logger.Trace("Message: {0}", name);
 			OnMessageEvent(name, data);
-			return proxy.Message(name, data);
+			
+			Variant ret = null;
+			PerformRemoting(delegate() { ret = proxy.Message(name, data); });
+			return ret;
 		}
 
 	}
