@@ -54,6 +54,7 @@ namespace Peach.Core.Analyzers
 
 		protected string tokens = TOKENS;
 		protected Dictionary<string, Variant> args = null;
+		protected StringType encodingType = StringType.ascii;
 
 		static StringTokenAnalyzer()
 		{
@@ -81,6 +82,7 @@ namespace Peach.Core.Analyzers
 				throw new PeachException("Error, StringToken analyzer only operates on String elements!");
 
 			var str = parent as Dom.String;
+			encodingType = str.stringType;
 
 			// Are our tokens present in this string?
 			bool foundToken = false;
@@ -129,6 +131,10 @@ namespace Peach.Core.Analyzers
 				var preString = new Dom.String();
 				var tokenString = new Dom.String();
 				var postString = new Dom.String();
+
+				preString.stringType = encodingType;
+				tokenString.stringType = encodingType;
+				postString.stringType = encodingType;
 
 				preString.DefaultValue = new Variant(str.Substring(0, tokenIndex));
 				tokenString.DefaultValue = new Variant(token.ToString());
