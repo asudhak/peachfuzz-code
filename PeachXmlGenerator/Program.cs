@@ -34,6 +34,7 @@ using System.Xml;
 using System.Windows.Forms;
 
 using Peach.Core.Xml;
+using System.Reflection;
 
 namespace PeachXmlGenerator
 {
@@ -42,8 +43,8 @@ namespace PeachXmlGenerator
 		static void DisplayTitle()
 		{
 			Console.WriteLine("");
-			Console.WriteLine("[ Peach v3.0 DEV");
-			Console.WriteLine("[ Peach DTD XML Fuzzer v1.0 DEV");
+			Console.WriteLine("[ Peach v3.0");
+			Console.WriteLine("[ Peach DTD XML Fuzzer v{0}", Assembly.GetExecutingAssembly().GetName().Version);
 			Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 		}
 

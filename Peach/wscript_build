@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+from waflib import Utils
 
-name = bld.env.DEST_OS is 'win32' and 'Peach.exe' or 'peach.exe'
+name = 'Peach.exe'
+
+if bld.env.DEST_OS != 'win32':
+	name = 'peach.exe'
+	bld.install_files('${BINDIR}', 'peach', chmod=Utils.O755)
 
 bld(
 	features = 'cs',
@@ -11,4 +16,3 @@ bld(
 	ver_product = 'Peach Fuzzing Platfom',
 	install = bld.path.ant_glob('samples/*')
 )
-

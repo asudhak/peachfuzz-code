@@ -122,15 +122,16 @@ namespace Peach.Core.Analyzers
 		{
 			if (el is Dom.String)
 			{
+				var strEl = (Dom.String)el;
 				var str = (string) el.DefaultValue;
 				var tokenIndex = str.IndexOf(token);
 
 				if(tokenIndex == -1)
 					return;
 
-				var preString = new Dom.String();
-				var tokenString = new Dom.String();
-				var postString = new Dom.String();
+				var preString = new Dom.String() { stringType = strEl.stringType };
+				var tokenString = new Dom.String() { stringType = strEl.stringType };
+				var postString = new Dom.String() { stringType = strEl.stringType };
 
 				preString.stringType = encodingType;
 				tokenString.stringType = encodingType;

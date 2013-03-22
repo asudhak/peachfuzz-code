@@ -378,7 +378,7 @@ namespace Peach.Core.Dom
 		public StringType stringType
 		{
 			get { return _type; }
-			set { _type = value; }
+			set { _type = value; encoding = Encoding.GetEncoding(value.ToString()); }
 		}
 
 		/// <summary>

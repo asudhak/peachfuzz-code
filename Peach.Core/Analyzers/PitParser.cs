@@ -61,7 +61,6 @@ namespace Peach.Core.Analyzers
 
 		Dom.Dom _dom = null;
 		bool isScriptingLanguageSet = false;
-		bool resolveRelations = true;
 
 		/// <summary>
 		/// Contains default attributes for DataElements
@@ -84,6 +83,65 @@ namespace Peach.Core.Analyzers
 		public PitParser()
 		{
 
+		}
+
+		public static Dictionary<string, string> parseDefines(string definedValuesFile)
+		{
+			var ret = new Dictionary<string, string>();
+
+			if (!File.Exists(definedValuesFile))
+				throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
+
+			XmlDocument xmlDoc = new XmlDocument();
+			xmlDoc.Load(definedValuesFile);
+
+			var root = xmlDoc.FirstChild;
+			if (root.Name != "PitDefines")
+			{
+				root = xmlDoc.FirstChild.NextSibling;
+				if (root.Name != "PitDefines")
+					throw new PeachException("Error, definition file root element must be PitDefines.");
+			}
+
+			foreach (XmlNode node in root.ChildNodes)
+			{
+				if (node is XmlComment)
+					continue;
+
+				if (node.hasAttr("platform"))
+				{
+					switch (node.getAttrString("platform").ToLower())
+					{
+						case "osx":
+							if (Platform.GetOS() != Platform.OS.OSX)
+								continue;
+							break;
+						case "linux":
+							if (Platform.GetOS() != Platform.OS.Linux)
+								continue;
+							break;
+						case "windows":
+							if (Platform.GetOS() != Platform.OS.Windows)
+								continue;
+							break;
+						default:
+							throw new PeachException("Error, unknown platform name \"" + node.getAttrString("platform") + "\" in definition file.");
+					}
+				}
+
+				foreach (XmlNode defNode in node.ChildNodes)
+				{
+					if (defNode is XmlComment)
+						continue;
+
+					if (!defNode.hasAttr("key") || !defNode.hasAttr("value"))
+						throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
+
+					ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
+				}
+			}
+
+			return ret;
 		}
 
 		public override Dom.Dom asParser(Dictionary<string, object> args, Stream data)
@@ -252,7 +310,6 @@ namespace Peach.Core.Analyzers
 						}
 
 						var newParser = new PitParser();
-						newParser.resolveRelations = false;
 						Dom.Dom newDom = newParser.asParser(args, fileName);
 						newDom.name = ns;
 						dom.ns[ns] = newDom;
@@ -331,8 +388,7 @@ namespace Peach.Core.Analyzers
 			}
 
 			// Pass 3.5 - Resolve all relations
-			if (resolveRelations)
-				finalUpdateRelations(dom);
+			finalUpdateRelations(dom.dataModels.Values);
 
 			// Pass 4 - Handle Data
 
@@ -516,16 +572,11 @@ namespace Peach.Core.Analyzers
 		/// After this, all relations will be bound to both from and of elements.
 		/// </remarks>
 		/// <param name="models"></param>
-		protected void finalUpdateRelations(Dom.Dom dom)
+		protected void finalUpdateRelations(ICollection<DataModel> models)
 		{
 			logger.Trace("finalUpdateRelations");
 
-			foreach (var other in dom.ns.Values)
-			{
-				finalUpdateRelations(other);
-			}
-
-			foreach (DataModel model in dom.dataModels.Values)
+			foreach (DataModel model in models)
 			{
 				//logger.Debug("finalUpdateRelations: DataModel: " + model.name);
 
@@ -539,6 +590,8 @@ namespace Peach.Core.Analyzers
 
 						try
 						{
+							rel.Reset();
+
 							if (rel.From == elem)
 							{
 								rel.parent = elem;
@@ -1592,6 +1645,8 @@ namespace Peach.Core.Analyzers
 					if (test.stateModel == null)
 						throw new PeachException("Error, could not locate StateModel named '" +
 							strRef + "' for Test '" + test.name + "'.");
+
+					test.stateModel.parent = test.parent;
 				}
 
 				// Publisher

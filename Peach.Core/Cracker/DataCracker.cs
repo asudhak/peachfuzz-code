@@ -44,6 +44,7 @@ namespace Peach.Core.Cracker
 	public delegate void ExitHandleNodeEventHandler(DataElement element, long position, BitStream data);
 	public delegate void ExceptionHandleNodeEventHandler(DataElement element, long position, BitStream data, Exception e);
 	public delegate void PlacementEventHandler(DataElement oldElement, DataElement newElement, DataElementContainer oldParent);
+	public delegate void AnalyzerEventHandler(DataElement element, BitStream data);
 
 	#endregion
 
@@ -132,6 +133,13 @@ namespace Peach.Core.Cracker
 				PlacementEvent(oldElement, newElement, oldParent);
 		}
 
+		public event AnalyzerEventHandler AnalyzerEvent;
+		protected void OnAnalyzerEvent(DataElement element, BitStream data)
+		{
+			if (AnalyzerEvent != null)
+				AnalyzerEvent(element, data);
+		}
+
 		#endregion
 
 		#region Public Methods
@@ -217,6 +225,20 @@ namespace Peach.Core.Cracker
 			return offset;
 		}
 
+		void addElements(DataElement de, BitStream data, long start, long end)
+		{
+			OnEnterHandleNodeEvent(de, start, data);
+
+			var cont = de as DataElementContainer;
+			if (cont != null)
+			{
+				foreach (var child in cont)
+					addElements(child, data, 0, 0);
+			}
+
+			OnExitHandleNodeEvent(de, end, data);
+		}
+
 		#endregion
 
 		#region Handlers
@@ -234,7 +256,15 @@ namespace Peach.Core.Cracker
 
 			// Handle any analyzers
 			foreach (DataElement elem in _elementsWithAnalyzer)
+			{
+				OnAnalyzerEvent(elem, data);
+
+				DataElementContainer parent = elem.parent;
 				elem.analyzer.asDataElement(elem, null);
+				var de = parent[elem.name];
+				var pos = _sizedElements[elem];
+				addElements(de, data, pos.begin, pos.end);
+			}
 		}
 
 		/// <summary>
@@ -744,7 +774,15 @@ namespace Peach.Core.Cracker
 			// Treat choices as unsized
 			if (cont is Dom.Choice)
 			{
+				var choice = (Dom.Choice)cont;
+				if (choice.choiceElements.Count == 1)
+					return scan(choice.choiceElements[0], ref pos, tokens, end, until);
+
 				logger.Debug("scan: {0} -> Offset: {1}, Unsized choice", elem.debugName, pos);
+
+				if (until == Until.FirstSized)
+					return false;
+
 				return null;
 			}
 

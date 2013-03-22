@@ -59,8 +59,7 @@ namespace Peach
 			return new Program(args).exitCode;
 		}
 
-		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
-		static ConsoleColor DefaultBackground = ConsoleColor.DarkRed;
+		static ConsoleColor DefaultForground = Console.ForegroundColor;
 
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Dom dom;
@@ -70,14 +69,11 @@ namespace Peach
 		public Program(string[] args)
 		{
 			RunConfiguration config = new RunConfiguration();
-			config.shouldStop = delegate() { return shouldStop; };
+			config.shouldStop = delegate() { return stopCount > 0; };
 			config.debug = false;
 
 			try
 			{
-				DefaultBackground = Console.BackgroundColor;
-				DefaultForground = Console.ForegroundColor;
-
 				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 
 				string analyzer = null;
@@ -91,7 +87,7 @@ namespace Peach
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
-				Console.WriteLine("Peach v3.0 DEV");
+				Console.WriteLine("Peach v3.0");
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -147,58 +143,13 @@ namespace Peach
 
 				foreach (var definedValuesFile in definedValues)
 				{
-					if (!File.Exists(definedValuesFile))
-						throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
+					var defs = PitParser.parseDefines(definedValuesFile);
 
-					XmlDocument xmlDoc = new XmlDocument();
-					xmlDoc.Load(definedValuesFile);
-
-					var root = xmlDoc.FirstChild;
-					if (root.Name != "PitDefines")
+					foreach (var kv in defs)
 					{
-						root = xmlDoc.FirstChild.NextSibling;
-						if (root.Name != "PitDefines")
-							throw new PeachException("Error, definition file root element must be PitDefines.");
-					}
-
-					foreach (XmlNode node in root.ChildNodes)
-					{
-						if (hasXmlAttribute(node, "platform"))
-						{
-							switch (getXmlAttribute(node, "platform").ToLower())
-							{
-								case "osx":
-									if (Platform.GetOS() != Platform.OS.OSX)
-										continue;
-									break;
-								case "linux":
-									if (Platform.GetOS() != Platform.OS.Linux)
-										continue;
-									break;
-								case "windows":
-									if (Platform.GetOS() != Platform.OS.Windows)
-										continue;
-									break;
-								default:
-									throw new PeachException("Error, unknown platform name \""+ getXmlAttribute(node, "platform") + "\" in definition file.");
-							}
-						}
-
-						foreach (XmlNode defNode in node.ChildNodes)
-						{
-							if (defNode is XmlComment)
-								continue;
-
-							if (!hasXmlAttribute(defNode, "key") || !hasXmlAttribute(defNode, "value"))
-								throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
-
-							// Allow command line to override values in XML file.
-							if (!DefinedValues.ContainsKey(getXmlAttribute(defNode, "key")))
-							{
-								DefinedValues[getXmlAttribute(defNode, "key")] =
-									getXmlAttribute(defNode, "value");
-							}
-						}
+						// Allow command line to override values in XML file.
+						if (!DefinedValues.ContainsKey(kv.Key))
+							DefinedValues.Add(kv.Key, kv.Value);
 					}
 				}
 
@@ -318,7 +269,6 @@ namespace Peach
 
 				// Reset console colors
 				Console.ForegroundColor = DefaultForground;
-				Console.BackgroundColor = DefaultBackground;
 			}
 		}
 
@@ -387,15 +337,15 @@ namespace Peach
 			config.parallel = true;
 		}
 
-		private static bool shouldStop = false;
+		private static int stopCount = 0;
 		
 		private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
 		{
 			Console.WriteLine();
 			Console.WriteLine(" --- Ctrl+C Detected --- ");
-		
-			shouldStop = true;
-			e.Cancel = true;
+
+			if (++stopCount == 1)
+				e.Cancel = true;
 		}
 
 		public void AddNewDefine(string value)
@@ -407,73 +357,12 @@ namespace Peach
 			DefinedValues[kv[0]] = kv[1];
 		}
 
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns innerText or null.</returns>
-		public string getXmlAttribute(XmlNode node, string name)
-		{
-			System.Xml.XmlAttribute attr = node.Attributes.GetNamedItem(name) as System.Xml.XmlAttribute;
-			if (attr != null)
-			{
-				return attr.InnerText;
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <param name="defaultValue">Default value if attribute is missing</param>
-		/// <returns>Returns true/false or default value</returns>
-		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
-		{
-			string value = getXmlAttribute(node, name);
-			if (value == null)
-				return defaultValue;
-
-			switch (value.ToLower())
-			{
-				case "1":
-				case "true":
-					return true;
-				case "0":
-				case "false":
-					return false;
-				default:
-					throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
-			}
-		}
-
-		/// <summary>
-		/// Check to see if XmlNode has specific attribute.
-		/// </summary>
-		/// <param name="node">XmlNode to check</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns boolean true or false.</returns>
-		public bool hasXmlAttribute(XmlNode node, string name)
-		{
-			if (node.Attributes == null)
-				return false;
-
-			object o = node.Attributes.GetNamedItem(name);
-			return o != null;
-		}
-
 		public void syntax()
 		{
 			string syntax = @"This is the Peach Runtime.  The Peach Runtime is one of the many ways
 to use Peach XML files.  Currently this runtime is still in development
 but already exposes several abilities to the end-user such as performing
-simple fuzzer runs, converting WireShark capture sinto Peach XML and
-performing parsing tests of Peach XML files.
+simple fuzzer runs and performing parsing tests of Peach XML files.
 
 Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 
@@ -481,7 +370,6 @@ Syntax:
 
   peach -a channel
   peach -c peach_xml_file [test_name]
-  peach -g
   peach [--skipto #] peach_xml_flie [test_name]
   peach -p 10,2 [--skipto #] peach_xml_file [test_name]
   peach --range 100,200 peach_xml_file [test_name]
@@ -490,12 +378,18 @@ Syntax:
   -1                         Perform a single iteration
   -a,--agent                 Launch Peach Agent
   -c,--count                 Count test cases
-  -t,--test xml_file         Test parse a Peach XML file
+  -t,--test xml_file         Validate a Peach XML file
   -p,--parallel M,N          Parallel fuzzing.  Total of M machines, this
                              is machine N.
   --debug                    Enable debug messages. Usefull when debugging
                              your Peach XML file.  Warning: Messages are very
                              cryptic sometimes.
+  --seed N                   Sets the seed used by the random number generator
+  --parseonly                Test parse a Peach XML file
+  --showenv                  Print a list of all DataElements, Fixups, Monitors
+                             Publishers and their associated parameters.
+  --showdevices              Display the list of PCAP devices
+  --analyzer                 Launch Peach Analyzer
   --skipto N                 Skip to a specific test #.  This replaced -r
                              for restarting a Peach run.
   --range N,M                Provide a range of test #'s to be run.
@@ -506,7 +400,7 @@ Syntax:
 
 Peach Agent
 
-  Syntax: peach.py -a channel
+  Syntax: peach -a channel
   
   Starts up a Peach Agent instance on this current machine.  User must provide
   a channel/protocol name (e.g. tcp).
@@ -539,7 +433,7 @@ Performing A Parellel Fuzzing Run
 
 Validate Peach XML File
 
-  Syntax: peach.py -t peach_xml_file
+  Syntax: peach -t peach_xml_file
   
   This will perform a parsing pass of the Peach XML file and display any
   errors that are found.

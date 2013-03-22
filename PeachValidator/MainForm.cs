@@ -14,6 +14,7 @@ using Peach.Core.Cracker;
 using Peach.Core.IO;
 using Peach.Core.Analyzers;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace PeachValidator
 {
@@ -26,6 +27,7 @@ namespace PeachValidator
 		string sampleFileName = null;
 		string pitFileName = null;
 		string dataModel = null;
+		Dictionary<string, object> parserArgs = new Dictionary<string, object>();
 		CrackModel crackModel = new CrackModel();
 		Dictionary<DataElement, CrackNode> crackMap = new Dictionary<DataElement, CrackNode>();
 
@@ -83,7 +85,7 @@ namespace PeachValidator
 				Dom dom;
 
 				parser = new PitParser();
-				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+				dom = parser.asParser(parserArgs, pitFileName);
 
 				treeViewAdv1.BeginUpdate();
 				treeViewAdv1.Model = null;
@@ -95,6 +97,8 @@ namespace PeachValidator
 					DataCracker cracker = new DataCracker();
 					cracker.EnterHandleNodeEvent += new EnterHandleNodeEventHandler(cracker_EnterHandleNodeEvent);
 					cracker.ExitHandleNodeEvent += new ExitHandleNodeEventHandler(cracker_ExitHandleNodeEvent);
+					cracker.AnalyzerEvent += new AnalyzerEventHandler(cracker_AnalyzerEvent);
+					cracker.ExceptionHandleNodeEvent += new ExceptionHandleNodeEventHandler(cracker_ExceptionHandleNodeEvent);
 					cracker.CrackData(dom.dataModels[dataModel], data);
 				}
 				catch (CrackingFailure ex)
@@ -105,7 +109,7 @@ namespace PeachValidator
 
 				foreach (var node in crackMap.Values)
 				{
-					if(node.DataElement.parent != null)
+					if (node.DataElement.parent != null)
 						node.Parent = crackMap[node.DataElement.parent];
 				}
 
@@ -127,26 +131,34 @@ namespace PeachValidator
 			}
 		}
 
+		void RemoveElement(DataElement element)
+		{
+			var currentModel = crackMap[element];
+			if (element.parent != null && crackMap.ContainsKey(element.parent))
+				crackMap[element.parent].Children.Remove(currentModel);
+			crackMap.Remove(element);
+
+			// Remove any elements that have 'element' as a parent
+			var res = crackMap.Select(kv => kv.Key).Where(k => k.parent == element).ToList();
+			foreach (var elem in res)
+			{
+				RemoveElement(elem);
+			}
+		}
+
+		void cracker_ExceptionHandleNodeEvent(DataElement element, long position, BitStream data, Exception e)
+		{
+			RemoveElement(element);
+		}
+
+		void cracker_AnalyzerEvent(DataElement element, BitStream data)
+		{
+			RemoveElement(element);
+		}
+
 		void cracker_ExitHandleNodeEvent(DataElement element, long position, BitStream data)
 		{
 			var currentModel = crackMap[element];
-
-			try
-			{
-				// Verify element is in data collection
-				long pos = data.DataElementPosition(element);
-			}
-			catch (ApplicationException ex)
-			{
-				// When occurs = 0 (element removed)
-				if (ex.Message.IndexOf("Unknown DataElement") > -1)
-				{
-					if(currentModel.Parent != null)
-						currentModel.Parent.RemoveChild(currentModel);
-					return;
-				}
-			}
-
 			currentModel.StopBits = position;
 
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
@@ -165,11 +177,24 @@ namespace PeachValidator
 		private void toolStripButtonOpenPit_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog ofd = new OpenFileDialog();
+			ofd.Title = "Selet PIT file";
+
 			if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
 				return;
 
 			pitFileName = ofd.FileName;
 			setTitle();
+
+			Regex re = new Regex("##\\w+##");
+			if (File.Exists(pitFileName) && re.IsMatch(File.ReadAllText(pitFileName)))
+			{
+				ofd.Title = "Selet PIT defines file";
+
+				if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+					return;
+
+				parserArgs[PitParser.DEFINED_VALUES] = PitParser.parseDefines(ofd.FileName);
+			}
 
 			toolStripButtonRefreshPit_Click(null, null);
 		}
@@ -180,21 +205,30 @@ namespace PeachValidator
 			{
 				PitParser parser = new PitParser();
 				Dom dom;
+				string previouslySelectedModelName;
+				int newModelIndex;
 
-				if(!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
+				if (!string.IsNullOrWhiteSpace(Path.GetDirectoryName(pitFileName)))
 					Directory.SetCurrentDirectory(Path.GetDirectoryName(pitFileName));
 
-				dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+				dom = parser.asParser(parserArgs, pitFileName);
+
+				previouslySelectedModelName = (string)toolStripComboBoxDataModel.SelectedItem;
 
 				toolStripComboBoxDataModel.Items.Clear();
 				foreach (var model in dom.dataModels.Keys)
 					toolStripComboBoxDataModel.Items.Add(model);
 
-				if(toolStripComboBoxDataModel.Items.Count > 0)
-					toolStripComboBoxDataModel.SelectedIndex = 0;
+				if ((previouslySelectedModelName != null) && toolStripComboBoxDataModel.Items.Contains(previouslySelectedModelName))
+					newModelIndex = toolStripComboBoxDataModel.Items.IndexOf(previouslySelectedModelName);
+				else
+					newModelIndex = 0;
+
+				if (toolStripComboBoxDataModel.Items.Count > 0)
+					toolStripComboBoxDataModel.SelectedIndex = newModelIndex;
 
 				treeViewAdv1.BeginUpdate();
-				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[0]);
+				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[newModelIndex]);
 				treeViewAdv1.Model = crackModel;
 				treeViewAdv1.EndUpdate();
 				treeViewAdv1.Root.Children[0].Expand();
@@ -212,7 +246,7 @@ namespace PeachValidator
 				dataModel = toolStripComboBoxDataModel.SelectedItem as string;
 
 				PitParser parser = new PitParser();
-				Dom dom = parser.asParser(new Dictionary<string, object>(), pitFileName);
+				Dom dom = parser.asParser(parserArgs, pitFileName);
 
 				treeViewAdv1.BeginUpdate();
 				crackModel = CrackModel.CreateModelFromPit(dom.dataModels[dataModel]);

@@ -5,7 +5,7 @@
 	<!--
 		
 		Example of the OS X Crash Reporter monitor.  This example will use the OS X
-		Crash Repoter functionality to detect faults.  This feature is still in BETA.
+		Crash Repoter functionality to detect faults.
 		
 		Syntax:
 		
