@@ -31,9 +31,12 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+
 using Peach.Core;
 using Peach.Core.Agent;
 using Peach.Core.Dom;
+
+using NLog;
 
 namespace Peach.Core.Loggers
 {
@@ -46,6 +49,7 @@ namespace Peach.Core.Loggers
 	[Parameter("Path", typeof(string), "Log folder")]
 	public class FileLogger : Logger
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 		string logpath = null;
 		string ourpath = null;
 		TextWriter log = null;
@@ -101,7 +105,10 @@ namespace Peach.Core.Loggers
 			foreach (Fault fault in faults)
 			{
 				if (fault.type == FaultType.Fault)
+				{
 					coreFault = fault;
+					logger.Debug("Found core fault [" + coreFault.title + "]");
+				}
 				else
 					dataFaults.Add(fault);
 			}
@@ -136,6 +143,8 @@ namespace Peach.Core.Loggers
 			int cnt = 0;
 			foreach (Dom.Action action in stateModel.dataActions)
 			{
+				logger.Debug("Writing action: " + action.name);
+
 				cnt++;
 				if (action.dataModel != null)
 				{
@@ -161,6 +170,8 @@ namespace Peach.Core.Loggers
 			// Write out all data information
 			foreach (Fault fault in faults)
 			{
+				logger.Debug("Writing fault: " + fault.title);
+
 				foreach (string key in fault.collectedData.Keys)
 				{
 					string fileName = System.IO.Path.Combine(faultPath,
@@ -176,6 +187,7 @@ namespace Peach.Core.Loggers
 				}
 			}
 
+			log.Flush();
 			return faultPath;
 		}
 

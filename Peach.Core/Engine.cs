@@ -129,8 +129,12 @@ namespace Peach.Core
 		}
 		public void OnFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{
+			logger.Debug(">> OnFault");
+			
 			if (Fault != null)
 				Fault(context, currentIteration, stateModel, faultData);
+
+			logger.Debug("<< OnFault");
 		}
 		public void OnReproFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{

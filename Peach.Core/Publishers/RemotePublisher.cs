@@ -25,6 +25,7 @@ namespace Peach.Core.Publishers
 		protected override NLog.Logger Logger { get { return logger; } }
 
 		private Publisher _publisher = null;
+		int _remotingWaitTime = 1000 * 60 * 1;
 
 		public RemotePublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -35,6 +36,41 @@ namespace Peach.Core.Publishers
 				this.Args.Add(kv.Key, kv.Value);
 
 			stream = new MemoryStream();
+		}
+
+
+		/// <summary>
+		/// Perform our remoting call with a forced timeout.
+		/// </summary>
+		/// <param name="method"></param>
+		protected void PerformRemoting(ThreadStart method)
+		{
+			Exception remotingException = null;
+
+			var thread = new System.Threading.Thread(delegate()
+			{
+				try
+				{
+					method();
+				}
+				catch (Exception ex)
+				{
+					remotingException = ex;
+				}
+			});
+
+			thread.Start();
+			if (thread.Join(_remotingWaitTime))
+			{
+				if (remotingException != null)
+				{
+					throw remotingException;
+				}
+			}
+			else
+			{
+				throw new System.Runtime.Remoting.RemotingException("Remoting call timed out.");
+			}
 		}
 
 		protected RunContext Context
@@ -54,12 +90,25 @@ namespace Peach.Core.Publishers
 
 		protected void RestartRemotePublisher()
 		{
-			logger.Debug("Restarting remote publisher");
+			try
+			{
+				logger.Debug("Restarting remote publisher");
 
-			_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
-			_publisher.Iteration = Iteration;
-			_publisher.IsControlIteration = IsControlIteration;
-			_publisher.start();
+				_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
+				_publisher.Iteration = Iteration;
+				_publisher.IsControlIteration = IsControlIteration;
+				_publisher.start();
+			}
+			catch(Exception ex)
+			{
+				// Allow iteration to complete in case there is a latent
+				// fault we must catch, then exit.
+				//Context.agentManager.mustStopDueToError = true;
+
+				logger.Warn("Ignoring exception on remote publisher restart.  Will exit on MustStop. [" + ex.Message + "]");
+
+				throw new SoftException(ex.Message);
+			}
 		}
 
 		public override uint Iteration
@@ -135,7 +184,7 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.stop();
+				PerformRemoting(delegate() { _publisher.stop(); });
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
@@ -148,12 +197,20 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.open();
+				PerformRemoting(delegate() { _publisher.open(); });
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
 				RestartRemotePublisher();
-				_publisher.open();
+
+				try
+				{
+					PerformRemoting(delegate() { _publisher.open(); });
+				}
+				catch(System.Runtime.Remoting.RemotingException)
+				{
+					// Ignore
+				}
 			}
 		}
 
@@ -161,7 +218,7 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.close();
+				PerformRemoting(delegate() { _publisher.close(); });
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
@@ -181,12 +238,21 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.accept();
+				PerformRemoting(delegate() { _publisher.accept(); });
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
 				RestartRemotePublisher();
-				_publisher.accept();
+
+				try
+				{
+					PerformRemoting(delegate() { _publisher.accept(); });
+				}
+				catch (System.Runtime.Remoting.RemotingException)
+				{
+					// Ignore
+				}
+				
 			}
 		}
 
@@ -194,7 +260,9 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				return _publisher.call(method, args);
+				Variant ret = null;
+				PerformRemoting(delegate() { ret = _publisher.call(method, args); });
+				return ret;
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
@@ -215,7 +283,7 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.setProperty(property, value);
+				PerformRemoting(delegate() { _publisher.setProperty(property, value); });
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
@@ -235,7 +303,9 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				return _publisher.getProperty(property);
+				Variant ret = null;
+				PerformRemoting(delegate() { ret = _publisher.getProperty(property); });
+				return ret;
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
@@ -256,7 +326,7 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.output(buffer, offset, count);
+				PerformRemoting(delegate() { _publisher.output(buffer, offset, count); });
 			}
 			catch (System.Runtime.Remoting.RemotingException)
 			{
@@ -268,7 +338,7 @@ namespace Peach.Core.Publishers
 		{
 			try
 			{
-				_publisher.input();
+				PerformRemoting(delegate() { _publisher.input(); });
 
 				stream.Seek(0, SeekOrigin.Begin);
 				stream.SetLength(0);
@@ -306,7 +376,10 @@ namespace Peach.Core.Publishers
 			{
 				for (;;)
 				{
-					int b = _publisher.ReadByte();
+					int b = -1;
+
+					PerformRemoting(delegate() { b = _publisher.ReadByte(); });
+					
 					if (b == -1)
 					{
 						stream.Seek(pos, SeekOrigin.Begin);

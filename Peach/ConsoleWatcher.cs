@@ -30,14 +30,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
+
 using Peach.Core;
 using Peach.Core.Agent;
-using System.Diagnostics;
+
+using NLog;
 
 namespace Peach
 {
 	public class ConsoleWatcher : Watcher
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		Stopwatch timer = new Stopwatch();
 		uint startIteration = 0;
 		bool reproducing = false;

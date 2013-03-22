@@ -18,6 +18,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("SnapshotIndex", typeof(int?), "VM snapshot index", "")]
 	[Parameter("SnapshotName", typeof(string), "VM snapshot name", "")]
 	[Parameter("ResetEveryIteration", typeof(bool), "Reset VM on every iteration", "false")]
+	[Parameter("ResetOnFaultBeforeCollection", typeof(bool), "Reset VM after we detect a fault during data collection", "false")]
 	[Parameter("WaitForToolsInGuest", typeof(bool), "Wait for tools to start in guest", "true")]
 	[Parameter("WaitTimeout", typeof(int), "How many seconds to wait for guest tools", "600")]
 	public class VmwareMonitor : Monitor
@@ -663,6 +664,11 @@ namespace Peach.Core.Agent.Monitors
 			return GetResultHandle(jobHandle);
 		}
 
+		private static void Disconnect(IntPtr connectionHandle)
+		{
+			VixHost_Disconnect(connectionHandle);
+		}
+
 		private static IntPtr OpenVM(IntPtr hostHandle, string vmx)
 		{
 			IntPtr jobHandle = VixHost_OpenVM(
@@ -839,6 +845,7 @@ namespace Peach.Core.Agent.Monitors
 		public int HostPort { get; private set; }
 		public int? SnapshotIndex { get; private set; }
 		public string SnapshotName { get; private set; }
+		public bool ResetOnFaultBeforeCollection { get; private set; }
 
 		IntPtr hostHandle = VixInvalidHandle;
 		IntPtr vmHandle = VixInvalidHandle;
@@ -852,6 +859,47 @@ namespace Peach.Core.Agent.Monitors
 				try
 				{
 					logger.Debug("Starting virtual machine \"" + Vmx + "\".");
+
+					try
+					{
+						if (snapshotHandle != VixInvalidHandle)
+							CloseHandle(ref snapshotHandle);
+
+						snapshotHandle = VixInvalidHandle;
+					}
+					catch (Exception ex)
+					{
+						logger.Warn("Ignoring exception closing old snapshotHandle: " + ex.Message);
+					}
+
+					try
+					{
+						if (vmHandle != VixInvalidHandle)
+							CloseHandle(ref vmHandle);
+
+						vmHandle = VixInvalidHandle;
+					}
+					catch (Exception ex)
+					{
+						logger.Warn("Ignoring exception closing old vmHandle: " + ex.Message);
+					}
+
+					try
+					{
+						if (hostHandle != VixInvalidHandle)
+							Disconnect(hostHandle);
+
+						hostHandle = VixInvalidHandle;
+					}
+					catch (Exception ex)
+					{
+						logger.Warn("Ignoring exception closing old hostHandle: " + ex.Message);
+					}
+
+					hostHandle = Connect(HostType, Host, HostPort, Login, Password);
+
+					OpenHandle();
+					GetSnapshot();
 
 					RevertToSnapshot(vmHandle, snapshotHandle);
 					PowerOn(vmHandle);
@@ -913,11 +961,10 @@ namespace Peach.Core.Agent.Monitors
 			CloseHandle(ref hostHandle);
 		}
 
-		public override void SessionStarting()
+		protected void OpenHandle()
 		{
-			logger.Debug(">> SessionStarting");
-
-			hostHandle = Connect(HostType, Host, HostPort, Login, Password);
+			if(hostHandle == VixInvalidHandle)
+				hostHandle = Connect(HostType, Host, HostPort, Login, Password);
 
 			try
 			{
@@ -934,19 +981,25 @@ namespace Peach.Core.Agent.Monitors
 				vms.Insert(0, msg);
 				msg = string.Join(Environment.NewLine + "\t", vms);
 
-				logger.Error("SessionStarting: " + msg);
+				logger.Error("OpenHandle: " + msg);
 
 				throw new PeachException(msg, ve);
 			}
+		}
 
+		protected void GetSnapshot()
+		{
 			if (SnapshotIndex.HasValue)
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotIndex.Value);
 			else
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotName);
+		}
 
+		public override void SessionStarting()
+		{
+			OpenHandle();
+			GetSnapshot();
 			StartVM();
-
-			logger.Debug("<< SessionStarting");
 		}
 
 		public override void SessionFinished()
@@ -972,6 +1025,10 @@ namespace Peach.Core.Agent.Monitors
 		{
 			// This indicates a fault was detected and we should reset the VM.
 			needReset = true;
+
+			if (ResetOnFaultBeforeCollection)
+				StartVM();
+
 			return null;
 		}
 
