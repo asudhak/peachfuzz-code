@@ -67,8 +67,6 @@ namespace Peach.Core.Loggers
 		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel,
 			Fault[] faults)
 		{
-			logger.Debug(">> Engine_Fault");
-
 			Fault coreFault = null;
 			List<Fault> dataFaults = new List<Fault>();
 
@@ -161,7 +159,6 @@ namespace Peach.Core.Loggers
 			}
 
 			log.Flush();
-			logger.Debug("<< Engine_Fault");
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)

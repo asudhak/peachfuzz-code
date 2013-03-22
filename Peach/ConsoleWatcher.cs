@@ -48,14 +48,10 @@ namespace Peach
 
 		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
 		{
-			logger.Debug(">> Engine_Fault");
-
 			var color = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
 			Console.ForegroundColor = color;
-
-			logger.Debug("<< Engine_Fault");
 		}
 
 		protected override void Engine_HaveCount(RunContext context, uint totalIterations)
