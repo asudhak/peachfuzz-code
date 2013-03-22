@@ -85,6 +85,7 @@ namespace Peach.Core.Agent.Monitors
 
 		bool _hybrid = true;
 		bool _replay = false;
+		Fault _fault = null;
 
 		DebuggerInstance _debugger = null;
 		SystemDebuggerInstance _systemDebugger = null;
@@ -306,6 +307,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			_replay = isReproduction;
+
 			if (!_IsDebuggerRunning() && _startOnCall == null)
 				_StartDebugger();
 		}
@@ -322,25 +325,19 @@ namespace Peach.Core.Agent.Monitors
 		{
 			logger.Info("DetectedFault()");
 
-			bool fault = false;
+			_fault = null;
 
 			if (_systemDebugger != null && _systemDebugger.caughtException)
 			{
-				logger.Info("DetectedFault - Using system debugger, triggering replay");
-				_replay = true;
+				logger.Info("DetectedFault - Using system debugger, caught exception");
+				_fault = _systemDebugger.crashInfo;
 
 				_systemDebugger.StopDebugger();
 				_systemDebugger = null;
-
-				var ex = new ReplayTestException();
-				ex.ReproducingFault = true;
-				throw ex;
 			}
 			else if (_debugger != null && _hybrid)
 			{
-				logger.Info("DetectedFault - Using WinDbg, checking for fualt, disable replay.");
-
-				_replay = false;
+				logger.Info("DetectedFault - Using WinDbg, checking for fault");
 
 				// Lets give windbg a chance to detect the crash.
 				// 10 seconds should be enough.
@@ -350,17 +347,17 @@ namespace Peach.Core.Agent.Monitors
 					{
 						// Kill off our debugger process and re-create
 						_debuggerProcessUsage = _debuggerProcessUsageMax;
-						fault = true;
+						_fault = _debugger.crashInfo;
 						break;
 					}
 
 					Thread.Sleep(1000);
 				}
 
-				if(fault)
+				if(_fault != null)
 					logger.Info("DetectedFault - Caught fault with windbg");
 
-				if (_debugger != null && _hybrid && !fault)
+				if (_debugger != null && _hybrid && _fault == null)
 				{
 					_StopDebugger();
 					_FinishDebugger();
@@ -370,31 +367,24 @@ namespace Peach.Core.Agent.Monitors
 			{
 				// Kill off our debugger process and re-create
 				_debuggerProcessUsage = _debuggerProcessUsageMax;
-				fault = true;
+				_fault = _debugger.crashInfo;
 			}
 
-			if(!fault)
+			if(_fault == null)
 				logger.Info("DetectedFault() - No fault detected");
 
-			return fault;
+			return _fault != null;
 		}
 
 		public override Fault GetMonitorData()
 		{
-			if (!DetectedFault())
-				return null;
-
-            Fault fault = _debugger.crashInfo;
-            fault.type = FaultType.Fault;
-            fault.detectionSource = "WindowsDebuggerHybrid";
-
-			if (_hybrid)
+			if (_fault != null && _hybrid)
 			{
 				_StopDebugger();
 				_FinishDebugger();
 			}
 
-            return fault;
+			return _fault;
 		}
 
 		public override bool MustStop()
@@ -643,8 +633,6 @@ namespace Peach.Core.Agent.Monitors
 
 			if (_debugger != null)
 			{
-				_replay = false;
-
 				try
 				{
 					_debugger.StopDebugger();

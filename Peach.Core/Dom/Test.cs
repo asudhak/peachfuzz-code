@@ -112,6 +112,11 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
+		/// Should iterations be replayed when a fault occurs.
+		/// </summary>
+		public bool replayEnabled { get; set; }
+
+		/// <summary>
 		/// Time to wait in seconds between each test case. Value can be fractional
 		/// (0.25). Defaults to zero (0).
 		/// </summary>

@@ -15,7 +15,8 @@ namespace Peach.Core.Test.Monitors
 {
     [Monitor("FaultingMonitor", true)]
     [Parameter("Iteration", typeof(int), "Iteration to Fault on")]
-    [Parameter("Replay", typeof(bool), "Trigger replay exception", "false")]
+    [Parameter("FaultAlways", typeof(bool), "Fault on non control iterations")]
+    [Parameter("Replay", typeof(bool), "Don't fault on replay", "false")]
     public class FaultingMonitor : Peach.Core.Agent.Monitor
     {
         protected int Iter = 0;
@@ -23,6 +24,7 @@ namespace Peach.Core.Test.Monitors
         protected bool replay = false;
         protected bool replaying = false;
         protected bool control = true;
+        protected bool faultAlways = false;
 
         public FaultingMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
             : base(agent, name, args)
@@ -31,6 +33,8 @@ namespace Peach.Core.Test.Monitors
                 Iter = (int)args["Iteration"];
             if (args.ContainsKey("Replay"))
                 replay = ((string) args["Replay"]).ToLower() == "true";
+            if (args.ContainsKey("FaultAlways"))
+                faultAlways = ((string) args["FaultAlways"]).ToLower() == "true";
         }
         public override void StopMonitor()
         {
@@ -45,6 +49,7 @@ namespace Peach.Core.Test.Monitors
         public override void IterationStarting(uint iterationCount, bool isReproduction) 
         {
             curIter = (int)iterationCount;
+            replaying = isReproduction;
         }
 
         public override bool IterationFinished()
@@ -56,18 +61,25 @@ namespace Peach.Core.Test.Monitors
         {
             if (curIter == Iter && !replaying)
             {
-                if (!control && replay)
+                if (replay)
                 {
-                    replaying = true;
-                    var ex = new ReplayTestException();
-                    ex.ReproducingFault = true;
-                    throw ex;
+                    bool fault = !control;
+                    control = false;
+                    return fault;
                 }
 
                 control = false;
                 return true;
             }
 
+			if (faultAlways)
+			{
+				bool fault = !control;
+				control = false;
+				return fault;
+			}
+
+            control = false;
             return false;
         }
 

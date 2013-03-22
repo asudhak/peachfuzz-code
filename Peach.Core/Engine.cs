@@ -352,7 +352,7 @@ namespace Peach.Core
 									logger.Debug("runTest: Performing control iteration.");
 							}
 
-							context.agentManager.IterationStarting(iterationCount, false);
+							context.agentManager.IterationStarting(iterationCount, context.reproducingFault);
 
 							test.stateModel.Run(context);
 						}
@@ -502,6 +502,27 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 								logger.Debug("runTest: Reproduced fault, continuing fuzzing at iteration " + iterationCount);
 							}
+							else if (test.replayEnabled)
+							{
+								logger.Debug("runTest: Attempting to reproduce fault.");
+
+								context.reproducingFault = true;
+								context.reproducingInitialIteration = iterationCount;
+								context.reproducingIterationJumpCount = 1;
+
+								// User can specify a time to wait between iterations
+								// we can use that time to better detect faults
+								if (context.test.waitTime > 0)
+									Thread.Sleep((int)(context.test.waitTime * 1000));
+
+								// User can specify a time to wait between iterations
+								// when reproducing faults.
+								if (context.test.faultWaitTime > 0)
+									Thread.Sleep((int)(context.test.faultWaitTime * 1000));
+
+								logger.Debug("runTest: replaying iteration " + iterationCount);
+								continue;
+							}
 						}
 						else if (context.reproducingFault)
 						{
@@ -573,29 +594,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 						redoCount = 0;
 					}
-					catch (ReplayTestException rtex)
-					{
-						if (rtex.ReproducingFault)
-						{
-							logger.Debug("runTest: Attempting to reproduce fault.");
-
-							context.reproducingFault = true;
-							context.reproducingInitialIteration = iterationCount;
-							context.reproducingIterationJumpCount = 1;
-
-							// User can specify a time to wait between iterations
-							// we can use that time to better detect faults
-							if (context.test.waitTime > 0)
-								Thread.Sleep((int)(context.test.waitTime * 1000));
-
-							// User can specify a time to wait between iterations
-							// when reproducing faults.
-							if (context.test.faultWaitTime > 0)
-								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
-						}
-
-						logger.Debug("runTest: replaying iteration " + iterationCount);
-					}
 					catch (RedoIterationException rte)
 					{
 						logger.Debug("runTest: redoing test iteration for the " + redoCount + " time.");
@@ -664,28 +662,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 			fault.type = FaultType.Fault;
 			context.faults.Add(fault);
 		}
-	}
-
-	public class RedoTestException : Exception
-	{
-	}
-
-	/// <summary>
-	/// Replay current test case
-	/// </summary>
-	/// <remarks>
-	/// Typically used by Agent/Monitors to replay
-	/// current iteration.
-	/// 
-	/// When a fault is detected we should replay the current
-	/// iteration to verify the fault.
-	/// </remarks>
-	public class ReplayTestException : Exception
-	{
-		/// <summary>
-		/// Are we replaying the test to reproduce a detected fault?
-		/// </summary>
-		public bool ReproducingFault = false;
 	}
 
 	public enum DebugLevel

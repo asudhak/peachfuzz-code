@@ -39,6 +39,7 @@ using System.Management;
 //using Peach.Core.Debuggers.Windows;
 using Peach.Core.Debuggers.WindowsSystem;
 using NLog;
+using System.Runtime.InteropServices;
 
 namespace Peach.Core.Agent.Monitors.WindowsDebug
 {
@@ -60,8 +61,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public bool noCpuKill = false;
 
 		public bool dbgExited = false;
-		public bool _caughtException = false;
-		public Dictionary<string, Variant> crashInfo = null;
+		public Fault crashInfo = null;
 
 		ManualResetEvent _dbgCreated;
 		
@@ -78,18 +78,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		{
 			get
 			{
-				if (_caughtException)
-				{
-					if (crashInfo == null)
-					{
-						crashInfo = new Dictionary<string, Variant>();
-						crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
-					}
-
-					return true;
-				}
-
-				return false;
+				return crashInfo != null;
 			}
 		}
 
@@ -116,12 +105,6 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				{
 					// Handle closed out from underneeth?
 					return true;
-				}
-
-				if (_caughtException && crashInfo == null)
-				{
-					crashInfo = new Dictionary<string, Variant>();
-					crashInfo["SystemDebugger_Infoz.txt"] = new Variant("Unknown Access Violation!");
 				}
 
 				dbgExited = true;
@@ -174,6 +157,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			//if (_thread.IsAlive)
 			StopDebugger();
 			_dbg = null;
+			crashInfo = null;
 
 			//ExitInstance = true;
 		}
@@ -281,7 +265,31 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					return;
 			}
 
-			_caughtException = true;
+			Fault fault = new Fault();
+			fault.type = FaultType.Fault;
+			fault.detectionSource = "SystemDebugger";
+			fault.title = "Exception: 0x" + DebugEv.u.Exception.ExceptionRecord.ExceptionCode.ToString("x8");
+
+			StringBuilder output = new StringBuilder();
+
+			if (DebugEv.u.Exception.dwFirstChance == 1)
+				output.Append("First Chance ");
+
+			output.AppendLine(fault.title);
+
+			if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
+			{
+				output.Append("Access Violation ");
+				if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
+					output.Append(" Reading From 0x");
+				else
+					output.Append(" Writing To 0x");
+				output.Append(DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[1].ToInt64().ToString("x16"));
+			}
+
+			fault.description = output.ToString();
+
+			crashInfo = fault;
 			_dbg.processExit = true;
 		}
 	}

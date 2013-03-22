@@ -418,6 +418,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 
                 Fault fault = new Fault();
                 fault.type = FaultType.Fault;
+				fault.detectionSource = "WindowsDebugEngine";
 				fault.majorHash = reMajorHash.Match(output).Groups[1].Value;
 				fault.minorHash = reMinorHash.Match(output).Groups[1].Value;
 				fault.exploitability = reClassification.Match(output).Groups[1].Value;
