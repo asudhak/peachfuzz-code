@@ -1563,6 +1563,9 @@ namespace Peach.Core.Analyzers
 			if (node.hasAttr("controlIteration"))
 				test.controlIterationEvery = int.Parse(node.getAttrString("controlIteration"));
 
+			if (node.hasAttr("replayEnabled"))
+				test.replayEnabled = node.getAttrBool("replayEnabled");
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")

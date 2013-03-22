@@ -410,7 +410,6 @@
     <Compile Include="Agent\Monitors\MemoryMonitor.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
-    <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
     <Compile Include="Agent\Monitors\SocketMonitor.cs" />
     <Compile Include="Agent\Monitors\SshDownloaderMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />

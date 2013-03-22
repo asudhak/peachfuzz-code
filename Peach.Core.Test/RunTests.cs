@@ -98,7 +98,7 @@ namespace Peach.Core.Test
 		</Monitor>
 	</Agent>
 
-	<Test name='Default' faultWaitTime='0'>
+	<Test name='Default' faultWaitTime='0' replayEnabled='true'>
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>

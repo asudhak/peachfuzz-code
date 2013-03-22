@@ -35,12 +35,12 @@ namespace Peach.Core.Test.Monitors
                 "   </StateModel>" +
 
                 "   <Agent name=\"LocalAgent\">" +
-                "       <Monitor class=\"Replay\">" +
-                "           <Param name=\"Name\" value=\"ReplayMonitor1\"/>" +
+                "       <Monitor class=\"FaultingMonitor\">" +
+                "           <Param name=\"FaultAlways\" value=\"true\"/>" +
                 "       </Monitor>" +
                 "   </Agent>" +
 
-                "   <Test name=\"Default\">" +
+                "   <Test name=\"Default\" replayEnabled=\"true\">" +
                 "       <Agent ref=\"LocalAgent\"/>" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
