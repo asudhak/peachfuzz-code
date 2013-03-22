@@ -121,6 +121,46 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public override bool hasLength
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		public override long length
+		{
+			get
+			{
+				return base.lengthAsBits;
+			}
+			set
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override LengthType lengthType
+		{
+			get
+			{
+				return LengthType.Bits;
+			}
+			set
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override long lengthAsBits
+		{
+			get
+			{
+				return this.Value.LengthBits;
+			}
+		}
+
 		/// <summary>
 		/// Element to pull size to align.  If null use parent.
 		/// </summary>
@@ -176,14 +216,15 @@ namespace Peach.Core.Dom
 
 					long currentLength = alignedElement.CalcLengthBits();
 
-					if (currentLength > 0 && currentLength % _alignment == 0)
-						return _defaultValue;
-
 					BitStream data = new BitStream();
-					data.WriteBit(0);
 
-					while (((currentLength + data.LengthBits) % _alignment) != 0)
+					if (currentLength == 0 || currentLength % _alignment != 0)
+					{
 						data.WriteBit(0);
+
+						while (((currentLength + data.LengthBits) % _alignment) != 0)
+							data.WriteBit(0);
+					}
 
 					data.SeekBits(0, System.IO.SeekOrigin.Begin);
 
