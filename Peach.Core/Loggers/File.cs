@@ -64,14 +64,12 @@ namespace Peach.Core.Loggers
 		protected override void Engine_ReproFault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faults)
 		{
 			reproPath = saveFaults("Reproducing", context, currentIteration, stateModel, faults);
-			Engine_ReproFailed(null, 1);
 		}
 
 		protected override void Engine_ReproFailed(RunContext context, uint currentIteration)
 		{
 			string baseName = System.IO.Path.Combine(ourpath, "Reproducing") + System.IO.Path.DirectorySeparatorChar;
 			string subdir = reproPath.Substring(baseName.Length);
-
 			string dest = System.IO.Path.Combine(ourpath, "NonReproducable", System.IO.Path.GetDirectoryName(subdir));
 			if (!Directory.Exists(dest))
 				Directory.CreateDirectory(dest);
