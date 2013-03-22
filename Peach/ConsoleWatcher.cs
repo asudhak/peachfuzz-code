@@ -40,14 +40,34 @@ namespace Peach
 	{
 		Stopwatch timer = new Stopwatch();
 		uint startIteration = 0;
+		bool reproducing = false;
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
+		protected override void Engine_ReproFault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0}, trying to reproduce --\n", currentIteration));
+			Console.ForegroundColor = color;
+			reproducing = true;
+		}
+
+		protected override void Engine_ReproFailed(RunContext context, uint currentIteration)
 		{
 			var color = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration));
+			Console.WriteLine(string.Format("\n -- Could not reproduce fault at iteration {0} --\n", currentIteration));
 			Console.ForegroundColor = color;
+			reproducing = false;
+		}
 
+		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faultData)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(string.Format("\n -- {1} fault at iteration {0} --\n", currentIteration,
+				reproducing ? "Reproduced" : "Caught"));
+			Console.ForegroundColor = color;
+			reproducing = false;
 		}
 
 		protected override void Engine_HaveCount(RunContext context, uint totalIterations)

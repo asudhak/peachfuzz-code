@@ -61,6 +61,8 @@ namespace Peach.Core
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
 		public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData);
+		public delegate void ReproFaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData);
+		public delegate void ReproFailedEventHandler(RunContext context, uint currentIteration);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
@@ -81,6 +83,14 @@ namespace Peach.Core
 		/// Fired at end of each iteration.  This event will be fired often.
 		/// </summary>
 		public event IterationFinishedEventHandler IterationFinished;
+		/// <summary>
+		/// Fired when a Fault is detected and the engine starts retrying to reproduce it.
+		/// </summary>
+		public event ReproFaultEventHandler ReproFault;
+		/// <summary>
+		/// Fired when a Fault is is unable to be reproduced
+		/// </summary>
+		public event ReproFailedEventHandler ReproFailed;
 		/// <summary>
 		/// Fired when a Fault is detected.
 		/// </summary>
@@ -121,6 +131,16 @@ namespace Peach.Core
 		{
 			if (Fault != null)
 				Fault(context, currentIteration, stateModel, faultData);
+		}
+		public void OnReproFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
+		{
+			if (ReproFault != null)
+				ReproFault(context, currentIteration, stateModel, faultData);
+		}
+		public void OnReproFailed(RunContext context, uint currentIteration)
+		{
+			if (ReproFailed != null)
+				ReproFailed(context, currentIteration);
 		}
 		public void OnTestFinished(RunContext context)
 		{
@@ -476,7 +496,10 @@ to execute same as initial control.  State " + state.name + "was not performed."
 								fault.controlRecordingIteration = context.controlRecordingIteration;
 							}
 
-							OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
+							if (context.controlIteration || context.reproducingFault || !test.replayEnabled)
+								OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
+							else
+								OnReproFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
 							if (context.controlIteration)
 							{
@@ -534,6 +557,8 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 								context.reproducingFault = false;
 								iterationCount = context.reproducingInitialIteration;
+
+								OnReproFailed(context, iterationCount);
 							}
 							else
 							{

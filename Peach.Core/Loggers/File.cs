@@ -49,6 +49,7 @@ namespace Peach.Core.Loggers
 		string logpath = null;
 		string ourpath = null;
 		TextWriter log = null;
+		string reproPath = null;
 
 		public FileLogger(Dictionary<string, Variant> args)
 		{
@@ -60,8 +61,38 @@ namespace Peach.Core.Loggers
 			get { return logpath; }
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel,
-			Fault[] faults)
+		protected override void Engine_ReproFault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faults)
+		{
+			reproPath = saveFaults("Reproducing", context, currentIteration, stateModel, faults);
+			Engine_ReproFailed(null, 1);
+		}
+
+		protected override void Engine_ReproFailed(RunContext context, uint currentIteration)
+		{
+			string baseName = System.IO.Path.Combine(ourpath, "Reproducing") + System.IO.Path.DirectorySeparatorChar;
+			string subdir = reproPath.Substring(baseName.Length);
+
+			string dest = System.IO.Path.Combine(ourpath, "NonReproducable", System.IO.Path.GetDirectoryName(subdir));
+			if (!Directory.Exists(dest))
+				Directory.CreateDirectory(dest);
+			dest = System.IO.Path.Combine(dest, System.IO.Path.GetFileName(subdir));
+			Directory.Move(reproPath, dest);
+			Directory.Delete(System.IO.Path.Combine(ourpath, "Reproducing"), true);
+			reproPath = null;
+		}
+
+		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faults)
+		{
+			string dir = saveFaults("Faults", context, currentIteration, stateModel, faults);
+			if (reproPath != null)
+			{
+				Directory.Move(reproPath, System.IO.Path.Combine(dir, "Initial"));
+				Directory.Delete(System.IO.Path.Combine(ourpath, "Reproducing"), true);
+				reproPath = null;
+			}
+		}
+
+		private string saveFaults(string root, RunContext context, uint currentIteration, StateModel stateModel, Fault[] faults)
 		{
 			Fault coreFault = null;
 			List<Fault> dataFaults = new List<Fault>();
@@ -80,7 +111,7 @@ namespace Peach.Core.Loggers
 			if (coreFault == null)
 				throw new ApplicationException("Error, we should always have a fault with type = Fault!");
 
-			string faultPath = System.IO.Path.Combine(ourpath, "Faults");
+			string faultPath = System.IO.Path.Combine(ourpath, root);
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
@@ -146,6 +177,8 @@ namespace Peach.Core.Loggers
 					File.WriteAllText(fileName, fault.description);
 				}
 			}
+
+			return faultPath;
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
