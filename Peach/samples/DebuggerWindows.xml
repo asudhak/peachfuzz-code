@@ -52,7 +52,7 @@
 		</Monitor>
 	</Agent>
 
-	<Test name="Default" replayEnabled="true">
+	<Test name="Default">
 		<Agent ref="LocalAgent" />
 
 		<StateModel ref="State"/>

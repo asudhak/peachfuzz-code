@@ -92,6 +92,7 @@ namespace Peach.Core.Dom
 		{
 			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
 
+			replayEnabled = true;
 			waitTime = 0;
 			faultWaitTime = 2;
 		}

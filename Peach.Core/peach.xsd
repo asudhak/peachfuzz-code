@@ -1924,7 +1924,7 @@
 			<xs:attribute name="replayEnabled" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>
-						Should iterations be replayed when a fault occurs.  Defaults to 'false'.
+						Should iterations be replayed when a fault occurs.  Defaults to 'true'.
 					</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
