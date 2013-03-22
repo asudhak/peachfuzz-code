@@ -133,6 +133,37 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void TestFirstSearch()
+		{
+			RunTest(0, 1);
+
+			uint[] expected = new uint[] {
+				1,  // Control
+				1,
+				1,  // Initial replay
+				2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+
+			uint[] actual = iterationHistory.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void TestSecondSearch()
+		{
+			RunTest(0, 2);
+
+			uint[] expected = new uint[] {
+				1,  // Control
+				1, 2,
+				2,  // Initial replay
+				1,  // Move back 1
+				3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+
+			uint[] actual = iterationHistory.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
 		public void TestMiddleSearch()
 		{
 			RunTest(1, 10);

@@ -302,7 +302,9 @@ namespace Peach.Core
 					iterationStart = context.config.skipToIteration;
 				}
 
-				uint iterationCount = Math.Max(1, iterationStart);
+				iterationStart = Math.Max(1, iterationStart);
+
+				uint iterationCount = iterationStart;
 				bool firstRun = true;
 
 				// First iteration is always a control/recording iteration

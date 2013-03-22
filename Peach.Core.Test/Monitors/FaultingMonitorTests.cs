@@ -59,11 +59,11 @@ namespace Peach.Core.Test.Monitors
 
         public override bool DetectedFault()
         {
-            if (curIter == Iter && !replaying)
+            if (curIter == Iter)
             {
                 if (replay)
                 {
-                    bool fault = !control;
+                    bool fault = !control && !replaying;
                     control = false;
                     return fault;
                 }
