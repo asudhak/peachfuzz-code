@@ -189,10 +189,6 @@ namespace Peach.Core.Agent
 				{
 					agent.IterationStarting(iterationCount, isReproduction);
 				}
-				catch (ReplayTestException)
-				{
-					throw;
-				}
 				catch (Exception ex)
 				{
 					logger.Warn("Ignoring exception calling IterationStarting: " + ex.Message);
