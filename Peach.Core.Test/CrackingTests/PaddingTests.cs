@@ -117,7 +117,7 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
-		public void GeneratePadding()
+		public void GeneratePadding1()
 		{
 			string xml = template.Fmt(1, "00");
 
@@ -133,6 +133,44 @@ namespace Peach.Core.Test.CrackingTests
 
 			var padding = block[1];
 			Assert.AreEqual(8, padding.Value.LengthBits);
+		}
+
+		[Test]
+		public void GeneratePadding2()
+		{
+			string xml = template.Fmt(0, "");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = dom.dataModels[0].Value;
+			Assert.AreEqual(0, data.LengthBits);
+
+			var block = dom.dataModels[0][0] as Block;
+			var blob = block[0];
+			Assert.AreEqual(0, blob.Value.LengthBits);
+
+			var padding = block[1];
+			Assert.AreEqual(0, padding.Value.LengthBits);
+		}
+
+		[Test]
+		public void GeneratePadding3()
+		{
+			string xml = template.Fmt(2, "11 22");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = dom.dataModels[0].Value;
+			Assert.AreEqual(16, data.LengthBits);
+
+			var block = dom.dataModels[0][0] as Block;
+			var blob = block[0];
+			Assert.AreEqual(16, blob.Value.LengthBits);
+
+			var padding = block[1];
+			Assert.AreEqual(0, padding.Value.LengthBits);
 		}
 	}
 }

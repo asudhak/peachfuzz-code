@@ -157,7 +157,7 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				return this.Value.LengthBits;
+				return this.CalcLengthBits();
 			}
 		}
 
@@ -218,13 +218,8 @@ namespace Peach.Core.Dom
 
 					BitStream data = new BitStream();
 
-					if (currentLength == 0 || currentLength % _alignment != 0)
-					{
+					while (((currentLength + data.LengthBits) % _alignment) != 0)
 						data.WriteBit(0);
-
-						while (((currentLength + data.LengthBits) % _alignment) != 0)
-							data.WriteBit(0);
-					}
 
 					data.SeekBits(0, System.IO.SeekOrigin.Begin);
 

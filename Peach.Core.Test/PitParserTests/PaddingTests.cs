@@ -56,7 +56,7 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Padding padding = dom.dataModels[0][0] as Padding;
 
-			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
+			Assert.AreEqual(0, ((BitStream)padding.DefaultValue).LengthBits);
 		}
 
 		[Test]
