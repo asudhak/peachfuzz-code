@@ -30,20 +30,49 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
+
 using Peach.Core;
 using Peach.Core.Agent;
+
+using NLog;
 
 namespace Peach
 {
 	public class ConsoleWatcher : Watcher
 	{
-		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		Stopwatch timer = new Stopwatch();
+		uint startIteration = 0;
+		bool reproducing = false;
+
+		protected override void Engine_ReproFault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault [] faultData)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0}, trying to reproduce --\n", currentIteration));
+			Console.ForegroundColor = color;
+			reproducing = true;
+		}
+
+		protected override void Engine_ReproFailed(RunContext context, uint currentIteration)
 		{
 			var color = Console.ForegroundColor;
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine(string.Format("\n -- Caught fault at iteration {0} --\n", currentIteration+1));
+			Console.WriteLine(string.Format("\n -- Could not reproduce fault at iteration {0} --\n", currentIteration));
 			Console.ForegroundColor = color;
+			reproducing = false;
+		}
 
+		protected override void Engine_Fault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faultData)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(string.Format("\n -- {1} fault at iteration {0} --\n", currentIteration,
+				reproducing ? "Reproduced" : "Caught"));
+			Console.ForegroundColor = color;
+			reproducing = false;
 		}
 
 		protected override void Engine_HaveCount(RunContext context, uint totalIterations)
@@ -54,41 +83,69 @@ namespace Peach
 			Console.ForegroundColor = color;
 		}
 
+		protected override void Engine_HaveParallel(RunContext context, uint startIteration, uint stopIteration)
+		{
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine("\n -- Machine {0} of {1} will run iterations {2} to {3} --\n",
+				context.config.parallelNum, context.config.parallelTotal, startIteration, stopIteration);
+			Console.ForegroundColor = color;
+		}
+
 		protected override void Engine_IterationFinished(RunContext context, uint currentIteration)
 		{
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			if (totalIterations == null || totalIterations == int.MaxValue)
+			string controlIteration = "";
+			if (context.controlIteration && context.controlRecordingIteration)
+				controlIteration = "R";
+			else if (context.controlIteration)
+				controlIteration = "C";
+
+			string strTotal = "-";
+			string strEta = "-";
+
+
+			if (!timer.IsRunning)
 			{
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("\n[");
-				Console.ForegroundColor = ConsoleColor.Gray;
-				Console.Write(string.Format("{0},-,-", currentIteration+1));
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("] ");
-				Console.ForegroundColor = ConsoleColor.DarkGreen;
-				Console.WriteLine("Performing iteration");
-				Console.ForegroundColor = color;
+				timer.Start();
+				startIteration = currentIteration;
 			}
-			else
+
+			if (totalIterations != null && totalIterations < uint.MaxValue)
 			{
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("\n[");
-				Console.ForegroundColor = ConsoleColor.Gray;
-				if(totalIterations == uint.MaxValue)
-					Console.Write(string.Format("{0},-,-", currentIteration+1, totalIterations));
+				strTotal = totalIterations.ToString();
+
+				var done = currentIteration - startIteration;
+				var total = totalIterations.Value - startIteration + 1;
+				var elapsed = timer.ElapsedMilliseconds;
+				TimeSpan remain;
+
+				if (done == 0)
+				{
+					remain = TimeSpan.FromMilliseconds(elapsed * total);
+				}
 				else
-					Console.Write(string.Format("{0},{1},-", currentIteration + 1, totalIterations));
-				Console.ForegroundColor = ConsoleColor.DarkGray;
-				Console.Write("] ");
-				Console.ForegroundColor = ConsoleColor.DarkGreen;
-				Console.WriteLine("Performing iteration");
-				Console.ForegroundColor = color;
+				{
+					remain = TimeSpan.FromMilliseconds((total * elapsed / done) - elapsed);
+				}
+
+				strEta = remain.ToString("g");
 			}
+
+
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("\n[");
+			Console.ForegroundColor = ConsoleColor.Gray;
+			Console.Write(string.Format("{0}{1},{2},{3}", controlIteration, currentIteration, strTotal, strEta));
+			Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.Write("] ");
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.WriteLine("Performing iteration");
+			Console.ForegroundColor = color;
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)

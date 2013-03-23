@@ -101,7 +101,9 @@ namespace Peach.Core.Mutators
 		private void performMutation(DataElement obj, uint newCount)
 		{
 			int startIdx = obj.parent.IndexOf(obj) + 1;
-			var mutatedValue = new Variant(obj.Value);
+			var value = obj.Value.Clone();
+			value.ClearElementPositions();
+			var mutatedValue = new Variant(value);
 
 			for (int i = 0; i < newCount; ++i)
 			{
@@ -111,7 +113,7 @@ namespace Peach.Core.Mutators
 				while (obj.parent.ContainsKey(newName))
 					newName += "_" + i;
 
-				var newElem = new Blob(newName);
+				DataElement newElem = Activator.CreateInstance(obj.GetType(), new object[] { newName }) as DataElement;
 				newElem.MutatedValue = mutatedValue;
 				newElem.mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 

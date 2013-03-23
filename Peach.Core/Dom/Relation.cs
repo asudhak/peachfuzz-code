@@ -46,7 +46,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[Serializable]
 	[DebuggerDisplay("Of={_ofName} From={_fromName}")]
-	public abstract class Relation : IPitSerializable
+	public abstract class Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -183,6 +183,15 @@ namespace Peach.Core.Dom
 				_fromName = value;
 				_from = null;
 			}
+		}
+
+		public void Reset()
+		{
+			if (_of != null)
+				_of.Invalidated -= OfInvalidated;
+
+			_of = null;
+			_from = null;
 		}
 
 		/// <summary>
@@ -422,6 +431,11 @@ namespace Peach.Core.Dom
 				m.of = _of;
 				_of = null;
 			}
+			else if (_ofName == ctx.oldName && parent.find(_ofName) == null)
+			{
+				m.ofName = _ofName;
+				_ofName = ctx.newName;
+			}
 
 			if (ctx.rename.Contains(_from))
 			{
@@ -434,6 +448,11 @@ namespace Peach.Core.Dom
 				ctx.elements[_fullNames.from] = _from;
 				m.from = _from;
 				_from = null;
+			}
+			else if (_fromName == ctx.oldName && parent.find(_fromName) == null)
+			{
+				m.fromName = _fromName;
+				_fromName = ctx.newName;
 			}
 
 			if (ctx.rename.Contains(_parent))
@@ -529,21 +548,18 @@ namespace Peach.Core.Dom
 
 			_fullNames = null;
 		}
+	}
 
-		public System.Xml.XmlNode pitSerialize(System.Xml.XmlDocument doc, System.Xml.XmlNode parent)
+	/// <summary>
+	/// Used to indicate a class is a valid Relation and 
+	/// provide it's invoking name used in the Pit XML file.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	public class RelationAttribute : PluginAttribute
+	{
+		public RelationAttribute(string name, bool isDefault = false)
+			: base(typeof(Relation), name, isDefault)
 		{
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Relation", null);
-			//type, of, from, when, expressionGet, expressionSet, relative, relativeTo
-
-			node.AppendAttribute("type", this.GetType().ToString());
-			node.AppendAttribute("of", this.OfName);
-			node.AppendAttribute("from", this.FromName);
-			//node.AppendAttribute("when", this.when);
-			node.AppendAttribute("expressionGet", this.ExpressionGet);
-			node.AppendAttribute("expressionSet", this.ExpressionSet);
-			//node.AppendAttribute("relative", this.relative);
-			//node.AppendAttribute("relativeTo", this.relativeTo);
-			return node;
 		}
 	}
 }

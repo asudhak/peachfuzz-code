@@ -28,27 +28,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.", true)]
-    [TransformerAttribute("encode.Ipv4StringToOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [Description("Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [Transformer("Ipv4StringToOctet", true)]
+    [Transformer("encode.Ipv4StringToOctet")]
     [Serializable]
     public class Ipv4StringToOctet : Transformer
     {
         public Ipv4StringToOctet(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {
-            string sip = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-            var ip = System.Net.IPAddress.Parse(sip);
+            try
+            {
+                string sip = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
+                var ip = IPAddress.Parse(sip);
 
-            return new BitStream(ip.GetAddressBytes());
+                return new BitStream(ip.GetAddressBytes());
+            }
+            catch(Exception ex)
+            {
+                throw new PeachException("Error, cannont parse data as IP address", ex);
+            }
+
         }
 
         protected override BitStream internalDecode(BitStream data)

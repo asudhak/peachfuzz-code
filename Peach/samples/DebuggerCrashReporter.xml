@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach ../peach.xsd">
 
 	<!--
 		
 		Example of the OS X Crash Reporter monitor.  This example will use the OS X
-		Crash Repoter functionality to detect faults.  This feature is still in BETA.
+		Crash Repoter functionality to detect faults.
 		
 		Syntax:
 		
@@ -31,7 +31,8 @@
 
 	<Agent name="LocalAgent">
 		<Monitor class="Process">
-			<Param name="Command" value="samples/UnixCrashServer/unixcrash" />
+			<Param name="Executable" value="CrashableServer" />
+			<Param name="Arguments" value="127.0.0.1 4242" />
 		</Monitor>
 		<Monitor class="CrashReporter" />
 	</Agent>

@@ -178,7 +178,7 @@ out = 'build'
 
 def configure(ctx):
 	ctx.find_program('touch', var='TOUCH')
-	ctx.check_waf_version(mini='1.7.0')
+	ctx.check_waf_version(mini='1.7.9')
 	ctx.find_file('fstab', ['/opt', '/etc'])
 ---------------
 
@@ -378,7 +378,7 @@ def configure(ctx):
 	try:
 		ctx.find_program('some_app')
 	except ctx.errors.ConfigurationError: <1>
-		self.to_log('some_app was not found (ignoring)') <2>
+		ctx.to_log('some_app was not found (ignoring)') <2>
 ---------------
 
 <1> For convenience, the module _waflib.Errors_ is bound to _ctx.errors_
@@ -394,7 +394,7 @@ Checking for program some_app            : not found
 
 $ cat build/config.log <2>
 # project  configured on Tue Jul 13 19:15:04 2010 by
-# waf 1.7.0 (abi 98, python 20605f0 on linux2)
+# waf 1.7.9 (abi 98, python 20605f0 on linux2)
 # using /home/waf/bin/waf configure
 #
 Checking for program some_app
@@ -448,7 +448,7 @@ Though several calls to 'stash' can be made, the copies made are shallow, which 
 [source,python]
 ---------------
 def configure(ctx):
-	ctx.env.CFLAGS += ['-O2']
+	ctx.env.CFLAGS.append('-O2')
 ---------------
 
 The methods should always be used instead:

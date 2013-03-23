@@ -17,9 +17,10 @@ namespace Peach.Core.Fixups
 	/// argument.  A method "fixup" will be called, passing in the element and expecting
 	/// a byte[] array as output.
 	/// </remarks>
-	[FixupAttribute("ScriptFixup", "A Python or Ruby fixup", true)]
-	[ParameterAttribute("class", typeof(string), "Reference to data element", true)]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Description("A Python or Ruby fixup.")]
+	[Fixup("ScriptFixup", true)]
+	[Parameter("class", typeof(string), "Reference to data element")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class ScriptFixup : Fixup
 	{
@@ -50,7 +51,7 @@ namespace Peach.Core.Fixups
 			{
 				logger.Debug("class: " + (string)args["class"]);
 				logger.Error(ex.Message);
-				throw ex;
+				throw;
 			}
 		}
 

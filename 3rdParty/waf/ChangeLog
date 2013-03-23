@@ -1,3 +1,56 @@
+NEW IN WAF 1.7.9
+----------------
+* Improved the patch submitted in #1237 as it caused regressions
+* Reverted the patch submitted in #1212 as it caused regressions
+* Added a cache to waflib/extras/gccdeps.py #1244
+* Unit test ut_exec was not obtained properly #1245
+
+NEW IN WAF 1.7.8
+----------------
+* Fixed a configuration issue in the visual studio compiler (regression #1239)
+
+NEW IN WAF 1.7.7
+----------------
+* XLC and XLF detection fixes #1230
+* Fixed the multiple gcc/msvc builds #1237
+* Better gdc detection on Ubuntu #1222
+* Relative symlinks in symlink_as #1234
+* Various improvements in the doxygen tool #1232 #1233
+* Fixed windows filehandle issues on Python #1235
+* Visual Studio 2012 detection improvements
+* OSX soname installation fix
+
+NEW IN WAF 1.7.6
+----------------
+* Better encapsulation of conf.check_cfg(uselib_store=...) defines #1212
+* Support for python modules in fortran
+* Extension files of D binaries on Mac
+* Raise an error when a tex manually-provided dependency is not found #1209
+* Enforce a stable name in bld(rule=..., name=undefined) to prevent rebuilds
+* Enhanced support for flex on win32 and msys #1207 #1211
+* Fixed a regression on configuration tests running with -Werror/-Wall #1220
+
+NEW IN WAF 1.7.5
+----------------
+* Fixed the kde4 library detection on Fedora
+* New tool for protocol buffers (protoc.py) #1184
+* Fixed a syntax error affecting Python < 2.6
+
+NEW IN WAF 1.7.4
+----------------
+* Fixed a regression in the Node,Task and Context classes
+
+NEW IN WAF 1.7.3
+-----------------
+* Fixed the LD_LIBRARY_PATH race condition in waf_unit_test #1200
+* Library detection fixes in boost.py #1199
+* Various waf_unit_test enhancements #1194
+* Use the same function signature main(int, char**) in all configuration tests #1192
+* Fixed the Clang version number detection #1191
+* Let the feature 'includes' propagate INCLUDES and FRAMEWORKPATH variables
+* Fix for incorrect installation paths #1202
+* Cabal script (haskell)
+
 NEW IN WAF 1.7.2
 ----------------
 * Install bld.subst() targets

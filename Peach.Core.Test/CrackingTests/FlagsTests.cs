@@ -53,7 +53,6 @@ namespace Peach.Core.Test.CrackingTests
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			BitStream val = dom.dataModels[0].Value;
@@ -66,6 +65,82 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.NotNull(results);
 			string expected = "00000000   00 00 48 65 6C 6C 6F 20  57 6F 72 6C 64            ??Hello World   " + Environment.NewLine;
 			Assert.AreEqual(expected, results);
+		}
+
+		[Test]
+		public void CrackOnlyFlag()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Flags size=""8"" endian=""big"">
+			<Flag position=""0"" size=""3"" token=""true"" value=""7""/>
+		</Flags>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0xe6 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			var flags = dom.dataModels[0][0] as Flags;
+			Assert.AreEqual(1, flags.Count);
+			var flag = flags[0] as Flag;
+			Assert.AreEqual(7, (int)flag.DefaultValue);
+
+			BitStream bad = new BitStream();
+			bad.LittleEndian();
+			bad.WriteBytes(new byte[] { 0x16 });
+			bad.SeekBits(0, SeekOrigin.Begin);
+
+			Assert.Throws<CrackingFailure>(delegate()
+			{
+				cracker.CrackData(dom.dataModels[0], bad);
+			});
+		}
+
+		[Test]
+		public void CrackFlagsSecond()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Number size=""8""/>
+		<Flags size=""8"" endian=""big"">
+			<Flag position=""0"" size=""4""/>
+			<Flag position=""4"" size=""4""/>
+		</Flags>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x00, 0xff });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var flags = dom.dataModels[0][1] as Flags;
+			Assert.AreEqual(2, flags.Count);
+			var flag1 = flags[0] as Flag;
+			Assert.AreEqual(0xf, (int)flag1.DefaultValue);
+			var flag2 = flags[1] as Flag;
+			Assert.AreEqual(0xf, (int)flag2.DefaultValue);
 		}
 
 		[Test]
@@ -106,7 +181,6 @@ namespace Peach.Core.Test.CrackingTests
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			BitStream val = dom.dataModels[0].Value;

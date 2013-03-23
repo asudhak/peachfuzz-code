@@ -4,194 +4,166 @@ using System.IO;
 using System.Text;
 using Peach.Core.Agent;
 using Renci.SshNet;
+using Renci.SshNet.Common;
+using System.Text.RegularExpressions;
 
 namespace Peach.Core.Agent.Monitors
 {
-    [Monitor("SSHMonitor")]
-    [Parameter("Host", typeof (string), "Host to ssh to.", true)]
-    [Parameter("Username", typeof (string), "Username for ssh", false)]
-    [Parameter("Password", typeof (string), "Password for ssh account", false)]
-    [Parameter("KeyPath", typeof(string), "Path to ssh key", false)]
-    [Parameter("Command", typeof (string), "Command to check for fault", false)]
-    [Parameter("CheckValue", typeof(string), "Value to look for in response", false)]
-    [Parameter("Fetch", typeof(bool), "Download the remote file that is output of the ssh command", false)]
-    [Parameter("Remove", typeof(bool), "Remove the remote file after download", false)]
-    [Parameter("GDBAnalyze", typeof(bool), "Analyze the core file in GDB (not implemented)", false)]
-    [Parameter("GDBPath", typeof(string), "Path to GDB (not implemented)", false)]
-    public class SSHMonitor : Peach.Core.Agent.Monitor
-    {
-        protected string Host       = "";
-        protected string Username   = "";
-        protected string Password   = "";
-        protected string KeyPath    = ""; 
-        protected string Command    = "";
-        protected string CheckValue = "";
-        protected bool   Fetch      = false;
-        protected bool   Remove     = false;
-        protected bool   GDBAnalyze = false;
-        protected string GDBPath    = "gdb"; 
+	[Monitor("Ssh", true)]
+	[Parameter("Host", typeof(string), "Host to ssh to.")]
+	[Parameter("Username", typeof(string), "Username for ssh")]
+	[Parameter("Password", typeof(string), "Password for ssh account", "")]
+	[Parameter("KeyPath", typeof(string), "Path to ssh key", "")]
+	[Parameter("Command", typeof(string), "Command to check for fault")]
+	[Parameter("CheckValue", typeof(string), "Regex to match on response", "")]
+	[Parameter("FaultOnMatch", typeof(bool), "Fault if regex matches", "true")]
+	public class SSHMonitor : Peach.Core.Agent.Monitor
+	{
+		public string Host { get; protected set; }
+		public string Username { get; protected set; }
+		public string Password { get; protected set; }
+		public string KeyPath { get; protected set; }
+		public string Command { get; protected set; }
+		public string CheckValue { get; protected set; }
+		public bool FaultOnMatch { get; protected set; }
 
-        private String _FaultResponse = "";
+		private Fault _fault = null;
+		private SshClient _sshClient = null;
+		private Regex _regex = null;
 
-        private SshClient _sshClient = null; 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="args"></param>
+		public SSHMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+			: base(agent, name, args)
+		{
+			ParameterParser.Parse(this, args);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="args"></param>
-        public SSHMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
-            : base(agent, name, args)
-        {
-            if (args.ContainsKey("Host"))
-                Host = (string) args["Host"];
+			if (Password == null && KeyPath == null)
+				throw new PeachException("Either Password or KeyPath is required.");
 
-            if (args.ContainsKey("Password"))
-                Password = (string) args["Password"];
+			try
+			{
+				_regex = new Regex(CheckValue ?? "", RegexOptions.Multiline);
+			}
+			catch (ArgumentException ex)
+			{
+				throw new PeachException("'CheckValue' is not a valid regular expression.  " + ex.Message, ex);
+			}
+		}
 
-            if (args.ContainsKey("Username"))
-                Username = (string) args["Username"];
+		void OnAuthPrompt(object sender, AuthenticationPromptEventArgs e)
+		{
+			foreach (var prompt in e.Prompts)
+			{
+				prompt.Response = Password;
+			}
+		}
 
-            if (args.ContainsKey("Command"))
-                Command = (string) args["Command"];
+		void OpenClient(ConnectionInfo ci)
+		{
+			try
+			{
+				_sshClient = new SshClient(ci);
+				_sshClient.Connect();
+			}
+			catch (Exception ex)
+			{
+				_sshClient.Dispose();
+				_sshClient = null;
 
-            if (args.ContainsKey("CheckValue"))
-                CheckValue = (string) args["CheckValue"];
+				throw new PeachException("Could not start the ssh monitor.  " + ex.Message, ex);
+			}
+		}
 
-            if (args.ContainsKey("Fetch"))
-                Fetch = ((string) args["Fetch"]).ToLower() == "true"; 
+		public override void SessionStarting()
+		{
+			if (KeyPath != null)
+			{
+				var ci = new PrivateKeyConnectionInfo(Host, Username, new PrivateKeyFile(KeyPath));
+				OpenClient(ci);
+			}
+			else
+			{
+				var auth_passwd = new PasswordAuthenticationMethod(Username, Password);
+				var auth_kb = new KeyboardInteractiveAuthenticationMethod(Username);
+				auth_kb.AuthenticationPrompt += new EventHandler<AuthenticationPromptEventArgs>(OnAuthPrompt);
+				var ci = new ConnectionInfo(Host, Username, auth_kb, auth_passwd);
+				OpenClient(ci);
+			}
+		}
 
-            if(args.ContainsKey("Fetch"))
-                Remove = ((string) args["Remove"]).ToLower() == "true"; 
+		public override void SessionFinished()
+		{
+			if (_sshClient != null)
+			{
+				_sshClient.Disconnect();
+				_sshClient = null;
+			}
+		}
 
-            _sshClient = new SshClient(Host, Username, Password);
+		public override bool DetectedFault()
+		{
+			_fault = new Fault();
+			_fault.type = FaultType.Fault;
+			_fault.detectionSource = "SshMonitor";
+			_fault.folderName = "SshMonitor";
 
-            _sshClient.Connect();
-        }
+			try
+			{
+				using (SshCommand cmd = _sshClient.RunCommand(Command))
+				{
+					_fault.title = "Response";
+					_fault.description = cmd.Execute();
 
-        public override void StopMonitor()
-        {
-            SessionFinished();
-        }
+					bool match = _regex.IsMatch(_fault.description);
 
-        public override void SessionStarting() { }
+					if (match)
+						_fault.type = FaultOnMatch ? FaultType.Fault : FaultType.Data;
+					else
+						_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;
+				}
+			}
+			catch (Exception ex)
+			{
+				_fault.title = "Exception";
+				_fault.description = ex.Message;
+			}
 
-        public override void SessionFinished()
-        {
-            _sshClient.Disconnect();
-        }
+			return _fault.type == FaultType.Fault;
 
+		}
 
-        public override void IterationStarting(uint iterationCount, bool isReproduction) { }
+		public override void IterationStarting(uint iterationCount, bool isReproduction)
+		{
+			_fault = null;
+		}
 
-        public override bool IterationFinished()
-        {
-            return false;
-        }
+		public override bool IterationFinished()
+		{
+			return false;
+		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override bool DetectedFault()
-        {
-            try
-            {
-                    SshCommand sshCommand = _sshClient.RunCommand(Command);
-                    _FaultResponse = sshCommand.Execute();
-                    _FaultResponse = _FaultResponse.Replace("\n", "");
-            }
-            catch (Exception e)
-            {
-                throw new PeachException(e.Message);
-                return false; 
-            }
+		public override void StopMonitor()
+		{
+			SessionFinished();
+		}
 
-            //TODO change to regex
-            if (_FaultResponse.Contains(CheckValue))
-                return true;
-            else
-                return false; 
+		public override Fault GetMonitorData()
+		{
+			return _fault;
+		}
 
-        }
+		public override bool MustStop()
+		{
+			return false;
+		}
 
-        public override Fault GetMonitorData()
-        {
-            Fault fault = new Fault();
-            fault.detectionSource = "SSHMonitor";
-            fault.folderName = "SSHMonitor"; 
-            fault.type = FaultType.Fault;
-
-            if(Fetch)
-            {
-                try
-                {
-                    using (SftpClient sftpClient = new SftpClient(Host, Username, Password))
-                    {
-
-                        sftpClient.Connect();
-                        MemoryStream memoryStream = new MemoryStream(10000);
-                        sftpClient.DownloadFile(_FaultResponse, memoryStream);
-                        fault.collectedData["corefile"] = memoryStream.ToArray();
-                        sftpClient.Disconnect();
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new PeachException(e.Message);
-                }
-            }
-
-            if(GDBAnalyze)
-            {
-                string gdbOutput = "";
-                try
-                {
-                    using (SshClient ssh = new SshClient(Host, Username, Password))
-                    {
-
-                        ssh.Connect();
-                        //SshCommand sshCommand = ssh.RunCommand();
-                        //string gdbOutput = sshCommand.Execute(); 
-                        ssh.Disconnect();
-                    }
-                }
-                catch(Exception e)
-                {
-                 throw new PeachException(e.Message);                    
-                }
-
-                fault.collectedData["gdbAnalyze"] = Encoding.ASCII.GetBytes(gdbOutput);  
-            }
-
-            if(Remove)
-            {
-                try
-                {
-                    using (SftpClient sftpClient = new SftpClient(Host, Username, Password))
-                    {
-                        sftpClient.Connect();
-                        sftpClient.DeleteFile(_FaultResponse);
-                        sftpClient.Disconnect();
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new PeachException(e.Message);
-                }
-           }
-
-            return fault; 
-        }
-
-        public override bool MustStop()
-        {
-            return false;
-        }
-
-        public override Variant Message(string name, Variant data)
-        {
-            return null;
-        }
-    }
+		public override Variant Message(string name, Variant data)
+		{
+			return null;
+		}
+	}
 }

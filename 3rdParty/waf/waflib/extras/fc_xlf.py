@@ -3,7 +3,7 @@
 # harald at klimachs.de
 
 import re
-from waflib import Utils
+from waflib import Utils,Errors
 from waflib.Tools import fc,fc_config,fc_scan
 from waflib.Configure import conf
 
@@ -44,7 +44,7 @@ def get_xlf_version(conf, fc):
 	except Errors.WafError:
 		conf.fatal('Could not find xlf %r' % cmd)
 
-	for v in (r"IBM XL Fortran.* V(?P<major>\d*)\.(?P<minor>\d*)"):
+	for v in (r"IBM XL Fortran.* V(?P<major>\d*)\.(?P<minor>\d*)",):
 		version_re = re.compile(v, re.I).search
 		match = version_re(out or err)
 		if match:

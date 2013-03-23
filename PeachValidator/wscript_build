@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+deps = [
+	'Aga.Controls.dll',
+	'Be.Windows.Forms.HexBox.dll',
+	'System.Drawing.dll',
+	'System.Windows.Forms.dll',
+	'System.ServiceProcess.dll',
+	'Peach.Core.dll',
+	'NLog.dll',
+	'SharpPcap.dll',
+	'System.Runtime.Remoting.dll',
+	'System.dll',
+	'System.Management.dll',
+	'System.Xml.dll',
+	'System.Core.dll',
+	'System.Data.dll',
+	'System.Web.dll',
+	'Ionic.Zip.dll',
+	'IronPython.dll',
+	'IronPython.Modules.dll',
+	'IronRuby.dll',
+	'IronRuby.Libraries.dll',
+	'IronRuby.Libraries.Yaml.dll',
+	'Microsoft.Dynamic.dll',
+	'Microsoft.CSharp.dll',
+	'Microsoft.Scripting.dll',
+	'Microsoft.Scripting.Metadata.dll',
+]
+
+bld(
+	features = 'cs',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs **/*.resx'),
+	resource = bld.path.ant_glob('icons/*.*'),
+	name = 'PeachValidator.exe',
+	bintype = 'winexe',
+	icon = 'icons/peach20x20.ico',
+)
+

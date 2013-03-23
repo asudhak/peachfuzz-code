@@ -39,48 +39,63 @@ using NLog;
 
 namespace Peach.Core.Transformers.Compress
 {
-    [TransformerAttribute("GzipDecompress", "Decompress on output using gzip.", true)]
-    [TransformerAttribute("compress.GzipDecompress", "Decompress on output using gzip.")]
-    [Serializable]
-    public class GzipDecompress : Transformer
-    {
+	[Description("Decompress on output using gzip.")]
+	[Transformer("GzipDecompress", true)]
+	[Transformer("compress.GzipDecompress")]
+	[Serializable]
+	public class GzipDecompress : Transformer
+	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public GzipDecompress(Dictionary<string, Variant> args)
 			: base(args)
-        {
-        }
+		{
+		}
 
 		protected override BitStream internalEncode(BitStream compressedData)
-        {
+		{
 			logger.Debug("internalDecode");
 
 			var data = new MemoryStream();
 			compressedData.SeekBits(0, SeekOrigin.Begin);
 
-			using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
-			{
-				compressionStream.CopyTo(data);
-			}
+            try
+            {
+                using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
+                {
+                    compressionStream.CopyTo(data);
+                }
 
-			return new BitStream(data.ToArray());
+                return new BitStream(data.ToArray());
+            }
+            catch (Exception ex)
+            {
+                throw new PeachException("Error, could not GZip decompress data", ex);
+            }
 		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
+		protected override BitStream internalDecode(BitStream data)
+		{
 			logger.Debug("internalDecode");
 
 			var compressedData = new MemoryStream();
 			data.SeekBits(0, SeekOrigin.Begin);
 
-			using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
-			{
-				data.Stream.CopyTo(compressionStream);
-			}
+            try
+            {
+                using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
+                {
+                    data.Stream.CopyTo(compressionStream);
+                }
 
-			return new BitStream(compressedData.ToArray());
+                return new BitStream(compressedData.ToArray());
+            }
+            catch(Exception ex)
+            {
+               throw new PeachException("Error, could not GZip dceompress data", ex); 
+            }
 		}
-    }
+	}
 }
 
 // end

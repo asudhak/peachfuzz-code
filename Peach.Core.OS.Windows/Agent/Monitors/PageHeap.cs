@@ -38,9 +38,9 @@ using System.Threading;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("PageHeap")]
-	[Parameter("Executable", typeof(string), "Name of executable to enable (NO PATH)", true)]
-	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", false)]
+	[Monitor("PageHeap", true)]
+	[Parameter("Executable", typeof(string), "Name of executable to enable (NO PATH)")]
+	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", "")]
 	public class PageHeap : Monitor
 	{
 		string _executable = null;
@@ -83,7 +83,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 			catch (Win32Exception exception)
 			{
-				throw new PeachException("Error, Enable PageHeap: " + exception.Message);
+				throw new PeachException("Error, Enable PageHeap: " + exception.Message, exception);
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 			catch (Win32Exception exception)
 			{
-				throw new PeachException("Error, Disable PageHeap: " + exception.Message);
+				throw new PeachException("Error, Disable PageHeap: " + exception.Message, exception);
 			}
 		}
 

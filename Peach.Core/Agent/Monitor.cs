@@ -120,14 +120,11 @@ namespace Peach.Core.Agent
 	}
 
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-	public class MonitorAttribute : Attribute
+	public class MonitorAttribute : PluginAttribute
 	{
-		public string name;
-		public bool isDefault = false;
 		public MonitorAttribute(string name, bool isDefault = false)
+			: base(typeof(Monitor), name, isDefault)
 		{
-			this.isDefault = isDefault;
-			this.name = name;
 		}
 	}
 }

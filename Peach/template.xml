@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2012/Peach /peach/peach.xsd">
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach /peach/peach.xsd">
 
 	<!-- TODO: Create data model -->
 	<DataModel name="TheDataModel">
-		
+		<!--<Blob/>-->
 	</DataModel>
 
 	<!-- TODO: Create state model -->
@@ -13,7 +13,7 @@
 			
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
-				<!--<Data fileName="samples" />-->
+				<!--<Data fileName="samples_png" />-->
 			</Action>
 
 			<!--<Action type="close"/>-->
@@ -24,7 +24,7 @@
 	</StateModel>
 
 	<!-- TODO: Configure Agent -->
-	<Agent name="TheAgent">
+	<Agent name="TheAgent" location="http://127.0.0.1:9000">
 		<!--<Monitor class="WindowsDebugger">
 			<Param name="CommandLine" value="mspaint.exe fuzzed.png" />
 			<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />
@@ -36,13 +36,13 @@
 		</Monitor>-->
 	</Agent>
 
-	<Test name="TheTest">
+	<Test name="Default">
 		<Agent ref="TheAgent"/>
 		<StateModel ref="TheState"/>
 
 		<!-- TODO: Configure a publisher -->
 		<!--<Publisher class="File">
-			<Param name="FileName" value="peach.png"/>
+			<Param name="FileName" value="fuzzed.png"/>
 		</Publisher>-->
 
 		<!-- OPTIONAL: Configure a strategy -->

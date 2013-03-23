@@ -47,7 +47,7 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<Defaults>" +
-				"		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"		<Number endian=\"big\" signed=\"true\"/>" +
 				"	</Defaults>" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Number name=\"TheNumber\" size=\"8\"/>" +
@@ -60,6 +60,42 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.IsTrue(num.Signed);
 			Assert.IsFalse(num.LittleEndian);
+		}
+
+		[Test]
+		public void ValueTypeHex()
+		{
+			string xml = @"
+<Peach>
+	<Defaults>
+		<Number valueType=""hex"" endian=""big"" signed=""false""/>
+		<String valueType=""hex""/>
+		<Blob   valueType=""hex""/>
+	</Defaults>
+
+	<DataModel name=""TheDataModel"">
+		<Number name=""num"" value=""00 AA"" size=""16""/>
+		<String valueType=""hex"" name=""str"" value=""41 42 43 44 45 46""/>
+		<Blob   valueType=""hex"" name=""blb"" value=""61 62 63 64 65 66""/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value;
+
+			Assert.NotNull(val);
+			MemoryStream ms = val.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			byte[] expected = new byte[] { 0x00, 0xAA, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
+			Assert.AreEqual(expected.Length, ms.Length);
+
+			byte[] actual = new byte[ms.Length];
+			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
+
+			Assert.AreEqual(expected, actual);
 		}
 
 		[Test]

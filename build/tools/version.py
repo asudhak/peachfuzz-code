@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyVersion("{VER0}.{VER1}.{VER2}.{VER3}")]
 [assembly: AssemblyFileVersion("{VER0}.{VER1}.{VER2}.{VER3}")]
+[assembly: AssemblyInformationalVersion("{VER0}.{VER1}.{VER2}.{VER3} {VARIANT}")]
 """
 
 template_cs_com = """
@@ -58,7 +59,7 @@ BEGIN
             VALUE "InternalName", "{FILENAME}"
             VALUE "OriginalFilename", "{FILENAME}"
             VALUE "ProductName", "{PRODUCT}"
-            VALUE "ProductVersion", "{VER0}.{VER1}.{VER2}.{VER3}"
+            VALUE "ProductVersion", "{VER0}.{VER1}.{VER2}.{VER3} {VARIANT}"
         END
     END
     BLOCK "VarFileInfo"
@@ -72,7 +73,6 @@ def configure(conf):
 	env = conf.env
 
 	env.VER_COMPANY = 'Deja vu Security'
-	env.VER_VERSION = '3.0'
 
 	env.VER_TEMPLATE = {
 		'.c'      : template_c,
@@ -86,6 +86,9 @@ def apply_version(self, name, inputs, exts):
 	if not self.env.VARIANT:
 		return
 
+	if not getattr(self, 'version', True):
+		return
+
 	exts = Utils.to_list(exts)
 
 	self.env.VER_TITLE   = getattr(self, 'ver_title', name)
@@ -96,10 +99,13 @@ def apply_version(self, name, inputs, exts):
 	tsk = self.create_task('version', inputs, outputs)
 	self.source = Utils.to_list(self.source) + tsk.outputs
 
-@feature('cs')
-@before_method('apply_cs')
-@after_method('cs_helpers')
+@feature('cs', 'msbuild')
+@before_method('apply_cs', 'apply_msbuild')
+@after_method('cs_helpers', 'msbuild_helpers')
 def apply_version_cs(self):
+	if not getattr(self, 'version', True):
+		return
+
 	asm = []
 	others = []
 	for x in self.to_nodes(self.source):
@@ -133,10 +139,10 @@ def apply_version_c(self):
 
 class version(Task.Task):
 	color = 'PINK'
-	vars = [ 'BUILDTAG', 'VER_COMPANY', 'VER_VERSION', 'VER_TITLE', 'VER_DESC', 'VER_PRODUCT', 'VER_TEMPLATE' ]
+	vars = [ 'BUILDTAG', 'VER_COMPANY', 'VER_TITLE', 'VER_DESC', 'VER_PRODUCT', 'VER_TEMPLATE' ]
 
 	def run(self):
-		parts = self.env.VER_VERSION.split('.')
+		parts = self.env.BUILDTAG.split('.')
 
 		fileflags = '0'
 		if 'debug' in self.generator.bld.variant:
@@ -162,12 +168,13 @@ class version(Task.Task):
 			'DESC'      : self.env.VER_DESC,
 			'YEAR'      : datetime.datetime.now().year,
 			'CONFIG'    : config,
+			'VARIANT'   : self.generator.bld.variant,
 			'COMPANY'   : self.env.VER_COMPANY,
 			'PRODUCT'   : self.env.VER_PRODUCT,
 			'VER0'      : parts[0],
 			'VER1'      : parts[1],
-			'VER2'      : self.env.BUILDTAG,
-			'VER3'      : '0',
+			'VER2'      : parts[2],
+			'VER3'      : len(parts) == 4 and parts[3] or '0',
 			'FILEFLAGS' : fileflags,
 			'FILETYPE'  : filetype,
 			'FILENAME'  : tsk.outputs[0].name,

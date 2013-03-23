@@ -59,15 +59,13 @@ namespace Peach.Core.Mutators
             // 2. Split on ';'
             // 3. Return each value in turn
 
-            if (obj.Hints.ContainsKey("ValidValues"))
+            Hint h = null;
+            if (obj.Hints.TryGetValue("ValidValues", out h))
             {
-                Hint h = null;
-                if (obj.Hints.TryGetValue("ValidValues", out h))
-                {
-                    values = h.Value.Split(';');
-                }
+                values = h.Value.Split(';');
             }
         }
+
 
         public override uint mutation
         {

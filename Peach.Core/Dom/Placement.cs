@@ -39,8 +39,9 @@ namespace Peach.Core.Dom
 	/// for mutators.
 	/// </summary>
 	[Serializable]
-	[Parameter("after", typeof(string), "Place after this element", false)]
-	[Parameter("before", typeof(string), "Place before this element", false)]
+	[DataElement("Placement")]
+	[Parameter("after", typeof(string), "Place after this element", "")]
+	[Parameter("before", typeof(string), "Place before this element", "")]
 	public class Placement
 	{
 		public Placement(Dictionary<string, Variant> args)

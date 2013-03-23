@@ -99,6 +99,38 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Blob10", ((Choice)dom.dataModels[0][0])[0].name);
 			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
 		}
+
+		[Test]
+		public void ConstraintRegex()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<Import import=\"re\"/>" +
+				"	<Import import=\"code\"/>" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String constraint=\"re.search('^\\w+$', value) != None\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			try
+			{
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+				BitStream data = new BitStream();
+				data.LittleEndian();
+				data.WriteBytes(Encoding.ASCII.GetBytes("Hello"));
+				data.SeekBits(0, SeekOrigin.Begin);
+
+				DataCracker cracker = new DataCracker();
+				cracker.CrackData(dom.dataModels[0], data);
+
+				Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			}
+			finally
+			{
+				Scripting.Imports.Clear();
+			}
+		}
 	}
 }
 

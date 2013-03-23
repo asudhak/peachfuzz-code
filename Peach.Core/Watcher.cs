@@ -39,6 +39,7 @@ namespace Peach.Core
 	/// Watches the Peach Engine events.  This is how to 
 	/// add a UI or logging.
 	/// </summary>
+	[Serializable]
 	public abstract class Watcher
 	{
 		public Watcher()
@@ -53,7 +54,10 @@ namespace Peach.Core
 			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 			engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
+			engine.ReproFault += new Engine.ReproFaultEventHandler(Engine_ReproFault);
+			engine.ReproFailed += new Engine.ReproFailedEventHandler(Engine_ReproFailed);
 			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
+			engine.HaveParallel += new Engine.HaveParallelEventHandler(Engine_HaveParallel);
 
 			MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
@@ -85,6 +89,10 @@ namespace Peach.Core
 		{
 		}
 
+		protected virtual void Engine_HaveParallel(RunContext context, uint startIteration, uint stopIteration)
+		{
+		}
+
 		protected virtual void Action_Finished(Core.Dom.Action action)
 		{
 		}
@@ -113,7 +121,15 @@ namespace Peach.Core
 		{
 		}
 
-		protected virtual void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault [] faultData)
+		protected virtual void Engine_ReproFailed(RunContext context, uint currentIteration)
+		{
+		}
+
+		protected virtual void Engine_ReproFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
+		{
+		}
+
+		protected virtual void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{
 		}
 

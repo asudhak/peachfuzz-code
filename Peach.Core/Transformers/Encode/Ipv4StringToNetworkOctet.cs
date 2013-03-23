@@ -28,14 +28,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.", true)]
-    [TransformerAttribute("encode.Ipv4StringToNetworkOctet", "Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [Description("Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+    [Transformer("Ipv4StringToNetworkOctet", true)]
+    [Transformer("encode.Ipv4StringToNetworkOctet")]
     [Serializable]
     public class Ipv4StringToNetworkOctet : Transformer
     {
@@ -47,14 +49,21 @@ namespace Peach.Core.Transformers.Encode
         {
             string sip = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
 
-            var ip = System.Net.IPAddress.Parse(sip);
-            var ipb = ip.GetAddressBytes();
-            System.Array.Reverse(ipb);
+            try
+            {
+                var ip = IPAddress.Parse(sip);
+                var ipb = ip.GetAddressBytes();
+                System.Array.Reverse(ipb);
 
-            int ipaddr = BitConverter.ToInt32(ipb, 0);
-            int ipaddr_network = System.Net.IPAddress.HostToNetworkOrder(ipaddr);
+                int ipaddr = BitConverter.ToInt32(ipb, 0);
+                int ipaddr_network = IPAddress.HostToNetworkOrder(ipaddr);
+                return new BitStream(BitConverter.GetBytes(ipaddr_network));
+            }
+            catch(Exception ex)
+            {
+                throw new PeachException("Error, could not convert IP address " + sip, ex);
+            }
 
-            return new BitStream(BitConverter.GetBytes(ipaddr_network));
         }
 
         protected override BitStream internalDecode(BitStream data)

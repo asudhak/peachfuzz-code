@@ -39,12 +39,18 @@ using NLog;
 
 namespace Peach.Core.Publishers
 {
+	/// <summary>
+	/// Allows for input/output of raw IP packets.
+	/// Protocol is the IP protocol number to send/receive.
+	/// This publisher does not expect an IP header in the output buffer.
+	/// The IP header is always included in the input buffer.
+	/// </summary>
 	[Publisher("RawV6", true)]
 	[Publisher("Raw6")]
 	[Publisher("raw.Raw6")]
-	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
-	[Parameter("Protocol", typeof(byte), "IP protocol to use", true)]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host")]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
+	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class RawV6Publisher : SocketPublisher
 	{
@@ -64,37 +70,6 @@ namespace Peach.Core.Publishers
 		protected override Socket OpenSocket(EndPoint remote)
 		{
 			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
-			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 0);
-			return s;
-		}
-	}
-
-	[Publisher("RawIPv6", true)]
-	[Publisher("RawIp6")]
-	[Publisher("raw.RawIp6")]
-	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", false)]
-	[Parameter("Protocol", typeof(byte), "IP protocol to use", "Unspecified")]
-	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
-	public class RawIPv6Publisher : SocketPublisher
-	{
-		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		protected override NLog.Logger Logger { get { return logger; } }
-
-		public RawIPv6Publisher(Dictionary<string, Variant> args)
-			: base("RawIPv6", args)
-		{
-		}
-
-		protected override bool AddressFamilySupported(AddressFamily af)
-		{
-			return af == AddressFamily.InterNetworkV6;
-		}
-
-		protected override Socket OpenSocket(EndPoint remote)
-		{
-			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
-			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 			return s;
 		}
 	}

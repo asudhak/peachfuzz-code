@@ -258,7 +258,7 @@ def distclean_dir(dirname):
 				try:
 					os.unlink(fname)
 				except OSError:
-					Logs.warn('could not remove %r' % fname)
+					Logs.warn('Could not remove %r' % fname)
 
 	for x in [Context.DBFILE, 'config.log']:
 		try:
@@ -279,7 +279,7 @@ def distclean(ctx):
 			try:
 				proj = ConfigSet.ConfigSet(f)
 			except IOError:
-				Logs.warn('could not read %r' % f)
+				Logs.warn('Could not read %r' % f)
 				continue
 
 			if proj['out_dir'] != proj['top_dir']:

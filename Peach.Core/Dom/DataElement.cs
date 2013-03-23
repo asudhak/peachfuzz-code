@@ -44,6 +44,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 using NLog;
+using System.Xml.Serialization;
 
 namespace Peach.Core.Dom
 {
@@ -56,17 +57,34 @@ namespace Peach.Core.Dom
 	/// </remarks>
 	public enum LengthType
 	{
+		[XmlEnum("bytes")]
 		Bytes,
+		[XmlEnum("bits")]
 		Bits,
-		Chars
+		[XmlEnum("chars")]
+		Chars,
+		[XmlEnum("calc")]
+		Calc
 	}
 
 	public enum ValueType
 	{
+		[XmlEnum("string")]
 		String,
+		[XmlEnum("hex")]
 		Hex,
-		Python,
-		Ruby
+		[XmlEnum("literal")]
+		Literal
+	}
+
+	public enum EndianType
+	{
+		[XmlEnum("big")]
+		Big,
+		[XmlEnum("little")]
+		Little,
+		[XmlEnum("network")]
+		Network,
 	}
 
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);
@@ -76,13 +94,13 @@ namespace Peach.Core.Dom
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	[Parameter("name", typeof(string), "Optional name for element", false)]
-	[Parameter("value", typeof(string), "Optional default value", false)]
-	[Parameter("valueType", typeof(ValueType), "Optional name for element", false)]
-	[DebuggerDisplay("{fullName}")]
-	public abstract class DataElement : INamed, ICrackable
+	[DebuggerDisplay("{debugName}")]
+	public abstract class DataElement : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		#region Clone
+
 		public static bool DebugClone = false;
 
 		public class CloneContext
@@ -117,11 +135,48 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		protected class CloneCache
+		{
+			private CloneContext additional;
+			private StreamingContext context;
+			private BinaryFormatter formatter;
+			private MemoryStream stream;
+			private DataElementContainer parent;
+
+			public CloneCache(DataElement element, string newName)
+			{
+				parent = element._parent;
+				stream = new MemoryStream();
+				additional = new CloneContext(element, newName);
+				context = new StreamingContext(StreamingContextStates.All, additional);
+				formatter = new BinaryFormatter(null, context);
+				formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+				formatter.Binder = new DataElementBinder();
+
+				element._parent = null;
+				formatter.Serialize(stream, element);
+				element._parent = parent;
+			}
+
+			public long Size
+			{
+				get { return stream.Length; }
+			}
+
+			public DataElement Get()
+			{
+				stream.Seek(0, SeekOrigin.Begin);
+				var copy = (DataElement)formatter.Deserialize(stream);
+				copy._parent = parent;
+				return copy;
+			}
+		}
+
 		/// <summary>
 		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
 		/// </summary>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public DataElement Clone()
+		public virtual DataElement Clone()
 		{
 			return Clone(name);
 		}
@@ -131,7 +186,7 @@ namespace Peach.Core.Dom
 		/// </summary>
 		/// <param name="newName">What name to set on the cloned DataElement</param>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public DataElement Clone(string newName)
+		public virtual DataElement Clone(string newName)
 		{
 			long size = 0;
 			return Clone(newName, ref size);
@@ -143,34 +198,23 @@ namespace Peach.Core.Dom
 		/// <param name="newName">What name to set on the cloned DataElement</param>
 		/// <param name="size">The size in bytes used when performing the copy. Useful for debugging statistics.</param>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public DataElement Clone(string newName, ref long size)
+		public virtual DataElement Clone(string newName, ref long size)
 		{
 			if (DataElement.DebugClone)
 				logger.Debug("Clone {0} as {1}", fullName, newName);
 
-			var parent = this._parent;
-			this._parent = null;
+			var cache = new CloneCache(this, newName);
+			var copy = cache.Get();
 
-			CloneContext additional = new CloneContext(this, newName);
-			StreamingContext context = new StreamingContext(StreamingContextStates.All, additional);
-			BinaryFormatter formatter = new BinaryFormatter(null, context);
-			MemoryStream stream = new MemoryStream();
-			formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-			formatter.Binder = new DataElementBinder();
-			formatter.Serialize(stream, this);
-			stream.Seek(0, SeekOrigin.Begin);
-
-			DataElement copy = (DataElement)formatter.Deserialize(stream);
-			copy._parent = parent;
-			this._parent = parent;
-
-			size = stream.Length;
+			size = cache.Size;
 
 			if (DataElement.DebugClone)
 				logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);
 
 			return copy;
 		}
+
+		#endregion
 
 		/// <summary>
 		/// Mutated vale override's fixupImpl
@@ -254,11 +298,6 @@ namespace Peach.Core.Dom
 		/// </summary>
 		protected LengthType _lengthType = LengthType.Bytes;
 
-		/// <summary>
-		/// Contains the calculation if any
-		/// </summary>
-		protected string _lengthCalc = null;
-
 		protected string _constraint = null;
 
 		#region Events
@@ -272,7 +311,40 @@ namespace Peach.Core.Dom
 			remove { _invalidatedEvent -= value; }
 		}
 
-		public abstract void Crack(DataCracker context, BitStream data);
+		protected virtual Variant GetDefaultValue(BitStream data, long? size)
+		{
+			if (size.HasValue && size.Value == 0)
+				return new Variant(new byte[0]);
+
+			var sizedData = ReadSizedData(data, size);
+			return new Variant(sizedData);
+		}
+
+		public virtual void Crack(DataCracker context, BitStream data, long? size)
+		{
+			var oldDefalut = DefaultValue;
+
+			try
+			{
+				DefaultValue = GetDefaultValue(data, size);
+			}
+			catch (PeachException pe)
+			{
+				throw new CrackingFailure(pe.Message, this, data);
+			}
+
+			logger.Debug("{0} value is: {1}", debugName, DefaultValue);
+
+			if (isToken && oldDefalut != DefaultValue)
+			{
+				var newDefault = DefaultValue;
+				DefaultValue = oldDefalut;
+				var msg = "{0} marked as token, values did not match '{1}' vs. '{2}'.";
+				msg = msg.Fmt(debugName, newDefault, oldDefalut);
+				logger.Debug(msg);
+				throw new CrackingFailure(msg, this, data);
+			}
+		}
 
 		protected void OnInvalidated(EventArgs e)
 		{
@@ -305,37 +377,6 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-		public static OrderedDictionary<string, Type> dataElements = new OrderedDictionary<string, Type>();
-		public static void loadDataElements(Assembly assembly)
-		{
-			foreach (Type type in assembly.GetTypes())
-			{
-				if (type.IsClass && !type.IsAbstract)
-				{
-					var attr = type.GetAttributes<DataElementAttribute>(null).First();
-					if (!dataElements.ContainsKey(attr.elementName))
-					{
-						dataElements.Add(attr.elementName, type);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Recursively returns elements of a specific type.  Will not
-		/// return elements of our partent.
-		/// </summary>
-		/// <param name="type">Type of elements to locate and return</param>
-		/// <returns>Returns elements of a specific type</returns>
-		public IEnumerable<DataElement> getElementsByType(Type type)
-		{
-			foreach(DataElement element in EnumerateAllElements())
-			{
-				if(element.GetType() == type)
-					yield return element;
-			}
-		}
-
 		/// <summary>
 		/// Dynamic properties
 		/// </summary>
@@ -367,7 +408,9 @@ namespace Peach.Core.Dom
 
 		public static T Generate<T>(XmlNode node) where T : DataElement, new()
 		{
-			string name = node.getAttribute("name");
+			string name = null;
+			if (node.hasAttr("name"))
+				name = node.getAttrString("name");
 
 			if (string.IsNullOrEmpty(name))
 			{
@@ -383,6 +426,22 @@ namespace Peach.Core.Dom
 				{
 					throw ex.InnerException;
 				}
+			}
+		}
+
+		public string elementType
+		{
+			get
+			{
+				return GetType().GetAttributes<DataElementAttribute>(null).First().elementName;
+			}
+		}
+
+		public string debugName
+		{
+			get
+			{
+				return "{0} '{1}'".Fmt(elementType, fullName);
 			}
 		}
 
@@ -552,7 +611,21 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
-		/// Length of element in bits.
+		/// Is the length of the element deterministic.
+		/// This is the case if the element hasLength or
+		/// if the element has a specific end. For example,
+		/// a null terminated string.
+		/// </summary>
+		public virtual bool isDeterministic
+		{
+			get
+			{
+				return hasLength;
+			}
+		}
+
+		/// <summary>
+		/// Length of element in lengthType units.
 		/// </summary>
 		/// <remarks>
 		/// In the case that LengthType == "Calc" we will evaluate the
@@ -562,32 +635,19 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (_lengthCalc != null)
-				{
-					Dictionary<string, object> scope = new Dictionary<string, object>();
-					scope["self"] = this;
-					return (int)Scripting.EvalExpression(_lengthCalc, scope);
-				}
-
 				if (_hasLength)
 				{
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return _length / 8;
+							return _length;
 						case LengthType.Bits:
 							return _length;
 						case LengthType.Chars:
 							throw new NotSupportedException("Length type of Chars not supported by DataElement.");
-						default:
-							throw new NotSupportedException("Error calculating length.");
 					}
 				}
-				else if (isToken && DefaultValue != null)
-				{
-					return Value.Value.Length;
-				}
-				else
+				else  if (isToken && DefaultValue != null)
 				{
 					switch (_lengthType)
 					{
@@ -597,25 +657,25 @@ namespace Peach.Core.Dom
 							return Value.LengthBits;
 						case LengthType.Chars:
 							throw new NotSupportedException("Length type of Chars not supported by DataElement.");
-						default:
-							throw new NotSupportedException("Error calculating length.");
 					}
-
 				}
-			}
 
+				throw new NotSupportedException("Error calculating length.");
+			}
 			set
 			{
 				switch (_lengthType)
 				{
 					case LengthType.Bytes:
-						_length = value * 8;
+						_length = value;
 						break;
 					case LengthType.Bits:
 						_length = value;
 						break;
 					case LengthType.Chars:
 						throw new NotSupportedException("Length type of Chars not supported by DataElement.");
+					default:
+						throw new NotSupportedException("Error setting length.");
 				}
 
 				_hasLength = true;
@@ -638,19 +698,9 @@ namespace Peach.Core.Dom
 					case LengthType.Chars:
 						throw new NotSupportedException("Length type of Chars not supported by DataElement.");
 					default:
-						throw new NotSupportedException("Error calculating length.");
+						throw new NotSupportedException("Error calculating lengthAsBits.");
 				}
 			}
-		}
-
-		/// <summary>
-		/// Length expression.  This expression is used
-		/// to calculate the length of this element.
-		/// </summary>
-		public virtual string lengthCalc
-		{
-			get { return _lengthCalc; }
-			set { _lengthCalc= value; }
 		}
 
 		/// <summary>
@@ -658,10 +708,6 @@ namespace Peach.Core.Dom
 		/// </summary>
 		/// <remarks>
 		/// Not all DataElement implementations support "Chars".
-		/// 
-		/// Note: A breaking change between Peach 2.3 and Peach 3 is 
-		/// the removal of the "calc" length type.  Instead use the
-		/// "lengthCalc" property.
 		/// </remarks>
 		public virtual LengthType lengthType
 		{
@@ -766,7 +812,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		private bool CacheValue
+		public virtual bool CacheValue
 		{
 			get
 			{
@@ -778,10 +824,25 @@ namespace Peach.Core.Dom
 					// The root can't have a fixup!
 					System.Diagnostics.Debug.Assert(_parent != null);
 
-					// We can only have a valid fixup value when the parent
-					// has not recursed onto itself
-					if (_parent._recursionDepth > 1)
-						return false;
+
+					//// We can only have a valid fixup value when the parent
+					//// has not recursed onto itself
+					//if (_parent._recursionDepth > 1)
+					//    return false;
+
+					foreach (var elem in _fixup.dependents)
+					{
+						// If elem is in out parent heirarchy, we are invalid if the _recustionDepth > 1
+						// Otherwise, we are invalid if the _recursionDepth > 0
+
+						uint minDepth = 0;
+						string relName = null;
+						if (isChildOf(elem, out relName))
+							minDepth = 1;
+
+						if (elem._recursionDepth > minDepth)
+							return false;
+					}
 				}
 
 				return true;
@@ -1148,8 +1209,6 @@ namespace Peach.Core.Dom
 			yield break;
 		}
 
-    public abstract object GetParameter(string parameterName);
-
 		/// <summary>
 		/// Fixup for this data element.  Can be null.
 		/// </summary>
@@ -1280,6 +1339,42 @@ namespace Peach.Core.Dom
 
 			foreach (var child in cont)
 				child.ClearRelations();
+		}
+
+		/// <summary>
+		/// Helper fucntion to obtain a bitstream sized for this element
+		/// </summary>
+		/// <param name="data">Source BitStream</param>
+		/// <param name="size">Length of this element</param>
+		/// <param name="read">Length of bits already read of this element</param>
+		/// <returns>BitStream of length 'size - read'</returns>
+		public virtual BitStream ReadSizedData(BitStream data, long? size, long read = 0)
+		{
+			if (!size.HasValue)
+				throw new CrackingFailure(debugName + " is unsized.", this, data);
+
+			if (size.Value < read)
+			{
+				string msg = "{0} has length of {1} bits but already read {2} bits.".Fmt(
+					debugName, size.Value, read);
+				throw new CrackingFailure(msg, this, data);
+			}
+
+			long needed = size.Value - read;
+			data.WantBytes((needed + 7) / 8);
+			long remain = data.LengthBits - data.TellBits();
+
+			if (needed > remain)
+			{
+				string msg = "{0} has length of {1} bits{2}but buffer only has {3} bits left.".Fmt(
+					debugName, size.Value, read == 0 ? " " : ", already read " + read + " bits, ", remain);
+				throw new CrackingFailure(msg, this, data);
+			}
+
+			var ret = data.ReadBitsAsBitStream(needed);
+			System.Diagnostics.Debug.Assert(ret != null);
+
+			return ret;
 		}
 
 		/// <summary>

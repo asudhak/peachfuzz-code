@@ -39,9 +39,10 @@ using NLog;
 
 namespace Peach.Core.Transformers.Compress
 {
-	[TransformerAttribute("GzipCompress", "Compress on output using gzip.", true)]
-    [TransformerAttribute("compress.GzipCompress", "Compress on output using gzip.")]
-    [Serializable]
+	[Description("Compress on output using gzip.")]
+	[Transformer("GzipCompress", true)]
+	[Transformer("compress.GzipCompress")]
+	[Serializable]
 	public class GzipCompress : Transformer
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -58,12 +59,20 @@ namespace Peach.Core.Transformers.Compress
 			var compressedData = new MemoryStream();
 			data.SeekBits(0, SeekOrigin.Begin);
 
-			using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
-			{
-				data.Stream.CopyTo(compressionStream);
-			}
+		    try
+		    {
+    			using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
+    			{
+    				data.Stream.CopyTo(compressionStream);
+    			}
 
-			return new BitStream(compressedData.ToArray());
+			    return new BitStream(compressedData.ToArray());
+		    }
+		    catch (InvalidDataException ex )
+		    {
+                throw new PeachException("Error, unable to GZip compress data", ex);
+		    }
+
 		}
 
 		protected override BitStream internalDecode(BitStream compressedData)
@@ -73,12 +82,21 @@ namespace Peach.Core.Transformers.Compress
 			var data = new MemoryStream();
 			compressedData.SeekBits(0, SeekOrigin.Begin);
 
-			using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
-			{
-				compressionStream.CopyTo(data);
-			}
+		    try
+		    {
+                using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
+			    {
+			    	compressionStream.CopyTo(data);
+			    }
 
-			return new BitStream(data.ToArray());
+			    return new BitStream(data.ToArray());
+		    }
+		    catch (InvalidDataException ex)
+		    {
+		        throw new PeachException("Error, unable to GZip compress data", ex);
+		    }
+			
+
 		}
 	}
 }

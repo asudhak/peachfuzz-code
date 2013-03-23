@@ -13,8 +13,8 @@ namespace Peach.Core.Publishers
 {
 	[Publisher("TcpListener", true)]
 	[Publisher("tcp.TcpListener")]
-	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", true)]
-	[Parameter("Port", typeof(ushort), "Local port to listen on", true)]
+	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to")]
+	[Parameter("Port", typeof(ushort), "Local port to listen on")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{
@@ -42,7 +42,7 @@ namespace Peach.Core.Publishers
 			catch (Exception ex)
 			{
 				throw new PeachException("Error, unable to bind to interface " +
-					Interface + " on port " + Port + ": " + ex.Message);
+					Interface + " on port " + Port + ": " + ex.Message, ex);
 			}
 
 			base.OnStart();
@@ -69,11 +69,11 @@ namespace Peach.Core.Publishers
 				var ar = _listener.BeginAcceptTcpClient(null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
-				_client = _listener.EndAcceptTcpClient(ar);
+				_tcp = _listener.EndAcceptTcpClient(ar);
 			}
 			catch (Exception ex)
 			{
-				throw new SoftException(new PeachException("Error, unable to accept incoming connection: " + ex.Message));
+				throw new SoftException(ex);
 			}
 
 			// Start receiving on the client

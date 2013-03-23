@@ -250,6 +250,79 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 		}
 
+		private void DoExpand(string enc, string lenType, int len, char? pad, bool nullTerm, string expected, int finalLen, string value="value=\"Hello\"")
+		{
+			string padChar = "";
+			if (pad.HasValue)
+				padChar = string.Format("padCharacter=\"{0}\"", pad.Value);
+
+			string template = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String {5} type=""{0}"" lengthType=""{1}"" length=""{2}"" {3} nullTerminated=""{4}""/>
+	</DataModel>
+</Peach>";
+			string xml = string.Format(template, enc, lenType, len, padChar, nullTerm.ToString().ToLower(), value);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+			Assert.AreNotEqual(null, str);
+
+			Assert.AreEqual(expected, (string)str.DefaultValue);
+			Assert.AreEqual(expected, (string)str.InternalValue);
+
+			var val = str.Value.Value;
+
+			Assert.AreEqual(finalLen, val.Length);
+			Assert.AreEqual(expected, Encoding.GetEncoding(enc).GetString(val));
+		}
+
+		[Test]
+		public void ExpandTests()
+		{
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("ascii", "bits", 5, '_', true, "", 0);
+			});
+
+			DoExpand("ascii", "bytes", 10, '_', true, "Hello____\0", 10);
+			DoExpand("ascii", "bits", 80, '_', true, "Hello____\0", 10);
+			DoExpand("utf32", "bytes", 40, '_', true, "Hello____\0", 40);
+
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("utf32", "bytes", 21, '_', true, "", 0);
+			});
+
+			Assert.Throws<PeachException>(delegate()
+			{
+				DoExpand("utf32", "bytes", 43, '_', true, "", 0);
+			});
+
+			DoExpand("utf8", "chars", 10, '_', true, "Hello____\0", 10);
+			DoExpand("utf16", "chars", 10, '_', true, "Hello____\0", 20);
+			DoExpand("utf16be", "chars", 10, '_', true, "Hello____\0", 20);
+			DoExpand("utf32", "chars", 10, '_', true, "Hello____\0", 40);
+
+			DoExpand("ascii", "chars", 10, '_', false, "Hello_____", 10);
+			DoExpand("ascii", "chars", 10, '_', true, "Hello____\0", 10);
+			DoExpand("ascii", "chars", 6, '_', false, "Hello_", 6);
+			DoExpand("ascii", "chars", 6, '_', true, "Hello\0", 6);
+			DoExpand("ascii", "chars", 5, '_', false, "Hello", 5);
+
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("ascii", "chars", 5, '_', true, "", 0);
+			});
+
+			Assert.Throws<PeachException>(delegate() {
+				DoExpand("ascii", "chars", 4, '_', true, "", 0);
+			});
+
+			DoExpand("ascii", "chars", 5, 'a', false, "aaaaa", 5, "");
+			DoExpand("ascii", "chars", 5, 'a', true, "aaaa\0", 5, "");
+			DoExpand("ascii", "bytes", 5, null, true, "\0\0\0\0\0", 5, "");
+			DoExpand("utf16", "chars", 5, null, false, "\0\0\0\0\0", 10, "");
+		}
+
 		[Test]
 		public void HexStringPad()
 		{
@@ -319,6 +392,26 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.Throws<PeachException>(delegate() {
 				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
+		}
+
+		[Test]
+		public void NullTerm()
+		{
+			string xml = "<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String nullTerminated=\"true\" value=\"Hello World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
+			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
+			Assert.AreEqual("Hello World", (string)str.DefaultValue);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello World\0"), str.Value.Value);
 		}
 	}
 }

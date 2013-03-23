@@ -2,8 +2,8 @@
 
 deps = [
 	'NLog.dll',
-	'CookComputing.XmlRpcV2.dll',
 	'SharpPcap.dll',
+	'ZeroMQ.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',
@@ -14,7 +14,6 @@ deps = [
 	'System.Web.Services.dll',
 	'Ionic.Zip.dll',
 	'IronPython.dll',
-	'IronPython.Modules.dll',
 	'IronRuby.dll',
 	'IronRuby.Libraries.dll',
 	'IronRuby.Libraries.Yaml.dll',
@@ -30,5 +29,6 @@ bld(
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	resource = 'peach.xsd xmltests.zip',
+	install = 'peach.xsd',
 	name = 'Peach.Core.dll',
 )

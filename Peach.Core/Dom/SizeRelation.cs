@@ -44,6 +44,12 @@ namespace Peach.Core.Dom
 	/// Byte size relation.
 	/// </summary>
 	[Serializable]
+	[Relation("size", true)]
+	[Description("Byte size relation")]
+	[Parameter("of", typeof(string), "Element used to generate relation value", "")]
+	[Parameter("from", typeof(string), "Element that receives relation value", "")]
+	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
+	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
 	public class SizeRelation : Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 

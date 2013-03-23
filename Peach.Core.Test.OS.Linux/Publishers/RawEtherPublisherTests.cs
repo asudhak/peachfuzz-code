@@ -57,7 +57,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 		}
@@ -96,7 +95,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 		}

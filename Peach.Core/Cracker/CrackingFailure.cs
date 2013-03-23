@@ -39,6 +39,7 @@ namespace Peach.Core.Cracker
 	{
 		public DataElement element;
 		public BitStream data;
+		public bool logged = false;
 
 		public CrackingFailure(DataElement element, BitStream data)
 			: base("Unknown error")

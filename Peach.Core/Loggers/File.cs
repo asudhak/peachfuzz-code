@@ -31,9 +31,12 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+
 using Peach.Core;
 using Peach.Core.Agent;
 using Peach.Core.Dom;
+
+using NLog;
 
 namespace Peach.Core.Loggers
 {
@@ -43,12 +46,14 @@ namespace Peach.Core.Loggers
 	[Logger("File")]
 	[Logger("Filesystem", true)]
 	[Logger("logger.Filesystem")]
-	[Parameter("Path", typeof(string), "Log folder", true)]
+	[Parameter("Path", typeof(string), "Log folder")]
 	public class FileLogger : Logger
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 		string logpath = null;
 		string ourpath = null;
 		TextWriter log = null;
+		string reproPath = null;
 
 		public FileLogger(Dictionary<string, Variant> args)
 		{
@@ -60,42 +65,73 @@ namespace Peach.Core.Loggers
 			get { return logpath; }
 		}
 
-		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel,
-			Fault [] faults)
+		protected override void Engine_ReproFault(RunContext context, uint currentIteration, Peach.Core.Dom.StateModel stateModel, Fault[] faults)
 		{
-            Fault coreFault = null;
-            List<Fault> dataFaults = new List<Fault>();
+			reproPath = saveFaults("Reproducing", context, currentIteration, stateModel, faults);
+		}
+
+		protected override void Engine_ReproFailed(RunContext context, uint currentIteration)
+		{
+			string baseName = System.IO.Path.Combine(ourpath, "Reproducing") + System.IO.Path.DirectorySeparatorChar;
+			string subdir = reproPath.Substring(baseName.Length);
+			string dest = System.IO.Path.Combine(ourpath, "NonReproducable", System.IO.Path.GetDirectoryName(subdir));
+			if (!Directory.Exists(dest))
+				Directory.CreateDirectory(dest);
+			dest = System.IO.Path.Combine(dest, System.IO.Path.GetFileName(subdir));
+			Directory.Move(reproPath, dest);
+			Directory.Delete(System.IO.Path.Combine(ourpath, "Reproducing"), true);
+			reproPath = null;
+		}
+
+		protected override void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faults)
+		{
+			string dir = saveFaults("Faults", context, currentIteration, stateModel, faults);
+			if (reproPath != null)
+			{
+				Directory.Move(reproPath, System.IO.Path.Combine(dir, "Initial"));
+				Directory.Delete(System.IO.Path.Combine(ourpath, "Reproducing"), true);
+				reproPath = null;
+			}
+		}
+
+		private string saveFaults(string root, RunContext context, uint currentIteration, StateModel stateModel, Fault[] faults)
+		{
+			Fault coreFault = null;
+			List<Fault> dataFaults = new List<Fault>();
 
 			log.WriteLine("! Fault detected at iteration {0} : {1}", currentIteration, DateTime.Now.ToString());
 
-            // First find the core fault.
-            foreach (Fault fault in faults)
-            {
-                if (fault.type == FaultType.Fault)
-                    coreFault = fault;
-                else
-                    dataFaults.Add(fault);
-            }
+			// First find the core fault.
+			foreach (Fault fault in faults)
+			{
+				if (fault.type == FaultType.Fault)
+				{
+					coreFault = fault;
+					logger.Debug("Found core fault [" + coreFault.title + "]");
+				}
+				else
+					dataFaults.Add(fault);
+			}
 
-            if (coreFault == null)
-                throw new ApplicationException("Error, we should always have a fault with type = Fault!");
+			if (coreFault == null)
+				throw new ApplicationException("Error, we should always have a fault with type = Fault!");
 
-			string faultPath = System.IO.Path.Combine(ourpath, "Faults");
+			string faultPath = System.IO.Path.Combine(ourpath, root);
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-            if(coreFault.folderName != null)
-                faultPath = System.IO.Path.Combine(faultPath, coreFault.folderName);
+			if (coreFault.folderName != null)
+				faultPath = System.IO.Path.Combine(faultPath, coreFault.folderName);
 
-            else if (coreFault.majorHash == null && coreFault.minorHash == null && coreFault.exploitability == null)
-            {
-                faultPath = System.IO.Path.Combine(faultPath, "Unknown");
-            }
-            else
-            {
-                faultPath = System.IO.Path.Combine(faultPath,
-                    string.Format("{0}_{1}_{2}", coreFault.exploitability, coreFault.majorHash, coreFault.minorHash));
-            }
+			else if (coreFault.majorHash == null && coreFault.minorHash == null && coreFault.exploitability == null)
+			{
+				faultPath = System.IO.Path.Combine(faultPath, "Unknown");
+			}
+			else
+			{
+				faultPath = System.IO.Path.Combine(faultPath,
+					string.Format("{0}_{1}_{2}", coreFault.exploitability, coreFault.majorHash, coreFault.minorHash));
+			}
 
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
@@ -107,6 +143,8 @@ namespace Peach.Core.Loggers
 			int cnt = 0;
 			foreach (Dom.Action action in stateModel.dataActions)
 			{
+				logger.Debug("Writing action: " + action.name);
+
 				cnt++;
 				if (action.dataModel != null)
 				{
@@ -129,23 +167,28 @@ namespace Peach.Core.Loggers
 				}
 			}
 
-            // Write out all data information
-            foreach (Fault fault in faults)
-            {
-                foreach(string key in fault.collectedData.Keys)
-                {
-                    string fileName = System.IO.Path.Combine(faultPath, 
-                        fault.detectionSource + "_" + key);
-                    File.WriteAllBytes(fileName, fault.collectedData[key]);
-                }
+			// Write out all data information
+			foreach (Fault fault in faults)
+			{
+				logger.Debug("Writing fault: " + fault.title);
 
-                if (fault.description != null)
-                {
-                    string fileName = System.IO.Path.Combine(faultPath,
-                        fault.detectionSource + "_" + "description.txt");
-                    File.WriteAllText(fileName, fault.description);
-                }
-            }
+				foreach (string key in fault.collectedData.Keys)
+				{
+					string fileName = System.IO.Path.Combine(faultPath,
+						fault.detectionSource + "_" + key);
+					File.WriteAllBytes(fileName, fault.collectedData[key]);
+				}
+
+				if (fault.description != null)
+				{
+					string fileName = System.IO.Path.Combine(faultPath,
+						fault.detectionSource + "_" + "description.txt");
+					File.WriteAllText(fileName, fault.description);
+				}
+			}
+
+			log.Flush();
+			return faultPath;
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
@@ -173,11 +216,9 @@ namespace Peach.Core.Loggers
 
 		protected override void Engine_TestFinished(RunContext context)
 		{
-			log.WriteLine(". Test finished: " + context.test.name);
-			log.Flush();
-
 			if (log != null)
 			{
+				log.WriteLine(". Test finished: " + context.test.name);
 				log.Flush();
 				log.Close();
 				log.Dispose();
@@ -198,14 +239,20 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(logpath))
 				Directory.CreateDirectory(logpath);
 
-			ourpath = System.IO.Path.Combine(logpath, context.config.pitFile.Replace(System.IO.Path.DirectorySeparatorChar, '_'));
-
+			ourpath = System.IO.Path.Combine(logpath, System.IO.Path.GetFileName(context.config.pitFile));
 			if (context.config.runName == "DefaultRun")
 				ourpath += "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
 			else
 				ourpath += "_" + context.config.runName + "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
 
-			Directory.CreateDirectory(ourpath);
+			try
+			{
+				Directory.CreateDirectory(ourpath);
+			}
+			catch (Exception e)
+			{
+				throw new PeachException(e.Message, e);
+			}
 
 			log = File.CreateText(System.IO.Path.Combine(ourpath, "status.txt"));
 

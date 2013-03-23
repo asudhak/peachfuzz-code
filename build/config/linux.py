@@ -2,6 +2,8 @@ import os.path
 from waflib import Utils
 from waflib.TaskGen import feature
 
+host_plat = [ 'linux' ]
+
 archs = [ 'x86', 'x86_64' ]
 
 tools = [
@@ -9,11 +11,13 @@ tools = [
 	'gxx',
 	'cs',
 	'resx',
-	'utils',
-	'externals',
-	'test',
-	'version',
-	'xcompile',
+	'misc',
+	'tools.utils',
+	'tools.externals',
+	'tools.test',
+	'tools.version',
+	'tools.xcompile',
+	'tools.mdoc',
 ]
 
 def prepare(conf):
@@ -28,7 +32,8 @@ def prepare(conf):
 	env['ARCH']    = ['-m%s' % ('64' in env.SUBARCH and '64' or '32')]
 	env['ARCH_ST'] = env['ARCH']
 
-	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-gcc.4.4.7-linux')
+	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
+	pin = j(pin_root, 'pin-2.12-54730-gcc.4.4.7-linux')
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
@@ -91,6 +96,10 @@ def prepare(conf):
 		'test',
 		'debug',
 		'release',
+		'emit',
+		'vnum',
+		'subst',
+		'network',
 	])
 
 def configure(conf):
@@ -98,19 +107,21 @@ def configure(conf):
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',
-		'/define:PEACH',
+		'/define:PEACH,UNIX,MONO',
+		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [
 		'/define:DEBUG,TRACE',
 	])
-	
+
 	env.append_value('CSFLAGS_release', [
 		'/define:TRACE',
 		'/optimize+',
 	])
 
 	env['CSPLATFORM'] = 'anycpu'
+	env['CSDOC'] = True
 
 	env.append_value('DEFINES_debug', [
 		'DEBUG',
@@ -121,7 +132,7 @@ def configure(conf):
 		'-Werror',
 		'-Wno-unused',
 	]
-	
+
 	cppflags_debug = [
 		'-ggdb',
 	]

@@ -196,7 +196,7 @@ namespace Peach.Core.Test.Publishers
 ";
 		public void TcpServer(bool clientShutdown)
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 20000);
+			ushort port = TestBase.MakePort(55000, 56000);
 			SimpleTcpClient cli = new SimpleTcpClient(port, clientShutdown);
 			cli.Start();
 
@@ -209,7 +209,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, actions.Count);
@@ -245,7 +244,7 @@ namespace Peach.Core.Test.Publishers
 
 		public void TcpClient(bool serverShutdown)
 		{
-			ushort port = (ushort)((Environment.TickCount % 10000) + 20000);
+			ushort port = TestBase.MakePort(56000, 57000);
 			SimpleTcpServer cli = new SimpleTcpServer(port, serverShutdown);
 			cli.Start();
 
@@ -258,7 +257,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, actions.Count);
@@ -304,7 +302,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
 		}
 	}

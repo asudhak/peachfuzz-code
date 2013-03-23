@@ -39,17 +39,79 @@ using Peach.Core;
 using Peach.Core.Dom;
 using NLog;
 using Peach.Core.Agent;
+using System.Net.Sockets;
 
 namespace Peach.Core.Agent.Channels
 {
 	[Agent("tcp", true)]
 	public class AgentClientTcpRemoting : AgentClient
 	{
-		AgentServiceTcpRemote proxy = null;
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		int _remotingWaitTime = 1000 * 60 * 1;
+		TcpClientChannel _channel = null;
+		AgentServiceTcpRemote proxy = null;
+		string _url = null;
+
+		/// <summary>
+		/// This is set to true when fault data is collected
+		/// indicating a fualt has occured.  When a fault occures
+		/// the agent might get restarted or a virtual machine
+		/// reset to a snapshot.
+		/// </summary>
+		bool _restartAgent = false;
+
+		/// <summary>
+		/// Contains information about all created monitors.
+		/// </summary>
+		/// <remarks>
+		/// When restarting the agent connect we will need to recreate monitors.
+		/// 
+		/// The tuple contains:
+		/// 
+		///   * name
+		///   * cls
+		///   * args
+		/// 
+		/// </remarks>
+		List<Tuple<string, string, SerializableDictionary<string, Variant>>> _monitors = new List<Tuple<string, string, SerializableDictionary<string, Variant>>>();
 
 		public AgentClientTcpRemoting(string name, string uri, string password)
 		{
+		}
+
+		/// <summary>
+		/// Perform our remoting call with a forced timeout.
+		/// </summary>
+		/// <param name="method"></param>
+		protected void PerformRemoting(ThreadStart method)
+		{
+			Exception remotingException = null;
+
+			var thread = new System.Threading.Thread(delegate()
+			{
+				try
+				{
+					method();
+				}
+				catch (Exception ex)
+				{
+					remotingException = ex;
+				}
+			});
+
+			thread.Start();
+			if (thread.Join(_remotingWaitTime))
+			{
+				if (remotingException != null)
+				{
+					throw remotingException;
+				}
+			}
+			else
+			{
+				throw new System.Runtime.Remoting.RemotingException("Remoting call timed out.");
+			}
 		}
 
 		public override bool SupportedProtocol(string protocol)
@@ -62,6 +124,42 @@ namespace Peach.Core.Agent.Channels
 				return true;
 
 			return false;
+		}
+
+		protected void CreateProxy()
+		{
+			RemoveProxy();
+
+			IDictionary props = new Hashtable() as IDictionary;
+			props["timeout"] = (uint)1000*60*1; // wait one minute max
+			props["connectionTimeout"] = (uint)1000*60*1; // wait one minute max
+
+			_channel = new TcpClientChannel(props, null);
+			ChannelServices.RegisterChannel(_channel, false); // Disable security for speed
+			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
+			if (proxy == null)
+				throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
+
+			try
+			{
+				// No messages are sent until a method is called on the proxy
+				proxy.VerifyChannel();
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Error, unable to connect to remote agent '" + _url + "'.  " + ex.Message, ex);
+			}
+		}
+
+		protected void RemoveProxy()
+		{
+			proxy = null;
+
+			if (_channel != null)
+			{
+				ChannelServices.UnregisterChannel(_channel);
+				_channel = null;
+			}
 		}
 
 		public override void AgentConnect(string name, string url, string password)
@@ -77,11 +175,9 @@ namespace Peach.Core.Agent.Channels
 			else
 				url += "/PeachAgent";
 
-			TcpChannel chan = new TcpChannel();
-			ChannelServices.RegisterChannel(chan, false); // Disable security for speed
-			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), url);
-			if (proxy == null)
-				throw new ApplicationException("Error, unable to connect to remote agent " + url);
+			_url = url;
+
+			CreateProxy();
 		}
 
 		public override void AgentDisconnect()
@@ -89,85 +185,148 @@ namespace Peach.Core.Agent.Channels
 			logger.Trace("AgentDisconnect");
 			OnAgentDisconnectEvent();
 
-			proxy.AgentDisconnect();
-			proxy = null;
+			PerformRemoting(delegate() { proxy.AgentDisconnect(); });
+			RemoveProxy();
 		}
 
-		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		/// <summary>
+		/// This method is used to recreate monitors when we restart an agent connection.
+		/// </summary>
+		protected void RecreateMonitors()
+		{
+			foreach (var moninfo in _monitors)
+			{
+				PerformRemoting(delegate() { proxy.StartMonitor(moninfo.Item1, moninfo.Item2, moninfo.Item3); });
+			}
+		}
+
+		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+
+			OnCreatePublisherEvent(cls, args);
+
+			Publisher ret = null;
+			PerformRemoting(delegate() { ret = proxy.CreatePublisher(cls, args); });
+
+			return ret;
+		}
+
+		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
+
+			_monitors.Add(new Tuple<string, string, SerializableDictionary<string, Variant>>(name, cls, args));
+
 			OnStartMonitorEvent(name, cls, args);
-			proxy.StartMonitor(name, cls, args);
+			PerformRemoting(delegate() { proxy.StartMonitor(name, cls, args); });
 		}
 
 		public override void StopMonitor(string name)
 		{
 			logger.Trace("AgentConnect: {0}", name);
 			OnStopMonitorEvent(name);
-			proxy.StopMonitor(name);
+			PerformRemoting(delegate() { proxy.StopMonitor(name); });
 		}
 
 		public override void StopAllMonitors()
 		{
 			logger.Trace("StopAllMonitors");
 			OnStopAllMonitorsEvent();
-			proxy.StopAllMonitors();
+			PerformRemoting(delegate() { proxy.StopAllMonitors(); });
 		}
 
 		public override void SessionStarting()
 		{
 			logger.Trace("SessionStarting");
 			OnSessionStartingEvent();
-			proxy.SessionStarting();
+			PerformRemoting(delegate() { proxy.SessionStarting(); });
 		}
 
 		public override void SessionFinished()
 		{
 			logger.Trace("SessionFinished");
 			OnSessionFinishedEvent();
-			proxy.SessionFinished();
+			PerformRemoting(delegate() { proxy.SessionFinished(); });
 		}
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			logger.Trace("IterationStarting: {0}, {1}", iterationCount, isReproduction);
+
 			OnIterationStartingEvent(iterationCount, isReproduction);
-			proxy.IterationStarting(iterationCount, isReproduction);
+
+			try
+			{
+				PerformRemoting(delegate() { proxy.IterationStarting(iterationCount, isReproduction); });
+			}
+			catch (SocketException)
+			{
+				logger.Debug("IterationStarting: Socket error, recreating proxy");
+
+				proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
+				if (proxy == null)
+					throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
+
+				proxy.AgentConnect(null);
+				proxy.SessionStarting();
+				RecreateMonitors();
+				proxy.IterationStarting(iterationCount, isReproduction);
+			}
 		}
 
 		public override bool IterationFinished()
 		{
 			logger.Trace("IterationFinished");
 			OnIterationFinishedEvent();
-			return proxy.IterationFinished();
+			bool ret = false;
+			PerformRemoting(delegate() { ret = proxy.IterationFinished(); });
+			return ret;
 		}
 
 		public override bool DetectedFault()
 		{
 			logger.Trace("DetectedFault");
 			OnDetectedFaultEvent();
-			return proxy.DetectedFault();
+			
+			bool ret = false;
+			PerformRemoting(delegate() { ret = proxy.DetectedFault(); });
+			return ret;
 		}
 
 		public override Fault[] GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
+
+			// On next iteration starting we will reconnect
+			// to our remote agent.
+			_restartAgent = true;
+
 			OnGetMonitorDataEvent();
-			return proxy.GetMonitorData();
+
+			Fault[] ret = null;
+			PerformRemoting(delegate() { ret = proxy.GetMonitorData(); });
+			return ret;
 		}
 
 		public override bool MustStop()
 		{
 			logger.Trace("MustStop");
 			OnMustStopEvent();
-			return proxy.MustStop();
+
+			bool ret = false;
+			PerformRemoting(delegate() { ret = proxy.MustStop(); });
+			return ret;
 		}
 
 		public override Variant Message(string name, Variant data)
 		{
 			logger.Trace("Message: {0}", name);
 			OnMessageEvent(name, data);
-			return proxy.Message(name, data);
+			
+			Variant ret = null;
+			PerformRemoting(delegate() { ret = proxy.Message(name, data); });
+			return ret;
 		}
 
 	}
@@ -185,6 +344,11 @@ namespace Peach.Core.Agent.Channels
 			agent = new Agent("AgentServiceTcpRemote");
 		}
 
+		// Remote function used to verify channel is working
+		public void VerifyChannel()
+		{
+		}
+
 		public void AgentConnect(string password)
 		{
 			logger.Trace("AgentConnect");
@@ -197,7 +361,13 @@ namespace Peach.Core.Agent.Channels
 			agent.AgentDisconnect();
 		}
 
-		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+			return agent.CreatePublisher(cls, args);
+		}
+
+		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 			agent.StartMonitor(name, cls, args);

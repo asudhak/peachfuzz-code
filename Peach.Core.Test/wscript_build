@@ -7,6 +7,10 @@ deps = [
 	'System.Core.dll',
 	'System.Xml.dll',
 	'Peach.Core.dll',
+	'Microsoft.Scripting.dll',
+	'Microsoft.Scripting.Metadata.dll',
+	'IronPython.dll',
+	'IronPython.Modules.dll',
 ]
 
 bld(

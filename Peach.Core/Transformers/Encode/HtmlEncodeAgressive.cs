@@ -35,14 +35,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Transformer("HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.", true)]
-    [Transformer("encode.HtmlEncodeAgressive", "Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
+    [Description("Encode on output as as HTML agressively.  Only alphanums will not be encoded.")]
+    [Transformer("HtmlEncodeAgressive", true)]
+    [Transformer("encode.HtmlEncodeAgressive")]
     [Serializable]
     public class HtmlEncodeAgressive : Transformer
     {
         public HtmlEncodeAgressive(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {
@@ -59,7 +60,7 @@ namespace Peach.Core.Transformers.Encode
 
             return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(ds));
         }
-    }   
+    }
 }
 
 // end

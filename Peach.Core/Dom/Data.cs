@@ -42,7 +42,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Data : INamed
 	{
-		string _name = null;
+		static int nameNum = 0;
+		string _name = "Unknown Data " + (++nameNum);
 
 		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
 
@@ -133,11 +134,11 @@ namespace Peach.Core.Dom
 					}
 					else if (container is Choice)
 					{
+						elem = null;
 						var choice = container as Choice;
-						if(!choice.choiceElements.ContainsKey(name))
+						if(!choice.choiceElements.TryGetValue(name, out elem))
 							throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
 
-						elem = container[name];
 						container = elem as DataElementContainer;
 
 						choice.SelectedElement = elem;
@@ -152,7 +153,8 @@ namespace Peach.Core.Dom
 					}
 				}
 
-				elem.DefaultValue = value;
+				if (!(elem is DataElementContainer))
+					elem.DefaultValue = value;
 			}
 		}
 	}

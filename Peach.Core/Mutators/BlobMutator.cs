@@ -353,8 +353,6 @@ namespace Peach.Core.Mutators
             Buffer.BlockCopy(buf, 0, ret, 0, index);
             Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
 
-            byte val = (byte)(context.Random.Next(256));
-
             for (int i = index; i < index + size; ++i)
                 ret[i] = 0;
 
@@ -369,8 +367,6 @@ namespace Peach.Core.Mutators
             byte[] ret = new byte[buf.Length + size];
             Buffer.BlockCopy(buf, 0, ret, 0, index);
             Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
-
-            byte val = (byte)(context.Random.Next(256));
 
             for (int i = index; i < index + size; ++i)
                 ret[i] = (byte)(context.Random.Next(256));

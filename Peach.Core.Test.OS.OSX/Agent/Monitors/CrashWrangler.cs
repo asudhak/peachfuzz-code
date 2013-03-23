@@ -23,16 +23,14 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.Throws<PeachException>(delegate() { w.SessionStarting(); }, expected);
 		}
 
-		// XXX: This test causes the testing framework to immediately die.  Need to investigate why
 		[Test]
-		[Ignore]
 		public void BadCommand()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Command"] = new Variant("foo");
 
 			CrashWrangler w = new CrashWrangler(null, "name", args);
-			string expected = "CrashWrangler handler could not run command \"foo\".";
+			string expected = "CrashWrangler handler could not find command \"foo\".";
 			Assert.Throws<PeachException>(delegate() { w.SessionStarting(); }, expected);
 		}
 		

@@ -54,7 +54,6 @@ namespace Peach.Core.Test.MutationStrategies
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			// verify values
@@ -120,7 +119,6 @@ namespace Peach.Core.Test.MutationStrategies
 			dom.tests[0].includedMutators.Add("StringCaseMutator");
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 		}
 
@@ -147,6 +145,17 @@ namespace Peach.Core.Test.MutationStrategies
 		}
 
 		[Test]
+		public void Test3a()
+		{
+			// Tests skipping to the 2nd iteration
+			RunConfiguration config = new RunConfiguration();
+			config.skipToIteration = 2;
+			FuzzSequential(config);
+			Assert.AreEqual(15, values.Count);
+			Assert.AreEqual(14, mutations.Count);
+		}
+
+		[Test]
 		public void Test4()
 		{
 			// Tests skipping a middle iteration
@@ -155,6 +164,17 @@ namespace Peach.Core.Test.MutationStrategies
 			FuzzSequential(config);
 			Assert.AreEqual(5, values.Count);
 			Assert.AreEqual(4, mutations.Count);
+		}
+
+		[Test]
+		public void Test4a()
+		{
+			// Tests skipping to the last iteration
+			RunConfiguration config = new RunConfiguration();
+			config.skipToIteration = 15;
+			FuzzSequential(config);
+			Assert.AreEqual(2, values.Count);
+			Assert.AreEqual(1, mutations.Count);
 		}
 
 		[Test]
@@ -187,8 +207,8 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = 5;
 			config.rangeStop = 5;
 			FuzzSequential(config);
-			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(0, mutations.Count);
+			Assert.AreEqual(2, values.Count);
+			Assert.AreEqual(1, mutations.Count);
 		}
 
 		[Test]
@@ -199,14 +219,14 @@ namespace Peach.Core.Test.MutationStrategies
 			config.rangeStart = 5;
 			config.rangeStop = 10;
 			FuzzSequential(config);
-			Assert.AreEqual(6, values.Count);
-			Assert.AreEqual(5, mutations.Count);
+			Assert.AreEqual(7, values.Count);
+			Assert.AreEqual(6, mutations.Count);
 		}
 
 		[Test]
-		public void TestSequencial()
+		public void TestSequential()
 		{
-			string xml = 
+			string xml =
 @"<?xml version='1.0' encoding='utf-8'?>
 <Peach>
    <DataModel name='TheDataModel'>
@@ -224,7 +244,7 @@ namespace Peach.Core.Test.MutationStrategies
    <Test name='Default'>
        <StateModel ref='TheState'/>
        <Publisher class='Null'/>
-       <Strategy class='Sequencial'/>
+       <Strategy class='Sequential'/>
    </Test>
 
 </Peach>";
@@ -235,5 +255,88 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.IsNotNull(strategy);
 			Assert.IsInstanceOf<Sequential>(strategy);
 		}
+
+		public uint GetMutationCount(string data)
+		{
+			string template = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<Defaults>
+		<Number endian='big'/>
+	</Defaults>
+
+	<DataModel name='choice_string'>
+		<Number name='string_type' size='8' token='true' value='1'/>
+		<Number name='string_size' size='32'>
+			<Relation type='size' of='string_data' />
+		</Number>
+		<String name='string_data'/>
+	</DataModel>
+
+	<DataModel name='choice_blob'>
+		<Number name='blob_type' size='8' token='true' value='2'/>
+		<Number name='blob_size' size='32'>
+			<Relation type='size' of='blob_data' />
+		</Number>
+		<Blob name='blob_data'/>
+	</DataModel>
+
+	<DataModel name='choice_number'>
+		<Number name='num_type' size='8' token='true' value='3'/>
+		<Number name='num_data' size='32'/>
+	</DataModel>
+
+	<DataModel name='TheDataModel'>
+		<Choice name='choice'>
+			<Block name='choice_string' ref='choice_string'/>
+			<Block name='choice_blob' ref='choice_blob'/>
+			<Block name='choice_number' ref='choice_number'/>
+		</Choice>
+		<String name='str' value='Hello World!'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+				<Data fileName='{0}'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>";
+
+			string tempFile = Path.GetTempFileName();
+			File.WriteAllBytes(tempFile, Encoding.ASCII.GetBytes(data));
+
+			string xml = string.Format(template, tempFile);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			return dom.tests[0].strategy.Count;
+		}
+
+		[Test]
+		public void TestChoice()
+		{
+			uint str = GetMutationCount("\x01\x00\x00\x00\x05Hello");
+			uint blob = GetMutationCount("\x02\x00\x00\x00\x05Hello");
+			uint num = GetMutationCount("\x03\x00\x01\x02\x03");
+
+			Assert.AreNotEqual(str, blob);
+			Assert.AreNotEqual(str, num);
+			Assert.AreNotEqual(blob, num);
+		}
+
 	}
 }

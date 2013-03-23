@@ -3,6 +3,8 @@ from waflib import Utils, Logs, Configure, Context, Options, Errors
 import os, zipfile, sys
 
 class PkgContext(InstallContext):
+	'''zip contents of output directory'''
+
 	cmd = 'pkg'
 
 	def __init__(self, **kw):
@@ -20,7 +22,7 @@ class PkgContext(InstallContext):
 
 	def archive(self):
 		env = self.env
-		version = '%s.%s' % (env.VER_VERSION, env.BUILDTAG)
+		version = '%s' % (env.BUILDTAG)
 		args = [ env.APPNAME, version, env.TARGET ]
 		if env.SUBARCH: args.append(env.SUBARCH)
 		if env.VARIANT: args.append(env.VARIANT)
@@ -33,7 +35,7 @@ class PkgContext(InstallContext):
 		Logs.warn('Creating archive: %s' % arch_name)
 
 		node = self.path.make_node(arch_name)
-		
+
 		try:
 			node.delete()
 		except Exception:
@@ -54,7 +56,7 @@ class PkgContext(InstallContext):
 				sys.stdout.write('.')
 				sys.stdout.flush()
 			zip.write(n.abspath(), archive_name, zipfile.ZIP_DEFLATED)
-		
+
 		zip.close()
 
 

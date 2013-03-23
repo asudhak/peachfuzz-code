@@ -166,6 +166,7 @@ namespace Peach.Core.Dom.XPath
 
 			this.dom = otherXpath.dom;
 			this.currentNode = otherXpath.currentNode;
+			this.currentNodeType = otherXpath.currentNodeType;
 			this.attributeIndex = otherXpath.attributeIndex;
 
 			return true;
@@ -344,7 +345,7 @@ namespace Peach.Core.Dom.XPath
 				if (stateModel.states.Values.Count <= (index + 1))
 					return false;
 
-				currentNode = stateModel.states.ElementAt(index + 1);
+				currentNode = stateModel.states.Values.ElementAt(index + 1);
 				return true;
 			}
 			else if (currentNode is Action)
@@ -490,6 +491,33 @@ namespace Peach.Core.Dom.XPath
 		{
 			get
 			{
+				if (!iteratingAttributes)
+					return string.Empty;
+
+				string attr = LocalName;
+
+				if (attr == "name")
+					return ((INamed)currentNode).name;
+
+				if (currentNode is DataElement)
+				{
+					switch (attr)
+					{
+						case "isMutable": return ((DataElement)currentNode).isMutable.ToString();
+						case "isToken": return ((DataElement)currentNode).isToken.ToString();
+						case "length": return ((DataElement)currentNode).length.ToString();
+					}
+				}
+				else if (currentNode is Action)
+				{
+					switch (attr)
+					{
+						case "type": return ((Action)currentNode).type.ToString();
+						case "method": return ((Action)currentNode).method;
+						case "property": return ((Action)currentNode).property;
+					}
+				}
+
 				return string.Empty;
 			}
 		}

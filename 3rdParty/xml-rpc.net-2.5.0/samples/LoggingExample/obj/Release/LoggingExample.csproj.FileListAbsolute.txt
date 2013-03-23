@@ -1,5 +1,0 @@
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\LoggingExample.exe
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\LoggingExample.pdb
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\LoggingExample\obj\Release\ResolveAssemblyReference.cache
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\LoggingExample\obj\Release\LoggingExample.exe
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\LoggingExample\obj\Release\LoggingExample.pdb

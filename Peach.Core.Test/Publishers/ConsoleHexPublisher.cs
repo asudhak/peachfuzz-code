@@ -68,7 +68,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			TestPublisher eval = dom.tests[0].publishers[0] as TestPublisher;

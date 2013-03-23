@@ -52,7 +52,6 @@ namespace Peach.Core.Test.Transformers
             config.singleIteration = true;
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values

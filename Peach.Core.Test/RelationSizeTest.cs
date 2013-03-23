@@ -244,10 +244,9 @@ namespace Peach.Core.Test
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
 			config.rangeStart = 0;
-			config.rangeStop = 10;
+			config.rangeStop = 9;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(10, dataModels.Count);
@@ -314,7 +313,6 @@ namespace Peach.Core.Test
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, dataModels.Count);
@@ -396,6 +394,180 @@ namespace Peach.Core.Test
 				Assert.LessOrEqual(delta, TimeSpan.FromSeconds(30));
 				Assert.AreEqual(count, i + 2);
 			}
+		}
+
+		[Test]
+		public void RelationInArray()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""ElemModel"">
+		<Number name=""length"" size=""16"" endian=""big"">
+			<Relation type=""size"" of=""data""/>
+		</Number>
+		<Blob name=""data""/>
+	</DataModel>
+
+	<DataModel name=""DM"">
+		<Number name=""tag"" size=""16"" endian=""big"" />
+		<Number name=""length"" size=""16"" endian=""big"">
+			<Relation type=""size"" of=""Elements""/>
+		</Number>
+		<Block name=""Elements"">
+			<Block name=""Elem"" minOccurs=""0"" maxOccurs=""999"">
+				<Block name=""Elem0"" ref=""ElemModel""/>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			BitStream data = new BitStream();
+			data.WriteBytes(new byte[] { 0x00, 0x10, 0x00, 0x06, 0x00, 0x04, 0xde, 0xad, 0xbe, 0xef });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(3, dom.dataModels[1].Count);
+
+			var tag = dom.dataModels[1][0] as Number;
+			var len = dom.dataModels[1][1] as Number;
+			var blk = dom.dataModels[1][2] as Block;
+
+			Assert.NotNull(tag);
+			Assert.NotNull(len);
+			Assert.NotNull(blk);
+			Assert.AreEqual(1, blk.Count);
+
+			var arr = blk[0] as Dom.Array;
+			Assert.NotNull(arr);
+			Assert.AreEqual(1, arr.Count);
+
+			var elm = arr[0] as Block;
+			Assert.NotNull(elm);
+			Assert.AreEqual(1, elm.Count);
+
+			var el0 = elm[0] as DataModel;
+			Assert.NotNull(el0);
+			Assert.AreEqual(2, el0.Count);
+
+			var length = el0[0] as Number;
+			var blob = el0[1] as Blob;
+
+			Assert.NotNull(length);
+			Assert.NotNull(blob);
+
+			Assert.AreEqual(16, (int)tag.DefaultValue);
+			Assert.AreEqual(6, (int)len.DefaultValue);
+			Assert.AreEqual(4, (int)length.DefaultValue);
+
+			var bs = (BitStream)blob.DefaultValue;
+			Assert.NotNull(bs);
+
+			MemoryStream ms = bs.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			Assert.AreEqual(4, ms.Length);
+
+			var buf = ms.GetBuffer();
+			Assert.AreEqual(0xde, buf[0]);
+			Assert.AreEqual(0xad, buf[1]);
+			Assert.AreEqual(0xbe, buf[2]);
+			Assert.AreEqual(0xef, buf[3]);
+		}
+
+		[Test]
+		public void IncludeRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Value'/>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
+
+			Assert.AreEqual(expected, final);
+		}
+
+		[Test]
+		public void IncludeStateModelRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big' value='201'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TLV'/>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<Test name='Default'>
+		<StateModel ref='ns:TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
 		}
 	}
 }

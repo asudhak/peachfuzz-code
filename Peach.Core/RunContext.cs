@@ -68,8 +68,15 @@ namespace Peach.Core
 		public RunConfiguration config = null;
 
 		/// <summary>
+		/// Engine instance for this run
+		/// </summary>
+		[NonSerialized]
+		public Engine engine = null;
+
+		/// <summary>
 		/// Dom to use for this run
 		/// </summary>
+		[NonSerialized]
 		public Dom.Dom dom = null;
 
 		/// <summary>
@@ -78,6 +85,7 @@ namespace Peach.Core
 		/// <remarks>
 		/// Currently the Engine code sets this.
 		/// </remarks>
+		[NonSerialized]
 		public Test test = null;
 
 		/// <summary>
@@ -86,9 +94,23 @@ namespace Peach.Core
 		/// <remarks>
 		/// Currently the Engine code sets this.
 		/// </remarks>
+		[NonSerialized]
 		public AgentManager agentManager = null;
 
 		public bool needDataModel = true;
+
+		/// <summary>
+		/// An object store that will last entire run.  For use
+		/// by Peach code to store some state.
+		/// </summary>
+		[NonSerialized]
+		public Dictionary<string, object> stateStore = new Dictionary<string, object>();
+
+		/// <summary>
+		/// An object store that will last current iteration.
+		/// </summary>
+		[NonSerialized]
+		public Dictionary<string, object> iterationStateStore = new Dictionary<string, object>();
 
 		#region Control Iterations
 
@@ -163,7 +185,23 @@ namespace Peach.Core
 		/// after current iteration.  This can be used
 		/// by UI code to stop Peach.
 		/// </summary>
-		public bool continueFuzzing = true;
+		private bool _continueFuzzing = true;
+
+		public bool continueFuzzing 
+		{
+			get
+			{
+				if (!_continueFuzzing)
+					return false;
+				if (config != null && config.shouldStop != null)
+					return !config.shouldStop();
+				return true;
+			}
+			set
+			{
+				_continueFuzzing = value;
+			}
+		}
 
 		#endregion
 
@@ -252,6 +290,16 @@ namespace Peach.Core
         /// Iteration fault was detected on
         /// </summary>
         public uint iteration = 0;
+
+        /// <summary>
+        /// Is this a control iteration.
+        /// </summary>
+        public bool controlIteration = false;
+
+        /// <summary>
+        /// Is this control operation also a recording iteration?
+        /// </summary>
+        public bool controlRecordingIteration = false;
 
         /// <summary>
         /// Type of fault

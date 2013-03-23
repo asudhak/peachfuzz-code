@@ -22,7 +22,7 @@ namespace Peach.Core.Test.Mutators
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <String name=\"str1\" value=\"Hello, World!\"/>" +
+                "       <String name=\"str1\" value=\"Hello, World!\" type=\"utf8\"/>" +
                 "   </DataModel>" +
 
                 "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
@@ -49,7 +49,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify first two values, last two values, and count (= 202)

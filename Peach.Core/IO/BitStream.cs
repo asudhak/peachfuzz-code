@@ -42,6 +42,7 @@ using System.Security.Cryptography;
 
 #if PEACH
 using Peach.Core.IO.Conversion;
+using System.Diagnostics;
 #endif
 
 namespace Peach.Core.IO
@@ -53,6 +54,7 @@ namespace Peach.Core.IO
 	/// bytes.
 	/// </summary>
 	[Serializable]
+	[DebuggerDisplay("{Progress}")]
 	public class BitStream : IDisposable
 	{
 #if PEACH
@@ -129,6 +131,13 @@ namespace Peach.Core.IO
 			LittleEndian();
 		}
 
+#if PEACH
+		public void ClearElementPositions()
+		{
+			_elementPositions = new Dictionary<string, long[]>();
+		}
+#endif
+
 		protected BitStream(Stream stream, long pos, long len,
 			EndianBitConverter bitConverter, Dictionary<string, long[]> _elementPositions)
 		{
@@ -160,6 +169,14 @@ namespace Peach.Core.IO
 			throw new ApplicationException("Error, unable to clone stream.");
 		}
 
+		public string Progress
+		{
+			get
+			{
+				return "Bytes: {0}/{1}, Bits: {2}/{3}".Fmt(TellBytes(), LengthBytes, TellBits(), LengthBits);
+			}
+		}
+
 		/// <summary>
 		/// Length in bits of buffer
 		/// </summary>
@@ -169,7 +186,7 @@ namespace Peach.Core.IO
 			{
 				if (stream is Publisher)
 				{
-					long l = len / 8 + (len % 8 == 0 ? 0 : 1);
+					//long l = len / 8 + (len % 8 == 0 ? 0 : 1);
 					if (stream.Length > 1)
 					{
 						len = stream.Length * 8;
@@ -190,7 +207,7 @@ namespace Peach.Core.IO
 			{
 				if (stream is Publisher)
 				{
-					long l = len / 8 + (len % 8 == 0 ? 0 : 1);
+					//long l = len / 8 + (len % 8 == 0 ? 0 : 1);
 					if (stream.Length > 1)
 					{
 						len = stream.Length * 8;
@@ -633,8 +650,7 @@ namespace Peach.Core.IO
 			long currentPos = TellBits();
 			foreach (var elem in bits._elementPositions)
 			{
-				elem.Value[0] += currentPos;
-				_elementPositions[elem.Key] = elem.Value;
+				_elementPositions.Add(elem.Key, new long[] { elem.Value[0] + currentPos, elem.Value[1] });
 			}
 
 			MarkStartOfElement(element, bits.LengthBits);
@@ -975,7 +991,7 @@ namespace Peach.Core.IO
 		{
 			BitStream newStream = new BitStream();
 
-			while (pos % 8 == 0 && bits > 0)
+			while (pos % 8 > 0 && bits > 0)
 			{
 				bits--;
 				newStream.WriteBit(ReadBit());

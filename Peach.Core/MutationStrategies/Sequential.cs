@@ -36,20 +36,24 @@ using NLog;
 
 namespace Peach.Core.MutationStrategies
 {
-	[MutationStrategy("Sequential")]
-	[MutationStrategy("Sequencial")] // for backwards compatibility with older PITs
+	[MutationStrategy("Sequential", true)]
+	[Serializable]
 	public class Sequential : MutationStrategy
 	{
 		protected class Iterations : List<Tuple<string, Mutator>> { }
 
+		[NonSerialized]
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		protected Iterations.Enumerator _enumerator;
+		[NonSerialized]
+		protected IEnumerator<Tuple<string, Mutator>> _enumerator;
+
+		[NonSerialized]
 		protected Iterations _iterations = new Iterations();
 
 		private List<Type> _mutators = null;
 		private uint _count = 1;
-		private uint _iteration = 0;
+		private uint _iteration = 1;
 
 		public Sequential(Dictionary<string, Variant> args)
 			: base(args)
@@ -64,8 +68,28 @@ namespace Peach.Core.MutationStrategies
 			context.config.randomSeed = 31337;
 
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.State.Starting += new StateStartingEventHandler(State_Starting);
+			context.engine.IterationFinished += new Engine.IterationFinishedEventHandler(engine_IterationFinished);
+			context.engine.IterationStarting += new Engine.IterationStartingEventHandler(engine_IterationStarting);
 			_mutators = new List<Type>();
 			_mutators.AddRange(EnumerateValidMutators());
+		}
+
+		void engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
+		{
+			if (context.controlIteration && context.controlRecordingIteration)
+			{
+				// Starting to record
+				_iterations = new Iterations();
+				_count = 0;
+			}
+		}
+
+		void engine_IterationFinished(RunContext context, uint currentIteration)
+		{
+			// If we were recording, end of iteration is end of recording
+			if(context.controlIteration && context.controlRecordingIteration)
+				OnDataModelRecorded();	
 		}
 
 		public override void Finalize(RunContext context, Engine engine)
@@ -73,10 +97,21 @@ namespace Peach.Core.MutationStrategies
 			base.Finalize(context, engine);
 
 			Core.Dom.Action.Starting -= Action_Starting;
+			Core.Dom.State.Starting -= State_Starting;
+			context.engine.IterationStarting -= engine_IterationStarting;
+			context.engine.IterationFinished -= engine_IterationFinished;
 		}
 
 		protected virtual void OnDataModelRecorded()
 		{
+		}
+
+		public override bool IsDeterministic
+		{
+			get
+			{
+				return true;
+			}
 		}
 
 		public override uint Iteration
@@ -94,22 +129,14 @@ namespace Peach.Core.MutationStrategies
 
 		private void SetIteration(uint value)
 		{
-			if (value == 0)
+			System.Diagnostics.Debug.Assert(value > 0);
+
+			if (_context.controlIteration && _context.controlRecordingIteration)
 			{
-				_iterations = new Iterations();
-				_count = 1;
-				_iteration = 0;
 				return;
 			}
 
-			System.Diagnostics.Debug.Assert(value > 0);
-			System.Diagnostics.Debug.Assert(value < Count);
-
-			// When we transition out of iteration 0, signal the data model has been recorded
-			if (_iteration == 0 && value > 0)
-				OnDataModelRecorded();
-
-			if (_iteration == 0 || value < _iteration)
+			if (_iteration == 1 || value < _iteration)
 			{
 				_iteration = 1;
 				_enumerator = _iterations.GetEnumerator();
@@ -146,11 +173,30 @@ namespace Peach.Core.MutationStrategies
 			if (!(action.type == ActionType.Output || action.type == ActionType.SetProperty || action.type == ActionType.Call))
 				return;
 
-			if (_iteration > 0 && !_context.controlIteration)
+			if (!_context.controlIteration)
 				MutateDataModel(action);
-			else if(_iteration == 0)
+
+			else if(_context.controlIteration && _context.controlRecordingIteration)
 				RecordDataModel(action);
 		}
+
+		void State_Starting(State state)
+		{
+			if (_context.controlIteration && _context.controlRecordingIteration)
+			{
+				foreach (Type t in _mutators)
+				{
+					// can add specific mutators here
+					if (SupportedState(t, state))
+					{
+						var mutator = GetMutatorInstance(t, state);
+						_iterations.Add(new Tuple<string, Mutator>("STATE_"+state.name, mutator));
+						_count += (uint)mutator.count;
+					}
+				}
+			}
+		}
+
 
 		// Recursivly walk all DataElements in a container.
 		// Add the element and accumulate any supported mutators.
@@ -178,7 +224,7 @@ namespace Peach.Core.MutationStrategies
 		private void RecordDataModel(Core.Dom.Action action)
 		{
 			// ParseDataModel should only be called during iteration 0
-			System.Diagnostics.Debug.Assert(_iteration == 0);
+			System.Diagnostics.Debug.Assert(_context.controlIteration && _context.controlRecordingIteration);
 
 			if (action.dataModel != null)
 			{
@@ -194,6 +240,27 @@ namespace Peach.Core.MutationStrategies
 			}
 		}
 
+		/// <summary>
+		/// Allows mutation strategy to affect state change.
+		/// </summary>
+		/// <param name="state"></param>
+		/// <returns></returns>
+		public override State MutateChangingState(State state)
+		{
+			if (_context.controlIteration)
+				return state;
+
+			if ("STATE_" + state.name == _enumerator.Current.Item1)
+			{
+				OnMutating(state.name, _enumerator.Current.Item2.name);
+				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
+				logger.Debug("MutateChangingState: Mutator: " + _enumerator.Current.Item2.name);
+				return _enumerator.Current.Item2.changeState(state);
+			}
+
+			return state;
+		}
+
 		private void ApplyMutation(DataModel dataModel)
 		{
 			var fullName = _enumerator.Current.Item1;
@@ -203,8 +270,8 @@ namespace Peach.Core.MutationStrategies
 			{
 				var mutator = _enumerator.Current.Item2;
 				OnMutating(fullName, mutator.name);
-				logger.Debug("Action_Starting: Fuzzing: " + fullName);
-				logger.Debug("Action_Starting: Mutator: " + mutator.name);
+				logger.Debug("ApplyMutation: Fuzzing: " + fullName);
+				logger.Debug("ApplyMutation: Mutator: " + mutator.name);
 				mutator.sequentialMutation(dataElement);
 			}
 		}
@@ -212,8 +279,9 @@ namespace Peach.Core.MutationStrategies
 		private void MutateDataModel(Core.Dom.Action action)
 		{
 			// MutateDataModel should only be called after ParseDataModel
-			System.Diagnostics.Debug.Assert(_count > 1);
+			System.Diagnostics.Debug.Assert(_count >= 1);
 			System.Diagnostics.Debug.Assert(_iteration > 0);
+			System.Diagnostics.Debug.Assert(!_context.controlIteration);
 
 			if (action.dataModel != null)
 			{

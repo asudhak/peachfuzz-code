@@ -98,6 +98,8 @@
 			this.radioButtonOSXCrashReporter = new System.Windows.Forms.RadioButton();
 			this.tabPageDebuggerLinux = new System.Windows.Forms.TabPage();
 			this.groupBox10 = new System.Windows.Forms.GroupBox();
+			this.label29 = new System.Windows.Forms.Label();
+			this.textBoxLinuxArguments = new System.Windows.Forms.TextBox();
 			this.checkBoxLinuxCpuKill = new System.Windows.Forms.CheckBox();
 			this.button3 = new System.Windows.Forms.Button();
 			this.textBoxLinuxExecutable = new System.Windows.Forms.TextBox();
@@ -140,8 +142,6 @@
 			this.buttonStopFuzzing = new System.Windows.Forms.Button();
 			this.buttonSaveConfiguration = new System.Windows.Forms.Button();
 			this.buttonStartFuzzing = new System.Windows.Forms.Button();
-			this.textBoxLinuxArguments = new System.Windows.Forms.TextBox();
-			this.label29 = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabPageIntroduction.SuspendLayout();
 			this.tabPageGeneral.SuspendLayout();
@@ -359,7 +359,7 @@
 			// 
 			this.comboBoxFuzzingStrategy.FormattingEnabled = true;
 			this.comboBoxFuzzingStrategy.Items.AddRange(new object[] {
-            "Sequencial Strategy",
+            "Sequential Strategy",
             "Random Strategy"});
 			this.comboBoxFuzzingStrategy.Location = new System.Drawing.Point(115, 78);
 			this.comboBoxFuzzingStrategy.Name = "comboBoxFuzzingStrategy";
@@ -884,6 +884,23 @@
 			this.groupBox10.TabStop = false;
 			this.groupBox10.Text = "Start Process";
 			// 
+			// label29
+			// 
+			this.label29.AutoSize = true;
+			this.label29.Location = new System.Drawing.Point(6, 51);
+			this.label29.Name = "label29";
+			this.label29.Size = new System.Drawing.Size(60, 13);
+			this.label29.TabIndex = 13;
+			this.label29.Text = "Arguments:";
+			// 
+			// textBoxLinuxArguments
+			// 
+			this.textBoxLinuxArguments.Location = new System.Drawing.Point(92, 48);
+			this.textBoxLinuxArguments.Name = "textBoxLinuxArguments";
+			this.textBoxLinuxArguments.Size = new System.Drawing.Size(356, 20);
+			this.textBoxLinuxArguments.TabIndex = 12;
+			this.textBoxLinuxArguments.Text = "fuzzed.png";
+			// 
 			// checkBoxLinuxCpuKill
 			// 
 			this.checkBoxLinuxCpuKill.AutoSize = true;
@@ -1284,23 +1301,6 @@
 			this.buttonStartFuzzing.UseVisualStyleBackColor = true;
 			this.buttonStartFuzzing.Click += new System.EventHandler(this.buttonStartFuzzing_Click);
 			// 
-			// textBoxLinuxArguments
-			// 
-			this.textBoxLinuxArguments.Location = new System.Drawing.Point(92, 48);
-			this.textBoxLinuxArguments.Name = "textBoxLinuxArguments";
-			this.textBoxLinuxArguments.Size = new System.Drawing.Size(356, 20);
-			this.textBoxLinuxArguments.TabIndex = 12;
-			this.textBoxLinuxArguments.Text = "fuzzed.png";
-			// 
-			// label29
-			// 
-			this.label29.AutoSize = true;
-			this.label29.Location = new System.Drawing.Point(6, 51);
-			this.label29.Name = "label29";
-			this.label29.Size = new System.Drawing.Size(60, 13);
-			this.label29.TabIndex = 13;
-			this.label29.Text = "Arguments:";
-			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1311,6 +1311,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "FormMain";
 			this.Text = "Peach 3 - Fuzz Bang";
+			this.Load += new System.EventHandler(this.FormMain_Load);
 			this.tabControl.ResumeLayout(false);
 			this.tabPageIntroduction.ResumeLayout(false);
 			this.tabPageGeneral.ResumeLayout(false);

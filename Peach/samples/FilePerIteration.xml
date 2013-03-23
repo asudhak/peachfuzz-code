@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach ../peach.xsd">
 
 	<!--
 
@@ -12,7 +12,7 @@
 	  
 	Output:
 	
-	  Lots and lots of "FilePer-%d.txt files.
+	  Lots and lots of "FilePer-{0}.txt files.
 	
 	Authors:
 	  Michael Eddington (mike@dejavusecurity.com)
@@ -37,7 +37,7 @@
 	<Test name="Default">
 		<StateModel ref="State"/>
 		<Publisher class="FilePerIteration">
-			<Param name="fileName" value="FilePer-%d.txt"/>
+			<Param name="FileName" value="FilePer-{0}.txt"/>
 		</Publisher>
 	</Test>
 

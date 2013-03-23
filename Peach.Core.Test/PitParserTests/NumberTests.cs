@@ -48,7 +48,7 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<Defaults>" +
-				"		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
+				"		<Number endian=\"big\" signed=\"true\"/>" +
 				"	</Defaults>" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Number name=\"TheNumber\" size=\"8\"/>" +
@@ -80,10 +80,13 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(signed, num.Signed);
 			Assert.AreEqual(isLittleEndian, num.LittleEndian);
-			if (signed)
-				Assert.AreEqual(value, (long)num.DefaultValue);
-			else
-				Assert.AreEqual(value, (ulong)num.DefaultValue);
+			if (!(value is string))
+			{
+				if (signed)
+					Assert.AreEqual(value, (long)num.DefaultValue);
+				else
+					Assert.AreEqual(value, (ulong)num.DefaultValue);
+			}
 			BitStream val = num.Value;
 			Assert.AreEqual(size, val.LengthBits);
 			Assert.AreEqual(expected, val.Value);
@@ -135,6 +138,12 @@ namespace Peach.Core.Test.PitParserTests
 		public void TestStringUshortUnsignedBig()
 		{
 			TestString<ushort>(0x0102, new byte[] { 0x01, 0x02 }, 16, false, false);
+		}
+
+		[Test]
+		public void TestHexStringUshortUnsignedBig()
+		{
+			TestString<string>("0x1fb", new byte[] { 0x01, 0xfb }, 16, false, false);
 		}
 
 		[Test]

@@ -55,22 +55,21 @@ namespace Peach.Core.Agent.Monitors
 	[Monitor("WindowsDebuggerHybrid")]
 	[Monitor("WindowsDebugEngine")]
 	[Monitor("debugger.WindowsDebugEngine")]
-	[Parameter("CommandLine", typeof(string), "Command line of program to start.", false)]
-	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", false)]
-	[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", false)]
-	[Parameter("Service", typeof(string), "Name of Windows Service to attach to.  Service will be started if stopped or crashes.", false)]
-	[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", false)]
-	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", false)]
-	[Parameter("StartOnCall", typeof(string), "Indicate the debugger should wait to start or attach to process until notified by state machine.", false)]
-	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
-	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", false)]
-	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", false)]
+	[Parameter("CommandLine", typeof(string), "Command line of program to start.", "")]
+	[Parameter("ProcessName", typeof(string), "Name of process to attach too.", "")]
+	[Parameter("KernelConnectionString", typeof(string), "Connection string for kernel debugging.", "")]
+	[Parameter("Service", typeof(string), "Name of Windows Service to attach to.  Service will be started if stopped or crashes.", "")]
+	[Parameter("SymbolsPath", typeof(string), "Optional Symbol path.  Default is Microsoft public symbols server.", "SRV*http://msdl.microsoft.com/download/symbols")]
+	[Parameter("WinDbgPath", typeof(string), "Path to WinDbg install.  If not provided we will try and locate it.", "")]
+	[Parameter("StartOnCall", typeof(string), "Indicate the debugger should wait to start or attach to process until notified by state machine.", "")]
+	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
+	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
+	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", "false")]
 	public class WindowsDebuggerHybrid : Monitor
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		string _name = null;
-		static bool _firstIteration = true;
 		string _commandLine = null;
 		string _processName = null;
 		string _kernelConnectionString = null;
@@ -86,6 +85,7 @@ namespace Peach.Core.Agent.Monitors
 
 		bool _hybrid = true;
 		bool _replay = false;
+		Fault _fault = null;
 
 		DebuggerInstance _debugger = null;
 		SystemDebuggerInstance _systemDebugger = null;
@@ -217,33 +217,7 @@ namespace Peach.Core.Agent.Monitors
 			return null;
 		}
 
-		PerformanceCounter _performanceCounter = null;
-		public float GetProcessCpuUsage(System.Diagnostics.Process proc)
-		{
-			try
-			{
-				if (_performanceCounter == null)
-				{
-					_performanceCounter = new PerformanceCounter("Process", "% Processor Time", proc.ProcessName);
-					_performanceCounter.NextValue();
-					if (_firstIteration)
-					{
-						_firstIteration = false;
-						System.Threading.Thread.Sleep(1000);
-					}
-					else
-					{
-						System.Threading.Thread.Sleep(100);
-					}
-				}
-
-				return _performanceCounter.NextValue();
-			}
-			catch
-			{
-				return 100;
-			}
-		}
+		long procLastTick = -1;
 
 		public override Variant Message(string name, Variant data)
 		{
@@ -259,34 +233,45 @@ namespace Peach.Core.Agent.Monitors
 				try
 				{
 					if (!_IsDebuggerRunning())
+					{
 						return new Variant(0);
+					}
 
 					try
 					{
+						// Note: Performance counters were used and removed due to speed issues.
+						//       monitoring the tick count is more reliable and less likely to cause
+						//       fuzzing slow-downs.
+
 						int pid = _debugger != null ? _debugger.ProcessId : _systemDebugger.ProcessId;
 						using (var proc = System.Diagnostics.Process.GetProcessById(pid))
 						{
 							if (proc == null || proc.HasExited)
+							{
 								return new Variant(0);
+							}
 
-							float cpu = GetProcessCpuUsage(proc);
-
-							if (cpu < 1.0)
+							if(proc.TotalProcessorTime.Ticks == procLastTick)
 							{
 								_StopDebugger();
 								return new Variant(0);
 							}
+
+							procLastTick = proc.TotalProcessorTime.Ticks;
 						}
 					}
 					catch
 					{
 					}
 
+					logger.Debug("Action.Call.IsRunning: 1");
 					return new Variant(1);
 				}
 				catch (ArgumentException)
 				{
 					// Might get thrown if process has already died.
+					logger.Debug("Action.Call.IsRunning: argument exception");
+					return new Variant(0);
 				}
 			}
 
@@ -322,6 +307,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			_replay = isReproduction;
+
 			if (!_IsDebuggerRunning() && _startOnCall == null)
 				_StartDebugger();
 		}
@@ -338,25 +325,19 @@ namespace Peach.Core.Agent.Monitors
 		{
 			logger.Info("DetectedFault()");
 
-			bool fault = false;
+			_fault = null;
 
 			if (_systemDebugger != null && _systemDebugger.caughtException)
 			{
-				logger.Info("DetectedFault - Using system debugger, triggering replay");
-				_replay = true;
+				logger.Info("DetectedFault - Using system debugger, caught exception");
+				_fault = _systemDebugger.crashInfo;
 
 				_systemDebugger.StopDebugger();
 				_systemDebugger = null;
-
-				var ex = new ReplayTestException();
-				ex.ReproducingFault = true;
-				throw ex;
 			}
 			else if (_debugger != null && _hybrid)
 			{
-				logger.Info("DetectedFault - Using WinDbg, checking for fualt, disable replay.");
-
-				_replay = false;
+				logger.Info("DetectedFault - Using WinDbg, checking for fault");
 
 				// Lets give windbg a chance to detect the crash.
 				// 10 seconds should be enough.
@@ -366,17 +347,17 @@ namespace Peach.Core.Agent.Monitors
 					{
 						// Kill off our debugger process and re-create
 						_debuggerProcessUsage = _debuggerProcessUsageMax;
-						fault = true;
+						_fault = _debugger.crashInfo;
 						break;
 					}
 
 					Thread.Sleep(1000);
 				}
 
-				if(fault)
+				if(_fault != null)
 					logger.Info("DetectedFault - Caught fault with windbg");
 
-				if (_debugger != null && _hybrid && !fault)
+				if (_debugger != null && _hybrid && _fault == null)
 				{
 					_StopDebugger();
 					_FinishDebugger();
@@ -386,31 +367,24 @@ namespace Peach.Core.Agent.Monitors
 			{
 				// Kill off our debugger process and re-create
 				_debuggerProcessUsage = _debuggerProcessUsageMax;
-				fault = true;
+				_fault = _debugger.crashInfo;
 			}
 
-			if(!fault)
+			if(_fault == null)
 				logger.Info("DetectedFault() - No fault detected");
 
-			return fault;
+			return _fault != null;
 		}
 
 		public override Fault GetMonitorData()
 		{
-			if (!DetectedFault())
-				return null;
-
-            Fault fault = _debugger.crashInfo;
-            fault.type = FaultType.Fault;
-            fault.detectionSource = "WindowsDebuggerHybrid";
-
-			if (_hybrid)
+			if (_fault != null && _hybrid)
 			{
 				_StopDebugger();
 				_FinishDebugger();
 			}
 
-            return fault;
+			return _fault;
 		}
 
 		public override bool MustStop()
@@ -436,6 +410,7 @@ namespace Peach.Core.Agent.Monitors
 
 		protected void _StartDebugger()
 		{
+			procLastTick = -1;
 			if (_hybrid)
 				_StartDebuggerHybrid();
 			else
@@ -626,12 +601,6 @@ namespace Peach.Core.Agent.Monitors
 			_debugger = null;
 			_systemDebugger = null;
 
-			if (_performanceCounter != null)
-			{
-				_performanceCounter.Close();
-				_performanceCounter = null;
-			}
-
 			if (_debuggerProcess != null)
 			{
 				try
@@ -660,29 +629,16 @@ namespace Peach.Core.Agent.Monitors
 				{
 				}
 
-				if (_performanceCounter != null)
-				{
-					_performanceCounter.Close();
-					_performanceCounter = null;
-				}
 			}
 
 			if (_debugger != null)
 			{
-				_replay = false;
-
 				try
 				{
 					_debugger.StopDebugger();
 				}
 				catch
 				{
-				}
-
-				if (_performanceCounter != null)
-				{
-					_performanceCounter.Close();
-					_performanceCounter = null;
 				}
 			}
 		}

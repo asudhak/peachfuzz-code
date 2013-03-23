@@ -43,8 +43,8 @@ namespace Peach.Core.Dom
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);
 
-    //[Serializable]
-	public class StateModel : INamed, IPitSerializable
+	[Serializable]
+	public class StateModel : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -115,7 +115,10 @@ namespace Peach.Core.Dom
 				OnStarting();
 
 				foreach (Publisher publisher in context.test.publishers.Values)
+				{
 					publisher.Iteration = context.test.strategy.Iteration;
+					publisher.IsControlIteration = context.controlIteration;
+				}
 
 				dataActions.Clear();
 
@@ -138,35 +141,57 @@ namespace Peach.Core.Dom
 								string fileName = null;
 
 								if (data.DataType == DataType.File)
+								{
 									fileName = data.FileName;
-								else if (data.DataType == DataType.Files)
-									fileName = data.Files[0];
-								else if (data.fields.Count > 0)
-								{
-									data.ApplyFields(action.dataModel);
-								}
 
-								//Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.dataModel);
-								//Peach.Core.Analyzers.PitParser.displayDataModel(action.dataModel);
-
-								if (fileName != null)
-								{
 									try
 									{
+										logger.Debug("Trying to crack " + fileName);
 										Cracker.DataCracker cracker = new Cracker.DataCracker();
 										cracker.CrackData(action.dataModel,
 											new BitStream(File.OpenRead(fileName)));
 									}
 									catch (Cracker.CrackingFailure ex)
 									{
-										throw new PeachException("Error, failed to crack \"" + fileName + "\" into \"" + action.dataModel.fullName + "\": " + ex.ToString());
+										throw new PeachException("Error, failed to crack \"" + fileName +
+											"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
 									}
 								}
+								else if (data.DataType == DataType.Files)
+								{
+									bool success = false;
+									foreach (var fn in data.Files)
+									{
+										try
+										{
+											logger.Debug("Trying to crack " + fn);
+											fileName = fn;
 
-								//Peach.Core.Cracker.DataCracker.ClearRelationsRecursively(action.dataModel);
-								//Peach.Core.Analyzers.PitParser.displayDataModel(action.dataModel);
+											Cracker.DataCracker cracker = new Cracker.DataCracker();
+											cracker.CrackData(action.dataModel,
+												new BitStream(File.OpenRead(fileName)));
+
+											success = true;
+											break;
+										}
+										catch
+										{
+											logger.Debug("Cracking failed, trying next file");
+										}
+									}
+									
+									if(!success)
+										throw new PeachException("Error, failed to crack any of the files specified by action \"" + action.name + "\".");
+								}
+								
+								// Always apply fields if we have them
+								if (data.fields.Count > 0)
+								{
+									data.ApplyFields(action.dataModel);
+								}
 
 								var value = action.dataModel.Value;
+								System.Diagnostics.Debug.Assert(value != null);
 
 								// Update our origional copy to have data!
 								action.origionalDataModel = action.dataModel.Clone() as DataModel;
@@ -174,6 +199,7 @@ namespace Peach.Core.Dom
 							else if (action.dataModel != null)
 							{
 								var value = action.dataModel.Value;
+								System.Diagnostics.Debug.Assert(value != null);
 
 								// Update our origional copy to have data!
 								action.origionalDataModel = action.dataModel.Clone() as DataModel;
@@ -204,13 +230,15 @@ namespace Peach.Core.Dom
 											}
 											catch (Cracker.CrackingFailure ex)
 											{
-												throw new PeachException("Error, failed to crack \"" + fileName + "\" into \"" + action.dataModel.fullName + "\": " + ex.ToString());
+												throw new PeachException("Error, failed to crack \"" + fileName + 
+													"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
 											}
 										}
 									}
 
 									// Invalidate model and produce value
 									var value = param.dataModel.Value;
+									System.Diagnostics.Debug.Assert(value != null);
 
 									// Update our origional copy to have data!
 									param.origionalDataModel = param.dataModel.Clone() as DataModel;
@@ -239,7 +267,16 @@ namespace Peach.Core.Dom
 					}
 					catch (ActionChangeStateException ase)
 					{
-						currentState = ase.changeToState;
+						var newState = context.test.strategy.MutateChangingState(ase.changeToState);
+						
+						if(newState == ase.changeToState)
+							logger.Debug("Run(): Changing to state \"" + newState.name + "\".");
+						else
+							logger.Debug("Run(): Changing state mutated.  Switching to \"" + newState.name + 
+								"\" instead of \""+ase.changeToState+"\".");
+						
+						currentState.OnChanging(newState);
+						currentState = newState;
 					}
 				}
 			}
@@ -250,28 +287,12 @@ namespace Peach.Core.Dom
 			finally
 			{
 				foreach (Publisher publisher in context.test.publishers.Values)
-					publisher.close(null);
+					publisher.close();
 
 				OnFinished();
 			}
 		}
-
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "StateModel", null);
-
-      node.AppendAttribute("name", this.name);
-      node.AppendAttribute("initialState", this.initialState.name);
-
-
-      foreach (State state in states.Values)
-      {
-        node.AppendChild(state.pitSerialize(doc, node));
-      }
-
-      return node;
-    }
-  }
+	}
 }
 
 // END

@@ -37,16 +37,32 @@ using Peach;
 namespace Peach.Core.Dom
 {
 	[DataElement("XmlAttribute")]
-    [PitParsable("XmlAttribute")]
-    [DataElementChildSupported(DataElementTypes.NonDataElements)]
-	[Parameter("name", typeof(string), "Name of element", false)]
-	[Parameter("attributeName", typeof(string), "Name of attribute", true)]
-	[Parameter("ns", typeof(string), "XML Namespace", false)]
+	[PitParsable("XmlAttribute")]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[Parameter("name", typeof(string), "Name of element", "")]
+	[Parameter("attributeName", typeof(string), "Name of XML attribute")]
+	[Parameter("ns", typeof(string), "XML Namespace", "")]
+	[Parameter("length", typeof(uint?), "Length in data element", "")]
+	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
+	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
+	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]
+	[Parameter("occurs", typeof(int), "Actual occurances", "1")]
 	[Serializable]
 	public class XmlAttribute : DataElementContainer
 	{
 		string _attributeName = null;
 		string _ns = null;
+
+		public XmlAttribute()
+		{
+		}
+
+		public XmlAttribute(string name)
+			: base(name)
+		{
+		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
@@ -55,11 +71,10 @@ namespace Peach.Core.Dom
 
 			var xmlAttribute = DataElement.Generate<XmlAttribute>(node);
 
-			xmlAttribute.attributeName = node.getAttribute("attributeName");
-			xmlAttribute.ns = node.getAttribute("ns");
+			xmlAttribute.attributeName = node.getAttrString("attributeName");
 
-			if (xmlAttribute.attributeName == null)
-				throw new PeachException("Error, attributeName is a required attribute for XmlAttribute: " + xmlAttribute.name);
+			if (node.hasAttr("ns"))
+				xmlAttribute.ns = node.getAttrString("ns");
 
 			context.handleCommonDataElementAttributes(node, xmlAttribute);
 			context.handleCommonDataElementChildren(node, xmlAttribute);
@@ -110,21 +125,6 @@ namespace Peach.Core.Dom
 			doc.values.Add(xmlAttrib.Value, elem.InternalValue);
 			return xmlAttrib;
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "attributeName":
-          return this.attributeName;
-        case "ns":
-          return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
-      }
-    }
 	}
 }
 

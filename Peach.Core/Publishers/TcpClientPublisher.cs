@@ -43,8 +43,8 @@ namespace Peach.Core.Publishers
 	[Publisher("Tcp", true)]
 	[Publisher("TcpClient")]
 	[Publisher("tcp.Tcp")]
-	[Parameter("Host", typeof(string), "Hostname or IP address of remote host", true)]
-	[Parameter("Port", typeof(ushort), "Local port to listen on", true)]
+	[Parameter("Host", typeof(string), "Hostname or IP address of remote host")]
+	[Parameter("Port", typeof(ushort), "Local port to listen on")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class TcpClientPublisher : TcpPublisher
 	{
@@ -62,24 +62,24 @@ namespace Peach.Core.Publishers
 		{
 			base.OnOpen();
 
-			for (int cnt = 0; cnt < 10 && _client == null; ++cnt)
+			for (int cnt = 0; cnt < 10 && _tcp == null; ++cnt)
 			{
 				try
 				{
 					// Must build a new client object after every failed attempt to connect.
 					// For some reason, just calling BeginConnect again does not work on mono.
-					_client = new TcpClient();
-					var ar = _client.BeginConnect(Host, Port, null, null);
+					_tcp = new TcpClient();
+					var ar = _tcp.BeginConnect(Host, Port, null, null);
 					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 						throw new TimeoutException();
-					_client.EndConnect(ar);
+					_tcp.EndConnect(ar);
 				}
 				catch (Exception ex)
 				{
-					if (_client != null)
+					if (_tcp != null)
 					{
-						_client.Close();
-						_client = null;
+						_tcp.Close();
+						_tcp = null;
 					}
 
 					if (cnt < 9)

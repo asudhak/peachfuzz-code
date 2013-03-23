@@ -43,7 +43,8 @@ namespace Peach.Core.Agent
 
 	public delegate void AgentConnectEventHandler(Agent agent);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
-	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, Dictionary<string, Variant> args);
+	public delegate void CreatePublisherEventHandler(Agent agent, string cls, SerializableDictionary<string, Variant> args);
+	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StopMonitorEventHandler(Agent agent, string name);
 	public delegate void StopAllMonitorsEventHandler(Agent agent);
 	public delegate void SessionStartingEventHandler(Agent agent);
@@ -61,11 +62,10 @@ namespace Peach.Core.Agent
 	/// Agent logic.  This class is typically
 	/// called from the server side of agent channels.
 	/// </summary>
-	public class Agent : IAgent
+	public class Agent : IAgent, INamed
 	{
 		public object parent;
 		Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
-		string name;
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		#region Events
@@ -84,8 +84,15 @@ namespace Peach.Core.Agent
 				AgentDisconnectEvent(this);
 		}
 
+		public event CreatePublisherEventHandler CreatePublisherEvent;
+		protected void OnCreatePublisherEvent(string cls, SerializableDictionary<string, Variant> args)
+		{
+			if (CreatePublisherEvent != null)
+				CreatePublisherEvent(this, cls, args);
+		}
+
 		public event StartMonitorEventHandler StartMonitorEvent;
-		protected void OnStartMonitorEvent(string name, string cls, Dictionary<string, Variant> args)
+		protected void OnStartMonitorEvent(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			if (StartMonitorEvent != null)
 				StartMonitorEvent(this, name, cls, args);
@@ -193,12 +200,36 @@ namespace Peach.Core.Agent
 			monitors.Clear();
 		}
 
-		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+			OnCreatePublisherEvent(cls, args);
+
+			var type = ClassLoader.FindTypeByAttribute<PublisherAttribute>((x, y) => y.Name == cls);
+			if (type == null)
+				throw new PeachException("Error, unable to locate Pubilsher '" + cls + "'");
+
+			try
+			{
+				Dictionary<string, Variant> copy = new Dictionary<string, Variant>();
+				foreach (var kv in args)
+					copy.Add(kv.Key, kv.Value);
+
+				var pub = Activator.CreateInstance(type, copy) as Publisher;
+				return pub;
+			}
+			catch (TargetInvocationException ex)
+			{
+				throw new PeachException("Could not start publisher \"" + cls + "\".  " + ex.InnerException.Message, ex);
+			}
+		}
+
+		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
 
-			var type = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.name == cls);
+			var type = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.Name == cls);
 			if (type == null)
 				throw new PeachException("Error, unable to locate Monitor '" + cls + "'");
 
@@ -209,7 +240,7 @@ namespace Peach.Core.Agent
 			}
 			catch (TargetInvocationException ex)
 			{
-				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message);
+				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message, ex);
 			}
 
 		}
@@ -361,13 +392,20 @@ namespace Peach.Core.Agent
 		{
 			throw new NotImplementedException();
 		}
+
+		public string name
+		{
+			get;
+			protected set;
+		}
 	}
 
 	public interface IAgent
 	{
 		void AgentConnect(string password);
 		void AgentDisconnect();
-		void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
+		Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
+		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
 		void StopMonitor(string name);
 		void StopAllMonitors();
 		void SessionStarting();

@@ -47,6 +47,14 @@ namespace Peach.Core.Dom
 	/// Byte offset relation
 	/// </summary>
 	[Serializable]
+	[Relation("offset", true)]
+	[Description("Byte offset relation")]
+	[Parameter("of", typeof(string), "Element used to generate relation value", "")]
+	[Parameter("from", typeof(string), "Element that receives relation value", "")]
+	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
+	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
+	[Parameter("relative", typeof(bool), "Is the offset relative", "false")]
+	[Parameter("relativeTo", typeof(string), "Element to compute value relative to", "")]
 	public class OffsetRelation : Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -154,19 +162,20 @@ namespace Peach.Core.Dom
 		protected long calculateOffset(DataElement from, DataElement to)
 		{
 			DataElementContainer commonAncestor = null;
-			long fromPosition;
-			long toPosition;
+			long fromPosition = 0;
+			long toPosition = 0;
 
 			if (isRelativeOffset)
 			{
-				if (string.IsNullOrEmpty(relativeTo))
+				if (!string.IsNullOrEmpty(relativeTo))
 				{
-					commonAncestor = findCommonRoot(from, to);
+					DataElement relative = from.find(relativeTo);
+					if (relative == null)
+						throw new PeachException(string.Format("Error, offset relation from element '{0}' couldn't locate relative to element '{1}'.", from.fullName, relativeTo));
+					from = relative;
 				}
-				else
-				{
-					commonAncestor = findCommonRoot(from.find(relativeTo), to);
-				}
+
+				commonAncestor = findCommonRoot(from, to);
 
 				if (commonAncestor == null)
 				{
@@ -175,7 +184,8 @@ namespace Peach.Core.Dom
 				}
 
 				BitStream stream = commonAncestor.Value;
-				fromPosition = stream.DataElementPosition(from);
+				if (from != commonAncestor)
+					fromPosition = stream.DataElementPosition(from);
 				toPosition = stream.DataElementPosition(to);
 			}
 			else
@@ -209,6 +219,9 @@ namespace Peach.Core.Dom
 		{
 			List<DataElementContainer> parentsElem1 = new List<DataElementContainer>();
 
+			if (elem1 is DataElementContainer)
+				parentsElem1.Add((DataElementContainer)elem1);
+
 			DataElementContainer parent = elem1.parent;
 			while (parent != null)
 			{
@@ -226,6 +239,52 @@ namespace Peach.Core.Dom
 			}
 
 			return null;
+		}
+
+		[NonSerialized]
+		private string tempRelativeTo = null;
+
+		[OnSerializing]
+		private void OnSerializing(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			if (DataElement.DebugClone)
+				logger.Debug("Serializing relativeTo={0}", relativeTo);
+
+			if (string.IsNullOrEmpty(relativeTo))
+				return;
+
+			var from = _from;
+			if (_from == null)
+			{
+				if (_fromName != null)
+					from = parent.find(_fromName);
+				else
+					from = parent;
+			}
+
+			var elem = from.find(relativeTo);
+			if (elem == null && relativeTo == ctx.oldName)
+			{
+				tempRelativeTo = relativeTo;
+				relativeTo = ctx.newName;
+			}
+		}
+
+		[OnSerialized]
+		private void OnSerialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			if (tempRelativeTo != null)
+				relativeTo = tempRelativeTo;
+
+			tempRelativeTo = null;
 		}
 	}
 }

@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+deps = [
+	'System.dll',
+	'System.Data.dll',
+	'System.Design.dll',
+	'System.Drawing.dll',
+	'System.Windows.Forms.dll',
+	'System.Xml.dll',
+]
+
+root = bld.path.find_dir('Aga.Controls')
+
+bld(
+	features = 'cs',
+	use = deps,
+	path = root,
+	source = root.ant_glob('**/*.cs **/*.resx'),
+	name = 'Aga.Controls.dll',
+	unsafe = True,
+	keyfile = 'key.snk',
+	version = False,
+	csdoc = False,
+)
+

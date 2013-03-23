@@ -36,30 +36,31 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Type
 {
-    [TransformerAttribute("AsInt64", "Changes the size of a number.", true)]
-    [TransformerAttribute("type.AsInt64", "Changes the size of a number.")]
-    [ParameterAttribute("isSigned", typeof(int), "Signed/Unsigned", false)]
-    [ParameterAttribute("isLittleEndian", typeof(int), "Big/Little Endian", false)]
+    [Description("Changes the size of a number.")]
+    [Transformer("AsInt64", true)]
+    [Transformer("type.AsInt64")]
+    [Parameter("isSigned", typeof(int), "Signed/Unsigned", "1")]
+    [Parameter("isLittleEndian", typeof(int), "Big/Little Endian", "1")]
     [Serializable]
     public class AsInt64 : Transformer
     {
-        Dictionary<string, Variant> m_args;
+        //Dictionary<string, Variant> m_args;
 
         public AsInt64(Dictionary<string, Variant> args) : base(args)
         {
-            m_args = args;
+            //m_args = args;
         }
 
         protected override BitStream internalEncode(BitStream data)
         {
-            int signed = 1;
-            int littleEndian = 1;
+            //int signed = 1;
+            //int littleEndian = 1;
 
-            if (m_args.ContainsKey("isSigned"))
-                signed = Int32.Parse((string)m_args["isSigned"]);
+            //if (m_args.ContainsKey("isSigned"))
+            //    signed = Int32.Parse((string)m_args["isSigned"]);
 
-            if (m_args.ContainsKey("isLittleEndian"))
-                littleEndian = Int32.Parse((string)m_args["isLittleEndian"]);
+            //if (m_args.ContainsKey("isLittleEndian"))
+            //    littleEndian = Int32.Parse((string)m_args["isLittleEndian"]);
 
             // TODO: FIXME: This doesn't honor signedness or endianness
             byte[] final = new byte[sizeof(Int64)];

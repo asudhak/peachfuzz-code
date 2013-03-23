@@ -33,6 +33,14 @@ namespace Peach.Core.Test.Publishers
 			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
 		}
 
+		public void SendRaw(IPAddress remote, int port = 5000)
+		{
+			Socket = new Socket(remote.AddressFamily, SocketType.Raw, ProtocolType.Pup);
+			remoteEP = new IPEndPoint(remote, port);
+			RecvBuf = Encoding.ASCII.GetBytes("SendOnly!");
+			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
+		}
+
 		public void Start(IPAddress local, int count = 1)
 		{
 			Socket = new Socket(local.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
@@ -186,16 +194,16 @@ namespace Peach.Core.Test.Publishers
 	</DataModel>
 
 	<DataModel name=""IpDataModel"">
-		<Number name=""ihl"" size=""8"" signed=""false""/>
+		<Number name=""ihl"" valueType=""hex"" value=""45"" size=""8"" signed=""false""/>
 		<Number name=""dscp"" size=""8"" signed=""false""/>
-		<Number name=""tot_len"" size=""16"" signed=""false""/>
+		<Number name=""tot_len"" value=""31"" endian=""big"" size=""16"" signed=""false""/>
 		<Number name=""id"" size=""16"" signed=""false""/>
 		<Number name=""fragoff"" size=""16"" signed=""false""/>
-		<Number name=""ttl"" size=""8"" signed=""false""/>
-		<Number name=""protocol"" size=""8"" signed=""false""/>
+		<Number name=""ttl"" value= ""1"" size=""8"" signed=""false""/>
+		<Number name=""protocol"" value=""13"" size=""8"" signed=""false""/>
 		<Number name=""csum"" size=""16"" signed=""false""/>
-		<Number name=""src"" size=""32"" signed=""false""/>
-		<Number name=""dst"" size=""32"" signed=""false""/>
+		<Number name=""src"" valueType=""hex"" value=""7f 00 00 01"" size=""32"" signed=""false"" endian=""big""/>
+		<Number name=""dst"" valueType=""hex"" value=""7f 00 00 01"" size=""32"" signed=""false"" endian=""big""/>
 	</DataModel>
 
 	<DataModel name=""UdpDataModel"">
@@ -207,12 +215,10 @@ namespace Peach.Core.Test.Publishers
 
 	<DataModel name=""ip_packet"">
 		<Block name=""ip"" ref=""IpDataModel""/>
-		<Block name=""udp"" ref=""UdpDataModel""/>
 		<Block name=""str"" ref=""TheDataModel""/>
 	</DataModel>
 
-	<DataModel name=""udp_packet"">
-		<Block name=""udp"" ref=""UdpDataModel""/>
+	<DataModel name=""pup_packet"">
 		<Block name=""str"" ref=""TheDataModel""/>
 	</DataModel>
 
@@ -228,14 +234,14 @@ namespace Peach.Core.Test.Publishers
 		</State>
 	</StateModel>
 
-	<StateModel name=""UdpStateModel"" initialState=""InitialState"">
+	<StateModel name=""PupStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
 			<Action name=""Recv"" type=""input"">
 				<DataModel ref=""ip_packet""/>
 			</Action>
 
 			<Action name=""Send"" type=""output"">
-				<DataModel ref=""udp_packet""/>
+				<DataModel ref=""pup_packet""/>
 			</Action>
 		</State>
 	</StateModel>
@@ -243,7 +249,7 @@ namespace Peach.Core.Test.Publishers
 	<StateModel name=""OspfStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
 			<Action name=""Send"" type=""output"">
-				<DataModel ref=""udp_packet""/>
+				<DataModel ref=""ip_packet""/>
 			</Action>
 		</State>
 	</StateModel>
@@ -274,7 +280,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, actions.Count);
@@ -295,12 +300,15 @@ namespace Peach.Core.Test.Publishers
 		[Test]
 		public void MulticastUdpTest()
 		{
+			ushort dstport = TestBase.MakePort(53000, 54000);
+			ushort srcport = TestBase.MakePort(54000, 55000);
+
 			SocketEcho echo = new SocketEcho();
-			echo.SendOnly(IPAddress.Parse("234.5.6.7"), 12345);
+			echo.SendOnly(IPAddress.Parse("234.5.6.7"), dstport);
 
 			try
 			{
-				string xml = string.Format(template, "Udp", "234.5.6.7", "1000", "Hello World", "12345");
+				string xml = string.Format(template, "Udp", "234.5.6.7", srcport.ToString(), "Hello World", dstport.ToString());
 
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -309,7 +317,6 @@ namespace Peach.Core.Test.Publishers
 				config.singleIteration = true;
 
 				Engine e = new Engine(null);
-				e.config = config;
 				e.startFuzzing(dom, config);
 
 				Assert.AreEqual(2, actions.Count);
@@ -347,7 +354,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(2, actions.Count);
@@ -378,7 +384,6 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
 		}
 
@@ -402,10 +407,9 @@ namespace Peach.Core.Test.Publishers
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
 			config.rangeStart = 0;
-			config.rangeStop = 2;
+			config.rangeStop = 1;
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(3, dataModels.Count);
@@ -421,11 +425,11 @@ namespace Peach.Core.Test.Publishers
 		{
 			SocketEcho echo = new SocketEcho();
 			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
-			echo.SendOnly(self);
+			echo.SendRaw(self);
 
 			try
 			{
-				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "17");
+				string xml = string.Format(raw_template, "RawIPv4", self, "IpStateModel", "12");
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -433,16 +437,7 @@ namespace Peach.Core.Test.Publishers
 				config.singleIteration = true;
 
 				Engine e = new Engine(null);
-				e.config = config;
 				e.startFuzzing(dom, config);
-
-				if (Platform.GetOS() == Platform.OS.Mac)
-				{
-					// Mac raw sockets don't support TCP or UDP receptions.
-					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
-					Assert.AreEqual(1, actions.Count);
-					return;
-				}
 
 				Assert.AreEqual(2, actions.Count);
 				var de = actions[0].dataModel.find("ip_packet.str.str");
@@ -461,11 +456,11 @@ namespace Peach.Core.Test.Publishers
 		{
 			SocketEcho echo = new SocketEcho();
 			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
-			echo.SendOnly(self);
+			echo.SendRaw(self);
 
 			try
 			{
-				string xml = string.Format(raw_template, "RawV4", self, "UdpStateModel", "17");
+				string xml = string.Format(raw_template, "RawV4", self, "PupStateModel", "12");
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -473,16 +468,7 @@ namespace Peach.Core.Test.Publishers
 				config.singleIteration = true;
 
 				Engine e = new Engine(null);
-				e.config = config;
 				e.startFuzzing(dom, config);
-
-				if (Platform.GetOS() == Platform.OS.Mac)
-				{
-					// Mac raw sockets don't support TCP or UDP receptions.
-					// See the "b. FreeBSD" section at: http://sock-raw.org/papers/sock_raw
-					Assert.AreEqual(1, actions.Count);
-					return;
-				}
 
 				Assert.AreEqual(2, actions.Count);
 				var de = actions[0].dataModel.find("ip_packet.str.str");
@@ -500,7 +486,7 @@ namespace Peach.Core.Test.Publishers
 		public void BadAddressFamily()
 		{
 			// Tests what happens when we give an ipv4 address to an ipv6 publisher.
-			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "UdpStateModel", "17");
+			string xml = string.Format(raw_template, "RawV6", IPAddress.Loopback, "PupStateModel", "17");
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
@@ -508,7 +494,98 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
+			e.startFuzzing(dom, config);
+		}
+
+		static IPAddress GetLinkLocalIPv6()
+		{
+			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+			foreach (NetworkInterface adapter in nics)
+			{
+				if (adapter.OperationalStatus != OperationalStatus.Up)
+					continue;
+
+				if (adapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
+					continue;
+
+				foreach (var ip in adapter.GetIPProperties().UnicastAddresses)
+				{
+					if (ip.Address.AddressFamily != AddressFamily.InterNetworkV6)
+						continue;
+
+					if (!ip.Address.IsIPv6LinkLocal)
+						continue;
+
+					return ip.Address;
+				}
+			}
+
+			return null;
+		}
+
+		private string udp6_xml_template = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<String name=""str"" value=""Hello World""/>
+	</DataModel>
+
+	<StateModel name=""StateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Send"" type=""output"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+<Test name=""Default"">
+		<StateModel ref=""StateModel""/>
+		<Publisher class=""Udp"">
+			<Param name=""Host"" value=""{0}""/>
+			<Param name=""Port"" value=""8080""/>
+			<Param name=""Interface"" value=""{0}""/>
+		</Publisher>
+	</Test>
+</Peach>
+";
+
+		[Test]
+		public void TestUdp6Send()
+		{
+			IPAddress ip = GetLinkLocalIPv6();
+
+			if (ip == null)
+				Assert.Ignore("No interface with a link-locak IPv6 address was found.");
+
+			Assert.AreNotEqual(0, ip.ScopeId);
+			ip.ScopeId = 0;
+
+			string xml = string.Format(udp6_xml_template, ip);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(1, actions.Count);
+
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Could not resolve scope id for interface with address 'fe80::'.")]
+		public void TestBadUdp6Send()
+		{
+			string xml = string.Format(udp6_xml_template, "fe80::");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 		}
 	}

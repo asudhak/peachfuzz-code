@@ -46,17 +46,21 @@ using System.Net.Sockets;
 
 namespace Peach.Core.Test.Monitors
 {
-	[Monitor("TestMonitor")]
+	[Monitor("TestMonitor", true)]
 	public class TestMonitor : Peach.Core.Agent.Monitor
 	{
 		private IPAddress _dest;
 		private Socket _socket;
+		private int port1;
+		private int port2;
 
 		public TestMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
 			bool ret = IPAddress.TryParse((string)args["Address"], out _dest);
 			System.Diagnostics.Debug.Assert(ret);
+			port1 = int.Parse((string)args["Port1"]);
+			port2 = int.Parse((string)args["Port2"]);
 		}
 
 		public override void StopMonitor()
@@ -76,9 +80,9 @@ namespace Peach.Core.Test.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
-			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, 8888));
-			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, 9999));
-			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, 9999));
+			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, port1));
+			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, port2));
+			_socket.SendTo(Encoding.ASCII.GetBytes("Hello"), new IPEndPoint(_dest, port2));
 			System.Threading.Thread.Sleep(1000);
 		}
 
@@ -117,8 +121,11 @@ namespace Peach.Core.Test.Monitors
 		// interface that is up and has a valid IPv4 address.
 		private static Tuple<string, IPAddress> GetInterface()
 		{
-			if (Platform.GetOS() != Platform.OS.Windows)
+			if (Platform.GetOS() == Platform.OS.Linux)
 				return new Tuple<string, IPAddress>("lo", IPAddress.Loopback);
+
+			if (Platform.GetOS() == Platform.OS.OSX)
+				return new Tuple<string, IPAddress>("lo0", IPAddress.Loopback);
 
 			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
 			foreach (NetworkInterface adapter in nics)
@@ -171,8 +178,12 @@ namespace Peach.Core.Test.Monitors
 
 		private void RunTest(string xml, uint iterations, Engine.FaultEventHandler OnFault)
 		{
+			var pid = System.Diagnostics.Process.GetCurrentProcess().Id;
+			var rng = new Random((uint)pid);
 			var iface = GetInterface();
-			xml = pre_xml + string.Format(xml, iface.Item1, iface.Item2) + post_xml;
+			var port1 = rng.Next(8000, 10000);
+			var port2 = rng.Next(100, 1000) + port1;
+			xml = pre_xml + string.Format(xml, iface.Item1, iface.Item2, port1, port2) + post_xml;
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -181,26 +192,32 @@ namespace Peach.Core.Test.Monitors
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.config = config;
-			e.config.range = true;
-			e.config.rangeStart = 0;
-			e.config.rangeStop = iterations;
+			config.range = true;
+			config.rangeStart = 1;
+			config.rangeStop = 1 + iterations;
 
-			if (OnFault != null)
+			if (OnFault == null)
 			{
-				e.Fault += OnFault;
+				e.startFuzzing(dom, config);
+				return;
 			}
 
-			e.startFuzzing(dom, config);
+			e.Fault += OnFault;
 
-			if (OnFault != null)
+			try
 			{
-				Assert.AreEqual(1, testResults.Count);
-				testResults.Clear();
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
 			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
+
+			Assert.AreEqual(1, testResults.Count);
+			testResults.Clear();
 
 			Assert.AreEqual(0, testResults.Count);
-
 		}
 
 		[Test]
@@ -208,7 +225,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -221,7 +238,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -234,7 +251,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"Some Unknown Device\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -247,7 +264,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"		</Monitor>" +
 				"	</Agent>";
 
@@ -259,7 +276,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"bad filter string\"/>" +
 				"		</Monitor>" +
@@ -273,20 +290,22 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon0\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon0\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"ip src 255.255.255.255\"/>" +
 				"		</Monitor>" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon1\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon1\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
-				"			<Param name=\"Filter\" value=\"udp port 8888\"/>" +
+				"			<Param name=\"Filter\" value=\"udp port {2}\"/>" +
 				"		</Monitor>" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon2\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon2\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
-				"			<Param name=\"Filter\" value=\"udp port 9999\"/>" +
+				"			<Param name=\"Filter\" value=\"udp port {3}\"/>" +
 				"		</Monitor>" +
 				"		<Monitor class=\"TestMonitor\">" +
 				"			<Param name=\"Address\" value=\"{1}\"/>" +
+				"			<Param name=\"Port1\" value=\"{2}\"/>" +
+				"			<Param name=\"Port2\" value=\"{3}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
 

@@ -61,19 +61,12 @@ namespace Peach.Core.Mutators
                 minValue = 0;
                 maxValue = UInt32.MaxValue;
             }
-            else if (obj is Number)
+            else if (obj is Number || obj is Flag)
             {
                 signed = ((Number)obj).Signed;
                 size = (int)((Number)obj).lengthAsBits;
                 minValue = ((Number)obj).MinValue;
                 maxValue = ((Number)obj).MaxValue;
-            }
-            else if (obj is Flag)
-            {
-                signed = false;
-                size = ((Flag)obj).size;
-                minValue = 0;
-                maxValue = UInt32.MaxValue;
             }
         }
 
@@ -91,9 +84,9 @@ namespace Peach.Core.Mutators
                     {
                         n = Int32.Parse(h.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
                     }
                 }
             }
@@ -125,7 +118,7 @@ namespace Peach.Core.Mutators
                     return true;
 
             if (obj is Flag && obj.isMutable)
-                if (((Flag)obj).size > 8)
+                if (((Flag)obj).lengthAsBits > 8)
                     return true;
 
             if (obj is Dom.String && obj.isMutable)

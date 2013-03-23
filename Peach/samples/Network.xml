@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach ../peach.xsd">
 
 	<!--
 		
@@ -42,7 +42,7 @@
 	</StateModel>
 
 	<!-- Agents that run localy will be started automatically by Peach -->
-	<Agent name="RemoteAgent" location="tcp://192.168.1.190">
+	<Agent name="RemoteAgent" location="tcp://192.168.1.190:9000">
 		<Monitor name="Debugger" class="WindowsDebugger">
 			<Param name="CommandLine" value="CrashableServer.exe 192.168.1.190 4242"/>
 		</Monitor>

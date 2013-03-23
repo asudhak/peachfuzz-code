@@ -52,35 +52,34 @@ namespace Peach
 	/// </summary>
 	public class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			Peach.Core.AssertWriter.Register();
 
-			new Program(args);
+			return new Program(args).exitCode;
 		}
 
-		static ConsoleColor DefaultForground = ConsoleColor.DarkRed;
-		static ConsoleColor DefaultBackground = ConsoleColor.DarkRed;
+		static ConsoleColor DefaultForground = Console.ForegroundColor;
 
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Dom dom;
 
+		public int exitCode = 1;
+
 		public Program(string[] args)
 		{
+			RunConfiguration config = new RunConfiguration();
+			config.shouldStop = delegate() { return stopCount > 0; };
+			config.debug = false;
+
 			try
 			{
-				DefaultBackground = Console.BackgroundColor;
-				DefaultForground = Console.ForegroundColor;
-
 				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 
 				string analyzer = null;
-				string parser = null;
-				string strategy = null;
-				string parallel = null;
 				bool test = false;
 				string agent = null;
-				string definedValuesFile = null;
+				var definedValues = new List<string>();
 				bool parseOnly = false;
 
 				var color = Console.ForegroundColor;
@@ -88,7 +87,7 @@ namespace Peach
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
-				Console.WriteLine("Peach v3.0 DEV");
+				Console.WriteLine("Peach v3.0");
 				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -113,15 +112,10 @@ namespace Peach
 				if (args.Length == 0)
 					syntax();
 
-				RunConfiguration config = new RunConfiguration();
-				config.debug = false;
-
 				var p = new OptionSet()
 				{
 					{ "h|?|help", v => syntax() },
 					{ "analyzer=", v => analyzer = v },
-					{ "parser=", v => parser = v },
-					{ "strategy=", v => strategy = v},
 					{ "debug", v => config.debug = true },
 					{ "1", v => config.singleIteration = true},
 					{ "range=", v => ParseRange(config, v)},
@@ -129,14 +123,15 @@ namespace Peach
 					{ "c|count", v => config.countOnly = true},
 					{ "skipto=", v => config.skipToIteration = Convert.ToUInt32(v)},
 					{ "seed=", v => config.randomSeed = Convert.ToUInt32(v)},
-					{ "p|parallel=", v => parallel = v},
+					{ "p|parallel=", v => ParseParallel(config, v)},
 					{ "a|agent=", v => agent = v},
 					{ "D|define=", v => AddNewDefine(v) },
-					{ "definedvalues=", v => definedValuesFile = v },
+					{ "definedvalues=", v => definedValues.Add(v) },
 					{ "parseonly", v => parseOnly = true },
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
 					{ "showdevices", var => ShowDevices() },
+					{ "showenv", var => ShowEnvironment() },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -144,91 +139,17 @@ namespace Peach
 				if (extra.Count == 0 && agent == null && analyzer == null)
 					syntax();
 
-				// Check OS and load side assembly
-				string osAssembly = null;
-				try
+				Platform.LoadAssembly();
+
+				foreach (var definedValuesFile in definedValues)
 				{
-					switch (Platform.GetOS())
+					var defs = PitParser.parseDefines(definedValuesFile);
+
+					foreach (var kv in defs)
 					{
-						case Platform.OS.Mac:
-							osAssembly = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-								"Peach.Core.OS.OSX.dll");
-							Assembly.LoadFrom(osAssembly);
-							break;
-						case Platform.OS.Linux:
-							osAssembly = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-								"Peach.Core.OS.Linux.dll");
-							Assembly.LoadFrom(osAssembly);
-							break;
-						case Platform.OS.Windows:
-							osAssembly = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-								"Peach.Core.OS.Windows.dll");
-							Assembly.LoadFrom(osAssembly);
-							break;
-					}
-				}
-				catch (Exception ex)
-				{
-					throw new PeachException(ex.Message);
-				}
-
-				if (definedValuesFile != null)
-				{
-					if (!File.Exists(definedValuesFile))
-						throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
-
-					XmlDocument xmlDoc = new XmlDocument();
-					xmlDoc.Load(definedValuesFile);
-
-					var root = xmlDoc.FirstChild;
-					if (root.Name != "PitDefines")
-					{
-						root = xmlDoc.FirstChild.NextSibling;
-						if (root.Name != "PitDefines")
-							throw new PeachException("Error, definition file root element must be PitDefines.");
-					}
-
-					foreach (XmlNode node in root.ChildNodes)
-					{
-						if (hasXmlAttribute(node, "platform"))
-						{
-							switch (getXmlAttribute(node, "platform").ToLower())
-							{
-								case "osx":
-									if (Platform.GetOS() != Platform.OS.Mac)
-										continue;
-									break;
-								case "linux":
-									if (Platform.GetOS() != Platform.OS.Linux)
-										continue;
-									break;
-								case "windows":
-									if (Platform.GetOS() != Platform.OS.Windows)
-										continue;
-									break;
-								default:
-									throw new PeachException("Error, unknown platform name \""+ getXmlAttribute(node, "platform") + "\" in definition file.");
-							}
-						}
-
-						foreach (XmlNode defNode in node.ChildNodes)
-						{
-							if (defNode is XmlComment)
-								continue;
-
-							if (!hasXmlAttribute(defNode, "key") || !hasXmlAttribute(defNode, "value"))
-								throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
-
-							// Allow command line to override values in XML file.
-							if (!DefinedValues.ContainsKey(getXmlAttribute(defNode, "key")))
-							{
-								DefinedValues[getXmlAttribute(defNode, "key")] =
-									getXmlAttribute(defNode, "value");
-							}
-						}
+						// Allow command line to override values in XML file.
+						if (!DefinedValues.ContainsKey(kv.Key))
+							DefinedValues.Add(kv.Key, kv.Value);
 					}
 				}
 
@@ -290,17 +211,22 @@ namespace Peach
 					return;
 				}
 
+				Dictionary<string, object> parserArgs = new Dictionary<string, object>();
+				parserArgs[PitParser.DEFINED_VALUES] = this.DefinedValues;
+
 				if (test)
 				{
 					ConsoleWatcher.WriteInfoMark();
-					Console.Write("Validating file [" + extra[0] + "]...");
-					Analyzer.defaultParser.asParserValidation(null, extra[0]);
-					Console.WriteLine("No Errors Found.");
+					Console.Write("Validating file [" + extra[0] + "]... ");
+					Analyzer.defaultParser.asParserValidation(parserArgs, extra[0]);
+
+					if (Type.GetType("Mono.Runtime") != null)
+						Console.WriteLine("File parsed successfully, but XSD validation is not supported on the Mono runtime.");
+					else
+						Console.WriteLine("No Errors Found.");
+
 					return;
 				}
-
-				Dictionary<string, object> parserArgs = new Dictionary<string, object>();
-				parserArgs[PitParser.DEFINED_VALUES] = this.DefinedValues;
 
 				Engine e = new Engine(new ConsoleWatcher());
 				dom = Analyzer.defaultParser.asParser(parserArgs, extra[0]);
@@ -309,13 +235,6 @@ namespace Peach
 				// Used for unittests
 				if (parseOnly)
 					return;
-
-				// The core uses 0 based iterations, users expect 1 based iterations
-				if (config.skipToIteration > 0)
-					--config.skipToIteration;
-
-				if (config.rangeStart > 0)
-					--config.rangeStart;
 
 				foreach (string arg in args)
 					config.commandLine += arg + " ";
@@ -329,6 +248,8 @@ namespace Peach
 				}
 				else
 					e.startFuzzing(dom, config);
+
+				exitCode = 0;
 			}
 			catch (SyntaxException)
 			{
@@ -336,7 +257,10 @@ namespace Peach
 			}
 			catch (PeachException ee)
 			{
-				Console.WriteLine(ee.Message + "\n");
+				if (config.debug)
+					Console.WriteLine(ee);
+				else
+					Console.WriteLine(ee.Message + "\n");
 			}
 			finally
 			{
@@ -345,7 +269,6 @@ namespace Peach
 
 				// Reset console colors
 				Console.ForegroundColor = DefaultForground;
-				Console.BackgroundColor = DefaultBackground;
 			}
 		}
 
@@ -359,35 +282,70 @@ namespace Peach
 			{
 				config.rangeStart = Convert.ToUInt32(parts[0]);
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Invalid range start iteration: " + parts[0]);
+				throw new PeachException("Invalid range start iteration: " + parts[0], ex);
 			}
 
 			try
 			{
 				config.rangeStop = Convert.ToUInt32(parts[1]);
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Invalid range stop iteration: " + parts[1]);
+				throw new PeachException("Invalid range stop iteration: " + parts[1], ex);
 			}
+
+			if (config.parallel)
+				throw new PeachException("--range is not supported when --parallel is specified");
 
 			config.range = true;
 		}
 
-		void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+		private void ParseParallel(RunConfiguration config, string v)
 		{
-			// Reset console colors
-			Console.Write("\n");
-			Console.ForegroundColor = DefaultForground;
-			Console.BackgroundColor = DefaultBackground;
+			string[] parts = v.Split(',');
+			if (parts.Length != 2)
+				throw new PeachException("Invalid parallel value: " + v);
 
+			try
+			{
+				config.parallelTotal = Convert.ToUInt32(parts[0]);
+
+				if (config.parallelTotal == 0)
+					throw new ArgumentOutOfRangeException();
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Invalid parallel machine total: " + parts[0], ex);
+			}
+
+			try
+			{
+				config.parallelNum = Convert.ToUInt32(parts[1]);
+				if (config.parallelNum == 0 || config.parallelNum > config.parallelTotal)
+					throw new ArgumentOutOfRangeException();
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Invalid parallel machine number: " + parts[1], ex);
+			}
+
+			if (config.range)
+				throw new PeachException("--parallel is not supported when --range is specified");
+
+			config.parallel = true;
+		}
+
+		private static int stopCount = 0;
+		
+		private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+		{
+			Console.WriteLine();
 			Console.WriteLine(" --- Ctrl+C Detected --- ");
 
-			Console.ForegroundColor = DefaultForground;
-			Console.BackgroundColor = DefaultBackground;
-			Console.SetOut(new System.IO.StringWriter());
+			if (++stopCount == 1)
+				e.Cancel = true;
 		}
 
 		public void AddNewDefine(string value)
@@ -399,73 +357,12 @@ namespace Peach
 			DefinedValues[kv[0]] = kv[1];
 		}
 
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns innerText or null.</returns>
-		public string getXmlAttribute(XmlNode node, string name)
-		{
-			System.Xml.XmlAttribute attr = node.Attributes.GetNamedItem(name) as System.Xml.XmlAttribute;
-			if (attr != null)
-			{
-				return attr.InnerText;
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Get attribute from XmlNode object.
-		/// </summary>
-		/// <param name="node">XmlNode to get attribute from</param>
-		/// <param name="name">Name of attribute</param>
-		/// <param name="defaultValue">Default value if attribute is missing</param>
-		/// <returns>Returns true/false or default value</returns>
-		public bool getXmlAttributeAsBool(XmlNode node, string name, bool defaultValue)
-		{
-			string value = getXmlAttribute(node, name);
-			if (value == null)
-				return defaultValue;
-
-			switch (value.ToLower())
-			{
-				case "1":
-				case "true":
-					return true;
-				case "0":
-				case "false":
-					return false;
-				default:
-					throw new PeachException("Error, " + name + " has unknown value, should be boolean.");
-			}
-		}
-
-		/// <summary>
-		/// Check to see if XmlNode has specific attribute.
-		/// </summary>
-		/// <param name="node">XmlNode to check</param>
-		/// <param name="name">Name of attribute</param>
-		/// <returns>Returns boolean true or false.</returns>
-		public bool hasXmlAttribute(XmlNode node, string name)
-		{
-			if (node.Attributes == null)
-				return false;
-
-			object o = node.Attributes.GetNamedItem(name);
-			return o != null;
-		}
-
 		public void syntax()
 		{
 			string syntax = @"This is the Peach Runtime.  The Peach Runtime is one of the many ways
 to use Peach XML files.  Currently this runtime is still in development
 but already exposes several abilities to the end-user such as performing
-simple fuzzer runs, converting WireShark captures into Peach XML and
-performing parsing tests of Peach XML files.
+simple fuzzer runs and performing parsing tests of Peach XML files.
 
 Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
 
@@ -473,7 +370,6 @@ Syntax:
 
   peach -a channel
   peach -c peach_xml_file [test_name]
-  peach -g
   peach [--skipto #] peach_xml_flie [test_name]
   peach -p 10,2 [--skipto #] peach_xml_file [test_name]
   peach --range 100,200 peach_xml_file [test_name]
@@ -482,12 +378,18 @@ Syntax:
   -1                         Perform a single iteration
   -a,--agent                 Launch Peach Agent
   -c,--count                 Count test cases
-  -t,--test xml_file         Test parse a Peach XML file
+  -t,--test xml_file         Validate a Peach XML file
   -p,--parallel M,N          Parallel fuzzing.  Total of M machines, this
                              is machine N.
   --debug                    Enable debug messages. Usefull when debugging
                              your Peach XML file.  Warning: Messages are very
                              cryptic sometimes.
+  --seed N                   Sets the seed used by the random number generator
+  --parseonly                Test parse a Peach XML file
+  --showenv                  Print a list of all DataElements, Fixups, Monitors
+                             Publishers and their associated parameters.
+  --showdevices              Display the list of PCAP devices
+  --analyzer                 Launch Peach Analyzer
   --skipto N                 Skip to a specific test #.  This replaced -r
                              for restarting a Peach run.
   --range N,M                Provide a range of test #'s to be run.
@@ -498,7 +400,7 @@ Syntax:
 
 Peach Agent
 
-  Syntax: peach.py -a channel
+  Syntax: peach -a channel
   
   Starts up a Peach Agent instance on this current machine.  User must provide
   a channel/protocol name (e.g. tcp).
@@ -531,7 +433,7 @@ Performing A Parellel Fuzzing Run
 
 Validate Peach XML File
 
-  Syntax: peach.py -t peach_xml_file
+  Syntax: peach -t peach_xml_file
   
   This will perform a parsing pass of the Peach XML file and display any
   errors that are found.
@@ -619,6 +521,13 @@ Debug Peach XML File
 				Console.WriteLine("Name: {0}\nDescription: {1}\n\n", dev.Name, dev.Description);
 				i++;
 			}
+
+			throw new SyntaxException();
+		}
+
+		public void ShowEnvironment()
+		{
+			Peach.Core.Usage.Print();
 
 			throw new SyntaxException();
 		}

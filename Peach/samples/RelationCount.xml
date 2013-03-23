@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Peach xmlns="http://phed.org/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://phed.org/2012/Peach ../peach.xsd">
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach ../peach.xsd">
 
 	<!--
 
@@ -23,7 +23,7 @@
 			<Relation type="count" of="HelloWorld" />
 		</String>
 		<String value="\n" />
-		<String name="HelloWorld" minOccurs="5" maxOccurs="10" isStatic="true" value="Hello World! " />
+		<String name="HelloWorld" minOccurs="5" maxOccurs="10" value="Hello World! " />
 
 	</DataModel>
 

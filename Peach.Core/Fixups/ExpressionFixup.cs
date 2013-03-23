@@ -34,10 +34,11 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("ExpressionFixup", "XOR bytes of data.", true)]
-	[FixupAttribute("checksums.ExpressionFixup", "XOR bytes of data.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
-	[ParameterAttribute("expression", typeof(string), "Expression returning string or int", true)]
+	[Description("XOR bytes of data.")]
+	[Fixup("ExpressionFixup", true)]
+	[Fixup("checksums.ExpressionFixup")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
+	[Parameter("expression", typeof(string), "Expression returning string or int")]
 	[Serializable]
 	public class ExpressionFixup : Fixup
 	{
@@ -84,7 +85,7 @@ namespace Peach.Core.Fixups
 			catch (System.Exception ex)
 			{
 				throw new PeachException(
-					string.Format("ExpressionFixup expression threw an exception!\nExpression: {0}\n Exception: {1}", expression, ex.ToString()));
+					string.Format("ExpressionFixup expression threw an exception!\nExpression: {0}\n Exception: {1}", expression, ex.ToString()), ex);
 			}
 		}
 	}

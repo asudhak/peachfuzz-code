@@ -76,10 +76,11 @@ namespace Peach.Core.Dom
 	/// calling a method, etc.
 	/// </summary>
 	[Serializable]
-	public class Action : INamed, IPitSerializable
+	public class Action : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public string _name = "Unknown Action";
+		static int nameNum = 0;
+		public string _name = "Unknown Action " + (++nameNum);
 		public ActionType type = ActionType.Unknown;
 
 		public State parent = null;
@@ -139,12 +140,12 @@ namespace Peach.Core.Dom
 				//}
 				//else
 				//{
-					_dataModel = value;
-					if (_dataModel != null)
-					{
-						_dataModel.action = this;
-						_dataModel.dom = null;
-					}
+				_dataModel = value;
+				if (_dataModel != null)
+				{
+					_dataModel.action = this;
+					_dataModel.dom = null;
+				}
 				//}
 			}
 		}
@@ -160,9 +161,25 @@ namespace Peach.Core.Dom
 				_origionalDataModel = value;
 
 				// Optimize output by pre-generating value
-				object tmp = _origionalDataModel.Value;
+				var tmp = _origionalDataModel.Value;
+				System.Diagnostics.Debug.Assert(tmp != null);
 			}
 		}
+
+		/// <summary>
+		/// Action was started
+		/// </summary>
+		public bool started { get; set; }
+
+		/// <summary>
+		/// Action finished
+		/// </summary>
+		public bool finished { get; set; }
+
+		/// <summary>
+		/// Action errored
+		/// </summary>
+		public bool error { get; set; }
 
 		//public string value
 		//{
@@ -279,7 +296,7 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnStarting()
 		{
-			if(!string.IsNullOrEmpty(onStart))
+			if (!string.IsNullOrEmpty(onStart))
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["action"] = this;
@@ -363,6 +380,8 @@ namespace Peach.Core.Dom
 			if (when != null)
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
+				state["context"] = context;
+				state["Context"] = context;
 				state["action"] = this;
 				state["Action"] = this;
 				state["state"] = this.parent;
@@ -393,7 +412,7 @@ namespace Peach.Core.Dom
 					if (!context.test.publishers.ContainsKey(this.publisher))
 					{
 						logger.Debug("Run: Publisher '" + this.publisher + "' not found!");
-						throw new PeachException("Error, Action '"+name+"' publisher value '" + this.publisher + "' was not found!");
+						throw new PeachException("Error, Action '" + name + "' publisher value '" + this.publisher + "' was not found!");
 					}
 
 					publisher = context.test.publishers[this.publisher];
@@ -404,107 +423,103 @@ namespace Peach.Core.Dom
 				}
 
 				if (context.controlIteration && context.controlRecordingIteration)
+				{
+					logger.Debug("Run: Adding action to controlRecordingActionsExecuted");
 					context.controlRecordingActionsExecuted.Add(this);
-				else if(context.controlIteration)
+				}
+				else if (context.controlIteration)
+				{
+					logger.Debug("Run: Adding action to controlActionsExecuted");
 					context.controlActionsExecuted.Add(this);
+				}
+
+				started = true;
+				finished = false;
+				error = false;
 
 				OnStarting();
+
+				logger.Debug("ActionType.{0}", type.ToString());
 
 				switch (type)
 				{
 					case ActionType.Start:
-						publisher.start(this);
+						publisher.start();
 						break;
+
 					case ActionType.Stop:
-						publisher.stop(this);
+						publisher.stop();
 						break;
+
 					case ActionType.Open:
 					case ActionType.Connect:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
-						publisher.open(this);
+						publisher.start();
+						publisher.open();
 						break;
+
 					case ActionType.Close:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
-						publisher.close(this);
+						publisher.start();
+						publisher.close();
 						break;
 
 					case ActionType.Accept:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
-
-						publisher.accept(this);
+						publisher.start();
+						publisher.open();
+						publisher.accept();
 						break;
 
 					case ActionType.Input:
-						logger.Debug("ActionType.Input");
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
-
-						publisher.input(this);
+						publisher.start();
+						publisher.open();
+						publisher.input();
 						handleInput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
+
 					case ActionType.Output:
-						logger.Debug("ActionType.Output");
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-						if (!publisher.IsOpen)
-							publisher.open(this);
-
-						publisher.output(this, dataModel.Value.Stream);
+						publisher.start();
+						publisher.open();
+						handleOutput(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.Call:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
+						publisher.start();
 						handleCall(publisher, context);
 						parent.parent.dataActions.Add(this);
 						break;
+
 					case ActionType.GetProperty:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
+						publisher.start();
 						handleGetProperty(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
+
 					case ActionType.SetProperty:
-
-						if (!publisher.HasStarted)
-							publisher.start(this);
-
+						publisher.start();
 						handleSetProperty(publisher);
 						parent.parent.dataActions.Add(this);
 						break;
 
 					case ActionType.ChangeState:
-						logger.Debug("ActionType.ChangeState");
 						handleChangeState();
 						break;
+
 					case ActionType.Slurp:
-						logger.Debug("ActionType.Slurp");
 						handleSlurp(context);
 						break;
 
 					default:
 						throw new ApplicationException("Error, Action.Run fell into unknown Action type handler!");
 				}
+
+				finished = true;
+			}
+			catch
+			{
+				error = true;
+				finished = true;
+				throw;
 			}
 			finally
 			{
@@ -519,10 +534,27 @@ namespace Peach.Core.Dom
 				DataCracker cracker = new DataCracker();
 				cracker.CrackData(dataModel, new IO.BitStream(publisher));
 			}
-			catch (CrackingFailure)
+			catch (CrackingFailure ex)
 			{
-				throw new SoftException();
+				throw new SoftException(ex);
 			}
+		}
+
+		protected void handleOutput(Publisher publisher)
+		{
+			Stream strm = dataModel.Value.Stream;
+			strm.Seek(0, SeekOrigin.Begin);
+
+			MemoryStream ms = strm as MemoryStream;
+			if (ms == null)
+			{
+				ms = new MemoryStream();
+				strm.CopyTo(ms);
+				ms.Seek(0, SeekOrigin.Begin);
+				strm.Seek(0, SeekOrigin.Begin);
+			}
+
+			publisher.output(ms.GetBuffer(), (int)ms.Position, (int)ms.Length);
 		}
 
 		protected void handleCall(Publisher publisher, RunContext context)
@@ -551,18 +583,18 @@ namespace Peach.Core.Dom
 				return;
 			}
 
-			publisher.call(this, method, parameters);
+			publisher.call(method, parameters);
 		}
 
 		protected void handleGetProperty(Publisher publisher)
 		{
-			Variant result = publisher.getProperty(this, property);
+			Variant result = publisher.getProperty(property);
 			this.dataModel.DefaultValue = result;
 		}
 
 		protected void handleSetProperty(Publisher publisher)
 		{
-			publisher.setProperty(this, property, this.dataModel.InternalValue);
+			publisher.setProperty(property, this.dataModel.InternalValue);
 		}
 
 		protected void handleChangeState()
@@ -608,54 +640,7 @@ namespace Peach.Core.Dom
 			}
 			while (iter.MoveNext());
 		}
-
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "Action", null);
-
-      node.AppendAttribute("name", this.name);
-      node.AppendAttribute("ref", this.reference);
-      node.AppendAttribute("method", this.method);
-      node.AppendAttribute("property", this.property);
-      node.AppendAttribute("setXpath", this.setXpath);
-      node.AppendAttribute("valueXpath", this.valueXpath);
-      node.AppendAttribute("type", this.type.ToString());
-      node.AppendAttribute("when", this.when);
-      node.AppendAttribute("publisher", this.publisher);
-      node.AppendAttribute("onStart", this.onStart);
-      node.AppendAttribute("onComplete", this.onComplete);
-
-      XmlSerializer xs;
-
-      if (this.dataModel != null)
-      {
-        XmlNode eDataModel = doc.CreateElement("DataModel");
-        eDataModel.AppendAttribute("ref", this.dataModel.name);
-        node.AppendChild(eDataModel);
-      }
-      
-      if (this.dataSet != null)
-      {
-        StringBuilder sb = new StringBuilder();
-        StringWriter writer = new StringWriter(sb);
-        xs = new XmlSerializer(typeof(DataSet));
-        xs.Serialize(writer, this.dataSet);
-
-        node.InnerXml = sb.ToString();
-      }
-      
-      if (this.parameters != null)
-      {
-        foreach (ActionParameter ap in this.parameters)
-        {
-          node.AppendChild(ap.pitSerialize(doc, node));
-        }
-      }
-      
-
-      return node;
-    }
-  }
+	}
 
 	public enum ActionParameterType
 	{
@@ -664,8 +649,10 @@ namespace Peach.Core.Dom
 		InOut
 	}
 
-	public class ActionParameter : IPitSerializable
+	[Serializable]
+	public class ActionParameter
 	{
+		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
 
@@ -686,18 +673,15 @@ namespace Peach.Core.Dom
 				_dataModel = value;
 
 				if (_origionalDataModel == null)
-					_origionalDataModel =_dataModel.Clone() as DataModel;
+					_origionalDataModel = _dataModel.Clone() as DataModel;
 			}
 		}
+	}
 
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      throw new NotImplementedException();
-    }
-  }
-
+	[Serializable]
 	public class ActionResult
 	{
+		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
 
@@ -720,6 +704,7 @@ namespace Peach.Core.Dom
 		}
 	}
 
+	[Serializable]
 	public class ActionChangeStateException : Exception
 	{
 		public State changeToState;

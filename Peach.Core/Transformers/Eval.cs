@@ -36,33 +36,35 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers
 {
-    [TransformerAttribute("Eval", "Evaluate a statement.", true)]
-    [TransformerAttribute("misc.Eval", "Evaluate a statement.")]
-    [Parameter("eval", typeof(string), "Formatter for data.", true)]
-    [Serializable]
-    public class Eval : Transformer
-    {
-        Dictionary<string, Variant> m_args;
+	[Description("Evaluate a statement.")]
+	[Transformer("Eval", true)]
+	[Transformer("misc.Eval")]
+	[Parameter("eval", typeof(string), "Formatter for data.")]
+	[Serializable]
+	public class Eval : Transformer
+	{
+		//Dictionary<string, Variant> m_args;
 
-        public Eval(Dictionary<string,Variant> args) : base(args)
+		public Eval(Dictionary<string, Variant> args)
+			: base(args)
 		{
-            m_args = args;
+			//m_args = args;
 		}
 
 		protected override BitStream internalEncode(BitStream data)
 		{
-            string format;
-            if (m_args.ContainsKey("eval"))
-                format = (string)(m_args["eval"]);
+			//string format;
+			//if (m_args.ContainsKey("eval"))
+			//    format = (string)(m_args["eval"]);
 
-            return new BitStream(data.Value);
+			return new BitStream(data.Value);
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-            throw new NotImplementedException();
+			throw new NotImplementedException();
 		}
-    }
+	}
 }
 
 // end

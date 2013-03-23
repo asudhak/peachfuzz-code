@@ -220,7 +220,6 @@ namespace Peach.Core.Analysis
 		/// <returns>True on success, false if a failure occured.</returns>
 		public bool RunSingleTrace(Coverage cov, string traceFile, string executable, string arguments, List<ulong> basicBlocks, bool needsKilling = false)
 		{
-			string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, basicBlocks);
 
 			// Delete existing trace file

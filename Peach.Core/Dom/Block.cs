@@ -49,8 +49,16 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Block")]
 	[PitParsable("Block")]
-	[DataElementChildSupportedAttribute(DataElementTypes.Any)]
-	[ParameterAttribute("name", typeof(string), "", true)]
+	[DataElementChildSupported(DataElementTypes.Any)]
+	[Parameter("name", typeof(string), "Element name", "")]
+	[Parameter("ref", typeof(string), "Element to reference", "")]
+	[Parameter("length", typeof(uint?), "Length in data element", "")]
+	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
+	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
+	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]
+	[Parameter("occurs", typeof(int), "Actual occurances", "1")]
 	[Serializable]
 	public class Block : DataElementContainer
 	{
@@ -69,15 +77,17 @@ namespace Peach.Core.Dom
 				return null;
 
 			Block block = null;
-			string refName = node.getAttribute("ref");
 
-			if (refName != null)
+			if (node.hasAttr("ref"))
 			{
-				Block refObj = Analyzers.PitParser.getReference(context._dom, refName, parent) as Block;
+				string refName = node.getAttrString("ref");
+				Block refObj = context.getReference(refName, parent) as Block;
 				if (refObj == null)
 					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
-				string name = node.getAttribute("name");
+				string name = null;
+				if (node.hasAttr("name"))
+					name = node.getAttrString("name");
 				if (string.IsNullOrEmpty(name))
 					name = new Block().name;
 
@@ -154,17 +164,6 @@ namespace Peach.Core.Dom
 				value = _fixup.fixup(this);
 
 			return value;
-		}
-
-		public override object GetParameter(string parameterName)
-		{
-			switch (parameterName)
-			{
-				case "name":
-					return this.name;
-				default:
-					throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Block", parameterName));
-			}
 		}
 	}
 }

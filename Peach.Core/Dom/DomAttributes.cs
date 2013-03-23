@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core;
+using System.Xml.Serialization;
 
 namespace Peach.Core.Dom
 {
@@ -59,9 +60,14 @@ namespace Peach.Core.Dom
 
 	public enum DataElementRelations
 	{
+    [System.ComponentModel.Browsable(false)]
+    [XmlIgnore]
 		Any,
+    [XmlEnum("size")]
 		Size,
+    [XmlEnum("count")]
 		Count,
+    [XmlEnum("offset")]
 		Offset
 	}
 
@@ -82,14 +88,5 @@ namespace Peach.Core.Dom
 		public DataElementRelationSupportedAttribute(DataElementRelations type)
 		{
 		}
-	}
-
-	[DataElement("String")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-	[ParameterAttribute("length", typeof(uint), "Length of string in characters", false)]
-	[ParameterAttribute("type", typeof(string), "Type of string (char, wchar, utf8)", false)]
-	[ParameterAttribute("nullTerminated", typeof(bool), "Is string null terminated (default: false)", false)]
-	public class DomString
-	{
 	}
 }

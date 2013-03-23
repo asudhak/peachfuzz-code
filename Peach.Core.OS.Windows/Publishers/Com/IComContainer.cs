@@ -39,8 +39,7 @@ namespace Peach.Core.Publishers.Com
 		/// Initialize COM control
 		/// </summary>
 		/// <param name="control">Control name or CLSID</param>
-		/// <returns>Returns true on success of false on failure.</returns>
-		bool Intialize(string control);
+		void Intialize(string control);
 
 		/// <summary>
 		/// Shutdown ComCOntainer process.

@@ -5,8 +5,10 @@ using System.Text;
 
 namespace Peach.Core
 {
+	[Serializable]
 	public class Random
 	{
+		[NonSerialized]
 		TinyMT32 _prng;
 		protected uint _seed;
 
@@ -149,7 +151,6 @@ namespace Peach.Core
 		/// <returns></returns>
 		public T[] Shuffle<T>(T[] items)
 		{
-			T[] ret = items;
 			T temp;
 			int n = items.Length;
 			int k = 0;

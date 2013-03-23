@@ -42,10 +42,11 @@ namespace Peach.Core.Dom
 	public delegate void StateFinishedEventHandler(State state);
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
-	public class State : INamed, IPitSerializable
+	[Serializable]
+	public class State : INamed
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public string _name = "Unknown State";
+		static int nameNum = 0;
+		public string _name = "Unknown State " + (++nameNum);
 		public List<Action> actions = new List<Action>();
 
 		public StateModel parent = null;
@@ -69,6 +70,19 @@ namespace Peach.Core.Dom
 			set { _name = value; }
 		}
 
+		/// <summary>
+		/// Has the state started?
+		/// </summary>
+		public bool started { get; set; }
+		/// <summary>
+		/// Has the start completed?
+		/// </summary>
+		public bool finished { get; set; }
+		/// <summary>
+		/// Has an error occured?
+		/// </summary>
+		public bool error { get; set; }
+
 		protected virtual void OnStarting()
 		{
 			if (Starting != null)
@@ -81,7 +95,7 @@ namespace Peach.Core.Dom
 				Finished(this);
 		}
 
-		protected virtual void OnChanging(State toState)
+		public virtual void OnChanging(State toState)
 		{
 			if (ChangingState != null)
 				ChangingState(this, toState);
@@ -93,20 +107,25 @@ namespace Peach.Core.Dom
 			{
 				if (context.controlIteration && context.controlRecordingIteration)
 					context.controlRecordingStatesExecuted.Add(this);
-				else if(context.controlIteration)
+				else if (context.controlIteration)
 					context.controlStatesExecuted.Add(this);
+
+				started = true;
+				finished = false;
+				error = false;
 
 				OnStarting();
 
 				foreach (Action action in actions)
-				{
 					action.Run(context);
-				}
+
+				finished = true;
 			}
-			catch (ActionChangeStateException e)
+			catch
 			{
-				OnChanging(e.changeToState);
-				throw e;
+				error = true;
+				finished = true;
+				throw;
 			}
 			finally
 			{
@@ -126,21 +145,6 @@ namespace Peach.Core.Dom
 
 				return null;
 			}
-		}
-
-		public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-		{
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "State", null);
-
-			node.AppendAttribute("name", this.name);
-
-			foreach (Action action in actions)
-			{
-				node.AppendChild(action.pitSerialize(doc, node));
-			}
-
-
-			return node;
 		}
 	}
 }

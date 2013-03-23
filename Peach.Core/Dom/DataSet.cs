@@ -41,7 +41,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class DataSet : INamed
 	{
-		string _name = null;
+		static int nameNum = 0;
+		string _name = "Unknown DataSet " + (++nameNum);
 
 		/// <summary>
 		/// Collection of Data objects

@@ -34,14 +34,15 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [TransformerAttribute("Utf8", "Encode on output a string as UTF-8.", true)]
-    [TransformerAttribute("encode.Utf8", "Encode on output a string as UTF-8.")]
+    [Description("Encode on output a string as UTF-8.")]
+    [Transformer("Utf8", true)]
+    [Transformer("encode.Utf8")]
     [Serializable]
     public class Utf8 : Transformer
     {
         public Utf8(Dictionary<string,Variant>  args) : base(args)
-		{
-		}
+        {
+        }
 
         protected override BitStream internalEncode(BitStream data)
         {

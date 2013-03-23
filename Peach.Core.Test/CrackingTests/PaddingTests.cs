@@ -44,51 +44,94 @@ namespace Peach.Core.Test.CrackingTests
 	[TestFixture]
 	public class PaddingTests
 	{
-		static string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+		static string template = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 			"	<DataModel name=\"TheDataModel\">" +
-			"		<Blob name=\"blb\" length=\"1\" valueType=\"hex\" value=\"00\" />" +
-			"		<Padding aligned=\"true\" alignment=\"16\" /> " +
+			"		<Block>" +
+			"			<Blob name=\"blb\" length=\"{0}\" valueType=\"hex\" value=\"{1}\" />" +
+			"			<Padding alignment=\"16\" /> " +
+			"		</Block>" +
+			"		<String/>" +
 			"	</DataModel>" +
 			"</Peach>";
 
 		[Test]
 		public void CrackPadding1()
 		{
+			string xml = template.Fmt(1, "00");
+
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
-			data.WriteBytes(new byte[] { 1, 2 });
+			data.WriteBytes(new byte[] { 1, 2, 49, 50, 51});
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(new byte[] { 1 }, (byte[])dom.dataModels[0][0].Value.Value);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(8, ((BitStream)dom.dataModels[0][1].DefaultValue).LengthBits);
-			Assert.AreEqual(8, ((BitStream)dom.dataModels[0][1].Value).LengthBits);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var block = dom.dataModels[0][0] as Block;
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual(new byte[] { 1 }, (byte[])block[0].Value.Value);
+			Assert.AreEqual(new byte[] { 1 }, (byte[])block[0].DefaultValue);
+			Assert.AreEqual(8, ((BitStream)block[1].DefaultValue).LengthBits);
+			Assert.AreEqual(8, ((BitStream)block[1].Value).LengthBits);
+			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
 
 			var value = dom.dataModels[0].Value;
 			value.SeekBytes(0, SeekOrigin.Begin);
-			Assert.AreEqual(2, value.LengthBytes);
+			Assert.AreEqual(5, value.LengthBytes);
 			Assert.AreEqual(1, value.ReadByte());
 			Assert.AreEqual(0, value.ReadByte());
 		}
 
 		[Test]
+		public void CrackPadding2()
+		{
+			string xml = template.Fmt(2, "00 00");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(new byte[] { 1, 2, 49, 50, 51 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var block = dom.dataModels[0][0] as Block;
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual(new byte[] { 1, 2 }, (byte[])block[0].Value.Value);
+			Assert.AreEqual(new byte[] { 1, 2 }, (byte[])block[0].DefaultValue);
+			Assert.AreEqual(0, ((BitStream)block[1].DefaultValue).LengthBits);
+			Assert.AreEqual(0, ((BitStream)block[1].Value).LengthBits);
+			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
+
+			var value = dom.dataModels[0].Value;
+			value.SeekBytes(0, SeekOrigin.Begin);
+			Assert.AreEqual(5, value.LengthBytes);
+			Assert.AreEqual(1, value.ReadByte());
+			Assert.AreEqual(2, value.ReadByte());
+		}
+
+		[Test]
 		public void GeneratePadding()
 		{
+			string xml = template.Fmt(1, "00");
+
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			var data = dom.dataModels[0].Value;
 			Assert.AreEqual(16, data.LengthBits);
 
-			var blob = dom.dataModels[0][0];
+			var block = dom.dataModels[0][0] as Block;
+			var blob = block[0];
 			Assert.AreEqual(8, blob.Value.LengthBits);
 
-			var padding = dom.dataModels[0][1];
+			var padding = block[1];
 			Assert.AreEqual(8, padding.Value.LengthBits);
 		}
 	}

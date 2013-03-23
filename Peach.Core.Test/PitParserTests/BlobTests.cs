@@ -94,6 +94,23 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), (byte[])blob.DefaultValue);
 		}
 
+		[Test]
+		public void BlobTest4()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob length=\"20\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value;
+			Assert.NotNull(val);
+			Assert.AreEqual(20, val.LengthBytes);
+		}
+
 		private void DoHexPad(bool throws, int length, string value)
 		{
 			string attr = value == null ? "" : string.Format("value=\"{0}\"", value);

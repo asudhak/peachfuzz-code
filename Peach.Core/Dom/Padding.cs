@@ -49,17 +49,16 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Padding")]
 	[PitParsable("Padding")]
-	[DataElementChildSupportedAttribute(DataElementTypes.NonDataElements)]
-  [ParameterAttribute("name", typeof(string), "", true)]
-  [ParameterAttribute("aligned", typeof(bool), "Align parent to 8 byte boundry", false)]
-	[ParameterAttribute("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", false)]
-	[ParameterAttribute("alignedTo", typeof(DataElement), "Name of element to base our padding on (default is parent)", false)]
-	[ParameterAttribute("lengthCalc", typeof(string), "Length calculation", false)]
+	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[Parameter("name", typeof(string), "Element name", "")]
+	[Parameter("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", "8")]
+	[Parameter("alignedTo", typeof(DataElement), "Name of element to base our padding on", "")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Serializable]
 	public class Padding : DataElement
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		bool _aligned = false;
 		int _alignment = 8;
 		DataElement _alignedTo = null;
 
@@ -68,66 +67,21 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public Padding()
 		{
-			_defaultValue = new Variant(new byte[] { });
 		}
 
 		/// <summary>
 		/// Create a padding element.
 		/// </summary>
 		/// <param name="name">Name of padding element</param>
-		/// <param name="aligned">Align data to a byte boundry</param>
-		/// <param name="alignment">Byte boundry for alignment (8, 16, etc)</param>
-		/// <param name="alignedTo">Align to another element (default is parent)</param>
-		public Padding(string name, bool aligned = true, int alignment = 8, DataElement alignedTo = null)
+		public Padding(string name)
 			: base(name)
 		{
-			this._aligned = aligned;
-			this._alignment = alignment;
-			this._alignedTo = alignedTo;
-
-			_defaultValue = new Variant(new byte[] { });
 		}
 
-		/// <summary>
-		/// Create a padding element.
-		/// </summary>
-		/// <param name="aligned">Align data to a byte boundry</param>
-		/// <param name="alignment">Byte boundry for alignment (8, 16, etc)</param>
-		/// <param name="alignedTo">Align to another element (default is parent)</param>
-		public Padding(bool aligned = true, int alignment = 8, DataElement alignedTo = null)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			this._aligned = aligned;
-			this._alignment = alignment;
-			this._alignedTo = alignedTo;
-
-			_defaultValue = new Variant(new byte[] { });
-		}
-
-		/// <summary>
-		/// Create a padding element.
-		/// </summary>
-		/// <param name="lengthCalc">Scripting expression that calculates pad amount</param>
-		public Padding(string lengthCalc)
-		{
-			this.lengthCalc = lengthCalc;
-			_defaultValue = new Variant(new byte[] { });
-		}
-
-		public override void Crack(DataCracker context, BitStream data)
-		{
-			Padding element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			// Length in bits
-			long paddingLength = element.Value.LengthBits;
-
-			if ((data.TellBits() + paddingLength) > data.LengthBits)
-				throw new CrackingFailure("Placement '" + element.fullName +
-					"' has length of '" + paddingLength + "' bits but buffer only has '" +
-					(data.LengthBits - data.TellBits()) + "' bits left.", element, data);
-
-			data.SeekBits(paddingLength, System.IO.SeekOrigin.Current);
+			// Consume padding bytes
+			ReadSizedData(data, size);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -137,14 +91,12 @@ namespace Peach.Core.Dom
 
 			var padding = DataElement.Generate<Padding>(node);
 
-			padding.aligned = node.getAttributeBool("aligned", false);
+			if (node.hasAttr("alignment"))
+				padding.alignment = node.getAttrInt("alignment");
 
-			if (node.hasAttribute("alignment"))
-				padding.alignment = int.Parse(node.getAttribute("alignment"));
-
-			string strTo = node.getAttribute("alignedTo");
-			if (strTo != null)
+			if (node.hasAttr("alignedTo"))
 			{
+				string strTo = node.getAttrString("alignedTo");
 				padding.alignedTo = parent.find(strTo);
 				if (padding.alignedTo == null)
 					throw new PeachException("Error, unable to resolve alignedTo '" + strTo + "'.");
@@ -157,19 +109,6 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
-		/// Align data to a specified byte boundry
-		/// </summary>
-		public virtual bool aligned
-		{
-			get { return _aligned; }
-			set
-			{
-				_aligned = value;
-				Invalidate();
-			}
-		}
-
-		/// <summary>
 		/// Byte alignment (8, 16, etc).
 		/// </summary>
 		public virtual int alignment
@@ -179,6 +118,46 @@ namespace Peach.Core.Dom
 			{
 				_alignment = value;
 				Invalidate();
+			}
+		}
+
+		public override bool hasLength
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		public override long length
+		{
+			get
+			{
+				return base.lengthAsBits;
+			}
+			set
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override LengthType lengthType
+		{
+			get
+			{
+				return LengthType.Bits;
+			}
+			set
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		public override long lengthAsBits
+		{
+			get
+			{
+				return this.Value.LengthBits;
 			}
 		}
 
@@ -224,7 +203,7 @@ namespace Peach.Core.Dom
 			get
 			{
 				if (_inDefaultValue)
-					return new Variant(new byte[] { });
+					return new Variant(new byte[0]);
 
 				// Prevent recursion
 				_inDefaultValue = true;
@@ -235,40 +214,21 @@ namespace Peach.Core.Dom
 					if (_alignedTo != null)
 						alignedElement = _alignedTo;
 
-					if (_aligned)
+					long currentLength = alignedElement.CalcLengthBits();
+
+					BitStream data = new BitStream();
+
+					if (currentLength == 0 || currentLength % _alignment != 0)
 					{
-						long currentLength = alignedElement.CalcLengthBits();
-
-						if (currentLength > 0 && currentLength % _alignment == 0)
-							return _defaultValue;
-
-						BitStream data = new BitStream();
 						data.WriteBit(0);
 
 						while (((currentLength + data.LengthBits) % _alignment) != 0)
 							data.WriteBit(0);
-
-						data.SeekBits(0, System.IO.SeekOrigin.Begin);
-
-						return new Variant(data);
 					}
-					else
-					{
-						// Otherwise do some scripting foo!
-						Dictionary<string, object> state = new Dictionary<string, object>();
-						state["alignedTo"] = alignedElement;
-						state["self"] = this._parent;
 
-						object value = Scripting.EvalExpression(_lengthCalc, state);
-						long paddingLength = Convert.ToInt64(value);
+					data.SeekBits(0, System.IO.SeekOrigin.Begin);
 
-						BitStream data = new BitStream();
-						for (long i = 0; i < paddingLength; i++)
-							data.WriteBit(0);
-
-						data.SeekBits(0, System.IO.SeekOrigin.Begin);
-						return new Variant(data);
-					}
+					return new Variant(data);
 				}
 				finally
 				{
@@ -281,26 +241,6 @@ namespace Peach.Core.Dom
 				throw new InvalidOperationException("DefaultValue cannot be set on Padding element!");
 			}
 		}
-
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "aligned":
-          return this.aligned;
-        case "alignment":
-          return this.alignment;
-        case "alignedTo":
-          return this.alignedTo.name;
-        case "lengthCalc":
-          return this.lengthCalc;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Padding", parameterName));
-      }
-    }
 	}
 }
 

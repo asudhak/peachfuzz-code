@@ -63,6 +63,20 @@ namespace Peach.Core
 			}
 		}
 
+		public IEnumerable<DataElement> dependents
+		{
+			get
+			{
+				if (elements != null)
+				{
+					foreach (var kv in elements)
+					{
+						yield return kv.Value;
+					}
+				}
+			}
+		}
+
 		public Fixup(DataElement parent, Dictionary<string, Variant> args, params string[] refs)
 		{
 			this.parent = parent;
@@ -186,7 +200,7 @@ namespace Peach.Core
 
 		private List<FullName> fullNames = null;
 
-		class Metadata : Dictionary<string, DataElement> {}
+		class Metadata : Dictionary<string, string> {}
 
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context)
@@ -198,10 +212,6 @@ namespace Peach.Core
 			System.Diagnostics.Debug.Assert(fullNames == null);
 			fullNames = new List<FullName>();
 
-			// Nothing to do if we haven't resolved any data elements yet
-			if (!resolvedRefs)
-				return;
-
 			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
 			Metadata m = new Metadata();
 
@@ -209,20 +219,37 @@ namespace Peach.Core
 			{
 				string relName;
 				var name = refs[i].Item1;
+				var elemName = (string)args[name];
 				var elem = refs[i].Item2;
 
 				// Fixup references an element that is not a child of ctx.root
-				if (elem != null && elem != ctx.root && !elem.isChildOf(ctx.root, out relName))
+				if (elem == null)
+				{
+					System.Diagnostics.Debug.Assert(!resolvedRefs);
+					elem = parent.find(elemName);
+					if (elem == null)
+					{
+						if (elemName != ctx.oldName)
+							continue;
+
+						elem = ctx.root;
+					}
+				}
+
+				if (ctx.rename.Contains(elem))
+				{
+					m.Add(name, elemName);
+					args[name] = new Variant(ctx.newName);
+				}
+				else if (!elem.isChildOf(ctx.root, out relName))
 				{
 					ctx.elements[relName] = elem;
-					m.Add(name, elem);
 					fullNames.Add(new FullName(name, relName));
 					refs[i] = new Tuple<string, DataElement>(name, null);
 				}
 			}
 
-			if (m.Count > 0)
-				ctx.metadata.Add(this, m);
+			ctx.metadata.Add(this, m);
 		}
 
 		[OnSerialized]
@@ -235,16 +262,18 @@ namespace Peach.Core
 			System.Diagnostics.Debug.Assert(fullNames != null);
 			fullNames = null;
 
-			if (!resolvedRefs)
-				return;
+			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
+			Metadata m = ctx.metadata[this] as Metadata;
 
 			for (int i = 0; i < refs.Count; ++i)
 			{
-				if (refs[i].Item2 == null)
-				{
-					string tgt = refs[i].Item1;
+				string tgt = refs[i].Item1;
+
+				if (m.ContainsKey(tgt))
+					args[tgt] = new Variant(m[tgt]);
+
+				if (refs[i].Item2 == null && resolvedRefs)
 					refs[i] = new Tuple<string, DataElement>(tgt, elements[tgt]);
-				}
 			}
 		}
 
@@ -294,17 +323,12 @@ namespace Peach.Core
 		protected abstract Variant fixupImpl();
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 	public class FixupAttribute : PluginAttribute
 	{
-		public string description;
-		public bool isDefault;
-
-		public FixupAttribute(string name, string description, bool isDefault = false)
-			: base(name)
+		public FixupAttribute(string name, bool isDefault = false)
+			: base(typeof(Fixup), name, isDefault)
 		{
-			this.description = description;
-			this.isDefault = isDefault;
 		}
 	}
 }

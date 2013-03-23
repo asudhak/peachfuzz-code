@@ -23,7 +23,7 @@ namespace Peach.Core.Test.Transformers.Encode
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
                 "           <Transformer class=\"UrlEncode\"/>" +
-                "           <Blob name=\"Data\" value=\"test space\"/>" +
+                "           <Blob name=\"Data\" value=\"base/test space?foo=foo val&amp;bar=bar val\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +
 
@@ -49,12 +49,10 @@ namespace Peach.Core.Test.Transformers.Encode
             config.singleIteration = true;
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: "test space"
-            byte[] precalcResult = new byte[] { 0x74, 0x65, 0x73, 0x74, 0x25, 0x32, 0x30, 0x73, 0x70, 0x61, 0x63, 0x65 };
+            byte[] precalcResult = Encoding.ASCII.GetBytes("base%2ftest+space%3ffoo%3dfoo+val%26bar%3dbar+val");
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcResult, values[0].Value);
         }

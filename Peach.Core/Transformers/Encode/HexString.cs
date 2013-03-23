@@ -36,10 +36,11 @@ using Peach.Core.IO;
 namespace Peach.Core.Transformers.Encode
 {
     [Serializable]
-    [TransformerAttribute("HexString", "Transforms a string of bytes into the specified hex format.", true)]
-    [TransformerAttribute("encode.HexString", "Transforms a string of bytes into the specified hex format.")]
-    [Parameter("resolution", typeof(int), "Number of nibbles between separator. (Must be a positive, even int.)", false)]
-    [Parameter("prefix", typeof(string), "A value to prepend each chunk with. (defaults to ' ')", false)]
+    [Description("Transforms a string of bytes into the specified hex format.")]
+    [Transformer("HexString", true)]
+    [Transformer("encode.HexString")]
+    [Parameter("resolution", typeof(int), "Number of nibbles between separator. Must be a positive, even int.", "1")]
+    [Parameter("prefix", typeof(string), "A value to prepend each chunk with.", " ")]
     public class HexString : Transformer
     {
         Dictionary<string, Variant> m_args;

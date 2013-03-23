@@ -1,22 +1,32 @@
 #!/usr/bin/env python
 
-bld.recurse('pin')
+subdirs = [
+	'clrzmq',
+	'pin',
+	'TreeViewAdv',
+	'Be.HexEditor.150',
+	'VMware-VIX-1.12.1-894247',
+	'zeromq3-x',
+]
+
+bld.recurse(subdirs)
 
 nlog = bld.env.CS_NAME == 'mono' and 'Mono 2.x' or '.NET Framework 4.0'
 
 bld.read_csshlib('NLog.dll',                         paths=['NLog-v2.0.0.2000/%s' % nlog])
 bld.read_csshlib('nunit.framework.dll',              paths=['NUnit-2.6.0.12051/bin/framework'])
-bld.read_csshlib('CookComputing.XmlRpcV2.dll',       paths=['xml-rpc.net-2.5.0/bin'])
 bld.read_csshlib('SharpPcap.dll',                    paths=['SharpPcap-4.1.0/Release'])
 bld.read_csshlib('PacketDotNet.dll',                 paths=['SharpPcap-4.1.0/Release'])
 bld.read_csshlib('Ionic.Zip.dll',                    paths=['DotNetZipLib-v1.9/zip-v1.9'])
-bld.read_csshlib('IronPython.dll',                   paths=['IronPython-2.7.1'])
-bld.read_csshlib('IronPython.Modules.dll',           paths=['IronPython-2.7.1'])
-bld.read_csshlib('Microsoft.Dynamic.dll',            paths=['IronPython-2.7.1'])
-bld.read_csshlib('Microsoft.Scripting.dll',          paths=['IronPython-2.7.1'])
-bld.read_csshlib('Microsoft.Scripting.Metadata.dll', paths=['IronPython-2.7.1'])
+bld.read_csshlib('IronPython.dll',                   paths=['IronPython-2.7.3'])
+bld.read_csshlib('IronPython.Modules.dll',           paths=['IronPython-2.7.3'])
+bld.read_csshlib('Microsoft.Dynamic.dll',            paths=['IronPython-2.7.3'])
+bld.read_csshlib('Microsoft.Scripting.dll',          paths=['IronPython-2.7.3'])
+bld.read_csshlib('Microsoft.Scripting.Metadata.dll', paths=['IronPython-2.7.3'])
 bld.read_csshlib('IronRuby.dll',                     paths=['IronRuby-1.1.3/bin'])
 bld.read_csshlib('IronRuby.Libraries.dll',           paths=['IronRuby-1.1.3/bin'])
 bld.read_csshlib('IronRuby.Libraries.Yaml.dll',      paths=['IronRuby-1.1.3/bin'])
-bld.read_csshlib('EasyHook.dll',                     paths=['EasyHook-2.6'])
 bld.read_csshlib('Renci.SshNet.dll',                 paths=['Renci.SshNet'])
+
+if bld.env.MCS:
+	bld.install_files('${BINDIR}', 'IronPython-2.7.3/IronPython.StdLib.zip')

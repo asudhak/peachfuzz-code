@@ -36,9 +36,10 @@ using System.Runtime.Serialization;
 
 namespace Peach.Core.Fixups
 {
-	[Fixup("Crc32Fixup", "Standard CRC32 as defined by ISO 3309.", true)]
-	[Fixup("checksums.Crc32Fixup", "Standard CRC32 as defined by ISO 3309.")]
-	[Parameter("ref", typeof(DataElement), "Reference to data element", true)]
+	[Description("Standard CRC32 as defined by ISO 3309.")]
+	[Fixup("Crc32Fixup", true)]
+	[Fixup("checksums.Crc32Fixup")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class Crc32Fixup : Fixup
 	{

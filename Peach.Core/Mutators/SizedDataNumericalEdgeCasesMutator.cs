@@ -48,7 +48,7 @@ namespace Peach.Core.Mutators
         int n;
         long[] values;
         uint currentCount;
-        long originalDataLength;
+        //long originalDataLength;
 
         // CTOR
         //
@@ -57,7 +57,7 @@ namespace Peach.Core.Mutators
             currentCount = 0;
             n = getN(obj, 50);
             name = "SizedDataNumericalEdgeCasesMutator";
-            originalDataLength = (long)obj.GenerateInternalValue();
+            //originalDataLength = (long)obj.GenerateInternalValue();
             PopulateValues(obj);
         }
 
@@ -67,13 +67,9 @@ namespace Peach.Core.Mutators
         {
             int size = 0;
 
-            if (obj is Number)
+            if (obj is Number || obj is Flag)
             {
-                size = (int)((Number)obj).lengthAsBits;
-            }
-            else if (obj is Flag)
-            {
-                size = ((Flag)obj).size;
+                size = (int)obj.lengthAsBits;
             }
             else
             {
@@ -110,9 +106,9 @@ namespace Peach.Core.Mutators
                     {
                         n = Int32.Parse(h.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
                     }
                 }
             }

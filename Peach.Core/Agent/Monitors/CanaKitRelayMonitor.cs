@@ -23,11 +23,11 @@ namespace Peach.Core.Agent.Monitors
 	/// http://www.canakit.com/4-port-usb-relay-controller.html
 	/// </remarks>
 	[Monitor("CanaKitRelay", true)]
-	[Parameter("SerialPort", typeof(string), "Serial port for board (e.g. COM2)", true)]
-	[Parameter("RelayNumber", typeof(int), "Which realy to trigger (1..4)", true)]
-	[Parameter("ResetEveryIteration", typeof(bool), "Reset power on every iteration (default is false)", false)]
-	[Parameter("OnOffPause", typeof(int), "Pause in milliseconds between off/on (default is 1/2 second)", false)]
-	[Parameter("ResetOnStart", typeof(bool), "Reset device on start? (defaults to false)", false)]
+	[Parameter("SerialPort", typeof(string), "Serial port for board (e.g. COM2)")]
+	[Parameter("RelayNumber", typeof(int), "Which realy to trigger (1..4)")]
+	[Parameter("ResetEveryIteration", typeof(bool), "Reset power on every iteration (default is false)", "false")]
+	[Parameter("OnOffPause", typeof(int), "Pause in milliseconds between off/on (default is 1/2 second)", "500")]
+	[Parameter("ResetOnStart", typeof(bool), "Reset device on start? (defaults to false)", "false")]
 	public class CanaKitRelayMonitor : Monitor
 	{
 		string _serialPort = null;

@@ -7,6 +7,8 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.IO;
+using Peach.Core.Cracker;
 
 namespace Peach.Core.Test.Fixups
 {
@@ -53,7 +55,6 @@ namespace Peach.Core.Test.Fixups
             config.singleIteration = true;
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -62,6 +63,52 @@ namespace Peach.Core.Test.Fixups
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcChecksum, values[0].Value);
         }
+
+		[Test]
+		public void TestCrack()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number size='8' signed='false' name='Length'>
+			<Relation type='size' of='DataBlock'/>
+		</Number>
+		<Block name='DataBlock'>
+			<Blob name='Data'/>
+			<Number size='32' name='CRC' endian='big' signed='false'>
+				<Fixup class='Crc32DualFixup'>
+					<Param name='ref1' value='Length'/>
+					<Param name='ref2' value='Data'/>
+				</Fixup>
+			</Number >
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x05, 0x11, 0x22, 0x33, 0x44, 0x55 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			var val = dom.dataModels[0].Value;
+			Assert.NotNull(val);
+
+			MemoryStream ms = val.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			byte[] actual = new byte[ms.Length];
+			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
+
+			byte[] expected = new byte[] { 0x05, 0x11, 0x56, 0x1e, 0xc6, 0x48 };
+			Assert.AreEqual(expected, actual);
+		}
     }
 }
 

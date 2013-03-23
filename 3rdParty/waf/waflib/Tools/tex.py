@@ -365,7 +365,10 @@ def apply_tex(self):
 		deps = self.to_list(self.deps)
 		for filename in deps:
 			n = self.path.find_resource(filename)
-			if not n in deps_lst: deps_lst.append(n)
+			if not n:
+				self.bld.fatal('Could not find %r for %r' % (filename, self))
+			if not n in deps_lst:
+				deps_lst.append(n)
 
 	for node in self.to_nodes(self.source):
 

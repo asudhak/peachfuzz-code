@@ -59,20 +59,18 @@ namespace PeachFuzzBang
 
 		Peach.Core.Dom.Dom userSelectedDom = null;
 		DataModel userSelectedDataModel = null;
+		bool hasPlatformAsm = false;
 
-		private void LoadPlatformAssembly(string name)
+		private void LoadPlatformAssembly()
 		{
-			string osAssembly = System.IO.Path.Combine(
-				System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-				name);
-
 			try
 			{
-				Assembly.LoadFrom(osAssembly);
+				Platform.LoadAssembly();
+				hasPlatformAsm = true;
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Could not load platform assembly \"" + name + "\".", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Console.WriteLine(ex.Message);
 			}
 		}
@@ -90,20 +88,20 @@ namespace PeachFuzzBang
 			tabControl.TabPages.Remove(tabPageFuzzing);
 			//tabControl.TabPages.Remove(tabPageOutput);
 
+			LoadPlatformAssembly();
+
 			// Check OS and load side assembly
 			Platform.OS os = Platform.GetOS();
 
 			switch (os)
 			{
-				case Platform.OS.Mac:
-					LoadPlatformAssembly("Peach.Core.OS.OSX.dll");
+				case Platform.OS.OSX:
 					tabControl.TabPages.Remove(tabPageDebuggerLinux);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
 					richTextBoxOSX.LoadFile(Assembly.GetExecutingAssembly().GetManifestResourceStream("PeachFuzzBang.OSXDebugging.rtf"), RichTextBoxStreamType.RichText);
 					break;
 				case Platform.OS.Linux:
-					LoadPlatformAssembly("Peach.Core.OS.Linux.dll");
 					tabControl.TabPages.Remove(tabPageDebuggerOSX);
 					tabControl.TabPages.Remove(tabPageDebuggerWin);
 					tabControl.TabPages.Remove(tabPageGUI);
@@ -124,16 +122,16 @@ namespace PeachFuzzBang
 							proc.Close();
 						}
 
-						LoadPlatformAssembly("Peach.Core.OS.Windows.dll");
-
 						tabControl.TabPages.Remove(tabPageDebuggerOSX);
 						tabControl.TabPages.Remove(tabPageDebuggerLinux);
 
 						if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 							MessageBox.Show("Warning: The 64bit version of Peach 3 must be used on 64 bit Operating Systems.", "Warning");
 
-						Type t = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.name == "WindowsDebugger");
-						string windbg = t.InvokeMember("FindWinDbg", BindingFlags.InvokeMethod, null, null, null) as string;
+						string windbg = null;
+						Type t = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.Name == "WindowsDebugger");
+						if (t != null)
+							windbg = t.InvokeMember("FindWinDbg", BindingFlags.InvokeMethod, null, null, null) as string;
 
 						if (windbg != null)
 							textBoxDebuggerPath.Text = windbg;
@@ -282,7 +280,7 @@ namespace PeachFuzzBang
 
 				switch (Platform.GetOS())
 				{
-					case Platform.OS.Mac:
+					case Platform.OS.OSX:
 						if (radioButtonOSXCrashReporter.Checked)
 						{
 							monitor.cls = "CrashReporter";
@@ -408,7 +406,7 @@ namespace PeachFuzzBang
 					logger = new Peach.Core.Loggers.FileLogger(loggerArgs);
 				}
 
-				test.logger = logger;
+				test.loggers.Add(logger);
 
 				// START FUZZING!!!!!
 				thread = new Thread(new ParameterizedThreadStart(Run));
@@ -417,7 +415,7 @@ namespace PeachFuzzBang
 			catch(Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
-				throw ex;
+				throw;
 			}
 		}
 
@@ -462,7 +460,7 @@ namespace PeachFuzzBang
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
-				throw ex;
+				throw;
 			}
 		}
 
@@ -601,6 +599,12 @@ namespace PeachFuzzBang
 				return;
 
 			textBoxLogPath.Text = dialog.FileName;
+		}
+
+		private void FormMain_Load(object sender, EventArgs e)
+		{
+			if (!hasPlatformAsm)
+				Close();
 		}
 	}
 }

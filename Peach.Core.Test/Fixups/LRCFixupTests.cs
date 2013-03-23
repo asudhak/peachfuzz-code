@@ -51,7 +51,6 @@ namespace Peach.Core.Test.Fixups
             config.singleIteration = true;
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -60,6 +59,68 @@ namespace Peach.Core.Test.Fixups
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcResult, values[0].Value);
         }
+
+		[Test]
+		public void TestTypes()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Blob name=""blob"" valueType=""hex"" value=""00 01 10""/>
+
+		<Blob length=""1"">
+			<Fixup class=""LRCFixup"">
+				<Param name=""ref"" value=""blob""/>
+			</Fixup>
+		</Blob>
+
+		<String>
+			<Fixup class=""LRCFixup"">
+				<Param name=""ref"" value=""blob""/>
+			</Fixup>
+		</String>
+
+		<Number size=""32"" endian=""little"">
+			<Fixup class=""LRCFixup"">
+				<Param name=""ref"" value=""blob""/>
+			</Fixup>
+		</Number>
+
+		<Number size=""32"" endian=""big"">
+			<Fixup class=""LRCFixup"">
+				<Param name=""ref"" value=""blob""/>
+			</Fixup>
+		</Number>
+
+		<Flags size=""16"">
+			<Flag position=""4"" size=""8"">
+				<Fixup class=""LRCFixup"">
+					<Param name=""ref"" value=""blob""/>
+				</Fixup>
+			</Flag>
+		</Flags>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value;
+			Assert.NotNull(val);
+
+			MemoryStream ms = val.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			byte[] expected = { 0x00, 0x01, 0x10, 0xef, 0x32, 0x33, 0x39, 0xef, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xef, 0x0e, 0xf0 };
+			Assert.AreEqual(expected.Length, ms.Length);
+
+			byte[] actual = new byte[ms.Length];
+			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
+
+			Assert.AreEqual(expected, actual);
+
+		}
+
     }
 }
 

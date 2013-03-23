@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Net.NetworkInformation;
 
 namespace Peach.Core.Publishers
 {
@@ -53,7 +54,45 @@ namespace Peach.Core.Publishers
 				return new IPEndPoint(ip, Port);
 			}
 
-			throw new PeachException("Could not resolve the IP address of host \"{0}\".", Host);
+			throw new PeachException("Could not resolve the IP address of host \"" + Host + "\".");
+		}
+
+		/// <summary>
+		/// Resolves the ScopeId for a Link-Local IPv6 address
+		/// </summary>
+		/// <param name="ip"></param>
+		/// <returns></returns>
+		private static IPAddress GetScopeId(IPAddress ip)
+		{
+			if (!ip.IsIPv6LinkLocal || ip.ScopeId != 0)
+				throw new ArgumentException("ip");
+
+			var results = new List<Tuple<string, IPAddress>>();
+			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+			foreach (NetworkInterface adapter in nics)
+			{
+				foreach (var addr in adapter.GetIPProperties().UnicastAddresses)
+				{
+					if (!addr.Address.IsIPv6LinkLocal)
+						continue;
+
+					IPAddress candidate = new IPAddress(addr.Address.GetAddressBytes(), 0);
+					if (IPAddress.Equals(candidate, ip))
+					{
+						results.Add(new Tuple<string,IPAddress>(adapter.Name, addr.Address));
+					}
+				}
+			}
+
+			if (results.Count == 0)
+				throw new PeachException("Could not resolve scope id for interface with address '" + ip + "'.");
+
+			if (results.Count != 1)
+				throw new PeachException(string.Format("Found multiple interfaces with address '{0}'.{1}\t{2}",
+					ip, Environment.NewLine,
+					string.Join(Environment.NewLine + "\t", results.Select( a => a.Item1.ToString() + " -> " + a.Item2.ToString()))));
+
+			return results[0].Item2;
 		}
 
 		/// <summary>
@@ -69,19 +108,6 @@ namespace Peach.Core.Publishers
 				IPEndPoint local = s.LocalEndPoint as IPEndPoint;
 				return local.Address;
 			}
-		}
-
-		private static bool IsMulticast(IPAddress addr)
-		{
-			// IPv6 -> 1st byte is 0xff
-			// IPv4 -> 1st byte is 0xE0 -> 0xEF
-
-			byte[] buf = addr.GetAddressBytes();
-
-			if (addr.AddressFamily == AddressFamily.InterNetwork)
-				return (buf[0] & 0xe0) == 0xe0;
-			else
-				return (buf[0] == 0xff);
 		}
 
 		private static SocketError WSAGetLastError()
@@ -136,7 +162,7 @@ namespace Peach.Core.Publishers
 				case 255: // Raw IP packets
 					return (ProtocolType)protocol;
 				default:
-					throw new PeachException("Error, the {0} publisher does not support protocol type 0x{1:X2}.", _type, protocol);
+					throw new PeachException(string.Format("Error, the {0} publisher does not support protocol type 0x{1:X2}.", _type, protocol));
 			}
 		}
 
@@ -145,6 +171,24 @@ namespace Peach.Core.Publishers
 
 		[DllImport("libc", SetLastError=true)]
 		private static extern int close(int fd);
+
+		protected static int AF_INET = 2;
+		protected static int AF_INET6 = GetInet6();
+
+		static int GetInet6()
+		{
+			switch (Platform.GetOS())
+			{
+				case Platform.OS.Windows:
+					return (int)AddressFamily.InterNetworkV6;
+				case Platform.OS.Linux:
+					return 10;
+				case Platform.OS.OSX:
+					return 30;
+				default:
+					throw new NotSupportedException();
+			}
+		}
 
 		protected Socket OpenRawSocket(AddressFamily af, int protocol)
 		{
@@ -165,7 +209,7 @@ namespace Peach.Core.Publishers
 			for (int i = 0; i < 10; ++i)
 			{
 				// Generate the internal mono fd tracking state
-				Socket temp = new Socket(af, SocketType.Raw, ProtocolType.Unspecified);
+				Socket temp = new Socket(af, SocketType.Raw, ProtocolType.Udp);
 
 				// Cleanup the object w/o releasing internal state
 				var info = temp.DuplicateAndClose(0);
@@ -177,7 +221,8 @@ namespace Peach.Core.Publishers
 				close(oldfd);
 
 				// Open a new file descriptor for the correct protocol
-				int fd = socket((int)af, (int)SocketType.Raw, protocol);
+				int family = af == AddressFamily.InterNetwork ? AF_INET : AF_INET6;
+				int fd = socket(family, (int)SocketType.Raw, protocol);
 
 				if (fd != oldfd)
 				{
@@ -196,7 +241,15 @@ namespace Peach.Core.Publishers
 				return new Socket(info);
 			}
 
-			throw new PeachException("{0} publisher could not open raw socket", _type);
+			throw new PeachException(_type + " publisher could not open raw socket.");
+		}
+
+		protected virtual void FilterInput(byte[] buffer, int offset, int count)
+		{
+		}
+
+		protected virtual void FilterOutput(byte[] buffer, int offset, int count)
+		{
 		}
 
 		protected override void OnOpen()
@@ -210,7 +263,7 @@ namespace Peach.Core.Publishers
 				ep = ResolveHost();
 
 				if (!AddressFamilySupported(ep.AddressFamily))
-					throw new PeachException("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type);
+					throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
 
 				_socket = OpenSocket(ep);
 
@@ -218,7 +271,13 @@ namespace Peach.Core.Publishers
 				if (Interface == null)
 					local = GetLocalIp(ep);
 
-				_multicast = IsMulticast(ep.Address);
+				if (local.IsIPv6LinkLocal && local.ScopeId == 0)
+				{
+					local = GetScopeId(local);
+					Logger.Trace("Resolved link-local interface IP for {0} socket to {1}.", _type, local);
+				}
+
+				_multicast = ep.Address.IsMulticast();
 
 				if (_multicast)
 				{
@@ -239,6 +298,16 @@ namespace Peach.Core.Publishers
 					var level = local.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
 					var opt = new MulticastOption(ep.Address, local);
 					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
+
+					if (local != IPAddress.Any && local != IPAddress.IPv6Any)
+					{
+						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, local);
+						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, local.GetAddressBytes());
+					}
+					else if (Platform.GetOS() == Platform.OS.OSX)
+					{
+						throw new PeachException(string.Format("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface));
+					}
 				}
 				else
 				{
@@ -255,7 +324,7 @@ namespace Peach.Core.Publishers
 
 				SocketException se = ex as SocketException;
 				if (se != null && se.SocketErrorCode == SocketError.AccessDenied)
-					throw new PeachException("Access denied when trying open a {0} socket.  Ensure the user has the appropriate permissions.", _type);
+					throw new PeachException(string.Format("Access denied when trying open a {0} socket.  Ensure the user has the appropriate permissions.", _type), ex);
 
 				Logger.Error("Unable to open {0} socket to {1}:{2}. {3}.", _type, Host, Port, ex.Message);
 
@@ -273,6 +342,8 @@ namespace Peach.Core.Publishers
 
 			_localEp = _socket.LocalEndPoint;
 			_remoteEp = ep;
+
+			Logger.Trace("Opened {0} socket, Local: {1}, Remote: {2}", _type, _localEp, _remoteEp);
 		}
 
 		protected override void OnClose()
@@ -320,6 +391,8 @@ namespace Peach.Core.Publishers
 					}
 					else
 					{
+						FilterInput(buf, offset, rxLen);
+
 						if (Logger.IsDebugEnabled)
 							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
 
@@ -351,23 +424,11 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buf, int offset, int count)
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 
-			var stream = data as MemoryStream;
-			if (stream == null)
-			{
-				stream = _sendBuffer;
-				stream.Seek(0, SeekOrigin.Begin);
-				stream.SetLength(0);
-				data.CopyTo(stream);
-				stream.Seek(0, SeekOrigin.Begin);
-			}
-
-			byte[] buf = stream.GetBuffer();
-			int offset = (int)stream.Position;
-			int size = (int)stream.Length;
+			int size = count;
 
 			if (size > MaxSendSize)
 			{
@@ -376,7 +437,9 @@ namespace Peach.Core.Publishers
 			}
 
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(stream));
+				Logger.Debug("\n\n" + Utilities.HexDump(buf, offset, count));
+
+			FilterOutput(buf, offset, count);
 
 			try
 			{
@@ -385,8 +448,8 @@ namespace Peach.Core.Publishers
 					throw new TimeoutException();
 				var txLen = _socket.EndSendTo(ar);
 
-				if (data.Length != txLen)
-					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, data.Length));
+				if (count != txLen)
+					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, count));
 			}
 			catch (Exception ex)
 			{

@@ -50,15 +50,14 @@ namespace Peach.Core.Test.Mutators
             var myArray = (Dom.Array)dom.tests[0].stateModel.initialState.actions[0].dataModel[0];
             myArray.origionalElement = myArray[0];
             myArray.hasExpanded = true;
-            myArray.Add(new Dom.String("a1", "1"));
-            myArray.Add(new Dom.String("a2", "2"));
-            myArray.Add(new Dom.String("a3", "3"));
-            myArray.Add(new Dom.String("a4", "4"));
+            myArray.Add(new Dom.String("a1") { DefaultValue = new Variant("1") });
+            myArray.Add(new Dom.String("a2") { DefaultValue = new Variant("2") });
+            myArray.Add(new Dom.String("a3") { DefaultValue = new Variant("3") });
+            myArray.Add(new Dom.String("a4") { DefaultValue = new Variant("4") });
 
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values

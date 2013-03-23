@@ -2,6 +2,8 @@ from waflib import Utils, Errors
 from waflib.TaskGen import feature
 import os.path
 
+host_plat = [ 'darwin' ]
+
 archs = [ ]
 
 tools = [
@@ -9,10 +11,12 @@ tools = [
 	'gxx',
 	'cs',
 	'resx',
-	'utils',
-	'externals',
-	'test',
-	'version',
+	'misc',
+	'tools.utils',
+	'tools.externals',
+	'tools.test',
+	'tools.version',
+	'tools.mdoc',
 ]
 
 def find_directory(dirname, paths):
@@ -40,8 +44,9 @@ def prepare(conf):
 		'/Developer/SDKs',
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
-	
-	pin = j(root, '3rdParty', 'pin', 'pin-2.12-54730-clang.3.0-mac')
+
+	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
+	pin = j(pin_root, 'pin-2.12-54730-clang.3.0-mac')
 
 	env['EXTERNALS'] = {
 		'pin' : {
@@ -95,24 +100,30 @@ def configure(conf):
 		'test',
 		'debug',
 		'release',
+		'emit',
+		'vnum',
+		'subst',
+		'network',
 	])
 
 	env.append_value('CSFLAGS', [
 		'/warn:4',
-		'/define:PEACH',
+		'/define:PEACH,UNIX,MONO',
+		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [
 		'/define:DEBUG,TRACE',
 	])
-	
+
 	env.append_value('CSFLAGS_release', [
 		'/define:TRACE',
 		'/optimize+',
 	])
 
 	env['CSPLATFORM'] = 'anycpu'
-	
+	env['CSDOC'] = True
+
 	arch_flags = [
 		'-mmacosx-version-min=10.6',
 		'-isysroot',
@@ -122,13 +133,13 @@ def configure(conf):
 		'-arch',
 		'x86_64',
 	]
-	
+
 	cppflags = [
 		'-pipe',
 		'-Werror',
 		'-Wno-unused',
 	]
-	
+
 	cppflags_debug = [
 		'-g',
 	]
@@ -140,7 +151,7 @@ def configure(conf):
 	env.append_value('CPPFLAGS', arch_flags + cppflags)
 	env.append_value('CPPFLAGS_debug', cppflags_debug)
 	env.append_value('CPPFLAGS_release', cppflags_release)
-	
+
 	env.append_value('LINKFLAGS', arch_flags)
 
 	env.append_value('DEFINES_debug', ['DEBUG'])

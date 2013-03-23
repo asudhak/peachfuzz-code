@@ -40,10 +40,10 @@ using System.ComponentModel;
 
 namespace Peach.Core.OS.Linux.Agent.Monitors
 {
-	[Monitor("LinuxCrashMonitor")]
-	[Parameter("Executable", typeof(string), "Target executable used to filter crashes.", false)]
-	[Parameter("LogFolder", typeof(string), "Folder with log files. Defaults to /var/peachcrash", false)]
-	[Parameter("Mono", typeof(string), "Full path and executable for mono runtime. Defaults to /usr/bin/mono.", false)]
+	[Monitor("LinuxCrashMonitor", true)]
+	[Parameter("Executable", typeof(string), "Target executable used to filter crashes.", "")]
+	[Parameter("LogFolder", typeof(string), "Folder with log files. Defaults to /var/peachcrash", "/var/peachcrash")]
+	[Parameter("Mono", typeof(string), "Full path and executable for mono runtime. Defaults to /usr/bin/mono.", "/usr/bin/mono")]
 	public class LinuxCrashMonitor : Peach.Core.Agent.Monitor
 	{
 		protected string corePattern = "|{0} {1} -p=%p -u=%u -g=%g -s=%s -t=%t -h=%h -e=%e";
@@ -75,7 +75,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 
 		public override void  SessionStarting()
 		{
-			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
+			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
 
 			if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) == -1)
 			{
@@ -88,10 +88,10 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				File.WriteAllText(
 					"/proc/sys/kernel/core_pattern",
 					corePat,
-					Encoding.ASCII);
+					System.Text.Encoding.ASCII);
 
-				var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", Encoding.ASCII);
-				if (checkWrite.IndexOf(linuxCrashHandlerExe) > -1)
+				var checkWrite = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
+				if (checkWrite.IndexOf(linuxCrashHandlerExe) == -1)
 					throw new PeachException("Error, LinuxCrashMonitor was unable to update /proc/sys/kernel/core_pattern.");
 			}
 			else
@@ -106,7 +106,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, LinuxCrashMonitor was unable to create the log directory.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashMonitor was unable to create the log directory.  " + ex.Message, ex);
 			}
 
 			logFolderCreated = true;
@@ -120,7 +120,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			// only replace core_pattern if we updated it.
 			if (origionalCorePattern != null)
 			{
-				File.WriteAllText("/proc/sys/kernel/core_pattern", origionalCorePattern, Encoding.ASCII);
+				File.WriteAllText("/proc/sys/kernel/core_pattern", origionalCorePattern, System.Text.Encoding.ASCII);
 			}
 
 			// Remove folder
@@ -138,7 +138,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, LinuxCrashMonitor was unable to clear the log directory.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashMonitor was unable to clear the log directory.  " + ex.Message, ex);
 			}
 		}
 
@@ -208,7 +208,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				}
 				catch (UnauthorizedAccessException ex)
 				{
-					throw new PeachException("Error, LinuxCrashMonitor was unable to read the crash log.  {0}", ex.Message);
+					throw new PeachException("Error, LinuxCrashMonitor was unable to read the crash log.  " + ex.Message, ex);
 				}
 			}
 
@@ -235,7 +235,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			{
 				int err = Marshal.GetLastWin32Error();
 				Win32Exception ex = new Win32Exception(err);
-				throw new PeachException("Error, LinuxCrashHandler could not query the core size resource limit.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashHandler could not query the core size resource limit.  " + ex.Message, ex);
 			}
 
 			rlim.rlim_curr = rlim.rlim_max;
@@ -244,7 +244,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			{
 				int err = Marshal.GetLastWin32Error();
 				Win32Exception ex = new Win32Exception(err);
-				throw new PeachException("Error, LinuxCrashHandler could not set the core size resource limit.  {0}", ex.Message);
+				throw new PeachException("Error, LinuxCrashHandler could not set the core size resource limit.  " + ex.Message, ex);
 			}
 		}
 

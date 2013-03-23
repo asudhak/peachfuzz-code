@@ -7,8 +7,8 @@ Classes and methods shared by tools providing support for C-like language such
 as C/C++/D/Assembly/Go (this support module is almost never used alone).
 """
 
-import os, sys, re
-from waflib import TaskGen, Task, Utils, Logs, Build, Options, Node, Errors
+import os
+from waflib import Task, Utils, Node, Errors
 from waflib.TaskGen import after_method, before_method, feature, taskgen_method, extension
 from waflib.Tools import c_aliases, c_preproc, c_config, c_osx, c_tests
 from waflib.Configure import conf
@@ -20,9 +20,10 @@ USELIB_VARS = Utils.defaultdict(set)
 Mapping for features to :py:class:`waflib.ConfigSet.ConfigSet` variables. See :py:func:`waflib.Tools.ccroot.propagate_uselib_vars`.
 """
 
-USELIB_VARS['c']   = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CCDEPS', 'CFLAGS', 'ARCH'])
-USELIB_VARS['cxx'] = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CXXDEPS', 'CXXFLAGS', 'ARCH'])
-USELIB_VARS['d']   = set(['INCLUDES', 'DFLAGS'])
+USELIB_VARS['c']        = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CCDEPS', 'CFLAGS', 'ARCH'])
+USELIB_VARS['cxx']      = set(['INCLUDES', 'FRAMEWORKPATH', 'DEFINES', 'CPPFLAGS', 'CXXDEPS', 'CXXFLAGS', 'ARCH'])
+USELIB_VARS['d']        = set(['INCLUDES', 'DFLAGS'])
+USELIB_VARS['includes'] = set(['INCLUDES', 'FRAMEWORKPATH', 'ARCH'])
 
 USELIB_VARS['cprogram'] = USELIB_VARS['cxxprogram'] = set(['LIB', 'STLIB', 'LIBPATH', 'STLIBPATH', 'LINKFLAGS', 'RPATH', 'LINKDEPS', 'FRAMEWORK', 'FRAMEWORKPATH', 'ARCH'])
 USELIB_VARS['cshlib']   = USELIB_VARS['cxxshlib']   = set(['LIB', 'STLIB', 'LIBPATH', 'STLIBPATH', 'LINKFLAGS', 'RPATH', 'LINKDEPS', 'FRAMEWORK', 'FRAMEWORKPATH', 'ARCH'])
@@ -203,7 +204,6 @@ def apply_link(self):
 	self.link_task.add_target(self.target)
 
 	# remember that the install paths are given by the task generators
-	# we need to define install_task even during the build phase because others might need the installation path
 	try:
 		inst_to = self.install_path
 	except AttributeError:
@@ -240,7 +240,7 @@ def use_rec(self, name, **kw):
 		y.tmp_use_var = ''
 	else:
 		objects = False
-		if not isinstance(y.link_task, stlink_task):
+		if not isinstance(link_task, stlink_task):
 			stlib = False
 			y.tmp_use_var = 'LIB'
 		else:
@@ -269,7 +269,7 @@ def process_use(self):
 	"""
 
 	use_not = self.tmp_use_not = set([])
-	use_seen = self.tmp_use_seen = [] # we would like an ordered set
+	self.tmp_use_seen = [] # we would like an ordered set
 	use_prec = self.tmp_use_prec = {}
 	self.uselib = self.to_list(getattr(self, 'uselib', []))
 	self.includes = self.to_list(getattr(self, 'includes', []))
@@ -453,12 +453,12 @@ def apply_implib(self):
 	if not inst_to:
 		return
 
-	self.implib_install_task = self.bld.install_as('${PREFIX}/lib/%s' % implib.name, implib, self.env)
+	self.implib_install_task = self.bld.install_as('${LIBDIR}/%s' % implib.name, implib, self.env)
 
 # ============ the code above must not know anything about vnum processing on unix platforms =========
 
 @feature('cshlib', 'cxxshlib', 'dshlib', 'fcshlib', 'vnum')
-@after_method('apply_link')
+@after_method('apply_link', 'propagate_uselib_vars')
 def apply_vnum(self):
 	"""
 	Enforce version numbering on shared libraries. The valid version numbers must have at most two dots::
@@ -492,9 +492,9 @@ def apply_vnum(self):
 		self.env.append_value('LINKFLAGS', v.split())
 
 	# the following task is just to enable execution from the build dir :-/
-	tsk = self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
+	self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
 
-	if getattr(self.bld, 'is_install', None):
+	if getattr(self, 'install_task', None):
 		self.install_task.hasrun = Task.SKIP_ME
 		bld = self.bld
 		path = self.install_task.dest
@@ -503,9 +503,16 @@ def apply_vnum(self):
 		t3 = bld.symlink_as(path + os.sep + libname, name3)
 		self.vnum_install_task = (t1, t2, t3)
 
-	if '-dynamiclib' in self.env['LINKFLAGS'] and getattr(self, 'install_task', None):
-		path = os.path.join(self.install_task.get_install_path(), self.link_task.outputs[0].name)
-		self.env.append_value('LINKFLAGS', ['-install_name', path])
+	if '-dynamiclib' in self.env['LINKFLAGS']:
+		# this requires after(propagate_uselib_vars)
+		try:
+			inst_to = self.install_path
+		except AttributeError:
+			inst_to = self.link_task.__class__.inst_to
+		if inst_to:
+			p = Utils.subst_vars(inst_to, self.env)
+			path = os.path.join(p, self.link_task.outputs[0].name)
+			self.env.append_value('LINKFLAGS', ['-install_name', path])
 
 class vnum(Task.Task):
 	"""

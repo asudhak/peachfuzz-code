@@ -35,9 +35,10 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Fixups
 {
-	[FixupAttribute("LRCFixup", "XOR bytes of data.", true)]
-	[FixupAttribute("checksums.LRCFixup", "XOR bytes of data.")]
-	[ParameterAttribute("ref", typeof(DataElement), "Reference to data element", true)]
+	[Description("XOR bytes of data.")]
+	[Fixup("LRCFixup", true)]
+	[Fixup("checksums.LRCFixup")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class LRCFixup : Fixup
 	{
@@ -53,9 +54,17 @@ namespace Peach.Core.Fixups
 			byte lrc = 0;
 
 			foreach (byte b in data)
-				lrc ^= b;
+				lrc = (byte)((lrc + b) & 0xff);
 
-			return new Variant(Convert.ToChar(lrc).ToString());
+			lrc = (byte)(((lrc ^ 0xff) + 1) % 0xff);
+
+			if (parent is Dom.String)
+				return new Variant(lrc.ToString());
+
+			if (parent is Dom.Number)
+				return new Variant((uint)lrc);
+
+			return new Variant(new byte[] { lrc });
 		}
 	}
 }

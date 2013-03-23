@@ -40,7 +40,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Analyzers
 {
-	[Analyzer("Xml")]
+	[Analyzer("Xml", true)]
 	[Analyzer("XmlAnalyzer")]
 	[Analyzer("xml.XmlAnalyzer")]
 	[Serializable]
@@ -69,8 +69,18 @@ namespace Peach.Core.Analyzers
 
 			var strElement = parent as Dom.String;
 
+			if (string.IsNullOrEmpty((string)strElement.InternalValue))
+				return;
+
 			var doc = new XmlDocument();
-			doc.LoadXml((string)strElement.InternalValue);
+			try
+			{
+				doc.LoadXml((string)strElement.InternalValue);
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Errorm XmlAnalyzer failed to analyze element '" + parent.name + "'.  " + ex.Message, ex);
+			}
 
 			Dom.XmlElement xmlElement = null;
 

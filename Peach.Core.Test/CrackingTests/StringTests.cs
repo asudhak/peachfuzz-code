@@ -45,6 +45,29 @@ namespace Peach.Core.Test.CrackingTests
 	class StringTests
 	{
 		[Test]
+		public void CrackSizedString()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String length=\"5\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+		}
+
+		[Test]
 		public void CrackString1()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -234,6 +257,335 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3111, (int)((DataElementContainer)dom.dataModels[0][1])[0].DefaultValue);
 			Assert.AreEqual(3112, (int)((DataElementContainer)dom.dataModels[0][2])[0].DefaultValue);
 			Assert.AreEqual(3113, (int)((DataElementContainer)dom.dataModels[0][3])[0].DefaultValue);
+		}
+
+
+		[Test]
+		public void CrackString8()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String nullTerminated=\"true\" length=\"8\" value=\"Foo\" />" +
+				"		<String />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello"));
+			data.WriteByte(0);
+			data.WriteByte(0);
+			data.WriteByte(0);
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Foo Bar"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello\0\0\0", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Foo Bar", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackAsciiLengthChars()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\" />" +
+				"		<String type=\"ascii\" length=\"5\" lengthType=\"chars\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.WriteBytes(Encoding.ASCII.GetBytes("12345"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("12345", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackAsciiVariableChars()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\" />" +
+				"		<String type=\"utf32\" length=\"5\" lengthType=\"chars\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.WriteBytes(Encoding.ASCII.GetBytes("12345"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			Assert.Throws<CrackingFailure>(delegate() {
+				cracker.CrackData(dom.dataModels[0], data);
+			});
+		}
+
+		[Test]
+		public void CrackAsciiInvalidChars()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"ascii\" length=\"5\" lengthType=\"chars\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.ASCII.GetBytes("1234"));
+			data.WriteByte(0xff);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			Assert.Throws<CrackingFailure>(delegate()
+			{
+				cracker.CrackData(dom.dataModels[0], data);
+			});
+		}
+
+		[Test]
+		public void CrackAsciiLengthCharsBefore()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"ascii\" length=\"5\" lengthType=\"chars\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.ASCII.GetBytes("12345"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("12345", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackUtf32LengthCharsBefore()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf32\" length=\"5\" lengthType=\"chars\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF32.GetBytes("12345"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("12345", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackUtf16LengthCharsBefore()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf16\" length=\"5\" lengthType=\"chars\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.Unicode.GetBytes("12345"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("12345", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackUtf8LengthCharsBefore()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\" length=\"1\" lengthType=\"chars\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("\u30ab"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("\u30ab", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackNullTermToken()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"Hello\" token=\"true\" nullTerminated=\"true\" />" +
+				"		<String value=\"World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello\0World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackNullTermLengthToken()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"Hello\" length=\"6\" nullTerminated=\"true\" token=\"true\" />" +
+				"		<String value=\"World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello\0World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello\0", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackNullTermString()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\" nullTerminated=\"true\" />" +
+				"		<String type=\"utf8\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("\u00abX\u00abX\0"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("\u00abX\u00abX", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackTokenNext()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\"/>" +
+				"		<String type=\"utf8\" value=\"\u00abX\" token=\"true\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.UTF8.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.WriteBytes(Encoding.UTF8.GetBytes("\u00abX"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("\u00abX", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackLastUnsized()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String type=\"utf8\"/>" +
+				"		<Number size=\"8\"/>" +
+				"		<String type=\"utf8\" value=\"\u00abX\" token=\"true\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.UTF8.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.WriteByte(255);
+			data.WriteBytes(Encoding.UTF8.GetBytes("\u00abX"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello World", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(255, (int)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("\u00abX", (string)dom.dataModels[0][2].DefaultValue);
 		}
 	}
 }

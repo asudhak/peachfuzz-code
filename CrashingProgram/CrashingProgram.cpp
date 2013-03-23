@@ -1,13 +1,18 @@
-// CrashingProgram.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
 #ifdef WIN32
+
+#include <SDKDDKVer.h>
+#include <tchar.h>
 #include <Windows.h>
+
 #else
+
 #define _tmain main
 #define _TCHAR char
+#define __try if(1)
+#define __except(a) if(0)
+
 #endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -45,7 +50,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	argv;
 
 	fprintf(stderr, "Crashing Program v0.1\n");
-	Bar();
+
+	__try
+	{
+		Bar();
+	}
+	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+	{
+		fprintf(stderr, "Caught AV exception.\n");
+	}
 
 	fprintf(stderr, "done...\n");
 

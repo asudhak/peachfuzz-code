@@ -1,3 +1,0 @@
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\src\obj\Release\ResolveAssemblyReference.cache
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\src\obj\Release\CookComputing.XmlRpcV2.dll

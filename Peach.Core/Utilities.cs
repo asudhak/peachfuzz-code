@@ -39,65 +39,11 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
 using NLog;
+using System.Security;
+using System.Security.Policy;
 
 namespace Peach.Core
 {
-	/// <summary>
-	/// Helper class to determine the OS/Platform we are on.  The built in 
-	/// method returns incorrect results.
-	/// </summary>
-	public static class Platform
-	{
-		[DllImport("libc")]
-		static extern int uname(IntPtr buf);
-		static private bool mIsWindows;
-		static private bool mIsMac;
-		
-		public enum OS { Windows, Mac, Linux, unknown };
-		public enum Architecture { x64, x86 };
-
-		static public Architecture GetArch()
-		{
-			if (IntPtr.Size == 64)
-				return Architecture.x64;
-
-			return Architecture.x86;
-		}
-
-		static public OS GetOS()
-		{
-			if (mIsWindows = (System.IO.Path.DirectorySeparatorChar == '\\')) return OS.Windows;
-			if (mIsMac = (!mIsWindows && IsRunningOnMac())) return OS.Mac;
-			if (!mIsMac && System.Environment.OSVersion.Platform == PlatformID.Unix) return OS.Linux;
-			return OS.unknown;
-		}
-
-
-		//From Managed.Windows.Forms/XplatUI
-		static bool IsRunningOnMac()
-		{
-			IntPtr buf = IntPtr.Zero;
-			try
-			{
-				buf = Marshal.AllocHGlobal(8192);
-				// This is a hacktastic way of getting sysname from uname ()
-				if (uname(buf) == 0)
-				{
-					string os = Marshal.PtrToStringAnsi(buf);
-					if (os == "Darwin") return true;
-				}
-			}
-			catch
-			{
-			}
-			finally
-			{
-				if (buf != IntPtr.Zero) Marshal.FreeHGlobal(buf);
-			}
-			return false;
-		}
-	}
-
 	/// <summary>
 	/// Helper class to add a debug listener so asserts get written to the console.
 	/// </summary>
@@ -117,161 +63,6 @@ namespace Peach.Core
 		{
 			Console.WriteLine("Assertion {0}", message);
 			Console.WriteLine(new System.Diagnostics.StackTrace(2, true));
-		}
-	}
-
-	/// <summary>
-	/// Methods for finding and creating instances of 
-	/// classes.
-	/// </summary>
-	public static class ClassLoader
-	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
-
-		static ClassLoader()
-		{
-			string[] searchPath = new string[] {
-				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-				Directory.GetCurrentDirectory(),
-			};
-
-			foreach (string path in searchPath)
-			{
-				foreach (string file in Directory.GetFiles(path))
-				{
-					if (!file.EndsWith(".exe") && !file.EndsWith(".dll"))
-						continue;
-
-					if (AssemblyCache.ContainsKey(file))
-						continue;
-
-					try
-					{
-						Assembly asm = Assembly.LoadFrom(file);
-						asm.GetExportedTypes(); // make sure we can load exported types.
-						AssemblyCache.Add(file, asm);
-					}
-					catch (Exception ex)
-					{
-						logger.Debug("ClassLoader skipping \"{0}\", {1}", file, ex.Message);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Extension to the Type class. Return all attributes matching the specified type and predicate.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="type">Type in which the search should run over.</param>
-		/// <param name="predicate">Returns an attribute if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>A generator which yields the attributes specified.</returns>
-		public static IEnumerable<A> GetAttributes<A>(this Type type, Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			foreach (var attr in type.GetCustomAttributes(true))
-			{
-				var concrete = attr as A;
-				if (concrete != null && (predicate == null || predicate(type, concrete)))
-				{
-					yield return concrete;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Finds all types that are decorated with the specified Attribute type and matches the specified predicate.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>A generator which yields KeyValuePair elements of custom attribute and type found.</returns>
-		public static IEnumerable<KeyValuePair<A, Type>> GetAllByAttribute<A>(Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			foreach (var asm in ClassLoader.AssemblyCache.Values)
-			{
-				if (asm.IsDynamic)
-					continue;
-
-				foreach (var type in asm.GetExportedTypes())
-				{
-					if (!type.IsClass)
-						continue;
-
-					foreach (var x in type.GetAttributes<A>(predicate))
-					{
-						yield return new KeyValuePair<A, Type>(x, type);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Finds all types that are decorated with the specified Attribute type and matches the specified predicate.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>A generator which yields elements of the type found.</returns>
-		public static IEnumerable<Type> GetAllTypesByAttribute<A>(Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			return GetAllByAttribute<A>(predicate).Select(x => x.Value);
-		}
-
-		/// <summary>
-		/// Finds the first type that matches the specified query.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>KeyValuePair of custom attribute and type found.</returns>
-		public static KeyValuePair<A, Type> FindByAttribute<A>(Func<Type, A, bool> predicate) 
-			where A : Attribute
-		{
-			return GetAllByAttribute<A>(predicate).FirstOrDefault();
-		}
-
-		/// <summary>
-		/// Finds the first type that matches the specified query.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>Returns only the Type found.</returns>
-		public static Type FindTypeByAttribute<A>(Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			return GetAllByAttribute<A>(predicate).FirstOrDefault().Value;
-		}
-
-		/// <summary>
-		/// Find and create and instance of class by parent type and 
-		/// name.
-		/// </summary>
-		/// <typeparam name="T">Return Type.</typeparam>
-		/// <param name="name">Name of type.</param>
-		/// <returns>Returns a new instance of found type, or null.</returns>
-		public static T FindAndCreateByTypeAndName<T>(string name)
-			where T : class
-		{
-			foreach (var asm in ClassLoader.AssemblyCache.Values)
-			{
-				if (asm.IsDynamic)
-					continue;
-
-				Type type = asm.GetType(name);
-				if (type == null)
-					continue;
-
-				if (!type.IsClass)
-					continue;
-
-				if (!type.IsSubclassOf(type))
-					continue;
-
-				return Activator.CreateInstance(type) as T;
-			}
-
-			return null;
 		}
 	}
 
@@ -388,6 +179,60 @@ namespace Peach.Core
         }
     }
 
+    [Serializable]
+	public class HexString
+	{
+		public byte[] Value { get; private set; }
+
+		private HexString(byte[] value)
+		{
+			this.Value = value;
+		}
+
+		public static HexString Parse(string s)
+		{
+			if (s.Length % 2 == 0)
+			{
+				var array = ToArray(s);
+				if (array != null)
+					return new HexString(array);
+			}
+
+			throw new FormatException("An invalid hex string was specified.");
+		}
+
+		public static byte[] ToArray(string s)
+		{
+			if (s.Length % 2 != 0)
+				throw new ArgumentException("s");
+
+			byte[] ret = new byte[s.Length / 2];
+
+			for (int i = 0; i < s.Length; i += 2)
+			{
+				int nibble1 = GetNibble(s[i]);
+				int nibble2 = GetNibble(s[i + 1]);
+
+				if (nibble1 < 0 || nibble1 > 0xF || nibble2 < 0 | nibble2 > 0xF)
+					return null;
+
+				ret[i / 2] = (byte)((nibble1 << 4) | nibble2);
+			}
+
+			return ret;
+		}
+
+		private static int GetNibble(char c)
+		{
+			if (c >= 'a')
+				return 0xA + (int)(c - 'a');
+			else if (c >= 'A')
+				return 0xA + (int)(c - 'A');
+			else
+				return (int)(c - '0');
+		}
+	}
+
 	/// <summary>
 	/// Some utility methods that be usefull
 	/// </summary>
@@ -489,38 +334,45 @@ namespace Peach.Core
 			return isAvailable;
 		}
 
-		public static Encoding GetXmlEncoding(string xml, Encoding def)
+		/// <summary>
+		/// Compute the subrange resulting from diving a range into equal parts
+		/// </summary>
+		/// <param name="begin">Inclusive range begin</param>
+		/// <param name="end">Inclusive range end</param>
+		/// <param name="curSlice">The 1 based index of the current slice</param>
+		/// <param name="numSlices">The total number of slices</param>
+		/// <returns>Range of the current slice</returns>
+		public static Tuple<uint, uint> SliceRange(uint begin, uint end, uint curSlice, uint numSlices)
 		{
-			// Look for <?xml encoding="xxx"?> - return def if not found
+			if (begin > end)
+				throw new ArgumentOutOfRangeException("begin");
+			if (curSlice == 0 || curSlice > numSlices)
+				throw new ArgumentOutOfRangeException("curSlice");
 
-			try
-			{
-				var re = new Regex("^<\\?xml.+?encoding=[\"']([^\"']+)[\"'].*?\\?>");
-				var m = re.Match(xml);
-				if (m.Success)
-				{
-					string enc = m.Groups[1].Value;
-					def = Encoding.GetEncoding(enc);
-				}
-			}
-			catch
-			{
-			}
+			uint total = end - begin + 1;
 
-			return def;
+			if (numSlices == 0 || numSlices > total)
+				throw new ArgumentOutOfRangeException("numSlices");
+
+			uint slice = total / numSlices;
+
+			end = curSlice * slice + begin - 1;
+			begin = end - slice + 1;
+
+			if (curSlice == numSlices)
+				end += total % numSlices;
+
+			return new Tuple<uint, uint>(begin, end);
 		}
 
 		// Slightly tweaked from:
 		// http://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
 		private delegate void HexOutputFunc(char[] line);
+		private delegate int HexInputFunc(byte[] buf, int max);
 
-		private static void HexDump(Stream data, HexOutputFunc output, int bytesPerLine = 16)
+		private static void HexDump(HexInputFunc input, HexOutputFunc output, int bytesPerLine = 16)
 		{
-			System.Diagnostics.Debug.Assert(data != null);
-			long pos = data.Position;
-			long bytesLength = data.Length - pos;
 			byte[] bytes = new byte[bytesPerLine];
-
 			char[] HexChars = "0123456789ABCDEF".ToCharArray();
 
 			int firstHexColumn =
@@ -537,10 +389,13 @@ namespace Peach.Core
 				+ Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
 
 			char[] line = (new System.String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-			long expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
 
-			for (int i = 0; i < bytesLength; i += bytesPerLine)
+			for (int i = 0; ; i += bytesPerLine)
 			{
+				int readLen = input(bytes, bytesPerLine);
+				if (readLen == 0)
+					break;
+
 				line[0] = HexChars[(i >> 28) & 0xF];
 				line[1] = HexChars[(i >> 24) & 0xF];
 				line[2] = HexChars[(i >> 20) & 0xF];
@@ -552,8 +407,6 @@ namespace Peach.Core
 
 				int hexColumn = firstHexColumn;
 				int charColumn = firstCharColumn;
-
-				int readLen = data.Read(bytes, 0, bytesPerLine);
 
 				for (int j = 0; j < bytesPerLine; j++)
 				{
@@ -578,26 +431,105 @@ namespace Peach.Core
 				output(line);
 			}
 
-			data.Seek(pos, SeekOrigin.Begin);
 		}
 
-		public static void HexDump(Stream data, Stream output, int bytesPerLine = 16)
+		public static void HexDump(Stream input, Stream output, int bytesPerLine = 16)
 		{
-			HexOutputFunc func = delegate(char[] line)
+			long pos = input.Position;
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
 			{
-				byte[] buf = Encoding.ASCII.GetBytes(line);
+				return input.Read(buf, 0, max);
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
 				output.Write(buf, 0, buf.Length);
 			};
 
-			HexDump(data, func, bytesPerLine);
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			input.Seek(pos, SeekOrigin.Begin);
 		}
 
-		public static string HexDump(Stream data, int bytesPerLine = 16)
+		public static void HexDump(byte[] buffer, int offset, int count, Stream output, int bytesPerLine = 16)
+		{
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				int len = Math.Min(count, max);
+				Buffer.BlockCopy(buffer, offset, buf, 0, len);
+				offset += len;
+				count -= len;
+				return len;
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
+				output.Write(buf, 0, buf.Length);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+		}
+
+		public static string HexDump(Stream input, int bytesPerLine = 16)
 		{
 			StringBuilder sb = new StringBuilder();
-			HexOutputFunc func = delegate(char[] line) { sb.Append(line); };
-			HexDump(data, func, bytesPerLine);
+			long pos = input.Position;
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				return input.Read(buf, 0, max);
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				sb.Append(line);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			input.Seek(pos, SeekOrigin.Begin);
+
 			return sb.ToString();
+		}
+
+		public static string HexDump(byte[] buffer, int offset, int count, int bytesPerLine = 16)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				int len = Math.Min(count, max);
+				Buffer.BlockCopy(buffer, offset, buf, 0, len);
+				offset += len;
+				count -= len;
+				return len;
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				sb.Append(line);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			return sb.ToString();
+		}
+
+		public static string PrettyBytes(long bytes)
+		{
+			if (bytes < 0)
+				throw new ArgumentOutOfRangeException("bytes");
+
+			if (bytes > (1024 * 1024 * 1024))
+				return (bytes / (1024 * 1024 * 1024.0)).ToString("0.###") + " Gbytes";
+			if (bytes > (1024 * 1024))
+				return (bytes / (1024 * 1024.0)).ToString("0.###") + " Mbytes";
+			if (bytes > 1024)
+				return (bytes / 1024.0).ToString("0.###") + " Kbytes";
+			return bytes.ToString() + " Bytes";
 		}
 	}
 
@@ -653,6 +585,46 @@ namespace Peach.Core
 			}
 		}
 	}
+
+	/// <summary>
+	/// Required for coping non-DataElements.
+	/// </summary>
+	/// <remarks>
+	/// Reference Article http://www.codeproject.com/KB/tips/SerializedObjectCloner.aspx
+	/// Provides a method for performing a deep copy of an object.
+	/// Binary Serialization is used to perform the copy.
+	/// </remarks>
+	public static class ObjectCopier
+	{
+		/// <summary>
+		/// Perform a deep Copy of the object.
+		/// </summary>
+		/// <typeparam name="T">The type of object being copied.</typeparam>
+		/// <param name="source">The object instance to copy.</param>
+		/// <returns>The copied object.</returns>
+		public static T Clone<T>(T source)
+		{
+			if (!typeof(T).IsSerializable)
+			{
+				throw new ArgumentException("The type must be serializable.", "source");
+			}
+
+			// Don't serialize a null object, simply return the default for that object
+			if (Object.ReferenceEquals(source, null))
+			{
+				return default(T);
+			}
+
+			IFormatter formatter = new BinaryFormatter();
+			Stream stream = new MemoryStream();
+			using (stream)
+			{
+				formatter.Serialize(stream, source);
+				stream.Seek(0, SeekOrigin.Begin);
+				return (T)formatter.Deserialize(stream);
+			}
+		}
+	}    
 }
 
 // end

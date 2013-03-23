@@ -7,7 +7,7 @@ using Peach.Core.Dom;
 namespace Peach.Core.Publishers
 {
 	[Publisher("FilePerIteration", true)]
-	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing", true)]
+	[Parameter("FileName", typeof(string), "Name of file to open for reading/writing")]
 	public class FilePerIterationPublisher : FilePublisher
 	{
 		protected string fileTemplate;
@@ -26,15 +26,18 @@ namespace Peach.Core.Publishers
 
 				FileName = null;
 			}
-			catch (FormatException)
+			catch (FormatException ex)
 			{
-				throw new PeachException("Error, FileName \"" + fileTemplate + "\" is not a valid format string.");
+				throw new PeachException("Error, FileName \"" + fileTemplate + "\" is not a valid format string.", ex);
 			}
 		}
 
 		protected void setFileName(uint iteration)
 		{
 			FileName = string.Format(fileTemplate, iteration);
+
+			if (IsControlIteration)
+				FileName += ".Control";
 		}
 
 		protected override void OnOpen()

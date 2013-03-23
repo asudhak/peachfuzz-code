@@ -55,7 +55,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -114,7 +113,6 @@ namespace Peach.Core.Test.Mutators
             RunConfiguration config = new RunConfiguration();
 
             Engine e = new Engine(null);
-            e.config = config;
             e.startFuzzing(dom, config);
 
             // verify values
@@ -154,7 +152,7 @@ namespace Peach.Core.Test.Mutators
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
-				"       <Strategy class=\"Sequencial\"/>" +
+				"       <Strategy class=\"Sequential\"/>" +
 				"   </Test>" +
 				"</Peach>";
 
@@ -167,7 +165,6 @@ namespace Peach.Core.Test.Mutators
 			RunConfiguration config = new RunConfiguration();
 
 			Engine e = new Engine(null);
-			e.config = config;
 			e.startFuzzing(dom, config);
 
 			// verify values

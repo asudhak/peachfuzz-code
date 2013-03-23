@@ -11,7 +11,7 @@ APPNAME='cc_test'
 
 top = '.'
 
-from waflib import Configure, Logs
+from waflib import Configure, Logs, Utils
 #Configure.autoconfig = True
 
 def options(opt):
@@ -59,6 +59,10 @@ def build(bld):
 	bld.install_files('${PREFIX}/', 'program/a.h  program/main.c', relative_trick=False)
 	bld.install_as('${PREFIX}/gnigni.txt', 'wscript')
 	bld.symlink_as('${PREFIX}/libfoo.so', 'wscript')
+
+	p = Utils.subst_vars('${PREFIX}/gnigni.txt', bld.env)
+	bld.symlink_as('${PREFIX}/share/gnigni-abs.txt', p, relative_trick=False)
+	bld.symlink_as('${PREFIX}/share/gnigni-rel.txt', p, relative_trick=True)
 
 	bld.env.FOO =['m', 'ncurses']
 	bld.env.ST = '-L%s'

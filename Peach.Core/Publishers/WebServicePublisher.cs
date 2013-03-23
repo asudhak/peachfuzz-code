@@ -22,11 +22,12 @@ using NLog;
 namespace Peach.Core.Publishers
 {
 	[Publisher("WebService", true)]
-	[ParameterAttribute("Url", typeof(string), "WebService URL", true)]
-	[ParameterAttribute("Service", typeof(string), "Service name", true)]
-	[ParameterAttribute("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", false)]
-	[ParameterAttribute("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
-	[ParameterAttribute("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
+	[Parameter("Url", typeof(string), "WebService URL")]
+	[Parameter("Service", typeof(string), "Service name")]
+	[Parameter("Wsdl", typeof(string), "Optional path or URL to WSDL for web service.", "")]
+	[Parameter("ErrorOnStatusCode", typeof(bool), "Error when status code isn't 200 (defaults to true)", "true")]
+	[Parameter("Timeout", typeof(int), "How long to wait in milliseconds for data/connection (default 3000)", "3000")]
+	[Parameter("Throttle", typeof(int), "Time in milliseconds to wait between connections", "0")]
 	public class WebServicePublisher : Publisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -38,6 +39,8 @@ namespace Peach.Core.Publishers
 		public int Timeout { get; set; }
 		public int Throttle { get; set; }
         public string StatusCode = HttpStatusCode.OK.ToString();
+		public bool ErrorOnStatusCode { get; set; }
+		public override string Result { get { return StatusCode;} set { StatusCode = value; } }
 
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
@@ -76,7 +79,16 @@ namespace Peach.Core.Publishers
 			int count = 0;
 			foreach(var arg in args)
 			{
-                parameters[count] = GetVariantValue(arg.dataModel[0].InternalValue);
+				try
+				{
+					parameters[count] = GetVariantValue(arg.dataModel[0].InternalValue);
+				}
+				catch(Exception ex)
+				{
+					logger.Debug("OnCall: Warning, unable to get value for parameter #" + count + ".  Setting parameter to null.  Exception: " + ex.ToString());
+					parameters[count] = null;
+				}
+
 				count++;
 			}
 
@@ -87,24 +99,42 @@ namespace Peach.Core.Publishers
 
                 StatusCode = HttpStatusCode.OK.ToString();
 
+				if (ret == null)
+					return null;
+
                 return new Variant(ret.ToString());
             }
             catch (Exception ex)
             {
+				if (ex.InnerException is ArgumentException &&
+					ex.InnerException.Message.IndexOf("surrogate") != -1)
+					throw new SoftException(ex.InnerException);
+				if (ex.InnerException is InvalidOperationException &&
+					ex.InnerException.Message.IndexOf("XML") != -1)
+					throw new SoftException(ex.InnerException);
+
                 if (!(ex.InnerException is WebException))
-                    throw ex;
+                    throw;
 
                 var webEx = ex.InnerException as WebException;
                 var response = webEx.Response as HttpWebResponse;
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     StatusCode = response.StatusCode.ToString();
+					logger.Debug("OnCall: Warning: Status code was: " + StatusCode);
 
-                    var sex = new SoftException(ex); // Soft or ignore?
-                    throw sex;
+					if (ErrorOnStatusCode)
+					{
+						var sex = new SoftException(ex); // Soft or ignore?
+						throw sex;
+					}
+					else
+					{
+						return null;
+					}
                 }
 
-                throw ex;
+                throw;
             }
 		}
 	}

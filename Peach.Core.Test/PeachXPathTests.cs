@@ -218,7 +218,6 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
-		[Ignore("TODO - Implement this feature, existing bug in github.")]
 		public void BasicAttributeTest()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -256,7 +255,7 @@ namespace Peach.Core.Test
 			DataElement findMe = ((DataElementContainer)dataModel[3])[0];
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
-			XPathNodeIterator iter = navi.Select("//FindMe[@isToken=true]");
+			XPathNodeIterator iter = navi.Select("//FindMe[@isToken='True']");
 
 			Assert.IsTrue(iter.MoveNext());
 			Assert.AreEqual(findMe, ((PeachXPathNavigator)iter.Current).currentNode);
