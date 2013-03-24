@@ -1,3 +1,6 @@
+
+#if MONO
+
 using System;
 using System.Collections.Generic;
 using Peach;
@@ -467,3 +470,5 @@ namespace Peach.Core.Publishers
 		#endregion
 	}
 }
+
+#endif

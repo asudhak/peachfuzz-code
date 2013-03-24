@@ -100,7 +100,7 @@ namespace Peach.Core.Publishers
 
 		protected abstract bool AddressFamilySupported(AddressFamily af);
 
-		protected abstract Socket OpenSocket(EndPoint remote);
+		protected abstract Socket OpenSocket(EndPoint remote, uint? mtu = null);
 
 		public SocketPublisher(string type, Dictionary<string, Variant> args)
 			: base(args)
@@ -592,6 +592,60 @@ namespace Peach.Core.Publishers
 
 				throw new SoftException(ex);
 			}
+		}
+
+		protected override Variant OnGetProperty(string property)
+		{
+#if MONO
+			if (property == "MTU")
+			{
+				if (_socket != null)
+				{
+					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
+					return new Variant(_mtu);
+				}
+
+				var ep = ResolveHost();
+
+				if (!AddressFamilySupported(ep.AddressFamily))
+					throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
+
+				using (var sock = OpenSocket(ep, null))
+				{
+					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
+					return new Variant(_mtu);
+				}
+			}
+#endif
+
+			return null;
+		}
+
+		protected override void OnSetProperty(string property, Variant value)
+		{
+#if MONO
+			if (property == "MTU")
+			{
+				System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
+				var bs = (BitStream)value;
+				bs.SeekBits(0, SeekOrigin.Begin);
+				int len = (int)Math.Min(bs.LengthBits, 32);
+				ulong bits = bs.ReadBits(len);
+				uint mtu = LittleBitWriter.GetUInt32(bits, len);
+				if (MaxMtu >= mtu && mtu >= MinMtu)
+				{
+					var ep = ResolveHost();
+
+					if (!AddressFamilySupported(ep.AddressFamily))
+						throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
+
+					using (var sock = OpenSocket(ep, mtu))
+					{
+						Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+					}
+				}
+			}
+#endif
 		}
 
 		#region Read Stream
