@@ -3,7 +3,7 @@ from waflib import Utils
 
 name = 'Peach.exe'
 
-if bld.env.DEST_OS != 'win32':
+if bld.env.MCS and bld.env.DEST_OS != 'win32':
 	name = 'peach.exe'
 	bld.install_files('${BINDIR}', 'peach', chmod=Utils.O755)
 
@@ -14,5 +14,5 @@ bld(
 	name = name,
 	namespace = 'Peach',
 	ver_product = 'Peach Fuzzing Platfom',
-	install = bld.path.ant_glob('samples/*')
+	install = bld.path.ant_glob('template.xml samples/*')
 )

@@ -302,7 +302,9 @@ namespace Peach.Core
 					iterationStart = context.config.skipToIteration;
 				}
 
-				uint iterationCount = Math.Max(1, iterationStart);
+				iterationStart = Math.Max(1, iterationStart);
+
+				uint iterationCount = iterationStart;
 				bool firstRun = true;
 
 				// First iteration is always a control/recording iteration
@@ -599,7 +601,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 							if (context.config.parallel)
 							{
-								if (iterationTotal > context.config.parallelTotal)
+								if (iterationTotal < context.config.parallelTotal)
 									throw new PeachException(string.Format("Error, {1} parallel machines is greater than the {0} total iterations.", iterationTotal, context.config.parallelTotal));
 
 								var range = Utilities.SliceRange(1, iterationStop, context.config.parallelNum, context.config.parallelTotal);

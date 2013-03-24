@@ -230,7 +230,13 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			}
 			finally
 			{
-				_dbgCreated.Set();
+				try
+				{
+					_dbgCreated.Set();
+				}
+				catch
+				{
+				}
 			}
 		}
 
