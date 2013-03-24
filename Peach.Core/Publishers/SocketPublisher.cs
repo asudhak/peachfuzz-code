@@ -8,10 +8,79 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Net.NetworkInformation;
 
+using NLog;
+
+#if MONO
+using Mono.Unix;
+using Mono.Unix.Native;
+#endif
+
+using Peach;
+using Peach.Core.IO;
+
 namespace Peach.Core.Publishers
 {
 	public abstract class SocketPublisher : Publisher
 	{
+#if MONO
+		#region P/Invokes for MTU
+
+		const int AF_PACKET = 17;
+		const int SOCK_RAW = 3;
+		const int SIOCGIFMTU = 0x8921;
+		const int SIOCSIFMTU = 0x8922;
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct sockaddr_ll
+		{
+			public ushort sll_family;
+			public ushort sll_protocol;
+			public int sll_ifindex;
+			public ushort sll_hatype;
+			public byte sll_pkttype;
+			public byte sll_halen;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+			public byte[] sll_addr;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+		struct ifreq
+		{
+			public ifreq(string ifr_name)
+			{
+				this.ifr_name = ifr_name;
+				this.ifru_mtu = 0;
+			}
+
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
+			public string ifr_name;
+			public uint ifru_mtu;
+		}
+
+		[DllImport("libc", SetLastError = true)]
+		private static extern int if_nametoindex(string ifname);
+
+		[DllImport("libc", SetLastError = true)]
+		private static extern int ioctl(int fd, int request, ref ifreq mtu);
+
+		#endregion
+
+		#region MTU Related Declarations
+
+		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header.
+		// In order to account for Jumbograms which are > 65535, max MTU is double 65535
+		// MinMTU is 128 so that IP info isn't lost if MTU is fuzzed
+		//
+		// These values should be made configurable at some point.
+		private const uint MaxMtu = 65535 * 2;
+		private const uint MinMtu = 128;
+
+		private uint _mtu = 0;
+		private uint orig_mtu = 0;
+
+		#endregion
+#endif
+
 		public byte Protocol { get; set; }
 		public IPAddress Interface { get; set; }
 		public string Host { get; set; }
@@ -41,6 +110,11 @@ namespace Peach.Core.Publishers
 			// Ensure Protocol is supported
 			if (Platform.GetOS() == Platform.OS.Windows)
 				GetProtocolType(Protocol);
+		}
+
+		public static bool IsRunningOnMono()
+		{
+			return Type.GetType("Mono.Runtime") != null;
 		}
 
 		private IPEndPoint ResolveHost()
@@ -192,6 +266,25 @@ namespace Peach.Core.Publishers
 
 		protected Socket OpenRawSocket(AddressFamily af, int protocol)
 		{
+			return OpenRawSocket(af, protocol, null);
+		}
+
+		protected string GetInterfaceName(IPAddress Ip)
+		{
+			foreach(var iface in NetworkInterface.GetAllNetworkInterfaces())
+			{
+				foreach (var ifaceIp in iface.GetIPProperties().UnicastAddresses)
+				{
+					if (ifaceIp.Address == Ip)
+						return iface.Name;
+				}
+			}
+
+			throw new Exception("Unable to locate interface for IP: " + Ip.ToString());
+		}
+
+		protected Socket OpenRawSocket(AddressFamily af, int protocol, uint? mtu)
+		{
 			if (Platform.GetOS() == Platform.OS.Windows)
 			{
 				ProtocolType protocolType = GetProtocolType(protocol);
@@ -234,6 +327,39 @@ namespace Peach.Core.Publishers
 
 					continue;
 				}
+
+				// Start MTU Related Code -- Duplicated in RawEtherPublisher
+
+#if MONO
+
+				int ret = -1;
+				ifreq ifr = new ifreq(GetInterfaceName(Interface));
+
+				if (orig_mtu == 0)
+				{
+					ret = ioctl(fd, SIOCGIFMTU, ref ifr);
+					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
+					orig_mtu = ifr.ifru_mtu;
+				}
+
+				if (mtu != null)
+				{
+					ifr.ifru_mtu = mtu.Value;
+					ret = ioctl(fd, SIOCSIFMTU, ref ifr);
+					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
+				}
+
+				ret = ioctl(fd, SIOCGIFMTU, ref ifr);
+				UnixMarshal.ThrowExceptionForLastErrorIf(ret);
+
+				if (mtu != null && ifr.ifru_mtu != mtu.Value)
+					throw new PeachException("MTU change did not take effect.");
+
+				_mtu = ifr.ifru_mtu;
+
+#endif
+
+				// End MTU Related Code
 
 				// Save off the new protocol
 				Buffer.BlockCopy(BitConverter.GetBytes((int)protocol), 0, info.ProtocolInformation, 8, 4);

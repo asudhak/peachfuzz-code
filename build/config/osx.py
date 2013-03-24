@@ -85,6 +85,8 @@ def prepare(conf):
 def configure(conf):
 	env = conf.env
 
+	env['IS_MONO'] = 'True'
+	
 	env.append_value('supported_features', [
 		'osx',
 		'c',
@@ -113,11 +115,11 @@ def configure(conf):
 	])
 
 	env.append_value('CSFLAGS_debug', [
-		'/define:DEBUG,TRACE',
+		'/define:DEBUG,TRACE,MONO',
 	])
 
 	env.append_value('CSFLAGS_release', [
-		'/define:TRACE',
+		'/define:TRACE,MONO',
 		'/optimize+',
 	])
 

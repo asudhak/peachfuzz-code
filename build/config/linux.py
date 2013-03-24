@@ -105,6 +105,8 @@ def prepare(conf):
 def configure(conf):
 	env = conf.env
 
+	env['IS_MONO'] = 'True'
+	
 	env.append_value('CSFLAGS', [
 		'/warn:4',
 		'/define:PEACH,UNIX,MONO',
@@ -112,11 +114,11 @@ def configure(conf):
 	])
 
 	env.append_value('CSFLAGS_debug', [
-		'/define:DEBUG,TRACE',
+		'/define:DEBUG,TRACE,MONO',
 	])
 
 	env.append_value('CSFLAGS_release', [
-		'/define:TRACE',
+		'/define:TRACE,MONO',
 		'/optimize+',
 	])
 
