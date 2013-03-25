@@ -275,7 +275,7 @@ namespace Peach.Core.Publishers
 			{
 				foreach (var ifaceIp in iface.GetIPProperties().UnicastAddresses)
 				{
-					if (ifaceIp.Address == Ip)
+					if (IPAddress.Equals(ifaceIp.Address, Ip))
 						return iface.Name;
 				}
 			}
