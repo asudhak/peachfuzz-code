@@ -212,6 +212,65 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual("Hello World!", result);
 		}
+
+		[Test]
+		public void Test4()
+		{
+			string inc1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+	<DataModel name=""HelloWorldTemplate"">
+		<Number name=""Size"" size=""8"">
+			<Relation type=""size"" of=""HelloWorldTemplate""/>
+		</Number>
+		<String name=""str"" value=""four""/>
+	</DataModel>
+</Peach>
+";
+
+			string template = @"
+<Peach>
+	<Include ns=""example"" src=""{0}"" />
+
+	<StateModel name=""State"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""example:HelloWorldTemplate"" />
+			</Action>
+		</State>
+	</StateModel>
+	
+	<Test name=""Default"">
+		<StateModel ref=""State"" />
+		<Publisher class=""File"">
+			<Param name=""FileName"" value=""{1}""/>
+		</Publisher>
+	</Test>
+	
+</Peach>";
+
+			string remote = Path.GetTempFileName();
+			string output = Path.GetTempFileName();
+
+			string xml = string.Format(template, remote, output);
+
+			using (TextWriter writer = File.CreateText(remote))
+			{
+				writer.Write(inc1);
+			}
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			string result = File.ReadAllText(output);
+
+			Assert.AreEqual("5four", result);
+		}
 	}
 }
 
