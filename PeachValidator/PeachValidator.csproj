@@ -305,9 +305,6 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Be.Windows.Forms.HexBox">
-      <HintPath>..\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\bin\Debug\Be.Windows.Forms.HexBox.dll</HintPath>
-    </Reference>
     <Reference Include="IronPython">
       <HintPath>..\3rdParty\IronPython-2.7.3\IronPython.dll</HintPath>
     </Reference>
@@ -368,6 +365,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\3rdParty\Be.HexEditor.150\sources\Be.Windows.Forms.HexBox\Be.Windows.Forms.HexBox.csproj">
+      <Project>{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}</Project>
+      <Name>Be.Windows.Forms.HexBox</Name>
+    </ProjectReference>
     <ProjectReference Include="..\3rdParty\TreeViewAdv\Aga.Controls\Aga.Controls.csproj">
       <Project>{E73BB233-D88B-44A7-A98F-D71EE158381D}</Project>
       <Name>Aga.Controls</Name>
