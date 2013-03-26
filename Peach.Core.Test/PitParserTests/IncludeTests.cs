@@ -213,7 +213,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello World!", result);
 		}
 
-		[Test]
+		[Test, Ignore("In reference to  Issue #324 ")]
 		public void Test4()
 		{
 			string inc1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
