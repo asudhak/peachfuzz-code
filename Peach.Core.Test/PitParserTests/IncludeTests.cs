@@ -216,7 +216,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello World!", result);
 		}
 
-		[Test, Ignore("In reference to  Issue #324 ")]
+		[Test]
 		public void Test4()
 		{
 			string inc1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -242,6 +242,24 @@ namespace Peach.Core.Test.PitParserTests
 		</State>
 	</StateModel>
 	
+	<StateModel name=""StateOverride"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""example:HelloWorldTemplate"" />
+				<Data>
+					<Field name=""str"" value=""hello""/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+<Test name=""Override"">
+		<StateModel ref=""StateOverride"" />
+		<Publisher class=""File"">
+			<Param name=""FileName"" value=""{1}""/>
+		</Publisher>
+	</Test>
+
 	<Test name=""Default"">
 		<StateModel ref=""State"" />
 		<Publisher class=""File"">
@@ -270,9 +288,17 @@ namespace Peach.Core.Test.PitParserTests
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			string result = File.ReadAllText(output);
+			byte[] result = File.ReadAllBytes(output);
 
-			Assert.AreEqual("5four", result);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x0005four"), result);
+
+			dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			e = new Engine(null);
+			e.startFuzzing(dom, dom.tests[0], config);
+
+			result = File.ReadAllBytes(output);
+
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x0006hello"), result);
 		}
 	}
 }
