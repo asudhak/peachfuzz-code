@@ -92,6 +92,8 @@ namespace Peach.Core.Dom
 			set
 			{
 				_attributeName = value;
+				// DefaultValue isn't used internally, but this makes the Validator show helpful text
+				_defaultValue = new Variant("'{0}' Attribute".Fmt(value));
 				Invalidate();
 			}
 		}

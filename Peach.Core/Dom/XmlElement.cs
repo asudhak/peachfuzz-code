@@ -103,6 +103,8 @@ namespace Peach.Core.Dom
 			set
 			{
 				_elementName = value;
+				// DefaultValue isn't used internally, but this makes the Validator show helpful text
+				_defaultValue = new Variant("<{0}> Element".Fmt(value));
 				Invalidate();
 			}
 		}
