@@ -86,6 +86,9 @@ namespace Peach.Core.Analyzers
 
 			foreach(XmlNode node in doc.ChildNodes)
 			{
+				if (node is XmlDeclaration || node is XmlComment)
+					continue;
+
 				if (node.Name.StartsWith("#"))
 					continue;
 
