@@ -1437,6 +1437,9 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			if (action.dataModelRequired && action.dataModel == null)
+				throw new PeachException("Error, action '" + action.name + "' is missing required child element <DataModel>.");
+
 			return action;
 		}
 
@@ -1452,6 +1455,9 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Data")
 					param.data = handleData(child, true);
 			}
+
+			if (param.dataModel == null)
+				throw new PeachException("Error, <Param> child of action '" + parent.name + "' is missing required child element <DataModel>.");
 
 			return param;
 		}

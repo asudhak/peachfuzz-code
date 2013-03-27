@@ -284,6 +284,25 @@ namespace Peach.Core.Dom
 			set { _property = value; }
 		}
 
+		/// <summary>
+		/// Returns true if this action requires a dataModel
+		/// </summary>
+		public bool dataModelRequired
+		{
+			get
+			{
+				switch (type)
+				{
+					case ActionType.Input:
+					case ActionType.Output:
+					case ActionType.GetProperty:
+					case ActionType.SetProperty:
+						return true;
+					default:
+						return false;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Action is starting to execute

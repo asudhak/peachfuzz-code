@@ -476,6 +476,7 @@
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="ReportedTests.cs" />
     <Compile Include="RunTests.cs" />
+    <Compile Include="StateModel\ActionTests.cs" />
     <Compile Include="StateModel\ActionWhenTests.cs" />
     <Compile Include="StateModel\InputTests.cs" />
     <Compile Include="StateModel\OutputTests.cs" />
