@@ -1590,7 +1590,7 @@ namespace Peach.Core.Analyzers
 					var attr = child.getAttr("ref", null);
 
 					if (attr != null)
-						attr = string.Format("//{0} | //{0}/*", attr);
+						attr = string.Format("//{0}", attr);
 					else
 						attr = child.getAttr("xpath", null);
 
@@ -1606,7 +1606,7 @@ namespace Peach.Core.Analyzers
 					var attr = child.getAttr("ref", null);
 
 					if (attr != null)
-						attr = string.Format("//{0} | //{0}/*", attr);
+						attr = string.Format("//{0}", attr);
 					else
 						attr = child.getAttr("xpath", null);
 
