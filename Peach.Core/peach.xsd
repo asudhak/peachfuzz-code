@@ -617,11 +617,6 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
-			<xs:attribute name="analyzer" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>[Optional] The class of an analyzer to further decompose data.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="lengthType" type="tLengthType">
 				<xs:annotation>
 					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
@@ -1112,11 +1107,6 @@
 			<xs:attributeGroup ref="peachCommonAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
 			<xs:attributeGroup ref="ValueAttributes" />
-			<xs:attribute name="analyzer" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>[Optional] The class of an analyzer to further decompose data.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="token" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Indicates a token in the data stream.</xs:documentation>
@@ -1477,15 +1467,6 @@
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<!--								<xs:enumeration value="logger.SQL">
-												<xs:annotation>
-												<xs:documentation>Log to a SQL server (MySQL).  Requires a 
-												single parameter named "path" with the fully qualified path 
-												place logged information.  This will include any data reported
-												by Agents and Monitors along with a text file containing
-												the sent and received data for each logged test.</xs:documentation>
-												</xs:annotation>
-												</xs:enumeration> -->
 										</xs:restriction>
 									</xs:simpleType>
 								</xs:union>
@@ -1606,14 +1587,6 @@
 														Each element will be mutated
 														using all mutators one at a time.  This strategy is deterministic and is
 														able to calculate the number of test cases it is capable of generating.
-													</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="ReproStrategy">
-												<xs:annotation>
-													<xs:documentation>
-														This strategy is used to replay an already fuzzed set of
-														files through Peach.  No additional fuzzing is performed by this strategy.
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
@@ -1869,13 +1842,6 @@
 														the test count #.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<xs:enumeration value="Odbc">
-												<xs:annotation>
-													<xs:documentation>Will execute test cases as SQL queries. Requires
-														parameter named &quot;dsn&quot; that is a valid ODBC
-														DSN.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
 											<xs:enumeration value="Com">
 												<xs:annotation>
 													<xs:documentation>A simple COM publisher that will pass a test case as a
@@ -1884,6 +1850,41 @@
 														methodFormat parameter is in format:
 														FunctionName(&quot;%s&quot;) where %s will be replaced with the
 														test case.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Http">
+												<xs:annotation>
+													<xs:documentation>A simple COM publisher that will pass a test case as a
+														parameter to a single method call. Requires a parameters named
+														&quot;clsid&quot; and &quot;methodFormat&quot;. The
+														methodFormat parameter is in format:
+														FunctionName(&quot;%s&quot;) where %s will be replaced with the
+														test case.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawIPv4">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for TCP v4.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawV4">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for IPv4.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawV6">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for IPv6.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SerialPort">
+												<xs:annotation>
+													<xs:documentation>Serial Port publisher.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="WebService">
+												<xs:annotation>
+													<xs:documentation>Web Service (SOAP) publisher.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
 										</xs:restriction>
@@ -2134,11 +2135,6 @@
 											form.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="WideChar">
-									<xs:annotation>
-										<xs:documentation>Make a normal string a wchar string</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
 								<xs:enumeration value="UrlEncode">
 									<xs:annotation>
 										<xs:documentation>URL encode w/o pluses.</xs:documentation>
@@ -2183,21 +2179,6 @@
 								<xs:enumeration value="HtmlDecode">
 									<xs:annotation>
 										<xs:documentation>Decode HTML encoded string</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Utf16">
-									<xs:annotation>
-										<xs:documentation>Encode string as UTF-16.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Utf16Le">
-									<xs:annotation>
-										<xs:documentation>Encode string as UTF-16LE.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Utf16Be">
-									<xs:annotation>
-										<xs:documentation>Encode string as UTF-16BE.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="Ipv4StringToOctet">
@@ -2317,6 +2298,26 @@
 										<xs:documentation>ICMP Checksum</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
+								<xs:enumeration value="IcmpV6ChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>ICMP v6 Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="LRCFixup">
+									<xs:annotation>
+										<xs:documentation>LRC Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="TCPChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>TCP Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="UDPChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>UDP Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
 								<xs:enumeration value="SequenceIncrementFixup">
 									<xs:annotation>
 										<xs:documentation>
@@ -2328,6 +2329,27 @@
 									<xs:annotation>
 										<xs:documentation>
 											Allows a field to emit a random value without adding additional test cases. This is useful for sequence numbers common in network protocols.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="ExpressionFixup">
+									<xs:annotation>
+										<xs:documentation>
+											Run a scripting expression to generate fixup data.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="ScriptFixup">
+									<xs:annotation>
+										<xs:documentation>
+											Use a scripting implemented fixup.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="HMAC">
+									<xs:annotation>
+										<xs:documentation>
+											Standard HMAC.  Requires key, hashtype, and length in bytes to return.
 										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
@@ -2393,10 +2415,29 @@
 			<xs:sequence>
 				<xs:element ref="Param" minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
-			<xs:attribute name="class" type="xs:string" use="required">
+			<xs:attribute name="class" use="required">
 				<xs:annotation>
 					<xs:documentation>Full class name of the Analyzer to use.</xs:documentation>
 				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="Binary">
+							<xs:annotation>
+								<xs:documentation>Break up binary data by identifying strings and basic relations.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="StringToken">
+							<xs:annotation>
+								<xs:documentation>Break up a string using a list of puncuation typically used as tokens in ascii based parsable strings.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="Xml">
+							<xs:annotation>
+								<xs:documentation>Convert a String containing XML into XmlElement and XmlAttribute data elements.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
@@ -2735,22 +2776,17 @@
 									</xs:simpleType>
 									<xs:simpleType>
 										<xs:restriction base="xs:string">
-											<!-- <xs:enumeration value="debugger.WindowsAppVerifier">
-												<xs:annotation>
-													<xs:documentation> Uses Microsoft AppVerifier tool to detect faults
-														on running processes. AppVerifier can be downloaded from Microsoft.
-														The following paramter is required: Application.  NOTE: This monitor
-														does not start the child process.  Use process.Process for that.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration> -->
-											<xs:enumeration value="WindowsDebugger">
+											<xs:enumeration value="CanaKitRelay">
 												<xs:annotation>
 													<xs:documentation>
-														Windows WinDbg agent. This debugger agent is based on
-														the windbg engine and supports the following features: User mode
-														debugging, Kernel mode debugging, x86 and x64, Symbols and symbol
-														server.   To use WinDBG *must* be installed.  One of the following three
-														parameters are required: CommandLine, ProcessName, or KernelConnectionString.
+														Monitor to control the Cana Kit Relay board.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="CleanupFolder">
+												<xs:annotation>
+													<xs:documentation>
+														Remove all files from specified folder.
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
@@ -2766,6 +2802,52 @@
 													<xs:documentation>
 														Use OS X Crash Wrangler library to detect faults and collect bucketing
 														information.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="IpPower9258">
+												<xs:annotation>
+													<xs:documentation>
+														Control IP Power 9258, networked power strip.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Ping">
+												<xs:annotation>
+													<xs:documentation>
+														Ping a remote host. Can trigger fault on no response.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="ProcessKiller">
+												<xs:annotation>
+													<xs:documentation>
+														Kill a process.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SaveFile">
+												<xs:annotation>
+													<xs:documentation>
+														File to save when a fault is triggered.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SshDownloader">
+												<xs:annotation>
+													<xs:documentation>
+														Download a file or folder via SSH.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="WindowsDebugger">
+												<xs:annotation>
+													<xs:documentation>
+														Windows WinDbg agent. This debugger agent is based on
+														the windbg engine and supports the following features: User mode
+														debugging, Kernel mode debugging, x86 and x64, Symbols and symbol
+														server.   To use WinDBG *must* be installed.  One of the following three
+														parameters are required: CommandLine, ProcessName, or KernelConnectionString.
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
@@ -2812,22 +2894,14 @@
 														specified.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<!--
-											<xs:enumeration value="popupkiller.PopupKiller">
-												<xs:annotation>
-													<xs:documentation>TODO - Will click through specified dialog
-													boxes.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											-->
-											<xs:enumeration value="PcapMonitor">
+											<xs:enumeration value="Pcap">
 												<xs:annotation>
 													<xs:documentation>Monitor and capture network traffic using PCAP library.
 														Capture is restart for each test. In event of a fault the capture file
 														is kept for further analysis.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<xs:enumeration value="SocketMonitor">
+											<xs:enumeration value="Socket">
 												<xs:annotation>
 													<xs:documentation>Monitors a given socket for connections. Issues a fault 
 														when a connection is made to the specified socket.
