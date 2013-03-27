@@ -569,6 +569,60 @@ namespace Peach.Core.Test
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 		}
+
+		[Test]
+		public void RelationOfDataModelWithinDataModel()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""RefData"">
+		<Number name=""Length"" size=""8"" endian=""big"">
+			<Relation type=""size"" of=""RefData""/>
+		</Number>
+		<Blob name=""data"" value=""a""/>
+	</DataModel>
+	
+	<DataModel name=""TheModel"">
+		<Block ref=""RefData"">
+			<Block name=""data"" ref=""RefData"">
+					<Blob name=""data"" value=""0""/>
+			</Block>
+		</Block>
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel name=""foo"" ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.IsTrue(dom.dataModels[0].Count == 2);
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(1, dataModels.Count);
+			BitStream val = dom.dataModels[1].Value;
+			Assert.NotNull(val);
+
+			byte[] expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
+			Assert.AreEqual(expected, val.Value);
+		}
 	}
 }
 
