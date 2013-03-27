@@ -1002,6 +1002,22 @@ namespace Peach.Core.Analyzers
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
+		Regex _escapeSlash = new Regex(@"\\\\|\\n|\\r|\\t");
+
+		private static string replaceSlash(Match m)
+		{
+			string s = m.ToString();
+
+			switch (s)
+			{
+				case "\\\\": return "\\";
+				case "\\n": return "\n";
+				case "\\r": return "\r";
+				case "\\t": return "\t";
+			}
+			
+			throw new ArgumentOutOfRangeException("m");
+		}
 
 		public void handleCommonDataElementValue(XmlNode node, DataElement elem)
 		{
@@ -1010,10 +1026,7 @@ namespace Peach.Core.Analyzers
 
 			string value = node.getAttrString("value");
 
-			value = value.Replace("\\\\", "\\");
-			value = value.Replace("\\n", "\n");
-			value = value.Replace("\\r", "\r");
-			value = value.Replace("\\t", "\t");
+			value = _escapeSlash.Replace(value, new MatchEvaluator(replaceSlash));
 
 			string valueType = null;
 

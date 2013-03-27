@@ -413,5 +413,35 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello World", (string)str.DefaultValue);
 			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello World\0"), str.Value.Value);
 		}
+
+		[Test]
+		public void EscapeChars()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM1'>
+		<String value='1\\t2\\r\\n'/>
+		<String value='1\t2\r\n'/>
+		<String value='1	2
+'/>
+		<String value='1	2
+\t
+\\n'/>
+
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str1 = dom.dataModels[0][0] as Dom.String;
+			Dom.String str2 = dom.dataModels[0][1] as Dom.String;
+			Dom.String str3 = dom.dataModels[0][2] as Dom.String;
+			Dom.String str4 = dom.dataModels[0][3] as Dom.String;
+
+			Assert.AreEqual("1\\t2\\r\\n", (string)str1.DefaultValue);
+			Assert.AreEqual("1\t2\r\n", (string)str2.DefaultValue);
+			Assert.AreEqual("1\t2\r\n", (string)str3.DefaultValue);
+			Assert.AreEqual("1\t2\r\n\t\r\n\\n", (string)str4.DefaultValue);
+		}
 	}
 }
