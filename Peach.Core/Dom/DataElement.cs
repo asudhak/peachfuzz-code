@@ -832,16 +832,28 @@ namespace Peach.Core.Dom
 
 					foreach (var elem in _fixup.dependents)
 					{
-						// If elem is in out parent heirarchy, we are invalid if the _recustionDepth > 1
+						// If elem is in our parent heirarchy, we are invalid any
+						// element in the heirarchy has a _recustionDepth > 1
 						// Otherwise, we are invalid if the _recursionDepth > 0
 
-						uint minDepth = 0;
 						string relName = null;
 						if (isChildOf(elem, out relName))
-							minDepth = 1;
+						{
+							var parent = this;
 
-						if (elem._recursionDepth > minDepth)
+							do
+							{
+								parent = parent.parent;
+
+								if (parent._recursionDepth > 1)
+									return false;
+							}
+							while (parent != elem);
+						}
+						else if (elem._recursionDepth > 0)
+						{
 							return false;
+						}
 					}
 				}
 

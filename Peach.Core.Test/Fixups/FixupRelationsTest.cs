@@ -257,6 +257,53 @@ namespace Peach.Core.Test.Fixups
 			byte[] expected = new byte[] { 0, 0, 0, 4, 38, 41, 27, 5 };
 			Assert.AreEqual(expected, actual);
 		}
+
+		[Test]
+		public void TestFixupChildRelation()
+		{
+			// Verify that in a DOM with Fixups that are siblings of a Relation,
+			// where the fixup ref's the parent of the parent of the relation,
+			// the fixup runs after the relation has.
+
+			// In this case the data model is:
+			// Len, 4 byte number whose value is the size of the crc
+			// CRC, 4 byte number whose value is the CRC of the length
+
+			// The CRC should include the computed size relation.
+
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"       <Block name=\"Data\">" +
+				"           <Number name=\"LEN\" size=\"32\" endian=\"big\" signed=\"false\">" +
+				"               <Relation type=\"size\" of=\"Data\" />" +
+				"           </Number>" +
+				"           <Block>" +
+				"               <Number name=\"CRC\" size=\"32\" endian=\"big\" signed=\"false\">" +
+				"                   <Fixup class=\"Crc32Fixup\">" +
+				"                       <Param name=\"ref\" value=\"TheDataModel\"/>" +
+				"                   </Fixup>" +
+				"               </Number>" +
+				"           </Block>" +
+				"       </Block>" +
+				"   </DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value;
+			Assert.NotNull(val);
+
+			MemoryStream ms = val.Stream as MemoryStream;
+			Assert.NotNull(ms);
+
+			byte[] actual = new byte[ms.Length];
+			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
+
+			byte[] expected = new byte[] { 0, 0, 0, 8, 85, 82, 148, 168 };
+			Assert.AreEqual(expected, actual);
+		}
 	}
 }
 
