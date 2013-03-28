@@ -502,7 +502,7 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 
-		[Test, Ignore("Referenced in issue #340")]
+		[Test]
 		public void RecursiveSizeRelation2()
 		{
 			string xml = @"
@@ -516,7 +516,7 @@ namespace Peach.Core.Test.CrackingTests
 		</Block>
 	</DataModel>
 
-    <DataModel name=""DM2"" ref=""DM"">
+	<DataModel name=""DM2"" ref=""DM"">
 		<Block name=""TheBlock.data"">
 			<Block name=""R1"" ref=""DM"" />
 		</Block>

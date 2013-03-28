@@ -384,11 +384,9 @@ namespace Peach.Core.Analyzers
 				{
 					DataModel dm = handleDataModel(child);
 					dom.dataModels.Add(dm.name, dm);
+					finalUpdateRelations(new DataModel[] { dm });
 				}
 			}
-
-			// Pass 3.5 - Resolve all relations
-			finalUpdateRelations(dom.dataModels.Values);
 
 			// Pass 4 - Handle Data
 
