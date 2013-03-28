@@ -36,7 +36,7 @@ namespace Peach.Core.Test.Monitors
 		</Monitor>
 	</Agent>
 
-	<Test name='Default'>
+	<Test name='Default' replayEnabled='false'>
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>

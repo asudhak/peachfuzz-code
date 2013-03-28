@@ -64,6 +64,79 @@ namespace Peach.Core.Test.Monitors
             Assert.AreEqual((string)mutations[2], (string)mutations[3]);
             Assert.AreEqual((string)mutations[4], (string)mutations[5]);
         }
+
+
+		[Test]
+		public void ReplayControl()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String value='Hello World'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Agent name='LocalAgent'>
+		<Monitor class='FaultingMonitor'>
+			<Param name='Iteration' value='1'/>
+		</Monitor>
+	</Agent>
+
+	<Test name='Default' faultWaitTime='0' replayEnabled='true'>
+		<Agent ref='LocalAgent'/>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.Fault += _Fault;
+			e.ReproFault += _ReproFault;
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw!");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
+
+			Assert.NotNull(faults);
+			Assert.AreEqual(1, faults.Length);
+
+			Assert.NotNull(reproFaults);
+			Assert.AreEqual(1, reproFaults.Length);
+		}
+
+		Fault[] faults = null;
+		Fault[] reproFaults = null;
+
+		void _ReproFault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faultData)
+		{
+			Assert.Null(reproFaults);
+			reproFaults = faultData;
+		}
+
+		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faultData)
+		{
+			Assert.Null(faults);
+			faults = faultData;
+		}
     }
 }
 

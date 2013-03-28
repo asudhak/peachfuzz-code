@@ -502,12 +502,12 @@ to execute same as initial control.  State " + state.name + "was not performed."
 								fault.controlRecordingIteration = context.controlRecordingIteration;
 							}
 
-							if (context.controlIteration || context.reproducingFault || !test.replayEnabled)
+							if (context.reproducingFault || !test.replayEnabled)
 								OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 							else
 								OnReproFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
-							if (context.controlIteration)
+							if (context.controlIteration && (!test.replayEnabled || context.reproducingFault))
 							{
 								logger.Debug("runTest: Fault detected on control iteration");
 								throw new PeachException("Fault detected on control iteration.");
