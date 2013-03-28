@@ -443,6 +443,121 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.NotNull(elem);
 			Assert.AreEqual(16, elem.Value.LengthBits);
 		}
+
+		[Test]
+		public void RecursiveSizeRelation1()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Block name=""TheBlock"">
+			<Number name=""Length"" size=""8"">
+				<Relation type=""size"" of=""data""/>
+			</Number>
+			<Blob name=""data""/>
+		</Block>
+	</DataModel>
+
+    <DataModel name=""DM2"" ref=""DM"">
+		<Block name=""TheBlock.data"">
+			<Block name=""R1"" ref=""DM"" />
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x02, 0x01, 0x60 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(1, dom.dataModels[1].Count);
+			Assert.IsTrue(dom.dataModels[1][0] is Dom.Block);
+
+			Dom.Block outerBlock = (Dom.Block)dom.dataModels[1][0];
+			Assert.AreEqual(2, outerBlock.Count);
+			Assert.IsTrue(outerBlock[0] is Dom.Number);
+			Assert.AreEqual(new byte[] { 0x02 }, ((Dom.Number)outerBlock[0]).Value.Value);
+			Assert.IsTrue(outerBlock[1] is Dom.Block);
+
+			Dom.Block outerDataBlock = (Dom.Block)outerBlock[1];
+			Assert.AreEqual(1, outerDataBlock.Count);
+			Assert.IsTrue(outerDataBlock[0] is Dom.Block);
+			Assert.AreEqual(1, ((Dom.Block)outerDataBlock[0]).Count);
+			Assert.IsTrue(((Dom.Block)outerDataBlock[0])[0] is Dom.Block);
+
+			Dom.Block innerBlock = (Dom.Block)(((Dom.Block)outerDataBlock[0])[0]);
+			Assert.AreEqual(2, innerBlock.Count);
+			Assert.IsTrue(innerBlock[0] is Dom.Number);
+			Assert.AreEqual(new byte[] { 0x01 }, ((Dom.Number)innerBlock[0]).Value.Value);
+			Assert.IsTrue(innerBlock[1] is Dom.Blob);
+			Assert.AreEqual(new byte[] { 0x60 }, ((Dom.Blob)innerBlock[1]).Value.Value);
+
+
+		}
+
+
+		[Test, Ignore("Referenced in issue #340")]
+		public void RecursiveSizeRelation2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Block name=""TheBlock"">
+			<Number name=""Length"" size=""8"">
+				<Relation type=""size"" of=""TheBlock""/>
+			</Number>
+			<Blob name=""data""/>
+		</Block>
+	</DataModel>
+
+    <DataModel name=""DM2"" ref=""DM"">
+		<Block name=""TheBlock.data"">
+			<Block name=""R1"" ref=""DM"" />
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x03, 0x02, 0x60 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(1, dom.dataModels[1].Count);
+			Assert.IsTrue(dom.dataModels[1][0] is Dom.Block);
+
+			Dom.Block outerBlock = (Dom.Block)dom.dataModels[1][0];
+			Assert.AreEqual(2, outerBlock.Count);
+			Assert.IsTrue(outerBlock[0] is Dom.Number);
+			Assert.AreEqual(new byte[] { 0x03 }, ((Dom.Number)outerBlock[0]).Value.Value);
+			Assert.IsTrue(outerBlock[1] is Dom.Block);
+
+			Dom.Block outerDataBlock = (Dom.Block)outerBlock[1];
+			Assert.AreEqual(1, outerDataBlock.Count);
+			Assert.IsTrue(outerDataBlock[0] is Dom.Block);
+			Assert.AreEqual(1, ((Dom.Block)outerDataBlock[0]).Count);
+			Assert.IsTrue(((Dom.Block)outerDataBlock[0])[0] is Dom.Block);
+
+			Dom.Block innerBlock = (Dom.Block)(((Dom.Block)outerDataBlock[0])[0]);
+			Assert.AreEqual(2, innerBlock.Count);
+			Assert.IsTrue(innerBlock[0] is Dom.Number);
+			Assert.AreEqual(new byte[] { 0x02 }, ((Dom.Number)innerBlock[0]).Value.Value);
+			Assert.IsTrue(innerBlock[1] is Dom.Blob);
+			Assert.AreEqual(new byte[] { 0x60 }, ((Dom.Blob)innerBlock[1]).Value.Value);
+
+
+		}
 	}
 }
 
