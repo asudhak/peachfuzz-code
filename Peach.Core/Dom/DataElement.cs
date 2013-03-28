@@ -1285,6 +1285,9 @@ namespace Peach.Core.Dom
 			if (r.From.parent == null)
 				throw new PeachException(FmtMessage(r, r.From, "valid parent in from="));
 
+			if (r.Of == null)
+				return r.From == this;
+
 			// r.Of.parent can be null if r.Of is the data model
 
 			if (!r.From.ContainsNamedRelation(r))

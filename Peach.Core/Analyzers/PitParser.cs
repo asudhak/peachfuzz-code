@@ -590,8 +590,6 @@ namespace Peach.Core.Analyzers
 
 						try
 						{
-							rel.Reset();
-
 							if (rel.From == elem)
 							{
 								rel.parent = elem;
@@ -979,18 +977,15 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, child name has dot notation but replacement element not found: '" + elem.name + ".");
 
 						System.Diagnostics.Debug.Assert(elem.name == parent.name);
-						parent.parent[parent.name] = elem;
+
+						replaceChild(parent.parent, elem);
 					}
 					else
 					{
-						try
-						{
-							element[elem.name] = elem;
-						}
-						catch
-						{
+						if (element.ContainsKey(elem.name))
+							replaceChild(element, elem);
+						else
 							element.Add(elem);
-						}
 					}
 				}
 				// Otherwise enforce unique element names.
@@ -999,6 +994,43 @@ namespace Peach.Core.Analyzers
 					element.Add(elem);
 				}
 			}
+		}
+
+		private static void replaceRelations(DataElement newChild, DataElement elem)
+		{
+			foreach (var rel in elem.relations)
+			{
+				var other = newChild.find(elem.fullName);
+
+				if (other == null)
+				{
+					rel.Reset();
+					continue;
+				}
+
+				other.relations.Add(rel);
+
+				if (rel.From == elem)
+					rel.From = other;
+
+				if (rel.Of == elem)
+					rel.Of = other;
+			}
+		}
+
+		private static void replaceChild(DataElementContainer parent, DataElement newChild)
+		{
+			var oldChild = parent[newChild.name];
+			oldChild.parent = null;
+
+			replaceRelations(newChild, oldChild);
+
+			foreach (var elem in oldChild.EnumerateAllElements())
+			{
+				replaceRelations(newChild, elem);
+			}
+
+			parent[newChild.name] = newChild;
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);

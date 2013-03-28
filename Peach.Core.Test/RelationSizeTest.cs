@@ -523,6 +523,92 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void IncludeChildRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Out'>
+			<Block name='Value'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Out'>
+				<Block name='Value'>
+					<Blob length='10' value='0000000000'/>
+				</Block>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
+
+			Assert.AreEqual(expected, final);
+		}
+
+		[Test]
+		public void IncludeBadChildRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Out'>
+			<Block name='Value'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Out'/>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 0 };
+
+			Assert.AreEqual(expected, final);
+		}
+
+		[Test]
 		public void IncludeStateModelRelation()
 		{
 			string tmp = Path.GetTempFileName();
