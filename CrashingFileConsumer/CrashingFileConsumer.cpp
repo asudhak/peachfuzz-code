@@ -39,7 +39,7 @@ void Function1(FILE* fd)
 
 int _tmain(int argc, char* argv[])
 {
-	if(argc < 1)
+	if(argc < 2)
 	{
 		printf("Error, please supply a filename to load.\n");
 		return 0;
