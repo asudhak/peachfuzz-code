@@ -242,6 +242,49 @@ namespace Peach.Core.Test.CrackingTests
 			e = new Engine(null);
 			e.startFuzzing(dom, config);
 		}
+
+
+		[Test, Ignore("Referenced in issue #338")]
+		public void ChoiceRelations()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+        <Choice>
+  		  <Block name=""C1"">
+			<Number name=""version"" size=""8"" value=""1"" token=""true"" />
+            <Number name=""LengthBig"" size=""16"">
+              <Relation type=""size"" of=""data"" expressionGet=""size"" expressionSet=""size""/>
+            </Number>
+          </Block>
+  		  <Block name=""C2"">
+			<Number name=""version"" size=""8"" value=""2"" token=""true"" />
+			<Number name=""LengthSmall"" size=""8"">
+              <Relation type=""size"" of=""data"" expressionGet=""size"" expressionSet=""size""/>
+            </Number>
+          </Block>
+        </Choice>
+		<Blob name=""data"" />
+	</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			Assert.IsTrue(dom.dataModels[0][0] is Dom.Choice);
+			Assert.IsTrue(dom.dataModels[0][1] is Blob);
+
+		}
 	}
 }
 
