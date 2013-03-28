@@ -9,6 +9,10 @@ def configure(conf):
 		conf.find_program('mdoc', var='MDOC', exts='.exe', path_list=[mdoc_path])
 		conf.env.MDOC_ST = '--lib=%s'
 		conf.env.MDOC_OUTPUT = '${PREFIX}/apidoc'
+
+		if (Utils.unversioned_sys_platform() != 'win32'):
+			conf.find_program('mono', var='MDOC_MONO')
+
 	except Exception, e:
 		if Logs.verbose > 0:
 			Logs.warn('C# html documentation is not available: %s' % (e))
@@ -75,7 +79,7 @@ class mdoc_update(Task.Task):
 	Run msbuild
 	"""
 	color   = 'YELLOW'
-	run_str = '${MDOC} update -i ${SRC[1].relpath()} ${MDOC_ST:MDOC_ASM_DIRS} -o ${TGT} ${SRC[0].relpath()}'
+	run_str = '${MDOC_MONO} ${MDOC} update -i ${SRC[1].relpath()} ${MDOC_ST:MDOC_ASM_DIRS} -o ${TGT} ${SRC[0].relpath()}'
 
 	def runnable_status(self):
 		ret = Task.SKIP_ME
@@ -90,7 +94,7 @@ class mdoc_html(Task.Task):
 	Run msbuild
 	"""
 	color   = 'YELLOW'
-	run_str = '${MDOC} export-html -o ${TGT} ${SRC}'
+	run_str = '${MDOC_MONO} ${MDOC} export-html -o ${TGT} ${SRC}'
 
 	def runnable_status(self):
 		ret = Task.SKIP_ME
