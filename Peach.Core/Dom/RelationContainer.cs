@@ -82,6 +82,26 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public IEnumerable<T> Of<T>() where T: class
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				T r = rel as T;
+				if (r != null && rel.Of == parent)
+					yield return r;
+			}
+		}
+
+		public IEnumerable<T> From<T>() where T : class
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				T r = rel as T;
+				if (r != null && rel.From == parent)
+					yield return r;
+			}
+		}
+
 		public bool hasOfSizeRelation
 		{
 			get

@@ -433,6 +433,9 @@ namespace Peach.Core.Dom
 			}
 			else if (_ofName == ctx.oldName && parent.find(_ofName) == null)
 			{
+				if (_of == null && ctx.oldName == _ofName)
+					_of = ctx.root;
+
 				m.ofName = _ofName;
 				_ofName = ctx.newName;
 			}
@@ -451,6 +454,9 @@ namespace Peach.Core.Dom
 			}
 			else if (_fromName == ctx.oldName && parent.find(_fromName) == null)
 			{
+				if (_from == null && ctx.oldName == _fromName)
+					_from = ctx.root;
+
 				m.fromName = _fromName;
 				_fromName = ctx.newName;
 			}

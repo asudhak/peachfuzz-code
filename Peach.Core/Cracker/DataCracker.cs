@@ -185,6 +185,16 @@ namespace Peach.Core.Cracker
 		}
 
 		/// <summary>
+		/// Determines if the From half of a relation has been cracked.
+		/// </summary>
+		/// <param name="elem">The Relation to test.</param>
+		/// <returns>True if the From half has been cracked, false otherwise.</returns>
+		public bool HasCracked(Relation rel)
+		{
+			return _sizedElements.ContainsKey(rel.From);
+		}
+
+		/// <summary>
 		/// Perform optimizations of data model for cracking
 		/// </summary>
 		/// <remarks>
@@ -528,13 +538,13 @@ namespace Peach.Core.Cracker
 
 		long? getRelativeOffset(DataElement elem, BitStream data, long minOffset = 0)
 		{
-			OffsetRelation rel = elem.relations.getOfOffsetRelation();
-
-			if (rel == null)
+			var relations = elem.relations.Of<OffsetRelation>();
+			if (!relations.Any())
 				return null;
 
 			// Ensure we have cracked the from half of the relation
-			if (!_sizedElements.ContainsKey(rel.From))
+			var rel = relations.Where(HasCracked).FirstOrDefault();
+			if (rel == null)
 				return null;
 
 			// Offset is in bytes
@@ -630,14 +640,23 @@ namespace Peach.Core.Cracker
 				if (until == Until.FirstSized)
 					ret = false;
 
-				var rel = array.relations.getOfCountRelation();
-				if (rel != null && _sizedElements.ContainsKey(rel.From))
+				var relations = array.relations.Of<CountRelation>();
+				if (relations.Any())
 				{
-					arrayPos *= rel.GetValue();
-					pos += arrayPos;
-					logger.Debug("scanArray: {0} -> Count Relation: {1}, Size: {2}",
-						array.debugName, rel.GetValue(), arrayPos);
-					return ret;
+					var rel = relations.Where(HasCracked).FirstOrDefault();
+					if (rel != null)
+					{
+						arrayPos *= rel.GetValue();
+						pos += arrayPos;
+						logger.Debug("scanArray: {0} -> Count Relation: {1}, Size: {2}",
+							array.debugName, rel.GetValue(), arrayPos);
+						return ret;
+					}
+					else
+					{
+						logger.Debug("scanArray: {0} -> Count Relation: ???", array.debugName);
+						return null;
+					}
 				}
 				else if (array.minOccurs == 1 && array.maxOccurs == 1)
 				{
@@ -725,10 +744,12 @@ namespace Peach.Core.Cracker
 			}
 
 			// See if we have a size relation
-			SizeRelation sizeRel = elem.relations.getOfSizeRelation();
-			if (sizeRel != null)
+			var relations = elem.relations.Of<SizeRelation>();
+			if (relations.Any())
 			{
-				if (_sizedElements.ContainsKey(sizeRel.From))
+				var sizeRel = relations.Where(HasCracked).FirstOrDefault();
+
+				if (sizeRel != null)
 				{
 					pos += sizeRel.GetValue();
 					logger.Debug("scan: {0} -> Pos: {1}, Size relation: {2}", elem.debugName, pos, sizeRel.GetValue());

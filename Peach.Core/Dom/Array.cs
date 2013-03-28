@@ -35,6 +35,7 @@ using System.Runtime;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Linq;
 
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
@@ -105,7 +106,7 @@ namespace Peach.Core.Dom
 			long min = minOccurs;
 			long max = maxOccurs;
 
-			var rel = relations.getOfCountRelation();
+			var rel = relations.Of<CountRelation>().Where(context.HasCracked).FirstOrDefault();
 			if (rel != null)
 				min = max = rel.GetValue();
 			else if (minOccurs == 1 && maxOccurs == 1)
