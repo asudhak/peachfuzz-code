@@ -75,6 +75,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CwLogFile", typeof(string), "CrashWrangler Log file (defaults to cw.log)", "cw.log")]
 	[Parameter("CwLockFile", typeof(string), "CrashWRangler Lock file (defaults to cw.lock)", "cw.lock")]
 	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", "cw.pid")]
+	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
 	public class CrashWrangler : Monitor
 	{
 		protected string _command = null;
@@ -91,6 +92,7 @@ namespace Peach.Core.Agent.Monitors
 		protected Proc _procCommand = null;
 		protected bool? _detectedFault = null;
 		protected ulong _totalProcessorTime = 0;
+		protected bool _faultOnEarlyExit = false;
 
 		public CrashWrangler(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -105,6 +107,7 @@ namespace Peach.Core.Agent.Monitors
 			_cwLogFile = args.GetString("CwLogFile", "cw.log");
 			_cwLockFile = args.GetString("CwLockFile", "cw.lock");
 			_cwPidFile = args.GetString("CwPidFile", "cw.pid");
+			_faultOnEarlyExit = args.GetBoolean("FaultOnEarlyExit", false);
 		}
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
@@ -122,6 +125,9 @@ namespace Peach.Core.Agent.Monitors
 				// Give CrashWrangler a chance to write the log
 				Thread.Sleep(500);
 				_detectedFault = File.Exists(_cwLogFile);
+
+				if (!_detectedFault.Value && _faultOnEarlyExit && !_IsProcessRunning())
+					_detectedFault = true;
 			}
 
 			return _detectedFault.Value;
@@ -132,15 +138,23 @@ namespace Peach.Core.Agent.Monitors
 			if (!DetectedFault())
 				return null;
 
-			string log = File.ReadAllText(_cwLogFile);
-			string summary = GenerateSummary(log);
-
 			Fault fault = new Fault();
 			fault.detectionSource = "CrashWrangler";
-			fault.folderName = "CrashWrangler";
 			fault.type = FaultType.Fault;
-			fault.description = summary;
-			fault.collectedData["Log"] = File.ReadAllBytes(_cwLogFile);
+
+			if (File.Exists(_cwLogFile))
+			{
+				string log = File.ReadAllText(_cwLogFile);
+				fault.description = GenerateSummary(log);
+				fault.collectedData["Log"] = File.ReadAllBytes(_cwLogFile);
+				fault.folderName = "CrashWrangler";
+			}
+			else
+			{
+				fault.title = "Process exited early";
+				fault.description = "Process exited early: " + _command + " " + _arguments;
+				fault.folderName = "ProcessExitedEarly";
+			}
 			return fault;
 		}
 
