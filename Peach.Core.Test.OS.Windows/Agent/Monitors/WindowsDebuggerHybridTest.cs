@@ -37,6 +37,16 @@ namespace Peach.Core.Test.Agent.Monitors
 			this.faults = faults;
 		}
 
+		void _AppendFault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)
+		{
+			List<Fault> tmp = new List<Fault>();
+			if (this.faults != null)
+				tmp.AddRange(this.faults);
+
+			tmp.AddRange(faults);
+			this.faults = tmp.ToArray();
+		}
+
 		string xml = @"
 <Peach>
 	<DataModel name='TheDataModel'>
@@ -107,6 +117,67 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual(1, this.faults.Length);
 			Assert.AreEqual(FaultType.Fault, this.faults[0].type);
 			Assert.AreEqual("WindowsDebuggerHybrid", this.faults[0].detectionSource);
+		}
+
+		[Test, Ignore]
+		public void TestEarlyExit()
+		{
+			string pit = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String value='Hello'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Agent name='LocalAgent'>
+		<Monitor class='WindowsDebugger'>
+			<Param name='CommandLine' value='CrashingFileConsumer.exe'/>
+			<Param name='FaultOnEarlyExit' value='true'/>
+		</Monitor>
+	</Agent>
+
+	<Test name='Default' replayEnabled='true'>
+		<Agent ref='LocalAgent'/>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(pit)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 1;
+			config.rangeStop = 1;
+
+			Engine e = new Engine(null);
+			e.Fault += _AppendFault;
+			e.ReproFault += _AppendFault;
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw!");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
+
+			Assert.NotNull(this.faults);
+			Assert.AreEqual(2, this.faults.Length);
+			Assert.AreEqual(FaultType.Fault, this.faults[0].type);
+			Assert.AreEqual("SystemDebugger", this.faults[0].detectionSource);
+			Assert.AreEqual(FaultType.Fault, this.faults[1].type);
+			Assert.AreEqual("WindowsDebugEngine", this.faults[1].detectionSource);
 		}
 	}
 }

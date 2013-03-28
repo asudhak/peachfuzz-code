@@ -124,6 +124,10 @@
       <Project>{D8A98103-E91F-4C24-AEA8-BF8C771A09D3}</Project>
       <Name>Peach.Core.Test</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Peach.Core.WindowsDebugInstance\Peach.Core.WindowsDebugInstance.csproj">
+      <Project>{41BDC4AF-7F8E-44A1-BAA4-7B36BEE50BEF}</Project>
+      <Name>Peach.Core.WindowsDebugInstance</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>

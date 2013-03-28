@@ -65,6 +65,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
 	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
 	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", "false")]
+	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
 	public class WindowsDebuggerHybrid : Monitor
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -82,6 +83,7 @@ namespace Peach.Core.Agent.Monitors
 		bool _ignoreFirstChanceGuardPage = false;
 		bool _ignoreSecondChanceGuardPage = false;
 		bool _noCpuKill = false;
+		bool _faultOnEarlyExit = false;
 
 		bool _hybrid = true;
 		bool _replay = false;
@@ -137,6 +139,8 @@ namespace Peach.Core.Agent.Monitors
 				_ignoreSecondChanceGuardPage = true;
 			if (args.ContainsKey("NoCpuKill") && ((string)args["NoCpuKill"]).ToLower() == "true")
 				_noCpuKill = true;
+			if (args.ContainsKey("FaultOnEarlyExit") && ((string)args["FaultOnEarlyExit"]).ToLower() == "true")
+				_faultOnEarlyExit = true;
 
 			// Register IPC Channel for connecting to debug process
 			//_ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
@@ -354,6 +358,9 @@ namespace Peach.Core.Agent.Monitors
 					Thread.Sleep(1000);
 				}
 
+				if (_fault == null && _faultOnEarlyExit && !_IsDebuggerRunning())
+					_fault = GetEarlyExitFault();
+
 				if(_fault != null)
 					logger.Info("DetectedFault - Caught fault with windbg");
 
@@ -368,6 +375,11 @@ namespace Peach.Core.Agent.Monitors
 				// Kill off our debugger process and re-create
 				_debuggerProcessUsage = _debuggerProcessUsageMax;
 				_fault = _debugger.crashInfo;
+			}
+			else if (_faultOnEarlyExit && !_IsDebuggerRunning())
+			{
+				logger.Info("DetectedFault() - Fault detected, process exited early");
+				_fault = GetEarlyExitFault();
 			}
 
 			if(_fault == null)
@@ -390,6 +402,28 @@ namespace Peach.Core.Agent.Monitors
 		public override bool MustStop()
 		{
 			return false;
+		}
+
+		protected Fault GetEarlyExitFault()
+		{
+			var fault = new Fault();
+			fault.type = FaultType.Fault;
+			fault.detectionSource = _systemDebugger != null ? "SystemDebugger" : "WindowsDebugEngine";
+			fault.title = "Process exited early";
+			fault.description = "Process exited early: ";
+
+			if (_processName != null)
+				fault.description += _processName;
+			else if (_commandLine != null)
+				fault.description += _commandLine;
+			else if (_kernelConnectionString != null)
+				fault.description += _kernelConnectionString;
+			else if (_service != null)
+				fault.description += _service;
+
+			fault.folderName = "ProcessExitedEarly";
+
+			return fault;
 		}
 
 		protected bool _IsDebuggerRunning()
