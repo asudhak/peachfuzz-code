@@ -165,6 +165,60 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
+		public void ExcludeThenIncludeBlock()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob />" +
+				"		<Block name=\"Block2\">" +
+				"			<Block>" +
+				"				<Blob/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<Blob />" +
+				"	</DataModel>" +
+				"	<StateModel name=\"TheStateModel\" initialState=\"TheState\">" +
+				"		<State name=\"TheState\">" +
+				"			<Action type=\"output\">" +
+				"				<DataModel ref=\"TheDataModel\"/>" +
+				"			</Action>" +
+				"		</State>" +
+				"	</StateModel>" +
+				"   <Agent name=\"AgentWindows\"> " +
+				"		<Monitor class=\"WindowsDebugEngine\"> " +
+				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
+				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
+				"		</Monitor>" +
+				"	</Agent>" +
+				"	<Test name=\"Default\">" +
+				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
+				"		<StateModel ref=\"TheStateModel\" />" +
+				"		<Publisher class=\"File\">" +
+				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
+				"		</Publisher>" +
+				"		<Exclude/>" +
+				"		<Include xpath=\"//Block2\"/>" +
+				"	</Test> " +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+
+			var cont = dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1] as DataElementContainer;
+			Assert.NotNull(cont);
+			Assert.AreEqual(1, cont.Count);
+			cont = cont[0] as DataElementContainer;
+			Assert.NotNull(cont);
+			Assert.AreEqual(1, cont.Count);
+			Assert.AreEqual(true, cont.isMutable);
+			Assert.AreEqual(true, cont[0].isMutable);
+		}
+
+		[Test]
 		public void ExcludeSpecific()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -202,6 +256,59 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
 			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+		}
+
+		[Test]
+		public void ExcludeBlock()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Blob />" +
+				"		<Block name=\"Block2\">" +
+				"			<Block>" +
+				"				<Blob/>" +
+				"			</Block>" +
+				"		</Block>" +
+				"		<Blob />" +
+				"	</DataModel>" +
+				"	<StateModel name=\"TheStateModel\" initialState=\"TheState\">" +
+				"		<State name=\"TheState\">" +
+				"			<Action type=\"output\">" +
+				"				<DataModel ref=\"TheDataModel\"/>" +
+				"			</Action>" +
+				"		</State>" +
+				"	</StateModel>" +
+				"   <Agent name=\"AgentWindows\"> " +
+				"		<Monitor class=\"WindowsDebugEngine\"> " +
+				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
+				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
+				"		</Monitor>" +
+				"	</Agent>" +
+				"	<Test name=\"Default\">" +
+				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
+				"		<StateModel ref=\"TheStateModel\" />" +
+				"		<Publisher class=\"File\">" +
+				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
+				"		</Publisher>" +
+				"		<Exclude xpath=\"//Block2\"/>" +
+				"	</Test> " +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+
+			var cont = dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1] as DataElementContainer;
+			Assert.NotNull(cont);
+			Assert.AreEqual(1, cont.Count);
+			cont = cont[0] as DataElementContainer;
+			Assert.NotNull(cont);
+			Assert.AreEqual(1, cont.Count);
+			Assert.AreEqual(false, cont.isMutable);
+			Assert.AreEqual(false, cont[0].isMutable);
 		}
 
 		[Test]

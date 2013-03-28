@@ -1002,6 +1002,22 @@ namespace Peach.Core.Analyzers
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
+		Regex _escapeSlash = new Regex(@"\\\\|\\n|\\r|\\t");
+
+		private static string replaceSlash(Match m)
+		{
+			string s = m.ToString();
+
+			switch (s)
+			{
+				case "\\\\": return "\\";
+				case "\\n": return "\n";
+				case "\\r": return "\r";
+				case "\\t": return "\t";
+			}
+			
+			throw new ArgumentOutOfRangeException("m");
+		}
 
 		public void handleCommonDataElementValue(XmlNode node, DataElement elem)
 		{
@@ -1010,10 +1026,7 @@ namespace Peach.Core.Analyzers
 
 			string value = node.getAttrString("value");
 
-			value = value.Replace("\\\\", "\\");
-			value = value.Replace("\\n", "\n");
-			value = value.Replace("\\r", "\r");
-			value = value.Replace("\\t", "\t");
+			value = _escapeSlash.Replace(value, new MatchEvaluator(replaceSlash));
 
 			string valueType = null;
 
@@ -1424,6 +1437,9 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			if (action.dataModelRequired && action.dataModel == null)
+				throw new PeachException("Error, action '" + action.name + "' is missing required child element <DataModel>.");
+
 			return action;
 		}
 
@@ -1439,6 +1455,9 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Data")
 					param.data = handleData(child, true);
 			}
+
+			if (param.dataModel == null)
+				throw new PeachException("Error, <Param> child of action '" + parent.name + "' is missing required child element <DataModel>.");
 
 			return param;
 		}
@@ -1577,7 +1596,7 @@ namespace Peach.Core.Analyzers
 					var attr = child.getAttr("ref", null);
 
 					if (attr != null)
-						attr = string.Format("//{0} | //{0}/*", attr);
+						attr = string.Format("//{0}", attr);
 					else
 						attr = child.getAttr("xpath", null);
 
@@ -1593,7 +1612,7 @@ namespace Peach.Core.Analyzers
 					var attr = child.getAttr("ref", null);
 
 					if (attr != null)
-						attr = string.Format("//{0} | //{0}/*", attr);
+						attr = string.Format("//{0}", attr);
 					else
 						attr = child.getAttr("xpath", null);
 
