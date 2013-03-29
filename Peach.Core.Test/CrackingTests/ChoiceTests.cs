@@ -380,6 +380,56 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.AreEqual(expected, actual);
 		}
+
+
+		[Test, Ignore("Referred to in issue#338"]
+		public void ChoiceSizeRelations2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+      <Block name=""TheBlock"">
+		<Choice>
+			<Block name=""C1"">
+				<Number name=""version"" size=""8"" value=""1"" token=""true""/>
+				<Number name=""LengthBig"" size=""16"">
+					<Relation type=""size"" of=""TheBlock""/>
+				</Number>
+			</Block>
+			<Block name=""C2"">
+				<Number name=""version"" size=""8"" value=""2"" token=""true""/>
+				<Number name=""LengthSmall"" size=""8"">
+					<Relation type=""size"" of=""TheBlock""/>
+				</Number>
+			</Block>
+		</Choice>
+		<Blob name=""data""/>
+      </Block>
+	  <Blob/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x02, 0x05, 0x33, 0x44, 0x55 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+
+			Dom.Block TheBlock = (Dom.Block)dom.dataModels[0][0];
+			Assert.AreEqual(3, TheBlock.Count);
+			Assert.IsTrue(TheBlock[0] is Dom.Choice);
+			Assert.IsTrue(TheBlock[1] is Blob);
+			Assert.IsTrue(dom.dataModels[0][1] is Blob);
+			Assert.AreEqual(3, TheBlock[1].Value.LengthBytes);
+			Assert.AreEqual(0, ((Dom.Blob)dom.dataModels[0][1]).Value.LengthBytes);
+
+		}
 	}
 }
 
