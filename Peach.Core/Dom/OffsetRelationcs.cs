@@ -185,7 +185,18 @@ namespace Peach.Core.Dom
 
 				BitStream stream = commonAncestor.Value;
 				if (from != commonAncestor)
+				{
+					if (!stream.HasDataElement(from.fullName))
+						throw new PeachException("Error, unable to calculate offset between '" +
+							from.fullName + "' and '" + to.fullName + "'.");
+
 					fromPosition = stream.DataElementPosition(from);
+				}
+
+				if (!stream.HasDataElement(to.fullName))
+					throw new PeachException("Error, unable to calculate offset between '" +
+						from.fullName + "' and '" + to.fullName + "'.");
+
 				toPosition = stream.DataElementPosition(to);
 			}
 			else
@@ -197,6 +208,11 @@ namespace Peach.Core.Dom
 
 				BitStream stream = commonAncestor.Value;
 				fromPosition = 0;
+
+				if (!stream.HasDataElement(to.fullName))
+					throw new PeachException("Error, unable to calculate offset between '" +
+						from.fullName + "' and '" + to.fullName + "'.");
+
 				toPosition = stream.DataElementPosition(to);
 			}
 

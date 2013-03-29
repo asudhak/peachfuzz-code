@@ -313,13 +313,9 @@ namespace Peach.Core.IO
 			SeekToDataElement(elem.fullName);
 		}
 
-		protected bool HasDataElement(string name)
+		public bool HasDataElement(string name)
 		{
-			foreach (string key in _elementPositions.Keys)
-				if (key == name)
-					return true;
-
-			return false;
+			return _elementPositions.ContainsKey(name);
 		}
 
 		public void SeekToDataElement(string name)
