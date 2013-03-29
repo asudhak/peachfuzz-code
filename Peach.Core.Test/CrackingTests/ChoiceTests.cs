@@ -382,30 +382,30 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 
-		[Test, Ignore("Referred to in issue#338"]
+		[Test]
 		public void ChoiceSizeRelations2()
 		{
 			string xml = @"
 <Peach>
 	<DataModel name=""DM"">
-      <Block name=""TheBlock"">
-		<Choice>
-			<Block name=""C1"">
-				<Number name=""version"" size=""8"" value=""1"" token=""true""/>
-				<Number name=""LengthBig"" size=""16"">
-					<Relation type=""size"" of=""TheBlock""/>
-				</Number>
-			</Block>
-			<Block name=""C2"">
-				<Number name=""version"" size=""8"" value=""2"" token=""true""/>
-				<Number name=""LengthSmall"" size=""8"">
-					<Relation type=""size"" of=""TheBlock""/>
-				</Number>
-			</Block>
-		</Choice>
-		<Blob name=""data""/>
-      </Block>
-	  <Blob/>
+		<Block name=""TheBlock"">
+			<Choice>
+				<Block name=""C1"">
+					<Number name=""version"" size=""8"" value=""1"" token=""true""/>
+					<Number name=""LengthBig"" size=""16"">
+						<Relation type=""size"" of=""TheBlock""/>
+					</Number>
+				</Block>
+				<Block name=""C2"">
+					<Number name=""version"" size=""8"" value=""2"" token=""true""/>
+					<Number name=""LengthSmall"" size=""8"">
+						<Relation type=""size"" of=""TheBlock""/>
+					</Number>
+				</Block>
+			</Choice>
+			<Blob name=""data""/>
+		</Block>
+		<Blob/>
 	</DataModel>
 </Peach>";
 
@@ -422,7 +422,7 @@ namespace Peach.Core.Test.CrackingTests
 
 
 			Dom.Block TheBlock = (Dom.Block)dom.dataModels[0][0];
-			Assert.AreEqual(3, TheBlock.Count);
+			Assert.AreEqual(2, TheBlock.Count);
 			Assert.IsTrue(TheBlock[0] is Dom.Choice);
 			Assert.IsTrue(TheBlock[1] is Blob);
 			Assert.IsTrue(dom.dataModels[0][1] is Blob);

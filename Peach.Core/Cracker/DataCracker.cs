@@ -483,9 +483,8 @@ namespace Peach.Core.Cracker
 			// keep track of the relation for evaluation in the future
 			if (!size.HasValue)
 			{
-				SizeRelation rel = elem.relations.getOfSizeRelation();
-				if (rel != null)
-					_sizeRelations.Add(rel);
+				var rel = elem.relations.Of<SizeRelation>();
+				_sizeRelations.AddRange(rel);
 			}
 
 			OnEnterHandleNodeEvent(elem, pos.begin, data);
@@ -497,9 +496,17 @@ namespace Peach.Core.Cracker
 		{
 			// Completing this element might allow us to evaluate
 			// outstanding size reation computations.
+			var resolved = new List<DataElement>();
+
 			for (int i = _sizeRelations.Count - 1; i >= 0; --i)
 			{
 				var rel = _sizeRelations[i];
+
+				if (resolved.Contains(rel.Of))
+				{
+					_sizeRelations.RemoveAt(i);
+					continue;
+				}
 
 				if (elem == rel.From || (elem is DataElementContainer &&
 					((DataElementContainer)elem).isParentOf(rel.From)))
@@ -507,6 +514,7 @@ namespace Peach.Core.Cracker
 					var other = _sizedElements[rel.Of];
 					System.Diagnostics.Debug.Assert(!other.size.HasValue);
 					other.size = rel.GetValue();
+					resolved.Add(rel.Of);
 					_sizeRelations.RemoveAt(i);
 
 					logger.Debug("Size relation of {0} cracked. Updating size: {1}",
