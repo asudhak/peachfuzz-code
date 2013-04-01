@@ -230,7 +230,8 @@ namespace Peach.Core.Publishers
 				}
 				catch (Exception ex)
 				{
-					Logger.Error("output: Ignoring error during send.  " + ex.Message);
+					Logger.Error("output: Error during send.  " + ex.Message);
+					throw new SoftException(ex);
 				}
 			}
 		}
