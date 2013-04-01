@@ -211,6 +211,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public bool processExit = false;
 		public bool verbose = false;
 		bool initialBreak = false;
+		Dictionary<uint, IntPtr> _openHandles = new Dictionary<uint, IntPtr>();
 		UnsafeMethods.STARTUPINFO _startUpInfo;
 		UnsafeMethods.PROCESS_INFORMATION _processInformation;
 		public ManualResetEvent processStarted = new ManualResetEvent(false);
@@ -270,6 +271,11 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					}
 				}
 			}
+
+			foreach (var handle in _openHandles)
+				UnsafeMethods.CloseHandle(handle.Value);
+
+			_openHandles.Clear();
 		}
 
 		public void Close()
@@ -390,6 +396,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		private uint OnExitThreadDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
+			_openHandles.Remove(DebugEv.dwThreadId);
 			return DBG_CONTINUE;
 		}
 
@@ -397,15 +404,15 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		{
 			var CreateProcessInfo = DebugEv.u.CreateProcessInfo;
 			UnsafeMethods.CloseHandle(CreateProcessInfo.hFile);
-			UnsafeMethods.CloseHandle(CreateProcessInfo.hProcess);
-			UnsafeMethods.CloseHandle(CreateProcessInfo.hThread);
+			_openHandles.Add(DebugEv.dwProcessId, CreateProcessInfo.hProcess);
+			_openHandles.Add(DebugEv.dwThreadId, CreateProcessInfo.hThread);
 			return DBG_CONTINUE;
 		}
 
 		private uint OnCreateThreadDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
 			var CreateThread = DebugEv.u.CreateThread;
-			UnsafeMethods.CloseHandle(CreateThread.hThread);
+			_openHandles.Add(DebugEv.dwThreadId, CreateThread.hThread);
 			return DBG_CONTINUE;
 		}
 
@@ -416,6 +423,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 				processExit = true;
 			}
 
+			_openHandles.Remove(DebugEv.dwProcessId);
 			return DBG_CONTINUE;
 		}
 
