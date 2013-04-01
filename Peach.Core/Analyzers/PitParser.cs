@@ -994,11 +994,20 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
-		private static void replaceRelations(DataElement newChild, DataElement elem)
+		private static void replaceRelations(DataElement newChild, DataElement oldChild, DataElement elem)
 		{
 			foreach (var rel in elem.relations)
 			{
+				DataElement which = rel.Of == elem ? rel.From : rel.Of;
+				string relName;
+
+				if (which.isChildOf(oldChild, out relName))
+					continue;
+
 				var other = newChild.find(elem.fullName);
+
+				if (elem == other)
+					continue;
 
 				if (other == null)
 				{
@@ -1021,11 +1030,11 @@ namespace Peach.Core.Analyzers
 			var oldChild = parent[newChild.name];
 			oldChild.parent = null;
 
-			replaceRelations(newChild, oldChild);
+			replaceRelations(newChild, oldChild, oldChild);
 
 			foreach (var elem in oldChild.EnumerateAllElements())
 			{
-				replaceRelations(newChild, elem);
+				replaceRelations(newChild, oldChild, elem);
 			}
 
 			parent[newChild.name] = newChild;

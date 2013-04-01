@@ -709,6 +709,40 @@ namespace Peach.Core.Test
 			byte[] expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
 			Assert.AreEqual(expected, val.Value);
 		}
+
+		[Test]
+		public void RelationRefOVerride()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='SubBlock'>
+		<Number name='BlockSize' size='8' signed='false'>
+			<Relation type='size' of='Data' />
+		</Number>
+		<Block name='Data'/>
+	</DataModel>
+
+	<DataModel name='DerivedSubBlock' ref='SubBlock'>
+		<String name='Data' value='Hello'/>
+	</DataModel>
+
+	<DataModel name='BasicBlock'>
+		<Block name='SubBlock' ref='SubBlock'/>
+	</DataModel>
+
+	<DataModel name='DerivedBlock' ref='BasicBlock'>
+		<Block name='SubBlock' ref='DerivedSubBlock'/>
+	</DataModel>
+
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[3].Value.Value;
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x5Hello"), val);
+		}
 	}
 }
 
