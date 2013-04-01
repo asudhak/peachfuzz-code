@@ -913,7 +913,7 @@ namespace Peach.Core.Agent.Monitors
 						catch (VMwareException vmex)
 						{
 							if ((ulong)vmex.Error != 3025)
-								throw vmex;
+								throw;
 
 							// Note: This exception seems to occur sometimes with workstation + open source tools.
 							//       Doesn't happen with ESXi + open source tools in guest.
@@ -928,7 +928,7 @@ namespace Peach.Core.Agent.Monitors
 				catch (Exception ex)
 				{
 					logger.Error(ex.Message);
-					throw ex;
+					throw;
 				}
 			}
 		}

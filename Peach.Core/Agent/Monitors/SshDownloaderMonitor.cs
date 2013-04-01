@@ -198,7 +198,7 @@ namespace Peach.Core.Agent.Monitors
 			catch (Exception ex)
 			{
 				logger.Error(ex.Message);
-				throw ex;
+				throw;
 			}
 		}
 
