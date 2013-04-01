@@ -88,7 +88,11 @@ namespace Peach.Core.Loggers
 			string dir = saveFaults("Faults", context, currentIteration, stateModel, faults);
 			if (reproPath != null)
 			{
-				Directory.Move(reproPath, System.IO.Path.Combine(dir, "Initial"));
+				string dirName = "Initial";
+				int i = 1;
+				while (Directory.Exists(System.IO.Path.Combine(dir, dirName)))
+					dirName = "Initial_" + i++;
+				Directory.Move(reproPath, System.IO.Path.Combine(dir, dirName));
 				Directory.Delete(System.IO.Path.Combine(ourpath, "Reproducing"), true);
 				reproPath = null;
 			}
