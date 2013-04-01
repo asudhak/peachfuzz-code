@@ -558,6 +558,35 @@ namespace Peach.Core.Test.CrackingTests
 
 
 		}
+
+		[Test]
+		public void StringSizeRelation()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='StringLengthModel'>
+		<String name='ALength'>
+			<Relation type='size' of='A' />
+		</String>
+		<String token='true' value='\r\n' />
+		<String name='A' />
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(Encoding.ASCII.GetBytes("3\r\nabc"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("abc", (string)dom.dataModels[0][2].DefaultValue);
+		}
 	}
 }
 

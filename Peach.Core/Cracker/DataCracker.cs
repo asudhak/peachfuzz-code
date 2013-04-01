@@ -766,7 +766,7 @@ namespace Peach.Core.Cracker
 				else
 				{
 					logger.Debug("scan: {0} -> Pos: {1}, Size relation: ???", elem.debugName, pos);
-					return false;
+					return null;
 				}
 			}
 
