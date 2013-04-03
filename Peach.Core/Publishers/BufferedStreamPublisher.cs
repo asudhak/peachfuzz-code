@@ -231,7 +231,11 @@ namespace Peach.Core.Publishers
 				catch (Exception ex)
 				{
 					Logger.Error("output: Error during send.  " + ex.Message);
-					throw new SoftException(ex);
+					
+                    // MIKE - Backing out change as it might affect reconnecting to 
+                    //  remote agents that contain a remote publisher.
+                    //
+                    //throw new SoftException(ex);
 				}
 			}
 		}
