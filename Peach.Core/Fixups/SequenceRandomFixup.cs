@@ -45,12 +45,106 @@ namespace Peach.Core.Fixups
 		public SequenceRandomFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args)
 		{
-			//TODO: reseed fixup based on iteration number for deterministic operation
+			Core.Dom.StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
+		}
+
+		void StateModel_Starting(StateModel model)
+		{
+			Core.Dom.StateModel.Starting -= new StateModelStartingEventHandler(StateModel_Starting);
+
+			Dom.Dom dom = model.parent as Dom.Dom;
+			dom.context.engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
+			dom.context.engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
+
+			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+
+			Engine_IterationStarting(dom.context, dom.context.test.strategy.Iteration, null);
+		}
+
+		void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
+		{
+			Random rng = new Random(context.config.randomSeed + currentIteration);
+			context.iterationStateStore["SequenceRandomFixup"] = rng;
+		}
+
+		void Engine_TestFinished(RunContext context)
+		{
+			Core.Dom.Action.Starting -= Action_Starting;
+			context.engine.TestFinished -= Engine_TestFinished;
+			context.engine.IterationStarting -= Engine_IterationStarting;
+		}
+
+		void Action_Starting(Dom.Action action)
+		{
+			if (action.type != ActionType.Output)
+				return;
+
+			var elem = action.dataModel.find(parent.fullName);
+			if (elem != null)
+			{
+				elem.Invalidate();
+				GetRandom(elem, action, true);
+			}
+		}
+
+		static Variant GetRandom(DataElement elem, Dom.Action action, bool update)
+		{
+			Dom.Number num = elem as Dom.Number;
+			if (num == null && !(elem is Dom.String && elem.Hints.ContainsKey("NumericalString")))
+				throw new PeachException("SequenceRandomFixup has non numeric parent '" + elem.fullName + "'.");
+
+			string key = "SequenceRandomFixup." + elem.fullName;
+
+			Dom.Dom dom = action.parent.parent.parent as Dom.Dom;
+			object obj;
+			if (!dom.context.iterationStateStore.TryGetValue(key, out obj))
+				obj = elem.DefaultValue;
+
+			Variant var = obj as Variant;
+			System.Diagnostics.Debug.Assert(var != null);
+
+			if (!update)
+				return var;
+
+			Random rng = (Random)dom.context.iterationStateStore["SequenceRandomFixup"];
+			
+			dynamic random;
+
+			if (num != null)
+			{
+				if (num.Signed)
+				{
+					if (num.MaxValue == long.MaxValue)
+						random = rng.NextInt64();
+					else
+						random = rng.Next((long)num.MinValue, (long)num.MaxValue + 1);
+				}
+				else
+				{
+					if (num.MaxValue == ulong.MaxValue)
+						random = rng.NextUInt64();
+					else
+						random = rng.Next((ulong)num.MinValue, (ulong)num.MaxValue + 1);
+				}
+			}
+			else
+			{
+				random = rng.NextInt32();
+			}
+
+			var = new Variant(random);
+			dom.context.iterationStateStore[key] = var;
+			return var;
 		}
 
 		protected override Variant fixupImpl()
 		{
-			return new Variant(rand.Next());
+			DataModel dm = parent.getRoot() as DataModel;
+
+			if (dm == null || dm.action == null)
+				return parent.DefaultValue;
+
+			return GetRandom(parent, dm.action, false);
 		}
 	}
 }
