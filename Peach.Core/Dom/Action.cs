@@ -467,6 +467,7 @@ namespace Peach.Core.Dom
 						break;
 
 					case ActionType.Stop:
+						publisher.close();
 						publisher.stop();
 						break;
 
