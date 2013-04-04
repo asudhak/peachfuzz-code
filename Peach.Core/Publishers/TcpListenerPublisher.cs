@@ -30,7 +30,7 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnStart()
+		protected override void OnOpen()
 		{
 			System.Diagnostics.Debug.Assert(_listener == null);
 
@@ -45,10 +45,10 @@ namespace Peach.Core.Publishers
 					Interface + " on port " + Port + ": " + ex.Message, ex);
 			}
 
-			base.OnStart();
+			base.OnOpen();
 		}
 
-		protected override void OnStop()
+		protected override void OnClose()
 		{
 			if (_listener != null)
 			{
@@ -56,13 +56,13 @@ namespace Peach.Core.Publishers
 				_listener = null;
 			}
 
-			base.OnStop();
+			base.OnClose();
 		}
 
 		protected override void OnAccept()
 		{
 			// Ensure any open stream is closed...
-			OnClose();
+			base.OnClose();
 
 			try
 			{
