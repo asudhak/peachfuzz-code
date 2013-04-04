@@ -583,6 +583,20 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="$(SolutionDir)Debug\$(PlatformName)\CrashingFileConsumer.exe">
+      <Link>CrashingFileConsumer.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(SolutionDir)Debug\$(PlatformName)\CrashingProgram.exe">
+      <Link>CrashingProgram.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(SolutionDir)Debug\$(PlatformName)\CrashableServer.exe">
+      <Link>CrashableServer.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

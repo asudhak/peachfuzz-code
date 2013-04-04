@@ -72,45 +72,32 @@ namespace Peach.Core.Test.Agent.Monitors
 		public void TestStartOnCall()
 		{
 			Variant foo = new Variant("foo");
-			Variant ret;
 
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Command"] = new Variant("nc");
 			args["Arguments"] = new Variant("-l 12345");
 			args["StartOnCall"] = foo;
+			args["WaitForExitTimeout"] = new Variant("2000");
 			args["NoCpuKill"] = new Variant("true");
 
 			CrashWrangler w = new CrashWrangler(null, "name", args);
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(0, (int)ret);
-
-			w.SessionStarting();
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(0, (int)ret);
-
-			w.IterationStarting(0, false);
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(0, (int)ret);
 
 			w.Message("Action.Call", foo);
 			Thread.Sleep(1000);
 
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(1, (int)ret);
-
+			var before = DateTime.Now;
 			w.IterationFinished();
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(0, (int)ret);
+			var after = DateTime.Now;
+
+			var span = (after - before);
 
 			Assert.AreEqual(false, w.DetectedFault());
 
 			w.SessionFinished();
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(0, (int)ret);
-
 			w.StopMonitor();
-			ret = w.Message("Action.Call.IsRunning", foo);
-			Assert.AreEqual(0, (int)ret);
+
+			Assert.GreaterOrEqual(span.TotalSeconds, 1.8);
+			Assert.LessOrEqual(span.TotalSeconds, 2.2);
 		}
 
 		[Test]
@@ -122,22 +109,245 @@ namespace Peach.Core.Test.Agent.Monitors
 			args["Command"] = new Variant("nc");
 			args["Arguments"] = new Variant("-l 12345");
 			args["StartOnCall"] = foo;
-			
+
 			CrashWrangler w = new CrashWrangler(null, "name", args);
+
 			w.Message("Action.Call", foo);
 			Thread.Sleep(1000);
 
-			// Should not be idle, as the cpu worked to start the program
-			Variant before = w.Message("Action.Call.IsRunning", foo);
+			var before = DateTime.Now;
+			w.IterationFinished();
+			var after = DateTime.Now;
 
-			Thread.Sleep(1000);
+			var span = (after - before);
 
-			// Should be idle, as the cpu hasn't done anything
-			Variant after = w.Message("Action.Call.IsRunning", foo);
+			Assert.AreEqual(false, w.DetectedFault());
 
+			w.SessionFinished();
 			w.StopMonitor();
-			Assert.AreEqual(1, (int)before);
-			Assert.AreEqual(0, (int)after);
+
+			Assert.GreaterOrEqual(span.TotalSeconds, 0.0);
+			Assert.LessOrEqual(span.TotalSeconds, 0.5);
+		}
+
+		[Test]
+		public void TestExitOnCallNoFault()
+		{
+			Variant foo = new Variant("foo");
+			Variant bar = new Variant("bar");
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("echo");
+			args["Arguments"] = new Variant("hello");
+			args["StartOnCall"] = foo;
+			args["WaitForExitOnCall"] = bar;
+			args["NoCpuKill"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+
+			w.Message("Action.Call", foo);
+			w.Message("Action.Call", bar);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitOnCallFault()
+		{
+			Variant foo = new Variant("foo");
+			Variant bar = new Variant("bar");
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("nc");
+			args["Arguments"] = new Variant("-l 12345");
+			args["StartOnCall"] = foo;
+			args["WaitForExitOnCall"] = bar;
+			args["WaitForExitTimeout"] = new Variant("2000");
+			args["NoCpuKill"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+
+			w.Message("Action.Call", foo);
+			w.Message("Action.Call", bar);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(true, w.DetectedFault());
+			Fault f = w.GetMonitorData();
+			Assert.NotNull(f);
+			Assert.AreEqual("ProcessFailedToExit", f.folderName);
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitTime()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("nc");
+			args["Arguments"] = new Variant("-l 12345");
+			args["RestartOnEachTest"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			var before = DateTime.Now;
+			w.IterationFinished();
+			var after = DateTime.Now;
+
+			var span = (after - before);
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
+
+			Assert.GreaterOrEqual(span.TotalSeconds, 0.0);
+			Assert.LessOrEqual(span.TotalSeconds, 0.1);
+		}
+
+		[Test]
+		public void TestExitEarlyFault()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("echo");
+			args["Arguments"] = new Variant("hello");
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.IterationStarting(1, false);
+
+			System.Threading.Thread.Sleep(1000);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(true, w.DetectedFault());
+			Fault f = w.GetMonitorData();
+			Assert.NotNull(f);
+			Assert.AreEqual("ProcessExitedEarly", f.folderName);
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault1()
+		{
+			Variant foo = new Variant("foo");
+			Variant bar = new Variant("bar");
+
+			// FaultOnEarlyExit doesn't fault when stop message is sent
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("echo");
+			args["Arguments"] = new Variant("hello");
+			args["StartOnCall"] = foo;
+			args["WaitForExitOnCall"] = bar;
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.Message("Action.Call", foo);
+			w.Message("Action.Call", bar);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault2()
+		{
+			Variant foo = new Variant("foo");
+
+			// FaultOnEarlyExit faults when StartOnCall is used and stop message is not sent
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("echo");
+			args["Arguments"] = new Variant("hello");
+			args["StartOnCall"] = foo;
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.Message("Action.Call", foo);
+
+			System.Threading.Thread.Sleep(1000);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(true, w.DetectedFault());
+			Fault f = w.GetMonitorData();
+			Assert.NotNull(f);
+			Assert.AreEqual("ProcessExitedEarly", f.folderName);
+
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault3()
+		{
+			Variant foo = new Variant("foo");
+
+			// FaultOnEarlyExit doesn't fault when StartOnCall is used
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("nc");
+			args["Arguments"] = new Variant("-l 12345");
+			args["StartOnCall"] = foo;
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.Message("Action.Call", foo);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault4()
+		{
+			// FaultOnEarlyExit doesn't fault when restart every iteration is true
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("nc");
+			args["Arguments"] = new Variant("-l 12345");
+			args["RestartOnEachTest"] = new Variant("true");
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
 		}
 
 		[Test]

@@ -291,7 +291,9 @@ namespace PeachFuzzBang
 							monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 
 							if (this.checkBoxOSXCpuKill.Checked)
-								monitor.parameters["CpuKill"] = new Variant("true");
+								monitor.parameters["NoCpuKill"] = new Variant("false");
+							else
+								monitor.parameters["NoCpuKill"] = new Variant("true");
 
 							monitor.parameters["Executable"] = new Variant(this.textBoxOSXExecutable.Text);
 							monitor.parameters["Arguments"] = new Variant(this.textBoxOSXArguments.Text);
@@ -317,7 +319,7 @@ namespace PeachFuzzBang
 						monitor.parameters["StartOnCall"] = new Variant("ScoobySnacks");
 						monitor.parameters["Executable"] = new Variant(textBoxLinuxExecutable.Text);
 						monitor.parameters["Arguments"] = new Variant(textBoxLinuxArguments.Text);
-						monitor.parameters["CpuKill"] = new Variant("true");
+						monitor.parameters["NoCpuKill"] = new Variant("false");
 						break;
 
 					case Platform.OS.Windows:

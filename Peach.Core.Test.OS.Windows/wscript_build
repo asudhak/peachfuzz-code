@@ -4,6 +4,7 @@ deps = [
 	'nunit.framework.dll',
 	'NLog.dll',
 	'System.dll',
+	'System.Xml.dll',
 	'System.Core.dll',
 	'System.Windows.Forms.dll',
 	'Microsoft.CSharp.dll',

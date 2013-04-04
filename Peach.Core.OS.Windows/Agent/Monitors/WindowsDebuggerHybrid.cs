@@ -66,6 +66,9 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
 	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", "false")]
 	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
+	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call and fault if timeout is reached", "")]
+	[Parameter("WaitForExitTimeout", typeof(int), "Wait for exit timeout value in milliseconds (-1 is infinite)", "10000")]
+	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation", "false")]
 	public class WindowsDebuggerHybrid : Monitor
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -78,13 +81,20 @@ namespace Peach.Core.Agent.Monitors
 
 		string _winDbgPath = null;
 		string _symbolsPath = "SRV*http://msdl.microsoft.com/download/symbols";
+		string _waitForExitOnCall = null;
 		string _startOnCall = null;
+
+		int _waitForExitTimeout = 10000;
 
 		bool _ignoreFirstChanceGuardPage = false;
 		bool _ignoreSecondChanceGuardPage = false;
 		bool _noCpuKill = false;
 		bool _faultOnEarlyExit = false;
+		bool _restartOnEachTest = false;
 
+		bool _waitForExitFailed = false;
+		bool _earlyExitFault = false;
+		bool _stopMessage = false;
 		bool _hybrid = true;
 		bool _replay = false;
 		Fault _fault = null;
@@ -116,6 +126,11 @@ namespace Peach.Core.Agent.Monitors
 				_symbolsPath = (string)args["SymbolsPath"];
 			if (args.ContainsKey("StartOnCall"))
 				_startOnCall = (string)args["StartOnCall"];
+			if (args.ContainsKey("WaitForExitOnCall"))
+				_waitForExitOnCall = (string)args["WaitForExitOnCall"];
+			if (args.ContainsKey("WaitForExitTimeout") && !int.TryParse((string)args["WaitForExitTimeout"], out _waitForExitTimeout))
+				throw new PeachException("Error, 'WaitForExitTimeout' is not a valid number.");
+
 			if (args.ContainsKey("WinDbgPath"))
 			{
 				_winDbgPath = (string)args["WinDbgPath"];
@@ -133,6 +148,8 @@ namespace Peach.Core.Agent.Monitors
 					throw new PeachException("Error, unable to locate WinDbg, please specify using 'WinDbgPath' parameter.");
 			}
 
+			if (args.ContainsKey("RestartOnEachTest") && ((string)args["RestartOnEachTest"]).ToLower() == "true")
+				_restartOnEachTest = true;
 			if (args.ContainsKey("IgnoreFirstChanceGuardPage") && ((string)args["IgnoreFirstChanceGuardPage"]).ToLower() == "true")
 				_ignoreFirstChanceGuardPage = true;
 			if (args.ContainsKey("IgnoreSecondChanceGuardPage") && ((string)args["IgnoreSecondChanceGuardPage"]).ToLower() == "true")
@@ -221,62 +238,22 @@ namespace Peach.Core.Agent.Monitors
 			return null;
 		}
 
-		long procLastTick = -1;
-
 		public override Variant Message(string name, Variant data)
 		{
 			if (name == "Action.Call" && ((string)data) == _startOnCall)
 			{
 				_StopDebugger();
 				_StartDebugger();
-				return null;
 			}
-
-			if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall && !_noCpuKill)
+			else if (name == "Action.Call" && ((string)data) == _waitForExitOnCall)
 			{
-				try
-				{
-					if (!_IsDebuggerRunning())
-					{
-						return new Variant(0);
-					}
-
-					try
-					{
-						// Note: Performance counters were used and removed due to speed issues.
-						//       monitoring the tick count is more reliable and less likely to cause
-						//       fuzzing slow-downs.
-
-						int pid = _debugger != null ? _debugger.ProcessId : _systemDebugger.ProcessId;
-						using (var proc = System.Diagnostics.Process.GetProcessById(pid))
-						{
-							if (proc == null || proc.HasExited)
-							{
-								return new Variant(0);
-							}
-
-							if(proc.TotalProcessorTime.Ticks == procLastTick)
-							{
-								_StopDebugger();
-								return new Variant(0);
-							}
-
-							procLastTick = proc.TotalProcessorTime.Ticks;
-						}
-					}
-					catch
-					{
-					}
-
-					logger.Debug("Action.Call.IsRunning: 1");
-					return new Variant(1);
-				}
-				catch (ArgumentException)
-				{
-					// Might get thrown if process has already died.
-					logger.Debug("Action.Call.IsRunning: argument exception");
-					return new Variant(0);
-				}
+				_stopMessage = true;
+				_WaitForExit(false);
+				_StopDebugger();
+			}
+			else
+			{
+				logger.Debug("Unknown msg: " + name + " data: " + (string)data);
 			}
 
 			return null;
@@ -312,6 +289,9 @@ namespace Peach.Core.Agent.Monitors
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			_replay = isReproduction;
+			_waitForExitFailed = false;
+			_earlyExitFault = false;
+			_stopMessage = false;
 
 			if (!_IsDebuggerRunning() && _startOnCall == null)
 				_StartDebugger();
@@ -319,8 +299,20 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool IterationFinished()
 		{
-			if (_startOnCall != null)
+			if (!_stopMessage && _faultOnEarlyExit && !_IsDebuggerRunning())
+			{
+				_earlyExitFault = true;
 				_StopDebugger();
+			}
+			else if (_startOnCall != null)
+			{
+				_WaitForExit(true);
+				_StopDebugger();
+			}
+			else if (_restartOnEachTest)
+			{
+				_StopDebugger();
+			}
 
 			return false;
 		}
@@ -358,7 +350,7 @@ namespace Peach.Core.Agent.Monitors
 					Thread.Sleep(1000);
 				}
 
-				if (_fault == null && _faultOnEarlyExit && !_IsDebuggerRunning())
+				if (_fault == null && _earlyExitFault)
 					_fault = GetEarlyExitFault();
 
 				if(_fault != null)
@@ -376,10 +368,15 @@ namespace Peach.Core.Agent.Monitors
 				_debuggerProcessUsage = _debuggerProcessUsageMax;
 				_fault = _debugger.crashInfo;
 			}
-			else if (_faultOnEarlyExit && !_IsDebuggerRunning())
+			else if (_earlyExitFault)
 			{
 				logger.Info("DetectedFault() - Fault detected, process exited early");
 				_fault = GetEarlyExitFault();
+			}
+			else if (_waitForExitFailed)
+			{
+				logger.Info("DetectedFault() - Fault detected, WaitForExitOnCall failed");
+				_fault = GetGeneralFault("ProcessFailedToExit", "Process did not exit in " + _waitForExitTimeout + "ms");
 			}
 
 			if(_fault == null)
@@ -406,11 +403,16 @@ namespace Peach.Core.Agent.Monitors
 
 		protected Fault GetEarlyExitFault()
 		{
+			return GetGeneralFault("ProcessExitedEarly", "Process exited early");
+		}
+
+		protected Fault GetGeneralFault(string folder, string reason)
+		{
 			var fault = new Fault();
 			fault.type = FaultType.Fault;
 			fault.detectionSource = _systemDebugger != null ? "SystemDebugger" : "WindowsDebugEngine";
-			fault.title = "Process exited early";
-			fault.description = "Process exited early: ";
+			fault.title = reason;
+			fault.description = reason + ": ";
 
 			if (_processName != null)
 				fault.description += _processName;
@@ -421,7 +423,7 @@ namespace Peach.Core.Agent.Monitors
 			else if (_service != null)
 				fault.description += _service;
 
-			fault.folderName = "ProcessExitedEarly";
+			fault.folderName = folder;
 
 			return fault;
 		}
@@ -444,7 +446,6 @@ namespace Peach.Core.Agent.Monitors
 
 		protected void _StartDebugger()
 		{
-			procLastTick = -1;
 			if (_hybrid)
 				_StartDebuggerHybrid();
 			else
@@ -674,6 +675,67 @@ namespace Peach.Core.Agent.Monitors
 				catch
 				{
 				}
+			}
+		}
+
+		protected void _WaitForExit(bool useCpuKill)
+		{
+			if (!_IsDebuggerRunning())
+				return;
+
+			try
+			{
+				int pid = _debugger != null ? _debugger.ProcessId : _systemDebugger.ProcessId;
+				using (var proc = System.Diagnostics.Process.GetProcessById(pid))
+				{
+					if (proc == null || proc.HasExited)
+						return;
+
+					if (useCpuKill && !_noCpuKill)
+					{
+						const int pollInterval = 200;
+						ulong lastTime = 0;
+						int i = 0;
+
+						for (i = 0; i < _waitForExitTimeout; i += pollInterval)
+						{
+							// Note: Performance counters were used and removed due to speed issues.
+							//       monitoring the tick count is more reliable and less likely to cause
+							//       fuzzing slow-downs.
+							var pi = ProcessInfo.Instance.Snapshot(proc);
+
+							logger.Trace("CpuKill: OldTicks={0} NewTicks={1}", lastTime, pi.TotalProcessorTicks);
+
+							if (i != 0 && lastTime == pi.TotalProcessorTicks)
+							{
+								logger.Debug("Cpu is idle, stopping process.");
+								break;
+							}
+
+							lastTime = pi.TotalProcessorTicks;
+							Thread.Sleep(pollInterval);
+						}
+
+						if (i >= _waitForExitTimeout)
+							logger.Debug("Timed out waiting for cpu idle, stopping process.");
+					}
+					else
+					{
+						logger.Debug("WaitForExit({0})", _waitForExitTimeout == -1 ? "INFINITE" : _waitForExitTimeout.ToString());
+						if (!proc.WaitForExit(_waitForExitTimeout))
+						{
+							if (!useCpuKill)
+							{
+								logger.Debug("FAULT, WaitForExit ran out of time!");
+								_waitForExitFailed = true;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Debug("_WaitForExit() failed: {0}", ex.Message);
 			}
 		}
 
