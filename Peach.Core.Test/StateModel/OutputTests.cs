@@ -33,7 +33,7 @@ namespace Peach.Core.Test.StateModel
 	}
 
 	[TestFixture]
-	class OutputTests
+	class OutputTests : DataModelCollector
 	{
 		[Test]
 		public void Test1()

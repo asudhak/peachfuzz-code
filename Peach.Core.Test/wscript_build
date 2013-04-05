@@ -5,6 +5,7 @@ deps = [
 	'nunit.framework.dll',
 	'System.dll',
 	'System.Core.dll',
+	'System.Runtime.Remoting.dll',
 	'System.Xml.dll',
 	'Peach.Core.dll',
 	'Microsoft.Scripting.dll',

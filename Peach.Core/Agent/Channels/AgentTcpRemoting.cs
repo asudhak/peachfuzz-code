@@ -136,19 +136,10 @@ namespace Peach.Core.Agent.Channels
 
 			_channel = new TcpClientChannel(props, null);
 			ChannelServices.RegisterChannel(_channel, false); // Disable security for speed
+
 			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
 			if (proxy == null)
 				throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
-
-			try
-			{
-				// No messages are sent until a method is called on the proxy
-				proxy.VerifyChannel();
-			}
-			catch (Exception ex)
-			{
-				throw new PeachException("Error, unable to connect to remote agent '" + _url + "'.  " + ex.Message, ex);
-			}
 		}
 
 		protected void RemoveProxy()
@@ -178,6 +169,15 @@ namespace Peach.Core.Agent.Channels
 			_url = url;
 
 			CreateProxy();
+
+			try
+			{
+				proxy.AgentConnect(null);
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Error, unable to connect to remote agent '" + _url + "'.  " + ex.Message, ex);
+			}
 		}
 
 		public override void AgentDisconnect()
@@ -256,23 +256,30 @@ namespace Peach.Core.Agent.Channels
 
 			OnIterationStartingEvent(iterationCount, isReproduction);
 
+
 			try
 			{
-				PerformRemoting(delegate() { proxy.IterationStarting(iterationCount, isReproduction); });
+				bool connected = false;
+				PerformRemoting(delegate() { connected = proxy.Connected; });
+				if (connected)
+				{
+					PerformRemoting(delegate() { proxy.IterationStarting(iterationCount, isReproduction); });
+					return;
+				}
 			}
 			catch (SocketException)
 			{
 				logger.Debug("IterationStarting: Socket error, recreating proxy");
-
-				proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
-				if (proxy == null)
-					throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
-
-				proxy.AgentConnect(null);
-				proxy.SessionStarting();
-				RecreateMonitors();
-				proxy.IterationStarting(iterationCount, isReproduction);
 			}
+
+			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
+			if (proxy == null)
+				throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
+
+			proxy.AgentConnect(null);
+			proxy.SessionStarting();
+			RecreateMonitors();
+			proxy.IterationStarting(iterationCount, isReproduction);
 		}
 
 		public override bool IterationFinished()
@@ -344,14 +351,15 @@ namespace Peach.Core.Agent.Channels
 			agent = new Agent("AgentServiceTcpRemote");
 		}
 
-		// Remote function used to verify channel is working
-		public void VerifyChannel()
+		public bool Connected
 		{
+			get; private set;
 		}
 
 		public void AgentConnect(string password)
 		{
 			logger.Trace("AgentConnect");
+			Connected = true;
 			agent.AgentConnect();
 		}
 
