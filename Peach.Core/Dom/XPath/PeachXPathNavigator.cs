@@ -315,13 +315,21 @@ namespace Peach.Core.Dom.XPath
 			{
 				if (parent is DataElementContainer)
 				{
+					var curr = currentNode as DataElement;
 					var block = parent as DataElementContainer;
-					int index = block.IndexOf(currentNode as DataElement);
-					if (index + 1 >= block.Count)
-						return false;
+					int index = block.IndexOf(curr);
 
-					currentNode = block[index + 1];
-					return true;
+					for (int i = index + 1; i < block.Count; ++i)
+					{
+						var elem = block[i];
+						if (elem != curr)
+						{
+							currentNode = elem;
+							return true;
+						}
+					}
+
+					return false;
 				}
 				return false;
 			}

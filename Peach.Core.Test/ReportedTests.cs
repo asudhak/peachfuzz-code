@@ -40,6 +40,7 @@ using Peach.Core.Analyzers;
 
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
+using Peach.Core.Dom.XPath;
 
 namespace Peach.Core.Test
 {
@@ -294,6 +295,86 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, block.Count);
 			Assert.AreEqual("END_MARKER", (string)block[0].DefaultValue);
 
+		}
+
+		[Test]
+		public void SlurpArray()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String name='str' value='Hello'/>
+		<Block name='blk' minOccurs='1'>
+			<String name='val'/>
+		</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='State1'>
+		<State name='State1'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Console'/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Dom.Array array = dom.tests[0].stateModel.states["State1"].actions[0].dataModel[1] as Dom.Array;
+			array.ExpandTo(50);
+
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			var iter = navi.Select("//str");
+			if (!iter.MoveNext())
+				Assert.Fail();
+
+			DataElement valueElement = ((PeachXPathNavigator)iter.Current).currentNode as DataElement;
+			if (valueElement == null)
+				Assert.Fail();
+
+			if (iter.MoveNext())
+				Assert.Fail();
+
+			iter = navi.Select("//val");
+
+			if (!iter.MoveNext())
+				Assert.Fail();
+
+			int count = 0;
+			do
+			{
+				var setElement = ((PeachXPathNavigator)iter.Current).currentNode as DataElement;
+				if (setElement == null)
+					Assert.Fail();
+
+				setElement.DefaultValue = valueElement.DefaultValue;
+				++count;
+			}
+			while (iter.MoveNext());
+
+			// When Array.ExpandTo() is used, it duplicates the element and adds that
+			// same element over and over, so there are really only 2 unique elements in the array...
+			Assert.AreEqual(2, count);
+			Assert.AreEqual(50, array.Count);
+
+			int hash = 0;
+			for (int i = 0; i < array.Count; ++i)
+			{
+				if (i <= 1)
+					hash = array[i].GetHashCode();
+
+				Assert.AreEqual(hash, array[i].GetHashCode());
+				var b = array[i] as Block;
+				Assert.NotNull(b);
+				Assert.AreEqual("Hello", (string)b[0].DefaultValue);
+			}
 		}
 	}
 }
