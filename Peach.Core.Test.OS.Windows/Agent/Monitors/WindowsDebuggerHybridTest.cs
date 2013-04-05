@@ -184,8 +184,7 @@ namespace Peach.Core.Test.Agent.Monitors
 		public void TestExitEarlyFault()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
-			args["Command"] = new Variant("echo");
-			args["Arguments"] = new Variant("hello");
+			args["CommandLine"] = new Variant("CrashingFileConsumer.exe");
 			args["FaultOnEarlyExit"] = new Variant("true");
 
 			var w = new WindowsDebuggerHybrid(null, "name", args);
