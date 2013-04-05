@@ -88,6 +88,7 @@ namespace Peach.Core.Dom
 		protected DataModel _dataModel;
 		protected DataModel _origionalDataModel;
 		protected DataSet _dataSet;
+		protected uint _runCount;
 
 		protected List<ActionParameter> _params = new List<ActionParameter>();
 
@@ -355,6 +356,8 @@ namespace Peach.Core.Dom
 		/// </remarks>
 		public void UpdateToOrigionalDataModel()
 		{
+			_runCount = 0;
+
 			switch (type)
 			{
 				case ActionType.Start:
@@ -395,6 +398,14 @@ namespace Peach.Core.Dom
 		public void Run(RunContext context)
 		{
 			logger.Trace("Run({0}): {1}", name, type);
+
+			var count = _runCount;
+			if (count > 0)
+			{
+				logger.Debug("Run: Action {0} has already been run, resetting data model", name);
+				UpdateToOrigionalDataModel();
+			}
+			_runCount = count + 1;
 
 			if (when != null)
 			{
