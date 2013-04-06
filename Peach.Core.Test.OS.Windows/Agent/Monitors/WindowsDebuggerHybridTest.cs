@@ -101,13 +101,11 @@ namespace Peach.Core.Test.Agent.Monitors
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			dom.tests[0].includedMutators = new List<string>();
-			dom.tests[0].includedMutators.Add("UnicodeUtf8ThreeCharMutator");
 
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
-			config.rangeStart = 1;
-			config.rangeStop = 1;
+			config.rangeStart = 2;
+			config.rangeStop = 2;
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
