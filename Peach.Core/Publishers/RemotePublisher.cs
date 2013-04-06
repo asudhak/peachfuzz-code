@@ -8,6 +8,7 @@ using Peach.Core.Dom;
 using Peach.Core.IO;
 
 using NLog;
+using System.Runtime.Remoting;
 
 namespace Peach.Core.Publishers
 {
@@ -64,12 +65,21 @@ namespace Peach.Core.Publishers
 			{
 				if (remotingException != null)
 				{
-					throw remotingException;
+					if (remotingException is PeachException)
+						throw new PeachException(remotingException.Message, remotingException);
+
+					if (remotingException is SoftException)
+						throw new SoftException(remotingException.Message, remotingException);
+
+					if (remotingException is RemotingException)
+						throw new RemotingException(remotingException.Message, remotingException);
+
+					throw new AgentException(remotingException.Message, remotingException);
 				}
 			}
 			else
 			{
-				throw new System.Runtime.Remoting.RemotingException("Remoting call timed out.");
+				throw new RemotingException("Remoting call timed out.");
 			}
 		}
 

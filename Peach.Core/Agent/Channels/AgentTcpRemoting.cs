@@ -105,12 +105,21 @@ namespace Peach.Core.Agent.Channels
 			{
 				if (remotingException != null)
 				{
-					throw remotingException;
+					if (remotingException is PeachException)
+						throw new PeachException(remotingException.Message, remotingException);
+
+					if (remotingException is SoftException)
+						throw new SoftException(remotingException.Message, remotingException);
+
+					if (remotingException is RemotingException)
+						throw new RemotingException(remotingException.Message, remotingException);
+
+					throw new AgentException(remotingException.Message, remotingException);
 				}
 			}
 			else
 			{
-				throw new System.Runtime.Remoting.RemotingException("Remoting call timed out.");
+				throw new RemotingException("Remoting call timed out.");
 			}
 		}
 
@@ -270,11 +279,11 @@ namespace Peach.Core.Agent.Channels
 			catch (SocketException)
 			{
 				logger.Debug("IterationStarting: Socket error, recreating proxy");
-			}
 
-			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
-			if (proxy == null)
-				throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
+				proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
+				if (proxy == null)
+					throw new PeachException("Error, unable to create proxy for remote agent '" + _url + "'.");
+			}
 
 			proxy.AgentConnect(null);
 			proxy.SessionStarting();
@@ -461,6 +470,10 @@ namespace Peach.Core.Agent.Channels
 				port = int.Parse(args["port"]);
 
 			//select channel to communicate
+			//IDictionary props = new Hashtable() as IDictionary;
+			//props["port"] = port;
+			//props["exclusiveAddressUse"] = false;
+			//var chan = new TcpServerChannel(props, null);
 			TcpChannel chan = new TcpChannel(port);
 			ChannelServices.RegisterChannel(chan, false);    //register channel
 

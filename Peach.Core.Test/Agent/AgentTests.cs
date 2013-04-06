@@ -19,6 +19,22 @@ namespace Peach.Core.Test.Agent
 	[TestFixture]
 	public class AgentTests
 	{
+		SingleInstance si;
+
+		[SetUp]
+		public void SetUp()
+		{
+			si = SingleInstance.CreateInstance("Peach.Core.Test.Agent.AgentTests");
+			si.Lock();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			si.Dispose();
+			si = null;
+		}
+
 		public System.Diagnostics.Process process;
 
 		[Publisher("AgentKiller", true)]
@@ -46,11 +62,11 @@ namespace Peach.Core.Test.Agent
 				{
 					owner.StopAgent();
 					owner.StartAgent();
-
-					System.Threading.Thread.Sleep(1000);
 				}
 			}
 		}
+
+		ManualResetEvent startEvent;
 
 		public void StartAgent()
 		{
@@ -59,18 +75,62 @@ namespace Peach.Core.Test.Agent
 			if (Platform.GetOS() == Platform.OS.Windows)
 			{
 				process.StartInfo.FileName = "Peach.exe";
-				process.StartInfo.Arguments = "-a tcp --debug";
+				process.StartInfo.Arguments = "-a tcp";
 			}
 			else
 			{
+				List<string> paths = new List<string>();
+				paths.Add(Environment.CurrentDirectory);
+				paths.AddRange(process.StartInfo.EnvironmentVariables["PATH"].Split(Path.PathSeparator));
+				string peach = "peach.exe";
+				foreach (var dir in paths)
+				{
+					var candidate = Path.Combine(dir, peach);
+					if (File.Exists(candidate))
+					{
+						peach = candidate;
+						break;
+					}
+				}
+
 				process.StartInfo.FileName = "mono";
-				process.StartInfo.Arguments = "--debug peach.exe -a tcp --debug";
+				process.StartInfo.Arguments = "--debug {0} -a tcp".Fmt(peach);
 			}
 
-			foreach (var x in process.StartInfo.EnvironmentVariables.Keys)
-				Console.WriteLine("{0} = {1}", x, process.StartInfo.EnvironmentVariables[x.ToString()]);
+			process.StartInfo.RedirectStandardInput = true;
+			process.StartInfo.RedirectStandardOutput = true;
+			process.StartInfo.UseShellExecute = false;
+			process.OutputDataReceived += new System.Diagnostics.DataReceivedEventHandler(process_OutputDataReceived);
 
-			process.Start();
+			try
+			{
+				using (startEvent = new ManualResetEvent(false))
+				{
+					process.Start();
+					if (Platform.GetOS() == Platform.OS.Windows)
+						process.BeginOutputReadLine();
+
+					startEvent.WaitOne(5000);
+				}
+			}
+			catch
+			{
+				process = null;
+				throw;
+			}
+			finally
+			{
+				startEvent = null;
+			}
+		}
+
+		void process_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
+		{
+			if (e.Data == null)
+				return;
+
+			if (e.Data.Contains("Press ENTER to quit agent"))
+				startEvent.Set();
 		}
 
 		public void StopAgent()
@@ -168,7 +228,8 @@ namespace Peach.Core.Test.Agent
 			}
 			finally
 			{
-				StopAgent();
+				if (process != null)
+					StopAgent();
 			}
 		}
 
@@ -179,5 +240,91 @@ namespace Peach.Core.Test.Agent
 			faults[currentIteration] = faultData;
 		}
 
+		[Test]
+		public void TestSoftException()
+		{
+			ushort port = TestBase.MakePort(20000, 21000);
+
+			string agent = @"
+	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
+		<Monitor class='WindowsDebugger'>
+			<Param name='CommandLine' value='CrashableServer.exe 127.0.0.1 {0}'/>
+			<Param name='FaultOnEarlyExit' value='true'/>
+		</Monitor>
+	</Agent>
+";
+			if (Platform.GetOS() != Platform.OS.Windows)
+			{
+				agent = @"
+	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
+		<Monitor class='Process'>
+			<Param name='Executable' value='CrashableServer'/>
+			<Param name='Arguments' value='127.0.0.1 {0}'/>
+			<Param name='FaultOnEarlyExit' value='true'/>
+		</Monitor>
+	</Agent>
+";
+			}
+
+			agent = agent.Fmt(port);
+
+			string xml = @"
+<Peach>
+	<Import import='code'/>
+
+	<DataModel name='TheDataModel'>
+		<String value='Hello'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output' publisher='Remote'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+			<Action type='output' publisher='Remote'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+{1}
+
+	<Test name='Default' replayEnabled='false'>
+		<Agent ref='RemoteAgent'/>
+		<StateModel ref='TheState'/>
+		<Publisher name='Remote' class='Remote'>
+			<Param name='Agent' value='RemoteAgent' />
+			<Param name='Class' value='Tcp'/>
+			<Param name='Host' value='127.0.0.1' />
+			<Param name='Port' value='{0}' />
+		</Publisher>
+		<Strategy class='RandomDeterministic'/>
+	</Test>
+</Peach>".Fmt(port, agent);
+
+			try
+			{
+				StartAgent();
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+				RunConfiguration config = new RunConfiguration();
+				config.range = true;
+				config.rangeStart = 1;
+				config.rangeStop = 5;
+
+				Engine e = new Engine(null);
+				e.Fault += new Engine.FaultEventHandler(e_Fault);
+				e.startFuzzing(dom, config);
+
+				Assert.Greater(faults.Count, 0);
+			}
+			finally
+			{
+				if (process != null)
+					StopAgent();
+			}
+		}
 	}
 }
