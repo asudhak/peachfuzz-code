@@ -155,6 +155,22 @@ namespace Peach.Core.Agent
 			}
 		}
 
+		public virtual void Shutdown()
+		{
+			logger.Trace("Shutdown");
+			foreach (AgentClient agent in _agents.Values)
+			{
+				try
+				{
+					agent.AgentDisconnect();
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring exception calling Shutdown: " + ex.Message);
+				}
+			}
+		}
+
 		public virtual void SessionStarting()
 		{
 			logger.Trace("SessionStarting");

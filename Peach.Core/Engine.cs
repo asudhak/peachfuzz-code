@@ -670,6 +670,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 				context.agentManager.SessionFinished();
 				context.agentManager.StopAllMonitors();
+				context.agentManager.Shutdown();
 				OnTestFinished(context);
 
 				context.test = null;
