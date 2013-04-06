@@ -264,13 +264,11 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected Socket OpenRawSocket(AddressFamily af, int protocol)
-		{
-			return OpenRawSocket(af, protocol, null);
-		}
-
 		protected string GetInterfaceName(IPAddress Ip)
 		{
+			if (Ip == null)
+				throw new ArgumentNullException("Ip");
+
 			foreach(var iface in NetworkInterface.GetAllNetworkInterfaces())
 			{
 				foreach (var ifaceIp in iface.GetIPProperties().UnicastAddresses)
@@ -283,7 +281,7 @@ namespace Peach.Core.Publishers
 			throw new Exception("Unable to locate interface for IP: " + Ip.ToString());
 		}
 
-		protected Socket OpenRawSocket(AddressFamily af, int protocol, uint? mtu)
+		protected Socket OpenRawSocket(AddressFamily af, int protocol, uint? mtu, EndPoint remote)
 		{
 			if (Platform.GetOS() == Platform.OS.Windows)
 			{
@@ -331,9 +329,12 @@ namespace Peach.Core.Publishers
 				// Start MTU Related Code -- Duplicated in RawEtherPublisher
 
 #if MONO
+				IPAddress local = Interface;
+				if (Interface == null)
+					local = GetLocalIp((IPEndPoint)remote);
 
 				int ret = -1;
-				ifreq ifr = new ifreq(GetInterfaceName(Interface));
+				ifreq ifr = new ifreq(GetInterfaceName(local));
 
 				if (orig_mtu == 0)
 				{
@@ -601,7 +602,7 @@ namespace Peach.Core.Publishers
 			{
 				if (_socket != null)
 				{
-					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
+					Logger.Debug("MTU of {0} is {1}.", ((IPEndPoint)_socket.LocalEndPoint).Address, _mtu);
 					return new Variant(_mtu);
 				}
 
@@ -610,9 +611,13 @@ namespace Peach.Core.Publishers
 				if (!AddressFamilySupported(ep.AddressFamily))
 					throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
 
+				IPAddress local = Interface;
+				if (Interface == null)
+					local = GetLocalIp(ep);
+
 				using (var sock = OpenSocket(ep, null))
 				{
-					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
+					Logger.Debug("MTU of {0} is {1}.", local, _mtu);
 					return new Variant(_mtu);
 				}
 			}
@@ -639,9 +644,13 @@ namespace Peach.Core.Publishers
 					if (!AddressFamilySupported(ep.AddressFamily))
 						throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
 
+					IPAddress local = Interface;
+					if (Interface == null)
+						local = GetLocalIp(ep);
+
 					using (var sock = OpenSocket(ep, mtu))
 					{
-						Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+						Logger.Debug("Changed MTU of {0} to {1}.", local, mtu);
 					}
 				}
 			}

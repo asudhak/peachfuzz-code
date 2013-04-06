@@ -69,7 +69,7 @@ namespace Peach.Core.Publishers
 
 		protected override Socket OpenSocket(EndPoint remote, uint? mtu = null)
 		{
-			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol, mtu);
+			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol, mtu, remote);
 			return s;
 		}
 	}
