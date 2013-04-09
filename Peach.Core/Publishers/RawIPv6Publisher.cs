@@ -67,9 +67,9 @@ namespace Peach.Core.Publishers
 			return af == AddressFamily.InterNetworkV6;
 		}
 
-		protected override Socket OpenSocket(EndPoint remote, uint? mtu = null)
+		protected override Socket OpenSocket(EndPoint remote)
 		{
-			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol, mtu, remote);
+			Socket s = OpenRawSocket(AddressFamily.InterNetworkV6, Protocol);
 			return s;
 		}
 	}

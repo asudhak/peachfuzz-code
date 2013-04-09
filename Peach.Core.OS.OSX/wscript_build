@@ -6,6 +6,7 @@ deps = [
 	'System.Core.dll',
 	'System.Xml.dll',
 	'NLog.dll',
+	'Mono.Posix.dll',
 ]
 
 bld(

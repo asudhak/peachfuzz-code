@@ -89,9 +89,9 @@ namespace Peach.Core.Publishers
 			return af == AddressFamily.InterNetwork;
 		}
 
-		protected override Socket OpenSocket(EndPoint remote, uint? mtu = null)
+		protected override Socket OpenSocket(EndPoint remote)
 		{
-			Socket s = OpenRawSocket(AddressFamily.InterNetwork, Protocol, mtu, remote);
+			Socket s = OpenRawSocket(AddressFamily.InterNetwork, Protocol);
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 0);
 			return s;
 		}
@@ -139,9 +139,9 @@ namespace Peach.Core.Publishers
 			return af == AddressFamily.InterNetwork;
 		}
 
-		protected override Socket OpenSocket(EndPoint remote, uint? mtu = null)
+		protected override Socket OpenSocket(EndPoint remote)
 		{
-			Socket s = OpenRawSocket(AddressFamily.InterNetwork, Protocol, mtu, remote);
+			Socket s = OpenRawSocket(AddressFamily.InterNetwork, Protocol);
 			s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.HeaderIncluded, 1);
 			return s;
 		}

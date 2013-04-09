@@ -30,11 +30,8 @@ namespace Peach.Core.Publishers
 			return (af == AddressFamily.InterNetwork) || (af == AddressFamily.InterNetworkV6);
 		}
 
-		protected override Socket OpenSocket(EndPoint remote, uint? mtu = null)
+		protected override Socket OpenSocket(EndPoint remote)
 		{
-			if (mtu != null)
-				throw new Exception("UdpPublisher does not support mtu parameter");
-
 			Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 			return s;
 		}
