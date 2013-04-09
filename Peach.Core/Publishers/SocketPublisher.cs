@@ -47,7 +47,6 @@ namespace Peach.Core.Publishers
 		private string _iface = null;
 		private Socket _socket = null;
 		private MemoryStream _recvBuffer = null;
-		private MemoryStream _sendBuffer = null;
 		private uint? _origMtu = null;
 		private uint? _mtu = null;
 
@@ -447,9 +446,6 @@ namespace Peach.Core.Publishers
 			if (_recvBuffer == null || _recvBuffer.Capacity < _socket.ReceiveBufferSize)
 				_recvBuffer = new MemoryStream(MaxSendSize);
 
-			if (_sendBuffer == null || _sendBuffer.Capacity < _socket.SendBufferSize)
-				_sendBuffer = new MemoryStream(MaxSendSize);
-
 			_localEp = _socket.LocalEndPoint;
 
 			Logger.Trace("Opened {0} socket, Local: {1}, Remote: {2}", _type, _localEp, _remoteEp);
@@ -532,7 +528,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(byte[] buf, int offset, int count)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 
@@ -545,13 +541,13 @@ namespace Peach.Core.Publishers
 			}
 
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(buf, offset, count));
+				Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
 
-			FilterOutput(buf, offset, count);
+			FilterOutput(buffer, offset, count);
 
 			try
 			{
-				var ar = _socket.BeginSendTo(buf, offset, size, SocketFlags.None, _remoteEp, null, null);
+				var ar = _socket.BeginSendTo(buffer, offset, size, SocketFlags.None, _remoteEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				var txLen = _socket.EndSendTo(ar);
