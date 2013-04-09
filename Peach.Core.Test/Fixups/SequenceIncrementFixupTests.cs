@@ -10,50 +10,50 @@ using Peach.Core.Analyzers;
 
 namespace Peach.Core.Test.Fixups
 {
-    [TestFixture]
-    class SequenceIncrementFixupTests : DataModelCollector
-    {
-        [Test]
-        public void Test1()
-        {
-            // standard test
+	[TestFixture]
+	class SequenceIncrementFixupTests : DataModelCollector
+	{
+		[Test]
+		public void Test1()
+		{
+			// standard test
 
-            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-                "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"num1\" size=\"32\" signed=\"false\">" +
-                "           <Fixup class=\"SequenceIncrementFixup\"/>" +
-                "       </Number>" +
-                "   </DataModel>" +
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"       <Number name=\"num1\" size=\"32\" signed=\"false\">" +
+				"           <Fixup class=\"SequenceIncrementFixup\"/>" +
+				"       </Number>" +
+				"   </DataModel>" +
 
-                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-                "       <State name=\"Initial\">" +
-                "           <Action type=\"output\">" +
-                "               <DataModel ref=\"TheDataModel\"/>" +
-                "           </Action>" +
-                "       </State>" +
-                "   </StateModel>" +
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
 
-                "   <Test name=\"Default\">" +
-                "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Null\"/>" +
-                "   </Test>" +
-                "</Peach>";
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Null\"/>" +
+				"   </Test>" +
+				"</Peach>";
 
-            PitParser parser = new PitParser();
+			PitParser parser = new PitParser();
 
-            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            RunConfiguration config = new RunConfiguration();
-            config.singleIteration = true;
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
 
-            Engine e = new Engine(null);
-            e.startFuzzing(dom, config);
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
 
-            // verify values
-            Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(1, BitConverter.ToUInt32(values[0].Value, 0));
-        }
+			// verify values
+			Assert.AreEqual(1, values.Count);
+			Assert.AreEqual(1, BitConverter.ToUInt32(values[0].Value, 0));
+		}
 
 		[Test]
 		public void TestIncrement()
@@ -513,7 +513,7 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(0, (int)dom.dataModels[0][0].DefaultValue);
 			Assert.AreEqual(0, (int)dom.dataModels[0][0].InternalValue);
 
-			for (int i = 0; i < 12; i+=3)
+			for (int i = 0; i < 12; i += 3)
 			{
 				Assert.AreEqual(0, (int)dataModels[i + 0][0].DefaultValue);
 				Assert.AreEqual(1, (int)dataModels[i + 0][0].InternalValue);
@@ -587,7 +587,7 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(0, (int)dataModels[2][0].DefaultValue);
 			Assert.AreEqual(3, (int)dataModels[2][0].InternalValue);
 		}
-    }
+	}
 }
 
 // end
