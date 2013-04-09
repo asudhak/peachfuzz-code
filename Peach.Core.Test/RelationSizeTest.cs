@@ -323,6 +323,76 @@ namespace Peach.Core.Test
 			Assert.AreEqual(expected, val.Value);
 		}
 
+		[Test]
+		public void RelationGetSet()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheModel"">
+		<Number size=""8"" mutable=""false""/>
+		<Number name=""len"" size=""64"" mutable=""false"">
+			<Relation type=""size"" of=""data"" expressionGet=""size+2"" expressionSet=""size-2""/>
+		</Number>
+		<Block name=""data"">
+			<Blob length=""1""/>
+			<Blob length=""2""/>
+		</Block>
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel name=""foo"" ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+			cloneActions = true;
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementRemoveMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(4, actions.Count);
+
+			byte[] act1 = Encoding.ASCII.GetBytes("\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+			Assert.False(actions[0].error);
+			Assert.AreEqual(act1, actions[0].dataModel.Value.Value);
+
+			byte[] act2 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+			Assert.False(actions[1].error);
+			Assert.AreEqual(act2, actions[1].dataModel.Value.Value);
+
+			byte[] act3 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+			Assert.False(actions[2].error);
+			Assert.AreEqual(act3, actions[2].dataModel.Value.Value);
+
+			Assert.True(actions[3].error);
+			try
+			{
+				var x = actions[3].dataModel.Value;
+				Assert.Fail("should throw");
+				Assert.NotNull(x);
+			}
+			catch (SoftException se)
+			{
+				Assert.AreEqual("Error, Number 'foo.len' value '-1' is less than the minimum 64-bit unsigned number.", se.Message);
+			}
+		}
+
 		Dictionary<string, object> SpeedTest(uint repeat)
 		{
 			// When the data element duplicator clones blockData multiple times,

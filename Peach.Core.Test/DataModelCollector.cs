@@ -17,10 +17,12 @@ namespace Peach.Core.Test
 		protected List<string> strategies = null;
 		protected List<string> iterStrategies = null;
 		protected List<string> allStrategies = null;
+		protected bool cloneActions = false;
 
 		[SetUp]
 		public void SetUp()
 		{
+			cloneActions = false;
 			ResetContainers();
 			Dom.Action.Finished += new Dom.ActionFinishedEventHandler(Action_Finished);
 			Peach.Core.MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
@@ -61,7 +63,12 @@ namespace Peach.Core.Test
 
 			// Collect transformed values, actions and dataModels always
 			values.Add(action.dataModel.Count > 0 ? action.dataModel[0].Value : null);
-			actions.Add(action);
+
+			if (cloneActions)
+				actions.Add(ObjectCopier.Clone(action));
+			else
+				actions.Add(action);
+
 			dataModels.Add(action.dataModel);
 		}
 
