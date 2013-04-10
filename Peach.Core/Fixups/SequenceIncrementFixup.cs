@@ -32,18 +32,26 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using System.Runtime.Serialization;
+using Action = Peach.Core.Dom.Action;
 
 namespace Peach.Core.Fixups
 {
 	[Description("Standard sequential increment fixup.")]
 	[Fixup("SequenceIncrementFixup", true)]
 	[Fixup("sequence.SequenceIncrementFixup")]
+	[Parameter("Offset", typeof(uint?), "Sets the per-iteration initial value to Offset * (Iteration - 1)", "")]
+	[Parameter("Once", typeof(bool), "Only increment once per iteration", "false")]
 	[Serializable]
 	public class SequenceIncrementFixup : Fixup
 	{
+		public uint? Offset { get; private set; }
+		public bool Once { get; private set; }
+
 		public SequenceIncrementFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args)
 		{
+			ParameterParser.Parse(this, args);
+
 			Core.Dom.StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 		}
 
@@ -63,7 +71,7 @@ namespace Peach.Core.Fixups
 			context.engine.TestFinished -= Engine_TestFinished;
 		}
 
-		void Action_Starting(Dom.Action action)
+		void Action_Starting(Action action)
 		{
 			if (action.type != ActionType.Output)
 				return;
@@ -72,50 +80,49 @@ namespace Peach.Core.Fixups
 			if (elem != null)
 			{
 				elem.Invalidate();
-				IncrementBy(elem, action, 1);
+				Update(elem, action, Offset, Once, true);
 			}
 		}
 
-		static Variant IncrementBy(Dom.DataElement elem, Dom.Action action, uint value)
+		static Variant Update(DataElement elem, Action action, uint? offset, bool once, bool increment)
 		{
-			string key = "SequenceIncrementFixup." + elem.fullName;
-
-			Dom.Dom dom = action.parent.parent.parent as Dom.Dom;
-			object obj;
-			bool cached = dom.context.iterationStateStore.TryGetValue(key, out obj);
-			if (!cached)
-				obj = elem.DefaultValue;
-
-			Variant var = obj as Variant;
-			System.Diagnostics.Debug.Assert(var != null);
-
-			if (cached && value == 0)
-				return var;
-
-			dynamic num;
-
-			if (elem is Dom.String && elem.Hints.ContainsKey("NumericalString"))
-			{
-				num = int.Parse((string)var);
-			}
-			else if (elem is Dom.Number)
-			{
-				if (((Dom.Number)elem).Signed)
-					num = (long)var;
-				else
-					num = (ulong)var;
-			}
-			else
-			{
+			if (!(elem is Dom.Number) && !(elem is Dom.String && elem.Hints.ContainsKey("NumericalString")))
 				throw new PeachException("SequenceIncrementFixup has non numeric parent '" + elem.fullName + "'.");
+
+			ulong max = elem is Dom.Number ? ((Dom.Number)elem).MaxValue : ulong.MaxValue;
+			ulong value = 0;
+			object obj = null;
+
+			string key = "SequenceIncrementFixup." + elem.fullName;
+			Dom.Dom dom = action.parent.parent.parent as Dom.Dom;
+
+			if (dom.context.stateStore.TryGetValue(key, out obj))
+				value = (ulong)obj;
+
+			if (dom.context.iterationStateStore.ContainsKey(key))
+				increment &= !once;
+			else if (offset.HasValue)
+				value = (ulong)offset.Value * (dom.context.test.strategy.Iteration - 1);
+
+			// For 2 bit number, offset is 2, 2 actions per iter:
+			// Iter:  1a,1b,2a,2b,3a,3b,4a,4b,5a,5b,6a,6b
+			// It-1:  0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5
+			// Pre:   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11
+			// Want:  0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2
+			// Final: 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3
+			if (value > max)
+				value = value % max;
+
+			if (increment)
+			{
+				if (++value > max)
+					value -= max;
+
+				dom.context.stateStore[key] = value;
+				dom.context.iterationStateStore[key] = value;
 			}
 
-			var = new Variant(num + value);
-
-			if (value != 0)
-				dom.context.iterationStateStore[key] = var;
-
-			return var;
+			return new Variant(value);
 		}
 
 		protected override Variant fixupImpl()
@@ -125,7 +132,7 @@ namespace Peach.Core.Fixups
 			if (dm == null || dm.action == null)
 				return parent.DefaultValue;
 
-			return IncrementBy(parent, dm.action, 0);
+			return Update(parent, dm.action, Offset, Once, false);
 		}
 	}
 }
