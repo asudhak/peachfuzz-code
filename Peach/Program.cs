@@ -52,7 +52,7 @@ namespace Peach
 	/// </summary>
 	public class Program
 	{
-		static int Main(string[] args)
+		public static int Run(string[] args)
 		{
 			Peach.Core.AssertWriter.Register();
 

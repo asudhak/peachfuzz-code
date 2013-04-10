@@ -39,12 +39,12 @@
 		</State>
 	</StateModel>
 	
-	<Agent name="RemoteAgent" location="tcp://192.168.1.190:9000"> 
+	<Agent name="RemoteAgent" location="tcp://127.0.0.1:9001"> 
 		<!-- This agent will get our remote publisher -->
 		
 		<!-- Load up our target -->
 		<Monitor class="WindowsDebugger">
-			<Param name="CommandLine" value="CrashableServer.exe 192.168.1.190 4242" />
+			<Param name="CommandLine" value="CrashableServer.exe 127.0.0.1 4242" />
 		</Monitor>
 	</Agent>
 	
@@ -55,7 +55,7 @@
 		<Publisher class="RemotePublisher">
 			<Param name="Agent" value="RemoteAgent" />
 			<Param name="Class" value="Tcp"/>
-			<Param name="Host" value="192.168.1.190" />
+			<Param name="Host" value="127.0.0.1" />
 			<Param name="Port" value="4242" />
 		</Publisher>
 		

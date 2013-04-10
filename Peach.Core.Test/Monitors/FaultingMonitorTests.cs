@@ -17,10 +17,12 @@ namespace Peach.Core.Test.Monitors
     [Parameter("Iteration", typeof(int), "Iteration to Fault on")]
     [Parameter("FaultAlways", typeof(bool), "Fault on non control iterations")]
     [Parameter("Replay", typeof(bool), "Don't fault on replay", "false")]
+    [Parameter("Repro", typeof(int), "Repro faults on this iteration", "0")]
     public class FaultingMonitor : Peach.Core.Agent.Monitor
     {
         protected int Iter = 0;
         protected int curIter = 0;
+        protected int ReproIter = 0;
         protected bool replay = false;
         protected bool replaying = false;
         protected bool control = true;
@@ -31,6 +33,8 @@ namespace Peach.Core.Test.Monitors
         {
             if (args.ContainsKey("Iteration"))
                 Iter = (int)args["Iteration"];
+            if (args.ContainsKey("Repro"))
+                ReproIter = (int)args["Repro"];
             if (args.ContainsKey("Replay"))
                 replay = ((string) args["Replay"]).ToLower() == "true";
             if (args.ContainsKey("FaultAlways"))
@@ -59,6 +63,13 @@ namespace Peach.Core.Test.Monitors
 
         public override bool DetectedFault()
         {
+			if (curIter == ReproIter)
+			{
+				bool fault = !control;
+				control = false;
+				return fault;
+			}
+
             if (curIter == Iter)
             {
                 if (replay)

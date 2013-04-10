@@ -7,13 +7,9 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Net.NetworkInformation;
+using System.Reflection;
 
 using NLog;
-
-#if MONO
-using Mono.Unix;
-using Mono.Unix.Native;
-#endif
 
 using Peach;
 using Peach.Core.IO;
@@ -22,49 +18,6 @@ namespace Peach.Core.Publishers
 {
 	public abstract class SocketPublisher : Publisher
 	{
-#if MONO
-		#region P/Invokes for MTU
-
-		const int AF_PACKET = 17;
-		const int SOCK_RAW = 3;
-		const int SIOCGIFMTU = 0x8921;
-		const int SIOCSIFMTU = 0x8922;
-
-		[StructLayout(LayoutKind.Sequential)]
-		struct sockaddr_ll
-		{
-			public ushort sll_family;
-			public ushort sll_protocol;
-			public int sll_ifindex;
-			public ushort sll_hatype;
-			public byte sll_pkttype;
-			public byte sll_halen;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-			public byte[] sll_addr;
-		}
-
-		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-		struct ifreq
-		{
-			public ifreq(string ifr_name)
-			{
-				this.ifr_name = ifr_name;
-				this.ifru_mtu = 0;
-			}
-
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
-			public string ifr_name;
-			public uint ifru_mtu;
-		}
-
-		[DllImport("libc", SetLastError = true)]
-		private static extern int if_nametoindex(string ifname);
-
-		[DllImport("libc", SetLastError = true)]
-		private static extern int ioctl(int fd, int request, ref ifreq mtu);
-
-		#endregion
-
 		#region MTU Related Declarations
 
 		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header.
@@ -75,11 +28,7 @@ namespace Peach.Core.Publishers
 		private const uint MaxMtu = 65535 * 2;
 		private const uint MinMtu = 128;
 
-		private uint _mtu = 0;
-		private uint orig_mtu = 0;
-
 		#endregion
-#endif
 
 		public byte Protocol { get; set; }
 		public IPAddress Interface { get; set; }
@@ -93,14 +42,17 @@ namespace Peach.Core.Publishers
 		private bool _multicast = false;
 		private EndPoint _localEp = null;
 		private EndPoint _remoteEp = null;
+		private IPAddress _localIp = null;
 		private string _type = null;
+		private string _iface = null;
 		private Socket _socket = null;
 		private MemoryStream _recvBuffer = null;
-		private MemoryStream _sendBuffer = null;
+		private uint? _origMtu = null;
+		private uint? _mtu = null;
 
 		protected abstract bool AddressFamilySupported(AddressFamily af);
 
-		protected abstract Socket OpenSocket(EndPoint remote, uint? mtu = null);
+		protected abstract Socket OpenSocket(EndPoint remote);
 
 		public SocketPublisher(string type, Dictionary<string, Variant> args)
 			: base(args)
@@ -110,11 +62,6 @@ namespace Peach.Core.Publishers
 			// Ensure Protocol is supported
 			if (Platform.GetOS() == Platform.OS.Windows)
 				GetProtocolType(Protocol);
-		}
-
-		public static bool IsRunningOnMono()
-		{
-			return Type.GetType("Mono.Runtime") != null;
 		}
 
 		private IPEndPoint ResolveHost()
@@ -264,26 +211,26 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected Socket OpenRawSocket(AddressFamily af, int protocol)
-		{
-			return OpenRawSocket(af, protocol, null);
-		}
-
 		protected string GetInterfaceName(IPAddress Ip)
 		{
+			if (Ip == null)
+				throw new ArgumentNullException("Ip");
+
 			foreach(var iface in NetworkInterface.GetAllNetworkInterfaces())
 			{
 				foreach (var ifaceIp in iface.GetIPProperties().UnicastAddresses)
 				{
 					if (IPAddress.Equals(ifaceIp.Address, Ip))
+					{
 						return iface.Name;
+					}
 				}
 			}
 
 			throw new Exception("Unable to locate interface for IP: " + Ip.ToString());
 		}
 
-		protected Socket OpenRawSocket(AddressFamily af, int protocol, uint? mtu)
+		protected Socket OpenRawSocket(AddressFamily af, int protocol)
 		{
 			if (Platform.GetOS() == Platform.OS.Windows)
 			{
@@ -328,39 +275,6 @@ namespace Peach.Core.Publishers
 					continue;
 				}
 
-				// Start MTU Related Code -- Duplicated in RawEtherPublisher
-
-#if MONO
-
-				int ret = -1;
-				ifreq ifr = new ifreq(GetInterfaceName(Interface));
-
-				if (orig_mtu == 0)
-				{
-					ret = ioctl(fd, SIOCGIFMTU, ref ifr);
-					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
-					orig_mtu = ifr.ifru_mtu;
-				}
-
-				if (mtu != null)
-				{
-					ifr.ifru_mtu = mtu.Value;
-					ret = ioctl(fd, SIOCSIFMTU, ref ifr);
-					UnixMarshal.ThrowExceptionForLastErrorIf(ret);
-				}
-
-				ret = ioctl(fd, SIOCGIFMTU, ref ifr);
-				UnixMarshal.ThrowExceptionForLastErrorIf(ret);
-
-				if (mtu != null && ifr.ifru_mtu != mtu.Value)
-					throw new PeachException("MTU change did not take effect.");
-
-				_mtu = ifr.ifru_mtu;
-
-#endif
-
-				// End MTU Related Code
-
 				// Save off the new protocol
 				Buffer.BlockCopy(BitConverter.GetBytes((int)protocol), 0, info.ProtocolInformation, 8, 4);
 
@@ -378,11 +292,14 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnOpen()
+		protected override void OnStart()
 		{
-			System.Diagnostics.Debug.Assert(_socket == null);
+			base.OnStart();
 
-			IPEndPoint ep = null;
+			IPEndPoint ep;
+			IPAddress local;
+			string iface;
+			uint? mtu;
 
 			try
 			{
@@ -391,9 +308,7 @@ namespace Peach.Core.Publishers
 				if (!AddressFamilySupported(ep.AddressFamily))
 					throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
 
-				_socket = OpenSocket(ep);
-
-				IPAddress local = Interface;
+				local = Interface;
 				if (Interface == null)
 					local = GetLocalIp(ep);
 
@@ -402,6 +317,74 @@ namespace Peach.Core.Publishers
 					local = GetScopeId(local);
 					Logger.Trace("Resolved link-local interface IP for {0} socket to {1}.", _type, local);
 				}
+
+				iface = GetInterfaceName(local);
+				if (iface == null)
+					throw new PeachException("Could not resolve interface name for local IP '{0}'.".Fmt(local));
+
+				try
+				{
+					using (var cfg = NetworkAdapter.CreateInstance(iface))
+					{
+						mtu = cfg.MTU;
+					}
+				}
+				catch (Exception ex)
+				{
+					string msg = ex.Message;
+					if (ex is TypeInitializationException || ex is TargetInvocationException)
+						msg = ex.InnerException.Message;
+
+					Logger.Debug("Could not query the MTU of '{0}'. {1}", _iface, msg);
+					mtu = null;
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Unable to start {0} publisher for {1}:{2}. {3}.", _type, Host, Port, ex.Message);
+				throw new SoftException(ex);
+			}
+
+			_remoteEp = ep;
+			_localIp = local;
+			_iface = iface;
+			_mtu = mtu;
+			_origMtu = mtu;
+		}
+
+		protected override void OnStop()
+		{
+			base.OnStop();
+
+			if (_mtu != _origMtu)
+			{
+				using (var cfg = NetworkAdapter.CreateInstance(_iface))
+				{
+					Logger.Debug("Restoring the MTU of '{0}' to {1}.", _iface, _origMtu.HasValue ? _origMtu.ToString() : "<null>");
+					cfg.MTU = _origMtu;
+				}
+			}
+
+			_remoteEp = null;
+			_localIp = null;
+			_iface = null;
+			_mtu = null;
+			_origMtu = null;
+		}
+
+
+		protected override void OnOpen()
+		{
+			System.Diagnostics.Debug.Assert(_socket == null);
+			System.Diagnostics.Debug.Assert(_remoteEp != null);
+			System.Diagnostics.Debug.Assert(_localIp != null);
+			System.Diagnostics.Debug.Assert(_iface != null);
+
+			try
+			{
+				IPEndPoint ep = _remoteEp as IPEndPoint;
+
+				_socket = OpenSocket(ep);
 
 				_multicast = ep.Address.IsMulticast();
 
@@ -421,14 +404,14 @@ namespace Peach.Core.Publishers
 						_socket.Bind(new IPEndPoint(ep.Address, SrcPort));
 					}
 
-					var level = local.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
-					var opt = new MulticastOption(ep.Address, local);
+					var level = _localIp.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
+					var opt = new MulticastOption(ep.Address, _localIp);
 					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
 
-					if (local != IPAddress.Any && local != IPAddress.IPv6Any)
+					if (_localIp != IPAddress.Any && _localIp != IPAddress.IPv6Any)
 					{
-						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, local);
-						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, local.GetAddressBytes());
+						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, _localIp);
+						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
 					{
@@ -437,7 +420,7 @@ namespace Peach.Core.Publishers
 				}
 				else
 				{
-					_socket.Bind(new IPEndPoint(local, SrcPort));
+					_socket.Bind(new IPEndPoint(_localIp, SrcPort));
 				}
 			}
 			catch (Exception ex)
@@ -463,11 +446,7 @@ namespace Peach.Core.Publishers
 			if (_recvBuffer == null || _recvBuffer.Capacity < _socket.ReceiveBufferSize)
 				_recvBuffer = new MemoryStream(MaxSendSize);
 
-			if (_sendBuffer == null || _sendBuffer.Capacity < _socket.SendBufferSize)
-				_sendBuffer = new MemoryStream(MaxSendSize);
-
 			_localEp = _socket.LocalEndPoint;
-			_remoteEp = ep;
 
 			Logger.Trace("Opened {0} socket, Local: {1}, Remote: {2}", _type, _localEp, _remoteEp);
 		}
@@ -477,7 +456,6 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_socket != null);
 			_socket.Close();
 			_localEp = null;
-			_remoteEp = null;
 			_socket = null;
 		}
 
@@ -550,7 +528,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(byte[] buf, int offset, int count)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 
@@ -563,13 +541,13 @@ namespace Peach.Core.Publishers
 			}
 
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(buf, offset, count));
+				Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
 
-			FilterOutput(buf, offset, count);
+			FilterOutput(buffer, offset, count);
 
 			try
 			{
-				var ar = _socket.BeginSendTo(buf, offset, size, SocketFlags.None, _remoteEp, null, null);
+				var ar = _socket.BeginSendTo(buffer, offset, size, SocketFlags.None, _remoteEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
 				var txLen = _socket.EndSendTo(ar);
@@ -596,34 +574,23 @@ namespace Peach.Core.Publishers
 
 		protected override Variant OnGetProperty(string property)
 		{
-#if MONO
 			if (property == "MTU")
 			{
-				if (_socket != null)
+				if (_mtu == null)
 				{
-					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
-					return new Variant(_mtu);
+					Logger.Debug("MTU of '{0}' is unknown.", _iface);
+					return null;
 				}
 
-				var ep = ResolveHost();
-
-				if (!AddressFamilySupported(ep.AddressFamily))
-					throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
-
-				using (var sock = OpenSocket(ep, null))
-				{
-					Logger.Debug("MTU of {0} is {1}.", Interface, _mtu);
-					return new Variant(_mtu);
-				}
+				Logger.Debug("MTU of '{0}' is {1}.", _iface, _mtu);
+				return new Variant(_mtu.Value);
 			}
-#endif
 
 			return null;
 		}
 
 		protected override void OnSetProperty(string property, Variant value)
 		{
-#if MONO
 			if (property == "MTU")
 			{
 				System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
@@ -632,20 +599,46 @@ namespace Peach.Core.Publishers
 				int len = (int)Math.Min(bs.LengthBits, 32);
 				ulong bits = bs.ReadBits(len);
 				uint mtu = LittleBitWriter.GetUInt32(bits, len);
+
 				if (MaxMtu >= mtu && mtu >= MinMtu)
 				{
-					var ep = ResolveHost();
-
-					if (!AddressFamilySupported(ep.AddressFamily))
-						throw new PeachException(string.Format("The resolved IP '{0}' for host '{1}' is not compatible with the {2} publisher.", ep, Host, _type));
-
-					using (var sock = OpenSocket(ep, mtu))
+					using (var cfg = NetworkAdapter.CreateInstance(_iface))
 					{
-						Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+						try
+						{
+							cfg.MTU = mtu;
+						}
+						catch (Exception ex)
+						{
+							string msg = ex.Message;
+							if (ex is TypeInitializationException || ex is TargetInvocationException)
+								msg = ex.InnerException.Message;
+
+							string err = "Failed to change MTU of '{0}' to {1}. {2}".Fmt(_iface, mtu, msg);
+							Logger.Error(err);
+							var se = new SoftException(err, ex);
+							throw new SoftException(se);
+						}
+
+						_mtu = cfg.MTU;
+
+						if (!_mtu.HasValue || _mtu.Value != mtu)
+						{
+							string err = "Failed to change MTU of '{0}' to {1}. The change did not take effect.".Fmt(_iface, mtu);
+							Logger.Error(err);
+							throw new SoftException(err);
+						}
+						else
+						{
+							Logger.Debug("Changed MTU of '{0}' to {1}.", _iface, mtu);
+						}
 					}
 				}
+				else
+				{
+					Logger.Debug("Not setting MTU of '{0}', value is out of range.", _iface);
+				}
 			}
-#endif
 		}
 
 		#region Read Stream

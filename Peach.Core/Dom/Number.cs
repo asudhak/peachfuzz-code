@@ -269,6 +269,21 @@ namespace Peach.Core.Dom
 
 		private Variant Sanitize(Variant variant)
 		{
+			dynamic value = GetNumber(variant);
+
+			if (value < 0 && (long)value < MinValue)
+				throw new PeachException(string.Format("Error, {0} value '{1}' is less than the minimum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+			if (value > 0 && (ulong)value > MaxValue)
+				throw new PeachException(string.Format("Error, {0} value '{1}' is greater than the maximum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+
+			if (Signed)
+				return new Variant((long)value);
+			else
+				return new Variant((ulong)value);
+		}
+
+		private dynamic GetNumber(Variant variant)
+		{
 			dynamic value = 0;
 
 			switch (variant.GetVariantType())
@@ -291,15 +306,7 @@ namespace Peach.Core.Dom
 					throw new ArgumentException("Variant type is unsupported.", "variant");
 			}
 
-			if (value < 0 && (long)value < MinValue)
-				throw new PeachException(string.Format("Error, {0} value '{1}' is less than the minimum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
-			if (value > 0 && (ulong)value > MaxValue)
-				throw new PeachException(string.Format("Error, {0} value '{1}' is greater than the maximum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
-
-			if (Signed)
-				return new Variant((long)value);
-			else
-				return new Variant((ulong)value);
+			return value;
 		}
 
 		#endregion
@@ -339,12 +346,8 @@ namespace Peach.Core.Dom
 		protected override BitStream InternalValueToBitStream()
 		{
 			ulong bits;
-			dynamic value;
 
-			if (Signed)
-				value = (long)InternalValue;
-			else
-				value = (ulong)InternalValue;
+			dynamic value = GetNumber(InternalValue);
 
 			if (value > 0 && (ulong)value > MaxValue)
 			{

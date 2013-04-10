@@ -15,13 +15,15 @@ namespace Peach.Core.Publishers
 	[Publisher("tcp.TcpListener")]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to")]
 	[Parameter("Port", typeof(ushort), "Local port to listen on")]
-	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data (default 3000)", "3000")]
+	[Parameter("AcceptTimeout", typeof(int), "How many milliseconds to wait for a connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
 
 		public IPAddress Interface { get; set; }
+		public int AcceptTimeout { get; set; }
 
 		protected TcpListener _listener = null;
 
@@ -30,7 +32,7 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnStart()
+		protected override void OnOpen()
 		{
 			System.Diagnostics.Debug.Assert(_listener == null);
 
@@ -45,10 +47,10 @@ namespace Peach.Core.Publishers
 					Interface + " on port " + Port + ": " + ex.Message, ex);
 			}
 
-			base.OnStart();
+			base.OnOpen();
 		}
 
-		protected override void OnStop()
+		protected override void OnClose()
 		{
 			if (_listener != null)
 			{
@@ -56,18 +58,18 @@ namespace Peach.Core.Publishers
 				_listener = null;
 			}
 
-			base.OnStop();
+			base.OnClose();
 		}
 
 		protected override void OnAccept()
 		{
 			// Ensure any open stream is closed...
-			OnClose();
+			base.OnClose();
 
 			try
 			{
 				var ar = _listener.BeginAcceptTcpClient(null, null);
-				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
+				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(AcceptTimeout)))
 					throw new TimeoutException();
 				_tcp = _listener.EndAcceptTcpClient(ar);
 			}

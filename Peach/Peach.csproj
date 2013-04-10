@@ -371,6 +371,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleWatcher.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

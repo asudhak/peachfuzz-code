@@ -19,14 +19,21 @@ namespace Peach.Core
 
 	public class PlatformFactory<T> where T : class
 	{
-		public static T CreateInstance(params object[] args)
+		private static Type impl = FindImpl();
+
+		private static Type FindImpl()
 		{
 			Platform.OS os = Platform.GetOS();
 			Type type = typeof(T);
 			var cls = ClassLoader.FindTypeByAttribute<PlatformImplAttribute>((t, a) => a.OS == os && (t.BaseType == type || t.GetInterfaces().Contains(type)));
 			if (cls == null)
 				throw new TypeLoadException("Could not find an instance of '" + type.FullName + "' for the " + os + " platform.");
-			object obj = Activator.CreateInstance(cls, args);
+			return cls;
+		}
+
+		public static T CreateInstance(params object[] args)
+		{
+			object obj = Activator.CreateInstance(impl, args);
 			T ret = obj as T;
 			return ret;
 		}

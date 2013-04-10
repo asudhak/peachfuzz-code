@@ -57,6 +57,12 @@ namespace Peach.Core.Agent.Monitors
 			string ret = args.GetString(key, defaultValue.ToString());
 			return Convert.ToBoolean(ret);
 		}
+
+		public static int GetInt(this Dictionary<string, Variant> args, string key, int defaultValue)
+		{
+			string ret = args.GetString(key, defaultValue.ToString());
+			return int.Parse(ret);
+		}
 	}
 
 	/// <summary>
@@ -76,11 +82,15 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CwLockFile", typeof(string), "CrashWRangler Lock file (defaults to cw.lock)", "cw.lock")]
 	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", "cw.pid")]
 	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
+	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call and fault if timeout is reached", "")]
+	[Parameter("WaitForExitTimeout", typeof(int), "Wait for exit timeout value in milliseconds (-1 is infinite)", "10000")]
+	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation", "false")]
 	public class CrashWrangler : Monitor
 	{
 		protected string _command = null;
 		protected string _arguments = null;
 		protected string _startOnCall = null;
+		protected string _waitForExitOnCall = null;
 		protected bool _useDebugMalloc = false;
 		protected string _execHandler = null;
 		protected bool _exploitableReads = false;
@@ -93,6 +103,11 @@ namespace Peach.Core.Agent.Monitors
 		protected bool? _detectedFault = null;
 		protected ulong _totalProcessorTime = 0;
 		protected bool _faultOnEarlyExit = false;
+		protected bool _faultExitFail = false;
+		protected bool _faultExitEarly = false;
+		protected bool _messageExit = false;
+		protected bool _restartOnEachTest = false;
+		protected int _waitForExitTimeout = 10000;
 
 		public CrashWrangler(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -108,11 +123,17 @@ namespace Peach.Core.Agent.Monitors
 			_cwLockFile = args.GetString("CwLockFile", "cw.lock");
 			_cwPidFile = args.GetString("CwPidFile", "cw.pid");
 			_faultOnEarlyExit = args.GetBoolean("FaultOnEarlyExit", false);
+			_waitForExitOnCall = args.GetString("WaitForExitOnCall", null);
+			_waitForExitTimeout = args.GetInt("WaitForExitTimeout", 10000);
+			_restartOnEachTest = args.GetBoolean("RestartOnEachTest", false);
 		}
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			_detectedFault = null;
+			_faultExitFail = false;
+			_faultExitEarly = false;
+			_messageExit = false;
 
 			if (!_IsProcessRunning() && _startOnCall == null)
 				_StartProcess();
@@ -126,8 +147,13 @@ namespace Peach.Core.Agent.Monitors
 				Thread.Sleep(500);
 				_detectedFault = File.Exists(_cwLogFile);
 
-				if (!_detectedFault.Value && _faultOnEarlyExit && !_IsProcessRunning())
-					_detectedFault = true;
+				if (!_detectedFault.Value)
+				{
+					if (_faultOnEarlyExit && _faultExitEarly)
+						_detectedFault = true;
+					else if (_faultExitFail)
+						_detectedFault = true;
+				}
 			}
 
 			return _detectedFault.Value;
@@ -149,11 +175,17 @@ namespace Peach.Core.Agent.Monitors
 				fault.collectedData["Log"] = File.ReadAllBytes(_cwLogFile);
 				fault.folderName = "CrashWrangler";
 			}
-			else
+			else if (!_faultExitFail)
 			{
 				fault.title = "Process exited early";
 				fault.description = "Process exited early: " + _command + " " + _arguments;
 				fault.folderName = "ProcessExitedEarly";
+			}
+			else
+			{
+				fault.title = "Process did not exit in " + _waitForExitTimeout + "ms";
+				fault.description = fault.title + ": " + _command + " " + _arguments;
+				fault.folderName = "ProcessFailedToExit";
 			}
 			return fault;
 		}
@@ -181,8 +213,20 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool IterationFinished()
 		{
-			if (_startOnCall != null)
+			if (!_messageExit && _faultOnEarlyExit && !_IsProcessRunning())
+			{
+				_faultExitEarly = true;
 				_StopProcess();
+			}
+			else if (_startOnCall != null)
+			{
+				_WaitForExit(true);
+				_StopProcess();
+			}
+			else if (_restartOnEachTest)
+			{
+				_StopProcess();
+			}
 
 			return false;
 		}
@@ -195,38 +239,17 @@ namespace Peach.Core.Agent.Monitors
 				_StartProcess();
 				return null;
 			}
-
-			if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall)
+			else if (name == "Action.Call" && ((string)data) == _waitForExitOnCall)
 			{
-				if (!_IsProcessRunning())
-				{
-					return new Variant(0);
-				}
-
-				if (!_noCpuKill && _IsIdleCpu())
-				{
-					_StopProcess();
-					return new Variant(0);
-				}
-				
-				return new Variant(1);
+				_messageExit = true;
+				_WaitForExit(false);
+				_StopProcess();
 			}
 
 			return null;
 		}
 
-		private bool _IsIdleCpu()
-		{
-			System.Diagnostics.Debug.Assert(_procCommand != null);
-
-			var lastTime = _totalProcessorTime;
-
-			_totalProcessorTime = GetTotalCputime(_procCommand);
-
-			return _totalProcessorTime > 0 && lastTime == _totalProcessorTime;
-		}
-
-		private ulong GetTotalCputime(Proc p)
+		private ulong _GetTotalCputime(Proc p)
 		{
 			try
 			{
@@ -240,10 +263,10 @@ namespace Peach.Core.Agent.Monitors
 
 		private bool _IsProcessRunning()
 		{
-			return _procCommand != null && !_procCommand.HasExited && !IsZombie(_procCommand);
+			return _procCommand != null && !_procCommand.HasExited && !_IsZombie(_procCommand);
 		}
 
-		private bool IsZombie(Proc p)
+		private bool _IsZombie(Proc p)
 		{
 			try
 			{
@@ -255,7 +278,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
-		private bool CommandExists()
+		private bool _CommandExists()
 		{
 			using (var p = new Proc())
 			{
@@ -268,7 +291,7 @@ namespace Peach.Core.Agent.Monitors
 
 		private void _StartProcess()
 		{
-			if (!CommandExists())
+			if (!_CommandExists())
 				throw new PeachException("CrashWrangler: Could not find command \"" + _command + "\"");
 
 			if (File.Exists(_cwPidFile))
@@ -386,6 +409,60 @@ namespace Peach.Core.Agent.Monitors
 
 			_procHandler.Close();
 			_procHandler = null;
+		}
+
+		private void _WaitForExit(bool useCpuKill)
+		{
+			const int pollInterval = 200;
+			int i = 0;
+
+			if (!_IsProcessRunning())
+				return;
+
+			if (useCpuKill && !_noCpuKill)
+			{
+				ulong lastTime = 0;
+
+				for (i = 0; i < _waitForExitTimeout; i += pollInterval)
+				{
+					var currTime = _GetTotalCputime(_procCommand);
+
+					if (i != 0 && lastTime == currTime)
+						break;
+
+					lastTime = currTime;
+					Thread.Sleep(pollInterval);
+				}
+
+				_StopProcess();
+			}
+			else
+			{
+				// For some reason, Process.WaitForExit is causing a SIGTERM
+				// to be delivered to the process. So we poll instead.
+
+				if (_waitForExitTimeout >= 0)
+				{
+					for (i = 0; i < _waitForExitTimeout; i += pollInterval)
+					{
+						if (!_IsProcessRunning())
+							break;
+
+						Thread.Sleep(pollInterval);
+					}
+
+					if (i >= _waitForExitTimeout && !useCpuKill)
+					{
+						_detectedFault = true;
+						_faultExitFail = true;
+					}
+				}
+				else
+				{
+					while (_IsProcessRunning())
+						Thread.Sleep(pollInterval);
+				}
+			}
 		}
 
 		private static string GenerateSummary(string file)

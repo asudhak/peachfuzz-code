@@ -108,6 +108,35 @@ namespace Peach.Core
 		{
 		}
 	}
+
+	/// <summary>
+	/// Thrown when peach catches an exception from an agent.
+	/// </summary>
+	[Serializable]
+	public class AgentException : ApplicationException
+	{
+		public AgentException(string message, Exception innerException)
+			: base(message, innerException)
+		{
+		}
+
+		public AgentException(string message)
+			: base(message)
+		{
+		}
+
+		public AgentException(Exception innerException)
+			: base(innerException.Message, innerException)
+		{
+		}
+
+		protected AgentException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+		{
+		}
+	}
+
+
 }
 
 // end

@@ -72,7 +72,7 @@ namespace Peach.Core.Test
 		}
 
 
-		public void RunTest(uint start, uint replay, uint max = 100)
+		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0)
 		{
 			string template = @"
 <Peach>
@@ -95,6 +95,7 @@ namespace Peach.Core.Test
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
 			<Param name='Replay' value='true'/>
+			<Param name='Repro' value='{1}'/>
 		</Monitor>
 	</Agent>
 
@@ -107,7 +108,7 @@ namespace Peach.Core.Test
 
 			iterationHistory.Clear();
 
-			string xml = string.Format(template, replay);
+			string xml = string.Format(template, replay, repro);
 
 			PitParser parser = new PitParser();
 
@@ -246,6 +247,46 @@ namespace Peach.Core.Test
 				9,  // Move back 1
 				8,  // Move back 2
 				6,  // Move back 4
+				11, 12 };
+
+			uint[] actual = iterationHistory.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void TestRangeNotPastFaultOne()
+		{
+			RunTest(1, 4, 100, 3);
+
+			uint[] expected = new uint[] {
+				1,  // Control
+				1, 2,
+				3, // Trigger replay
+				3, // Repro
+				4,
+				4, // Initial Replay
+				5, 6, 7, 8, 9, 10, 11, 12 };
+
+			uint[] actual = iterationHistory.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void TestRangeNotPastFault()
+		{
+			RunTest(1, 10, 100, 3);
+
+			uint[] expected = new uint[] {
+				1,  // Control
+				1, 2,
+				3, // Trigger replay
+				3, // Repro
+				4, 5, 6, 7, 8, 9, 10,
+				10, // Initial replay
+				9,  // Move back 1
+				8,  // Move back 2
+				6,  // Move back 4
+				4,  // Move back 6
 				11, 12 };
 
 			uint[] actual = iterationHistory.ToArray();

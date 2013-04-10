@@ -245,9 +245,9 @@ namespace Peach.Core.Loggers
 
 			ourpath = System.IO.Path.Combine(logpath, System.IO.Path.GetFileName(context.config.pitFile));
 			if (context.config.runName == "DefaultRun")
-				ourpath += "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
+				ourpath += "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
 			else
-				ourpath += "_" + context.config.runName + "_" + string.Format("{0:yyyyMMddhhmmss}", DateTime.Now);
+				ourpath += "_" + context.config.runName + "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
 
 			try
 			{

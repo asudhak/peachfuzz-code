@@ -304,6 +304,7 @@ namespace Peach.Core
 
 				iterationStart = Math.Max(1, iterationStart);
 
+				uint lastReproFault = iterationStart - 1;
 				uint iterationCount = iterationStart;
 				bool firstRun = true;
 
@@ -515,6 +516,8 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 							if (context.reproducingFault)
 							{
+								lastReproFault = iterationCount;
+
 								// If we have moved less than 20 iterations, start fuzzing
 								// from here thinking we may have not really performed the
 								// next few iterations.
@@ -555,7 +558,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 						}
 						else if (context.reproducingFault)
 						{
-							uint maxJump = (context.reproducingInitialIteration - iterationStart);
+							uint maxJump = context.reproducingInitialIteration - lastReproFault - 1;
 
 							if (context.reproducingIterationJumpCount >= (maxJump * 2) || context.reproducingIterationJumpCount > context.reproducingMaxBacksearch)
 							{
@@ -670,6 +673,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 				context.agentManager.SessionFinished();
 				context.agentManager.StopAllMonitors();
+				context.agentManager.Shutdown();
 				OnTestFinished(context);
 
 				context.test = null;

@@ -815,6 +815,7 @@
     <Compile Include="Debuggers\DebugEngine\WindowsDebugEngine.cs" />
     <Compile Include="Debuggers\WindowsSystem\SystemDebugger.cs" />
     <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
+    <Compile Include="NetworkAdapter.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\ComPublisher.cs" />

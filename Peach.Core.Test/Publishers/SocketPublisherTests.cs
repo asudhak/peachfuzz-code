@@ -588,5 +588,83 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 		}
+
+		public void TestMtu(string iface, int mtu)
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Number size=""16"" value=""{1}""/>
+	</DataModel>
+
+	<StateModel name=""StateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action type=""getProperty"" property=""MTU"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+			<Action type=""setProperty"" property=""MTU"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+			<Action type=""getProperty"" property=""MTU"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+
+	</StateModel>
+
+<Test name=""Default"">
+		<StateModel ref=""StateModel""/>
+		<Publisher class=""Udp"">
+			<Param name=""Host"" value=""{0}""/>
+			<Param name=""Port"" value=""8080""/>
+			<Param name=""Interface"" value=""{0}""/>
+		</Publisher>
+	</Test>
+</Peach>
+";
+
+			xml = xml.Fmt(iface, mtu);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(3, this.actions.Count);
+			Assert.AreEqual(mtu, (int)this.actions[2].dataModel.DefaultValue);
+		}
+
+		[Test]
+		public void TestMtuInterface()
+		{
+			IPAddress self = GetFirstInterface(AddressFamily.InterNetwork).Item2;
+			TestMtu(self.ToString(), 1280);
+		}
+
+		[Test]
+		public void TestMtuLoopback()
+		{
+			try
+			{
+				TestMtu("127.0.0.1", 1280);
+				if (Platform.GetOS() == Platform.OS.Windows)
+					Assert.Fail("Should throw");
+				Assert.AreEqual(3, this.actions.Count);
+				Assert.NotNull(this.actions[0].dataModel.DefaultValue);
+			}
+			catch (PeachException pe)
+			{
+				if (Platform.GetOS() != Platform.OS.Windows)
+					Assert.Fail("Should not throw");
+
+				Assert.True(pe.Message.Contains("MTU changes are not supported on interface"));
+				Assert.AreEqual(2, this.actions.Count);
+				Assert.Null(this.actions[0].dataModel.DefaultValue);
+			}
+		}
 	}
 }

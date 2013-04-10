@@ -101,13 +101,11 @@ namespace Peach.Core.Test.Agent.Monitors
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			dom.tests[0].includedMutators = new List<string>();
-			dom.tests[0].includedMutators.Add("UnicodeUtf8ThreeCharMutator");
 
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
-			config.rangeStart = 1;
-			config.rangeStop = 1;
+			config.rangeStart = 2;
+			config.rangeStop = 2;
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
@@ -119,7 +117,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual("WindowsDebuggerHybrid", this.faults[0].detectionSource);
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void TestEarlyExit()
 		{
 			string pit = @"
@@ -178,6 +176,138 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual("SystemDebugger", this.faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, this.faults[1].type);
 			Assert.AreEqual("WindowsDebugEngine", this.faults[1].detectionSource);
+		}
+
+		[Test]
+		public void TestExitEarlyFault()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["CommandLine"] = new Variant("CrashingFileConsumer.exe");
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			var w = new WindowsDebuggerHybrid(null, "name", args);
+			w.IterationStarting(1, false);
+
+			System.Threading.Thread.Sleep(1000);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(true, w.DetectedFault());
+			Fault f = w.GetMonitorData();
+			Assert.NotNull(f);
+			Assert.AreEqual("ProcessExitedEarly", f.folderName);
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault1()
+		{
+			Variant foo = new Variant("foo");
+			Variant bar = new Variant("bar");
+
+			// FaultOnEarlyExit doesn't fault when stop message is sent
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["CommandLine"] = new Variant("CrashingFileConsumer.exe");
+			args["StartOnCall"] = foo;
+			args["WaitForExitOnCall"] = bar;
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			var w = new WindowsDebuggerHybrid(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.Message("Action.Call", foo);
+			w.Message("Action.Call", bar);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault2()
+		{
+			Variant foo = new Variant("foo");
+
+			// FaultOnEarlyExit faults when StartOnCall is used and stop message is not sent
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["CommandLine"] = new Variant("CrashingFileConsumer.exe");
+			args["StartOnCall"] = foo;
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			var w = new WindowsDebuggerHybrid(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.Message("Action.Call", foo);
+
+			System.Threading.Thread.Sleep(1000);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(true, w.DetectedFault());
+			Fault f = w.GetMonitorData();
+			Assert.NotNull(f);
+			Assert.AreEqual("ProcessExitedEarly", f.folderName);
+
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault3()
+		{
+			Variant foo = new Variant("foo");
+
+			// FaultOnEarlyExit doesn't fault when StartOnCall is used
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["CommandLine"] = new Variant("CrashableServer.exe 127.0.0.1 6789");
+			args["StartOnCall"] = foo;
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			var w = new WindowsDebuggerHybrid(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.Message("Action.Call", foo);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
+		}
+
+		[Test]
+		public void TestExitEarlyFault4()
+		{
+			// FaultOnEarlyExit doesn't fault when restart every iteration is true
+
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["CommandLine"] = new Variant("CrashableServer.exe 127.0.0.1 6789");
+			args["RestartOnEachTest"] = new Variant("true");
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			var w = new WindowsDebuggerHybrid(null, "name", args);
+			w.SessionStarting();
+			w.IterationStarting(1, false);
+
+			w.IterationFinished();
+
+			Assert.AreEqual(false, w.DetectedFault());
+
+			w.SessionFinished();
+			w.StopMonitor();
 		}
 	}
 }
