@@ -89,7 +89,9 @@ namespace Peach.Core.Test.StateModel
 
 	<DataModel name='DM'>
 		<Number name='num' size='8' mutable='false'>
-			<Fixup class='SequenceIncrementFixup'/>
+			<Fixup class='SequenceIncrementFixup'>
+				<Param name='Offset' value='0'/>
+			</Fixup>
 		</Number>
 		<String name='str1' value='Hello'/>
 		<String name='str2' value='World'/>
