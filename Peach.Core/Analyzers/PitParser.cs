@@ -165,7 +165,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Peach")
 				{
-					handlePeach(child, args);
+					handlePeach(_dom, child, args);
 					break;
 				}
 			}
@@ -274,12 +274,14 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// Handle parsing the top level Peach node.
 		/// </summary>
+		/// <remarks>
+		/// NOTE: This method is intended to be overriden (hence the virtual) and is 
+		///			currently in use by Godel to extend the Pit Parser.
+		/// </remarks>
 		/// <param name="node">XmlNode to parse</param>
 		/// <returns>Returns the parsed Dom object.</returns>
-		protected virtual void handlePeach(XmlNode node, Dictionary<string, object> args)
+		protected virtual void handlePeach(Dom.Dom dom, XmlNode node, Dictionary<string, object> args)
 		{
-			Dom.Dom dom = _dom;
-
 			// Pass 0 - Basic check if Peach 2.3 ns  
 			if (node.NamespaceURI.Contains("2008"))
 				throw new PeachException("Error, Peach 2.3 namespace detected please upgrade the pit");
