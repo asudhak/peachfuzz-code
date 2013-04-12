@@ -138,11 +138,11 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
 					try
 					{
-					  ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
+						ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
 					}
-					catch (System.ArgumentException ex)
+					catch (System.ArgumentException)
 					{
-					  throw new PeachException("Error, Duplicate element '" + defNode.getAttrString("key") + "', already exists.");
+						throw new PeachException("Error, defines file '" + definedValuesFile +"' contains multiple entries for key '" + defNode.getAttrString("key") + "'.");
 					}
 				}
 			}
