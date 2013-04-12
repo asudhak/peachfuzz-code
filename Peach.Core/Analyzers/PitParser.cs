@@ -1492,13 +1492,15 @@ namespace Peach.Core.Analyzers
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "DataModel")
-					param.dataModel = getRef<DataModel>(dom, child.getAttrString("ref"), a => a.dataModels);
+					param.dataModel = handleDataModel(child);
 				if (child.Name == "Data")
 					param.data = handleData(child, true);
 			}
 
 			if (param.dataModel == null)
 				throw new PeachException("Error, <Param> child of action '" + parent.name + "' is missing required child element <DataModel>.");
+
+			param.dataModel.action = parent;
 
 			return param;
 		}
