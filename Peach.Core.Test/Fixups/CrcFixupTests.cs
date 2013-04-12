@@ -61,7 +61,7 @@ namespace Peach.Core.Test.Fixups
 		}
 
 		[Test]
-		public void Test32Default()
+		public void TestLegacy()
 		{
 			// standard test
 
@@ -69,9 +69,8 @@ namespace Peach.Core.Test.Fixups
 				<Peach>
 				   <DataModel name=""TheDataModel"">
 				       <Number name=""CRC"" size=""32"" signed=""false"">
-				           <Fixup class=""CrcFixup"">
+				           <Fixup class=""Crc32Fixup"">
 				               <Param name=""ref"" value=""Data""/>
-							   <Param name=""type"" value=""32""/>
 				           </Fixup>
 				       </Number>
 				       <Blob name=""Data"" value=""Hello""/>
@@ -109,7 +108,7 @@ namespace Peach.Core.Test.Fixups
 		}
 
 		[Test]
-		public void Test32MixedCase()
+		public void Test32Default()
 		{
 			// standard test
 
@@ -119,7 +118,7 @@ namespace Peach.Core.Test.Fixups
 				       <Number name=""CRC"" size=""32"" signed=""false"">
 				           <Fixup class=""CrcFixup"">
 				               <Param name=""ref"" value=""Data""/>
-							   <Param name=""type"" value=""Crc32""/>
+							   <Param name=""type"" value=""CRC32""/>
 				           </Fixup>
 				       </Number>
 				       <Blob name=""Data"" value=""Hello""/>
@@ -155,6 +154,7 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(1, values.Count);
 			Assert.AreEqual(precalcChecksum, values[0].Value);
 		}
+
 
 		[Test]
 		public void Test16Default()
@@ -167,53 +167,7 @@ namespace Peach.Core.Test.Fixups
 				       <Number name=""CRC"" size=""16"" signed=""false"">
 				           <Fixup class=""CrcFixup"">
 				               <Param name=""ref"" value=""Data""/>
-							   <Param name=""type"" value=""16""/>
-				           </Fixup>
-				       </Number>
-				       <Blob name=""Data"" value=""Hello""/>
-				   </DataModel>
-
-				   <StateModel name=""TheState"" initialState=""Initial"">
-				       <State name=""Initial"">
-				           <Action type=""output"">
-				               <DataModel ref=""TheDataModel""/>
-				           </Action>
-				       </State>
-				   </StateModel>
-
-				   <Test name=""Default"">
-				       <StateModel ref=""TheState""/>
-				       <Publisher class=""Null""/>
-				   </Test>
-				</Peach>";
-
-			PitParser parser = new PitParser();
-
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-
-			RunConfiguration config = new RunConfiguration();
-			config.singleIteration = true;
-
-			Engine e = new Engine(null);
-			e.startFuzzing(dom, config);
-
-			byte[] precalcChecksum = new byte[] { 0x53, 0xF3 };
-			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
-		}
-
-		[Test]
-		public void Test16MixedCase()
-		{
-			// standard test
-
-			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-				<Peach>
-				   <DataModel name=""TheDataModel"">
-				       <Number name=""CRC"" size=""16"" signed=""false"">
-				           <Fixup class=""CrcFixup"">
-				               <Param name=""ref"" value=""Data""/>
-							   <Param name=""type"" value=""cRc16""/>
+							   <Param name=""type"" value=""CRC16""/>
 				           </Fixup>
 				       </Number>
 				       <Blob name=""Data"" value=""Hello""/>
@@ -259,7 +213,7 @@ namespace Peach.Core.Test.Fixups
 				       <Number name=""CRC"" size=""16"" signed=""false"">
 				           <Fixup class=""CrcFixup"">
 				               <Param name=""ref"" value=""Data""/>
-							   <Param name=""type"" value=""CCITT""/>
+							   <Param name=""type"" value=""CRC_CCITT""/>
 				           </Fixup>
 				       </Number>
 				       <Blob name=""Data"" value=""Hello""/>
@@ -294,51 +248,6 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(precalcChecksum, values[0].Value);
 		}
 
-		[Test]
-		public void TestCCITTMixedCase()
-		{
-			// standard test
-
-			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-				<Peach>
-				   <DataModel name=""TheDataModel"">
-				       <Number name=""CRC"" size=""16"" signed=""false"">
-				           <Fixup class=""CrcFixup"">
-				               <Param name=""ref"" value=""Data""/>
-							   <Param name=""type"" value=""cRc_CcITt""/>
-				           </Fixup>
-				       </Number>
-				       <Blob name=""Data"" value=""Hello""/>
-				   </DataModel>
-
-				   <StateModel name=""TheState"" initialState=""Initial"">
-				       <State name=""Initial"">
-				           <Action type=""output"">
-				               <DataModel ref=""TheDataModel""/>
-				           </Action>
-				       </State>
-				   </StateModel>
-
-				   <Test name=""Default"">
-				       <StateModel ref=""TheState""/>
-				       <Publisher class=""Null""/>
-				   </Test>
-				</Peach>";
-
-			PitParser parser = new PitParser();
-
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-
-			RunConfiguration config = new RunConfiguration();
-			config.singleIteration = true;
-
-			Engine e = new Engine(null);
-			e.startFuzzing(dom, config);
-
-			byte[] precalcChecksum = new byte[] { 0xDA, 0xDA };
-			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
-		}
 	}
 }
 

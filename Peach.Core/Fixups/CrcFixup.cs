@@ -37,11 +37,13 @@ using System.Runtime.Serialization;
 
 namespace Peach.Core.Fixups
 {
-	[Description("Standard CRC32 as defined by ISO 3309.")]
+	[Description("CRC Fixup library including CRC32 as defined by ISO 3309.")]
 	[Fixup("CrcFixup", true)]
 	[Fixup("checksums.CrcFixup")]
+	[Fixup("Crc32Fixup")]
+	[Fixup("checksums.Crc32Fixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
-	[Parameter("type", typeof(string), "Type of CRC to run [32, 16, CCITT]: Default is 32", "32")]
+	[Parameter("type", typeof(CRCTool.CRCCode), "Type of CRC to run [CRC32, CRC16, CRC_CCITT]", "CRC32")]
 	[Serializable]
 	public class CrcFixup : Fixup
 	{
@@ -51,7 +53,7 @@ namespace Peach.Core.Fixups
 		}
 
 		protected DataElement _ref { get; set; }
-		protected string type { get; set; }
+		protected CRCTool.CRCCode type { get; set; }
 
 		public CrcFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args, "ref")
@@ -65,22 +67,8 @@ namespace Peach.Core.Fixups
 			byte[] data = elem.Value.Value;
 
 			CRCTool crcTool = new CRCTool();
-			if (type.Equals("32") || type.ToUpper().Equals("CRC32"))
-			{
-				crcTool.Init(CRCTool.CRCCode.CRC32);
-			}
-			else if(type.Equals("16") || type.ToUpper().Equals("CRC16"))
-			{
-				crcTool.Init(CRCTool.CRCCode.CRC16);
-			}
-			else if(type.ToUpper().Equals("CCITT") || type.ToUpper().Equals("CRC_CCITT"))
-			{
-				crcTool.Init(CRCTool.CRCCode.CRC_CCITT);
-			}
-			else
-			{
-				throw new PeachException("CrcFixup does not recognize Crc type: '" + type + "'.");
-			}
+			crcTool.Init(type);
+		
 			return new Variant((uint)crcTool.crctablefast(data));
 		}
 	}
