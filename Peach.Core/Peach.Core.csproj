@@ -437,6 +437,7 @@
     <Compile Include="Dom\INamed.cs" />
     <Compile Include="Encoding.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Fixups\CrcFixup.cs" />
     <Compile Include="Fixups\FillValueFixup.cs" />
     <Compile Include="Fixups\HashFixup.cs" />
     <Compile Include="Fixups\HMACFixup.cs" />
@@ -458,10 +459,8 @@
     <Compile Include="Dom\XPath\PeachXPathNodeType.cs" />
     <Compile Include="Fixups\CopyValueFixup.cs" />
     <Compile Include="Fixups\Crc32DualFixup.cs" />
-    <Compile Include="Fixups\EthernetChecksumFixup.cs" />
     <Compile Include="Fixups\ExpressionFixup.cs" />
     <Compile Include="Fixups\IcmpChecksumFixup.cs" />
-    <Compile Include="Fixups\Libraries\CRC32.cs" />
     <Compile Include="Fixups\Libraries\SHA224.cs" />
     <Compile Include="Fixups\LRCFixup.cs" />
     <Compile Include="Fixups\MD5Fixup.cs" />
@@ -494,7 +493,6 @@
     <Compile Include="Dom\String.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Fixup.cs" />
-    <Compile Include="Fixups\Crc32Fixup.cs" />
     <Compile Include="Fixups\Libraries\CRCTool.cs" />
     <Compile Include="IO\Conversion\BigEndianBitConverter.cs" />
     <Compile Include="IO\Conversion\EndianBitConverter.cs" />
