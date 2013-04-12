@@ -251,7 +251,7 @@ namespace Peach.Core.Runtime
 				}
 
 				Engine e = new Engine(GetUIWatcher());
-				dom = GetParser().asParser(parserArgs, extra[0]);
+				dom = GetParser(e).asParser(parserArgs, extra[0]);
 				config.pitFile = extra[0];
 
 				// Used for unittests
@@ -568,7 +568,7 @@ Debug Peach XML File
 			return new ConsoleWatcher();
 		}
 
-		protected virtual Analyzer GetParser()
+		protected virtual Analyzer GetParser(Engine engine)
 		{
 			return Analyzer.defaultParser;
 		}
