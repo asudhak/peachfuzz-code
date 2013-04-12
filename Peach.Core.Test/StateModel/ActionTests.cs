@@ -48,7 +48,7 @@ namespace Peach.Core.Test.StateModel
 			Assert.AreEqual(args[3].type, ActionParameterType.In);
 			Assert.AreEqual("Param4", (string)args[3].dataModel[0].InternalValue);
 
-			return null;
+			return new Variant(Encoding.ASCII.GetBytes("The Result!"));
 		}
 	}
 
@@ -136,6 +136,10 @@ namespace Peach.Core.Test.StateModel
 		<String name='str2' value='World'/>
 	</DataModel>
 
+	<DataModel name='DM2'>
+		<String name='str'/>
+	</DataModel>
+
 	<StateModel name='SM' initialState='Initial'>
 		<State name='Initial'>
 			<Action name='action' type='call'>
@@ -163,6 +167,9 @@ namespace Peach.Core.Test.StateModel
 						<Field name='str1' value='Param4'/>
 					</Data>
 				</Param>
+				<Result name='res'>
+					<DataModel ref='DM2'/>
+				</Result>
 			</Action>
 		</State>
 	</StateModel>
@@ -181,9 +188,19 @@ namespace Peach.Core.Test.StateModel
 			dom.tests[0].publishers[0] = new ParamPublisher(new Dictionary<string, Variant>());
 
 			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
 
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
+
+			var act = dom.tests[0].stateModel.states["Initial"].actions[0];
+
+			Assert.NotNull(act.result);
+			Assert.AreEqual("res", act.result.name);
+			Assert.NotNull(act.result.dataModel);
+			string str = (string)act.result.dataModel[0].InternalValue;
+			Assert.AreEqual("The Result!", str);
+
 		}
 	}
 }
