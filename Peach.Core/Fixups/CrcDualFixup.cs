@@ -36,16 +36,29 @@ using Peach.Core.Fixups.Libraries;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard CRC32 as defined by ISO 3309 applied to two elements.")]
-	[Fixup("Crc32DualFixup", true)]
+	[Fixup("CrcDualFixup", true)]
+	[Fixup("checksums.CrcDualFixup")]
+	[Fixup("Crc32DualFixup")]
 	[Fixup("checksums.Crc32DualFixup")]
 	[Parameter("ref1", typeof(DataElement), "Reference to first data element")]
 	[Parameter("ref2", typeof(DataElement), "Reference to second data element")]
+	[Parameter("type", typeof(CRCTool.CRCCode), "Type of CRC to run [CRC32, CRC16, CRC_CCITT]", "CRC32")]
 	[Serializable]
-	public class Crc32DualFixup : Fixup
+	public class CrcDualFixup : Fixup
 	{
-		public Crc32DualFixup(DataElement parent, Dictionary<string, Variant> args)
+		static void Parse(string str, out DataElement val)
+		{
+			val = null;
+		}
+
+		protected DataElement ref1 { get; set; }
+		protected DataElement ref2 { get; set; }
+		protected CRCTool.CRCCode type { get; set; }
+
+		public CrcDualFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args, "ref1", "ref2")
 		{
+			ParameterParser.Parse(this, args);
 		}
 
 		protected override Variant fixupImpl()
@@ -60,7 +73,7 @@ namespace Peach.Core.Fixups
 			Buffer.BlockCopy(data2, 0, data3, data1.Length, data2.Length);
 
 			CRCTool crcTool = new CRCTool();
-			crcTool.Init(CRCTool.CRCCode.CRC32);
+			crcTool.Init(type);
 
 			return new Variant((uint)crcTool.crctablefast(data3));
 		}
