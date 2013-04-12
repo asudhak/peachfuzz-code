@@ -582,6 +582,10 @@
     <Compile Include="Random.cs" />
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />
+    <Compile Include="Runtime\ConsoleWatcher.cs" />
+    <Compile Include="Runtime\Launcher.cs" />
+    <Compile Include="Runtime\Options.cs" />
+    <Compile Include="Runtime\Program.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="SerializableDictionary.cs" />
     <Compile Include="SingleInstance.cs" />
