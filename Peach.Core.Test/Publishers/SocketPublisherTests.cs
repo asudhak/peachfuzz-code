@@ -171,6 +171,11 @@ namespace Peach.Core.Test.Publishers
 			<Action name=""Recv"" type=""input"">
 				<DataModel ref=""ResponseModel""/>
 			</Action>
+
+			<Action name=""Addr"" type=""getProperty"" property=""LastRecvAddr"">
+				<DataModel name=""LastRecvAddr""/>
+			</Action>
+
 		</State>
 	</StateModel>
 
@@ -282,7 +287,7 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(2, actions.Count);
+			Assert.AreEqual(3, actions.Count);
 
 			var de1 = actions[0].dataModel.find("TheDataModel.str");
 			Assert.NotNull(de1);
@@ -319,18 +324,24 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.startFuzzing(dom, config);
 
-				Assert.AreEqual(2, actions.Count);
+				Assert.AreEqual(3, actions.Count);
 
 				var de1 = actions[0].dataModel.find("TheDataModel.str");
 				Assert.NotNull(de1);
 				var de2 = actions[1].dataModel.find("ResponseModel.str");
 				Assert.NotNull(de2);
+				var addr = actions[2].dataModel.DefaultValue;
+				Assert.NotNull(addr);
+
+				IPAddress ip = new IPAddress((byte[])addr);
+				Assert.NotNull(ip);
 
 				string send = (string)de1.DefaultValue;
 				string recv = (string)de2.DefaultValue;
 
 				Assert.AreEqual("Hello World", send);
 				Assert.AreEqual("SendOnly!", recv);
+
 			}
 			finally
 			{
@@ -362,7 +373,7 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.startFuzzing(dom, config);
 
-				Assert.AreEqual(2, actions.Count);
+				Assert.AreEqual(3, actions.Count);
 
 				var de1 = actions[0].dataModel.find("TheDataModel.str");
 				Assert.NotNull(de1);
@@ -399,7 +410,7 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(2, actions.Count);
+			Assert.AreEqual(3, actions.Count);
 
 			var de1 = actions[0].dataModel.find("TheDataModel.str");
 			Assert.NotNull(de1);
@@ -455,7 +466,7 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(3, dataModels.Count);
+			Assert.AreEqual(4, dataModels.Count);
 
 			var de1 = dataModels[1].find("ResponseModel.str");
 			Assert.NotNull(de1);

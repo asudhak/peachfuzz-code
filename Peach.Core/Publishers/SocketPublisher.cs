@@ -42,6 +42,7 @@ namespace Peach.Core.Publishers
 		private bool _multicast = false;
 		private EndPoint _localEp = null;
 		private EndPoint _remoteEp = null;
+		private EndPoint _lastRxEp = null;
 		private IPAddress _localIp = null;
 		private string _type = null;
 		private string _iface = null;
@@ -492,6 +493,7 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_socket != null);
 			_socket.Close();
 			_localEp = null;
+			_lastRxEp = null;
 			_socket = null;
 		}
 
@@ -536,7 +538,10 @@ namespace Peach.Core.Publishers
 						if (Logger.IsDebugEnabled)
 							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
 
+
 						// Got a valid packet
+						_lastRxEp = ep;
+
 						return;
 					}
 				}
@@ -620,6 +625,14 @@ namespace Peach.Core.Publishers
 
 				Logger.Debug("MTU of '{0}' is {1}.", _iface, _mtu);
 				return new Variant(_mtu.Value);
+			}
+
+			if (property == "LastRecvAddr")
+			{
+				if (_lastRxEp == null)
+					return new Variant(new byte[0]);
+				else
+					return new Variant(((IPEndPoint)_lastRxEp).Address.GetAddressBytes());
 			}
 
 			return null;
