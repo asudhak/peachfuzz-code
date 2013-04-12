@@ -654,12 +654,28 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class ActionParameter
 	{
+		static int nameNum = 0;
+
+		string _name = "Unknown Parameter " + (++nameNum);
+		ActionParameterType _type;
+
 		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
 
-		public ActionParameterType type;
 		public object data;
+
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
+
+		public ActionParameterType type
+		{
+			get { return _type; }
+			set { _type = value; }
+		}
 
 		public DataModel origionalDataModel
 		{

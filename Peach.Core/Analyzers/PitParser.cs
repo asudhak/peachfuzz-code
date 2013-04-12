@@ -1495,6 +1495,15 @@ namespace Peach.Core.Analyzers
 			ActionParameter param = new ActionParameter();
 			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
 
+			if (node.hasAttr("name"))
+				param.name = node.getAttrString("name");
+
+			string strType = node.getAttr("type", "in");
+			ActionParameterType type;
+			if (!Enum.TryParse(strType, true, out type))
+				throw new PeachException("Error, type attribute '" + strType + "' on <Param> child of action '" + parent.name + "' is invalid");
+			param.type = type;
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "DataModel")
