@@ -86,11 +86,24 @@ namespace Peach.Core.Dom
 
 		public DataModel()
 		{
+			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
 		}
 
 		public DataModel(string name)
 			: base(name)
 		{
+			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
+		}
+
+		[OnDeserialized]
+		void OnDeserialized(StreamingContext context)
+		{
+			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
+		}
+
+		void  DataModel_Invalidated(object sender, EventArgs e)
+		{
+			cache = null;
 		}
 
 		public override DataElement Clone()
