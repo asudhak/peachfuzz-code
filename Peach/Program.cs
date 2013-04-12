@@ -33,7 +33,7 @@ using System.Reflection;
 using System.IO;
 using System.Xml;
 
-using Peach.Options;
+using Peach.Core.Runtime;
 using Peach.Core.Dom;
 using Peach.Core;
 using Peach.Core.Agent;
@@ -50,8 +50,17 @@ namespace Peach
 	/// Command line interface for Peach 3.  Mostly backwards compatable with
 	/// Peach 2.3.
 	/// </summary>
-	public class Program
+	public class Program : Peach.Core.Runtime.Program
 	{
+		static int Main(string[] args)
+		{
+#if !MONO
+			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(Launcher.CurrentDomain_AssemblyResolve);
+#endif
+
+			return Program.Run(args);
+		}
+
 		public static int Run(string[] args)
 		{
 			Peach.Core.AssertWriter.Register();
@@ -61,12 +70,7 @@ namespace Peach
 
 		static ConsoleColor DefaultForground = Console.ForegroundColor;
 
-		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
-		public Dom dom;
-
-		public int exitCode = 1;
-
-		public Program(string[] args)
+		public Program(string[] args) : base()
 		{
 			RunConfiguration config = new RunConfiguration();
 			config.shouldStop = delegate() { return stopCount > 0; };
@@ -228,8 +232,8 @@ namespace Peach
 					return;
 				}
 
-				Engine e = new Engine(new ConsoleWatcher());
-				dom = Analyzer.defaultParser.asParser(parserArgs, extra[0]);
+				Engine e = new Engine(GetUIWatcher());
+				dom = GetParser().asParser(parserArgs, extra[0]);
 				config.pitFile = extra[0];
 
 				// Used for unittests
@@ -272,89 +276,9 @@ namespace Peach
 			}
 		}
 
-		private void ParseRange(RunConfiguration config, string v)
+		protected override Watcher GetUIWatcher()
 		{
-			string[] parts = v.Split(',');
-			if (parts.Length != 2)
-				throw new PeachException("Invalid range: " + v);
-
-			try
-			{
-				config.rangeStart = Convert.ToUInt32(parts[0]);
-			}
-			catch (Exception ex)
-			{
-				throw new PeachException("Invalid range start iteration: " + parts[0], ex);
-			}
-
-			try
-			{
-				config.rangeStop = Convert.ToUInt32(parts[1]);
-			}
-			catch (Exception ex)
-			{
-				throw new PeachException("Invalid range stop iteration: " + parts[1], ex);
-			}
-
-			if (config.parallel)
-				throw new PeachException("--range is not supported when --parallel is specified");
-
-			config.range = true;
-		}
-
-		private void ParseParallel(RunConfiguration config, string v)
-		{
-			string[] parts = v.Split(',');
-			if (parts.Length != 2)
-				throw new PeachException("Invalid parallel value: " + v);
-
-			try
-			{
-				config.parallelTotal = Convert.ToUInt32(parts[0]);
-
-				if (config.parallelTotal == 0)
-					throw new ArgumentOutOfRangeException();
-			}
-			catch (Exception ex)
-			{
-				throw new PeachException("Invalid parallel machine total: " + parts[0], ex);
-			}
-
-			try
-			{
-				config.parallelNum = Convert.ToUInt32(parts[1]);
-				if (config.parallelNum == 0 || config.parallelNum > config.parallelTotal)
-					throw new ArgumentOutOfRangeException();
-			}
-			catch (Exception ex)
-			{
-				throw new PeachException("Invalid parallel machine number: " + parts[1], ex);
-			}
-
-			if (config.range)
-				throw new PeachException("--parallel is not supported when --range is specified");
-
-			config.parallel = true;
-		}
-
-		private static int stopCount = 0;
-		
-		private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-		{
-			Console.WriteLine();
-			Console.WriteLine(" --- Ctrl+C Detected --- ");
-
-			if (++stopCount == 1)
-				e.Cancel = true;
-		}
-
-		public void AddNewDefine(string value)
-		{
-			if(value.IndexOf("=") < 0)
-				throw new PeachException("Error, defined values supplied via -D/--define must have an equals sign providing a key-pair set.");
-
-			var kv = value.Split('=');
-			DefinedValues[kv[0]] = kv[1];
+			return new ConsoleWatcher();
 		}
 
 		public void syntax()
@@ -503,39 +427,6 @@ Debug Peach XML File
 ");
 			throw new SyntaxException();
 		}
-
-		public void ShowDevices()
-		{
-			Console.WriteLine();
-			Console.WriteLine("The following devices are available on this machine:");
-			Console.WriteLine("----------------------------------------------------");
-			Console.WriteLine();
-
-			int i = 0;
-
-			var devices = CaptureDeviceList.Instance;
-
-			// Print out all available devices
-			foreach (ICaptureDevice dev in devices)
-			{
-				Console.WriteLine("Name: {0}\nDescription: {1}\n\n", dev.Name, dev.Description);
-				i++;
-			}
-
-			throw new SyntaxException();
-		}
-
-		public void ShowEnvironment()
-		{
-			Peach.Core.Usage.Print();
-
-			throw new SyntaxException();
-		}
-	}
-
-
-	public class SyntaxException : Exception
-	{
 	}
 }
 
