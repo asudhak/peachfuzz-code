@@ -125,7 +125,17 @@ namespace Peach.Core.Publishers
 		{
 			using (Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp))
 			{
-				s.Connect(remote.Address, 22);
+				try
+				{
+					s.Connect(remote.Address, 22);
+				}
+				catch (SocketException)
+				{
+					if (remote.Address.IsMulticast())
+						return remote.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any;
+
+					throw;
+				}
 				IPEndPoint local = s.LocalEndPoint as IPEndPoint;
 				return local.Address;
 			}
@@ -318,12 +328,12 @@ namespace Peach.Core.Publishers
 					Logger.Trace("Resolved link-local interface IP for {0} socket to {1}.", _type, local);
 				}
 
-				iface = GetInterfaceName(local);
-				if (iface == null)
-					throw new PeachException("Could not resolve interface name for local IP '{0}'.".Fmt(local));
-
 				try
 				{
+					iface = GetInterfaceName(local);
+					if (iface == null)
+						throw new PeachException("Could not resolve interface name for local IP '{0}'.".Fmt(local));
+
 					using (var cfg = NetworkAdapter.CreateInstance(iface))
 					{
 						mtu = cfg.MTU;
@@ -335,8 +345,9 @@ namespace Peach.Core.Publishers
 					if (ex is TypeInitializationException || ex is TargetInvocationException)
 						msg = ex.InnerException.Message;
 
-					Logger.Debug("Could not query the MTU of '{0}'. {1}", _iface, msg);
+					iface = local.ToString();
 					mtu = null;
+					Logger.Debug("Could not query the MTU of '{0}'. {1}", iface, msg);
 				}
 			}
 			catch (Exception ex)
@@ -398,20 +409,45 @@ namespace Peach.Core.Publishers
 						else
 							_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
 					}
-					else
+					else if (ep.Address.AddressFamily == AddressFamily.InterNetwork)
 					{
 						// Multicast needs to bind to the group on *nix
 						_socket.Bind(new IPEndPoint(ep.Address, SrcPort));
 					}
+					else
+					{
+						_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+					}
 
-					var level = _localIp.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
-					var opt = new MulticastOption(ep.Address, _localIp);
+					SocketOptionLevel level;
+					object opt;
+
+					if (_localIp.AddressFamily == AddressFamily.InterNetwork)
+					{
+						level = SocketOptionLevel.IP;
+						opt = new MulticastOption(ep.Address, _localIp);
+					}
+					else if (_localIp != IPAddress.IPv6Any)
+					{
+						level = SocketOptionLevel.IPv6;
+						opt = new IPv6MulticastOption(ep.Address, _localIp.ScopeId);
+					}
+					else
+					{
+						level = SocketOptionLevel.IPv6;
+						opt = new IPv6MulticastOption(ep.Address);
+					}
+
 					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
 
 					if (_localIp != IPAddress.Any && _localIp != IPAddress.IPv6Any)
 					{
 						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, _localIp);
-						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
+
+						if (level == SocketOptionLevel.IP)
+							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
+						else
+							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, (int)_localIp.ScopeId);
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
 					{
@@ -427,7 +463,7 @@ namespace Peach.Core.Publishers
 			{
 				if (_socket != null)
 				{
-					_socket.Close();
+					_socket.Close();	
 					_socket = null;
 				}
 

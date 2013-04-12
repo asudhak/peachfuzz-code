@@ -339,6 +339,49 @@ namespace Peach.Core.Test.Publishers
 		}
 
 		[Test]
+		public void MulticastUdp6Test()
+		{
+			ushort dstport = TestBase.MakePort(53000, 54000);
+			ushort srcport = TestBase.MakePort(54000, 55000);
+
+			SocketEcho echo = new SocketEcho();
+			echo.SendOnly(IPAddress.Parse("ff02::1:2"), dstport);
+
+			try
+			{
+				string xml = string.Format(template, "Udp", "ff02::1:2", srcport.ToString(), "Hello World", dstport.ToString());
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Peach.Core.Publishers.UdpPublisher pub = dom.tests[0].publishers[0] as Peach.Core.Publishers.UdpPublisher;
+				pub.Interface = GetFirstInterface(AddressFamily.InterNetworkV6).Item2; 
+
+				RunConfiguration config = new RunConfiguration();
+				config.singleIteration = true;
+
+				Engine e = new Engine(null);
+				e.startFuzzing(dom, config);
+
+				Assert.AreEqual(2, actions.Count);
+
+				var de1 = actions[0].dataModel.find("TheDataModel.str");
+				Assert.NotNull(de1);
+				var de2 = actions[1].dataModel.find("ResponseModel.str");
+				Assert.NotNull(de2);
+
+				string send = (string)de1.DefaultValue;
+				string recv = (string)de2.DefaultValue;
+
+				Assert.AreEqual("Hello World", send);
+				Assert.AreEqual("SendOnly!", recv);
+			}
+			finally
+			{
+				echo.Socket.Close();
+			}
+		}
+
+		[Test]
 		public void Udp6Test()
 		{
 			SocketEcho echo = new SocketEcho();
