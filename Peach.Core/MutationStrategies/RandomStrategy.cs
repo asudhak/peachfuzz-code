@@ -31,6 +31,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Linq;
 
 using Peach.Core.IO;
 using Peach.Core.Dom;
@@ -52,7 +53,7 @@ namespace Peach.Core.MutationStrategies
 	{
 		class DataSetTracker
 		{
-			public List<string> fileNames = new List<string>();
+			public List<Data> options = new List<Data>();
 			public uint iteration = 1;
 		};
 
@@ -215,6 +216,64 @@ namespace Peach.Core.MutationStrategies
 			}
 		}
 
+		private DataModel ApplyFileData(Dom.Action action, Data data)
+		{
+			byte[] fileBytes = null;
+
+			for (int i = 0; i < 5 && fileBytes == null; ++i)
+			{
+				try
+				{
+					fileBytes = File.ReadAllBytes(data.FileName);
+				}
+				catch (Exception ex)
+				{
+					logger.Debug("Failed to open '{0}'. {1}", data.FileName, ex.Message);
+				}
+			}
+
+			if (fileBytes == null)
+				throw new CrackingFailure(null, null);
+
+
+			// Note: We need to find the origional data model to use.  Re-using
+			// a data model that has been cracked into will fail in odd ways.
+
+			var referenceName = action.dataModel.referenceName;
+			if (referenceName == null)
+				referenceName = action.dataModel.name;
+
+			var dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
+			dataModel.isReference = true;
+			dataModel.referenceName = referenceName;
+
+			// Crack the file
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dataModel, new BitStream(fileBytes));
+
+			return dataModel;
+		}
+
+		private DataModel AppleFieldData(Dom.Action action, Data data)
+		{
+			// Note: We need to find the origional data model to use.  Re-using
+			// a data model that has been cracked into will fail in odd ways.
+
+			var referenceName = action.dataModel.referenceName;
+			if (referenceName == null)
+				referenceName = action.dataModel.name;
+
+			var dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
+			dataModel.isReference = true;
+			dataModel.referenceName = referenceName;
+
+			// Apply the fields
+
+			data.ApplyFields(dataModel);
+
+			return dataModel;
+		}
 
 		private void SyncDataSet(Dom.Action action)
 		{
@@ -231,75 +290,65 @@ namespace Peach.Core.MutationStrategies
 				return;
 
 			// Don't switch files if we are only using a single file :)
-			if (val.fileNames.Count < 2)
+			if (val.options.Count < 2)
 				return;
 
-			string fileName = null;
-			byte[] fileBytes = null;
+			DataModel dataModel = null;
 
 			// Some of our sample files may not crack.  Loop through them until we
 			// find a good sample file.
-			while (val.fileNames.Count > 0)
+			while (val.options.Count > 0 && dataModel == null)
 			{
-				try
+				Data option = _randomDataSet.Choice(val.options);
+
+				if (option.DataType == DataType.File)
 				{
-					fileName = _randomDataSet.Choice(val.fileNames);
-
-					for (int i = 0; i < 5; ++i)
+					try
 					{
-						try
-						{
-							// Only pick the file name once so any given iteration is guranteed to be deterministic
-							fileBytes = File.ReadAllBytes(fileName);
-						}
-						catch
-						{
-							continue;
-						}
-
-						// Crack the file
-
-						// Note: We need to find the origional data model to use.  Re-using
-						// a data model that has been cracked into will fail in odd ways.
-
-						var referenceName = action.dataModel.referenceName;
-						if (referenceName == null)
-							referenceName = action.dataModel.name;
-						action.dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
-						action.dataModel.isReference = true;
-						action.dataModel.referenceName = referenceName;
-
-						DataCracker cracker = new DataCracker();
-						cracker.CrackData(action.dataModel, new BitStream(fileBytes));
-
-						// Generate all values;
-						var ret = action.dataModel.Value;
-						System.Diagnostics.Debug.Assert(ret != null);
-
-						// Remove our old mutators
-						_dataModels.Remove(GetDataModelName(action));
-						List<DataElement> oldElements = new List<DataElement>();
-						RecursevlyGetElements(action.origionalDataModel, oldElements);
-						foreach (var item in oldElements)
-							_iterations.Remove(item.fullName);
-
-						// Store copy of new origional data model
-						action.origionalDataModel = action.dataModel.Clone() as DataModel;
-
-						// Save our current state
-						val.iteration = switchIteration;
-
-						return;
+						dataModel = ApplyFileData(action, option);
+					}
+					catch (CrackingFailure)
+					{
+						logger.Debug("Removing " + option.FileName + " from sample list.  Unable to crack.");
+						val.options.Remove(option);
 					}
 				}
-				catch(Cracker.CrackingFailure)
+				else if (option.DataType == DataType.Fields)
 				{
-					logger.Debug("Removing " + fileName + " from sample list.  Unable to crack.");
-					val.fileNames.Remove(fileName);
+					try
+					{
+						dataModel = AppleFieldData(action, option);
+					}
+					catch (PeachException)
+					{
+						logger.Debug("Removing " + option.name + " from sample list.  Unable to apply fields.");
+						val.options.Remove(option);
+					}
 				}
 			}
 
-			throw new PeachException("Error, RandomStrategy was unable to load data for model \"" + action.dataModel.fullName + "\"");
+			if (dataModel == null)
+				throw new PeachException("Error, RandomStrategy was unable to load data for model \"" + action.dataModel.fullName + "\"");
+
+			// Set new data model
+			action.dataModel = dataModel;
+
+			// Generate all values;
+			var ret = action.dataModel.Value;
+			System.Diagnostics.Debug.Assert(ret != null);
+
+			// Remove our old mutators
+			_dataModels.Remove(GetDataModelName(action));
+			List<DataElement> oldElements = new List<DataElement>();
+			RecursevlyGetElements(action.origionalDataModel, oldElements);
+			foreach (var item in oldElements)
+				_iterations.Remove(item.fullName);
+
+			// Store copy of new origional data model
+			action.origionalDataModel = action.dataModel.Clone() as DataModel;
+
+			// Save our current state
+			val.iteration = switchIteration;
 		}
 
 		private void GatherMutators(DataElementContainer cont)
@@ -364,19 +413,20 @@ namespace Peach.Core.MutationStrategies
 					switch (item.DataType)
 					{
 						case DataType.File:
-							val.fileNames.Add(item.FileName);
+							val.options.Add(item);
 							break;
 						case DataType.Files:
-							val.fileNames.AddRange(item.Files);
+							val.options.AddRange(item.Files.Select(a => new Data() { DataType = DataType.File, FileName = a }));
 							break;
 						case DataType.Fields:
-							throw new NotImplementedException();
+							val.options.Add(item);
+							break;
 						default:
 							throw new PeachException("Unexpected DataType: " + item.DataType.ToString());
 					}
 				}
 
-				if (val.fileNames.Count > 0)
+				if (val.options.Count > 0)
 				{
 					// Need to properly support more than one action that are unnamed
 					string key = action.name + " " + action.GetHashCode();

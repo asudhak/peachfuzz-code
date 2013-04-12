@@ -478,6 +478,82 @@ namespace Peach.Core.Test.MutationStrategies
 			}
 		}
 
+		[Test]
+		public void TestSwitchDataField()
+		{
+			string temp0 = Path.GetTempFileName();
+			string temp1 = Path.GetTempFileName();
+			string temp2 = Path.GetTempFileName();
+			string temp3 = Path.GetTempFileName();
+
+			File.WriteAllBytes(temp0, Encoding.ASCII.GetBytes("111Hello"));
+			File.WriteAllBytes(temp1, Encoding.ASCII.GetBytes("222World"));
+			File.WriteAllBytes(temp2, Encoding.ASCII.GetBytes("555Foo"));
+			File.WriteAllBytes(temp3, Encoding.ASCII.GetBytes("666Bar"));
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str1' value='000' length='3' mutable='false'/>
+		<String name='str2'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data fileName='{0}'/>
+				<Data fileName='{1}'/>
+				<Data>
+					<Field name='str1' value='333'/>
+					<Field name='str2' value='Data1'/>
+				</Data>
+				<Data>
+					<Field name='str1' value='444'/>
+					<Field name='str2' value='Data2'/>
+				</Data>
+			</Action>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data fileName='{2}'/>
+				<Data fileName='{3}'/>
+				<Data>
+					<Field name='str1' value='777'/>
+					<Field name='str2' value='MoreData1'/>
+				</Data>
+				<Data>
+					<Field name='str1' value='888'/>
+					<Field name='str2' value='MoreData2'/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='RandomStrategy'>
+			<Param name='SwitchCount' value='2'/>
+		</Strategy>
+	</Test>
+</Peach>".Fmt(temp0, temp1, temp2, temp3);
+
+			RunSwitchTest(xml, 1, 100);
+
+			Assert.AreEqual(300, dataModels.Count);
+			var res = new Dictionary<string, int>();
+			for (int i = 0; i < dataModels.Count; ++i)
+			{
+				var dm = dataModels[i];
+				string key = (string)dm[0].InternalValue;
+				int val = 0;
+				res.TryGetValue(key, out val);
+				res[key] = ++val;
+			}
+
+			Assert.AreEqual(8, res.Count);
+		}
+
 		private static void RunSwitchTest(string xml, uint start, uint stop)
 		{
 			PitParser parser = new PitParser();

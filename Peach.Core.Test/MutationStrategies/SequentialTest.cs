@@ -338,5 +338,52 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.AreNotEqual(blob, num);
 		}
 
+		[Test]
+		public void FieldOverride()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str1' value='000' length='3' mutable='false'/>
+		<String name='str2'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str1' value='111'/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+		<Mutators mode='include'>
+			<Mutator class='StringMutator'/>
+		</Mutators>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(2380, dataModels.Count);
+
+			for (int i = 0; i < dataModels.Count; ++i)
+			{
+				string val = (string)dataModels[i][0].InternalValue;
+				Assert.AreEqual("111", val);
+			}
+		}
 	}
 }
