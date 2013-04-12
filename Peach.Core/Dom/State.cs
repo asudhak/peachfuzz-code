@@ -82,6 +82,10 @@ namespace Peach.Core.Dom
 		/// Has an error occured?
 		/// </summary>
 		public bool error { get; set; }
+		/// <summary>
+		/// How many times has this state run
+		/// </summary>
+		public uint count { get; set; }
 
 		protected virtual void OnStarting()
 		{
@@ -113,6 +117,12 @@ namespace Peach.Core.Dom
 				started = true;
 				finished = false;
 				error = false;
+
+				if (++count > 1)
+				{
+					foreach (Action action in actions)
+						action.UpdateToOrigionalDataModel();
+				}
 
 				OnStarting();
 
