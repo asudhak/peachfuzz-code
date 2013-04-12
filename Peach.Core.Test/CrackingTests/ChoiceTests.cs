@@ -430,6 +430,63 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(0, ((Dom.Blob)dom.dataModels[0][1]).Value.LengthBytes);
 
 		}
+
+		[Test]
+		public void ChoiceArrayField()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Block name='Root' minOccurs='0'>
+			<Choice name='Choice'>
+				<Block name='C1'>
+					<String name='str1' value='Choice 1='/>
+					<String name='str2'/>
+				</Block>
+				<Block name='C2'>
+					<String name='str1' value='Choice 2='/>
+					<String name='str2'/>
+				</Block>
+			</Choice>
+			<Blob name='data'/>
+		</Block>
+		<Blob/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM' />
+				<Data DataModel='DM'>
+					<Field name='Root[0].Choice.C1.str2' value='foo,' />
+					<Field name='Root[1].Choice.C2.str2' value='bar' />
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM' />
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var dm = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
+
+			var bytes = dm.Value.Value;
+			string str = Encoding.ASCII.GetString(bytes);
+			Assert.AreEqual("Choice 1=foo,Choice 2=bar", str);
+		}
+
 	}
 }
 
