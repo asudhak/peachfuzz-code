@@ -437,6 +437,7 @@
     <Compile Include="Dom\INamed.cs" />
     <Compile Include="Encoding.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Fixups\CrcFixup.cs" />
     <Compile Include="Fixups\FillValueFixup.cs" />
     <Compile Include="Fixups\HashFixup.cs" />
     <Compile Include="Fixups\HMACFixup.cs" />
