@@ -143,7 +143,7 @@ using System.Linq;
 using NDesk.Options;
 #endif
 
-namespace Peach.Options {
+namespace Peach.Core.Runtime {
 
 	public class OptionValueCollection : IList, IList<string> {
 

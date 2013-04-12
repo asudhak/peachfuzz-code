@@ -37,7 +37,7 @@ using Peach.Core.Agent;
 
 using NLog;
 
-namespace Peach
+namespace Peach.Core.Runtime
 {
 	public class ConsoleWatcher : Watcher
 	{

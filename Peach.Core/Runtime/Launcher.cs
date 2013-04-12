@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Peach
+namespace Peach.Core.Runtime
 {
 	public class Launcher
 	{
-		static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		public static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
 			var vars = Environment.GetEnvironmentVariables();
 			if (!vars.Contains("DEVPATH"))
@@ -23,13 +23,14 @@ namespace Peach
 			return null;
 		}
 
-		static int Main(string[] args)
-		{
-#if !MONO
-			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-#endif
+// PUT THIS INTO YOUR PROGRAM!
+//        static int Main(string[] args)
+//        {
+//#if !MONO
+//            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+//#endif
 
-			return Program.Run(args);
-		}
+//            return Program.Run(args);
+//        }
 	}
 }
