@@ -167,22 +167,44 @@ namespace Peach.Core.Dom
 		public override Variant GenerateInternalValue()
 		{
 			BitStream bits = new BitStream();
+			bits.BigEndian();
 
-			// Expand to 'size' bits
-			bits.WriteBits(0, (int)lengthAsBits);
+			int shift;
+
+			if (_isLittleEndian && lengthAsBits < 64)
+			{
+				// Expand to 64 bits and skip remaining bits at the beginning
+				shift = 64 - (int)lengthAsBits;
+				bits.WriteBits(0, 64);
+			}
+			else
+			{
+				// Expand to 'size' bits
+				shift = 0;
+				bits.WriteBits(0, (int)lengthAsBits);
+			}
 
 			foreach (DataElement child in this)
 			{
 				if (child is Flag)
 				{
-					bits.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Begin);
+					bits.SeekBits(((Flag)child).position + shift, System.IO.SeekOrigin.Begin);
 					bits.Write(child.Value, child);
 				}
 				else
 					throw new ApplicationException("Flag has child thats not a flag!");
 			}
 
-			return new Variant(bits);
+			if (!_isLittleEndian)
+				return new Variant(bits);
+
+			bits.SeekBits(0, System.IO.SeekOrigin.Begin);
+			ulong val = bits.ReadUInt64();
+			ulong final = LittleBitWriter.GetBits(val, (int)lengthAsBits);
+
+			BitStream bs = new BitStream();
+			bs.WriteBits(final, (int)lengthAsBits);
+			return new Variant(bs);
 		}
 	}
 }
