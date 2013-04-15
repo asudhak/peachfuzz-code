@@ -39,6 +39,7 @@ using Peach.Core.Cracker;
 using Peach.Core.Dom.XPath;
 using System.Xml.Serialization;
 using System.IO;
+using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
@@ -90,6 +91,7 @@ namespace Peach.Core.Dom
 		protected DataSet _dataSet;
 
 		protected List<ActionParameter> _params = new List<ActionParameter>();
+		protected ActionResult _result = null;
 
 		protected string _publisher = null;
 		protected string _when = null;
@@ -194,6 +196,15 @@ namespace Peach.Core.Dom
 		{
 			get { return _params; }
 			set { _params = value; }
+		}
+
+		/// <summary>
+		/// Action result for a method call
+		/// </summary>
+		public ActionResult result
+		{
+			get { return _result; }
+			set { _result = value; }
 		}
 
 		/// <summary>
@@ -385,7 +396,12 @@ namespace Peach.Core.Dom
 						p.dataModel.action = this;
 					}
 
-					// TODO - Also set ActionResult
+					if (result != null)
+					{
+						logger.Debug("Updating action result to original data model");
+						result.dataModel = result.origionalDataModel.Clone() as DataModel;
+						result.dataModel.action = this;
+					}
 
 					break;
 
@@ -581,11 +597,37 @@ namespace Peach.Core.Dom
 
 		protected void handleCall(Publisher publisher, RunContext context)
 		{
+			Variant ret = null;
+
 			// Are we sending to Agents?
 			if (this.publisher == "Peach.Agent")
-				context.agentManager.Message("Action.Call", new Variant(this.method));
+				ret = context.agentManager.Message("Action.Call", new Variant(this.method));
 			else
-				publisher.call(method, parameters);
+				ret = publisher.call(method, parameters);
+
+			if (result != null && ret != null)
+			{
+				BitStream data;
+
+				try
+				{
+					data = (BitStream)ret;
+				}
+				catch (NotSupportedException)
+				{
+					throw new PeachException("Error, unable to convert result from method '" + this.method + "' to a BitStream");
+				}
+
+				try
+				{
+					DataCracker cracker = new DataCracker();
+					cracker.CrackData(result.dataModel, data);
+				}
+				catch (CrackingFailure ex)
+				{
+					throw new SoftException(ex);
+				}
+			}
 		}
 
 		protected void handleGetProperty(Publisher publisher)
@@ -699,9 +741,19 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class ActionResult
 	{
+		static int nameNum = 0;
+
+		string _name = "Unknown Result " + (++nameNum);
+
 		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
+
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
 
 		public DataModel origionalDataModel
 		{

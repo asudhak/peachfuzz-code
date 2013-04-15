@@ -1471,7 +1471,7 @@ namespace Peach.Core.Analyzers
 					action.parameters.Add(handleActionParameter(child, action));
 
 				if (child.Name == "Result")
-					throw new NotImplementedException("Action.Result TODO");
+					action.result = handleActionResult(child, action);
 
 				if (child.Name == "DataModel")
 					action.dataModel = handleDataModel(child);
@@ -1518,6 +1518,28 @@ namespace Peach.Core.Analyzers
 			param.dataModel.action = parent;
 
 			return param;
+		}
+
+		protected virtual ActionResult handleActionResult(XmlNode node, Dom.Action parent)
+		{
+			ActionResult result = new ActionResult();
+			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
+
+			if (node.hasAttr("name"))
+				result.name = node.getAttrString("name");
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "DataModel")
+					result.dataModel = handleDataModel(child);
+			}
+
+			if (result.dataModel == null)
+				throw new PeachException("Error, <Result> child of action '" + parent.name + "' is missing required child element <DataModel>.");
+
+			result.dataModel.action = parent;
+
+			return result;
 		}
 
 		protected virtual Data handleData(XmlNode node, bool resolveRefs)
