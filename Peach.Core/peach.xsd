@@ -76,7 +76,7 @@
 				Provide OCL script inside of cdata.
 			</xs:documentation>
 		</xs:annotation>
-		<xs:complexType>
+		<xs:complexType mixed="true">
 			<xs:attribute name="controlOnly" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Only use these OCL Contexts on Control or Record iterations./</xs:documentation>
