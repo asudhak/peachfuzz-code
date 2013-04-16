@@ -430,13 +430,13 @@ namespace Peach.Core.Dom
 				object value = Scripting.EvalExpression(when, state);
 				if (!(value is bool))
 				{
-					logger.Debug("Run: when return is not boolean: " + value.ToString());
+				        logger.Debug("Run: action '{0}' when return is not boolean, returned: {1}", name, value);
 					return;
 				}
 
 				if (!(bool)value)
 				{
-					logger.Debug("Run: when returned false");
+				        logger.Debug("Run: action '{0}' when returned false", name);
 					return;
 				}
 			}
