@@ -234,6 +234,10 @@ namespace Peach.Core.Test.PitParserTests
 <Peach>
 	<Include ns=""example"" src=""{0}"" />
 
+	<DataModel name='Foo'>
+		<String name='slurp' value='slurping' />
+	</DataModel>
+
 	<StateModel name=""State"" initialState=""Initial"">
 		<State name=""Initial"">
 			<Action type=""output"">
@@ -253,7 +257,26 @@ namespace Peach.Core.Test.PitParserTests
 		</State>
 	</StateModel>
 
-<Test name=""Override"">
+	<StateModel name=""StateSlurp"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""slurp"" valueXpath=""//slurp"" setXpath=""//str"">
+				<DataModel ref=""Foo"" />
+			</Action>
+
+			<Action type=""output"">
+				<DataModel ref=""example:HelloWorldTemplate"" />
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Slurp"">
+		<StateModel ref=""StateSlurp"" />
+		<Publisher class=""File"">
+			<Param name=""FileName"" value=""{1}""/>
+		</Publisher>
+	</Test>
+
+	<Test name=""Override"">
 		<StateModel ref=""StateOverride"" />
 		<Publisher class=""File"">
 			<Param name=""FileName"" value=""{1}""/>
@@ -286,7 +309,7 @@ namespace Peach.Core.Test.PitParserTests
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.startFuzzing(dom, config);
+			e.startFuzzing(dom, dom.tests[2], config);
 
 			byte[] result = File.ReadAllBytes(output);
 
@@ -294,11 +317,19 @@ namespace Peach.Core.Test.PitParserTests
 
 			dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			e = new Engine(null);
-			e.startFuzzing(dom, dom.tests[0], config);
+			e.startFuzzing(dom, dom.tests[1], config);
 
 			result = File.ReadAllBytes(output);
 
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x0006hello"), result);
+
+			dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			e = new Engine(null);
+			e.startFuzzing(dom, dom.tests[0], config);
+
+			result = File.ReadAllBytes(output);
+
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x0009slurping"), result);
 		}
 	}
 }

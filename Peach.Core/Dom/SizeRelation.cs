@@ -103,7 +103,7 @@ namespace Peach.Core.Dom
 				}
 
 				_isRecursing = true;
-				long size = Of.Value.LengthBits;
+				long size = Of.CalcLengthBits();
 
 				if (_isByteRelation)
 				{
