@@ -164,7 +164,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
 			BitStream bits = new BitStream();
 			bits.BigEndian();

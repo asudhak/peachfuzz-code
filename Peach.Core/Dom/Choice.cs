@@ -197,7 +197,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
 			Variant value;
 

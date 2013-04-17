@@ -176,7 +176,7 @@ namespace Peach.Core.Dom
 			return xmlNode;
 		}
 
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
 				return MutatedValue;

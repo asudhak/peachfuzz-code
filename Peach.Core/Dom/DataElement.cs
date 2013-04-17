@@ -881,7 +881,7 @@ namespace Peach.Core.Dom
 		/// Generate the internal value of this data element
 		/// </summary>
 		/// <returns>Internal value in .NET form</returns>
-		public virtual Variant GenerateInternalValue()
+		protected virtual Variant GenerateInternalValue()
 		{
 			Variant value;
 
@@ -948,7 +948,7 @@ namespace Peach.Core.Dom
 		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
-		public BitStream GenerateValue()
+		protected BitStream GenerateValue()
 		{
 			++GenerateCount;
 

@@ -108,7 +108,7 @@ namespace Peach.Core.Dom
 			return block;
 		}
 
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
 			Variant value;
 
