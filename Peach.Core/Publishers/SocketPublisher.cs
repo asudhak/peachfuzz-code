@@ -396,6 +396,8 @@ namespace Peach.Core.Publishers
 			{
 				IPEndPoint ep = _remoteEp as IPEndPoint;
 
+				ep.Port = Port;
+
 				_socket = OpenSocket(ep);
 
 				_multicast = ep.Address.IsMulticast();
@@ -527,27 +529,46 @@ namespace Peach.Core.Publishers
 
 					_recvBuffer.SetLength(rxLen);
 
-					if (!_multicast && !IPEndPoint.Equals(ep, _remoteEp))
+					if (!_multicast)
 					{
-						Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", ep, _remoteEp);
+						IPEndPoint expected = (IPEndPoint)_remoteEp;
+						IPEndPoint actual = (IPEndPoint)ep;
+
+						if (expected.Port == 0)
+						{
+							if (!IPAddress.Equals(expected.Address, actual.Address))
+							{
+								Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", actual, expected);
+								continue;
+							}
+
+							if (actual.Port != 0)
+							{
+								Logger.Debug("Updating expected remote address from {0} to {1}.", expected, actual);
+								expected.Port = actual.Port;
+							}
+						}
+						else if (!IPEndPoint.Equals(ep, _remoteEp))
+						{
+							Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", ep, _remoteEp);
+							continue;
+						}
 					}
-					else
-					{
-						FilterInput(buf, offset, rxLen);
 
-						if (Logger.IsDebugEnabled)
-							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
+					FilterInput(buf, offset, rxLen);
+
+					if (Logger.IsDebugEnabled)
+						Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
 
 
-						// Got a valid packet
-						_lastRxEp = ep;
+					// Got a valid packet
+					_lastRxEp = ep;
 
-						return;
-					}
+					return;
 				}
 				catch (Exception ex)
 				{
-					if (ex is SocketException && ((SocketException)ex).SocketErrorCode == SocketError.ConnectionRefused)
+					if (ex is SocketException && (((SocketException)ex).SocketErrorCode == SocketError.ConnectionRefused || ((SocketException)ex).SocketErrorCode == SocketError.ConnectionReset))
 					{
 						// Eat Connection reset by peer errors
 						Logger.Debug("Connection reset by peer.  Ignoring...");
@@ -584,10 +605,10 @@ namespace Peach.Core.Publishers
 			if (Logger.IsDebugEnabled)
 				Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
 
-			FilterOutput(buffer, offset, count);
-
 			try
 			{
+				FilterOutput(buffer, offset, count);
+
 				var ar = _socket.BeginSendTo(buffer, offset, size, SocketFlags.None, _remoteEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
