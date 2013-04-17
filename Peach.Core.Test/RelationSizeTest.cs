@@ -456,7 +456,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void MeasureSpeed()
 		{
-			for (uint i = 0; i <= 50; i += 10)
+			for (uint i = 0; i <= 25; i += 5)
 			{
 				var ret = SpeedTest(i);
 				TimeSpan delta = (TimeSpan)ret["delta"];
