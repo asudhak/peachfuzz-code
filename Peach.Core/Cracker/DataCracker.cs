@@ -286,6 +286,8 @@ namespace Peach.Core.Cracker
 		/// <param name="data">Input stream to use for data</param>
 		void handleNode(DataElement elem, BitStream data)
 		{
+			List<BitStream> oldStack = null;
+
 			try
 			{
 				if (elem == null)
@@ -300,11 +302,21 @@ namespace Peach.Core.Cracker
 
 				if (elem.transformer != null)
 				{
+					long startPos = data.TellBits();
 					var sizedData = elem.ReadSizedData(data, pos.size);
 					var decodedData = elem.transformer.decode(sizedData);
 
+					// Make a new stack of data for the decoded data
+					oldStack = _dataStack;
+					_dataStack = new List<BitStream>();
+					_dataStack.Add(decodedData);
+
 					// Use the size of the transformed data as the new size of the element
 					handleCrack(elem, decodedData, decodedData.LengthBits);
+
+					// Make sure the non-decoded data is at the right place
+					if (data == decodedData)
+						data.SeekBits(startPos + decodedData.LengthBits, System.IO.SeekOrigin.Begin);
 				}
 				else
 				{
@@ -323,6 +335,11 @@ namespace Peach.Core.Cracker
 			{
 				handleException(elem, data, e);
 				throw;
+			}
+			finally
+			{
+				if (oldStack != null)
+					_dataStack = oldStack;
 			}
 		}
 
