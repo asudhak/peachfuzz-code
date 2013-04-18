@@ -7,57 +7,86 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.Transformers.Encode
 {
-    [TestFixture]
-    class HexTests : DataModelCollector
-    {
-        [Test]
-        public void Test1()
-        {
-            // standard test
+	[TestFixture]
+	class HexTests : DataModelCollector
+	{
+		byte[] precalcResult = new byte[] { 0x34, 0x38, 0x36, 0x35, 0x36, 0x63, 0x36, 0x63, 0x36, 0x66 };
 
-            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
-                "<Peach>" +
-                "   <DataModel name=\"TheDataModel\">" +
-                "       <Block name=\"TheBlock\">" +
-                "           <Transformer class=\"Hex\"/>" +
-                "           <Blob name=\"Data\" value=\"Hello\"/>" +
-                "       </Block>" +
-                "   </DataModel>" +
+		[Test]
+		public void Test1()
+		{
+			// standard test
 
-                "   <StateModel name=\"TheState\" initialState=\"Initial\">" +
-                "       <State name=\"Initial\">" +
-                "           <Action type=\"output\">" +
-                "               <DataModel ref=\"TheDataModel\"/>" +
-                "           </Action>" +
-                "       </State>" +
-                "   </StateModel>" +
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
+				"<Peach>" +
+				"   <DataModel name=\"TheDataModel\">" +
+				"       <Block name=\"TheBlock\">" +
+				"           <Transformer class=\"Hex\"/>" +
+				"           <Blob name=\"Data\" value=\"Hello\"/>" +
+				"       </Block>" +
+				"   </DataModel>" +
 
-                "   <Test name=\"Default\">" +
-                "       <StateModel ref=\"TheState\"/>" +
-                "       <Publisher class=\"Null\"/>" +
-                "   </Test>" +
-                "</Peach>";
+				"   <StateModel name=\"TheState\" initialState=\"Initial\">" +
+				"       <State name=\"Initial\">" +
+				"           <Action type=\"output\">" +
+				"               <DataModel ref=\"TheDataModel\"/>" +
+				"           </Action>" +
+				"       </State>" +
+				"   </StateModel>" +
 
-            PitParser parser = new PitParser();
+				"   <Test name=\"Default\">" +
+				"       <StateModel ref=\"TheState\"/>" +
+				"       <Publisher class=\"Null\"/>" +
+				"   </Test>" +
+				"</Peach>";
 
-            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			PitParser parser = new PitParser();
 
-            RunConfiguration config = new RunConfiguration();
-            config.singleIteration = true;
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            Engine e = new Engine(null);
-            e.startFuzzing(dom, config);
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
 
-            // verify values
-            // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
-            byte[] precalcResult = new byte[] { 0x34, 0x38, 0x36, 0x35, 0x36, 0x63, 0x36, 0x63, 0x36, 0x66 };
-            Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
-        }
-    }
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			// verify values
+			// -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
+			Assert.AreEqual(1, values.Count);
+			Assert.AreEqual(precalcResult, values[0].Value);
+		}
+
+		[Test]
+		public void CrackTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String/>
+		<Transformer class='Hex'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(precalcResult);
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+		}
+	}
 }
 
 // end
