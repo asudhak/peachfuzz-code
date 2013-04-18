@@ -85,7 +85,38 @@ namespace Peach.Core.Test.Transformers.Encode
 
 			Assert.AreEqual("192.168.1.1", (string)dom.dataModels[0][0].DefaultValue);
 		}
-    }
+
+		[Test]
+		public void CrackingTest2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Block name='blk' length='4'>
+			<String name='IP'>
+				<Transformer class='Ipv4StringToOctet'/>
+			</String>
+		</Block>
+		<String name='Payload'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0xC0, 0xA8, 0x01, 0x01 });
+			data.WriteBytes(Encoding.ASCII.GetBytes("Hello"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("192.168.1.1", (string)dom.dataModels[0].find("blk.IP").DefaultValue);
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][1].DefaultValue);
+		}
+	}
 }
 
 // end

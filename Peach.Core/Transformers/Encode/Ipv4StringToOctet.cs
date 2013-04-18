@@ -51,17 +51,19 @@ namespace Peach.Core.Transformers.Encode
 			IPAddress ip;
 
             if(!IPAddress.TryParse(sip, out ip))
-				throw new PeachException("Error, cannont parse data as IP address " + sip);
+				throw new PeachException("Error, can't transform IP to bytes, '{0}' is not a valid IP address.".Fmt(sip));
 
             return new BitStream(ip.GetAddressBytes());
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-			if(data.Value.Length != 4)
-				throw new PeachException("Error, the length of data isn't four bytes unable to parse data as IP address " + data);
+			var buf = data.Value;
 
-			IPAddress ip = new IPAddress(data.Value);
+			if (buf.Length != 4)
+				throw new PeachException("Error, can't transform bytes to IP, expected 4 bytes but got {0} bytes.".Fmt(buf.Length));
+
+			IPAddress ip = new IPAddress(buf);
 
 			return new BitStream(Encoding.ASCII.GetBytes(ip.ToString()));
         }
