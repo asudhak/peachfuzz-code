@@ -252,7 +252,7 @@ namespace Peach.Core.Dom
 				// before we start down the state path.
 				foreach (State state in states.Values)
 				{
-					state.count = 0;
+					state.runCount = 0;
 
 					foreach (Action action in state.actions)
 						action.UpdateToOrigionalDataModel();

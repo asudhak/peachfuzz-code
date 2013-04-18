@@ -85,7 +85,7 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// How many times has this state run
 		/// </summary>
-		public uint count { get; set; }
+		public uint runCount { get; set; }
 
 		protected virtual void OnStarting()
 		{
@@ -118,7 +118,7 @@ namespace Peach.Core.Dom
 				finished = false;
 				error = false;
 
-				if (++count > 1)
+				if (++runCount > 1)
 				{
 					foreach (Action action in actions)
 						action.UpdateToOrigionalDataModel();
