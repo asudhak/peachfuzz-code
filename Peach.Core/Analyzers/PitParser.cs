@@ -736,7 +736,8 @@ namespace Peach.Core.Analyzers
 			{
 				DataModel refObj = getRef<Dom.DataModel>(_dom, refName, a => a.dataModels);
 				if (refObj == null)
-					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
+					throw new PeachException("Error, DataModel {0}could not resolve ref '{1}'. XML:\n{2}".Fmt(
+						name == null ? "" : "'" + name + "' ", refName, node.OuterXml));
 
 				if (string.IsNullOrEmpty(name))
 					name = refName;

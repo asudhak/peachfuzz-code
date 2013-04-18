@@ -292,5 +292,44 @@ namespace Peach.Core.Test
 			uint[] actual = iterationHistory.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage="Error, DataModel could not resolve ref 'foo'. XML:\n<DataModel ref=\"foo\" />")]
+		public void BadDataModelNoName()
+		{
+			string xml = @"
+<Peach>
+<DataModel ref='foo'/>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, DataModel 'DM' could not resolve ref 'foo'. XML:\n<DataModel name=\"DM\" ref=\"foo\" />")]
+		public void BadDataModelName()
+		{
+			string xml = @"
+<Peach>
+<DataModel name='DM' ref='foo'/>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, Data element has multiple entries for field 'foo'.")]
+		public void MultipleFields()
+		{
+			string xml = @"
+<Peach>
+	<Data>
+		<Field name='foo' value='bar'/>
+		<Field name='foo' value='bar'/>
+	</Data>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
 	}
 }
