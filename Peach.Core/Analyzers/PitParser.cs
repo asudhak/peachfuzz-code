@@ -402,7 +402,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Data")
 				{
-					var data = handleData(child, false);
+					var data = handleData(child);
 
 					if (dom.datas.ContainsKey(data.name))
 						throw new PeachException("Error, a Data element named '" + data.name + "' already exists.");
@@ -1481,7 +1481,7 @@ namespace Peach.Core.Analyzers
 				{
 					if (action.dataSet == null)
 						action.dataSet = new DataSet();
-					action.dataSet.Datas.Add(handleData(child, true));
+					action.dataSet.Datas.Add(handleData(child));
 				}
 			}
 
@@ -1510,7 +1510,7 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "DataModel")
 					param.dataModel = handleDataModel(child);
 				if (child.Name == "Data")
-					param.data = handleData(child, true);
+					param.data = handleData(child);
 			}
 
 			if (param.dataModel == null)
@@ -1543,15 +1543,12 @@ namespace Peach.Core.Analyzers
 			return result;
 		}
 
-		protected virtual Data handleData(XmlNode node, bool resolveRefs)
+		protected virtual Data handleData(XmlNode node)
 		{
 			Data data = null;
 
 			if (node.hasAttr("ref"))
 			{
-				if (!resolveRefs)
-					throw new PeachException("Error, the ref attribute is not valid on top level Data elements.");
-
 				string refName = node.getAttrString("ref");
 
 				Data other = getRef<Data>(_dom, refName, a => a.datas);
@@ -1559,15 +1556,15 @@ namespace Peach.Core.Analyzers
 					throw new PeachException("Error, could not resolve Data element ref attribute value '" + refName + "'.");
 
 				data = ObjectCopier.Clone(other);
+				data.name = node.getAttr("name", new Data().name);
 			}
 			else
 			{
 				data = new Data();
+
+				if (node.hasAttr("name"))
+					data.name = node.getAttrString("name");
 			}
-
-			if (node.hasAttr("name"))
-				data.name = node.getAttrString("name");
-
 
 			if (node.hasAttr("fileName"))
 			{
@@ -1615,16 +1612,24 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			var names = new HashSet<string>();
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Field")
 				{
+					string name = child.getAttrString("name");
+
+					if (!names.Add(name))
+						throw new PeachException("Error, Data element has multiple entries for field '" + name + "'.");
+
 					data.DataType = DataType.Fields;
+
 					// Hack to call common value parsing code.
 					Blob tmp = new Blob();
 					handleCommonDataElementValue(child, tmp);
 
-					data.fields.Add(child.getAttrString("name"), tmp.DefaultValue);
+					data.fields[name] = tmp.DefaultValue;
 				}
 			}
 

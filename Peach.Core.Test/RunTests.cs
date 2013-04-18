@@ -331,5 +331,28 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 		}
+
+		[Test]
+		public void MultipleFieldsRef()
+		{
+			string xml = @"
+<Peach>
+	<Data name='Base'>
+		<Field name='foo' value='bar'/>
+	</Data>
+
+	<Data name='Derived' ref='Base'>
+		<Field name='foo' value='baz'/>
+	</Data>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+			Assert.AreEqual(2, dom.datas.Count);
+			Assert.AreEqual(1, dom.datas[0].fields.Count);
+			Assert.AreEqual("bar", (string)dom.datas[0].fields[0]);
+			Assert.AreEqual(1, dom.datas[1].fields.Count);
+			Assert.AreEqual("baz", (string)dom.datas[1].fields[0]);
+		}
 	}
 }
