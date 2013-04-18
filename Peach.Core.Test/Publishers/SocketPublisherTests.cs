@@ -20,16 +20,17 @@ namespace Peach.Core.Test.Publishers
 		public Socket Socket;
 		public int Max = 1;
 		public int Count = 0;
+		public int WaitTime = 500;
 
 		public SocketEcho()
 		{
 		}
 
-		public void SendOnly(IPAddress remote, int port = 5000)
+		public void SendOnly(IPAddress remote, int port = 5000, string payload = "SendOnly!")
 		{
 			Socket = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
 			remoteEP = new IPEndPoint(remote, port);
-			RecvBuf = Encoding.ASCII.GetBytes("SendOnly!");
+			RecvBuf = Encoding.ASCII.GetBytes(payload);
 			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
 		}
 
@@ -74,7 +75,7 @@ namespace Peach.Core.Test.Publishers
 				Assert.Null(ex.Message);
 			}
 
-			System.Threading.Thread.Sleep(500);
+			System.Threading.Thread.Sleep(WaitTime);
 
 			try
 			{
@@ -171,6 +172,11 @@ namespace Peach.Core.Test.Publishers
 			<Action name=""Recv"" type=""input"">
 				<DataModel ref=""ResponseModel""/>
 			</Action>
+
+			<Action name=""Addr"" type=""getProperty"" property=""LastRecvAddr"">
+				<DataModel name=""LastRecvAddr""/>
+			</Action>
+
 		</State>
 	</StateModel>
 
@@ -282,7 +288,7 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(2, actions.Count);
+			Assert.AreEqual(3, actions.Count);
 
 			var de1 = actions[0].dataModel.find("TheDataModel.str");
 			Assert.NotNull(de1);
@@ -319,7 +325,56 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.startFuzzing(dom, config);
 
-				Assert.AreEqual(2, actions.Count);
+				Assert.AreEqual(3, actions.Count);
+
+				var de1 = actions[0].dataModel.find("TheDataModel.str");
+				Assert.NotNull(de1);
+				var de2 = actions[1].dataModel.find("ResponseModel.str");
+				Assert.NotNull(de2);
+				var addr = actions[2].dataModel.DefaultValue;
+				Assert.NotNull(addr);
+
+				IPAddress ip = new IPAddress((byte[])addr);
+				Assert.NotNull(ip);
+
+				string send = (string)de1.DefaultValue;
+				string recv = (string)de2.DefaultValue;
+
+				Assert.AreEqual("Hello World", send);
+				Assert.AreEqual("SendOnly!", recv);
+
+			}
+			finally
+			{
+				echo.Socket.Close();
+			}
+		}
+
+		[Test]
+		public void MulticastUdp6Test()
+		{
+			ushort dstport = TestBase.MakePort(53000, 54000);
+			ushort srcport = TestBase.MakePort(54000, 55000);
+
+			SocketEcho echo = new SocketEcho();
+			echo.SendOnly(IPAddress.Parse("ff02::1:2"), dstport);
+
+			try
+			{
+				string xml = string.Format(template, "Udp", "ff02::1:2", srcport.ToString(), "Hello World", dstport.ToString());
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				Peach.Core.Publishers.UdpPublisher pub = dom.tests[0].publishers[0] as Peach.Core.Publishers.UdpPublisher;
+				pub.Interface = GetFirstInterface(AddressFamily.InterNetworkV6).Item2; 
+
+				RunConfiguration config = new RunConfiguration();
+				config.singleIteration = true;
+
+				Engine e = new Engine(null);
+				e.startFuzzing(dom, config);
+
+				Assert.AreEqual(3, actions.Count);
 
 				var de1 = actions[0].dataModel.find("TheDataModel.str");
 				Assert.NotNull(de1);
@@ -356,7 +411,7 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(2, actions.Count);
+			Assert.AreEqual(3, actions.Count);
 
 			var de1 = actions[0].dataModel.find("TheDataModel.str");
 			Assert.NotNull(de1);
@@ -412,7 +467,7 @@ namespace Peach.Core.Test.Publishers
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			Assert.AreEqual(3, dataModels.Count);
+			Assert.AreEqual(4, dataModels.Count);
 
 			var de1 = dataModels[1].find("ResponseModel.str");
 			Assert.NotNull(de1);
@@ -664,6 +719,127 @@ namespace Peach.Core.Test.Publishers
 				Assert.True(pe.Message.Contains("MTU changes are not supported on interface"));
 				Assert.AreEqual(2, this.actions.Count);
 				Assert.Null(this.actions[0].dataModel.DefaultValue);
+			}
+		}
+
+		[Test]
+		public void TestUdpNoPortSend()
+		{
+			string xml = string.Format(template, "Udp", IPAddress.Loopback, 0, "Hello World", "0");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw");
+			}
+			catch (PeachException pe)
+			{
+				Assert.AreEqual("Error sending a Udp packet to 127.0.0.1, the port was not specified.", pe.Message);
+			}
+		}
+
+		[Test]
+		public void TestUdpNoPort()
+		{
+			ushort srcport = TestBase.MakePort(24000, 25000);
+
+			string xml = @"
+<Peach>
+
+	<DataModel name=""TheDataModel"">
+		<String name=""str""/>
+	</DataModel>
+
+	<StateModel name=""TheStateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+
+			<Action name=""Send"" type=""output"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheStateModel""/>
+		<Publisher class=""Udp"">
+			<Param name=""Host"" value=""127.0.0.1""/>
+			<Param name=""SrcPort"" value=""{0}""/>
+		</Publisher>
+	</Test>
+
+</Peach>
+".Fmt(srcport);
+
+			this.cloneActions = true;
+
+			SocketEcho echo1 = new SocketEcho() { WaitTime = 100 };
+			echo1.SendOnly(IPAddress.Loopback, srcport, "Echo1");
+
+			SocketEcho echo2 = new SocketEcho() { WaitTime = 66 };
+			echo2.SendOnly(IPAddress.Loopback, srcport, "Echo2");
+
+			try
+			{
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+				RunConfiguration config = new RunConfiguration();
+				config.range = true;
+				config.rangeStart = 1;
+				config.rangeStop = 10;
+
+				Engine e = new Engine(null);
+				e.startFuzzing(dom, config);
+
+				Assert.AreEqual(44, this.actions.Count);
+
+				int num1 = 0;
+				int num2 = 0;
+
+				for (int i = 0; i < 44; i += 4)
+				{
+					var exp = (string)actions[i + 0].dataModel[0].DefaultValue;
+					if (exp != "Echo1")
+					{
+						Assert.AreEqual("Echo2", exp);
+						++num2;
+					}
+					else
+					{
+						++num1;
+					}
+
+					Assert.AreEqual(exp, (string)actions[i + 2].dataModel[0].DefaultValue);
+					Assert.AreEqual(exp, (string)actions[i + 3].dataModel[0].DefaultValue);
+				}
+
+				Assert.Greater(num1, 0);
+				Assert.Greater(num2, 0);
+			}
+			finally
+			{
+				echo1.Socket.Close();
+				echo2.Socket.Close();
 			}
 		}
 	}

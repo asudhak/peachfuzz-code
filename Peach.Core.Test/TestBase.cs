@@ -19,6 +19,24 @@ using Peach.Core.IO;
 
 namespace Peach
 {
+	public class AssertTestFail : System.Diagnostics.TraceListener
+	{
+		public override void Write(string message)
+		{
+			Assert.Fail(message);
+		}
+
+		public override void WriteLine(string message)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			sb.AppendLine("Assertion " + message);
+			sb.AppendLine(new System.Diagnostics.StackTrace(2, true).ToString());
+
+			Assert.Fail(sb.ToString());
+		}
+	}
+
 	[SetUpFixture]
 	public class TestBase
 	{
@@ -34,6 +52,8 @@ namespace Peach
 		[SetUp]
 		public void Initialize()
 		{
+			System.Diagnostics.Debug.Listeners.Insert(0, new AssertTestFail());
+
 			ColoredConsoleTarget consoleTarget = new ColoredConsoleTarget();
 			consoleTarget.Layout = "${date:format=HH\\:MM\\:ss} ${logger} ${message}";
 
@@ -46,6 +66,17 @@ namespace Peach
 			LogManager.Configuration = config;
 
 			Peach.Core.Platform.LoadAssembly();
+		}
+	}
+
+
+	[TestFixture]
+	class AssertTest
+	{
+		[Test, ExpectedException(typeof(AssertionException))]
+		public void TestAssert()
+		{
+			System.Diagnostics.Debug.Assert(false);
 		}
 	}
 }

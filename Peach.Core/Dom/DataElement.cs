@@ -276,6 +276,7 @@ namespace Peach.Core.Dom
 		protected DataElementContainer _parent;
 
 		private uint _recursionDepth = 0;
+		private uint _intRecursionDepth = 0;
 		private bool _readValueCache = true;
 		private bool _writeValueCache = true;
 		private Variant _internalValue;
@@ -755,10 +756,15 @@ namespace Peach.Core.Dom
 			{
 				if (_internalValue == null || _invalidated || !_readValueCache)
 				{
+					_intRecursionDepth++;
+
 					var internalValue = GenerateInternalValue();
+
+					_intRecursionDepth--;
 
 					if (CacheValue)
 						_internalValue = internalValue;
+
 
 					return internalValue;
 				}
@@ -816,7 +822,7 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				if (!_writeValueCache || _recursionDepth > 1)
+				if (!_writeValueCache || _recursionDepth > 1 || _intRecursionDepth > 0)
 					return false;
 
 				if (_fixup != null)
@@ -881,7 +887,7 @@ namespace Peach.Core.Dom
 		/// Generate the internal value of this data element
 		/// </summary>
 		/// <returns>Internal value in .NET form</returns>
-		public virtual Variant GenerateInternalValue()
+		protected virtual Variant GenerateInternalValue()
 		{
 			Variant value;
 
@@ -948,7 +954,7 @@ namespace Peach.Core.Dom
 		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
-		public BitStream GenerateValue()
+		protected BitStream GenerateValue()
 		{
 			++GenerateCount;
 

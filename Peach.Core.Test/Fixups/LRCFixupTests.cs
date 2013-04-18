@@ -92,7 +92,7 @@ namespace Peach.Core.Test.Fixups
 			</Fixup>
 		</Number>
 
-		<Flags size=""16"">
+		<Flags size=""16"" endian=""big"">
 			<Flag position=""4"" size=""8"">
 				<Fixup class=""LRCFixup"">
 					<Param name=""ref"" value=""blob""/>

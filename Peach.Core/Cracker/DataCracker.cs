@@ -286,6 +286,8 @@ namespace Peach.Core.Cracker
 		/// <param name="data">Input stream to use for data</param>
 		void handleNode(DataElement elem, BitStream data)
 		{
+			List<BitStream> oldStack = null;
+
 			try
 			{
 				if (elem == null)
@@ -300,11 +302,21 @@ namespace Peach.Core.Cracker
 
 				if (elem.transformer != null)
 				{
+					long startPos = data.TellBits();
 					var sizedData = elem.ReadSizedData(data, pos.size);
 					var decodedData = elem.transformer.decode(sizedData);
 
+					// Make a new stack of data for the decoded data
+					oldStack = _dataStack;
+					_dataStack = new List<BitStream>();
+					_dataStack.Add(decodedData);
+
 					// Use the size of the transformed data as the new size of the element
 					handleCrack(elem, decodedData, decodedData.LengthBits);
+
+					// Make sure the non-decoded data is at the right place
+					if (data == decodedData)
+						data.SeekBits(startPos + decodedData.LengthBits, System.IO.SeekOrigin.Begin);
 				}
 				else
 				{
@@ -323,6 +335,11 @@ namespace Peach.Core.Cracker
 			{
 				handleException(elem, data, e);
 				throw;
+			}
+			finally
+			{
+				if (oldStack != null)
+					_dataStack = oldStack;
 			}
 		}
 
@@ -496,29 +513,37 @@ namespace Peach.Core.Cracker
 		{
 			// Completing this element might allow us to evaluate
 			// outstanding size reation computations.
-			var resolved = new List<DataElement>();
 
 			for (int i = _sizeRelations.Count - 1; i >= 0; --i)
 			{
 				var rel = _sizeRelations[i];
 
-				if (resolved.Contains(rel.Of))
-				{
-					_sizeRelations.RemoveAt(i);
-					continue;
-				}
-
-				if (elem == rel.From || (elem is DataElementContainer &&
-					((DataElementContainer)elem).isParentOf(rel.From)))
+				if (elem == rel.From)
 				{
 					var other = _sizedElements[rel.Of];
-					System.Diagnostics.Debug.Assert(!other.size.HasValue);
-					other.size = rel.GetValue();
-					resolved.Add(rel.Of);
-					_sizeRelations.RemoveAt(i);
+					long size = rel.GetValue();
 
-					logger.Debug("Size relation of {0} cracked. Updating size: {1}",
-						rel.Of.debugName, other.size);
+					if (other.size.HasValue)
+						logger.Debug("Size relation of {0} cracked again. Updating size from: {1} to: {2}",
+							rel.Of.debugName, other.size, size);
+					else
+						logger.Debug("Size relation of {0} cracked. Updating size to: {1}",
+							rel.Of.debugName, size);
+
+					other.size = size;
+					_sizeRelations.RemoveAt(i);
+				}
+
+				var cont = elem as DataElementContainer;
+				if (cont != null && cont.isParentOf(rel.From))
+				{
+					// If we have finished cracking the parent of the From half of
+					// an outstanding size relation, this means we never cracked
+					// the From element. This can happen when the From half is in
+					// a choice. Just stop tracking the incomplete relation and
+					// keep going.
+
+					_sizeRelations.RemoveAt(i);
 				}
 			}
 

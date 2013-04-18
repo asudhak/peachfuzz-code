@@ -115,7 +115,10 @@ namespace Peach.Core.Dom
 			flag.position = position;
 			flag.lengthType = LengthType.Bits;
 			flag.length = size;
-			flag.LittleEndian = parent.LittleEndian;
+
+			// The individual flag is always big endian, it is up to the flags container
+			// to change the order after all the flags are packed.
+			flag.LittleEndian = false;
 
 			context.handleCommonDataElementAttributes(node, flag);
 			context.handleCommonDataElementChildren(node, flag);

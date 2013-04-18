@@ -687,10 +687,9 @@ namespace Peach.Core.IO
 				CopyTo(bits.stream, stream);
 				bits.stream.Position = oPos;
 
-				stream.Position = 0;
-				this.len = bits.LengthBits;
-
-				SeekBits(0, SeekOrigin.End);
+				pos += bits.LengthBits;
+				if (pos > len)
+					len = pos;
 
 				return;
 			}
@@ -705,10 +704,9 @@ namespace Peach.Core.IO
 				CopyTo(bits.stream, stream);
 				bits.stream.Position = oPos;
 
-				stream.Position = ourPos;
-				len += bits.LengthBits;
-
-				SeekBits(0, SeekOrigin.End);
+				pos += bits.LengthBits;
+				if (pos > len)
+					len = pos;
 
 				return;
 			}

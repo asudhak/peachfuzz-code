@@ -42,6 +42,7 @@ namespace Peach.Core.Publishers
 		private bool _multicast = false;
 		private EndPoint _localEp = null;
 		private EndPoint _remoteEp = null;
+		private EndPoint _lastRxEp = null;
 		private IPAddress _localIp = null;
 		private string _type = null;
 		private string _iface = null;
@@ -125,7 +126,17 @@ namespace Peach.Core.Publishers
 		{
 			using (Socket s = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp))
 			{
-				s.Connect(remote.Address, 22);
+				try
+				{
+					s.Connect(remote.Address, 22);
+				}
+				catch (SocketException)
+				{
+					if (remote.Address.IsMulticast())
+						return remote.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any;
+
+					throw;
+				}
 				IPEndPoint local = s.LocalEndPoint as IPEndPoint;
 				return local.Address;
 			}
@@ -318,12 +329,12 @@ namespace Peach.Core.Publishers
 					Logger.Trace("Resolved link-local interface IP for {0} socket to {1}.", _type, local);
 				}
 
-				iface = GetInterfaceName(local);
-				if (iface == null)
-					throw new PeachException("Could not resolve interface name for local IP '{0}'.".Fmt(local));
-
 				try
 				{
+					iface = GetInterfaceName(local);
+					if (iface == null)
+						throw new PeachException("Could not resolve interface name for local IP '{0}'.".Fmt(local));
+
 					using (var cfg = NetworkAdapter.CreateInstance(iface))
 					{
 						mtu = cfg.MTU;
@@ -335,8 +346,9 @@ namespace Peach.Core.Publishers
 					if (ex is TypeInitializationException || ex is TargetInvocationException)
 						msg = ex.InnerException.Message;
 
-					Logger.Debug("Could not query the MTU of '{0}'. {1}", _iface, msg);
+					iface = local.ToString();
 					mtu = null;
+					Logger.Debug("Could not query the MTU of '{0}'. {1}", iface, msg);
 				}
 			}
 			catch (Exception ex)
@@ -384,6 +396,8 @@ namespace Peach.Core.Publishers
 			{
 				IPEndPoint ep = _remoteEp as IPEndPoint;
 
+				ep.Port = Port;
+
 				_socket = OpenSocket(ep);
 
 				_multicast = ep.Address.IsMulticast();
@@ -398,20 +412,45 @@ namespace Peach.Core.Publishers
 						else
 							_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
 					}
-					else
+					else if (ep.Address.AddressFamily == AddressFamily.InterNetwork)
 					{
 						// Multicast needs to bind to the group on *nix
 						_socket.Bind(new IPEndPoint(ep.Address, SrcPort));
 					}
+					else
+					{
+						_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
+					}
 
-					var level = _localIp.AddressFamily == AddressFamily.InterNetwork ? SocketOptionLevel.IP : SocketOptionLevel.IPv6;
-					var opt = new MulticastOption(ep.Address, _localIp);
+					SocketOptionLevel level;
+					object opt;
+
+					if (_localIp.AddressFamily == AddressFamily.InterNetwork)
+					{
+						level = SocketOptionLevel.IP;
+						opt = new MulticastOption(ep.Address, _localIp);
+					}
+					else if (_localIp != IPAddress.IPv6Any)
+					{
+						level = SocketOptionLevel.IPv6;
+						opt = new IPv6MulticastOption(ep.Address, _localIp.ScopeId);
+					}
+					else
+					{
+						level = SocketOptionLevel.IPv6;
+						opt = new IPv6MulticastOption(ep.Address);
+					}
+
 					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
 
 					if (_localIp != IPAddress.Any && _localIp != IPAddress.IPv6Any)
 					{
 						Logger.Trace("Setting multicast interface for {0} socket to {1}.", _type, _localIp);
-						_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
+
+						if (level == SocketOptionLevel.IP)
+							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
+						else
+							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, (int)_localIp.ScopeId);
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
 					{
@@ -427,7 +466,7 @@ namespace Peach.Core.Publishers
 			{
 				if (_socket != null)
 				{
-					_socket.Close();
+					_socket.Close();	
 					_socket = null;
 				}
 
@@ -456,6 +495,7 @@ namespace Peach.Core.Publishers
 			System.Diagnostics.Debug.Assert(_socket != null);
 			_socket.Close();
 			_localEp = null;
+			_lastRxEp = null;
 			_socket = null;
 		}
 
@@ -489,24 +529,46 @@ namespace Peach.Core.Publishers
 
 					_recvBuffer.SetLength(rxLen);
 
-					if (!_multicast && !IPEndPoint.Equals(ep, _remoteEp))
+					if (!_multicast)
 					{
-						Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", ep, _remoteEp);
-					}
-					else
-					{
-						FilterInput(buf, offset, rxLen);
+						IPEndPoint expected = (IPEndPoint)_remoteEp;
+						IPEndPoint actual = (IPEndPoint)ep;
 
-						if (Logger.IsDebugEnabled)
-							Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
+						if (expected.Port == 0)
+						{
+							if (!IPAddress.Equals(expected.Address, actual.Address))
+							{
+								Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", actual, expected);
+								continue;
+							}
 
-						// Got a valid packet
-						return;
+							if (actual.Port != 0)
+							{
+								Logger.Debug("Updating expected remote address from {0} to {1}.", expected, actual);
+								expected.Port = actual.Port;
+							}
+						}
+						else if (!IPEndPoint.Equals(ep, _remoteEp))
+						{
+							Logger.Debug("Ignoring received packet from {0}, want packets from {1}.", ep, _remoteEp);
+							continue;
+						}
 					}
+
+					FilterInput(buf, offset, rxLen);
+
+					if (Logger.IsDebugEnabled)
+						Logger.Debug("\n\n" + Utilities.HexDump(_recvBuffer));
+
+
+					// Got a valid packet
+					_lastRxEp = ep;
+
+					return;
 				}
 				catch (Exception ex)
 				{
-					if (ex is SocketException && ((SocketException)ex).SocketErrorCode == SocketError.ConnectionRefused)
+					if (ex is SocketException && (((SocketException)ex).SocketErrorCode == SocketError.ConnectionRefused || ((SocketException)ex).SocketErrorCode == SocketError.ConnectionReset))
 					{
 						// Eat Connection reset by peer errors
 						Logger.Debug("Connection reset by peer.  Ignoring...");
@@ -543,10 +605,10 @@ namespace Peach.Core.Publishers
 			if (Logger.IsDebugEnabled)
 				Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
 
-			FilterOutput(buffer, offset, count);
-
 			try
 			{
+				FilterOutput(buffer, offset, count);
+
 				var ar = _socket.BeginSendTo(buffer, offset, size, SocketFlags.None, _remoteEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
@@ -584,6 +646,14 @@ namespace Peach.Core.Publishers
 
 				Logger.Debug("MTU of '{0}' is {1}.", _iface, _mtu);
 				return new Variant(_mtu.Value);
+			}
+
+			if (property == "LastRecvAddr")
+			{
+				if (_lastRxEp == null)
+					return new Variant(new byte[0]);
+				else
+					return new Variant(((IPEndPoint)_lastRxEp).Address.GetAddressBytes());
 			}
 
 			return null;

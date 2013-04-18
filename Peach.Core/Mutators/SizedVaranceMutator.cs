@@ -55,7 +55,7 @@ namespace Peach.Core.Mutators
             currentCount = 0;
             n = getN(obj, 50);
             name = "SizedVaranceMutator";
-            originalDataLength = (long)obj.GenerateInternalValue();
+            originalDataLength = (long)obj.InternalValue;
             PopulateValues(originalDataLength);
         }
 
@@ -161,7 +161,7 @@ namespace Peach.Core.Mutators
 				return;
 			}
 
-			var size = (long)obj.GenerateInternalValue();
+			var size = (long)obj.InternalValue;
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
             n = (int)size + curr;

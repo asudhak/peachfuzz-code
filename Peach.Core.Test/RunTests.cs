@@ -292,5 +292,86 @@ namespace Peach.Core.Test
 			uint[] actual = iterationHistory.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage="Error, DataModel could not resolve ref 'foo'. XML:\n<DataModel ref=\"foo\" />")]
+		public void BadDataModelNoName()
+		{
+			string xml = @"
+<Peach>
+<DataModel ref='foo'/>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, DataModel 'DM' could not resolve ref 'foo'. XML:\n<DataModel name=\"DM\" ref=\"foo\" />")]
+		public void BadDataModelName()
+		{
+			string xml = @"
+<Peach>
+<DataModel name='DM' ref='foo'/>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, Block 'H2' resolved ref 'Header' to unsupported element String 'Final.H1.Header'. XML:\n<Block name=\"H2\" ref=\"Header\" />")]
+		public void BadBlockRef()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Header'>
+		<String name='Header'/>
+	</DataModel>
+
+	<DataModel name='Final'>
+		<Block name='H1' ref='Header'/>
+		<Block name='H2' ref='Header'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, Data element has multiple entries for field 'foo'.")]
+		public void MultipleFields()
+		{
+			string xml = @"
+<Peach>
+	<Data>
+		<Field name='foo' value='bar'/>
+		<Field name='foo' value='bar'/>
+	</Data>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test]
+		public void MultipleFieldsRef()
+		{
+			string xml = @"
+<Peach>
+	<Data name='Base'>
+		<Field name='foo' value='bar'/>
+	</Data>
+
+	<Data name='Derived' ref='Base'>
+		<Field name='foo' value='baz'/>
+	</Data>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+			Assert.AreEqual(2, dom.datas.Count);
+			Assert.AreEqual(1, dom.datas[0].fields.Count);
+			Assert.AreEqual("bar", (string)dom.datas[0].fields[0]);
+			Assert.AreEqual(1, dom.datas[1].fields.Count);
+			Assert.AreEqual("baz", (string)dom.datas[1].fields[0]);
+		}
 	}
 }

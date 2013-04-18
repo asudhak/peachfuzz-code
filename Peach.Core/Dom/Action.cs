@@ -39,6 +39,7 @@ using Peach.Core.Cracker;
 using Peach.Core.Dom.XPath;
 using System.Xml.Serialization;
 using System.IO;
+using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
@@ -88,9 +89,9 @@ namespace Peach.Core.Dom
 		protected DataModel _dataModel;
 		protected DataModel _origionalDataModel;
 		protected DataSet _dataSet;
-		protected uint _runCount;
 
 		protected List<ActionParameter> _params = new List<ActionParameter>();
+		protected ActionResult _result = null;
 
 		protected string _publisher = null;
 		protected string _when = null;
@@ -195,6 +196,15 @@ namespace Peach.Core.Dom
 		{
 			get { return _params; }
 			set { _params = value; }
+		}
+
+		/// <summary>
+		/// Action result for a method call
+		/// </summary>
+		public ActionResult result
+		{
+			get { return _result; }
+			set { _result = value; }
 		}
 
 		/// <summary>
@@ -356,8 +366,6 @@ namespace Peach.Core.Dom
 		/// </remarks>
 		public void UpdateToOrigionalDataModel()
 		{
-			_runCount = 0;
-
 			switch (type)
 			{
 				case ActionType.Start:
@@ -374,6 +382,7 @@ namespace Peach.Core.Dom
 				case ActionType.Output:
 				case ActionType.GetProperty:
 				case ActionType.SetProperty:
+					logger.Debug("Updating action to original data model");
 					dataModel = origionalDataModel.Clone() as DataModel;
 					dataModel.action = this;
 
@@ -382,11 +391,17 @@ namespace Peach.Core.Dom
 				case ActionType.Call:
 					foreach (ActionParameter p in this.parameters)
 					{
+						logger.Debug("Updating action parameter to original data model");
 						p.dataModel = p.origionalDataModel.Clone() as DataModel;
 						p.dataModel.action = this;
 					}
 
-					// TODO - Also set ActionResult
+					if (result != null)
+					{
+						logger.Debug("Updating action result to original data model");
+						result.dataModel = result.origionalDataModel.Clone() as DataModel;
+						result.dataModel.action = this;
+					}
 
 					break;
 
@@ -398,14 +413,6 @@ namespace Peach.Core.Dom
 		public void Run(RunContext context)
 		{
 			logger.Trace("Run({0}): {1}", name, type);
-
-			var count = _runCount;
-			if (count > 0)
-			{
-				logger.Debug("Run: Action {0} has already been run, resetting data model", name);
-				UpdateToOrigionalDataModel();
-			}
-			_runCount = count + 1;
 
 			if (when != null)
 			{
@@ -423,13 +430,13 @@ namespace Peach.Core.Dom
 				object value = Scripting.EvalExpression(when, state);
 				if (!(value is bool))
 				{
-					logger.Debug("Run: when return is not boolean: " + value.ToString());
+				        logger.Debug("Run: action '{0}' when return is not boolean, returned: {1}", name, value);
 					return;
 				}
 
 				if (!(bool)value)
 				{
-					logger.Debug("Run: when returned false");
+				        logger.Debug("Run: action '{0}' when returned false", name);
 					return;
 				}
 			}
@@ -590,11 +597,37 @@ namespace Peach.Core.Dom
 
 		protected void handleCall(Publisher publisher, RunContext context)
 		{
+			Variant ret = null;
+
 			// Are we sending to Agents?
 			if (this.publisher == "Peach.Agent")
-				context.agentManager.Message("Action.Call", new Variant(this.method));
+				ret = context.agentManager.Message("Action.Call", new Variant(this.method));
 			else
-				publisher.call(method, parameters);
+				ret = publisher.call(method, parameters);
+
+			if (result != null && ret != null)
+			{
+				BitStream data;
+
+				try
+				{
+					data = (BitStream)ret;
+				}
+				catch (NotSupportedException)
+				{
+					throw new PeachException("Error, unable to convert result from method '" + this.method + "' to a BitStream");
+				}
+
+				try
+				{
+					DataCracker cracker = new DataCracker();
+					cracker.CrackData(result.dataModel, data);
+				}
+				catch (CrackingFailure ex)
+				{
+					throw new SoftException(ex);
+				}
+			}
 		}
 
 		protected void handleGetProperty(Publisher publisher)
@@ -663,12 +696,28 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class ActionParameter
 	{
+		static int nameNum = 0;
+
+		string _name = "Unknown Parameter " + (++nameNum);
+		ActionParameterType _type;
+
 		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
 
-		public ActionParameterType type;
 		public object data;
+
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
+
+		public ActionParameterType type
+		{
+			get { return _type; }
+			set { _type = value; }
+		}
 
 		public DataModel origionalDataModel
 		{
@@ -692,9 +741,19 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class ActionResult
 	{
+		static int nameNum = 0;
+
+		string _name = "Unknown Result " + (++nameNum);
+
 		[NonSerialized]
 		DataModel _origionalDataModel = null;
 		DataModel _dataModel = null;
+
+		public string name
+		{
+			get { return _name; }
+			set { _name = value; }
+		}
 
 		public DataModel origionalDataModel
 		{

@@ -136,8 +136,14 @@ namespace Peach.Core.Analyzers
 
 					if (!defNode.hasAttr("key") || !defNode.hasAttr("value"))
 						throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
-
-					ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
+					try
+					{
+						ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
+					}
+					catch (System.ArgumentException)
+					{
+						throw new PeachException("Error, defines file '" + definedValuesFile +"' contains multiple entries for key '" + defNode.getAttrString("key") + "'.");
+					}
 				}
 			}
 
@@ -396,7 +402,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Data")
 				{
-					var data = handleData(child, false);
+					var data = handleData(child);
 
 					if (dom.datas.ContainsKey(data.name))
 						throw new PeachException("Error, a Data element named '" + data.name + "' already exists.");
@@ -730,7 +736,8 @@ namespace Peach.Core.Analyzers
 			{
 				DataModel refObj = getRef<Dom.DataModel>(_dom, refName, a => a.dataModels);
 				if (refObj == null)
-					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
+					throw new PeachException("Error, DataModel {0}could not resolve ref '{1}'. XML:\n{2}".Fmt(
+						name == null ? "" : "'" + name + "' ", refName, node.OuterXml));
 
 				if (string.IsNullOrEmpty(name))
 					name = refName;
@@ -1465,7 +1472,7 @@ namespace Peach.Core.Analyzers
 					action.parameters.Add(handleActionParameter(child, action));
 
 				if (child.Name == "Result")
-					throw new NotImplementedException("Action.Result TODO");
+					action.result = handleActionResult(child, action);
 
 				if (child.Name == "DataModel")
 					action.dataModel = handleDataModel(child);
@@ -1474,7 +1481,7 @@ namespace Peach.Core.Analyzers
 				{
 					if (action.dataSet == null)
 						action.dataSet = new DataSet();
-					action.dataSet.Datas.Add(handleData(child, true));
+					action.dataSet.Datas.Add(handleData(child));
 				}
 			}
 
@@ -1489,29 +1496,59 @@ namespace Peach.Core.Analyzers
 			ActionParameter param = new ActionParameter();
 			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
 
+			if (node.hasAttr("name"))
+				param.name = node.getAttrString("name");
+
+			string strType = node.getAttr("type", "in");
+			ActionParameterType type;
+			if (!Enum.TryParse(strType, true, out type))
+				throw new PeachException("Error, type attribute '" + strType + "' on <Param> child of action '" + parent.name + "' is invalid");
+			param.type = type;
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "DataModel")
-					param.dataModel = getRef<DataModel>(dom, child.getAttrString("ref"), a => a.dataModels);
+					param.dataModel = handleDataModel(child);
 				if (child.Name == "Data")
-					param.data = handleData(child, true);
+					param.data = handleData(child);
 			}
 
 			if (param.dataModel == null)
 				throw new PeachException("Error, <Param> child of action '" + parent.name + "' is missing required child element <DataModel>.");
 
+			param.dataModel.action = parent;
+
 			return param;
 		}
 
-		protected virtual Data handleData(XmlNode node, bool resolveRefs)
+		protected virtual ActionResult handleActionResult(XmlNode node, Dom.Action parent)
+		{
+			ActionResult result = new ActionResult();
+			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
+
+			if (node.hasAttr("name"))
+				result.name = node.getAttrString("name");
+
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "DataModel")
+					result.dataModel = handleDataModel(child);
+			}
+
+			if (result.dataModel == null)
+				throw new PeachException("Error, <Result> child of action '" + parent.name + "' is missing required child element <DataModel>.");
+
+			result.dataModel.action = parent;
+
+			return result;
+		}
+
+		protected virtual Data handleData(XmlNode node)
 		{
 			Data data = null;
 
 			if (node.hasAttr("ref"))
 			{
-				if (!resolveRefs)
-					throw new PeachException("Error, the ref attribute is not valid on top level Data elements.");
-
 				string refName = node.getAttrString("ref");
 
 				Data other = getRef<Data>(_dom, refName, a => a.datas);
@@ -1519,15 +1556,15 @@ namespace Peach.Core.Analyzers
 					throw new PeachException("Error, could not resolve Data element ref attribute value '" + refName + "'.");
 
 				data = ObjectCopier.Clone(other);
+				data.name = node.getAttr("name", new Data().name);
 			}
 			else
 			{
 				data = new Data();
+
+				if (node.hasAttr("name"))
+					data.name = node.getAttrString("name");
 			}
-
-			if (node.hasAttr("name"))
-				data.name = node.getAttrString("name");
-
 
 			if (node.hasAttr("fileName"))
 			{
@@ -1575,16 +1612,24 @@ namespace Peach.Core.Analyzers
 				}
 			}
 
+			var names = new HashSet<string>();
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Field")
 				{
+					string name = child.getAttrString("name");
+
+					if (!names.Add(name))
+						throw new PeachException("Error, Data element has multiple entries for field '" + name + "'.");
+
 					data.DataType = DataType.Fields;
+
 					// Hack to call common value parsing code.
 					Blob tmp = new Blob();
 					handleCommonDataElementValue(child, tmp);
 
-					data.fields.Add(child.getAttrString("name"), tmp.DefaultValue);
+					data.fields[name] = tmp.DefaultValue;
 				}
 			}
 

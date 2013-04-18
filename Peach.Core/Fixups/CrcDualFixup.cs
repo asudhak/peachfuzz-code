@@ -32,30 +32,50 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.Fixups.Libraries;
-using System.Runtime.Serialization;
 
 namespace Peach.Core.Fixups
 {
-	[Description("Standard CRC32 as defined by ISO 3309.")]
-	[Fixup("Crc32Fixup", true)]
-	[Fixup("checksums.Crc32Fixup")]
-	[Parameter("ref", typeof(DataElement), "Reference to data element")]
+	[Description("Standard CRC32 as defined by ISO 3309 applied to two elements.")]
+	[Fixup("CrcDualFixup", true)]
+	[Fixup("checksums.CrcDualFixup")]
+	[Fixup("Crc32DualFixup")]
+	[Fixup("checksums.Crc32DualFixup")]
+	[Parameter("ref1", typeof(DataElement), "Reference to first data element")]
+	[Parameter("ref2", typeof(DataElement), "Reference to second data element")]
+	[Parameter("type", typeof(CRCTool.CRCCode), "Type of CRC to run [CRC32, CRC16, CRC_CCITT]", "CRC32")]
 	[Serializable]
-	public class Crc32Fixup : Fixup
+	public class CrcDualFixup : Fixup
 	{
-		public Crc32Fixup(DataElement parent, Dictionary<string, Variant> args)
-			: base(parent, args, "ref")
+		static void Parse(string str, out DataElement val)
 		{
+			val = null;
+		}
+
+		protected DataElement ref1 { get; set; }
+		protected DataElement ref2 { get; set; }
+		protected CRCTool.CRCCode type { get; set; }
+
+		public CrcDualFixup(DataElement parent, Dictionary<string, Variant> args)
+			: base(parent, args, "ref1", "ref2")
+		{
+			ParameterParser.Parse(this, args);
 		}
 
 		protected override Variant fixupImpl()
 		{
-			var elem = elements["ref"];
-			byte[] data = elem.Value.Value;
+			var ref1 = elements["ref1"];
+			var ref2 = elements["ref2"];
+
+			byte[] data1 = ref1.Value.Value;
+			byte[] data2 = ref2.Value.Value;
+			byte[] data3 = new byte[data1.Length + data2.Length];
+			Buffer.BlockCopy(data1, 0, data3, 0, data1.Length);
+			Buffer.BlockCopy(data2, 0, data3, data1.Length, data2.Length);
 
 			CRCTool crcTool = new CRCTool();
-			crcTool.Init(CRCTool.CRCCode.CRC32);
-			return new Variant((uint)crcTool.crctablefast(data));
+			crcTool.Init(type);
+
+			return new Variant((uint)crcTool.crctablefast(data3));
 		}
 	}
 }

@@ -456,7 +456,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void MeasureSpeed()
 		{
-			for (uint i = 0; i <= 50; i += 10)
+			for (uint i = 0; i <= 25; i += 5)
 			{
 				var ret = SpeedTest(i);
 				TimeSpan delta = (TimeSpan)ret["delta"];
@@ -812,6 +812,36 @@ namespace Peach.Core.Test
 
 			var val = dom.dataModels[3].Value.Value;
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x5Hello"), val);
+		}
+
+		[Test]
+		public void NoCacheGetValue()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='Size' size='8' signed='false'>
+			<Relation type='size' of='DM' />
+		</Number>
+		<String name='Value'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// Invalidate 'Value', thus invalidating 'DM'
+			dom.dataModels[0][1].DefaultValue = new Variant("Hello");
+
+			// Get InternalValue from 'Size' when 'DM' is invalidated
+			uint size = (uint)dom.dataModels[0][0].InternalValue;
+
+			Assert.AreEqual(6, size);
+
+			// Ensure 'DM' has proper value
+			byte[] actual = dom.dataModels[0].Value.Value;
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x6Hello"), actual);
 		}
 	}
 }
