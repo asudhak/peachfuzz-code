@@ -182,7 +182,7 @@ namespace Peach.Core.Mutators
                 }
                 catch (Exception ex)
                 {
-                    throw new OutOfMemoryException("Out of memory", ex);
+                    throw new OutOfMemoryException("ArrayNumericalEdgeCasesMutator -- Out of memory", ex);
                 }
             }
         }
