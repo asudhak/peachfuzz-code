@@ -317,6 +317,25 @@ namespace Peach.Core.Test
 			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 		}
 
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, Block 'H2' resolved ref 'Header' to unsupported element String 'Final.H1.Header'. XML:\n<Block name=\"H2\" ref=\"Header\" />")]
+		public void BadBlockRef()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Header'>
+		<String name='Header'/>
+	</DataModel>
+
+	<DataModel name='Final'>
+		<Block name='H1' ref='Header'/>
+		<Block name='H2' ref='Header'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, Data element has multiple entries for field 'foo'.")]
 		public void MultipleFields()
 		{

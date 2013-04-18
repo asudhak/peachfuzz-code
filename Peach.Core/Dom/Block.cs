@@ -80,14 +80,18 @@ namespace Peach.Core.Dom
 
 			if (node.hasAttr("ref"))
 			{
+				string name = node.getAttr("name", null);
 				string refName = node.getAttrString("ref");
-				Block refObj = context.getReference(refName, parent) as Block;
-				if (refObj == null)
-					throw new PeachException("Unable to locate 'ref' [" + refName + "] or found node did not match type. [" + node.OuterXml + "].");
 
-				string name = null;
-				if (node.hasAttr("name"))
-					name = node.getAttrString("name");
+				DataElement refObj = context.getReference(refName, parent);
+				if (refObj == null)
+					throw new PeachException("Error, Block {0}could not resolve ref '{1}'. XML:\n{2}".Fmt(
+						name == null ? "" : "'" + name + "' ", refName, node.OuterXml));
+
+				if (!(refObj is Block))
+					throw new PeachException("Error, Block {0}resolved ref '{1}' to unsupported element {2}. XML:\n{3}".Fmt(
+						name == null ? "" : "'" + name + "' ", refName, refObj.debugName, node.OuterXml));
+				
 				if (string.IsNullOrEmpty(name))
 					name = new Block().name;
 
