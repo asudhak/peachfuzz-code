@@ -407,10 +407,14 @@ namespace Peach.Core
 
 							logger.Debug("runTest: PathException, skipping to next iteration");
 						}
-						catch (System.OutOfMemoryException)
+						catch (System.OutOfMemoryException ex)
 						{
 							logger.Debug("runTest: " +
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
+
+#if MONO
+							throw new PeachException("out of memory", ex);
+#endif
 						}
 						finally
 						{
