@@ -130,7 +130,7 @@ namespace Peach.Core
 		public void OnFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{
 			logger.Debug(">> OnFault");
-			
+
 			if (Fault != null)
 				Fault(context, currentIteration, stateModel, faultData);
 
@@ -222,14 +222,14 @@ namespace Peach.Core
 				if (watcher != null)
 					watcher.Initialize(this, context);
 
-				foreach(var logger in context.test.loggers)
+				foreach (var logger in context.test.loggers)
 					logger.Initialize(this, context);
 
 				runTest(context.dom, context.test, context);
 			}
 			finally
 			{
-				if(context.test != null)
+				if (context.test != null)
 					foreach (var logger in context.test.loggers)
 						logger.Finalize(this, context);
 
@@ -281,7 +281,7 @@ namespace Peach.Core
 				uint redoCount = 0;
 
 				if (context.config.parallel && !mutationStrategy.IsDeterministic)
-						throw new NotSupportedException("parallel is not supported when a non-deterministic mutation strategy is used");
+					throw new NotSupportedException("parallel is not supported when a non-deterministic mutation strategy is used");
 
 				if (context.config.range)
 				{
@@ -409,9 +409,9 @@ namespace Peach.Core
 						}
 						catch (System.OutOfMemoryException ex)
 						{
+							logger.Debug(ex.ToString());
 							logger.Debug("runTest: " +
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
-
 #if MONO
 							throw new PeachException("out of memory", ex);
 #endif
