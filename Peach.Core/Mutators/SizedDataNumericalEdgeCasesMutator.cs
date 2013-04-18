@@ -89,8 +89,12 @@ namespace Peach.Core.Mutators
 
         private bool RemoveInvalid(long n)
         {
-            return n < 0;
-        }
+#if MONO
+			return n < 0 || n > 16000;
+#else
+			return n < 0;
+#endif
+		}
 
         // GET N
         //
