@@ -56,7 +56,7 @@ namespace Peach.Core.Mutators
             name = "SizedNumericalEdgeCasesMutator";
             currentCount = 0;
             n = getN(obj, 50);
-            originalDataLength = (long)obj.InternalValue;
+            originalDataLength = (long)obj.GenerateInternalValue();
             PopulateValues(obj);
         }
 
@@ -97,7 +97,11 @@ namespace Peach.Core.Mutators
 
         private bool RemoveInvalid(long n)
         {
-            return originalDataLength + n <= 0;
+#if MONO
+			return (originalDataLength+n) < 0 || n > 1000;
+#else
+			return (originalDataLength+n) < 0;
+#endif
         }
 
         // GET N
@@ -184,7 +188,7 @@ namespace Peach.Core.Mutators
 				return;
 			}
 
-            var size = (long)obj.InternalValue;
+            var size = (long)obj.GenerateInternalValue();
             var realSize = objOf.Value.LengthBytes;
             var diff = size - realSize;
             n = (int)(size + curr);

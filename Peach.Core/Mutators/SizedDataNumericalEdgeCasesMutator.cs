@@ -90,7 +90,7 @@ namespace Peach.Core.Mutators
         private bool RemoveInvalid(long n)
         {
 #if MONO
-			return n < 0 || n > 16000;
+			return n < 0 || n > 1000;
 #else
 			return n < 0;
 #endif
