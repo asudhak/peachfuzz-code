@@ -47,23 +47,23 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalEncode(BitStream data)
         {
-            try
-            {
-                string sip = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-                var ip = IPAddress.Parse(sip);
+            string sip = Encoding.ASCII.GetString(data.Value);
+			IPAddress ip;
 
-                return new BitStream(ip.GetAddressBytes());
-            }
-            catch(Exception ex)
-            {
-                throw new PeachException("Error, cannont parse data as IP address", ex);
-            }
+            if(!IPAddress.TryParse(sip, out ip))
+				throw new PeachException("Error, cannont parse data as IP address " + sip);
 
+            return new BitStream(ip.GetAddressBytes());
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            throw new NotImplementedException();
+			if(data.Value.Length != 4)
+				throw new PeachException("Error, the length of data isn't four bytes unable to parse data as IP address " + data);
+
+			IPAddress ip = new IPAddress(data.Value);
+
+			return new BitStream(Encoding.ASCII.GetBytes(ip.ToString()));
         }
     }
 }
