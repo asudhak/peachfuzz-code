@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
@@ -62,7 +63,12 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalDecode(BitStream data)
         {
-            throw new NotImplementedException();
+           if(data.Value.Length != 16)
+			 throw new PeachException("Error, the length of data isn't 16 bytes unable to parse data as IP address " + data);
+
+			IPAddress ip = new IPAddress(data.Value);
+
+			return new BitStream(Encoding.ASCII.GetBytes(ip.ToString()));
         }
     }
 }

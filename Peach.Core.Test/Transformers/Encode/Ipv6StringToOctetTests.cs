@@ -7,6 +7,8 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.Transformers.Encode
 {
@@ -57,6 +59,30 @@ namespace Peach.Core.Test.Transformers.Encode
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcResult, values[0].Value);
         }
+
+		[Test]
+		public void CrackingTest1()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+						 "  <DataModel name=\"TheDataModel\">" +
+						 "    <String name=\"Data\" value=\"3ffe:1900:4545:3:200:f8ff:fe21:67cf\">" +
+						 "           <Transformer class=\"Ipv6StringToOctet\"/>" +
+						 "    </String>" +
+						 "  </DataModel>" +
+						 "</Peach>";
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x3F, 0xFE, 0x19, 0x00, 0x45, 0x45, 0x00, 0x03, 0x02, 0x00, 0xF8, 0xFF, 0xFE, 0x21, 0x67, 0xCF });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("3ffe:1900:4545:3:200:f8ff:fe21:67cf", (string)dom.dataModels[0][0].DefaultValue);
+		}
     }
 }
 
