@@ -32,6 +32,7 @@ using System.Net;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using System.Linq;
 
 namespace Peach.Core.Transformers.Encode
 {
@@ -50,7 +51,7 @@ namespace Peach.Core.Transformers.Encode
             string sip = Encoding.ASCII.GetString(data.Value);
 			IPAddress ip;
 
-            if(!IPAddress.TryParse(sip, out ip))
+            if(sip.Count(c => c == '.') != 3 || !IPAddress.TryParse(sip, out ip))
 				throw new PeachException("Error, can't transform IP to bytes, '{0}' is not a valid IP address.".Fmt(sip));
 
             return new BitStream(ip.GetAddressBytes());
