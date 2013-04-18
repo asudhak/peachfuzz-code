@@ -409,11 +409,12 @@ namespace Peach.Core
 						}
 						catch (System.OutOfMemoryException ex)
 						{
-							logger.Debug(ex.ToString());
+							logger.Debug(ex.Message);
+							logger.Debug(ex.StackTrace);
 							logger.Debug("runTest: " +
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
 #if MONO
-							throw new PeachException("out of memory", ex);
+							throw ex;
 #endif
 						}
 						finally
