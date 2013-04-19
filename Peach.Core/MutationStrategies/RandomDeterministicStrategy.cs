@@ -34,7 +34,6 @@ using System.Reflection;
 
 namespace Peach.Core.MutationStrategies
 {
-	[DefaultMutationStrategy]
 	[MutationStrategy("RandomDeterministic", true)]
 	[Serializable]
 	public class RandomDeterministicStrategy : Sequential
