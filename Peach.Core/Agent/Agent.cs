@@ -30,6 +30,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Reflection;
 
 using Peach.Core.Dom;
@@ -65,7 +66,7 @@ namespace Peach.Core.Agent
 	public class Agent : IAgent, INamed
 	{
 		public object parent;
-		Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
+		OrderedDictionary<string, Monitor> monitors = new OrderedDictionary<string, Monitor>();
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		#region Events
@@ -178,7 +179,7 @@ namespace Peach.Core.Agent
 		/// <summary>
 		/// Dictionary of currently loaded monitor instances.
 		/// </summary>
-		public Dictionary<string, Monitor> Monitors
+		public OrderedDictionary<string, Monitor> Monitors
 		{
 			get { return monitors; }
 			protected set { monitors = value; }
@@ -258,7 +259,7 @@ namespace Peach.Core.Agent
 			logger.Trace("StopAllMonitors");
 			OnStopAllMonitorsEvent();
 
-			foreach (Monitor monitor in monitors.Values)
+			foreach (Monitor monitor in monitors.Values.Reverse())
 				monitor.StopMonitor();
 
 			monitors.Clear();
@@ -278,7 +279,7 @@ namespace Peach.Core.Agent
 			logger.Trace("SessionFinished");
 			OnSessionFinishedEvent();
 
-			foreach (Monitor monitor in monitors.Values)
+			foreach (Monitor monitor in monitors.Values.Reverse())
 				monitor.SessionFinished();
 		}
 
@@ -297,7 +298,7 @@ namespace Peach.Core.Agent
 			OnIterationFinishedEvent();
 
 			bool replay = false;
-			foreach (Monitor monitor in monitors.Values)
+			foreach (Monitor monitor in monitors.Values.Reverse())
 				if (monitor.IterationFinished())
 					replay = true;
 

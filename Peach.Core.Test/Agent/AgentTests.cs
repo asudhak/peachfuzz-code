@@ -326,5 +326,151 @@ namespace Peach.Core.Test.Agent
 					StopAgent();
 			}
 		}
+
+		[Monitor("LoggingMonitor", true, IsTest = true)]
+		public class LoggingMonitor : Peach.Core.Agent.Monitor
+		{
+			public LoggingMonitor(IAgent agent, string name, SerializableDictionary<string, Variant> args)
+				: base(agent, name, args)
+			{
+				history.Add(Name + ".LoggingMonitor");
+			}
+
+			public override void StopMonitor()
+			{
+				history.Add(Name + ".StopMonitor");
+			}
+
+			public override void SessionStarting()
+			{
+				history.Add(Name + ".SessionStarting");
+			}
+
+			public override void SessionFinished()
+			{
+				history.Add(Name + ".SessionFinished");
+			}
+
+			public override void IterationStarting(uint iterationCount, bool isReproduction)
+			{
+				history.Add(Name + ".IterationStarting");
+			}
+
+			public override bool IterationFinished()
+			{
+				history.Add(Name + ".IterationFinished");
+				return false;
+			}
+
+			public override bool DetectedFault()
+			{
+				history.Add(Name + ".DetectedFault");
+				return false;
+			}
+
+			public override Fault GetMonitorData()
+			{
+				history.Add(Name + ".GetMonitorData");
+				return null;
+			}
+
+			public override bool MustStop()
+			{
+				history.Add(Name + ".MustStop");
+				return false;
+			}
+
+			public override Variant Message(string name, Variant data)
+			{
+				history.Add(name + ".Message");
+				return null;
+			}
+		}
+
+		static List<string> history = new List<string>();
+
+		[Test]
+		public void TestAgentOrder()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String value='Hello'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Agent name='Local1'>
+		<Monitor name='Local1.mon1' class='LoggingMonitor'/>
+		<Monitor name='Local1.mon2' class='LoggingMonitor'/>
+	</Agent>
+
+	<Agent name='Local2'>
+		<Monitor name='Local2.mon1' class='LoggingMonitor'/>
+		<Monitor name='Local2.mon2' class='LoggingMonitor'/>
+	</Agent>
+
+	<Test name='Default' replayEnabled='false'>
+		<Agent ref='Local1'/>
+		<Agent ref='Local2'/>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			string[] expected =
+			{
+				"Local1.mon1.LoggingMonitor",
+				"Local1.mon2.LoggingMonitor",
+				"Local1.mon1.SessionStarting",
+				"Local1.mon2.SessionStarting",
+				"Local2.mon1.LoggingMonitor",
+				"Local2.mon2.LoggingMonitor",
+				"Local2.mon1.SessionStarting",
+				"Local2.mon2.SessionStarting",
+				"Local1.mon1.IterationStarting",
+				"Local1.mon2.IterationStarting",
+				"Local2.mon1.IterationStarting",
+				"Local2.mon2.IterationStarting",
+				"Local2.mon2.IterationFinished",
+				"Local2.mon1.IterationFinished",
+				"Local1.mon2.IterationFinished",
+				"Local1.mon1.IterationFinished",
+				"Local1.mon1.DetectedFault",
+				"Local1.mon2.DetectedFault",
+				"Local2.mon1.DetectedFault",
+				"Local2.mon2.DetectedFault",
+				"Local1.mon1.MustStop",
+				"Local1.mon2.MustStop",
+				"Local2.mon1.MustStop",
+				"Local2.mon2.MustStop",
+				"Local2.mon2.SessionFinished",
+				"Local2.mon1.SessionFinished",
+				"Local1.mon2.SessionFinished",
+				"Local1.mon1.SessionFinished",
+				"Local2.mon2.StopMonitor",
+				"Local2.mon1.StopMonitor",
+				"Local1.mon2.StopMonitor",
+				"Local1.mon1.StopMonitor",
+			};
+
+			Assert.AreEqual(expected, history.ToArray());
+
+		}
 	}
 }
