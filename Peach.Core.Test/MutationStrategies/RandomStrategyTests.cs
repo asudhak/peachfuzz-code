@@ -554,6 +554,81 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.AreEqual(8, res.Count);
 		}
 
+		[Test]
+		public void ReEnterState()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num' size='8' mutable='false'>
+			<Fixup class='SequenceIncrementFixup'>
+				<Param name='Offset' value='0'/>
+			</Fixup>
+		</Number>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='Hello'/>
+				</Data>
+			</Action>
+			<Action type='changeState' ref='Second'/>
+		</State>
+
+		<State name='Second'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='World'/>
+				</Data>
+			</Action>
+			<Action type='changeState' ref='Initial' when='int(state.actions[0].dataModel[&quot;num&quot;].InternalValue) &lt; 4'/>
+		</State>
+
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Random'>
+			<Param name='MaxFieldsToMutate' value='1'/>
+		</Strategy>
+	</Test>
+</Peach>";
+
+			RunSwitchTest(xml, 1, 10);
+
+			Assert.AreEqual(44, dataModels.Count);
+
+			Assert.AreEqual("Hello", (string)dataModels[0][1].InternalValue);
+			Assert.AreEqual("World", (string)dataModels[1][1].InternalValue);
+			Assert.AreEqual("Hello", (string)dataModels[2][1].InternalValue);
+			Assert.AreEqual("World", (string)dataModels[3][1].InternalValue);
+
+			int total = 0;
+			for (int i = 4; i < 44; i += 4)
+			{
+				int changed = 0;
+
+				if ("Hello" != (string)dataModels[i + 0][1].InternalValue)
+					++changed;
+				if ("World" != (string)dataModels[i + 1][1].InternalValue)
+					++changed;
+				if ("Hello" != (string)dataModels[i + 2][1].InternalValue)
+					++changed;
+				if ("World" != (string)dataModels[i + 3][1].InternalValue)
+					++changed;
+
+				Assert.AreEqual(1, changed);
+				total += changed;
+			}
+			Assert.AreEqual(10, total);
+		}
+
 		private static void RunSwitchTest(string xml, uint start, uint stop)
 		{
 			PitParser parser = new PitParser();

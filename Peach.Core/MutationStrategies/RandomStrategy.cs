@@ -279,7 +279,7 @@ namespace Peach.Core.MutationStrategies
 		{
 			System.Diagnostics.Debug.Assert(_iteration != 0);
 
-			string key = action.name + " " + action.GetHashCode();
+			string key = GetDataModelName(action);
 			DataSetTracker val = null;
 			if (!_dataSets.TryGetValue(key, out val))
 				return;
@@ -429,7 +429,7 @@ namespace Peach.Core.MutationStrategies
 				if (val.options.Count > 0)
 				{
 					// Need to properly support more than one action that are unnamed
-					string key = action.name + " " + action.GetHashCode();
+					string key = GetDataModelName(action);
 					System.Diagnostics.Debug.Assert(!_dataSets.ContainsKey(key));
 					_dataSets.Add(key, val);
 				}

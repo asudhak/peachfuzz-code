@@ -91,6 +91,9 @@ namespace Peach.Core
 
 			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.PluginAttribute>(null))
 			{
+				if (type.Key.IsTest)
+					continue;
+
 				var pluginType = type.Key.Type;
 
 				string fullName = type.Key.Type.Name + ": " + type.Key.Name;
