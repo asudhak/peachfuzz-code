@@ -382,7 +382,7 @@ namespace Peach.Core.Test.Agent
 
 			public override Variant Message(string name, Variant data)
 			{
-				history.Add(name + ".Message");
+				history.Add(Name + ".Message." + name + "." + (string)data);
 				return null;
 			}
 		}
@@ -403,6 +403,7 @@ namespace Peach.Core.Test.Agent
 			<Action type='output'>
 				<DataModel ref='TheDataModel'/>
 			</Action>
+			<Action type='call' method='Foo' publisher='Peach.Agent'/>
 		</State>
 	</StateModel>
 
@@ -421,6 +422,7 @@ namespace Peach.Core.Test.Agent
 		<Agent ref='Local2'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='Random'/>
 	</Test>
 </Peach>";
 
@@ -447,6 +449,10 @@ namespace Peach.Core.Test.Agent
 				"Local1.mon2.IterationStarting",
 				"Local2.mon1.IterationStarting",
 				"Local2.mon2.IterationStarting",
+				"Local1.mon1.Message.Action.Call.Foo",
+				"Local1.mon2.Message.Action.Call.Foo",
+				"Local2.mon1.Message.Action.Call.Foo",
+				"Local2.mon2.Message.Action.Call.Foo",
 				"Local2.mon2.IterationFinished",
 				"Local2.mon1.IterationFinished",
 				"Local1.mon2.IterationFinished",
