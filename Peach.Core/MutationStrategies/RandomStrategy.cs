@@ -279,6 +279,10 @@ namespace Peach.Core.MutationStrategies
 		{
 			System.Diagnostics.Debug.Assert(_iteration != 0);
 
+			// dataModel is null on type="call"!
+			if (action.dataModel == null)
+				return;
+
 			string key = GetDataModelName(action);
 			DataSetTracker val = null;
 			if (!_dataSets.TryGetValue(key, out val))
