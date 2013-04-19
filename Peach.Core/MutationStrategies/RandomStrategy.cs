@@ -338,7 +338,9 @@ namespace Peach.Core.MutationStrategies
 			System.Diagnostics.Debug.Assert(ret != null);
 
 			// Remove our old mutators
-			_dataModels.Remove(GetDataModelName(action));
+			foreach(var dataModelName in GetAllDataModelNames(action))
+				_dataModels.Remove(dataModelName);
+
 			List<DataElement> oldElements = new List<DataElement>();
 			RecursevlyGetElements(action.origionalDataModel, oldElements);
 			foreach (var item in oldElements)
