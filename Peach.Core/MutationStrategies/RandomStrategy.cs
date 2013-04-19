@@ -45,6 +45,7 @@ using NLog;
  */
 namespace Peach.Core.MutationStrategies
 {
+	[DefaultMutationStrategy]
 	[MutationStrategy("Random", true)]
 	[MutationStrategy("RandomStrategy")]
 	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching.", "200")]
