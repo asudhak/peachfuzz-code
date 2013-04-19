@@ -45,6 +45,7 @@ using NLog;
  */
 namespace Peach.Core.MutationStrategies
 {
+	[DefaultMutationStrategy]
 	[MutationStrategy("Random", true)]
 	[MutationStrategy("RandomStrategy")]
 	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching.", "200")]
@@ -279,7 +280,7 @@ namespace Peach.Core.MutationStrategies
 		{
 			System.Diagnostics.Debug.Assert(_iteration != 0);
 
-			// dataModel is null on type="call"!
+			// Only sync <Data> elements if the action has a data model
 			if (action.dataModel == null)
 				return;
 
