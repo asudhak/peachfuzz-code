@@ -257,7 +257,7 @@ namespace Peach.Core
 
 		public void Add(KeyValuePair<TKey, TValue> item)
 		{
-			throw new NotImplementedException();
+			Add(item.Key, item.Value);
 		}
 
 		public void Clear()
@@ -268,12 +268,16 @@ namespace Peach.Core
 
 		public bool Contains(KeyValuePair<TKey, TValue> item)
 		{
-			throw new NotImplementedException();
+			TValue value;
+			if (!TryGetValue(item.Key, out value))
+				return false;
+
+			return value.Equals(item.Value);
 		}
 
 		public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 		{
-			throw new NotImplementedException();
+			_list.CopyTo(array, arrayIndex);
 		}
 
 		public int Count
@@ -283,12 +287,12 @@ namespace Peach.Core
 
 		public bool IsReadOnly
 		{
-			get { throw new NotImplementedException(); }
+			get { return false; }
 		}
 
 		public bool Remove(KeyValuePair<TKey, TValue> item)
 		{
-			throw new NotImplementedException();
+			return Contains(item) && Remove(item.Key);
 		}
 
 		#endregion
