@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace Peach.Core
 {
@@ -184,7 +185,6 @@ namespace Peach.Core
 			_dictionary.Add(key, value);
 			_list.Add(new KeyValuePair<TKey, TValue>(key, value));
 			OnAdd(key, value);
-			//return Count - 1;
 		}
 
 		public bool ContainsKey(TKey key)
@@ -196,12 +196,7 @@ namespace Peach.Core
 		{
 			get
 			{
-				List<TKey> keys = new List<TKey>();
-
-				foreach (var item in _list)
-					keys.Add(item.Key);
-
-				return keys;
+				return _list.Select(kv => kv.Key).ToList();
 			}
 		}
 
@@ -231,7 +226,7 @@ namespace Peach.Core
 		{
 			get
 			{
-				return this._dictionary.Values;
+				return _list.Select(kv => kv.Value).ToList();
 			}
 		}
 
@@ -267,7 +262,8 @@ namespace Peach.Core
 
 		public void Clear()
 		{
-			throw new NotImplementedException();
+			_list.Clear();
+			_dictionary.Clear();
 		}
 
 		public bool Contains(KeyValuePair<TKey, TValue> item)
@@ -301,7 +297,7 @@ namespace Peach.Core
 
 		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return _list.GetEnumerator();
 		}
 
 		#endregion
@@ -310,7 +306,7 @@ namespace Peach.Core
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return GetEnumerator();
 		}
 
 		#endregion
