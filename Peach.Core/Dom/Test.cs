@@ -47,6 +47,11 @@ namespace Peach.Core.Dom
 		public object parent = null;
 		public int controlIterationEvery = 0;
 
+		/// <summary>
+		/// Do not fault when actions miss-match
+		/// </summary>
+		public bool nonDeterministicActions = false;
+
 		[NonSerialized]
 		public List<Logger> loggers = new List<Logger>();
 

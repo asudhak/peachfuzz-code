@@ -1680,6 +1680,9 @@ namespace Peach.Core.Analyzers
 			if (node.hasAttr("replayEnabled"))
 				test.replayEnabled = node.getAttrBool("replayEnabled");
 
+			if (node.hasAttr("nonDeterministicActions"))
+				test.nonDeterministicActions = node.getAttrBool("nonDeterministicActions");
+
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Logger")
