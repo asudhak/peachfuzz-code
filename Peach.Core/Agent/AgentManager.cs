@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Reflection;
 using Peach.Core.Dom;
 using NLog;
@@ -142,7 +143,7 @@ namespace Peach.Core.Agent
 		public virtual void StopAllMonitors()
 		{
 			logger.Trace("StopAllMonitors");
-			foreach (AgentClient agent in _agents.Values)
+			foreach (var agent in _agents.Values.Reverse())
 			{
 				try
 				{
@@ -183,7 +184,7 @@ namespace Peach.Core.Agent
 		public virtual void SessionFinished()
 		{
 			logger.Trace("SessionFinished");
-			foreach (AgentClient agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values.Reverse())
 			{
 				try
 				{
@@ -217,7 +218,7 @@ namespace Peach.Core.Agent
 			logger.Trace("IterationFinished");
 			bool ret = false;
 
-			foreach (AgentClient agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values.Reverse())
 			{
 				try
 				{

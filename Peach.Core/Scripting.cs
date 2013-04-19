@@ -89,6 +89,10 @@ namespace Peach.Core
 
 		public static void Exec(string code, Dictionary<string, object> localScope)
 		{
+			var missing = Imports.Except(Engine.Modules.Keys).ToList();
+			foreach (string import in missing)
+				Engine.Modules.Add(import, Engine.Instance.ImportModule(import));
+
 			ScriptScope scope = Engine.Instance.CreateScope();
 
 			foreach (var kv in Engine.Modules)
@@ -119,6 +123,10 @@ namespace Peach.Core
 
 		public static object EvalExpression(string code, Dictionary<string, object> localScope)
 		{
+			var missing = Imports.Except(Engine.Modules.Keys).ToList();
+			foreach (string import in missing)
+				Engine.Modules.Add(import, Engine.Instance.ImportModule(import));
+
 			ScriptScope scope = Engine.Instance.CreateScope();
 
 			foreach (var kv in Engine.Modules)

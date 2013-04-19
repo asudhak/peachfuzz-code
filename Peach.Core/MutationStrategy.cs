@@ -161,6 +161,9 @@ namespace Peach.Core
 
 			StringBuilder sb = new StringBuilder();
 
+			sb.Append("Run ");
+			sb.Append(action.parent.runCount);
+			sb.Append('.');
 			sb.Append(action.parent.name);
 			sb.Append('.');
 			sb.Append(action.name);
@@ -177,6 +180,9 @@ namespace Peach.Core
 
 			StringBuilder sb = new StringBuilder();
 
+			sb.Append("Run ");
+			sb.Append(action.parent.runCount);
+			sb.Append('.');
 			sb.Append(action.parent.name);
 			sb.Append('.');
 			sb.Append(action.name);

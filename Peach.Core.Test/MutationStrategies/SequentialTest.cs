@@ -385,5 +385,96 @@ namespace Peach.Core.Test.MutationStrategies
 				Assert.AreEqual("111", val);
 			}
 		}
+
+		[Test]
+		public void ReEnterState()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num' size='8' mutable='false'>
+			<Fixup class='SequenceIncrementFixup'>
+				<Param name='Offset' value='0'/>
+			</Fixup>
+		</Number>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='Hello'/>
+				</Data>
+			</Action>
+			<Action type='changeState' ref='Second'/>
+		</State>
+
+		<State name='Second'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='World'/>
+				</Data>
+			</Action>
+			<Action type='changeState' ref='Initial' when='int(state.actions[0].dataModel[&quot;num&quot;].InternalValue) &lt; 4'/>
+		</State>
+
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("StringCaseMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+			
+			// 4 DM for control
+			// 3 mutations per field, 4 fields = 12 iterations
+			// 12 iterations * 4 DM per = 48
+			// 52 total
+
+			Assert.AreEqual(52, dataModels.Count);
+
+			Assert.AreEqual("Hello", (string)dataModels[0][1].InternalValue);
+			Assert.AreEqual("World", (string)dataModels[1][1].InternalValue);
+			Assert.AreEqual("Hello", (string)dataModels[2][1].InternalValue);
+			Assert.AreEqual("World", (string)dataModels[3][1].InternalValue);
+
+			int total = 0;
+			for (int i = 4; i < 52; i += 4)
+			{
+				// For any given iteration, only 1 field should be mutated
+				int changed = 0;
+
+				if ("Hello" != (string)dataModels[i + 0][1].InternalValue)
+					++changed;
+				if ("World" != (string)dataModels[i + 1][1].InternalValue)
+					++changed;
+				if ("Hello" != (string)dataModels[i + 2][1].InternalValue)
+					++changed;
+				if ("World" != (string)dataModels[i + 3][1].InternalValue)
+					++changed;
+
+				// one element should change each iteration
+				Assert.AreEqual(1, changed);
+				total += changed;
+			}
+
+			// 12 total iterations of fuzzing
+			Assert.AreEqual(12, total);
+		}
+
 	}
 }

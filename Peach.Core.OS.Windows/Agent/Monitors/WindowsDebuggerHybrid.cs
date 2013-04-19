@@ -108,6 +108,24 @@ namespace Peach.Core.Agent.Monitors
 		{
 			_name = name;
 
+			//var color = Console.ForegroundColor;
+			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+			{
+				//Console.ForegroundColor = ConsoleColor.Yellow;
+				//Console.WriteLine("\nError: Cannot use the 32bit version of Peach 3 on a 64bit operating system.");
+				//Console.ForegroundColor = color;
+				//return;
+				throw new PeachException("Error: Cannot use the 32bit version of Peach 3 on a 64bit operating system.");
+			}
+			else if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
+			{
+				//Console.ForegroundColor = ConsoleColor.Yellow;
+				//Console.WriteLine("\nError: Cannot use the 64bit version of Peach 3 on a 32bit operating system.");
+				//Console.ForegroundColor = color;
+
+				throw new PeachException("Error: Cannot use the 64bit version of Peach 3 on a 32bit operating system.");
+			}
+
 			if (args.ContainsKey("CommandLine"))
 				_commandLine = (string)args["CommandLine"];
 			else if (args.ContainsKey("ProcessName"))
