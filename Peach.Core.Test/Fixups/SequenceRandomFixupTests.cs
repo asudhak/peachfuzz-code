@@ -256,6 +256,7 @@ namespace Peach.Core.Test.Fixups
 	<Test name='Default'>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>
 ";

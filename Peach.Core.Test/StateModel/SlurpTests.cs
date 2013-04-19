@@ -55,6 +55,7 @@ namespace Peach.Core.Test.StateModel
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheStateModel\"/>" +
 				"       <Publisher class=\"Null\"/>" +
+				"       <Strategy class=\"RandomDeterministic\"/>" +
 				"   </Test>" +
 				"</Peach>";
 
@@ -107,6 +108,7 @@ namespace Peach.Core.Test.StateModel
 				"   <Test name=\"Default\">" +
 				"       <StateModel ref=\"TheStateModel\"/>" +
 				"       <Publisher class=\"Null\"/>" +
+				"       <Strategy class=\"RandomDeterministic\"/>" +
 				"   </Test>" +
 				"</Peach>";
 

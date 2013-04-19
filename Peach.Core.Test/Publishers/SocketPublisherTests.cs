@@ -187,6 +187,7 @@ namespace Peach.Core.Test.Publishers
 			<Param name=""Port"" value=""{2}""/>
 			<Param name=""SrcPort"" value=""{4}""/>
 		</Publisher>
+		<Strategy class=""RandomDeterministic""/>
 	</Test>
 
 </Peach>
@@ -266,6 +267,7 @@ namespace Peach.Core.Test.Publishers
 			<Param name=""Host"" value=""{1}""/>
 			<Param name=""Protocol"" value=""{3}""/>
 		</Publisher>
+		<Strategy class=""RandomDeterministic""/>
 	</Test>
 
 </Peach>
