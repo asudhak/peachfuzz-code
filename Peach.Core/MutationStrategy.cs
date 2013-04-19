@@ -44,6 +44,8 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class MutationStrategy
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public delegate void MutationEventHandler(string elementName, string mutatorName);
 
 		public static event MutationEventHandler Mutating;
@@ -109,10 +111,53 @@ namespace Peach.Core
 			}
 		}
 
+		protected string[] GetAllDataModelNames(Dom.Action action)
+		{
+			var names = new List<string>();
+
+			if(action.dataModel != null)
+			{
+				StringBuilder sb = new StringBuilder();
+
+				sb.Append(action.parent.name);
+				sb.Append('.');
+				sb.Append(action.name);
+				sb.Append('.');
+				sb.Append(action.dataModel.name);
+
+				names.Add(sb.ToString());
+
+				return names.ToArray();
+			}
+
+			if(action.parameters.Count == 0)
+				throw new ArgumentException();
+
+			foreach (var parameter in action.parameters)
+			{
+				StringBuilder sb = new StringBuilder();
+
+				sb.Append(action.parent.name);
+				sb.Append('.');
+				sb.Append(action.name);
+				sb.Append('.');
+				sb.Append(action.parameters.IndexOf(parameter));
+				sb.Append('.');
+				sb.Append(parameter.name);
+
+				names.Add(sb.ToString());
+			}
+
+			return names.ToArray();
+		}
+
 		protected string GetDataModelName(Dom.Action action)
 		{
 			if (action.dataModel == null)
+			{
+				logger.Error("Error, in GetDataModelName, action.dataModel is null for action \""+action.name+"\".");
 				throw new ArgumentException();
+			}
 
 			StringBuilder sb = new StringBuilder();
 
