@@ -117,21 +117,6 @@ namespace Peach.Core.Runtime
 				Console.WriteLine();
 				Console.ForegroundColor = color;
 
-				if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
-				{
-					Console.ForegroundColor = ConsoleColor.Yellow;
-					Console.WriteLine("\nError: Cannot use the 32bit version of Peach 3 on a 64bit operating system.");
-					Console.ForegroundColor = color;
-					return;
-				}
-				else if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
-				{
-					Console.ForegroundColor = ConsoleColor.Yellow;
-					Console.WriteLine("\nError: Cannot use the 64bit version of Peach 3 on a 32bit operating system.");
-					Console.ForegroundColor = color;
-					return;
-				}
-
 				if (args.Length == 0)
 					Syntax();
 
