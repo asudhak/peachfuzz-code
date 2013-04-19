@@ -612,6 +612,7 @@ namespace Peach.Core.Test.MutationStrategies
 			int total = 0;
 			for (int i = 4; i < 44; i += 4)
 			{
+				// For any given iteration, only 1 field should be mutated
 				int changed = 0;
 
 				if ("Hello" != (string)dataModels[i + 0][1].InternalValue)
