@@ -81,6 +81,7 @@ namespace Peach.Core
 		public string Name { get; private set; }
 		public Type Type { get; private set; }
 		public bool IsDefault { get; private set; }
+		public bool IsTest { get; set; }
 
 		protected PluginAttribute(Type type, string name, bool isDefault)
 		{
