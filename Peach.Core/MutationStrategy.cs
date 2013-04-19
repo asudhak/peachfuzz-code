@@ -29,9 +29,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
+
 using Peach.Core.MutationStrategies;
 using Peach.Core.Dom;
-using System.Reflection;
+
+using NLog;
 
 namespace Peach.Core
 {
