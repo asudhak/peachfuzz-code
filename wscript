@@ -9,6 +9,9 @@ out = 'slag'
 inst = 'output'
 appname = 'peach'
 
+def supported_variant(name):
+	return True;
+
 def init(ctx):
 	wscript.init(ctx)
 
