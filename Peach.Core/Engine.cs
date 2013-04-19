@@ -413,9 +413,8 @@ namespace Peach.Core
 							logger.Debug(ex.StackTrace);
 							logger.Debug("runTest: " +
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
-#if MONO
-							throw ex;
-#endif
+
+							throw new SoftException("Out of memory");
 						}
 						finally
 						{
@@ -426,7 +425,9 @@ namespace Peach.Core
 
 							// If this was a control iteration, verify it againt our origional
 							// recording.
-							if (context.controlRecordingIteration == false && context.controlIteration)
+							if (context.controlRecordingIteration == false && 
+								context.controlIteration &&
+								!test.nonDeterministicActions)
 							{
 								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
 								{
