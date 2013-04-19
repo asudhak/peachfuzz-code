@@ -61,6 +61,7 @@ def configure(ctx):
 	out = getattr(Context.g_module, 'out')
 	inst = getattr(Context.g_module, 'inst')
 	appname = getattr(Context.g_module, 'appname')
+	supported_variant = getattr(Context.g_module, 'supported_variant')
 
 	base_env = ctx.env
 	base_env.APPNAME = appname
@@ -87,6 +88,9 @@ def configure(ctx):
 		options = [ ('%s_%s' % (tgt, arch), arch) for arch in archs ] or [ (tgt, None) ]
 
 		for (name, arch) in options:
+			if not supported_variant(name):
+				continue
+
 			if Logs.verbose == 0:
 				Logs.pprint('NORMAL', 'Configuring variant %s :' % name.ljust(20), sep='')
 

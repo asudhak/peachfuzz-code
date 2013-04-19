@@ -4,6 +4,14 @@ VERSION = '1.7.9'
 
 import sys, os, os.path
 
+# Configure to be the relative path to the root of
+# the Peach repo. eg: subdir = 'Peach'
+subdir = None
+
+if not subdir:
+        print 'Error, the "subdir" variable in "%s" must be configured' % os.path.join(cwd, 'waf')
+        sys.exit(1)
+
 if sys.platform == "cygwin":
         print 'waf must be run from cmd.exe'
         sys.exit(1)
@@ -13,8 +21,8 @@ if os.getenv('DevEnvDir'):
         sys.exit(1)
 
 cwd = os.getcwd()
-build = os.path.join(cwd, 'build')
-wafdir = os.path.join(cwd, '3rdParty', 'waf')
+build = os.path.join(cwd, subdir, 'build')
+wafdir = os.path.join(cwd, subdir, '3rdParty', 'waf')
 sys.path = [ build, wafdir ] + sys.path
 
 if __name__ == '__main__':

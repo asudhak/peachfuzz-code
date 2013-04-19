@@ -373,5 +373,77 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, dom.datas[1].fields.Count);
 			Assert.AreEqual("baz", (string)dom.datas[1].fields[0]);
 		}
+
+		[Test]
+		public void ParseDefines()
+		{
+			string temp1 = Path.GetTempFileName();
+			string temp2 = Path.GetTempFileName();
+
+			string def1 = @"
+<PitDefines>
+	<All>
+		<Define key='k1' value='v1'/>
+		<Define key='k2' value='v2'/>
+	</All>
+</PitDefines>
+";
+
+			string def2 = @"
+<PitDefines>
+	<Include include='{0}'/>
+
+	<All>
+		<Define key='k1' value='override'/>
+		<Define key='k3' value='v3'/>
+	</All>
+</PitDefines>
+".Fmt(temp1);
+
+			File.WriteAllText(temp1, def1);
+			File.WriteAllText(temp2, def2);
+
+			var defs = PitParser.parseDefines(temp2);
+
+			Assert.AreEqual(3, defs.Count);
+			Assert.True(defs.ContainsKey("k1"));
+			Assert.True(defs.ContainsKey("k2"));
+			Assert.True(defs.ContainsKey("k2"));
+			Assert.AreEqual("override", defs["k1"]);
+			Assert.AreEqual("v2", defs["k2"]);
+			Assert.AreEqual("v3", defs["k3"]);
+		}
+
+		[Test]
+		public void ParseDefinesDuplicate()
+		{
+			string temp1 = Path.GetTempFileName();
+			string def1 = @"
+<PitDefines>
+	<All>
+		<Define key='k1' value='v1'/>
+		<Define key='k1' value='v2'/>
+	</All>
+</PitDefines>
+";
+
+			File.WriteAllText(temp1, def1);
+
+			try
+			{
+				PitParser.parseDefines(temp1);
+				Assert.Fail("should throw");
+			}
+			catch (PeachException ex)
+			{
+				Assert.True(ex.Message.EndsWith("contains multiple entries for key 'k1'."));
+			}
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, defined values file \"filenotfound.xml\" does not exist.")]
+		public void ParseDefinesFileNotFound()
+		{
+			PitParser.parseDefines("filenotfound.xml");
+		}
 	}
 }

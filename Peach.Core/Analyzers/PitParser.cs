@@ -88,6 +88,7 @@ namespace Peach.Core.Analyzers
 		public static Dictionary<string, string> parseDefines(string definedValuesFile)
 		{
 			var ret = new Dictionary<string, string>();
+			var keys = new HashSet<string>();
 
 			if (!File.Exists(definedValuesFile))
 				throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
@@ -129,21 +130,29 @@ namespace Peach.Core.Analyzers
 					}
 				}
 
+				string include = node.getAttr("include", null);
+				if (include != null)
+				{
+					var other = parseDefines(include);
+					foreach (var kv in other)
+						ret[kv.Key] = kv.Value;
+				}
+
 				foreach (XmlNode defNode in node.ChildNodes)
 				{
 					if (defNode is XmlComment)
 						continue;
 
-					if (!defNode.hasAttr("key") || !defNode.hasAttr("value"))
+					string key = defNode.getAttr("key", null);
+					string value = defNode.getAttr("value", null);
+
+					if (key == null || value == null)
 						throw new PeachException("Error, Define elements in definition file must have both key and value attributes.");
-					try
-					{
-						ret.Add(defNode.getAttrString("key"), defNode.getAttrString("value"));
-					}
-					catch (System.ArgumentException)
-					{
-						throw new PeachException("Error, defines file '" + definedValuesFile +"' contains multiple entries for key '" + defNode.getAttrString("key") + "'.");
-					}
+
+					if (!keys.Add(key))
+						throw new PeachException("Error, defines file '" + definedValuesFile + "' contains multiple entries for key '" + key + "'.");
+
+					ret[key] = value;
 				}
 			}
 
