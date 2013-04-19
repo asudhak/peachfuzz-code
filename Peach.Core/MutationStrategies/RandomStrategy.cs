@@ -279,7 +279,7 @@ namespace Peach.Core.MutationStrategies
 		{
 			System.Diagnostics.Debug.Assert(_iteration != 0);
 
-			// dataModel is null on type="call"!
+			// Only sync <Data> elements if the action has a data model
 			if (action.dataModel == null)
 				return;
 
