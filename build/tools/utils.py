@@ -102,10 +102,15 @@ def cs_resource(self):
 		self.cs_task.dep_nodes.append(node)
 		self.env.append_value('CSFLAGS', ['/win32icon:%s' % node.path_from(self.bld.bldnode)])
 
-	# if this is an exe, look for app.config and install to ${BINDIR}
 	if 'exe' in self.cs_task.env.CSTYPE:
-		inst_to = getattr(self, 'install_path', '${BINDIR}')
+		# if this is an exe, require app.config and install to ${BINDIR}
 		cfg = self.path.find_or_declare('app.config')
+	else:
+		# if this is an assembly, app.config is optional
+		cfg = self.path.find_resource('app.config')
+
+	if cfg:
+		inst_to = getattr(self, 'install_path', '${BINDIR}')
 		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O755)
 
 @conf
