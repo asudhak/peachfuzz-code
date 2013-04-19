@@ -40,13 +40,13 @@ namespace Peach.Core.MutationStrategies
 	[Serializable]
 	public class Sequential : MutationStrategy
 	{
-		protected class Iterations : List<Tuple<string, Mutator>> { }
+		protected class Iterations : List<Tuple<string, Mutator, string>> { }
 
 		[NonSerialized]
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		[NonSerialized]
-		protected IEnumerator<Tuple<string, Mutator>> _enumerator;
+		protected IEnumerator<Tuple<string, Mutator, string>> _enumerator;
 
 		[NonSerialized]
 		protected Iterations _iterations = new Iterations();
@@ -190,7 +190,7 @@ namespace Peach.Core.MutationStrategies
 					if (SupportedState(t, state))
 					{
 						var mutator = GetMutatorInstance(t, state);
-						_iterations.Add(new Tuple<string, Mutator>("STATE_"+state.name, mutator));
+						_iterations.Add(new Tuple<string, Mutator, string>("STATE_"+state.name, mutator, null));
 						_count += (uint)mutator.count;
 					}
 				}
@@ -200,7 +200,7 @@ namespace Peach.Core.MutationStrategies
 
 		// Recursivly walk all DataElements in a container.
 		// Add the element and accumulate any supported mutators.
-		private void GatherMutators(DataElementContainer cont)
+		private void GatherMutators(string modelName, DataElementContainer cont)
 		{
 			List<DataElement> allElements = new List<DataElement>();
 			RecursevlyGetElements(cont, allElements);
@@ -214,7 +214,7 @@ namespace Peach.Core.MutationStrategies
 					if (SupportedDataElement(t, elem))
 					{
 						var mutator = GetMutatorInstance(t, elem);
-						_iterations.Add(new Tuple<string,Mutator>(elementName, mutator));
+						_iterations.Add(new Tuple<string, Mutator, string>(elementName, mutator, modelName));
 						_count += (uint)mutator.count;
 					}
 				}
@@ -228,14 +228,18 @@ namespace Peach.Core.MutationStrategies
 
 			if (action.dataModel != null)
 			{
-				GatherMutators(action.dataModel as DataElementContainer);
+				string modelName = GetDataModelName(action);
+				GatherMutators(modelName, action.dataModel as DataElementContainer);
 			}
 			else if (action.parameters != null && action.parameters.Count > 0)
 			{
 				foreach (ActionParameter param in action.parameters)
 				{
 					if (param.dataModel != null)
-						GatherMutators(param.dataModel as DataElementContainer);
+					{
+						string modelName = GetDataModelName(action, param);
+						GatherMutators(modelName, param.dataModel as DataElementContainer);
+					}
 				}
 			}
 		}
@@ -261,8 +265,12 @@ namespace Peach.Core.MutationStrategies
 			return state;
 		}
 
-		private void ApplyMutation(DataModel dataModel)
+		private void ApplyMutation(string modelName, DataModel dataModel)
 		{
+			// Ensure we are on the right model
+			if (_enumerator.Current.Item3 != modelName)
+				return;
+
 			var fullName = _enumerator.Current.Item1;
 			var dataElement = dataModel.find(fullName);
 
@@ -285,14 +293,18 @@ namespace Peach.Core.MutationStrategies
 
 			if (action.dataModel != null)
 			{
-				ApplyMutation(action.dataModel);
+				string modelName = GetDataModelName(action);
+				ApplyMutation(modelName, action.dataModel);
 			}
 			else if (action.parameters != null && action.parameters.Count > 0)
 			{
 				foreach (ActionParameter param in action.parameters)
 				{
 					if (param.dataModel != null)
-						ApplyMutation(param.dataModel);
+					{
+						string modelName = GetDataModelName(action, param);
+						ApplyMutation(modelName, param.dataModel);
+					}
 				}
 			}
 		}

@@ -157,6 +157,7 @@ namespace Peach.Core.Test.StateModel
 
 			for (int i = 6; i < dataModels.Count; i += 6)
 			{
+				int count = 0;
 				for (int j = 1; j < 6; ++j)
 				{
 					Assert.AreEqual(j, (int)dataModels[i + j][0].InternalValue);
@@ -166,13 +167,13 @@ namespace Peach.Core.Test.StateModel
 
 					string exp = j == 1 ? "Foo Data Model" : "World";
 
-					if (str1 == "Hello")
-						Assert.AreNotEqual(exp, str2);
-					else
-						Assert.AreEqual(exp, str2);
+					if (str1 != "Hello")
+						++count;
+					if (str2 != exp)
+						++count;
 				}
+				Assert.AreEqual(1, count);
 			}
-
 		}
 
 		[Test]
@@ -246,6 +247,7 @@ namespace Peach.Core.Test.StateModel
 
 			for (int i = 10; i < dataModels.Count; i += 10)
 			{
+				int count = 0;
 				for (int j = 1; j < 6; ++j)
 				{
 					Assert.AreEqual(j, (int)dataModels[i + (2 * j - 1)][0].InternalValue);
@@ -253,11 +255,12 @@ namespace Peach.Core.Test.StateModel
 					string str1 = (string)dataModels[i + (2 * j - 1)][1].InternalValue;
 					string str2 = (string)dataModels[i + (2 * j - 1)][2].InternalValue;
 
-					if (str1 == "Hello")
-						Assert.AreNotEqual("Foo Data Model", str2);
-					else
-						Assert.AreEqual("Foo Data Model", str2);
+					if (str1 != "Hello")
+						++count;
+					if (str2 != "Foo Data Model")
+						++count;
 				}
+				Assert.AreEqual(1, count);
 			}
 
 		}
