@@ -659,19 +659,19 @@ namespace Peach.Core.Dom
 			PeachXPathNavigator navi = new PeachXPathNavigator(context.dom);
 			var iter = navi.Select(valueXpath);
 			if (!iter.MoveNext())
-				throw new PeachException("Error, slurp valueXpath returned no values. [" + valueXpath + "]");
+				throw new SoftException("Error, slurp valueXpath returned no values. [" + valueXpath + "]");
 
 			DataElement valueElement = ((PeachXPathNavigator)iter.Current).currentNode as DataElement;
 			if (valueElement == null)
-				throw new PeachException("Error, slurp valueXpath did not return a Data Element. [" + valueXpath + "]");
+				throw new SoftException("Error, slurp valueXpath did not return a Data Element. [" + valueXpath + "]");
 
 			if (iter.MoveNext())
-				throw new PeachException("Error, slurp valueXpath returned multiple values. [" + valueXpath + "]");
+				throw new SoftException("Error, slurp valueXpath returned multiple values. [" + valueXpath + "]");
 
 			iter = navi.Select(setXpath);
 
 			if (!iter.MoveNext())
-				throw new PeachException("Error, slurp setXpath returned no values. [" + setXpath + "]");
+				throw new SoftException("Error, slurp setXpath returned no values. [" + setXpath + "]");
 
 			do
 			{
