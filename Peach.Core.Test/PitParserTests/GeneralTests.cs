@@ -461,6 +461,7 @@ namespace Peach.Core.Test.PitParserTests
 		<Mutators mode='include'>
 			<Mutator class='StringCaseMutator'/>
 		</Mutators>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 			xml = string.Format(xml, Platform.GetOS() == Platform.OS.Windows ? "linux" : "windows");

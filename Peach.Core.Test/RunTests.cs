@@ -103,6 +103,7 @@ namespace Peach.Core.Test
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 

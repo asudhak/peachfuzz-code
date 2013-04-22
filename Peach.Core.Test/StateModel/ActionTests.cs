@@ -74,6 +74,7 @@ namespace Peach.Core.Test.StateModel
 	<Test name='Default'>
 		<StateModel ref='SM'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>".Fmt(action, children);
 
@@ -180,6 +181,7 @@ namespace Peach.Core.Test.StateModel
 		<Mutators mode='include'>
 			<Mutator class='StringCaseMutator'/>
 		</Mutators>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 

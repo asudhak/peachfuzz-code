@@ -173,6 +173,7 @@ namespace Peach.Core.Test.Monitors
 			"		<Agent ref=\"LocalAgent\"/>" +
 			"		<StateModel ref=\"TheState\"/>" +
 			"		<Publisher class=\"Null\" />" +
+			"		<Strategy class=\"RandomDeterministic\"/>" +
 			"	</Test>" +
 			"</Peach>";
 
