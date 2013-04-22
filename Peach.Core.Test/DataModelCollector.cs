@@ -49,27 +49,42 @@ namespace Peach.Core.Test
 
 		protected void Action_Finished(Dom.Action action)
 		{
-			if (action.dataModel == null)
-				return;
-
-			// Collect mutated values only after the first run
 			var dom = action.parent.parent.parent as Dom.Dom;
 
-			if (!dom.context.controlIteration)
+			if (action.dataModel == null)
 			{
-				mutations.Add(action.dataModel.Count > 0 ? action.dataModel[0].InternalValue : null);
-				mutatedDataModels.Add(action.dataModel);
-			}
+				var models = action.parameters.Select(a => a.dataModel).Where(a => a != null);
+				if (!models.Any())
+					return;
 
-			// Collect transformed values, actions and dataModels always
-			values.Add(action.dataModel.Count > 0 ? action.dataModel[0].Value : null);
+				foreach (var model in models)
+				{
+					SaveDataModel(dom, model);
+				}
+			}
+			else
+			{
+				SaveDataModel(dom, action.dataModel);
+			}
 
 			if (cloneActions)
 				actions.Add(ObjectCopier.Clone(action));
 			else
 				actions.Add(action);
+		}
 
-			dataModels.Add(action.dataModel);
+		void SaveDataModel(Dom.Dom dom, Dom.DataModel model)
+		{
+			// Collect mutated values only after the first run
+			if (!dom.context.controlIteration)
+			{
+				mutations.Add(model.Count > 0 ? model[0].InternalValue : null);
+				mutatedDataModels.Add(model);
+			}
+
+			// Collect transformed values, actions and dataModels always
+			values.Add(model.Count > 0 ? model[0].Value : null);
+			dataModels.Add(model);
 		}
 
 		void MutationStrategy_Mutating(string elementName, string mutatorName)
