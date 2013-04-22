@@ -19,12 +19,13 @@ tools = [
 	'tools.mdoc',
 ]
 
-def find_directory(dirname, paths):
-	for path in paths:
-		candidate = os.path.join(path, dirname)
-		if os.path.exists(candidate):
-			return candidate
-	raise Errors.WafError('Could not find directory \'%s\'' % dirname)
+def find_directory(dirs, paths):
+	for dirname in dirs:
+		for path in paths:
+			candidate = os.path.join(path, dirname)
+			if os.path.exists(candidate):
+				return candidate
+	raise Errors.WafError('Could not find directory \'%s\'' % dirs)
 
 def prepare(conf):
 	root = conf.path.abspath()
@@ -34,16 +35,25 @@ def prepare(conf):
 	env['PATH'] = [
 		'/Library/Frameworks/Mono.framework/Commands',
 		'/usr/bin',
+		'/Developer/usr/bin',
 	]
 
 	env['MCS']  = 'dmcs'
 	env['CC']   = 'clang'
 	env['CXX']  = 'clang++'
 
-	env['SYSROOT'] = find_directory('MacOSX10.7.sdk', [
+	env['SYSROOT'] = find_directory( ['MacOSX10.7.sdk', 'MacOSX10.6.sdk'],
+	[
 		'/Developer/SDKs',
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
 	])
+
+	# TODO
+	# Reported issues compiling pin using XCode 4.0 on 10.6
+	# Figure out a better check for clang version on 10.6
+	# For now, just skip all pin tools
+	if '10.6' in env['SYSROOT']:
+		return
 
 	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
 	pin = j(pin_root, 'pin-2.12-54730-clang.3.0-mac')
@@ -86,7 +96,7 @@ def configure(conf):
 	env = conf.env
 
 	env['IS_MONO'] = 'True'
-	
+
 	env.append_value('supported_features', [
 		'osx',
 		'c',
