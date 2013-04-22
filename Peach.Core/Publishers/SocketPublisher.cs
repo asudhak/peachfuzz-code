@@ -663,12 +663,26 @@ namespace Peach.Core.Publishers
 		{
 			if (property == "MTU")
 			{
-				System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
-				var bs = (BitStream)value;
-				bs.SeekBits(0, SeekOrigin.Begin);
-				int len = (int)Math.Min(bs.LengthBits, 32);
-				ulong bits = bs.ReadBits(len);
-				uint mtu = LittleBitWriter.GetUInt32(bits, len);
+				uint mtu = 0;
+
+				if (value.GetVariantType() == Variant.VariantType.BitStream)
+				{
+					var bs = (BitStream)value;
+					bs.SeekBits(0, SeekOrigin.Begin);
+					int len = (int)Math.Min(bs.LengthBits, 32);
+					ulong bits = bs.ReadBits(len);
+					mtu = LittleBitWriter.GetUInt32(bits, len);
+				}
+				else if (value.GetVariantType() == Variant.VariantType.ByteString)
+				{
+					byte[] buf = (byte[])value;
+					int len = Math.Min(buf.Length * 8, 32);
+					mtu = LittleBitWriter.GetUInt32(buf, len);
+				}
+				else
+				{
+					throw new SoftException("Can't set MTU, 'value' is an unsupported type.");
+				}
 
 				if (MaxMtu >= mtu && mtu >= MinMtu)
 				{
