@@ -293,6 +293,11 @@ namespace Peach.Core.Publishers
 
 		protected override void OnSetProperty(string property, Variant value)
 		{
+			// The Engine always gives us a BitStream but we can't remote that
+			System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
+			var buf = (byte[])value;
+			value = new Variant(buf);
+
 			try
 			{
 				PerformRemoting(delegate() { _publisher.setProperty(property, value); });
