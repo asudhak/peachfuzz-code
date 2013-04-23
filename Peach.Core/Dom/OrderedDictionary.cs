@@ -75,7 +75,7 @@ namespace Peach.Core
 		/// Returns the zero-based index of the specified key in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>
 		/// </summary>
 		/// <param name="key">The key to locate in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
-		/// <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
+		/// <returns>The zero-based index of <paramref name="key"/>, if <paramref name="key"/> is found in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
 		/// <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
 		int IndexOfKey(TKey key);
 	}
@@ -117,7 +117,7 @@ namespace Peach.Core
 		/// Returns the zero-based index of the specified key in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>
 		/// </summary>
 		/// <param name="key">The key to locate in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
-		/// <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
+		/// <returns>The zero-based index of <paramref name="key"/>, if <paramref name="key"/> is found in the <see cref="T:OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
 		/// <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
 		public int IndexOfKey(TKey key)
 		{

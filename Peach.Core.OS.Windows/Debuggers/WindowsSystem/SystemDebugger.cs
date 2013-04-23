@@ -40,19 +40,20 @@ namespace Peach.Core.Debuggers.WindowsSystem
 	/// <summary>
 	/// Callback to handle an A/V exception
 	/// </summary>
-	/// <param name="?"></param>
+	/// <param name="e"></param>
 	public delegate void HandleAccessViolation(UnsafeMethods.DEBUG_EVENT e);
 
 	/// <summary>
 	/// Callback to handle a breakpoint
 	/// </summary>
-	/// <param name="?"></param>
+	/// <param name="e"></param>
 	public delegate void HandleBreakpoint(UnsafeMethods.DEBUG_EVENT e);
 
 	/// <summary>
 	/// Callback to handle a breakpoint
 	/// </summary>
-	/// <param name="?"></param>
+	/// <param name="e"></param>
+	/// <param name="moduleName"></param>
 	public delegate void HandleLoadDll(UnsafeMethods.DEBUG_EVENT e, string moduleName);
 
 	/// <summary>

@@ -47,7 +47,6 @@ namespace Peach.Core.Dom
 	/// Abstract base class for DataElements that contain other
 	/// data elements.  Such as Block, Choice, or Flags.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>, IList<DataElement>
 	{
