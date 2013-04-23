@@ -950,7 +950,8 @@ namespace Peach.Core.Agent.Monitors
 			}
 			catch (DllNotFoundException ex)
 			{
-				throw new PeachException("VMWare VIX library could not be found.", ex);
+				string msg = "VMWare VIX library could not be found. Ensure VIX API 1.12 has been installed. The SDK download can be found at 'http://www.vmware.com/support/developer/vix-api/'";
+				throw new PeachException(msg, ex);
 			}
 		}
 
