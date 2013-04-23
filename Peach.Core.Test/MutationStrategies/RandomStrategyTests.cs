@@ -52,7 +52,7 @@ namespace Peach.Core.Test.MutationStrategies
 		[Test]
 		public void Test2()
 		{
-			// Random strategy picks one data model to fuzz each iteration, make sure this is working
+			// Random strategy picks a list of elements across all models, make sure this is working
 
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
@@ -97,14 +97,12 @@ namespace Peach.Core.Test.MutationStrategies
 
 			// 999 mutations, control at iteration 1, 201, 401, 601, 801, two data models = (999+5)*2
 			Assert.AreEqual((999+5)*2, actions.Count);
-			Assert.AreEqual(999, allStrategies.Count);
 			Assert.AreEqual(allStrategies.Count, dm1 + dm2);
 
-			// Make sure each data model was fuzzed about half the time
-			Assert.Greater(dm1, 450);
-			Assert.Less(dm1, 550);
-			Assert.Greater(dm2, 450);
-			Assert.Less(dm2, 550);
+			// Make sure each data model was fuzzed about the same number of times
+			int diff = dm1 - dm2;
+			Assert.Greater(diff, -10);
+			Assert.Less(diff, 10);
 		}
 
 		[Test]
@@ -628,6 +626,57 @@ namespace Peach.Core.Test.MutationStrategies
 				total += changed;
 			}
 			Assert.AreEqual(10, total);
+		}
+
+		[Test]
+		public void TwoStates()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str' value='Hello'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+			<Action type='changeState' ref='Second'/>
+		</State>
+		<State name='Second'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Random'>
+			<Param name='MaxFieldsToMutate' value='2'/>
+		</Strategy>
+	</Test>
+</Peach>";
+
+			RunSwitchTest(xml, 1, 10);
+
+			Assert.AreEqual(22, dataModels.Count);
+
+			Assert.AreEqual("Hello", (string)dataModels[0][0].InternalValue);
+			Assert.AreEqual("Hello", (string)dataModels[1][0].InternalValue);
+
+			int total = 0;
+			for (int i = 2; i < dataModels.Count; i += 2)
+			{
+				// When two fields are chosen, it should mutate one field in each state
+				if ("Hello" != (string)dataModels[i + 0][0].InternalValue && "Hello" != (string)dataModels[i + 1][0].InternalValue)
+					++total;
+			}
+
+			Assert.Greater(total, 1);
+			Assert.Less(total, 10);
 		}
 
 		private static void RunSwitchTest(string xml, uint start, uint stop)
