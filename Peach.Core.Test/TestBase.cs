@@ -73,10 +73,17 @@ namespace Peach
 	[TestFixture]
 	class AssertTest
 	{
-		[Test, ExpectedException(typeof(AssertionException))]
+		[Test]
 		public void TestAssert()
 		{
+#if DEBUG
+			Assert.Throws<AssertionException>(delegate() {
+				System.Diagnostics.Debug.Assert(false);
+			});
+#else
 			System.Diagnostics.Debug.Assert(false);
+#endif
+
 		}
 	}
 }
