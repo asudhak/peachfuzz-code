@@ -168,7 +168,9 @@ namespace Peach.Core.Analysis
 		/// This method will use the TraceStarting and TraceCompleted events
 		/// to report progress.
 		/// </remarks>
-		/// <param name="command">Command to execute.  Must contain a "%s" placeholder for the sampe filename.</param>
+		/// <param name="executable">Executable to run.</param>
+		/// <param name="arguments">Executable arguments.  Must contain a "%s" placeholder for the sampe filename.</param>
+		/// <param name="tracesFolder">Where to write trace files</param>
 		/// <param name="sampleFiles">Collection of sample files</param>
 		/// <param name="needsKilling">Does this command requiring forcefull killing to exit?</param>
 		/// <returns>Returns a collection of trace files</returns>
@@ -212,6 +214,7 @@ namespace Peach.Core.Analysis
 		/// <summary>
 		/// Create a single trace file based on code coverage stats for fileName.
 		/// </summary>
+		/// <param name="cov">Coverage stats</param>
 		/// <param name="traceFile">Output trace to this filename</param>
 		/// <param name="executable">Command to execute.</param>
 		/// <param name="arguments">Command arguments.</param>

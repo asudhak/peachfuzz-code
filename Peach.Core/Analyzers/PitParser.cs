@@ -228,8 +228,7 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// Validate PIT XML using Schema file.
 		/// </summary>
-		/// <param name="fileName">Pit file to validate</param>
-		/// <param name="schema">Peach XML Schema file</param>
+		/// <param name="xmlData">Pit file to validate</param>
 		private void validatePit(string xmlData)
 		{
 			XmlSchemaSet set = new XmlSchemaSet();
@@ -293,7 +292,9 @@ namespace Peach.Core.Analyzers
 		/// NOTE: This method is intended to be overriden (hence the virtual) and is 
 		///			currently in use by Godel to extend the Pit Parser.
 		/// </remarks>
+		/// <param name="dom">Dom object</param>
 		/// <param name="node">XmlNode to parse</param>
+		/// <param name="args">Parser arguments</param>
 		/// <returns>Returns the parsed Dom object.</returns>
 		protected virtual void handlePeach(Dom.Dom dom, XmlNode node, Dictionary<string, object> args)
 		{
@@ -498,6 +499,7 @@ namespace Peach.Core.Analyzers
 		/// namespace is given, but not found.
 		/// </summary>
 		/// <param name="name">Ref name to resolve.</param>
+		/// <param name="container">Container to start searching from.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
 		public DataElement getReference(string name, DataElementContainer container)
 		{
@@ -548,6 +550,7 @@ namespace Peach.Core.Analyzers
 		/// Find a referenced Dom element by name, taking into account namespace prefixes.
 		/// </summary>
 		/// <typeparam name="T">Type of Dom element.</typeparam>
+		/// <param name="dom">Dom to search in</param>
 		/// <param name="refName">Name of reference</param>
 		/// <param name="predicate">Selector predicate that returns the element collection</param>
 		/// <returns></returns>
@@ -1503,7 +1506,6 @@ namespace Peach.Core.Analyzers
 		protected virtual ActionParameter handleActionParameter(XmlNode node, Dom.Action parent)
 		{
 			ActionParameter param = new ActionParameter();
-			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
 
 			if (node.hasAttr("name"))
 				param.name = node.getAttrString("name");
@@ -1533,7 +1535,6 @@ namespace Peach.Core.Analyzers
 		protected virtual ActionResult handleActionResult(XmlNode node, Dom.Action parent)
 		{
 			ActionResult result = new ActionResult();
-			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
 
 			if (node.hasAttr("name"))
 				result.name = node.getAttrString("name");

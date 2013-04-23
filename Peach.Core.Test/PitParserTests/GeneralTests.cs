@@ -363,21 +363,21 @@ namespace Peach.Core.Test.PitParserTests
 			{
 				string xml = string.Format("<Peach><Data name='data' fileName=''/></Peach>", tempDir);
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 
 			Assert.Throws<PeachException>(delegate()
 			{
 				string xml = string.Format("<Peach><Data name='data' fileName='foo'/></Peach>", tempDir);
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 
 			Assert.Throws<PeachException>(delegate()
 			{
 				string xml = string.Format("<Peach><Data name='data' fileName='*/foo'/></Peach>", tempDir);
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 
 			{

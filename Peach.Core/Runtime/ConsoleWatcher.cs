@@ -41,8 +41,6 @@ namespace Peach.Core.Runtime
 {
 	public class ConsoleWatcher : Watcher
 	{
-		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		Stopwatch timer = new Stopwatch();
 		uint startIteration = 0;
 		bool reproducing = false;

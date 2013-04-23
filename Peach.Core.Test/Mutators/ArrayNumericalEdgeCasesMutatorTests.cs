@@ -63,7 +63,11 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
+#if MONO
+            Assert.AreEqual(303, mutations.Count);
+#else
             Assert.AreEqual(505, mutations.Count);
+#endif
             foreach (var item in mutations)
             {
                 Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
@@ -121,7 +125,11 @@ namespace Peach.Core.Test.Mutators
             e.startFuzzing(dom, config);
 
             // verify values
+#if MONO
+            Assert.AreEqual(33, mutations.Count);
+#else
             Assert.AreEqual(55, mutations.Count);
+#endif
             foreach (var item in mutations)
             {
                 Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
