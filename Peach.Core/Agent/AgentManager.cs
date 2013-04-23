@@ -159,7 +159,7 @@ namespace Peach.Core.Agent
 		public virtual void Shutdown()
 		{
 			logger.Trace("Shutdown");
-			foreach (AgentClient agent in _agents.Values)
+			foreach (AgentClient agent in _agents.Values.Reverse())
 			{
 				try
 				{
