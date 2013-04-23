@@ -302,8 +302,9 @@ namespace Peach.Core.Publishers
 			{
 				PerformRemoting(delegate() { _publisher.setProperty(property, value); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Debug(ex);
 				try
 				{
 					RestartRemotePublisher();
