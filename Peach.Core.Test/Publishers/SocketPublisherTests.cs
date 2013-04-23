@@ -808,17 +808,17 @@ namespace Peach.Core.Test.Publishers
 				RunConfiguration config = new RunConfiguration();
 				config.range = true;
 				config.rangeStart = 1;
-				config.rangeStop = 10;
+				config.rangeStop = 21;
 
 				Engine e = new Engine(null);
 				e.startFuzzing(dom, config);
 
-				Assert.AreEqual(44, this.actions.Count);
+				Assert.AreEqual(88, this.actions.Count);
 
 				int num1 = 0;
 				int num2 = 0;
 
-				for (int i = 0; i < 44; i += 4)
+				for (int i = 0; i < this.actions.Count; i += 4)
 				{
 					var exp = (string)actions[i + 0].dataModel[0].DefaultValue;
 					if (exp != "Echo1")
