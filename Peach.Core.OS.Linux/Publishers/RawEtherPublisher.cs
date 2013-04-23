@@ -474,9 +474,19 @@ namespace Peach.Core.Publishers
 
 				if (MaxMtu >= mtu && mtu >= MinMtu)
 				{
-					using (var sock = OpenSocket(mtu))
+					try
 					{
-						Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+						using (var sock = OpenSocket(mtu))
+						{
+							Logger.Debug("Changed MTU of {0} to {1}.", Interface, mtu);
+						}
+					}
+					catch (Exception ex)
+					{
+						string err = "Failed to change MTU of '{0}' to {1}. {2}".Fmt(Interface, mtu, ex.Message);
+						Logger.Error(err);
+						var se = new SoftException(err, ex);
+						throw new SoftException(se);
 					}
 				}
 			}
