@@ -180,6 +180,7 @@ namespace Peach.Core
 		/// Run the default fuzzing run in the specified dom.
 		/// </summary>
 		/// <param name="dom"></param>
+		/// <param name="config"></param>
 		public void startFuzzing(Dom.Dom dom, RunConfiguration config)
 		{
 			if (dom == null)

@@ -82,7 +82,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class String : DataElement
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected StringType _type = StringType.ascii;
 		protected bool _nullTerminated = false;
 		protected char _padCharacter = '\0';

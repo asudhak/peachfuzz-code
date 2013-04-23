@@ -63,7 +63,7 @@ namespace Peach.Core.Runtime
 
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Peach.Core.Dom.Dom dom;
-		RunConfiguration config = new RunConfiguration();
+		//RunConfiguration config = new RunConfiguration();
 
 		public int exitCode = 1;
 

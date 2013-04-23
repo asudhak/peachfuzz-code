@@ -487,7 +487,7 @@ namespace Peach.Core.Dom
 
 		/// <summary>
 		/// Constraint on value of data element.
-		/// </summery>
+		/// </summary>
 		/// <remarks>
 		/// This
 		/// constraint is only enforced when loading data into
