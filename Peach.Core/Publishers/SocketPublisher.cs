@@ -423,8 +423,8 @@ namespace Peach.Core.Publishers
 						_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
 					}
 
-					SocketOptionLevel level;
-					object opt;
+					SocketOptionLevel level = SocketOptionLevel.IPv6;
+					object opt = null;
 
 					if (_localIp.AddressFamily == AddressFamily.InterNetwork)
 					{
@@ -436,13 +436,14 @@ namespace Peach.Core.Publishers
 						level = SocketOptionLevel.IPv6;
 						opt = new IPv6MulticastOption(ep.Address, _localIp.ScopeId);
 					}
-					else
+					else if (Platform.GetOS() != Platform.OS.OSX)
 					{
 						level = SocketOptionLevel.IPv6;
 						opt = new IPv6MulticastOption(ep.Address);
 					}
 
-					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
+					if (opt != null)
+						_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
 
 					if (_localIp != IPAddress.Any && _localIp != IPAddress.IPv6Any)
 					{
@@ -455,7 +456,7 @@ namespace Peach.Core.Publishers
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
 					{
-						throw new PeachException(string.Format("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface));
+						throw new PeachException(string.Format("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface == null ? "<null>" : Interface.ToString()));
 					}
 				}
 				else
