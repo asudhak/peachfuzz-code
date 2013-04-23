@@ -22,11 +22,10 @@ namespace Peach.Core.Publishers
 
 		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header.
 		// In order to account for Jumbograms which are > 65535, max MTU is double 65535
-		// MinMTU is 128 so that IP info isn't lost if MTU is fuzzed
-		//
-		// These values should be made configurable at some point.
-		private const uint MaxMtu = 65535 * 2;
-		private const uint MinMtu = 128;
+		// MinMTU is 1280 so that IPv6 info isn't lost if MTU is fuzzed
+
+		public const string DefaultMinMTU = "1280";
+		public const string DefaultMaxMTU = "131070"; // 65535 * 2
 
 		#endregion
 
@@ -36,6 +35,8 @@ namespace Peach.Core.Publishers
 		public ushort Port { get; set; }
 		public ushort SrcPort { get; set; }
 		public int Timeout { get; set; }
+		public uint MinMTU { get; set; }
+		public uint MaxMTU { get; set; }
 
 		public static int MaxSendSize = 65000;
 
@@ -684,7 +685,7 @@ namespace Peach.Core.Publishers
 					throw new SoftException("Can't set MTU, 'value' is an unsupported type.");
 				}
 
-				if (MaxMtu >= mtu && mtu >= MinMtu)
+				if (MaxMTU >= mtu && mtu >= MinMTU)
 				{
 					using (var cfg = NetworkAdapter.CreateInstance(_iface))
 					{

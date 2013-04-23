@@ -19,9 +19,11 @@ namespace Peach.Core.Publishers
 	[Parameter("Interface", typeof(string), "Name of interface to bind to")]
 	[Parameter("Protocol", typeof(EtherProto), "Ethernet protocol to use", "ETH_P_ALL")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("MinMTU", typeof(uint), "Minimum allowable MTU property value", SocketPublisher.DefaultMinMTU)]
+	[Parameter("MaxMTU", typeof(uint), "Maximum allowable MTU property value", SocketPublisher.DefaultMaxMTU)]
 	public class RawEtherPublisher : Publisher
 	{
-		#region Ethernet Protocols
+#region Ethernet Protocols
 
 		public enum EtherProto : ushort
 		{
@@ -101,9 +103,9 @@ namespace Peach.Core.Publishers
 			ETH_P_CAIF       = 0x00F7, // ST-Ericsson CAIF protocol
 		}
 
-		#endregion
+#endregion
 
-		#region P/Invokes
+#region P/Invokes
 
 		const int AF_PACKET  = 17;
 		const int SOCK_RAW   = 3;
@@ -149,11 +151,13 @@ namespace Peach.Core.Publishers
 		[DllImport("libc", SetLastError = true)]
 		private static extern int ioctl(int fd, int request, ref ifreq mtu);
 
-		#endregion
+#endregion
 
 		public string Interface { get; set; }
 		public EtherProto Protocol { get; set; }
 		public int Timeout { get; set; }
+		public uint MinMTU { get; set; }
+		public uint MaxMTU { get; set; }
 
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
@@ -163,10 +167,6 @@ namespace Peach.Core.Publishers
 		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header.
 		// In order to account for Jumbograms which are > 65535, max MTU is double 65535
 		// MinMTU is 128 so that IP info isn't lost if MTU is fuzzed
-		//
-		// These values should be made configurable at some point.
-		private const uint MaxMtu = 65535 * 2;
-		private const uint MinMtu = 128;
 
 		private UnixStream _socket = null;
 		private MemoryStream _recvBuffer = null;
@@ -235,8 +235,8 @@ namespace Peach.Core.Publishers
 
 				_mtu = ifr.ifru_mtu;
 
-				if (ifr.ifru_mtu > (MaxMtu - EthernetHeaderSize))
-					_bufferSize = (int)MaxMtu;
+				if (ifr.ifru_mtu > (MaxMTU - EthernetHeaderSize))
+					_bufferSize = (int)MaxMTU;
 				else
 					_bufferSize = (int)(ifr.ifru_mtu + EthernetHeaderSize);
 
@@ -394,7 +394,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		#region Read Stream
+#region Read Stream
 
 		public override bool CanRead
 		{
@@ -472,7 +472,7 @@ namespace Peach.Core.Publishers
 					throw new SoftException("Can't set MTU, 'value' is an unsupported type.");
 				}
 
-				if (MaxMtu >= mtu && mtu >= MinMtu)
+				if (MaxMTU >= mtu && mtu >= MinMTU)
 				{
 					try
 					{
@@ -492,7 +492,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		#endregion
+#endregion
 	}
 }
 
