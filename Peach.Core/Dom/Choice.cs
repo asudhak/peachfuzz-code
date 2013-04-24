@@ -83,6 +83,9 @@ namespace Peach.Core.Dom
 			BitStream sizedData = ReadSizedData(data, size);
 			long startPosition = sizedData.TellBits();
 
+			Clear(false);
+			_selectedElement = null;
+
 			foreach (DataElement child in choiceElements.Values)
 			{
 				try
