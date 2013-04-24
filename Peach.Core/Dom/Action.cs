@@ -654,10 +654,29 @@ namespace Peach.Core.Dom
 			throw new ActionChangeStateException(this.parent.parent.states[reference]);
 		}
 
+		class PeachXmlNamespaceResolver : IXmlNamespaceResolver
+		{
+			public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
+			{
+				return new Dictionary<string, string>();
+			}
+
+			public string LookupNamespace(string prefix)
+			{
+				return prefix;
+			}
+
+			public string LookupPrefix(string namespaceName)
+			{
+				return namespaceName;
+			}
+		}
+
 		protected void handleSlurp(RunContext context)
 		{
+			PeachXmlNamespaceResolver resolver = new PeachXmlNamespaceResolver();
 			PeachXPathNavigator navi = new PeachXPathNavigator(context.dom);
-			var iter = navi.Select(valueXpath);
+			var iter = navi.Select(valueXpath, resolver);
 			if (!iter.MoveNext())
 				throw new SoftException("Error, slurp valueXpath returned no values. [" + valueXpath + "]");
 
@@ -668,7 +687,7 @@ namespace Peach.Core.Dom
 			if (iter.MoveNext())
 				throw new SoftException("Error, slurp valueXpath returned multiple values. [" + valueXpath + "]");
 
-			iter = navi.Select(setXpath);
+			iter = navi.Select(setXpath, resolver);
 
 			if (!iter.MoveNext())
 				throw new SoftException("Error, slurp setXpath returned no values. [" + setXpath + "]");
