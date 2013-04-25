@@ -646,10 +646,26 @@ namespace Peach.Core.Agent.Monitors
 			_StopDebugger();
 
 			if (_systemDebugger != null)
-				_systemDebugger.FinishDebugging();
+			{
+				try
+				{
+					_systemDebugger.FinishDebugging();
+				}
+				catch
+				{
+				}
+			}
 
 			if (_debugger != null)
-				_debugger.FinishDebugging();
+			{
+				try
+				{
+					_debugger.FinishDebugging();
+				}
+				catch
+				{
+				}
+			}
 
 			_debugger = null;
 			_systemDebugger = null;
@@ -681,7 +697,6 @@ namespace Peach.Core.Agent.Monitors
 				catch
 				{
 				}
-
 			}
 
 			if (_debugger != null)
