@@ -54,12 +54,24 @@ namespace Peach.Core.Test.Agent
 				get { return logger; }
 			}
 
+			protected RunContext Context
+			{
+				get
+				{
+					Dom.Dom dom = this.Test.parent as Dom.Dom;
+					return dom.context;
+				}
+			}
+
 			protected override void OnOpen()
 			{
 				base.OnOpen();
 
 				if (!this.IsControlIteration && (this.Iteration % 2) == 1)
 				{
+					// Lame hack to make sure CrashableServer gets stopped
+					Context.agentManager.IterationFinished();
+
 					owner.StopAgent();
 					owner.StartAgent();
 				}
@@ -154,6 +166,7 @@ namespace Peach.Core.Test.Agent
 	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
 		<Monitor class='WindowsDebugger'>
 			<Param name='CommandLine' value='CrashableServer.exe 127.0.0.1 {0}'/>
+			<Param name='RestartOnEachTest' value='true'/>
 			<Param name='FaultOnEarlyExit' value='true'/>
 		</Monitor>
 	</Agent>
@@ -165,6 +178,7 @@ namespace Peach.Core.Test.Agent
 		<Monitor class='Process'>
 			<Param name='Executable' value='CrashableServer'/>
 			<Param name='Arguments' value='127.0.0.1 {0}'/>
+			<Param name='RestartOnEachTest' value='true'/>
 			<Param name='FaultOnEarlyExit' value='true'/>
 		</Monitor>
 	</Agent>
