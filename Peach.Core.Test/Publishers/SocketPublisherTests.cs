@@ -808,12 +808,11 @@ namespace Peach.Core.Test.Publishers
 				RunConfiguration config = new RunConfiguration();
 				config.range = true;
 				config.rangeStart = 1;
-				config.rangeStop = 21;
+				config.rangeStop = 200;
 
 				Engine e = new Engine(null);
+				e.IterationFinished += new Engine.IterationFinishedEventHandler(e_IterationFinished);
 				e.startFuzzing(dom, config);
-
-				Assert.AreEqual(88, this.actions.Count);
 
 				int num1 = 0;
 				int num2 = 0;
@@ -843,6 +842,33 @@ namespace Peach.Core.Test.Publishers
 				echo1.Socket.Close();
 				echo2.Socket.Close();
 			}
+		}
+
+		int numEcho1 = 0;
+		int numEcho2 = 0;
+
+		void e_IterationFinished(RunContext context, uint currentIteration)
+		{
+			if (currentIteration < 2)
+				return;
+
+			var v1 = (string)actions[actions.Count - 2].dataModel[0].DefaultValue;
+			var v2 = (string)actions[actions.Count - 1].dataModel[0].DefaultValue;
+
+			if (v1 != "Echo1")
+			{
+				Assert.AreEqual("Echo2", v1);
+				++numEcho2;
+			}
+			else
+			{
+				++numEcho1;
+			}
+
+			Assert.AreEqual(v1, v2);
+
+			if (numEcho1 > 0 && numEcho2 > 0)
+				context.config.shouldStop = new RunConfiguration.StopHandler(delegate() { return true; });
 		}
 	}
 }
