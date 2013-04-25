@@ -83,7 +83,8 @@ namespace Peach.Core
 				// Import any modules
 				Modules = new Dictionary<string,ScriptScope>();
 				foreach (string import in Imports)
-					Modules.Add(import, Instance.ImportModule(import));
+					if (!Modules.ContainsKey(import))
+						Modules.Add(import, Instance.ImportModule(import));
 			}
 		}
 

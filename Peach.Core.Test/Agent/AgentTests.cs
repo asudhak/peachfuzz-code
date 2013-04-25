@@ -300,8 +300,6 @@ namespace Peach.Core.Test.Agent
 
 			string xml = @"
 <Peach>
-	<Import import='code'/>
-
 	<DataModel name='TheDataModel'>
 		<String value='Hello'/>
 	</DataModel>
@@ -390,8 +388,6 @@ namespace Peach.Core.Test.Agent
 
 			string xml = @"
 <Peach>
-	<Import import='code'/>
-
 	<DataModel name='TheDataModel'>
 		<String value='Hello'/>
 	</DataModel>
