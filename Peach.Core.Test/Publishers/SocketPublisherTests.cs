@@ -10,6 +10,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 
 namespace Peach.Core.Test.Publishers
 {
@@ -21,6 +22,18 @@ namespace Peach.Core.Test.Publishers
 		public int Max = 1;
 		public int Count = 0;
 		public int WaitTime = 500;
+		public IPAddress localIp;
+
+		#region OSX Multicast Goo
+		[DllImport("libc")]
+		static extern int setsockopt(int socket, int level, int optname, ref IntPtr opt, int optlen);
+
+		[DllImport("libc")]
+		static extern uint if_nametoindex(string ifname);
+
+		const int IPPROTO_IPV6 = 0x29;
+		const int IPV6_MULTICAST_IF = 0x9;
+		#endregion
 
 		public SocketEcho()
 		{
@@ -29,6 +42,14 @@ namespace Peach.Core.Test.Publishers
 		public void SendOnly(IPAddress remote, int port = 5000, string payload = "SendOnly!")
 		{
 			Socket = new Socket(remote.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+
+			if (remote.IsIPv6Multicast && Platform.GetOS() == Platform.OS.OSX)
+			{
+				Assert.AreEqual(localIp, IPAddress.IPv6Loopback);
+				IntPtr ptr = new IntPtr(if_nametoindex("lo0"));
+				setsockopt(Socket.Handle.ToInt32(), IPPROTO_IPV6, IPV6_MULTICAST_IF, ref ptr, Marshal.SizeOf(typeof(IntPtr)));
+			}
+
 			remoteEP = new IPEndPoint(remote, port);
 			RecvBuf = Encoding.ASCII.GetBytes(payload);
 			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);
@@ -357,18 +378,19 @@ namespace Peach.Core.Test.Publishers
 		{
 			ushort dstport = TestBase.MakePort(53000, 54000);
 			ushort srcport = TestBase.MakePort(54000, 55000);
+			var local = GetFirstInterface(AddressFamily.InterNetworkV6).Item2;
 
-			SocketEcho echo = new SocketEcho();
-			echo.SendOnly(IPAddress.Parse("ff02::1:2"), dstport);
+			SocketEcho echo = new SocketEcho() { localIp = local };
+			echo.SendOnly(IPAddress.Parse("ff02::22"), dstport);
 
 			try
 			{
-				string xml = string.Format(template, "Udp", "ff02::1:2", srcport.ToString(), "Hello World", dstport.ToString());
+				string xml = string.Format(template, "Udp", "ff02::22", srcport.ToString(), "Hello World", dstport.ToString());
 
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 				Peach.Core.Publishers.UdpPublisher pub = dom.tests[0].publishers[0] as Peach.Core.Publishers.UdpPublisher;
-				pub.Interface = GetFirstInterface(AddressFamily.InterNetworkV6).Item2; 
+				pub.Interface = local; 
 
 				RunConfiguration config = new RunConfiguration();
 				config.singleIteration = true;

@@ -29,6 +29,56 @@ namespace Peach.Core.Publishers
 
 		#endregion
 
+		#region OSX Multicast IPV6 Declarations
+
+		[DllImport("libc")]
+		static extern uint if_nametoindex(string ifname);
+
+		[DllImport("libc")]
+		static extern int setsockopt(int socket, int level, int optname, ref ipv6_mreq opt, int optlen);
+
+		[DllImport("libc")]
+		static extern int setsockopt(int socket, int level, int optname, ref IntPtr opt, int optlen);
+
+		const int IPPROTO_IPV6 = 0x29;
+		const int IPV6_JOIN_GROUP = 0xC;
+		const int IPV6_MULTICAST_IF = 0x9;
+
+		struct ipv6_mreq
+		{
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst=16)]
+			public byte[] ipv6mr_multiaddr;
+			public IntPtr ipv6mr_interface;
+		}
+
+		void JoinGroupV6(IPAddress group, uint ifindex)
+		{
+			System.Diagnostics.Debug.Assert(_socket.Handle != IntPtr.Zero);
+			System.Diagnostics.Debug.Assert(group.AddressFamily == AddressFamily.InterNetworkV6);
+			System.Diagnostics.Debug.Assert(ifindex != 0);
+
+			if (_localIp == IPAddress.IPv6Any)
+				return;
+
+			IntPtr ptr = new IntPtr(ifindex);
+
+			ipv6_mreq mr = new ipv6_mreq() {
+				ipv6mr_multiaddr = group.GetAddressBytes(),
+				ipv6mr_interface = ptr
+			};
+
+			int ret = setsockopt(_socket.Handle.ToInt32(), IPPROTO_IPV6, IPV6_JOIN_GROUP, ref mr, Marshal.SizeOf(mr));
+			if (ret != 0)
+				throw new PeachException("Error, failed to join group '{0}' on interface '{1}', error {2}.".Fmt(group, _iface, ret));
+
+			ret = setsockopt(_socket.Handle.ToInt32(), IPPROTO_IPV6, IPV6_MULTICAST_IF, ref ptr, Marshal.SizeOf(typeof(IntPtr)));
+			if (ret != 0)
+				throw new PeachException("Error, failed to set outgoing interface to '{1}' for group '{0}', error {2}.".Fmt(group, _iface, ret));
+
+		}
+
+		#endregion
+
 		public byte Protocol { get; set; }
 		public IPAddress Interface { get; set; }
 		public string Host { get; set; }
@@ -431,12 +481,24 @@ namespace Peach.Core.Publishers
 						level = SocketOptionLevel.IP;
 						opt = new MulticastOption(ep.Address, _localIp);
 					}
+					else if (Platform.GetOS() == Platform.OS.OSX)
+					{
+						if (_iface == null)
+							throw new PeachException("Error, could not resolve local interface name for local IP '{0}'.".Fmt(_localIp));
+
+						uint ifindex = if_nametoindex(_iface);
+
+						if (ifindex == 0)
+							throw new PeachException("Error, could not resolve interface index for interface name '{0}'.".Fmt(_iface));
+
+						JoinGroupV6(ep.Address, ifindex);
+					}
 					else if (_localIp != IPAddress.IPv6Any)
 					{
 						level = SocketOptionLevel.IPv6;
 						opt = new IPv6MulticastOption(ep.Address, _localIp.ScopeId);
 					}
-					else if (Platform.GetOS() != Platform.OS.OSX)
+					else
 					{
 						level = SocketOptionLevel.IPv6;
 						opt = new IPv6MulticastOption(ep.Address);
@@ -451,7 +513,7 @@ namespace Peach.Core.Publishers
 
 						if (level == SocketOptionLevel.IP)
 							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
-						else
+						else if (Platform.GetOS() != Platform.OS.OSX)
 							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, (int)_localIp.ScopeId);
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
