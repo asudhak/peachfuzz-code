@@ -238,7 +238,7 @@ namespace Peach.Core.Publishers
 		/// Builds the web service description importer, which allows us to generate a proxy class based on the 
 		/// content of the WSDL described by the XmlTextReader.
 		/// </summary>
-		/// <param name="xmlreader">The WSDL content, described by XML.</param>
+		/// <param name="webserviceUri">The WSDL content, described by XML.</param>
 		/// <returns>A ServiceDescriptionImporter that can be used to create a proxy class.</returns>
 		private ServiceDescriptionImporter BuildServiceDescriptionImporter(string webserviceUri)
 		{

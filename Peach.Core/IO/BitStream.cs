@@ -78,7 +78,7 @@ namespace Peach.Core.IO
 		/// <summary>
 		/// Constructor for BitStream class
 		/// </summary>
-		/// <param name="buff">Use buff as initial stream data.</param>
+		/// <param name="stream">Use stream as initial stream data.</param>
 		public BitStream(Stream stream)
 		{
 			this.stream = stream;
@@ -104,6 +104,8 @@ namespace Peach.Core.IO
 		/// Constructor for BitStream class
 		/// </summary>
 		/// <param name="buff">Use buff as initial stream data.</param>
+		/// <param name="offset">Offset to start.</param>
+		/// <param name="length">Length to use.</param>
 		public BitStream(byte[] buff, int offset, int length)
 		{
 			stream = new MemoryStream();
@@ -697,7 +699,6 @@ namespace Peach.Core.IO
 			// Are we working in bytes?
 			if (pos % 8 == 0 && bits.LengthBits % 8 == 0)
 			{
-				long ourPos = stream.Position;
 				long oPos = bits.stream.Position;
 
 				bits.stream.Position = 0;

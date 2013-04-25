@@ -41,6 +41,7 @@ namespace Peach.Core.Test.Monitors
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 
@@ -193,9 +194,6 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestExitTime()
 		{
-			Variant foo = new Variant("foo");
-			Variant bar = new Variant("bar");
-
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Executable"] = new Variant("CrashableServer");
 			args["Arguments"] = new Variant("127.0.0.1 {0}".Fmt(TestBase.MakePort(63000, 64000)));
@@ -223,9 +221,6 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestExitEarlyFault()
 		{
-			Variant foo = new Variant("foo");
-			Variant bar = new Variant("bar");
-
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["Executable"] = new Variant("CrashingFileConsumer");
 			args["FaultOnEarlyExit"] = new Variant("true");
@@ -338,8 +333,6 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestExitEarlyFault4()
 		{
-			Variant foo = new Variant("foo");
-
 			// FaultOnEarlyExit doesn't fault when restart every iteration is true
 
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();

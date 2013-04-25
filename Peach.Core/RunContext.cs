@@ -278,7 +278,6 @@ namespace Peach.Core
     /// <summary>
     /// Fault detected during fuzzing run
     /// </summary>
-    /// </remarks>
     [Serializable]
     public class Fault
     {

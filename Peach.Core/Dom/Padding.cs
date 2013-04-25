@@ -58,7 +58,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Padding : DataElement
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		int _alignment = 8;
 		DataElement _alignedTo = null;
 

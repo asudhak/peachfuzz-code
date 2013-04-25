@@ -66,8 +66,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Number : DataElement
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		protected ulong _max = (ulong)sbyte.MaxValue;
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = false;

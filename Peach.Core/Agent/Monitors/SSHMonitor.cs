@@ -34,6 +34,7 @@ namespace Peach.Core.Agent.Monitors
 		/// <summary>
 		/// 
 		/// </summary>
+		/// <param name="agent"></param>
 		/// <param name="name"></param>
 		/// <param name="args"></param>
 		public SSHMonitor(IAgent agent, string name, Dictionary<string, Variant> args)

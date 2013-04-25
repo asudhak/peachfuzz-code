@@ -652,6 +652,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			var final = dom.dataModels[0].Value;
 			string str = Encoding.ASCII.GetString(final.Value);
+			Assert.NotNull(str);
 		}
 
 	}

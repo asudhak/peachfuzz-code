@@ -150,7 +150,7 @@ namespace Peach.Core.Cracker
 		/// <remarks>
 		/// Method will throw one of two exceptions on an error: CrackingFailure, or NotEnoughDataException.
 		/// </remarks>
-		/// <param name="model">DataModel to import data into</param>
+		/// <param name="element">DataElement to import data into</param>
 		/// <param name="data">Data stream to read data from</param>
 		public void CrackData(DataElement element, BitStream data)
 		{
@@ -187,7 +187,7 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// Determines if the From half of a relation has been cracked.
 		/// </summary>
-		/// <param name="elem">The Relation to test.</param>
+		/// <param name="rel">The Relation to test.</param>
 		/// <returns>True if the From half has been cracked, false otherwise.</returns>
 		public bool HasCracked(Relation rel)
 		{
@@ -282,7 +282,7 @@ namespace Peach.Core.Cracker
 		/// will hand cracking off to a more specific method after performing
 		/// some common tasks.
 		/// </summary>
-		/// <param name="element">DataElement to crack</param>
+		/// <param name="elem">DataElement to crack</param>
 		/// <param name="data">Input stream to use for data</param>
 		void handleNode(DataElement elem, BitStream data)
 		{
@@ -969,7 +969,7 @@ namespace Peach.Core.Cracker
 		/// <param name="pos">The position of the scanner when 'until' occurs.</param>
 		/// <param name="tokens">List of tokens found when scanning.</param>
 		/// <param name="end">If non-null and an element with an offset relation is detected,
-		/// record the element's absolute position and stop scanning.</param>
+		/// record the element's absolute position and stop scanning.
 		/// Either first sized element or first unsized element.</param>
 		/// <returns>Null if an unsized element was found.
 		/// False if a deterministic element was found.

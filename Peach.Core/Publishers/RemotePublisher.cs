@@ -137,8 +137,11 @@ namespace Peach.Core.Publishers
 					{
 						_publisher.Iteration = value;
 					}
-					catch (System.Runtime.Remoting.RemotingException)
+					catch (System.Runtime.Remoting.RemotingException re)
 					{
+						logger.Trace("Ignoring remoting exception on Iteration set");
+						logger.Trace(re);
+
 						RestartRemotePublisher();
 					}
 				}
@@ -161,8 +164,11 @@ namespace Peach.Core.Publishers
 					{
 						_publisher.IsControlIteration = value;
 					}
-					catch (System.Runtime.Remoting.RemotingException)
+					catch (System.Runtime.Remoting.RemotingException re)
 					{
+						logger.Trace("Ignoring remoting exception on IsControlIteration set");
+						logger.Trace(re);
+
 						RestartRemotePublisher();
 					}
 				}
@@ -196,8 +202,10 @@ namespace Peach.Core.Publishers
 			{
 				PerformRemoting(delegate() { _publisher.stop(); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException re)
 			{
+				logger.Trace("Ignoring remoting exception on OnClose");
+				logger.Trace(re);
 			}
 
 			_publisher = null;
@@ -209,17 +217,21 @@ namespace Peach.Core.Publishers
 			{
 				PerformRemoting(delegate() { _publisher.open(); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Trace("Ignoring initial remoting exception on OnOpen");
+				logger.Trace(ex);
+
 				RestartRemotePublisher();
 
 				try
 				{
 					PerformRemoting(delegate() { _publisher.open(); });
 				}
-				catch(System.Runtime.Remoting.RemotingException)
+				catch(System.Runtime.Remoting.RemotingException re)
 				{
-					// Ignore
+					logger.Trace("Ignoring remoting exception on OnOpen");
+					logger.Trace(re);
 				}
 			}
 		}
@@ -230,16 +242,20 @@ namespace Peach.Core.Publishers
 			{
 				PerformRemoting(delegate() { _publisher.close(); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Trace("Ignoring initial remoting exception on OnClose");
+				logger.Trace(ex);
+
 				try
 				{
 					RestartRemotePublisher();
 					_publisher.close();
 				}
-				catch (System.Runtime.Remoting.RemotingException)
+				catch (System.Runtime.Remoting.RemotingException re)
 				{
 					logger.Warn("Ignoring remoting exception on OnClose");
+					logger.Debug(re);
 				}
 			}
 		}
@@ -250,17 +266,21 @@ namespace Peach.Core.Publishers
 			{
 				PerformRemoting(delegate() { _publisher.accept(); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Trace("Ignoring initial remoting exception on OnAccept");
+				logger.Trace(ex);
+
 				RestartRemotePublisher();
 
 				try
 				{
 					PerformRemoting(delegate() { _publisher.accept(); });
 				}
-				catch (System.Runtime.Remoting.RemotingException)
+				catch (System.Runtime.Remoting.RemotingException re)
 				{
-					// Ignore
+					logger.Trace("Ignoring remoting exception on OnAccept");
+					logger.Trace(re);
 				}
 				
 			}
@@ -274,16 +294,20 @@ namespace Peach.Core.Publishers
 				PerformRemoting(delegate() { ret = _publisher.call(method, args); });
 				return ret;
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Trace("Ignoring initial remoting exception on OnCall");
+				logger.Trace(ex);
+
 				try
 				{
 					RestartRemotePublisher();
 					return _publisher.call(method, args);
 				}
-				catch (System.Runtime.Remoting.RemotingException)
+				catch (System.Runtime.Remoting.RemotingException re)
 				{
 					logger.Warn("Ignoring remoting exception on OnCall");
+					logger.Debug(re);
 					return null;
 				}
 			}
@@ -291,20 +315,29 @@ namespace Peach.Core.Publishers
 
 		protected override void OnSetProperty(string property, Variant value)
 		{
+			// The Engine always gives us a BitStream but we can't remote that
+			System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
+			var buf = (byte[])value;
+			value = new Variant(buf);
+
 			try
 			{
 				PerformRemoting(delegate() { _publisher.setProperty(property, value); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Trace("Ignoring initial remoting exception on OnSetProperty");
+				logger.Trace(ex);
+
 				try
 				{
 					RestartRemotePublisher();
 					_publisher.setProperty(property, value);
 				}
-				catch (System.Runtime.Remoting.RemotingException)
+				catch (System.Runtime.Remoting.RemotingException re)
 				{
 					logger.Warn("Ignoring remoting exception on OnSetProperty");
+					logger.Debug(re);
 				}
 			}
 		}
@@ -317,16 +350,20 @@ namespace Peach.Core.Publishers
 				PerformRemoting(delegate() { ret = _publisher.getProperty(property); });
 				return ret;
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException ex)
 			{
+				logger.Trace("Ignoring initial remoting exception on OnGetProperty");
+				logger.Trace(ex);
+
 				try
 				{
 					RestartRemotePublisher();
 					return _publisher.getProperty(property);
 				}
-				catch (System.Runtime.Remoting.RemotingException)
+				catch (System.Runtime.Remoting.RemotingException re)
 				{
 					logger.Warn("Ignoring remoting exception on OnGetProperty");
+					logger.Debug(re);
 					return null;
 				}
 			}
@@ -338,9 +375,10 @@ namespace Peach.Core.Publishers
 			{
 				PerformRemoting(delegate() { _publisher.output(buffer, offset, count); });
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException re)
 			{
 				logger.Warn("Ignoring remoting exception on OnOutput");
+				logger.Debug(re);
 			}
 		}
 
@@ -355,9 +393,10 @@ namespace Peach.Core.Publishers
 
 				ReadAllBytes();
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException re)
 			{
 				logger.Warn("Ignoring remoting exception on OnInput");
+				logger.Debug(re);
 			}
 		}
 
@@ -372,9 +411,10 @@ namespace Peach.Core.Publishers
 					ReadAllBytes();
 				}
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException re)
 			{
 				logger.Warn("Ignoring remoting exception on WantBytes");
+				logger.Debug(re);
 			}
 		}
 
@@ -399,9 +439,10 @@ namespace Peach.Core.Publishers
 					stream.WriteByte((byte)b);
 				}
 			}
-			catch (System.Runtime.Remoting.RemotingException)
+			catch (System.Runtime.Remoting.RemotingException re)
 			{
 				logger.Warn("Ignoring remoting exception on ReadAllBytes");
+				logger.Debug(re);
 				stream.Seek(pos, SeekOrigin.Begin);
 			}
 		}

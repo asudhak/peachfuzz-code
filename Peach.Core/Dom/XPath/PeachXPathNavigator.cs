@@ -152,7 +152,7 @@ namespace Peach.Core.Dom.XPath
 				if (iteratingAttributes)
 					return GetCurrentNodeAttributeMatrix().ElementAt(attributeIndex);
 
-				return ((INamed)currentNode).name;
+				return ((INamed)currentNode).name.Split(':').Last();
 			}
 		}
 
@@ -487,7 +487,14 @@ namespace Peach.Core.Dom.XPath
 
 		public override string NamespaceURI
 		{
-			get { return string.Empty; }
+			get
+			{
+				if (iteratingAttributes)
+					return string.Empty;
+
+				var parts = ((INamed)currentNode).name.Split(':');
+				return parts.Length > 1 ? parts[0] : string.Empty;
+			}
 		}
 
 		public override XPathNodeType NodeType

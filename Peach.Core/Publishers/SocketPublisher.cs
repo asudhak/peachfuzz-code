@@ -22,11 +22,60 @@ namespace Peach.Core.Publishers
 
 		// Max IP len is 65535, ensure we can fit that plus ip header plus ethernet header.
 		// In order to account for Jumbograms which are > 65535, max MTU is double 65535
-		// MinMTU is 128 so that IP info isn't lost if MTU is fuzzed
-		//
-		// These values should be made configurable at some point.
-		private const uint MaxMtu = 65535 * 2;
-		private const uint MinMtu = 128;
+		// MinMTU is 1280 so that IPv6 info isn't lost if MTU is fuzzed
+
+		public const string DefaultMinMTU = "1280";
+		public const string DefaultMaxMTU = "131070"; // 65535 * 2
+
+		#endregion
+
+		#region OSX Multicast IPV6 Declarations
+
+		[DllImport("libc")]
+		static extern uint if_nametoindex(string ifname);
+
+		[DllImport("libc")]
+		static extern int setsockopt(int socket, int level, int optname, ref ipv6_mreq opt, int optlen);
+
+		[DllImport("libc")]
+		static extern int setsockopt(int socket, int level, int optname, ref IntPtr opt, int optlen);
+
+		const int IPPROTO_IPV6 = 0x29;
+		const int IPV6_JOIN_GROUP = 0xC;
+		const int IPV6_MULTICAST_IF = 0x9;
+
+		struct ipv6_mreq
+		{
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst=16)]
+			public byte[] ipv6mr_multiaddr;
+			public IntPtr ipv6mr_interface;
+		}
+
+		void JoinGroupV6(IPAddress group, uint ifindex)
+		{
+			System.Diagnostics.Debug.Assert(_socket.Handle != IntPtr.Zero);
+			System.Diagnostics.Debug.Assert(group.AddressFamily == AddressFamily.InterNetworkV6);
+			System.Diagnostics.Debug.Assert(ifindex != 0);
+
+			if (_localIp == IPAddress.IPv6Any)
+				return;
+
+			IntPtr ptr = new IntPtr(ifindex);
+
+			ipv6_mreq mr = new ipv6_mreq() {
+				ipv6mr_multiaddr = group.GetAddressBytes(),
+				ipv6mr_interface = ptr
+			};
+
+			int ret = setsockopt(_socket.Handle.ToInt32(), IPPROTO_IPV6, IPV6_JOIN_GROUP, ref mr, Marshal.SizeOf(mr));
+			if (ret != 0)
+				throw new PeachException("Error, failed to join group '{0}' on interface '{1}', error {2}.".Fmt(group, _iface, ret));
+
+			ret = setsockopt(_socket.Handle.ToInt32(), IPPROTO_IPV6, IPV6_MULTICAST_IF, ref ptr, Marshal.SizeOf(typeof(IntPtr)));
+			if (ret != 0)
+				throw new PeachException("Error, failed to set outgoing interface to '{1}' for group '{0}', error {2}.".Fmt(group, _iface, ret));
+
+		}
 
 		#endregion
 
@@ -36,6 +85,8 @@ namespace Peach.Core.Publishers
 		public ushort Port { get; set; }
 		public ushort SrcPort { get; set; }
 		public int Timeout { get; set; }
+		public uint MinMTU { get; set; }
+		public uint MaxMTU { get; set; }
 
 		public static int MaxSendSize = 65000;
 
@@ -422,13 +473,25 @@ namespace Peach.Core.Publishers
 						_socket.Bind(new IPEndPoint(IPAddress.IPv6Any, SrcPort));
 					}
 
-					SocketOptionLevel level;
-					object opt;
+					SocketOptionLevel level = SocketOptionLevel.IPv6;
+					object opt = null;
 
 					if (_localIp.AddressFamily == AddressFamily.InterNetwork)
 					{
 						level = SocketOptionLevel.IP;
 						opt = new MulticastOption(ep.Address, _localIp);
+					}
+					else if (Platform.GetOS() == Platform.OS.OSX)
+					{
+						if (_iface == null)
+							throw new PeachException("Error, could not resolve local interface name for local IP '{0}'.".Fmt(_localIp));
+
+						uint ifindex = if_nametoindex(_iface);
+
+						if (ifindex == 0)
+							throw new PeachException("Error, could not resolve interface index for interface name '{0}'.".Fmt(_iface));
+
+						JoinGroupV6(ep.Address, ifindex);
 					}
 					else if (_localIp != IPAddress.IPv6Any)
 					{
@@ -441,7 +504,8 @@ namespace Peach.Core.Publishers
 						opt = new IPv6MulticastOption(ep.Address);
 					}
 
-					_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
+					if (opt != null)
+						_socket.SetSocketOption(level, SocketOptionName.AddMembership, opt);
 
 					if (_localIp != IPAddress.Any && _localIp != IPAddress.IPv6Any)
 					{
@@ -449,12 +513,12 @@ namespace Peach.Core.Publishers
 
 						if (level == SocketOptionLevel.IP)
 							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, _localIp.GetAddressBytes());
-						else
+						else if (Platform.GetOS() != Platform.OS.OSX)
 							_socket.SetSocketOption(level, SocketOptionName.MulticastInterface, (int)_localIp.ScopeId);
 					}
 					else if (Platform.GetOS() == Platform.OS.OSX)
 					{
-						throw new PeachException(string.Format("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface));
+						throw new PeachException(string.Format("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", Interface == null ? "<null>" : Interface.ToString()));
 					}
 				}
 				else
@@ -663,14 +727,28 @@ namespace Peach.Core.Publishers
 		{
 			if (property == "MTU")
 			{
-				System.Diagnostics.Debug.Assert(value.GetVariantType() == Variant.VariantType.BitStream);
-				var bs = (BitStream)value;
-				bs.SeekBits(0, SeekOrigin.Begin);
-				int len = (int)Math.Min(bs.LengthBits, 32);
-				ulong bits = bs.ReadBits(len);
-				uint mtu = LittleBitWriter.GetUInt32(bits, len);
+				uint mtu = 0;
 
-				if (MaxMtu >= mtu && mtu >= MinMtu)
+				if (value.GetVariantType() == Variant.VariantType.BitStream)
+				{
+					var bs = (BitStream)value;
+					bs.SeekBits(0, SeekOrigin.Begin);
+					int len = (int)Math.Min(bs.LengthBits, 32);
+					ulong bits = bs.ReadBits(len);
+					mtu = LittleBitWriter.GetUInt32(bits, len);
+				}
+				else if (value.GetVariantType() == Variant.VariantType.ByteString)
+				{
+					byte[] buf = (byte[])value;
+					int len = Math.Min(buf.Length * 8, 32);
+					mtu = LittleBitWriter.GetUInt32(buf, len);
+				}
+				else
+				{
+					throw new SoftException("Can't set MTU, 'value' is an unsupported type.");
+				}
+
+				if (MaxMTU >= mtu && mtu >= MinMTU)
 				{
 					using (var cfg = NetworkAdapter.CreateInstance(_iface))
 					{

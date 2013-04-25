@@ -260,7 +260,7 @@ namespace Peach.Core.IO
 
 		private static ulong GetBits(ulong value, int bitlen, int maxlen)
 		{
-			if (bitlen <= 0 || bitlen > maxlen)
+			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
 
 			if (bitlen < 64)
@@ -271,7 +271,7 @@ namespace Peach.Core.IO
 
 		private static ulong GetUnsigned(ulong bits, int bitlen, int maxlen)
 		{
-			if (bitlen <= 0 || bitlen > maxlen)
+			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
 
 			if (bitlen < 64)
@@ -293,7 +293,7 @@ namespace Peach.Core.IO
 
 		private static byte[] GetBytes(ulong value, int bitlen, int maxlen)
 		{
-			if (bitlen <= 0 || bitlen > maxlen)
+			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
 
 			byte[] ret = new byte[(bitlen + 7) / 8];
@@ -320,7 +320,7 @@ namespace Peach.Core.IO
 
 		private static ulong GetUnsigned(byte[] buf, int bitlen, int maxlen)
 		{
-			if (bitlen <= 0 || bitlen > maxlen)
+			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
 			if (buf.Length != ((bitlen + 7) / 8))
 				throw new ArgumentOutOfRangeException("buf");

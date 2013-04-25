@@ -150,7 +150,6 @@ namespace Peach.Core.Dom
 				}
 				else if (child is Number)
 				{
-					var fullName = child.fullName;
 					xmlNode.InnerText = (string)child.InternalValue;
 				}
 				else if (child is XmlElement)

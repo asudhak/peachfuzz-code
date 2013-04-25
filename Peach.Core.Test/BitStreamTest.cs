@@ -777,10 +777,20 @@ namespace Peach.Core.Test
 
 			byte[] val = null;
 
+			val = BitWriter<BigEndian>.GetBytes(0xABC, 0);
+			Assert.AreEqual(new byte[] { }, val);
+			Assert.AreEqual(0, BigBitWriter.GetUInt64(val, 0));
+			Assert.AreEqual(0, BigBitWriter.GetInt64(val, 0));
+
 			val = BitWriter<BigEndian>.GetBytes(0xABC, 12);
 			Assert.AreEqual(new byte[] { 0xab, 0xc0 }, val);
 			Assert.AreEqual(2748, BigBitWriter.GetUInt64(val, 12));
 			Assert.AreEqual(-1348, BigBitWriter.GetInt64(val, 12));
+
+			val = BitWriter<LittleEndian>.GetBytes(0xABC, 0);
+			Assert.AreEqual(new byte[] { }, val);
+			Assert.AreEqual(0, LittleBitWriter.GetUInt64(val, 0));
+			Assert.AreEqual(0, LittleBitWriter.GetInt64(val, 0));
 
 			val = BitWriter<LittleEndian>.GetBytes(0xABC, 12);
 			Assert.AreEqual(new byte[] { 0xbc, 0xa0 }, val);

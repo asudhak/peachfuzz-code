@@ -186,6 +186,8 @@ namespace Peach.Core
 		/// Send data
 		/// </summary>
 		/// <param name="buffer">Data to send/write</param>
+		/// <param name="offset">The byte offset in buffer at which to begin writing from.</param>
+		/// <param name="count">The maximum number of bytes to write.</param>
 		protected virtual void OnOutput(byte[] buffer, int offset, int count)
 		{
 			throw new PeachException("Error, action 'output' not supported by publisher");
@@ -321,7 +323,9 @@ namespace Peach.Core
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="buffer">Array of sata to send/write</param>
+		/// <param name="buffer">Data to send/write</param>
+		/// <param name="offset">The byte offset in buffer at which to begin writing from.</param>
+		/// <param name="count">The maximum number of bytes to write.</param>
 		public void output(byte[] buffer, int offset, int count)
 		{
 			Logger.Debug("output({0} bytes)", count);
@@ -331,7 +335,6 @@ namespace Peach.Core
 		/// <summary>
 		/// Read data
 		/// </summary>
-		/// <param name="data">Minimum length of data to read</param>
 		public void input()
 		{
 			Logger.Debug("input()");

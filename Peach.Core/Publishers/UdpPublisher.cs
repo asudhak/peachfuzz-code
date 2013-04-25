@@ -15,6 +15,8 @@ namespace Peach.Core.Publishers
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
 	[Parameter("SrcPort", typeof(ushort), "Source port number", "0")]
+	[Parameter("MinMTU", typeof(uint), "Minimum allowable MTU property value", DefaultMinMTU)]
+	[Parameter("MaxMTU", typeof(uint), "Maximum allowable MTU property value", DefaultMaxMTU)]
 	public class UdpPublisher : SocketPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();

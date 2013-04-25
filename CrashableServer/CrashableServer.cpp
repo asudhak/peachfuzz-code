@@ -138,6 +138,7 @@ SOCKET SetUpListener(const char* host, int port)
 	SOCKET listener;
 	u_long addr;
 	sockaddr_in sa;
+	int optval;
 
 	addr = inet_addr(host);
 	if (addr == INADDR_NONE)
@@ -145,6 +146,10 @@ SOCKET SetUpListener(const char* host, int port)
 
 	listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (listener == INVALID_SOCKET)
+		return INVALID_SOCKET;
+
+	optval = 1;
+	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval)) == SOCKET_ERROR)
 		return INVALID_SOCKET;
 
 	sa.sin_family = AF_INET;
