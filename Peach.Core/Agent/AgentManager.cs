@@ -255,10 +255,10 @@ namespace Peach.Core.Agent
 			return ret;
 		}
 
-        public virtual Dictionary<AgentClient, Fault[]> GetMonitorData()
+		public virtual Dictionary<AgentClient, Fault[]> GetMonitorData()
 		{
 			logger.Trace("GetMonitorData");
-            Dictionary<AgentClient, Fault[]> faults = new Dictionary<AgentClient, Fault[]>();
+			Dictionary<AgentClient, Fault[]> faults = new Dictionary<AgentClient, Fault[]>();
 
 			foreach (AgentClient agent in _agents.Values)
 			{
@@ -272,7 +272,7 @@ namespace Peach.Core.Agent
 				}
 			}
 
-            return faults;
+			return faults;
 		}
 
 		public virtual bool MustStop()
@@ -309,6 +309,12 @@ namespace Peach.Core.Agent
 					tmp = agent.Message(name, data);
 					if (tmp != null)
 						ret = tmp;
+				}
+				catch (PeachException)
+				{
+					// Allow peach exceptions to bubble up for things like
+					// StartOnCall with an invalid process
+					throw;
 				}
 				catch (Exception ex)
 				{
