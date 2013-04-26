@@ -51,6 +51,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		protected string executable = null;
 		protected string logFolder = "/var/peachcrash";
 		protected string origionalCorePattern = null;
+		protected string origionalSuidDumpable = null;
 		protected string linuxCrashHandlerExe = "PeachLinuxCrashHandler.exe";
 		protected bool logFolderCreated = false;
 
@@ -75,6 +76,11 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 
 		public override void  SessionStarting()
 		{
+			// Ensure the crash handler has been installed at the right place
+			string handler = Path.DirectorySeparatorChar + linuxCrashHandlerExe;
+			if (!File.Exists(handler))
+				throw new PeachException("Error, LinuxCrashMonitor did not find crash handler located at '" + handler + "'.");
+
 			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
 
 			if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) == -1)
@@ -96,6 +102,22 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			}
 			else
 				origionalCorePattern = null;
+
+			origionalSuidDumpable = File.ReadAllText("/proc/sys/fs/suid_dumpable");
+			if (!origionalSuidDumpable.StartsWith("1"))
+			{
+				// Enable core files for all binaries, regardless of suid or protections
+				File.WriteAllText(
+					"/proc/sys/fs/suid_dumpable",
+					"1",
+					System.Text.Encoding.ASCII);
+
+				var checkWrite = File.ReadAllText("/proc/sys/fs/suid_dumpable", System.Text.Encoding.ASCII);
+				if (!checkWrite.StartsWith("1"))
+					throw new PeachException("Error, LinuxCrashMonitor was unable to update /proc/sys/fs/suid_dumpable.");
+			}
+			else
+				origionalSuidDumpable = null;
 
 			if (Directory.Exists(logFolder))
 				DeleteLogFolder();
@@ -123,6 +145,12 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 				File.WriteAllText("/proc/sys/kernel/core_pattern", origionalCorePattern, System.Text.Encoding.ASCII);
 			}
 
+			// only replace suid_dumpable if we updated it.
+			if (origionalSuidDumpable != null)
+			{
+				File.WriteAllText("/proc/sys/fs/suid_dumpable", origionalSuidDumpable, System.Text.Encoding.ASCII);
+			}
+
 			// Remove folder
 			if (logFolderCreated)
 				DeleteLogFolder();
@@ -134,7 +162,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 		{
 			try
 			{
-				Directory.Delete(logFolder);
+				Directory.Delete(logFolder, true);
 			}
 			catch (Exception ex)
 			{
