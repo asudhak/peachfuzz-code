@@ -438,6 +438,9 @@
     <Content Include="samples\DebuggerCrashWrangler.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="samples\DebuggerLinux.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="samples\DebuggerLinuxCrashMonitor.xml" />
     <Content Include="samples\DebuggerWindows.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

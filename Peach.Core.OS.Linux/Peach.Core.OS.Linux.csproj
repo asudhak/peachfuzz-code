@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent\Monitors\LinuxCrashMonitor.cs" />
+    <Compile Include="Agent\Monitors\LinuxDebugger.cs" />
     <Compile Include="NetworkAdapter.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
