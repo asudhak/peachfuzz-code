@@ -263,6 +263,10 @@ namespace Peach.Core.Runtime
 			{
 				// Ignore, thrown by syntax()
 			}
+			catch (OptionException oe)
+			{
+					Console.WriteLine(oe.Message +"\n"); 
+			}
 			catch (PeachException ee)
 			{
 				if (config.debug)
