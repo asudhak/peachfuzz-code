@@ -664,7 +664,7 @@ namespace Peach.Core.Cracker
 
 			for (int i = tokenCount; i < tokens.Count; ++i)
 			{
-				tokens[i].Optional = array.minOccurs == 0;
+				tokens[i].Optional = array.Count >= array.minOccurs;
 				tokens[i].Position += pos;
 			}
 
@@ -713,15 +713,22 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			// Look for optional tokens, if none found and we are minOccurs==0, our size is 0
+			// Look for optional tokens, if none found and we are greater than minOccurs, our size is 0
 			for (int i = tokenCount; i < tokens.Count; ++i)
 			{
 				long? where = findToken(_dataStack.First(), tokens[i].Element.Value, tokens[i].Position);
 				if (!where.HasValue && tokens[i].Optional)
 				{
-					logger.Debug("scanArray: {0} -> Missing Token, minOccurs==0", array.debugName);
+					logger.Debug("scanArray: {0} -> Missing Token, minOccurs <= Count", array.debugName);
 					return true;
 				}
+			}
+
+			// If no tokens exist and we are greater than minOccurs, our size is 0
+			if (until == Until.FirstUnsized && array.Count >= array.minOccurs && tokenCount == tokens.Count)
+			{
+				logger.Debug("scanArray: {0} -> Unsized, minOccurs <= Count", array.debugName);
+				return true;
 			}
 
 			logger.Debug("scanArray: {0} -> {1}", array.debugName,

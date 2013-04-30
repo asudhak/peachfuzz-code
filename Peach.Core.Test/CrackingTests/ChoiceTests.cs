@@ -627,10 +627,10 @@ namespace Peach.Core.Test.CrackingTests
 	<DataModel name=""DM"">
 		<Choice name=""c"">
 			<Block name=""C1"">
-				<Blob length=""1"" valueType=""hex"" value=""0x08"" token=""true""/>
-				<Block minOccurs=""0"">
-					<Blob length=""1"" valueType=""hex"" value=""0x05""/>
-					<Blob/>
+				<Blob name=""blb"" length=""1"" valueType=""hex"" value=""0x08"" token=""true""/>
+				<Block name=""array"" minOccurs=""0"">
+					<Blob name=""inner"" length=""1"" valueType=""hex"" value=""0x05""/>
+					<Blob name=""unsized""/>
 				</Block>
 			</Block>
 		</Choice>
@@ -653,10 +653,18 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 
-			Dom.Choice c = (Dom.Choice)dom.dataModels[0][0];
+			Dom.Choice c = dom.dataModels[0][0] as Dom.Choice;
+			Assert.NotNull(c);
 			var selected = c.SelectedElement as Dom.Block;
-			var innerBlock = selected[1] as Dom.Block;
+			Assert.NotNull(selected);
 			Assert.AreEqual("C1", selected.name);
+			Assert.AreEqual(2, selected.Count);
+			var array = selected[1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var innerBlock = array[0] as Dom.Block;
+			Assert.NotNull(innerBlock);
+			Assert.AreEqual(2, innerBlock.Count);
 			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
 			Assert.AreEqual(1, ((byte[])innerBlock[0].DefaultValue).Length);
 			Assert.AreEqual(3, ((byte[])innerBlock[1].DefaultValue).Length);
