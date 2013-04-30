@@ -300,11 +300,21 @@ quit
 			_fault = new Fault();
 			_fault.type = FaultType.Fault;
 			_fault.detectionSource = "LinuxDebugger";
+
 			var hash = reHash.Match(output);
-			_fault.majorHash = hash.Groups[1].Value;
-			_fault.minorHash = hash.Groups[2].Value;
-			_fault.exploitability = reClassification.Match(output).Groups[1].Value;
-			_fault.title = reDescription.Match(output).Groups[1].Value;
+			if (hash.Success)
+			{
+				_fault.majorHash = hash.Groups[1].Value;
+				_fault.minorHash = hash.Groups[2].Value;
+			}
+
+			var exp = reClassification.Match(output);
+			if (exp.Success)
+				_fault.exploitability = exp.Groups[1].Value;
+
+			var desc = reDescription.Match(output);
+			if (desc.Success)
+				_fault.title = desc.Groups[1].Value;
 
 			var other = reOther.Match(output);
 			if (other.Success)
