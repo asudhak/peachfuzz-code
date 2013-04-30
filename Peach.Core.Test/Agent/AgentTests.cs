@@ -54,12 +54,24 @@ namespace Peach.Core.Test.Agent
 				get { return logger; }
 			}
 
+			protected RunContext Context
+			{
+				get
+				{
+					Dom.Dom dom = this.Test.parent as Dom.Dom;
+					return dom.context;
+				}
+			}
+
 			protected override void OnOpen()
 			{
 				base.OnOpen();
 
 				if (!this.IsControlIteration && (this.Iteration % 2) == 1)
 				{
+					// Lame hack to make sure CrashableServer gets stopped
+					Context.agentManager.IterationFinished();
+
 					owner.StopAgent();
 					owner.StartAgent();
 				}
@@ -154,6 +166,7 @@ namespace Peach.Core.Test.Agent
 	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
 		<Monitor class='WindowsDebugger'>
 			<Param name='CommandLine' value='CrashableServer.exe 127.0.0.1 {0}'/>
+			<Param name='RestartOnEachTest' value='true'/>
 			<Param name='FaultOnEarlyExit' value='true'/>
 		</Monitor>
 	</Agent>
@@ -165,6 +178,7 @@ namespace Peach.Core.Test.Agent
 		<Monitor class='Process'>
 			<Param name='Executable' value='CrashableServer'/>
 			<Param name='Arguments' value='127.0.0.1 {0}'/>
+			<Param name='RestartOnEachTest' value='true'/>
 			<Param name='FaultOnEarlyExit' value='true'/>
 		</Monitor>
 	</Agent>
@@ -286,8 +300,6 @@ namespace Peach.Core.Test.Agent
 
 			string xml = @"
 <Peach>
-	<Import import='code'/>
-
 	<DataModel name='TheDataModel'>
 		<String value='Hello'/>
 	</DataModel>
@@ -335,6 +347,89 @@ namespace Peach.Core.Test.Agent
 				e.startFuzzing(dom, config);
 
 				Assert.Greater(faults.Count, 0);
+			}
+			finally
+			{
+				if (process != null)
+					StopAgent();
+			}
+		}
+
+		[Test]
+		public void TestBadProcess()
+		{
+			string error = "System debugger could not start process 'MissingProgram'.";
+			string agent = @"
+	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
+		<Monitor class='WindowsDebugger'>
+			<Param name='CommandLine' value='MissingProgram'/>
+		</Monitor>
+	</Agent>
+";
+			if (Platform.GetOS() != Platform.OS.Windows)
+			{
+				error = "Could not start process 'MissingProgram'.";
+				agent = @"
+	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
+		<Monitor class='Process'>
+			<Param name='Executable' value='MissingProgram'/>
+		</Monitor>
+	</Agent>
+";
+			}
+			else
+			{
+				if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+					Assert.Ignore("Cannot run the 32bit version of this test on a 64bit operating system.");
+
+				if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
+					Assert.Ignore("Cannot run the 64bit version of this test on a 32bit operating system.");
+			}
+
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String value='Hello'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+{0}
+
+	<Test name='Default' replayEnabled='false'>
+		<Agent ref='RemoteAgent'/>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
+	</Test>
+</Peach>".Fmt(agent);
+
+			try
+			{
+				StartAgent();
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+				RunConfiguration config = new RunConfiguration();
+
+				Engine e = new Engine(null);
+
+				try
+				{
+					e.startFuzzing(dom, config);
+					Assert.Fail("Should throw!");
+				}
+				catch (PeachException pe)
+				{
+					Assert.True(pe.Message.StartsWith(error));
+				}
 			}
 			finally
 			{

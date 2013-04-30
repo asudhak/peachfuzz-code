@@ -77,6 +77,10 @@ namespace Peach.Core.Dom
 		{
 			if (Count == 0)
 			{
+				// Mutation might have erased all of our children
+				if (origionalElement == null)
+					yield break;
+
 				// First our origionalElement
 				yield return origionalElement;
 

@@ -187,7 +187,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					out processInformation)) // lpProcessInformation 
 			{
 				var ex = new Win32Exception(Marshal.GetLastWin32Error());
-				throw new Exception("Failed to create new process and attach debugger.  " + ex.Message, ex);
+				throw new Exception("System debugger could not start process '" + command + "'.  " + ex.Message, ex);
 			}
 
 			UnsafeMethods.CloseHandle(processInformation.hProcess);
@@ -201,7 +201,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		{
 			// DebugActiveProcess
 			if (!UnsafeMethods.DebugActiveProcess((uint)dwProcessId))
-				throw new Exception("Can't attach to process " + dwProcessId + ".");
+				throw new Exception("System debugger could not attach to process id " + dwProcessId + ".");
 
 			UnsafeMethods.DebugSetProcessKillOnExit(true);
 

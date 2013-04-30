@@ -1024,11 +1024,11 @@ namespace Peach.Core.Agent.Monitors
 
 		public override Fault GetMonitorData()
 		{
-			// This indicates a fault was detected and we should reset the VM.
-			needReset = true;
-
 			if (ResetOnFaultBeforeCollection)
 				StartVM();
+
+			// This indicates a fault was detected and we should reset the VM.
+			needReset = true;
 
 			return null;
 		}

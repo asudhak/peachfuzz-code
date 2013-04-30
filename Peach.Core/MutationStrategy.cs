@@ -116,40 +116,17 @@ namespace Peach.Core
 
 		protected string[] GetAllDataModelNames(Dom.Action action)
 		{
-			var names = new List<string>();
 
 			if(action.dataModel != null)
-			{
-				StringBuilder sb = new StringBuilder();
-
-				sb.Append(action.parent.name);
-				sb.Append('.');
-				sb.Append(action.name);
-				sb.Append('.');
-				sb.Append(action.dataModel.name);
-
-				names.Add(sb.ToString());
-
-				return names.ToArray();
-			}
+				return new string[] { GetDataModelName(action) };
 
 			if(action.parameters.Count == 0)
 				throw new ArgumentException();
 
+			var names = new List<string>();
+
 			foreach (var parameter in action.parameters)
-			{
-				StringBuilder sb = new StringBuilder();
-
-				sb.Append(action.parent.name);
-				sb.Append('.');
-				sb.Append(action.name);
-				sb.Append('.');
-				sb.Append(action.parameters.IndexOf(parameter));
-				sb.Append('.');
-				sb.Append(parameter.name);
-
-				names.Add(sb.ToString());
-			}
+				names.Add(GetDataModelName(action, parameter));
 
 			return names.ToArray();
 		}

@@ -127,6 +127,11 @@ namespace Peach.Core.Dom
 			doc.values.Add(xmlAttrib.Value, elem.InternalValue);
 			return xmlAttrib;
 		}
+
+		protected override Variant GenerateInternalValue()
+		{
+			return null;
+		}
 	}
 }
 
