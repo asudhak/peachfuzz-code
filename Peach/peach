@@ -1,3 +1,4 @@
 #!/bin/bash
 
-mono --debug peach.exe $@
+DIRNAME="`dirname ${0}`"
+mono --debug ${DIRNAME}/peach.exe $@
