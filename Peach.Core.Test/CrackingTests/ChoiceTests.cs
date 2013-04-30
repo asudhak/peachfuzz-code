@@ -628,11 +628,11 @@ namespace Peach.Core.Test.CrackingTests
 		<Choice name=""c"">
 			<Block name=""C1"">
 				<Blob length=""1"" valueType=""hex"" value=""0x08"" token=""true""/>
-				 <Block minOccurs=""1"">
+				<Block minOccurs=""0"">
+					<Blob length=""1"" valueType=""hex"" value=""0x05""/>
 					<Blob/>
 				</Block>
 			</Block>
-			<Blob name=""Empty"" length=""0""/>
 		</Choice>
 	</DataModel>
 </Peach>";
@@ -655,9 +655,11 @@ namespace Peach.Core.Test.CrackingTests
 
 			Dom.Choice c = (Dom.Choice)dom.dataModels[0][0];
 			var selected = c.SelectedElement as Dom.Block;
+			var innerBlock = selected[1] as Dom.Block;
 			Assert.AreEqual("C1", selected.name);
 			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
-			Assert.AreEqual(4, ((byte[])selected[1].DefaultValue).Length);
+			Assert.AreEqual(1, ((byte[])innerBlock[0].DefaultValue).Length);
+			Assert.AreEqual(3, ((byte[])innerBlock[1].DefaultValue).Length);
 		}
 	}
 }
