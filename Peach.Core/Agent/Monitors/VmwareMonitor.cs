@@ -779,7 +779,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			IntPtr jobHandle = VixVM_PowerOff(
 				vmHandle,
-				VixVMPowerOpOptions.VIX_VMPOWEROP_LAUNCH_GUI,
+				VixVMPowerOpOptions.VIX_VMPOWEROP_NORMAL,
 				null,
 				IntPtr.Zero);
 
