@@ -50,7 +50,7 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// Default token set.  Order is important!
 		/// </summary>
-		const string TOKENS = "\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/";
+		public const string TOKENS = "\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/";
 
 		protected string tokens = TOKENS;
 		protected Dictionary<string, Variant> args = null;
@@ -75,7 +75,7 @@ namespace Peach.Core.Analyzers
 
 		public override void asDataElement(DataElement parent, object dataBuffer)
 		{
-			if (args.ContainsKey("Tokens"))
+			if (args != null && args.ContainsKey("Tokens"))
 				tokens = (string)args["Tokens"];
 
 			if (!(parent is Dom.String))

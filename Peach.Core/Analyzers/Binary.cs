@@ -32,19 +32,29 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Reflection;
 
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
+using NLog;
+
 namespace Peach.Core.Analyzers
 {
     [Analyzer("Binary", true)]
     [Analyzer("BinaryAnalyzer")]
+    [Parameter("Tokens", typeof(string), "List of character tokens to pass to the StringToken analyzer", StringTokenAnalyzer.TOKENS)]
+    [Parameter("AnalyzeStrings", typeof(string), "Call the StringToken analyzer on string elements", "true")]
     [Serializable]
     public class Binary : Analyzer
     {
+        static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+        protected Dictionary<string, Variant> args = null;
+        protected bool analyzeStrings = true;
+
         static Binary()
         {
             supportParser = false;
@@ -59,6 +69,11 @@ namespace Peach.Core.Analyzers
 
         public Binary(Dictionary<string, Variant> args)
         {
+            this.args = args;
+
+            Variant val = null;
+            if (args != null && args.TryGetValue("AnalyzeStrings", out val))
+                analyzeStrings = ((string)val).ToLower() == "true";
         }
 
         const int MINCHARS = 5;
@@ -106,6 +121,8 @@ namespace Peach.Core.Analyzers
                         str.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetString(possibleString.ToArray()));
                         block.Add(str);
 
+                        if (analyzeStrings)
+                            new StringTokenAnalyzer(args).asDataElement(str, str.DefaultValue);
                     }
                     else
                     {
@@ -125,6 +142,12 @@ namespace Peach.Core.Analyzers
                 blob.DefaultValue = new Variant(currentBlob.ToArray());
                 currentBlob.Clear();
                 block.Add(blob);
+            }
+
+            if (logger.IsDebugEnabled)
+            {
+                int count = block.EnumerateAllElements().Count();
+                logger.Debug("Created {0} data elements from binary data.", count);
             }
 
             parent.parent[parent.name] = block;
