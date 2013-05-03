@@ -90,5 +90,103 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(choice, element.parent);
 			}
 		}
+
+		[Test]
+		public void TestOverWrite()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Base'>
+		<Choice name='c'>
+			<Block name='b1'>
+				<String name='s' value='Hello'/>
+			</Block>
+			<Block name='b2'>
+				<String name='s' value='World'/>
+			</Block>
+			<Block name='b3'>
+				<String name='s' value='!'/>
+			</Block>
+		</Choice>
+	</DataModel>
+
+	<DataModel name='Derived' ref='Base'>
+		<String name='c.b1.s' value='World'/>
+		<String name='c.b3' value='.'/>
+	</DataModel>
+
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			var c1 = dom.dataModels[0][0] as Dom.Choice;
+			Assert.NotNull(c1);
+			Assert.AreEqual(3, c1.choiceElements.Count);
+			var c1_b1 = c1.choiceElements[0] as Dom.Block;
+			Assert.NotNull(c1_b1);
+			Assert.AreEqual(1, c1_b1.Count);
+			Assert.AreEqual("Hello", (string)c1_b1[0].DefaultValue);
+			var c1_b2 = c1.choiceElements[1] as Dom.Block;
+			Assert.NotNull(c1_b2);
+			Assert.AreEqual(1, c1_b2.Count);
+			Assert.AreEqual("World", (string)c1_b2[0].DefaultValue);
+			var c1_b3 = c1.choiceElements[2] as Dom.Block;
+			Assert.NotNull(c1_b3);
+			Assert.AreEqual(1, c1_b3.Count);
+			Assert.AreEqual("!", (string)c1_b3[0].DefaultValue);
+
+			Assert.AreEqual(1, dom.dataModels[1].Count);
+			var c2 = dom.dataModels[1][0] as Dom.Choice;
+			Assert.NotNull(c2);
+			Assert.AreEqual(3, c2.choiceElements.Count);
+			var c2_b1 = c2.choiceElements[0] as Dom.Block;
+			Assert.NotNull(c2_b1);
+			Assert.AreEqual(1, c2_b1.Count);
+			Assert.AreEqual("World", (string)c2_b1[0].DefaultValue);
+			var c2_b2 = c2.choiceElements[1] as Dom.Block;
+			Assert.NotNull(c2_b2);
+			Assert.AreEqual(1, c2_b2.Count);
+			Assert.AreEqual("World", (string)c2_b2[0].DefaultValue);
+			var c3_b3 = c2.choiceElements[2] as Dom.String;
+			Assert.NotNull(c3_b3);
+			Assert.AreEqual(".", (string)c3_b3.DefaultValue);
+
+		}
+
+		[Test]
+		public void TestAddNewChoice()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Base'>
+		<Choice name='c'>
+			<String name='s1' value='Hello'/>
+			<String name='s2' value='World'/>
+		</Choice>
+	</DataModel>
+
+	<DataModel name='Derived' ref='Base'>
+		<String name='c.s3' value='Hello'/>
+	</DataModel>
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+			var c1 = dom.dataModels[0][0] as Dom.Choice;
+			Assert.AreEqual(2, c1.choiceElements.Count);
+
+			Assert.AreEqual(1, dom.dataModels[1].Count);
+			var c2 = dom.dataModels[1][0] as Dom.Choice;
+			Assert.AreEqual(3, c2.choiceElements.Count);
+		}
 	}
 }
