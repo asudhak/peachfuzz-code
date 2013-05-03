@@ -629,6 +629,48 @@ namespace Peach.Core.Test.MutationStrategies
 		}
 
 		[Test]
+		public void ControlAndSwitch()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str' value='Hello'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='Data Field 1'/>
+				</Data>
+				<Data>
+					<Field name='str' value='Data Field 2'/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default' controlIteration='5'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Random'>
+			<Param name='SwitchCount' value='2'/>
+		</Strategy>
+	</Test>
+</Peach>";
+
+			RunSwitchTest(xml, 1, 20);
+
+			// 20 fuzz + 10 control & record
+			// control at iterations 5, 10, 15, 20
+			// 5 and 15 are already switching iterations
+			// so we have 20 fuzz, 10 Ctrl&Rec, 2 Ctrl
+			Assert.AreEqual(32, dataModels.Count);
+		}
+
+
+		[Test]
 		public void TwoStates()
 		{
 			string xml = @"

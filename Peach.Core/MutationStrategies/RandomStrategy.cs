@@ -168,11 +168,10 @@ namespace Peach.Core.MutationStrategies
 			}
 			set
 			{
-				_lastIteration = _iteration;
 				_iteration = value;
 				SeedRandom();
 
-				if (!_context.controlIteration && _iteration == GetSwitchIteration() && _lastIteration != _iteration)
+				if (_iteration == GetSwitchIteration() && _lastIteration != _iteration)
 					_randomDataSet = null;
 
 				if (_randomDataSet == null)
@@ -183,6 +182,7 @@ namespace Peach.Core.MutationStrategies
 
 					_context.controlIteration = true;
 					_context.controlRecordingIteration = true;
+					_lastIteration = _iteration;
 				}
 
 				_mutations = null;

@@ -346,6 +346,9 @@ namespace Peach.Core
 
 					try
 					{
+						// Must set iteration 1st as strategy could enable control/record bools
+						mutationStrategy.Iteration = iterationCount;
+
 						if (context.controlIteration && context.controlRecordingIteration)
 						{
 							context.controlRecordingActionsExecuted.Clear();
@@ -361,8 +364,6 @@ namespace Peach.Core
 							logger.Debug("runTest: context.config.singleIteration == true");
 							break;
 						}
-
-						mutationStrategy.Iteration = iterationCount;
 
 						// Make sure we are not hanging on to old faults.
 						context.faults.Clear();
@@ -691,7 +692,9 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 		private void OnControlFault(RunContext context, uint iterationCount, string description)
 		{
-			context.continueFuzzing = false;
+			// Don't tell the engine to stop, let the replay logic determine what to do
+			// If a fault is detected or reproduced on a control iteration the engine
+			// will automatically stop.
 
 			Fault fault = new Fault();
 			fault.detectionSource = "PeachControlIteration";
