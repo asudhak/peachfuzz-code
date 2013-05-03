@@ -147,6 +147,8 @@ namespace Peach.Core.Runtime
 
 				Platform.LoadAssembly();
 
+				AddNewDefine("Peach.Cwd=" + Environment.CurrentDirectory);
+
 				foreach (var definedValuesFile in definedValues)
 				{
 					var defs = PitParser.parseDefines(definedValuesFile);
