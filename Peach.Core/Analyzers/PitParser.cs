@@ -90,11 +90,13 @@ namespace Peach.Core.Analyzers
 			var ret = new Dictionary<string, string>();
 			var keys = new HashSet<string>();
 
-			if (!File.Exists(definedValuesFile))
+			string normalized = Path.GetFullPath(definedValuesFile);
+
+			if (!File.Exists(normalized))
 				throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
 
 			XmlDocument xmlDoc = new XmlDocument();
-			xmlDoc.Load(definedValuesFile);
+			xmlDoc.Load(normalized);
 
 			var root = xmlDoc.FirstChild;
 			if (root.Name != "PitDefines")
@@ -311,18 +313,18 @@ namespace Peach.Core.Analyzers
 						string ns = child.getAttrString("ns");
 						string fileName = child.getAttrString("src");
 						fileName = fileName.Replace("file:", "");
+						string normalized = Path.GetFullPath(fileName);
 
-						if (!File.Exists(fileName))
+						if (!File.Exists(normalized))
 						{
 							string newFileName = Path.Combine(
 								Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 								fileName);
 
-							if (!File.Exists(newFileName))
-							{
-								Console.WriteLine(newFileName);
+							normalized = Path.GetFullPath(newFileName);
+
+							if (!File.Exists(normalized))
 								throw new PeachException("Error, Unable to locate Pit file [" + fileName + "].\n");
-							}
 
 							fileName = newFileName;
 						}
@@ -1562,24 +1564,7 @@ namespace Peach.Core.Analyzers
 			{
 				string dataFileName = node.getAttrString("fileName");
 
-				if (Directory.Exists(dataFileName))
-				{
-					List<string> files = new List<string>();
-					foreach (string fileName in Directory.GetFiles(dataFileName))
-						files.Add(fileName);
-
-					if (files.Count == 0)
-						throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
-
-					data.DataType = DataType.Files;
-					data.Files = files;
-				}
-				else if (File.Exists(dataFileName))
-				{
-					data.DataType = DataType.File;
-					data.FileName = dataFileName;
-				}
-				else if (dataFileName.Contains('*'))
+				if (dataFileName.Contains('*'))
 				{
 					string pattern = Path.GetFileName(dataFileName);
 					string dir = dataFileName.Substring(0, dataFileName.Length - pattern.Length);
@@ -1587,10 +1572,16 @@ namespace Peach.Core.Analyzers
 					if (dir == "")
 						dir = ".";
 
-					if (!dir.Contains('*'))
+					try
 					{
+						dir = Path.GetFullPath(dir);
 						string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
 						data.Files.AddRange(files);
+					}
+					catch (ArgumentException ex)
+					{
+						// Directory is not legal
+						throw new PeachException("Error parsing Data element, fileName contains invalid characters: " + dataFileName, ex);
 					}
 
 					if (data.Files.Count == 0)
@@ -1600,7 +1591,36 @@ namespace Peach.Core.Analyzers
 				}
 				else
 				{
-					throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+					try
+					{
+						string normalized = Path.GetFullPath(dataFileName);
+
+						if (Directory.Exists(normalized))
+						{
+							List<string> files = new List<string>();
+							foreach (string fileName in Directory.GetFiles(normalized))
+								files.Add(fileName);
+
+							if (files.Count == 0)
+								throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
+
+							data.DataType = DataType.Files;
+							data.Files = files;
+						}
+						else if (File.Exists(normalized))
+						{
+							data.DataType = DataType.File;
+							data.FileName = normalized;
+						}
+						else
+						{
+							throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+						}
+					}
+					catch (ArgumentException ex)
+					{
+						throw new PeachException("Error parsing Data element, fileName contains invalid characters: " + dataFileName, ex);
+					}
 				}
 			}
 
