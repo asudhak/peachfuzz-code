@@ -61,6 +61,9 @@ def cs_helpers(self):
 	if not getattr(self, 'gen', None):
 		setattr(self, 'gen', self.name)
 
+	# ensure all binaries get chmod 755
+	setattr(self, 'chmod', Utils.O755)
+
 	# add optional csflags
 	csflags = getattr(self, 'csflags', [])
 	if csflags:
