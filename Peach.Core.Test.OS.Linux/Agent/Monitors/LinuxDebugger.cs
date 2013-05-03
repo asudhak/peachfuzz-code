@@ -32,8 +32,6 @@ namespace Peach.Core.Test.OS.Linux.Agent.Monitors
 			Assert.True(fault.collectedData.ContainsKey("StackTrace.txt"));
 			Assert.Greater(fault.collectedData["StackTrace.txt"].Length, 0);
 			Assert.True(fault.description.Contains("PossibleStackCorruption"));
-			Assert.True(fault.description.Contains("DestAv"));
-			Assert.True(fault.description.Contains("AccessViolation"));
 			m.SessionFinished();
 			m.StopMonitor();
 		}
