@@ -252,20 +252,11 @@ namespace Peach.Core.MutationStrategies
 			if (fileBytes == null)
 				throw new CrackingFailure(null, null);
 
-
 			// Note: We need to find the origional data model to use.  Re-using
 			// a data model that has been cracked into will fail in odd ways.
-
-			var referenceName = action.dataModel.referenceName;
-			if (referenceName == null)
-				referenceName = action.dataModel.name;
-
-			var dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
-			dataModel.isReference = true;
-			dataModel.referenceName = referenceName;
+			var dataModel = GetNewDataModel(action);
 
 			// Crack the file
-
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dataModel, new BitStream(fileBytes));
 
@@ -276,18 +267,26 @@ namespace Peach.Core.MutationStrategies
 		{
 			// Note: We need to find the origional data model to use.  Re-using
 			// a data model that has been cracked into will fail in odd ways.
+			var dataModel = GetNewDataModel(action);
 
+			// Apply the fields
+			data.ApplyFields(dataModel);
+
+			return dataModel;
+		}
+
+		private DataModel GetNewDataModel(Dom.Action action)
+		{
 			var referenceName = action.dataModel.referenceName;
 			if (referenceName == null)
 				referenceName = action.dataModel.name;
 
-			var dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
+			// Need to take namespaces into account when searching for the model
+			var baseModel = _context.dom.getRef<DataModel>(referenceName, a => a.dataModels);
+
+			var dataModel = baseModel.Clone() as DataModel;
 			dataModel.isReference = true;
 			dataModel.referenceName = referenceName;
-
-			// Apply the fields
-
-			data.ApplyFields(dataModel);
 
 			return dataModel;
 		}

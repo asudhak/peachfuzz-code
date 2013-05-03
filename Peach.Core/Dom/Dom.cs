@@ -112,6 +112,37 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		/// <summary>
+		/// Find a referenced Dom element by name, taking into account namespace prefixes.
+		/// </summary>
+		/// <typeparam name="T">Type of Dom element.</typeparam>
+		/// <param name="refName">Name of reference</param>
+		/// <param name="predicate">Selector predicate that returns the element collection</param>
+		/// <returns>The named Dom element or null if not found.</returns>
+		public T getRef<T>(string refName, Func<Dom, OrderedDictionary<string, T>> predicate)
+		{
+			int i = refName.IndexOf(':');
+			if (i > -1)
+			{
+				string prefix = refName.Substring(0, i);
+
+				Dom other;
+				if (!ns.TryGetValue(prefix, out other))
+					throw new PeachException("Unable to locate namespace '" + prefix + "' in ref '" + refName + "'.");
+
+				refName = refName.Substring(i + 1);
+
+				return other.getRef<T>(refName, predicate);
+			}
+
+			var dict = predicate(this);
+			T value = default(T);
+			if (dict.TryGetValue(refName, out value))
+				return value;
+			return default(T);
+		}
+
+
 		#region INamed Members
 
 		public virtual string name

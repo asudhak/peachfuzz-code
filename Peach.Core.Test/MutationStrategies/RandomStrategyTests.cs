@@ -721,6 +721,89 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.Less(total, 10);
 		}
 
+		[Test]
+		public void SwitchWithIncludedDataModel()
+		{
+			string temp1 = Path.GetTempFileName();
+			string temp2 = Path.GetTempFileName();
+			string temp3 = Path.GetTempFileName();
+
+			string include = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str' value='Hello'/>
+	</DataModel>
+</Peach>
+";
+
+			string xml = @"
+<Peach>
+	<Include ns='other' src='{0}'/>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='other:DM'/>
+				<Data fileName='{1}'/>
+				<Data fileName='{2}'/>
+				<Data>
+					<Field name='str' value='Data Field 1'/>
+				</Data>
+				<Data>
+					<Field name='str' value='Data Field 2'/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Random'>
+			<Param name='SwitchCount' value='2'/>
+		</Strategy>
+	</Test>
+</Peach>".Fmt(temp1, temp2, temp3);
+
+			File.WriteAllText(temp1, include);
+			File.WriteAllText(temp2, "Data Set 1");
+			File.WriteAllText(temp3, "Data Set 2");
+
+			RunSwitchTest(xml, 1, 20);
+
+			Assert.AreEqual(30, dataModels.Count);
+
+			int[] choices = new int[4];
+
+			for (int i = 0; i < dataModels.Count; ++i)
+			{
+				string val = (string)dataModels[i][0].InternalValue;
+				switch (val)
+				{
+					case "Data Set 1":
+						choices[0] += 1;
+						break;
+					case "Data Set 2":
+						choices[1] += 1;
+						break;
+					case "Data Field 1":
+						choices[2] += 1;
+						break;
+					case "Data Field 2":
+						choices[3] += 1;
+						break;
+					default:
+						Assert.AreNotEqual("Hello", val);
+						break;
+				}
+			}
+
+			Assert.Greater(choices[0], 0);
+			Assert.Greater(choices[1], 0);
+			Assert.Greater(choices[2], 0);
+			Assert.Greater(choices[3], 0);
+		}
+
 		private static void RunSwitchTest(string xml, uint start, uint stop)
 		{
 			PitParser parser = new PitParser();

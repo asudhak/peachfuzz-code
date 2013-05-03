@@ -556,25 +556,7 @@ namespace Peach.Core.Analyzers
 		/// <returns></returns>
 		protected T getRef<T>(Dom.Dom dom, string refName, Func<Dom.Dom, OrderedDictionary<string, T>> predicate)
 		{
-			int i = refName.IndexOf(':');
-			if (i > -1)
-			{
-				string ns = refName.Substring(0, i);
-
-				Dom.Dom other;
-				if (!dom.ns.TryGetValue(ns, out other))
-					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + refName + "'.");
-
-				refName = refName.Substring(i + 1);
-
-				return getRef<T>(other, refName, predicate);
-			}
-
-			var dict = predicate(dom);
-			T value = default(T);
-			if (dict.TryGetValue(refName, out value))
-				return value;
-			return default(T);
+			return dom.getRef<T>(refName, predicate);
 		}
 
 		#endregion
