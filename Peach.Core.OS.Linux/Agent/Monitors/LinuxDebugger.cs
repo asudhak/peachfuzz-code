@@ -87,11 +87,30 @@ quit
 		{
 			ParameterParser.Parse(this, args);
 
-			string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			_exploitable = Path.Combine(dir, "gdb/exploitable/exploitable.py");
+			_exploitable = FindExploitable();
+		}
 
-			if (!File.Exists(_exploitable))
-				throw new PeachException("Error, LinuxDebugger could not find exploitable at '" + _exploitable + "'.");
+		string FindExploitable()
+		{
+			var target = "gdb/exploitable/exploitable.py";
+
+			var dirs = new List<string> {
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+				Directory.GetCurrentDirectory(),
+			};
+
+			string path = Environment.GetEnvironmentVariable("PATH");
+			if (!string.IsNullOrEmpty(path))
+				dirs.AddRange(path.Split(Path.PathSeparator));
+
+			foreach (var dir in dirs)
+			{
+				string full = Path.Combine(dir, target);
+				if (File.Exists(full))
+					return full;
+			};
+
+			throw new PeachException("Error, LinuxDebugger could not find '" + target + "' in search path.");
 		}
 
 		void _Start()
