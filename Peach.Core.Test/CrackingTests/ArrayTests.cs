@@ -544,6 +544,60 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.NotNull(array);
 			Assert.AreEqual(3, array.Count);
 		}
+
+		[Test]
+		public void TokenAfterArrayInArray()
+		{
+			string xml = @"
+<Peach>
+	<Import import='re'/>
+
+	<DataModel name='TupleLine'>
+		<String name='LineHeader' />
+		<Block name='ValueTuples' minOccurs='0' maxOccurs='5'>
+			<String name='CommaSeparator' value=',' token='true' />
+			<String name='TupleValue' constraint='re.search(""^[A-Za-z0-9]+$"", value) != None' />
+		</Block>
+		<String name='LineTerminator' value='\n' token='true' />
+	</DataModel>
+
+	<DataModel name='TheDataModel'>
+		<Block name='FirstLine' ref='TupleLine'>
+			<String name='LineHeader' value='CIRCLE' token='true' />
+		</Block>
+
+		<Block name='SecondLine' ref='TupleLine'>
+			<String name='LineHeader' value='RECT' token='true' />
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(Encoding.ASCII.GetBytes("CIRCLE,0,50\nRECT,0\n"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(2, dom.dataModels[1].Count);
+
+			var b1 = dom.dataModels[1][0] as Block;
+			Assert.NotNull(b1);
+			Assert.AreEqual(3, b1.Count);
+			var b1_array = b1[1] as Dom.Array;
+			Assert.AreEqual(2, b1_array.Count);
+
+			var b2 = dom.dataModels[1][1] as Block;
+			Assert.NotNull(b2);
+			Assert.AreEqual(3, b2.Count);
+			var b2_array = b2[1] as Dom.Array;
+			Assert.AreEqual(1, b2_array.Count);
+		}
 	}
 }
 

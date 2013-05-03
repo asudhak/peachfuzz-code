@@ -942,17 +942,34 @@ namespace Peach.Core.Cracker
 			}
 			
 			// 3rd priority, token scan
+			long? closest = null;
+			Mark winner = null;
+
 			foreach (var token in tokens)
 			{
 				long? where = findToken(data, token.Element.Value, token.Position);
-				if (where.HasValue || !token.Optional)
+				if (!where.HasValue && !token.Optional)
 				{
-					logger.Debug("getSize: <----- {0}{1} Token: {2}",
-						where.HasValue ? "" : "Missing ",
-						token.Optional ? "Optional" : "Required",
-						where.HasValue ? where.ToString() : "???");
+					logger.Debug("getSize: <----- Missing Required Token: ???");
 					return where;
 				}
+
+				if (!where.HasValue)
+					continue;
+
+				if (!closest.HasValue || closest.Value > where.Value)
+				{
+					closest = where.Value;
+					winner = token;
+				}
+			}
+
+			if (closest.HasValue)
+			{
+				logger.Debug("getSize: <----- {0} Token: {1}",
+					winner.Optional ? "Optional" : "Required",
+					closest.ToString());
+				return closest;
 			}
 
 			if (tokens.Count > 0)
@@ -991,6 +1008,7 @@ namespace Peach.Core.Cracker
 			// 3) The end of the data model
 
 			DataElement prev = elem;
+			bool? final = true;
 
 			while (true)
 			{
@@ -1004,7 +1022,7 @@ namespace Peach.Core.Cracker
 						return ret;
 
 					if (end.Element != null)
-						return true;
+						return final;
 				}
 				else if (prev.parent == null)
 				{
@@ -1024,9 +1042,15 @@ namespace Peach.Core.Cracker
 						if (array.maxOccurs == -1 || array.Count < array.maxOccurs)
 						{
 							long arrayPos = pos;
+							int tokenCount = tokens.Count;
 							var ret = scanArray(array, ref arrayPos, tokens, Until.FirstUnsized);
 							if (!ret.HasValue || ret.Value == false)
-								return ret;
+							{
+								if (tokenCount == tokens.Count)
+									return ret;
+								else
+									final = ret;
+							}
 						}
 					}
 
@@ -1037,7 +1061,7 @@ namespace Peach.Core.Cracker
 				prev = curr;
 			}
 
-			return true;
+			return final;
 		}
 
 		#endregion
