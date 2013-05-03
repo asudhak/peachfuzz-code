@@ -49,11 +49,6 @@ namespace Peach.Core.Analysis
         string _traceFolder = null;
 
 		/// <summary>
-		/// Does our process need killing based on CPU time?
-		/// </summary>
-        bool _needsKilling = false;
-
-		/// <summary>
 		/// Executables for pin tools by OS and architecture.
 		/// </summary>
 		static Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>> pinExecutables = new Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>>();
@@ -107,7 +102,7 @@ namespace Peach.Core.Analysis
         /// </summary>
         /// <param name="executable"></param>
         /// <returns></returns>
-        public override List<ulong> BasicBlocksForExecutable(string executable)
+        public override List<ulong> BasicBlocksForExecutable(string executable, bool needsKilling)
         {
             return null;
         }
@@ -120,7 +115,7 @@ namespace Peach.Core.Analysis
         /// <param name="arguments"></param>
         /// <param name="basicBlocks"></param>
         /// <returns></returns>
-        public override List<ulong> CodeCoverageForExecutable(string executable, string arguments, List<ulong> basicBlocks = null)
+        public override List<ulong> CodeCoverageForExecutable(string executable, string arguments, bool needsKilling, List<ulong> basicBlocks = null)
         {
             try
             {
@@ -164,15 +159,10 @@ namespace Peach.Core.Analysis
 					proc.StartInfo = psi;
 					proc.Start();
 
-					if (_needsKilling)
-					{
-						// TODO - Check process/cpu usage
+					if (needsKilling)
 						throw new NotImplementedException();
-					}
-					else
-					{
-						proc.WaitForExit();
-					}
+
+					proc.WaitForExit();
 				}
 
 				if (!File.Exists("bblocks.out"))
