@@ -128,6 +128,8 @@ class utest(Task.Task):
 						if tg.gen.endswith('.dll'):
 							asm.append(tg.cs_task.outputs[0].parent.abspath())
 						lst.append(tg.cs_task.outputs[0].parent.abspath())
+					if getattr(tg, 'install', None):
+						lst.append(tg.path.get_src().abspath())
 
 			def add_path(dct, path, var):
 				dct[var] = os.pathsep.join(Utils.to_list(path) + [os.environ.get(var, '')])
