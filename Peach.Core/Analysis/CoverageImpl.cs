@@ -124,6 +124,9 @@ namespace Peach.Core.Analysis
                 if (File.Exists("bblocks.out"))
                     File.Delete("bblocks.out");
 
+				if (File.Exists("bblocks.pid"))
+					File.Delete("bblocks.pid");
+
 				// This is intended to disable this feature.
 				// We currently want all trace files to be "masters" and not
 				// diffs.  This will make it easy to distrubute out using
@@ -162,7 +165,66 @@ namespace Peach.Core.Analysis
 					proc.Start();
 
 					if (needsKilling)
-						throw new NotImplementedException();
+					{
+						while (!proc.HasExited && !File.Exists("bblocks.pid"))
+							System.Threading.Thread.Sleep(100);
+
+						int pid = 0;
+
+						// Ensure pid is fully written
+						while (true)
+						{
+							try
+							{
+								using (FileStream f = new FileStream("bblocks.pid", FileMode.Open, FileAccess.Read))
+								{
+									StreamReader rdr = new StreamReader(f);
+									string contents = rdr.ReadToEnd();
+									pid = Convert.ToInt32(contents);
+									break;
+								}
+							}
+							catch (IOException)
+							{
+							}
+							catch
+							{
+								throw;
+							}
+						}
+
+						try
+						{
+							using (var child = Process.GetProcessById(pid))
+							{
+								ulong lastTime = 0;
+								ulong currTime = 0;
+								const int pollInterval = 200;
+
+								do
+								{
+									lastTime = currTime;
+									System.Threading.Thread.Sleep(pollInterval);
+
+									var pi = ProcessInfo.Instance.Snapshot(child);
+									currTime = pi.TotalProcessorTicks;
+								}
+								while (lastTime != currTime);
+
+								child.Kill();
+							}
+						}
+						catch (ArgumentException)
+						{
+							// No such pid, must have already exited
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine();
+							Console.WriteLine("Error waiting for idle cpu for '" + executable + "'.  " + ex.Message);
+							proc.Kill();
+						}
+					}
 
 					proc.WaitForExit();
 				}
