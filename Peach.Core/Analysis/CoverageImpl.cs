@@ -101,6 +101,7 @@ namespace Peach.Core.Analysis
         /// Collect all basic blocks in binary
         /// </summary>
         /// <param name="executable"></param>
+        /// <param name="needsKilling"></param>
         /// <returns></returns>
         public override List<ulong> BasicBlocksForExecutable(string executable, bool needsKilling)
         {
@@ -113,6 +114,7 @@ namespace Peach.Core.Analysis
         /// </summary>
         /// <param name="executable"></param>
         /// <param name="arguments"></param>
+        /// <param name="needsKilling"></param>
         /// <param name="basicBlocks"></param>
         /// <returns></returns>
         public override List<ulong> CodeCoverageForExecutable(string executable, string arguments, bool needsKilling, List<ulong> basicBlocks = null)
