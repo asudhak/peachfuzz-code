@@ -1802,6 +1802,7 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, could not locate StateModel named '" +
 							strRef + "' for Test '" + test.name + "'.");
 
+					test.stateModel.name = strRef;
 					test.stateModel.parent = test.parent;
 				}
 
