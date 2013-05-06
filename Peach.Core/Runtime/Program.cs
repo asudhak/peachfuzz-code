@@ -90,6 +90,7 @@ namespace Peach.Core.Runtime
 
 		public Program(string[] args)
 		{
+			AppDomain.CurrentDomain.DomainUnload += new EventHandler(CurrentDomain_DomainUnload);
 			Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 			RunConfiguration config = new RunConfiguration();
 			config.debug = false;
@@ -282,6 +283,11 @@ namespace Peach.Core.Runtime
 				// Reset console colors
 				Console.ForegroundColor = DefaultForground;
 			}
+		}
+
+		protected static void CurrentDomain_DomainUnload(object sender, EventArgs e)
+		{
+			Console.ForegroundColor = DefaultForground;
 		}
 
 		/// <summary>
