@@ -56,6 +56,64 @@ namespace Peach.Core.Test.Fixups
 		}
 
 		[Test]
+		public void TestRefDataModel()
+		{
+			// standard test
+
+			string xml = @"
+<Peach>
+	<DataModel name='Base'>
+		<Block name='Header' mutable='false'>
+			<Number name='id' size='8' signed='false' mutable='false'>
+				<Fixup class='SequenceIncrementFixup'/>
+			</Number>
+		</Block>
+	</DataModel>
+
+	<DataModel name='TheDataModel' ref='Base'>
+		<Block name='Payload'>
+			<String name='value' value='Hello World'/>
+		</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 0;
+			config.rangeStop = 10;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			// verify values
+			Assert.AreEqual(11, dataModels.Count);
+
+			for (int i = 0; i < dataModels.Count; ++i)
+			{
+				var bytes = dataModels[i].Value.Value;
+				Assert.GreaterOrEqual(bytes.Length, 1);
+				Assert.AreEqual(i + 1, bytes[0]);
+			}
+		}
+
+		[Test]
 		public void TestIncrement()
 		{
 			// Should only increment on output actions
