@@ -74,6 +74,8 @@ namespace Peach.Core.Publishers
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
 	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("MinMTU", typeof(uint), "Minimum allowable MTU property value", DefaultMinMTU)]
+	[Parameter("MaxMTU", typeof(uint), "Maximum allowable MTU property value", DefaultMaxMTU)]
 	public class RawV4Publisher : SocketPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -124,6 +126,8 @@ namespace Peach.Core.Publishers
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
 	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("MinMTU", typeof(uint), "Minimum allowable MTU property value", DefaultMinMTU)]
+	[Parameter("MaxMTU", typeof(uint), "Maximum allowable MTU property value", DefaultMaxMTU)]
 	public class RawIPv4Publisher : SocketPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();

@@ -474,7 +474,7 @@ namespace Peach.Core.Agent.Monitors
 		/// The hybrid mode uses both WinDbg and System Debugger
 		/// </summary>
 		/// <remarks>
-		/// When _hybrid == true && _replay == false we will use the
+		/// When _hybrid == true &amp;&amp; _replay == false we will use the
 		/// System Debugger.
 		/// 
 		/// When we hit a fault in _hybrid mode we will replay with windbg.
@@ -646,10 +646,26 @@ namespace Peach.Core.Agent.Monitors
 			_StopDebugger();
 
 			if (_systemDebugger != null)
-				_systemDebugger.FinishDebugging();
+			{
+				try
+				{
+					_systemDebugger.FinishDebugging();
+				}
+				catch
+				{
+				}
+			}
 
 			if (_debugger != null)
-				_debugger.FinishDebugging();
+			{
+				try
+				{
+					_debugger.FinishDebugging();
+				}
+				catch
+				{
+				}
+			}
 
 			_debugger = null;
 			_systemDebugger = null;
@@ -681,7 +697,6 @@ namespace Peach.Core.Agent.Monitors
 				catch
 				{
 				}
-
 			}
 
 			if (_debugger != null)

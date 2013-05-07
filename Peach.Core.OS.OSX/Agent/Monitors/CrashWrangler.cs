@@ -32,6 +32,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Threading;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -170,10 +171,16 @@ namespace Peach.Core.Agent.Monitors
 
 			if (File.Exists(_cwLogFile))
 			{
-				string log = File.ReadAllText(_cwLogFile);
-				fault.description = GenerateSummary(log);
-				fault.collectedData["Log"] = File.ReadAllBytes(_cwLogFile);
-				fault.folderName = "CrashWrangler";
+				fault.description = File.ReadAllText(_cwLogFile);
+				fault.collectedData["StackTrace.txt"] = File.ReadAllBytes(_cwLogFile);
+
+				var s = new Summary(fault.description);
+
+				fault.majorHash = s.majorHash;
+				fault.minorHash = s.minorHash;
+				fault.title = s.title;
+				fault.exploitability = s.exploitable;
+
 			}
 			else if (!_faultExitFail)
 			{
@@ -311,11 +318,17 @@ namespace Peach.Core.Agent.Monitors
 			foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
 				si.EnvironmentVariables[de.Key.ToString()] = de.Value.ToString();
 
+			si.EnvironmentVariables["CW_NO_CRASH_REPORTER"] = "1";
+			si.EnvironmentVariables["CW_QUIET"] = "1";
 			si.EnvironmentVariables["CW_LOG_PATH"] = _cwLogFile;
 			si.EnvironmentVariables["CW_PID_FILE"] = _cwPidFile;
 			si.EnvironmentVariables["CW_LOCK_FILE"] = _cwLockFile;
-			si.EnvironmentVariables["CW_USE_GMAL"] = _useDebugMalloc ? "1" : "0";
-			si.EnvironmentVariables["CW_EXPLOITABLE_READS"] = _exploitableReads ? "1" : "0";
+
+			if (_useDebugMalloc)
+				si.EnvironmentVariables["CW_USE_GMAL"] = "1";
+
+			if (_exploitableReads)
+				si.EnvironmentVariables["CW_EXPLOITABLE_READS"] = "1";
 
 			_procHandler = new Proc();
 			_procHandler.StartInfo = si;
@@ -465,59 +478,6 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
-		private static string GenerateSummary(string file)
-		{
-			StringBuilder summary = new StringBuilder();
-
-			if (file.Contains(":is_exploitable=no:"))
-				summary.Append("NotExploitable");
-			else if (file.Contains(":is_exploitable=yes:"))
-				summary.Append("Exploitable");
-			else
-				summary.Append("Unknown");
-
-			if (file.Contains("exception=EXC_BAD_ACCESS:"))
-			{
-				summary.Append("_BadAccess");
-
-				if (file.Contains(":access_Type=read:"))
-					summary.Append("_Read");
-				else if (file.Contains(":access_Type=write:"))
-					summary.Append("_Write");
-				else if (file.Contains(":access_Type=exec:"))
-					summary.Append("_Exec");
-				else if (file.Contains(":access_Type=recursion:"))
-					summary.Append("_Recursion");
-				else if (file.Contains(":access_Type=unknown:"))
-					summary.Append("_Unknown");
-			}
-			else if (file.Contains("exception=EXC_BAD_INSTRUCTION:"))
-				summary.Append("_BadInstruction");
-			else if (file.Contains("exception=EXC_ARITHMETIC:"))
-				summary.Append("_Arithmetic");
-			else if (file.Contains("exception=EXC_CRASH:"))
-				summary.Append("_Crash");
-
-			Regex reTid = new Regex(@"^Crashed Thread:\s+(\d+)", RegexOptions.Multiline);
-			Match mTid = reTid.Match(file);
-			if (mTid.Success)
-			{
-				string tid = mTid.Groups[1].Value;
-
-				string strReAddr = @"^Thread " + tid + @" Crashed:.*\n((\d+.*\s(?<addr>0x[0-9,a-f,A-F]+)\s.*\n)+)";
-				Regex reAddr = new Regex(strReAddr, RegexOptions.Multiline);
-				Match mAddr = reAddr.Match(file);
-				if (mAddr.Success)
-				{
-					var captures = mAddr.Groups["addr"].Captures;
-					for (int i = captures.Count - 1; i >= 0; --i)
-						summary.Append("_" + captures[i].Value);
-				}
-			}
-
-			return summary.ToString();
-		}
-
 		private static string GetLastError(int err)
 		{
 			IntPtr ptr = strerror(err);
@@ -527,6 +487,160 @@ namespace Peach.Core.Agent.Monitors
 
 		[DllImport("libc")]
 		private static extern IntPtr strerror(int err);
+
+		class Summary
+		{
+			public string majorHash { get; private set; }
+			public string minorHash { get; private set; }
+			public string title { get; private set; }
+			public string exploitable { get; private set; }
+
+			private static readonly string[] system_modules =
+			{
+				"libSystem.B.dylib",
+				"libsystem_kernel.dylib",
+				"libsystem_c.dylib",
+				"com.apple.CoreFoundation",
+				"libstdc++.6.dylib",
+				"libobjc.A.dylib",
+				"libgcc_s.1.dylib",
+				"libgmalloc.dylib",
+				"libc++abi.dylib",
+				"modified_gmalloc.dylib", // Apple internal dylib
+				"???",                    // For when it doesn't exist in a known module
+			};
+
+			private static readonly string[] offset_functions = 
+			{
+				"__memcpy",
+				"__longcopy",
+				"__memmove",
+				"__bcopy",
+				"__memset_pattern",
+				"__bzero",
+				"memcpy",
+				"longcopy",
+				"memmove",
+				"bcopy",
+				"bzero",
+				"memset_pattern",
+			};
+
+			private const int major_depth = 5;
+
+			public Summary(string log)
+			{
+				string is_exploitable = null;
+				string access_type = null;
+				string exception = null;
+
+				exploitable = "UNKNOWN";
+
+				var reProp = new Regex(@"^(((?<key>\w+)=(?<value>[^:]+):)+)$", RegexOptions.Multiline);
+				var mProp = reProp.Match(log);
+				if (mProp.Success)
+				{
+					var ti = System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo;
+					var keys = mProp.Groups["key"].Captures;
+					var vals = mProp.Groups["value"].Captures;
+
+					System.Diagnostics.Debug.Assert(keys.Count == vals.Count);
+
+					for (int i = 0; i < keys.Count; ++i)
+					{
+						var key = keys[i].Value;
+						var val = vals[i].Value;
+
+						switch (key)
+						{
+							case "is_exploitable":
+								is_exploitable = val.ToLower();
+								break;
+							case "exception":
+								exception = string.Join("", val.ToLower().Split('_').Where(a => a != "exc").Select(a => ti.ToTitleCase(a)).ToArray());
+								break;
+							case "access_type":
+								access_type = ti.ToTitleCase(val.ToLower());
+								break;
+						}
+					}
+				}
+
+				title = string.Format("{0}{1}", access_type, exception);
+
+				if (is_exploitable == null)
+					exploitable = "UNKNOWN";
+				else if (is_exploitable == "yes")
+					exploitable = "EXPLOITABLE";
+				else
+					exploitable = "NOT_EXPLOITABLE";
+
+				Regex reTid = new Regex(@"^Crashed Thread:\s+(\d+)", RegexOptions.Multiline);
+				Match mTid = reTid.Match(log);
+				if (!mTid.Success)
+					return;
+
+				string tid = mTid.Groups[1].Value;
+				string strReAddr = @"^Thread " + tid + @" Crashed:.*\n((\d+\s+(?<file>\S*)\s+(?<addr>0x[0-9,a-f,A-F]+)\s(?<func>.+)\n)+)";
+				Regex reAddr = new Regex(strReAddr, RegexOptions.Multiline);
+				Match mAddr = reAddr.Match(log);
+				if (!mAddr.Success)
+					return;
+
+				var files = mAddr.Groups["file"].Captures;
+				var addrs = mAddr.Groups["addr"].Captures;
+				var names = mAddr.Groups["func"].Captures;
+
+				string maj = "";
+				string min = "";
+				int cnt = 0;
+
+				for (int i = 0; i < files.Count; ++i)
+				{
+					var file = files[i].Value;
+					var addr = addrs[i].Value;
+					var name = names[i].Value;
+
+					// Ignore certian system modules
+					if (system_modules.Contains(file))
+						continue;
+
+					// When generating a signature, remove offsets for common functions
+					string other = offset_functions.Where(a => name.StartsWith(a)).FirstOrDefault();
+					if (other != null)
+						addr = other;
+
+					string sig = (cnt == 0 ? "" : ",") + addr;
+					min += sig;
+
+					if (++cnt <= major_depth)
+						maj += sig;
+				}
+
+				// If we have no usable backtrace info, hash on the reProp line
+				if (cnt == 0)
+				{
+					maj = mProp.Value;
+					min = mProp.Value;
+				}
+
+				majorHash = Md5(maj);
+				minorHash = Md5(min);
+			}
+
+			private static string Md5(string input)
+			{
+				using (var md5 = new System.Security.Cryptography.MD5CryptoServiceProvider())
+				{
+					byte[] buf = Encoding.UTF8.GetBytes(input);
+					byte[] final = md5.ComputeHash(buf);
+					var sb = new StringBuilder();
+					foreach (byte b in final)
+						sb.Append(b.ToString("X2"));
+					return sb.ToString();
+				}
+			}
+		}
 	}
 }
 

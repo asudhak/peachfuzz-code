@@ -654,24 +654,43 @@ namespace Peach.Core.Dom
 			throw new ActionChangeStateException(this.parent.parent.states[reference]);
 		}
 
+		class PeachXmlNamespaceResolver : IXmlNamespaceResolver
+		{
+			public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
+			{
+				return new Dictionary<string, string>();
+			}
+
+			public string LookupNamespace(string prefix)
+			{
+				return prefix;
+			}
+
+			public string LookupPrefix(string namespaceName)
+			{
+				return namespaceName;
+			}
+		}
+
 		protected void handleSlurp(RunContext context)
 		{
+			PeachXmlNamespaceResolver resolver = new PeachXmlNamespaceResolver();
 			PeachXPathNavigator navi = new PeachXPathNavigator(context.dom);
-			var iter = navi.Select(valueXpath);
+			var iter = navi.Select(valueXpath, resolver);
 			if (!iter.MoveNext())
-				throw new PeachException("Error, slurp valueXpath returned no values. [" + valueXpath + "]");
+				throw new SoftException("Error, slurp valueXpath returned no values. [" + valueXpath + "]");
 
 			DataElement valueElement = ((PeachXPathNavigator)iter.Current).currentNode as DataElement;
 			if (valueElement == null)
-				throw new PeachException("Error, slurp valueXpath did not return a Data Element. [" + valueXpath + "]");
+				throw new SoftException("Error, slurp valueXpath did not return a Data Element. [" + valueXpath + "]");
 
 			if (iter.MoveNext())
-				throw new PeachException("Error, slurp valueXpath returned multiple values. [" + valueXpath + "]");
+				throw new SoftException("Error, slurp valueXpath returned multiple values. [" + valueXpath + "]");
 
-			iter = navi.Select(setXpath);
+			iter = navi.Select(setXpath, resolver);
 
 			if (!iter.MoveNext())
-				throw new PeachException("Error, slurp setXpath returned no values. [" + setXpath + "]");
+				throw new SoftException("Error, slurp setXpath returned no values. [" + setXpath + "]");
 
 			do
 			{

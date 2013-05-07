@@ -64,6 +64,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public Fault crashInfo = null;
 
 		ManualResetEvent _dbgCreated;
+		Exception runException = null;
 		
 		public SystemDebuggerInstance()
 		{
@@ -120,6 +121,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 				FinishDebugging();
 
 			_dbgCreated = new ManualResetEvent(false);
+			runException = null;
 
 			_dbgThread = new Thread(new ThreadStart(Run));
 			_dbgThread.Start();
@@ -127,8 +129,15 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			// Wait for process to start up.
 			_dbgCreated.WaitOne();
 
-			if(_dbg != null)
-				_dbg.processStarted.WaitOne();
+			if(_dbg == null)
+			{
+				System.Diagnostics.Debug.Assert(runException != null);
+				var ex = runException;
+				runException = null;
+				throw new PeachException(ex.Message, ex);
+			}
+
+			_dbg.processStarted.WaitOne();
 		}
 
 		public void StopDebugger()
@@ -190,10 +199,10 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					}
 
 					if (proc == null && int.TryParse(processName, out pid))
-						proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
+						proc = System.Diagnostics.Process.GetProcessById(pid);
 
 					if (proc == null)
-						throw new Exception("Unable to locate process by \"" + processName + "\".");
+						throw new Exception("Unable to locate process id from name \"" + processName + "\".");
 
 					pid = proc.Id;
 
@@ -227,6 +236,7 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			catch (Exception ex)
 			{
 				logger.Error("Run(): Caught exception starting debugger: " + ex.ToString());
+				runException = ex;
 			}
 			finally
 			{

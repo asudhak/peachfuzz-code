@@ -42,6 +42,7 @@ using SharpPcap;
 using NLog;
 using NLog.Targets;
 using NLog.Config;
+using System.Threading;
 
 namespace Peach.Core.Runtime
 {
@@ -63,7 +64,6 @@ namespace Peach.Core.Runtime
 
 		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
 		public Peach.Core.Dom.Dom dom;
-		RunConfiguration config = new RunConfiguration();
 
 		public int exitCode = 1;
 
@@ -90,14 +90,13 @@ namespace Peach.Core.Runtime
 
 		public Program(string[] args)
 		{
+			AppDomain.CurrentDomain.DomainUnload += new EventHandler(CurrentDomain_DomainUnload);
+			Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 			RunConfiguration config = new RunConfiguration();
-			config.shouldStop = delegate() { return stopCount > 0; };
 			config.debug = false;
 
 			try
 			{
-				Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
-
 				string analyzer = null;
 				bool test = false;
 				string agent = null;
@@ -148,6 +147,8 @@ namespace Peach.Core.Runtime
 					Syntax();
 
 				Platform.LoadAssembly();
+
+				AddNewDefine("Peach.Cwd=" + Environment.CurrentDirectory);
 
 				foreach (var definedValuesFile in definedValues)
 				{
@@ -263,6 +264,10 @@ namespace Peach.Core.Runtime
 			{
 				// Ignore, thrown by syntax()
 			}
+			catch (OptionException oe)
+			{
+					Console.WriteLine(oe.Message +"\n"); 
+			}
 			catch (PeachException ee)
 			{
 				if (config.debug)
@@ -278,6 +283,11 @@ namespace Peach.Core.Runtime
 				// Reset console colors
 				Console.ForegroundColor = DefaultForground;
 			}
+		}
+
+		protected static void CurrentDomain_DomainUnload(object sender, EventArgs e)
+		{
+			Console.ForegroundColor = DefaultForground;
 		}
 
 		/// <summary>
@@ -503,14 +513,20 @@ Debug Peach XML File
 			config.parallel = true;
 		}
 
-		protected static int stopCount = 0;
 		protected static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
 		{
 			Console.WriteLine();
 			Console.WriteLine(" --- Ctrl+C Detected --- ");
 
-			if (++stopCount == 1)
-				e.Cancel = true;
+			e.Cancel = true;
+
+			// Need to call Environment.Exit from outside this event handler
+			// to ensure the finalizers get called...
+			// http://www.codeproject.com/Articles/16164/Managed-Application-Shutdown
+			new Thread(delegate()
+			{
+				Environment.Exit(0);
+			}).Start();
 		}
 
 		public void AddNewDefine(string value)

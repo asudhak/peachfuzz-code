@@ -52,7 +52,9 @@ namespace Peach.Core.Test.Analyzers
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
                 "	<DataModel name=\"TheDataModel\">" +
                 "       <Blob name=\"TheBlob\">" +
-                "           <Analyzer class=\"Binary\" /> "+
+                "           <Analyzer class=\"Binary\"> "+
+                "               <Param name=\"AnalyzeStrings\" value=\"false\"/> "+
+                "           </Analyzer> "+
                 "       </Blob>"+
                 "	</DataModel>" +
                 "</Peach>";

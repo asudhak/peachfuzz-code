@@ -90,11 +90,13 @@ namespace Peach.Core.Analyzers
 			var ret = new Dictionary<string, string>();
 			var keys = new HashSet<string>();
 
-			if (!File.Exists(definedValuesFile))
+			string normalized = Path.GetFullPath(definedValuesFile);
+
+			if (!File.Exists(normalized))
 				throw new PeachException("Error, defined values file \"" + definedValuesFile + "\" does not exist.");
 
 			XmlDocument xmlDoc = new XmlDocument();
-			xmlDoc.Load(definedValuesFile);
+			xmlDoc.Load(normalized);
 
 			var root = xmlDoc.FirstChild;
 			if (root.Name != "PitDefines")
@@ -228,8 +230,7 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// Validate PIT XML using Schema file.
 		/// </summary>
-		/// <param name="fileName">Pit file to validate</param>
-		/// <param name="schema">Peach XML Schema file</param>
+		/// <param name="xmlData">Pit file to validate</param>
 		private void validatePit(string xmlData)
 		{
 			XmlSchemaSet set = new XmlSchemaSet();
@@ -293,7 +294,9 @@ namespace Peach.Core.Analyzers
 		/// NOTE: This method is intended to be overriden (hence the virtual) and is 
 		///			currently in use by Godel to extend the Pit Parser.
 		/// </remarks>
+		/// <param name="dom">Dom object</param>
 		/// <param name="node">XmlNode to parse</param>
+		/// <param name="args">Parser arguments</param>
 		/// <returns>Returns the parsed Dom object.</returns>
 		protected virtual void handlePeach(Dom.Dom dom, XmlNode node, Dictionary<string, object> args)
 		{
@@ -310,18 +313,18 @@ namespace Peach.Core.Analyzers
 						string ns = child.getAttrString("ns");
 						string fileName = child.getAttrString("src");
 						fileName = fileName.Replace("file:", "");
+						string normalized = Path.GetFullPath(fileName);
 
-						if (!File.Exists(fileName))
+						if (!File.Exists(normalized))
 						{
 							string newFileName = Path.Combine(
 								Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 								fileName);
 
-							if (!File.Exists(newFileName))
-							{
-								Console.WriteLine(newFileName);
+							normalized = Path.GetFullPath(newFileName);
+
+							if (!File.Exists(normalized))
 								throw new PeachException("Error, Unable to locate Pit file [" + fileName + "].\n");
-							}
 
 							fileName = newFileName;
 						}
@@ -498,6 +501,7 @@ namespace Peach.Core.Analyzers
 		/// namespace is given, but not found.
 		/// </summary>
 		/// <param name="name">Ref name to resolve.</param>
+		/// <param name="container">Container to start searching from.</param>
 		/// <returns>DataElement for ref or null if not found.</returns>
 		public DataElement getReference(string name, DataElementContainer container)
 		{
@@ -548,30 +552,13 @@ namespace Peach.Core.Analyzers
 		/// Find a referenced Dom element by name, taking into account namespace prefixes.
 		/// </summary>
 		/// <typeparam name="T">Type of Dom element.</typeparam>
+		/// <param name="dom">Dom to search in</param>
 		/// <param name="refName">Name of reference</param>
 		/// <param name="predicate">Selector predicate that returns the element collection</param>
 		/// <returns></returns>
 		protected T getRef<T>(Dom.Dom dom, string refName, Func<Dom.Dom, OrderedDictionary<string, T>> predicate)
 		{
-			int i = refName.IndexOf(':');
-			if (i > -1)
-			{
-				string ns = refName.Substring(0, i);
-
-				Dom.Dom other;
-				if (!dom.ns.TryGetValue(ns, out other))
-					throw new PeachException("Unable to locate namespace '" + ns + "' in ref '" + refName + "'.");
-
-				refName = refName.Substring(i + 1);
-
-				return getRef<T>(other, refName, predicate);
-			}
-
-			var dict = predicate(dom);
-			T value = default(T);
-			if (dict.TryGetValue(refName, out value))
-				return value;
-			return default(T);
+			return dom.getRef<T>(refName, predicate);
 		}
 
 		#endregion
@@ -988,13 +975,24 @@ namespace Peach.Core.Analyzers
 				{
 					if (childName != null && childName.IndexOf(".") > -1)
 					{
-						DataElement parent = element.find(childName);
+						var parentName = childName.Substring(0, childName.LastIndexOf('.'));
+						var parent = element.find(parentName) as DataElementContainer;
+
 						if (parent == null)
-							throw new PeachException("Error, child name has dot notation but replacement element not found: '" + elem.name + ".");
+							throw new PeachException("Error, child name has dot notation but parent element not found: '" + parentName + ".");
 
-						System.Diagnostics.Debug.Assert(elem.name == parent.name);
-
-						replaceChild(parent.parent, elem);
+						var choice = parent as Choice;
+						if (choice != null)
+						{
+							updateChoice(choice, elem);
+						}
+						else
+						{
+							if (parent.ContainsKey(elem.name))
+								replaceChild(parent, elem);
+							else
+								parent.Add(elem);
+						}
 					}
 					else
 					{
@@ -1056,6 +1054,28 @@ namespace Peach.Core.Analyzers
 			}
 
 			parent[newChild.name] = newChild;
+		}
+
+		private static void updateChoice(Choice parent, DataElement newChild)
+		{
+			if (!parent.choiceElements.ContainsKey(newChild.name))
+			{
+				parent.choiceElements.Add(newChild.name, newChild);
+				newChild.parent = parent;
+				return;
+			}
+
+			var oldChild = parent.choiceElements[newChild.name];
+			oldChild.parent = null;
+
+			replaceRelations(newChild, oldChild, oldChild);
+
+			foreach (var elem in oldChild.EnumerateAllElements())
+			{
+				replaceRelations(newChild, oldChild, elem);
+			}
+
+			parent.choiceElements[newChild.name] = newChild;
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
@@ -1503,7 +1523,6 @@ namespace Peach.Core.Analyzers
 		protected virtual ActionParameter handleActionParameter(XmlNode node, Dom.Action parent)
 		{
 			ActionParameter param = new ActionParameter();
-			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
 
 			if (node.hasAttr("name"))
 				param.name = node.getAttrString("name");
@@ -1533,7 +1552,6 @@ namespace Peach.Core.Analyzers
 		protected virtual ActionResult handleActionResult(XmlNode node, Dom.Action parent)
 		{
 			ActionResult result = new ActionResult();
-			Dom.Dom dom = parent.parent.parent.parent as Dom.Dom;
 
 			if (node.hasAttr("name"))
 				result.name = node.getAttrString("name");
@@ -1579,24 +1597,7 @@ namespace Peach.Core.Analyzers
 			{
 				string dataFileName = node.getAttrString("fileName");
 
-				if (Directory.Exists(dataFileName))
-				{
-					List<string> files = new List<string>();
-					foreach (string fileName in Directory.GetFiles(dataFileName))
-						files.Add(fileName);
-
-					if (files.Count == 0)
-						throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
-
-					data.DataType = DataType.Files;
-					data.Files = files;
-				}
-				else if (File.Exists(dataFileName))
-				{
-					data.DataType = DataType.File;
-					data.FileName = dataFileName;
-				}
-				else if (dataFileName.Contains('*'))
+				if (dataFileName.Contains('*'))
 				{
 					string pattern = Path.GetFileName(dataFileName);
 					string dir = dataFileName.Substring(0, dataFileName.Length - pattern.Length);
@@ -1604,10 +1605,16 @@ namespace Peach.Core.Analyzers
 					if (dir == "")
 						dir = ".";
 
-					if (!dir.Contains('*'))
+					try
 					{
+						dir = Path.GetFullPath(dir);
 						string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
 						data.Files.AddRange(files);
+					}
+					catch (ArgumentException ex)
+					{
+						// Directory is not legal
+						throw new PeachException("Error parsing Data element, fileName contains invalid characters: " + dataFileName, ex);
 					}
 
 					if (data.Files.Count == 0)
@@ -1617,7 +1624,36 @@ namespace Peach.Core.Analyzers
 				}
 				else
 				{
-					throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+					try
+					{
+						string normalized = Path.GetFullPath(dataFileName);
+
+						if (Directory.Exists(normalized))
+						{
+							List<string> files = new List<string>();
+							foreach (string fileName in Directory.GetFiles(normalized))
+								files.Add(fileName);
+
+							if (files.Count == 0)
+								throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
+
+							data.DataType = DataType.Files;
+							data.Files = files;
+						}
+						else if (File.Exists(normalized))
+						{
+							data.DataType = DataType.File;
+							data.FileName = normalized;
+						}
+						else
+						{
+							throw new PeachException("Error parsing Data element, file or folder does not exist: " + dataFileName);
+						}
+					}
+					catch (ArgumentException ex)
+					{
+						throw new PeachException("Error parsing Data element, fileName contains invalid characters: " + dataFileName, ex);
+					}
 				}
 			}
 
@@ -1766,6 +1802,7 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, could not locate StateModel named '" +
 							strRef + "' for Test '" + test.name + "'.");
 
+					test.stateModel.name = strRef;
 					test.stateModel.parent = test.parent;
 				}
 

@@ -280,7 +280,16 @@ namespace Peach.Core.Agent
 			OnSessionFinishedEvent();
 
 			foreach (Monitor monitor in monitors.Values.Reverse())
-				monitor.SessionFinished();
+			{
+				try
+				{
+					monitor.SessionFinished();
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling SessionFinished: " + ex.Message);
+				}
+			}
 		}
 
 		public void IterationStarting(uint iterationCount, bool isReproduction)
@@ -299,8 +308,17 @@ namespace Peach.Core.Agent
 
 			bool replay = false;
 			foreach (Monitor monitor in monitors.Values.Reverse())
-				if (monitor.IterationFinished())
-					replay = true;
+			{
+				try
+				{
+					if (monitor.IterationFinished())
+						replay = true;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling IterationFinished: " + ex.Message);
+				}
+			}
 
 			return replay;
 		}
@@ -312,8 +330,17 @@ namespace Peach.Core.Agent
 
 			bool detectedFault = false;
 			foreach (Monitor monitor in monitors.Values)
-				if (monitor.DetectedFault())
-					detectedFault = true;
+			{
+				try
+				{
+					if (monitor.DetectedFault())
+						detectedFault = true;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling DetectedFault: " + ex.Message);
+				}
+			}
 
 			return detectedFault;
 		}
@@ -323,10 +350,19 @@ namespace Peach.Core.Agent
 			logger.Trace("GetMonitorData");
 			OnGetMonitorDataEvent();
 
-            List<Fault> faults = new List<Fault>();
+			List<Fault> faults = new List<Fault>();
 
-            foreach (Monitor monitor in monitors.Values)
-                faults.Add(monitor.GetMonitorData());
+			foreach (Monitor monitor in monitors.Values)
+			{
+				try
+				{
+					faults.Add(monitor.GetMonitorData());
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling GetMonitorData: " + ex.Message);
+				}
+			}
 
 			return faults.ToArray();
 		}
@@ -337,8 +373,17 @@ namespace Peach.Core.Agent
 			OnMustStopEvent();
 
 			foreach (Monitor monitor in monitors.Values)
-				if (monitor.MustStop())
-					return true;
+			{
+				try
+				{
+					if (monitor.MustStop())
+						return true;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling MustStop: " + ex.Message);
+				}
+			}
 
 			return false;
 		}

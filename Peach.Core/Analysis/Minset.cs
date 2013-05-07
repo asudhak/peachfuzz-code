@@ -168,7 +168,9 @@ namespace Peach.Core.Analysis
 		/// This method will use the TraceStarting and TraceCompleted events
 		/// to report progress.
 		/// </remarks>
-		/// <param name="command">Command to execute.  Must contain a "%s" placeholder for the sampe filename.</param>
+		/// <param name="executable">Executable to run.</param>
+		/// <param name="arguments">Executable arguments.  Must contain a "%s" placeholder for the sampe filename.</param>
+		/// <param name="tracesFolder">Where to write trace files</param>
 		/// <param name="sampleFiles">Collection of sample files</param>
 		/// <param name="needsKilling">Does this command requiring forcefull killing to exit?</param>
 		/// <returns>Returns a collection of trace files</returns>
@@ -182,7 +184,7 @@ namespace Peach.Core.Analysis
 				int count = 0;
 				string traceFilename = null;
 				List<string> traces = new List<string>();
-				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable);
+				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable, needsKilling);
 
 				foreach (string fileName in sampleFiles)
 				{
@@ -212,6 +214,7 @@ namespace Peach.Core.Analysis
 		/// <summary>
 		/// Create a single trace file based on code coverage stats for fileName.
 		/// </summary>
+		/// <param name="cov">Coverage stats</param>
 		/// <param name="traceFile">Output trace to this filename</param>
 		/// <param name="executable">Command to execute.</param>
 		/// <param name="arguments">Command arguments.</param>
@@ -220,7 +223,7 @@ namespace Peach.Core.Analysis
 		/// <returns>True on success, false if a failure occured.</returns>
 		public bool RunSingleTrace(Coverage cov, string traceFile, string executable, string arguments, List<ulong> basicBlocks, bool needsKilling = false)
 		{
-			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, basicBlocks);
+			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, needsKilling, basicBlocks);
 
 			// Delete existing trace file
 			if (File.Exists(traceFile))

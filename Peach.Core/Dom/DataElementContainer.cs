@@ -47,11 +47,9 @@ namespace Peach.Core.Dom
 	/// Abstract base class for DataElements that contain other
 	/// data elements.  Such as Block, Choice, or Flags.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public abstract class DataElementContainer : DataElement, IEnumerable<DataElement>, IList<DataElement>
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected List<DataElement> _childrenList = new List<DataElement>();
 		protected Dictionary<string, DataElement> _childrenDict = new Dictionary<string, DataElement>();
 
@@ -107,23 +105,33 @@ namespace Peach.Core.Dom
 
 		public DataElement QuickNameMatch(string[] names)
 		{
-			try
+			if (names.Length == 0)
+				throw new ArgumentException("Array must contain at least one entry.", "names");
+
+			if (this.name != names[0])
+				return null;
+
+			DataElement ret = this;
+			for (int cnt = 1; cnt < names.Length; cnt++)
 			{
-				if (this.name != names[0])
+				var cont = ret as DataElementContainer;
+				if (cont == null)
 					return null;
 
-				DataElement ret = this;
-				for (int cnt = 1; cnt < names.Length; cnt++)
+				var choice = cont as Choice;
+				if (choice != null)
 				{
-					ret = ((DataElementContainer)ret)[names[cnt]];
+					if (!choice.choiceElements.TryGetValue(names[cnt], out ret))
+						return null;
 				}
+				else
+				{
+					if (!cont._childrenDict.TryGetValue(names[cnt], out ret))
+						return null;
+				}
+			}
 
-				return ret;
-			}
-			catch
-			{
-				return null;
-			}
+			return ret;
 		}
 
 		public override BitStream  ReadSizedData(BitStream data, long? size, long read = 0)

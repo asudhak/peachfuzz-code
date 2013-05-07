@@ -363,21 +363,21 @@ namespace Peach.Core.Test.PitParserTests
 			{
 				string xml = string.Format("<Peach><Data name='data' fileName=''/></Peach>", tempDir);
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 
 			Assert.Throws<PeachException>(delegate()
 			{
 				string xml = string.Format("<Peach><Data name='data' fileName='foo'/></Peach>", tempDir);
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 
 			Assert.Throws<PeachException>(delegate()
 			{
 				string xml = string.Format("<Peach><Data name='data' fileName='*/foo'/></Peach>", tempDir);
 				PitParser parser = new PitParser();
-				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
 
 			{
@@ -461,6 +461,7 @@ namespace Peach.Core.Test.PitParserTests
 		<Mutators mode='include'>
 			<Mutator class='StringCaseMutator'/>
 		</Mutators>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 			xml = string.Format(xml, Platform.GetOS() == Platform.OS.Windows ? "linux" : "windows");

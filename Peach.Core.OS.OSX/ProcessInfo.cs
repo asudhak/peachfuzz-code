@@ -140,19 +140,33 @@ namespace Peach.Core
 			var kp = GetKernProc(p.Id);
 			if (!kp.HasValue)
 			{
-				if (p.HasExited)
+				try
+				{
+					if (p.HasExited)
+						throw new ArgumentException();
+					else
+						throw new UnauthorizedAccessException();
+				}
+				catch
+				{
 					throw new ArgumentException();
-				else
-					throw new UnauthorizedAccessException();
+				}
 			}
 
 			var ti = GetTaskInfo(p.Id);
 			if (!ti.HasValue)
 			{
-				if (p.HasExited)
+				try
+				{
+					if (p.HasExited)
+						throw new ArgumentException();
+					else
+						throw new UnauthorizedAccessException();
+				}
+				catch
+				{
 					throw new ArgumentException();
-				else
-					throw new UnauthorizedAccessException();
+				}
 			}
 
 			ProcessInfo pi = new ProcessInfo();

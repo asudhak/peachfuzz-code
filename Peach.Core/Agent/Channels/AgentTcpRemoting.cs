@@ -265,6 +265,8 @@ namespace Peach.Core.Agent.Channels
 
 			OnIterationStartingEvent(iterationCount, isReproduction);
 
+			if (_restartAgent)
+				_restartAgent = false;
 
 			try
 			{

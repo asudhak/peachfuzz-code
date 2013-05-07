@@ -34,7 +34,6 @@ namespace Peach.Core
 		/// <param name="name"></param>
 		/// <param name="type"></param>
 		/// <param name="description"></param>
-		/// <param name="defaultValue"></param>
 		public ParameterAttribute(string name, Type type, string description)
 		{
 			this.name = name;

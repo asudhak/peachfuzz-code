@@ -48,12 +48,15 @@ namespace Peach.Core.Test.Publishers
 			}
 			listener.Start();
 
-			IAsyncResult ar = listener.BeginGetContext(null, null);
+			IAsyncResult ar = null;
 
 			while(!stop)
 			{
 				try
 				{
+					if (ar == null)
+						 ar = listener.BeginGetContext(null, null);
+
 					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1)))
 						continue;
 
@@ -81,7 +84,7 @@ namespace Peach.Core.Test.Publishers
 					output.Close();
 					response.Close();
 
-					ar = listener.BeginGetContext(null, null);
+					ar = null;
 				}
 				catch
 				{

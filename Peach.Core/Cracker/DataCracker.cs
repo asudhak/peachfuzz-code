@@ -150,7 +150,7 @@ namespace Peach.Core.Cracker
 		/// <remarks>
 		/// Method will throw one of two exceptions on an error: CrackingFailure, or NotEnoughDataException.
 		/// </remarks>
-		/// <param name="model">DataModel to import data into</param>
+		/// <param name="element">DataElement to import data into</param>
 		/// <param name="data">Data stream to read data from</param>
 		public void CrackData(DataElement element, BitStream data)
 		{
@@ -187,7 +187,7 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// Determines if the From half of a relation has been cracked.
 		/// </summary>
-		/// <param name="elem">The Relation to test.</param>
+		/// <param name="rel">The Relation to test.</param>
 		/// <returns>True if the From half has been cracked, false otherwise.</returns>
 		public bool HasCracked(Relation rel)
 		{
@@ -282,7 +282,7 @@ namespace Peach.Core.Cracker
 		/// will hand cracking off to a more specific method after performing
 		/// some common tasks.
 		/// </summary>
-		/// <param name="element">DataElement to crack</param>
+		/// <param name="elem">DataElement to crack</param>
 		/// <param name="data">Input stream to use for data</param>
 		void handleNode(DataElement elem, BitStream data)
 		{
@@ -664,7 +664,7 @@ namespace Peach.Core.Cracker
 
 			for (int i = tokenCount; i < tokens.Count; ++i)
 			{
-				tokens[i].Optional = array.minOccurs == 0;
+				tokens[i].Optional = array.Count >= array.minOccurs;
 				tokens[i].Position += pos;
 			}
 
@@ -713,15 +713,22 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			// Look for optional tokens, if none found and we are minOccurs==0, our size is 0
+			// Look for optional tokens, if none found and we are greater than minOccurs, our size is 0
 			for (int i = tokenCount; i < tokens.Count; ++i)
 			{
 				long? where = findToken(_dataStack.First(), tokens[i].Element.Value, tokens[i].Position);
 				if (!where.HasValue && tokens[i].Optional)
 				{
-					logger.Debug("scanArray: {0} -> Missing Token, minOccurs==0", array.debugName);
+					logger.Debug("scanArray: {0} -> Missing Token, minOccurs <= Count", array.debugName);
 					return true;
 				}
+			}
+
+			// If no tokens exist and we are greater than minOccurs, our size is 0
+			if (until == Until.FirstUnsized && array.Count >= array.minOccurs && tokenCount == tokens.Count)
+			{
+				logger.Debug("scanArray: {0} -> Unsized, minOccurs <= Count", array.debugName);
+				return true;
 			}
 
 			logger.Debug("scanArray: {0} -> {1}", array.debugName,
@@ -935,17 +942,34 @@ namespace Peach.Core.Cracker
 			}
 			
 			// 3rd priority, token scan
+			long? closest = null;
+			Mark winner = null;
+
 			foreach (var token in tokens)
 			{
 				long? where = findToken(data, token.Element.Value, token.Position);
-				if (where.HasValue || !token.Optional)
+				if (!where.HasValue && !token.Optional)
 				{
-					logger.Debug("getSize: <----- {0}{1} Token: {2}",
-						where.HasValue ? "" : "Missing ",
-						token.Optional ? "Optional" : "Required",
-						where.HasValue ? where.ToString() : "???");
+					logger.Debug("getSize: <----- Missing Required Token: ???");
 					return where;
 				}
+
+				if (!where.HasValue)
+					continue;
+
+				if (!closest.HasValue || closest.Value > where.Value)
+				{
+					closest = where.Value;
+					winner = token;
+				}
+			}
+
+			if (closest.HasValue)
+			{
+				logger.Debug("getSize: <----- {0} Token: {1}",
+					winner.Optional ? "Optional" : "Required",
+					closest.ToString());
+				return closest;
 			}
 
 			if (tokens.Count > 0)
@@ -969,7 +993,7 @@ namespace Peach.Core.Cracker
 		/// <param name="pos">The position of the scanner when 'until' occurs.</param>
 		/// <param name="tokens">List of tokens found when scanning.</param>
 		/// <param name="end">If non-null and an element with an offset relation is detected,
-		/// record the element's absolute position and stop scanning.</param>
+		/// record the element's absolute position and stop scanning.
 		/// Either first sized element or first unsized element.</param>
 		/// <returns>Null if an unsized element was found.
 		/// False if a deterministic element was found.
@@ -984,6 +1008,7 @@ namespace Peach.Core.Cracker
 			// 3) The end of the data model
 
 			DataElement prev = elem;
+			bool? final = true;
 
 			while (true)
 			{
@@ -997,7 +1022,7 @@ namespace Peach.Core.Cracker
 						return ret;
 
 					if (end.Element != null)
-						return true;
+						return final;
 				}
 				else if (prev.parent == null)
 				{
@@ -1017,9 +1042,15 @@ namespace Peach.Core.Cracker
 						if (array.maxOccurs == -1 || array.Count < array.maxOccurs)
 						{
 							long arrayPos = pos;
+							int tokenCount = tokens.Count;
 							var ret = scanArray(array, ref arrayPos, tokens, Until.FirstUnsized);
 							if (!ret.HasValue || ret.Value == false)
-								return ret;
+							{
+								if (tokenCount == tokens.Count)
+									return ret;
+								else
+									final = ret;
+							}
 						}
 					}
 
@@ -1030,7 +1061,7 @@ namespace Peach.Core.Cracker
 				prev = curr;
 			}
 
-			return true;
+			return final;
 		}
 
 		#endregion

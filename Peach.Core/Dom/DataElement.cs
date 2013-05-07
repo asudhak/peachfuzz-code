@@ -92,7 +92,6 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Base class for all data elements.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	[DebuggerDisplay("{debugName}")]
 	public abstract class DataElement : INamed
@@ -487,7 +486,7 @@ namespace Peach.Core.Dom
 
 		/// <summary>
 		/// Constraint on value of data element.
-		/// </summery>
+		/// </summary>
 		/// <remarks>
 		/// This
 		/// constraint is only enforced when loading data into

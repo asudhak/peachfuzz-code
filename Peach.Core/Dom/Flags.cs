@@ -60,7 +60,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Flags : DataElementContainer
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected int _size = 0;
 		protected bool _isLittleEndian = true;
 

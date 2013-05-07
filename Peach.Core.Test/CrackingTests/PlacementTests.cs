@@ -465,6 +465,7 @@ namespace Peach.Core.Test.CrackingTests
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			var expected = data.Value;
+			Assert.NotNull(expected);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);

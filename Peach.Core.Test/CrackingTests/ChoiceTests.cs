@@ -577,6 +577,98 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Choice 1=foo,Choice 2=bar", str);
 		}
 
+		[Test]
+		public void ChoiceUnsizedLookahead()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Choice name=""c"">
+			<Block name=""C1"">
+				<Number size=""8"" value=""0xff"" token=""true""/>
+				<Blob/>
+			</Block>
+			<Block name=""C2"">
+				<Blob length=""1""/>
+				<Blob/>
+			</Block>
+		</Choice>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// Generate Value prior to cracking, to simulate state model running then an input action
+			var model = dom.dataModels[0].Value;
+			Assert.NotNull(model);
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x02, 0x05, 0x33, 0x44, 0x55 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+
+			Dom.Choice c = (Dom.Choice)dom.dataModels[0][0];
+			var selected = c.SelectedElement as Dom.Block;
+			Assert.AreEqual("C2", selected.name);
+			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
+			Assert.AreEqual(4, ((byte[])selected[1].DefaultValue).Length);
+		}
+
+		[Test]
+		public void ChoiceUnsizedLookahead2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Choice name=""c"">
+			<Block name=""C1"">
+				<Blob name=""blb"" length=""1"" valueType=""hex"" value=""0x08"" token=""true""/>
+				<Block name=""array"" minOccurs=""0"">
+					<Blob name=""inner"" length=""1"" valueType=""hex"" value=""0x05""/>
+					<Blob name=""unsized""/>
+				</Block>
+			</Block>
+		</Choice>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// Generate Value prior to cracking, to simulate state model running then an input action
+			var model = dom.dataModels[0].Value;
+			Assert.NotNull(model);
+
+			BitStream data = new BitStream();
+			data.LittleEndian();
+			data.WriteBytes(new byte[] { 0x08, 0x05, 0x33, 0x44, 0x55 });
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+
+			Dom.Choice c = dom.dataModels[0][0] as Dom.Choice;
+			Assert.NotNull(c);
+			var selected = c.SelectedElement as Dom.Block;
+			Assert.NotNull(selected);
+			Assert.AreEqual("C1", selected.name);
+			Assert.AreEqual(2, selected.Count);
+			var array = selected[1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var innerBlock = array[0] as Dom.Block;
+			Assert.NotNull(innerBlock);
+			Assert.AreEqual(2, innerBlock.Count);
+			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
+			Assert.AreEqual(1, ((byte[])innerBlock[0].DefaultValue).Length);
+			Assert.AreEqual(3, ((byte[])innerBlock[1].DefaultValue).Length);
+		}
 	}
 }
 

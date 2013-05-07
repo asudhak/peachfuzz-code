@@ -45,6 +45,7 @@ using NLog;
  */
 namespace Peach.Core.MutationStrategies
 {
+	[DefaultMutationStrategy]
 	[MutationStrategy("Random", true)]
 	[MutationStrategy("RandomStrategy")]
 	[Parameter("SwitchCount", typeof(int), "Number of iterations to perform per-mutator befor switching.", "200")]
@@ -57,12 +58,24 @@ namespace Peach.Core.MutationStrategies
 			public uint iteration = 1;
 		};
 
-		protected class Iterations : Dictionary<string, List<Mutator>> { }
+		protected class ElementId : Tuple<string, string>
+		{
+			public ElementId(string modelName, string elementName)
+				: base(modelName, elementName)
+			{
+			}
+
+			public string ModelName { get { return Item1; } }
+			public string ElementName { get { return Item2; } }
+		}
+
+		protected class Iterations : OrderedDictionary<ElementId, List<Mutator>> { }
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		Dictionary<string, DataSetTracker> _dataSets;
+		OrderedDictionary<string, DataSetTracker> _dataSets;
 		List<Type> _mutators;
 		Iterations _iterations;
+		KeyValuePair<ElementId, List<Mutator>>[] _mutations;
 
 		/// <summary>
 		/// container also contains states if we have mutations
@@ -70,8 +83,6 @@ namespace Peach.Core.MutationStrategies
 		/// conflicting with data model names.
 		/// Use a list to maintain the order this strategy learns about data models
 		/// </summary>
-		List<string> _dataModels;
-		string _targetDataModel;
 		uint _iteration;
 		Random _randomDataSet;
 		uint _lastIteration = 1;
@@ -111,8 +122,15 @@ namespace Peach.Core.MutationStrategies
 			if (context.controlIteration && context.controlRecordingIteration)
 			{
 				_iterations = new Iterations();
-				_dataModels = new List<string>();
-				_dataSets = new Dictionary<string, DataSetTracker>();
+				_dataSets = new OrderedDictionary<string, DataSetTracker>();
+				_mutations = null;
+			}
+			else
+			{
+				// Random.Next() Doesn't include max and we want it to
+				var fieldsToMutate = Random.Next(1, maxFieldsToMutate + 1);
+
+				_mutations = Random.Sample(_iterations, fieldsToMutate);
 			}
 		}
 
@@ -150,12 +168,10 @@ namespace Peach.Core.MutationStrategies
 			}
 			set
 			{
-				_lastIteration = _iteration;
 				_iteration = value;
-				_targetDataModel = null;
 				SeedRandom();
 
-				if (!_context.controlIteration && _iteration == GetSwitchIteration() && _lastIteration != _iteration)
+				if (_iteration == GetSwitchIteration() && _lastIteration != _iteration)
 					_randomDataSet = null;
 
 				if (_randomDataSet == null)
@@ -166,7 +182,10 @@ namespace Peach.Core.MutationStrategies
 
 					_context.controlIteration = true;
 					_context.controlRecordingIteration = true;
+					_lastIteration = _iteration;
 				}
+
+				_mutations = null;
 			}
 		}
 
@@ -193,8 +212,9 @@ namespace Peach.Core.MutationStrategies
 			if (!_context.controlIteration || !_context.controlRecordingIteration)
 				return;
 
-			string name = "STATE_" + state.name;
-			if (_dataModels.Exists(a => a == name))
+			var key = new ElementId("STATE_" + state.name, null);
+
+			if (_iterations.ContainsKey(key))
 				return;
 
 			List<Mutator> mutators = new List<Mutator>();
@@ -210,10 +230,7 @@ namespace Peach.Core.MutationStrategies
 			}
 
 			if (mutators.Count > 0)
-			{
-				_dataModels.Add(name);
-				_iterations[name] = mutators;
-			}
+				_iterations.Add(key, mutators);
 		}
 
 		private DataModel ApplyFileData(Dom.Action action, Data data)
@@ -235,20 +252,11 @@ namespace Peach.Core.MutationStrategies
 			if (fileBytes == null)
 				throw new CrackingFailure(null, null);
 
-
 			// Note: We need to find the origional data model to use.  Re-using
 			// a data model that has been cracked into will fail in odd ways.
-
-			var referenceName = action.dataModel.referenceName;
-			if (referenceName == null)
-				referenceName = action.dataModel.name;
-
-			var dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
-			dataModel.isReference = true;
-			dataModel.referenceName = referenceName;
+			var dataModel = GetNewDataModel(action);
 
 			// Crack the file
-
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dataModel, new BitStream(fileBytes));
 
@@ -259,18 +267,41 @@ namespace Peach.Core.MutationStrategies
 		{
 			// Note: We need to find the origional data model to use.  Re-using
 			// a data model that has been cracked into will fail in odd ways.
+			var dataModel = GetNewDataModel(action);
 
+			// Apply the fields
+			data.ApplyFields(dataModel);
+
+			return dataModel;
+		}
+
+		private DataModel GetNewDataModel(Dom.Action action)
+		{
 			var referenceName = action.dataModel.referenceName;
 			if (referenceName == null)
 				referenceName = action.dataModel.name;
 
-			var dataModel = _context.dom.dataModels[referenceName].Clone() as DataModel;
+			var sm = action.parent.parent;
+			Dom.Dom dom = _context.dom;
+
+			int i = sm.name.IndexOf(':');
+			if (i > -1)
+			{
+				string prefix = sm.name.Substring(0, i);
+
+				Dom.Dom other;
+				if (!_context.dom.ns.TryGetValue(prefix, out other))
+					throw new PeachException("Unable to locate namespace '" + prefix + "' in state model '" + sm.name + "'.");
+
+				dom = other;
+			}
+
+			// Need to take namespaces into account when searching for the model
+			var baseModel = dom.getRef<DataModel>(referenceName, a => a.dataModels);
+
+			var dataModel = baseModel.Clone() as DataModel;
 			dataModel.isReference = true;
 			dataModel.referenceName = referenceName;
-
-			// Apply the fields
-
-			data.ApplyFields(dataModel);
 
 			return dataModel;
 		}
@@ -278,6 +309,10 @@ namespace Peach.Core.MutationStrategies
 		private void SyncDataSet(Dom.Action action)
 		{
 			System.Diagnostics.Debug.Assert(_iteration != 0);
+
+			// Only sync <Data> elements if the action has a data model
+			if (action.dataModel == null)
+				return;
 
 			string key = GetDataModelName(action);
 			DataSetTracker val = null;
@@ -337,15 +372,6 @@ namespace Peach.Core.MutationStrategies
 			var ret = action.dataModel.Value;
 			System.Diagnostics.Debug.Assert(ret != null);
 
-			// Remove our old mutators
-			foreach(var dataModelName in GetAllDataModelNames(action))
-				_dataModels.Remove(dataModelName);
-
-			List<DataElement> oldElements = new List<DataElement>();
-			RecursevlyGetElements(action.origionalDataModel, oldElements);
-			foreach (var item in oldElements)
-				_iterations.Remove(item.fullName);
-
 			// Store copy of new origional data model
 			action.origionalDataModel = action.dataModel.Clone() as DataModel;
 
@@ -353,7 +379,7 @@ namespace Peach.Core.MutationStrategies
 			val.iteration = switchIteration;
 		}
 
-		private void GatherMutators(DataElementContainer cont)
+		private void GatherMutators(string modelName, DataElementContainer cont)
 		{
 			List<DataElement> allElements = new List<DataElement>();
 			RecursevlyGetElements(cont, allElements);
@@ -373,7 +399,7 @@ namespace Peach.Core.MutationStrategies
 				}
 
 				if (mutators.Count > 0)
-					_iterations[elementName] = mutators;
+					_iterations.Add(new ElementId(modelName, elementName), mutators);
 			}
 		}
 
@@ -381,25 +407,17 @@ namespace Peach.Core.MutationStrategies
 		{
 			if (action.dataModel != null)
 			{
-				string name = GetDataModelName(action);
-				if (!_dataModels.Exists(a => a == name))
-				{
-					_dataModels.Add(name);
-					GatherMutators(action.dataModel as DataElementContainer);
-				}
+				string modelName = GetDataModelName(action);
+				GatherMutators(modelName, action.dataModel);
 			}
-			else if (action.parameters != null && action.parameters.Count > 0)
+			else if (action.parameters != null)
 			{
 				foreach (ActionParameter param in action.parameters)
 				{
 					if (param.dataModel != null)
 					{
-						string name = GetDataModelName(action, param);
-						if (!_dataModels.Exists(a => a == name))
-						{
-							_dataModels.Add(name);
-							GatherMutators(param.dataModel as DataElementContainer);
-						}
+						string modelName = GetDataModelName(action, param);
+						GatherMutators(modelName, param.dataModel);
 					}
 				}
 			}
@@ -439,32 +457,25 @@ namespace Peach.Core.MutationStrategies
 
 		}
 
-		private void ApplyMutation(DataModel dataModel)
+		private void ApplyMutation(string modelName, DataModel dataModel)
 		{
-			List<DataElement> allElements = new List<DataElement>();
-			foreach (var item in dataModel.EnumerateAllElements())
+			foreach (var item in _mutations)
 			{
-				if (item.isMutable)
-					allElements.Add(item);
-			}
+				if (item.Key.ModelName != modelName)
+					continue;
 
-			// Random.Next() Doesn't include max and we want it to
-			var fieldsToMutate = Random.Next(1, maxFieldsToMutate + 1);
-			logger.Debug("ApplyMutation: fieldsToMutate: " + fieldsToMutate + "; max: " + maxFieldsToMutate + "; available: " + allElements.Count);
-			DataElement[] toMutate = Random.Sample(allElements, fieldsToMutate);
-			foreach (var item in toMutate)
-			{
-				if (_iterations.ContainsKey(item.fullName))
+				var elem = dataModel.find(item.Key.ElementName);
+				if (elem != null)
 				{
-					Mutator mutator = Random.Choice(_iterations[item.fullName]);
-					OnMutating(item.fullName, mutator.name);
-					logger.Debug("Action_Starting: Fuzzing: " + item.fullName);
+					Mutator mutator = Random.Choice(item.Value);
+					OnMutating(item.Key.ElementName, mutator.name);
+					logger.Debug("Action_Starting: Fuzzing: " + item.Key.ElementName);
 					logger.Debug("Action_Starting: Mutator: " + mutator.name);
-					mutator.randomMutation(item);
+					mutator.randomMutation(elem);
 				}
 				else
 				{
-					logger.Debug("Action_Starting: Skipping Fuzzing: " + item.fullName);
+					logger.Debug("Action_Starting: Skipping Fuzzing: " + item.Key.ElementName);
 				}
 			}
 		}
@@ -474,17 +485,20 @@ namespace Peach.Core.MutationStrategies
 			// MutateDataModel should only be called after ParseDataModel
 			System.Diagnostics.Debug.Assert(_iteration > 0);
 
-			if (_targetDataModel == null)
-				_targetDataModel = Random.Choice(_dataModels);
-
-			if (action.dataModel != null && GetDataModelName(action) == _targetDataModel)
-				ApplyMutation(action.dataModel);
-			else if (action.parameters.Count != 0)
+			if (action.dataModel != null)
+			{
+				string modelName = GetDataModelName(action);
+				ApplyMutation(modelName, action.dataModel);
+			}
+			else if (action.parameters != null)
 			{
 				foreach (var param in action.parameters)
 				{
-					if (param.dataModel != null && GetDataModelName(action, param) == _targetDataModel)
-						ApplyMutation(param.dataModel);
+					if (param.dataModel != null)
+					{
+						string modelName = GetDataModelName(action, param);
+						ApplyMutation(modelName, param.dataModel);
+					}
 				}
 			}
 		}
@@ -499,9 +513,14 @@ namespace Peach.Core.MutationStrategies
 			if (_context.controlIteration)
 				return state;
 
-			if ("STATE_" + state.name == _targetDataModel)
+			string name = "STATE_" + state.name;
+
+			foreach (var item in _mutations)
 			{
-				Mutator mutator = Random.Choice(_iterations["STATE_" + state.name]);
+				if (item.Key.ModelName != name)
+					continue;
+
+				Mutator mutator = Random.Choice(item.Value);
 				OnMutating(state.name, mutator.name);
 
 				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);

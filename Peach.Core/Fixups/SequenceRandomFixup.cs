@@ -40,8 +40,6 @@ namespace Peach.Core.Fixups
 	[Serializable]
 	public class SequenceRandomFixup : Fixup
 	{
-		System.Random rand = new System.Random();
-
 		public SequenceRandomFixup(DataElement parent, Dictionary<string, Variant> args)
 			: base(parent, args)
 		{

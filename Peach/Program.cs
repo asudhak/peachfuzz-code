@@ -27,22 +27,8 @@
 // $Id$
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
 using System.IO;
-using System.Xml;
-
-using Peach.Core.Runtime;
-using Peach.Core.Dom;
-using Peach.Core;
-using Peach.Core.Agent;
-using Peach.Core.Analyzers;
-
-using SharpPcap;
-using NLog;
-using NLog.Targets;
-using NLog.Config;
+using System.Reflection;
 
 namespace Peach
 {
@@ -50,28 +36,45 @@ namespace Peach
 	/// Command line interface for Peach 3.  Mostly backwards compatable with
 	/// Peach 2.3.
 	/// </summary>
-	public class Program : Peach.Core.Runtime.Program
+	public class Program 
 	{
+		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		{
+			var vars = Environment.GetEnvironmentVariables();
+			if (!vars.Contains("DEVPATH"))
+				return null;
+
+			foreach (var path in ((string)vars["DEVPATH"]).Split(Path.PathSeparator))
+			{
+				string name = args.Name.Substring(0, args.Name.IndexOf(",")) + ".dll";
+				string candidate = Path.Combine(path, name);
+				if (File.Exists(candidate))
+					return Assembly.LoadFrom(candidate);
+			}
+
+			return null;
+		}
+
 		static int Main(string[] args)
 		{
 #if !MONO
-			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(Launcher.CurrentDomain_AssemblyResolve);
+			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 #endif
 
-			return Program.Run(args);
+			// Keep all references to Peach.Core in a seperate class
+			// so we can hook up AssemblyResolve before they are resolved
+			return Invoke.Run(args);
 		}
+	}
 
+	internal class Invoke
+	{
 		public static int Run(string[] args)
 		{
 			Peach.Core.AssertWriter.Register();
 
-			return new Program(args).exitCode;
+			return new Peach.Core.Runtime.Program(args).exitCode;
 		}
-
-		public Program(string[] args) : base(args)
-		{
-		}
-
 	}
 }
 

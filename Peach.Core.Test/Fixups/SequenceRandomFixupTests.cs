@@ -99,6 +99,7 @@ namespace Peach.Core.Test.Fixups
 			config.range = true;
 			config.rangeStart = 0;
 			config.rangeStop = 3;
+			config.randomSeed = 1;
 
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
@@ -256,6 +257,7 @@ namespace Peach.Core.Test.Fixups
 	<Test name='Default'>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>
 ";

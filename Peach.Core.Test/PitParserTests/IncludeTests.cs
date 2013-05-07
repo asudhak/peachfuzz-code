@@ -331,6 +331,62 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x0009slurping"), result);
 		}
+
+		[Test]
+		public void Test5()
+		{
+			string inc1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+	<DataModel name=""Model1"">
+		<String name=""str1"" value=""foo""/>
+	</DataModel>
+
+	<DataModel name=""Model2"">
+		<String name=""str2"" value=""bar""/>
+	</DataModel>
+</Peach>
+";
+
+			string template = @"
+<Peach>
+	<Include ns=""example"" src=""{0}"" />
+
+	<StateModel name=""State"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""example:Model1"" />
+			</Action>
+
+			<Action type=""slurp"" valueXpath=""//example:Model1/str1"" setXpath=""//example:Model2//str2"" />
+
+			<Action type=""output"">
+				<DataModel ref=""example:Model2"" />
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""State"" />
+		<Publisher class=""Null""/>
+	</Test>
+</Peach>";
+
+			string remote = Path.GetTempFileName();
+			string xml = string.Format(template, remote);
+			File.WriteAllText(remote, inc1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var act = dom.tests[0].stateModel.states["Initial"].actions[2];
+			Assert.AreEqual("foo", (string)act.dataModel[0].DefaultValue);
+		}
 	}
 }
 

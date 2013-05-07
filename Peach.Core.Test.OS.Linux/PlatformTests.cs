@@ -52,7 +52,7 @@ namespace Peach.Core.Test.OS.Linux
 		[Test]
 		public void TestProcess()
 		{
-			MakeProcesses(10000);
+			MakeProcesses(1000);
 		}
 
 		public void MakeProcesses(int max)
@@ -81,7 +81,7 @@ namespace Peach.Core.Test.OS.Linux
 			}
 		}
 
-		[Test]
+		[Test,Ignore]
 		public void TestOutOfMemory()
 		{
 			// MONO_GC_PARAMS=max-heap-size=1g
