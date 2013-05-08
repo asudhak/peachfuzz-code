@@ -1517,6 +1517,9 @@ namespace Peach.Core.Analyzers
 			if (action.dataModelRequired && action.dataModel == null)
 				throw new PeachException("Error, action '" + action.name + "' is missing required child element <DataModel>.");
 
+			if (action.dataSet != null && action.dataModel == null)
+				throw new PeachException("Error, action '" + action.name + "' has child element <Data> but is missing child element <DataModel>.");
+
 			return action;
 		}
 
