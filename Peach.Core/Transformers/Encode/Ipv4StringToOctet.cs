@@ -52,7 +52,7 @@ namespace Peach.Core.Transformers.Encode
 			IPAddress ip;
 
             if(sip.Count(c => c == '.') != 3 || !IPAddress.TryParse(sip, out ip))
-				throw new PeachException("Error, can't transform IP to bytes, '{0}' is not a valid IP address.".Fmt(sip));
+				throw new SoftException("Error, can't transform IP to bytes, '{0}' is not a valid IP address.".Fmt(sip));
 
             return new BitStream(ip.GetAddressBytes());
         }
