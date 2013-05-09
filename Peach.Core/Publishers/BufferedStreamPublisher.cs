@@ -25,6 +25,7 @@ namespace Peach.Core.Publishers
 		protected ManualResetEvent _event = null;
 		protected Stream _client = null;
 		protected MemoryStream _buffer = null;
+		protected bool _timeout = false;
 
 		public BufferedStreamPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -77,6 +78,9 @@ namespace Peach.Core.Publishers
 							_buffer.Seek(0, SeekOrigin.End);
 							_buffer.Write(_recvBuf, 0, len);
 							_buffer.Position = pos;
+
+							// Reset any timeout value
+							_timeout = false;
 
 							if (Logger.IsDebugEnabled)
 								Logger.Debug("\n\n" + Utilities.HexDump(_buffer));
@@ -246,22 +250,29 @@ namespace Peach.Core.Publishers
 				// If the connection has been closed, we are not going to get anymore bytes.
 				if (_client == null)
 					return;
+
+				// If we have already timed out, 
 			}
 
 			DateTime start = DateTime.Now;
 
 			// Wait up to Timeout milliseconds to see if count bytes become available
-			do
+			while (true)
 			{
 				lock (_bufferLock)
 				{
-					if ((_buffer.Length - _buffer.Position) >= count)
-						break;
+					if ((_buffer.Length - _buffer.Position) >= count || _timeout)
+						return;
+
+					if ((DateTime.Now - start) >= TimeSpan.FromMilliseconds(Timeout))
+					{
+						_timeout = true;
+						return;
+					}
 				}
 
 				Thread.Sleep(100);
 			}
-			while ((DateTime.Now - start) < TimeSpan.FromMilliseconds(Timeout));
 		}
 
 		#endregion

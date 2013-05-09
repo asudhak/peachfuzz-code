@@ -713,28 +713,23 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			// Look for optional tokens, if none found and we are greater than minOccurs, our size is 0
-			for (int i = tokenCount; i < tokens.Count; ++i)
+			// If we are looking for the first sized element, try cracking our first element
+			if (until == Until.FirstSized)
 			{
-				long? where = findToken(_dataStack.First(), tokens[i].Element.Value, tokens[i].Position);
-				if (!where.HasValue && tokens[i].Optional)
-				{
-					logger.Debug("scanArray: {0} -> Missing Token, minOccurs <= Count", array.debugName);
-					return true;
-				}
+				logger.Debug("scanArray: {0} -> FirstSized", array.debugName);
+				return false;
 			}
 
-			// If no tokens exist and we are greater than minOccurs, our size is 0
-			if (until == Until.FirstUnsized && array.Count >= array.minOccurs && tokenCount == tokens.Count)
+			if (tokenCount == tokens.Count)
 			{
-				logger.Debug("scanArray: {0} -> Unsized, minOccurs <= Count", array.debugName);
-				return true;
+				logger.Debug("scanArray: {0} -> No Tokens", array.debugName);
+					//ret.HasValue ? "Deterministic" : "Unsized");
+				return false;
 			}
 
-			logger.Debug("scanArray: {0} -> {1}", array.debugName,
-				ret.HasValue ? "Deterministic" : "Unsized");
-
-			return ret;
+			// If we have tokens, keep scanning thru the dom.
+			logger.Debug("scanArray: {0} -> Tokens", array.debugName);
+			return true;
 		}
 
 		class Mark
@@ -915,33 +910,7 @@ namespace Peach.Core.Cracker
 				return pos;
 			}
 
-			// 2nd priority, last unsized element
-			if (ret.HasValue)
-			{
-				if (ret.Value && (pos != 0 || !(elem is DataElementContainer)))
-				{
-					pos = data.LengthBits - (data.TellBits() + pos);
-					logger.Debug("getSize: <----- Last Unsized: {0}", pos);
-					return pos;
-				}
-
-				logger.Debug("getSize: <----- Last Unsized: ???");
-				return null;
-			}
-
-			if (elem is Dom.Array)
-			{
-				logger.Debug("getSize: <----- Array Not Last Unsized: ???");
-				return null;
-			}
-
-			if (elem is Dom.Choice)
-			{
-				logger.Debug("getSize: <----- Choice Not Last Unsized: ???");
-				return null;
-			}
-			
-			// 3rd priority, token scan
+			// 2rd priority, token scan
 			long? closest = null;
 			Mark winner = null;
 
@@ -972,11 +941,37 @@ namespace Peach.Core.Cracker
 				return closest;
 			}
 
-			if (tokens.Count > 0)
+			if (tokens.Count > 0 && ret.HasValue && ret.Value)
 			{
 				pos = data.LengthBits - (data.TellBits() + pos);
 				logger.Debug("getSize: <----- Missing Optional Token: {0}", pos);
 				return pos;
+			}
+
+			// 3nd priority, last unsized element
+			if (ret.HasValue)
+			{
+				if (ret.Value && (pos != 0 || !(elem is DataElementContainer)))
+				{
+					pos = data.LengthBits - (data.TellBits() + pos);
+					logger.Debug("getSize: <----- Last Unsized: {0}", pos);
+					return pos;
+				}
+
+				logger.Debug("getSize: <----- Last Unsized: ???");
+				return null;
+			}
+
+			if (elem is Dom.Array)
+			{
+				logger.Debug("getSize: <----- Array Not Last Unsized: ???");
+				return null;
+			}
+
+			if (elem is Dom.Choice)
+			{
+				logger.Debug("getSize: <----- Choice Not Last Unsized: ???");
+				return null;
 			}
 
 			logger.Debug("getSize: <----- Not Last Unsized: ???");
@@ -1042,15 +1037,12 @@ namespace Peach.Core.Cracker
 						if (array.maxOccurs == -1 || array.Count < array.maxOccurs)
 						{
 							long arrayPos = pos;
-							int tokenCount = tokens.Count;
 							var ret = scanArray(array, ref arrayPos, tokens, Until.FirstUnsized);
-							if (!ret.HasValue || ret.Value == false)
-							{
-								if (tokenCount == tokens.Count)
+
+							// If the array isn't sized and we haven't met the minimum, propigate
+							// the lack of size, otherwise keep scanning
+							if ((!ret.HasValue || ret.Value == false) && array.Count < array.minOccurs)
 									return ret;
-								else
-									final = ret;
-							}
 						}
 					}
 
