@@ -119,6 +119,14 @@ namespace Peach.Core.Dom
 			set { _dataSet = value; }
 		}
 
+		public RunContext Context
+		{
+			get
+			{
+				return ((Dom)((Test)this.parent.parent.parent).parent).context;
+			}
+		}
+
 		/// <summary>
 		/// Current copy of the data model we are mutating.
 		/// </summary>
