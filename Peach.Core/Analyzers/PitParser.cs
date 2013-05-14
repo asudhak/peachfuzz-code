@@ -1014,9 +1014,19 @@ namespace Peach.Core.Analyzers
 		{
 			foreach (var rel in elem.relations)
 			{
+				// Find the half of the relation that is not elem
 				DataElement which = rel.Of == elem ? rel.From : rel.Of;
-				string relName;
 
+				if (rel.parent == elem)
+				{
+					// If the relation's parent is the old child, just remove the relation
+					which.relations.Remove(rel);
+					rel.Reset();
+					continue;
+				}
+
+				// If the other half if a child of oldChild, no fixing is needed
+				string relName;
 				if (which.isChildOf(oldChild, out relName))
 					continue;
 
@@ -1025,12 +1035,14 @@ namespace Peach.Core.Analyzers
 				if (elem == other)
 					continue;
 
+				// If the other half no longer exists under newChild, reset the relation
 				if (other == null)
 				{
 					rel.Reset();
 					continue;
 				}
 
+				// Fix up the relation to be in the newChild branch of the DOM
 				other.relations.Add(rel);
 
 				if (rel.From == elem)
