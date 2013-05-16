@@ -31,3 +31,6 @@ bld.read_csshlib('Newtonsoft.Json.dll',              paths=['Json.net-5'])
 
 if bld.env.MCS:
 	bld.install_files('${BINDIR}', 'IronPython-2.7.3/IronPython.StdLib.zip')
+
+if bld.env.BASENAME == 'osx':
+	bld.install_files('${BINDIR}', 'CrashWrangler/44947_crashwrangler.zip')

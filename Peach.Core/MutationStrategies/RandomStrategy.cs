@@ -281,8 +281,23 @@ namespace Peach.Core.MutationStrategies
 			if (referenceName == null)
 				referenceName = action.dataModel.name;
 
+			var sm = action.parent.parent;
+			Dom.Dom dom = _context.dom;
+
+			int i = sm.name.IndexOf(':');
+			if (i > -1)
+			{
+				string prefix = sm.name.Substring(0, i);
+
+				Dom.Dom other;
+				if (!_context.dom.ns.TryGetValue(prefix, out other))
+					throw new PeachException("Unable to locate namespace '" + prefix + "' in state model '" + sm.name + "'.");
+
+				dom = other;
+			}
+
 			// Need to take namespaces into account when searching for the model
-			var baseModel = _context.dom.getRef<DataModel>(referenceName, a => a.dataModels);
+			var baseModel = dom.getRef<DataModel>(referenceName, a => a.dataModels);
 
 			var dataModel = baseModel.Clone() as DataModel;
 			dataModel.isReference = true;

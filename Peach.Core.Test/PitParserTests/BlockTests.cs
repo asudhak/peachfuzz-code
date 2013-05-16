@@ -42,21 +42,55 @@ namespace Peach.Core.Test.PitParserTests
 	[TestFixture]
 	class BlockTests
 	{
-		//[Test]
-		//public void NumberDefaults()
-		//{
-		//    string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-		//        "	<Defaults>" +
-		//        "		<Number size=\"8\" endian=\"big\" signed=\"true\"/>" +
-		//        "	</Defaults>" +
-		//        "</Peach>";
+		[Test]
+		public void TestOverWrite()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Base'>
+		<Block name='b'>
+			<String name='s1' value='Hello'/>
+			<String name='s2' value='World'/>
+		</Block>
+	</DataModel>
 
-		//    PitParser parser = new PitParser();
-		//    Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-		//    Number num = dom.dataModels[0][0] as Number;
+	<DataModel name='Derived' ref='Base'>
+		<String name='b.s2' value='Hello'/>
+	</DataModel>
+</Peach>";
 
-		//    Assert.IsTrue(num.Signed);
-		//    Assert.IsFalse(num.LittleEndian);
-		//}
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+			Assert.AreEqual("HelloWorld", Encoding.ASCII.GetString(dom.dataModels[0].Value.Value));
+			Assert.AreEqual("HelloHello", Encoding.ASCII.GetString(dom.dataModels[1].Value.Value));
+		}
+
+		[Test]
+		public void TestAddNewChild()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Base'>
+		<Block name='b'>
+			<String name='s1' value='Hello'/>
+			<String name='s2' value='World'/>
+		</Block>
+		<String value='.'/>
+	</DataModel>
+
+	<DataModel name='Derived' ref='Base'>
+		<String name='b.s3' value='Hello'/>
+	</DataModel>
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+			Assert.AreEqual("HelloWorld.", Encoding.ASCII.GetString(dom.dataModels[0].Value.Value));
+			Assert.AreEqual("HelloWorldHello.", Encoding.ASCII.GetString(dom.dataModels[1].Value.Value));
+		}
 	}
 }

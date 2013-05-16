@@ -184,7 +184,7 @@ namespace Peach.Core.Analysis
 				int count = 0;
 				string traceFilename = null;
 				List<string> traces = new List<string>();
-				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable);
+				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable, needsKilling);
 
 				foreach (string fileName in sampleFiles)
 				{
@@ -223,7 +223,7 @@ namespace Peach.Core.Analysis
 		/// <returns>True on success, false if a failure occured.</returns>
 		public bool RunSingleTrace(Coverage cov, string traceFile, string executable, string arguments, List<ulong> basicBlocks, bool needsKilling = false)
 		{
-			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, basicBlocks);
+			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, needsKilling, basicBlocks);
 
 			// Delete existing trace file
 			if (File.Exists(traceFile))

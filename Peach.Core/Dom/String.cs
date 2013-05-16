@@ -226,23 +226,11 @@ namespace Peach.Core.Dom
 				throw new NotSupportedException("Analyzer attribute is depricated in Peach 3.  Use a child element instead.");
 
 			context.handleCommonDataElementAttributes(node, str);
-			context.handleCommonDataElementValue(node, str);
 			context.handleCommonDataElementChildren(node, str);
+			context.handleCommonDataElementValue(node, str);
 
 			if (!node.hasAttr("value"))
 				str.DefaultValue = new Variant("");
-
-			int test;
-			if (int.TryParse((string)str.DefaultValue, out test))
-			{
-				if (!str.Hints.ContainsKey("NumericalString"))
-					str.Hints.Add("NumericalString", new Hint("NumericalString", "true"));
-			}
-			else
-			{
-				if (str.Hints.ContainsKey("NumericalString"))
-					str.Hints.Remove("NumericalString");
-			}
 
 			return str;
 		}
@@ -337,6 +325,18 @@ namespace Peach.Core.Dom
 						final += MakePad(grow / padLen);
 					}
 				}
+			}
+
+			int test;
+			if (int.TryParse(final, out test))
+			{
+				if (!Hints.ContainsKey("NumericalString"))
+					Hints.Add("NumericalString", new Hint("NumericalString", "true"));
+			}
+			else
+			{
+				if (Hints.ContainsKey("NumericalString"))
+					Hints.Remove("NumericalString");
 			}
 
 			return final;

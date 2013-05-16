@@ -30,6 +30,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Peach.Core.Dom;
 using System.Runtime.Serialization;
 using Action = Peach.Core.Dom.Action;
@@ -51,36 +52,27 @@ namespace Peach.Core.Fixups
 			: base(parent, args)
 		{
 			ParameterParser.Parse(this, args);
-
-			Core.Dom.StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 		}
 
-		void StateModel_Starting(StateModel model)
-		{
-			Core.Dom.StateModel.Starting -= new StateModelStartingEventHandler(StateModel_Starting);
-
-			Dom.Dom dom = model.parent as Dom.Dom;
-			dom.context.engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
-
-			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
-		}
-
-		void Engine_TestFinished(RunContext context)
+		void StateModel_Finished(StateModel model)
 		{
 			Core.Dom.Action.Starting -= Action_Starting;
-			context.engine.TestFinished -= Engine_TestFinished;
+			Core.Dom.StateModel.Finished -= StateModel_Finished;
 		}
 
 		void Action_Starting(Action action)
 		{
-			if (action.type != ActionType.Output)
+			var root = parent.getRoot() as DataModel;
+			if (root.action != action)
 				return;
 
-			var elem = action.dataModel.find(parent.fullName);
-			if (elem != null)
+			if (action.dataModel == root || action.parameters.Any(a => a.dataModel == root))
 			{
-				elem.Invalidate();
-				Update(elem, action, Offset, Once, true);
+				if (action.type != ActionType.Output)
+					return;
+
+				parent.Invalidate();
+				Update(parent, action, Offset, Once, true);
 			}
 		}
 
@@ -134,6 +126,18 @@ namespace Peach.Core.Fixups
 
 			return Update(parent, dm.action, Offset, Once, false);
 		}
+
+		[OnDeserialized]
+		private void OnDeserialized(StreamingContext context)
+		{
+			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
+			if (ctx == null)
+				return;
+
+			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
+			Core.Dom.StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
+		}
+
 	}
 }
 

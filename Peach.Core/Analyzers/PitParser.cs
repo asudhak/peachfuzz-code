@@ -975,13 +975,24 @@ namespace Peach.Core.Analyzers
 				{
 					if (childName != null && childName.IndexOf(".") > -1)
 					{
-						DataElement parent = element.find(childName);
+						var parentName = childName.Substring(0, childName.LastIndexOf('.'));
+						var parent = element.find(parentName) as DataElementContainer;
+
 						if (parent == null)
-							throw new PeachException("Error, child name has dot notation but replacement element not found: '" + elem.name + ".");
+							throw new PeachException("Error, child name has dot notation but parent element not found: '" + parentName + ".");
 
-						System.Diagnostics.Debug.Assert(elem.name == parent.name);
-
-						replaceChild(parent.parent, elem);
+						var choice = parent as Choice;
+						if (choice != null)
+						{
+							updateChoice(choice, elem);
+						}
+						else
+						{
+							if (parent.ContainsKey(elem.name))
+								replaceChild(parent, elem);
+							else
+								parent.Add(elem);
+						}
 					}
 					else
 					{
@@ -1003,9 +1014,19 @@ namespace Peach.Core.Analyzers
 		{
 			foreach (var rel in elem.relations)
 			{
+				// Find the half of the relation that is not elem
 				DataElement which = rel.Of == elem ? rel.From : rel.Of;
-				string relName;
 
+				if (rel.parent == elem)
+				{
+					// If the relation's parent is the old child, just remove the relation
+					which.relations.Remove(rel);
+					rel.Reset();
+					continue;
+				}
+
+				// If the other half if a child of oldChild, no fixing is needed
+				string relName;
 				if (which.isChildOf(oldChild, out relName))
 					continue;
 
@@ -1014,12 +1035,14 @@ namespace Peach.Core.Analyzers
 				if (elem == other)
 					continue;
 
+				// If the other half no longer exists under newChild, reset the relation
 				if (other == null)
 				{
 					rel.Reset();
 					continue;
 				}
 
+				// Fix up the relation to be in the newChild branch of the DOM
 				other.relations.Add(rel);
 
 				if (rel.From == elem)
@@ -1043,6 +1066,28 @@ namespace Peach.Core.Analyzers
 			}
 
 			parent[newChild.name] = newChild;
+		}
+
+		private static void updateChoice(Choice parent, DataElement newChild)
+		{
+			if (!parent.choiceElements.ContainsKey(newChild.name))
+			{
+				parent.choiceElements.Add(newChild.name, newChild);
+				newChild.parent = parent;
+				return;
+			}
+
+			var oldChild = parent.choiceElements[newChild.name];
+			oldChild.parent = null;
+
+			replaceRelations(newChild, oldChild, oldChild);
+
+			foreach (var elem in oldChild.EnumerateAllElements())
+			{
+				replaceRelations(newChild, oldChild, elem);
+			}
+
+			parent.choiceElements[newChild.name] = newChild;
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
@@ -1484,6 +1529,9 @@ namespace Peach.Core.Analyzers
 			if (action.dataModelRequired && action.dataModel == null)
 				throw new PeachException("Error, action '" + action.name + "' is missing required child element <DataModel>.");
 
+			if (action.dataSet != null && action.dataModel == null)
+				throw new PeachException("Error, action '" + action.name + "' has child element <Data> but is missing child element <DataModel>.");
+
 			return action;
 		}
 
@@ -1769,6 +1817,7 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, could not locate StateModel named '" +
 							strRef + "' for Test '" + test.name + "'.");
 
+					test.stateModel.name = strRef;
 					test.stateModel.parent = test.parent;
 				}
 

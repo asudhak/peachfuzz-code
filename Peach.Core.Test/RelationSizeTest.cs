@@ -815,6 +815,33 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void RelationParentOverride()
+		{
+			string xml = @"
+<Peach>
+
+	<DataModel name=""DataModel1"">
+		<Number name=""RelOrStatic"" size=""8"">
+			<Relation type=""size"" of=""Data""/>
+		</Number>
+		<Blob name=""Data"" value=""AB""/>
+	</DataModel>
+
+	<DataModel name=""DataModel2"" ref=""DataModel1"">
+		<Number name=""RelOrStatic"" size=""8"" value=""0x40""/>
+	</DataModel>
+
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[1].Value.Value;
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x40\x41\x42"), val);
+		}
+
+		[Test]
 		public void NoCacheGetValue()
 		{
 			string xml = @"

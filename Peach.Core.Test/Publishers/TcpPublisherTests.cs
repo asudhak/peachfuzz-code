@@ -85,13 +85,15 @@ namespace Peach.Core.Test.Publishers
 		private Socket Socket;
 		private bool Graceful;
 		public string Result = null;
+		private bool Send;
 
 
-		public SimpleTcpServer(ushort port, bool graceful)
+		public SimpleTcpServer(ushort port, bool graceful, bool send = true)
 		{
 			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			localEP = new IPEndPoint(IPAddress.Loopback, port);
 			Graceful = graceful;
+			Send = send;
 			Socket.Bind(localEP);
 			Socket.Listen(8);
 		}
@@ -107,7 +109,8 @@ namespace Peach.Core.Test.Publishers
 			{
 				Socket cli = Socket.EndAccept(ar);
 
-				cli.Send(Encoding.ASCII.GetBytes("Test buffer"));
+				if (Send)
+					cli.Send(Encoding.ASCII.GetBytes("Test buffer"));
 				byte[] recv = new byte[1024];
 				int len = cli.Receive(recv);
 				Result = Encoding.ASCII.GetString(recv, 0, len);
@@ -303,6 +306,68 @@ namespace Peach.Core.Test.Publishers
 
 			Engine e = new Engine(null);
 			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
+		}
+
+		[Test]
+		public void TcpTimeout()
+		{
+			ushort port = TestBase.MakePort(45000, 46000);
+			var cli = new SimpleTcpServer(port, false, false);
+			cli.Start();
+
+			string xml = @"
+<Peach>
+	<DataModel name=""TheDataModel"">
+		<Choice>
+			<String value=""00"" token=""true""/>
+			<String value=""01"" token=""true""/>
+			<String value=""02"" token=""true""/>
+			<String value=""03"" token=""true""/>
+			<String value=""04"" token=""true""/>
+			<String value=""05"" token=""true""/>
+			<String value=""06"" token=""true""/>
+			<String value=""07"" token=""true""/>
+			<String value=""08"" token=""true""/>
+			<String value=""09"" token=""true""/>
+			<String name=""empty"" length=""0""/>
+		</Choice>
+	</DataModel>
+
+	<StateModel name=""SM"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action name=""Recv"" type=""input"">
+				<DataModel ref=""TheDataModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+<Test name=""Default"">
+		<StateModel ref=""SM""/>
+		<Publisher class=""TcpClient"">
+			<Param name=""Host"" value=""127.0.0.1""/>
+			<Param name=""Port"" value=""{0}""/>
+			<Param name=""Timeout"" value=""1000""/>
+		</Publisher>
+	</Test>
+</Peach>".Fmt(port);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+
+			var before = DateTime.Now;
+			e.startFuzzing(dom, config);
+			var after = DateTime.Now;
+
+			var delta = after - before;
+
+			Assert.Less(delta, TimeSpan.FromSeconds(2));
+			Assert.Greater(delta, TimeSpan.FromSeconds(1));
+
 		}
 	}
 }

@@ -34,6 +34,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+#include <stdarg.h>
 #include <set>
 
 #if defined(_MSC_VER)
@@ -81,6 +82,44 @@ int haveExisting = FALSE;
 # error TARGET_IA32 or TARGET_IA32E must be defined
 #endif
 
+class Logger
+{
+public:
+	Logger()
+	{
+		m_log = fopen("bblocks.log", "a");
+	}
+
+	~Logger()
+	{
+		if (m_log)
+		{
+			fclose(m_log);
+			m_log = NULL;
+		}
+	}
+
+	void Write(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+
+		if (m_log)
+		{
+			vfprintf(m_log, fmt, args);
+			fflush(m_log);
+		}
+
+		va_end(args);
+	}
+
+private:
+	FILE *m_log;
+};
+
+//#define DBGLOG(x) Logger().Write x
+#define DBGLOG(x)
+
 // Method called every time an instrumented bblock is executed
 VOID PIN_FAST_ANALYSIS_CALL rememberBlock(ADDRINT bbl)
 {
@@ -122,8 +161,24 @@ VOID Fini(INT32 code, VOID *v)
 		fclose(existing);
 }
 
+// Called when the application starts
+VOID Start(VOID* v)
+{
+	v;
+
+	FILE* pid = fopen("bblocks.pid", "wb+");
+	if (pid)
+	{
+		fprintf(pid, "%d", PIN_GetPid());
+		fclose(pid);
+		pid = NULL;
+	}
+}
+
 int main(int argc, char * argv[])
 {
+	DBGLOG(("bblocks main() PID: %d\n", PIN_GetPid()));
+
 	// Load existing trace
 	ADDRINT block = 0;
 	existing = fopen("bblocks.existing", "rb+");
@@ -145,6 +200,7 @@ int main(int argc, char * argv[])
 	// Configure Pin Tools
 	PIN_Init(argc, argv);
 	TRACE_AddInstrumentFunction(Trace, 0);
+	PIN_AddApplicationStartFunction(Start, 0);
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_StartProgram();
 

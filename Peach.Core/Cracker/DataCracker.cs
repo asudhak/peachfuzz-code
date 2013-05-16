@@ -713,28 +713,23 @@ namespace Peach.Core.Cracker
 				}
 			}
 
-			// Look for optional tokens, if none found and we are greater than minOccurs, our size is 0
-			for (int i = tokenCount; i < tokens.Count; ++i)
+			// If we are looking for the first sized element, try cracking our first element
+			if (until == Until.FirstSized)
 			{
-				long? where = findToken(_dataStack.First(), tokens[i].Element.Value, tokens[i].Position);
-				if (!where.HasValue && tokens[i].Optional)
-				{
-					logger.Debug("scanArray: {0} -> Missing Token, minOccurs <= Count", array.debugName);
-					return true;
-				}
+				logger.Debug("scanArray: {0} -> FirstSized", array.debugName);
+				return false;
 			}
 
-			// If no tokens exist and we are greater than minOccurs, our size is 0
-			if (until == Until.FirstUnsized && array.Count >= array.minOccurs && tokenCount == tokens.Count)
+			if (tokenCount == tokens.Count)
 			{
-				logger.Debug("scanArray: {0} -> Unsized, minOccurs <= Count", array.debugName);
-				return true;
+				logger.Debug("scanArray: {0} -> No Tokens", array.debugName);
+					//ret.HasValue ? "Deterministic" : "Unsized");
+				return false;
 			}
 
-			logger.Debug("scanArray: {0} -> {1}", array.debugName,
-				ret.HasValue ? "Deterministic" : "Unsized");
-
-			return ret;
+			// If we have tokens, keep scanning thru the dom.
+			logger.Debug("scanArray: {0} -> Tokens", array.debugName);
+			return true;
 		}
 
 		class Mark
@@ -915,7 +910,45 @@ namespace Peach.Core.Cracker
 				return pos;
 			}
 
-			// 2nd priority, last unsized element
+			// 2rd priority, token scan
+			long? closest = null;
+			Mark winner = null;
+
+			foreach (var token in tokens)
+			{
+				long? where = findToken(data, token.Element.Value, token.Position);
+				if (!where.HasValue && !token.Optional)
+				{
+					logger.Debug("getSize: <----- Missing Required Token: ???");
+					return where;
+				}
+
+				if (!where.HasValue)
+					continue;
+
+				if (!closest.HasValue || closest.Value > where.Value)
+				{
+					closest = where.Value;
+					winner = token;
+				}
+			}
+
+			if (closest.HasValue)
+			{
+				logger.Debug("getSize: <----- {0} Token: {1}",
+					winner.Optional ? "Optional" : "Required",
+					closest.ToString());
+				return closest;
+			}
+
+			if (tokens.Count > 0 && ret.HasValue && ret.Value)
+			{
+				pos = data.LengthBits - (data.TellBits() + pos);
+				logger.Debug("getSize: <----- Missing Optional Token: {0}", pos);
+				return pos;
+			}
+
+			// 3nd priority, last unsized element
 			if (ret.HasValue)
 			{
 				if (ret.Value && (pos != 0 || !(elem is DataElementContainer)))
@@ -939,27 +972,6 @@ namespace Peach.Core.Cracker
 			{
 				logger.Debug("getSize: <----- Choice Not Last Unsized: ???");
 				return null;
-			}
-			
-			// 3rd priority, token scan
-			foreach (var token in tokens)
-			{
-				long? where = findToken(data, token.Element.Value, token.Position);
-				if (where.HasValue || !token.Optional)
-				{
-					logger.Debug("getSize: <----- {0}{1} Token: {2}",
-						where.HasValue ? "" : "Missing ",
-						token.Optional ? "Optional" : "Required",
-						where.HasValue ? where.ToString() : "???");
-					return where;
-				}
-			}
-
-			if (tokens.Count > 0)
-			{
-				pos = data.LengthBits - (data.TellBits() + pos);
-				logger.Debug("getSize: <----- Missing Optional Token: {0}", pos);
-				return pos;
 			}
 
 			logger.Debug("getSize: <----- Not Last Unsized: ???");
@@ -991,6 +1003,7 @@ namespace Peach.Core.Cracker
 			// 3) The end of the data model
 
 			DataElement prev = elem;
+			bool? final = true;
 
 			while (true)
 			{
@@ -1004,7 +1017,7 @@ namespace Peach.Core.Cracker
 						return ret;
 
 					if (end.Element != null)
-						return true;
+						return final;
 				}
 				else if (prev.parent == null)
 				{
@@ -1025,8 +1038,11 @@ namespace Peach.Core.Cracker
 						{
 							long arrayPos = pos;
 							var ret = scanArray(array, ref arrayPos, tokens, Until.FirstUnsized);
-							if (!ret.HasValue || ret.Value == false)
-								return ret;
+
+							// If the array isn't sized and we haven't met the minimum, propigate
+							// the lack of size, otherwise keep scanning
+							if ((!ret.HasValue || ret.Value == false) && array.Count < array.minOccurs)
+									return ret;
 						}
 					}
 
@@ -1037,7 +1053,7 @@ namespace Peach.Core.Cracker
 				prev = curr;
 			}
 
-			return true;
+			return final;
 		}
 
 		#endregion

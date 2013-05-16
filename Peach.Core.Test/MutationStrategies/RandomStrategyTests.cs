@@ -727,6 +727,7 @@ namespace Peach.Core.Test.MutationStrategies
 			string temp1 = Path.GetTempFileName();
 			string temp2 = Path.GetTempFileName();
 			string temp3 = Path.GetTempFileName();
+			string temp4 = Path.GetTempFileName();
 
 			string include = @"
 <Peach>
@@ -736,7 +737,7 @@ namespace Peach.Core.Test.MutationStrategies
 </Peach>
 ";
 
-			string xml = @"
+			string sm = @"
 <Peach>
 	<Include ns='other' src='{0}'/>
 
@@ -755,17 +756,23 @@ namespace Peach.Core.Test.MutationStrategies
 			</Action>
 		</State>
 	</StateModel>
+</Peach>".Fmt(temp1, temp2, temp3);
+
+			string xml = @"
+<Peach>
+	<Include ns='sm' src='{0}'/>
 
 	<Test name='Default'>
-		<StateModel ref='SM'/>
+		<StateModel ref='sm:SM'/>
 		<Publisher class='Null'/>
 		<Strategy class='Random'>
 			<Param name='SwitchCount' value='2'/>
 		</Strategy>
 	</Test>
-</Peach>".Fmt(temp1, temp2, temp3);
+</Peach>".Fmt(temp4);
 
 			File.WriteAllText(temp1, include);
+			File.WriteAllText(temp4, sm);
 			File.WriteAllText(temp2, "Data Set 1");
 			File.WriteAllText(temp3, "Data Set 2");
 

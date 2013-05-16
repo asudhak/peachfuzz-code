@@ -152,6 +152,7 @@ SOCKET SetUpListener(const char* host, int port)
 	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval)) == SOCKET_ERROR)
 		return INVALID_SOCKET;
 
+	memset(&sa, 0, sizeof(sa));
 	sa.sin_family = AF_INET;
 	sa.sin_addr.s_addr = addr;
 	sa.sin_port = (u_short)port;

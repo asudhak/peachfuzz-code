@@ -587,6 +587,92 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(255, (int)dom.dataModels[0][1].DefaultValue);
 			Assert.AreEqual("\u00abX", (string)dom.dataModels[0][2].DefaultValue);
 		}
+
+		[Test]
+		public void CrackNumericalOn()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.UTF8.GetBytes(xml)));
+
+			Assert.False(dom.dataModels[0][0].Hints.ContainsKey("NumericalString"));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("100"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.True(dom.dataModels[0][0].Hints.ContainsKey("NumericalString"));
+		}
+
+		[Test]
+		public void CrackNumericalOff()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String value=\"100\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.UTF8.GetBytes(xml)));
+
+			Assert.True(dom.dataModels[0][0].Hints.ContainsKey("NumericalString"));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.UTF8.GetBytes("Hello World"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.False(dom.dataModels[0][0].Hints.ContainsKey("NumericalString"));
+		}
+
+		[Test]
+		public void FieldNumerical()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str\"/>" +
+				"	</DataModel>" +
+				"	<StateModel name=\"TheStateModel\" initialState=\"InitialState\">" +
+				"		<State name=\"InitialState\">" +
+				"			<Action type=\"output\">" +
+				"				<DataModel ref=\"TheDataModel\"/>" +
+				"				<Data>" +
+				"					<Field name=\"str\" value=\"100\"/>" +
+				"				</Data>" +
+				"			</Action>" +
+				"		</State>" +
+				"	</StateModel>" +
+				"	<Test name=\"Default\">" +
+				"		<StateModel ref=\"TheStateModel\"/>" +
+				"		<Publisher class=\"Null\"/>" +
+				"		<Strategy class=\"RandomDeterministic\"/>" +
+				"	</Test>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.UTF8.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.False(dom.dataModels[0][0].Hints.ContainsKey("NumericalString"));
+			Assert.True(dom.tests[0].stateModel.states["InitialState"].actions[0].dataModel[0].Hints.ContainsKey("NumericalString"));
+		}
+
 	}
 }
 
