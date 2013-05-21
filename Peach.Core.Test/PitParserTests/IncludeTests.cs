@@ -309,7 +309,8 @@ namespace Peach.Core.Test.PitParserTests
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
-			e.startFuzzing(dom, dom.tests[2], config);
+			config.runName = "Default";
+			e.startFuzzing(dom, config);
 
 			byte[] result = File.ReadAllBytes(output);
 
@@ -317,7 +318,8 @@ namespace Peach.Core.Test.PitParserTests
 
 			dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			e = new Engine(null);
-			e.startFuzzing(dom, dom.tests[1], config);
+			config.runName = "Override";
+			e.startFuzzing(dom, config);
 
 			result = File.ReadAllBytes(output);
 
@@ -325,7 +327,8 @@ namespace Peach.Core.Test.PitParserTests
 
 			dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			e = new Engine(null);
-			e.startFuzzing(dom, dom.tests[0], config);
+			config.runName = "Slurp";
+			e.startFuzzing(dom, config);
 
 			result = File.ReadAllBytes(output);
 

@@ -202,7 +202,7 @@ namespace Peach.Core
 			startFuzzing(dom, test, config);
 		}
 
-		public void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
+		protected void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
 		{
 			try
 			{

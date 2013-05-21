@@ -304,7 +304,7 @@ namespace Peach.Core.Loggers
 		protected virtual string GetBasePath(RunContext context)
 		{
 			string ret = System.IO.Path.Combine(Path, System.IO.Path.GetFileName(context.config.pitFile));
-			if (context.config.runName == "DefaultRun")
+			if (context.config.runName == "Default")
 				ret += "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
 			else
 				ret += "_" + context.config.runName + "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
