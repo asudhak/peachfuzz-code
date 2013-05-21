@@ -292,6 +292,33 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 		[Test]
+		public void CrackSizeOf9()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String length=\"8\">" +
+				"			<Relation type=\"size\" of=\"Data\" />" +
+				"			<Hint name='NumericalString' value='true' />" +
+				"		</String>" +
+				"		<String name=\"Data\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("000000088ByteLen"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(8, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("8ByteLen", (string)dom.dataModels[0][1].DefaultValue);
+		}
+
+		[Test]
 		public void CrackSizeOfBlockReference()
 		{
 			string xml = @"
