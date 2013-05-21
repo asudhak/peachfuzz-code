@@ -644,7 +644,7 @@ namespace Peach.Core.Cracker
 				long end = data.IndexOf(token, start + offset);
 
 				if (end >= 0)
-					return end - start - offset;
+					return end - start;
 
 				long dataLen = data.LengthBytes;
 				data.WantBytes(token.LengthBytes);
@@ -855,7 +855,7 @@ namespace Peach.Core.Cracker
 
 				// An unsized element was found
 				if (!ret.HasValue)
-					return ret;
+					return until == Until.FirstSized ? false : ret;
 
 				// Aa unsized but deterministic element was found
 				if (ret.Value == false)
@@ -935,6 +935,7 @@ namespace Peach.Core.Cracker
 
 			if (closest.HasValue)
 			{
+				closest -= winner.Position;
 				logger.Debug("getSize: <----- {0} Token: {1}",
 					winner.Optional ? "Optional" : "Required",
 					closest.ToString());
