@@ -1054,6 +1054,52 @@ namespace Peach.Core.Test.CrackingTests
 			var choice = block[1] as Choice;
 			Assert.AreEqual("Pie", (string)choice.SelectedElement.DefaultValue);
 		}
+
+
+		[Test]
+		public void TestHttp()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='Request'/>
+		<String value='\r\n' token='true'/>
+		<Block minOccurs='0'>
+			<String name='Header'/>
+			<String value=': ' token='true'/>
+			<String name='Value'/>
+			<String value='\r\n' token='true'/>
+		</Block>
+		<String value='\r\n' token='true'/>
+		<String name='Body'/>
+	</DataModel>
+</Peach>
+";
+
+			string value = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Type: text/html\r\n\r\nabc";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+			Assert.AreEqual("HTTP/1.1 200 OK", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("abc", (string)dom.dataModels[0][4].DefaultValue);
+			var array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(2, array.Count);
+			Assert.AreEqual("Content-Length", (string)((Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("2", (string)((Block)array[0])[2].DefaultValue);
+			Assert.AreEqual("Content-Type", (string)((Block)array[1])[0].DefaultValue);
+			Assert.AreEqual("text/html", (string)((Block)array[1])[2].DefaultValue);
+		}
+
 	}
 }
 
