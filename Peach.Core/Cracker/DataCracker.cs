@@ -931,6 +931,9 @@ namespace Peach.Core.Cracker
 					closest = where.Value;
 					winner = token;
 				}
+
+				if (!token.Optional)
+					break;
 			}
 
 			if (closest.HasValue)
