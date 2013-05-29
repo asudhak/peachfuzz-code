@@ -90,7 +90,7 @@
 		
 		<!-- This publisher will write our file. -->
 		<Publisher class="File">
-			<Param value="fuzzed.bin"/>
+			<Param name="FileName" value="fuzzed.bin"/>
 		</Publisher>
 		
 		<!-- To enable logging we must include this -->

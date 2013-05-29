@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 bld(
-	features = 'cxx cxxprogram debug win',
-	lib = 'ws2_32',
-	source = 'CrashableServer.cpp main.cpp ws-util.cpp',
+	features = 'cxx cxxprogram debug network',
+	source = 'CrashableServer.cpp',
 	target='CrashableServer',
 )
 

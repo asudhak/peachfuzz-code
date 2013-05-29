@@ -14,6 +14,22 @@ namespace Peach.Core.Test.Monitors
 	[TestFixture]
 	class ProcessKillerMonitorTests
 	{
+		SingleInstance si;
+
+		[SetUp]
+		public void SetUp()
+		{
+			si = SingleInstance.CreateInstance("Peach.Core.Test.Monitors.ProcessKillerMonitorTests");
+			si.Lock();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			si.Dispose();
+			si = null;
+		}
+
 		string MakeXml(string folder)
 		{
 			string template = @"
@@ -36,10 +52,11 @@ namespace Peach.Core.Test.Monitors
 		</Monitor>
 	</Agent>
 
-	<Test name='Default'>
+	<Test name='Default' replayEnabled='false'>
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 
@@ -94,6 +111,7 @@ namespace Peach.Core.Test.Monitors
 			Proc p = new Proc();
 			p.StartInfo = new ProcessStartInfo(testProcess);
 			madeProcess = p.Start();
+			System.Threading.Thread.Sleep(1000);
 			p.Close();
 		}
 

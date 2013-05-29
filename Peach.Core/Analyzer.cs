@@ -63,43 +63,49 @@ namespace Peach.Core
 		/// Replaces the parser for fuzzer definition.
 		/// </summary>
 		/// <param name="args">Command line arguments</param>
+		/// <param name="fileName">File to parse</param>
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, string fileName)
 		{
-		    try
-		    {
-			    return asParser(args, File.OpenRead(fileName));
-		    }
-		    catch (FileNotFoundException fileNotFoundException)
-		    {
-		        throw new PeachException("Error, " + fileNotFoundException.Message); 
-		    }
-            catch (PathTooLongException pathTooLongException)
-            {
-                throw new PeachException("Error, " + pathTooLongException.Message); 
-            }
-            catch(DirectoryNotFoundException directoryNotFoundException)
-            {
-                throw new PeachException("Error, " + directoryNotFoundException.Message); 
-            }
-            catch(UnauthorizedAccessException unauthorizedAccessException)
-            {
-                throw new PeachException("Error, " + unauthorizedAccessException.Message); 
-            }
-            catch(NotSupportedException notSupportedException)
-            {
-                 throw new PeachException("Error, " + notSupportedException.Message); 
-            }
+			try
+			{
+				using(Stream fin = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				{
+					Dom.Dom ret = asParser(args, fin);
+					ret.fileName = fileName;
+					return ret;
+				}
+			}
+			catch (FileNotFoundException fileNotFoundException)
+			{
+				throw new PeachException("Error, " + fileNotFoundException.Message, fileNotFoundException);
+			}
+			catch (PathTooLongException pathTooLongException)
+			{
+				throw new PeachException("Error, " + pathTooLongException.Message, pathTooLongException);
+			}
+			catch (DirectoryNotFoundException directoryNotFoundException)
+			{
+				throw new PeachException("Error, " + directoryNotFoundException.Message, directoryNotFoundException);
+			}
+			catch (UnauthorizedAccessException unauthorizedAccessException)
+			{
+				throw new PeachException("Error, " + unauthorizedAccessException.Message, unauthorizedAccessException);
+			}
+			catch (NotSupportedException notSupportedException)
+			{
+				throw new PeachException("Error, " + notSupportedException.Message, notSupportedException);
+			}
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="args"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="args"></param>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data)
 		{
-			throw new NotImplementedException("");
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -108,7 +114,7 @@ namespace Peach.Core
 		/// <param name="args">Arguments</param>
 		/// <param name="fileName">Filename to test</param>
 		/// <returns>Throws PeachException on error.</returns>
-		public virtual void asParserValidation(Dictionary<string, string> args, string fileName)
+		public virtual void asParserValidation(Dictionary<string, object> args, string fileName)
 		{
 			try
 			{
@@ -120,28 +126,28 @@ namespace Peach.Core
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, {0}", ex.Message);
+				throw new PeachException("Error, " + ex.Message, ex);
 			}
 		}
 
-		public virtual void asParserValidation(Dictionary<string, string> args, Stream data)
+		public virtual void asParserValidation(Dictionary<string, object> args, Stream data)
 		{
-			throw new NotImplementedException("");
+			throw new NotImplementedException();
 		}
 
 		public virtual void asDataElement(DataElement parent, object dataBuffer)
 		{
-			throw new NotImplementedException("");
+			throw new NotImplementedException();
 		}
 
 		public virtual void asCommandLine(Dictionary<string, string> args)
 		{
-			throw new NotImplementedException("");
+			throw new NotImplementedException();
 		}
 
 		public virtual void asTopLevel(Dom.Dom dom, Dictionary<string, string> args)
 		{
-			throw new NotImplementedException("");
+			throw new NotImplementedException();
 		}
 	}
 

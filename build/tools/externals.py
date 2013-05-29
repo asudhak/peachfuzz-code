@@ -11,7 +11,7 @@ def find_external(conf, filename, **kw):
 	if path_list:
 		path_list = Utils.to_list(path_list)
 	else:
-		path_list = environ.get('PATH', '').split(os.pathsep)
+		path_list = os.environ.get('PATH', '').split(os.pathsep)
 
 	for d in path_list:
 		f = os.path.expanduser(os.path.join(d, filename))
@@ -30,8 +30,16 @@ def config_uselib(conf, var, name, ext):
 	value = ext.get(var)
 	if value:
 		conf.env[uselib] = value
-	
+
 def config_external(conf, name, ext):
+	msvc = Utils.to_list(ext.get('MSVC', []))
+	if msvc:
+		ver = conf.env['MSVC_VERSION']
+		conf.msg('Checking for msvc ' + str(msvc), ver)
+		conf.to_log('msvc external=%r supported=%r -> %r' % (name, msvc, ver))
+		if str(ver) not in msvc:
+			conf.fatal('msvc version %s not in supported list of %s' % (ver, msvc))
+
 	paths = ext.get('INCLUDES', conf.env['INCLUDES'])
 	for x in ext.get('HEADERS', []):
 		find_external(conf, x, path_list=paths)
@@ -40,7 +48,7 @@ def config_external(conf, name, ext):
 	for x in ext.get('LIB', []):
 		find_external(conf, x, path_list=paths, fmt=conf.env['cshlib_PATTERN'])
 
-	paths = ext.get('STLIBPATH', conf.env['STLIBPATH'])
+	paths = ext.get('STLIBPATH', conf.env['LIBPATH'])
 	for x in ext.get('STLIB', []):
 		find_external(conf, x, path_list=paths, fmt=conf.env['cstlib_PATTERN'])
 
@@ -54,7 +62,7 @@ def config_external(conf, name, ext):
 	config_uselib(conf, 'CPPFLAGS', name, ext)
 	config_uselib(conf, 'CXXFLAGS', name, ext)
 	config_uselib(conf, 'LINKFLAGS', name, ext)
-	
+
 def configure(conf):
 	exts = conf.env['EXTERNALS']
 	for k in exts:
@@ -62,6 +70,7 @@ def configure(conf):
 			config_external(conf, k, exts[k])
 			conf.env.append_value('supported_features', [ k ])
 		except Exception, e:
+			conf.env.append_value('missing_features', [ k ])
 			if Logs.verbose:
 				Logs.warn('External library \'%s\' is not available: %s' % (k, e))
 

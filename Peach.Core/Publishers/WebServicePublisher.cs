@@ -40,7 +40,7 @@ namespace Peach.Core.Publishers
 		public int Throttle { get; set; }
         public string StatusCode = HttpStatusCode.OK.ToString();
 		public bool ErrorOnStatusCode { get; set; }
-		public override string Result { get { return StatusCode;} protected set { StatusCode = value; } }
+		public override string Result { get { return StatusCode;} set { StatusCode = value; } }
 
 		protected MemoryStream _buffer = new MemoryStream();
 		protected int _pos = 0;
@@ -114,7 +114,7 @@ namespace Peach.Core.Publishers
 					throw new SoftException(ex.InnerException);
 
                 if (!(ex.InnerException is WebException))
-                    throw ex;
+                    throw;
 
                 var webEx = ex.InnerException as WebException;
                 var response = webEx.Response as HttpWebResponse;
@@ -134,7 +134,7 @@ namespace Peach.Core.Publishers
 					}
                 }
 
-                throw ex;
+                throw;
             }
 		}
 	}
@@ -238,7 +238,7 @@ namespace Peach.Core.Publishers
 		/// Builds the web service description importer, which allows us to generate a proxy class based on the 
 		/// content of the WSDL described by the XmlTextReader.
 		/// </summary>
-		/// <param name="xmlreader">The WSDL content, described by XML.</param>
+		/// <param name="webserviceUri">The WSDL content, described by XML.</param>
 		/// <returns>A ServiceDescriptionImporter that can be used to create a proxy class.</returns>
 		private ServiceDescriptionImporter BuildServiceDescriptionImporter(string webserviceUri)
 		{

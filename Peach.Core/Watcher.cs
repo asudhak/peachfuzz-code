@@ -54,6 +54,8 @@ namespace Peach.Core
 			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 			engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
+			engine.ReproFault += new Engine.ReproFaultEventHandler(Engine_ReproFault);
+			engine.ReproFailed += new Engine.ReproFailedEventHandler(Engine_ReproFailed);
 			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
 			engine.HaveParallel += new Engine.HaveParallelEventHandler(Engine_HaveParallel);
 
@@ -119,7 +121,15 @@ namespace Peach.Core
 		{
 		}
 
-		protected virtual void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault [] faultData)
+		protected virtual void Engine_ReproFailed(RunContext context, uint currentIteration)
+		{
+		}
+
+		protected virtual void Engine_ReproFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
+		{
+		}
+
+		protected virtual void Engine_Fault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{
 		}
 

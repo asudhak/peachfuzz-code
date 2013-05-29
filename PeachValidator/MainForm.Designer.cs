@@ -42,7 +42,6 @@
 			this.hexBox1 = new Be.Windows.Forms.HexBox();
 			this.treeViewAdv1 = new Aga.Controls.Tree.TreeViewAdv();
 			this.treeColumn1 = new Aga.Controls.Tree.TreeColumn();
-			this.treeColumn2 = new Aga.Controls.Tree.TreeColumn();
 			this.treeColumn3 = new Aga.Controls.Tree.TreeColumn();
 			this.treeColumn4 = new Aga.Controls.Tree.TreeColumn();
 			this.treeColumn5 = new Aga.Controls.Tree.TreeColumn();
@@ -52,7 +51,7 @@
 			this.nodeTextBoxLength = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.nodeTextBoxValue = new Aga.Controls.Tree.NodeControls.NodeTextBox();
 			this.toolStrip1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+			this.splitContainer1.BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
@@ -182,7 +181,6 @@
 			this.treeViewAdv1.AutoRowHeight = true;
 			this.treeViewAdv1.BackColor = System.Drawing.SystemColors.Window;
 			this.treeViewAdv1.Columns.Add(this.treeColumn1);
-			this.treeViewAdv1.Columns.Add(this.treeColumn2);
 			this.treeViewAdv1.Columns.Add(this.treeColumn3);
 			this.treeViewAdv1.Columns.Add(this.treeColumn4);
 			this.treeViewAdv1.Columns.Add(this.treeColumn5);
@@ -210,18 +208,10 @@
 			// 
 			// treeColumn1
 			// 
-			this.treeColumn1.Header = "";
+			this.treeColumn1.Header = "Name";
 			this.treeColumn1.SortOrder = System.Windows.Forms.SortOrder.None;
 			this.treeColumn1.TooltipText = null;
-			this.treeColumn1.Width = 100;
-			// 
-			// treeColumn2
-			// 
-			this.treeColumn2.Header = "Name";
-			this.treeColumn2.Sortable = true;
-			this.treeColumn2.SortOrder = System.Windows.Forms.SortOrder.None;
-			this.treeColumn2.TooltipText = null;
-			this.treeColumn2.Width = 100;
+			this.treeColumn1.Width = 220;
 			// 
 			// treeColumn3
 			// 
@@ -255,7 +245,7 @@
 			this.nodeTextBoxName.DataPropertyName = "Name";
 			this.nodeTextBoxName.IncrementalSearchEnabled = true;
 			this.nodeTextBoxName.LeftMargin = 3;
-			this.nodeTextBoxName.ParentColumn = this.treeColumn2;
+			this.nodeTextBoxName.ParentColumn = this.treeColumn1;
 			// 
 			// nodeTextBoxPosition
 			// 
@@ -292,7 +282,7 @@
 			this.toolStrip1.PerformLayout();
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+			this.splitContainer1.EndInit();
 			this.splitContainer1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -314,7 +304,6 @@
 		private Be.Windows.Forms.HexBox hexBox1;
 		private Aga.Controls.Tree.TreeViewAdv treeViewAdv1;
 		private Aga.Controls.Tree.TreeColumn treeColumn1;
-		private Aga.Controls.Tree.TreeColumn treeColumn2;
 		private Aga.Controls.Tree.TreeColumn treeColumn3;
 		private Aga.Controls.Tree.TreeColumn treeColumn4;
 		private Aga.Controls.Tree.TreeColumn treeColumn5;

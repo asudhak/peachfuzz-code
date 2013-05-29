@@ -393,6 +393,283 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 		}
 
+		public Dom.Dom TokenAfterArrayToken(string value)
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"A\"/>" +
+				"		<String name=\"T1\" value=\" \" token=\"true\"/>" +
+				"		<String name=\"B\"/>" +
+				"		<String name=\"T2\" value=\"-\" minOccurs=\"0\" token=\"true\"/>" +
+				"		<String name=\"T3\" value=\" \" token=\"true\"/>" +
+				"		<String name=\"C\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void ZeroTokenAfterArrayToken()
+		{
+			var dom = TokenAfterArrayToken("aaa bbb ccc");
+
+			Assert.AreEqual(6, dom.dataModels[0].Count);
+			Assert.AreEqual("aaa", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("bbb", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(0, ((Dom.Array)dom.dataModels[0][3]).Count);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][4].DefaultValue);
+			Assert.AreEqual("ccc", (string)dom.dataModels[0][5].DefaultValue);
+		}
+
+		[Test]
+		public void OneTokenAfterArrayToken()
+		{
+			var dom = TokenAfterArrayToken("aaa bbb- ccc");
+
+			Assert.AreEqual(6, dom.dataModels[0].Count);
+			Assert.AreEqual("aaa", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("bbb", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(1, ((Dom.Array)dom.dataModels[0][3]).Count);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][4].DefaultValue);
+			Assert.AreEqual("ccc", (string)dom.dataModels[0][5].DefaultValue);
+		}
+
+		[Test]
+		public void ManyTokenAfterArrayToken()
+		{
+			var dom = TokenAfterArrayToken("aaa bbb-------------- ccc");
+
+			Assert.AreEqual(6, dom.dataModels[0].Count);
+			Assert.AreEqual("aaa", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("bbb", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(14, ((Dom.Array)dom.dataModels[0][3]).Count);
+			Assert.AreEqual(" ", (string)dom.dataModels[0][4].DefaultValue);
+			Assert.AreEqual("ccc", (string)dom.dataModels[0][5].DefaultValue);
+		}
+
+		public Dom.Dom DoCrackArrayToken(string value)
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str1\"/>" +
+				"		<Block minOccurs=\"0\">" +
+				"			<String value=\"+\" token=\"true\"/>" +
+				"			<String name=\"str2\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void CrackArrayZeroToken()
+		{
+			var dom = DoCrackArrayToken("Hello");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var str = dom.dataModels[0][0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
+		}
+
+		[Test]
+		public void CrackArrayOneToken()
+		{
+			var dom = DoCrackArrayToken("Hello+World");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var str = dom.dataModels[0][0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("World", (string)((Dom.Block)array[0])[1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackArrayManyToken()
+		{
+			var dom = DoCrackArrayToken("Hello+World+More+Data");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var str = dom.dataModels[0][0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("Hello", (string)str.DefaultValue);
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("World", (string)((Dom.Block)array[0])[1].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[1])[0].DefaultValue);
+			Assert.AreEqual("More", (string)((Dom.Block)array[1])[1].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[2])[0].DefaultValue);
+			Assert.AreEqual("Data", (string)((Dom.Block)array[2])[1].DefaultValue);
+		}
+
+		public Dom.Dom DoCrackTokenBeforeArray(string value)
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str1\"/>" +
+				"		<String value=\"+\" token=\"true\"/>" +
+				"		<Block minOccurs=\"0\">" +
+				"			<String name=\"str2\"/>" +
+				"			<String value=\"+\" token=\"true\"/>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void CrackTokenBeforeArrayZero()
+		{
+			var dom = DoCrackTokenBeforeArray("Hello+");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("+", (string)dom.dataModels[0][1].DefaultValue);
+			var array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
+		}
+
+		[Test]
+		public void CrackTokenBeforeArrayOne()
+		{
+			var dom = DoCrackTokenBeforeArray("Hello+World+");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("+", (string)dom.dataModels[0][1].DefaultValue);
+			var array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("World", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[1].DefaultValue);
+		}
+
+		[Test]
+		public void CrackTokenBeforeArrayMany()
+		{
+			var dom = DoCrackTokenBeforeArray("Hello+World+More+Data+");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("+", (string)dom.dataModels[0][1].DefaultValue);
+			var array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
+			Assert.AreEqual("World", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[1].DefaultValue);
+			Assert.AreEqual("More", (string)((Dom.Block)array[1])[0].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[1])[1].DefaultValue);
+			Assert.AreEqual("Data", (string)((Dom.Block)array[2])[0].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[2])[1].DefaultValue);
+		}
+
+		public Dom.Dom DoCrackTokenArray(string value)
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"str1\"/>" +
+				"		<Block minOccurs=\"0\">" +
+				"			<String value=\"+\" token=\"true\"/>" +
+				"		</Block>" +
+				"		<String name=\"str2\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.str1' is unsized.")]
+		public void CrackTokenArrayZero()
+		{
+			DoCrackTokenArray("HelloWorld");
+		}
+
+		[Test]
+		public void CrackTokenArrayOne()
+		{
+			var dom = DoCrackTokenArray("Hello+World");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("World", (string)dom.dataModels[0][2].DefaultValue);
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
+		}
+
+		[Test]
+		public void CrackTokenArrayMany()
+		{
+			var dom = DoCrackTokenArray("Hello+++World");
+			Assert.AreEqual(1, dom.dataModels.Count);
+			Assert.AreEqual(3, dom.dataModels[0].Count);
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("World", (string)dom.dataModels[0][2].DefaultValue);
+			var array = dom.dataModels[0][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(3, array.Count);
+			Assert.AreEqual("+", (string)((Dom.Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[1])[0].DefaultValue);
+			Assert.AreEqual("+", (string)((Dom.Block)array[2])[0].DefaultValue);
+		}
+
         [Test]
         public void SizedByToken()
         {
@@ -450,6 +727,464 @@ namespace Peach.Core.Test.CrackingTests
 
             Assert.AreEqual("SUCCESS", (string)dom.dataModels[0].find("Data").DefaultValue);
         }
+
+
+
+
+		public Dom.Dom SharedTokensAfterChoiceWithSizedElements(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+			<Blob name='SecondToken' />
+		</DataModel>
+
+		<DataModel name='r2' ref='r1'>
+			<Blob name='SecondToken' value='32' valueType='hex' token='true'/>
+			<String length='3'/>
+		</DataModel>
+
+		<DataModel name='r3' ref='r1'>
+			<Blob name='SecondToken' value='33' valueType='hex' token='true'/>
+			<String/>
+		</DataModel>
+	
+		<DataModel name='r4'>
+			<Choice name='c1' minOccurs='0'>
+				<Block name='b2' ref='r2' />
+			</Choice>
+			<Block name='b3' ref='r3' />
+		</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[3], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneSharedTokensAfterChoiceWithSizedElements()
+		{
+			var dom = SharedTokensAfterChoiceWithSizedElements("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[3].Count);
+			var minoccursArray = (Dom.Array)dom.dataModels[3][0];
+			Assert.AreEqual(2, minoccursArray.Count);
+
+			var choiceref1 = (Dom.Choice)minoccursArray[0];
+			Assert.AreEqual(1, choiceref1.Count);
+			var blockref1 = (Dom.Block)choiceref1[0];
+			Assert.AreEqual(3, blockref1.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
+
+			var choiceref2 = (Dom.Choice)minoccursArray[1];
+			Assert.AreEqual(1, choiceref2.Count);
+			var blockref2 = (Dom.Block)choiceref2[0];
+			Assert.AreEqual(3, blockref2.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
+
+			var lastBlock = (Dom.Block)dom.dataModels[3][1];
+			Assert.AreEqual(3, lastBlock.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
+		}
+
+		public Dom.Dom SharedTokensAfterArrayWithUnsizedElements(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+			<Blob name='SecondToken' />
+			<String/>
+		</DataModel>
+
+		<DataModel name='r2' ref='r1'>
+			<Blob name='SecondToken' value='32' valueType='hex' token='true'/>
+		</DataModel>
+
+		<DataModel name='r3' ref='r1'>
+			<Blob name='SecondToken' value='33' valueType='hex' token='true'/>
+		</DataModel>
+	
+		<DataModel name='r4'>
+			<Block name='a2' minOccurs='0'>
+				<Block ref='r2' />
+			</Block>
+			<Block name='b3' ref='r3' />
+		</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[3], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneSharedTokensAfterArrayWithUnsizedElements()
+		{
+			var dom = SharedTokensAfterArrayWithUnsizedElements("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[3].Count);
+			var minoccursArray = (Dom.Array)dom.dataModels[3][0];
+			Assert.AreEqual(2, minoccursArray.Count);
+
+			var blockref1 = (Dom.Block)((Dom.Block)minoccursArray[0])[0];
+			Assert.AreEqual(3, blockref1.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
+
+			var blockref2 = (Dom.Block)((Dom.Block)minoccursArray[1])[0];
+			Assert.AreEqual(3, blockref2.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
+
+			var lastBlock = (Dom.Block)dom.dataModels[3][1];
+			Assert.AreEqual(3, lastBlock.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
+
+		}
+
+		public Dom.Dom SharedTokensAfterChoiceWithUnsizedElements(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+			<Blob name='SecondToken' />
+			<String />
+		</DataModel>
+
+		<DataModel name='r2' ref='r1'>
+			<Blob name='SecondToken' value='32' valueType='hex' token='true'/>
+		</DataModel>
+
+
+		<DataModel name='r3' ref='r1'>
+			<Blob name='SecondToken' value='33' valueType='hex' token='true'/>
+		</DataModel>
+	
+		<DataModel name='r4'>
+			<Choice minOccurs='0'>
+				<Block ref='r2' />
+			</Choice>
+			<Block ref='r3' />
+		</DataModel>
+
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[3], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneSharedTokensAfterChoiceWithUnsizedElements()
+		{
+			var dom = SharedTokensAfterChoiceWithUnsizedElements("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[3].Count);
+			var minoccursArray = (Dom.Array)dom.dataModels[3][0];
+			Assert.AreEqual(2, minoccursArray.Count);
+
+			var blockref1 = (Dom.Block)((Dom.Choice)minoccursArray[0])[0];
+			Assert.AreEqual(3, blockref1.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
+
+			var blockref2 = (Dom.Block)((Dom.Choice)minoccursArray[1])[0];
+			Assert.AreEqual(3, blockref2.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
+
+			var lastBlock = (Dom.Block)dom.dataModels[3][1];
+			Assert.AreEqual(3, lastBlock.Count);
+			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
+		}
+
+
+		public Dom.Dom MinMaxZeroWithUnsized(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+	<Peach>
+		<DataModel name='r1'>
+			<Block name='b1' minOccurs='1' maxOccurs='1'>
+				<Blob name='FirstToken' value='31' valueType='hex' token='true' />
+				<String/>
+			</Block>
+			<String value='z' token='true' />
+		</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void OneMinMaxZeroWithUnsized()
+		{
+			var dom = MinMaxZeroWithUnsized("12foo12bar13baz");
+
+			Assert.AreEqual(2, dom.dataModels[0].Count);
+			var array = dom.dataModels[0][0] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual("2foo12bar13ba", (string)block[1].DefaultValue);
+
+		}
+
+		public Dom.Dom TokenAfterSizedArray(string value)
+		{
+			string xml = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<DataModel name='MealModel'>
+		<String name='Appetizer' />
+		<String value='/' token='true' />
+		<String name='Entree' />
+		<Block name='Dessert' minOccurs='0'>
+			<String value='/' token='true' />
+			<Choice name='DessertChoice'>
+				<String name='Pie' value='Pie' token='true' />
+				<String name='Cake' value='Cake' token='true' />
+			</Choice>
+		</Block>
+		<String name='Terminator' value=';' token='true' />
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void ZeroTokenAfterSizedArray()
+		{
+			var dom = TokenAfterSizedArray("Soup/Steak;");
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+
+			Assert.AreEqual("Soup", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("/", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Steak", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(";", (string)dom.dataModels[0][4].DefaultValue);
+			var array = dom.dataModels[0][3] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
+		}
+
+		[Test]
+		public void OneTokenAfterSizedArray()
+		{
+			var dom = TokenAfterSizedArray("Soup/Steak/Pie;");
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+
+			Assert.AreEqual("Soup", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("/", (string)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Steak", (string)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(";", (string)dom.dataModels[0][4].DefaultValue);
+			var array = dom.dataModels[0][3] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+			var block = array[0] as Block;
+			Assert.NotNull(block);
+			Assert.AreEqual(2, block.Count);
+			Assert.AreEqual("/", (string)block[0].DefaultValue);
+			var choice = block[1] as Choice;
+			Assert.AreEqual("Pie", (string)choice.SelectedElement.DefaultValue);
+		}
+
+
+		[Test]
+		public void TestHttp()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='Request'/>
+		<String value='\r\n' token='true'/>
+		<Block minOccurs='0'>
+			<String name='Header'/>
+			<String value=': ' token='true'/>
+			<String name='Value'/>
+			<String value='\r\n' token='true'/>
+		</Block>
+		<String value='\r\n' token='true'/>
+		<String name='Body'/>
+	</DataModel>
+</Peach>
+";
+
+			string value = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Type: text/html\r\n\r\nabc";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(5, dom.dataModels[0].Count);
+			Assert.AreEqual("HTTP/1.1 200 OK", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("abc", (string)dom.dataModels[0][4].DefaultValue);
+			var array = dom.dataModels[0][2] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(2, array.Count);
+			Assert.AreEqual("Content-Length", (string)((Block)array[0])[0].DefaultValue);
+			Assert.AreEqual("2", (string)((Block)array[0])[2].DefaultValue);
+			Assert.AreEqual("Content-Type", (string)((Block)array[1])[0].DefaultValue);
+			Assert.AreEqual("text/html", (string)((Block)array[1])[2].DefaultValue);
+		}
+
+		Dom.Dom TokenBeforeOptionalArray(string value)
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TV'>
+		<String name='Type' length='1'/>
+		<String value='=' token='true'/>
+		<String name='Value'/>
+		<String value='\r\n' token='true'/>
+	</DataModel>
+
+	<DataModel name='Model'>
+		<Block ref='TV'>
+			<String name='Type' value='s' token='true'/>
+		</Block>
+		<Block ref='TV' minOccurs='0'>
+			<String name='Type' value='e' token='true'/>
+		</Block>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			BitStream data = new BitStream();
+			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(value));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			return dom;
+		}
+
+		[Test]
+		public void TestTokenBeforeOptionalArray()
+		{
+			var dom = TokenBeforeOptionalArray("s=Cookies\r\n");
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[1].Count);
+
+			var blk1 = dom.dataModels[1][0] as Dom.Block;
+			Assert.NotNull(blk1);
+			Assert.AreEqual(4, blk1.Count);
+			Assert.AreEqual("s", (string)blk1[0].DefaultValue);
+			Assert.AreEqual("=", (string)blk1[1].DefaultValue);
+			Assert.AreEqual("Cookies", (string)blk1[2].DefaultValue);
+			Assert.AreEqual("\r\n", (string)blk1[3].DefaultValue);
+
+			var array = dom.dataModels[1][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
+		}
+
+		[Test]
+		public void TestTokenBeforeOptionalArray1()
+		{
+			var dom = TokenBeforeOptionalArray("s=Cookies\r\ne=MoreCookies\r\n");
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+			Assert.AreEqual(2, dom.dataModels[1].Count);
+
+			var blk1 = dom.dataModels[1][0] as Dom.Block;
+			Assert.NotNull(blk1);
+			Assert.AreEqual(4, blk1.Count);
+			Assert.AreEqual("s", (string)blk1[0].DefaultValue);
+			Assert.AreEqual("=", (string)blk1[1].DefaultValue);
+			Assert.AreEqual("Cookies", (string)blk1[2].DefaultValue);
+			Assert.AreEqual("\r\n", (string)blk1[3].DefaultValue);
+
+			var array = dom.dataModels[1][1] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(1, array.Count);
+
+			var blk2 = array[0] as Dom.Block;
+			Assert.NotNull(blk2);
+			Assert.AreEqual(4, blk2.Count);
+			Assert.AreEqual("e", (string)blk2[0].DefaultValue);
+			Assert.AreEqual("=", (string)blk2[1].DefaultValue);
+			Assert.AreEqual("MoreCookies", (string)blk2[2].DefaultValue);
+			Assert.AreEqual("\r\n", (string)blk2[3].DefaultValue);
+
+		}
 	}
 }
 

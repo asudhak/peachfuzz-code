@@ -270,7 +270,12 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreNotEqual(null, str);
 
 			Assert.AreEqual(expected, (string)str.DefaultValue);
-			Assert.AreEqual(finalLen, str.Value.Stream.Length);
+			Assert.AreEqual(expected, (string)str.InternalValue);
+
+			var val = str.Value.Value;
+
+			Assert.AreEqual(finalLen, val.Length);
+			Assert.AreEqual(expected, Encoding.GetEncoding(enc).GetString(val));
 		}
 
 		[Test]
@@ -387,6 +392,56 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.Throws<PeachException>(delegate() {
 				parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			});
+		}
+
+		[Test]
+		public void NullTerm()
+		{
+			string xml = "<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String nullTerminated=\"true\" value=\"Hello World\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str = dom.dataModels[0][0] as Dom.String;
+
+			Assert.AreNotEqual(null, str);
+			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
+			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
+			Assert.AreEqual("Hello World", (string)str.DefaultValue);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello World\0"), str.Value.Value);
+		}
+
+		[Test]
+		public void EscapeChars()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM1'>
+		<String value='1\\t2\\r\\n'/>
+		<String value='1\t2\r\n'/>
+		<String value='1	2
+'/>
+		<String value='1	2
+\t
+\\n'/>
+
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Dom.String str1 = dom.dataModels[0][0] as Dom.String;
+			Dom.String str2 = dom.dataModels[0][1] as Dom.String;
+			Dom.String str3 = dom.dataModels[0][2] as Dom.String;
+			Dom.String str4 = dom.dataModels[0][3] as Dom.String;
+
+			Assert.AreEqual("1\\t2\\r\\n", (string)str1.DefaultValue);
+			Assert.AreEqual("1\t2\r\n", (string)str2.DefaultValue);
+			Assert.AreEqual("1\t2\r\n", (string)str3.DefaultValue);
+			Assert.AreEqual("1\t2\r\n\t\r\n\\n", (string)str4.DefaultValue);
 		}
 	}
 }

@@ -59,31 +59,13 @@ namespace Peach.Core.Test.MutationStrategies
 
 			// verify values
 			// 5 strings, BOM - 1413 mutations, StringCase - 3 mutations, String - 2379 mutations
-			Assert.AreEqual(5 * (1413 + 3 + 2379), mutations.Count);
-			Assert.AreEqual(5 * 3, strategies.Count);
+			int expected = 5 * (1413 + 3 + 2379);
+			Assert.AreEqual(expected, mutations.Count);
 
 			// this strategy fuzzes elements in a consistently random order
-			string[] expected =
-			{
-				"UnicodeBomMutator | TheDataModel.str3",
-				"StringCaseMutator | TheDataModel.str5",
-				"StringCaseMutator | TheDataModel.str2",
-				"StringMutator | TheDataModel.str5",
-				"StringMutator | TheDataModel.str1",
-				"UnicodeBomMutator | TheDataModel.str1",
-				"StringMutator | TheDataModel.str2",
-				"StringCaseMutator | TheDataModel.str1",
-				"UnicodeBomMutator | TheDataModel.str5",
-				"StringMutator | TheDataModel.str4",
-				"UnicodeBomMutator | TheDataModel.str2",
-				"UnicodeBomMutator | TheDataModel.str4",
-				"StringCaseMutator | TheDataModel.str3",
-				"StringMutator | TheDataModel.str3",
-				"StringCaseMutator | TheDataModel.str4",
-			};
-
-			for (int i = 0; i < expected.Length; ++i)
-				Assert.AreEqual(expected[i], strategies[i]);
+			// that appears to be random.  should not run the same strategy twice
+			// for > 85% of the time.
+			Assert.Greater(strategies.Count, (expected * 85) / 100);
 		}
 
 	}

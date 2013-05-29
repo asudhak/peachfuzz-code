@@ -8,7 +8,7 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("VmwareMonitor", true)]
+	[Monitor("Vmware", true)]
 	[Parameter("Vmx", typeof(string), "Path to virtual machine")]
 	[Parameter("Host", typeof(string), "Name of host machine", "")]
 	[Parameter("Login", typeof(string), "Username for authentication on the remote machine", "")]
@@ -18,10 +18,13 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("SnapshotIndex", typeof(int?), "VM snapshot index", "")]
 	[Parameter("SnapshotName", typeof(string), "VM snapshot name", "")]
 	[Parameter("ResetEveryIteration", typeof(bool), "Reset VM on every iteration", "false")]
+	[Parameter("ResetOnFaultBeforeCollection", typeof(bool), "Reset VM after we detect a fault during data collection", "false")]
 	[Parameter("WaitForToolsInGuest", typeof(bool), "Wait for tools to start in guest", "true")]
 	[Parameter("WaitTimeout", typeof(int), "How many seconds to wait for guest tools", "600")]
 	public class VmwareMonitor : Monitor
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public enum Provider
 		{
 			// Default
@@ -40,7 +43,7 @@ namespace Peach.Core.Agent.Monitors
 
 		#region P/Invokes
 
-		const string VixDll = "Vix64AllProductsDyn.dll";
+		const string VixDll = "VixAllProducts.dll";
 		const int VixApiVersion = -1;
 		static readonly IntPtr VixInvalidHandle = IntPtr.Zero;
 
@@ -661,6 +664,11 @@ namespace Peach.Core.Agent.Monitors
 			return GetResultHandle(jobHandle);
 		}
 
+		private static void Disconnect(IntPtr connectionHandle)
+		{
+			VixHost_Disconnect(connectionHandle);
+		}
+
 		private static IntPtr OpenVM(IntPtr hostHandle, string vmx)
 		{
 			IntPtr jobHandle = VixHost_OpenVM(
@@ -771,7 +779,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			IntPtr jobHandle = VixVM_PowerOff(
 				vmHandle,
-				VixVMPowerOpOptions.VIX_VMPOWEROP_LAUNCH_GUI,
+				VixVMPowerOpOptions.VIX_VMPOWEROP_NORMAL,
 				null,
 				IntPtr.Zero);
 
@@ -837,6 +845,7 @@ namespace Peach.Core.Agent.Monitors
 		public int HostPort { get; private set; }
 		public int? SnapshotIndex { get; private set; }
 		public string SnapshotName { get; private set; }
+		public bool ResetOnFaultBeforeCollection { get; private set; }
 
 		IntPtr hostHandle = VixInvalidHandle;
 		IntPtr vmHandle = VixInvalidHandle;
@@ -847,13 +856,80 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (needReset || ResetEveryIteration)
 			{
-				RevertToSnapshot(vmHandle, snapshotHandle);
-				PowerOn(vmHandle);
+				try
+				{
+					logger.Debug("Starting virtual machine \"" + Vmx + "\".");
 
-				if (WaitForToolsInGuest)
-					WaitForTools(vmHandle, WaitTimeout);
+					try
+					{
+						if (snapshotHandle != VixInvalidHandle)
+							CloseHandle(ref snapshotHandle);
 
-				needReset = false;
+						snapshotHandle = VixInvalidHandle;
+					}
+					catch (Exception ex)
+					{
+						logger.Warn("Ignoring exception closing old snapshotHandle: " + ex.Message);
+					}
+
+					try
+					{
+						if (vmHandle != VixInvalidHandle)
+							CloseHandle(ref vmHandle);
+
+						vmHandle = VixInvalidHandle;
+					}
+					catch (Exception ex)
+					{
+						logger.Warn("Ignoring exception closing old vmHandle: " + ex.Message);
+					}
+
+					try
+					{
+						if (hostHandle != VixInvalidHandle)
+							Disconnect(hostHandle);
+
+						hostHandle = VixInvalidHandle;
+					}
+					catch (Exception ex)
+					{
+						logger.Warn("Ignoring exception closing old hostHandle: " + ex.Message);
+					}
+
+					hostHandle = Connect(HostType, Host, HostPort, Login, Password);
+
+					OpenHandle();
+					GetSnapshot();
+
+					RevertToSnapshot(vmHandle, snapshotHandle);
+					PowerOn(vmHandle);
+
+					if (WaitForToolsInGuest)
+					{
+						try
+						{
+							WaitForTools(vmHandle, WaitTimeout);
+						}
+						catch (VMwareException vmex)
+						{
+							if ((ulong)vmex.Error != 3025)
+								throw;
+
+							// Note: This exception seems to occur sometimes with workstation + open source tools.
+							//       Doesn't happen with ESXi + open source tools in guest.
+							//  Also ignoring since this should mean the tools are up (??)
+
+							logger.Warn("Ignoring: The command is not recognized by VMware Tools exception.");
+						}
+					}
+
+					needReset = false;
+				}
+				catch (Exception ex)
+				{
+					logger.Error(ex.Message);
+					throw;
+				}
 			}
 		}
 
@@ -872,9 +948,10 @@ namespace Peach.Core.Agent.Monitors
 			{
 				GetErrorText(VixError.VIX_OK);
 			}
-			catch (DllNotFoundException)
+			catch (DllNotFoundException ex)
 			{
-				throw new PeachException("VMWare VIX library could not be found.");
+				string msg = "VMWare VIX library could not be found. Ensure VIX API 1.12 has been installed. The SDK download can be found at 'http://www.vmware.com/support/developer/vix-api/'";
+				throw new PeachException(msg, ex);
 			}
 		}
 
@@ -885,9 +962,10 @@ namespace Peach.Core.Agent.Monitors
 			CloseHandle(ref hostHandle);
 		}
 
-		public override void SessionStarting()
+		protected void OpenHandle()
 		{
-			hostHandle = Connect(HostType, Host, HostPort, Login, Password);
+			if(hostHandle == VixInvalidHandle)
+				hostHandle = Connect(HostType, Host, HostPort, Login, Password);
 
 			try
 			{
@@ -903,13 +981,26 @@ namespace Peach.Core.Agent.Monitors
 				string msg = string.Format("Could not find vmx '{0}' on host '{1}'.  Available vms are:", Vmx, Host);
 				vms.Insert(0, msg);
 				msg = string.Join(Environment.NewLine + "\t", vms);
-				throw new PeachException(msg);
-			}
 
+				logger.Error("OpenHandle: " + msg);
+
+				throw new PeachException(msg, ve);
+			}
+		}
+
+		protected void GetSnapshot()
+		{
 			if (SnapshotIndex.HasValue)
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotIndex.Value);
 			else
 				snapshotHandle = GetSnapshot(vmHandle, SnapshotName);
+		}
+
+		public override void SessionStarting()
+		{
+			OpenHandle();
+			GetSnapshot();
+			StartVM();
 		}
 
 		public override void SessionFinished()
@@ -933,8 +1024,12 @@ namespace Peach.Core.Agent.Monitors
 
 		public override Fault GetMonitorData()
 		{
+			if (ResetOnFaultBeforeCollection)
+				StartVM();
+
 			// This indicates a fault was detected and we should reset the VM.
 			needReset = true;
+
 			return null;
 		}
 

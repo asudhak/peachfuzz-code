@@ -15,16 +15,30 @@ namespace Peach.Core.Test.Monitors
 {
     [Monitor("FaultingMonitor", true)]
     [Parameter("Iteration", typeof(int), "Iteration to Fault on")]
+    [Parameter("FaultAlways", typeof(bool), "Fault on non control iterations")]
+    [Parameter("Replay", typeof(bool), "Don't fault on replay", "false")]
+    [Parameter("Repro", typeof(int), "Repro faults on this iteration", "0")]
     public class FaultingMonitor : Peach.Core.Agent.Monitor
     {
         protected int Iter = 0;
         protected int curIter = 0;
+        protected int ReproIter = 0;
+        protected bool replay = false;
+        protected bool replaying = false;
+        protected bool control = true;
+        protected bool faultAlways = false;
 
         public FaultingMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
             : base(agent, name, args)
         {
             if (args.ContainsKey("Iteration"))
                 Iter = (int)args["Iteration"];
+            if (args.ContainsKey("Repro"))
+                ReproIter = (int)args["Repro"];
+            if (args.ContainsKey("Replay"))
+                replay = ((string) args["Replay"]).ToLower() == "true";
+            if (args.ContainsKey("FaultAlways"))
+                faultAlways = ((string) args["FaultAlways"]).ToLower() == "true";
         }
         public override void StopMonitor()
         {
@@ -39,6 +53,7 @@ namespace Peach.Core.Test.Monitors
         public override void IterationStarting(uint iterationCount, bool isReproduction) 
         {
             curIter = (int)iterationCount;
+            replaying = isReproduction;
         }
 
         public override bool IterationFinished()
@@ -48,7 +63,35 @@ namespace Peach.Core.Test.Monitors
 
         public override bool DetectedFault()
         {
-            return curIter == Iter;
+			if (curIter == ReproIter)
+			{
+				bool fault = !control;
+				control = false;
+				return fault;
+			}
+
+            if (curIter == Iter)
+            {
+                if (replay)
+                {
+                    bool fault = !control && !replaying;
+                    control = false;
+                    return fault;
+                }
+
+                control = false;
+                return true;
+            }
+
+			if (faultAlways)
+			{
+				bool fault = !control;
+				control = false;
+				return fault;
+			}
+
+            control = false;
+            return false;
         }
 
         public override Fault GetMonitorData()
@@ -101,11 +144,14 @@ namespace Peach.Core.Test.Monitors
             "		<Agent ref=\"LocalAgent\"/>" +
             "		<StateModel ref=\"TheState\"/>" +
             "		<Publisher class=\"Null\" />" +
+            "		<Strategy class=\"RandomDeterministic\"/>" +
             "	</Test>" +
             "</Peach>";
 
         private void RunTest(string mid_xml, uint iterations, Engine.FaultEventHandler OnFault)
         {
+            testResults.Clear();
+
             string xml = pre_xml + mid_xml + post_xml;
 
             PitParser parser = new PitParser();
@@ -128,11 +174,7 @@ namespace Peach.Core.Test.Monitors
             if (OnFault != null)
             {
                 Assert.AreEqual(expectedFaults, testResults.Count);
-                testResults.Clear();
             }
-
-            Assert.AreEqual(0, testResults.Count);
-
         }
 
         uint expectedFaultIteration;
@@ -148,8 +190,18 @@ namespace Peach.Core.Test.Monitors
                 "		</Monitor>" +
                 "	</Agent>";
             expectedFaultIteration = 1;
-            expectedFaults = 2; // Iteration 1 runs twice, once as control and once for mutation
-            RunTest(agent_xml, 10, new Engine.FaultEventHandler(_Fault));
+
+            // Faults on iteration 1 cause peach exceptions
+            try
+            {
+                RunTest(agent_xml, 10, new Engine.FaultEventHandler(_Fault));
+                Assert.Fail("Should throw.");
+            }
+            catch (PeachException ex)
+            {
+                Assert.AreEqual(1, testResults.Count);
+                Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+            }
         }
 
         void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)

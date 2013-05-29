@@ -19,6 +19,28 @@ namespace Peach.Core
 
 	public class PlatformFactory<T> where T : class
 	{
+		private static Type impl = FindImpl();
+
+		private static Type FindImpl()
+		{
+			Platform.OS os = Platform.GetOS();
+			Type type = typeof(T);
+			var cls = ClassLoader.FindTypeByAttribute<PlatformImplAttribute>((t, a) => a.OS == os && (t.BaseType == type || t.GetInterfaces().Contains(type)));
+			if (cls == null)
+				throw new TypeLoadException("Could not find an instance of '" + type.FullName + "' for the " + os + " platform.");
+			return cls;
+		}
+
+		public static T CreateInstance(params object[] args)
+		{
+			object obj = Activator.CreateInstance(impl, args);
+			T ret = obj as T;
+			return ret;
+		}
+	}
+
+	public class StaticPlatformFactory<T> where T : class
+	{
 		public static T Instance { get { return instance; } }
 
 		private static T instance = LoadInstance();
@@ -57,6 +79,12 @@ namespace Peach.Core
 
 		public static void LoadAssembly()
 		{
+			//if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+			//	throw new PeachException("Error: Cannot use the 32bit version of Peach 3 on a 64bit operating system.");
+
+			//if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
+			//	throw new PeachException("Error: Cannot use the 64bit version of Peach 3 on a 32bit operating system.");
+
 			string osAssembly = null;
 
 			switch (Platform.GetOS())
@@ -78,7 +106,7 @@ namespace Peach.Core
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error, could not load platform assembly '{0}'.  {1}", osAssembly, ex.Message);
+				throw new PeachException(string.Format("Error, could not load platform assembly '{0}'.  {1}", osAssembly, ex.Message), ex);
 			}
 		}
 

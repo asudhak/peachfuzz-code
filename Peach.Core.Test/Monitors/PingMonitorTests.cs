@@ -52,15 +52,16 @@ namespace Peach.Core.Test.Monitors
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
 		</Monitor>
-		<Monitor class='PingMonitor'>
+		<Monitor class='Ping'>
 {1}
 		</Monitor>
 	</Agent>
 
-	<Test name='Default'>
+	<Test name='Default' replayEnabled='false'>
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>";
 
@@ -71,7 +72,7 @@ namespace Peach.Core.Test.Monitors
 			return ret;
 		}
 
-		private void Run(Params parameters)
+		private void Run(Params parameters, bool shouldFault)
 		{
 			string xml = MakeXml(parameters);
 
@@ -87,20 +88,35 @@ namespace Peach.Core.Test.Monitors
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
-			e.startFuzzing(dom, config);
+
+			if (!shouldFault)
+			{
+				e.startFuzzing(dom, config);
+				return;
+			}
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
 		}
 
 		[Test]
 		public void TestSuccess()
 		{
-			Run(new Params { { "Host", "127.0.0.1" } });
+			Run(new Params { { "Host", "127.0.0.1" } }, false);
 			Assert.Null(faults);
 		}
 
 		[Test]
 		public void TestFailure()
 		{
-			Run(new Params { { "Host", "234.5.6.7" } });
+			Run(new Params { { "Host", "234.5.6.7" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("PingMonitor", faults[0].detectionSource);
@@ -110,14 +126,14 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestFaultSuccess()
 		{
-			Run(new Params { { "Host", "234.5.6.7" }, { "FaultOnSuccess", "true" } });
+			Run(new Params { { "Host", "234.5.6.7" }, { "FaultOnSuccess", "true" } }, false);
 			Assert.Null(faults);
 		}
 
 		[Test]
 		public void TestFaultFailure()
 		{
-			Run(new Params { { "Host", "127.0.0.1" }, { "FaultOnSuccess", "true" } });
+			Run(new Params { { "Host", "127.0.0.1" }, { "FaultOnSuccess", "true" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("PingMonitor", faults[0].detectionSource);
@@ -129,7 +145,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestSuccessData()
 		{
 			faultIteration = 1;
-			Run(new Params { { "Host", "127.0.0.1" } });
+			Run(new Params { { "Host", "127.0.0.1" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -143,7 +159,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestFaultSuccessData()
 		{
 			faultIteration = 1;
-			Run(new Params { { "Host", "234.5.6.7" }, { "FaultOnSuccess", "true" } });
+			Run(new Params { { "Host", "234.5.6.7" }, { "FaultOnSuccess", "true" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
@@ -156,7 +172,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestBadHost()
 		{
-			Run(new Params { { "Host", "some.bad.host" } });
+			Run(new Params { { "Host", "some.bad.host" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("PingMonitor", faults[0].detectionSource);
@@ -169,10 +185,10 @@ namespace Peach.Core.Test.Monitors
 			int start, stop, diff;
 
 			// Run once to ensure all static objects are initialized
-			Run(new Params { { "Host", "234.5.6.7" } });
+			Run(new Params { { "Host", "234.5.6.7" } }, true);
 
 			start = Environment.TickCount;
-			Run(new Params { { "Host", "234.5.6.7" }, { "Timeout", "5000" } });
+			Run(new Params { { "Host", "234.5.6.7" }, { "Timeout", "5000" } }, true);
 			stop = Environment.TickCount;
 
 			diff = stop - start;
@@ -185,7 +201,7 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 
 			start = Environment.TickCount;
-			Run(new Params { { "Host", "234.5.6.7" }, { "Timeout", "1000" } });
+			Run(new Params { { "Host", "234.5.6.7" }, { "Timeout", "1000" } }, true);
 			stop = Environment.TickCount;
 
 			diff = stop - start;
@@ -202,7 +218,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestData()
 		{
 			string data = new string('a', 70);
-			Run(new Params { { "Host", "127.0.0.1" }, { "FaultOnSuccess", "true" }, { "Data", data } });
+			Run(new Params { { "Host", "127.0.0.1" }, { "FaultOnSuccess", "true" }, { "Data", data } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("PingMonitor", faults[0].detectionSource);

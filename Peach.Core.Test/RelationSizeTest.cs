@@ -323,6 +323,76 @@ namespace Peach.Core.Test
 			Assert.AreEqual(expected, val.Value);
 		}
 
+		[Test]
+		public void RelationGetSet()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""TheModel"">
+		<Number size=""8"" mutable=""false""/>
+		<Number name=""len"" size=""64"" mutable=""false"">
+			<Relation type=""size"" of=""data"" expressionGet=""size+2"" expressionSet=""size-2""/>
+		</Number>
+		<Block name=""data"">
+			<Blob length=""1""/>
+			<Blob length=""2""/>
+		</Block>
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel name=""foo"" ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+			cloneActions = true;
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementRemoveMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(4, actions.Count);
+
+			byte[] act1 = Encoding.ASCII.GetBytes("\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+			Assert.False(actions[0].error);
+			Assert.AreEqual(act1, actions[0].dataModel.Value.Value);
+
+			byte[] act2 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+			Assert.False(actions[1].error);
+			Assert.AreEqual(act2, actions[1].dataModel.Value.Value);
+
+			byte[] act3 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+			Assert.False(actions[2].error);
+			Assert.AreEqual(act3, actions[2].dataModel.Value.Value);
+
+			Assert.True(actions[3].error);
+			try
+			{
+				var x = actions[3].dataModel.Value;
+				Assert.Fail("should throw");
+				Assert.NotNull(x);
+			}
+			catch (SoftException se)
+			{
+				Assert.AreEqual("Error, Number 'foo.len' value '-1' is less than the minimum 64-bit unsigned number.", se.Message);
+			}
+		}
+
 		Dictionary<string, object> SpeedTest(uint repeat)
 		{
 			// When the data element duplicator clones blockData multiple times,
@@ -386,7 +456,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void MeasureSpeed()
 		{
-			for (uint i = 0; i <= 50; i += 10)
+			for (uint i = 0; i <= 25; i += 5)
 			{
 				var ret = SpeedTest(i);
 				TimeSpan delta = (TimeSpan)ret["delta"];
@@ -479,6 +549,326 @@ namespace Peach.Core.Test
 			Assert.AreEqual(0xad, buf[1]);
 			Assert.AreEqual(0xbe, buf[2]);
 			Assert.AreEqual(0xef, buf[3]);
+		}
+
+		[Test]
+		public void IncludeRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Value'/>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
+
+			Assert.AreEqual(expected, final);
+		}
+
+		[Test]
+		public void IncludeChildRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Out'>
+			<Block name='Value'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Out'>
+				<Block name='Value'>
+					<Blob length='10' value='0000000000'/>
+				</Block>
+			</Block>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
+
+			Assert.AreEqual(expected, final);
+		}
+
+		[Test]
+		public void IncludeBadChildRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+		<Block name='Out'>
+			<Block name='Value'/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<DataModel name='DM'>
+		<Block ref='ns:TLV' name='Type1'>
+			<Number name='Type' size='8' endian='big' value='201'/>
+			<Block name='Out'/>
+		</Block>
+	</DataModel>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			var final = dom.dataModels[0].Value.Value;
+			var expected = new byte[] { 201, 0 };
+
+			Assert.AreEqual(expected, final);
+		}
+
+		[Test]
+		public void IncludeStateModelRelation()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml1 = @"
+<Peach>
+	<DataModel name='TLV'>
+		<Number name='Type' size='8' endian='big' value='201'/>
+		<Number name='Length' size='8'>
+			<Relation type='size' of='Value'/>
+		</Number>
+			<Block name='Value'>
+				<Blob length='10' value='0000000000'/>
+			</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TLV'/>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>";
+
+			string xml2 = @"
+<Peach>
+	<Include ns='ns' src='{0}'/>
+
+	<Test name='Default'>
+		<StateModel ref='ns:TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>".Fmt(tmp);
+
+			File.WriteAllText(tmp, xml1);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+		}
+
+		[Test]
+		public void RelationOfDataModelWithinDataModel()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""RefData"">
+		<Number name=""Length"" size=""8"" endian=""big"">
+			<Relation type=""size"" of=""RefData""/>
+		</Number>
+		<Blob name=""data"" value=""a""/>
+	</DataModel>
+	
+	<DataModel name=""TheModel"">
+		<Block ref=""RefData"">
+			<Block name=""data"" ref=""RefData"">
+					<Blob name=""data"" value=""0""/>
+			</Block>
+		</Block>
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel name=""foo"" ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.IsTrue(dom.dataModels[0].Count == 2);
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(1, dataModels.Count);
+			BitStream val = dom.dataModels[1].Value;
+			Assert.NotNull(val);
+
+			byte[] expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
+			Assert.AreEqual(expected, val.Value);
+		}
+
+		[Test]
+		public void RelationRefOVerride()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='SubBlock'>
+		<Number name='BlockSize' size='8' signed='false'>
+			<Relation type='size' of='Data' />
+		</Number>
+		<Block name='Data'/>
+	</DataModel>
+
+	<DataModel name='DerivedSubBlock' ref='SubBlock'>
+		<String name='Data' value='Hello'/>
+	</DataModel>
+
+	<DataModel name='BasicBlock'>
+		<Block name='SubBlock' ref='SubBlock'/>
+	</DataModel>
+
+	<DataModel name='DerivedBlock' ref='BasicBlock'>
+		<Block name='SubBlock' ref='DerivedSubBlock'/>
+	</DataModel>
+
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[3].Value.Value;
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x5Hello"), val);
+		}
+
+		[Test]
+		public void RelationParentOverride()
+		{
+			string xml = @"
+<Peach>
+
+	<DataModel name=""DataModel1"">
+		<Number name=""RelOrStatic"" size=""8"">
+			<Relation type=""size"" of=""Data""/>
+		</Number>
+		<Blob name=""Data"" value=""AB""/>
+	</DataModel>
+
+	<DataModel name=""DataModel2"" ref=""DataModel1"">
+		<Number name=""RelOrStatic"" size=""8"" value=""0x40""/>
+	</DataModel>
+
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[1].Value.Value;
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x40\x41\x42"), val);
+		}
+
+		[Test]
+		public void NoCacheGetValue()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='Size' size='8' signed='false'>
+			<Relation type='size' of='DM' />
+		</Number>
+		<String name='Value'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// Invalidate 'Value', thus invalidating 'DM'
+			dom.dataModels[0][1].DefaultValue = new Variant("Hello");
+
+			// Get InternalValue from 'Size' when 'DM' is invalidated
+			uint size = (uint)dom.dataModels[0][0].InternalValue;
+
+			Assert.AreEqual(6, size);
+
+			// Ensure 'DM' has proper value
+			byte[] actual = dom.dataModels[0].Value.Value;
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x6Hello"), actual);
 		}
 	}
 }

@@ -43,7 +43,7 @@ namespace Peach.Core.Dom
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
 	[Serializable]
-	public class State : INamed, IPitSerializable
+	public class State : INamed
 	{
 		static int nameNum = 0;
 		public string _name = "Unknown State " + (++nameNum);
@@ -82,6 +82,10 @@ namespace Peach.Core.Dom
 		/// Has an error occured?
 		/// </summary>
 		public bool error { get; set; }
+		/// <summary>
+		/// How many times has this state run
+		/// </summary>
+		public uint runCount { get; set; }
 
 		protected virtual void OnStarting()
 		{
@@ -114,6 +118,12 @@ namespace Peach.Core.Dom
 				finished = false;
 				error = false;
 
+				if (++runCount > 1)
+				{
+					foreach (Action action in actions)
+						action.UpdateToOrigionalDataModel();
+				}
+
 				OnStarting();
 
 				foreach (Action action in actions)
@@ -145,21 +155,6 @@ namespace Peach.Core.Dom
 
 				return null;
 			}
-		}
-
-		public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-		{
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "State", null);
-
-			node.AppendAttribute("name", this.name);
-
-			foreach (Action action in actions)
-			{
-				node.AppendChild(action.pitSerialize(doc, node));
-			}
-
-
-			return node;
 		}
 	}
 }

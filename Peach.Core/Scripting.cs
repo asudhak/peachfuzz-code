@@ -29,6 +29,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using IronPython;
 using IronPython.Hosting;
 using IronRuby;
@@ -36,6 +37,8 @@ using IronRuby.Hosting;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using Microsoft.Scripting.Math;
+using System.Reflection;
+using System.IO;
 
 namespace Peach.Core
 {
@@ -55,78 +58,90 @@ namespace Peach.Core
 		static public List<string> Imports = new List<string>();
 		static public List<string> Paths = new List<string>();
 		static public Dictionary<string, object> GlobalScope = new Dictionary<string, object>();
+		static public string StdLib = ClassLoader.FindFile("IronPython.StdLib.zip");
 
-		/// <summary>
-		/// Returns the correct scripting engine.
-		/// </summary>
-		/// <returns>Scipting engine</returns>
-		public static ScriptEngine GetEngine()
+		private static class Engine
 		{
-			if (DefaultScriptingEngine == ScriptingEngines.Python)
-				return IronPython.Hosting.Python.CreateEngine();
-			else
-				return IronRuby.Ruby.CreateEngine();
+			static public ScriptEngine Instance { get; private set; }
+			static public Dictionary<string, ScriptScope> Modules { get; private set; }
+
+			static Engine()
+			{
+				// Construct the correct engine type
+				if (DefaultScriptingEngine == ScriptingEngines.Python)
+					Instance = IronPython.Hosting.Python.CreateEngine();
+				else
+					Instance = IronRuby.Ruby.CreateEngine();
+
+				// Add any specified paths to our engine.
+				ICollection<string> enginePaths = Instance.GetSearchPaths();
+				foreach (string path in Paths)
+					enginePaths.Add(path);
+				enginePaths.Add(StdLib);
+				Instance.SetSearchPaths(enginePaths);
+
+				// Import any modules
+				Modules = new Dictionary<string,ScriptScope>();
+				foreach (string import in Imports)
+					if (!Modules.ContainsKey(import))
+						Modules.Add(import, Instance.ImportModule(import));
+			}
 		}
 
 		public static void Exec(string code, Dictionary<string, object> localScope)
 		{
-			ScriptEngine engine = GetEngine();
-			ScriptScope scope = engine.CreateScope();
+			var missing = Imports.Except(Engine.Modules.Keys).ToList();
+			foreach (string import in missing)
+				Engine.Modules.Add(import, Engine.Instance.ImportModule(import));
 
-			foreach (string key in GlobalScope.Keys)
-				scope.SetVariable(key, GlobalScope[key]);
+			ScriptScope scope = Engine.Instance.CreateScope();
 
-			foreach (string key in localScope.Keys)
-				scope.SetVariable(key, localScope[key]);
+			foreach (var kv in Engine.Modules)
+				scope.SetVariable(kv.Key, kv.Value);
 
-			// Add any specified paths to our engine.
-			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
-			foreach(string path in Paths)
-				enginePaths.Add(path);
+			foreach (var kv in GlobalScope)
+				scope.SetVariable(kv.Key, kv.Value);
 
-			// Import any modules
-			foreach(string import in Imports)
-				scope.Engine.ImportModule(import);
+			foreach (var kv in localScope)
+				scope.SetVariable(kv.Key, kv.Value);
 
 			try
 			{
-				engine.Execute(code, scope);
+				scope.Engine.Execute(code, scope);
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error executing expression [" + code + "]: " + ex.ToString());
+				throw new PeachException("Error executing expression [" + code + "]: " + ex.ToString(), ex);
 			}
 			finally
 			{
-				// Clean up any internal state created by the engine
-				engine.Runtime.Shutdown();
+				// Clean up any internal state created by the scope
+				var names = scope.GetVariableNames().ToList();
+				foreach (var name in names)
+					scope.RemoveVariable(name);
 			}
 		}
 
 		public static object EvalExpression(string code, Dictionary<string, object> localScope)
 		{
-			ScriptEngine engine = GetEngine();
-			ScriptScope scope = engine.CreateScope();
+			var missing = Imports.Except(Engine.Modules.Keys).ToList();
+			foreach (string import in missing)
+				Engine.Modules.Add(import, Engine.Instance.ImportModule(import));
 
-			foreach (string key in GlobalScope.Keys)
-				scope.SetVariable(key, GlobalScope[key]);
+			ScriptScope scope = Engine.Instance.CreateScope();
 
-			foreach (string key in localScope.Keys)
-				scope.SetVariable(key, localScope[key]);
+			foreach (var kv in Engine.Modules)
+				scope.SetVariable(kv.Key, kv.Value);
 
-			// Add any specified paths to our engine.
-			ICollection<string> enginePaths = scope.Engine.GetSearchPaths();
-			foreach(string path in Paths)
-				enginePaths.Add(path);
-			scope.Engine.SetSearchPaths(enginePaths);
+			foreach (var kv in GlobalScope)
+				scope.SetVariable(kv.Key, kv.Value);
 
-			// Import any modules
-			foreach (string import in Imports)
-				scope.SetVariable(import, scope.Engine.ImportModule(import));
-			
+			foreach (var kv in localScope)
+				scope.SetVariable(kv.Key, kv.Value);
+
 			try
 			{
-				ScriptSource source = engine.CreateScriptSourceFromString(code, SourceCodeKind.Expression);
+				ScriptSource source = scope.Engine.CreateScriptSourceFromString(code, SourceCodeKind.Expression);
 				object obj = source.Execute(scope);
 
 				if (obj != null && obj.GetType() == typeof(BigInteger))
@@ -155,12 +170,13 @@ namespace Peach.Core
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Error executing expression ["+code+"]: " + ex.ToString());
+				throw new PeachException("Error executing expression ["+code+"]: " + ex.ToString(), ex);
 			}
 			finally
 			{
-				// Clean up any internal state created by the engine
-				engine.Runtime.Shutdown();
+				var names = scope.GetVariableNames().ToList();
+				foreach (var name in names)
+					scope.RemoveVariable(name);
 			}
 		}
 	}

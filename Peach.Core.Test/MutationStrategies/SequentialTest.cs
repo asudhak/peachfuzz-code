@@ -255,5 +255,226 @@ namespace Peach.Core.Test.MutationStrategies
 			Assert.IsNotNull(strategy);
 			Assert.IsInstanceOf<Sequential>(strategy);
 		}
+
+		public uint GetMutationCount(string data)
+		{
+			string template = @"<?xml version='1.0' encoding='utf-8'?>
+<Peach>
+	<Defaults>
+		<Number endian='big'/>
+	</Defaults>
+
+	<DataModel name='choice_string'>
+		<Number name='string_type' size='8' token='true' value='1'/>
+		<Number name='string_size' size='32'>
+			<Relation type='size' of='string_data' />
+		</Number>
+		<String name='string_data'/>
+	</DataModel>
+
+	<DataModel name='choice_blob'>
+		<Number name='blob_type' size='8' token='true' value='2'/>
+		<Number name='blob_size' size='32'>
+			<Relation type='size' of='blob_data' />
+		</Number>
+		<Blob name='blob_data'/>
+	</DataModel>
+
+	<DataModel name='choice_number'>
+		<Number name='num_type' size='8' token='true' value='3'/>
+		<Number name='num_data' size='32'/>
+	</DataModel>
+
+	<DataModel name='TheDataModel'>
+		<Choice name='choice'>
+			<Block name='choice_string' ref='choice_string'/>
+			<Block name='choice_blob' ref='choice_blob'/>
+			<Block name='choice_number' ref='choice_number'/>
+		</Choice>
+		<String name='str' value='Hello World!'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+				<Data fileName='{0}'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>";
+
+			string tempFile = Path.GetTempFileName();
+			File.WriteAllBytes(tempFile, Encoding.ASCII.GetBytes(data));
+
+			string xml = string.Format(template, tempFile);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			return dom.tests[0].strategy.Count;
+		}
+
+		[Test]
+		public void TestChoice()
+		{
+			uint str = GetMutationCount("\x01\x00\x00\x00\x05Hello");
+			uint blob = GetMutationCount("\x02\x00\x00\x00\x05Hello");
+			uint num = GetMutationCount("\x03\x00\x01\x02\x03");
+
+			Assert.AreNotEqual(str, blob);
+			Assert.AreNotEqual(str, num);
+			Assert.AreNotEqual(blob, num);
+		}
+
+		[Test]
+		public void FieldOverride()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str1' value='000' length='3' mutable='false'/>
+		<String name='str2'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str1' value='111'/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+		<Mutators mode='include'>
+			<Mutator class='StringMutator'/>
+		</Mutators>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(2380, dataModels.Count);
+
+			for (int i = 0; i < dataModels.Count; ++i)
+			{
+				string val = (string)dataModels[i][0].InternalValue;
+				Assert.AreEqual("111", val);
+			}
+		}
+
+		[Test]
+		public void ReEnterState()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num' size='8' mutable='false'>
+			<Fixup class='SequenceIncrementFixup'>
+				<Param name='Offset' value='0'/>
+			</Fixup>
+		</Number>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='Hello'/>
+				</Data>
+			</Action>
+			<Action type='changeState' ref='Second'/>
+		</State>
+
+		<State name='Second'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='World'/>
+				</Data>
+			</Action>
+			<Action type='changeState' ref='Initial' when='int(state.actions[0].dataModel[&quot;num&quot;].InternalValue) &lt; 4'/>
+		</State>
+
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("StringCaseMutator");
+
+			RunConfiguration config = new RunConfiguration();
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+			
+			// 4 DM for control
+			// 3 mutations per field, 4 fields = 12 iterations
+			// 12 iterations * 4 DM per = 48
+			// 52 total
+
+			Assert.AreEqual(52, dataModels.Count);
+
+			Assert.AreEqual("Hello", (string)dataModels[0][1].InternalValue);
+			Assert.AreEqual("World", (string)dataModels[1][1].InternalValue);
+			Assert.AreEqual("Hello", (string)dataModels[2][1].InternalValue);
+			Assert.AreEqual("World", (string)dataModels[3][1].InternalValue);
+
+			int total = 0;
+			for (int i = 4; i < 52; i += 4)
+			{
+				// For any given iteration, only 1 field should be mutated
+				int changed = 0;
+
+				if ("Hello" != (string)dataModels[i + 0][1].InternalValue)
+					++changed;
+				if ("World" != (string)dataModels[i + 1][1].InternalValue)
+					++changed;
+				if ("Hello" != (string)dataModels[i + 2][1].InternalValue)
+					++changed;
+				if ("World" != (string)dataModels[i + 3][1].InternalValue)
+					++changed;
+
+				// one element should change each iteration
+				Assert.AreEqual(1, changed);
+				total += changed;
+			}
+
+			// 12 total iterations of fuzzing
+			Assert.AreEqual(12, total);
+		}
+
 	}
 }

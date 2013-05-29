@@ -29,9 +29,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reflection;
+
 using Peach.Core.MutationStrategies;
 using Peach.Core.Dom;
-using System.Reflection;
+
+using NLog;
 
 namespace Peach.Core
 {
@@ -44,6 +47,8 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class MutationStrategy
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public delegate void MutationEventHandler(string elementName, string mutatorName);
 
 		public static event MutationEventHandler Mutating;
@@ -80,6 +85,11 @@ namespace Peach.Core
 			set { _engine = value; }
 		}
 
+		public abstract bool IsDeterministic
+		{
+			get;
+		}
+
 		public abstract uint Count
 		{
 			get;
@@ -104,13 +114,36 @@ namespace Peach.Core
 			}
 		}
 
+		protected string[] GetAllDataModelNames(Dom.Action action)
+		{
+
+			if(action.dataModel != null)
+				return new string[] { GetDataModelName(action) };
+
+			if(action.parameters.Count == 0)
+				throw new ArgumentException();
+
+			var names = new List<string>();
+
+			foreach (var parameter in action.parameters)
+				names.Add(GetDataModelName(action, parameter));
+
+			return names.ToArray();
+		}
+
 		protected string GetDataModelName(Dom.Action action)
 		{
 			if (action.dataModel == null)
+			{
+				logger.Error("Error, in GetDataModelName, action.dataModel is null for action \""+action.name+"\".");
 				throw new ArgumentException();
+			}
 
 			StringBuilder sb = new StringBuilder();
 
+			sb.Append("Run ");
+			sb.Append(action.parent.runCount);
+			sb.Append('.');
 			sb.Append(action.parent.name);
 			sb.Append('.');
 			sb.Append(action.name);
@@ -127,6 +160,9 @@ namespace Peach.Core
 
 			StringBuilder sb = new StringBuilder();
 
+			sb.Append("Run ");
+			sb.Append(action.parent.runCount);
+			sb.Append('.');
 			sb.Append(action.parent.name);
 			sb.Append('.');
 			sb.Append(action.name);

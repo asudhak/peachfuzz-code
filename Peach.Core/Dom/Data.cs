@@ -42,7 +42,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Data : INamed
 	{
-		string _name = null;
+		static int nameNum = 0;
+		string _name = "Unknown Data " + (++nameNum);
 
 		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
 
@@ -110,17 +111,17 @@ namespace Peach.Core.Dom
 							return;
 						}
 
-						if (index > array.maxOccurs)
+						if (array.maxOccurs != -1 && index > array.maxOccurs)
 							throw new PeachException("Error, index larger that maxOccurs.  Field: " + field + " Element: " + array.fullName);
 
-						if (!array.hasExpanded && array.origionalElement != null)
+						if (!array.hasExpanded && array.origionalElement == null)
 						{
 							array.origionalElement = array[0];
 							array.RemoveAt(0);
 						}
 
 						// Add elements upto our index
-						for (int x = (array.Count > 0 ? array.Count - 1 : 0); x < index; x++)
+						for (int x = array.Count; x <= index; x++)
 						{
 							string itemName = array.origionalElement.name + "_" + x;
 							var item = array.origionalElement.Clone(itemName);
@@ -133,11 +134,11 @@ namespace Peach.Core.Dom
 					}
 					else if (container is Choice)
 					{
+						elem = null;
 						var choice = container as Choice;
-						if(!choice.choiceElements.ContainsKey(name))
+						if(!choice.choiceElements.TryGetValue(name, out elem))
 							throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
 
-						elem = container[name];
 						container = elem as DataElementContainer;
 
 						choice.SelectedElement = elem;
@@ -152,7 +153,8 @@ namespace Peach.Core.Dom
 					}
 				}
 
-				elem.DefaultValue = value;
+				if (!(elem is DataElementContainer))
+					elem.DefaultValue = value;
 			}
 		}
 	}

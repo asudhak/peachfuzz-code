@@ -39,21 +39,23 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Dom : INamed
 	{
-		public string fileName;
-		public string version;
-		public string author;
-		public string description;
+		public string fileName = "";
+		public string version = "";
+		public string author = "";
+		public string description = "";
 
 		public RunContext context = null;
-		public OrderedDictionary<string, DomNamespace> ns = new OrderedDictionary<string, DomNamespace>();
+		public OrderedDictionary<string, Dom> ns = new OrderedDictionary<string, Dom>();
 		public OrderedDictionary<string, DataModel> dataModels = new OrderedDictionary<string, DataModel>();
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
 		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
+		public OrderedDictionary<string, Data> datas = new OrderedDictionary<string, Data>();
 
 		public Dom()
 		{
-			ns.AddEvent += new AddEventHandler<string, DomNamespace>(ns_AddEvent);
+			name = "";
+
 			dataModels.AddEvent += new AddEventHandler<string, DataModel>(dataModels_AddEvent);
 			stateModels.AddEvent += new AddEventHandler<string, StateModel>(stateModels_AddEvent);
 			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
@@ -79,11 +81,6 @@ namespace Peach.Core.Dom
 		void dataModels_AddEvent(OrderedDictionary<string, DataModel> sender, string key, DataModel value)
 		{
 			value.dom = this;
-		}
-
-		void ns_AddEvent(OrderedDictionary<string, DomNamespace> sender, string key, DomNamespace value)
-		{
-			value.parent = this;
 		}
 
 		#endregion
@@ -115,47 +112,45 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		/// <summary>
+		/// Find a referenced Dom element by name, taking into account namespace prefixes.
+		/// </summary>
+		/// <typeparam name="T">Type of Dom element.</typeparam>
+		/// <param name="refName">Name of reference</param>
+		/// <param name="predicate">Selector predicate that returns the element collection</param>
+		/// <returns>The named Dom element or null if not found.</returns>
+		public T getRef<T>(string refName, Func<Dom, OrderedDictionary<string, T>> predicate)
+		{
+			int i = refName.IndexOf(':');
+			if (i > -1)
+			{
+				string prefix = refName.Substring(0, i);
+
+				Dom other;
+				if (!ns.TryGetValue(prefix, out other))
+					throw new PeachException("Unable to locate namespace '" + prefix + "' in ref '" + refName + "'.");
+
+				refName = refName.Substring(i + 1);
+
+				return other.getRef<T>(refName, predicate);
+			}
+
+			var dict = predicate(this);
+			T value = default(T);
+			if (dict.TryGetValue(refName, out value))
+				return value;
+			return default(T);
+		}
+
+
 		#region INamed Members
 
 		public virtual string name
 		{
-			get { return "root"; }
-			set { throw new Exception("Error, Dom.name is static and cannot be set"); }
+			get; set;
 		}
 
 		#endregion
-
-		public XmlDocument pitSerialize()
-		{
-
-			XmlDocument doc = new XmlDocument();
-
-			XmlNode node = doc.CreateNode(XmlNodeType.Element, "Peach", "");
-
-			foreach (DataModel dataModel in dataModels.Values)
-			{
-				node.AppendChild(dataModel.pitSerialize(doc, node));
-			}
-
-			foreach (StateModel stateModel in stateModels.Values)
-			{
-				node.AppendChild(stateModel.pitSerialize(doc, node));
-			}
-
-			foreach (Agent agent in agents.Values)
-			{
-				node.AppendChild(agent.pitSerialize(doc, node));
-			}
-
-			foreach (Test test in tests.Values)
-			{
-				node.AppendChild(test.pitSerialize(doc, node));
-			}
-
-			doc.AppendChild(node);
-
-			return doc;
-		}
 	}
 }
 

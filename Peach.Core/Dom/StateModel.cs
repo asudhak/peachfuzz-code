@@ -43,8 +43,8 @@ namespace Peach.Core.Dom
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);
 
-    [Serializable]
-	public class StateModel : INamed, IPitSerializable
+	[Serializable]
+	public class StateModel : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -154,7 +154,7 @@ namespace Peach.Core.Dom
 									catch (Cracker.CrackingFailure ex)
 									{
 										throw new PeachException("Error, failed to crack \"" + fileName +
-											"\" into \"" + action.dataModel.fullName + "\": " + ex.Message);
+											"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
 									}
 								}
 								else if (data.DataType == DataType.Files)
@@ -231,7 +231,7 @@ namespace Peach.Core.Dom
 											catch (Cracker.CrackingFailure ex)
 											{
 												throw new PeachException("Error, failed to crack \"" + fileName + 
-													"\" into \"" + action.dataModel.fullName + "\": " + ex.Message);
+													"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
 											}
 										}
 									}
@@ -252,6 +252,8 @@ namespace Peach.Core.Dom
 				// before we start down the state path.
 				foreach (State state in states.Values)
 				{
+					state.runCount = 0;
+
 					foreach (Action action in state.actions)
 						action.UpdateToOrigionalDataModel();
 				}
@@ -287,28 +289,12 @@ namespace Peach.Core.Dom
 			finally
 			{
 				foreach (Publisher publisher in context.test.publishers.Values)
-					publisher.close(null);
+					publisher.close();
 
 				OnFinished();
 			}
 		}
-
-    public XmlNode pitSerialize(XmlDocument doc, XmlNode parent)
-    {
-      XmlNode node = doc.CreateNode(XmlNodeType.Element, "StateModel", null);
-
-      node.AppendAttribute("name", this.name);
-      node.AppendAttribute("initialState", this.initialState.name);
-
-
-      foreach (State state in states.Values)
-      {
-        node.AppendChild(state.pitSerialize(doc, node));
-      }
-
-      return node;
-    }
-  }
+	}
 }
 
 // END

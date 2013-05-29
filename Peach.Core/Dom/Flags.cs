@@ -60,9 +60,8 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Flags : DataElementContainer
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected int _size = 0;
-		protected bool _littleEndian = true;
+		protected bool _isLittleEndian = true;
 
 		public Flags()
 		{
@@ -73,30 +72,19 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			Flags element = this;
+			BitStream sizedData = ReadSizedData(data, size);
+			long pos = sizedData.TellBits();
 
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits < (data.TellBits() + element.size))
-				throw new CrackingFailure("Not enough data to crack '" + element.fullName + "'.", element, data);
-
-			long startPos = data.TellBits();
-
-			foreach (DataElement child in element)
+			foreach (DataElement child in this)
 			{
 				if (!(child is Flag))
-					throw new CrackingFailure("Found non-Flag child!", this, data);
+					throw new CrackingFailure("Found non-Flag child.", this, data);
 
-				data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
-				data.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Current);
-				((Flag)child).Crack(context, data);
+				sizedData.SeekBits(((Flag)child).position + pos, System.IO.SeekOrigin.Begin);
+				context.CrackData(child, sizedData);
 			}
-
-			// Make sure we land at end of Flags
-			data.SeekBits(startPos, System.IO.SeekOrigin.Begin);
-			data.SeekBits((int)element.size, System.IO.SeekOrigin.Current);
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -106,10 +94,11 @@ namespace Peach.Core.Dom
 
 			var flags = DataElement.Generate<Flags>(node);
 
-
-			string strSize = node.getAttribute("size");
+			string strSize = null;
+			if (node.hasAttr("size"))
+				strSize = node.getAttrString("size");
 			if (strSize == null)
-				strSize = context.getDefaultAttribute(typeof(Flags), "size");
+				strSize = context.getDefaultAttr(typeof(Flags), "size", null);
 			if (strSize == null)
 				throw new PeachException("Error, Flags elements must have 'size' attribute!");
 
@@ -119,13 +108,16 @@ namespace Peach.Core.Dom
 				throw new PeachException("Error, " + flags.name + " size attribute is not valid number.");
 
 			if (size < 1 || size > 64)
-				throw new PeachException(string.Format("Error, unsupported size {0} for element {1}.", size, flags.name));
+				throw new PeachException(string.Format("Error, unsupported size '{0}' for {1}.", size, flags.debugName));
 
-			flags.size = size;
+			flags.lengthType = LengthType.Bits;
+			flags.length = size;
 
-			string strEndian = node.getAttribute("endian");
+			string strEndian = null;
+			if (node.hasAttr("endian"))
+				strEndian = node.getAttrString("endian");
 			if (strEndian == null)
-				strEndian = context.getDefaultAttribute(typeof(Flags), "endian");
+				strEndian = context.getDefaultAttr(typeof(Flags), "endian", null);
 
 			if (strEndian != null)
 			{
@@ -142,7 +134,7 @@ namespace Peach.Core.Dom
 						break;
 					default:
 						throw new PeachException(
-							string.Format("Error, unsupported value \"{0}\" for \"endian\" attribute on field \"{1}\".", strEndian, flags.name));
+							string.Format("Error, unsupported value '{0}' for 'endian' attribute on {1}.", strEndian, flags.debugName));
 				}
 			}
 
@@ -163,59 +155,56 @@ namespace Peach.Core.Dom
 
 		public bool LittleEndian
 		{
-			get { return _littleEndian; }
+			get { return _isLittleEndian; }
 			set
 			{
-				_littleEndian = value;
+				_isLittleEndian = value;
 				Invalidate();
 			}
 		}
 
-		public int size
-		{
-			get { return _size; }
-			set
-			{
-				_size = value;
-				Invalidate();
-			}
-		}
-
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
 			BitStream bits = new BitStream();
+			bits.BigEndian();
 
-			// Expand to 'size' bits
-			bits.WriteBits(0, size);
+			int shift;
+
+			if (_isLittleEndian && lengthAsBits < 64)
+			{
+				// Expand to 64 bits and skip remaining bits at the beginning
+				shift = 64 - (int)lengthAsBits;
+				bits.WriteBits(0, 64);
+			}
+			else
+			{
+				// Expand to 'size' bits
+				shift = 0;
+				bits.WriteBits(0, (int)lengthAsBits);
+			}
 
 			foreach (DataElement child in this)
 			{
 				if (child is Flag)
 				{
-					bits.SeekBits(((Flag)child).position, System.IO.SeekOrigin.Begin);
+					bits.SeekBits(((Flag)child).position + shift, System.IO.SeekOrigin.Begin);
 					bits.Write(child.Value, child);
 				}
 				else
 					throw new ApplicationException("Flag has child thats not a flag!");
 			}
 
-			return new Variant(bits);
-		}
+			if (!_isLittleEndian)
+				return new Variant(bits);
 
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "size":
-          return this.size;
-        case "endian":
-          return this.LittleEndian ? "little" : "big";
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flags", parameterName));
-      }
-    }
+			bits.SeekBits(0, System.IO.SeekOrigin.Begin);
+			ulong val = bits.ReadUInt64();
+			ulong final = LittleBitWriter.GetBits(val, (int)lengthAsBits);
+
+			BitStream bs = new BitStream();
+			bs.WriteBits(final, (int)lengthAsBits);
+			return new Variant(bs);
+		}
 	}
 }
 

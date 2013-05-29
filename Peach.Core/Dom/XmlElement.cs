@@ -55,7 +55,6 @@ namespace Peach.Core.Dom
 	[Parameter("ns", typeof(string), "XML Namespace", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
@@ -83,11 +82,10 @@ namespace Peach.Core.Dom
 
 			var xmlElement = DataElement.Generate<XmlElement>(node);
 
-			xmlElement.elementName = node.getAttribute("elementName");
-			xmlElement.ns = node.getAttribute("ns");
+			xmlElement.elementName = node.getAttrString("elementName");
 
-			if (xmlElement.elementName == null)
-				throw new PeachException("Error, elementName is a required attribute for XmlElement: " + xmlElement.name);
+			if (node.hasAttr("ns"))
+				xmlElement.ns = node.getAttrString("ns");
 
 			context.handleCommonDataElementAttributes(node, xmlElement);
 			context.handleCommonDataElementChildren(node, xmlElement);
@@ -105,6 +103,8 @@ namespace Peach.Core.Dom
 			set
 			{
 				_elementName = value;
+				// DefaultValue isn't used internally, but this makes the Validator show helpful text
+				_defaultValue = new Variant("<{0}> Element".Fmt(value));
 				Invalidate();
 			}
 		}
@@ -131,30 +131,55 @@ namespace Peach.Core.Dom
 				if (child is XmlAttribute)
 				{
 					XmlAttribute attrib = child as XmlAttribute;
+					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					{
+						// Happend when data element is duplicated.  Duplicate attributes are invalid so ignore.
+						continue;
+					}
+
 					if (attrib.Count > 0)
+					{
 						xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
+					}
 				}
 				else if (child is String)
 				{
 					var fullName = child.fullName;
 					xmlNode.InnerText = "|||" + fullName + "|||";
-					doc.values.Add(xmlNode.InnerText, child.InternalValue);
+					doc.values.Add(xmlNode.InnerText, new Variant(child.Value));
+				}
+				else if (child is Number)
+				{
+					xmlNode.InnerText = (string)child.InternalValue;
 				}
 				else if (child is XmlElement)
 				{
-					xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
+					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					{
+						var key = "|||" + child.fullName + "|||";
+						var text = doc.doc.CreateTextNode(key);
+						xmlNode.AppendChild(text);
+						doc.values.Add(key, child.InternalValue);
+					}
+					else
+					{
+						xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
+					}
 				}
 				else
 				{
-					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single String element.");
+					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single Number or String element.");
 				}
 			}
 
 			return xmlNode;
 		}
 
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
+			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+				return MutatedValue;
+
 			PeachXmlDoc doc = new PeachXmlDoc();
 			doc.doc.AppendChild(GenerateXmlNode(doc, null));
 			string template = doc.doc.OuterXml;
@@ -176,11 +201,11 @@ namespace Peach.Core.Dom
 					else if (type == Variant.VariantType.ByteString)
 						toWrite = new BitStream((byte[])var);
 					else
-						toWrite = new BitStream(Encoding.ASCII.GetBytes((string)var));
+						toWrite = new BitStream(Encoding.ASCII.GetRawBytes((string)var));
 				}
 				else
 				{
-					toWrite = new BitStream(Encoding.ASCII.GetBytes(item));
+					toWrite = new BitStream(Encoding.ASCII.GetRawBytes(item));
 				}
 
 				bs.Write(toWrite);
@@ -196,21 +221,6 @@ namespace Peach.Core.Dom
 
 			return new BitStream(((BitStream)InternalValue).Stream);
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "elementName":
-          return this.elementName;
-        case "ns":
-          return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlElement", parameterName));
-      }
-    }
 	}
 }
 

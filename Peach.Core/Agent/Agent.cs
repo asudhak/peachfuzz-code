@@ -30,6 +30,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Reflection;
 
 using Peach.Core.Dom;
@@ -43,7 +44,8 @@ namespace Peach.Core.Agent
 
 	public delegate void AgentConnectEventHandler(Agent agent);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
-	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, Dictionary<string, Variant> args);
+	public delegate void CreatePublisherEventHandler(Agent agent, string cls, SerializableDictionary<string, Variant> args);
+	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StopMonitorEventHandler(Agent agent, string name);
 	public delegate void StopAllMonitorsEventHandler(Agent agent);
 	public delegate void SessionStartingEventHandler(Agent agent);
@@ -64,7 +66,7 @@ namespace Peach.Core.Agent
 	public class Agent : IAgent, INamed
 	{
 		public object parent;
-		Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
+		OrderedDictionary<string, Monitor> monitors = new OrderedDictionary<string, Monitor>();
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		#region Events
@@ -83,8 +85,15 @@ namespace Peach.Core.Agent
 				AgentDisconnectEvent(this);
 		}
 
+		public event CreatePublisherEventHandler CreatePublisherEvent;
+		protected void OnCreatePublisherEvent(string cls, SerializableDictionary<string, Variant> args)
+		{
+			if (CreatePublisherEvent != null)
+				CreatePublisherEvent(this, cls, args);
+		}
+
 		public event StartMonitorEventHandler StartMonitorEvent;
-		protected void OnStartMonitorEvent(string name, string cls, Dictionary<string, Variant> args)
+		protected void OnStartMonitorEvent(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			if (StartMonitorEvent != null)
 				StartMonitorEvent(this, name, cls, args);
@@ -170,7 +179,7 @@ namespace Peach.Core.Agent
 		/// <summary>
 		/// Dictionary of currently loaded monitor instances.
 		/// </summary>
-		public Dictionary<string, Monitor> Monitors
+		public OrderedDictionary<string, Monitor> Monitors
 		{
 			get { return monitors; }
 			protected set { monitors = value; }
@@ -192,7 +201,31 @@ namespace Peach.Core.Agent
 			monitors.Clear();
 		}
 
-		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
+		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		{
+			logger.Trace("CreatePublisher: {0}", cls);
+			OnCreatePublisherEvent(cls, args);
+
+			var type = ClassLoader.FindTypeByAttribute<PublisherAttribute>((x, y) => y.Name == cls);
+			if (type == null)
+				throw new PeachException("Error, unable to locate Pubilsher '" + cls + "'");
+
+			try
+			{
+				Dictionary<string, Variant> copy = new Dictionary<string, Variant>();
+				foreach (var kv in args)
+					copy.Add(kv.Key, kv.Value);
+
+				var pub = Activator.CreateInstance(type, copy) as Publisher;
+				return pub;
+			}
+			catch (TargetInvocationException ex)
+			{
+				throw new PeachException("Could not start publisher \"" + cls + "\".  " + ex.InnerException.Message, ex);
+			}
+		}
+
+		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
@@ -208,7 +241,7 @@ namespace Peach.Core.Agent
 			}
 			catch (TargetInvocationException ex)
 			{
-				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message);
+				throw new PeachException("Could not start monitor \"" + cls + "\".  " + ex.InnerException.Message, ex);
 			}
 
 		}
@@ -226,7 +259,7 @@ namespace Peach.Core.Agent
 			logger.Trace("StopAllMonitors");
 			OnStopAllMonitorsEvent();
 
-			foreach (Monitor monitor in monitors.Values)
+			foreach (Monitor monitor in monitors.Values.Reverse())
 				monitor.StopMonitor();
 
 			monitors.Clear();
@@ -246,8 +279,17 @@ namespace Peach.Core.Agent
 			logger.Trace("SessionFinished");
 			OnSessionFinishedEvent();
 
-			foreach (Monitor monitor in monitors.Values)
-				monitor.SessionFinished();
+			foreach (Monitor monitor in monitors.Values.Reverse())
+			{
+				try
+				{
+					monitor.SessionFinished();
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling SessionFinished: " + ex.Message);
+				}
+			}
 		}
 
 		public void IterationStarting(uint iterationCount, bool isReproduction)
@@ -265,9 +307,18 @@ namespace Peach.Core.Agent
 			OnIterationFinishedEvent();
 
 			bool replay = false;
-			foreach (Monitor monitor in monitors.Values)
-				if (monitor.IterationFinished())
-					replay = true;
+			foreach (Monitor monitor in monitors.Values.Reverse())
+			{
+				try
+				{
+					if (monitor.IterationFinished())
+						replay = true;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling IterationFinished: " + ex.Message);
+				}
+			}
 
 			return replay;
 		}
@@ -279,8 +330,17 @@ namespace Peach.Core.Agent
 
 			bool detectedFault = false;
 			foreach (Monitor monitor in monitors.Values)
-				if (monitor.DetectedFault())
-					detectedFault = true;
+			{
+				try
+				{
+					if (monitor.DetectedFault())
+						detectedFault = true;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling DetectedFault: " + ex.Message);
+				}
+			}
 
 			return detectedFault;
 		}
@@ -290,10 +350,19 @@ namespace Peach.Core.Agent
 			logger.Trace("GetMonitorData");
 			OnGetMonitorDataEvent();
 
-            List<Fault> faults = new List<Fault>();
+			List<Fault> faults = new List<Fault>();
 
-            foreach (Monitor monitor in monitors.Values)
-                faults.Add(monitor.GetMonitorData());
+			foreach (Monitor monitor in monitors.Values)
+			{
+				try
+				{
+					faults.Add(monitor.GetMonitorData());
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling GetMonitorData: " + ex.Message);
+				}
+			}
 
 			return faults.ToArray();
 		}
@@ -304,8 +373,17 @@ namespace Peach.Core.Agent
 			OnMustStopEvent();
 
 			foreach (Monitor monitor in monitors.Values)
-				if (monitor.MustStop())
-					return true;
+			{
+				try
+				{
+					if (monitor.MustStop())
+						return true;
+				}
+				catch (Exception ex)
+				{
+					logger.Warn("Ignoring monitor exception calling MustStop: " + ex.Message);
+				}
+			}
 
 			return false;
 		}
@@ -372,7 +450,8 @@ namespace Peach.Core.Agent
 	{
 		void AgentConnect(string password);
 		void AgentDisconnect();
-		void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
+		Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
+		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
 		void StopMonitor(string name);
 		void StopAllMonitors();
 		void SessionStarting();

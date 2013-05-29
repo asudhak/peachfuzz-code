@@ -42,7 +42,6 @@ namespace Peach.Core.Mutators
         int n;
         uint currentCount;
         int valuesLength;
-        ulong defaultValue;
         long minValue;
         ulong maxValue;
         long[] values;
@@ -54,7 +53,6 @@ namespace Peach.Core.Mutators
         {
             name = "NumericalVarianceMutator";
             currentCount = 0;
-            defaultValue = (ulong)obj.DefaultValue;
             n = getN(obj, 50);
 
             if (obj is Dom.String)
@@ -76,12 +74,12 @@ namespace Peach.Core.Mutators
                 maxValue = UInt32.MaxValue;
             }
 
-            PopulateValues(defaultValue);
+            PopulateValues(obj);
         }
 
         // POPULATE_VALUES
         //
-        private void PopulateValues(ulong val)
+        private void PopulateValues(DataElement obj)
         {
             // catch n == 0
             if (n == 0)
@@ -96,7 +94,7 @@ namespace Peach.Core.Mutators
             {
                 if (signed)
                 {
-                    long num = (long)val + i;
+                    long num = (long)obj.DefaultValue + i;
                     if (num >= minValue && num <= (long)maxValue)
                         temp.Add(i);
                 }
@@ -104,13 +102,13 @@ namespace Peach.Core.Mutators
                 {
                     if (i < 0)
                     {
-                        ulong num = val - (ulong)-i;
+                        ulong num = (ulong)obj.DefaultValue - (ulong)-i;
                         if (num <= maxValue)
                             temp.Add(i);
                     }
                     else
                     {
-                        if ((val + (ulong)i) <= (ulong)maxValue)
+                        if (((ulong)obj.DefaultValue + (ulong)i) <= (ulong)maxValue)
                             temp.Add(i);
                     }
                 }
@@ -135,9 +133,9 @@ namespace Peach.Core.Mutators
                     {
                         n = Int32.Parse(h.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
                     }
                 }
             }
@@ -173,7 +171,7 @@ namespace Peach.Core.Mutators
                     return true;
 
             if (obj is Flag && obj.isMutable)
-                if (((Flag)obj).size > 8)
+                if (((Flag)obj).lengthAsBits > 8)
                     return true;
 
             return false;

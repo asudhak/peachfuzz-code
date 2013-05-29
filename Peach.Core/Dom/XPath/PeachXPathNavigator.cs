@@ -152,7 +152,7 @@ namespace Peach.Core.Dom.XPath
 				if (iteratingAttributes)
 					return GetCurrentNodeAttributeMatrix().ElementAt(attributeIndex);
 
-				return ((INamed)currentNode).name;
+				return ((INamed)currentNode).name.Split(':').Last();
 			}
 		}
 
@@ -303,25 +303,50 @@ namespace Peach.Core.Dom.XPath
 			// DataModel drives from Block, so if our parent is a DataElementContainer we are all good
 			if (currentNode is DataModel && !(parent is DataElementContainer))
 			{
-				if(parent is Action)
+				var action = parent as Action;
+				if (action == null)
+					throw new Exception("Error, data model has weird parent!");
+
+				if (action.dataModel == currentNode)
 				{
-					return false;
+					if (action.parameters.Count == 0)
+						return false;
+
+					currentNode = action.parameters[0].dataModel;
+					currentNodeType = PeachXPathNodeType.DataModel;
+					return true;
 				}
 
-				throw new Exception("Error, data model has weird parent!");
+				int idx = action.parameters.FindIndex(a => a.dataModel == currentNode);
+				if (idx == -1)
+					throw new Exception("Error, data model missing from action parameters!");
 
+				if (++idx >= action.parameters.Count)
+					return false;
+
+				currentNode = action.parameters[idx].dataModel;
+				currentNodeType = PeachXPathNodeType.DataModel;
+				return true;
 			}
 			else if (currentNode is DataElement)
 			{
 				if (parent is DataElementContainer)
 				{
+					var curr = currentNode as DataElement;
 					var block = parent as DataElementContainer;
-					int index = block.IndexOf(currentNode as DataElement);
-					if (index + 1 >= block.Count)
-						return false;
+					int index = block.IndexOf(curr);
 
-					currentNode = block[index + 1];
-					return true;
+					for (int i = index + 1; i < block.Count; ++i)
+					{
+						var elem = block[i];
+						if (elem != curr)
+						{
+							currentNode = elem;
+							return true;
+						}
+					}
+
+					return false;
 				}
 				return false;
 			}
@@ -462,7 +487,14 @@ namespace Peach.Core.Dom.XPath
 
 		public override string NamespaceURI
 		{
-			get { return string.Empty; }
+			get
+			{
+				if (iteratingAttributes)
+					return string.Empty;
+
+				var parts = ((INamed)currentNode).name.Split(':');
+				return parts.Length > 1 ? parts[0] : string.Empty;
+			}
 		}
 
 		public override XPathNodeType NodeType

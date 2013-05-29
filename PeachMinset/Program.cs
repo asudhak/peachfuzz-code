@@ -94,6 +94,9 @@ namespace PeachMinset
 				}
 			}
 
+			// Ensure peach platform assemblies are loaded
+			Platform.LoadAssembly();
+
             var ms = new Minset();
             ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
             ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);

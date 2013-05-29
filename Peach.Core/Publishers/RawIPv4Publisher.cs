@@ -43,18 +43,17 @@ namespace Peach.Core.Publishers
 	{
 		public const int IpHeaderLen = 20;
 
-		public static void SetLength(MemoryStream ms)
+		public static void SetLength(byte[] buffer, int offset, int count)
 		{
-			if (ms.Length < IpHeaderLen)
+			if (count < IpHeaderLen)
 				return;
 
-			var buf = ms.GetBuffer();
 			// Get in host order
-			ushort ip_len = BitConverter.ToUInt16(buf, 2);
-			ip_len += (ushort)(((ushort)(buf[0] & 0x0f)) << 2);
+			ushort ip_len = BitConverter.ToUInt16(buffer, offset + 2);
+			ip_len += (ushort)(((ushort)(buffer[offset] & 0x0f)) << 2);
 			// Set in network order
-			buf[2] = (byte)(ip_len >> 8);
-			buf[3] = (byte)(ip_len);
+			buffer[offset + 2] = (byte)(ip_len >> 8);
+			buffer[offset + 3] = (byte)(ip_len);
 		}
 	}
 
@@ -75,6 +74,8 @@ namespace Peach.Core.Publishers
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
 	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("MinMTU", typeof(uint), "Minimum allowable MTU property value", DefaultMinMTU)]
+	[Parameter("MaxMTU", typeof(uint), "Maximum allowable MTU property value", DefaultMaxMTU)]
 	public class RawV4Publisher : SocketPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -97,14 +98,14 @@ namespace Peach.Core.Publishers
 			return s;
 		}
 
-		protected override void FilterInput(MemoryStream ms)
+		protected override void FilterInput(byte[] buffer, int offset, int count)
 		{
 			if (Platform.GetOS() != Platform.OS.OSX)
 				return;
 
 			// On OSX, ip_len is in host order and does not include the ip header
 			// http://cseweb.ucsd.edu/~braghava/notes/freebsd-sockets.txt
-			RawHelpers.SetLength(ms);
+			RawHelpers.SetLength(buffer, offset, count);
 		}
 	}
 
@@ -125,6 +126,8 @@ namespace Peach.Core.Publishers
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to", "")]
 	[Parameter("Protocol", typeof(byte), "IP protocol to use")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("MinMTU", typeof(uint), "Minimum allowable MTU property value", DefaultMinMTU)]
+	[Parameter("MaxMTU", typeof(uint), "Maximum allowable MTU property value", DefaultMaxMTU)]
 	public class RawIPv4Publisher : SocketPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -147,23 +150,23 @@ namespace Peach.Core.Publishers
 			return s;
 		}
 
-		protected override void FilterInput(MemoryStream ms)
+		protected override void FilterInput(byte[] buffer, int offset, int count)
 		{
 			if (Platform.GetOS() != Platform.OS.OSX)
 				return;
 
 			// On OSX, ip_len is in host order and does not include the ip header
 			// http://cseweb.ucsd.edu/~braghava/notes/freebsd-sockets.txt
-			RawHelpers.SetLength(ms);
+			RawHelpers.SetLength(buffer, offset, count);
 		}
 
-		protected override void FilterOutput(MemoryStream ms)
+		protected override void FilterOutput(byte[] buffer, int offset, int count)
 		{
 			if (Platform.GetOS() != Platform.OS.OSX)
 				return;
 
 
-			if (ms.Length < RawHelpers.IpHeaderLen)
+			if (count < RawHelpers.IpHeaderLen)
 				return;
 
 			// On OSX, ip_len and ip_off need to be in host order
@@ -171,17 +174,15 @@ namespace Peach.Core.Publishers
 
 			byte tmp;
 
-			var buf = ms.GetBuffer();
-
 			// Swap ip_len
-			tmp = buf[2];
-			buf[2] = buf[3];
-			buf[3] = tmp;
+			tmp = buffer[offset + 2];
+			buffer[offset + 2] = buffer[offset + 3];
+			buffer[offset + 3] = tmp;
 
 			// Swap ip_off
-			tmp = buf[6];
-			buf[6] = buf[7];
-			buf[7] = tmp;
+			tmp = buffer[offset + 6];
+			buffer[offset + 6] = buffer[offset + 7];
+			buffer[offset + 7] = tmp;
 		}
 	}
 }

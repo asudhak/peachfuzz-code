@@ -44,7 +44,6 @@ namespace Peach.Core.Dom
 	[Parameter("ns", typeof(string), "XML Namespace", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
@@ -56,6 +55,15 @@ namespace Peach.Core.Dom
 		string _attributeName = null;
 		string _ns = null;
 
+		public XmlAttribute()
+		{
+		}
+
+		public XmlAttribute(string name)
+			: base(name)
+		{
+		}
+
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
 			if (node.Name != "XmlAttribute" || !(parent is XmlElement))
@@ -63,11 +71,10 @@ namespace Peach.Core.Dom
 
 			var xmlAttribute = DataElement.Generate<XmlAttribute>(node);
 
-			xmlAttribute.attributeName = node.getAttribute("attributeName");
-			xmlAttribute.ns = node.getAttribute("ns");
+			xmlAttribute.attributeName = node.getAttrString("attributeName");
 
-			if (xmlAttribute.attributeName == null)
-				throw new PeachException("Error, attributeName is a required attribute for XmlAttribute: " + xmlAttribute.name);
+			if (node.hasAttr("ns"))
+				xmlAttribute.ns = node.getAttrString("ns");
 
 			context.handleCommonDataElementAttributes(node, xmlAttribute);
 			context.handleCommonDataElementChildren(node, xmlAttribute);
@@ -85,6 +92,8 @@ namespace Peach.Core.Dom
 			set
 			{
 				_attributeName = value;
+				// DefaultValue isn't used internally, but this makes the Validator show helpful text
+				_defaultValue = new Variant("'{0}' Attribute".Fmt(value));
 				Invalidate();
 			}
 		}
@@ -119,20 +128,10 @@ namespace Peach.Core.Dom
 			return xmlAttrib;
 		}
 
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "attributeName":
-          return this.attributeName;
-        case "ns":
-          return this.ns;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.XmlAttribute", parameterName));
-      }
-    }
+		protected override Variant GenerateInternalValue()
+		{
+			return null;
+		}
 	}
 }
 

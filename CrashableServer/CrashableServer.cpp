@@ -1,137 +1,176 @@
-// CrashableServer.cpp : Defines the entry point for the console application.
-//
+#ifdef WIN32
 
-#include "stdafx.h"
-/***********************************************************************
- basic-server.cpp - Implements a fairly basic single-threaded Winsock 
-    server program that waits for a connection, accepts it, echoes back
-    any data it receives, and then goes back to listening when the
-    client drops the connection.
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
 
- Compiling:
-    VC++: cl -GX basic-server.cpp main.cpp ws-util.cpp wsock32.lib
-    BC++: bcc32 basic-server.cpp main.cpp ws-util.cpp
-    
- This program is hereby released into the public domain.  There is
- ABSOLUTELY NO WARRANTY WHATSOEVER for this product.  Caveat hacker.
-***********************************************************************/
-
-//#include "ws-util.h"
-
+#include <stdio.h>
 #include <winsock2.h>
+#include <tchar.h>
+#include <windows.h>
 
-#include <iostream>
+typedef int socklen_t;
 
-using namespace std;
+#else
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
-////////////////////////////////////////////////////////////////////////
-// Constants
+typedef int SOCKET;
 
+struct WSAData {};
+
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+#define _tmain main
+
+#define MAKEDWORD(a,b) (0)
+#define WSAStartup(a,b) (0)
+#define __try if(1)
+#define __except(a) if(0)
+
+inline int closesocket(int s) { return close(s); }
+inline void WSACleanup() {}
+inline int WSAGetLastError() { return errno; }
+
+#endif
+
+const int kDefaultServerPort = 4242;
 const int kBufferSize = 1024;
-        
 
-////////////////////////////////////////////////////////////////////////
-// Prototypes
+SOCKET SetUpListener(const char* host, int port);
+SOCKET AcceptConnection(SOCKET listener, sockaddr_in* remote);
+bool EchoIncomingPackets(SOCKET socket);
+int Run(const char* host, int port);
 
-SOCKET SetUpListener(const char* pcAddress, int nPort);
-SOCKET AcceptConnection(SOCKET ListeningSocket, sockaddr_in& sinRemote);
-bool EchoIncomingPackets(SOCKET sd);
-
-
-//// DoWinsock /////////////////////////////////////////////////////////
-// The module's driver function -- we just call other functions and
-// interpret their results.
-
-int DoWinsock(const char* pcAddress, int nPort)
+int main(int argc, char* argv[])
 {
-    // Begin listening for connections
-    cout << "Establishing the listener..." << endl;
-    SOCKET ListeningSocket = SetUpListener(pcAddress, htons((u_short)nPort));
-    if (ListeningSocket == INVALID_SOCKET) {
-        cout << endl << "establish listener error:" << WSAGetLastError() <<
-                endl;
-        return 3;
-    }
+	WSAData wsaData;
+	int ret;
+	const char* host;
+	int port;
+	int retval = 0;
 
-    // Spin forever handling clients
-    for (;;) {
-        // Wait for a connection, and accepting it when one arrives.
-        cout << "Waiting for a connection..." << flush;
-        sockaddr_in sinRemote;
-        SOCKET sd = AcceptConnection(ListeningSocket, sinRemote);
-        if (sd != INVALID_SOCKET) {
-            cout << "Accepted connection from " <<
-                    inet_ntoa(sinRemote.sin_addr) << ":" <<
-                    ntohs(sinRemote.sin_port) << "." << endl;
-        }
-        else {
-            cout << endl << "accept connection error: " << WSAGetLastError() << endl;
-            return 3;
-        }
-        
-        // Bounce packets from the client back to it.
-        if (EchoIncomingPackets(sd)) {
-            // Successfully bounced all connections back to client, so
-            // close the connection down gracefully.
-            cout << "Shutting connection down..." << flush;
-            if (closesocket(sd) == 0) {
-                cout << "Connection is down." << endl;
-            }
-            else {
-                cout << endl << "shutdown connection error: " << WSAGetLastError() << endl;
-                return 3;
-            }
-        }
-        else {
-            cout << endl << "echo incoming packets error: " << WSAGetLastError() << endl;
-            return 3;
-        }
-    }
+	// Do we have enough command line arguments?
+	if (argc < 2) {
+		fprintf(stderr, "usage: %s <server-address> [server-port]\n", argv[0]);
+		fprintf(stderr, "\tIf you don't pass server-port, it defaults to %d.\n", kDefaultServerPort);
+		return 1;
+	}
+
+	host = argv[1];
+	port = (argc >= 3) ? atoi(argv[2]) : kDefaultServerPort;
+
+	if (argc > 3) {
+		fprintf(stderr, "%d extra argument%s ignored.  FYI.\n", argc - 3, argc == 4 ? "" : "s");
+	}
+
+	if ((ret = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0) {
+		fprintf(stderr, "WSAStartup() returned error code %d.\n", ret);
+		return 255;
+	}
+
+	__try
+	{
+		retval = Run(host, port);
+	}
+	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+	{
+		fprintf(stderr, "Caught AV exception.\n");
+	}
+
+	WSACleanup();
+	return retval;
 }
 
-
-//// SetUpListener /////////////////////////////////////////////////////
-// Sets up a listener on the given interface and port, returning the
-// listening socket if successful; if not, returns INVALID_SOCKET.
-
-SOCKET SetUpListener(const char* pcAddress, int nPort)
+int Run(const char* host, int port)
 {
-    u_long nInterfaceAddr = inet_addr(pcAddress);
-    if (nInterfaceAddr != INADDR_NONE) {
-        SOCKET sd = socket(AF_INET, SOCK_STREAM, 0);
-        if (sd != INVALID_SOCKET) {
-            sockaddr_in sinInterface;
-            sinInterface.sin_family = AF_INET;
-            sinInterface.sin_addr.s_addr = nInterfaceAddr;
-            sinInterface.sin_port = (u_short)nPort;
-            if (bind(sd, (sockaddr*)&sinInterface, 
-                    sizeof(sockaddr_in)) != SOCKET_ERROR) {
-                listen(sd, 1);
-                return sd;
-            }
-        }
-    }
+	SOCKET listener;
 
-    return INVALID_SOCKET;
+	printf("Establishing the listener...\n");
+
+	listener = SetUpListener(host, htons((u_short)port));
+	if (listener == INVALID_SOCKET) {
+		fprintf(stderr, "\nestablish listener error: %d\n", WSAGetLastError());
+		return 3;
+	}
+
+	for (;;) {
+		SOCKET socket;
+		sockaddr_in remote;
+
+		printf("Waiting for a connection...\n");
+
+		socket = AcceptConnection(listener, &remote);
+		if (socket == INVALID_SOCKET) {
+			fprintf(stderr, "\naccept connection error: %d\n", WSAGetLastError());
+			return 3;
+		}
+
+		printf("Accepted connection from %s:%d.\n",
+			inet_ntoa(remote.sin_addr),
+			ntohs(remote.sin_port));
+
+		if (!EchoIncomingPackets(socket)) {
+			fprintf(stderr, "\necho incoming packets error: %d\n", WSAGetLastError());
+			return 3;
+		}
+
+		printf("Shutting connection down...\n");
+
+		if (closesocket(socket) != 0) {
+			fprintf(stderr, "\nshutdown connection error: %d\n", WSAGetLastError());
+			return 3;
+		}
+
+		printf("Connection is down.\n");
+	}
 }
 
-
-//// AcceptConnection //////////////////////////////////////////////////
-// Waits for a connection on the given socket.  When one comes in, we
-// return a socket for it.  If an error occurs, we return 
-// INVALID_SOCKET.
-
-SOCKET AcceptConnection(SOCKET ListeningSocket, sockaddr_in& sinRemote)
+SOCKET SetUpListener(const char* host, int port)
 {
-    int nAddrSize = sizeof(sinRemote);
-    return accept(ListeningSocket, (sockaddr*)&sinRemote, &nAddrSize);
+	SOCKET listener;
+	u_long addr;
+	sockaddr_in sa;
+	int optval;
+
+	addr = inet_addr(host);
+	if (addr == INADDR_NONE)
+		return INVALID_SOCKET;
+
+	listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (listener == INVALID_SOCKET)
+		return INVALID_SOCKET;
+
+	optval = 1;
+	if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval, sizeof(optval)) == SOCKET_ERROR)
+		return INVALID_SOCKET;
+
+	memset(&sa, 0, sizeof(sa));
+	sa.sin_family = AF_INET;
+	sa.sin_addr.s_addr = addr;
+	sa.sin_port = (u_short)port;
+
+	if (bind(listener, (sockaddr*)&sa, sizeof(sa)) == SOCKET_ERROR)
+		return INVALID_SOCKET;
+
+	if (listen(listener, 1) == SOCKET_ERROR)
+		return INVALID_SOCKET;
+
+	return listener;
 }
 
-
-//// EchoIncomingPackets ///////////////////////////////////////////////
-// Bounces any incoming packets back to the client.  We return false
-// on errors, or true if the client closed the socket normally.
+SOCKET AcceptConnection(SOCKET listener, sockaddr_in* remote)
+{
+	socklen_t size = sizeof(*remote);
+	return accept(listener, (sockaddr*)remote, &size);
+}
 
 void CrashMe(char* in)
 {
@@ -160,50 +199,27 @@ void CrashMe(char* in)
 	strcat(buff, in);
 }
 
-bool EchoIncomingPackets(SOCKET sd)
+bool EchoIncomingPackets(SOCKET socket)
 {
-    // Read data from client
-	char *acReadBuffer = (char *)malloc(kBufferSize);
-    //char acReadBuffer[kBufferSize];
+	char* buf = (char*)malloc(kBufferSize);
+	int len;
 
-    int nReadBytes;
-    do {
-        nReadBytes = recv(sd, acReadBuffer, kBufferSize, 0);
-        if (nReadBytes > 0) {
-            cout << "Received " << nReadBytes << 
-                    " bytes from client." << endl;
-			
+	do {
+		len = recv(socket, buf, kBufferSize, 0);
+		if (len > 0) {
+			printf("Received %d bytes from client.\n", len);
+
 			// Add a silly stack overflow
-			if( nReadBytes >= 1024 )
-			{
-				CrashMe(acReadBuffer);
+			if (len >= 1024) {
+				CrashMe(buf);
 			}
-			
-            //while (nSentBytes < nReadBytes) {
-            //    int nTemp = send(sd, acReadBuffer + nSentBytes,
-            //            nReadBytes - nSentBytes, 0);
-            //    if (nTemp > 0) {
-            //        cout << "Sent " << nTemp << 
-            //                " bytes back to client." << endl;
-            //        nSentBytes += nTemp;
-            //    }
-            //    else if (nTemp == SOCKET_ERROR) {
-            //        return false;
-            //    }
-            //    else {
-            //        // Client closed connection before we could reply to
-            //        // all the data it sent, so bomb out early.
-            //        cout << "Peer unexpectedly dropped connection!" << 
-            //                endl;
-            //        return true;
-            //    }
-            //}
-        }
-        else if (nReadBytes == SOCKET_ERROR) {
-            return false;
-        }
-    } while (nReadBytes != 0);
+		}
+		else if (len == SOCKET_ERROR) {
+			return false;
+		}
+	} while (len != 0);
 
-    cout << "Connection closed by peer." << endl;
-    return true;
+	printf("Connection closed by peer.\n");
+
+	return true;
 }

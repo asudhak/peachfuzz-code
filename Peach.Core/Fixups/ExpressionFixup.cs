@@ -85,7 +85,7 @@ namespace Peach.Core.Fixups
 			catch (System.Exception ex)
 			{
 				throw new PeachException(
-					string.Format("ExpressionFixup expression threw an exception!\nExpression: {0}\n Exception: {1}", expression, ex.ToString()));
+					string.Format("ExpressionFixup expression threw an exception!\nExpression: {0}\n Exception: {1}", expression, ex.ToString()), ex);
 			}
 		}
 	}

@@ -43,6 +43,8 @@ namespace Peach.Core.Test.OS.OSX
 				p.StartInfo = si;
 				p.Start();
 				p.WaitForExit();
+				Assert.True(p.HasExited);
+				p.Close();
 
 				Assert.Throws<ArgumentException>(delegate() { ProcessInfo.Instance.Snapshot(p); });
 			}

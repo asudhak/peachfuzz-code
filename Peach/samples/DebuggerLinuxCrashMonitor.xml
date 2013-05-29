@@ -23,7 +23,7 @@
 	<Agent name="LocalAgent">
 		<Monitor class="LinuxCrashMonitor"/>
 		<Monitor class="Process">
-			<Param name="Executable" value="./CrashingProgram" />
+			<Param name="Executable" value="./CrashingFileConsumer" />
 			<Param name="StartOnCall" value="Start" />
 			<Param name="Arguments" value="fuzzed.bin" />
 		</Monitor>

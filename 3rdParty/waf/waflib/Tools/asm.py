@@ -45,7 +45,7 @@ class asm(Task.Task):
 	Compile asm files by gas/nasm/yasm/...
 	"""
 	color = 'BLUE'
-	run_str = '${AS} ${ASFLAGS} ${CPPPATH_ST:INCPATHS} ${AS_SRC_F}${SRC} ${AS_TGT_F}${TGT}'
+	run_str = '${AS} ${ASFLAGS} ${ASMPATH_ST:INCPATHS} ${AS_SRC_F}${SRC} ${AS_TGT_F}${TGT}'
 
 @extension('.s', '.S', '.asm', '.ASM', '.spp', '.SPP')
 def asm_hook(self, node):
@@ -71,3 +71,5 @@ class asmstlib(stlink_task):
 	"Link object files into a c static library"
 	pass # do not remove
 
+def configure(conf):
+	conf.env['ASMPATH_ST'] = '-I%s'

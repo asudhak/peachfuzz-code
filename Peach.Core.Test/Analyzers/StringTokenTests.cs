@@ -22,7 +22,8 @@
 //
 
 // Authors:
-//   Michael Eddington (mike@dejavusecurity.com)
+//  Michael Eddington (mike@dejavusecurity.com)
+//	Adam Cecchetti (adam@dejavusecurity.com) 
 
 // $Id$
 
@@ -43,35 +44,209 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Test.Analyzers
 {
-	[TestFixture]
-	class StringTokenTests
-	{
-		[Test]
-		public void BasicTest()
-		{
-			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
-				"	<DataModel name=\"TheDataModel\">" +
-				"		<String name=\"TheString\">"+
-				"			<Analyzer class=\"StringToken\" />" +
-				"		</String>"+
-				"	</DataModel>" +
-				"</Peach>";
+    [TestFixture]
+    internal class StringTokenTests
+    {
+        [Test]
+        public void BasicTest()
+        {
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
 
-			PitParser parser = new PitParser();
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+            data.SeekBits(0, SeekOrigin.Begin);
 
-			DataCracker cracker = new DataCracker();
-			cracker.CrackData(dom.dataModels[0], data);
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString((byte[])dom.dataModels[0][0].InternalValue));
-			Assert.AreEqual(3, ((DataElementContainer)((DataElementContainer)dom.dataModels[0][0])[0]).Count);
-		}
-	}
+            Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);
+        }
+
+        [Test]
+        public void NoTokens()
+        {
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("HelloWorld"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual("HelloWorld", dom.dataModels[0][0].InternalValue.ToString());
+            Assert.AreEqual(1, ((DataElementContainer) dom.dataModels[0]).Count);
+        }
+
+        [Test]
+        public void JustTokens()
+        {
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/",
+                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);
+        }
+
+        [Test]
+        public void SingleTokenMiddle()
+        {
+             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAA:AAAA"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual("AAAA:AAAA",
+                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+
+						Assert.AreEqual("AAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
+            Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
+            Assert.AreEqual("AAAA", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
+
+            Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
+        }
+
+        [Test]
+        public void SingleTokenEnd()
+        {
+             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAA:"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual("AAAAAAAA:",
+                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+
+						Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
+            Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
+
+            Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
+        }
+
+        [Test]
+        public void SingleTokenBegin()
+        {
+             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(":AAAAAAAA"));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual(":AAAAAAAA",
+                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+
+            Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
+						Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
+
+            Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
+        }
+
+        [Test]
+        public void StringTokenAllWhiteSpaceTokens()
+        {
+              string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+                         "	<DataModel name=\"TheDataModel\">" +
+                         "		<String name=\"TheString\">" +
+                         "			<Analyzer class=\"StringToken\" />" +
+                         "		</String>" +
+                         "	</DataModel>" +
+                         "</Peach>";
+
+            PitParser parser = new PitParser();
+            Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+            BitStream data = new BitStream();
+            data.LittleEndian();
+            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(@"\t\n\r "));
+            data.SeekBits(0, SeekOrigin.Begin);
+
+            DataCracker cracker = new DataCracker();
+            cracker.CrackData(dom.dataModels[0], data);
+
+            Assert.AreEqual(@"\t\n\r ",
+                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);                      
+        }
+    }
 }
 
 // end

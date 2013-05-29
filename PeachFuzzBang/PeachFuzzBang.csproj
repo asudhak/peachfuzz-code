@@ -31,7 +31,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
@@ -41,7 +41,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -50,7 +50,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|x86' ">
     <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -68,7 +68,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|x86' ">
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>True</Optimize>
@@ -88,7 +88,7 @@
   <PropertyGroup>
     <StartupObject>PeachFuzzBang.Program</StartupObject>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|x64' ">
     <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -104,7 +104,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|x64' ">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>True</Optimize>
@@ -327,6 +327,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="IronPython.Modules">
+      <HintPath>..\3rdParty\IronPython-2.7.3\IronPython.Modules.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -340,7 +343,6 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -401,6 +403,30 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - Windows'" Include="..\Peach.Core.OS.Windows\Peach.Core.OS.Windows.csproj">
+      <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
+      <Name>Peach.Core.OS.Windows</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Release - Windows'" Include="..\Peach.Core.OS.Windows\Peach.Core.OS.Windows.csproj">
+      <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
+      <Name>Peach.Core.OS.Windows</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
+      <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
+      <Name>Peach.Core.OS.Linux</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Release - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
+      <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
+      <Name>Peach.Core.OS.Linux</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+      <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
+      <Name>Peach.Core.OS.OSX</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Release - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+      <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
+      <Name>Peach.Core.OS.OSX</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>

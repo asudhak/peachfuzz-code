@@ -55,6 +55,25 @@ def remove_makefile_rule_lhs(line):
 	else:
 		return line
 
+def path_to_node(base_node, path, cached_nodes):
+	# Take the base node and the path and return a node
+	# Results are cached because searching the node tree is expensive
+	# The following code is executed by threads, it is not safe, so a lock is needed...
+	if getattr(path, '__hash__'):
+		node_lookup_key = (base_node, path)
+	else:
+		# Not hashable, assume it is a list and join into a string
+		node_lookup_key = (base_node, os.path.sep.join(path))
+	try:
+		lock.acquire()
+		node = cached_nodes[node_lookup_key]
+	except KeyError:
+		node = base_node.find_resource(path)
+		cached_nodes[node_lookup_key] = node
+	finally:
+		lock.release()
+	return node
+
 def post_run(self):
 	# The following code is executed by threads, it is not safe, so a lock is needed...
 
@@ -99,28 +118,27 @@ def post_run(self):
 	nodes = []
 	bld = self.generator.bld
 
+	# Dynamically bind to the cache
+	try:
+		cached_nodes = bld.cached_nodes
+	except AttributeError:
+		cached_nodes = bld.cached_nodes = {}
+
 	for x in val:
 
 		node = None
 		if os.path.isabs(x):
-			lock.acquire()
-			try:
-				node = bld.root.find_resource(x)
-			finally:
-				lock.release()
+			node = path_to_node(bld.root, x, cached_nodes)
+
 		else:
 			path = bld.bldnode
+			# when calling find_resource, make sure the path does not begin by '..'
 			x = [k for k in Utils.split_path(x) if k and k != '.']
 			while lst and x[0] == '..':
 				x = x[1:]
 				path = path.parent
 
-			# when calling find_resource, make sure the path does not begin by '..'
-			try:
-				lock.acquire()
-				node = path.find_resource(x)
-			finally:
-				lock.release()
+			node = path_to_node(path, x, cached_nodes)
 
 		if not node:
 			raise ValueError('could not find %r for %r' % (x, self))

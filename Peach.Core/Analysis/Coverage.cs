@@ -58,8 +58,9 @@ namespace Peach.Core.Analysis
 		/// Collect all basic blocks in binary
 		/// </summary>
 		/// <param name="executable"></param>
+		/// <param name="needsKilling"></param>
 		/// <returns></returns>
-		public abstract List<ulong> BasicBlocksForExecutable(string executable);
+		public abstract List<ulong> BasicBlocksForExecutable(string executable, bool needsKilling);
 
 		/// <summary>
 		/// Perform code coverage based on collection of basic blocks.  If
@@ -67,9 +68,10 @@ namespace Peach.Core.Analysis
 		/// </summary>
 		/// <param name="executable"></param>
 		/// <param name="arguments"></param>
+		/// <param name="needsKilling"></param>
 		/// <param name="basicBlocks"></param>
 		/// <returns></returns>
-		public abstract List<ulong> CodeCoverageForExecutable(string executable, string arguments, List<ulong> basicBlocks = null);
+		public abstract List<ulong> CodeCoverageForExecutable(string executable, string arguments, bool needsKilling, List<ulong> basicBlocks = null);
 
 		public abstract void Dispose();
 	}

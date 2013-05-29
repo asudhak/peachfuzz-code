@@ -2,7 +2,6 @@
 
 deps = [
 	'NLog.dll',
-	'CookComputing.XmlRpcV2.dll',
 	'SharpPcap.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
@@ -30,4 +29,5 @@ bld(
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.OS.Linux.dll',
+	install = bld.path.ant_glob('gdb/**/*'),
 )

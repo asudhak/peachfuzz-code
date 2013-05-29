@@ -31,8 +31,8 @@ namespace Peach.Core.Test.Monitors
 			}
 			catch (PeachException ex)
 			{
-				logger.Trace(ex.Message);
-				logger.Trace(ex.StackTrace);
+				logger.Error(ex.Message);
+				logger.Error(ex.StackTrace);
 			}
 			finally
 			{

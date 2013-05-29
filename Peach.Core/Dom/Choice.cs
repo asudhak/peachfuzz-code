@@ -57,7 +57,6 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
-	[Parameter("lengthCalc", typeof(string), "Scripting expression that evaluates to an integer", "")]
 	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
@@ -79,70 +78,38 @@ namespace Peach.Core.Dom
 		{
 		}
 
-		public override void Crack(DataCracker context, BitStream data)
+		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			Choice element = this;
-
-			logger.Trace("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			BitStream sizedData = data;
-			SizeRelation sizeRelation = null;
-
-			// Do we have relations or a length?
-			if (element.relations.hasOfSizeRelation)
-			{
-				sizeRelation = element.relations.getOfSizeRelation();
-
-				if (!element.isParentOf(sizeRelation.From))
-				{
-					int size = (int)sizeRelation.GetValue();
-					context._sizedBlockStack.Add(element);
-					context._sizedBlockMap[element] = size;
-
-					sizedData = new BitStream(data.ReadBytes(size));
-					sizeRelation = null;
-				}
-			}
-			else if (element.hasLength)
-			{
-				long size = element.lengthAsBits;
-				context._sizedBlockStack.Add(element);
-				context._sizedBlockMap[element] = size;
-
-				sizedData = new BitStream(data.ReadBytes(size));
-			}
-
+			BitStream sizedData = ReadSizedData(data, size);
 			long startPosition = sizedData.TellBits();
-			bool foundElement = false;
 
-			foreach (DataElement child in element.choiceElements.Values)
+			Clear(false);
+			_selectedElement = null;
+
+			foreach (DataElement child in choiceElements.Values)
 			{
 				try
 				{
-					logger.Debug("handleChoice: Trying next child: " + child.fullName);
+					logger.Debug("handleChoice: Trying child: " + child.debugName);
 
-					child.parent = element;
 					sizedData.SeekBits(startPosition, System.IO.SeekOrigin.Begin);
-					context.handleNode(child, sizedData);
-					element.SelectedElement = child;
-					foundElement = true;
+					context.CrackData(child, sizedData);
+					SelectedElement = child;
 
-					logger.Debug("handleChoice: Keeping child!");
-					break;
+					logger.Debug("handleChoice: Keeping child: " + child.debugName);
+					return;
 				}
 				catch (CrackingFailure)
 				{
-					logger.Debug("handleChoice: Child failed to crack: " + child.fullName);
-					foundElement = false;
+					logger.Debug("handleChoice: Failed to crack child: " + child.debugName);
 				}
 				catch (Exception ex)
 				{
-					logger.Debug("handleChoice: Child threw exception: " + child.fullName + ": " + ex.Message);
+					logger.Debug("handleChoice: Child threw exception: " + child.debugName + ": " + ex.Message);
 				}
 			}
 
-			if (!foundElement)
-				throw new CrackingFailure("Unable to crack '" + element.fullName + "'.", element, data);
+			throw new CrackingFailure(debugName + " has no valid children.", this, data);
 		}
 
 		public void SelectDefault()
@@ -233,7 +200,7 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public override Variant GenerateInternalValue()
+		protected override Variant GenerateInternalValue()
 		{
 			Variant value;
 
@@ -280,17 +247,6 @@ namespace Peach.Core.Dom
 				value = _fixup.fixup(this);
 
 			return value;
-		}
-
-		public override object GetParameter(string parameterName)
-		{
-			switch (parameterName)
-			{
-				case "name":
-					return this.name;
-				default:
-					throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Choice", parameterName));
-			}
 		}
 	}
 }

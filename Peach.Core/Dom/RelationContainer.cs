@@ -41,7 +41,6 @@ namespace Peach.Core.Dom
 	/// Abstract base class for DataElements that contain other
 	/// data elements.  Such as Block, Choice, or Flags.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public class RelationContainer : IEnumerable<Relation>, IList<Relation>
 	{
@@ -79,6 +78,26 @@ namespace Peach.Core.Dom
 				_childrenList.Insert(index, value);
 
 				value.parent = parent;
+			}
+		}
+
+		public IEnumerable<T> Of<T>() where T: class
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				T r = rel as T;
+				if (r != null && rel.Of == parent)
+					yield return r;
+			}
+		}
+
+		public IEnumerable<T> From<T>() where T : class
+		{
+			foreach (Relation rel in _childrenList)
+			{
+				T r = rel as T;
+				if (r != null && rel.From == parent)
+					yield return r;
 			}
 		}
 

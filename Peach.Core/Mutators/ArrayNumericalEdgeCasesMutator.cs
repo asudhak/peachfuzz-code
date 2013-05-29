@@ -66,7 +66,11 @@ namespace Peach.Core.Mutators
 
         private bool RemoveInvalid(long n)
         {
+#if MONO
+			return n < 0 || n > 1000;
+#else
             return n < 0;
+#endif
         }
 
         // GET N
@@ -83,9 +87,9 @@ namespace Peach.Core.Mutators
                     {
                         n = Int32.Parse(h.Value);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name);
+                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
                     }
                 }
             }
@@ -163,9 +167,8 @@ namespace Peach.Core.Mutators
                     // we are going to override the count and copy the last element many times simulating a 
                     // very long array.
 
-                    objAsArray.overrideCount = num;
-
                     var elemValue = objAsArray[objAsArray.Count - 1].Value;
+					objAsArray.overrideCount = num;
 
                     var newValue = new BitStream();
                     newValue.Write(elemValue);
@@ -176,9 +179,10 @@ namespace Peach.Core.Mutators
                     objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
                     objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    throw new OutOfMemoryException();
+					logger.Error("Eating exception: " + ex.ToString());
+                    //throw new OutOfMemoryException("ArrayNumericalEdgeCasesMutator -- Out of memory", ex);
                 }
             }
         }

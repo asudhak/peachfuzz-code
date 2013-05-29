@@ -8,7 +8,6 @@ deps = [
 	'System.ServiceProcess.dll',
 	'Peach.Core.dll',
 	'NLog.dll',
-	'CookComputing.XmlRpcV2.dll',
 	'SharpPcap.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',

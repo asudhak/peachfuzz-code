@@ -60,7 +60,7 @@ namespace Peach.Core.Test.Agent.Monitors
 		</Monitor>
 	</Agent>
 
-	<Test name='Default'>
+	<Test name='Default' replayEnabled='false'>
 		<Agent ref='LocalAgent'/>
 		<StateModel ref='TheState'/>
 		<Publisher class='Null'/>
@@ -74,7 +74,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			return ret;
 		}
 
-		void Run(Params parameters)
+		void Run(Params parameters, bool shouldFault)
 		{
 			string xml = MakeXml(parameters);
 
@@ -90,13 +90,28 @@ namespace Peach.Core.Test.Agent.Monitors
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
-			e.startFuzzing(dom, config);
+
+			if (!shouldFault)
+			{
+				e.startFuzzing(dom, config);
+				return;
+			}
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
+			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
 		}
 
 		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"PopupWatcher\".  Monitor 'PopupWatcher' is missing required parameter 'WindowNames'.")]
 		public void TestNoWindow()
 		{
-			Run(new Params());
+			Run(new Params(), false);
 			Assert.Null(faults);
 		}
 
@@ -115,10 +130,15 @@ namespace Peach.Core.Test.Agent.Monitors
 			}
 		}
 
+		private AutoResetEvent evt = new AutoResetEvent(false);
+
 		void ThreadProc(object windowTitle)
 		{
+			evt.Reset();
 			using (var wnd = new LameWindow(windowTitle.ToString()))
 			{
+				System.Windows.Forms.Application.DoEvents();
+				evt.Set();
 				System.Windows.Forms.Application.Run();
 				Console.WriteLine("Done!");
 			}
@@ -127,14 +147,16 @@ namespace Peach.Core.Test.Agent.Monitors
 		[Test]
 		public void TestWindow()
 		{
+			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
-			th.Start("PopupWatcherTest");
+			th.Start(windowName);
+			evt.WaitOne();
 
 			faultIteration = 1;
 
 			try
 			{
-				Run(new Params { { "WindowNames", "PopupWatcherTest" } });
+				Run(new Params { { "WindowNames", windowName } }, true);
 			}
 			finally
 			{
@@ -154,14 +176,16 @@ namespace Peach.Core.Test.Agent.Monitors
 		[Test]
 		public void TestWindowList()
 		{
+			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
 			var th = new Thread(ThreadProc);
-			th.Start("PopupWatcherTest");
+			th.Start(windowName);
+			evt.WaitOne();
 
 			faultIteration = 1;
 
 			try
 			{
-				Run(new Params { { "WindowNames", "Window1,Window2,PopupWatcherTest" } });
+				Run(new Params { { "WindowNames", "Window1,Window2," + windowName } }, true);
 			}
 			finally
 			{
@@ -174,19 +198,22 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual("FaultingMonitor", faults[0].detectionSource);
 			Assert.AreEqual("PopupWatcher", faults[1].detectionSource);
 			Assert.AreEqual("Closed 1 popup window.", faults[1].title);
-			Assert.True(faults[1].description.Contains("PopupWatcherTest"));
+			Assert.True(faults[1].description.Contains(windowName));
 			Assert.AreEqual(FaultType.Data, faults[1].type);
 		}
 
 		[Test]
 		public void TestFault()
 		{
+			string windowName = "PopupWatcherTest - " + System.Diagnostics.Process.GetCurrentProcess().Id;
+
 			var th = new Thread(ThreadProc);
-			th.Start("PopupWatcherTest");
+			th.Start(windowName);
+			evt.WaitOne();
 
 			try
 			{
-				Run(new Params { { "WindowNames", "PopupWatcherTest" }, { "Fault", "true" } });
+				Run(new Params { { "WindowNames", windowName }, { "Fault", "true" } }, true);
 			}
 			finally
 			{
@@ -198,7 +225,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual(1, faults.Length);
 			Assert.AreEqual("PopupWatcher", faults[0].detectionSource);
 			Assert.AreEqual("Closed 1 popup window.", faults[0].title);
-			Assert.True(faults[0].description.Contains("PopupWatcherTest"));
+			Assert.True(faults[0].description.Contains(windowName));
 		}
 	}
 }

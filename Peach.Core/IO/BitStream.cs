@@ -42,6 +42,7 @@ using System.Security.Cryptography;
 
 #if PEACH
 using Peach.Core.IO.Conversion;
+using System.Diagnostics;
 #endif
 
 namespace Peach.Core.IO
@@ -53,6 +54,7 @@ namespace Peach.Core.IO
 	/// bytes.
 	/// </summary>
 	[Serializable]
+	[DebuggerDisplay("{Progress}")]
 	public class BitStream : IDisposable
 	{
 #if PEACH
@@ -76,7 +78,7 @@ namespace Peach.Core.IO
 		/// <summary>
 		/// Constructor for BitStream class
 		/// </summary>
-		/// <param name="buff">Use buff as initial stream data.</param>
+		/// <param name="stream">Use stream as initial stream data.</param>
 		public BitStream(Stream stream)
 		{
 			this.stream = stream;
@@ -102,6 +104,8 @@ namespace Peach.Core.IO
 		/// Constructor for BitStream class
 		/// </summary>
 		/// <param name="buff">Use buff as initial stream data.</param>
+		/// <param name="offset">Offset to start.</param>
+		/// <param name="length">Length to use.</param>
 		public BitStream(byte[] buff, int offset, int length)
 		{
 			stream = new MemoryStream();
@@ -165,6 +169,14 @@ namespace Peach.Core.IO
 			}
 
 			throw new ApplicationException("Error, unable to clone stream.");
+		}
+
+		public string Progress
+		{
+			get
+			{
+				return "Bytes: {0}/{1}, Bits: {2}/{3}".Fmt(TellBytes(), LengthBytes, TellBits(), LengthBits);
+			}
 		}
 
 		/// <summary>
@@ -303,13 +315,9 @@ namespace Peach.Core.IO
 			SeekToDataElement(elem.fullName);
 		}
 
-		protected bool HasDataElement(string name)
+		public bool HasDataElement(string name)
 		{
-			foreach (string key in _elementPositions.Keys)
-				if (key == name)
-					return true;
-
-			return false;
+			return _elementPositions.ContainsKey(name);
 		}
 
 		public void SeekToDataElement(string name)
@@ -681,10 +689,9 @@ namespace Peach.Core.IO
 				CopyTo(bits.stream, stream);
 				bits.stream.Position = oPos;
 
-				stream.Position = 0;
-				this.len = bits.LengthBits;
-
-				SeekBits(0, SeekOrigin.End);
+				pos += bits.LengthBits;
+				if (pos > len)
+					len = pos;
 
 				return;
 			}
@@ -692,17 +699,15 @@ namespace Peach.Core.IO
 			// Are we working in bytes?
 			if (pos % 8 == 0 && bits.LengthBits % 8 == 0)
 			{
-				long ourPos = stream.Position;
 				long oPos = bits.stream.Position;
 
 				bits.stream.Position = 0;
 				CopyTo(bits.stream, stream);
 				bits.stream.Position = oPos;
 
-				stream.Position = ourPos;
-				len += bits.LengthBits;
-
-				SeekBits(0, SeekOrigin.End);
+				pos += bits.LengthBits;
+				if (pos > len)
+					len = pos;
 
 				return;
 			}
@@ -981,7 +986,7 @@ namespace Peach.Core.IO
 		{
 			BitStream newStream = new BitStream();
 
-			while (pos % 8 == 0 && bits > 0)
+			while (pos % 8 > 0 && bits > 0)
 			{
 				bits--;
 				newStream.WriteBit(ReadBit());

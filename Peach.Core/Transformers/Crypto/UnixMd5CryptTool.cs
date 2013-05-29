@@ -60,6 +60,7 @@ namespace Peach.Core.Transformers.Crypto
         /// </summary>
         /// <param name="array1"></param>
         /// <param name="array2"></param>
+        /// <param name="max"></param>
         /// <returns>New adition array</returns>
         private static byte[] PartialConcat(byte[] array1, byte[] array2,int max)
         {
@@ -93,6 +94,7 @@ namespace Peach.Core.Transformers.Crypto
         /// </summary>
         /// <param name="password">The user password</param>
         /// <param name="salt">The salt or the pepper of the password</param>
+        /// <param name="magic">Extra characters to add</param>
         /// <returns>a human readable string</returns>
         public static String crypt(String password, String salt, String magic)
         {

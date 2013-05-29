@@ -61,6 +61,8 @@ namespace Peach.Core
 		public delegate void IterationStartingEventHandler(RunContext context, uint currentIteration, uint? totalIterations);
 		public delegate void IterationFinishedEventHandler(RunContext context, uint currentIteration);
 		public delegate void FaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData);
+		public delegate void ReproFaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData);
+		public delegate void ReproFailedEventHandler(RunContext context, uint currentIteration);
 		public delegate void TestFinishedEventHandler(RunContext context);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
@@ -81,6 +83,14 @@ namespace Peach.Core
 		/// Fired at end of each iteration.  This event will be fired often.
 		/// </summary>
 		public event IterationFinishedEventHandler IterationFinished;
+		/// <summary>
+		/// Fired when a Fault is detected and the engine starts retrying to reproduce it.
+		/// </summary>
+		public event ReproFaultEventHandler ReproFault;
+		/// <summary>
+		/// Fired when a Fault is is unable to be reproduced
+		/// </summary>
+		public event ReproFailedEventHandler ReproFailed;
 		/// <summary>
 		/// Fired when a Fault is detected.
 		/// </summary>
@@ -119,8 +129,22 @@ namespace Peach.Core
 		}
 		public void OnFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
 		{
+			logger.Debug(">> OnFault");
+
 			if (Fault != null)
 				Fault(context, currentIteration, stateModel, faultData);
+
+			logger.Debug("<< OnFault");
+		}
+		public void OnReproFault(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData)
+		{
+			if (ReproFault != null)
+				ReproFault(context, currentIteration, stateModel, faultData);
+		}
+		public void OnReproFailed(RunContext context, uint currentIteration)
+		{
+			if (ReproFailed != null)
+				ReproFailed(context, currentIteration);
 		}
 		public void OnTestFinished(RunContext context)
 		{
@@ -156,6 +180,7 @@ namespace Peach.Core
 		/// Run the default fuzzing run in the specified dom.
 		/// </summary>
 		/// <param name="dom"></param>
+		/// <param name="config"></param>
 		public void startFuzzing(Dom.Dom dom, RunConfiguration config)
 		{
 			if (dom == null)
@@ -169,15 +194,15 @@ namespace Peach.Core
 			{
 				test = dom.tests[config.runName];
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new PeachException("Unable to locate test named '" + config.runName + "'.");
+				throw new PeachException("Unable to locate test named '" + config.runName + "'.", ex);
 			}
 
 			startFuzzing(dom, test, config);
 		}
 
-		public void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
+		protected void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
 		{
 			try
 			{
@@ -198,14 +223,14 @@ namespace Peach.Core
 				if (watcher != null)
 					watcher.Initialize(this, context);
 
-				foreach(var logger in context.test.loggers)
+				foreach (var logger in context.test.loggers)
 					logger.Initialize(this, context);
 
 				runTest(context.dom, context.test, context);
 			}
 			finally
 			{
-				if(context.test != null)
+				if (context.test != null)
 					foreach (var logger in context.test.loggers)
 						logger.Finalize(this, context);
 
@@ -250,16 +275,24 @@ namespace Peach.Core
 				mutationStrategy.Initialize(context, this);
 
 				uint iterationStart = 1;
-				uint iterationStop = Int32.MaxValue;
+				uint iterationStop = uint.MaxValue;
 				uint? iterationTotal = null;
 				uint lastControlIteration = 0;
 
 				uint redoCount = 0;
 
+				if (!mutationStrategy.IsDeterministic)
+				{
+					if (context.config.parallel)
+						throw new PeachException("parallel is not supported when a non-deterministic mutation strategy is used");
+					if (context.config.countOnly)
+						throw new PeachException("count is not supported when a non-deterministic mutation strategy is used");
+				}
+
 				if (context.config.range)
 				{
 					if (context.config.parallel)
-						throw new NotSupportedException("range is not supported when parallel is used");
+						throw new PeachException("range is not supported when parallel is used");
 
 					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);
@@ -275,7 +308,10 @@ namespace Peach.Core
 					iterationStart = context.config.skipToIteration;
 				}
 
-				uint iterationCount = Math.Max(1, iterationStart);
+				iterationStart = Math.Max(1, iterationStart);
+
+				uint lastReproFault = iterationStart - 1;
+				uint iterationCount = iterationStart;
 				bool firstRun = true;
 
 				// First iteration is always a control/recording iteration
@@ -289,10 +325,15 @@ namespace Peach.Core
 				{
 					// Only use agent if on correct platform
 					if ((agent.platform & Platform.GetOS()) != Platform.OS.None)
+					{
 						context.agentManager.AgentConnect(agent);
-				}
+						context.agentManager.GetAgent(agent.name).SessionStarting();
 
-				context.agentManager.SessionStarting();
+						// Note: We want to perfrom SessionStarting on each agent
+						//       in turn.  We do this incase the first agent starts
+						//       a virtual machine that contains the second agent.
+					}
+				}
 
 				while ((firstRun || iterationCount <= iterationStop) && context.continueFuzzing)
 				{
@@ -310,6 +351,9 @@ namespace Peach.Core
 
 					try
 					{
+						// Must set iteration 1st as strategy could enable control/record bools
+						mutationStrategy.Iteration = iterationCount;
+
 						if (context.controlIteration && context.controlRecordingIteration)
 						{
 							context.controlRecordingActionsExecuted.Clear();
@@ -325,8 +369,6 @@ namespace Peach.Core
 							logger.Debug("runTest: context.config.singleIteration == true");
 							break;
 						}
-
-						mutationStrategy.Iteration = iterationCount;
 
 						// Make sure we are not hanging on to old faults.
 						context.faults.Clear();
@@ -344,7 +386,7 @@ namespace Peach.Core
 									logger.Debug("runTest: Performing control iteration.");
 							}
 
-							context.agentManager.IterationStarting(iterationCount, false);
+							context.agentManager.IterationStarting(iterationCount, context.reproducingFault);
 
 							test.stateModel.Run(context);
 						}
@@ -358,8 +400,8 @@ namespace Peach.Core
 							{
 								logger.Debug("runTest: SoftException on control iteration");
 								if (se.InnerException != null)
-									throw new PeachException(se.InnerException.Message);
-								throw new PeachException(se.Message);
+									throw new PeachException(se.InnerException.Message, se);
+								throw new PeachException(se.Message, se);
 							}
 
 							logger.Debug("runTest: SoftException, skipping to next iteration");
@@ -372,10 +414,14 @@ namespace Peach.Core
 
 							logger.Debug("runTest: PathException, skipping to next iteration");
 						}
-						catch (System.OutOfMemoryException)
+						catch (System.OutOfMemoryException ex)
 						{
+							logger.Debug(ex.Message);
+							logger.Debug(ex.StackTrace);
 							logger.Debug("runTest: " +
 								"Warning: Iteration ended due to out of memory exception.  Continuing to next iteration.");
+
+							throw new SoftException("Out of memory");
 						}
 						finally
 						{
@@ -386,7 +432,9 @@ namespace Peach.Core
 
 							// If this was a control iteration, verify it againt our origional
 							// recording.
-							if (context.controlRecordingIteration == false && context.controlIteration)
+							if (context.controlRecordingIteration == false && 
+								context.controlIteration &&
+								!test.nonDeterministicActions)
 							{
 								if (context.controlRecordingActionsExecuted.Count != context.controlActionsExecuted.Count)
 								{
@@ -468,10 +516,21 @@ to execute same as initial control.  State " + state.name + "was not performed."
 								fault.controlRecordingIteration = context.controlRecordingIteration;
 							}
 
-							OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
+							if (context.reproducingFault || !test.replayEnabled)
+								OnFault(context, iterationCount, test.stateModel, context.faults.ToArray());
+							else
+								OnReproFault(context, iterationCount, test.stateModel, context.faults.ToArray());
+
+							if (context.controlIteration && (!test.replayEnabled || context.reproducingFault))
+							{
+								logger.Debug("runTest: Fault detected on control iteration");
+								throw new PeachException("Fault detected on control iteration.");
+							}
 
 							if (context.reproducingFault)
 							{
+								lastReproFault = iterationCount;
+
 								// If we have moved less than 20 iterations, start fuzzing
 								// from here thinking we may have not really performed the
 								// next few iterations.
@@ -488,23 +547,48 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 								logger.Debug("runTest: Reproduced fault, continuing fuzzing at iteration " + iterationCount);
 							}
+							else if (test.replayEnabled)
+							{
+								logger.Debug("runTest: Attempting to reproduce fault.");
+
+								context.reproducingFault = true;
+								context.reproducingInitialIteration = iterationCount;
+								context.reproducingIterationJumpCount = 1;
+
+								// User can specify a time to wait between iterations
+								// we can use that time to better detect faults
+								if (context.test.waitTime > 0)
+									Thread.Sleep((int)(context.test.waitTime * 1000));
+
+								// User can specify a time to wait between iterations
+								// when reproducing faults.
+								if (context.test.faultWaitTime > 0)
+									Thread.Sleep((int)(context.test.faultWaitTime * 1000));
+
+								logger.Debug("runTest: replaying iteration " + iterationCount);
+								continue;
+							}
 						}
 						else if (context.reproducingFault)
 						{
-							// Move back N iterations
-							iterationCount -= (uint)context.reproducingIterationJumpCount;
+							uint maxJump = context.reproducingInitialIteration - lastReproFault - 1;
 
-							if (context.reproducingInitialIteration - iterationCount > context.reproducingMaxBacksearch)
+							if (context.reproducingIterationJumpCount >= (maxJump * 2) || context.reproducingIterationJumpCount > context.reproducingMaxBacksearch)
 							{
 								logger.Debug("runTest: Giving up reproducing fault, reached max backsearch.");
 
 								context.reproducingFault = false;
 								iterationCount = context.reproducingInitialIteration;
+
+								OnReproFailed(context, iterationCount);
 							}
 							else
 							{
+								uint delta = Math.Min(maxJump, context.reproducingIterationJumpCount);
+								iterationCount = (uint)context.reproducingInitialIteration - delta - 1;
+
 								logger.Debug("runTest: " +
-									"Moving backwards " + context.reproducingIterationJumpCount + " iterations to reproduce fault.");
+									"Moving backwards " + delta + " iterations to reproduce fault.");
 							}
 
 							// Make next jump larger
@@ -531,15 +615,15 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							if (iterationTotal < iterationStop)
 								iterationStop = iterationTotal.Value;
 
-							if (context.config.parallel && iterationTotal != uint.MaxValue)
+							if (context.config.parallel)
 							{
-								uint slice = iterationTotal.Value / context.config.parallelTotal;
+								if (iterationTotal < context.config.parallelTotal)
+									throw new PeachException(string.Format("Error, {1} parallel machines is greater than the {0} total iterations.", iterationTotal, context.config.parallelTotal));
 
-								iterationStop = context.config.parallelNum * slice;
-								iterationStart = iterationStop - slice + 1;
+								var range = Utilities.SliceRange(1, iterationStop, context.config.parallelNum, context.config.parallelTotal);
 
-								if (context.config.parallelNum == context.config.parallelTotal)
-									iterationStop += iterationTotal.Value % context.config.parallelTotal;
+								iterationStart = range.Item1;
+								iterationStop = range.Item2;
 
 								OnHaveParallel(context, iterationStart, iterationStop);
 
@@ -557,29 +641,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 						redoCount = 0;
 					}
-					catch (ReplayTestException rtex)
-					{
-						if (rtex.ReproducingFault)
-						{
-							logger.Debug("runTest: Attempting to reproduce fault.");
-
-							context.reproducingFault = true;
-							context.reproducingInitialIteration = iterationCount;
-							context.reproducingIterationJumpCount = 1;
-
-							// User can specify a time to wait between iterations
-							// we can use that time to better detect faults
-							if (context.test.waitTime > 0)
-								Thread.Sleep((int)(context.test.waitTime * 1000));
-
-							// User can specify a time to wait between iterations
-							// when reproducing faults.
-							if (context.test.faultWaitTime > 0)
-								Thread.Sleep((int)(context.test.faultWaitTime * 1000));
-						}
-
-						logger.Debug("runTest: replaying iteration " + iterationCount);
-					}
 					catch (RedoIterationException rte)
 					{
 						logger.Debug("runTest: redoing test iteration for the " + redoCount + " time.");
@@ -588,17 +649,20 @@ to execute same as initial control.  State " + state.name + "was not performed."
 						// we have already retried 3 times.
 
 						if (redoCount >= 3)
-							throw new PeachException(rte.Message);
+							throw new PeachException(rte.Message, rte);
 
 						redoCount++;
 					}
 					finally
 					{
-						if (context.controlIteration)
-							lastControlIteration = iterationCount;
+						if (!context.reproducingFault)
+						{
+							if (context.controlIteration)
+								lastControlIteration = iterationCount;
 
-						context.controlIteration = false;
-						context.controlRecordingIteration = false;
+							context.controlIteration = false;
+							context.controlRecordingIteration = false;
+						}
 					}
 				}
 			}
@@ -613,7 +677,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 				{
 					try
 					{
-						publisher.stop(null);
+						publisher.stop();
 					}
 					catch
 					{
@@ -622,6 +686,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 				context.agentManager.SessionFinished();
 				context.agentManager.StopAllMonitors();
+				context.agentManager.Shutdown();
 				OnTestFinished(context);
 
 				context.test = null;
@@ -632,7 +697,9 @@ to execute same as initial control.  State " + state.name + "was not performed."
 
 		private void OnControlFault(RunContext context, uint iterationCount, string description)
 		{
-			context.continueFuzzing = false;
+			// Don't tell the engine to stop, let the replay logic determine what to do
+			// If a fault is detected or reproduced on a control iteration the engine
+			// will automatically stop.
 
 			Fault fault = new Fault();
 			fault.detectionSource = "PeachControlIteration";
@@ -645,28 +712,6 @@ to execute same as initial control.  State " + state.name + "was not performed."
 			fault.type = FaultType.Fault;
 			context.faults.Add(fault);
 		}
-	}
-
-	public class RedoTestException : Exception
-	{
-	}
-
-	/// <summary>
-	/// Replay current test case
-	/// </summary>
-	/// <remarks>
-	/// Typically used by Agent/Monitors to replay
-	/// current iteration.
-	/// 
-	/// When a fault is detected we should replay the current
-	/// iteration to verify the fault.
-	/// </remarks>
-	public class ReplayTestException : Exception
-	{
-		/// <summary>
-		/// Are we replaying the test to reproduce a detected fault?
-		/// </summary>
-		public bool ReproducingFault = false;
 	}
 
 	public enum DebugLevel

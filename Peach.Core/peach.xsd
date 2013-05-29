@@ -76,12 +76,19 @@
 				Provide OCL script inside of cdata.
 			</xs:documentation>
 		</xs:annotation>
+		<xs:complexType mixed="true">
+			<xs:attribute name="controlOnly" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Only use these OCL Contexts on Control or Record iterations./</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
 	</xs:element>
 
 	<xs:element name="Python">
 		<xs:annotation>
 			<xs:documentation>
-				This element allows for running Python code.  This is usefull to call any initialization methods for code
+				This element allows for running Python code.  This is useful to call any initialization methods for code
 				that is later used.  This is an advanced element.
 			</xs:documentation>
 		</xs:annotation>
@@ -189,7 +196,7 @@
 						<xs:annotation>
 							<xs:documentation>
 								Treated as a python literal string. An example is
-								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								&quot;[1,2,3,4]&quot; which would evaluate to a python
 								list.
 							</xs:documentation>
 						</xs:annotation>
@@ -288,7 +295,7 @@
 						<xs:annotation>
 							<xs:documentation>
 								Treated as a python literal string. An example is
-								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								&quot;[1,2,3,4]&quot; which would evaluate to a python
 								list.
 							</xs:documentation>
 						</xs:annotation>
@@ -353,7 +360,7 @@
 						<xs:annotation>
 							<xs:documentation>
 								Treated as a python literal string. An example is
-								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								&quot;[1,2,3,4]&quot; which would evaluate to a python
 								list.
 							</xs:documentation>
 						</xs:annotation>
@@ -405,8 +412,7 @@
 		</xs:attribute>
 		<xs:attribute name="length" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Specify static length of string. Default is
-					unbounded.</xs:documentation>
+				<xs:documentation>[Optional] Specify length of block.  Default is unbounded.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -483,6 +489,16 @@
 			</xs:choice>
 			<xs:attributeGroup ref="peachCommonAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
+			<xs:attribute name="lengthType" type="tLengthType">
+				<xs:annotation>
+					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="length" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>[Optional] Specify length of choice.  Default is unbounded.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
 		</xs:complexType>
 		<xs:unique name="ChoiceKey1">
 			<xs:selector xpath="." />
@@ -608,11 +624,6 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
-			<xs:attribute name="analyzer" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>[Optional] The class of an analyzer to further decompose data.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="lengthType" type="tLengthType">
 				<xs:annotation>
 					<xs:documentation>An optional attribute that specifies the value of length.  Default is bytes.</xs:documentation>
@@ -674,7 +685,7 @@
 					<xs:enumeration value="literal">
 						<xs:annotation>
 							<xs:documentation>Treated as a python literal string. An example is
-								&quot;[1,2,3,4]&quot; which would evauluate to a python
+								&quot;[1,2,3,4]&quot; which would evaluate to a python
 							list.</xs:documentation>
 						</xs:annotation>
 					</xs:enumeration>
@@ -724,7 +735,7 @@
 							Dots need to be tested for in the parser because they are valid when they are used in a reference.
 						</xs:documentation>
 					</xs:annotation>
-					<xs:pattern value="[^ \t\r\n\v\f]+"/>
+					<xs:pattern value="[\w\._#]+"/>
 				</xs:restriction>
 			</xs:simpleType>
 		</xs:attribute>
@@ -770,7 +781,7 @@
 						</xs:enumeration>-->
 						<xs:enumeration value="offset">
 							<xs:annotation>
-								<xs:documentation>The position or offset from begining of data that element of is located 
+								<xs:documentation>The position or offset from beginning of data that element of is located 
 									at.</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
@@ -791,7 +802,7 @@
 			</xs:attribute>
 			<!--<xs:attribute name="when" type="xs:string">
 				<xs:annotation>
-					<xs:documentation>A python expression that must evauluate to true or false.  Only used
+					<xs:documentation>A python expression that must evaluate to true or false.  Only used
 						when type is when.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>-->
@@ -999,7 +1010,7 @@
 									<xs:enumeration value="literal">
 										<xs:annotation>
 											<xs:documentation>Treated as a python literal string. An example is
-												&quot;[1,2,3,4]&quot; which would evauluate to a python
+												&quot;[1,2,3,4]&quot; which would evaluate to a python
 												list.</xs:documentation>
 										</xs:annotation>
 									</xs:enumeration>
@@ -1082,8 +1093,8 @@
 			<xs:enumeration value="calc">
 				<xs:annotation>
 					<xs:documentation>
-						Indicates the length value is actually a python expression
-						that is evaulated to calculate the length value.  This expression will be evauluated
+						Indicates the length value is actually a scripting expression
+						that is evaluated to calculate the length value.  This expression will be evaluated
 						every time the length value is needed.  A special variable of "self" is available in the
 						expression which is the current object in the dom.
 					</xs:documentation>
@@ -1103,11 +1114,6 @@
 			<xs:attributeGroup ref="peachCommonAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
 			<xs:attributeGroup ref="ValueAttributes" />
-			<xs:attribute name="analyzer" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>[Optional] The class of an analyzer to further decompose data.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="token" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Indicates a token in the data stream.</xs:documentation>
@@ -1133,7 +1139,7 @@
 	
 	<xs:element name="Padding">
 		<xs:annotation>
-			<xs:documentation>Align a model/block with padding.  Will automatically pad to specified bit boundry, or provide an expression.</xs:documentation>
+			<xs:documentation>Align a model/block with padding.  Will automatically pad to specified bit boundary, or provide an expression.</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -1142,11 +1148,6 @@
 			<xs:attributeGroup ref="peachCommonAttributes" />
 			<xs:attributeGroup ref="commonTemplateAttributes" />
 			<xs:attributeGroup ref="ValueAttributes" />
-			<xs:attribute name="aligned" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>Align to a specified byte boundry?  Default is false.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
 			<xs:attribute name="alignment" type="xs:int">
 				<xs:annotation>
 					<xs:documentation>Bit boundry to align to. Default is 8 bits (1 byte).</xs:documentation>
@@ -1155,11 +1156,6 @@
 			<xs:attribute name="alignedTo" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>Align to a specific element.  Default is parent element.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-			<xs:attribute name="lengthCalc" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>If aligned=false provide an expression to calculate padding amount.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
@@ -1198,7 +1194,7 @@
 		</xs:attribute>
 		<xs:attribute name="constraint" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Provide a python expression that will contrain the accepted value.  Expression
+				<xs:documentation>Provide a python expression that will constrain the accepted value.  Expression
 					must evaulate to true or false.  The special variables 'self', and 'value' are available.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
@@ -1246,7 +1242,7 @@
 	<!-- TODO Finish creating Schema for the following elements -->
 	<xs:element name="PythonPath">
 		<xs:annotation>
-			<xs:documentation>Includes an additional path for module resolution. Synonomis with saying
+			<xs:documentation>Includes an additional path for module resolution. Synonymous with saying
 				"sys.path.append()".</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
@@ -1445,7 +1441,7 @@
 			<xs:choice minOccurs="1" maxOccurs="unbounded">
 				<xs:element name="Logger" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
-						<xs:documentation>Specify a a logging mechanism for fuzzing Run.</xs:documentation>
+						<xs:documentation>Specify a logging mechanism for fuzzing Run.</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
 						<xs:sequence>
@@ -1478,15 +1474,6 @@
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<!--								<xs:enumeration value="logger.SQL">
-												<xs:annotation>
-												<xs:documentation>Log to a SQL server (MySQL).  Requires a 
-												single parameter named "path" with the fully qualified path 
-												place logged information.  This will include any data reported
-												by Agents and Monitors along with a text file containing
-												the sent and received data for each logged test.</xs:documentation>
-												</xs:annotation>
-												</xs:enumeration> -->
 										</xs:restriction>
 									</xs:simpleType>
 								</xs:union>
@@ -1508,7 +1495,7 @@
 				<xs:element name="Mutators" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>
-							Specifiy applicable mutators to this test.  This is an optional element.
+							Specify applicable mutators to this test.  This is an optional element.
 						</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
@@ -1596,7 +1583,7 @@
 													<xs:documentation>
 														This is the default strategy.  Each element will be mutated
 														using all mutators one at a time.  This strategy is deterministic and is
-														able to calculate the number of test cases it is capable of genreating.  The order
+														able to calculate the number of test cases it is capable of generating.  The order
 														is shuffled which sometimes makes it look random.
 													</xs:documentation>
 												</xs:annotation>
@@ -1606,15 +1593,7 @@
 													<xs:documentation>
 														Each element will be mutated
 														using all mutators one at a time.  This strategy is deterministic and is
-														able to calculate the number of test cases it is capable of genreating.
-													</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="ReproStrategy">
-												<xs:annotation>
-													<xs:documentation>
-														This strategy is used to replay an already fuzzed set of
-														files through Peach.  No additional fuzzing is performed by this strategy.
+														able to calculate the number of test cases it is capable of generating.
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
@@ -1623,7 +1602,7 @@
 													<xs:documentation>
 														This strategy will select a random number of elements to
 														mutate on each iteration from 1 to 5.  Each selected element will have a
-														mutator selected at random and the mutater will be asked to produce a
+														mutator selected at random and the mutator will be asked to produce a
 														value at random. This strategy will produce an infinite number of iterations
 														cases.
 													</xs:documentation>
@@ -1870,13 +1849,6 @@
 														the test count #.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<xs:enumeration value="Odbc">
-												<xs:annotation>
-													<xs:documentation>Will execute test cases as SQL queries. Requires
-														parameter named &quot;dsn&quot; that is a valid ODBC
-														DSN.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
 											<xs:enumeration value="Com">
 												<xs:annotation>
 													<xs:documentation>A simple COM publisher that will pass a test case as a
@@ -1885,6 +1857,41 @@
 														methodFormat parameter is in format:
 														FunctionName(&quot;%s&quot;) where %s will be replaced with the
 														test case.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Http">
+												<xs:annotation>
+													<xs:documentation>A simple COM publisher that will pass a test case as a
+														parameter to a single method call. Requires a parameters named
+														&quot;clsid&quot; and &quot;methodFormat&quot;. The
+														methodFormat parameter is in format:
+														FunctionName(&quot;%s&quot;) where %s will be replaced with the
+														test case.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawIPv4">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for TCP v4.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawV4">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for IPv4.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawV6">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for IPv6.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SerialPort">
+												<xs:annotation>
+													<xs:documentation>Serial Port publisher.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="WebService">
+												<xs:annotation>
+													<xs:documentation>Web Service (SOAP) publisher.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
 										</xs:restriction>
@@ -1919,6 +1926,13 @@
 						Time to wait in seconds between each iteration when in fault reproduction mode. 
 						This occurs when a fault has been detected and is being verified. Value can 
 						be fractional (0.25). Defaults to two (2) seconds.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="replayEnabled" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>
+						Should iterations be replayed when a fault occurs.  Defaults to 'true'.
 					</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
@@ -1958,7 +1972,7 @@
 						<xs:enumeration value="literal">
 							<xs:annotation>
 								<xs:documentation>Treated as a python literal string. An example is
-									&quot;[1,2,3,4]&quot; which would evauluate to a python
+									&quot;[1,2,3,4]&quot; which would evaluate to a python
 								list.</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
@@ -2042,13 +2056,13 @@
 		</xs:annotation>
 		<xs:complexType>
 			<xs:choice minOccurs="0">
-				<xs:element ref="Param" />
+				<xs:element ref="Param" minOccurs="0" maxOccurs="unbounded"/>
 				<xs:element ref="Transformer" minOccurs="0" maxOccurs="1" />
 			</xs:choice>
 			<xs:attribute name="class">
 				<xs:annotation>
 					<xs:documentation>Specify the python class name of a Peach transformer class. You can
-						implement your own transformers's as needed.</xs:documentation>
+						implement your own transformers as needed.</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:union>
@@ -2117,7 +2131,7 @@
 								<xs:enumeration value="Hmac">
 									<xs:annotation>
 										<xs:documentation>HMAC as described in RFC 2104. A required parameter of name
-											&quot;key&quot; is needed. Additionally an optional paramter of
+											&quot;key&quot; is needed. Additionally an optional parameter of
 											&quot;digestmod&quot; can be specified with a value of md5 or
 											sha.</xs:documentation>
 									</xs:annotation>
@@ -2126,11 +2140,6 @@
 									<xs:annotation>
 										<xs:documentation>Convert a string representation SID to a byte
 											form.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="WideChar">
-									<xs:annotation>
-										<xs:documentation>Make a normal string a wchar string</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="UrlEncode">
@@ -2165,7 +2174,7 @@
 								</xs:enumeration>
 								<xs:enumeration value="HtmlEncodeAgressive">
 									<xs:annotation>
-										<xs:documentation>Perform agressive HTML encoding.</xs:documentation>
+										<xs:documentation>Perform aggressive HTML encoding.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="HtmlEncode">
@@ -2179,36 +2188,21 @@
 										<xs:documentation>Decode HTML encoded string</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="Utf16">
-									<xs:annotation>
-										<xs:documentation>Encode string as UTF-16.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Utf16Le">
-									<xs:annotation>
-										<xs:documentation>Encode string as UTF-16LE.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Utf16Be">
-									<xs:annotation>
-										<xs:documentation>Encode string as UTF-16BE.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
 								<xs:enumeration value="Ipv4StringToOctet">
 									<xs:annotation>
-										<xs:documentation>Convert a dot notiation ipv4 address into a 4 byte octect
+										<xs:documentation>Convert a dot notation IPV4 address into a 4 byte octect
 											representation.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="Ipv4StringToNetworkOctet">
 									<xs:annotation>
-										<xs:documentation>Convert a dot notiation ipv4 address into a 4 byte octect
+										<xs:documentation>Convert a dot notation IPV4 address into a 4 byte octect
 											representation.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="Ipv6StringToOctet">
 									<xs:annotation>
-										<xs:documentation>Convert a collen notiation ipv6 address into a 4 byte octect
+										<xs:documentation>Convert a collen notation IPV6 address into a 4 byte octect
 											representation.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
@@ -2311,6 +2305,26 @@
 										<xs:documentation>ICMP Checksum</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
+								<xs:enumeration value="IcmpV6ChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>ICMP v6 Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="LRCFixup">
+									<xs:annotation>
+										<xs:documentation>LRC Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="TCPChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>TCP Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="UDPChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>UDP Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
 								<xs:enumeration value="SequenceIncrementFixup">
 									<xs:annotation>
 										<xs:documentation>
@@ -2322,6 +2336,27 @@
 									<xs:annotation>
 										<xs:documentation>
 											Allows a field to emit a random value without adding additional test cases. This is useful for sequence numbers common in network protocols.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="ExpressionFixup">
+									<xs:annotation>
+										<xs:documentation>
+											Run a scripting expression to generate fixup data.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="ScriptFixup">
+									<xs:annotation>
+										<xs:documentation>
+											Use a scripting implemented fixup.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="HMAC">
+									<xs:annotation>
+										<xs:documentation>
+											Standard HMAC.  Requires key, hashtype, and length in bytes to return.
 										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
@@ -2387,10 +2422,29 @@
 			<xs:sequence>
 				<xs:element ref="Param" minOccurs="0" maxOccurs="unbounded" />
 			</xs:sequence>
-			<xs:attribute name="class" type="xs:string" use="required">
+			<xs:attribute name="class" use="required">
 				<xs:annotation>
 					<xs:documentation>Full class name of the Analyzer to use.</xs:documentation>
 				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="Binary">
+							<xs:annotation>
+								<xs:documentation>Break up binary data by identifying strings and basic relations.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="StringToken">
+							<xs:annotation>
+								<xs:documentation>Break up a string using a list of puncuation typically used as tokens in ascii based parsable strings.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+						<xs:enumeration value="Xml">
+							<xs:annotation>
+								<xs:documentation>Convert a String containing XML into XmlElement and XmlAttribute data elements.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
@@ -2399,7 +2453,7 @@
 		<xs:annotation>
 			<xs:documentation>Defines a state machine to use during a fuzzing test.  State machines in Peach are intended to be
 				fairly simple and allow for only the basic modeling typically required for fuzzing state aware protocols or 
-				call sequences.  State machines are made up of one or more States which are inthem selves make up of
+				call sequences.  State machines are made up of one or more States which are in them selves make up of
 				one or more Action.  As Actions are executed the data can be moved between them as needed.</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
@@ -2539,7 +2593,7 @@
 									</xs:attribute>
 									<xs:attribute name="property" type="xs:string">
 										<xs:annotation>
-											<xs:documentation>Property to invoke.  Only used when type is setprop or getprop.</xs:documentation>
+											<xs:documentation>Property to invoke.  Only used when type is setProperty or getProperty.</xs:documentation>
 										</xs:annotation>
 									</xs:attribute>
 									<xs:attribute name="setXpath" type="xs:string">
@@ -2559,8 +2613,8 @@
 									</xs:attribute>-->
 									<xs:attribute name="when" type="xs:string">
 										<xs:annotation>
-											<xs:documentation>Python expression that will be evauluated before this Action is performed.  If the 
-												expression evaulates to true the action will be performed otherwise it will be skipped.</xs:documentation>
+											<xs:documentation>Python expression that will be evaluated before this Action is performed.  If the 
+												expression evaluates to true the action will be performed otherwise it will be skipped.</xs:documentation>
 										</xs:annotation>
 									</xs:attribute>
 									<xs:attribute name="publisher" type="xs:string">
@@ -2570,13 +2624,13 @@
 									</xs:attribute>
 									<xs:attribute name="onStart" type="xs:string">
 										<xs:annotation>
-											<xs:documentation>A python expression that will be evaulated at the start of this Action being performed.  It is
-												evauluated after the when expression (if present) is evauluated.</xs:documentation>
+											<xs:documentation>A python expression that will be evaluated at the start of this Action being performed.  It is
+												evaluated after the when expression (if present) is evaluated.</xs:documentation>
 										</xs:annotation>
 									</xs:attribute>
 									<xs:attribute name="onComplete" type="xs:string">
 										<xs:annotation>
-											<xs:documentation>A python expression that will be evaulated after the Action has been performed.</xs:documentation>
+											<xs:documentation>A python expression that will be evaluated after the Action has been performed.</xs:documentation>
 										</xs:annotation>
 									</xs:attribute>
 									<xs:attribute name="type">
@@ -2605,19 +2659,19 @@
 														<xs:documentation>Perform a call using specified parameters.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
-												<xs:enumeration value="getprop">
+												<xs:enumeration value="getProperty">
 													<xs:annotation>
 														<xs:documentation>Get value from property.  Not all publishers support this (COM does).  Requires a Result child element.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
-												<xs:enumeration value="setprop">
+												<xs:enumeration value="setProperty">
 													<xs:annotation>
 														<xs:documentation>Set value for property.  Not all publishers support this (COM does). Requires a single Param of type in.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
 												<xs:enumeration value="slurp">
 													<xs:annotation>
-														<xs:documentation>Evaulate an xpath expression against an XML DOM of the State Machine object model.</xs:documentation>
+														<xs:documentation>Evaluate an xpath expression against an XML DOM of the State Machine object model.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
 												<xs:enumeration value="start">
@@ -2632,12 +2686,12 @@
 												</xs:enumeration>
 												<xs:enumeration value="connect">
 													<xs:annotation>
-														<xs:documentation>Cause publisher to make a connection (if supported).  This is also synonomis with open.</xs:documentation>
+														<xs:documentation>Cause publisher to make a connection (if supported).  This is also synonymous with open.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
 												<xs:enumeration value="open">
 													<xs:annotation>
-														<xs:documentation>Cause publisher to perform an open operation (if supported).  This is also synonomis with connect.</xs:documentation>
+														<xs:documentation>Cause publisher to perform an open operation (if supported).  This is also synonymous with connect.</xs:documentation>
 													</xs:annotation>
 												</xs:enumeration>
 												<xs:enumeration value="accept">
@@ -2664,12 +2718,12 @@
 						</xs:attribute>
 						<xs:attribute name="onEnter" type="xs:string">
 							<xs:annotation>
-								<xs:documentation>A python expression that is evauluated on the start of this states execution.</xs:documentation>
+								<xs:documentation>A python expression that is evaluated on the start of this states execution.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="onExit" type="xs:string">
 							<xs:annotation>
-								<xs:documentation>A python expression that is evauluated on the end of this states execution.</xs:documentation>
+								<xs:documentation>A python expression that is evaluated on the end of this states execution.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 					</xs:complexType>
@@ -2691,7 +2745,7 @@
 
 	<xs:element name="Agent">
 		<xs:annotation>
-			<xs:documentation>Configure a local or remote agent. Agents can perform variouse tasks during
+			<xs:documentation>Configure a local or remote agent. Agents can perform various tasks during
 				a fuzzing run. This element must include at least one Monitor child.</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
@@ -2701,9 +2755,9 @@
 				
 				<xs:element name="Monitor" minOccurs="1" maxOccurs="unbounded">
 					<xs:annotation>
-						<xs:documentation>Monitors are agent modules that can perform a number of tasts such as
+						<xs:documentation>Monitors are agent modules that can perform a number of tasks such as
 							monitoring a target application to detect faults, restarting virtual machines,
-							recording network traffice, etc. Custom monitors can easily be created and used along
+							recording network traffic, etc. Custom monitors can easily be created and used along
 							with the included monitors.</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
@@ -2729,22 +2783,17 @@
 									</xs:simpleType>
 									<xs:simpleType>
 										<xs:restriction base="xs:string">
-											<!-- <xs:enumeration value="debugger.WindowsAppVerifier">
-												<xs:annotation>
-													<xs:documentation> Uses Microsoft AppVerifier tool to detect faults
-														on running processes. AppVerifier can be downloaded from Microsoft.
-														The following paramter is required: Application.  NOTE: This monitor
-														does not start the child process.  Use process.Process for that.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration> -->
-											<xs:enumeration value="WindowsDebugger">
+											<xs:enumeration value="CanaKitRelay">
 												<xs:annotation>
 													<xs:documentation>
-														Windows WinDbg agent. This debugger agent is based on
-														the windbg engine and supports the following features: User mode
-														debugging, Kernel mode debugging, x86 and x64, Symbols and symbol
-														server.   To use WinDBG *must* be installed.  One of the following three
-														parameters are required: CommandLine, ProcessName, or KernelConnectionString.
+														Monitor to control the Cana Kit Relay board.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="CleanupFolder">
+												<xs:annotation>
+													<xs:documentation>
+														Remove all files from specified folder.
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
@@ -2760,6 +2809,52 @@
 													<xs:documentation>
 														Use OS X Crash Wrangler library to detect faults and collect bucketing
 														information.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="IpPower9258">
+												<xs:annotation>
+													<xs:documentation>
+														Control IP Power 9258, networked power strip.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Ping">
+												<xs:annotation>
+													<xs:documentation>
+														Ping a remote host. Can trigger fault on no response.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="ProcessKiller">
+												<xs:annotation>
+													<xs:documentation>
+														Kill a process.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SaveFile">
+												<xs:annotation>
+													<xs:documentation>
+														File to save when a fault is triggered.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SshDownloader">
+												<xs:annotation>
+													<xs:documentation>
+														Download a file or folder via SSH.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="WindowsDebugger">
+												<xs:annotation>
+													<xs:documentation>
+														Windows WinDbg agent. This debugger agent is based on
+														the windbg engine and supports the following features: User mode
+														debugging, Kernel mode debugging, x86 and x64, Symbols and symbol
+														server.   To use WinDBG *must* be installed.  One of the following three
+														parameters are required: CommandLine, ProcessName, or KernelConnectionString.
 													</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
@@ -2806,22 +2901,14 @@
 														specified.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<!--
-											<xs:enumeration value="popupkiller.PopupKiller">
-												<xs:annotation>
-													<xs:documentation>TODO - Will click through specified dialog
-													boxes.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											-->
-											<xs:enumeration value="PcapMonitor">
+											<xs:enumeration value="Pcap">
 												<xs:annotation>
 													<xs:documentation>Monitor and capture network traffic using PCAP library.
 														Capture is restart for each test. In event of a fault the capture file
 														is kept for further analysis.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<xs:enumeration value="SocketMonitor">
+											<xs:enumeration value="Socket">
 												<xs:annotation>
 													<xs:documentation>Monitors a given socket for connections. Issues a fault 
 														when a connection is made to the specified socket.
@@ -2855,7 +2942,7 @@
 			</xs:choice>
 			<xs:attribute name="name" type="xs:string" use="required">
 				<xs:annotation>
-					<xs:documentation>Name of agent. May not contian spaces or periods (.).</xs:documentation>
+					<xs:documentation>Name of agent. May not contain spaces or periods (.).</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="password" type="xs:string">

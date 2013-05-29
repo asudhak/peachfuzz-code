@@ -69,13 +69,26 @@ namespace Peach.Core.Analyzers
 
 			var strElement = parent as Dom.String;
 
+			if (string.IsNullOrEmpty((string)strElement.InternalValue))
+				return;
+
 			var doc = new XmlDocument();
-			doc.LoadXml((string)strElement.InternalValue);
+			try
+			{
+				doc.LoadXml((string)strElement.InternalValue);
+			}
+			catch (Exception ex)
+			{
+				throw new PeachException("Errorm XmlAnalyzer failed to analyze element '" + parent.name + "'.  " + ex.Message, ex);
+			}
 
 			Dom.XmlElement xmlElement = null;
 
 			foreach(XmlNode node in doc.ChildNodes)
 			{
+				if (node is XmlDeclaration || node is XmlComment)
+					continue;
+
 				if (node.Name.StartsWith("#"))
 					continue;
 

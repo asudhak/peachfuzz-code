@@ -3,6 +3,7 @@
 # Carlos Rafael Giani, 2006 (dv)
 # Tamas Pal, 2007 (folti)
 # Nicolas Mercier, 2009
+# Matt Clarkson, 2012
 
 """
 Microsoft Visual C++/Intel C++ compiler support
@@ -33,9 +34,9 @@ Supported platforms: ia64, x64, x86, x86_amd64, x86_ia64
 
 Compilers supported:
 
-* msvc       => Visual Studio, versions 6.0 (VC 98, VC .NET 2002) to 10.0 (Visual Studio 2010)
-* wsdk       => Windows SDK, versions 6.0, 6.1, 7.0
-* icl        => Intel compiler, versions 9,10,11
+* msvc       => Visual Studio, versions 6.0 (VC 98, VC .NET 2002) to 11.0 (Visual Studio 2012)
+* wsdk       => Windows SDK, versions 6.0, 6.1, 7.0, 7.1
+* icl        => Intel compiler, versions 9, 10, 11, 13
 * Smartphone => Compiler/SDK for Smartphone devices (armv4/v4i)
 * PocketPC   => Compiler/SDK for PocketPC devices (armv4/v4i)
 
@@ -89,7 +90,7 @@ def options(opt):
 	opt.add_option('--msvc_version', type='string', help = 'msvc version, eg: "msvc 10.0,msvc 9.0"', default='')
 	opt.add_option('--msvc_targets', type='string', help = 'msvc targets, eg: "x64,arm"', default='')
 
-def setup_msvc(conf, versions):
+def setup_msvc(conf, versions, arch = False):
 	platforms = getattr(Options.options, 'msvc_targets', '').split(',')
 	if platforms == ['']:
 		platforms=Utils.to_list(conf.env['MSVC_TARGETS']) or [i for i,j in all_msvc_platforms+all_icl_platforms+all_wince_platforms]
@@ -105,7 +106,10 @@ def setup_msvc(conf, versions):
 				try:
 					arch,(p1,p2,p3) = targets[target]
 					compiler,revision = version.rsplit(' ', 1)
-					return compiler,revision,p1,p2,p3
+					if arch:
+						return compiler,revision,p1,p2,p3,arch
+					else:
+						return compiler,revision,p1,p2,p3
 				except KeyError: continue
 		except KeyError: continue
 	conf.fatal('msvc: Impossible to find a valid architecture for building (in setup_msvc)')
@@ -142,7 +146,9 @@ echo LIB=%%LIB%%
 		if lines[0].startswith('Error'):
 			conf.fatal('msvc: Could not find a valid architecture for building (get_msvc_version_1)')
 	else:
-		for x in ('Setting environment', 'Setting SDK environment', 'Intel(R) C++ Compiler', 'Intel Parallel Studio'):
+		for x in ('Setting environment', 'Setting SDK environment', 'Intel(R) C++ Compiler',
+				'Intel Parallel Studio', 'Intel(R) Parallel Studio', 'Intel(R) Composer',
+				'Intel Corporation. All rights reserved.'):
 			if lines[0].find(x) > -1:
 				lines.pop(0)
 				break
@@ -410,9 +416,10 @@ def gather_icl_versions(conf, versions):
 				Utils.winreg.OpenKey(all_versions,version+'\\'+targetDir)
 				icl_version=Utils.winreg.OpenKey(all_versions,version)
 				path,type=Utils.winreg.QueryValueEx(icl_version,'ProductDir')
-				if os.path.isfile(os.path.join(path,'bin','iclvars.bat')):
+				batch_file=os.path.join(path,'bin','iclvars.bat')
+				if os.path.isfile(batch_file):
 					try:
-						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,os.path.join(path,'bin','iclvars.bat')))))
+						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,batch_file))))
 					except conf.errors.ConfigurationError:
 						pass
 			except WindowsError:
@@ -421,13 +428,81 @@ def gather_icl_versions(conf, versions):
 			try:
 				icl_version = Utils.winreg.OpenKey(all_versions, version+'\\'+target)
 				path,type = Utils.winreg.QueryValueEx(icl_version,'ProductDir')
-				if os.path.isfile(os.path.join(path, 'bin', 'iclvars.bat')):
+				batch_file=os.path.join(path,'bin','iclvars.bat')
+				if os.path.isfile(batch_file):
 					try:
-						targets.append((target, (arch, conf.get_msvc_version('intel', version, target, os.path.join(path, 'bin', 'iclvars.bat')))))
+						targets.append((target, (arch, conf.get_msvc_version('intel', version, target, batch_file))))
 					except conf.errors.ConfigurationError:
 						pass
 			except WindowsError:
 				continue
+		major = version[0:2]
+		versions.append(('intel ' + major, targets))
+
+@conf
+def gather_intel_composer_versions(conf, versions):
+	"""
+	Checks ICL compilers that are part of Intel Composer Suites
+
+	:param versions: list to modify
+	:type versions: list
+	"""
+	version_pattern = re.compile('^...?.?\...?.?.?')
+	try:
+		all_versions = Utils.winreg.OpenKey(Utils.winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Wow6432node\\Intel\\Suites')
+	except WindowsError:
+		try:
+			all_versions = Utils.winreg.OpenKey(Utils.winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Intel\\Suites')
+		except WindowsError:
+			return
+	index = 0
+	while 1:
+		try:
+			version = Utils.winreg.EnumKey(all_versions, index)
+		except WindowsError:
+			break
+		index = index + 1
+		if not version_pattern.match(version):
+			continue
+		targets = []
+		for target,arch in all_icl_platforms:
+			try:
+				if target=='intel64': targetDir='EM64T_NATIVE'
+				else: targetDir=target
+				try:
+					defaults = Utils.winreg.OpenKey(all_versions,version+'\\Defaults\\C++\\'+targetDir)
+				except WindowsError:
+					if targetDir=='EM64T_NATIVE':
+						defaults = Utils.winreg.OpenKey(all_versions,version+'\\Defaults\\C++\\EM64T')
+					else:
+						raise WindowsError
+				uid,type = Utils.winreg.QueryValueEx(defaults, 'SubKey')
+				Utils.winreg.OpenKey(all_versions,version+'\\'+uid+'\\C++\\'+targetDir)
+				icl_version=Utils.winreg.OpenKey(all_versions,version+'\\'+uid+'\\C++')
+				path,type=Utils.winreg.QueryValueEx(icl_version,'ProductDir')
+				batch_file=os.path.join(path,'bin','iclvars.bat')
+				if os.path.isfile(batch_file):
+					try:
+						targets.append((target,(arch,conf.get_msvc_version('intel',version,target,batch_file))))
+					except conf.errors.ConfigurationError as e:
+						pass
+				# The intel compilervar_arch.bat is broken when used with Visual Studio Express 2012
+				# http://software.intel.com/en-us/forums/topic/328487
+				compilervars_warning_attr = '_compilervars_warning_key'
+				if version[0:2] == '13' and getattr(conf, compilervars_warning_attr, True):
+					setattr(conf, compilervars_warning_attr, False)
+					patch_url = 'http://software.intel.com/en-us/forums/topic/328487'
+					compilervars_arch = os.path.join(path, 'bin', 'compilervars_arch.bat')
+					vs_express_path = os.environ['VS110COMNTOOLS'] + r'..\IDE\VSWinExpress.exe'
+					dev_env_path = os.environ['VS110COMNTOOLS'] + r'..\IDE\devenv.exe'
+					if (r'if exist "%VS110COMNTOOLS%..\IDE\VSWinExpress.exe"' in Utils.readf(compilervars_arch) and
+						not os.path.exists(vs_express_path) and not os.path.exists(dev_env_path)):
+						Logs.warn(('The Intel compilervar_arch.bat only checks for one Visual Studio SKU '
+						           '(VSWinExpress.exe) but it does not seem to be installed at %r. '
+						           'The intel command line set up will fail to configure unless the file %r'
+						           'is patched. See: %s') % (vs_express_path, compilervars_arch, patch_url))
+			except WindowsError:
+				pass
 		major = version[0:2]
 		versions.append(('intel ' + major, targets))
 
@@ -440,6 +515,7 @@ def get_msvc_versions(conf):
 	if not conf.env['MSVC_INSTALLED_VERSIONS']:
 		lst = []
 		conf.gather_icl_versions(lst)
+		conf.gather_intel_composer_versions(lst)
 		conf.gather_wsdk_versions(lst)
 		conf.gather_msvc_versions(lst)
 		conf.env['MSVC_INSTALLED_VERSIONS'] = lst
@@ -456,9 +532,9 @@ def print_all_msvc_detected(conf):
 			Logs.info("\t"+target)
 
 @conf
-def detect_msvc(conf):
+def detect_msvc(conf, arch = False):
 	versions = get_msvc_versions(conf)
-	return setup_msvc(conf, versions)
+	return setup_msvc(conf, versions, arch)
 
 @conf
 def find_lt_names_msvc(self, libname, is_static=False):
@@ -579,7 +655,7 @@ def configure(conf):
 	"""
 	Configuration methods to call for detecting msvc
 	"""
-	conf.autodetect()
+	conf.autodetect(True)
 	conf.find_msvc()
 	conf.msvc_common_flags()
 	conf.cc_load_tools()
@@ -595,11 +671,16 @@ def no_autodetect(conf):
 	configure(conf)
 
 @conf
-def autodetect(conf):
+def autodetect(conf, arch = False):
 	v = conf.env
 	if v.NO_MSVC_DETECT:
 		return
-	compiler, version, path, includes, libdirs = conf.detect_msvc()
+	if arch:
+		compiler, version, path, includes, libdirs, arch = conf.detect_msvc(True)
+		v['DEST_CPU'] = arch
+	else:
+		compiler, version, path, includes, libdirs = conf.detect_msvc()
+
 	v['PATH'] = path
 	v['INCLUDES'] = includes
 	v['LIBPATH'] = libdirs
@@ -889,22 +970,22 @@ def exec_command_msvc(self, *k, **kw):
 	Change the command-line execution for msvc programs.
 	Instead of quoting all the paths and keep using the shell, we can just join the options msvc is interested in
 	"""
-	if self.env['CC_NAME'] == 'msvc':
-		if isinstance(k[0], list):
-			lst = []
-			carry = ''
-			for a in k[0]:
-				if a == '/Fo' or a == '/doc' or a[-1] == ':':
-					carry = a
-				else:
-					lst.append(carry + a)
-					carry = ''
-			k = [lst]
+	assert self.env['CC_NAME'] == 'msvc'
+	if isinstance(k[0], list):
+		lst = []
+		carry = ''
+		for a in k[0]:
+			if a == '/Fo' or a == '/doc' or a[-1] == ':':
+				carry = a
+			else:
+				lst.append(carry + a)
+				carry = ''
+		k = [lst]
 
-		if self.env['PATH']:
-			env = self.env.env or dict(os.environ)
-			env.update(PATH = ';'.join(self.env['PATH']))
-			kw['env'] = env
+	if self.env['PATH']:
+		env = dict(self.env.env or os.environ)
+		env.update(PATH = ';'.join(self.env['PATH']))
+		kw['env'] = env
 
 	bld = self.generator.bld
 	try:
@@ -918,11 +999,36 @@ def exec_command_msvc(self, *k, **kw):
 		ret = self.exec_mf()
 	return ret
 
+def wrap_class(class_name):
+	"""
+	Manifest file processing and @response file workaround for command-line length limits on Windows systems
+	The indicated task class is replaced by a subclass to prevent conflicts in case the class is wrapped more than once
+	"""
+	cls = Task.classes.get(class_name, None)
+
+	if not cls:
+		return None
+
+	derived_class = type(class_name, (cls,), {})
+
+	def exec_command(self, *k, **kw):
+		if self.env['CC_NAME'] == 'msvc':
+			return self.exec_command_msvc(*k, **kw)
+		else:
+			return super(derived_class, self).exec_command(*k, **kw)
+
+	# Chain-up monkeypatch needed since exec_command() is in base class API
+	derived_class.exec_command = exec_command
+
+	# No chain-up behavior needed since the following methods aren't in
+	# base class API
+	derived_class.exec_response_command = exec_response_command
+	derived_class.quote_response_command = quote_response_command
+	derived_class.exec_command_msvc = exec_command_msvc
+	derived_class.exec_mf = exec_mf
+
+	return derived_class
+
 for k in 'c cxx cprogram cxxprogram cshlib cxxshlib cstlib cxxstlib'.split():
-	cls = Task.classes.get(k, None)
-	if cls:
-		cls.exec_command = exec_command_msvc
-		cls.exec_response_command = exec_response_command
-		cls.quote_response_command = quote_response_command
-		cls.exec_mf = exec_mf
+	wrap_class(k)
 

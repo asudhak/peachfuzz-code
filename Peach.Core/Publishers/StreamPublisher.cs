@@ -21,9 +21,9 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			data.CopyTo(this);
+			stream.Write(buffer, offset, count);
 		}
 
 		#region Stream
@@ -41,14 +41,6 @@ namespace Peach.Core.Publishers
 			get
 			{
 				return stream.CanSeek;
-			}
-		}
-
-		public override bool CanWrite
-		{
-			get
-			{
-				return stream.CanWrite;
 			}
 		}
 
@@ -90,11 +82,6 @@ namespace Peach.Core.Publishers
 		public override void SetLength(long value)
 		{
 			stream.SetLength(value);
-		}
-
-		public override void Write(byte[] buffer, int offset, int count)
-		{
-			stream.Write(buffer, offset, count);
 		}
 
 		#endregion

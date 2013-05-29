@@ -56,8 +56,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class Flag : Number
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		protected int _size = 0;
 		protected int _position = 0;
 
 		public Flag()
@@ -67,44 +65,6 @@ namespace Peach.Core.Dom
 		public Flag(string name)
 			: base(name)
 		{
-		}
-
-		public Flag(string name, int size, int position)
-			: base(name)
-		{
-			this.size = size;
-			this.position = position;
-		}
-
-		public Flag(int size, int position)
-		{
-			this.size = size;
-			this.position = position;
-		}
-
-		public override void Crack(DataCracker context, BitStream data)
-		{
-			Flag element = this;
-
-			logger.Debug("Crack: {0} data.TellBits: {1}", element.fullName, data.TellBits());
-
-			if (data.LengthBits < data.TellBits() + element.lengthAsBits)
-				throw new CrackingFailure("Failed cracking Flag '" + element.fullName + "'.", element, data);
-
-			Variant defaultValue = new Variant(FromBitstream(data));
-
-			logger.Debug("Flag's value is: {0}", defaultValue);
-
-			if (element.isToken)
-			{
-				if (defaultValue != element.DefaultValue)
-				{
-					logger.Debug("Flag marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.");
-					throw new CrackingFailure("Flag marked as token, values did not match '" + ((string)defaultValue) + "' vs. '" + ((string)element.DefaultValue) + "'.", element, data);
-				}
-			}
-
-			element.DefaultValue = defaultValue;
 		}
 
 		/// <summary>
@@ -117,7 +77,7 @@ namespace Peach.Core.Dom
 		{
 			if (position >= this.position)
 			{
-				if (position < (this.position + this.size))
+				if (position < (this.position + this.lengthAsBits))
 					return true;
 			}
 			else
@@ -137,39 +97,28 @@ namespace Peach.Core.Dom
 
 			var flag = DataElement.Generate<Flag>(node);
 
-			string strPos = node.getAttribute("position");
-			if (strPos == null)
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
+			int position = node.getAttrInt("position");
+			int size = node.getAttrInt("size");
 
-			string strSize = node.getAttribute("size");
-			if (strSize == null)
-				throw new PeachException("Error, Flag elements must have 'position' attribute!");
-
-			int position;
-			if (!int.TryParse(strPos, out position))
-				throw new PeachException("Error, " + flag.name + " position attribute is not valid number.");
-
-			int size;
-			if (!int.TryParse(strSize, out size))
-				throw new PeachException("Error, " + flag.name + " size attribute is not valid number.");
-
-			if (position < 0 || size < 0 || (position + size) > parent.size)
-				throw new PeachException("Error, flag {0} is placed outside its parent.", flag.name);
+			if (position < 0 || size < 0 || (position + size) > parent.lengthAsBits)
+				throw new PeachException("Error, " + flag.debugName + " is placed outside its parent.");
 
 			if (parent.LittleEndian)
-				position = parent.size - size - position;
+				position = (int)parent.lengthAsBits - size - position;
 
 			foreach (Flag other in parent)
 			{
 				if (other.Overlapps(position, size))
-					throw new PeachException("Error, flag {0} overlapps with flag {1}.", flag.name, other.name);
+					throw new PeachException("Error, " + flag.debugName + " overlapps with " + other.debugName + ".");
 			}
 
-			flag.size = (int)size;
+			flag.position = position;
 			flag.lengthType = LengthType.Bits;
 			flag.length = size;
-			flag.position = (int)position;
-			flag.LittleEndian = parent.LittleEndian;
+
+			// The individual flag is always big endian, it is up to the flags container
+			// to change the order after all the flags are packed.
+			flag.LittleEndian = false;
 
 			context.handleCommonDataElementAttributes(node, flag);
 			context.handleCommonDataElementChildren(node, flag);
@@ -178,44 +127,15 @@ namespace Peach.Core.Dom
 			return flag;
 		}
 
-		public int size
-		{
-			get { return _size; }
-			set
-			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("Should not be null");
-				_size = value;
-				Invalidate();
-			}
-		}
-
 		public int position
 		{
 			get { return _position; }
 			set
 			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("Should not be null");
 				_position = value;
 				Invalidate();
 			}
 		}
-
-    public override object GetParameter(string parameterName)
-    {
-      switch (parameterName)
-      {
-        case "name":
-          return this.name;
-        case "position":
-          return this.position;
-        case "size":
-          return this.size;
-        default:
-          throw new PeachException(System.String.Format("Parameter '{0}' does not exist in Peach.Core.Dom.Flag", parameterName));
-      }
-    }
 	}
 }
 

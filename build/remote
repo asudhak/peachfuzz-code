@@ -14,5 +14,5 @@ REMOTE="jobs/${SELF}/${PROJ// /\\ }"
 shift
 
 ssh $HOST "mkdir -p ${REMOTE}"
-rsync -avz --delete --exclude-from=build/rsync-excludes "${LOCAL}/" "${HOST}:${REMOTE}/"
+rsync -avz --delete --exclude=.git --exclude-from=.gitignore "${LOCAL}/" "${HOST}:${REMOTE}/"
 ssh $HOST "export TERM=msys; cd ${REMOTE} && ./waf configure build install $*"

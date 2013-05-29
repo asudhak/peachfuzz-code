@@ -27,7 +27,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
@@ -37,7 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -49,7 +49,7 @@
   <PropertyGroup>
     <ApplicationManifest>Mutators\ArrayVarianceMutatorTests.cs</ApplicationManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|x64' ">
     <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -65,7 +65,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|x64' ">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>True</Optimize>
@@ -223,21 +223,130 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - Windows|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug - Windows\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\Peach.Core.Test.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Windows|x86'">
+    <OutputPath>bin\x86\Release - Windows\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\Peach.Core.Test.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - OS X|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug - OS X\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\Peach.Core.Test.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - OS X|x86'">
+    <OutputPath>bin\x86\Release - OS X\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\Peach.Core.Test.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - Linux|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug - Linux\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\Peach.Core.Test.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Linux|x86'">
+    <OutputPath>bin\x86\Release - Linux\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\Peach.Core.Test.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Condition="'$(Configuration)' == 'Debug'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="IronPython.Modules">
+      <HintPath>..\3rdParty\IronPython-2.7.3\IronPython.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
     </Reference>
-    <Reference Condition="'$(Configuration)' == 'Release'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
     </Reference>
-    <Reference Condition="'$(Configuration)' == 'Debug - OS X'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Linux'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
-    <Reference Condition="'$(Configuration)' == 'Release - OS X'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - Linux'">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - OS X'">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - OS X'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -247,6 +356,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Agent\AgentTests.cs" />
     <Compile Include="Analyzers\BinaryAnalyzerTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="Analyzers\XmlAnalyzerTests.cs" />
@@ -259,6 +369,7 @@
     <Compile Include="CrackingTests\ContraintTests.cs" />
     <Compile Include="CrackingTests\CountRelationTests.cs" />
     <Compile Include="CrackingTests\FlagsTests.cs" />
+    <Compile Include="CrackingTests\LengthTests.cs" />
     <Compile Include="CrackingTests\NumberTests.cs" />
     <Compile Include="CrackingTests\OffsetRelationTests.cs" />
     <Compile Include="CrackingTests\PaddingTests.cs" />
@@ -269,12 +380,15 @@
     <Compile Include="CrackingTests\XmlTests.cs" />
     <Compile Include="DataModelCollector.cs" />
     <Compile Include="DomGeneralTests.cs" />
+    <Compile Include="EncodingTests.cs" />
+    <Compile Include="FixupCloneTests.cs" />
     <Compile Include="Fixups\Crc32DualFixupTests.cs" />
-    <Compile Include="Fixups\Crc32FixupTests.cs" />
-    <Compile Include="Fixups\EthernetChecksumFixupTests.cs" />
+    <Compile Include="Fixups\CrcFixupTests.cs" />
     <Compile Include="Fixups\ExpressionFixupTests.cs" />
     <Compile Include="Fixups\FixupRelationsTest.cs" />
+    <Compile Include="Fixups\HMACFixupTests.cs" />
     <Compile Include="Fixups\IcmpChecksumFixupTests.cs" />
+    <Compile Include="Fixups\IcmpV6ChecksumFixupTest.cs" />
     <Compile Include="Fixups\LRCFixupTests.cs" />
     <Compile Include="Fixups\MD5FixupTests.cs" />
     <Compile Include="Fixups\SequenceIncrementFixupTests.cs" />
@@ -284,13 +398,17 @@
     <Compile Include="Fixups\SHA256FixupTests.cs" />
     <Compile Include="Fixups\SHA384FixupTests.cs" />
     <Compile Include="Fixups\SHA512FixupTests.cs" />
+    <Compile Include="Fixups\TCPChecksumFixupTests.cs" />
+    <Compile Include="Fixups\UDPChecksumFixupTests.cs" />
     <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
     <Compile Include="Monitors\PingMonitorTests.cs" />
     <Compile Include="Monitors\ProcessKillerMoniorTests.cs" />
+    <Compile Include="Monitors\ProcessMonitorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
     <Compile Include="Monitors\SocketMonitorTests.cs" />
+    <Compile Include="Monitors\SshMonitorTests.cs" />
     <Compile Include="Monitors\VmwareMonitorTests.cs" />
     <Compile Include="MutationStrategies\SequentialTest.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicTest.cs" />
@@ -334,6 +452,7 @@
     <Compile Include="PitParserTests\DefaultValuesTests.cs" />
     <Compile Include="PitParserTests\FlagTests.cs" />
     <Compile Include="PitParserTests\GeneralTests.cs" />
+    <Compile Include="PitParserTests\IncludeTests.cs" />
     <Compile Include="PitParserTests\MiscTests.cs" />
     <Compile Include="PitParserTests\NumberTests.cs" />
     <Compile Include="PitParserTests\PaddingTests.cs" />
@@ -347,7 +466,9 @@
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
     <Compile Include="Publishers\FilePerIterationTests.cs" />
     <Compile Include="Publishers\FilePublisherTests.cs" />
+    <Compile Include="Publishers\HttpPublisherTests.cs" />
     <Compile Include="Publishers\ParameterTests.cs" />
+    <Compile Include="Publishers\RemotePubilsherTests.cs" />
     <Compile Include="Publishers\SocketPublisherTests.cs" />
     <Compile Include="Publishers\TcpPublisherTests.cs" />
     <Compile Include="RandomTest.cs" />
@@ -357,6 +478,7 @@
     <Compile Include="RelationSizeTest.cs" />
     <Compile Include="ReportedTests.cs" />
     <Compile Include="RunTests.cs" />
+    <Compile Include="StateModel\ActionTests.cs" />
     <Compile Include="StateModel\ActionWhenTests.cs" />
     <Compile Include="StateModel\InputTests.cs" />
     <Compile Include="StateModel\OutputTests.cs" />
@@ -366,12 +488,14 @@
     <Compile Include="Transformers\Compress\Bz2DecompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipCompressTests.cs" />
     <Compile Include="Transformers\Compress\GzipDecompressTests.cs" />
+    <Compile Include="Transformers\Crypto\Aes128Tests.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CryptTests.cs" />
     <Compile Include="Transformers\Crypto\CvsScrambleTests.cs" />
     <Compile Include="Transformers\Crypto\HmacTests.cs" />
     <Compile Include="Transformers\Crypto\Md5Tests.cs" />
     <Compile Include="Transformers\Crypto\Sha1Tests.cs" />
+    <Compile Include="Transformers\Crypto\TripleDesTests.cs" />
     <Compile Include="Transformers\Crypto\UnixMd5CryptTests.cs" />
     <Compile Include="Transformers\Encode\Base64DecodeTests.cs" />
     <Compile Include="Transformers\Encode\Base64EncodeTests.cs" />
@@ -387,7 +511,6 @@
     <Compile Include="Transformers\Encode\NetBiosDecodeTests.cs" />
     <Compile Include="Transformers\Encode\NetBiosEncodeTests.cs" />
     <Compile Include="Transformers\Encode\SidStringToBytesTests.cs" />
-    <Compile Include="Transformers\Encode\UrlEncodePlusTests.cs" />
     <Compile Include="Transformers\Encode\UrlEncodeTests.cs" />
     <Compile Include="Transformers\Encode\Utf16BeTests.cs" />
     <Compile Include="Transformers\Encode\Utf16LeTests.cs" />
@@ -395,6 +518,7 @@
     <Compile Include="Transformers\Encode\Utf8Tests.cs" />
     <Compile Include="Transformers\Encode\WideCharTests.cs" />
     <Compile Include="Transformers\EvalTests.cs" />
+    <Compile Include="Transformers\NullTests.cs" />
     <Compile Include="Transformers\Type\AsInt16Test.cs" />
     <Compile Include="Transformers\Type\AsInt32Tests.cs" />
     <Compile Include="Transformers\Type\AsInt64Tests.cs" />
@@ -403,19 +527,45 @@
     <Compile Include="Transformers\Type\NumberToStringTests.cs" />
     <Compile Include="Transformers\Type\StringToFloatTests.cs" />
     <Compile Include="Transformers\Type\StringToIntTests.cs" />
+    <Compile Include="UtilitiesTests.cs" />
+    <Compile Include="VariantTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - Windows'" Include="..\Peach.Core.OS.Windows\Peach.Core.OS.Windows.csproj">
+      <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
+      <Name>Peach.Core.OS.Windows</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Release - Windows'" Include="..\Peach.Core.OS.Windows\Peach.Core.OS.Windows.csproj">
+      <Project>{7197143E-57FC-49E8-A5F4-0D0FD27D746C}</Project>
+      <Name>Peach.Core.OS.Windows</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
+      <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
+      <Name>Peach.Core.OS.Linux</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Release - Linux'" Include="..\Peach.Core.OS.Linux\Peach.Core.OS.Linux.csproj">
+      <Project>{CB6CF019-C1D0-4B99-86D7-E9AD0DCEF59F}</Project>
+      <Name>Peach.Core.OS.Linux</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Debug - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+      <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
+      <Name>Peach.Core.OS.OSX</Name>
+    </ProjectReference>
+    <ProjectReference Condition="'$(Configuration)' == 'Release - OS X'" Include="..\Peach.Core.OS.OSX\Peach.Core.OS.OSX.csproj">
+      <Project>{1F6BD7C2-289C-4628-B475-C44E43655142}</Project>
+      <Name>Peach.Core.OS.OSX</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Peach.Core\Peach.Core.csproj">
       <Project>{63C7C70D-0CBF-40EC-A11E-079B2E943D47}</Project>
       <Name>Peach.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Peach\Peach.csproj">
+      <Project>{52B8AB06-9191-4C0E-B308-9B3990B48E05}</Project>
+      <Name>Peach</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Agent\" />
     <Folder Include="Debuggers\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -438,6 +588,20 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(SolutionDir)Debug\$(PlatformName)\CrashingFileConsumer.exe">
+      <Link>CrashingFileConsumer.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(SolutionDir)Debug\$(PlatformName)\CrashingProgram.exe">
+      <Link>CrashingProgram.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(SolutionDir)Debug\$(PlatformName)\CrashableServer.exe">
+      <Link>CrashableServer.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
@@ -46,14 +47,25 @@ namespace Peach.Core.Transformers.Encode
 
         protected override BitStream internalEncode(BitStream data)
         {
-            string ipstr = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-            var ip = System.Net.IPAddress.Parse(ipstr);
-            return new BitStream(ip.GetAddressBytes());
+			string sip = Encoding.ASCII.GetString(data.Value);
+			IPAddress ip;
+
+			if (!IPAddress.TryParse(sip, out ip))
+				throw new PeachException("Error, can't transform IP to bytes, '{0}' is not a valid IP address.".Fmt(sip));
+
+			return new BitStream(ip.GetAddressBytes());
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            throw new NotImplementedException();
+			var buf = data.Value;
+
+           if(buf.Length != 16)
+			   throw new PeachException("Error, can't transform bytes to IP, expected 16 bytes but got {0} bytes.".Fmt(buf.Length));
+
+			IPAddress ip = new IPAddress(buf);
+
+			return new BitStream(Encoding.ASCII.GetBytes(ip.ToString()));
         }
     }
 }

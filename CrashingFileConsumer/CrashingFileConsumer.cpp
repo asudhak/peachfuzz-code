@@ -1,7 +1,17 @@
-// CrashingFileConsumer.cpp : Defines the entry point for the console application.
-//
+#ifdef WIN32
 
-#include "stdafx.h"
+#include <SDKDDKVer.h>
+#include <tchar.h>
+#include <windows.h>
+
+#else
+
+#define _tmain main
+#define __try if(1)
+#define __except(a) if(0)
+
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +39,7 @@ void Function1(FILE* fd)
 
 int _tmain(int argc, char* argv[])
 {
-	if(argc < 1)
+	if(argc < 2)
 	{
 		printf("Error, please supply a filename to load.\n");
 		return 0;
@@ -44,7 +54,14 @@ int _tmain(int argc, char* argv[])
 		return 0;
 	}
 
-	Function1(fd);
+	__try
+	{
+		Function1(fd);
+	}
+	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+	{
+		fprintf(stderr, "Caught AV exception.\n");
+	}
 
 	fclose(fd);
 

@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+zmq_version = [ '3', '2', '2' ]
+
+config_win = '''
+#define ZMQ_HAVE_WINDOWS
+'''
+
+config_linux = '''
+#define ZMQ_HAVE_EVENTFD 1
+#define ZMQ_HAVE_IFADDRS 1
+#define ZMQ_HAVE_LINUX 1
+#define ZMQ_HAVE_SOCK_CLOEXEC 1
+#define ZMQ_HAVE_SO_KEEPALIVE 1
+#define ZMQ_HAVE_TCP_KEEPCNT 1
+#define ZMQ_HAVE_TCP_KEEPIDLE 1
+#define ZMQ_HAVE_TCP_KEEPINTVL 1
+#define ZMQ_HAVE_UIO 1
+'''
+
+config_osx = '''
+#define ZMQ_HAVE_IFADDRS 1
+#define ZMQ_HAVE_OSX 1
+#define ZMQ_HAVE_SO_KEEPALIVE 1
+#define ZMQ_HAVE_TCP_KEEPALIVE 1
+#define ZMQ_HAVE_UIO 1
+
+'''
+
+template = '''
+#ifndef __ZMQ_PLATFORM_HPP_INCLUDED__
+#define __ZMQ_PLATFORM_HPP_INCLUDED__
+
+%s
+
+#endif
+'''
+
+cfg = {
+	'win' : {
+		'defs'  : [ 'DLL_EXPORT', 'FD_SETSIZE=1024' ],
+		'cfg'   : template % config_win,
+	},
+	'linux' : {
+		'defs'  : [ '_GUN_SOURCE', '_REENTRANT', '_THREAD_SAFE', 'ZMQ_FORCE_EPOLL' ],
+		'cfg'   : template % config_linux,
+	},
+	'osx' : {
+		'defs'  : [ '_DARWIN_C_SOURCE', '_REENTRANT', '_THREAD_SAFE', 'ZMQ_FORCE_KQUEUE' ],
+		'cfg'   : template % config_osx,
+	},
+}
+
+tgt = bld.env['TARGET']
+
+def getcfg(arg):
+	if not cfg.has_key(tgt):
+		return None
+	return cfg[tgt][arg]
+
+bld(
+	name     = 'zmq_cfg',
+	features = 'emit cxx network',
+	source   = getcfg('cfg'),
+	target   = 'platform.hpp',
+)
+
+bld(
+	name              = 'zmq_ver',
+	features          = 'subst win network',
+	source            = 'src/version.rc.in',
+	target            = 'src/version.rc',
+	ZMQ_VERSION_MAJOR = zmq_version[0],
+	ZMQ_VERSION_MINOR = zmq_version[1],
+	ZMQ_VERSION_PATCH = zmq_version[2],
+)
+
+zmq = bld(
+	features = 'cxx cxxshlib vnum network',
+	target   = 'zmq',
+	name     = 'zmq',
+#	vnum     = '.'.join(zmq_version),
+	includes = [ '.', 'include' ],
+	source   = bld.path.ant_glob('src/*.cpp'),
+	defines  = getcfg('defs'),
+	version  = False,
+)
+
+if 'win' == tgt:
+	zmq.source.append('src/version.rc')
+	zmq.target = 'libzmq'
+#	zmq.vnum = None
+	zmq.cxxflags = [ '/wd4512', '/wd4244', '/wd4127', '/wd4099', '/wd4267', '/wd4800', '/wd4245', '/wd4100', '/wd4121' ]
+	zmq.stlib = [ 'ws2_32', 'advapi32' ]

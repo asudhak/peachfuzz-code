@@ -50,6 +50,9 @@
 			<Param name="Executable" value="CrashableServer.exe"/>
 			<!--<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />-->
 		</Monitor>
+		<Monitor class="Pcap">
+			<Param name="Device" value="Local Area Connection"/>
+		</Monitor>
 	</Agent>
 
 	<Test name="Default">

@@ -47,13 +47,20 @@ namespace Peach.Core.Transformers.Encode
         protected override BitStream internalEncode(BitStream data)
         {
             var sids = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-            
-            //Hopefully this is in mono...
-            var sid = new System.Security.Principal.SecurityIdentifier(sids);
-            byte[] bsid = new byte[sid.BinaryLength];
-            sid.GetBinaryForm(bsid, 0);
 
-            return new BitStream(bsid);
+            try
+            {
+                //Hopefully this is in mono...
+                var sid = new System.Security.Principal.SecurityIdentifier(sids);
+                byte[] bsid = new byte[sid.BinaryLength];
+                sid.GetBinaryForm(bsid, 0);
+
+                return new BitStream(bsid);
+            }
+            catch(Exception ex)
+            {
+                throw new PeachException("Error, Cannot convert string to sid" + sids, ex);
+            }
         }
 
         protected override BitStream internalDecode(BitStream data)

@@ -1,3 +1,0 @@
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\bin\MathService.dll
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathService\obj\Release\ResolveAssemblyReference.cache
-C:\Peach3.0\3rdParty\xml-rpc.net-2.5.0\samples\MathService\obj\Release\MathService.dll

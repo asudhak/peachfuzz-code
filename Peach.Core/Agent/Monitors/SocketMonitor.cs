@@ -6,13 +6,12 @@ using System.IO;
 
 namespace Peach.Core.Agent.Monitors
 {
-	[Monitor("SocketMonitor", true)]
+	[Monitor("Socket", true)]
 	[Parameter("Host", typeof(IPAddress), "IP address of remote host", "")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to listen on", "")]
 	[Parameter("Protocol", typeof(Proto), "Protocol type to listen for", "tcp")]
 	[Parameter("Port", typeof(ushort), "Port to listen on", "8080")]
-	[Parameter("Backlog", typeof(int), "Maximum number of pending TCP connections.", "100")]
 	[Parameter("FaultOnSuccess", typeof(bool), "Fault if no connection is recorded", "false")]
 	public class SocketMonitor : Peach.Core.Agent.Monitor
 	{
@@ -44,7 +43,7 @@ namespace Peach.Core.Agent.Monitors
 				_multicast = Host.IsMulticast();
 
 				if (Interface != null && Interface.AddressFamily != Host.AddressFamily)
-					throw new PeachException("Interface '{0}' is not compatible with the address family for Host '{1}'.", Interface, Host);
+					throw new PeachException("Interface '" + Interface + "' is not compatible with the address family for Host '" + Host + "'.");
 
 				if (_multicast && Protocol != Proto.Udp)
 					throw new PeachException("Multicast hosts are not supported with the tcp protocol.");
@@ -131,7 +130,7 @@ namespace Peach.Core.Agent.Monitors
 				if (Platform.GetOS() == Platform.OS.OSX)
 				{
 					if (local.Equals(IPAddress.Any) || local.Equals(IPAddress.IPv6Any))
-						throw new PeachException("Error, the value for parameter 'Interface' can not be '{0}' when the 'Host' parameter is multicast.", local);
+						throw new PeachException("Error, the value for parameter 'Interface' can not be '" + local + "' when the 'Host' parameter is multicast.");
 				}
 
 				if (Platform.GetOS() == Platform.OS.Windows)

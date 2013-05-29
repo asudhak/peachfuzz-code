@@ -63,9 +63,14 @@ namespace Peach.Core.Publishers
 			stream = null;
 		}
 
-		protected override void OnOutput(Stream data)
+		protected override void OnOutput(byte[] buffer, int offset, int count)
 		{
-			data.CopyTo(stream, 1024);
+			for (int written = 0; written < count; )
+			{
+				int toWrite = Math.Min(1024, count - written);
+				stream.Write(buffer, offset + written, toWrite);
+				written += toWrite;
+			}
 		}
 	}
 }

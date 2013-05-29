@@ -17,10 +17,12 @@ namespace Peach.Core.Test
 		protected List<string> strategies = null;
 		protected List<string> iterStrategies = null;
 		protected List<string> allStrategies = null;
+		protected bool cloneActions = false;
 
 		[SetUp]
 		public void SetUp()
 		{
+			cloneActions = false;
 			ResetContainers();
 			Dom.Action.Finished += new Dom.ActionFinishedEventHandler(Action_Finished);
 			Peach.Core.MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
@@ -47,22 +49,42 @@ namespace Peach.Core.Test
 
 		protected void Action_Finished(Dom.Action action)
 		{
-			if (action.dataModel == null)
-				return;
-
-			// Collect mutated values only after the first run
 			var dom = action.parent.parent.parent as Dom.Dom;
 
+			if (action.dataModel == null)
+			{
+				var models = action.parameters.Select(a => a.dataModel).Where(a => a != null);
+				if (!models.Any())
+					return;
+
+				foreach (var model in models)
+				{
+					SaveDataModel(dom, model);
+				}
+			}
+			else
+			{
+				SaveDataModel(dom, action.dataModel);
+			}
+
+			if (cloneActions)
+				actions.Add(ObjectCopier.Clone(action));
+			else
+				actions.Add(action);
+		}
+
+		void SaveDataModel(Dom.Dom dom, Dom.DataModel model)
+		{
+			// Collect mutated values only after the first run
 			if (!dom.context.controlIteration)
 			{
-				mutations.Add(action.dataModel.Count > 0 ? action.dataModel[0].InternalValue : null);
-				mutatedDataModels.Add(action.dataModel);
+				mutations.Add(model.Count > 0 ? model[0].InternalValue : null);
+				mutatedDataModels.Add(model);
 			}
 
 			// Collect transformed values, actions and dataModels always
-			values.Add(action.dataModel.Count > 0 ? action.dataModel[0].Value : null);
-			actions.Add(action);
-			dataModels.Add(action.dataModel);
+			values.Add(model.Count > 0 ? model[0].Value : null);
+			dataModels.Add(model);
 		}
 
 		void MutationStrategy_Mutating(string elementName, string mutatorName)

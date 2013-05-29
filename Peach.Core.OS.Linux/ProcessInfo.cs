@@ -1,12 +1,15 @@
 using System;
 using System.IO;
 using System.Diagnostics;
+using NLog;
 
 namespace Peach.Core
 {
 	[PlatformImpl(Platform.OS.Linux)]
 	public class ProcessInfoImpl : IProcessInfo
 	{
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		private static string StatPath = "/proc/{0}/stat";
 
 		private enum Fields : int
@@ -19,14 +22,16 @@ namespace Peach.Core
 
 		private static string[] ReadProc(int pid)
 		{
+			string path = string.Format(StatPath, pid);
 			string stat;
 
 			try
 			{
-				stat = File.ReadAllText(string.Format(StatPath, pid));
+				stat = File.ReadAllText(path);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				logger.Info("Failed to read \"{0}\".  {1}", path, ex.Message);
 				return null;
 			}
 

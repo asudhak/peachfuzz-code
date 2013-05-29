@@ -2,8 +2,8 @@
 
 deps = [
 	'NLog.dll',
-	'CookComputing.XmlRpcV2.dll',
 	'SharpPcap.dll',
+	'ZeroMQ.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',
@@ -14,7 +14,6 @@ deps = [
 	'System.Web.Services.dll',
 	'Ionic.Zip.dll',
 	'IronPython.dll',
-	'IronPython.Modules.dll',
 	'IronRuby.dll',
 	'IronRuby.Libraries.dll',
 	'IronRuby.Libraries.Yaml.dll',
@@ -23,12 +22,17 @@ deps = [
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
 	'Renci.SshNet.dll',
+	'Newtonsoft.Json.dll',
 ]
+
+if bld.env['IS_MONO'] == 'True':
+	deps.append('Mono.Posix.dll')
 
 bld(
 	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	resource = 'peach.xsd xmltests.zip',
+	install = 'peach.xsd',
 	name = 'Peach.Core.dll',
 )

@@ -1,5 +1,4 @@
-
-Peach 3 - BETA 1
+Peach 3 - RC 1
 ================
 
 Welcome to Peach 3, a complete re-write of Peach using the 
@@ -16,10 +15,18 @@ Peach 3 currently supports the following OSes:
 Installing from Source
 ----------------------
 
-Pre-requisits:
+Windows Pre-requisits:
+  - Microsoft.NET v4
+  - Visual Studio 2010 SP1
 
-  - Microsoft.NET v4  *or*  Latest Mono
-  - Compilers
+Linux Pre-requisites:  
+  - build-essential
+  - mono-complete
+  - g++-multilib (x86_64 only)
+
+OS X Pre-requisites:
+  - XCode 4
+  - Mono SDK (2.10.10)
 
 ./waf configure
 ./waf build
@@ -29,3 +36,4 @@ Pre-requisits:
 
 Copyright (c) Deja vu Security
 Copyright (c) Michael Eddington
+

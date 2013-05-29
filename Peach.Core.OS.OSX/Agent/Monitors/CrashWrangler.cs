@@ -32,6 +32,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Threading;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -57,6 +58,12 @@ namespace Peach.Core.Agent.Monitors
 			string ret = args.GetString(key, defaultValue.ToString());
 			return Convert.ToBoolean(ret);
 		}
+
+		public static int GetInt(this Dictionary<string, Variant> args, string key, int defaultValue)
+		{
+			string ret = args.GetString(key, defaultValue.ToString());
+			return int.Parse(ret);
+		}
 	}
 
 	/// <summary>
@@ -75,11 +82,16 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("CwLogFile", typeof(string), "CrashWrangler Log file (defaults to cw.log)", "cw.log")]
 	[Parameter("CwLockFile", typeof(string), "CrashWRangler Lock file (defaults to cw.lock)", "cw.lock")]
 	[Parameter("CwPidFile", typeof(string), "CrashWrangler PID file (defaults to cw.pid)", "cw.pid")]
+	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
+	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call and fault if timeout is reached", "")]
+	[Parameter("WaitForExitTimeout", typeof(int), "Wait for exit timeout value in milliseconds (-1 is infinite)", "10000")]
+	[Parameter("RestartOnEachTest", typeof(bool), "Restart process for each interation", "false")]
 	public class CrashWrangler : Monitor
 	{
 		protected string _command = null;
 		protected string _arguments = null;
 		protected string _startOnCall = null;
+		protected string _waitForExitOnCall = null;
 		protected bool _useDebugMalloc = false;
 		protected string _execHandler = null;
 		protected bool _exploitableReads = false;
@@ -91,6 +103,12 @@ namespace Peach.Core.Agent.Monitors
 		protected Proc _procCommand = null;
 		protected bool? _detectedFault = null;
 		protected ulong _totalProcessorTime = 0;
+		protected bool _faultOnEarlyExit = false;
+		protected bool _faultExitFail = false;
+		protected bool _faultExitEarly = false;
+		protected bool _messageExit = false;
+		protected bool _restartOnEachTest = false;
+		protected int _waitForExitTimeout = 10000;
 
 		public CrashWrangler(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -105,11 +123,18 @@ namespace Peach.Core.Agent.Monitors
 			_cwLogFile = args.GetString("CwLogFile", "cw.log");
 			_cwLockFile = args.GetString("CwLockFile", "cw.lock");
 			_cwPidFile = args.GetString("CwPidFile", "cw.pid");
+			_faultOnEarlyExit = args.GetBoolean("FaultOnEarlyExit", false);
+			_waitForExitOnCall = args.GetString("WaitForExitOnCall", null);
+			_waitForExitTimeout = args.GetInt("WaitForExitTimeout", 10000);
+			_restartOnEachTest = args.GetBoolean("RestartOnEachTest", false);
 		}
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
 			_detectedFault = null;
+			_faultExitFail = false;
+			_faultExitEarly = false;
+			_messageExit = false;
 
 			if (!_IsProcessRunning() && _startOnCall == null)
 				_StartProcess();
@@ -122,6 +147,14 @@ namespace Peach.Core.Agent.Monitors
 				// Give CrashWrangler a chance to write the log
 				Thread.Sleep(500);
 				_detectedFault = File.Exists(_cwLogFile);
+
+				if (!_detectedFault.Value)
+				{
+					if (_faultOnEarlyExit && _faultExitEarly)
+						_detectedFault = true;
+					else if (_faultExitFail)
+						_detectedFault = true;
+				}
 			}
 
 			return _detectedFault.Value;
@@ -132,15 +165,35 @@ namespace Peach.Core.Agent.Monitors
 			if (!DetectedFault())
 				return null;
 
-			string log = File.ReadAllText(_cwLogFile);
-			string summary = GenerateSummary(log);
-
 			Fault fault = new Fault();
 			fault.detectionSource = "CrashWrangler";
-			fault.folderName = "CrashWrangler";
 			fault.type = FaultType.Fault;
-			fault.description = summary;
-			fault.collectedData["Log"] = File.ReadAllBytes(_cwLogFile);
+
+			if (File.Exists(_cwLogFile))
+			{
+				fault.description = File.ReadAllText(_cwLogFile);
+				fault.collectedData["StackTrace.txt"] = File.ReadAllBytes(_cwLogFile);
+
+				var s = new Summary(fault.description);
+
+				fault.majorHash = s.majorHash;
+				fault.minorHash = s.minorHash;
+				fault.title = s.title;
+				fault.exploitability = s.exploitable;
+
+			}
+			else if (!_faultExitFail)
+			{
+				fault.title = "Process exited early";
+				fault.description = "Process exited early: " + _command + " " + _arguments;
+				fault.folderName = "ProcessExitedEarly";
+			}
+			else
+			{
+				fault.title = "Process did not exit in " + _waitForExitTimeout + "ms";
+				fault.description = fault.title + ": " + _command + " " + _arguments;
+				fault.folderName = "ProcessFailedToExit";
+			}
 			return fault;
 		}
 
@@ -167,8 +220,20 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool IterationFinished()
 		{
-			if (_startOnCall != null)
+			if (!_messageExit && _faultOnEarlyExit && !_IsProcessRunning())
+			{
+				_faultExitEarly = true;
 				_StopProcess();
+			}
+			else if (_startOnCall != null)
+			{
+				_WaitForExit(true);
+				_StopProcess();
+			}
+			else if (_restartOnEachTest)
+			{
+				_StopProcess();
+			}
 
 			return false;
 		}
@@ -181,38 +246,17 @@ namespace Peach.Core.Agent.Monitors
 				_StartProcess();
 				return null;
 			}
-
-			if (name == "Action.Call.IsRunning" && ((string)data) == _startOnCall)
+			else if (name == "Action.Call" && ((string)data) == _waitForExitOnCall)
 			{
-				if (!_IsProcessRunning())
-				{
-					return new Variant(0);
-				}
-
-				if (!_noCpuKill && _IsIdleCpu())
-				{
-					_StopProcess();
-					return new Variant(0);
-				}
-				
-				return new Variant(1);
+				_messageExit = true;
+				_WaitForExit(false);
+				_StopProcess();
 			}
 
 			return null;
 		}
 
-		private bool _IsIdleCpu()
-		{
-			System.Diagnostics.Debug.Assert(_procCommand != null);
-
-			var lastTime = _totalProcessorTime;
-
-			_totalProcessorTime = GetTotalCputime(_procCommand);
-
-			return _totalProcessorTime > 0 && lastTime == _totalProcessorTime;
-		}
-
-		private ulong GetTotalCputime(Proc p)
+		private ulong _GetTotalCputime(Proc p)
 		{
 			try
 			{
@@ -226,10 +270,10 @@ namespace Peach.Core.Agent.Monitors
 
 		private bool _IsProcessRunning()
 		{
-			return _procCommand != null && !_procCommand.HasExited && !IsZombie(_procCommand);
+			return _procCommand != null && !_procCommand.HasExited && !_IsZombie(_procCommand);
 		}
 
-		private bool IsZombie(Proc p)
+		private bool _IsZombie(Proc p)
 		{
 			try
 			{
@@ -241,7 +285,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
-		private bool CommandExists()
+		private bool _CommandExists()
 		{
 			using (var p = new Proc())
 			{
@@ -254,7 +298,7 @@ namespace Peach.Core.Agent.Monitors
 
 		private void _StartProcess()
 		{
-			if (!CommandExists())
+			if (!_CommandExists())
 				throw new PeachException("CrashWrangler: Could not find command \"" + _command + "\"");
 
 			if (File.Exists(_cwPidFile))
@@ -274,11 +318,17 @@ namespace Peach.Core.Agent.Monitors
 			foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
 				si.EnvironmentVariables[de.Key.ToString()] = de.Value.ToString();
 
+			si.EnvironmentVariables["CW_NO_CRASH_REPORTER"] = "1";
+			si.EnvironmentVariables["CW_QUIET"] = "1";
 			si.EnvironmentVariables["CW_LOG_PATH"] = _cwLogFile;
 			si.EnvironmentVariables["CW_PID_FILE"] = _cwPidFile;
 			si.EnvironmentVariables["CW_LOCK_FILE"] = _cwLockFile;
-			si.EnvironmentVariables["CW_USE_GMAL"] = _useDebugMalloc ? "1" : "0";
-			si.EnvironmentVariables["CW_EXPLOITABLE_READS"] = _exploitableReads ? "1" : "0";
+
+			if (_useDebugMalloc)
+				si.EnvironmentVariables["CW_USE_GMAL"] = "1";
+
+			if (_exploitableReads)
+				si.EnvironmentVariables["CW_EXPLOITABLE_READS"] = "1";
 
 			_procHandler = new Proc();
 			_procHandler.StartInfo = si;
@@ -291,7 +341,7 @@ namespace Peach.Core.Agent.Monitors
 			{
 
 				string err = GetLastError(ex.NativeErrorCode);
-				throw new PeachException(string.Format("CrashWrangler: Could not start handler \"{0}\" - {1}", _execHandler, err));
+				throw new PeachException(string.Format("CrashWrangler: Could not start handler \"{0}\" - {1}", _execHandler, err), ex);
 			}
 
 			_totalProcessorTime = 0;
@@ -307,17 +357,17 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_procCommand = Proc.GetProcessById(pid);
 			}
-			catch (ArgumentException)
+			catch (ArgumentException ex)
 			{
 				if (!_procHandler.HasExited)
-					throw new PeachException("CrashWrangler: Could not open handle to command \"" + _command + "\" with pid \"" + pid + "\"");
+					throw new PeachException("CrashWrangler: Could not open handle to command \"" + _command + "\" with pid \"" + pid + "\"", ex);
 
 				var ret = _procHandler.ExitCode;
 				var log = File.Exists(_cwLogFile);
 
 				// If the exit code non-zero and no log means it was unable to run the command
 				if (ret != 0 && !log)
-					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"");
+					throw new PeachException("CrashWrangler: Handler could not run command \"" + _command + "\"", ex);
 
 				// If the exit code is 0 or there is a log, the program ran to completion
 				if (_procCommand != null)
@@ -374,57 +424,58 @@ namespace Peach.Core.Agent.Monitors
 			_procHandler = null;
 		}
 
-		private static string GenerateSummary(string file)
+		private void _WaitForExit(bool useCpuKill)
 		{
-			StringBuilder summary = new StringBuilder();
+			const int pollInterval = 200;
+			int i = 0;
 
-			if (file.Contains(":is_exploitable=no:"))
-				summary.Append("NotExploitable");
-			else if (file.Contains(":is_exploitable=yes:"))
-				summary.Append("Exploitable");
-			else
-				summary.Append("Unknown");
+			if (!_IsProcessRunning())
+				return;
 
-			if (file.Contains("exception=EXC_BAD_ACCESS:"))
+			if (useCpuKill && !_noCpuKill)
 			{
-				summary.Append("_BadAccess");
+				ulong lastTime = 0;
 
-				if (file.Contains(":access_Type=read:"))
-					summary.Append("_Read");
-				else if (file.Contains(":access_Type=write:"))
-					summary.Append("_Write");
-				else if (file.Contains(":access_Type=exec:"))
-					summary.Append("_Exec");
-				else if (file.Contains(":access_Type=recursion:"))
-					summary.Append("_Recursion");
-				else if (file.Contains(":access_Type=unknown:"))
-					summary.Append("_Unknown");
-			}
-			else if (file.Contains("exception=EXC_BAD_INSTRUCTION:"))
-				summary.Append("_BadInstruction");
-			else if (file.Contains("exception=EXC_ARITHMETIC:"))
-				summary.Append("_Arithmetic");
-			else if (file.Contains("exception=EXC_CRASH:"))
-				summary.Append("_Crash");
-
-			Regex reTid = new Regex(@"^Crashed Thread:\s+(\d+)", RegexOptions.Multiline);
-			Match mTid = reTid.Match(file);
-			if (mTid.Success)
-			{
-				string tid = mTid.Groups[1].Value;
-
-				string strReAddr = @"^Thread " + tid + @" Crashed:.*\n((\d+.*\s(?<addr>0x[0-9,a-f,A-F]+)\s.*\n)+)";
-				Regex reAddr = new Regex(strReAddr, RegexOptions.Multiline);
-				Match mAddr = reAddr.Match(file);
-				if (mAddr.Success)
+				for (i = 0; i < _waitForExitTimeout; i += pollInterval)
 				{
-					var captures = mAddr.Groups["addr"].Captures;
-					for (int i = captures.Count - 1; i >= 0; --i)
-						summary.Append("_" + captures[i].Value);
+					var currTime = _GetTotalCputime(_procCommand);
+
+					if (i != 0 && lastTime == currTime)
+						break;
+
+					lastTime = currTime;
+					Thread.Sleep(pollInterval);
+				}
+
+				_StopProcess();
+			}
+			else
+			{
+				// For some reason, Process.WaitForExit is causing a SIGTERM
+				// to be delivered to the process. So we poll instead.
+
+				if (_waitForExitTimeout >= 0)
+				{
+					for (i = 0; i < _waitForExitTimeout; i += pollInterval)
+					{
+						if (!_IsProcessRunning())
+							break;
+
+						Thread.Sleep(pollInterval);
+					}
+
+					if (i >= _waitForExitTimeout && !useCpuKill)
+					{
+						_detectedFault = true;
+						_faultExitFail = true;
+					}
+				}
+				else
+				{
+					while (_IsProcessRunning())
+						Thread.Sleep(pollInterval);
 				}
 			}
-
-			return summary.ToString();
 		}
 
 		private static string GetLastError(int err)
@@ -436,6 +487,160 @@ namespace Peach.Core.Agent.Monitors
 
 		[DllImport("libc")]
 		private static extern IntPtr strerror(int err);
+
+		class Summary
+		{
+			public string majorHash { get; private set; }
+			public string minorHash { get; private set; }
+			public string title { get; private set; }
+			public string exploitable { get; private set; }
+
+			private static readonly string[] system_modules =
+			{
+				"libSystem.B.dylib",
+				"libsystem_kernel.dylib",
+				"libsystem_c.dylib",
+				"com.apple.CoreFoundation",
+				"libstdc++.6.dylib",
+				"libobjc.A.dylib",
+				"libgcc_s.1.dylib",
+				"libgmalloc.dylib",
+				"libc++abi.dylib",
+				"modified_gmalloc.dylib", // Apple internal dylib
+				"???",                    // For when it doesn't exist in a known module
+			};
+
+			private static readonly string[] offset_functions = 
+			{
+				"__memcpy",
+				"__longcopy",
+				"__memmove",
+				"__bcopy",
+				"__memset_pattern",
+				"__bzero",
+				"memcpy",
+				"longcopy",
+				"memmove",
+				"bcopy",
+				"bzero",
+				"memset_pattern",
+			};
+
+			private const int major_depth = 5;
+
+			public Summary(string log)
+			{
+				string is_exploitable = null;
+				string access_type = null;
+				string exception = null;
+
+				exploitable = "UNKNOWN";
+
+				var reProp = new Regex(@"^(((?<key>\w+)=(?<value>[^:]+):)+)$", RegexOptions.Multiline);
+				var mProp = reProp.Match(log);
+				if (mProp.Success)
+				{
+					var ti = System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo;
+					var keys = mProp.Groups["key"].Captures;
+					var vals = mProp.Groups["value"].Captures;
+
+					System.Diagnostics.Debug.Assert(keys.Count == vals.Count);
+
+					for (int i = 0; i < keys.Count; ++i)
+					{
+						var key = keys[i].Value;
+						var val = vals[i].Value;
+
+						switch (key)
+						{
+							case "is_exploitable":
+								is_exploitable = val.ToLower();
+								break;
+							case "exception":
+								exception = string.Join("", val.ToLower().Split('_').Where(a => a != "exc").Select(a => ti.ToTitleCase(a)).ToArray());
+								break;
+							case "access_type":
+								access_type = ti.ToTitleCase(val.ToLower());
+								break;
+						}
+					}
+				}
+
+				title = string.Format("{0}{1}", access_type, exception);
+
+				if (is_exploitable == null)
+					exploitable = "UNKNOWN";
+				else if (is_exploitable == "yes")
+					exploitable = "EXPLOITABLE";
+				else
+					exploitable = "NOT_EXPLOITABLE";
+
+				Regex reTid = new Regex(@"^Crashed Thread:\s+(\d+)", RegexOptions.Multiline);
+				Match mTid = reTid.Match(log);
+				if (!mTid.Success)
+					return;
+
+				string tid = mTid.Groups[1].Value;
+				string strReAddr = @"^Thread " + tid + @" Crashed:.*\n((\d+\s+(?<file>\S*)\s+(?<addr>0x[0-9,a-f,A-F]+)\s(?<func>.+)\n)+)";
+				Regex reAddr = new Regex(strReAddr, RegexOptions.Multiline);
+				Match mAddr = reAddr.Match(log);
+				if (!mAddr.Success)
+					return;
+
+				var files = mAddr.Groups["file"].Captures;
+				var addrs = mAddr.Groups["addr"].Captures;
+				var names = mAddr.Groups["func"].Captures;
+
+				string maj = "";
+				string min = "";
+				int cnt = 0;
+
+				for (int i = 0; i < files.Count; ++i)
+				{
+					var file = files[i].Value;
+					var addr = addrs[i].Value;
+					var name = names[i].Value;
+
+					// Ignore certian system modules
+					if (system_modules.Contains(file))
+						continue;
+
+					// When generating a signature, remove offsets for common functions
+					string other = offset_functions.Where(a => name.StartsWith(a)).FirstOrDefault();
+					if (other != null)
+						addr = other;
+
+					string sig = (cnt == 0 ? "" : ",") + addr;
+					min += sig;
+
+					if (++cnt <= major_depth)
+						maj += sig;
+				}
+
+				// If we have no usable backtrace info, hash on the reProp line
+				if (cnt == 0)
+				{
+					maj = mProp.Value;
+					min = mProp.Value;
+				}
+
+				majorHash = Md5(maj);
+				minorHash = Md5(min);
+			}
+
+			private static string Md5(string input)
+			{
+				using (var md5 = new System.Security.Cryptography.MD5CryptoServiceProvider())
+				{
+					byte[] buf = Encoding.UTF8.GetBytes(input);
+					byte[] final = md5.ComputeHash(buf);
+					var sb = new StringBuilder();
+					foreach (byte b in final)
+						sb.Append(b.ToString("X2"));
+					return sb.ToString();
+				}
+			}
+		}
 	}
 }
 

@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+# win_x86, win_x64, osx
+arch = bld.env['BASENAME']
+
+base = bld.path.find_dir(arch)
+if base:
+	# osx: lib*.dylib, win: *.dll
+	dll = bld.env['cshlib_PATTERN'] % '*'
+	src = base.ant_glob(dll)[0]
+	dst = bld.env['cshlib_PATTERN'] % 'VixAllProducts'
+	bld.install_as('${BINDIR}/%s' % dst, src, chmod=Utils.O755)
+

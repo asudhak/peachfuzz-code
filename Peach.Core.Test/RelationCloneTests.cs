@@ -211,5 +211,36 @@ namespace Peach.Core.Test
 			Assert.AreEqual(200, clone[0].relations[0].Of.relations.Count);
 			Assert.True(clone[0].relations[0].Of.relations.Contains(clone[0].relations[0]));
 		}
+
+		[Test]
+		public void TestArrayRef()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""A"">
+		<Block name=""B"">
+			<Number name=""Length"" size=""32"" endian=""little"">
+				<Relation type=""size"" of=""A""/>
+			</Number>
+		</Block>
+	</DataModel>
+
+	<DataModel name=""C"">
+		<Block name=""D"">
+			<Block occurs=""1"" name=""E"" ref=""A""/>
+		</Block>
+	</DataModel>
+</Peach>";
+
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var final = dom.dataModels[1].Value;
+
+			byte[] expected = new byte[] { 4, 0, 0, 0 };
+
+			Assert.AreEqual(expected, final.Value);
+		}
 	}
 }

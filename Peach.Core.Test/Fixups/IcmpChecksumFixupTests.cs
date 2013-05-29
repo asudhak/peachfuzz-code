@@ -21,7 +21,7 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"ICMPChecksum\" signed=\"false\" size=\"32\">" +
+                "       <Number name=\"ICMPChecksum\" signed=\"false\" endian=\"big\" size=\"16\">" +
                 "           <Fixup class=\"IcmpChecksumFixup\">" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "           </Fixup>" +
@@ -55,7 +55,7 @@ namespace Peach.Core.Test.Fixups
 
             // verify values
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
-            byte[] precalcChecksum = new byte[] { 0xDC, 0x2D, 0x00, 0x00 };
+            byte[] precalcChecksum = new byte[] { 0xDC, 0x2D };
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcChecksum, values[0].Value);
         }
@@ -68,7 +68,7 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Number name=\"ICMPChecksum\" signed=\"false\" size=\"32\">" +
+				"       <Number name=\"ICMPChecksum\" signed=\"false\" endian=\"big\" size=\"16\">" +
                 "           <Fixup class=\"IcmpChecksumFixup\">" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "           </Fixup>" +
@@ -102,7 +102,7 @@ namespace Peach.Core.Test.Fixups
 
             // verify values
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
-            byte[] precalcChecksum = new byte[] { 0x9b, 0x99, 0x00, 0x00 };
+            byte[] precalcChecksum = new byte[] { 0x9b, 0x99 };
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcChecksum, values[0].Value);
         }

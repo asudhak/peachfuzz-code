@@ -50,10 +50,11 @@ namespace Peach.Core.Analyzers
 		/// <summary>
 		/// Default token set.  Order is important!
 		/// </summary>
-		const string TOKENS = "\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/";
+		public const string TOKENS = "\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/";
 
 		protected string tokens = TOKENS;
 		protected Dictionary<string, Variant> args = null;
+		protected StringType encodingType = StringType.ascii;
 
 		static StringTokenAnalyzer()
 		{
@@ -74,13 +75,14 @@ namespace Peach.Core.Analyzers
 
 		public override void asDataElement(DataElement parent, object dataBuffer)
 		{
-			if (args.ContainsKey("Tokens"))
+			if (args != null && args.ContainsKey("Tokens"))
 				tokens = (string)args["Tokens"];
 
 			if (!(parent is Dom.String))
 				throw new PeachException("Error, StringToken analyzer only operates on String elements!");
 
 			var str = parent as Dom.String;
+			encodingType = str.stringType;
 
 			// Are our tokens present in this string?
 			bool foundToken = false;
@@ -120,15 +122,20 @@ namespace Peach.Core.Analyzers
 		{
 			if (el is Dom.String)
 			{
+				var strEl = (Dom.String)el;
 				var str = (string) el.DefaultValue;
 				var tokenIndex = str.IndexOf(token);
 
 				if(tokenIndex == -1)
 					return;
 
-				var preString = new Dom.String();
-				var tokenString = new Dom.String();
-				var postString = new Dom.String();
+				var preString = new Dom.String() { stringType = strEl.stringType };
+				var tokenString = new Dom.String() { stringType = strEl.stringType };
+				var postString = new Dom.String() { stringType = strEl.stringType };
+
+				preString.stringType = encodingType;
+				tokenString.stringType = encodingType;
+				postString.stringType = encodingType;
 
 				preString.DefaultValue = new Variant(str.Substring(0, tokenIndex));
 				tokenString.DefaultValue = new Variant(token.ToString());

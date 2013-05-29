@@ -66,7 +66,7 @@ def build(bld):
 
 from waflib import Build, Utils, TaskGen
 @TaskGen.feature('c')
-@TaskGen.before('process_source')
+@TaskGen.before('process_source', 'process_rule')
 def dynamic_post(self):
 	"""
 	bld(dynamic_source='*.c', ..) will search for source files to add to the attribute 'source'

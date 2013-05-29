@@ -61,17 +61,73 @@ namespace PeachValidator
 		public event EventHandler<TreeModelEventArgs> NodesInserted;
 		public event EventHandler<TreeModelEventArgs> NodesRemoved;
 		public event EventHandler<TreePathEventArgs> StructureChanged;
+
+		public static CrackModel CreateModelFromPit(DataModel dataModel)
+		{
+			CrackModel model = new CrackModel();
+			model.Root = BuildFromElement(model, dataModel);
+
+			return model;
+		}
+
+		public static CrackNode BuildFromElement(CrackModel model, DataElementContainer container)
+		{
+			CrackNode node = new CrackNode(model, container, 0, 0);
+
+			if (container is Choice)
+			{
+				foreach (var child in ((Choice)container).choiceElements.Values)
+				{
+					if (child is DataElementContainer)
+					{
+						var childNode = BuildFromElement(model, child as DataElementContainer);
+						childNode.Parent = node;
+						node.Children.Add(childNode);
+					}
+					else
+					{
+						var childNode = new CrackNode(model, child, 0, 0);
+						childNode.Parent = node;
+						node.Children.Add(childNode);
+					}
+				}
+			}
+
+			foreach (var child in container)
+			{
+				if (child is DataElementContainer)
+				{
+					var childNode = BuildFromElement(model, child as DataElementContainer);
+					childNode.Parent = node;
+					node.Children.Add(childNode);
+				}
+				else
+				{
+					var childNode = new CrackNode(model, child, 0, 0);
+					childNode.Parent = node;
+					node.Children.Add(childNode);
+				}
+			}
+
+			return node;
+		}
 	}
 
 	public class CrackNode
 	{
-		public CrackNode(CrackModel model, DataElement element, int position, int length)
+		public CrackNode(CrackModel model, DataElement element, long startBits, long stopBits)
 		{
 			Model = model;
 			DataElement = element;
-			Position = position;
-			Length = length;
+			StartBits = startBits;
+			StopBits = stopBits;
 			Error = false;
+		}
+
+		public bool RelativeToParent
+		{
+			get;
+			set;
 		}
 
 		public CrackNode Root
@@ -108,16 +164,21 @@ namespace PeachValidator
 		{
 			get
 			{
-				//var stuff = System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceNames();
+				var asm = System.Reflection.Assembly.GetEntryAssembly();
 
-				return new Bitmap(
-				  System.Reflection.Assembly.GetEntryAssembly().
-					GetManifestResourceStream(IconName));
+				var strm = asm.GetManifestResourceStream(IconName);
+				if (strm == null)
+					strm = asm.GetManifestResourceStream("PeachValidator.icons.node-unknown.png");
+				return new Bitmap(strm);
 
 			}
 		}
 
-		public CrackNode Parent { get; set; }
+		public CrackNode Parent
+		{
+			get;
+			set;
+		}
 
 		public DataElement DataElement
 		{
@@ -125,16 +186,26 @@ namespace PeachValidator
 			set;
 		}
 
-		public int Position
+		public long StartBits
 		{
 			get;
 			set;
 		}
 
-		public int Length
+		public long StopBits
 		{
 			get;
 			set;
+		}
+
+		public int Position
+		{
+			get { return (int)(StartBits / 8); }
+		}
+
+		public int Length
+		{
+			get { return StopBits == 0 ? 0 : (int)((StopBits - StartBits + 7) / 8); }
 		}
 
 		public bool Error
@@ -147,30 +218,7 @@ namespace PeachValidator
 		{
 			get
 			{
-				if (DataElement is DataElementContainer)
-					return "";
-
-				string ret;
-
-				try
-				{
-					ret = (string)this.DataElement.InternalValue;
-				}
-				catch
-				{
-					ret = ASCIIEncoding.ASCII.GetString((byte[])this.DataElement.InternalValue);
-				}
-
-				for (int i = 0; i < ret.Length; i++)
-				{
-					if (ret[i].CompareTo(' ') < 0)
-						ret = ret.Replace(ret[i], '.');
-
-					if (ret[i].CompareTo('~') > 0)
-						ret = ret.Replace(ret[i], '.');
-				}
-
-				return ret.Length > 20 ? ret.Substring(0, 20) : ret;
+				return DataElement.DefaultValue == null ? "" : DataElement.DefaultValue.ToString();
 			}
 		}
 
@@ -197,6 +245,7 @@ namespace PeachValidator
 		{
 			child.Parent = this;
 			Children.Add(child);
+
 			Model.OnNodesChanged(this);
 		}
 

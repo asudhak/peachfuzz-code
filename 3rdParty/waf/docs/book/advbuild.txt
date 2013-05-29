@@ -306,7 +306,7 @@ class debug(BuildContext): <2>
 <2> Create the _debug_ command inheriting the build context
 <3> Declare a folder for targets of the _debug_ command
 
-This projet declares two different builds _build_ and _debug_. Let's examine the execution output:
+This project declares two different builds _build_ and _debug_. Let's examine the execution output:
 
 [source,shishell]
 ---------------

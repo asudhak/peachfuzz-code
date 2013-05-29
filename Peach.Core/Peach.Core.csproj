@@ -31,7 +31,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
@@ -42,7 +42,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -51,7 +51,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|x86' ">
     <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
@@ -70,7 +70,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|x86' ">
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
     <Optimize>True</Optimize>
@@ -85,7 +85,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug - Windows|x64' ">
     <DebugSymbols>True</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;PEACH</DefineConstants>
@@ -103,7 +103,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>False</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Windows|x64' ">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE;PEACH</DefineConstants>
     <Optimize>True</Optimize>
@@ -332,11 +332,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IronPython">
-      <HintPath>..\3rdParty\IronPython-2.7.1\IronPython.dll</HintPath>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\3rdParty\DotNetZipLib-v1.9\zip-v1.9\Ionic.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="IronPython.Modules">
-      <HintPath>..\3rdParty\IronPython-2.7.1\IronPython.Modules.dll</HintPath>
+    <Reference Include="IronPython">
+      <HintPath>..\3rdParty\IronPython-2.7.3\IronPython.dll</HintPath>
     </Reference>
     <Reference Include="IronRuby">
       <HintPath>..\3rdParty\IronRuby-1.1.3\bin\IronRuby.dll</HintPath>
@@ -349,19 +349,34 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Dynamic">
-      <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Dynamic.dll</HintPath>
+      <HintPath>..\3rdParty\IronPython-2.7.3\Microsoft.Dynamic.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting">
-      <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Scripting.dll</HintPath>
+      <HintPath>..\3rdParty\IronPython-2.7.3\Microsoft.Scripting.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting.Metadata">
-      <HintPath>..\3rdParty\IronPython-2.7.1\Microsoft.Scripting.Metadata.dll</HintPath>
+      <HintPath>..\3rdParty\IronPython-2.7.3\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
-    <Reference Condition="'$(Configuration)' == 'Debug'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\3rdParty\Json.net-5\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
     </Reference>
-    <Reference Condition="'$(Configuration)' == 'Release'" Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Linux'">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - Linux'">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - OS X'">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog" Condition="'$(Configuration)' == 'Release - OS X'">
+      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
     </Reference>
     <Reference Include="Renci.SshNet">
       <HintPath>..\3rdParty\Renci.SshNet\Renci.SshNet.dll</HintPath>
@@ -375,24 +390,6 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
-    <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\3rdParty\xml-rpc.net-2.5.0\bin\CookComputing.XmlRpcV2.dll</HintPath>
-    </Reference>
-    <Reference Include="Ionic.Zip">
-      <HintPath>..\3rdParty\DotNetZipLib-v1.9\zip-v1.9\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c" Condition="'$(Configuration)' == 'Debug'">
-      <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c" Condition="'$(Configuration)' == 'Release'">
-      <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c" Condition="'$(Configuration)' == 'Debug - OS X'">
-      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c" Condition="'$(Configuration)' == 'Release - OS X'">
-      <HintPath>..\3rdParty\NLog-v2.0.0.2000\Mono 2.x\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="SharpPcap">
       <HintPath>..\3rdParty\SharpPcap-4.1.0\Release\SharpPcap.dll</HintPath>
     </Reference>
@@ -404,8 +401,9 @@
     <Compile Include="Agent\Channels\AgentLocal.cs" />
     <Compile Include="Agent\AgentManager.cs" />
     <Compile Include="Agent\AgentServer.cs" />
+    <Compile Include="Agent\Channels\AgentREST.cs" />
     <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
-    <Compile Include="Agent\Channels\AgentXmlRpc.cs" />
+    <Compile Include="Agent\Channels\AgentZeroMq.cs" />
     <Compile Include="Agent\Monitor.cs" />
     <Compile Include="Agent\Monitors\CanaKitRelayMonitor.cs" />
     <Compile Include="Agent\Monitors\CleanupFolderMonitor.cs" />
@@ -416,13 +414,9 @@
     <Compile Include="Agent\Monitors\MemoryMonitor.cs" />
     <Compile Include="Agent\Monitors\PcapMonitor.cs" />
     <Compile Include="Agent\Monitors\Process.cs" />
-    <Compile Include="Agent\Monitors\ReplayMonitor.cs" />
-    <Compile Include="Agent\Channels\XmlRpc\HttpListenerController.cs" />
-    <Compile Include="Agent\Channels\XmlRpc\HttpListenerWorkerRequest.cs" />
-    <Compile Include="Agent\Channels\XmlRpc\HttpListenerWrapper.cs" />
     <Compile Include="Agent\Monitors\SocketMonitor.cs" />
+    <Compile Include="Agent\Monitors\SshDownloaderMonitor.cs" />
     <Compile Include="Agent\Monitors\SSHMonitor.cs" />
-    <Compile Include="Agent\Monitors\TCPListenerMonitor.cs" />
     <Compile Include="Agent\Monitors\VmwareMonitor.cs" />
     <Compile Include="Analysis\Coverage.cs" />
     <Compile Include="Analysis\CoverageImpl.cs" />
@@ -433,6 +427,7 @@
     <Compile Include="Analyzers\PitParser.cs" />
     <Compile Include="Analyzers\StringTokenAnalyzer.cs" />
     <Compile Include="Analyzers\XmlAnalyzer.cs" />
+    <Compile Include="ClassLoader.cs" />
     <Compile Include="Cracker\CrackingFailure.cs" />
     <Compile Include="Cracker\ICrackable.cs" />
     <Compile Include="Cracker\NotEnoughDataException.cs" />
@@ -441,16 +436,21 @@
     <Compile Include="Dom\Data.cs" />
     <Compile Include="Dom\DataElementContainer.cs" />
     <Compile Include="Dom\DataSet.cs" />
-    <Compile Include="Dom\DomNamespace.cs" />
     <Compile Include="Dom\Flag.cs" />
     <Compile Include="Dom\Hint.cs" />
     <Compile Include="Dom\INamed.cs" />
+    <Compile Include="Encoding.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Fixups\CiscoFixup.cs" />
+    <Compile Include="Fixups\CrcFixup.cs" />
+    <Compile Include="Fixups\FillValueFixup.cs" />
     <Compile Include="Fixups\HashFixup.cs" />
+    <Compile Include="Fixups\HMACFixup.cs" />
+    <Compile Include="Fixups\IcmpV6ChecksumFixup.cs" />
+    <Compile Include="Fixups\Libraries\InternetFixup.cs" />
     <Compile Include="Fixups\ScriptFixup.cs" />
     <Compile Include="IO\BitwiseStream.cs" />
     <Compile Include="IO\BitWriter.cs" />
-    <Compile Include="IPitSerializable.cs" />
     <Compile Include="Dom\Monitor.cs" />
     <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />
@@ -462,11 +462,9 @@
     <Compile Include="Dom\XPath\PeachXPathNavigator.cs" />
     <Compile Include="Dom\XPath\PeachXPathNodeType.cs" />
     <Compile Include="Fixups\CopyValueFixup.cs" />
-    <Compile Include="Fixups\Crc32DualFixup.cs" />
-    <Compile Include="Fixups\EthernetChecksumFixup.cs" />
+    <Compile Include="Fixups\CrcDualFixup.cs" />
     <Compile Include="Fixups\ExpressionFixup.cs" />
     <Compile Include="Fixups\IcmpChecksumFixup.cs" />
-    <Compile Include="Fixups\Libraries\CRC32.cs" />
     <Compile Include="Fixups\Libraries\SHA224.cs" />
     <Compile Include="Fixups\LRCFixup.cs" />
     <Compile Include="Fixups\MD5Fixup.cs" />
@@ -499,26 +497,15 @@
     <Compile Include="Dom\String.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Fixup.cs" />
-    <Compile Include="Fixups\Crc32Fixup.cs" />
     <Compile Include="Fixups\Libraries\CRCTool.cs" />
     <Compile Include="IO\Conversion\BigEndianBitConverter.cs" />
     <Compile Include="IO\Conversion\EndianBitConverter.cs" />
     <Compile Include="IO\Conversion\Endianness.cs" />
     <Compile Include="IO\Conversion\LittleEndianBitConverter.cs" />
     <Compile Include="IWeighted.cs" />
-    <Compile Include="Language\DotNet\AssemblyFuzzer.cs" />
-    <Compile Include="Language\DotNet\Generators\ClassGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\CtorGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\Generator.cs" />
-    <Compile Include="Language\DotNet\Generators\MethodGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\ObjectGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\PropertyGenerator.cs" />
-    <Compile Include="Language\DotNet\Generators\TypeGenerators.cs" />
-    <Compile Include="Language\DotNet\Groups.cs" />
-    <Compile Include="Language\DotNet\ObjectFuzzer.cs" />
-    <Compile Include="Language\DotNet\PeachData.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Loggers\File.cs" />
+    <Compile Include="LSFR.cs" />
     <Compile Include="MutationStrategies\RandomDeterministicStrategy.cs" />
     <Compile Include="MutationStrategies\RandomStrategy.cs" />
     <Compile Include="MutationStrategies\Sequential.cs" />
@@ -557,6 +544,7 @@
     <Compile Include="Mutators\ValidValuesMutator.cs" />
     <Compile Include="Mutators\WordListMutator.cs" />
     <Compile Include="Mutators\XmlW3CMutator.cs" />
+    <Compile Include="NetworkAdapter.cs" />
     <Compile Include="ParameterParser.cs" />
     <Compile Include="PeachException.cs" />
     <Compile Include="PitParsableAttribute.cs" />
@@ -574,6 +562,7 @@
     <Compile Include="Proxy\Web\HttpResponse.cs" />
     <Compile Include="Proxy\Web\WebProxy.cs" />
     <Compile Include="Publisher.cs" />
+    <Compile Include="Publishers\BufferedStreamPublisher.cs" />
     <Compile Include="Publishers\ConsolePublisher.cs" />
     <Compile Include="Publishers\FilePerIterationPublisher.cs" />
     <Compile Include="Publishers\FilePublisher.cs" />
@@ -582,6 +571,8 @@
     <Compile Include="Publishers\RawIPv4Publisher.cs" />
     <Compile Include="Publishers\RawIPv6Publisher.cs" />
     <Compile Include="Publishers\ConsoleHexPublisher.cs" />
+    <Compile Include="Publishers\RemotePublisher.cs" />
+    <Compile Include="Publishers\SerialPortPublisher.cs" />
     <Compile Include="Publishers\SocketPublisher.cs" />
     <Compile Include="Publishers\StreamPublisher.cs" />
     <Compile Include="Publishers\TcpClientPublisher.cs" />
@@ -593,13 +584,22 @@
     <Compile Include="Random.cs" />
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />
+    <Compile Include="Runtime\ConsoleWatcher.cs" />
+    <Compile Include="Runtime\Launcher.cs" />
+    <Compile Include="Runtime\Options.cs" />
+    <Compile Include="Runtime\Program.cs" />
     <Compile Include="Scripting.cs" />
     <Compile Include="SerializableDictionary.cs" />
+    <Compile Include="SingleInstance.cs" />
     <Compile Include="TinyMT32.cs" />
     <Compile Include="Transformer.cs" />
     <Compile Include="Transformers\Compress\Bz2Compress.cs" />
     <Compile Include="Transformers\Compress\Bz2Decompress.cs" />
     <Compile Include="Transformers\Compress\GzipDecompress.cs" />
+    <Compile Include="Transformers\Crypto\Aes128.cs" />
+    <Compile Include="Transformers\Null.cs" />
+    <Compile Include="Transformers\Crypto\SymmetricAlgorithmTransformer.cs" />
+    <Compile Include="Transformers\Crypto\TripleDes.cs" />
     <Compile Include="Transformers\Crypto\ApacheMd5Crypt.cs" />
     <Compile Include="Transformers\Crypto\Crypt.cs" />
     <Compile Include="Transformers\Crypto\CvsScramble.cs" />
@@ -624,7 +624,6 @@
     <Compile Include="Transformers\Encode\NetBiosEncode.cs" />
     <Compile Include="Transformers\Encode\SidStringToBytes.cs" />
     <Compile Include="Transformers\Encode\UrlEncode.cs" />
-    <Compile Include="Transformers\Encode\UrlEncodePlus.cs" />
     <Compile Include="Transformers\Encode\Utf16.cs" />
     <Compile Include="Transformers\Encode\Utf16Be.cs" />
     <Compile Include="Transformers\Encode\Utf16Le.cs" />
@@ -640,6 +639,7 @@
     <Compile Include="Transformers\Type\NumberToString.cs" />
     <Compile Include="Transformers\Type\StringToFloat.cs" />
     <Compile Include="Transformers\Type\StringToInt.cs" />
+    <Compile Include="Usage.cs" />
     <Compile Include="Utilities.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -672,13 +672,25 @@
   <ItemGroup>
     <EmbeddedResource Include="peach.xsd">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="xmltests.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\3rdParty\clrzmq\src\ZeroMQ\ZeroMQ.csproj">
+      <Project>{6FFD872F-A4A4-4EFA-9B4D-4342BA6CF250}</Project>
+      <Name>ZeroMQ</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\3rdParty\IronPython-2.7.3\IronPython.StdLib.zip">
+      <Link>IronPython.StdLib.zip</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

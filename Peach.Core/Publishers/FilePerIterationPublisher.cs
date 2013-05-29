@@ -26,9 +26,9 @@ namespace Peach.Core.Publishers
 
 				FileName = null;
 			}
-			catch (FormatException)
+			catch (FormatException ex)
 			{
-				throw new PeachException("Error, FileName \"" + fileTemplate + "\" is not a valid format string.");
+				throw new PeachException("Error, FileName \"" + fileTemplate + "\" is not a valid format string.", ex);
 			}
 		}
 

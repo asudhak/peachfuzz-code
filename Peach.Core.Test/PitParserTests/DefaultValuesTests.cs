@@ -4,7 +4,6 @@ using System.Text;
 using System.IO;
 using NUnit.Framework;
 
-using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 
@@ -15,11 +14,19 @@ namespace Peach.Core.Test.PitParserTests
 	{
 		public void TestEncoding(Encoding enc, bool defaultArgs)
 		{
-			string encoding = enc.HeaderName;
-			if (enc is UnicodeEncoding)
-				encoding = Encoding.Unicode.HeaderName;
+			int codepage = 0;
+			string encoding = "";
 
-			string val = (enc != Encoding.Default) ? "encoding=\"" + encoding + "\"" : "";
+			if (enc != null)
+			{
+				codepage = enc.CodePage;
+				if (enc is UnicodeEncoding)
+					encoding = Encoding.Unicode.HeaderName;
+				else
+					encoding = enc.HeaderName;
+			}
+
+			string val = !string.IsNullOrEmpty(encoding) ? "encoding=\"" + encoding + "\"" : "";
 			string xml = "<?xml version=\"1.0\" " + val + "?>\r\n" +
 				"<Peach>\r\n" +
 				"	<DataModel name=\"##VAR1##\">\r\n" +
@@ -42,7 +49,7 @@ namespace Peach.Core.Test.PitParserTests
 
 			using (FileStream f = File.OpenWrite(pitFile))
 			{
-				using (StreamWriter sw = new StreamWriter(f, enc))
+				using (StreamWriter sw = new StreamWriter(f, System.Text.Encoding.GetEncoding(codepage)))
 				{
 					sw.Write(xml);
 				}
@@ -69,8 +76,8 @@ namespace Peach.Core.Test.PitParserTests
 		[Test]
 		public void TestDefault()
 		{
-			TestEncoding(Encoding.Default, true);
-			TestEncoding(Encoding.Default, false);
+			TestEncoding(null, true);
+			TestEncoding(null, false);
 		}
 
 		[Test]
@@ -99,6 +106,28 @@ namespace Peach.Core.Test.PitParserTests
 		{
 			TestEncoding(Encoding.BigEndianUnicode, true);
 			TestEncoding(Encoding.BigEndianUnicode, false);
+		}
+
+		[Test]
+		public void DefinesBeforeValidate()
+		{
+			string xml = @"
+<Peach>
+	<Include ns='test' src='file:##FILE##'/>
+</Peach>
+";
+			string tempFile = Path.GetTempFileName();
+			File.WriteAllText(tempFile, "<Peach><DataModel name='DM'/></Peach>");
+
+			var defines = new Dictionary<string, string>();
+			defines["FILE"] = tempFile;
+
+			var args = new Dictionary<string, object>();
+			args[PitParser.DEFINED_VALUES] = defines;
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(args, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Assert.NotNull(dom);
 		}
 	}
 }

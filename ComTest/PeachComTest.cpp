@@ -39,6 +39,13 @@ STDMETHODIMP CPeachComTest::Method3(BSTR str)
 	// TODO: Add your implementation code here
 	wprintf(L"CPeachComTest::Method3(%s)\n", str);
 
+	if (wcslen(str) > 50)
+	{
+		char buff[10];
+		wprintf(L"In Call1");
+		Call1(buff);
+	}
+
 	return S_OK;
 }
 
@@ -46,10 +53,6 @@ STDMETHODIMP CPeachComTest::Method4(void)
 {
 	// TODO: Add your implementation code here
 	printf("CPeachComTest::Method4()\n");
-
-	char buff[10];
-
-	Call1(buff);
 
 	return S_OK;
 }

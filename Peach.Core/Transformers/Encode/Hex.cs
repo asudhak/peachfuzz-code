@@ -34,46 +34,63 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Description("Encode on output as a hex string.")]
-    [Transformer("Hex", true)]
-    [Transformer("encode.Hex")]
-    [Serializable]
-    public class Hex : Transformer
-    {
-        public Hex(Dictionary<string,Variant>  args) : base(args)
-        {
-        }
+	[Description("Encode on output as a hex string.")]
+	[Transformer("Hex", true)]
+	[Transformer("encode.Hex")]
+	[Serializable]
+	public class Hex : Transformer
+	{
+		public Hex(Dictionary<string, Variant> args)
+			: base(args)
+		{
+		}
 
-        protected override BitStream internalEncode(BitStream data)
-        {
-            StringBuilder sb = new StringBuilder(((int)data.LengthBytes*2));
+		protected override BitStream internalEncode(BitStream data)
+		{
+			var buf = data.Value;
+			StringBuilder sb = new StringBuilder(buf.Length * 2);
 
-            foreach (byte b in data.Value)
-                sb.AppendFormat("{0:x2}", b);
+			foreach (byte b in buf)
+				sb.AppendFormat("{0:x2}", b);
 
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sb.ToString()));
-        }
+			return new BitStream(Encoding.ASCII.GetBytes(sb.ToString()));
+		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
-            if (data.Value.Length % 2 != 0)
-                //TODO: Transformer soft exception?
-                throw new Exception("Hex transfromer internalDecode failed: Invalid length.");
+		protected override BitStream internalDecode(BitStream data)
+		{
+			var buf = data.Value;
 
-            byte[] ret = new byte[data.LengthBytes/2];
+			if (buf.Length % 2 != 0)
+				//TODO: Transformer soft exception?
+				throw new Exception("Hex transfromer internalDecode failed: Invalid length.");
 
-            for (int i = 0; i < data.LengthBytes; i += 2)
-            {
-                int high = (data.Value[i] > 0x40 ? data.Value[i] - 0x37 : data.Value[i] - 0x30) << 4;
-                int low = data.Value[i + 1] > 0x40 ? data.Value[i + 1] - 0x37 : data.Value[i] - 0x30;
+			byte[] ret = new byte[buf.Length / 2];
 
-                ret[i/2] = Convert.ToByte(high + low);
+			for (int i = 0; i < buf.Length; i += 2)
+			{
+				int nibble1 = GetNibble(buf[i]);
+				int nibble2 = GetNibble(buf[i + 1]);
 
-            }
+				if (nibble1 < 0 || nibble1 > 0xF || nibble2 < 0 | nibble2 > 0xF)
+					//TODO: Transformer soft exception?
+					throw new Exception("Hex transfromer internalDecode failed: Invalid bytes.");
 
-            return new BitStream(ret);
-        }
-    }
+				ret[i / 2] = (byte)((nibble1 << 4) | nibble2);
+			}
+
+			return new BitStream(ret);
+		}
+
+		private static int GetNibble(byte c)
+		{
+			if (c >= 'a')
+				return 0xA + (int)(c - 'a');
+			else if (c >= 'A')
+				return 0xA + (int)(c - 'A');
+			else
+				return (int)(c - '0');
+		}
+	}
 }
 
 // end

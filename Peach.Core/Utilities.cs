@@ -66,223 +66,6 @@ namespace Peach.Core
 		}
 	}
 
-	/// <summary>
-	/// Methods for finding and creating instances of 
-	/// classes.
-	/// </summary>
-	public static class ClassLoader
-	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
-		static string[] searchPath = GetSearchPath();
-
-		static string[] GetSearchPath()
-		{
-			var ret = new List<string> {
-				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-				Directory.GetCurrentDirectory(),
-			};
-
-			string devpath = Environment.GetEnvironmentVariable("DEVPATH");
-			if (!string.IsNullOrEmpty(devpath))
-				ret.AddRange(devpath.Split(Path.PathSeparator));
-
-			string mono_path = Environment.GetEnvironmentVariable("MONO_PATH");
-			if (!string.IsNullOrEmpty(mono_path))
-				ret.AddRange(mono_path.Split(Path.PathSeparator));
-
-			return ret.ToArray();
-		}
-
-		static ClassLoader()
-		{
-			foreach (string path in searchPath)
-			{
-				foreach (string file in Directory.GetFiles(path))
-				{
-					if (!file.EndsWith(".exe") && !file.EndsWith(".dll"))
-						continue;
-
-					if (AssemblyCache.ContainsKey(file))
-						continue;
-
-					try
-					{
-						Assembly asm = Load(file);
-						asm.GetExportedTypes(); // make sure we can load exported types.
-						AssemblyCache.Add(file, asm);
-					}
-					catch (Exception ex)
-					{
-						logger.Debug("ClassLoader skipping \"{0}\", {1}", file, ex.Message);
-					}
-				}
-			}
-		}
-
-		static Assembly Load(string fullPath)
-		{
-			if (!File.Exists(fullPath))
-				throw new FileNotFoundException("The file \"" + fullPath + "\" does not exist.");
-
-			// http://mikehadlow.blogspot.com/2011/07/detecting-and-changing-files-internet.html
-			var zone = Zone.CreateFromUrl(fullPath);
-			if (zone.SecurityZone > SecurityZone.MyComputer)
-				throw new SecurityException("The assemly is part of the " + zone.SecurityZone + " Security Zone and loading has been blocked.");
-
-			Assembly asm = Assembly.LoadFrom(fullPath);
-			return asm;
-		}
-
-		static bool TryLoad(string fullPath)
-		{
-			if (!File.Exists(fullPath))
-				return false;
-
-			if (!AssemblyCache.ContainsKey(fullPath))
-			{
-				var asm = Load(fullPath);
-				asm.GetExportedTypes(); // make sure we can load exported types.
-				AssemblyCache.Add(fullPath, asm);
-			}
-
-			return true;
-		}
-
-		public static void LoadAssembly(string fileName)
-		{
-			if (Path.IsPathRooted(fileName))
-			{
-				if (TryLoad(fileName))
-					return;
-			}
-			else
-			{
-				foreach (string path in searchPath)
-				{
-					if (TryLoad(Path.Combine(path, fileName)))
-						return;
-				}
-			}
-
-			throw new FileNotFoundException();
-		}
-
-		/// <summary>
-		/// Extension to the Type class. Return all attributes matching the specified type and predicate.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="type">Type in which the search should run over.</param>
-		/// <param name="predicate">Returns an attribute if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>A generator which yields the attributes specified.</returns>
-		public static IEnumerable<A> GetAttributes<A>(this Type type, Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			foreach (var attr in type.GetCustomAttributes(true))
-			{
-				var concrete = attr as A;
-				if (concrete != null && (predicate == null || predicate(type, concrete)))
-				{
-					yield return concrete;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Finds all types that are decorated with the specified Attribute type and matches the specified predicate.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>A generator which yields KeyValuePair elements of custom attribute and type found.</returns>
-		public static IEnumerable<KeyValuePair<A, Type>> GetAllByAttribute<A>(Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			foreach (var asm in ClassLoader.AssemblyCache.Values)
-			{
-				if (asm.IsDynamic)
-					continue;
-
-				foreach (var type in asm.GetExportedTypes())
-				{
-					if (!type.IsClass)
-						continue;
-
-					foreach (var x in type.GetAttributes<A>(predicate))
-					{
-						yield return new KeyValuePair<A, Type>(x, type);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Finds all types that are decorated with the specified Attribute type and matches the specified predicate.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>A generator which yields elements of the type found.</returns>
-		public static IEnumerable<Type> GetAllTypesByAttribute<A>(Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			return GetAllByAttribute<A>(predicate).Select(x => x.Value);
-		}
-
-		/// <summary>
-		/// Finds the first type that matches the specified query.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>KeyValuePair of custom attribute and type found.</returns>
-		public static KeyValuePair<A, Type> FindByAttribute<A>(Func<Type, A, bool> predicate) 
-			where A : Attribute
-		{
-			return GetAllByAttribute<A>(predicate).FirstOrDefault();
-		}
-
-		/// <summary>
-		/// Finds the first type that matches the specified query.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="predicate">Returns a value if the predicate returns true or the predicate itself is null.</param>
-		/// <returns>Returns only the Type found.</returns>
-		public static Type FindTypeByAttribute<A>(Func<Type, A, bool> predicate)
-			where A : Attribute
-		{
-			return GetAllByAttribute<A>(predicate).FirstOrDefault().Value;
-		}
-
-		/// <summary>
-		/// Find and create and instance of class by parent type and 
-		/// name.
-		/// </summary>
-		/// <typeparam name="T">Return Type.</typeparam>
-		/// <param name="name">Name of type.</param>
-		/// <returns>Returns a new instance of found type, or null.</returns>
-		public static T FindAndCreateByTypeAndName<T>(string name)
-			where T : class
-		{
-			foreach (var asm in ClassLoader.AssemblyCache.Values)
-			{
-				if (asm.IsDynamic)
-					continue;
-
-				Type type = asm.GetType(name);
-				if (type == null)
-					continue;
-
-				if (!type.IsClass)
-					continue;
-
-				if (!type.IsSubclassOf(type))
-					continue;
-
-				return Activator.CreateInstance(type) as T;
-			}
-
-			return null;
-		}
-	}
-
     /// <summary>
     /// A simple number generation class.
     /// </summary>
@@ -396,171 +179,57 @@ namespace Peach.Core
         }
     }
 
-	public static class Usage
+    [Serializable]
+	public class HexString
 	{
-		private class TypeComparer : IComparer<Type>
+		public byte[] Value { get; private set; }
+
+		private HexString(byte[] value)
 		{
-			public int Compare(Type x, Type y)
-			{
-				return x.Name.CompareTo(y.Name);
-			}
+			this.Value = value;
 		}
 
-		private class PluginComparer : IComparer<PluginAttribute>
+		public static HexString Parse(string s)
 		{
-			public int Compare(PluginAttribute x, PluginAttribute y)
+			if (s.Length % 2 == 0)
 			{
-				if (x.IsDefault == y.IsDefault)
-					return x.Name.CompareTo(y.Name);
-
-				if (x.IsDefault)
-					return -1;
-
-				return 1;
+				var array = ToArray(s);
+				if (array != null)
+					return new HexString(array);
 			}
+
+			throw new FormatException("An invalid hex string was specified.");
 		}
 
-		private class ParamComparer : IComparer<ParameterAttribute>
+		public static byte[] ToArray(string s)
 		{
-			public int Compare(ParameterAttribute x, ParameterAttribute y)
+			if (s.Length % 2 != 0)
+				throw new ArgumentException("s");
+
+			byte[] ret = new byte[s.Length / 2];
+
+			for (int i = 0; i < s.Length; i += 2)
 			{
-				if (x.required == y.required)
-					return x.name.CompareTo(y.name);
+				int nibble1 = GetNibble(s[i]);
+				int nibble2 = GetNibble(s[i + 1]);
 
-				if (x.required)
-					return -1;
+				if (nibble1 < 0 || nibble1 > 0xF || nibble2 < 0 | nibble2 > 0xF)
+					return null;
 
-				return 1;
+				ret[i / 2] = (byte)((nibble1 << 4) | nibble2);
 			}
+
+			return ret;
 		}
 
-		public static void Print()
+		private static int GetNibble(char c)
 		{
-			var color = Console.ForegroundColor;
-
-			var domTypes = new SortedDictionary<string, Type>();
-
-			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.Dom.DataElementAttribute>(null))
-			{
-				if (domTypes.ContainsKey(type.Key.elementName))
-				{
-					PrintDuplicate("Data element", type.Key.elementName, domTypes[type.Key.elementName], type.Value);
-					continue;
-				}
-
-				domTypes.Add(type.Key.elementName, type.Value);
-			}
-
-			var pluginsByName = new SortedDictionary<string, Type>();
-			var plugins = new SortedDictionary<Type, SortedDictionary<Type, SortedSet<PluginAttribute>>>(new TypeComparer());
-
-			foreach (var type in ClassLoader.GetAllByAttribute<Peach.Core.PluginAttribute>(null))
-			{
-				var pluginType = type.Key.Type;
-
-				string fullName = type.Key.Type.Name + ": " + type.Key.Name;
-				if (pluginsByName.ContainsKey(fullName))
-				{
-					PrintDuplicate(type.Key.Type.Name, type.Key.Name, pluginsByName[fullName], type.Value);
-					continue;
-				}
-			
-				pluginsByName.Add(fullName, type.Value);
-
-				if (!plugins.ContainsKey(pluginType))
-					plugins.Add(pluginType, new SortedDictionary<Type, SortedSet<PluginAttribute>>(new TypeComparer()));
-
-				var plugin = plugins[pluginType];
-
-				if (!plugin.ContainsKey(type.Value))
-					plugin.Add(type.Value, new SortedSet<PluginAttribute>(new PluginComparer()));
-
-				var attrs = plugin[type.Value];
-
-				bool added = attrs.Add(type.Key);
-				System.Diagnostics.Debug.Assert(added);
-			}
-
-			Console.WriteLine("----- Data Elements --------------------------------------------");
-			foreach (var elem in domTypes)
-			{
-				Console.WriteLine();
-				Console.WriteLine("  {0}", elem.Key);
-				PrintParams(elem.Value);
-			}
-
-			foreach (var kv in plugins)
-			{
-				Console.WriteLine();
-				Console.WriteLine();
-				Console.WriteLine("----- {0}s --------------------------------------------", kv.Key.Name);
-
-				foreach (var plugin in kv.Value)
-				{
-					Console.WriteLine();
-					Console.Write(" ");
-
-					foreach (var attr in plugin.Value)
-					{
-						Console.Write(" ");
-						if (attr.IsDefault)
-							Console.ForegroundColor = ConsoleColor.White;
-						Console.Write(attr.Name);
-						Console.ForegroundColor = color;
-					}
-
-					Console.WriteLine();
-
-					var desc = plugin.Key.GetAttributes<DescriptionAttribute>(null).FirstOrDefault();
-					if (desc != null)
-						Console.WriteLine("    [{0}]", desc.Description);
-
-					PrintParams(plugin.Key);
-				}
-			}
-		}
-
-		private static void PrintDuplicate(string category, string name, Type type1, Type type2)
-		{
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Red;
-
-			if (type1 == type2)
-			{
-				// duplicate name on same type
-				Console.WriteLine("{0} '{1}' declared more than once in assembly '{2}' class '{3}'.",
-					category, name, type1.Assembly.Location, type1.FullName);
-			}
+			if (c >= 'a')
+				return 0xA + (int)(c - 'a');
+			else if (c >= 'A')
+				return 0xA + (int)(c - 'A');
 			else
-			{
-				// duplicate name on different types
-				Console.WriteLine("{0} '{1}' declared in assembly '{2}' class '{3}' and in assembly {4} and class '{5}'.",
-					category, name, type1.Assembly.Location, type1.FullName, type2.Assembly.Location, type2.FullName);
-			}
-
-			Console.ForegroundColor = color;
-			Console.WriteLine();
-		}
-
-		private static void PrintParams(Type elem)
-		{
-			var properties = new SortedSet<ParameterAttribute>(elem.GetAttributes<ParameterAttribute>(null), new ParamComparer());
-
-			foreach (var prop in properties)
-			{
-				string value = "";
-				if (!prop.required)
-					value = string.Format(" default=\"{0}\"", prop.defaultValue.Replace("\r", "\\r").Replace("\n", "\\n"));
-
-				string type;
-				if (prop.type.IsGenericType && prop.type.GetGenericTypeDefinition() == typeof(Nullable<>))
-					type = string.Format("({0}?)", prop.type.GetGenericArguments()[0].Name);
-				else
-					type = string.Format("({0})", prop.type.Name);
-
-				Console.WriteLine("    {0} {1} {2} {3}.{4}", prop.required ? "*" : "-",
-					prop.name.PadRight(24), type.PadRight(14), prop.description, value);
-			}
+				return (int)(c - '0');
 		}
 	}
 
@@ -665,38 +334,45 @@ namespace Peach.Core
 			return isAvailable;
 		}
 
-		public static Encoding GetXmlEncoding(string xml, Encoding def)
+		/// <summary>
+		/// Compute the subrange resulting from diving a range into equal parts
+		/// </summary>
+		/// <param name="begin">Inclusive range begin</param>
+		/// <param name="end">Inclusive range end</param>
+		/// <param name="curSlice">The 1 based index of the current slice</param>
+		/// <param name="numSlices">The total number of slices</param>
+		/// <returns>Range of the current slice</returns>
+		public static Tuple<uint, uint> SliceRange(uint begin, uint end, uint curSlice, uint numSlices)
 		{
-			// Look for <?xml encoding="xxx"?> - return def if not found
+			if (begin > end)
+				throw new ArgumentOutOfRangeException("begin");
+			if (curSlice == 0 || curSlice > numSlices)
+				throw new ArgumentOutOfRangeException("curSlice");
 
-			try
-			{
-				var re = new Regex("^<\\?xml.+?encoding=[\"']([^\"']+)[\"'].*?\\?>");
-				var m = re.Match(xml);
-				if (m.Success)
-				{
-					string enc = m.Groups[1].Value;
-					def = Encoding.GetEncoding(enc);
-				}
-			}
-			catch
-			{
-			}
+			uint total = end - begin + 1;
 
-			return def;
+			if (numSlices == 0 || numSlices > total)
+				throw new ArgumentOutOfRangeException("numSlices");
+
+			uint slice = total / numSlices;
+
+			end = curSlice * slice + begin - 1;
+			begin = end - slice + 1;
+
+			if (curSlice == numSlices)
+				end += total % numSlices;
+
+			return new Tuple<uint, uint>(begin, end);
 		}
 
 		// Slightly tweaked from:
 		// http://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
 		private delegate void HexOutputFunc(char[] line);
+		private delegate int HexInputFunc(byte[] buf, int max);
 
-		private static void HexDump(Stream data, HexOutputFunc output, int bytesPerLine = 16)
+		private static void HexDump(HexInputFunc input, HexOutputFunc output, int bytesPerLine = 16)
 		{
-			System.Diagnostics.Debug.Assert(data != null);
-			long pos = data.Position;
-			long bytesLength = data.Length - pos;
 			byte[] bytes = new byte[bytesPerLine];
-
 			char[] HexChars = "0123456789ABCDEF".ToCharArray();
 
 			int firstHexColumn =
@@ -714,8 +390,12 @@ namespace Peach.Core
 
 			char[] line = (new System.String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
 
-			for (int i = 0; i < bytesLength; i += bytesPerLine)
+			for (int i = 0; ; i += bytesPerLine)
 			{
+				int readLen = input(bytes, bytesPerLine);
+				if (readLen == 0)
+					break;
+
 				line[0] = HexChars[(i >> 28) & 0xF];
 				line[1] = HexChars[(i >> 24) & 0xF];
 				line[2] = HexChars[(i >> 20) & 0xF];
@@ -727,8 +407,6 @@ namespace Peach.Core
 
 				int hexColumn = firstHexColumn;
 				int charColumn = firstCharColumn;
-
-				int readLen = data.Read(bytes, 0, bytesPerLine);
 
 				for (int j = 0; j < bytesPerLine; j++)
 				{
@@ -753,26 +431,105 @@ namespace Peach.Core
 				output(line);
 			}
 
-			data.Seek(pos, SeekOrigin.Begin);
 		}
 
-		public static void HexDump(Stream data, Stream output, int bytesPerLine = 16)
+		public static void HexDump(Stream input, Stream output, int bytesPerLine = 16)
 		{
-			HexOutputFunc func = delegate(char[] line)
+			long pos = input.Position;
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
 			{
-				byte[] buf = Encoding.ASCII.GetBytes(line);
+				return input.Read(buf, 0, max);
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
 				output.Write(buf, 0, buf.Length);
 			};
 
-			HexDump(data, func, bytesPerLine);
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			input.Seek(pos, SeekOrigin.Begin);
 		}
 
-		public static string HexDump(Stream data, int bytesPerLine = 16)
+		public static void HexDump(byte[] buffer, int offset, int count, Stream output, int bytesPerLine = 16)
+		{
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				int len = Math.Min(count, max);
+				Buffer.BlockCopy(buffer, offset, buf, 0, len);
+				offset += len;
+				count -= len;
+				return len;
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				byte[] buf = System.Text.Encoding.ASCII.GetBytes(line);
+				output.Write(buf, 0, buf.Length);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+		}
+
+		public static string HexDump(Stream input, int bytesPerLine = 16)
 		{
 			StringBuilder sb = new StringBuilder();
-			HexOutputFunc func = delegate(char[] line) { sb.Append(line); };
-			HexDump(data, func, bytesPerLine);
+			long pos = input.Position;
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				return input.Read(buf, 0, max);
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				sb.Append(line);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			input.Seek(pos, SeekOrigin.Begin);
+
 			return sb.ToString();
+		}
+
+		public static string HexDump(byte[] buffer, int offset, int count, int bytesPerLine = 16)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			HexInputFunc inputFunc = delegate(byte[] buf, int max)
+			{
+				int len = Math.Min(count, max);
+				Buffer.BlockCopy(buffer, offset, buf, 0, len);
+				offset += len;
+				count -= len;
+				return len;
+			};
+
+			HexOutputFunc outputFunc = delegate(char[] line)
+			{
+				sb.Append(line);
+			};
+
+			HexDump(inputFunc, outputFunc, bytesPerLine);
+
+			return sb.ToString();
+		}
+
+		public static string PrettyBytes(long bytes)
+		{
+			if (bytes < 0)
+				throw new ArgumentOutOfRangeException("bytes");
+
+			if (bytes > (1024 * 1024 * 1024))
+				return (bytes / (1024 * 1024 * 1024.0)).ToString("0.###") + " Gbytes";
+			if (bytes > (1024 * 1024))
+				return (bytes / (1024 * 1024.0)).ToString("0.###") + " Mbytes";
+			if (bytes > 1024)
+				return (bytes / 1024.0).ToString("0.###") + " Kbytes";
+			return bytes.ToString() + " Bytes";
 		}
 	}
 

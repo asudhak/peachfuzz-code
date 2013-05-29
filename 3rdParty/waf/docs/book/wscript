@@ -90,6 +90,7 @@ def configure(conf):
 
 def build(bld):
 
+	#bld(features='subst', is_copy=True, source='asciidoc-dblatex.sty asciidoc-dblatex.xsl', target='asciidoc-dblatex.sty asciidoc-dblatex.xsl')
 
 	for x in bld.path.ant_glob('*.eps'):
 		bld(features='subst', source=x.name, target=x.name, is_copy=True)
@@ -122,11 +123,15 @@ def build(bld):
 	bld(rule='${ADOC} -a icons=true -a stylesheet=${SRC[1].abspath()} -a iconsdir=. -a toc -d book -o ${TGT} ${SRC[0].abspath()}',
 		source='waf.txt waf.css', target='single.html', scan=ascii_doc_scan)
 
-	bld(rule='${A2X} -L -a toc --icons-dir=. --icons -D ${gen.path.get_bld().abspath()} -d book -f pdf ${SRC}',
-		source='waf.txt', target='waf.pdf', scan=ascii_doc_scan)
+	bld(rule='${A2X} -L -a toc --icons-dir=. --icons -D ${gen.path.get_bld().abspath()} \
+                -d book -f pdf --dblatex-opts "-s ${SRC[1].abspath()} -p ${SRC[2].abspath()}" ${SRC[0].bldpath()}',
+		shell=True,
+		source='waf.txt asciidoc-dblatex.sty asciidoc-dblatex.xsl', target='waf.pdf', scan=ascii_doc_scan)
 
-	bld(rule='${A2X} -L -a toc --icons-dir=. --icons -D ${gen.path.get_bld().abspath()} -d article -f pdf ${SRC}',
-		source='intro_waf_1.6.txt', target='intro_waf_1.6.pdf', scan=ascii_doc_scan)
+	bld(rule='${A2X} -L -a toc --icons-dir=. --icons -D ${gen.path.get_bld().abspath()} \
+                -d article -f pdf --dblatex-opts "-s ${SRC[1].abspath()} -p ${SRC[2].abspath()}" ${SRC[0].bldpath()}',
+		shell=True,
+		source='intro_waf_1.6.txt asciidoc-dblatex.sty asciidoc-dblatex.xsl', target='intro_waf_1.6.pdf', scan=ascii_doc_scan)
 
 	bld(rule='ln -sf single.html index.html', shell=True)
 
@@ -136,25 +141,7 @@ def build(bld):
 		bld.add_post_fun(exe)
 
 """
-Add the following to asciidoc/dblatex/asciidoc-dblatex.sty
-
-\\usepackage{color}
-\\usepackage{listings}
-\definecolor{gray}{gray}{0.5}
-\definecolor{plum}{rgb}{0.55078125,0.09765625,0.55859375}
-\lstset{commentstyle=\color{plum}}
-\lstdefinelanguage{shishell} {
-  morekeywords={},
-  sensitive=false,
-  morecomment=[l]{\$}
-}
-
-Set the following values in asciidoc-dblatex.xsl:
-  <xsl:param name="doc.publisher.show">0</xsl:param>
-  ...
-  <xsl:param name="latex.output.revhistory">0</xsl:param>
-
-And for vim highlighting:
+For vim highlighting:
 cp vim/syntax/asciidoc.vim /usr/share/vim/site/syntax/
 cp vim/ftdetect/asciidoc_filetype.vim /usr/share/vim/site/ftdetect/
 

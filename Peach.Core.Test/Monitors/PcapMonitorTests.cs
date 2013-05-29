@@ -169,10 +169,11 @@ namespace Peach.Core.Test.Monitors
 			"		</State>" +
 			"	</StateModel>" +
 			"	" +
-			"	<Test name=\"Default\">" +
+			"	<Test name=\"Default\" replayEnabled='false'>" +
 			"		<Agent ref=\"LocalAgent\"/>" +
 			"		<StateModel ref=\"TheState\"/>" +
 			"		<Publisher class=\"Null\" />" +
+			"		<Strategy class=\"RandomDeterministic\"/>" +
 			"	</Test>" +
 			"</Peach>";
 
@@ -196,21 +197,28 @@ namespace Peach.Core.Test.Monitors
 			config.rangeStart = 1;
 			config.rangeStop = 1 + iterations;
 
-			if (OnFault != null)
+			if (OnFault == null)
 			{
-				e.Fault += OnFault;
+				e.startFuzzing(dom, config);
+				return;
 			}
 
-			e.startFuzzing(dom, config);
+			e.Fault += OnFault;
 
-			if (OnFault != null)
+			try
 			{
-				Assert.AreEqual(1, testResults.Count);
-				testResults.Clear();
+				e.startFuzzing(dom, config);
+				Assert.Fail("Should throw.");
 			}
+			catch (PeachException ex)
+			{
+				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
+			}
+
+			Assert.AreEqual(1, testResults.Count);
+			testResults.Clear();
 
 			Assert.AreEqual(0, testResults.Count);
-
 		}
 
 		[Test]
@@ -218,7 +226,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -231,7 +239,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -244,7 +252,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"Some Unknown Device\"/>" +
 				"		</Monitor>" +
 				"	</Agent>";
@@ -257,7 +265,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"		</Monitor>" +
 				"	</Agent>";
 
@@ -269,7 +277,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\">" +
+				"		<Monitor class=\"Pcap\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"bad filter string\"/>" +
 				"		</Monitor>" +
@@ -283,15 +291,15 @@ namespace Peach.Core.Test.Monitors
 		{
 			string agent_xml =
 				"	<Agent name=\"LocalAgent\">" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon0\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon0\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"ip src 255.255.255.255\"/>" +
 				"		</Monitor>" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon1\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon1\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"udp port {2}\"/>" +
 				"		</Monitor>" +
-				"		<Monitor class=\"PcapMonitor\" name=\"Mon2\">" +
+				"		<Monitor class=\"Pcap\" name=\"Mon2\">" +
 				"			<Param name=\"Device\" value=\"{0}\"/>" +
 				"			<Param name=\"Filter\" value=\"udp port {3}\"/>" +
 				"		</Monitor>" +

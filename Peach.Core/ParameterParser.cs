@@ -38,7 +38,7 @@ namespace Peach.Core
 		/// If an appropriate conversion function can not be found, this function will
 		/// look for a static method on 'type' to perform the conversion.  For example,
 		/// if the attribute type was class 'SomeClass', the function signature would be:
-		/// static void ParseParam(string str, out SomeClass val)
+		/// static void Parse(string str, out SomeClass val)
 		/// 
 		/// If the value is string.Empty and the destination type is nullable, the value
 		/// null will be returned.
@@ -99,7 +99,7 @@ namespace Peach.Core
 				}
 				catch (Exception ex)
 				{
-					RaiseError(pluginType, "could not set parameter '{0}'.  {1}", name, ex.Message);
+					RaiseError(ex, pluginType, "could not set parameter '{0}'.  {1}", name, ex.Message);
 				}
 			}
 
@@ -114,6 +114,8 @@ namespace Peach.Core
 
 			BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 			var prop = obj.GetType().GetProperty(attr.name, bindingAttr, null, attr.type, new Type[0], null);
+			if (prop == null)
+				prop = obj.GetType().GetProperty("_" + attr.name, bindingAttr, null, attr.type, new Type[0], null);
 			if (prop == null)
 				RaiseError(type, "has no property for parameter '{0}'.", attr.name);
 			else if (!prop.CanWrite)
@@ -132,21 +134,48 @@ namespace Peach.Core
 			{
 			}
 
-			// Find a converter on this type with the signature:
-			// static void ParseParam(string str, out "type" val)
+			// Look for a static Parse(string) on destType
+			MethodInfo method = destType.GetMethod("Parse", BindingFlags.Public | BindingFlags.Static, Type.DefaultBinder, new Type[] { typeof(string) }, null);
+			if (method != null)
+			{
+				if (method.ReturnType != destType)
+					method = null;
+			}
 
-			BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-			Type[] types = new Type[] { typeof(string), destType.MakeByRefType() };
-			var method = ownerType.GetMethod("Parse", bindingAttr, Type.DefaultBinder, types, null);
-			if (method == null || method.ReturnType != typeof(void) || !method.GetParameters()[1].IsOut)
-				throw new InvalidCastException("No suitable method exists for converting a string to " + destType.Name + ".");
+			if (method == null)
+			{
+				// Find a converter on this type with the signature:
+				// static void Parse(string str, out "type" val)
+				BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+				Type[] types = new Type[] { typeof(string), destType.MakeByRefType() };
+				Type level = ownerType;
+
+				do
+				{
+					method = level.GetMethod("Parse", bindingAttr, Type.DefaultBinder, types, null);
+					level = level.BaseType;
+
+					if (method != null && (method.ReturnType != typeof(void) || !method.GetParameters()[1].IsOut))
+						method = null;
+				}
+				while (method == null && level != null);
+
+				if (method == null)
+					throw new InvalidCastException("No suitable method exists for converting a string to " + destType.Name + ".");
+			}
 
 			try
 			{
-				object[] parameters = new object[] { value, null };
-				method.Invoke(null, parameters);
-				System.Diagnostics.Debug.Assert(parameters[1] != null);
-				return parameters[1];
+				if (method.ReturnType == typeof(void))
+				{
+					object[] parameters = new object[] { value, null };
+					method.Invoke(null, parameters);
+					return parameters[1];
+				}
+				else
+				{
+					return method.Invoke(null, new object[] { value });
+				}
 			}
 			catch (TargetInvocationException ex)
 			{
@@ -160,12 +189,17 @@ namespace Peach.Core
 
 		private static void RaiseError(Type type, string fmt, params string[] args)
 		{
+			RaiseError(null, type, fmt, args);
+		}
+
+		private static void RaiseError(Exception ex, Type type, string fmt, params string[] args)
+		{
 			var attrs = type.GetAttributes<PluginAttribute>(null);
 			var attr = attrs.FirstOrDefault(a => a.IsDefault == true);
 			if (attr == null) attr = attrs.First();
 
 			string msg = string.Format("{0} '{1}' {2}", attr.Type.Name, attr.Name, string.Format(fmt, args));
-			throw new PeachException(msg);
+			throw new PeachException(msg, ex);
 		}
 
 	}
