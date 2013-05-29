@@ -449,6 +449,8 @@
     <Compile Include="Fixups\IcmpV6ChecksumFixup.cs" />
     <Compile Include="Fixups\Libraries\InternetFixup.cs" />
     <Compile Include="Fixups\ScriptFixup.cs" />
+    <Compile Include="Fixups\TCPChecksumFixup.cs" />
+    <Compile Include="Fixups\UDPChecksumFixup.cs" />
     <Compile Include="IO\BitwiseStream.cs" />
     <Compile Include="IO\BitWriter.cs" />
     <Compile Include="Dom\Monitor.cs" />
