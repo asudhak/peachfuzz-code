@@ -123,7 +123,7 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				return ((Dom)((Test)this.parent.parent.parent).parent).context;
+				return ((Dom)this.parent.parent.parent).context;
 			}
 		}
 

@@ -357,6 +357,9 @@
     <Reference Include="Microsoft.Scripting.Metadata">
       <HintPath>..\3rdParty\IronPython-2.7.3\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\3rdParty\Json.net-5\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
     </Reference>
@@ -398,6 +401,7 @@
     <Compile Include="Agent\Channels\AgentLocal.cs" />
     <Compile Include="Agent\AgentManager.cs" />
     <Compile Include="Agent\AgentServer.cs" />
+    <Compile Include="Agent\Channels\AgentREST.cs" />
     <Compile Include="Agent\Channels\AgentTcpRemoting.cs" />
     <Compile Include="Agent\Channels\AgentZeroMq.cs" />
     <Compile Include="Agent\Monitor.cs" />

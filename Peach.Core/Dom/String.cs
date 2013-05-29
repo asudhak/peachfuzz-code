@@ -408,12 +408,76 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		private string TryFormatNumber(Variant value)
+		{
+			if (!_hasLength)
+				return (string)value;
+
+			dynamic num;
+			switch (value.GetVariantType())
+			{
+				case Variant.VariantType.Int:
+					num = (int)value;
+					break;
+				case Variant.VariantType.Long:
+					num = (long)value;
+					break;
+				case Variant.VariantType.ULong:
+					num = (ulong)value;
+					break;
+				default:
+					return (string)value;
+			}
+
+			long lenInChars = 0;
+
+			if (_lengthType == LengthType.Chars)
+			{
+				lenInChars = _length;
+			}
+			else
+			{
+				long lenInBytes = _length;
+
+				if (_lengthType != LengthType.Bytes)
+				{
+					// Should be verified during pit parser phase
+					System.Diagnostics.Debug.Assert(_lengthType == LengthType.Bits);
+					System.Diagnostics.Debug.Assert((lenInBytes % 8) == 0);
+					lenInBytes /= 8;
+				}
+
+				long bytesPerChar = encoding.GetByteCount("0");
+
+				if ((lenInBytes % bytesPerChar) == 0)
+					lenInChars = lenInBytes / bytesPerChar;
+			}
+
+			string ret = "";
+
+			if (lenInChars > 0)
+			{
+				// Subtract one for the '-' sign
+				long fmtLen = 0 > num ? lenInChars - 1 : lenInChars;
+				ret = num.ToString("D" + fmtLen.ToString());
+			}
+
+			if (ret.Length == lenInChars)
+				return ret;
+
+			throw new SoftException(string.Format(
+				"Error, {0} numeric value '{1}' could not be converted to a {2}-{3} {4} string.",
+				debugName, value, _length, _lengthType.ToString().ToLower().TrimEnd('s'), _type));
+		}
+
 		protected override BitStream InternalValueToBitStream()
 		{
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			var bs = new BitStream(encoding.GetRawBytes((string)InternalValue));
+			string str = TryFormatNumber(InternalValue);
+
+			var bs = new BitStream(encoding.GetRawBytes(str));
 
 			if (!_hasLength && nullTerminated)
 			{

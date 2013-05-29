@@ -202,7 +202,7 @@ namespace Peach.Core
 			startFuzzing(dom, test, config);
 		}
 
-		public void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
+		protected void startFuzzing(Dom.Dom dom, Test test, RunConfiguration config)
 		{
 			try
 			{
@@ -281,13 +281,18 @@ namespace Peach.Core
 
 				uint redoCount = 0;
 
-				if (context.config.parallel && !mutationStrategy.IsDeterministic)
-					throw new NotSupportedException("parallel is not supported when a non-deterministic mutation strategy is used");
+				if (!mutationStrategy.IsDeterministic)
+				{
+					if (context.config.parallel)
+						throw new PeachException("parallel is not supported when a non-deterministic mutation strategy is used");
+					if (context.config.countOnly)
+						throw new PeachException("count is not supported when a non-deterministic mutation strategy is used");
+				}
 
 				if (context.config.range)
 				{
 					if (context.config.parallel)
-						throw new NotSupportedException("range is not supported when parallel is used");
+						throw new PeachException("range is not supported when parallel is used");
 
 					logger.Debug("runTest: context.config.range == true, start: " +
 						context.config.rangeStart + ", stop: " + context.config.rangeStop);

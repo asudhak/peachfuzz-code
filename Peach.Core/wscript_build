@@ -22,6 +22,7 @@ deps = [
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
 	'Renci.SshNet.dll',
+	'Newtonsoft.Json.dll',
 ]
 
 if bld.env['IS_MONO'] == 'True':

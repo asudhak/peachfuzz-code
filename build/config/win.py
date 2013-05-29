@@ -54,6 +54,7 @@ def prepare(conf):
 		},
 		'com' : {
 			'HEADERS' : [ 'atlbase.h' ],
+			'DEFINES' : [ '_WINDLL' ],
 		},
 		'network' : {
 			'HEADERS' : [ 'winsock2.h' ],
@@ -84,6 +85,7 @@ def prepare(conf):
 		},
 		'com' : {
 			'HEADERS' : [ 'atlbase.h' ],
+			'DEFINES' : [ '_WINDLL' ],
 		},
 		'network' : {
 			'HEADERS' : [ 'winsock2.h' ],
