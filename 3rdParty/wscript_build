@@ -27,6 +27,7 @@ bld.read_csshlib('IronRuby.dll',                     paths=['IronRuby-1.1.3/bin'
 bld.read_csshlib('IronRuby.Libraries.dll',           paths=['IronRuby-1.1.3/bin'])
 bld.read_csshlib('IronRuby.Libraries.Yaml.dll',      paths=['IronRuby-1.1.3/bin'])
 bld.read_csshlib('Renci.SshNet.dll',                 paths=['Renci.SshNet'])
+bld.read_csshlib('Newtonsoft.Json.dll',              paths=['Json.net-5'])
 
 if bld.env.MCS:
 	bld.install_files('${BINDIR}', 'IronPython-2.7.3/IronPython.StdLib.zip')

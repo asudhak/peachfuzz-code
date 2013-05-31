@@ -249,14 +249,9 @@ namespace Peach.Core.Runtime
 					config.commandLine += arg + " ";
 
 				if (extra.Count > 1)
-				{
-					if (!dom.tests.ContainsKey(extra[1]))
-						throw new PeachException("Error, unable to locate test named \"" + extra[1] + "\".");
+					config.runName = extra[1];
 
-					e.startFuzzing(dom, dom.tests[extra[1]], config);
-				}
-				else
-					e.startFuzzing(dom, config);
+				e.startFuzzing(dom, config);
 
 				exitCode = 0;
 			}
