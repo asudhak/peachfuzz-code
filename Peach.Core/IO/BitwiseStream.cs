@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Peach.Core.IO.New
 {
@@ -17,6 +18,7 @@ namespace Peach.Core.IO.New
 		public abstract void WriteBits(ulong bits, int count);
 	}
 
+	[DebuggerDisplay("{Progress}")]
 	public class BitStream : BitwiseStream
 	{
 		#region Private Members
@@ -56,6 +58,18 @@ namespace Peach.Core.IO.New
 			{
 				_stream.Dispose();
 				_stream = null;
+			}
+		}
+
+		#endregion
+
+		#region Utility Functions
+
+		public string Progress
+		{
+			get
+			{
+				return "Bytes: {0}/{1}, Bits: {2}/{3}".Fmt(Position, Length, PositionBits, LengthBits);
 			}
 		}
 
@@ -419,6 +433,7 @@ namespace Peach.Core.IO.New
 		#endregion
 	}
 
+	[DebuggerDisplay("Count = {Count}")]
 	public class BitStreamList : BitwiseStream, IList<BitStream>
 	{
 		#region Private Members
@@ -621,7 +636,7 @@ namespace Peach.Core.IO.New
 						ulong tmp;
 						int len = item.ReadBits(out tmp, 8 - bits);
 						int shift = 8 - bits - len;
-						buffer[offset] = (byte)(tmp << shift);
+						buffer[offset] |= (byte)(tmp << shift);
 						PositionBits += len;
 						bits += len;
 

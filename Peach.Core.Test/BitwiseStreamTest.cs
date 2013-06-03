@@ -361,6 +361,11 @@ namespace Peach.Core.Test
 			Assert.AreEqual(37, lst.PositionBits);
 			Assert.AreEqual(5, lst.Length);
 			Assert.AreEqual(4, lst.Position);
+
+			// 00 00 10 10 10 10 11 10 11 10 00 00 00 00 10 00 01 01 0
+			//                10 11 10 11 10 00 00 00 00 10 00 01 01 00 00 00
+			//                0xbb        0x80        0x21        0x40
+			Assert.AreEqual(new byte[] { 0xbb, 0x80, 0x21, 0x40 }, buf);
 		}
 	}
 }
