@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 deps = [
-	'NLog.dll',
-	'SharpPcap.dll',
-	'ZeroMQ.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',
@@ -12,17 +9,31 @@ deps = [
 	'System.Data.dll',
 	'System.Web.dll',
 	'System.Web.Services.dll',
+	'System.Configuration.dll',
+
+	'NLog.dll',
+	'SharpPcap.dll',
+	'ZeroMQ.dll',
 	'Ionic.Zip.dll',
+	
 	'IronPython.dll',
 	'IronRuby.dll',
 	'IronRuby.Libraries.dll',
 	'IronRuby.Libraries.Yaml.dll',
+
 	'Microsoft.Dynamic.dll',
 	'Microsoft.CSharp.dll',
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
+	
 	'Renci.SshNet.dll',
 	'Newtonsoft.Json.dll',
+	'SuperSocket.Common.dll',
+	'SuperSocket.Facility.dll',
+	'SuperSocket.SocketBase.dll',
+	'SuperWebSocket.dll',
+	'SuperSocket.SocketEngine.dll',
+	'log4net.dll',
 ]
 
 if bld.env['IS_MONO'] == 'True':

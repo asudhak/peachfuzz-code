@@ -24,8 +24,6 @@
 // Authors:
 //   Michael Eddington (mike@dejavusecurity.com)
 
-// $Id$
-
 using System;
 using System.IO;
 using System.Collections.Generic;
