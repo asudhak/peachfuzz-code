@@ -199,7 +199,7 @@ namespace Peach.Core.Dom
 
 			bits.SeekBits(0, System.IO.SeekOrigin.Begin);
 			ulong val = bits.ReadUInt64();
-			ulong final = LittleBitWriter.GetBits(val, (int)lengthAsBits);
+			ulong final = LittleBitConverter.GetBits(val, (int)lengthAsBits);
 
 			BitStream bs = new BitStream();
 			bs.WriteBits(final, (int)lengthAsBits);

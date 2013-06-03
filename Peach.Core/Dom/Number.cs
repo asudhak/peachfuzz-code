@@ -252,16 +252,16 @@ namespace Peach.Core.Dom
 			if (Signed)
 			{
 				if (LittleEndian)
-					return LittleBitWriter.GetInt64(bits, (int)lengthAsBits);
+					return LittleBitConverter.GetInt64(bits, (int)lengthAsBits);
 				else
-					return BigBitWriter.GetInt64(bits, (int)lengthAsBits);
+					return BigBitConverter.GetInt64(bits, (int)lengthAsBits);
 			}
 			else
 			{
 				if (LittleEndian)
-					return LittleBitWriter.GetUInt64(bits, (int)lengthAsBits);
+					return LittleBitConverter.GetUInt64(bits, (int)lengthAsBits);
 				else
-					return BigBitWriter.GetUInt64(bits, (int)lengthAsBits);
+					return BigBitConverter.GetUInt64(bits, (int)lengthAsBits);
 			}
 		}
 
@@ -362,9 +362,9 @@ namespace Peach.Core.Dom
 			}
 
 			if (LittleEndian)
-				bits = LittleBitWriter.GetBits(value, (int)lengthAsBits);
+				bits = LittleBitConverter.GetBits(value, (int)lengthAsBits);
 			else
-				bits = BigBitWriter.GetBits(value, (int)lengthAsBits);
+				bits = BigBitConverter.GetBits(value, (int)lengthAsBits);
 
 			var bs = new BitStream();
 			bs.WriteBits(bits, (int)lengthAsBits);

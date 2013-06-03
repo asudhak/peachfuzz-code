@@ -452,7 +452,7 @@
     <Compile Include="Fixups\TCPChecksumFixup.cs" />
     <Compile Include="Fixups\UDPChecksumFixup.cs" />
     <Compile Include="IO\BitwiseStream.cs" />
-    <Compile Include="IO\BitWriter.cs" />
+    <Compile Include="IO\BitConverter.cs" />
     <Compile Include="Dom\Monitor.cs" />
     <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />

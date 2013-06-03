@@ -59,11 +59,11 @@ namespace Peach.Core.IO
 		}
 	}
 
-	public class LittleBitWriter : BitWriter<LittleEndian> { }
+	public class LittleBitConverter : BitConverter<LittleEndian> { }
 
-	public class BigBitWriter : BitWriter<BigEndian> { }
+	public class BigBitConverter : BitConverter<BigEndian> { }
 
-	public class BitWriter<T> where T : IEndian, new()
+	public class BitConverter<T> where T : IEndian, new()
 	{
 		#region Helpers
 
