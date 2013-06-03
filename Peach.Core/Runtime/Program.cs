@@ -80,7 +80,7 @@ namespace Peach.Core.Runtime
 		/// </summary>
 		public virtual string ProductName
 		{
-			get { return "Peach v3.0"; }
+			get { return "Peach v" + Assembly.GetExecutingAssembly().GetName().Version; }
 		}
 
 		/// <summary>
