@@ -6,6 +6,113 @@ using System.Diagnostics;
 
 namespace Peach.Core.IO.New
 {
+	public static class BitwiseStreamExtensions
+	{
+		public static ulong ReadBits(this BitStream bs, int count)
+		{
+			ulong bits;
+			int len = bs.ReadBits(out bits, count);
+			if (len != count)
+				throw new IOException();
+
+			return bits;
+		}
+
+		public static long SeekBytes(this BitStream bs, long offset, SeekOrigin origin)
+		{
+			return bs.Seek(offset, origin);
+		}
+
+		public static long TellBits(this BitStream bs)
+		{
+			return bs.PositionBits;
+		}
+
+		public static byte[] ReadBytes(this BitStream bs, long count)
+		{
+			var buf = new byte[count];
+			int len = bs.Read(buf, 0, (int)count);
+			if (count != len)
+				throw new IOException();
+
+			return buf;
+		}
+
+		public static void WriteBytes(this BitStream bs, byte[] buffer)
+		{
+			bs.Write(buffer, 0, buffer.Length);
+		}
+
+		public static long TellBytes(this BitStream bs)
+		{
+			return bs.Position;
+		}
+
+		public static void Write(this BitStream bs, BitwiseStream other)
+		{
+			long pos = other.PositionBits;
+			other.SeekBits(0, SeekOrigin.Begin);
+			other.CopyTo(bs);
+			other.SeekBits(pos, SeekOrigin.Begin);
+		}
+
+		public static void WriteBit(this BitStream bs, byte bit)
+		{
+			bs.WriteBits(bit, 1);
+		}
+
+		public static byte ReadBit(this BitStream bs)
+		{
+			return (byte)ReadBits(bs, 1);
+		}
+
+		public static void Truncate(this BitStream bs)
+		{
+			bs.SetLengthBits(bs.PositionBits);
+		}
+
+		public static BitStream ReadBitsAsBitStream(this BitStream bs, long bits)
+		{
+			var ret = new BitStream();
+			const int bufferSize = 16 * 1024;
+			var buffer = new byte[bufferSize];
+			long remain = bits / 8;
+			long pos = bs.PositionBits;
+
+			while (remain > 0)
+			{
+				int readSize = (int)Math.Min(remain, bufferSize);
+				int len = bs.Read(buffer, 0, readSize);
+
+				// Why??
+				if (len == 0)
+					throw new IOException();
+
+				ret.Write(buffer, 0, len);
+				remain -= len;
+			}
+
+			ulong tmp;
+			int bitLen = bs.ReadBits(out tmp, (int)(bits % 8));
+			ret.WriteBits(tmp, bitLen);
+
+			bs.SeekBits(pos, SeekOrigin.Begin);
+			ret.SeekBits(0, SeekOrigin.Begin);
+
+			return ret;
+		}
+
+		public static BitStream Clone(this BitStream bs)
+		{
+			var ret = new BitStream();
+			long pos = bs.PositionBits;
+			bs.SeekBits(0, SeekOrigin.Begin);
+			bs.CopyTo(ret);
+			bs.SeekBits(pos, SeekOrigin.Begin);
+			return ret;
+		}
+	}
+
 	public abstract class BitwiseStream : Stream
 	{
 		#region Constructor
@@ -54,6 +161,42 @@ namespace Peach.Core.IO.New
 		}
 
 		#endregion
+
+		#region Legacy Compatibility
+
+		[Obsolete]
+		public byte[] Value
+		{
+			get
+			{
+				var dest = new MemoryStream();
+				long pos = PositionBits;
+				SeekBits(0, SeekOrigin.Begin);
+				CopyTo(dest);
+				SeekBits(pos, SeekOrigin.Begin);
+				return dest.ToArray();
+			}
+		}
+
+		[Obsolete]
+		public Stream Stream
+		{
+			get
+			{
+				return this;
+			}
+		}
+
+		[Obsolete]
+		public long LengthBytes
+		{
+			get
+			{
+				return Length;
+			}
+		}
+
+		#endregion
 	}
 
 	[DebuggerDisplay("{Progress}")]
@@ -71,6 +214,12 @@ namespace Peach.Core.IO.New
 
 		public BitStream()
 			: this(new MemoryStream())
+		{
+		}
+
+		[Obsolete]
+		public BitStream(byte[] buffer)
+			: this(new MemoryStream(buffer))
 		{
 		}
 
