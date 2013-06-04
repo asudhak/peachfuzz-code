@@ -8,7 +8,13 @@ namespace Peach.Core.IO.New
 {
 	public abstract class BitwiseStream : Stream
 	{
+		#region Constructor
+
 		protected BitwiseStream() { }
+
+		#endregion
+
+		#region Bitwise Interface
 
 		public abstract long LengthBits { get; }
 		public abstract long PositionBits { get; set; }
@@ -16,6 +22,38 @@ namespace Peach.Core.IO.New
 		public abstract int ReadBits(out ulong bits, int count);
 		public abstract void SetLengthBits(long value);
 		public abstract void WriteBits(ulong bits, int count);
+
+		#endregion
+
+		#region Stream Specializations
+
+		public void CopyTo(BitwiseStream destination)
+		{
+			CopyTo(destination, 16 * 1024);
+		}
+
+		public void CopyTo(BitwiseStream destination, int bufferSize)
+		{
+			if (destination == null)
+				throw new ArgumentNullException("destination");
+			if (!CanRead)
+				throw new NotSupportedException("This stream does not support reading");
+			if (!destination.CanWrite)
+				throw new NotSupportedException("This destination stream does not support writing");
+			if (bufferSize <= 0)
+				throw new ArgumentOutOfRangeException("bufferSize");
+
+			var buffer = new byte[bufferSize];
+			int nread;
+			while ((nread = Read(buffer, 0, bufferSize)) != 0)
+				destination.Write(buffer, 0, nread);
+
+			ulong bits;
+			nread = ReadBits(out bits, 7);
+			destination.WriteBits(bits, nread);
+		}
+
+		#endregion
 	}
 
 	[DebuggerDisplay("{Progress}")]
@@ -73,6 +111,19 @@ namespace Peach.Core.IO.New
 			}
 		}
 
+		public void WantBytes(long bytes)
+		{
+			if (bytes < 0)
+				throw new ArgumentOutOfRangeException("bytes", "Non-negative number required.");
+
+			if (bytes == 0)
+				return;
+
+			Publisher pub = _stream as Publisher;
+			if (pub != null)
+				pub.WantBytes(bytes);
+		}
+
 		#endregion
 
 		#region Stream Interface
@@ -99,7 +150,7 @@ namespace Peach.Core.IO.New
 
 		public override long Length
 		{
-			get { return (_length + 7) / 8; }
+			get { return _length / 8; }
 		}
 
 		public override long Position
@@ -129,9 +180,9 @@ namespace Peach.Core.IO.New
 			if ((offset + count) > buffer.Length)
 				throw new ArgumentOutOfRangeException("count");
 
-			int avail = (int)Math.Min((_length + 7 - _position) / 8, count);
+			int avail = (int)Math.Min((_length - _position) / 8, count);
 
-			if (avail == 0)
+			if (avail <= 0)
 				return 0;
 
 			int pos = (int)(_position & 0x7);
@@ -158,38 +209,24 @@ namespace Peach.Core.IO.New
 					next &= BitsMask[shift];
 					next <<= pos;
 
-					// If there is another byte, read the low bits
-					if (_stream.Position < _stream.Length)
-					{
-						cur = _stream.ReadByte();
-						System.Diagnostics.Debug.Assert(cur != -1);
+					// Read the low bits from the next byte
+					cur = _stream.ReadByte();
+					System.Diagnostics.Debug.Assert(cur != -1);
 
-						// Shift the low bits into place
-						next |= (byte)((cur >> shift) & BitsMask[pos]);
-					}
+					// Shift the low bits into place
+					next |= (byte)((cur >> shift) & BitsMask[pos]);
 
 					// Save the combined byte
 					buffer[i] = next;
 				}
-			}
 
-			// If LengthBits=1, and we were asked to read a byte, we
-			// need to mask off the unread low bits and ensure
-			// our PositionBits matches our LengthBits
-			_position += (avail * 8);
-			if (_position > _length)
-			{
-				int bits = (int)(_position - _length);
-				System.Diagnostics.Debug.Assert(bits < 8);
-				buffer[offset + avail - 1] &= KeepMask[8 - bits];
-				_position = _length;
-			}
-
-			// If our position is not aligned, we need to back up
-			// the stream by a single byte so subsequent reads/writes work
-			int remain = (int)(_position & 0x7);
-			if (remain != 0)
+				// Since our position is not aligned, we need to back up
+				// the stream by a single byte so subsequent reads/writes work
 				_stream.Seek(-1, SeekOrigin.Current);
+			}
+
+			// Advance position
+			_position += (avail * 8);
 
 			return avail;
 		}
@@ -253,10 +290,12 @@ namespace Peach.Core.IO.New
 				int shift = 8 - pos;
 				byte next = (byte)(buffer[offset] >> pos);
 				int cur = _stream.ReadByte();
-				System.Diagnostics.Debug.Assert(cur != 1);
-				_stream.Seek(-1, SeekOrigin.Current);
-				cur &= KeepMask[pos];
-				next |= (byte)cur;
+				if (cur != -1)
+				{
+					_stream.Seek(-1, SeekOrigin.Current);
+					cur &= KeepMask[pos];
+					next |= (byte)cur;
+				}
 				_stream.WriteByte(next);
 
 				int last = offset + count - 1;
@@ -315,6 +354,9 @@ namespace Peach.Core.IO.New
 				throw new ArgumentOutOfRangeException("count");
 
 			bits = 0;
+
+			if (_length < _position)
+				return 0;
 
 			int pos = (int)(_position & 0x7);
 			int avail = (int)Math.Min(_length - _position, count);
@@ -387,6 +429,9 @@ namespace Peach.Core.IO.New
 
 			if (count == 0)
 				return;
+
+			if (count < 64 && bits >= ((ulong)1 << count))
+				throw new ArgumentOutOfRangeException("bits");
 
 			int pos = (int)(_position & 0x7);
 			int remain = count;
@@ -591,7 +636,7 @@ namespace Peach.Core.IO.New
 
 		public override long Length
 		{
-			get { return (LengthBits + 7) / 8; }
+			get { return LengthBits / 8; }
 		}
 
 		public override long Position
@@ -620,6 +665,8 @@ namespace Peach.Core.IO.New
 			int bits = 0;
 			int needed = count;
 			long pos = 0;
+			ulong tmp = 0;
+			byte glue = 0;
 
 			foreach (var item in this)
 			{
@@ -633,37 +680,38 @@ namespace Peach.Core.IO.New
 					// If we are not aligned reading into buffer, get back aligned
 					if (bits != 0)
 					{
-						ulong tmp;
 						int len = item.ReadBits(out tmp, 8 - bits);
-						int shift = 8 - bits - len;
-						buffer[offset] |= (byte)(tmp << shift);
+						glue |= (byte)(tmp << (8 - bits - len));
 						PositionBits += len;
 						bits += len;
 
 						// Advance offset once buffer is aligned again
 						if (bits == 8)
 						{
+							buffer[offset] = glue;
 							++offset;
 							--needed;
 							bits = 0;
+							glue = 0;
 						}
 					}
 
 					// If we are aligned, read directly into the buffer
 					if (bits == 0)
 					{
-						long start = item.PositionBits;
 						int len = item.Read(buffer, offset, needed);
-
-						long read = item.PositionBits - start;
-						bits = (int)(read % 8);
-
-						if (bits != 0)
-							--len;
 
 						offset += len;
 						needed -= len;
-						PositionBits += read;
+						PositionBits += (len * 8);
+
+						// Ensure we read any leftover bits
+						if (needed > 0)
+						{
+							bits = item.ReadBits(out tmp, 7);
+							glue = (byte)(tmp << (8 - bits));
+							PositionBits += bits;
+						}
 					}
 
 					item.PositionBits = restore;
@@ -675,9 +723,9 @@ namespace Peach.Core.IO.New
 				pos = next;
 			}
 
-			// If we have leftover bits at the end, we have written into the next byte
-			if (bits > 0)
-				--needed;
+			// If we have partial bits we failed to glue into a whole byte
+			// we need to back up our position
+			PositionBits -= bits;
 
 			return count - needed;
 		}
