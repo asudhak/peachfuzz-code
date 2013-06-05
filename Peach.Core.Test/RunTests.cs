@@ -17,11 +17,10 @@ namespace Peach.Core.Test
 	[TestFixture]
 	class RunTests
 	{
-		DateTime iterationStarted;
+		DateTime iterationStarted = DateTime.MinValue;
 		double iterationTimeSeconds = -1;
 
-		[Test]
-		public void TestWaitTime()
+		public void RunWaitTime(string waitTime, double min, double max)
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
@@ -37,12 +36,15 @@ namespace Peach.Core.Test
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"Default\" waitTime=\"5\">" +
+				"   <Test name=\"Default\" waitTime=\"{0}\">".Fmt(waitTime) +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"Sequential\"/>" +
 				"   </Test>" +
 				"</Peach>";
+
+			iterationStarted = DateTime.MinValue;
+			iterationTimeSeconds = -1;
 
 			PitParser parser = new PitParser();
 
@@ -51,26 +53,33 @@ namespace Peach.Core.Test
 			dom.tests[0].includedMutators.Add("BlobMutator");
 
 			RunConfiguration config = new RunConfiguration();
-			config.singleIteration = true;
+			config.range = true;
+			config.rangeStart = 1;
+			config.rangeStop = 1;
 
 			Engine e = new Engine(null);
 			e.IterationStarting += new Engine.IterationStartingEventHandler(e_IterationStarting);
-			e.IterationFinished += new Engine.IterationFinishedEventHandler(e_IterationFinished);
 			e.startFuzzing(dom, config);
 
 			// verify values
-			Assert.GreaterOrEqual(5, iterationTimeSeconds);
-		}
-		void e_IterationFinished(RunContext context, uint currentIteration)
-		{
-			iterationTimeSeconds = (DateTime.Now - this.iterationStarted).TotalSeconds;
+			Assert.GreaterOrEqual(iterationTimeSeconds, min);
+			Assert.LessOrEqual(iterationTimeSeconds, max);
 		}
 
 		void e_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			this.iterationStarted = DateTime.Now;
+			if (this.iterationStarted == DateTime.MinValue)
+				this.iterationStarted = DateTime.Now;
+			else
+				this.iterationTimeSeconds = (DateTime.Now - this.iterationStarted).TotalSeconds;
 		}
 
+		[Test]
+		public void TestWaitTime()
+		{
+			RunWaitTime("2", 2.0, 2.1);
+			RunWaitTime("0.1", 0.1, 0.2);
+		}
 
 		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0)
 		{

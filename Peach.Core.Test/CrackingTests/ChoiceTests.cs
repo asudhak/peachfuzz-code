@@ -669,6 +669,42 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(1, ((byte[])innerBlock[0].DefaultValue).Length);
 			Assert.AreEqual(3, ((byte[])innerBlock[1].DefaultValue).Length);
 		}
+
+		[Test]
+		public void FindChosenElement()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""DM"">
+		<Choice name=""Choice"">
+			<String name=""Foo"" value=""Foo"" token=""true""/>
+			<String name=""Bar"" value=""Bar"" token=""true""/>
+		</Choice>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			// Prior to selecting a choice, we should be able to find Foo and Bar
+			var foo = dom.dataModels[0].find("DM.Choice.Foo");
+			Assert.NotNull(foo);
+			var bar = dom.dataModels[0].find("DM.Choice.Bar");
+			Assert.NotNull(bar);
+
+			BitStream data = new BitStream();
+			data.WriteBytes(Encoding.ASCII.GetBytes("Bar"));
+			data.SeekBits(0, SeekOrigin.Begin);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			// After selecting a choice, we should only be able to find the chosen element
+			foo = dom.dataModels[0].find("DM.Choice.Foo");
+			Assert.Null(foo);
+			bar = dom.dataModels[0].find("DM.Choice.Bar");
+			Assert.NotNull(bar);
+		}
 	}
 }
 

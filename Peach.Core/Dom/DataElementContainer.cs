@@ -119,7 +119,7 @@ namespace Peach.Core.Dom
 					return null;
 
 				var choice = cont as Choice;
-				if (choice != null)
+				if (choice != null && choice.SelectedElement == null)
 				{
 					if (!choice.choiceElements.TryGetValue(names[cnt], out ret))
 						return null;
