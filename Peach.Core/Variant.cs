@@ -219,26 +219,26 @@ namespace Peach.Core
 
 						return Convert.ToInt32(v._valueString);
 					case VariantType.ByteString:
-						BitStream bs = new BitStream(v._valueByteArray);
-						switch (bs.LengthBytes)
-						{
-							case 8:
-								return (int)bs.ReadInt8();
-							case 16:
-								return (int)bs.ReadInt16();
-							case 32:
-								return bs.ReadInt32();
-						}
+						//BitStream bs = new BitStream(v._valueByteArray);
+						//switch (bs.LengthBytes)
+						//{
+						//    case 8:
+						//        return (int)bs.ReadInt8();
+						//    case 16:
+						//        return (int)bs.ReadInt16();
+						//    case 32:
+						//        return bs.ReadInt32();
+						//}
 
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 
 					case VariantType.BitStream:
-						if (v._valueInt != null)
-							return (int)v._valueInt;
-						if (v._valueLong != null)
-							return (int)v._valueLong;
-						if (v._valueULong != null)
-							return (int)v._valueULong;
+						//if (v._valueInt != null)
+						//    return (int)v._valueInt;
+						//if (v._valueLong != null)
+						//    return (int)v._valueLong;
+						//if (v._valueULong != null)
+						//    return (int)v._valueULong;
 
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
@@ -281,26 +281,26 @@ namespace Peach.Core
 
 						return Convert.ToUInt32(v._valueString);
 					case VariantType.ByteString:
-						BitStream bs = new BitStream(v._valueByteArray);
-						switch (bs.LengthBytes)
-						{
-							case 8:
-								return (uint)bs.ReadUInt8();
-							case 16:
-								return (uint)bs.ReadUInt16();
-							case 32:
-								return bs.ReadUInt32();
-						}
+						//BitStream bs = new BitStream(v._valueByteArray);
+						//switch (bs.LengthBytes)
+						//{
+						//    case 8:
+						//        return (uint)bs.ReadUInt8();
+						//    case 16:
+						//        return (uint)bs.ReadUInt16();
+						//    case 32:
+						//        return bs.ReadUInt32();
+						//}
 
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 
 					case VariantType.BitStream:
-						if (v._valueInt != null)
-							return (uint)v._valueInt;
-						if (v._valueLong != null)
-							return (uint)v._valueLong;
-						if (v._valueULong != null)
-							return (uint)v._valueULong;
+						//if (v._valueInt != null)
+						//    return (uint)v._valueInt;
+						//if (v._valueLong != null)
+						//    return (uint)v._valueLong;
+						//if (v._valueULong != null)
+						//    return (uint)v._valueULong;
 
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
@@ -552,23 +552,25 @@ namespace Peach.Core
 
 		private static string BitsToString(BitStream bs)
 		{
-			long end = Math.Min(32, bs.LengthBytes);
-			if (end == 0)
-				return "";
-
+			byte[] buf = new byte[32];
 			long pos = bs.TellBits();
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
-			byte[] buf = bs.ReadBitsAsBytes(end * 8);
+			int len = bs.Read(buf, 0, buf.Length);
 			bs.SeekBits(pos, System.IO.SeekOrigin.Begin);
+
+			if (len == 0)
+				return "";
 
 			StringBuilder ret = new StringBuilder();
 			ret.AppendFormat("{0:x2}", buf[0]);
 
-			for (long i = 1; i < end; ++i)
+			int end = Math.Min(len, buf.Length);
+			for (int i = 1; i < end; ++i)
 				ret.AppendFormat(" {0:x2}", buf[i]);
 
-			if (end != bs.LengthBytes)
-				ret.AppendFormat(".. (Len: {0} bits)", bs.LengthBits);
+			long lengthBits = bs.LengthBits;
+			if ((len * 8) < lengthBits)
+				ret.AppendFormat(".. (Len: {0} bits)", lengthBits);
 
 			return ret.ToString();
 		}

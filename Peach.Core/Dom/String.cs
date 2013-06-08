@@ -110,15 +110,17 @@ namespace Peach.Core.Dom
 			try
 			{
 				StringBuilder sb = new StringBuilder();
-				int bufLen = 1;
 				char[] chars = new char[1];
+				byte[] buf = new byte[1];
 				var dec = encoding.GetDecoder();
 
 				while (maxCount == -1 || sb.Length < maxCount)
 				{
-					data.WantBytes(bufLen);
+					data.WantBytes(buf.Length);
 
-					if (data.TellBytes() >= data.LengthBytes)
+					int len = data.Read(buf, 0, buf.Length);
+
+					if (len == 0)
 					{
 						string msg = "";
 						if (!stopOnNull)
@@ -128,8 +130,6 @@ namespace Peach.Core.Dom
 								" could only crack '" + sb.Length + msg + "' characters " +
 								"before exhausting the input buffer.", this, data);
 					}
-
-					var buf = data.ReadBytes(bufLen);
 
 					if (dec.GetChars(buf, 0, buf.Length, chars, 0) == 0)
 						continue;
@@ -475,17 +475,18 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			string str = TryFormatNumber(InternalValue);
-
-			var bs = new BitStream(encoding.GetRawBytes(str));
+			var str = TryFormatNumber(InternalValue);
+			var buf = encoding.GetRawBytes(str);
+			var bs = new BitStream();
+			bs.Write(buf, 0, buf.Length);
 
 			if (!_hasLength && nullTerminated)
 			{
-				bs.SeekBits(0, System.IO.SeekOrigin.End);
-				bs.WriteBytes(encoding.GetRawBytes("\0"));
-				bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+				buf = encoding.GetRawBytes("\0");
+				bs.Write(buf, 0, buf.Length);
 			}
 
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			return bs;
 		}
 

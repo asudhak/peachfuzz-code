@@ -95,22 +95,23 @@ namespace Peach.Core.Dom
 
 			if (blob.hasLength)
 			{
-				BitStream bs = (BitStream)blob.DefaultValue;
-				if (bs.LengthBits > blob.lengthAsBits)
+				System.Diagnostics.Debug.Assert(blob.DefaultValue.GetVariantType() == Variant.VariantType.ByteString);
+				var buf = (byte[])blob.DefaultValue;
+
+				if (8 * buf.Length > blob.lengthAsBits)
 					throw new PeachException("Error, value of " + blob.debugName + " is longer than specified length.");
-				else if (bs.LengthBits < blob.lengthAsBits)
-					ExpandDefaultValue(blob, bs);
+
+				if (8 * buf.Length < blob.lengthAsBits)
+				{
+					BitStream bs = new BitStream();
+					bs.Write(buf, 0, buf.Length);
+					bs.SetLengthBits(blob.lengthAsBits);
+					bs.Seek(0, SeekOrigin.Begin);
+					blob.DefaultValue = new Variant(bs);
+				}
 			}
 
 			return blob;
-		}
-
-		private static void ExpandDefaultValue(Blob blob, BitStream bs)
-		{
-			bs.SeekBits(blob.lengthAsBits - 1, SeekOrigin.Begin);
-			bs.WriteBit(0);
-			bs.SeekBits(0, SeekOrigin.Begin);
-			blob.DefaultValue = new Variant(bs);
 		}
 	}
 }

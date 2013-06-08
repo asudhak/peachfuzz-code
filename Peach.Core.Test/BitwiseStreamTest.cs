@@ -1,5 +1,5 @@
 using System;
-using Peach.Core.IO.New;
+using Peach.Core.IO;
 using NUnit.Framework;
 using System.Text;
 using System.IO;
@@ -18,6 +18,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(0, bs.Position);
 			Assert.AreEqual(0, bs.LengthBits);
 			Assert.AreEqual(0, bs.PositionBits);
+			Assert.AreEqual(0, bs.BaseStream.Length);
+			Assert.AreEqual(0, bs.BaseStream.Position);
 
 			bs.Position = 10;
 
@@ -25,6 +27,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(10, bs.Position);
 			Assert.AreEqual(0, bs.LengthBits);
 			Assert.AreEqual(80, bs.PositionBits);
+			Assert.AreEqual(0, bs.BaseStream.Length);
+			Assert.AreEqual(10, bs.BaseStream.Position);
 
 			bs.PositionBits = 26;
 
@@ -32,6 +36,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(3, bs.Position);
 			Assert.AreEqual(0, bs.LengthBits);
 			Assert.AreEqual(26, bs.PositionBits);
+			Assert.AreEqual(0, bs.BaseStream.Length);
+			Assert.AreEqual(3, bs.BaseStream.Position);
 
 			bs.SetLength(2);
 
@@ -39,6 +45,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(2, bs.Position);
 			Assert.AreEqual(16, bs.LengthBits);
 			Assert.AreEqual(16, bs.PositionBits);
+			Assert.AreEqual(2, bs.BaseStream.Length);
+			Assert.AreEqual(2, bs.BaseStream.Position);
 
 			bs.Position = 10;
 
@@ -46,6 +54,17 @@ namespace Peach.Core.Test
 			Assert.AreEqual(10, bs.Position);
 			Assert.AreEqual(16, bs.LengthBits);
 			Assert.AreEqual(80, bs.PositionBits);
+			Assert.AreEqual(2, bs.BaseStream.Length);
+			Assert.AreEqual(10, bs.BaseStream.Position);
+
+			bs.SetLengthBits(20);
+
+			Assert.AreEqual(2, bs.Length);
+			Assert.AreEqual(2, bs.Position);
+			Assert.AreEqual(20, bs.LengthBits);
+			Assert.AreEqual(20, bs.PositionBits);
+			Assert.AreEqual(3, bs.BaseStream.Length);
+			Assert.AreEqual(2, bs.BaseStream.Position);
 
 			try
 			{
@@ -73,22 +92,86 @@ namespace Peach.Core.Test
 		{
 			var bs1 = new BitStream();
 			bs1.Write(Encoding.ASCII.GetBytes("Hello"), 0, 5);
-			bs1.WriteBits(0x3d, 6);
-			bs1.SeekBits(4, SeekOrigin.Begin);
-
-			var bs2 = new BitStream();
-			bs2.SeekBits(4, SeekOrigin.Begin);
-			bs1.CopyTo(bs2);
+			bs1.WriteBits(0x2, 4);
+			bs1.SeekBits(0, SeekOrigin.Begin);
 
 			Assert.AreEqual(5, bs1.Length);
-			Assert.AreEqual(46, bs1.LengthBits);
-			Assert.AreEqual(5, bs1.Position);
-			Assert.AreEqual(46, bs1.PositionBits);
+			Assert.AreEqual(44, bs1.LengthBits);
+			Assert.AreEqual(0, bs1.Position);
+			Assert.AreEqual(0, bs1.PositionBits);
 
-			Assert.AreEqual(5, bs2.Length);
-			Assert.AreEqual(46, bs2.LengthBits);
-			Assert.AreEqual(5, bs2.Position);
-			Assert.AreEqual(46, bs2.PositionBits);
+			var dst = new MemoryStream();
+			bs1.CopyTo(dst);
+
+			Assert.AreEqual(5, dst.Length);
+			Assert.AreEqual(5, dst.Position);
+			dst.Seek(0, SeekOrigin.Begin);
+			var rdr = new StreamReader(dst);
+			var final = rdr.ReadToEnd();
+
+			Assert.AreEqual("Hello", final);
+		}
+
+		[Test]
+		public void CopyToStream()
+		{
+			// Extra bits need to be copied off to a real stream
+			var bs1 = new BitStream();
+			bs1.Write(Encoding.ASCII.GetBytes("Hello"), 0, 5);
+			bs1.WriteBits(0x3, 6);
+			bs1.SeekBits(4, SeekOrigin.Begin);
+		}
+
+		[Test]
+		public void TestSlice()
+		{
+			var ms = new MemoryStream();
+			for (int i = 0; i < 256; ++i)
+				ms.WriteByte((byte)i);
+			ms.Seek(0, SeekOrigin.Begin);
+
+			var bs1 = new BitStream(ms);
+			Assert.AreEqual(0, bs1.Position);
+			Assert.AreEqual(256, bs1.Length);
+
+			bs1.Seek(10, SeekOrigin.Begin);
+			Assert.AreEqual(10, ms.Position);
+
+			var bs2 = bs1.SliceBits(800);
+
+			Assert.AreEqual(110, bs1.Position);
+			Assert.AreEqual(880, bs1.PositionBits);
+			Assert.AreEqual(0, bs2.Position);
+			Assert.AreEqual(0, bs2.PositionBits);
+			Assert.AreEqual(100, bs2.Length);
+			Assert.AreEqual(800, bs2.LengthBits);
+
+			var bs3 = bs1.SliceBits(800);
+			Assert.AreEqual(210, bs1.Position);
+			Assert.AreEqual(1680, bs1.PositionBits);
+			Assert.AreEqual(0, bs2.Position);
+			Assert.AreEqual(0, bs2.PositionBits);
+			Assert.AreEqual(0, bs3.Position);
+			Assert.AreEqual(0, bs3.PositionBits);
+			Assert.AreEqual(100, bs3.Length);
+			Assert.AreEqual(800, bs3.LengthBits);
+
+			for (int i = 0; i < 100; ++i)
+			{
+				int b2 = bs2.ReadByte();
+				Assert.AreEqual(10 + i, b2);
+				Assert.AreEqual(i + 1, bs2.Position);
+				Assert.AreEqual(i, bs3.Position);
+				Assert.AreEqual(210, bs1.Position);
+				Assert.AreEqual(10 + i + 1, ms.Position);
+
+				int b3 = bs3.ReadByte();
+				Assert.AreEqual(110 + i, b3);
+				Assert.AreEqual(i + 1, bs2.Position);
+				Assert.AreEqual(i + 1, bs3.Position);
+				Assert.AreEqual(210, bs1.Position);
+				Assert.AreEqual(110 + i + 1, ms.Position);
+			}
 		}
 
 		[Test]
@@ -112,8 +195,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(25, bs.LengthBits);
 
 			bs.SetLengthBits(17);
-			Assert.AreEqual(3, bs.Position);
-			Assert.AreEqual(25, bs.PositionBits);
+			Assert.AreEqual(2, bs.Position);
+			Assert.AreEqual(17, bs.PositionBits);
 			Assert.AreEqual(2, bs.Length);
 			Assert.AreEqual(17, bs.LengthBits);
 		}
@@ -321,9 +404,9 @@ namespace Peach.Core.Test
 			byte[] buf = Encoding.UTF32.GetBytes(test);
 
 			var bs = new BitStream();
-			bs.WriteBits(0x3, 2);
+			bs.WriteBits(0x1, 2);
 			bs.Write(buf, 0, buf.Length);
-			bs.WriteBits(0x3, 2);
+			bs.WriteBits(0x1, 2);
 
 			Assert.AreEqual(buf.Length, bs.Length);
 			Assert.AreEqual(buf.Length * 8 + 4, bs.LengthBits);
@@ -345,7 +428,7 @@ namespace Peach.Core.Test
 			ulong extra;
 			int remain = bs.ReadBits(out extra, 2);
 
-			Assert.AreEqual(0x3, extra);
+			Assert.AreEqual(0x1, extra);
 			Assert.AreEqual(2, remain);
 
 			remain = bs.ReadBits(out extra, 1);

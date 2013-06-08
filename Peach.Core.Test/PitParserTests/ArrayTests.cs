@@ -208,16 +208,8 @@ namespace Peach.Core.Test.PitParserTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var value = dom.dataModels[0].Value;
-			Assert.NotNull(value);
-			MemoryStream ms = value.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			Assert.AreEqual(expected.Length, ms.Length);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-			Assert.AreEqual(expected, actual);
+			var value = dom.dataModels[0].Value.ToArray();
+			Assert.AreEqual(expected, value);
 		}
 
 		[Test]

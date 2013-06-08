@@ -192,13 +192,12 @@ namespace Peach.Core.Mutators
             //PopulateValues(obj);
 
             // Set all mutation flags up front
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            objOf.mutationFlags = DataElement.MUTATE_DEFAULT;
             objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
             objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
 
             // keep size indicator the same
-            obj.MutatedValue = new Variant(obj.Value);
+            obj.MutatedValue = obj.InternalValue;
 
             byte[] data = objOf.Value.Value;
             BitStream newData = new BitStream();
@@ -228,7 +227,7 @@ namespace Peach.Core.Mutators
                 {
                     if ((newData.LengthBytes + data.Length) < n)
                     {
-                        newData.WriteBytes(data);
+                        newData.Write(data, 0, data.Length);
                     }
                     else
                     {

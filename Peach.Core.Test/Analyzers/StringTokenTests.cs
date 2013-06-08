@@ -61,10 +61,7 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", "Hello World");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
@@ -87,10 +84,7 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("HelloWorld"));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", "HelloWorld");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
@@ -113,16 +107,12 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/"));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", "\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/",
-                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);
         }
 
@@ -140,21 +130,15 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAA:AAAA"));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", "AAAA:AAAA");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("AAAA:AAAA",
-                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
-
-						Assert.AreEqual("AAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
+            Assert.AreEqual("AAAA:AAAA", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("AAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
             Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
             Assert.AreEqual("AAAA", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
-
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
         }
 
@@ -172,20 +156,14 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAA:"));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", "AAAAAAAA:");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("AAAAAAAA:",
-                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
-
-						Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
+            Assert.AreEqual("AAAAAAAA:", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
             Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
-
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
         }
 
@@ -203,20 +181,14 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(":AAAAAAAA"));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", ":AAAAAAAA");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual(":AAAAAAAA",
-                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
-
+            Assert.AreEqual(":AAAAAAAA",ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
             Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
-						Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
-
+            Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
         }
 
@@ -234,16 +206,12 @@ namespace Peach.Core.Test.Analyzers
             PitParser parser = new PitParser();
             Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-            BitStream data = new BitStream();
-            data.LittleEndian();
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(@"\t\n\r "));
-            data.SeekBits(0, SeekOrigin.Begin);
+            var data = Bits.Fmt("{0}", @"\t\n\r ");
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual(@"\t\n\r ",
-                            ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual(@"\t\n\r ", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);                      
         }
     }

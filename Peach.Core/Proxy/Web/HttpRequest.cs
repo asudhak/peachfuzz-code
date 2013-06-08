@@ -50,16 +50,15 @@ namespace Peach.Core.Proxy.Web
 
 		public virtual byte[] ToByteArray()
 		{
-			BitStream msg = new BitStream();
-			msg.WriteBytes(ASCIIEncoding.ASCII.GetBytes(
-				string.Format("{0} {1} HTTP/{2}\r\n{3}\r\n",
+			BitWriter msg = new BitWriter(new BitStream());
+			msg.WriteString(string.Format("{0} {1} HTTP/{2}\r\n{3}\r\n",
 					Method,
 					Uri,
 					Version,
-					Headers.ToString())));
+					Headers.ToString()));
 			msg.WriteBytes(Body);
 
-			return msg.Value;
+			return msg.BaseStream.Value;
 		}
 
 		public override string ToString()

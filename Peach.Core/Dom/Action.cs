@@ -588,18 +588,19 @@ namespace Peach.Core.Dom
 
 		protected void handleOutput(Publisher publisher)
 		{
-			Stream strm = dataModel.Value.Stream;
-			strm.Seek(0, SeekOrigin.Begin);
+			BitStreamList lst = new BitStreamList();
+			lst.Add(dataModel.Value);
 
-			MemoryStream ms = strm as MemoryStream;
-			if (ms == null)
+			int remain = (int)(lst.LengthBits % 8);
+			if (remain != 0)
 			{
-				ms = new MemoryStream();
-				strm.CopyTo(ms);
-				ms.Seek(0, SeekOrigin.Begin);
-				strm.Seek(0, SeekOrigin.Begin);
+				BitStream pad = new BitStream();
+				pad.WriteBits(0, 8 - remain);
 			}
 
+			MemoryStream ms = new MemoryStream();
+			lst.CopyTo(ms);
+			ms.Seek(0, SeekOrigin.Begin);
 			publisher.output(ms.GetBuffer(), (int)ms.Position, (int)ms.Length);
 		}
 

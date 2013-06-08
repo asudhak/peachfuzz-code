@@ -70,6 +70,7 @@ namespace Peach.Core.Dom
 		protected long _min = sbyte.MinValue;
 		protected bool _signed = false;
 		protected bool _isLittleEndian = true;
+		protected Endian _endian = Endian.Little;
 
 		public Number()
 			: base()
@@ -232,37 +233,28 @@ namespace Peach.Core.Dom
 
 		private dynamic SanitizeStream(BitStream bs)
 		{
-			if (bs.LengthBytes != ((lengthAsBits + 7) / 8))
+			if (bs.LengthBits < lengthAsBits || (bs.LengthBits + 7) / 8 != (lengthAsBits + 7) / 8)
 				throw new PeachException(string.Format("Error, {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", debugName, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8));
 
-			if (bs.LengthBits > lengthAsBits)
-			{
-				ulong extra = bs.ReadBits((int)(bs.LengthBits - lengthAsBits));
-				if (extra != 0)
-					throw new PeachException(string.Format("Error, {0} value has an invalid bytes for a {1}-bit {2} number.", debugName, lengthAsBits, Signed ? "signed" : "unsigned"));
-			}
+			ulong extra;
+			bs.ReadBits(out extra, (int)(bs.LengthBits - lengthAsBits));
+
+			if (extra != 0)
+				throw new PeachException(string.Format("Error, {0} value has an invalid bytes for a {1}-bit {2} number.", debugName, lengthAsBits, Signed ? "signed" : "unsigned"));
 
 			return FromBitstream(bs);
 		}
 
 		private dynamic FromBitstream(BitStream bs)
 		{
-			ulong bits = bs.ReadBits((int)lengthAsBits);
+			ulong bits;
+			int len = bs.ReadBits(out bits, (int)lengthAsBits);
+			System.Diagnostics.Debug.Assert(len == lengthAsBits);
 
 			if (Signed)
-			{
-				if (LittleEndian)
-					return LittleBitConverter.GetInt64(bits, (int)lengthAsBits);
-				else
-					return BigBitConverter.GetInt64(bits, (int)lengthAsBits);
-			}
+				return _endian.GetInt64(bits, (int)lengthAsBits);
 			else
-			{
-				if (LittleEndian)
-					return LittleBitConverter.GetUInt64(bits, (int)lengthAsBits);
-				else
-					return BigBitConverter.GetUInt64(bits, (int)lengthAsBits);
-			}
+				return _endian.GetUInt64(bits, (int)lengthAsBits);
 		}
 
 		private Variant Sanitize(Variant variant)
@@ -326,8 +318,12 @@ namespace Peach.Core.Dom
 			get { return _isLittleEndian; }
 			set
 			{
-				_isLittleEndian = value;
-				Invalidate();
+				if (_isLittleEndian != value)
+				{
+					_isLittleEndian = value;
+					_endian = value ? Endian.Little : Endian.Big;
+					Invalidate();
+				}
 			}
 		}
 
@@ -343,8 +339,6 @@ namespace Peach.Core.Dom
 
 		protected override BitStream InternalValueToBitStream()
 		{
-			ulong bits;
-
 			dynamic value = GetNumber(InternalValue);
 
 			if (value > 0 && (ulong)value > MaxValue)
@@ -361,10 +355,7 @@ namespace Peach.Core.Dom
 				throw new SoftException(inner);
 			}
 
-			if (LittleEndian)
-				bits = LittleBitConverter.GetBits(value, (int)lengthAsBits);
-			else
-				bits = BigBitConverter.GetBits(value, (int)lengthAsBits);
+			ulong bits = _endian.GetBits(value, (int)lengthAsBits);
 
 			var bs = new BitStream();
 			bs.WriteBits(bits, (int)lengthAsBits);

@@ -60,10 +60,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -89,10 +86,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -118,10 +112,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -149,10 +140,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("11Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "11Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -183,10 +171,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("HELLO WORLDHello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "HELLO WORLDHello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -220,10 +205,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("11Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "11Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -284,10 +266,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("000011000011Hello WorldhELLO wORLD"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "000011000011Hello WorldhELLO wORLD");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -358,9 +337,8 @@ namespace Peach.Core.Test.CrackingTests
 			// When using placement with after, the order gets reversed.  This is because
 			// each placement puts the element directly after the target.
 			var expected = Encoding.ASCII.GetBytes("\x02\x05\x07!fuzzerpeach");
-			BitStream data = new BitStream();
-			data.WriteBytes(expected);
-			data.SeekBits(0, SeekOrigin.Begin);
+
+			var data = Bits.Fmt("{0}", expected);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -401,9 +379,8 @@ namespace Peach.Core.Test.CrackingTests
 			// When using placement with before, the order is maintained.  This is because
 			// each placement puts the element directly before the target.
 			var expected = Encoding.ASCII.GetBytes("\x02\x05\x07peach!fuzzer");
-			BitStream data = new BitStream();
-			data.WriteBytes(expected);
-			data.SeekBits(0, SeekOrigin.Begin);
+
+			var data = Bits.Fmt("{0}", expected);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -450,19 +427,8 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.BigEndian();
-			data.WriteUInt16(2);
-			data.WriteUInt16(14);
-			data.WriteUInt16(5);
-			data.WriteUInt16(27);
-			data.WriteUInt16(7);
-			data.WriteBytes(Encoding.ASCII.GetBytes("junk"));
-			data.WriteBytes(Encoding.ASCII.GetBytes("peach"));
-			data.WriteBytes(Encoding.ASCII.GetBytes("morejunk"));
-			data.WriteBytes(Encoding.ASCII.GetBytes("!fuzzer"));
-			data.WriteBytes(Encoding.ASCII.GetBytes("evenmorejunk"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:B16}{1:B16}{2:B16}{3:B16}{4:B16}{5}",
+				2, 14, 5, 27, 7, "junkpeachmorejunk!fuzzerevenmorejunk");
 
 			var expected = data.Value;
 			Assert.NotNull(expected);

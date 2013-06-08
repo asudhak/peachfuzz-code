@@ -44,16 +44,15 @@ namespace Peach.Core.Proxy.Web
 
 		public virtual byte[] ToByteArray()
 		{
-			BitStream msg = new BitStream();
-			msg.WriteBytes(ASCIIEncoding.ASCII.GetBytes(
-				string.Format("HTTP/{0} {1} {2}\r\n{3}\r\n",
+			BitWriter msg = new BitWriter(new BitStream());
+			msg.WriteString(string.Format("HTTP/{0} {1} {2}\r\n{3}\r\n",
 					Version,
 					Status,
 					Reason,
-					Headers.ToString())));
+					Headers.ToString()));
 			msg.WriteBytes(Body);
 
-			return msg.Value;
+			return msg.BaseStream.Value;
 		}
 
 		public override string ToString()
@@ -77,6 +76,7 @@ namespace Peach.Core.Proxy.Web
 				byte[] buff = new byte[stream.Length - stream.Position];
 				stream.Read(buff, 0, (int) (stream.Length - stream.Position));
 				BitStream dataBuffer = new BitStream(buff);
+				BitReader dataReader = new BitReader(dataBuffer);
 
 				string data = ReadLine(dataBuffer);
 				if (data == null)
@@ -122,7 +122,7 @@ namespace Peach.Core.Proxy.Web
 					}
 					else
 					{
-						res.Body = dataBuffer.ReadBytes(len);
+						res.Body = dataReader.ReadBytes(len);
 					}
 					pos = newPos + res.Body.Length;
 				}
@@ -160,8 +160,8 @@ namespace Peach.Core.Proxy.Web
 						if (length > (dataBuffer.LengthBytes - dataBuffer.TellBytes()))
 							return null;
 
-						byte[] chunk = dataBuffer.ReadBytes(length);
-						dataBuffer.ReadBytes(2); // Skip \r\n at end of chunk
+						byte[] chunk = dataReader.ReadBytes(length);
+						dataReader.ReadBytes(2); // Skip \r\n at end of chunk
 
 						res.Chunks.Add(chunk);
 					}
@@ -177,7 +177,7 @@ namespace Peach.Core.Proxy.Web
 					}
 					else
 					{
-						res.Body = dataBuffer.ReadBytes(dataBuffer.LengthBytes - dataBuffer.TellBytes());
+						res.Body = dataReader.ReadBytes((int)(dataBuffer.LengthBytes - dataBuffer.TellBytes()));
 						pos = newPos + res.Body.Length;
 					}
 				}

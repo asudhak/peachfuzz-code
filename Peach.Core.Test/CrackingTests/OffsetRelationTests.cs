@@ -59,10 +59,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)20);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 20, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -83,10 +80,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)0);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 0, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -107,13 +101,8 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)(offsetdata.Length + 1));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			var data = Bits.Fmt("{0:L8}{1}{2}", offsetdata.Length + 1, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -138,15 +127,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("12345");
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteBytes(otherdata);
-			data.WriteInt8((sbyte)(offsetdata.Length + 1 + otherdata.Length));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string otherdata = "12345";
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			var data = Bits.Fmt("{0}{1:L8}{2}{3}", otherdata, offsetdata.Length + 1 + otherdata.Length, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -173,12 +156,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 			string target = "Hello World";
-
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)(offsetdata.Length + 1));
-			data.WriteBytes(Encoding.ASCII.GetBytes(offsetdata));
-			data.WriteBytes(Encoding.ASCII.GetBytes(target));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}{2}", offsetdata.Length + 1, offsetdata, target);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -208,13 +186,7 @@ namespace Peach.Core.Test.CrackingTests
 			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 			string sizeddata = "12345";
 			string target = "Hello World";
-
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)(sizeddata.Length + offsetdata.Length + 1));
-			data.WriteBytes(Encoding.ASCII.GetBytes(offsetdata));
-			data.WriteBytes(Encoding.ASCII.GetBytes(sizeddata));
-			data.WriteBytes(Encoding.ASCII.GetBytes(target));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}{2}{3}", sizeddata.Length + offsetdata.Length + 1, offsetdata, sizeddata, target);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -245,13 +217,7 @@ namespace Peach.Core.Test.CrackingTests
 			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 			string sizeddata = "12345";
 			string target = "Hello World";
-
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)3);
-			data.WriteBytes(Encoding.ASCII.GetBytes(offsetdata));
-			data.WriteBytes(Encoding.ASCII.GetBytes(sizeddata));
-			data.WriteBytes(Encoding.ASCII.GetBytes(target));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}{2}{3}", 3, offsetdata, sizeddata, target);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -283,15 +249,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
-			byte[] payload = ASCIIEncoding.ASCII.GetBytes("Hello World");
-
-			BitStream data = new BitStream();
-			data.WriteByte((byte)(1 + 1 + offsetdata.Length));
-			data.WriteByte((byte)(1 + offsetdata.Length + payload.Length));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(payload);
-			data.SeekBits(0, SeekOrigin.Begin);
+			string offsetdata = "AAAAAAAAAA";
+			string payload = "Hello World";
+			var data = Bits.Fmt("{0:L8}{1:L8}{2}{3}", 1 + 1 + offsetdata.Length, 1 + offsetdata.Length + payload.Length, offsetdata, payload);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -323,15 +283,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
-			byte[] payload = ASCIIEncoding.ASCII.GetBytes("Hello World");
-
-			BitStream data = new BitStream();
-			data.WriteByte((byte)30);
-			data.WriteByte((byte)(1 + offsetdata.Length + payload.Length));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(payload);
-			data.SeekBits(0, SeekOrigin.Begin);
+			string offsetdata = "AAAAAAAAAA";
+			string payload = "Hello World";
+			var data = Bits.Fmt("{0:L8}{1:L8}{2}{3}", 30, 1 + offsetdata.Length + payload.Length, offsetdata, payload);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -355,15 +309,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("12345");
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteBytes(otherdata);
-			data.WriteInt8((sbyte)offsetdata.Length);
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string otherdata = "12345";
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			var data = Bits.Fmt("{0}{1:L8}{2}{3}", otherdata, offsetdata.Length, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -390,17 +338,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("12345");
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteBytes(otherdata);
-			data.WriteInt8((sbyte)(offsetdata.Length + otherdata.Length));
-			data.WriteBytes(otherdata);
-			data.WriteBytes(otherdata); // RelData
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string otherdata = "12345";
+			string offsetdata = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+			var data = Bits.Fmt("{0}{1:L8}{2}{3}{4}{5}", otherdata, offsetdata.Length + otherdata.Length, otherdata, otherdata, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -427,13 +367,8 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteByte((byte)(offsetdata.Length));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string offsetdata = "AAAAAAAAAA";
+			var data = Bits.Fmt("{0:L8}{1}{2}", offsetdata.Length, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -458,13 +393,8 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteByte((byte)(offsetdata.Length));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string offsetdata = "AAAAAAAAAA";
+			var data = Bits.Fmt("{0:L8}{1}{2}", offsetdata.Length, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -496,16 +426,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("abcde");
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteByte(7);
-			data.WriteBytes(otherdata);
-			data.WriteByte(16);
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string otherdata = "abcde";
+			string offsetdata = "AAAAAAAAA";
+			var data = Bits.Fmt("{0:L8}{1}{2:L8}{3}{4}", 7, otherdata, 16, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -537,16 +460,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("abcde");
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteByte((byte)(1 + otherdata.Length + 1));
-			data.WriteBytes(otherdata);
-			data.WriteByte((byte)offsetdata.Length);
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string otherdata = "abcde";
+			string offsetdata = "AAAAAAAAA";
+			var data = Bits.Fmt("{0:L8}{1}{2:L8}{3}{4}", 1 + otherdata.Length + 1, otherdata, offsetdata.Length, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -579,16 +495,9 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			byte[] otherdata = ASCIIEncoding.ASCII.GetBytes("abcde");
-			byte[] offsetdata = ASCIIEncoding.ASCII.GetBytes("AAAAAAAAA");
-
-			BitStream data = new BitStream();
-			data.WriteByte((byte)(1 + otherdata.Length + 1));
-			data.WriteBytes(otherdata);
-			data.WriteByte((byte)(1 + 1 + offsetdata.Length));
-			data.WriteBytes(offsetdata);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			string otherdata = "abcde";
+			string offsetdata = "AAAAAAAAA";
+			var data = Bits.Fmt("{0:L8}{1}{2:L8}{3}{4}", 1 + otherdata.Length + 1, otherdata, 1 + 1 + offsetdata.Length, offsetdata, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -671,9 +580,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("00000010  Payload"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "00000010  Payload");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);

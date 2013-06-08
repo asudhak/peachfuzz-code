@@ -66,8 +66,8 @@ namespace Peach.Core.Test.Mutators
             {
                 var num = dataModels[i][0].InternalValue;
                 var str = dataModels[i][1].Value.Value;
-                Assert.AreEqual(Variant.VariantType.BitStream, num.GetVariantType());
-                Assert.AreEqual(5, new BitStream((byte[])num).ReadInt32());
+                Assert.AreEqual(Variant.VariantType.Long, num.GetVariantType());
+                Assert.AreEqual(5, (long)num);
                 if ((i - 1) <= 50)
                     Assert.AreEqual(i - 1, str.Length);
                 else

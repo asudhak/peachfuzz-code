@@ -61,7 +61,7 @@ namespace Peach.Core.Transformers.Compress
 
             try
             {
-                using (GZipStream compressionStream = new GZipStream(compressedData.Stream, CompressionMode.Decompress))
+                using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Decompress))
                 {
                     compressionStream.CopyTo(data);
                 }
@@ -85,7 +85,7 @@ namespace Peach.Core.Transformers.Compress
             {
                 using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
                 {
-                    data.Stream.CopyTo(compressionStream);
+                    data.CopyTo(compressionStream);
                 }
 
                 return new BitStream(compressedData.ToArray());

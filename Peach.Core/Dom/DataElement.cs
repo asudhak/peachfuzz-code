@@ -1391,8 +1391,12 @@ namespace Peach.Core.Dom
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			var ret = data.ReadBitsAsBitStream(needed);
-			System.Diagnostics.Debug.Assert(ret != null);
+			var slice = data.SliceBits(needed);
+			System.Diagnostics.Debug.Assert(slice != null);
+
+			var ret = new BitStream();
+			slice.CopyTo(ret);
+			ret.Seek(0, SeekOrigin.Begin);
 
 			return ret;
 		}

@@ -92,14 +92,19 @@ namespace Peach.Core.Analyzers
 
             List<byte> currentBlob = new List<byte>();
 
-            while (data.TellBytes() < data.LengthBytes)
+            while (true)
             {
-                byte b = data.ReadByte();
+                int value = data.ReadByte();
+                if (value == -1)
+                    break;
+
+                byte b = (byte)value;
 
                 //if (isGzip(b, data))
                 //{
                 //    throw new NotImplementedException("Handle Gzip data stream");
                 //}
+
                 if (isAsciiChar(b))
                 {
                     List<byte> possibleString = new List<byte>();
@@ -107,7 +112,10 @@ namespace Peach.Core.Analyzers
                     while (isAsciiChar(b))
                     {
                         possibleString.Add(b);
-                        b = data.ReadByte();
+                        value = data.ReadByte();
+                        if (value == -1)
+                            break;
+                        b = (byte)value;
                     }
 
                     if (possibleString.Count >= MINCHARS)
@@ -130,7 +138,8 @@ namespace Peach.Core.Analyzers
                     }
 
                     // Backup so we don't use that last byte
-                    data.SeekBytes(-1, SeekOrigin.Current);
+                    if (value != -1)
+                        data.SeekBytes(-1, SeekOrigin.Current);
                 }
                 else
                     currentBlob.Add(b);

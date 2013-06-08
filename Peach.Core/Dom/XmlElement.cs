@@ -219,7 +219,7 @@ namespace Peach.Core.Dom
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			return new BitStream(((BitStream)InternalValue).Stream);
+			return (BitStream)InternalValue;
 		}
 	}
 }

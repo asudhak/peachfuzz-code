@@ -145,11 +145,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.NotNull(value);
 			Assert.AreEqual(2, value.LengthBytes);
 
-			MemoryStream ms = value.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[expected.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, actual.Length);
+			byte[] actual = value.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
 
@@ -181,16 +177,12 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(1, dom.dataModels.Count);
 
-			var value = dom.dataModels[0].Value;
-
+			var value = dom.dataModels[0].Value.ToArray();
 			Assert.NotNull(value);
-			Assert.AreEqual(102, value.LengthBytes);
+			Assert.AreEqual(102, value.Length);
 
-			MemoryStream ms = value.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			Assert.AreEqual(2, ms.GetBuffer()[0]);
-			Assert.AreEqual(100, ms.GetBuffer()[1]);
+			Assert.AreEqual(2, value[0]);
+			Assert.AreEqual(100, value[1]);
 		}
 
 		byte[] RunEndian(string how)

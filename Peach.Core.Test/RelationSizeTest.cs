@@ -101,11 +101,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)("Hello World".Length - 5));
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAA"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 6, "Hello WorldAAAAAAAAAAA");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -182,10 +178,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8(5);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("HelloWorldMore"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 5, "HelloWorldMore");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -496,9 +489,7 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Assert.AreEqual(2, dom.dataModels.Count);
 
-			BitStream data = new BitStream();
-			data.WriteBytes(new byte[] { 0x00, 0x10, 0x00, 0x06, 0x00, 0x04, 0xde, 0xad, 0xbe, 0xef });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x00, 0x10, 0x00, 0x06, 0x00, 0x04, 0xde, 0xad, 0xbe, 0xef });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[1], data);
@@ -536,19 +527,13 @@ namespace Peach.Core.Test
 			Assert.AreEqual(6, (int)len.DefaultValue);
 			Assert.AreEqual(4, (int)length.DefaultValue);
 
-			var bs = (BitStream)blob.DefaultValue;
-			Assert.NotNull(bs);
+			var final = (BitStream)blob.DefaultValue;
+			Assert.NotNull(final);
 
-			MemoryStream ms = bs.Stream as MemoryStream;
-			Assert.NotNull(ms);
+			var actual = final.ToArray();
+			var expected = new byte[] { 0xde, 0xad, 0xbe, 0xef };
 
-			Assert.AreEqual(4, ms.Length);
-
-			var buf = ms.GetBuffer();
-			Assert.AreEqual(0xde, buf[0]);
-			Assert.AreEqual(0xad, buf[1]);
-			Assert.AreEqual(0xbe, buf[2]);
-			Assert.AreEqual(0xef, buf[3]);
+			Assert.AreEqual(actual, expected);
 		}
 
 		[Test]

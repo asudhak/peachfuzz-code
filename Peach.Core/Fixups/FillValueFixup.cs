@@ -74,8 +74,8 @@ namespace Peach.Core.Fixups
 			for (int i = 0; i < val.LengthBytes; ++i)
 				bs.WriteByte((byte)((i % cycle) + start));
 
-			bs.SeekBits(val.LengthBits, System.IO.SeekOrigin.Begin);
-			bs.Truncate();
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+			bs.SetLengthBits(val.LengthBits);
 
 			return new Variant(bs);
 		}

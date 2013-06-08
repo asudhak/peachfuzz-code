@@ -204,11 +204,8 @@ namespace Peach.Core.Test.PitParserTests
 			var final = num.Value;
 			Assert.NotNull(final);
 			Assert.AreEqual(12, final.LengthBits);
-			Assert.AreEqual(2, final.LengthBytes);
-			MemoryStream ms = final.Stream as MemoryStream;
-			Assert.NotNull(ms);
-			Assert.AreEqual(0, ms.GetBuffer()[0]);
-			Assert.AreEqual(0, ms.GetBuffer()[1]);
+			Assert.AreEqual(1, final.LengthBytes);
+			Assert.AreEqual(new byte[] { 0, 0 }, final.ToArray());
 		}
 
 		[Test]

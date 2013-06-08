@@ -166,44 +166,47 @@ namespace Peach.Core.Dom
 		protected override Variant GenerateInternalValue()
 		{
 			BitStream bits = new BitStream();
-			bits.BigEndian();
 
-			int shift;
+			long shift;
 
-			if (_isLittleEndian && lengthAsBits < 64)
+			if (_isLittleEndian)
 			{
 				// Expand to 64 bits and skip remaining bits at the beginning
-				shift = 64 - (int)lengthAsBits;
-				bits.WriteBits(0, 64);
+				shift = 64 - lengthAsBits;
+				bits.SetLengthBits(64);
 			}
 			else
 			{
 				// Expand to 'size' bits
 				shift = 0;
-				bits.WriteBits(0, (int)lengthAsBits);
+				bits.SetLengthBits(lengthAsBits);
 			}
 
 			foreach (DataElement child in this)
 			{
-				if (child is Flag)
-				{
-					bits.SeekBits(((Flag)child).position + shift, System.IO.SeekOrigin.Begin);
-					bits.Write(child.Value, child);
-				}
-				else
-					throw new ApplicationException("Flag has child thats not a flag!");
+				var flag = child as Flag;
+				if (flag == null)
+					throw new ApplicationException("Flags has child thats not a flag!");
+
+				bits.SeekBits(flag.position + shift, System.IO.SeekOrigin.Begin);
+				bits.Write(flag.Value, flag);
 			}
 
-			if (!_isLittleEndian)
-				return new Variant(bits);
+			if (_isLittleEndian)
+			{
+				bits.SeekBits(0, System.IO.SeekOrigin.Begin);
+				ulong value;
+				int len = bits.ReadBits(out value, 64);
+				System.Diagnostics.Debug.Assert(len == 64);
+				ulong final = Endian.Little.GetBits(value, (int)lengthAsBits);
+				bits.Seek(0, System.IO.SeekOrigin.Begin);
+				bits.WriteBits(final, (int)lengthAsBits);
+				bits.SetLengthBits(bits.PositionBits);
+			}
 
-			bits.SeekBits(0, System.IO.SeekOrigin.Begin);
-			ulong val = bits.ReadUInt64();
-			ulong final = LittleBitConverter.GetBits(val, (int)lengthAsBits);
+			bits.Seek(0, System.IO.SeekOrigin.Begin);
 
-			BitStream bs = new BitStream();
-			bs.WriteBits(final, (int)lengthAsBits);
-			return new Variant(bs);
+			return new Variant(bits);
 		}
 	}
 }

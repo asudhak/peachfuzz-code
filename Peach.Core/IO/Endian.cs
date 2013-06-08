@@ -2,72 +2,18 @@ using System;
 
 namespace Peach.Core.IO
 {
-	public interface IEndian
+	[Serializable]
+	public abstract class Endian
 	{
-		int ShiftBy(int written, int todo);
-		ulong GetBits(ulong value, int bitlen);
-		ulong GetValue(ulong bits, int bitlen);
-	}
+		#region Abstract Functions
 
-	public class LittleEndian : IEndian
-	{
-		public int ShiftBy(int written, int todo) { return written; }
+		protected abstract int ShiftBy(int written, int todo);
+		protected abstract ulong PackBits(ulong value, int bitlen);
+		protected abstract ulong UnpackBits(ulong bits, int bitlen);
 
-		public ulong GetBits(ulong value, int bitlen)
-		{
-			ulong ret = 0;
+		#endregion
 
-			while (bitlen > 0)
-			{
-				bitlen =  Math.Max(0, bitlen - 8);
-				ret |= (value & 0xff) << bitlen;
-				value >>= 8;
-			}
-
-			return ret;
-		}
-
-		public ulong GetValue(ulong bits, int bitlen)
-		{
-			ulong ret = 0;
-			int shift = bitlen % 8;
-
-			while (bitlen > 0)
-			{
-				bitlen -= shift;
-				ret |= (bits & ((ulong)0xff >> (8 - shift))) << bitlen;
-				bits >>= shift;
-				shift = 8;
-			}
-
-			return ret;
-		}
-	}
-
-	public class BigEndian : IEndian
-	{
-		public int ShiftBy(int written, int todo) { return Math.Max(0, todo); }
-
-		public ulong GetBits(ulong value, int bitlen)
-		{
-			return value;
-		}
-
-		public ulong GetValue(ulong bits, int bitlen)
-		{
-			return bits;
-		}
-	}
-
-	public class LittleBitConverter : BitConverter<LittleEndian> { }
-
-	public class BigBitConverter : BitConverter<BigEndian> { }
-
-	public class BitConverter<T> where T : IEndian, new()
-	{
 		#region Helpers
-
-		private static T endian = new T();
 
 		private static long SignExpand(ulong value, int bitlen)
 		{
@@ -82,42 +28,42 @@ namespace Peach.Core.IO
 
 		#region Value -> byte[]
 
-		public static byte[] GetBytes(sbyte value, int bitlen)
+		public byte[] GetBytes(sbyte value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 8);
 		}
 
-		public static byte[] GetBytes(byte value, int bitlen)
+		public byte[] GetBytes(byte value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 8);
 		}
 
-		public static byte[] GetBytes(short value, int bitlen)
+		public byte[] GetBytes(short value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 16);
 		}
 
-		public static byte[] GetBytes(ushort value, int bitlen)
+		public byte[] GetBytes(ushort value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 16);
 		}
 
-		public static byte[] GetBytes(int value, int bitlen)
+		public byte[] GetBytes(int value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 32);
 		}
 
-		public static byte[] GetBytes(uint value, int bitlen)
+		public byte[] GetBytes(uint value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 32);
 		}
 
-		public static byte[] GetBytes(long value, int bitlen)
+		public byte[] GetBytes(long value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 64);
 		}
 
-		public static byte[] GetBytes(ulong value, int bitlen)
+		public byte[] GetBytes(ulong value, int bitlen)
 		{
 			return GetBytes((ulong)value, bitlen, 64);
 		}
@@ -126,42 +72,42 @@ namespace Peach.Core.IO
 
 		#region Value -> Bits
 
-		public static ulong GetBits(sbyte value, int bitlen)
+		public ulong GetBits(sbyte value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 8);
 		}
 
-		public static ulong GetBits(byte value, int bitlen)
+		public ulong GetBits(byte value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 8);
 		}
 
-		public static ulong GetBits(short value, int bitlen)
+		public ulong GetBits(short value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 16);
 		}
 
-		public static ulong GetBits(ushort value, int bitlen)
+		public ulong GetBits(ushort value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 16);
 		}
 
-		public static ulong GetBits(int value, int bitlen)
+		public ulong GetBits(int value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 32);
 		}
 
-		public static ulong GetBits(uint value, int bitlen)
+		public ulong GetBits(uint value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 32);
 		}
 
-		public static ulong GetBits(long value, int bitlen)
+		public ulong GetBits(long value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 64);
 		}
 
-		public static ulong GetBits(ulong value, int bitlen)
+		public ulong GetBits(ulong value, int bitlen)
 		{
 			return GetBits((ulong)value, bitlen, 64);
 		}
@@ -170,42 +116,42 @@ namespace Peach.Core.IO
 
 		#region byte[] to Value
 
-		public static sbyte GetInt8(byte[] buf, int bitlen)
+		public sbyte GetSByte(byte[] buf, int bitlen)
 		{
 			return (sbyte)GetSigned(buf, bitlen, 8);
 		}
 
-		public static byte GetUInt8(byte[] buf, int bitlen)
+		public byte GetByte(byte[] buf, int bitlen)
 		{
 			return (byte)GetUnsigned(buf, bitlen, 8);
 		}
 
-		public static short GetInt16(byte[] buf, int bitlen)
+		public short GetInt16(byte[] buf, int bitlen)
 		{
 			return (short)GetSigned(buf, bitlen, 16);
 		}
 
-		public static ushort GetUInt16(byte[] buf, int bitlen)
+		public ushort GetUInt16(byte[] buf, int bitlen)
 		{
 			return (ushort)GetUnsigned(buf, bitlen, 16);
 		}
 
-		public static int GetInt32(byte[] buf, int bitlen)
+		public int GetInt32(byte[] buf, int bitlen)
 		{
 			return (int)GetSigned(buf, bitlen, 32);
 		}
 
-		public static uint GetUInt32(byte[] buf, int bitlen)
+		public uint GetUInt32(byte[] buf, int bitlen)
 		{
 			return (uint)GetUnsigned(buf, bitlen, 32);
 		}
 
-		public static long GetInt64(byte[] buf, int bitlen)
+		public long GetInt64(byte[] buf, int bitlen)
 		{
 			return (long)GetSigned(buf, bitlen, 64);
 		}
 
-		public static ulong GetUInt64(byte[] buf, int bitlen)
+		public ulong GetUInt64(byte[] buf, int bitlen)
 		{
 			return (ulong)GetUnsigned(buf, bitlen, 64);
 		}
@@ -214,42 +160,42 @@ namespace Peach.Core.IO
 
 		#region Bits to Value
 
-		public static sbyte GetInt8(ulong bits, int bitlen)
+		public sbyte GetSByte(ulong bits, int bitlen)
 		{
 			return (sbyte)GetSigned(bits, bitlen, 8);
 		}
 
-		public static byte GetUInt8(ulong bits, int bitlen)
+		public byte GetByte(ulong bits, int bitlen)
 		{
 			return (byte)GetUnsigned(bits, bitlen, 8);
 		}
 
-		public static short GetInt16(ulong bits, int bitlen)
+		public short GetInt16(ulong bits, int bitlen)
 		{
 			return (short)GetSigned(bits, bitlen, 16);
 		}
 
-		public static ushort GetUInt16(ulong bits, int bitlen)
+		public ushort GetUInt16(ulong bits, int bitlen)
 		{
 			return (ushort)GetUnsigned(bits, bitlen, 16);
 		}
 
-		public static int GetInt32(ulong bits, int bitlen)
+		public int GetInt32(ulong bits, int bitlen)
 		{
 			return (int)GetSigned(bits, bitlen, 32);
 		}
 
-		public static uint GetUInt32(ulong bits, int bitlen)
+		public uint GetUInt32(ulong bits, int bitlen)
 		{
 			return (uint)GetUnsigned(bits, bitlen, 32);
 		}
 
-		public static long GetInt64(ulong bits, int bitlen)
+		public long GetInt64(ulong bits, int bitlen)
 		{
 			return (long)GetSigned(bits, bitlen, 64);
 		}
 
-		public static ulong GetUInt64(ulong bits, int bitlen)
+		public ulong GetUInt64(ulong bits, int bitlen)
 		{
 			return (ulong)GetUnsigned(bits, bitlen, 64);
 		}
@@ -258,7 +204,7 @@ namespace Peach.Core.IO
 
 		#region Bit Conversion
 
-		private static ulong GetBits(ulong value, int bitlen, int maxlen)
+		private ulong GetBits(ulong value, int bitlen, int maxlen)
 		{
 			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
@@ -266,10 +212,10 @@ namespace Peach.Core.IO
 			if (bitlen < 64)
 				value &= ((ulong)1 << bitlen) - 1;
 
-			return endian.GetBits(value, bitlen);
+			return PackBits(value, bitlen);
 		}
 
-		private static ulong GetUnsigned(ulong bits, int bitlen, int maxlen)
+		private ulong GetUnsigned(ulong bits, int bitlen, int maxlen)
 		{
 			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
@@ -277,10 +223,10 @@ namespace Peach.Core.IO
 			if (bitlen < 64)
 				bits &= ((ulong)1 << bitlen) - 1;
 
-			return endian.GetValue(bits, bitlen);
+			return UnpackBits(bits, bitlen);
 		}
 
-		private static long GetSigned(ulong bits, int bitlen, int maxlen)
+		private long GetSigned(ulong bits, int bitlen, int maxlen)
 		{
 			ulong ret = GetUnsigned(bits, bitlen, maxlen);
 
@@ -291,7 +237,7 @@ namespace Peach.Core.IO
 
 		#region Byte Conversion
 
-		private static byte[] GetBytes(ulong value, int bitlen, int maxlen)
+		private byte[] GetBytes(ulong value, int bitlen, int maxlen)
 		{
 			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
@@ -305,7 +251,7 @@ namespace Peach.Core.IO
 				bitlen -= 8;
 
 				// LE: written, BE: bitlen
-				int shift = endian.ShiftBy(written, bitlen);
+				int shift = ShiftBy(written, bitlen);
 				byte next = (byte)(value >> shift);
 
 				if (bitlen < 0)
@@ -318,7 +264,7 @@ namespace Peach.Core.IO
 			return ret;
 		}
 
-		private static ulong GetUnsigned(byte[] buf, int bitlen, int maxlen)
+		private ulong GetUnsigned(byte[] buf, int bitlen, int maxlen)
 		{
 			if (bitlen < 0 || bitlen > maxlen)
 				throw new ArgumentOutOfRangeException("bitlen");
@@ -339,7 +285,7 @@ namespace Peach.Core.IO
 					next >>= -bitlen;
 
 				// LE: written, BE: bitlen
-				int shift = endian.ShiftBy(written, bitlen);
+				int shift = ShiftBy(written, bitlen);
 
 				ret |= ((ulong)next << shift);
 				written += 8;
@@ -348,7 +294,7 @@ namespace Peach.Core.IO
 			return ret;
 		}
 
-		private static long GetSigned(byte[] buf, int bitlen, int maxlen)
+		private long GetSigned(byte[] buf, int bitlen, int maxlen)
 		{
 			ulong ret = GetUnsigned(buf, bitlen, maxlen);
 
@@ -356,5 +302,80 @@ namespace Peach.Core.IO
 		}
 
 		#endregion
+
+		#region Static Properties
+
+		private static Endian big = new BigEndian();
+		private static Endian little = new LittleEndian();
+
+		public static Endian Big
+		{
+			get { return big; }
+		}
+
+		public static Endian Little
+		{
+			get { return little; }
+		}
+
+		#endregion
+	}
+
+	[Serializable]
+	public class LittleEndian : Endian
+	{
+		protected override int ShiftBy(int written, int todo)
+		{
+			return written;
+		}
+
+		protected override ulong PackBits(ulong value, int bitlen)
+		{
+			ulong ret = 0;
+
+			while (bitlen > 0)
+			{
+				bitlen =  Math.Max(0, bitlen - 8);
+				ret |= (value & 0xff) << bitlen;
+				value >>= 8;
+			}
+
+			return ret;
+		}
+
+		protected override ulong UnpackBits(ulong bits, int bitlen)
+		{
+			ulong ret = 0;
+			int shift = bitlen % 8;
+
+			while (bitlen > 0)
+			{
+				bitlen -= shift;
+				ret |= (bits & ((ulong)0xff >> (8 - shift))) << bitlen;
+				bits >>= shift;
+				shift = 8;
+			}
+
+			return ret;
+		}
+	}
+
+	[Serializable]
+	public class BigEndian : Endian
+	{
+		protected override int ShiftBy(int written, int todo)
+		{
+			return Math.Max(0, todo);
+		}
+
+		protected override ulong PackBits(ulong value, int bitlen)
+		{
+			return value;
+		}
+
+		protected override ulong UnpackBits(ulong bits, int bitlen)
+		{
+			return bits;
+		}
 	}
 }

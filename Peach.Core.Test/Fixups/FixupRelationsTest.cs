@@ -79,17 +79,14 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(4 + 4 + 5, dm1.Length);
 			Assert.Greater(dm2.Length, dm1.Length);
 
-			BitStream bs = new BitStream();
-			bs.WriteUInt32(13);
-			bs.WriteUInt32(0);
-			bs.WriteBytes(Encoding.ASCII.GetBytes("Hello"));
+			var data = Bits.Fmt("{0:L32}{1:L32}{2}", 13, 0, "Hello");
 
 			var crc = new CRCTool();
 			crc.Init(CRCTool.CRCCode.CRC32);
-			bs.SeekBytes(4, SeekOrigin.Begin);
-			bs.WriteUInt32((uint)crc.crctablefast(bs.Value));
+			data.SeekBytes(4, SeekOrigin.Begin);
+			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.Value), 32), 32);
 
-			byte[] final = bs.Value;
+			byte[] final = data.Value;
 			Assert.AreEqual(final, dm1);
 		}
 
@@ -158,17 +155,14 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(4 + 4 + 5, dm1.Length);
 			Assert.Greater(dm2.Length, dm1.Length);
 
-			BitStream bs = new BitStream();
-			bs.WriteUInt32(0);
-			bs.WriteUInt32(13);
-			bs.WriteBytes(Encoding.ASCII.GetBytes("Hello"));
+			var data = Bits.Fmt("{0:L32}{1:L32}{2}", 0, 13, "Hello");
 
 			var crc = new CRCTool();
 			crc.Init(CRCTool.CRCCode.CRC32);
-			bs.SeekBytes(0, SeekOrigin.Begin);
-			bs.WriteUInt32((uint)crc.crctablefast(bs.Value));
+			data.SeekBytes(0, SeekOrigin.Begin);
+			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.Value), 32), 32);
 
-			byte[] final = bs.Value;
+			byte[] final = data.Value;
 			Assert.AreEqual(final, dm1);
 		}
 
@@ -203,15 +197,7 @@ namespace Peach.Core.Test.Fixups
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[0].Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
+			var actual = dom.dataModels[0].Value.ToArray();
 			byte[] expected = new byte[] { 38, 41, 27, 5, 0, 0, 0, 4 };
 			Assert.AreEqual(expected, actual);
 		}
@@ -247,15 +233,7 @@ namespace Peach.Core.Test.Fixups
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[0].Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
+			var actual = dom.dataModels[0].Value.ToArray();
 			byte[] expected = new byte[] { 0, 0, 0, 4, 38, 41, 27, 5 };
 			Assert.AreEqual(expected, actual);
 		}
@@ -294,15 +272,7 @@ namespace Peach.Core.Test.Fixups
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[0].Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
+			var actual = dom.dataModels[0].Value.ToArray();
 			byte[] expected = new byte[] { 0, 0, 0, 8, 85, 82, 148, 168 };
 			Assert.AreEqual(expected, actual);
 		}

@@ -59,10 +59,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 1, 2, 3, 4, 5 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -99,10 +96,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 11, 22, 33, 44, 55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 11, 22, 33, 44, 55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[2], data);
@@ -145,10 +139,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 11, 22, 33, 44, 55, 1, 9, 9, 2, 8, 8, 8, 8, 1, 7, 7, 0 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 11, 22, 33, 44, 55, 1, 9, 9, 2, 8, 8, 8, 8, 1, 7, 7, 0 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[2], data);
@@ -272,10 +263,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -319,10 +307,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x01, 0x06, 0x00, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x01, 0x06, 0x00, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -364,10 +349,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x03, 0x00, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x03, 0x00, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -407,10 +389,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -453,10 +432,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x02, 0x03, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -502,10 +478,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x02, 0x05, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x02, 0x05, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -603,10 +576,7 @@ namespace Peach.Core.Test.CrackingTests
 			var model = dom.dataModels[0].Value;
 			Assert.NotNull(model);
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x02, 0x05, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x02, 0x05, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -644,10 +614,7 @@ namespace Peach.Core.Test.CrackingTests
 			var model = dom.dataModels[0].Value;
 			Assert.NotNull(model);
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x08, 0x05, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x08, 0x05, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -668,6 +635,73 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
 			Assert.AreEqual(1, ((byte[])innerBlock[0].DefaultValue).Length);
 			Assert.AreEqual(3, ((byte[])innerBlock[1].DefaultValue).Length);
+		}
+
+		void TryCrackChoice(DataModel model, string data, bool shouldFail)
+		{
+			var bs = Bits.Fmt("{0}", data);
+
+			var cracker = new DataCracker();
+
+			try
+			{
+				cracker.CrackData(model, bs);
+				Assert.False(shouldFail);
+			}
+			catch (CrackingFailure)
+			{
+				Assert.True(shouldFail);
+			}
+		}
+
+		[Test]
+		public void CrackDerivedChoice()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Parent'>
+		<Choice name='Prefixes'>
+			<String value='A' token='true' />
+			<String value='B' token='true' />
+		</Choice>
+		<String value='-' token='true' />
+		<String value='Hello' token='true' />
+	</DataModel>
+
+	<DataModel name='Child' ref='Parent'>
+		<String name='Prefixes.X' value='X' token='true' />
+		<String name='Prefixes.Y' value='Y' token='true' />
+	</DataModel>
+
+	<DataModel name='Grandchild' ref='Child'>
+		<String name='Prefixes.Z' value='Z' token='true' />
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			TryCrackChoice(dom.dataModels[0], "A-Hello", false);
+			TryCrackChoice(dom.dataModels[0], "B-Hello", false);
+			TryCrackChoice(dom.dataModels[0], "X-Hello", true);
+			TryCrackChoice(dom.dataModels[0], "Y-Hello", true);
+			TryCrackChoice(dom.dataModels[0], "Z-Hello", true);
+			TryCrackChoice(dom.dataModels[0], "Q-Hello", true);
+
+			TryCrackChoice(dom.dataModels[1], "A-Hello", false);
+			TryCrackChoice(dom.dataModels[1], "B-Hello", false);
+			TryCrackChoice(dom.dataModels[1], "X-Hello", false);
+			TryCrackChoice(dom.dataModels[1], "Y-Hello", false);
+			TryCrackChoice(dom.dataModels[1], "Z-Hello", true);
+			TryCrackChoice(dom.dataModels[1], "Q-Hello", true);
+
+			TryCrackChoice(dom.dataModels[2], "A-Hello", false);
+			TryCrackChoice(dom.dataModels[2], "B-Hello", false);
+			TryCrackChoice(dom.dataModels[2], "X-Hello", false);
+			TryCrackChoice(dom.dataModels[2], "Y-Hello", false);
+			TryCrackChoice(dom.dataModels[2], "Z-Hello", false);
+			TryCrackChoice(dom.dataModels[2], "Q-Hello", true);
 		}
 	}
 }

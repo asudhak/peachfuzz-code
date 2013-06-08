@@ -101,8 +101,11 @@ namespace Peach.Core.Mutators
 		private void performMutation(DataElement obj, uint newCount)
 		{
 			int startIdx = obj.parent.IndexOf(obj) + 1;
-			var value = obj.Value.Clone();
-			value.ClearElementPositions();
+			var value = new Peach.Core.IO.BitStream();
+			var src = obj.Value;
+			src.CopyTo(value);
+			src.SeekBits(0, System.IO.SeekOrigin.Begin);
+			value.SeekBits(0, System.IO.SeekOrigin.Begin);
 			var mutatedValue = new Variant(value);
 
 			for (int i = 0; i < newCount; ++i)

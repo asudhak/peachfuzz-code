@@ -360,6 +360,7 @@
     <Compile Include="Analyzers\BinaryAnalyzerTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="Analyzers\XmlAnalyzerTests.cs" />
+    <Compile Include="BitsTests.cs" />
     <Compile Include="BitStreamTest.cs" />
     <Compile Include="BitwiseStreamTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />

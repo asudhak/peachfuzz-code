@@ -733,15 +733,15 @@ namespace Peach.Core.Publishers
 				{
 					var bs = (BitStream)value;
 					bs.SeekBits(0, SeekOrigin.Begin);
-					int len = (int)Math.Min(bs.LengthBits, 32);
-					ulong bits = bs.ReadBits(len);
-					mtu = LittleBitConverter.GetUInt32(bits, len);
+					ulong bits;
+					int len = bs.ReadBits(out bits, 32);
+					mtu = Endian.Little.GetUInt32(bits, len);
 				}
 				else if (value.GetVariantType() == Variant.VariantType.ByteString)
 				{
 					byte[] buf = (byte[])value;
 					int len = Math.Min(buf.Length * 8, 32);
-					mtu = LittleBitConverter.GetUInt32(buf, len);
+					mtu = Endian.Little.GetUInt32(buf, len);
 				}
 				else
 				{
