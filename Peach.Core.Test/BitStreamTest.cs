@@ -189,70 +189,70 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MaxValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt16(short.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MaxValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt32(67305985);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(67305985, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt32(Int32.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MaxValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt64(Int64.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MaxValue, r.ReadInt64());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteByte(byte.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(byte.MaxValue, r.ReadByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteUInt16(ushort.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(ushort.MaxValue, r.ReadUInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteUInt32(UInt32.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(UInt32.MaxValue, r.ReadUInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteUInt64(UInt64.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(UInt64.MaxValue, r.ReadUInt64());
 
 			//Min
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteSByte(sbyte.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MinValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt16(short.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MinValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt32(Int32.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MinValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt64(Int64.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MinValue, r.ReadInt64());
 
 			// BIG ENDIAN //////////////////////////////////////////
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.LittleEndian();
 			r.LittleEndian();
 
@@ -261,63 +261,63 @@ namespace Peach.Core.Test
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MaxValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt16(short.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MaxValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt32(67305985);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(67305985, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt32(Int32.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MaxValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt64(Int64.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MaxValue, r.ReadInt64());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteByte(byte.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(byte.MaxValue, r.ReadByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteUInt16(ushort.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(ushort.MaxValue, r.ReadUInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteUInt32(UInt32.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(UInt32.MaxValue, r.ReadUInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteUInt64(UInt64.MaxValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(UInt64.MaxValue, r.ReadUInt64());
 
 			//Min
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteSByte(sbyte.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MinValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt16(short.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MinValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt32(Int32.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MinValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteInt64(Int64.MinValue);
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MinValue, r.ReadInt64());
@@ -355,7 +355,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MaxValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -363,7 +363,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MaxValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -371,7 +371,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(67305985, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -379,7 +379,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MaxValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -387,7 +387,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MaxValue, r.ReadInt64());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -395,7 +395,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(byte.MaxValue, r.ReadByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -403,7 +403,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(ushort.MaxValue, r.ReadUInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -411,7 +411,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(UInt32.MaxValue, r.ReadUInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -421,7 +421,7 @@ namespace Peach.Core.Test
 
 
 			//Min
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -429,7 +429,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MinValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -437,7 +437,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MinValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -445,7 +445,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MinValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -455,7 +455,7 @@ namespace Peach.Core.Test
 
 			// BIG ENDIAN //////////////////////////////////////////
 
-			bs.Clear();
+			bs.SetLength(0);
 			r.BigEndian();
 			w.BigEndian();
 
@@ -468,7 +468,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MaxValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -476,7 +476,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MaxValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -484,7 +484,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(67305985, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -492,7 +492,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MaxValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -500,7 +500,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int64.MaxValue, r.ReadInt64());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -508,7 +508,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(byte.MaxValue, r.ReadByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -516,7 +516,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(ushort.MaxValue, r.ReadUInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -524,7 +524,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(UInt32.MaxValue, r.ReadUInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -533,7 +533,7 @@ namespace Peach.Core.Test
 			Assert.AreEqual(UInt64.MaxValue, r.ReadUInt64());
 
 			//Min
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -541,7 +541,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(sbyte.MinValue, r.ReadSByte());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -549,7 +549,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(short.MinValue, r.ReadInt16());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
@@ -557,7 +557,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(3, System.IO.SeekOrigin.Begin);
 			Assert.AreEqual(Int32.MinValue, r.ReadInt32());
 
-			bs.Clear();
+			bs.SetLength(0);
 			w.WriteBit(1);
 			w.WriteBit(1);
 			w.WriteBit(1);
