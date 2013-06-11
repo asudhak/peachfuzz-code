@@ -235,13 +235,13 @@ namespace Peach.Core.MutationStrategies
 
 		private DataModel ApplyFileData(Dom.Action action, Data data)
 		{
-			byte[] fileBytes = null;
+			FileStream fileBytes = null;
 
 			for (int i = 0; i < 5 && fileBytes == null; ++i)
 			{
 				try
 				{
-					fileBytes = File.ReadAllBytes(data.FileName);
+					fileBytes = File.OpenRead(data.FileName);
 				}
 				catch (Exception ex)
 				{
