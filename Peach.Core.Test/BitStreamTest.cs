@@ -751,5 +751,55 @@ namespace Peach.Core.Test
 			Assert.AreEqual(new byte[] { 0xcc, 0xd1 }, in4.Value);
 		}
 
+		[Test]
+		public void ReadString()
+		{
+			var bs = new BitStream();
+			var writer = new BitWriter(bs);
+			var reader = new BitReader(bs);
+
+			writer.WriteString("Hello");
+			Assert.AreEqual(5, bs.Length);
+			Assert.AreEqual(5, bs.Position);
+			bs.Seek(1, SeekOrigin.Begin);
+
+			var str = reader.ReadString();
+			Assert.AreEqual("ello", str);
+
+			bs.Seek(5, SeekOrigin.Begin);
+			writer.WriteBits(0xf, 4);
+			bs.Seek(0, SeekOrigin.Begin);
+
+			// 4-bits of trailer is bad
+			try
+			{
+				reader.ReadString();
+				Assert.Fail("should throw");
+			}
+			catch (IOException ex)
+			{
+				Assert.AreEqual("Couldn't convert last 4 bits into string.", ex.Message);
+			}
+
+			bs.Seek(0, SeekOrigin.Begin);
+			writer.WriteString("Hello", Encoding.UTF32);
+			Assert.AreEqual(20, bs.Length);
+			Assert.AreEqual(20, bs.Position);
+
+			bs.Seek(0, SeekOrigin.Begin);
+			bs.SetLength(bs.Length - 1);
+
+			// 3-bytes of trailer is bad
+			try
+			{
+				reader.ReadString(Encoding.UTF32);
+				Assert.Fail("should throw");
+			}
+			catch (IOException ex)
+			{
+				Assert.AreEqual("Couldn't convert last 3 bytes into string.", ex.Message);
+			}
+		}
+
 	}
 }

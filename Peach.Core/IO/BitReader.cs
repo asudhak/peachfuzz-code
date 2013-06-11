@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 
 namespace Peach.Core.IO
 {
@@ -92,6 +93,47 @@ namespace Peach.Core.IO
 		public ulong ReadUInt64()
 		{
 			return endian.GetUInt64(ReadBits(64), 64);
+		}
+
+		public string ReadString()
+		{
+			return ReadString(Encoding.ASCII);
+		}
+
+		public string ReadString(Encoding encoding)
+		{
+			var sb = new StringBuilder();
+			var dec = encoding.GetDecoder();
+			var chars = new char[1];
+			var buf = new byte[1];
+			var idx = 0;
+
+			while (true)
+			{
+				int len = BaseStream.Read(buf, 0, buf.Length);
+
+				if (len == 0)
+				{
+					if (idx != 0)
+						throw new IOException("Couldn't convert last " + idx + " bytes into string.");
+
+					long bits = BaseStream.LengthBits - BaseStream.PositionBits;
+					if (bits != 0)
+						throw new IOException("Couldn't convert last " + bits + " bits into string.");
+
+					return sb.ToString();
+				}
+
+				if (dec.GetChars(buf, 0, buf.Length, chars, 0) == 0)
+				{
+					idx++;
+				}
+				else
+				{
+					sb.Append(chars);
+					idx = 0;
+				}
+			}
 		}
 	}
 }
