@@ -84,7 +84,7 @@ namespace Peach.Core.Test.Mutators
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <String name=\"sizeRelation1\">" +
                 "           <Relation type=\"size\" of=\"string1\"/>" +
-                "           <Hint name=\"SizedDataVaranceMutator-N\" value=\"5\"/>" +
+                "           <Hint name=\"SizedDataVarianceMutator-N\" value=\"5\"/>" +
                 "       </String>" +
                 "       <String name=\"string1\" value=\"AAAAA\"/>" +
                 "   </DataModel>" +

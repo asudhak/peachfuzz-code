@@ -533,6 +533,7 @@
     <Compile Include="Mutators\NumericalVarianceMutator.cs" />
     <Compile Include="Mutators\SizedDataNumericalEdgeCasesMutator.cs" />
     <Compile Include="Mutators\SizedDataVaranceMutator.cs" />
+    <Compile Include="Mutators\SizedMutator.cs" />
     <Compile Include="Mutators\SizedNumericalEdgeCasesMutator.cs" />
     <Compile Include="Mutators\SizedVaranceMutator.cs" />
     <Compile Include="Mutators\StringCaseMutator.cs" />
