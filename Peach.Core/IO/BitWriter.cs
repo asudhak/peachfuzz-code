@@ -2,16 +2,31 @@ using System;
 
 namespace Peach.Core.IO
 {
-	public class BitWriter
+	public class BitWriter : IDisposable
 	{
 		Endian endian = Endian.Little;
+		bool leaveOpen;
 
 		public BitWriter(BitwiseStream stream)
+			: this(stream, false)
+		{
+		}
+
+		public BitWriter(BitwiseStream stream, bool leaveOpen)
 		{
 			if (stream == null)
 				throw new ArgumentNullException("stream");
 
 			BaseStream = stream;
+			this.leaveOpen = leaveOpen;
+		}
+
+		public void Dispose()
+		{
+			if (!leaveOpen)
+				BaseStream.Close();
+
+			BaseStream = null;
 		}
 
 		public BitwiseStream BaseStream

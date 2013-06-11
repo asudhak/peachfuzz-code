@@ -4,16 +4,31 @@ using System.Text;
 
 namespace Peach.Core.IO
 {
-	public class BitReader
+	public class BitReader : IDisposable
 	{
 		Endian endian = Endian.Little;
+		bool leaveOpen;
 
 		public BitReader(BitwiseStream stream)
+			: this(stream, false)
+		{
+		}
+
+		public BitReader(BitwiseStream stream, bool leaveOpen)
 		{
 			if (stream == null)
 				throw new ArgumentNullException("stream");
 
 			BaseStream = stream;
+			this.leaveOpen = leaveOpen;
+		}
+
+		public void Dispose()
+		{
+			if (!leaveOpen)
+				BaseStream.Close();
+
+			BaseStream = null;
 		}
 
 		public BitwiseStream BaseStream
