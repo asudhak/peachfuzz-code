@@ -8,11 +8,11 @@ namespace Peach.Core.IO
 {
 	[Serializable]
 	[DebuggerDisplay("Count = {Count}")]
-	public class BitStreamList : BitwiseStream, IList<BitStream>
+	public class BitStreamList : BitwiseStream, IList<BitwiseStream>
 	{
 		#region Private Members
 
-		private List<BitStream> _streams;
+		private List<BitwiseStream> _streams;
 		private long _position;
 
 		#endregion
@@ -21,17 +21,17 @@ namespace Peach.Core.IO
 
 		public BitStreamList()
 		{
-			_streams = new List<BitStream>();
+			_streams = new List<BitwiseStream>();
 		}
 
 		public BitStreamList(int capacity)
 		{
-			_streams = new List<BitStream>(capacity);
+			_streams = new List<BitwiseStream>(capacity);
 		}
 
 		public BitStreamList(IEnumerable<BitStream> collection)
 		{
-			_streams = new List<BitStream>(collection);
+			_streams = new List<BitwiseStream>(collection);
 		}
 
 		#endregion
@@ -276,14 +276,14 @@ namespace Peach.Core.IO
 
 		#endregion
 
-		#region IList<BitStream> Members
+		#region IList<BitwiseStream> Members
 
-		public int IndexOf(BitStream item)
+		public int IndexOf(BitwiseStream item)
 		{
 			return _streams.IndexOf(item);
 		}
 
-		public void Insert(int index, BitStream item)
+		public void Insert(int index, BitwiseStream item)
 		{
 			_streams.Insert(index, item);
 		}
@@ -293,7 +293,7 @@ namespace Peach.Core.IO
 			_streams.RemoveAt(index);
 		}
 
-		public BitStream this[int index]
+		public BitwiseStream this[int index]
 		{
 			get
 			{
@@ -305,7 +305,7 @@ namespace Peach.Core.IO
 			}
 		}
 
-		public void Add(BitStream item)
+		public void Add(BitwiseStream item)
 		{
 			_streams.Add(item);
 		}
@@ -315,12 +315,12 @@ namespace Peach.Core.IO
 			_streams.Clear();
 		}
 
-		public bool Contains(BitStream item)
+		public bool Contains(BitwiseStream item)
 		{
 			return _streams.Contains(item);
 		}
 
-		public void CopyTo(BitStream[] array, int arrayIndex)
+		public void CopyTo(BitwiseStream[] array, int arrayIndex)
 		{
 			_streams.CopyTo(array, arrayIndex);
 		}
@@ -335,12 +335,12 @@ namespace Peach.Core.IO
 			get { return false; }
 		}
 
-		public bool Remove(BitStream item)
+		public bool Remove(BitwiseStream item)
 		{
 			return _streams.Remove(item);
 		}
 
-		public IEnumerator<BitStream> GetEnumerator()
+		public IEnumerator<BitwiseStream> GetEnumerator()
 		{
 			return _streams.GetEnumerator();
 		}

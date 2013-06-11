@@ -558,8 +558,6 @@ namespace Peach.Core.Cracker
 			logger.Debug("Crack: {0} Size: {1}, {2}", elem.debugName,
 				size.HasValue ? size.ToString() : "<null>", data.Progress);
 
-			data.MarkStartOfElement(elem);
-
 			elem.Crack(this, data, size);
 		}
 
@@ -636,7 +634,7 @@ namespace Peach.Core.Cracker
 		/// <param name="token">BitStream to search for.</param>
 		/// <param name="offset">How many bits after the current position of data to start searching.</param>
 		/// <returns>The location of the token in data from the current position or null.</returns>
-		long? findToken(BitStream data, BitStream token, long offset)
+		long? findToken(BitStream data, BitwiseStream token, long offset)
 		{
 			while (true)
 			{

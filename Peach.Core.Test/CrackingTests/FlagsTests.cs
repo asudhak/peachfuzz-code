@@ -55,7 +55,7 @@ namespace Peach.Core.Test.CrackingTests
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			BitStream val = dom.dataModels[0].Value;
+			BitwiseStream val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
 			Assert.AreEqual(13, val.LengthBytes);
 			Assert.AreEqual(13 * 8, val.LengthBits);
@@ -174,7 +174,7 @@ namespace Peach.Core.Test.CrackingTests
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			BitStream val = dom.dataModels[0].Value;
+			BitwiseStream val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
 			Assert.AreEqual(3, val.LengthBytes);
 			Assert.AreEqual(3 * 8, val.LengthBits);

@@ -470,7 +470,7 @@ namespace Peach.Core.Dom
 				debugName, value, _length, _lengthType.ToString().ToLower().TrimEnd('s'), _type));
 		}
 
-		protected override BitStream InternalValueToBitStream()
+		protected override BitwiseStream InternalValueToBitStream()
 		{
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
 				return (BitStream)MutatedValue;

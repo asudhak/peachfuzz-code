@@ -47,12 +47,18 @@ namespace Peach.Core.Transformers.Crypto
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			string dataAsString = Encoding.ASCII.GetString(data.Value);
+			var reader = new BitReader(data);
+			string dataAsString = reader.ReadString();
 			string salt = dataAsString.Substring(0, 2);
 			string result = UnixCryptTool.Crypt(salt, dataAsString);
-			return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(result));
+
+			var ret = new BitStream();
+			var writer = new BitWriter(ret);
+			writer.WriteString(result);
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 
 		protected override BitStream internalDecode(BitStream data)

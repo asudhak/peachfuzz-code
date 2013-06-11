@@ -46,14 +46,24 @@ namespace Peach.Core.Transformers.Encode
         {
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
-            return new BitStream(System.Web.HttpUtility.UrlEncodeToBytes(data.Value));
+            var str = new BitReader(data).ReadString();
+            var buf = System.Web.HttpUtility.UrlEncodeToBytes(str);
+            var ret = new BitStream();
+            ret.Write(buf, 0, buf.Length);
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            return new BitStream(System.Web.HttpUtility.UrlDecodeToBytes(data.Value));
+            var str = new BitReader(data).ReadString();
+            var buf = System.Web.HttpUtility.UrlDecodeToBytes(str);
+            var ret = new BitStream();
+            ret.Write(buf, 0, buf.Length);
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
     }
 }

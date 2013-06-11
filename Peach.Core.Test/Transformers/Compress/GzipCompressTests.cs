@@ -54,7 +54,7 @@ namespace Peach.Core.Test.Transformers.Compress
 
 			var valueData = new MemoryStream(values[0].Value);
 			var data = new MemoryStream();
-			using (GZipStream zip = new GZipStream(valueData, CompressionMode.Decompress))
+			using (GZipStream zip = new GZipStream(valueData, CompressionMode.Decompress, true))
 			{
 				zip.CopyTo(data);
 			}

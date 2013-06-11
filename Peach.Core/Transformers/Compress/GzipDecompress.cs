@@ -52,48 +52,37 @@ namespace Peach.Core.Transformers.Compress
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream compressedData)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			logger.Debug("internalDecode");
+			BitStream ret = new BitStream();
 
-			var data = new MemoryStream();
-			compressedData.SeekBits(0, SeekOrigin.Begin);
+			using (var strm = new GZipStream(data, CompressionMode.Decompress, true))
+			{
+				try
+				{
+					strm.CopyTo(ret);
+				}
+				catch (Exception ex)
+				{
+					throw new SoftException("Could not GZip decompress data.", ex);
+				}
+			}
 
-            try
-            {
-                using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Decompress))
-                {
-                    compressionStream.CopyTo(data);
-                }
-
-                return new BitStream(data.ToArray());
-            }
-            catch (Exception ex)
-            {
-                throw new PeachException("Error, could not GZip decompress data", ex);
-            }
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			logger.Debug("internalDecode");
+			BitStream ret = new BitStream();
 
-			var compressedData = new MemoryStream();
-			data.SeekBits(0, SeekOrigin.Begin);
+			using (var strm = new GZipStream(ret, CompressionMode.Compress, true))
+			{
+				data.CopyTo(strm);
+			}
 
-            try
-            {
-                using (GZipStream compressionStream = new GZipStream(compressedData, CompressionMode.Compress))
-                {
-                    data.CopyTo(compressionStream);
-                }
-
-                return new BitStream(compressedData.ToArray());
-            }
-            catch(Exception ex)
-            {
-               throw new PeachException("Error, could not GZip dceompress data", ex); 
-            }
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 	}
 }

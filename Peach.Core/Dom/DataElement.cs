@@ -279,7 +279,7 @@ namespace Peach.Core.Dom
 		private bool _readValueCache = true;
 		private bool _writeValueCache = true;
 		private Variant _internalValue;
-		private BitStream _value;
+		private BitwiseStream _value;
 
 		private bool _invalidated = false;
 
@@ -775,7 +775,7 @@ namespace Peach.Core.Dom
         /// <summary>
         /// Get the final Value of this data element
         /// </summary>
-		public BitStream Value
+		public BitwiseStream Value
 		{
 			get
 			{
@@ -935,12 +935,12 @@ namespace Peach.Core.Dom
 			return value;
 		}
 
-		protected virtual BitStream InternalValueToBitStream()
+		protected virtual BitwiseStream InternalValueToBitStream()
 		{
 			var ret = InternalValue;
 			if (ret == null)
-				return new BitStream();
-			return (BitStream)ret;
+				return BitwiseStream.Empty;
+			return (BitwiseStream)ret;
 		}
 
 		/// <summary>
@@ -953,15 +953,15 @@ namespace Peach.Core.Dom
 		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
-		protected BitStream GenerateValue()
+		protected BitwiseStream GenerateValue()
 		{
 			++GenerateCount;
 
-			BitStream value = null;
+			BitwiseStream value = null;
 
 			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
 			{
-				value = (BitStream)_mutatedValue;
+				value = (BitwiseStream)_mutatedValue;
 			}
 			else
 			{

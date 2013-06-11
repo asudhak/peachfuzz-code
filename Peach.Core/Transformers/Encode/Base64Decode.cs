@@ -27,36 +27,36 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using System.Security.Cryptography;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Description("Decode on output from Base64.")]
-    [Transformer("Base64Decode", true)]
-    [Transformer("encode.Base64Decode")]
-    [Serializable]
-    public class Base64Decode : Transformer
-    {
-        public Base64Decode(Dictionary<string, Variant> args) : base(args)
-        {
-        }
+	[Description("Decode on output from Base64.")]
+	[Transformer("Base64Decode", true)]
+	[Transformer("encode.Base64Decode")]
+	[Serializable]
+	public class Base64Decode : Transformer
+	{
+		public Base64Decode(Dictionary<string, Variant> args)
+			: base(args)
+		{
+		}
 
-        protected override BitStream internalEncode(BitStream data)
-        {
-            var b64s = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-            return new BitStream(System.Convert.FromBase64String(b64s));
-        }
+		protected override BitwiseStream internalEncode(BitwiseStream data)
+		{
+			return CryptoStream(data, new FromBase64Transform(), CryptoStreamMode.Read);
+		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
-            var b64s = System.Convert.ToBase64String(data.Value);
-            var bytes = System.Text.ASCIIEncoding.ASCII.GetBytes(b64s);
-            return new BitStream(bytes);
-        }
-    }
+		protected override BitStream internalDecode(BitStream data)
+		{
+			return CryptoStream(data, new ToBase64Transform(), CryptoStreamMode.Write);
+		}
+	}
 }
 
 // end

@@ -87,7 +87,7 @@ namespace Peach.Core.Test.PitParserTests
 				else
 					Assert.AreEqual(value, (ulong)num.DefaultValue);
 			}
-			BitStream val = num.Value;
+			BitwiseStream val = num.Value;
 			Assert.AreEqual(size, val.LengthBits);
 			Assert.AreEqual(expected, val.Value);
 		}
@@ -225,7 +225,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(true, num.Signed);
 			Assert.AreEqual(false, num.LittleEndian);
 			Assert.AreEqual(0x01020304, (int)num.DefaultValue);
-			BitStream val = num.Value;
+			BitwiseStream val = num.Value;
 			Assert.AreEqual(32, val.LengthBits);
 			Assert.AreEqual(new byte[]{0x01, 0x02, 0x03, 0x04}, val.Value);
 		}
@@ -256,7 +256,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(true, num.Signed);
 			Assert.AreEqual(false, num.LittleEndian);
 			Assert.AreNotEqual(0, (long)num.DefaultValue);
-			BitStream val = num.Value;
+			BitwiseStream val = num.Value;
 			Assert.AreEqual(size, val.LengthBits);
 		}
 

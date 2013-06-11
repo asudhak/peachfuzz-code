@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Text;
 using System.IO.Compression;
@@ -47,17 +48,28 @@ namespace Peach.Core.Transformers.Type
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			string dataAsStr = ASCIIEncoding.ASCII.GetString(data.Value);
+			string dataAsStr = new BitReader(data).ReadString();
 			int dataAsInt = Int32.Parse(dataAsStr);
 			string dataAsHexStr = dataAsInt.ToString("X");
-			return new BitStream(Encoding.ASCII.GetBytes(dataAsHexStr));
+			var ret = new BitStream();
+			var writer = new BitWriter(ret);
+			writer.WriteString(dataAsHexStr);
+			ret.Seek(0, System.IO.SeekOrigin.Begin);
+			return ret;
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			throw new NotImplementedException();
+			string dataAsHexStr = new BitReader(data).ReadString();
+			int dataAsInt = Int32.Parse(dataAsHexStr, NumberStyles.HexNumber);
+			string dataAsStr = dataAsInt.ToString();
+			var ret = new BitStream();
+			var writer = new BitWriter(ret);
+			writer.WriteString(dataAsStr);
+			ret.Seek(0, System.IO.SeekOrigin.Begin);
+			return ret;
 		}
 	}
 }

@@ -189,7 +189,8 @@ namespace Peach.Core.Dom
 					throw new ApplicationException("Flags has child thats not a flag!");
 
 				bits.SeekBits(flag.position + shift, System.IO.SeekOrigin.Begin);
-				bits.Write(flag.Value, flag);
+				flag.Value.SeekBits(0, System.IO.SeekOrigin.Begin);
+				flag.Value.CopyTo(bits);
 			}
 
 			if (_isLittleEndian)

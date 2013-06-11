@@ -48,29 +48,37 @@ namespace Peach.Core.Transformers.Compress
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			MemoryStream sin = new MemoryStream(data.Value);
-			MemoryStream sout = new MemoryStream();
-			BZip2OutputStream bzip2 = new BZip2OutputStream(sout);
+			BitStream ret = new BitStream();
 
-			sin.CopyTo(bzip2);
-			bzip2.Flush();
-			bzip2.Dispose();
+			using (var bzip2 = new BZip2OutputStream(ret, true))
+			{
+				data.CopyTo(bzip2);
+			}
 
-			return new BitStream(sout.ToArray());
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			MemoryStream sin = new MemoryStream(data.Value);
-			MemoryStream sout = new MemoryStream();
-			BZip2InputStream bzip2 = new BZip2InputStream(sin);
+			BitStream ret = new BitStream();
 
-			bzip2.CopyTo(sout);
-			bzip2.Dispose();
+			using (var bzip2 = new BZip2InputStream(data, true))
+			{
+				try
+				{
+					bzip2.CopyTo(ret);
+				}
+				catch (Exception ex)
+				{
+					throw new SoftException("Could not BZip decompress data.", ex);
+				}
+			}
 
-			return new BitStream(sout.ToArray());
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 	}
 }

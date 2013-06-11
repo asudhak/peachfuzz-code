@@ -231,7 +231,7 @@ namespace Peach.Core.Dom
 			throw new PeachException(string.Format("Error, {0} value '{1}' could not be converted to a {2}-bit {3} number.", debugName, str, lengthAsBits, Signed ? "signed" : "unsigned"));
 		}
 
-		private dynamic SanitizeStream(BitStream bs)
+		private dynamic SanitizeStream(BitwiseStream bs)
 		{
 			if (bs.LengthBits < lengthAsBits || (bs.LengthBits + 7) / 8 != (lengthAsBits + 7) / 8)
 				throw new PeachException(string.Format("Error, {0} value has an incorrect length for a {1}-bit {2} number, expected {3} bytes.", debugName, lengthAsBits, Signed ? "signed" : "unsigned", (lengthAsBits + 7) / 8));
@@ -245,7 +245,7 @@ namespace Peach.Core.Dom
 			return FromBitstream(bs);
 		}
 
-		private dynamic FromBitstream(BitStream bs)
+		private dynamic FromBitstream(BitwiseStream bs)
 		{
 			ulong bits;
 			int len = bs.ReadBits(out bits, (int)lengthAsBits);
@@ -283,7 +283,7 @@ namespace Peach.Core.Dom
 					break;
 				case Variant.VariantType.BitStream:
 				case Variant.VariantType.ByteString:
-					value = SanitizeStream((BitStream)variant);
+					value = SanitizeStream((BitwiseStream)variant);
 					break;
 				case Variant.VariantType.Int:
 				case Variant.VariantType.Long:
@@ -337,7 +337,7 @@ namespace Peach.Core.Dom
 			get { return _min; }
 		}
 
-		protected override BitStream InternalValueToBitStream()
+		protected override BitwiseStream InternalValueToBitStream()
 		{
 			dynamic value = GetNumber(InternalValue);
 

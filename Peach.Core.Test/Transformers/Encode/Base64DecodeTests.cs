@@ -7,6 +7,8 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.Transformers.Encode
 {
@@ -23,7 +25,7 @@ namespace Peach.Core.Test.Transformers.Encode
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
                 "           <Transformer class=\"Base64Decode\"/>" +
-                "           <Blob name=\"Data\" value=\"12345678\"/>" +
+                "           <String name=\"Data\" value=\"12345678\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +
 
@@ -56,6 +58,14 @@ namespace Peach.Core.Test.Transformers.Encode
             byte[] precalcResult = new byte[] { 0xD7, 0x6D, 0xF8, 0xE7, 0xAE, 0xFC };
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(precalcResult, values[0].Value);
+
+            DataCracker cracker = new DataCracker();
+            var bs = new BitStream(new MemoryStream(precalcResult));
+            cracker.CrackData(dom.dataModels[0], bs);
+
+            var elem = dom.dataModels[0].find("TheBlock.Data");
+            Assert.NotNull(elem);
+            Assert.AreEqual("12345678", (string)elem.DefaultValue);
         }
     }
 }

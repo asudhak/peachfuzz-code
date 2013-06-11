@@ -83,6 +83,29 @@ namespace Peach.Core.Test.Transformers.Encode
 
 			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
 		}
+
+		[Test, ExpectedException(typeof(SoftException), ExpectedMessage = "Hex decode failed, invalid length.")]
+		public void CrackBadLengthTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String/>
+		<Transformer class='Hex'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0}", (byte)'0');
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+		}
 	}
 }
 

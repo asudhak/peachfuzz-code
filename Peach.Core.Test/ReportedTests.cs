@@ -238,9 +238,7 @@ namespace Peach.Core.Test
 			<Relation of='OBJECT' type='size'/>
 		</Number>
 
-		<String name='FILENAME' occurs='1' nullTerminated='false'>
-			<Transformer class='encode.Utf16'/>
-		</String>
+		<String name='FILENAME' occurs='1' type='utf16' nullTerminated='false'/>
 
 		<Block name='OBJECT' occurs='1'>
 			<String value='END_MARKER'/>

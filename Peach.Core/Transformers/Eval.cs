@@ -51,13 +51,13 @@ namespace Peach.Core.Transformers
 			//m_args = args;
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
 			//string format;
 			//if (m_args.ContainsKey("eval"))
 			//    format = (string)(m_args["eval"]);
 
-			return new BitStream(data.Value);
+			return data;
 		}
 
 		protected override BitStream internalDecode(BitStream data)

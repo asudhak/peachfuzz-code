@@ -60,7 +60,6 @@ namespace Peach.Core.Dom
 		public int occurs = 1;
 
 		public bool hasExpanded = false;
-		public int? overrideCount = null;
 
 		public DataElement origionalElement = null;
 
@@ -238,8 +237,8 @@ namespace Peach.Core.Dom
 
 
 			var bs = new BitStream();
-			bs.Write(item.Value);
-			bs.ClearElementPositions();
+			item.Value.SeekBits(0, System.IO.SeekOrigin.Begin);
+			item.Value.CopyTo(bs);
 
 			var clone = item.Clone();
 			clone.MutatedValue = new Variant(bs);

@@ -48,7 +48,7 @@ namespace Peach.Core.Transformers.Encode
             m_args = args;
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
             string name = System.Text.ASCIIEncoding.ASCII.GetString(data.Value).ToUpper();
             var sb = new System.Text.StringBuilder(32);
@@ -83,7 +83,7 @@ namespace Peach.Core.Transformers.Encode
         protected override BitStream internalDecode(BitStream data)
         {
             if (data.LengthBytes % 2 != 0)
-                throw new Exception("NetBiosDecode transformer internalEncode failed: Length must be divisible by two.");
+                throw new SoftException("NetBiosDecode transformer internalEncode failed: Length must be divisible by two.");
 
             var sb = new System.Text.StringBuilder((int)data.LengthBytes / 2);
 

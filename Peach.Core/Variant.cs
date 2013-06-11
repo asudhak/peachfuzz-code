@@ -70,7 +70,7 @@ namespace Peach.Core
 		ulong? _valueULong;
 		string _valueString;
 		byte[] _valueByteArray;
-		BitStream _valueBitStream = null;
+		BitwiseStream _valueBitStream = null;
 
 		public Variant()
 		{
@@ -119,7 +119,7 @@ namespace Peach.Core
 			SetValue(v);
 		}
 
-		public Variant(BitStream v)
+		public Variant(BitwiseStream v)
 		{
 			SetValue(v);
 		}
@@ -172,7 +172,7 @@ namespace Peach.Core
 			_valueBitStream = null;
 		}
 
-		public void SetValue(BitStream v)
+		public void SetValue(BitwiseStream v)
 		{
 			_type = VariantType.BitStream;
 			_valueBitStream = v;
@@ -462,7 +462,7 @@ namespace Peach.Core
 			}
 		}
 
-		public static explicit operator BitStream(Variant v)
+		public static explicit operator BitwiseStream(Variant v)
 		{
 			if (v == null)
 				throw new ApplicationException("Parameter v is null");
@@ -550,7 +550,7 @@ namespace Peach.Core
 			return !(a == b);
 		}
 
-		private static string BitsToString(BitStream bs)
+		private static string BitsToString(BitwiseStream bs)
 		{
 			byte[] buf = new byte[32];
 			long pos = bs.TellBits();
@@ -685,8 +685,8 @@ namespace Peach.Core
 					_valueByteArray = (byte[])serializer.Deserialize(reader);
 					break;
 				case VariantType.BitStream:
-					serializer = new XmlSerializer(typeof(BitStream));
-					_valueBitStream = (BitStream) serializer.Deserialize(reader);
+					serializer = new XmlSerializer(typeof(BitwiseStream));
+					_valueBitStream = (BitwiseStream) serializer.Deserialize(reader);
 					break;
 			}
 
@@ -722,7 +722,7 @@ namespace Peach.Core
 					serializer.Serialize(writer, _valueByteArray);
 					break;
 				case VariantType.BitStream:
-					serializer = new XmlSerializer(typeof(BitStream));
+					serializer = new XmlSerializer(typeof(BitwiseStream));
 					serializer.Serialize(writer, _valueBitStream);
 					break;
 			}

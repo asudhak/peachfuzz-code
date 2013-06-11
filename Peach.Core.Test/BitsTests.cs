@@ -161,11 +161,40 @@ namespace Peach
 
 		#endregion
 
-		public static byte[] ToArray(this BitStream bs)
+		public static byte[] ToArray(this BitwiseStream bs)
 		{
-			var ms = bs.BaseStream as MemoryStream;
-			Assert.NotNull(ms);
-			return ms.ToArray();
+			long pos = bs.PositionBits;
+			bs.SeekBits(0, SeekOrigin.Begin);
+
+			int len = 0;
+			int count = (int)((bs.LengthBits + 7) / 8);
+			int offset = 0;
+			byte[] buffer = new byte[count];
+
+			do
+			{
+				len = bs.Read(buffer, offset, count);
+				offset += len;
+				count -= len;
+			}
+			while (len > 0);
+
+			if (count != 0)
+			{
+				ulong remain;
+				len = bs.ReadBits(out remain, 64);
+
+				System.Diagnostics.Debug.Assert(count == 1);
+				System.Diagnostics.Debug.Assert(len < 8);
+				System.Diagnostics.Debug.Assert(len > 0);
+
+				buffer[offset] = (byte)(remain << (8 - len));
+				++offset;
+				--count;
+			}
+
+			bs.SeekBits(pos, SeekOrigin.Begin);
+			return buffer;
 		}
 
 		/// <summary>

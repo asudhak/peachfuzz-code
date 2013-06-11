@@ -309,11 +309,9 @@ namespace Peach.Core.Test
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, dataModels.Count);
-			BitStream val = dom.dataModels[0].Value;
-			Assert.NotNull(val);
-
-			byte[] expected = Encoding.ASCII.GetBytes("\x01\x01\x10\x00Hello World!");
-			Assert.AreEqual(expected, val.Value);
+			var actual = dom.dataModels[0].Value.ToArray();
+			var expected = Encoding.ASCII.GetBytes("\x01\x01\x10\x00Hello World!");
+			Assert.AreEqual(expected, actual);
 		}
 
 		[Test]
@@ -758,11 +756,9 @@ namespace Peach.Core.Test
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, dataModels.Count);
-			BitStream val = dom.dataModels[1].Value;
-			Assert.NotNull(val);
-
-			byte[] expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
-			Assert.AreEqual(expected, val.Value);
+			var actual = dom.dataModels[1].Value.ToArray();
+			var expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
+			Assert.AreEqual(expected, actual);
 		}
 
 		[Test]

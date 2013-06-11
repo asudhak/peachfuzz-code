@@ -189,7 +189,7 @@ namespace Peach.Core.Dom
 
 			foreach (string item in parts)
 			{
-				BitStream toWrite = null;
+				BitwiseStream toWrite = null;
 				Variant var = null;
 				string key = "|||" + item + "|||";
 				if (doc.values.TryGetValue(key, out var))
@@ -197,7 +197,7 @@ namespace Peach.Core.Dom
 					var type = var.GetVariantType();
 
 					if (type == Variant.VariantType.BitStream)
-						toWrite = (BitStream)var;
+						toWrite = (BitwiseStream)var;
 					else if (type == Variant.VariantType.ByteString)
 						toWrite = new BitStream((byte[])var);
 					else
@@ -207,19 +207,19 @@ namespace Peach.Core.Dom
 				{
 					toWrite = new BitStream(Encoding.ASCII.GetRawBytes(item));
 				}
-
-				bs.Write(toWrite);
+				toWrite.SeekBits(0, System.IO.SeekOrigin.Begin);
+				toWrite.CopyTo(bs);
 			}
 
 			return new Variant(bs);
 		}
 
-		protected override BitStream InternalValueToBitStream()
+		protected override BitwiseStream InternalValueToBitStream()
 		{
 			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
-				return (BitStream)MutatedValue;
+				return (BitwiseStream)MutatedValue;
 
-			return (BitStream)InternalValue;
+			return (BitwiseStream)InternalValue;
 		}
 	}
 }

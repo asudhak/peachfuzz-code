@@ -122,7 +122,11 @@ namespace Peach.Core.Dom
 			{
 				BitStream stream = new BitStream();
 				foreach (DataElement child in this)
-					stream.Write(child.Value, child);
+				{
+					var other = child.Value;
+					other.Seek(0, System.IO.SeekOrigin.Begin);
+					other.CopyTo(stream);
+				}
 
 				// TODO - Remove this debugging code!
 				//if (stream.TellBytes() != stream.Value.Length)

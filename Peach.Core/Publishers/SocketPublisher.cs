@@ -731,7 +731,7 @@ namespace Peach.Core.Publishers
 
 				if (value.GetVariantType() == Variant.VariantType.BitStream)
 				{
-					var bs = (BitStream)value;
+					var bs = (BitwiseStream)value;
 					bs.SeekBits(0, SeekOrigin.Begin);
 					ulong bits;
 					int len = bs.ReadBits(out bits, 32);

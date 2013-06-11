@@ -23,18 +23,6 @@ namespace Peach.Core.IO
 			return bs.Position;
 		}
 
-		public static void Write(this BitwiseStream bs, BitwiseStream other, object arg = null)
-		{
-			long pos = other.PositionBits;
-			other.SeekBits(0, SeekOrigin.Begin);
-			other.CopyTo(bs);
-			other.SeekBits(pos, SeekOrigin.Begin);
-		}
-
-		public static void ClearElementPositions(this BitwiseStream bs)
-		{
-		}
-
 		public static bool HasDataElement(this BitwiseStream bs, object arg)
 		{
 			return false;
@@ -45,23 +33,17 @@ namespace Peach.Core.IO
 		{
 			throw new NotImplementedException();
 		}
-
-		public static void MarkStartOfElement(this BitwiseStream bs, object arg)
-		{
-		}
-
-		public static void Clear(this BitwiseStream bs)
-		{
-			bs.Seek(0, SeekOrigin.Begin);
-			bs.SetLength(0);
-		}
 	}
-
-
 
 	[Serializable]
 	public abstract class BitwiseStream : Stream
 	{
+		#region Static Members
+
+		public static readonly BitwiseStream Empty = new BitStream(Stream.Null);
+
+		#endregion
+
 		#region Constructor
 
 		protected BitwiseStream() { }

@@ -62,25 +62,38 @@ namespace Peach.Core.Transformers.Crypto
 			243,233,253,240,194,250,191,155,142,137,245,235,163,242,178,152
 		};
 
+		byte marker = 0x41; // 'A'
+
 		public CvsScramble(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			byte[] ret = new byte[data.Value.Length + 1];
-			ret[0] = data.Value[0];
+			BitStream ret = new BitStream();
+			ret.WriteByte(marker);
 
-			for (int i = 0; i < data.Value.Length; ++i)
-				ret[i + 1] = shifts[(int)(data.Value[i])];
+			int value;
+			while ((value = data.ReadByte()) != -1)
+				ret.WriteByte(shifts[value]);
 
-			return new BitStream(ret);
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			throw new NotImplementedException();
+			int value = data.ReadByte();
+			if (value != marker)
+				throw new SoftException("Unknown scrambling method.");
+
+			BitStream ret = new BitStream();
+			while ((value = data.ReadByte()) != -1)
+				ret.WriteByte(shifts[value]);
+
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 	}
 }

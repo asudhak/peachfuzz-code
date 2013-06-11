@@ -36,7 +36,7 @@ namespace Peach.Core.Test.CrackingTests
 	</DataModel>
 </Peach>";
 
-		BitStream Crack(string template, string elem, string units, string lengthType, string length)
+		BitwiseStream Crack(string template, string elem, string units, string lengthType, string length)
 		{
 			string xml = string.Format(template, elem, units, lengthType, length);
 
@@ -62,12 +62,12 @@ namespace Peach.Core.Test.CrackingTests
 			return value;
 		}
 
-		BitStream CrackElement(string elem, string units, string lengthType, string length)
+		BitwiseStream CrackElement(string elem, string units, string lengthType, string length)
 		{
 			return Crack(elem_template, elem, units, lengthType, length);
 		}
 
-		BitStream CrackContainer(string elem, string units, string lengthType, string length)
+		BitwiseStream CrackContainer(string elem, string units, string lengthType, string length)
 		{
 			return Crack(cont_template, elem, units, lengthType, length);
 		}

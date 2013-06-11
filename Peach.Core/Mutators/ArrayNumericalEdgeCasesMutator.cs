@@ -161,29 +161,9 @@ namespace Peach.Core.Mutators
             }
             else if (num > objAsArray.Count)
             {
-                try
-                {
-                    // We are not actually going to make this array thousands of items long.  Instead
-                    // we are going to override the count and copy the last element many times simulating a 
-                    // very long array.
-
-                    var elemValue = objAsArray[objAsArray.Count - 1].Value;
-					objAsArray.overrideCount = num;
-
-                    var newValue = new BitStream();
-                    newValue.Write(elemValue);
-
-                    for (int i = objAsArray.Count; i < num; i++)
-                        newValue.Write(elemValue);
-
-                    objAsArray[objAsArray.Count - 1].MutatedValue = new Variant(newValue);
-                    objAsArray[objAsArray.Count - 1].mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
-                }
-                catch (Exception ex)
-                {
-					logger.Error("Eating exception: " + ex.ToString());
-                    //throw new OutOfMemoryException("ArrayNumericalEdgeCasesMutator -- Out of memory", ex);
-                }
+                // add some items, but do it by replicating
+                // the last item over and over to save memory
+                objAsArray.ExpandTo(num);
             }
         }
     }

@@ -31,6 +31,8 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using System.Security.Cryptography;
+using System.IO;
 
 namespace Peach.Core
 {
@@ -51,8 +53,10 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="data">Data to encode</param>
 		/// <returns>Returns encoded value or null if encoding is not supported.</returns>
-		public virtual BitStream encode(BitStream data)
+		public virtual BitwiseStream encode(BitwiseStream data)
 		{
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
 			data = internalEncode(data);
 
 			if (anotherTransformer != null)
@@ -68,6 +72,8 @@ namespace Peach.Core
 		/// <returns>Returns decoded value or null if decoding is not supported.</returns>
 		public virtual BitStream decode(BitStream data)
 		{
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
 			if (anotherTransformer != null)
 				data = anotherTransformer.decode(data);
 
@@ -80,7 +86,7 @@ namespace Peach.Core
 		/// </summary>
 		/// <param name="data">Data to encode</param>
 		/// <returns>Returns encoded data</returns>
-		protected abstract BitStream internalEncode(BitStream data);
+		protected abstract BitwiseStream internalEncode(BitwiseStream data);
 
 		/// <summary>
 		/// Implement to perform actual decoding of
@@ -89,6 +95,36 @@ namespace Peach.Core
 		/// <param name="data">Data to decode</param>
 		/// <returns>Returns decoded data</returns>
 		protected abstract BitStream internalDecode(BitStream data);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="stream"></param>
+		/// <param name="transform"></param>
+		/// <param name="mode"></param>
+		/// <returns></returns>
+		protected static BitStream CryptoStream(BitwiseStream stream, ICryptoTransform transform, CryptoStreamMode mode)
+		{
+			BitStream ret = new BitStream();
+
+			if (mode == CryptoStreamMode.Write)
+			{
+				var cs = new CryptoStream(ret, transform, mode);
+				stream.CopyTo(cs);
+				cs.FlushFinalBlock();
+			}
+			else
+			{
+				var cs = new CryptoStream(stream, transform, mode);
+				cs.CopyTo(ret);
+			}
+
+			if (stream.Position != stream.Length)
+				throw new PeachException("Didn't transform all bytes.");
+
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
+		}
 	}
 
 	/// <summary>

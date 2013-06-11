@@ -27,6 +27,7 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
@@ -36,39 +37,49 @@ using System.Linq;
 
 namespace Peach.Core.Transformers.Encode
 {
-    [Description("Encode on output from a dot notation string to a 4 byte octet representaiton.")]
-    [Transformer("Ipv4StringToOctet", true)]
-    [Transformer("encode.Ipv4StringToOctet")]
-    [Serializable]
-    public class Ipv4StringToOctet : Transformer
-    {
-        public Ipv4StringToOctet(Dictionary<string,Variant>  args) : base(args)
-        {
-        }
+	[Description("Encode on output from a dot notation string to a 4 byte octet representaiton.")]
+	[Transformer("Ipv4StringToOctet", true)]
+	[Transformer("encode.Ipv4StringToOctet")]
+	[Serializable]
+	public class Ipv4StringToOctet : Transformer
+	{
+		public Ipv4StringToOctet(Dictionary<string, Variant> args)
+			: base(args)
+		{
+		}
 
-        protected override BitStream internalEncode(BitStream data)
-        {
-            string sip = Encoding.ASCII.GetString(data.Value);
+		protected override BitwiseStream internalEncode(BitwiseStream data)
+		{
+			var reader = new BitReader(data);
+			string sip = reader.ReadString();
+
 			IPAddress ip;
-
-            if(sip.Count(c => c == '.') != 3 || !IPAddress.TryParse(sip, out ip))
+			if (sip.Count(c => c == '.') != 3 || !IPAddress.TryParse(sip, out ip))
 				throw new SoftException("Error, can't transform IP to bytes, '{0}' is not a valid IP address.".Fmt(sip));
 
-            return new BitStream(ip.GetAddressBytes());
-        }
+			var ret = new BitStream();
+			var writer = new BitWriter(ret);
+			writer.WriteBytes(ip.GetAddressBytes());
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
+		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
-			var buf = data.Value;
+		protected override BitStream internalDecode(BitStream data)
+		{
+			if (data.Length != 4)
+				throw new PeachException("Error, can't transform bytes to IP, expected 4 bytes but got {0} bytes.".Fmt(data.Length));
 
-			if (buf.Length != 4)
-				throw new PeachException("Error, can't transform bytes to IP, expected 4 bytes but got {0} bytes.".Fmt(buf.Length));
+			var reader = new BitReader(data);
+			var bytes = reader.ReadBytes(4);
+			IPAddress ip = new IPAddress(bytes);
 
-			IPAddress ip = new IPAddress(buf);
-
-			return new BitStream(Encoding.ASCII.GetBytes(ip.ToString()));
-        }
-    }
+			var ret = new BitStream();
+			var writer = new BitWriter(ret);
+			writer.WriteString(ip.ToString());
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
+		}
+	}
 }
 
 // end
