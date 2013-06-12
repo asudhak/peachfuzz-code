@@ -101,7 +101,7 @@ namespace Peach.Core.Mutators
 			else if ((long)obj.InternalValue + growBy <= 0)
 			{
 				// Ensure we won't send the relation negative
-				objOf.MutatedValue = new Variant(BitwiseStream.Empty);
+				objOf.MutatedValue = new Variant(BitwiseStream.Null);
 				return;
 			}
 
@@ -109,27 +109,33 @@ namespace Peach.Core.Mutators
 			var dataLen = data.Length;
 			var tgtLen = dataLen + growBy;
 
-			BitwiseStream dst;
-
 			if (tgtLen <= 0)
 			{
 				// Return empty if size is negative
-				dst = BitwiseStream.Empty;
+				data = BitwiseStream.Null;
 			}
-			if (data.Length == 0)
+			else if (data.Length == 0)
 			{
 				// Fill with 'A' if we don't have any data
-				dst = new BitStream();
-
 				while (--tgtLen > 0)
-					dst.WriteByte((byte)'A');
+					data.WriteByte((byte)'A');
 			}
 			else
 			{
 				// Loop data over and over until we get to our target length
-				var buf = new byte[4 * 1024];
+
+				var lst = new BitStreamList();
+
+				while (tgtLen > dataLen)
+				{
+					lst.Add(data);
+					tgtLen -= dataLen;
+				}
+
+				var buf = new byte[BitwiseStream.BlockCopySize];
+				var dst = new BitStream();
+
 				data.Seek(0, System.IO.SeekOrigin.Begin);
-				dst = new BitStream();
 
 				while (tgtLen > 0)
 				{
@@ -143,9 +149,13 @@ namespace Peach.Core.Mutators
 
 					tgtLen -= len;
 				}
+
+				lst.Add(dst);
+
+				data = lst;
 			}
 
-			objOf.MutatedValue = new Variant(dst);
+			objOf.MutatedValue = new Variant(data);
 		}
 	}
 }
