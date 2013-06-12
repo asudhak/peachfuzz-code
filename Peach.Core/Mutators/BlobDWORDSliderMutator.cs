@@ -131,7 +131,7 @@ namespace Peach.Core.Mutators
 
             stream.SeekBits(cur, System.IO.SeekOrigin.Begin);
 
-            obj.MutatedValue = new Variant(obj.Value);
+            obj.MutatedValue = new Variant(stream);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
