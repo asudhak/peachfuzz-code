@@ -124,28 +124,28 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            byte[] data = obj.Value.Value;
+            var data = obj.Value;
 
             if (data.Length == 0)
                 return;
 
-            BitStream bs = new BitStream(data);
-
             // pick a random bit
-            long bit = context.Random.Next(bs.LengthBits);
+            long bit = context.Random.Next(data.LengthBits);
 
             // seek, read, rewind
-            bs.SeekBits(bit, SeekOrigin.Begin);
-            var value = bs.ReadBit();
-            bs.SeekBits(bit, SeekOrigin.Begin);
+            data.SeekBits(bit, SeekOrigin.Begin);
+            var value = data.ReadBit();
+            data.SeekBits(bit, SeekOrigin.Begin);
 
             // flip
             if (value == 0)
-                bs.WriteBit(1);
+                data.WriteBit(1);
             else
-                bs.WriteBit(0);
+                data.WriteBit(0);
 
-            obj.MutatedValue = new Variant(bs.Value);
+            data.Seek(0, SeekOrigin.Begin);
+
+            obj.MutatedValue = new Variant(data);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
