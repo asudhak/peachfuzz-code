@@ -120,18 +120,9 @@ namespace Peach.Core.Dom
 
 			if (_mutatedValue == null)
 			{
-				BitStream stream = new BitStream();
-				foreach (DataElement child in this)
-				{
-					var other = child.Value;
-					other.Seek(0, System.IO.SeekOrigin.Begin);
-					other.CopyTo(stream);
-				}
-
-				// TODO - Remove this debugging code!
-				//if (stream.TellBytes() != stream.Value.Length)
-				//    throw new ApplicationException("Whoa, something is way off here: " +
-				//        stream.TellBytes() + " != " + stream.Value.Length);
+				var stream = new BitStreamList();
+				foreach (var child in this)
+					stream.Add(child.Value);
 
 				value = new Variant(stream);
 			}
