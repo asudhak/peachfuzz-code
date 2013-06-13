@@ -232,7 +232,7 @@ namespace Peach.Core.Agent.Channels
 		{
 			logger.Trace("CreateBitwiseStream");
 
-			//OnCreateBitwiseStream();
+			OnCreateBitwiseStreamEvent();
 
 			BitwiseStream ret = null;
 			PerformRemoting(delegate() { ret = proxy.CreateBitwiseStream(); });
