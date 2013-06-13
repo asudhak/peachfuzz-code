@@ -467,7 +467,21 @@ namespace Peach.Core.Cracker
 			var iv = element.InternalValue;
 			if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
 			{
-				scope["value"] = (byte[])iv;
+				var bs = (BitwiseStream)iv;
+				var buffer = new byte[bs.Length];
+				var offset = 0;
+				var count = buffer.Length;
+
+				bs.Seek(0, System.IO.SeekOrigin.Begin);
+
+				while (count > 0)
+				{
+					int nread = bs.Read(buffer, offset, count);
+					offset += nread;
+					count -= nread;
+				}
+
+				scope["value"] = buffer;
 				logger.Debug("Constraint, value=byte array.");
 			}
 			else
