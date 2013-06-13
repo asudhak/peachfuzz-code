@@ -98,7 +98,6 @@ namespace Peach.Core.IO
 		/// Reports the position of the first occurrence of the specified BitStream in this
 		/// instance. The search starts at a specified BitStream position.
 		/// </summary>
-		/// <param name="bs">The BitStream to search in.</param>
 		/// <param name="value">The BitStream to seek.</param>
 		/// <param name="offsetBits">The search starting position.</param>
 		/// <returns>

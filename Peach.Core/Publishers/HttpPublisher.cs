@@ -125,9 +125,7 @@ namespace Peach.Core.Publishers
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="buffer">Data to send/write</param>
-		/// <param name="offset">The byte offset in buffer at which to begin writing from.</param>
-		/// <param name="count">The maximum number of bytes to write.</param>
+		/// <param name="data">Data to send/write</param>
 		protected override void OnOutput(BitwiseStream data)
 		{
 			lock (_clientLock)
