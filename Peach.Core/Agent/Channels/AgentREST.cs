@@ -121,7 +121,7 @@ namespace Peach.Core.Agent.Channels
         public override BitwiseStream CreateBitwiseStream()
         {
             logger.Trace("BitwiseStream");
-            //OnCreateBitwiseStream();
+            OnCreateBitwiseStreamEvent();
             throw new NotImplementedException();
         }
 
