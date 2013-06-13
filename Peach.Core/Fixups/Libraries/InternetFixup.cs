@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups.Libraries
 {
@@ -23,14 +24,14 @@ namespace Peach.Core.Fixups.Libraries
 			sum += value;
 		}
 
-		public virtual void Update(byte[] buf)
+		public virtual void Update(byte[] buf, int offset, int count)
 		{
-			int i = 0;
-			for (; i < buf.Length - 1; i += 2)
+			int i = offset;
+			for (; i < count - 1; i += 2)
 				sum += (uint)((buf[i] << 8) + buf[i + 1]);
 
-			if (i != buf.Length)
-				sum += (uint)(buf[buf.Length - 1] << 8);
+			if (i != count)
+				sum += (uint)(buf[count - 1] << 8);
 		}
 
 		public virtual ushort Final()
@@ -76,17 +77,24 @@ namespace Peach.Core.Fixups.Libraries
 		protected override Variant fixupImpl()
 		{
 			var elem = elements["ref"];
-			byte[] data = elem.Value.Value;
+			var data = elem.Value;
 
 			InternetChecksum sum = new InternetChecksum();
 
-			sum.Update(data);
-			sum.Update(srcAddress);
-			sum.Update(dstAddress);
+			sum.Update(srcAddress, 0, srcAddress.Length);
+			sum.Update(dstAddress, 0, dstAddress.Length);
 			sum.Update(Protocol);
 
 			if (AddLength)
 				sum.Update((uint)data.Length);
+
+			System.Diagnostics.Debug.Assert((BitwiseStream.BlockCopySize % 2) == 0);
+			var buf = new byte[BitwiseStream.BlockCopySize];
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
+			int nread;
+			while ((nread = data.Read(buf, 0, buf.Length)) != 0)
+				sum.Update(buf, 0, nread);
 
 			return new Variant(sum.Final());
 		}
