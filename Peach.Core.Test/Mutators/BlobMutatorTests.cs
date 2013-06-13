@@ -85,7 +85,7 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var mutation in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, mutation.GetVariantType());
+				Assert.AreEqual(Variant.VariantType.BitStream, mutation.GetVariantType());
 			}
 		}
 
@@ -147,8 +147,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				if (val.Length < minLen)
 					minLen = val.Length;
@@ -198,8 +198,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				if (val.Length < minLen)
 					minLen = val.Length;
@@ -228,13 +228,20 @@ namespace Peach.Core.Test.Mutators
 
 			}
 
-			int numMinMissed = minCount.Count(n => n == 0);
-			int numMaxMissed = maxCount.Count(n => n == 0);
-
 			Assert.AreEqual(4, minLen);
 			Assert.AreEqual(4 + 255, maxLen);
-			Assert.LessOrEqual(numMinMissed, 1);
-			Assert.AreEqual(0, numMaxMissed);
+
+			for (int i = 0; i < maxCount.Length; ++i)
+			{
+				if (maxCount[i] == 0)
+					Assert.Fail("Max Count '" + i + "' is zero.");
+			}
+
+			for (int i = 0; i < minCount.Length; ++i)
+			{
+				if (minCount[i] == 0)
+					Assert.Fail("Min Count '" + i + "' is zero.");
+			}
 		}
 
 		[Test]
@@ -250,8 +257,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int expanded = val.Length - 4;
 				Assert.GreaterOrEqual(expanded, 0);
@@ -284,8 +291,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int expanded = val.Length - 4;
 				Assert.GreaterOrEqual(expanded, 0);
@@ -316,8 +323,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int reduced = 100 - val.Length;
 				Assert.GreaterOrEqual(reduced, 0);
@@ -342,8 +349,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int nonZero = val.Count(n => n != 0);
 				int numChanged = nonZero;
@@ -376,8 +383,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int num00 = val.Count(n => n == 0x00);
 				int num01 = val.Count(n => n == 0x01);
@@ -416,8 +423,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int changed = val.Count(n => n == 0x00);
 				int unchanged = val.Count(n => n == 0xaa);
@@ -446,8 +453,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int changed = val.Count(n => n != 0);
 				int unchanged = val.Count(n => n == 0);

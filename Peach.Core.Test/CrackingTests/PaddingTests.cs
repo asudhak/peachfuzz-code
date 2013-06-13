@@ -70,8 +70,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, dom.dataModels[0].Count);
 			var block = dom.dataModels[0][0] as Block;
 			Assert.AreEqual(2, block.Count);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])block[0].Value.Value);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])block[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1 }, block[0].Value.ToArray());
+			Assert.AreEqual(new byte[] { 1 }, block[0].DefaultValue.BitsToArray());
 			Assert.AreEqual(8, ((BitStream)block[1].DefaultValue).LengthBits);
 			Assert.AreEqual(8, ((BitStream)block[1].Value).LengthBits);
 			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
@@ -99,8 +99,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, dom.dataModels[0].Count);
 			var block = dom.dataModels[0][0] as Block;
 			Assert.AreEqual(2, block.Count);
-			Assert.AreEqual(new byte[] { 1, 2 }, (byte[])block[0].Value.Value);
-			Assert.AreEqual(new byte[] { 1, 2 }, (byte[])block[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2 }, block[0].Value.ToArray());
+			Assert.AreEqual(new byte[] { 1, 2 }, block[0].DefaultValue.BitsToArray());
 			Assert.AreEqual(0, ((BitStream)block[1].DefaultValue).LengthBits);
 			Assert.AreEqual(0, ((BitStream)block[1].Value).LengthBits);
 			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);

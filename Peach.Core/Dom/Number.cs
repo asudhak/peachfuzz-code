@@ -281,8 +281,10 @@ namespace Peach.Core.Dom
 				case Variant.VariantType.String:
 					value = SanitizeString((string)variant);
 					break;
-				case Variant.VariantType.BitStream:
 				case Variant.VariantType.ByteString:
+					value = SanitizeStream(new BitStream((byte[])variant));
+					break;
+				case Variant.VariantType.BitStream:
 					value = SanitizeStream((BitwiseStream)variant);
 					break;
 				case Variant.VariantType.Int:

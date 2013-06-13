@@ -33,6 +33,7 @@ using System.IO;
 using System.Reflection;
 using Peach.Core.Dom;
 using Ionic.Zip;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
@@ -163,9 +164,9 @@ namespace Peach.Core.Mutators
             string filePath = "xmltests/" + values[pos];
             entry = zip[filePath];
             s = entry.OpenReader();
-            byte[] data2 = new byte[s.Length];
-            s.Read(data2, 0, data2.Length);
-            obj.MutatedValue = new Variant(data2);
+            var bs = new BitStream();
+            s.CopyTo(bs);
+            obj.MutatedValue = new Variant(bs);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }
@@ -177,9 +178,9 @@ namespace Peach.Core.Mutators
             string filePath = "xmltests/" + context.Random.Choice(values);
             entry = zip[filePath];
             s = entry.OpenReader();
-            byte[] data2 = new byte[s.Length];
-            s.Read(data2, 0, data2.Length);
-            obj.MutatedValue = new Variant(data2);
+            var bs = new BitStream();
+            s.CopyTo(bs);
+            obj.MutatedValue = new Variant(bs);
             obj.mutationFlags = DataElement.MUTATE_DEFAULT;
             obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
         }

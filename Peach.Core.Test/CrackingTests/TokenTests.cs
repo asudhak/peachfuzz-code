@@ -190,7 +190,7 @@ namespace Peach.Core.Test.CrackingTests
 				DataCracker cracker = new DataCracker();
 				cracker.CrackData(dom.dataModels[0], data);
 
-				Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("300"), (byte[])dom.dataModels[0][0].DefaultValue);
+				Assert.AreEqual("300", dom.dataModels[0][0].DefaultValue.BitsToString());
 				Assert.AreEqual("Hello World", (string)dom.dataModels[0][1].DefaultValue);
 			}
 			{
@@ -205,7 +205,7 @@ namespace Peach.Core.Test.CrackingTests
 				TestDelegate myTestDelegate = () => cracker.CrackData(dom.dataModels[0], data);
 				Assert.Throws<CrackingFailure>(myTestDelegate);
 
-				Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("300"), (byte[])dom.dataModels[0][0].DefaultValue);
+				Assert.AreEqual("300", dom.dataModels[0][0].DefaultValue.BitsToString());
 				Assert.AreEqual("Foo Bar", (string)dom.dataModels[0][1].DefaultValue);
 			}
 		}
@@ -720,22 +720,22 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(1, choiceref1.Count);
 			var blockref1 = (Dom.Block)choiceref1[0];
 			Assert.AreEqual(3, blockref1.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)blockref1[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x32 }, ((Blob)blockref1[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
 
 			var choiceref2 = (Dom.Choice)minoccursArray[1];
 			Assert.AreEqual(1, choiceref2.Count);
 			var blockref2 = (Dom.Block)choiceref2[0];
 			Assert.AreEqual(3, blockref2.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)blockref2[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x32 }, ((Blob)blockref2[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
 
 			var lastBlock = (Dom.Block)dom.dataModels[3][1];
 			Assert.AreEqual(3, lastBlock.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)lastBlock[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x33 }, ((Blob)lastBlock[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
 		}
 
@@ -788,20 +788,20 @@ namespace Peach.Core.Test.CrackingTests
 
 			var blockref1 = (Dom.Block)((Dom.Block)minoccursArray[0])[0];
 			Assert.AreEqual(3, blockref1.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)blockref1[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x32 }, ((Blob)blockref1[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
 
 			var blockref2 = (Dom.Block)((Dom.Block)minoccursArray[1])[0];
 			Assert.AreEqual(3, blockref2.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)blockref2[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x32 }, ((Blob)blockref2[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
 
 			var lastBlock = (Dom.Block)dom.dataModels[3][1];
 			Assert.AreEqual(3, lastBlock.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)lastBlock[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x33 }, ((Blob)lastBlock[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
 
 		}
@@ -856,20 +856,20 @@ namespace Peach.Core.Test.CrackingTests
 
 			var blockref1 = (Dom.Block)((Dom.Choice)minoccursArray[0])[0];
 			Assert.AreEqual(3, blockref1.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref1[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref1[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)blockref1[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x32 }, ((Blob)blockref1[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("foo", (string)blockref1[2].DefaultValue);
 
 			var blockref2 = (Dom.Block)((Dom.Choice)minoccursArray[1])[0];
 			Assert.AreEqual(3, blockref2.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)blockref2[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x32 }, (byte[])((Blob)blockref2[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)blockref2[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x32 }, ((Blob)blockref2[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("bar", (string)blockref2[2].DefaultValue);
 
 			var lastBlock = (Dom.Block)dom.dataModels[3][1];
 			Assert.AreEqual(3, lastBlock.Count);
-			Assert.AreEqual(new byte[] { 0x31 }, (byte[])((Blob)lastBlock[0]).DefaultValue);
-			Assert.AreEqual(new byte[] { 0x33 }, (byte[])((Blob)lastBlock[1]).DefaultValue);
+			Assert.AreEqual(new byte[] { 0x31 }, ((Blob)lastBlock[0]).DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 0x33 }, ((Blob)lastBlock[1]).DefaultValue.BitsToArray());
 			Assert.AreEqual("baz", (string)lastBlock[2].DefaultValue);
 		}
 

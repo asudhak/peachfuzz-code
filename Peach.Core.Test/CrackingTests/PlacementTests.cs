@@ -66,7 +66,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Data", dom.dataModels[0][1].name);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][1].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -92,7 +92,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Data", dom.dataModels[0][1].name);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][1].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -118,7 +118,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Data_0", dom.dataModels[0][1].name);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][1].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -147,7 +147,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.AreEqual(1, dom.dataModels[0][0].relations.Count);
 			Assert.AreEqual("TheDataModel.Data", dom.dataModels[0][0].relations[0].OfName);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][2].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -180,8 +180,8 @@ namespace Peach.Core.Test.CrackingTests
 			var item = dom.dataModels[0][0].fixup.references.First();
 			Assert.AreEqual("ref", item.Item1);
 			Assert.AreEqual("TheDataModel.Data", item.Item2);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][0].InternalValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][0].InternalValue.BitsToString());
+			Assert.AreEqual("Hello World", dom.dataModels[0][2].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -343,7 +343,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			Assert.AreEqual(expected, final);
 
 			Assert.AreEqual(4, dom.dataModels[0].Count);
@@ -385,7 +385,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			Assert.AreEqual(expected, final);
 
 			Assert.AreEqual(5, dom.dataModels[0].Count);

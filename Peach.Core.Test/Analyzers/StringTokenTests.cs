@@ -66,7 +66,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("Hello World", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("Hello World", dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);
         }
 
@@ -89,7 +89,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("HelloWorld", dom.dataModels[0][0].InternalValue.ToString());
+            Assert.AreEqual("HelloWorld", (string)dom.dataModels[0][0].InternalValue);
             Assert.AreEqual(1, ((DataElementContainer) dom.dataModels[0]).Count);
         }
 
@@ -112,7 +112,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("\r\n\"'[]{}<>` \t.,~!@#$%^?&*_=+-|\\:;/", dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);
         }
 
@@ -135,7 +135,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("AAAA:AAAA", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("AAAA:AAAA", dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual("AAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
             Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
             Assert.AreEqual("AAAA", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
@@ -161,7 +161,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual("AAAAAAAA:", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual("AAAAAAAA:", dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[0].InternalValue.ToString());           
             Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
@@ -186,7 +186,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual(":AAAAAAAA",ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual(":AAAAAAAA" ,dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual(":", ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[1].InternalValue.ToString());           
             Assert.AreEqual("AAAAAAAA",((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0])[2].InternalValue.ToString());           
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);           
@@ -211,7 +211,7 @@ namespace Peach.Core.Test.Analyzers
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], data);
 
-            Assert.AreEqual(@"\t\n\r ", ASCIIEncoding.ASCII.GetString((byte[]) dom.dataModels[0][0].InternalValue));
+            Assert.AreEqual(@"\t\n\r ", dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);                      
         }
     }

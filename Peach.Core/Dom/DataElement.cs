@@ -314,7 +314,7 @@ namespace Peach.Core.Dom
 		protected virtual Variant GetDefaultValue(BitStream data, long? size)
 		{
 			if (size.HasValue && size.Value == 0)
-				return new Variant(new byte[0]);
+				return new Variant(new BitStream());
 
 			var sizedData = ReadSizedData(data, size);
 			return new Variant(sizedData);
@@ -939,7 +939,7 @@ namespace Peach.Core.Dom
 		{
 			var ret = InternalValue;
 			if (ret == null)
-				return BitwiseStream.Empty;
+				return BitwiseStream.Null;
 			return (BitwiseStream)ret;
 		}
 

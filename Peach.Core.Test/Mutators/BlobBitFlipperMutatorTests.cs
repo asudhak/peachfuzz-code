@@ -67,10 +67,10 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             Assert.AreEqual(1, mutations.Count);
-            Assert.AreEqual(Variant.VariantType.ByteString, mutations[0].GetVariantType());
-            byte[] item = (byte[])mutations[0];
+            Assert.AreEqual(Variant.VariantType.BitStream, mutations[0].GetVariantType());
+            var item = (BitwiseStream)mutations[0];
             Assert.AreEqual(1, item.Length);
-            Assert.AreEqual(1, CountBits(item[0]));
+            Assert.AreEqual(1, CountBits(item.ToArray()[0]));
         }
 
         [Test]
@@ -118,10 +118,10 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual(4, mutations.Count);
             foreach (var item in mutations)
             {
-                Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-                byte[] val = (byte[])item;
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                var val = (BitwiseStream)item;
                 Assert.AreEqual(1, val.Length);
-                Assert.AreEqual(1, CountBits(val[0]));
+                Assert.AreEqual(1, CountBits(val.ToArray()[0]));
             }
         }
 
@@ -169,7 +169,11 @@ namespace Peach.Core.Test.Mutators
 
             List<byte[]> ret = new List<byte[]>();
             foreach (var item in mutations)
-                ret.Add((byte[])item);
+            {
+                Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+                var bs = (BitwiseStream)item;
+                ret.Add(bs.ToArray());
+            }
 
             ResetContainers();
 

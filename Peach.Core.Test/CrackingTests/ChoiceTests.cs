@@ -66,7 +66,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.IsTrue(dom.dataModels[0][0] is Choice);
 			Assert.AreEqual("Blob5", ((Choice)dom.dataModels[0][0])[0].name);
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, ((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue.BitsToArray());
 		}
 
 		[Test]
@@ -585,8 +585,8 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Choice c = (Dom.Choice)dom.dataModels[0][0];
 			var selected = c.SelectedElement as Dom.Block;
 			Assert.AreEqual("C2", selected.name);
-			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
-			Assert.AreEqual(4, ((byte[])selected[1].DefaultValue).Length);
+			Assert.AreEqual(1, selected[0].DefaultValue.BitsToArray().Length);
+			Assert.AreEqual(4, selected[1].DefaultValue.BitsToArray().Length);
 		}
 
 		[Test]
@@ -632,9 +632,9 @@ namespace Peach.Core.Test.CrackingTests
 			var innerBlock = array[0] as Dom.Block;
 			Assert.NotNull(innerBlock);
 			Assert.AreEqual(2, innerBlock.Count);
-			Assert.AreEqual(1, ((byte[])selected[0].DefaultValue).Length);
-			Assert.AreEqual(1, ((byte[])innerBlock[0].DefaultValue).Length);
-			Assert.AreEqual(3, ((byte[])innerBlock[1].DefaultValue).Length);
+			Assert.AreEqual(1, selected[0].DefaultValue.BitsToArray().Length);
+			Assert.AreEqual(1, innerBlock[0].DefaultValue.BitsToArray().Length);
+			Assert.AreEqual(3, innerBlock[1].DefaultValue.BitsToArray().Length);
 		}
 
 		void TryCrackChoice(DataModel model, string data, bool shouldFail)

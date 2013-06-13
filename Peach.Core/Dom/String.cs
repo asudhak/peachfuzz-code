@@ -253,11 +253,24 @@ namespace Peach.Core.Dom
 		{
 			string final = null;
 
-			if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
+			if (value.GetVariantType() == Variant.VariantType.ByteString)
 			{
 				try
 				{
 					final = encoding.GetString((byte[])value);
+				}
+				catch (DecoderFallbackException)
+				{
+					throw new PeachException("Error, " + debugName + " value contains invalid " + stringType + " bytes.");
+				}
+			}
+			if (value.GetVariantType() == Variant.VariantType.BitStream)
+			{
+				try
+				{
+					var rdr = new BitReader((BitwiseStream)value);
+					rdr.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
+					final = rdr.ReadString(encoding);
 				}
 				catch (DecoderFallbackException)
 				{

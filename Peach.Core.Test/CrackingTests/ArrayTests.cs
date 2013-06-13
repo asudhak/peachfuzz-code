@@ -141,8 +141,8 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
 
 			Assert.AreEqual(6, array.Count);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])array[0].InternalValue);
-			Assert.AreEqual(new byte[] { 6 }, (byte[])array[5].InternalValue);
+			Assert.AreEqual(new byte[] { 1 }, array[0].InternalValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 6 }, array[5].InternalValue.BitsToArray());
 		}
 
 		/// <summary>
@@ -169,9 +169,9 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Array array = (Dom.Array)dom.dataModels[0][0];
 
 			Assert.AreEqual(3, array.Count);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])array[0].InternalValue);
-			Assert.AreEqual(new byte[] { 2 }, (byte[])array[1].InternalValue);
-			Assert.AreEqual(new byte[] { 3 }, (byte[])array[2].InternalValue);
+			Assert.AreEqual(new byte[] { 1 }, array[0].InternalValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 2 }, array[1].InternalValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 3 }, array[2].InternalValue.BitsToArray());
 		}
 
 		[Test]
@@ -224,7 +224,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			Blob rest = (Blob)dom.dataModels[0].find("Rest");
 
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6 }, (byte[])rest.InternalValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6 }, rest.InternalValue.BitsToArray());
 		}
 
 		[Test]
@@ -251,7 +251,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			Blob rest = (Blob)dom.dataModels[0].find("Rest");
 
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6 }, (byte[])rest.InternalValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6 }, rest.InternalValue.BitsToArray());
 		}
 
 		[Test]
@@ -279,10 +279,10 @@ namespace Peach.Core.Test.CrackingTests
 			Blob blob = (Blob)dom.dataModels[0][2];
 
 			Assert.AreEqual(3, array.Count);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])array[0].InternalValue);
-			Assert.AreEqual(new byte[] { 2 }, (byte[])array[1].InternalValue);
-			Assert.AreEqual(new byte[] { 3 }, (byte[])array[2].InternalValue);
-			Assert.AreEqual(new byte[] { 4, 5, 6 }, (byte[])blob.InternalValue);
+			Assert.AreEqual(new byte[] { 1 }, array[0].InternalValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 2 }, array[1].InternalValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 3 }, array[2].InternalValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 4, 5, 6 }, blob.InternalValue.BitsToArray());
 		}
 
 		[Test]

@@ -387,8 +387,8 @@ namespace Peach.Core.Test.Fixups
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			Assert.AreEqual(new byte[0], (byte[])dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(new byte[0], (byte[])dom.dataModels[0][0].InternalValue);
+			Assert.AreEqual(new byte[0], dom.dataModels[0][0].DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[0], dom.dataModels[0][0].InternalValue.BitsToArray());
 
 			RunConfiguration config = new RunConfiguration();
 			config.singleIteration = true;

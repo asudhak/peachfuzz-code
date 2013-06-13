@@ -56,8 +56,8 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])blob.DefaultValue);
+			Assert.AreEqual(Variant.VariantType.BitStream, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), ((BitwiseStream)blob.DefaultValue).ToArray());
 		}
 
 		[Test]
@@ -73,8 +73,8 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
-			Assert.AreEqual(new byte[] { 0x41, 0x42, 0x43, 0x44 }, (byte[])blob.DefaultValue);
+			Assert.AreEqual(Variant.VariantType.BitStream, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(new byte[] { 0x41, 0x42, 0x43, 0x44 }, ((BitwiseStream)blob.DefaultValue).ToArray());
 		}
 
 		[Test]
@@ -90,8 +90,8 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), (byte[])blob.DefaultValue);
+			Assert.AreEqual(Variant.VariantType.BitStream, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), ((BitwiseStream)blob.DefaultValue).ToArray());
 		}
 
 		[Test]

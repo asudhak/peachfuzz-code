@@ -63,7 +63,7 @@ namespace Peach.Core.Test.Mutators
             // verify values
             Assert.AreEqual(1, mutations.Count);
             Assert.AreEqual(Variant.VariantType.BitStream, mutations[0].GetVariantType());
-            byte[] item = (byte[])mutations[0];
+            byte[] item = ((BitwiseStream)mutations[0]).ToArray();
             Assert.NotNull(item);
             Assert.AreEqual(5, item.Length);
             Assert.AreEqual((byte)('4'), item[0]);

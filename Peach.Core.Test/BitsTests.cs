@@ -197,6 +197,21 @@ namespace Peach
 			return buffer;
 		}
 
+		public static byte[] BitsToArray(this Variant v)
+		{
+			Assert.AreEqual(Variant.VariantType.BitStream, v.GetVariantType());
+			return ((BitwiseStream)v).ToArray();
+		}
+
+		public static string BitsToString(this Variant v)
+		{
+			Assert.AreEqual(Variant.VariantType.BitStream, v.GetVariantType());
+			var bs = (BitwiseStream)v;
+			bs.Seek(0, SeekOrigin.Begin);
+			var ret = new BitReader(bs).ReadString();
+			return ret;
+		}
+
 		/// <summary>
 		/// Formats a BitStream according to the format string. Supported
 		/// arguments are byte[], numbers and strings.

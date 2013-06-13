@@ -202,7 +202,7 @@ namespace Peach.Core.Dom
 			get
 			{
 				if (_inDefaultValue)
-					return new Variant(new byte[0]);
+					return new Variant(BitwiseStream.Null);
 
 				// Prevent recursion
 				_inDefaultValue = true;

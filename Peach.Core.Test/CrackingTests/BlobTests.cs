@@ -61,7 +61,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6, 0xff, 0xfe, 0xff }, (byte[])dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6, 0xff, 0xfe, 0xff }, dom.dataModels[0][0].DefaultValue.BitsToArray());
 		}
 
 		[Test]
@@ -81,7 +81,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, dom.dataModels[0][0].DefaultValue.BitsToArray());
 		}
 
 		[Test]
@@ -102,8 +102,8 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4 }, (byte[])dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(new byte[] { 5, 6, 0xff, 0xfe, 0xff }, (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4 }, dom.dataModels[0][0].DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 5, 6, 0xff, 0xfe, 0xff }, dom.dataModels[0][1].DefaultValue.BitsToArray());
 		}
 
 		[Test]
@@ -126,8 +126,8 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4 }, (byte[])dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(new byte[] { 5, 6, 0xff, 0xfe, 0xff }, (byte[])((DataElementContainer) dom.dataModels[0][1])[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4 }, dom.dataModels[0][0].DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[] { 5, 6, 0xff, 0xfe, 0xff }, ((DataElementContainer)dom.dataModels[0][1])[0].DefaultValue.BitsToArray());
 		}
 	}
 }

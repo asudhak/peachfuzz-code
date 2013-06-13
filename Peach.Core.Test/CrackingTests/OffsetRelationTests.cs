@@ -108,7 +108,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(offsetdata.Length + 1, (int)dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][1].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -135,7 +135,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(offsetdata.Length + 1 + otherdata.Length, (int)dom.dataModels[0][1].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][2].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -317,7 +317,7 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual(offsetdata.Length, (int)dom.dataModels[0][1].DefaultValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][2].DefaultValue.BitsToString());
 		}
 
 		[Test]
@@ -433,7 +433,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0]["Data"].DefaultValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0]["Data"].DefaultValue.BitsToString());
 		}
 
 		[Test]

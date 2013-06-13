@@ -107,7 +107,7 @@ namespace Peach.Core.Test
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].InternalValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].InternalValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][1].InternalValue.BitsToString());
 		}
 
 		[Test]
@@ -191,11 +191,11 @@ namespace Peach.Core.Test
 
 			Blob blob1 = dom.dataModels[0][1] as Blob;
 			Variant val2 = blob1.InternalValue;
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), (byte[])val2);
+			Assert.AreEqual("Hello", val2.BitsToString());
 
 			Blob blob2 = dom.dataModels[0][2] as Blob;
 			Variant val3 = blob2.InternalValue;
-			Assert.AreEqual(Encoding.ASCII.GetBytes("World"), (byte[])val3);
+			Assert.AreEqual("World", val3.BitsToString());
 		}
 
 		[Test]
@@ -256,7 +256,7 @@ namespace Peach.Core.Test
 
 				Blob blob = model[1] as Blob;
 				Variant val2 = blob.InternalValue;
-				int len = ((byte[])val2).Length;
+				int len = val2.BitsToArray().Length;
 				Assert.GreaterOrEqual(len, 8);
 
 				Number num2 = model[2] as Number;
