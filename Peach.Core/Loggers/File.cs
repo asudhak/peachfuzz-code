@@ -38,6 +38,7 @@ using Peach.Core.Agent;
 using Peach.Core.Dom;
 
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Loggers
 {
@@ -136,6 +137,39 @@ namespace Peach.Core.Loggers
 			SaveFault(Category.Faults, fault);
 		}
 
+		// TODO: Figure out how to not do this!
+		private static byte[] ToByteArray(BitwiseStream data)
+		{
+			var length = data.LengthBits + 7 / 8;
+			var buffer = new byte[length];
+			var offset = 0;
+			var count = buffer.Length;
+
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
+			int nread;
+			while ((nread = data.Read(buffer, offset, count)) != 0)
+			{
+				offset += nread;
+				count -= nread;
+			}
+
+			if (count != 0)
+			{
+				System.Diagnostics.Debug.Assert(count == 1);
+
+				ulong bits;
+				nread = data.ReadBits(out bits, 64);
+
+				System.Diagnostics.Debug.Assert(nread > 0);
+				System.Diagnostics.Debug.Assert(nread < 8);
+
+				buffer[offset] = (byte)(bits << (8 - nread));
+			}
+
+			return buffer;
+		}
+
 		private Fault combineFaults(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faults)
 		{
 			Fault ret = new Fault();
@@ -168,7 +202,7 @@ namespace Peach.Core.Loggers
 				if (action.dataModel != null)
 				{
 					string fileName = string.Format("action_{0}_{1}_{2}.txt", cnt, action.type.ToString(), action.name);
-					ret.collectedData.Add(fileName, action.dataModel.Value.Value);
+					ret.collectedData.Add(fileName, ToByteArray(action.dataModel.Value));
 				}
 				else if (action.parameters.Count > 0)
 				{
@@ -177,7 +211,7 @@ namespace Peach.Core.Loggers
 					{
 						pcnt++;
 						string fileName = string.Format("action_{0}-{1}_{2}_{3}.txt", cnt, pcnt, action.type.ToString(), action.name);
-						ret.collectedData.Add(fileName, param.dataModel.Value.Value);
+						ret.collectedData.Add(fileName, ToByteArray(param.dataModel.Value));
 					}
 				}
 			}
