@@ -48,19 +48,19 @@ namespace Peach.Core.Proxy.Web
 			{
 				if(_body == null && _chunks != null)
 				{
-					var data = new BitWriter(new BitStream());
+					var writer = new StreamWriter(new MemoryStream());
 
 					// Build chunks body
 					foreach (byte[] chunk in _chunks)
 					{
-						data.WriteString(Convert.ToString(chunk.Length, 16) + "\r\n");
-						data.WriteBytes(chunk);
-						data.WriteString("\r\n");
+						writer.Write(Convert.ToString(chunk.Length, 16) + "\r\n");
+						writer.BaseStream.Write(chunk, 0, chunk.Length);
+						writer.Write("\r\n");
 					}
 
-					data.WriteString("0\r\n\r\n");
+					writer.Write("0\r\n\r\n");
 
-					return data.BaseStream.Value;
+					return ((MemoryStream)writer.BaseStream).ToArray();
 				}
 
 				return _body;
