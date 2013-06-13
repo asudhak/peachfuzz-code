@@ -556,7 +556,6 @@ namespace Peach.Core
 			long pos = bs.TellBits();
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			int len = bs.Read(buf, 0, buf.Length);
-			bs.SeekBits(pos, System.IO.SeekOrigin.Begin);
 
 			if (len == 0)
 				return "";
@@ -569,8 +568,34 @@ namespace Peach.Core
 				ret.AppendFormat(" {0:x2}", buf[i]);
 
 			long lengthBits = bs.LengthBits;
+
 			if ((len * 8) < lengthBits)
-				ret.AppendFormat(".. (Len: {0} bits)", lengthBits);
+			{
+				if (len < buf.Length)
+				{
+					ulong tmp;
+					int bits = bs.ReadBits(out tmp, 64);
+					System.Diagnostics.Debug.Assert(bits < 8);
+
+					tmp <<= (8 - bits);
+
+					if (len != 0)
+						ret.Append(" ");
+
+					ret.AppendFormat("{0:x2}", tmp);
+					ret.AppendFormat(" (Len: {0} bits)", lengthBits);
+				}
+				else if ((lengthBits % 8) == 0)
+				{
+					ret.AppendFormat(".. (Len: {0} bytes)", lengthBits / 8);
+				}
+				else
+				{
+					ret.AppendFormat(".. (Len: {0} bits)", lengthBits);
+				}
+			}
+
+			bs.SeekBits(pos, System.IO.SeekOrigin.Begin);
 
 			return ret.ToString();
 		}
