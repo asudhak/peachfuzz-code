@@ -22,17 +22,6 @@ namespace Peach.Core.IO
 		{
 			return bs.Position;
 		}
-
-		public static bool HasDataElement(this BitwiseStream bs, object arg)
-		{
-			return false;
-			//throw new NotImplementedException();
-		}
-
-		public static long DataElementPosition(this BitwiseStream bs, object arg)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	[Serializable]
@@ -177,31 +166,6 @@ namespace Peach.Core.IO
 				throw new ArgumentOutOfRangeException("value");
 
 			WriteBits((ulong)value, 1);
-		}
-
-//		[Obsolete]
-		public byte[] Value
-		{
-			get
-			{
-				var dest = new MemoryStream();
-				long pos = PositionBits;
-				SeekBits(0, SeekOrigin.Begin);
-				CopyTo(dest);
-
-				ulong bits;
-				int len = ReadBits(out bits, 8);
-				if (len > 0)
-				{
-					System.Diagnostics.Debug.Assert(bits < byte.MaxValue);
-					System.Diagnostics.Debug.Assert(len < 8);
-					bits <<= (8 - len);
-					dest.WriteByte((byte)bits);
-				}
-
-				SeekBits(pos, SeekOrigin.Begin);
-				return dest.ToArray();
-			}
 		}
 
 //		[Obsolete]
