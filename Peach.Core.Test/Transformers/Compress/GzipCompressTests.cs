@@ -52,7 +52,7 @@ namespace Peach.Core.Test.Transformers.Compress
             Engine e = new Engine(null);
             e.startFuzzing(dom, config);
 
-			var valueData = new MemoryStream(values[0].Value);
+			var valueData = new MemoryStream(values[0].ToArray());
 			var data = new MemoryStream();
 			using (GZipStream zip = new GZipStream(valueData, CompressionMode.Decompress, true))
 			{

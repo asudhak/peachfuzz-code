@@ -179,7 +179,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(3, val.LengthBytes);
 			Assert.AreEqual(3 * 8, val.LengthBits);
 
-			byte[] buf = val.Value;
+			byte[] buf = val.ToArray();
 
 			Assert.AreEqual(3, buf.Length);
 			Assert.AreEqual(0x02, buf[0]);

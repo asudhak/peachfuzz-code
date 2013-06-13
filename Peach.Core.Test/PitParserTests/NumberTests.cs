@@ -89,7 +89,7 @@ namespace Peach.Core.Test.PitParserTests
 			}
 			BitwiseStream val = num.Value;
 			Assert.AreEqual(size, val.LengthBits);
-			Assert.AreEqual(expected, val.Value);
+			Assert.AreEqual(expected, val.ToArray());
 		}
 
 		[Test]
@@ -227,7 +227,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(0x01020304, (int)num.DefaultValue);
 			BitwiseStream val = num.Value;
 			Assert.AreEqual(32, val.LengthBits);
-			Assert.AreEqual(new byte[]{0x01, 0x02, 0x03, 0x04}, val.Value);
+			Assert.AreEqual(new byte[] { 0x01, 0x02, 0x03, 0x04 }, val.ToArray());
 		}
 
 		private void DoHexParse(bool throws, string value, int size)

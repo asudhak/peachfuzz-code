@@ -560,7 +560,7 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			var final = dom.dataModels[0].Value;
-			string str = Encoding.ASCII.GetString(final.Value);
+			string str = Encoding.ASCII.GetString(final.ToArray());
 			Assert.NotNull(str);
 		}
 

@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Transformers.Encode
             // -- this is the pre-calculated result from Peach2.3 on the blob: "12345678"
             byte[] precalcResult = new byte[] { 0x4D, 0x54, 0x49, 0x7A, 0x4E, 0x44, 0x55, 0x32, 0x4E, 0x7A, 0x67, 0x3D };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
 
             DataCracker cracker = new DataCracker();
             var bs = new BitStream(new MemoryStream(precalcResult));

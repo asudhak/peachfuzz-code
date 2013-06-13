@@ -73,8 +73,8 @@ namespace Peach.Core.Test.Fixups
 
 			Assert.AreEqual(2, dataModels.Count);
 
-			byte[] dm1 = dataModels[0].Value.Value;
-			byte[] dm2 = dataModels[1].Value.Value;
+			byte[] dm1 = dataModels[0].Value.ToArray();
+			byte[] dm2 = dataModels[1].Value.ToArray();
 
 			Assert.AreEqual(4 + 4 + 5, dm1.Length);
 			Assert.Greater(dm2.Length, dm1.Length);
@@ -84,9 +84,9 @@ namespace Peach.Core.Test.Fixups
 			var crc = new CRCTool();
 			crc.Init(CRCTool.CRCCode.CRC32);
 			data.SeekBytes(4, SeekOrigin.Begin);
-			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.Value), 32), 32);
+			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.ToArray()), 32), 32);
 
-			byte[] final = data.Value;
+			byte[] final = data.ToArray();
 			Assert.AreEqual(final, dm1);
 		}
 
@@ -149,8 +149,8 @@ namespace Peach.Core.Test.Fixups
 
 			Assert.AreEqual(2, dataModels.Count);
 
-			byte[] dm1 = dataModels[0].Value.Value;
-			byte[] dm2 = dataModels[1].Value.Value;
+			byte[] dm1 = dataModels[0].Value.ToArray();
+			byte[] dm2 = dataModels[1].Value.ToArray();
 
 			Assert.AreEqual(4 + 4 + 5, dm1.Length);
 			Assert.Greater(dm2.Length, dm1.Length);
@@ -160,9 +160,9 @@ namespace Peach.Core.Test.Fixups
 			var crc = new CRCTool();
 			crc.Init(CRCTool.CRCCode.CRC32);
 			data.SeekBytes(0, SeekOrigin.Begin);
-			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.Value), 32), 32);
+			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.ToArray()), 32), 32);
 
-			byte[] final = data.Value;
+			byte[] final = data.ToArray();
 			Assert.AreEqual(final, dm1);
 		}
 

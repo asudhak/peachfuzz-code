@@ -442,7 +442,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.IsTrue(dom.dataModels[0][1] is Dom.Blob);
 
 			var expected = new byte[] { 0x44, 0x55 };
-			var actual = dom.dataModels[0][1].Value.Value;
+			var actual = dom.dataModels[0][1].Value.ToArray();
 
 			Assert.AreEqual(expected, actual);
 		}
@@ -545,7 +545,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			var dm = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
 
-			var bytes = dm.Value.Value;
+			var bytes = dm.Value.ToArray();
 			string str = Encoding.ASCII.GetString(bytes);
 			Assert.AreEqual("Choice 1=foo,Choice 2=bar", str);
 		}

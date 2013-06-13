@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Transformers.Encode
             // -- this is the pre-calculated result from Peach2.3 on the blob: "192.168.1.1"
             byte[] precalcResult = new byte[] { 0xC0, 0xA8, 0x01, 0x01 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, can't transform IP to bytes, '192.168.1' is not a valid IP address.")]

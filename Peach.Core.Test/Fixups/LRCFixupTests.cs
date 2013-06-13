@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Fixups
             // -- this is the pre-calculated result from Peach2.3 on the blob: "12345"
             byte[] precalcResult = new byte[] { 0x01, 0x00, 0x00, 0x00 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
 
 		[Test]

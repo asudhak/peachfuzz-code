@@ -54,7 +54,7 @@ namespace Peach.Core.Test.Transformers
 			// -- this is the pre-calculated result on the string: "Hello"
 			byte[] precalcResult = new byte[] { 0x48, 0x65, 0x6c, 0x6c, 0x6f  };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcResult, values[0].Value);
+			Assert.AreEqual(precalcResult, values[0].ToArray());
 		}
 	}
 }

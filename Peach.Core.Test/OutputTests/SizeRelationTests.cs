@@ -89,7 +89,7 @@ namespace Peach.Core.Test.OutputTests
 
 			try
 			{
-				var final = dom.dataModels[0].Value.Value;
+				var final = dom.dataModels[0].Value.ToArray();
 				Assert.AreEqual(expected, final);
 			}
 			catch (SoftException se)

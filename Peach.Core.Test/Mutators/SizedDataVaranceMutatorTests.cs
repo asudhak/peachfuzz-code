@@ -61,13 +61,13 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual(56, dataModels.Count);
             Assert.AreEqual(Variant.VariantType.Long, dataModels[0][0].InternalValue.GetVariantType());
             Assert.AreEqual(5, (long)dataModels[0][0].InternalValue);
-            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.Value);
+            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.ToArray());
 
             for (int i = 1; i < 56; ++i)
             {
                 Assert.AreEqual(Variant.VariantType.Long, dataModels[i][0].InternalValue.GetVariantType());
                 Assert.AreEqual(5, (long)dataModels[i][0].InternalValue);
-                Assert.AreEqual(i, dataModels[i][1].Value.Value.Length);
+                Assert.AreEqual(i, dataModels[i][1].Value.Length);
             }
         }
 
@@ -119,13 +119,13 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual(11, dataModels.Count);
             Assert.AreEqual(Variant.VariantType.Long, dataModels[0][0].InternalValue.GetVariantType());
             Assert.AreEqual(5, (long)dataModels[0][0].InternalValue);
-            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.Value);
+            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.ToArray());
 
             for (int i = 1; i < 11; ++i)
             {
                 Assert.AreEqual(Variant.VariantType.Long, dataModels[i][0].InternalValue.GetVariantType());
                 Assert.AreEqual(5, (long)dataModels[i][0].InternalValue);
-                Assert.AreEqual(i, dataModels[i][1].Value.Value.Length);
+                Assert.AreEqual(i, dataModels[i][1].Value.Length);
             }
         }
 

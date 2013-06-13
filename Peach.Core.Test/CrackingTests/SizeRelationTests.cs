@@ -305,10 +305,10 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[1], data);
 
 			Assert.AreEqual(3, dom.dataModels[1].Count);
-			Assert.AreEqual(new byte[] { 0x01 }, dom.dataModels[1][0].Value.Value);
-			Assert.AreEqual(new byte[] { 0x02 }, ((Block)dom.dataModels[1][1])[0].Value.Value);
-			Assert.AreEqual(new byte[] { 0x33, 0x44 }, ((Block)dom.dataModels[1][1])[1].Value.Value);
-			Assert.AreEqual(new byte[] { 0x00 }, dom.dataModels[1][2].Value.Value);
+			Assert.AreEqual(new byte[] { 0x01 }, dom.dataModels[1][0].Value.ToArray());
+			Assert.AreEqual(new byte[] { 0x02 }, ((Block)dom.dataModels[1][1])[0].Value.ToArray());
+			Assert.AreEqual(new byte[] { 0x33, 0x44 }, ((Block)dom.dataModels[1][1])[1].Value.ToArray());
+			Assert.AreEqual(new byte[] { 0x00 }, dom.dataModels[1][2].Value.ToArray());
 		}
 
 		[Test]
@@ -450,7 +450,7 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Block outerBlock = (Dom.Block)dom.dataModels[1][0];
 			Assert.AreEqual(2, outerBlock.Count);
 			Assert.IsTrue(outerBlock[0] is Dom.Number);
-			Assert.AreEqual(new byte[] { 0x02 }, ((Dom.Number)outerBlock[0]).Value.Value);
+			Assert.AreEqual(new byte[] { 0x02 }, ((Dom.Number)outerBlock[0]).Value.ToArray());
 			Assert.IsTrue(outerBlock[1] is Dom.Block);
 
 			Dom.Block outerDataBlock = (Dom.Block)outerBlock[1];
@@ -462,9 +462,9 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Block innerBlock = (Dom.Block)(((Dom.Block)outerDataBlock[0])[0]);
 			Assert.AreEqual(2, innerBlock.Count);
 			Assert.IsTrue(innerBlock[0] is Dom.Number);
-			Assert.AreEqual(new byte[] { 0x01 }, ((Dom.Number)innerBlock[0]).Value.Value);
+			Assert.AreEqual(new byte[] { 0x01 }, ((Dom.Number)innerBlock[0]).Value.ToArray());
 			Assert.IsTrue(innerBlock[1] is Dom.Blob);
-			Assert.AreEqual(new byte[] { 0x60 }, ((Dom.Blob)innerBlock[1]).Value.Value);
+			Assert.AreEqual(new byte[] { 0x60 }, ((Dom.Blob)innerBlock[1]).Value.ToArray());
 
 
 		}
@@ -505,7 +505,7 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Block outerBlock = (Dom.Block)dom.dataModels[1][0];
 			Assert.AreEqual(2, outerBlock.Count);
 			Assert.IsTrue(outerBlock[0] is Dom.Number);
-			Assert.AreEqual(new byte[] { 0x03 }, ((Dom.Number)outerBlock[0]).Value.Value);
+			Assert.AreEqual(new byte[] { 0x03 }, ((Dom.Number)outerBlock[0]).Value.ToArray());
 			Assert.IsTrue(outerBlock[1] is Dom.Block);
 
 			Dom.Block outerDataBlock = (Dom.Block)outerBlock[1];
@@ -517,9 +517,9 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Block innerBlock = (Dom.Block)(((Dom.Block)outerDataBlock[0])[0]);
 			Assert.AreEqual(2, innerBlock.Count);
 			Assert.IsTrue(innerBlock[0] is Dom.Number);
-			Assert.AreEqual(new byte[] { 0x02 }, ((Dom.Number)innerBlock[0]).Value.Value);
+			Assert.AreEqual(new byte[] { 0x02 }, ((Dom.Number)innerBlock[0]).Value.ToArray());
 			Assert.IsTrue(innerBlock[1] is Dom.Blob);
-			Assert.AreEqual(new byte[] { 0x60 }, ((Dom.Blob)innerBlock[1]).Value.Value);
+			Assert.AreEqual(new byte[] { 0x60 }, ((Dom.Blob)innerBlock[1]).Value.ToArray());
 
 
 		}

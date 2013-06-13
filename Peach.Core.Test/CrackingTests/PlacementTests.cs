@@ -430,7 +430,7 @@ namespace Peach.Core.Test.CrackingTests
 			var data = Bits.Fmt("{0:B16}{1:B16}{2:B16}{3:B16}{4:B16}{5}",
 				2, 14, 5, 27, 7, "junkpeachmorejunk!fuzzerevenmorejunk");
 
-			var expected = data.Value;
+			var expected = data.ToArray();
 			Assert.NotNull(expected);
 
 			DataCracker cracker = new DataCracker();

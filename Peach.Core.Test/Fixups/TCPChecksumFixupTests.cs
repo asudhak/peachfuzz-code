@@ -58,7 +58,7 @@ namespace Peach.Core.Test.Fixups
 			// verify values
 			byte[] precalcChecksum = new byte[] { 0xc5, 0xe2 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 		[Test]
@@ -107,7 +107,7 @@ namespace Peach.Core.Test.Fixups
 			// verify values
 			byte[] precalcChecksum = new byte[] { 0xb8, 0xad };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 	}
 }

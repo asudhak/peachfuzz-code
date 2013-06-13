@@ -60,12 +60,12 @@ namespace Peach.Core.Test.Mutators
             Assert.Greater(dataModels.Count, 1);
             Assert.AreEqual(Variant.VariantType.Long, dataModels[0][0].InternalValue.GetVariantType());
             Assert.AreEqual(5, (long)dataModels[0][0].InternalValue);
-            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.Value);
+            Assert.AreEqual(Encoding.ASCII.GetBytes("AAAAA"), dataModels[0][1].Value.ToArray());
 
             for (int i = 1; i < dataModels.Count; ++i)
             {
                 var num = dataModels[i][0].InternalValue;
-                var str = dataModels[i][1].Value.Value;
+                var str = dataModels[i][1].Value.ToArray();
                 Assert.AreEqual(Variant.VariantType.Long, num.GetVariantType());
                 Assert.AreEqual(5, (long)num);
                 if ((i - 1) <= 50)

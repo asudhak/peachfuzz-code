@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Transformers.Encode
 			// -- this is the pre-calculated result from Peach2.3 on the blob: "3ffe:1900:4545:3:200:f8ff:fe21:67cf"
 			byte[] precalcResult = new byte[] { 0x3F, 0xFE, 0x19, 0x00, 0x45, 0x45, 0x00, 0x03, 0x02, 0x00, 0xF8, 0xFF, 0xFE, 0x21, 0x67, 0xCF };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcResult, values[0].Value);
+			Assert.AreEqual(precalcResult, values[0].ToArray());
 		}
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, can't transform IP to bytes, '3ffe:1900:4545:3:200:f8ff:fe21' is not a valid IP address.")]

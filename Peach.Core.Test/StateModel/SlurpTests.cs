@@ -71,8 +71,8 @@ namespace Peach.Core.Test.StateModel
 			var stateModel = dom.tests[0].stateModel;
 			var state = stateModel.initialState;
 
-			Assert.AreEqual(state.actions[0].dataModel.Value.Value, state.actions[2].dataModel.Value.Value);
-			Assert.AreEqual(state.actions[0].dataModel.Value.Value, state.actions[3].dataModel.Value.Value);
+			Assert.AreEqual(state.actions[0].dataModel.Value.ToArray(), state.actions[2].dataModel.Value.ToArray());
+			Assert.AreEqual(state.actions[0].dataModel.Value.ToArray(), state.actions[3].dataModel.Value.ToArray());
 		}
 
 		[Test]
@@ -124,8 +124,8 @@ namespace Peach.Core.Test.StateModel
 			var stateModel = dom.tests[0].stateModel;
 			var state = stateModel.initialState;
 
-			Assert.AreEqual(state.actions[0].dataModel.Value.Value, state.actions[2].dataModel.Value.Value);
-			Assert.AreEqual(state.actions[0].dataModel.Value.Value, state.actions[3].dataModel.Value.Value);
+			Assert.AreEqual(state.actions[0].dataModel.Value.ToArray(), state.actions[2].dataModel.Value.ToArray());
+			Assert.AreEqual(state.actions[0].dataModel.Value.ToArray(), state.actions[3].dataModel.Value.ToArray());
 		}
 	}
 }

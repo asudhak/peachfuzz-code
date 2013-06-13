@@ -121,7 +121,7 @@ namespace Peach.Core.Test.PitParserTests
 				0xff                                                        // next
 			};
 
-			Assert.AreEqual(expected, val.Value);
+			Assert.AreEqual(expected, val.ToArray());
 		}
 
 		[Test]

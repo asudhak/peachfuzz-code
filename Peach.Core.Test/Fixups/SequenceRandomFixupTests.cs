@@ -52,7 +52,7 @@ namespace Peach.Core.Test.Fixups
 
             // verify values
             Assert.AreEqual(1, values.Count);
-            uint val = BitConverter.ToUInt32(values[0].Value, 0);
+            uint val = BitConverter.ToUInt32(values[0].ToArray(), 0);
             Assert.GreaterOrEqual(val, UInt32.MinValue);
             Assert.LessOrEqual(val, UInt32.MaxValue);
         }

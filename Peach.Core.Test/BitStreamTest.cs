@@ -745,10 +745,10 @@ namespace Peach.Core.Test
 			BitStream in3 = bs.SliceBits(2 + 16 + 4);
 			BitStream in4 = in3.SliceBits(16);
 
-			Assert.AreEqual(new byte[] { 0x11, 0x20 }, in1.Value);
-			Assert.AreEqual(new byte[] { 0x40 }, in2.Value);
-			Assert.AreEqual(new byte[] { 0xcc, 0xd1, 0x14 }, in3.Value);
-			Assert.AreEqual(new byte[] { 0xcc, 0xd1 }, in4.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x20 }, in1.ToArray());
+			Assert.AreEqual(new byte[] { 0x40 }, in2.ToArray());
+			Assert.AreEqual(new byte[] { 0xcc, 0xd1, 0x14 }, in3.ToArray());
+			Assert.AreEqual(new byte[] { 0xcc, 0xd1 }, in4.ToArray());
 		}
 
 		[Test]

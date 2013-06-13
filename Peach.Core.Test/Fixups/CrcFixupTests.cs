@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Fixups
 			// -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
 			byte[] precalcChecksum = new byte[] { 0x82, 0x89, 0xD1, 0xF7 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 		[Test]
@@ -104,7 +104,7 @@ namespace Peach.Core.Test.Fixups
 			// -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
 			byte[] precalcChecksum = new byte[] { 0x82, 0x89, 0xD1, 0xF7 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 		[Test]
@@ -152,7 +152,7 @@ namespace Peach.Core.Test.Fixups
 			// -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
 			byte[] precalcChecksum = new byte[] { 0x82, 0x89, 0xD1, 0xF7 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 
@@ -199,7 +199,7 @@ namespace Peach.Core.Test.Fixups
 
 			byte[] precalcChecksum = new byte[] { 0x53, 0xF3 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 		[Test]
@@ -245,7 +245,7 @@ namespace Peach.Core.Test.Fixups
 
 			byte[] precalcChecksum = new byte[] { 0xDA, 0xDA };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 	}

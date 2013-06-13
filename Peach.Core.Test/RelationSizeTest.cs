@@ -361,15 +361,15 @@ namespace Peach.Core.Test
 
 			byte[] act1 = Encoding.ASCII.GetBytes("\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[0].error);
-			Assert.AreEqual(act1, actions[0].dataModel.Value.Value);
+			Assert.AreEqual(act1, actions[0].dataModel.Value.ToArray());
 
 			byte[] act2 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[1].error);
-			Assert.AreEqual(act2, actions[1].dataModel.Value.Value);
+			Assert.AreEqual(act2, actions[1].dataModel.Value.ToArray());
 
 			byte[] act3 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[2].error);
-			Assert.AreEqual(act3, actions[2].dataModel.Value.Value);
+			Assert.AreEqual(act3, actions[2].dataModel.Value.ToArray());
 
 			Assert.True(actions[3].error);
 			try
@@ -569,7 +569,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
 
 			Assert.AreEqual(expected, final);
@@ -614,7 +614,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
 
 			Assert.AreEqual(expected, final);
@@ -655,7 +655,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			var expected = new byte[] { 201, 0 };
 
 			Assert.AreEqual(expected, final);
@@ -791,7 +791,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[3].Value.Value;
+			var val = dom.dataModels[3].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x5Hello"), val);
 		}
 
@@ -818,7 +818,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[1].Value.Value;
+			var val = dom.dataModels[1].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x40\x41\x42"), val);
 		}
 
@@ -848,7 +848,7 @@ namespace Peach.Core.Test
 			Assert.AreEqual(6, size);
 
 			// Ensure 'DM' has proper value
-			byte[] actual = dom.dataModels[0].Value.Value;
+			byte[] actual = dom.dataModels[0].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x6Hello"), actual);
 		}
 	}

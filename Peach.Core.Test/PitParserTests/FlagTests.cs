@@ -213,7 +213,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.NotNull(value);
 			Assert.AreEqual(64, value.LengthBits);
 
-			var bytes = value.Value;
+			var bytes = value.ToArray();
 
 			return bytes;
 		}
@@ -240,7 +240,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.NotNull(value);
 			Assert.AreEqual(32, value.LengthBits);
 
-			var bytes = value.Value;
+			var bytes = value.ToArray();
 
 			return bytes;
 		}
@@ -267,7 +267,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.NotNull(value);
 			Assert.AreEqual(28, value.LengthBits);
 
-			var bytes = value.Value;
+			var bytes = value.ToArray();
 
 			return bytes;
 		}

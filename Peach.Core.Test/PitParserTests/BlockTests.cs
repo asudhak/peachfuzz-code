@@ -63,8 +63,8 @@ namespace Peach.Core.Test.PitParserTests
 			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(2, dom.dataModels.Count);
-			Assert.AreEqual("HelloWorld", Encoding.ASCII.GetString(dom.dataModels[0].Value.Value));
-			Assert.AreEqual("HelloHello", Encoding.ASCII.GetString(dom.dataModels[1].Value.Value));
+			Assert.AreEqual("HelloWorld", Encoding.ASCII.GetString(dom.dataModels[0].Value.ToArray()));
+			Assert.AreEqual("HelloHello", Encoding.ASCII.GetString(dom.dataModels[1].Value.ToArray()));
 		}
 
 		[Test]
@@ -89,8 +89,8 @@ namespace Peach.Core.Test.PitParserTests
 			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 
 			Assert.AreEqual(2, dom.dataModels.Count);
-			Assert.AreEqual("HelloWorld.", Encoding.ASCII.GetString(dom.dataModels[0].Value.Value));
-			Assert.AreEqual("HelloWorldHello.", Encoding.ASCII.GetString(dom.dataModels[1].Value.Value));
+			Assert.AreEqual("HelloWorld.", Encoding.ASCII.GetString(dom.dataModels[0].Value.ToArray()));
+			Assert.AreEqual("HelloWorldHello.", Encoding.ASCII.GetString(dom.dataModels[1].Value.ToArray()));
 		}
 	}
 }

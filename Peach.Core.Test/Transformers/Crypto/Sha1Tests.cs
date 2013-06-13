@@ -55,7 +55,7 @@ namespace Peach.Core.Test.Transformers.Crypto
             // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
             byte[] precalcResult = new byte[] { 0xF7, 0xFF, 0x9E, 0x8B, 0x7B, 0xB2, 0xE0, 0x9B, 0x70, 0x93, 0x5A, 0x5D, 0x78, 0x5E, 0x0C, 0xC5, 0xD9, 0xD0, 0xAB, 0xF0 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
     }
 }
