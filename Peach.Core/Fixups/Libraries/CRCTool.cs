@@ -196,6 +196,40 @@ namespace Peach.Core.Fixups.Libraries
             return (crc);
         }
 
+		public ulong crctablefast(Stream stream)
+		{
+			// fast lookup table algorithm without augmented zero bytes, e.g. used in pkzip.
+			// only usable with polynom orders of 8, 16, 24 or 32.
+			ulong crc = crcinit_direct;
+			if (refin != 0)
+			{
+				crc = reflect(crc, order);
+			}
+			if (refin == 0)
+			{
+				int b;
+				while ((b = stream.ReadByte()) != -1)
+				{
+					crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ (byte)b];
+				}
+			}
+			else
+			{
+				int b;
+				while ((b = stream.ReadByte()) != -1)
+				{
+					crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ (byte)b];
+				}
+			}
+			if ((refout ^ refin) != 0)
+			{
+				crc = reflect(crc, order);
+			}
+			crc ^= crcxor;
+			crc &= crcmask;
+			return (crc);
+		}
+
 		public ulong crctable(byte[] p)
 		{
 			// normal lookup table algorithm with augmented zero bytes.
