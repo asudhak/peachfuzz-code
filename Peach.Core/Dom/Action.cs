@@ -588,20 +588,8 @@ namespace Peach.Core.Dom
 
 		protected void handleOutput(Publisher publisher)
 		{
-			BitStreamList lst = new BitStreamList();
-			lst.Add(dataModel.Value);
-
-			int remain = (int)(lst.LengthBits % 8);
-			if (remain != 0)
-			{
-				BitStream pad = new BitStream();
-				pad.WriteBits(0, 8 - remain);
-			}
-
-			MemoryStream ms = new MemoryStream();
-			lst.CopyTo(ms);
-			ms.Seek(0, SeekOrigin.Begin);
-			publisher.output(ms.GetBuffer(), (int)ms.Position, (int)ms.Length);
+			var data = dataModel.Value;
+			publisher.output(data);
 		}
 
 		protected void handleCall(Publisher publisher, RunContext context)

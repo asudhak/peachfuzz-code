@@ -185,10 +185,8 @@ namespace Peach.Core
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="buffer">Data to send/write</param>
-		/// <param name="offset">The byte offset in buffer at which to begin writing from.</param>
-		/// <param name="count">The maximum number of bytes to write.</param>
-		protected virtual void OnOutput(byte[] buffer, int offset, int count)
+		/// <param name="data">Data to send/write</param>
+		protected virtual void OnOutput(BitwiseStream data)
 		{
 			throw new PeachException("Error, action 'output' not supported by publisher");
 		}
@@ -323,13 +321,27 @@ namespace Peach.Core
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="buffer">Data to send/write</param>
-		/// <param name="offset">The byte offset in buffer at which to begin writing from.</param>
-		/// <param name="count">The maximum number of bytes to write.</param>
-		public void output(byte[] buffer, int offset, int count)
+		/// <param name="data">Data to send/write</param>
+		public void output(BitwiseStream data)
 		{
-			Logger.Debug("output({0} bytes)", count);
-			OnOutput(buffer, offset, count);
+			long lengthBits = data.LengthBits;
+
+			int extra = 8 - (int)(lengthBits % 8);
+			if (extra != 8)
+			{
+				BitStreamList lst = new BitStreamList();
+				lst.Add(data);
+
+				BitStream pad = new BitStream();
+				pad.WriteBits(0, extra);
+				lst.Add(pad);
+				lengthBits += extra;
+
+				data = lst;
+			}
+
+			Logger.Debug("output({0} bytes)", lengthBits / 8);
+			OnOutput(data);
 		}
 
 		/// <summary>

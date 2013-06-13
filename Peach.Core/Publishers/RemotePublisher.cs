@@ -26,6 +26,7 @@ namespace Peach.Core.Publishers
 		protected override NLog.Logger Logger { get { return logger; } }
 
 		private Publisher _publisher = null;
+		private BitwiseStream _stream = null;
 		int _remotingWaitTime = 1000 * 60 * 1;
 
 		public RemotePublisher(Dictionary<string, Variant> args)
@@ -104,6 +105,7 @@ namespace Peach.Core.Publishers
 			{
 				logger.Debug("Restarting remote publisher");
 
+				_stream = Context.agentManager.CreateBitwiseStream(Agent);
 				_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
 				_publisher.Iteration = Iteration;
 				_publisher.IsControlIteration = IsControlIteration;
@@ -190,6 +192,7 @@ namespace Peach.Core.Publishers
 		protected override void OnStart()
 		{
 			logger.Debug(">> OnStart");
+			_stream = Context.agentManager.CreateBitwiseStream(Agent);
 			_publisher = Context.agentManager.CreatePublisher(Agent, Class, Args);
 			_publisher.Iteration = Iteration;
 			_publisher.IsControlIteration = IsControlIteration;
@@ -369,11 +372,17 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
 			try
 			{
-				PerformRemoting(delegate() { _publisher.output(buffer, offset, count); });
+				PerformRemoting(delegate()
+				{
+					_stream.SetLength(0);
+					data.CopyTo(_stream);
+					_stream.Seek(0, SeekOrigin.Begin);
+					_publisher.output(_stream);
+				});
 			}
 			catch (System.Runtime.Remoting.RemotingException re)
 			{

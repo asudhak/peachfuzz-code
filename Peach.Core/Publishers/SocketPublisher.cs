@@ -654,32 +654,28 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
 			System.Diagnostics.Debug.Assert(_socket != null);
 
-			int size = count;
-
-			if (size > MaxSendSize)
-			{
-				// This will be logged below as a truncated send
-				size = MaxSendSize;
-			}
-
 			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
+				Logger.Debug("\n\n" + Utilities.HexDump(data));
+
+			long count = data.Length;
+			var buffer = new byte[MaxSendSize];
+			int size = data.Read(buffer, 0, buffer.Length);
 
 			try
 			{
-				FilterOutput(buffer, offset, count);
+				FilterOutput(buffer, 0, size);
 
-				var ar = _socket.BeginSendTo(buffer, offset, size, SocketFlags.None, _remoteEp, null, null);
+				var ar = _socket.BeginSendTo(buffer, 0, size, SocketFlags.None, _remoteEp, null, null);
 				if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
 					throw new TimeoutException();
-				var txLen = _socket.EndSendTo(ar);
+				size = _socket.EndSendTo(ar);
 
-				if (count != txLen)
-					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, txLen, count));
+				if (count != size)
+					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, size, count));
 			}
 			catch (Exception ex)
 			{
@@ -715,9 +711,9 @@ namespace Peach.Core.Publishers
 			if (property == "LastRecvAddr")
 			{
 				if (_lastRxEp == null)
-					return new Variant(new byte[0]);
+					return new Variant(BitwiseStream.Null);
 				else
-					return new Variant(((IPEndPoint)_lastRxEp).Address.GetAddressBytes());
+					return new Variant(new BitStream(((IPEndPoint)_lastRxEp).Address.GetAddressBytes()));
 			}
 
 			return null;

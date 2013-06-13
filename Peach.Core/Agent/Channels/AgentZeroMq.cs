@@ -42,6 +42,7 @@ using Peach.Core.Dom;
 using NLog;
 using Peach.Core.Agent;
 using ZeroMQ;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent.Channels
 {
@@ -116,6 +117,13 @@ namespace Peach.Core.Agent.Channels
 		{
 			logger.Trace("CreatePublisher: {0}", cls);
 			OnCreatePublisherEvent(cls, args);
+			throw new NotImplementedException();
+		}
+
+		public override BitwiseStream CreateBitwiseStream()
+		{
+			logger.Trace("CreateBitwiseStream");
+			//OnCreateBitwiseStream();
 			throw new NotImplementedException();
 		}
 

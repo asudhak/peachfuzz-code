@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent
 {
@@ -200,6 +201,14 @@ namespace Peach.Core.Agent
 		/// <param name="args">Arguments for publisher</param>
 		/// <returns>Instance of remote publisher</returns>
 		public abstract Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
+
+		/// <summary>
+		/// Creates a publisher on the remote agent
+		/// </summary>
+		/// <param name="cls">Class of publisher to create</param>
+		/// <param name="args">Arguments for publisher</param>
+		/// <returns>Instance of remote publisher</returns>
+		public abstract BitwiseStream CreateBitwiseStream();
 
 		/// <summary>
 		/// Start a specific monitor
