@@ -142,6 +142,37 @@ namespace Peach.Core.IO
 
 		#endregion
 
+		#region Element Positions
+
+		public override bool TryGetPosition(string name, out long position)
+		{
+			position = 0;
+			return ScanUntil(name, ref position);
+		}
+
+		protected bool ScanUntil(string name, ref long position)
+		{
+			if (this.Name == name)
+				return true;
+
+			foreach (var item in this)
+			{
+				if (item.Name == name)
+					return true;
+
+				var lst = item as BitStreamList;
+
+				if (lst == null)
+					position += item.LengthBits;
+				else if (lst.ScanUntil(name, ref position))
+					return true;
+			}
+
+			return false;
+		}
+
+		#endregion
+
 		#region Stream Interface
 
 		public override bool CanRead

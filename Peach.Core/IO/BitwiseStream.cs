@@ -62,6 +62,17 @@ namespace Peach.Core.IO
 
 		#endregion
 
+		#region Element Positions
+
+		public string Name { get; set; }
+
+		public virtual bool TryGetPosition(string name, out long position)
+		{
+			throw new NotSupportedException("Stream does not support element positions.");
+		}
+
+		#endregion
+
 		#region Stream Specializations
 
 		public void CopyTo(BitwiseStream destination)

@@ -122,7 +122,11 @@ namespace Peach.Core.Dom
 			{
 				var stream = new BitStreamList();
 				foreach (var child in this)
-					stream.Add(child.Value);
+				{
+					var val = child.Value;
+					val.Name = child.fullName;
+					stream.Add(val);
+				}
 
 				value = new Variant(stream);
 			}
