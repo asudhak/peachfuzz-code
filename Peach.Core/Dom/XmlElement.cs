@@ -131,7 +131,7 @@ namespace Peach.Core.Dom
 				if (child is XmlAttribute)
 				{
 					XmlAttribute attrib = child as XmlAttribute;
-					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					if (child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
 					{
 						// Happend when data element is duplicated.  Duplicate attributes are invalid so ignore.
 						continue;
@@ -154,7 +154,7 @@ namespace Peach.Core.Dom
 				}
 				else if (child is XmlElement)
 				{
-					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					if (child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
 					{
 						var key = "|||" + child.fullName + "|||";
 						var text = doc.doc.CreateTextNode(key);
@@ -177,7 +177,7 @@ namespace Peach.Core.Dom
 
 		protected override Variant GenerateInternalValue()
 		{
-			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			if (mutationFlags.HasFlag(MutateOverride.TypeTransform))
 				return MutatedValue;
 
 			PeachXmlDoc doc = new PeachXmlDoc();
@@ -216,7 +216,7 @@ namespace Peach.Core.Dom
 
 		protected override BitwiseStream InternalValueToBitStream()
 		{
-			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
+			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
 				return (BitwiseStream)MutatedValue;
 
 			return (BitwiseStream)InternalValue;

@@ -89,7 +89,7 @@ namespace Peach.Core.Mutators
 
         private void applyMutation(DataElement obj, string value)
         {
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
             obj.MutatedValue = new Variant(value);
         }
     }

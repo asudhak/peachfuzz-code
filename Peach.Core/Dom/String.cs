@@ -485,7 +485,7 @@ namespace Peach.Core.Dom
 
 		protected override BitwiseStream InternalValueToBitStream()
 		{
-			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
+			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
 			var str = TryFormatNumber(InternalValue);

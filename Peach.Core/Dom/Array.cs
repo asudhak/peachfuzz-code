@@ -242,7 +242,7 @@ namespace Peach.Core.Dom
 
 			var clone = item.Clone();
 			clone.MutatedValue = new Variant(bs);
-			clone.mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+			clone.mutationFlags = MutateOverride.Default | MutateOverride.TypeTransform;
 
 			// Force the same element to be duplicated in the DataElementContainer
 			for (int i = Count; i < num; ++i)

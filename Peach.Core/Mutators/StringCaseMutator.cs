@@ -81,7 +81,7 @@ namespace Peach.Core.Mutators
         public override void sequentialMutation(DataElement obj)
         {
             // Only called via the Sequential mutation strategy, which should always have a consistent seed
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
             mutations[index](obj);
         }
 
@@ -89,10 +89,10 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            if ((obj.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+            if (obj.mutationFlags.HasFlag(MutateOverride.TypeTransform))
                 return;
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
             context.Random.Choice(mutations)(obj);
         }
 

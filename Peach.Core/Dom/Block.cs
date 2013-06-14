@@ -137,7 +137,7 @@ namespace Peach.Core.Dom
 
 			// 2. Relations
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			if (_mutatedValue != null && mutationFlags.HasFlag(MutateOverride.Relations))
 			{
 				return MutatedValue;
 			}
@@ -158,7 +158,7 @@ namespace Peach.Core.Dom
 
 			// 3. Fixup
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			if (_mutatedValue != null && mutationFlags.HasFlag(MutateOverride.Fixup))
 			{
 				return MutatedValue;
 			}

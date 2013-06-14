@@ -98,7 +98,7 @@ namespace Peach.Core.Mutators
         public override void sequentialMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(values[pos]);
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
 
         // RANDOM_MUTATION
@@ -106,7 +106,7 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             obj.MutatedValue = new Variant(context.Random.Choice(values));
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
     }
 }

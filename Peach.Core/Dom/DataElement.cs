@@ -90,6 +90,48 @@ namespace Peach.Core.Dom
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);
 
 	/// <summary>
+	/// Mutated value override's fixupImpl
+	///
+	///  - Default Value
+	///  - Relation
+	///  - Fixup
+	///  - Type contraints
+	///  - Transformer
+	/// </summary>
+	[Flags]
+	public enum MutateOverride : uint
+	{
+		/// <summary>
+		/// No overrides have occured
+		/// </summary>
+		None = 0x00,
+		/// <summary>
+		/// Mutated value overrides fixups
+		/// </summary>
+		Fixup = 0x01,
+		/// <summary>
+		/// Mutated value overrides transformers
+		/// </summary>
+		Transformer = 0x02,
+		/// <summary>
+		/// Mutated value overrides type constraints (e.g. string length, null terminated, etc.)
+		/// </summary>
+		TypeConstraints = 0x04,
+		/// <summary>
+		/// Mutated value overrides relations.
+		/// </summary>
+		Relations = 0x08,
+		/// <summary>
+		/// Mutated value overrides type transforms.
+		/// </summary>
+		TypeTransform = 0x20,
+		/// <summary>
+		/// Default mutate value
+		/// </summary>
+		Default = Fixup,
+	}
+
+	/// <summary>
 	/// Base class for all data elements.
 	/// </summary>
 	[Serializable]
@@ -215,38 +257,6 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-		/// <summary>
-		/// Mutated vale override's fixupImpl
-		///
-		///  - Default Value
-		///  - Relation
-		///  - Fixup
-		///  - Type contraints
-		///  - Transformer
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_FIXUP = 0x1;
-		/// <summary>
-		/// Mutated value overrides transformers
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_TRANSFORMER = 0x2;
-		/// <summary>
-		/// Mutated value overrides type constraints (e.g. string length,
-		/// null terminated, etc.)
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_TYPE_CONSTRAINTS = 0x4;
-		/// <summary>
-		/// Mutated value overrides relations.
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_RELATIONS = 0x8;
-        /// <summary>
-        /// Mutated value overrides type transforms.
-        /// </summary>
-        public const uint MUTATE_OVERRIDE_TYPE_TRANSFORM = 0x20;
-		/// <summary>
-		/// Default mutate value
-		/// </summary>
-		public const uint MUTATE_DEFAULT = MUTATE_OVERRIDE_FIXUP;
-
 		private string _name;
 
 		public string name
@@ -255,7 +265,7 @@ namespace Peach.Core.Dom
 		}
 
 		public bool isMutable = true;
-		public uint mutationFlags = MUTATE_DEFAULT;
+		public MutateOverride mutationFlags = MutateOverride.None;
 		public bool isToken = false;
 
 		public Analyzer analyzer = null;
@@ -896,14 +906,14 @@ namespace Peach.Core.Dom
 
 			// 2. Check for type transformations
 
-			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			if (MutatedValue != null && mutationFlags.HasFlag(MutateOverride.TypeTransform))
 			{
 				return MutatedValue;
 			}
 
 			// 3. Relations
 
-			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			if (MutatedValue != null && mutationFlags.HasFlag(MutateOverride.Relations))
 			{
 				return MutatedValue;
 			}
@@ -924,7 +934,7 @@ namespace Peach.Core.Dom
 
 			// 4. Fixup
 
-			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			if (MutatedValue != null && mutationFlags.HasFlag(MutateOverride.Fixup))
 			{
 				return MutatedValue;
 			}
@@ -959,7 +969,7 @@ namespace Peach.Core.Dom
 
 			BitwiseStream value = null;
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			if (_mutatedValue != null && mutationFlags.HasFlag(MutateOverride.TypeTransform))
 			{
 				value = (BitwiseStream)_mutatedValue;
 			}
@@ -968,9 +978,9 @@ namespace Peach.Core.Dom
 				value = InternalValueToBitStream();
 			}
 
-            if (_mutatedValue == null || (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
-                if (_transformer != null)
-                    value = _transformer.encode(value);
+			if (_mutatedValue == null || mutationFlags.HasFlag(MutateOverride.Transformer))
+				if (_transformer != null)
+					value = _transformer.encode(value);
 
 			return value;
 		}

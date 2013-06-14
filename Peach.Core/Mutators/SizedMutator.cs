@@ -71,7 +71,7 @@ namespace Peach.Core.Mutators
 		{
 			Logger.Debug("performMutaton> Length: {0}, Grow By: {1}", obj.InternalValue, growBy);
 
-			obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+			obj.mutationFlags = MutateOverride.Default;
 
 			var sizeRelation = obj.relations.getFromSizeRelation();
 			if (sizeRelation == null)
@@ -87,13 +87,13 @@ namespace Peach.Core.Mutators
 				return;
 			}
 
-			objOf.mutationFlags = DataElement.MUTATE_DEFAULT;
-			objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+			obj.mutationFlags = MutateOverride.Default;
+			obj.mutationFlags |= MutateOverride.TypeTransform;
 
 			if (OverrideRelation)
 			{
 				// Indicate we are overrideing the relation
-				objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_RELATIONS;
+				objOf.mutationFlags |= MutateOverride.Relations;
 
 				// Keep size indicator the same
 				obj.MutatedValue = obj.InternalValue;

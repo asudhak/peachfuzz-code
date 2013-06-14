@@ -118,7 +118,7 @@ namespace Peach.Core.Mutators
 
 				DataElement newElem = Activator.CreateInstance(obj.GetType(), new object[] { newName }) as DataElement;
 				newElem.MutatedValue = mutatedValue;
-				newElem.mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+				newElem.mutationFlags = MutateOverride.Default | MutateOverride.TypeTransform;
 
 				obj.parent.Insert(startIdx + i, newElem);
 			}
