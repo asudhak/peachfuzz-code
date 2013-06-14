@@ -116,7 +116,7 @@ namespace Peach.Core
 
 		public Variant(byte[] v)
 		{
-			SetValue(v);
+			SetValue(new BitStream(v));
 		}
 
 		public Variant(BitwiseStream v)
@@ -164,13 +164,13 @@ namespace Peach.Core
 			_valueByteArray = null;
 		}
 
-		public void SetValue(byte[] v)
-		{
-			_type = VariantType.ByteString;
-			_valueByteArray = v;
-			_valueString = null;
-			_valueBitStream = null;
-		}
+		//public void SetValue(byte[] v)
+		//{
+		//    _type = VariantType.ByteString;
+		//    _valueByteArray = v;
+		//    _valueString = null;
+		//    _valueBitStream = null;
+		//}
 
 		public void SetValue(BitwiseStream v)
 		{
@@ -219,27 +219,8 @@ namespace Peach.Core
 
 						return Convert.ToInt32(v._valueString);
 					case VariantType.ByteString:
-						//BitStream bs = new BitStream(v._valueByteArray);
-						//switch (bs.LengthBytes)
-						//{
-						//    case 8:
-						//        return (int)bs.ReadInt8();
-						//    case 16:
-						//        return (int)bs.ReadInt16();
-						//    case 32:
-						//        return bs.ReadInt32();
-						//}
-
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
-
 					case VariantType.BitStream:
-						//if (v._valueInt != null)
-						//    return (int)v._valueInt;
-						//if (v._valueLong != null)
-						//    return (int)v._valueLong;
-						//if (v._valueULong != null)
-						//    return (int)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -281,27 +262,8 @@ namespace Peach.Core
 
 						return Convert.ToUInt32(v._valueString);
 					case VariantType.ByteString:
-						//BitStream bs = new BitStream(v._valueByteArray);
-						//switch (bs.LengthBytes)
-						//{
-						//    case 8:
-						//        return (uint)bs.ReadUInt8();
-						//    case 16:
-						//        return (uint)bs.ReadUInt16();
-						//    case 32:
-						//        return bs.ReadUInt32();
-						//}
-
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
-
 					case VariantType.BitStream:
-						//if (v._valueInt != null)
-						//    return (uint)v._valueInt;
-						//if (v._valueLong != null)
-						//    return (uint)v._valueLong;
-						//if (v._valueULong != null)
-						//    return (uint)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -375,22 +337,8 @@ namespace Peach.Core
 
 						return Convert.ToUInt64(v._valueString);
 					case VariantType.ByteString:
-						if (v._valueInt != null)
-							return (ulong)v._valueInt;
-						if (v._valueLong != null)
-							return (ulong)v._valueLong;
-						if (v._valueULong != null)
-							return (ulong)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 					case VariantType.BitStream:
-						if (v._valueInt != null)
-							return (ulong)v._valueInt;
-						if (v._valueLong != null)
-							return (ulong)v._valueLong;
-						if (v._valueULong != null)
-							return (ulong)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -456,7 +404,7 @@ namespace Peach.Core
 				case VariantType.ByteString:
 					return v._valueByteArray;
 				case VariantType.BitStream:
-					return v._valueBitStream.Value;
+					throw new NotSupportedException("Unable to convert BitStream to byte[] type.");
 				default:
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}
@@ -478,7 +426,7 @@ namespace Peach.Core
 				case VariantType.String:
 					throw new NotSupportedException("Unable to convert string to BitStream type.");
 				case VariantType.ByteString:
-					return new BitStream(v._valueByteArray);
+					throw new NotSupportedException("Unable to convert byte[] to BitStream type.");
 				case VariantType.BitStream:
 					return v._valueBitStream;
 				default:
@@ -520,29 +468,42 @@ namespace Peach.Core
 			if (((object)a == null) || ((object)b == null))
 				return false;
 
-			try
+			if (a.GetVariantType() == VariantType.BitStream && b.GetVariantType() == VariantType.BitStream)
 			{
-				string stra = (string)a;
-				string strb = (string)b;
+				BitStream aa = (BitStream)a;
+				BitStream bb = (BitStream)b;
 
-				if (stra.Equals(strb))
-					return true;
-				else
+				if (aa.Length != bb.Length)
 					return false;
+
+				aa.Seek(0, System.IO.SeekOrigin.Begin);
+				bb.Seek(0, System.IO.SeekOrigin.Begin);
+
+				while (true)
+				{
+					int lhs = aa.ReadByte();
+					int rhs = bb.ReadByte();
+
+					if (lhs != rhs)
+						return false;
+
+					if (lhs == -1)
+						break;
+				}
+
+				return true;
 			}
-			catch { }
 
-			byte[] aa = (byte[])a;
-			byte[] bb = (byte[])b;
+			if (a.GetVariantType() == VariantType.BitStream || b.GetVariantType() == VariantType.BitStream)
+				throw new NotSupportedException("Unable to compare BitStream to Non-BitStream.");
 
-			if (aa.Length != bb.Length)
+			string stra = (string)a;
+			string strb = (string)b;
+
+			if (stra.Equals(strb))
+				return true;
+			else
 				return false;
-
-			for (int cnt = 0; cnt < aa.Length; cnt++)
-				if (aa[cnt] != bb[cnt])
-					return false;
-
-			return true;
 		}
 
 		public static bool operator !=(Variant a, Variant b)
