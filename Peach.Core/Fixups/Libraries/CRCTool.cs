@@ -3,6 +3,7 @@ using System.Collections;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups.Libraries
 {
@@ -207,18 +208,22 @@ namespace Peach.Core.Fixups.Libraries
 			}
 			if (refin == 0)
 			{
-				int b;
-				while ((b = stream.ReadByte()) != -1)
+				var buffer = new byte[BitwiseStream.BlockCopySize];
+				int nread;
+				while ((nread = stream.Read(buffer, 0, buffer.Length)) != 0)
 				{
-					crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ (byte)b];
+					for (int i = 0; i < nread; ++i)
+						crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ buffer[i]];
 				}
 			}
 			else
 			{
-				int b;
-				while ((b = stream.ReadByte()) != -1)
+				var buffer = new byte[BitwiseStream.BlockCopySize];
+				int nread;
+				while ((nread = stream.Read(buffer, 0, buffer.Length)) != 0)
 				{
-					crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ (byte)b];
+					for (int i = 0; i < nread; ++i)
+						crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ buffer[i]];
 				}
 			}
 			if ((refout ^ refin) != 0)

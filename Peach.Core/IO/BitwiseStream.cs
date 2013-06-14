@@ -30,7 +30,7 @@ namespace Peach.Core.IO
 		#region Static Members
 
 		public new static readonly BitwiseStream Null = new BitStream(Stream.Null);
-		public const int BlockCopySize = 16 * 1024;
+		public const int BlockCopySize = 4 * 1024 * 1024;
 
 		#endregion
 
