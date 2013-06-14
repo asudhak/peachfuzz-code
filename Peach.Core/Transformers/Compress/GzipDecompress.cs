@@ -45,8 +45,6 @@ namespace Peach.Core.Transformers.Compress
 	[Serializable]
 	public class GzipDecompress : Transformer
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		public GzipDecompress(Dictionary<string, Variant> args)
 			: base(args)
 		{

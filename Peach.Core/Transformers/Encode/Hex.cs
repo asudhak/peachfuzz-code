@@ -85,10 +85,10 @@ namespace Peach.Core.Transformers.Encode
 
 			public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
 			{
-				if (inputCount != 0)
-					throw new ArgumentOutOfRangeException("outputOffset");
-
-				return new byte[0];
+				var ret = new byte[inputCount * 2];
+				int len = TransformBlock(inputBuffer, inputOffset, inputCount, ret, 0);
+				System.Diagnostics.Debug.Assert(len == ret.Length);
+				return ret;
 			}
 
 			private byte GetChar(int nibble)
@@ -150,10 +150,13 @@ namespace Peach.Core.Transformers.Encode
 
 			public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
 			{
-				if (inputCount != 0)
+				if ((inputCount % 2) != 0)
 					throw new SoftException("Hex decode failed, invalid length.");
 
-				return new byte[0];
+				var ret = new byte[inputCount / 2];
+				var len = TransformBlock(inputBuffer, inputOffset, inputCount, ret, 0);
+				System.Diagnostics.Debug.Assert(len == ret.Length);
+				return ret;
 			}
 
 			private byte GetNibble(byte c)

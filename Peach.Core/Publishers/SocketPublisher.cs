@@ -675,7 +675,7 @@ namespace Peach.Core.Publishers
 				size = _socket.EndSendTo(ar);
 
 				if (count != size)
-					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", _type, size, count));
+					throw new Exception(string.Format("Only sent {0} of {1} byte {2} packet.", size, count, _type));
 			}
 			catch (Exception ex)
 			{

@@ -73,7 +73,7 @@ namespace Peach.Core.Test
 			}
 			catch (ArgumentOutOfRangeException ex)
 			{
-				Assert.AreEqual(ex.Message, "Non-negative number required.\r\nParameter name: value");
+				Assert.AreEqual("Non-negative number required." + Environment.NewLine + "Parameter name: value", ex.Message);
 			}
 
 			try
@@ -83,7 +83,7 @@ namespace Peach.Core.Test
 			}
 			catch (ArgumentOutOfRangeException ex)
 			{
-				Assert.AreEqual(ex.Message, "Non-negative number required.\r\nParameter name: value");
+				Assert.AreEqual("Non-negative number required." + Environment.NewLine + "Parameter name: value", ex.Message);
 			}
 		}
 
@@ -307,6 +307,7 @@ namespace Peach.Core.Test
 			bs.SeekBits(34, System.IO.SeekOrigin.Begin);
 
 			int val = bs.ReadByte();
+			Assert.AreNotEqual(-1, val);
 
 			bs.SeekBits(-1, System.IO.SeekOrigin.End);
 			val = bs.ReadByte();

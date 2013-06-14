@@ -145,8 +145,10 @@ namespace Peach.Core.Agent.Channels
 			props["timeout"] = (uint)1000*60*1; // wait one minute max
 			props["connectionTimeout"] = (uint)1000*60*1; // wait one minute max
 
+#if !MONO
 			if (RemotingConfiguration.CustomErrorsMode != CustomErrorsModes.Off)
 				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+#endif
 
 			BinaryClientFormatterSinkProvider clientProvider = new BinaryClientFormatterSinkProvider();
 

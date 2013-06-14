@@ -1,6 +1,3 @@
-
-#if MONO
-
 using System;
 using System.Collections.Generic;
 using Peach;
@@ -265,11 +262,11 @@ namespace Peach.Core.Publishers
 
 		protected override void OnClose()
 		{
-		        //this never happens....
-
+			//this never happens....
 			System.Diagnostics.Debug.Assert(_socket != null);
 			if (orig_mtu != 0)
-			  OpenSocket(orig_mtu);
+				OpenSocket(orig_mtu);
+
 			_socket.Close();
 			_socket = null;
 		}
@@ -344,16 +341,18 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-		protected override void OnOutput(byte[] buf, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
-			int size = count;
+			if (Logger.IsDebugEnabled)
+				Logger.Debug("\n\n" + Utilities.HexDump(data));
+
+			long count = data.Length;
+			var buffer = new byte[MaxMTU];
+			int size = data.Read(buffer, 0, buffer.Length);
 
 			Pollfd[] fds = new Pollfd[1];
 			fds[0].fd = _socket.Handle;
 			fds[0].events = PollEvents.POLLOUT;
-
-			if (Logger.IsDebugEnabled)
-				Logger.Debug("\n\n" + Utilities.HexDump(buf, offset, count));
 
 			int expires = Environment.TickCount + Timeout;
 			int wait = 0;
@@ -378,8 +377,11 @@ namespace Peach.Core.Publishers
 					if (ret != 1 || (fds[0].revents & PollEvents.POLLOUT) == 0)
 						continue;
 
-					_socket.Write(buf, offset, size);
-					
+					_socket.Write(buffer, 0, size);
+
+					if (count != size)
+						throw new Exception(string.Format("Only sent {0} of {1} byte packet.", size, count));
+
 					return;
 				}
 				catch (Exception ex)
@@ -394,7 +396,7 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-#region Read Stream
+		#region Read Stream
 
 		public override bool CanRead
 		{
@@ -455,17 +457,17 @@ namespace Peach.Core.Publishers
 
 				if (value.GetVariantType() == Variant.VariantType.BitStream)
 				{
-					var bs = (BitStream)value;
+					var bs = (BitwiseStream)value;
 					bs.SeekBits(0, SeekOrigin.Begin);
-					int len = (int)Math.Min(bs.LengthBits, 32);
-					ulong bits = bs.ReadBits(len);
-					mtu = LittleBitWriter.GetUInt32(bits, len);
+					ulong bits;
+					int len = bs.ReadBits(out bits, 32);
+					mtu = Endian.Little.GetUInt32(bits, len);
 				}
 				else if (value.GetVariantType() == Variant.VariantType.ByteString)
 				{
 					byte[] buf = (byte[])value;
 					int len = Math.Min(buf.Length * 8, 32);
-					mtu = LittleBitWriter.GetUInt32(buf, len);
+					mtu = Endian.Little.GetUInt32(buf, len);
 				}
 				else
 				{
@@ -492,8 +494,6 @@ namespace Peach.Core.Publishers
 			}
 		}
 
-#endregion
+		#endregion
 	}
 }
-
-#endif
