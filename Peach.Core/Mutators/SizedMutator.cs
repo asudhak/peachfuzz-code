@@ -87,8 +87,9 @@ namespace Peach.Core.Mutators
 				return;
 			}
 
-			obj.mutationFlags = MutateOverride.Default;
-			obj.mutationFlags |= MutateOverride.TypeTransform;
+			objOf.mutationFlags = MutateOverride.Default;
+			objOf.mutationFlags |= MutateOverride.TypeTransform;
+			objOf.mutationFlags |= MutateOverride.Transformer;
 
 			if (OverrideRelation)
 			{
