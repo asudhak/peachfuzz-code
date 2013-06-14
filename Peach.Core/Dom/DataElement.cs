@@ -978,7 +978,7 @@ namespace Peach.Core.Dom
 				value = InternalValueToBitStream();
 			}
 
-			if (_mutatedValue == null || mutationFlags.HasFlag(MutateOverride.Transformer))
+			if (_mutatedValue == null || !mutationFlags.HasFlag(MutateOverride.Transformer))
 				if (_transformer != null)
 					value = _transformer.encode(value);
 
