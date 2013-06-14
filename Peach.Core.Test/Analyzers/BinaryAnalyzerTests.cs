@@ -85,7 +85,7 @@ namespace Peach.Core.Test.Analyzers
 
             DataCracker cracker = new DataCracker();
             cracker.CrackData(dom.dataModels[0], bs);
-            bs.SeekBytes(0, SeekOrigin.Begin);
+            bs.Seek(0, SeekOrigin.Begin);
 
             Assert.IsTrue(dom.dataModels["TheDataModel"][0] is Block);
             Assert.AreEqual("TheBlob", dom.dataModels["TheDataModel"][0].name);

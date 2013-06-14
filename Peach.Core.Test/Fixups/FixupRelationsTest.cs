@@ -83,7 +83,7 @@ namespace Peach.Core.Test.Fixups
 
 			var crc = new CRCTool();
 			crc.Init(CRCTool.CRCCode.CRC32);
-			data.SeekBytes(4, SeekOrigin.Begin);
+			data.Seek(4, SeekOrigin.Begin);
 			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.ToArray()), 32), 32);
 
 			byte[] final = data.ToArray();
@@ -159,7 +159,7 @@ namespace Peach.Core.Test.Fixups
 
 			var crc = new CRCTool();
 			crc.Init(CRCTool.CRCCode.CRC32);
-			data.SeekBytes(0, SeekOrigin.Begin);
+			data.Seek(0, SeekOrigin.Begin);
 			data.WriteBits(Endian.Little.GetBits((uint)crc.crctablefast(data.ToArray()), 32), 32);
 
 			byte[] final = data.ToArray();

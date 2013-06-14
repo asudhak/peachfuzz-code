@@ -107,7 +107,7 @@ namespace Peach.Core.Test.PitParserTests
 			var val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
 
-			val.SeekBytes(0, SeekOrigin.Begin);
+			val.Seek(0, SeekOrigin.Begin);
 			string str = Utilities.HexDump(val);
 			Assert.NotNull(str);
 

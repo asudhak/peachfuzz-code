@@ -514,7 +514,7 @@ namespace Peach.Core
 		private static string BitsToString(BitwiseStream bs)
 		{
 			byte[] buf = new byte[32];
-			long pos = bs.TellBits();
+			long pos = bs.PositionBits;
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			int len = bs.Read(buf, 0, buf.Length);
 

@@ -143,7 +143,7 @@ namespace Peach.Core.Test.PitParserTests
 			var value = dom.dataModels[0].Value;
 
 			Assert.NotNull(value);
-			Assert.AreEqual(2, value.LengthBytes);
+			Assert.AreEqual(2, value.Length);
 
 			byte[] actual = value.ToArray();
 			Assert.AreEqual(expected, actual);

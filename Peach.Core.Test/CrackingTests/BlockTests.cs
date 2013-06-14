@@ -66,7 +66,7 @@ namespace Peach.Core.Test.CrackingTests
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(0, data.TellBits());
+			Assert.AreEqual(0, data.PositionBits);
 		}
 
 		[Test]
@@ -246,8 +246,8 @@ namespace Peach.Core.Test.CrackingTests
 			cracker.CrackData(dom.dataModels[0], data);
 
 			// Ensure we actually advance the BitStream over sized blocks with no children
-			Assert.AreEqual(3, data.TellBytes());
-			Assert.AreEqual(24, data.TellBits());
+			Assert.AreEqual(3, data.Position);
+			Assert.AreEqual(24, data.PositionBits);
 		}
 
 		[Test]

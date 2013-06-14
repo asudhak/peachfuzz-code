@@ -108,7 +108,7 @@ namespace Peach.Core.Test.PitParserTests
 
 			var val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
-			Assert.AreEqual(20, val.LengthBytes);
+			Assert.AreEqual(20, val.Length);
 		}
 
 		private void DoHexPad(bool throws, int length, string value)
@@ -143,7 +143,7 @@ namespace Peach.Core.Test.PitParserTests
 			var type = blob.DefaultValue.GetVariantType();
 			Assert.True(Variant.VariantType.BitStream == type ||Variant.VariantType.ByteString == type);
 			BitStream bs = (BitStream)blob.DefaultValue;
-			Assert.AreEqual(length, bs.LengthBytes);
+			Assert.AreEqual(length, bs.Length);
 		}
 
 		[Test]

@@ -110,13 +110,13 @@ namespace Peach.Core.Proxy.Web
 
 				res.ParseRequestHeader(headerData);
 
-				newPos += dataBuffer.TellBytes();
+				newPos += dataBuffer.Position;
 				match = null;
 
 				if (res.Headers.ContainsKey("content-length"))
 				{
 					int len = int.Parse(res.Headers["content-length"].Value);
-					if ((dataBuffer.LengthBytes - dataBuffer.TellBytes()) < len)
+					if ((dataBuffer.Length - dataBuffer.Position) < len)
 						return null;
 
 					if (len == 0)
@@ -131,7 +131,7 @@ namespace Peach.Core.Proxy.Web
 				}
 				else if(res.Headers.ContainsKey("transfer-encoding") && res.Headers["transfer-encoding"].Value == "chunked")
 				{
-					int startingPosistion = (int)dataBuffer.TellBytes();
+					int startingPosistion = (int)dataBuffer.Position;
 					res.Chunks = new List<byte[]>();
 					res.Body = null;
 					int length = 0;
@@ -160,7 +160,7 @@ namespace Peach.Core.Proxy.Web
 							break;
 
 						// not enough data
-						if (length > (dataBuffer.LengthBytes - dataBuffer.TellBytes()))
+						if (length > (dataBuffer.Length - dataBuffer.Position))
 							return null;
 
 						byte[] chunk = dataReader.ReadBytes(length);
@@ -169,18 +169,18 @@ namespace Peach.Core.Proxy.Web
 						res.Chunks.Add(chunk);
 					}
 
-					pos = newPos + (dataBuffer.TellBytes() - startingPosistion);
+					pos = newPos + (dataBuffer.Position - startingPosistion);
 				}
 				else
 				{
-					if ((dataBuffer.LengthBytes - dataBuffer.TellBytes()) == 0)
+					if ((dataBuffer.Length - dataBuffer.Position) == 0)
 					{
 						res.Body = new byte[0];
 						pos = newPos;
 					}
 					else
 					{
-						res.Body = dataReader.ReadBytes((int)(dataBuffer.LengthBytes - dataBuffer.TellBytes()));
+						res.Body = dataReader.ReadBytes((int)(dataBuffer.Length - dataBuffer.Position));
 						pos = newPos + res.Body.Length;
 					}
 				}

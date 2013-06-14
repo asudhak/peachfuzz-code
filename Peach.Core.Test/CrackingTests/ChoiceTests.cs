@@ -272,8 +272,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.IsTrue(dom.dataModels[0][0] is Dom.Choice);
 			Assert.IsTrue(dom.dataModels[0][1] is Blob);
 			Assert.IsTrue(dom.dataModels[0][2] is Blob);
-			Assert.AreEqual(3, dom.dataModels[0][1].Value.LengthBytes);
-			Assert.AreEqual(0, dom.dataModels[0][2].Value.LengthBytes);
+			Assert.AreEqual(3, dom.dataModels[0][1].Value.Length);
+			Assert.AreEqual(0, dom.dataModels[0][2].Value.Length);
 
 		}
 
@@ -315,8 +315,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, dom.dataModels[0].Count);
 			Assert.IsTrue(dom.dataModels[0][0] is Dom.Block);
 			Assert.IsTrue(dom.dataModels[0][1] is Blob);
-			Assert.AreEqual(3, dom.dataModels[0].find("blk.blb").Value.LengthBytes);
-			Assert.AreEqual(0, dom.dataModels[0][1].Value.LengthBytes);
+			Assert.AreEqual(3, dom.dataModels[0].find("blk.blb").Value.Length);
+			Assert.AreEqual(0, dom.dataModels[0][1].Value.Length);
 		}
 
 		[Test]
@@ -357,8 +357,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, dom.dataModels[0].Count);
 			Assert.IsTrue(dom.dataModels[0][0] is Dom.Block);
 			Assert.IsTrue(dom.dataModels[0][1] is Blob);
-			Assert.AreEqual(3, dom.dataModels[0].find("blk.blb").Value.LengthBytes);
-			Assert.AreEqual(0, dom.dataModels[0][1].Value.LengthBytes);
+			Assert.AreEqual(3, dom.dataModels[0].find("blk.blb").Value.Length);
+			Assert.AreEqual(0, dom.dataModels[0][1].Value.Length);
 		}
 
 		[Test]
@@ -402,7 +402,7 @@ namespace Peach.Core.Test.CrackingTests
 			Dom.Array array = dom.dataModels[0][1] as Dom.Array;
 			Assert.AreEqual(3, array.Count);
 
-			Assert.AreEqual(0, dom.dataModels[0][2].Value.LengthBytes);
+			Assert.AreEqual(0, dom.dataModels[0][2].Value.Length);
 		}
 
 		[Test]
@@ -489,8 +489,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.IsTrue(TheBlock[0] is Dom.Choice);
 			Assert.IsTrue(TheBlock[1] is Blob);
 			Assert.IsTrue(dom.dataModels[0][1] is Blob);
-			Assert.AreEqual(3, TheBlock[1].Value.LengthBytes);
-			Assert.AreEqual(0, ((Dom.Blob)dom.dataModels[0][1]).Value.LengthBytes);
+			Assert.AreEqual(3, TheBlock[1].Value.Length);
+			Assert.AreEqual(0, ((Dom.Blob)dom.dataModels[0][1]).Value.Length);
 
 		}
 

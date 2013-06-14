@@ -88,7 +88,7 @@ namespace Peach.Core.Proxy.Web
 
 		protected static string ReadLine(BitStream data)
 		{
-			int currentPosition = (int)data.TellBytes();
+			int currentPosition = (int)data.Position;
 
 			try
 			{
@@ -118,7 +118,7 @@ namespace Peach.Core.Proxy.Web
 					else
 					{
 						lineData.Add(b1);
-						data.SeekBytes(-1, SeekOrigin.Current);
+						data.Seek(-1, SeekOrigin.Current);
 					}
 				}
 			}
@@ -126,7 +126,7 @@ namespace Peach.Core.Proxy.Web
 			{
 			}
 
-			data.SeekBytes(currentPosition, SeekOrigin.Begin);
+			data.Seek(currentPosition, SeekOrigin.Begin);
 			return null;
 		}
     }

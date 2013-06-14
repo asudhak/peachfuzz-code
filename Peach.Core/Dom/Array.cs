@@ -97,7 +97,7 @@ namespace Peach.Core.Dom
 
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			long startPos = data.TellBits();
+			long startPos = data.PositionBits;
 			BitStream sizedData = ReadSizedData(data, size);
 
 			if (this.Count > 0)
@@ -127,7 +127,7 @@ namespace Peach.Core.Dom
 				logger.Debug("Crack: ======================");
 				logger.Debug("Crack: {0} Trying #{1}", origionalElement.debugName, i+1);
 
-				long pos = sizedData.TellBits();
+				long pos = sizedData.PositionBits;
 				if (pos == sizedData.LengthBits)
 				{
 					logger.Debug("Crack: Consumed all bytes. {0}", sizedData.Progress);
@@ -142,7 +142,7 @@ namespace Peach.Core.Dom
 					context.CrackData(clone, sizedData);
 
 					// If we used 0 bytes and met the minimum, we are done
-					if (pos == sizedData.TellBits() && i == min)
+					if (pos == sizedData.PositionBits && i == min)
 					{
 						RemoveAt(clone.parent.IndexOf(clone));
 						break;
@@ -169,7 +169,7 @@ namespace Peach.Core.Dom
 			}
 
 			if (size.HasValue && data != sizedData)
-				data.SeekBits(startPos + sizedData.TellBits(), System.IO.SeekOrigin.Begin);
+				data.SeekBits(startPos + sizedData.PositionBits, System.IO.SeekOrigin.Begin);
 		}
 
 		public new static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)

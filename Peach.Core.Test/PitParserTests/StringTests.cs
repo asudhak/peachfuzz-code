@@ -63,7 +63,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
 			BitwiseStream value = str.Value;
-			Assert.AreEqual(3, value.LengthBytes);
+			Assert.AreEqual(3, value.Length);
 			Assert.AreEqual(Encoding.ASCII.GetBytes("abc"), value.ToArray());
 		}
 
@@ -227,7 +227,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 
 			BitwiseStream value = str.Value;
-			Assert.AreEqual(20, value.LengthBytes);
+			Assert.AreEqual(20, value.Length);
 			Assert.AreEqual(Encoding.UTF32.GetBytes("Hello"), value.ToArray());
 		}
 

@@ -87,7 +87,7 @@ namespace Peach.Core.Analyzers
             var data = blob.Value;
             Block block = new Block(blob.name);
 
-            if (data.LengthBytes == 0)
+            if (data.Length == 0)
                 return;
 
             List<byte> currentBlob = new List<byte>();
@@ -139,7 +139,7 @@ namespace Peach.Core.Analyzers
 
                     // Backup so we don't use that last byte
                     if (value != -1)
-                        data.SeekBytes(-1, SeekOrigin.Current);
+                        data.Seek(-1, SeekOrigin.Current);
                 }
                 else
                     currentBlob.Add(b);
@@ -168,11 +168,11 @@ namespace Peach.Core.Analyzers
             {
                 if (data.ReadByte() == 0x8b)
                 {
-                    data.SeekBytes(-1, SeekOrigin.Current);
+                    data.Seek(-1, SeekOrigin.Current);
                     return true;
                 }
 
-                data.SeekBytes(-1, SeekOrigin.Current);
+                data.Seek(-1, SeekOrigin.Current);
             }
 
             return false;

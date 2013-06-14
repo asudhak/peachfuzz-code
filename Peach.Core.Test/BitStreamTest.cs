@@ -61,10 +61,10 @@ namespace Peach.Core.Test
 			bs = new BitStream();
 			bs.WriteByte(1);
 			Assert.AreEqual(8, bs.LengthBits);
-			Assert.AreEqual(1, bs.LengthBytes);
+			Assert.AreEqual(1, bs.Length);
 
 			bs = new BitStream(new byte[] { 1, 2, 3, 4, 5 });
-			Assert.AreEqual(5, bs.LengthBytes);
+			Assert.AreEqual(5, bs.Length);
 			Assert.AreEqual(5 * 8, bs.LengthBits);
 		}
 

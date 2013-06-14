@@ -65,7 +65,7 @@ namespace Peach.Core.Dom
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
 			BitStream sizedData = ReadSizedData(data, size);
-			long startPosition = data.TellBits();
+			long startPosition = data.PositionBits;
 
 			// Handle children, iterate over a copy since cracking can modify the list
 			for (int i = 0; i < this.Count; )
@@ -81,7 +81,7 @@ namespace Peach.Core.Dom
 
 					if (size.HasValue)
 					{
-						long read = data.TellBits() - startPosition;
+						long read = data.PositionBits - startPosition;
 						sizedData = ReadSizedData(data, size, read);
 					}
 				}
@@ -148,7 +148,7 @@ namespace Peach.Core.Dom
 
 			long needed = size.Value - read;
 			data.WantBytes((needed + 7) / 8);
-			long remain = data.LengthBits - data.TellBits();
+			long remain = data.LengthBits - data.PositionBits;
 
 			if (needed > remain)
 			{

@@ -57,7 +57,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			BitwiseStream val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
-			Assert.AreEqual(13, val.LengthBytes);
+			Assert.AreEqual(13, val.Length);
 			Assert.AreEqual(13 * 8, val.LengthBits);
 
 			pub.Stream.Seek(0, SeekOrigin.Begin);
@@ -176,7 +176,7 @@ namespace Peach.Core.Test.CrackingTests
 
 			BitwiseStream val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
-			Assert.AreEqual(3, val.LengthBytes);
+			Assert.AreEqual(3, val.Length);
 			Assert.AreEqual(3 * 8, val.LengthBits);
 
 			byte[] buf = val.ToArray();

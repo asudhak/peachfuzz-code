@@ -226,7 +226,7 @@ namespace Peach.Core.Cracker
 			{
 				if (_dataStack[i] != _dataStack[prev])
 				{
-					offset += _dataStack[prev].TellBits() - _dataStack[i].LengthBits;
+					offset += _dataStack[prev].PositionBits - _dataStack[i].LengthBits;
 					prev = i;
 				}
 			}
@@ -302,7 +302,7 @@ namespace Peach.Core.Cracker
 
 				if (elem.transformer != null)
 				{
-					long startPos = data.TellBits();
+					long startPos = data.PositionBits;
 					var sizedData = elem.ReadSizedData(data, pos.size);
 					var decodedData = elem.transformer.decode(sizedData);
 
@@ -421,7 +421,7 @@ namespace Peach.Core.Cracker
 			if (!offset.HasValue)
 				return;
 
-			offset += data.TellBits();
+			offset += data.PositionBits;
 
 			if (offset > data.LengthBits)
 				data.WantBytes((offset.Value + 7 - data.LengthBits) / 8);
@@ -454,7 +454,7 @@ namespace Peach.Core.Cracker
 				logger.Debug("Exception occured: {0}", e.ToString());
 			}
 
-			OnExceptionHandleNodeEvent(elem, data.TellBits(), data, e);
+			OnExceptionHandleNodeEvent(elem, data.PositionBits, data, e);
 		}
 
 		void handleConstraint(DataElement element, BitStream data)
@@ -491,7 +491,7 @@ namespace Peach.Core.Cracker
 			long? size = getSize(elem, data);
 
 			var pos = new Position();
-			pos.begin = data.TellBits() + getDataOffset();
+			pos.begin = data.PositionBits + getDataOffset();
 			pos.size = size;
 
 			_sizedElements.Add(elem, pos);
@@ -548,7 +548,7 @@ namespace Peach.Core.Cracker
 			}
 
 			// Mark the end position of this element
-			pos.end = data.TellBits() + getDataOffset();
+			pos.end = data.PositionBits + getDataOffset();
 
 			OnExitHandleNodeEvent(elem, pos.end, data);
 		}
@@ -606,15 +606,15 @@ namespace Peach.Core.Cracker
 			offset -= getDataOffset();
 
 			// Ensure the offset is not before our current position
-			if (offset < data.TellBits())
+			if (offset < data.PositionBits)
 			{
 				string msg = "{0} has offset of {1} bits but already read {2} bits.".Fmt(
-					elem.debugName, offset, data.TellBits());
+					elem.debugName, offset, data.PositionBits);
 				throw new CrackingFailure(msg, elem, data);
 			}
 
 			// Make offset relative to current position
-			offset -= data.TellBits();
+			offset -= data.PositionBits;
 
 			// Ensure the offset satisfies the minimum
 			if (offset < minOffset)
@@ -638,16 +638,16 @@ namespace Peach.Core.Cracker
 		{
 			while (true)
 			{
-				long start = data.TellBits();
+				long start = data.PositionBits;
 				long end = data.IndexOf(token, start + offset);
 
 				if (end >= 0)
 					return end - start;
 
-				long dataLen = data.LengthBytes;
-				data.WantBytes(token.LengthBytes);
+				long dataLen = data.Length;
+				data.WantBytes(token.Length);
 
-				if (dataLen == data.LengthBytes)
+				if (dataLen == data.Length)
 					return null;
 			}
 		}
@@ -945,7 +945,7 @@ namespace Peach.Core.Cracker
 
 			if (tokens.Count > 0 && ret.HasValue && ret.Value)
 			{
-				pos = data.LengthBits - (data.TellBits() + pos);
+				pos = data.LengthBits - (data.PositionBits + pos);
 				logger.Debug("getSize: <----- Missing Optional Token: {0}", pos);
 				return pos;
 			}
@@ -955,7 +955,7 @@ namespace Peach.Core.Cracker
 			{
 				if (ret.Value && (pos != 0 || !(elem is DataElementContainer)))
 				{
-					pos = data.LengthBits - (data.TellBits() + pos);
+					pos = data.LengthBits - (data.PositionBits + pos);
 					logger.Debug("getSize: <----- Last Unsized: {0}", pos);
 					return pos;
 				}

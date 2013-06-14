@@ -6,30 +6,11 @@ using System.Diagnostics;
 
 namespace Peach.Core.IO
 {
-	public static class BitwiseStreamExtensions
-	{
-		public static long SeekBytes(this BitwiseStream bs, long offset, SeekOrigin origin)
-		{
-			return bs.Seek(offset, origin);
-		}
-
-		public static long TellBits(this BitwiseStream bs)
-		{
-			return bs.PositionBits;
-		}
-
-		public static long TellBytes(this BitwiseStream bs)
-		{
-			return bs.Position;
-		}
-	}
-
 	[Serializable]
 	public abstract class BitwiseStream : Stream
 	{
-		#region Static Members
+		#region Const Members
 
-		public new static readonly BitwiseStream Null = new BitStream(Stream.Null);
 		public const int BlockCopySize = 4 * 1024 * 1024;
 
 		#endregion
@@ -148,6 +129,10 @@ namespace Peach.Core.IO
 			return ret;
 		}
 
+		/// <summary>
+		/// Reads the next bit from the BitwiseStream.
+		/// </summary>
+		/// <returns>Returns the next bit, or -1 if there are no bits left.</returns>
 		public int ReadBit()
 		{
 			ulong bits;
@@ -159,21 +144,16 @@ namespace Peach.Core.IO
 			return (int)bits;
 		}
 
+		/// <summary>
+		/// Write a bit into the BitwiseStream
+		/// </summary>
+		/// <param name="value">The bit value to write.</param>
 		public void WriteBit(int value)
 		{
 			if (value != 0 && value != 1)
 				throw new ArgumentOutOfRangeException("value");
 
 			WriteBits((ulong)value, 1);
-		}
-
-//		[Obsolete]
-		public long LengthBytes
-		{
-			get
-			{
-				return Length;
-			}
 		}
 
 		#endregion

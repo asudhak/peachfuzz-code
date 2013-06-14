@@ -711,7 +711,7 @@ namespace Peach.Core.Publishers
 			if (property == "LastRecvAddr")
 			{
 				if (_lastRxEp == null)
-					return new Variant(BitwiseStream.Null);
+					return new Variant(new BitStream());
 				else
 					return new Variant(new BitStream(((IPEndPoint)_lastRxEp).Address.GetAddressBytes()));
 			}

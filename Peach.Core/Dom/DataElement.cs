@@ -662,7 +662,7 @@ namespace Peach.Core.Dom
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return Value.LengthBytes;
+							return Value.Length;
 						case LengthType.Bits:
 							return Value.LengthBits;
 						case LengthType.Chars:
@@ -949,7 +949,7 @@ namespace Peach.Core.Dom
 		{
 			var ret = InternalValue;
 			if (ret == null)
-				return BitwiseStream.Null;
+				return new BitStream();
 			return (BitwiseStream)ret;
 		}
 
@@ -1392,7 +1392,7 @@ namespace Peach.Core.Dom
 
 			long needed = size.Value - read;
 			data.WantBytes((needed + 7) / 8);
-			long remain = data.LengthBits - data.TellBits();
+			long remain = data.LengthBits - data.PositionBits;
 
 			if (needed > remain)
 			{

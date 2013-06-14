@@ -555,7 +555,7 @@ namespace Peach.Core.Dom
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return Value.LengthBytes;
+							return Value.Length;
 						case LengthType.Bits:
 							return Value.LengthBits;
 						case LengthType.Chars:

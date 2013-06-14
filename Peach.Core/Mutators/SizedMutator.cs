@@ -102,7 +102,7 @@ namespace Peach.Core.Mutators
 			else if ((long)obj.InternalValue + growBy <= 0)
 			{
 				// Ensure we won't send the relation negative
-				objOf.MutatedValue = new Variant(BitwiseStream.Null);
+				objOf.MutatedValue = new Variant(new BitStream());
 				return;
 			}
 
@@ -113,7 +113,7 @@ namespace Peach.Core.Mutators
 			if (tgtLen <= 0)
 			{
 				// Return empty if size is negative
-				data = BitwiseStream.Null;
+				data = new BitStream();
 			}
 			else if (data.Length == 0)
 			{

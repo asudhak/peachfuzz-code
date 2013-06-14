@@ -75,7 +75,7 @@ namespace Peach.Core.Dom
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
 			BitStream sizedData = ReadSizedData(data, size);
-			long pos = sizedData.TellBits();
+			long pos = sizedData.PositionBits;
 
 			foreach (DataElement child in this)
 			{

@@ -77,8 +77,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
 
 			var value = dom.dataModels[0].Value;
-			value.SeekBytes(0, SeekOrigin.Begin);
-			Assert.AreEqual(5, value.LengthBytes);
+			value.Seek(0, SeekOrigin.Begin);
+			Assert.AreEqual(5, value.Length);
 			Assert.AreEqual(1, value.ReadByte());
 			Assert.AreEqual(0, value.ReadByte());
 		}
@@ -106,8 +106,8 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
 
 			var value = dom.dataModels[0].Value;
-			value.SeekBytes(0, SeekOrigin.Begin);
-			Assert.AreEqual(5, value.LengthBytes);
+			value.Seek(0, SeekOrigin.Begin);
+			Assert.AreEqual(5, value.Length);
 			Assert.AreEqual(1, value.ReadByte());
 			Assert.AreEqual(2, value.ReadByte());
 		}
