@@ -465,7 +465,7 @@ namespace Peach.Core.MutationStrategies
 					continue;
 
 				var elem = dataModel.find(item.Key.ElementName);
-				if (elem != null)
+				if (elem != null && elem.MutatedValue == null)
 				{
 					Mutator mutator = Random.Choice(item.Value);
 					OnMutating(item.Key.ElementName, mutator.name);
