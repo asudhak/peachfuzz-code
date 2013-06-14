@@ -167,8 +167,8 @@ namespace Peach.Core.Test.Mutators
 
 			Assert.AreEqual(3, iterStrategies.Count);
 
-			// Looking for SizedNumerical on len and DataElementDuplicate on str
-			Assert.AreEqual("SizedNumericalEdgeCasesMutator | TheModel.num ; DataElementDuplicateMutator | TheModel.str", iterStrategies[2]);
+			// Looking for SizedNumerical on len
+			Assert.AreEqual("SizedNumericalEdgeCasesMutator | TheModel.num", iterStrategies[2]);
 		}
 
 		[Test]
