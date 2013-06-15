@@ -261,6 +261,9 @@ namespace Peach.Core.Cracker
 			_sizeRelations = new List<SizeRelation>();
 			_elementsWithAnalyzer = new List<DataElement>();
 
+			// We want at least 1 byte before we begin
+			data.WantBytes(1);
+
 			// Crack the model
 			handleNode(element, data);
 
