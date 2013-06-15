@@ -165,13 +165,27 @@ namespace Peach.Core.Dom
 
 		private sealed class DataElementBinder : SerializationBinder
 		{
+			static Dictionary<string, Type> cache = new Dictionary<string, Type>();
+
 			public override Type BindToType(string assemblyName, string typeName)
 			{
+				var key = assemblyName + "." + typeName;
+				Type value;
+
+				if (cache.TryGetValue(key, out value))
+					return value;
+
 				foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
 				{
 					if (asm.FullName == assemblyName)
-						return asm.GetType(typeName);
+					{
+						value = asm.GetType(typeName);
+						cache.Add(key, value);
+						return value;
+					}
 				}
+
+				cache.Add(key, null);
 				return null;
 			}
 		}
