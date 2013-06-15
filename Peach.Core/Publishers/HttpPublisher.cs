@@ -49,6 +49,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Domain", typeof(string), "Optional domain for authentication", "")]
 	[Parameter("Cookies", typeof(bool), "Track cookies (defaults to true)", "true")]
 	[Parameter("CookiesAcrossIterations", typeof(bool), "Track cookies across iterations (defaults to false)", "false")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class HttpPublisher : BufferedStreamPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
