@@ -726,9 +726,7 @@ namespace Peach.Core.Test.CrackingTests
 			var bar = dom.dataModels[0].find("DM.Choice.Bar");
 			Assert.NotNull(bar);
 
-			BitStream data = new BitStream();
-			data.WriteBytes(Encoding.ASCII.GetBytes("Bar"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", "Bar");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
