@@ -184,7 +184,7 @@ namespace Peach.Core.Test.Mutators
 		[Test]
 		public void TestExpandIncrementing()
 		{
-			RunRandom(100000, "ExpandIncrementing", 4, 0);
+			RunRandom(2000, "ExpandIncrementing", 4, 0);
 
 			// Should expand by len bytes [0,255]
 			// When expanding, will stick len bytes somewhere in the blob
@@ -193,8 +193,8 @@ namespace Peach.Core.Test.Mutators
 
 			int minLen = int.MaxValue;
 			int maxLen = int.MinValue;
-			int[] minCount = new int[256];
-			int[] maxCount = new int[256];
+			int[] expanded = new int[256];
+			int[] nums = new int[256];
 
 			foreach (var item in mutations)
 			{
@@ -206,41 +206,29 @@ namespace Peach.Core.Test.Mutators
 				if (val.Length > maxLen)
 					maxLen = val.Length;
 
-				int expanded = val.Length - 4;
+				int expandedBy = val.Length - 4;
+				expanded[expandedBy] += 1;
 
 				byte max = val.Max();
 				byte min = (max == 0) ? (byte)0 : val.First(n => n != 0);
 
-				if (min == 1 && (max - min + 1 == expanded - 1))
-					min = 0;
-
-				if (max == 0 && min == 0)
-				{
-					Assert.True(expanded == 0 || expanded == 1);
-				}
-				else
-				{
-					Assert.AreEqual(expanded, max - min + 1);
-				}
-
-				minCount[min] += 1;
-				maxCount[max] += 1;
-
+				for (int i = min; i <= max; ++i)
+					nums[i] += 1;
 			}
 
 			Assert.AreEqual(4, minLen);
 			Assert.AreEqual(4 + 255, maxLen);
 
-			for (int i = 0; i < maxCount.Length; ++i)
+			for (int i = 0; i < expanded.Length; ++i)
 			{
-				if (maxCount[i] == 0)
-					Assert.Fail("Max Count '" + i + "' is zero.");
+				if (expanded[i] == 0)
+					Assert.Fail("Expanded '" + i + "' is zero.");
 			}
 
-			for (int i = 0; i < minCount.Length; ++i)
+			for (int i = 0; i < nums.Length; ++i)
 			{
-				if (minCount[i] == 0)
-					Assert.Fail("Min Count '" + i + "' is zero.");
+				if (nums[i] == 0)
+					Assert.Fail("Number '" + i + "' is zero.");
 			}
 		}
 
