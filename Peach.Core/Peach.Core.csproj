@@ -381,7 +381,23 @@
     <Reference Include="Renci.SshNet">
       <HintPath>..\3rdParty\Renci.SshNet\Renci.SshNet.dll</HintPath>
     </Reference>
+    <Reference Include="SuperSocket.Common">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.Facility">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.Facility.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketBase">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.SocketBase.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketEngine">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.SocketEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperWebSocket">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperWebSocket.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
@@ -587,6 +603,7 @@
     <Compile Include="Publishers\TcpPublisher.cs" />
     <Compile Include="Publishers\UdpPublisher.cs" />
     <Compile Include="Publishers\WebServicePublisher.cs" />
+    <Compile Include="Publishers\WebSocketPublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />
