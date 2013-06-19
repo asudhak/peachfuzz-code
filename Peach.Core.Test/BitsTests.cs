@@ -177,7 +177,7 @@ namespace Peach
 				offset += len;
 				count -= len;
 			}
-			while (len > 0);
+			while (len != 0);
 
 			if (count != 0)
 			{

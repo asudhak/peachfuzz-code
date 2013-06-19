@@ -519,32 +519,32 @@ namespace Peach.Core.Dom
 						publisher.open();
 						publisher.input();
 						handleInput(publisher);
-						parent.parent.dataActions.Add(this);
+						parent.parent.SaveData(this);
 						break;
 
 					case ActionType.Output:
 						publisher.start();
 						publisher.open();
 						handleOutput(publisher);
-						parent.parent.dataActions.Add(this);
+						parent.parent.SaveData(this);
 						break;
 
 					case ActionType.Call:
 						publisher.start();
 						handleCall(publisher, context);
-						parent.parent.dataActions.Add(this);
+						parent.parent.SaveData(this);
 						break;
 
 					case ActionType.GetProperty:
 						publisher.start();
 						handleGetProperty(publisher);
-						parent.parent.dataActions.Add(this);
+						parent.parent.SaveData(this);
 						break;
 
 					case ActionType.SetProperty:
 						publisher.start();
 						handleSetProperty(publisher);
-						parent.parent.dataActions.Add(this);
+						parent.parent.SaveData(this);
 						break;
 
 					case ActionType.ChangeState:

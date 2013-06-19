@@ -193,27 +193,10 @@ namespace Peach.Core.Loggers
 				throw new PeachException("Error, we should always have a fault with type = Fault!");
 
 			// Gather up data from the state model
-			int cnt = 0;
-			foreach (Dom.Action action in stateModel.dataActions)
+			foreach (var item in stateModel.dataActions)
 			{
-				logger.Debug("Saving action: " + action.name);
-
-				cnt++;
-				if (action.dataModel != null)
-				{
-					string fileName = string.Format("action_{0}_{1}_{2}.txt", cnt, action.type.ToString(), action.name);
-					ret.collectedData.Add(fileName, ToByteArray(action.dataModel.Value));
-				}
-				else if (action.parameters.Count > 0)
-				{
-					int pcnt = 0;
-					foreach (Dom.ActionParameter param in action.parameters)
-					{
-						pcnt++;
-						string fileName = string.Format("action_{0}-{1}_{2}_{3}.txt", cnt, pcnt, action.type.ToString(), action.name);
-						ret.collectedData.Add(fileName, ToByteArray(param.dataModel.Value));
-					}
-				}
+				logger.Debug("Saving action: " + item.Key);
+				ret.collectedData.Add(item.Key, ToByteArray(item.Value));
 			}
 
 			// Write out all collected data information
