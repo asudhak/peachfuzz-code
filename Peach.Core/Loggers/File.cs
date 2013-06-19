@@ -144,31 +144,12 @@ namespace Peach.Core.Loggers
 			if (!Directory.Exists(faultPath))
 				Directory.CreateDirectory(faultPath);
 
-			int cnt = 0;
-			foreach (Dom.Action action in stateModel.dataActions)
+			foreach (var item in stateModel.dataActions)
 			{
-				logger.Debug("Writing action: " + action.name);
+				logger.Debug("Writing action: " + item.Key);
 
-				cnt++;
-				if (action.dataModel != null)
-				{
-					string fileName = System.IO.Path.Combine(faultPath, string.Format("action_{0}_{1}_{2}.txt",
-								  cnt, action.type.ToString(), action.name));
-
-					File.WriteAllBytes(fileName, action.dataModel.Value.Value);
-				}
-				else if (action.parameters.Count > 0)
-				{
-					int pcnt = 0;
-					foreach (Dom.ActionParameter param in action.parameters)
-					{
-						pcnt++;
-						string fileName = System.IO.Path.Combine(faultPath, string.Format("action_{0}-{1}_{2}_{3}.txt",
-										cnt, pcnt, action.type.ToString(), action.name));
-
-						File.WriteAllBytes(fileName, param.dataModel.Value.Value);
-					}
-				}
+				string fileName = System.IO.Path.Combine(faultPath, item.Key);
+				File.WriteAllBytes(fileName, item.Value.Value);
 			}
 
 			// Write out all data information

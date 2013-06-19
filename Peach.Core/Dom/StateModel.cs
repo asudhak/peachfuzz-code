@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using System.Linq;
 
 using Peach.Core;
 using Peach.Core.IO;
@@ -51,7 +52,18 @@ namespace Peach.Core.Dom
 		public string _name = null;
 		public object parent;
 		protected State _initialState = null;
-		public List<Action> dataActions = new List<Action>();
+
+		protected Dictionary<string, BitStream> _dataActions = new Dictionary<string, BitStream>();
+		protected int _dataActionsCount = 0;
+
+		public IEnumerable<KeyValuePair<string, BitStream>> dataActions
+		{
+			get
+			{
+				foreach (var item in _dataActions)
+					yield return item;
+			}
+		}
 
 		/// <summary>
 		/// All states in state model.
@@ -77,6 +89,27 @@ namespace Peach.Core.Dom
 			set
 			{
 				_initialState = value;
+			}
+		}
+
+		public void SaveData(Action action)
+		{
+			_dataActionsCount++;
+
+			if (action.dataModel != null)
+			{
+				var key = "action_{0}_{1}_{2}.txt".Fmt(_dataActionsCount, action.type, action.name);
+				var val = action.dataModel.Value;
+				_dataActions.Add(key, val);
+			}
+			else
+			{
+				for (int i = 0; i < action.parameters.Count; ++i)
+				{
+					var key = "action_{0}-{1}_{2}_{3}.txt".Fmt(_dataActionsCount, i + 1, action.type, action.name);
+					var val = action.parameters[i].dataModel.Value;
+					_dataActions.Add(key, val);
+				}
 			}
 		}
 
@@ -120,7 +153,8 @@ namespace Peach.Core.Dom
 					publisher.IsControlIteration = context.controlIteration;
 				}
 
-				dataActions.Clear();
+				_dataActions.Clear();
+				_dataActionsCount = 0;
 
 				// Prior to starting our state model, on iteration #1 lets
 				// locate all data sets and load our initial data.

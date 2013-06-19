@@ -399,6 +399,7 @@
     <Compile Include="Fixups\SHA512FixupTests.cs" />
     <Compile Include="Fixups\TCPChecksumFixupTests.cs" />
     <Compile Include="Fixups\UDPChecksumFixupTests.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
