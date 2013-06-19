@@ -140,7 +140,7 @@ namespace Peach.Core.Loggers
 		// TODO: Figure out how to not do this!
 		private static byte[] ToByteArray(BitwiseStream data)
 		{
-			var length = data.LengthBits + 7 / 8;
+			var length = (data.LengthBits + 7) / 8;
 			var buffer = new byte[length];
 			var offset = 0;
 			var count = buffer.Length;
