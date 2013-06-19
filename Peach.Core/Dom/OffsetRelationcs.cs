@@ -267,11 +267,25 @@ namespace Peach.Core.Dom
 			if (string.IsNullOrEmpty(relativeTo))
 				return;
 
+			Relation.Metadata m = null;
+
+			object obj;
+			if (ctx.metadata.TryGetValue(this, out obj))
+				m = (Relation.Metadata)obj;
+
 			var from = _from;
-			if (_from == null)
+			if (from == null && m != null)
+				from = m.from;
+
+			if (from == null)
 			{
-				if (_fromName != null)
-					from = parent.find(_fromName);
+				// If we are being cloned, but our parent is not, the parent
+				// gets moved into the metadata
+				var fromName = (m != null && m.fromName != null) ? m.fromName : _fromName;
+				var parent = (m != null && m.parent != null) ? m.parent : _parent;
+
+				if (fromName != null)
+					from = parent.find(fromName);
 				else
 					from = parent;
 			}

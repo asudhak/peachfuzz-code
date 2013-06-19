@@ -442,7 +442,7 @@ namespace Peach.Core.Test.CrackingTests
 		}
 
 
-		[Test, Ignore("See Issue #417")]
+		[Test]//, Ignore("See Issue #417")]
 		public void BeforeAndAfterPlacement()
 		{
 			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -487,21 +487,27 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Data", Blob1.name);
 			Assert.AreEqual(new byte[] { 0x41, 0x41 }, Blob1.DefaultValue.BitsToArray());
 
-			// Possible two bugs here:
-			// 1) This Block1 should be after the placeholder
-			// 2) The Value 0x42 is never set when cracked
+			var Block1 = (Dom.Block)dom.dataModels[0][2];
+			Assert.AreEqual("Block1", Block1.name);
 
-			var PlaceHolder = (Dom.Block)dom.dataModels[0][2];
+			Assert.AreEqual(1, Block1.Count);
+			Assert.AreEqual(4, (int)Block1[0].DefaultValue);
+
+			var PlaceHolder = (Dom.Block)dom.dataModels[0][3];
 			Assert.AreEqual("PlaceHolder", PlaceHolder.name);
+			Assert.AreEqual(0, PlaceHolder.Count);
 
-			var DataPlaced = (Dom.Blob)((Dom.Block)dom.dataModels[0][3])[0];
+			var Block2 = (Dom.Block)dom.dataModels[0][4];
+			Assert.AreEqual("Block2", Block2.name);
+			Assert.AreEqual(1, Block2.Count);
+
+			var DataPlaced = (Dom.Blob)Block2[0];
 			Assert.AreEqual("DataPlaced", DataPlaced.name);
 			Assert.AreEqual(new byte[] { 0x42 }, DataPlaced.DefaultValue.BitsToArray());
-
 		}
 
 
-		[Test, Ignore("See Issue #417")]
+		[Test]
 		public void BeforeAndAfterPlacementRelativeTo()
 		{
 			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -546,17 +552,23 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Data", Blob1.name);
 			Assert.AreEqual(new byte[] { 0x41, 0x41 }, Blob1.DefaultValue.BitsToArray());
 
-			// Possible two bugs here:
-			// 1) This Block1 should be after the placeholder
-			// 2) The Value 0x42 is never set when cracked
+			var Block1 = (Dom.Block)dom.dataModels[0][2];
+			Assert.AreEqual("Block1", Block1.name);
 
-			var PlaceHolder = (Dom.Block)dom.dataModels[0][2];
+			Assert.AreEqual(1, Block1.Count);
+			Assert.AreEqual(4, (int)Block1[0].DefaultValue);
+
+			var PlaceHolder = (Dom.Block)dom.dataModels[0][3];
 			Assert.AreEqual("PlaceHolder", PlaceHolder.name);
+			Assert.AreEqual(0, PlaceHolder.Count);
 
-			var DataPlaced = (Dom.Blob)((Dom.Block)dom.dataModels[0][3])[0];
+			var Block2 = (Dom.Block)dom.dataModels[0][4];
+			Assert.AreEqual("Block2", Block2.name);
+			Assert.AreEqual(1, Block2.Count);
+
+			var DataPlaced = (Dom.Blob)Block2[0];
 			Assert.AreEqual("DataPlaced", DataPlaced.name);
 			Assert.AreEqual(new byte[] { 0x42 }, DataPlaced.DefaultValue.BitsToArray());
-
 		}
 	}
 }

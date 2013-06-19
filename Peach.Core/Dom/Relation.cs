@@ -381,7 +381,7 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-		private class Metadata
+		protected class Metadata
 		{
 			public DataElement of = null;
 			public DataElement from = null;

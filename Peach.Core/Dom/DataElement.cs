@@ -1458,6 +1458,16 @@ namespace Peach.Core.Dom
 
 			DataElementContainer oldParent = this.parent;
 
+			if (oldParent == newParent)
+			{
+				int oldIdx = oldParent.IndexOf(this);
+				oldParent.RemoveAt(oldIdx);
+				if (oldIdx < index)
+					--index;
+				newParent.Insert(index, this);
+				return this;
+			}
+
 			string newName = this.name;
 			for (int i = 0; newParent.ContainsKey(newName); i++)
 				newName = this.name + "_" + i;

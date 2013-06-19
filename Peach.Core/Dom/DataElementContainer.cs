@@ -87,7 +87,7 @@ namespace Peach.Core.Dom
 				}
 
 				int idx = IndexOf(child);
-				if (idx != -1)
+				if (idx == i)
 					i = idx + 1;
 			}
 
