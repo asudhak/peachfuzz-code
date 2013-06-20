@@ -440,6 +440,124 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("peach", (string)dom.dataModels[0][2].DefaultValue);
 			Assert.AreEqual("!fuzzer", (string)dom.dataModels[0][3].DefaultValue);
 		}
+
+
+		[Test, Ignore("See Issue #417")]
+		public void BeforeAndAfterPlacement()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+				<Peach>
+					<DataModel name=""TheDataModel"">
+						<Number size=""8"" name=""Offset1"">
+							<Relation type=""offset"" of=""Block1"" />
+						</Number>
+
+						<Block name=""Block1"">
+							<Placement before=""PlaceHolder""/>	
+							
+							<Number size=""8"" name=""Offset2"">
+								<Relation type=""offset"" of=""Block2"" />
+							</Number>
+
+							<Block name=""Block2"">
+								<Placement after=""PlaceHolder""/>
+								<Blob name=""DataPlaced"" length=""1"" />
+							</Block>							
+						</Block>				
+						
+						<Blob name=""Data"" />
+
+						<Block name=""PlaceHolder""/>
+
+					</DataModel>
+				</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0}", new byte[] { 0x03, 0x41, 0x41, 0x04, 0x42 });
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Offset1", dom.dataModels[0][0].name);
+			Assert.AreEqual(3, (int)dom.dataModels[0][0].DefaultValue);
+
+			var Blob1 = (Dom.Blob)dom.dataModels[0][1];
+			Assert.AreEqual("Data", Blob1.name);
+			Assert.AreEqual(new byte[] { 0x41, 0x41 }, Blob1.DefaultValue.BitsToArray());
+
+			// Possible two bugs here:
+			// 1) This Block1 should be after the placeholder
+			// 2) The Value 0x42 is never set when cracked
+
+			var PlaceHolder = (Dom.Block)dom.dataModels[0][2];
+			Assert.AreEqual("PlaceHolder", PlaceHolder.name);
+
+			var DataPlaced = (Dom.Blob)((Dom.Block)dom.dataModels[0][3])[0];
+			Assert.AreEqual("DataPlaced", DataPlaced.name);
+			Assert.AreEqual(new byte[] { 0x42 }, DataPlaced.DefaultValue.BitsToArray());
+
+		}
+
+
+		[Test, Ignore("See Issue #417")]
+		public void BeforeAndAfterPlacementRelativeTo()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+				<Peach>
+					<DataModel name=""TheDataModel"">
+						<Number size=""8"" name=""Offset1"">
+							<Relation type=""offset"" of=""Block1"" relative=""true"" relativeTo=""TheDataModel""/>
+						</Number>
+
+						<Block name=""Block1"">
+							<Placement before=""PlaceHolder""/>	
+							
+							<Number size=""8"" name=""Offset2"">
+								<Relation type=""offset"" of=""Block2"" relative=""true"" relativeTo=""TheDataModel""/>
+							</Number>
+
+							<Block name=""Block2"">
+								<Placement after=""PlaceHolder""/>
+								<Blob name=""DataPlaced"" length=""1"" />
+							</Block>							
+						</Block>				
+						
+						<Blob name=""Data"" />
+
+						<Block name=""PlaceHolder""/>
+
+					</DataModel>
+				</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0}", new byte[] { 0x03, 0x41, 0x41, 0x04, 0x42 });
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Offset1", dom.dataModels[0][0].name);
+			Assert.AreEqual(3, (int)dom.dataModels[0][0].DefaultValue);
+
+			var Blob1 = (Dom.Blob)dom.dataModels[0][1];
+			Assert.AreEqual("Data", Blob1.name);
+			Assert.AreEqual(new byte[] { 0x41, 0x41 }, Blob1.DefaultValue.BitsToArray());
+
+			// Possible two bugs here:
+			// 1) This Block1 should be after the placeholder
+			// 2) The Value 0x42 is never set when cracked
+
+			var PlaceHolder = (Dom.Block)dom.dataModels[0][2];
+			Assert.AreEqual("PlaceHolder", PlaceHolder.name);
+
+			var DataPlaced = (Dom.Blob)((Dom.Block)dom.dataModels[0][3])[0];
+			Assert.AreEqual("DataPlaced", DataPlaced.name);
+			Assert.AreEqual(new byte[] { 0x42 }, DataPlaced.DefaultValue.BitsToArray());
+
+		}
 	}
 }
 
