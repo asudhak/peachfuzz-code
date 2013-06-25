@@ -106,7 +106,7 @@ namespace Peach.Core.Dom
 			bs.Seek(0, SeekOrigin.Begin);
 			blob.DefaultValue = new Variant(bs);
 
-			if (blob.hasLength && !blob.isToken)
+			if (blob.hasLength)
 			{
 				if (bs.LengthBits > blob.lengthAsBits)
 					throw new PeachException("Error, value of " + blob.debugName + " is longer than specified length.");
