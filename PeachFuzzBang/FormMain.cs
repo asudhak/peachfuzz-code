@@ -38,6 +38,7 @@ using System.Reflection;
 using System.IO;
 using System.ServiceProcess;
 using System.Linq;
+using System.Xml.Serialization;
 
 using Peach;
 using Peach.Core;
@@ -60,6 +61,7 @@ namespace PeachFuzzBang
 		Peach.Core.Dom.Dom userSelectedDom = null;
 		DataModel userSelectedDataModel = null;
 		bool hasPlatformAsm = false;
+		RunConfiguration config = new RunConfiguration();
 
 		private void LoadPlatformAssembly()
 		{
@@ -164,7 +166,7 @@ namespace PeachFuzzBang
 			}
 
 			buttonStartFuzzing.Enabled = true;
-			buttonSaveConfiguration.Enabled = false;
+			buttonSaveConfiguration.Enabled = true;
 			buttonStopFuzzing.Enabled = false;
 
 			comboBoxPitDataModel.SelectedIndexChanged += new EventHandler(comboBoxPitDataModel_SelectedIndexChanged);
@@ -183,7 +185,7 @@ namespace PeachFuzzBang
 			{
 				tabControl.SelectedTab = tabPageOutput;
 				buttonStartFuzzing.Enabled = false;
-				buttonSaveConfiguration.Enabled = false;
+				buttonSaveConfiguration.Enabled = true;
 				buttonStopFuzzing.Enabled = true;
 
 				IterationCount = 1;
@@ -414,7 +416,7 @@ namespace PeachFuzzBang
 				thread = new Thread(new ParameterizedThreadStart(Run));
 				thread.Start(dom);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
 				throw;
@@ -432,7 +434,6 @@ namespace PeachFuzzBang
 					consoleWatcher = new ConsoleWatcher(this);
 
 				Dom dom = obj as Dom;
-				RunConfiguration config = new RunConfiguration();
 				Engine e = new Engine(consoleWatcher);
 
 				config.pitFile = "PeachFuzzBang";
@@ -545,7 +546,7 @@ namespace PeachFuzzBang
 		public void StoppedFuzzing()
 		{
 			buttonStartFuzzing.Enabled = true;
-			buttonSaveConfiguration.Enabled = false;
+			buttonSaveConfiguration.Enabled = true;
 			buttonStopFuzzing.Enabled = false;
 
 			//tabControl.SelectedTab = tabPageGeneral;
@@ -554,7 +555,7 @@ namespace PeachFuzzBang
 		private void buttonStopFuzzing_Click(object sender, EventArgs e)
 		{
 			buttonStartFuzzing.Enabled = true;
-			buttonSaveConfiguration.Enabled = false;
+			buttonSaveConfiguration.Enabled = true;
 			buttonStopFuzzing.Enabled = false;
 
 			tabControl.SelectedTab = tabPageGeneral;
@@ -595,12 +596,11 @@ namespace PeachFuzzBang
 
 		private void buttonLogPathBrowse_Click(object sender, EventArgs e)
 		{
-			OpenFileDialog dialog = new OpenFileDialog();
-			dialog.Title = "Select Logs Path";
+			var dialog = new FolderBrowserDialog();
+			dialog.Description = "Select Logs Path";
 			if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
 				return;
-
-			textBoxLogPath.Text = dialog.FileName;
+			textBoxLogPath.Text = dialog.SelectedPath;
 		}
 
 		private void FormMain_Load(object sender, EventArgs e)
