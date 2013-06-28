@@ -2,6 +2,7 @@
 
 subdirs = [
 	'clrzmq',
+	'DotNetZip',
 	'pin',
 	'TreeViewAdv',
 	'Be.HexEditor.150',
@@ -17,7 +18,6 @@ bld.read_csshlib('NLog.dll',                         paths=['NLog-v2.0.0.2000/%s
 bld.read_csshlib('nunit.framework.dll',              paths=['NUnit-2.6.0.12051/bin/framework'])
 bld.read_csshlib('SharpPcap.dll',                    paths=['SharpPcap-4.1.0/Release'])
 bld.read_csshlib('PacketDotNet.dll',                 paths=['SharpPcap-4.1.0/Release'])
-bld.read_csshlib('Ionic.Zip.dll',                    paths=['DotNetZipLib-v1.9/zip-v1.9'])
 bld.read_csshlib('IronPython.dll',                   paths=['IronPython-2.7.3'])
 bld.read_csshlib('IronPython.Modules.dll',           paths=['IronPython-2.7.3'])
 bld.read_csshlib('Microsoft.Dynamic.dll',            paths=['IronPython-2.7.3'])

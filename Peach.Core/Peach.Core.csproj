@@ -686,6 +686,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\DotNetZip\Zip Reduced\Zip Reduced.csproj">
+      <Project>{49A128D3-C3F2-46B1-8F7A-EECD209EA860}</Project>
+      <Name>Zip Reduced</Name>
+    </ProjectReference>
     <ProjectReference Include="..\3rdParty\clrzmq\src\ZeroMQ\ZeroMQ.csproj">
       <Project>{6FFD872F-A4A4-4EFA-9B4D-4342BA6CF250}</Project>
       <Name>ZeroMQ</Name>
