@@ -745,16 +745,16 @@ namespace Ionic.BZip2
                             var buffer = new byte[1024];
                             while ((n = ms.Read(buffer,0,buffer.Length)) > 0)
                             {
-#if Trace
                                 if (y == -1) // diagnostics only
                                 {
+#if Trace
                                     var sb1 = new System.Text.StringBuilder();
                                     sb1.Append("first 16 whole bytes in block: ");
                                     for (int z=0; z < 16; z++)
                                         sb1.Append(String.Format(" {0:X2}", buffer[z]));
                                     TraceOutput(TraceBits.Write, sb1.ToString());
-                                }
 #endif
+                                }
                                 y = n;
                                 for (int k=0; k < n; k++)
                                 {

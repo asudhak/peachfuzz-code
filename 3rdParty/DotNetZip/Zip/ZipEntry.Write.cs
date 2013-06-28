@@ -73,7 +73,7 @@ namespace Ionic.Zip
 
             // workitem 11969: Version Needed To Extract in central directory must be
             // the same as the local entry or MS .NET System.IO.Zip fails read.
-            Int16 vNeeded = (Int16)(VersionNeeded != 0 ? VersionNeeded : 20);
+            Int16 vNeeded = VersionNeeded != 0 ? VersionNeeded : (Int16)20;
             // workitem 12964
             if (_OutputUsesZip64==null)
             {
@@ -81,7 +81,7 @@ namespace Ionic.Zip
                 _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always);
             }
 
-            Int16 versionNeededToExtract = (Int16)(_OutputUsesZip64.Value ? 45 : vNeeded);
+            Int16 versionNeededToExtract = _OutputUsesZip64.Value ? (Int16)45 : vNeeded;
 #if BZIP
             if (this.CompressionMethod == Ionic.Zip.CompressionMethod.BZip2)
                 versionNeededToExtract = 46;
