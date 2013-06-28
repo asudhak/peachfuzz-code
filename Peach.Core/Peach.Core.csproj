@@ -355,7 +355,7 @@
       <HintPath>..\3rdParty\IronPython-2.7.3\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\3rdParty\Json.net-5\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
