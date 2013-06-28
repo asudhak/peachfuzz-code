@@ -332,9 +332,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.Zip">
-      <HintPath>..\3rdParty\DotNetZipLib-v1.9\zip-v1.9\Ionic.Zip.dll</HintPath>
-    </Reference>
     <Reference Include="IronPython">
       <HintPath>..\3rdParty\IronPython-2.7.3\IronPython.dll</HintPath>
     </Reference>
