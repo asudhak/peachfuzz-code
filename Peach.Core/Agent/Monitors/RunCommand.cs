@@ -16,7 +16,6 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Command", typeof(string), "Command line command to run")]
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", "")]
 	[Parameter("When", typeof(When), "Period _When the command should be ran")]
-	[Parameter("WaitForExitTimeout", typeof(int), "Wait for exit timeout value in milliseconds (-1 is infinite)", "10000")]
 	public class RunCommand  : Monitor
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -39,7 +38,7 @@ namespace Peach.Core.Agent.Monitors
 			var startInfo = new ProcessStartInfo();
 			startInfo.FileName = createScript();
 
-			logger.Debug("_Start(): Starting process");
+			logger.Debug("_Start(): Running command");
 
 			try
 			{
