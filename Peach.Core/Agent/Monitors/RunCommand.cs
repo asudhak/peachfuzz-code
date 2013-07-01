@@ -25,7 +25,6 @@ namespace Peach.Core.Agent.Monitors
 		public string Arguments { get; private set; }
 		public When _When { get; private set; }
 		public int WaitForExitTimeout { get; private set; }
-		public bool UseShell { get; private set; }
 
 		public enum When {OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault};
 
@@ -39,9 +38,6 @@ namespace Peach.Core.Agent.Monitors
 		{
 			var startInfo = new ProcessStartInfo();
 			startInfo.FileName = createScript();
-			startInfo.UseShellExecute = UseShell;
-			//if (!string.IsNullOrEmpty(Arguments))
-			//		startInfo.Arguments = Arguments;
 
 			logger.Debug("_Start(): Starting process");
 
