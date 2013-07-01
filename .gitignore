@@ -34,6 +34,7 @@
 
 # Visual Studio generated files
 /ComTest/idl/
+*.vcxproj.vspscc
 
 # Visual C++ cache files
 /ipch/
