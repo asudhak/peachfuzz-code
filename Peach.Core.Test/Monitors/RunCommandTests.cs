@@ -39,6 +39,7 @@ namespace Peach.Core.Test.Monitors
 						<Param name='When' value='{2}'/>
 						<Param name='UseShell' value='true'/>
 					</Monitor>
+
 					{3}
 				</Agent>
 
@@ -54,10 +55,11 @@ namespace Peach.Core.Test.Monitors
 			return ret;
 		}
 
-		void Run(string testName, string faultAgent = "")
+		void Run(string testName, string arguments="", string faultAgent = "")
 		{
 			string tempFile = Path.GetTempFileName();
-			string xml = MakeXml(new string[] { "echo", testName + ">" + tempFile, testName, faultAgent});
+			string testFile = createScript(testName, tempFile);
+			string xml = MakeXml(new string[] {testFile , arguments, testName, faultAgent});
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -74,7 +76,23 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(testName, output[0]);
 		}
 
-		//public enum When {OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault};
+		private string createScript(string testName, string tempFile)
+		{
+			string extension = "";
+			if (System.Environment.OSVersion.Platform == PlatformID.Win32NT)
+				extension = "bat";
+			else
+				extension = "sh";
+
+			string command = "echo " + testName + ">" + tempFile;
+			string path = Path.GetTempPath();
+			string fileName = Guid.NewGuid().ToString() + "." + extension;
+			string file = Path.Combine(path, fileName);
+			System.IO.File.WriteAllText(@file, command);
+
+			return file;
+		}
+
 		[Test]
 		public void TestOnStart()
 		{
@@ -115,7 +133,7 @@ namespace Peach.Core.Test.Monitors
 
 			try
 			{
-				Run("OnFault", faultAgent);
+				Run("OnFault", "", faultAgent);
 				Assert.Fail("Should throw.");
 			}
 			catch (PeachException ex)

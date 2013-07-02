@@ -16,6 +16,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Command", typeof(string), "Command line command to run")]
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", "")]
 	[Parameter("When", typeof(When), "Period _When the command should be ran")]
+	[Parameter("UseShellExecute", typeof(bool), "Use the operating system shell to run the command", "true")]
 	public class RunCommand  : Monitor
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -23,7 +24,7 @@ namespace Peach.Core.Agent.Monitors
 		public string Command { get; private set; }
 		public string Arguments { get; private set; }
 		public When _When { get; private set; }
-		public int WaitForExitTimeout { get; private set; }
+		public bool UseShellExecute { get; private set; }
 
 		public enum When {OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault};
 
@@ -36,9 +37,11 @@ namespace Peach.Core.Agent.Monitors
 		void _Start()
 		{
 			var startInfo = new ProcessStartInfo();
-			startInfo.FileName = createScript();
+			startInfo.FileName = Command;
+			startInfo.UseShellExecute = UseShellExecute;
+			startInfo.Arguments = Arguments;
 
-			logger.Debug("_Start(): Running command");
+			logger.Debug("_Start(): Running command " + Command + " with arguments " + Arguments);
 
 			try
 			{
@@ -53,22 +56,6 @@ namespace Peach.Core.Agent.Monitors
 			{
 				throw new PeachException("Could not run command '" + Command + "'.  " + ex.Message + ".", ex);
 			}
-		}
-
-		private string createScript()
-		{
-			string extension = "";
-			if (System.Environment.OSVersion.Platform == PlatformID.Win32NT)
-				extension = "bat";
-			else
-				extension = "sh";
-
-			string path = Path.GetTempPath();
-			string fileName = Guid.NewGuid().ToString() + "." + extension;
-			string file = Path.Combine(path, fileName);
-			System.IO.File.WriteAllText(@file, Command + " " + Arguments);
-			
-			return file;
 		}
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
