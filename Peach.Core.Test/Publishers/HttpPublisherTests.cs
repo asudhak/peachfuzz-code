@@ -125,6 +125,7 @@ namespace Peach.Core.Test.Publishers
 		<Publisher class=""Http"">
 			<Param name=""Method"" value=""{0}""/>
 			<Param name=""Url"" value=""{1}""/>
+			<Param name=""IgnoreCertErrors"" value=""true""/>
 		</Publisher>
 	</Test>
 
@@ -150,22 +151,39 @@ namespace Peach.Core.Test.Publishers
 		<Publisher class=""Http"">
 			<Param name=""Method"" value=""{0}""/>
 			<Param name=""Url"" value=""{1}""/>
+			<Param name=""IgnoreCertErrors"" value=""true""/>
 		</Publisher>
 	</Test>
 
 </Peach>
 ";
-		
+
 		public void HttpClient(bool send_recv, string method)
 		{
+			HttpClient(send_recv, method, false);
+		}
+
+		public void HttpClient(bool send_recv, string method, bool isHttps)
+		{
 			ushort port = TestBase.MakePort(56000, 57000);
-			string url = "http://localhost:" + port.ToString() + "/";
+			string url = null;
+			SimpleHttpListener listener = null;
+			Thread lThread = null;
+			if ( isHttps)
+			{
+				url = "https://changethisurltotest.peach";
+			}
+			else
+			{
+				url = "http://localhost:" + port.ToString() + "/";
 
-			SimpleHttpListener listener = new SimpleHttpListener();
-			string[] prefixes = new string[1] {url};
-			Thread lThread = new Thread(() => listener.Listen(prefixes));
+				listener = new SimpleHttpListener();
+				string[] prefixes = new string[1] { url };
+				lThread = new Thread(() => listener.Listen(prefixes));
 
-			lThread.Start();
+				lThread.Start();
+			}
+
 			try
 			{
 				string xml = string.Format(send_recv ? send_recv_template : recv_template, method, url);
@@ -179,7 +197,7 @@ namespace Peach.Core.Test.Publishers
 				Engine e = new Engine(null);
 				e.startFuzzing(dom, config);
 
-				if (send_recv)
+				if (send_recv && ! isHttps)
 				{
 					Assert.AreEqual(2, actions.Count);
 
@@ -194,7 +212,7 @@ namespace Peach.Core.Test.Publishers
 					Assert.AreEqual("Hello World", send);
 					Assert.AreEqual(method + " Hello World Too = 11", recv);
 				}
-				else
+				else if ( ! isHttps)
 				{
 					Assert.AreEqual(1, actions.Count);
 					var de1 = actions[0].dataModel.find("TheDataModel.str");
@@ -207,8 +225,11 @@ namespace Peach.Core.Test.Publishers
 			}
 			finally
 			{
-				listener.Stop();
-				lThread.Join();
+				if ( ! isHttps)
+				{
+					listener.Stop();
+					lThread.Join();
+				}
 			}
 		}
 
@@ -236,6 +257,14 @@ namespace Peach.Core.Test.Publishers
 		public void HttpClientRecvPost()
 		{
 			HttpClient(false, "POST");
+		}
+
+		[Test, Ignore]
+		public void AreCertErrorsIgnored()
+		{
+			// need to set url above to something that has a self signed cert for https
+			HttpClient(false, "GET", true);
+			HttpClient(false, "POST", true);
 		}
 	}
 }
