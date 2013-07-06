@@ -117,6 +117,9 @@ namespace Peach.Core.Mutators
 			}
 			else if (data.Length == 0)
 			{
+				// If objOf is a block, data is a BitStreamList
+				data = new BitStream();
+
 				// Fill with 'A' if we don't have any data
 				while (--tgtLen > 0)
 					data.WriteByte((byte)'A');
