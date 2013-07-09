@@ -49,6 +49,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Domain", typeof(string), "Optional domain for authentication", "")]
 	[Parameter("Cookies", typeof(bool), "Track cookies (defaults to true)", "true")]
 	[Parameter("CookiesAcrossIterations", typeof(bool), "Track cookies across iterations (defaults to false)", "false")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
 	public class HttpPublisher : BufferedStreamPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -90,15 +91,24 @@ namespace Peach.Core.Publishers
 			}
 		}
 
+		protected static string ReadString(BitwiseStream data)
+		{
+			data.Seek(0, SeekOrigin.Begin);
+			var rdr = new BitReader(data);
+			var str = rdr.ReadString(Encoding.UTF8);
+			return str;
+		}
+
 		protected override Variant OnCall(string method, List<ActionParameter> args)
 		{
+
 			switch (method)
 			{
 				case "Query":
-					Query = UTF8Encoding.UTF8.GetString(args[0].dataModel.Value.Value);
+					Query = ReadString(args[0].dataModel.Value);
 					break;
 				case "Header":
-					Headers[UTF8Encoding.UTF8.GetString(args[0].dataModel.Value.Value)] = UTF8Encoding.UTF8.GetString(args[1].dataModel.Value.Value);
+					Headers[ReadString(args[0].dataModel.Value)] = ReadString(args[1].dataModel.Value);
 					break;
 			}
 
@@ -108,7 +118,7 @@ namespace Peach.Core.Publishers
 		protected override void OnInput()
 		{
 			if (Response == null)
-				CreateClient(null, 0, 0);
+				CreateClient(null);
 
 			base.OnInput();
 		}
@@ -116,10 +126,8 @@ namespace Peach.Core.Publishers
 		/// <summary>
 		/// Send data
 		/// </summary>
-		/// <param name="buffer">Data to send/write</param>
-		/// <param name="offset">The byte offset in buffer at which to begin writing from.</param>
-		/// <param name="count">The maximum number of bytes to write.</param>
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		/// <param name="data">Data to send/write</param>
+		protected override void OnOutput(BitwiseStream data)
 		{
 			lock (_clientLock)
 			{
@@ -127,10 +135,10 @@ namespace Peach.Core.Publishers
 					CloseClient();
 			}
 
-			CreateClient(buffer, offset, count);
+			CreateClient(data);
 		}
 
-		private void CreateClient(byte[] buffer, int offset, int count)
+		private void CreateClient(BitwiseStream data)
 		{
 			if (Response != null)
 			{
@@ -155,13 +163,13 @@ namespace Peach.Core.Publishers
 			foreach (var header in Headers.Keys)
 				request.Headers[header] = Headers[header];
 
-			if (buffer != null)
+			if (data != null)
 			{
 				try
 				{
 					using (var sout = request.GetRequestStream())
 					{
-						sout.Write(buffer, offset, count);
+						data.CopyTo(sout);
 					}
 				}
 				catch (ProtocolViolationException ex)

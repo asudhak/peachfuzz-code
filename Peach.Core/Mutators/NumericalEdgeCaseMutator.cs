@@ -221,7 +221,7 @@ namespace Peach.Core.Mutators
             else
                 obj.MutatedValue = new Variant(values[size][currentCount]);
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
 
         // RANDOM_MUTAION
@@ -235,7 +235,7 @@ namespace Peach.Core.Mutators
             else
                 obj.MutatedValue = new Variant(context.Random.Choice(values[size]));
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
     }
 }

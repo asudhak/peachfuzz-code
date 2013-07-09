@@ -131,7 +131,7 @@ namespace Peach.Core.Dom
 				if (child is XmlAttribute)
 				{
 					XmlAttribute attrib = child as XmlAttribute;
-					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					if (child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
 					{
 						// Happend when data element is duplicated.  Duplicate attributes are invalid so ignore.
 						continue;
@@ -154,7 +154,7 @@ namespace Peach.Core.Dom
 				}
 				else if (child is XmlElement)
 				{
-					if ((child.mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+					if (child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
 					{
 						var key = "|||" + child.fullName + "|||";
 						var text = doc.doc.CreateTextNode(key);
@@ -177,7 +177,7 @@ namespace Peach.Core.Dom
 
 		protected override Variant GenerateInternalValue()
 		{
-			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			if (mutationFlags.HasFlag(MutateOverride.TypeTransform))
 				return MutatedValue;
 
 			PeachXmlDoc doc = new PeachXmlDoc();
@@ -189,7 +189,7 @@ namespace Peach.Core.Dom
 
 			foreach (string item in parts)
 			{
-				BitStream toWrite = null;
+				BitwiseStream toWrite = null;
 				Variant var = null;
 				string key = "|||" + item + "|||";
 				if (doc.values.TryGetValue(key, out var))
@@ -197,7 +197,7 @@ namespace Peach.Core.Dom
 					var type = var.GetVariantType();
 
 					if (type == Variant.VariantType.BitStream)
-						toWrite = (BitStream)var;
+						toWrite = (BitwiseStream)var;
 					else if (type == Variant.VariantType.ByteString)
 						toWrite = new BitStream((byte[])var);
 					else
@@ -207,19 +207,19 @@ namespace Peach.Core.Dom
 				{
 					toWrite = new BitStream(Encoding.ASCII.GetRawBytes(item));
 				}
-
-				bs.Write(toWrite);
+				toWrite.SeekBits(0, System.IO.SeekOrigin.Begin);
+				toWrite.CopyTo(bs);
 			}
 
 			return new Variant(bs);
 		}
 
-		protected override BitStream InternalValueToBitStream()
+		protected override BitwiseStream InternalValueToBitStream()
 		{
-			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
-				return (BitStream)MutatedValue;
+			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
+				return (BitwiseStream)MutatedValue;
 
-			return new BitStream(((BitStream)InternalValue).Stream);
+			return (BitwiseStream)InternalValue;
 		}
 	}
 }

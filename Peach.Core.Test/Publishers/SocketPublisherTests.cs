@@ -357,7 +357,7 @@ namespace Peach.Core.Test.Publishers
 				var addr = actions[2].dataModel.DefaultValue;
 				Assert.NotNull(addr);
 
-				IPAddress ip = new IPAddress((byte[])addr);
+				IPAddress ip = new IPAddress(addr.BitsToArray());
 				Assert.NotNull(ip);
 
 				string send = (string)de1.DefaultValue;

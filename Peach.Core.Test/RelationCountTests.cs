@@ -70,7 +70,7 @@ namespace Peach.Core.Test
 			array.Add(new Dom.String("Child3") { DefaultValue = new Variant("3") });
 
 			Assert.AreEqual(3, (int)num.InternalValue);
-			Assert.AreEqual("123", ASCIIEncoding.ASCII.GetString(array.Value.Value));
+			Assert.AreEqual("123", ASCIIEncoding.ASCII.GetString(array.Value.ToArray()));
 		}
 
 		[Test]
@@ -98,7 +98,7 @@ namespace Peach.Core.Test
 			array.Add(new Dom.String("Child3") { DefaultValue = new Variant("3") });
 
 			Assert.AreEqual(4, (int)num.InternalValue);
-			Assert.AreEqual("123", ASCIIEncoding.ASCII.GetString(array.Value.Value));
+			Assert.AreEqual("123", ASCIIEncoding.ASCII.GetString(array.Value.ToArray()));
 		}
 	}
 }

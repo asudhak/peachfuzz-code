@@ -7,6 +7,8 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.Transformers.Encode
 {
@@ -23,7 +25,7 @@ namespace Peach.Core.Test.Transformers.Encode
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
                 "           <Transformer class=\"Base64Encode\"/>" +
-                "           <Blob name=\"Data\" value=\"12345678\"/>" +
+                "           <String name=\"Data\" value=\"12345678\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +
 
@@ -55,7 +57,15 @@ namespace Peach.Core.Test.Transformers.Encode
             // -- this is the pre-calculated result from Peach2.3 on the blob: "12345678"
             byte[] precalcResult = new byte[] { 0x4D, 0x54, 0x49, 0x7A, 0x4E, 0x44, 0x55, 0x32, 0x4E, 0x7A, 0x67, 0x3D };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
+
+            DataCracker cracker = new DataCracker();
+            var bs = new BitStream(new MemoryStream(precalcResult));
+            cracker.CrackData(dom.dataModels[0], bs);
+
+            var elem = dom.dataModels[0].find("TheBlock.Data");
+            Assert.NotNull(elem);
+            Assert.AreEqual("12345678", (string)elem.DefaultValue);
         }
     }
 }

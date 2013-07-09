@@ -360,7 +360,9 @@
     <Compile Include="Analyzers\BinaryAnalyzerTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="Analyzers\XmlAnalyzerTests.cs" />
+    <Compile Include="BitsTests.cs" />
     <Compile Include="BitStreamTest.cs" />
+    <Compile Include="BitwiseStreamTest.cs" />
     <Compile Include="CrackingTests\ArrayTests.cs" />
     <Compile Include="CrackingTests\BlobTests.cs" />
     <Compile Include="CrackingTests\BlockTests.cs" />
@@ -399,6 +401,7 @@
     <Compile Include="Fixups\SHA512FixupTests.cs" />
     <Compile Include="Fixups\TCPChecksumFixupTests.cs" />
     <Compile Include="Fixups\UDPChecksumFixupTests.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="Monitors\CleanupFolderMoniorTests.cs" />
     <Compile Include="Monitors\FaultingMonitorTests.cs" />
     <Compile Include="Monitors\MemoryMonitorTests.cs" />
@@ -406,6 +409,7 @@
     <Compile Include="Monitors\ProcessKillerMoniorTests.cs" />
     <Compile Include="Monitors\ProcessMonitorTests.cs" />
     <Compile Include="Monitors\ReplayMonitorTests.cs" />
+    <Compile Include="Monitors\RunCommandTests.cs" />
     <Compile Include="Monitors\SocketMonitorTests.cs" />
     <Compile Include="Monitors\SshMonitorTests.cs" />
     <Compile Include="Monitors\VmwareMonitorTests.cs" />
@@ -498,12 +502,9 @@
     <Compile Include="Transformers\Crypto\UnixMd5CryptTests.cs" />
     <Compile Include="Transformers\Encode\Base64DecodeTests.cs" />
     <Compile Include="Transformers\Encode\Base64EncodeTests.cs" />
-    <Compile Include="Transformers\Encode\HexStringTests.cs" />
     <Compile Include="Transformers\Encode\HexTests.cs" />
     <Compile Include="Transformers\Encode\HtmlDecodeTests.cs" />
-    <Compile Include="Transformers\Encode\HtmlEncodeAgressiveTests.cs" />
     <Compile Include="Transformers\Encode\HtmlEncodeTests.cs" />
-    <Compile Include="Transformers\Encode\Ipv4StringToNetworkOctetTests.cs" />
     <Compile Include="Transformers\Encode\Ipv4StringToOctetTests.cs" />
     <Compile Include="Transformers\Encode\Ipv6StringToOctetTests.cs" />
     <Compile Include="Transformers\Encode\JsEncodeTests.cs" />
@@ -511,21 +512,9 @@
     <Compile Include="Transformers\Encode\NetBiosEncodeTests.cs" />
     <Compile Include="Transformers\Encode\SidStringToBytesTests.cs" />
     <Compile Include="Transformers\Encode\UrlEncodeTests.cs" />
-    <Compile Include="Transformers\Encode\Utf16BeTests.cs" />
-    <Compile Include="Transformers\Encode\Utf16LeTests.cs" />
-    <Compile Include="Transformers\Encode\Utf16Tests.cs" />
-    <Compile Include="Transformers\Encode\Utf8Tests.cs" />
-    <Compile Include="Transformers\Encode\WideCharTests.cs" />
     <Compile Include="Transformers\EvalTests.cs" />
     <Compile Include="Transformers\NullTests.cs" />
-    <Compile Include="Transformers\Type\AsInt16Test.cs" />
-    <Compile Include="Transformers\Type\AsInt32Tests.cs" />
-    <Compile Include="Transformers\Type\AsInt64Tests.cs" />
-    <Compile Include="Transformers\Type\AsInt8Tests.cs" />
     <Compile Include="Transformers\Type\IntToHexTests.cs" />
-    <Compile Include="Transformers\Type\NumberToStringTests.cs" />
-    <Compile Include="Transformers\Type\StringToFloatTests.cs" />
-    <Compile Include="Transformers\Type\StringToIntTests.cs" />
     <Compile Include="UtilitiesTests.cs" />
     <Compile Include="VariantTests.cs" />
   </ItemGroup>

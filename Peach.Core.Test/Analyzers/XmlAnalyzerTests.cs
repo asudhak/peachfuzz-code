@@ -52,8 +52,8 @@ namespace Peach.Core.Test.Analyzers
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
                 "	<DataModel name=\"TheDataModel\">" +
                 "       <String value=\"&lt;Root&gt;&lt;Element1 attrib1=&quot;Attrib1Value&quot; /&gt;&lt;/Root&gt;\"> "+
-			    "           <Analyzer class=\"Xml\" /> " +
-		        "       </String>"+
+                "           <Analyzer class=\"Xml\" /> " +
+                "       </String>"+
                 "	</DataModel>" +
                 "</Peach>";
 

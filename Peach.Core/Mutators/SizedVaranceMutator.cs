@@ -35,196 +35,38 @@ using NLog;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Change the length of sizes to count - N to count + N")]
-    [Hint("SizedVaranceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
-    public class SizedVaranceMutator : Mutator
-    {
+	[Mutator("Change the length of sizes to count - N to count + N")]
+	[Hint("SizedVaranceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
+	public class SizedVaranceMutator : SizedMutator
+	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		// members
-        //
-        int n;
-        int[] values;
-        uint currentCount;
-        long originalDataLength;
+		public SizedVaranceMutator(DataElement obj)
+			: base("SizedVaranceMutator", obj)
+		{
+		}
 
-        // CTOR
-        //
-        public SizedVaranceMutator(DataElement obj)
-        {
-            currentCount = 0;
-            n = getN(obj, 50);
-            name = "SizedVaranceMutator";
-            originalDataLength = (long)obj.InternalValue;
-            PopulateValues(originalDataLength);
-        }
+		protected override NLog.Logger Logger
+		{
+			get { return logger; }
+		}
 
-        // POPULATE_VALUES
-        //
-        private void PopulateValues(long length)
-        {            
-            // generate values from [-n, n]
-            List<int> temp = new List<int>();
+		protected override bool OverrideRelation
+		{
+			get { return false; }
+		}
 
-            for (int i = -n; i <= n; ++i)
-            {
-                // only add valid n-values
-                if (length + i <= 0)
-                    continue;
-                temp.Add(i);
-            }
+		protected override List<long> GenerateValues(DataElement obj, int n)
+		{
+			// Find all numbers from [-n, n] where (originalDataLength + n) > 0
+			// TODO: See if we want to exclude mutations where our size will be 0
+			long min = (int)Math.Max(-(long)obj.InternalValue + 1, -n);
 
-            values = temp.ToArray();
-        }
+			var ret = new List<long>();
+			while (min <= n)
+				ret.Add(min++);
 
-        // GET N
-        //
-        public int getN(DataElement obj, int n)
-        {
-            // check for hint
-            if (obj.Hints.ContainsKey("SizedVaranceMutator-N"))
-            {
-                Hint h = null;
-                if (obj.Hints.TryGetValue("SizedVaranceMutator-N", out h))
-                {
-                    try
-                    {
-                        n = Int32.Parse(h.Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new PeachException("Expected numerical value for Hint named " + h.Name, ex);
-                    }
-                }
-            }
-
-            return n;
-        }
-
-        // MUTATION
-        //
-        public override uint mutation
-        {
-            get { return currentCount; }
-            set { currentCount = value; }
-        }
-
-        // COUNT
-        //
-        public override int count
-        {
-            get { return values.Length; }
-        }
-
-        // SUPPORTED
-        //
-        public new static bool supportedDataElement(DataElement obj)
-        {
-            // verify data element has size relation
-            if (obj.isMutable && obj.relations.hasFromSizeRelation)
-                return true;
-
-            return false;
-        }
-
-        // SEQUENTIAL_MUTATION
-        //
-        public override void sequentialMutation(DataElement obj)
-        {
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            performMutation(obj, values[currentCount]);
-        }
-
-        // RANDOM_MUTAION
-        //
-        public override void randomMutation(DataElement obj)
-        {
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            performMutation(obj, context.Random.Choice(values));
-        }
-
-        // PERFORM_MUTATION
-        //
-        private void performMutation(DataElement obj, int curr)
-        {
-            var sizeRelation = obj.relations.getFromSizeRelation();
-			if (sizeRelation == null)
-			{
-				logger.Error("Error, sizeRelation == null, unable to perform mutation.");
-				return;
-			}
-
-			var objOf = sizeRelation.Of;
-			if (objOf == null)
-			{
-				logger.Error("Error, sizeRelation.Of == null, unable to perform mutation.");
-				return;
-			}
-
-			var size = (long)obj.InternalValue;
-            var realSize = objOf.Value.LengthBytes;
-            var diff = size - realSize;
-            n = (int)size + curr;
-
-            objOf.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
-
-            if (n - diff < 0)
-            {
-                objOf.MutatedValue = new Variant(new byte[0]);
-                return;
-            }
-
-            byte[] data = objOf.Value.Value;
-            List<byte> newData = new List<byte>();
-
-            // can we make the value?
-            if (n <= 0)
-            {
-                objOf.MutatedValue = new Variant(new byte[0]);
-            }
-            else if (n < size)
-            {
-                // shorten the size
-                for (int i = 0; i < n - diff; ++i)
-                    newData.Add(data[i]);
-                objOf.MutatedValue = new Variant(newData.ToArray());
-            }
-            else if (data.Length == 0)
-            {
-                // fill in with A's
-                for (int i = 0; i < n - diff; ++i)
-                    newData.Add((byte)('A'));
-                objOf.MutatedValue = new Variant(newData.ToArray());
-            }
-            else
-            {
-                try
-                {
-                    // wrap the data to fill size
-                    int cnt = 0;
-
-                    while (cnt < n - diff)
-                    {
-                        for (int i = 0; i < data.Length; ++i)
-                        {
-                            newData.Add(data[i]);
-                            cnt++;
-
-                            if (cnt >= n - diff)
-                                break;
-                        }
-                    }
-
-                    objOf.MutatedValue = new Variant(newData.ToArray());
-                }
-                catch
-                {
-                    // catch divide by zero exception
-                    objOf.MutatedValue = new Variant(new byte[0]);
-                }
-            }
-        }
-    }
+			return ret;
+		}
+	}
 }
-
-// end

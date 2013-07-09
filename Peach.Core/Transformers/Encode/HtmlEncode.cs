@@ -44,20 +44,26 @@ namespace Peach.Core.Transformers.Encode
         {
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
-            var s = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
-            var es = System.Web.HttpUtility.HtmlAttributeEncode(s);
-
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(es));
+            var s = new BitReader(data).ReadString();
+            var ds = System.Web.HttpUtility.HtmlAttributeEncode(s);
+            var ret = new BitStream();
+            var writer = new BitWriter(ret);
+            writer.WriteString(ds);
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            var s = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
+            var s = new BitReader(data).ReadString();
             var ds = System.Web.HttpUtility.HtmlDecode(s);
-
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(ds));
+            var ret = new BitStream();
+            var writer = new BitWriter(ret);
+            writer.WriteString(ds);
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
     }
 }

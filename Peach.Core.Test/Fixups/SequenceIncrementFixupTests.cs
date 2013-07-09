@@ -52,7 +52,7 @@ namespace Peach.Core.Test.Fixups
 
 			// verify values
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(1, BitConverter.ToUInt32(values[0].Value, 0));
+			Assert.AreEqual(1, BitConverter.ToUInt32(values[0].ToArray(), 0));
 		}
 
 		[Test]
@@ -107,7 +107,7 @@ namespace Peach.Core.Test.Fixups
 
 			for (int i = 0; i < dataModels.Count; ++i)
 			{
-				var bytes = dataModels[i].Value.Value;
+				var bytes = dataModels[i].Value.ToArray();
 				Assert.GreaterOrEqual(bytes.Length, 1);
 				Assert.AreEqual(i + 1, bytes[0]);
 			}
@@ -403,8 +403,8 @@ namespace Peach.Core.Test.Fixups
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			Assert.AreEqual(new byte[0], (byte[])dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(new byte[0], (byte[])dom.dataModels[0][0].InternalValue);
+			Assert.AreEqual(new byte[0], dom.dataModels[0][0].DefaultValue.BitsToArray());
+			Assert.AreEqual(new byte[0], dom.dataModels[0][0].InternalValue.BitsToArray());
 
 			RunConfiguration config = new RunConfiguration();
 			config.singleIteration = true;

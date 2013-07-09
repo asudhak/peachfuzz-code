@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups
 {
@@ -50,10 +51,13 @@ namespace Peach.Core.Fixups
 		protected override Variant fixupImpl()
 		{
 			var from = elements["ref"];
-			byte[] data = from.Value.Value;
+			var data = from.Value;
 			byte lrc = 0;
+			int b = 0;
 
-			foreach (byte b in data)
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
+			while ((b = data.ReadByte()) != -1)
 				lrc = (byte)((lrc + b) & 0xff);
 
 			lrc = (byte)(((lrc ^ 0xff) + 1) % 0xff);
@@ -64,7 +68,7 @@ namespace Peach.Core.Fixups
 			if (parent is Dom.Number)
 				return new Variant((uint)lrc);
 
-			return new Variant(new byte[] { lrc });
+			return new Variant(new BitStream(new byte[] { lrc }));
 		}
 	}
 }

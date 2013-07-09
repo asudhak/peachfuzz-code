@@ -107,8 +107,8 @@ namespace Peach.Core.Test.PitParserTests
 			var val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
 
-			val.SeekBytes(0, SeekOrigin.Begin);
-			string str = Utilities.HexDump(val.Stream);
+			val.Seek(0, SeekOrigin.Begin);
+			string str = Utilities.HexDump(val);
 			Assert.NotNull(str);
 
 			Assert.AreEqual(80 + 128, val.LengthBits);
@@ -121,8 +121,24 @@ namespace Peach.Core.Test.PitParserTests
 				0xff                                                        // next
 			};
 
-			Assert.AreEqual(expected, val.Value);
+			Assert.AreEqual(expected, val.ToArray());
 		}
 
+		[Test]
+		public void PaddingTest4()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number size=\"33\" />" +
+				"		<Padding alignment=\"16\" />" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = dom.dataModels[0][1] as Padding;
+
+			Assert.AreEqual(15, ((BitStream)padding.DefaultValue).LengthBits);
+		}
 	}
 }

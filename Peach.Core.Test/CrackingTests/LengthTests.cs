@@ -36,16 +36,13 @@ namespace Peach.Core.Test.CrackingTests
 	</DataModel>
 </Peach>";
 
-		BitStream Crack(string template, string elem, string units, string lengthType, string length)
+		BitwiseStream Crack(string template, string elem, string units, string lengthType, string length)
 		{
 			string xml = string.Format(template, elem, units, lengthType, length);
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -65,12 +62,12 @@ namespace Peach.Core.Test.CrackingTests
 			return value;
 		}
 
-		BitStream CrackElement(string elem, string units, string lengthType, string length)
+		BitwiseStream CrackElement(string elem, string units, string lengthType, string length)
 		{
 			return Crack(elem_template, elem, units, lengthType, length);
 		}
 
-		BitStream CrackContainer(string elem, string units, string lengthType, string length)
+		BitwiseStream CrackContainer(string elem, string units, string lengthType, string length)
 		{
 			return Crack(cont_template, elem, units, lengthType, length);
 		}
@@ -85,14 +82,14 @@ namespace Peach.Core.Test.CrackingTests
 		public void BlobBytes()
 		{
 			var bs = CrackElement("Blob", "bytes", "length", "5");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.ToArray());
 		}
 
 		[Test]
 		public void BlobBits()
 		{
 			var bs = CrackElement("Blob", "bits", "length", "36");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.ToArray());
 		}
 
 		[Test, ExpectedException(typeof(PeachException))]
@@ -105,14 +102,14 @@ namespace Peach.Core.Test.CrackingTests
 		public void BlockBytes()
 		{
 			var bs = CrackContainer("Block", "bytes", "length", "5");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.ToArray());
 		}
 
 		[Test]
 		public void BlockBits()
 		{
 			var bs = CrackContainer("Block", "bits", "length", "36");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.ToArray());
 		}
 
 		[Test, ExpectedException(typeof(PeachException))]
@@ -125,14 +122,14 @@ namespace Peach.Core.Test.CrackingTests
 		public void ChoiceBytes()
 		{
 			var bs = CrackContainer("Choice", "bytes", "length", "5");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55 }, bs.ToArray());
 		}
 
 		[Test]
 		public void ChoiceBits()
 		{
 			var bs = CrackContainer("Choice", "bits", "length", "36");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44, 0x50 }, bs.ToArray());
 		}
 
 		[Test, ExpectedException(typeof(PeachException))]
@@ -157,21 +154,21 @@ namespace Peach.Core.Test.CrackingTests
 		public void StringChars()
 		{
 			var bs = CrackElement("String type=\"utf16\"", "chars", "length", "2");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.ToArray());
 		}
 
 		[Test]
 		public void StringBytes()
 		{
 			var bs = CrackElement("String type=\"utf16\"", "bytes", "length", "4");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.ToArray());
 		}
 
 		[Test]
 		public void StringBits()
 		{
 			var bs = CrackElement("String type=\"utf16\"", "bits", "length", "32");
-			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.Value);
+			Assert.AreEqual(new byte[] { 0x11, 0x22, 0x33, 0x44 }, bs.ToArray());
 		}
 	}
 }

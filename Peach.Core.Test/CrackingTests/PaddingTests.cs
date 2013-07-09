@@ -62,9 +62,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteBytes(new byte[] { 1, 2, 49, 50, 51});
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 1, 2, 49, 50, 51 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -72,15 +70,15 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, dom.dataModels[0].Count);
 			var block = dom.dataModels[0][0] as Block;
 			Assert.AreEqual(2, block.Count);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])block[0].Value.Value);
-			Assert.AreEqual(new byte[] { 1 }, (byte[])block[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1 }, block[0].Value.ToArray());
+			Assert.AreEqual(new byte[] { 1 }, block[0].DefaultValue.BitsToArray());
 			Assert.AreEqual(8, ((BitStream)block[1].DefaultValue).LengthBits);
 			Assert.AreEqual(8, ((BitStream)block[1].Value).LengthBits);
 			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
 
 			var value = dom.dataModels[0].Value;
-			value.SeekBytes(0, SeekOrigin.Begin);
-			Assert.AreEqual(5, value.LengthBytes);
+			value.Seek(0, SeekOrigin.Begin);
+			Assert.AreEqual(5, value.Length);
 			Assert.AreEqual(1, value.ReadByte());
 			Assert.AreEqual(0, value.ReadByte());
 		}
@@ -93,9 +91,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteBytes(new byte[] { 1, 2, 49, 50, 51 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 1, 2, 49, 50, 51 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -103,15 +99,15 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(2, dom.dataModels[0].Count);
 			var block = dom.dataModels[0][0] as Block;
 			Assert.AreEqual(2, block.Count);
-			Assert.AreEqual(new byte[] { 1, 2 }, (byte[])block[0].Value.Value);
-			Assert.AreEqual(new byte[] { 1, 2 }, (byte[])block[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2 }, block[0].Value.ToArray());
+			Assert.AreEqual(new byte[] { 1, 2 }, block[0].DefaultValue.BitsToArray());
 			Assert.AreEqual(0, ((BitStream)block[1].DefaultValue).LengthBits);
 			Assert.AreEqual(0, ((BitStream)block[1].Value).LengthBits);
 			Assert.AreEqual("123", (string)dom.dataModels[0][1].DefaultValue);
 
 			var value = dom.dataModels[0].Value;
-			value.SeekBytes(0, SeekOrigin.Begin);
-			Assert.AreEqual(5, value.LengthBytes);
+			value.Seek(0, SeekOrigin.Begin);
+			Assert.AreEqual(5, value.Length);
 			Assert.AreEqual(1, value.ReadByte());
 			Assert.AreEqual(2, value.ReadByte());
 		}

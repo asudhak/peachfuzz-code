@@ -20,14 +20,17 @@ namespace Peach.Core
 		/// <param name="args">Dictionary of arguments</param>
 		public static void Parse<T>(T obj, Dictionary<string, Variant> args) where T: class
 		{
-			foreach (var attr in obj.GetType().GetAttributes<ParameterAttribute>(null))
+			foreach (var item in GetProperties(obj))
 			{
+				var attr = item.Key;
+				var prop = item.Value;
+
 				Variant value;
 
 				if (args.TryGetValue(attr.name, out value))
-					ApplyProperty(obj, attr, (string)value);
+					ApplyProperty(obj, prop, attr, (string)value);
 				else if (!attr.required)
-					ApplyProperty(obj, attr, attr.defaultValue);
+					ApplyProperty(obj, prop, attr, attr.defaultValue);
 				else if (attr.required)
 					RaiseError(obj.GetType(), "is missing required parameter '{0}'.", attr.name);
 			}
@@ -50,6 +53,40 @@ namespace Peach.Core
 		public static object FromString(Type type, ParameterAttribute attr, string value)
 		{
 			return FromString(type, attr.type, attr.name, value);
+		}
+
+		public static IEnumerable<KeyValuePair<string, string>> Get<T>(T obj) where T : class
+		{
+			foreach (var item in GetProperties(obj))
+			{
+				var attr = item.Key;
+				var prop = item.Value;
+
+				var value = prop.GetValue(obj, null).ToString();
+
+				if (attr.required || attr.defaultValue != value)
+					yield return new KeyValuePair<string, string>(attr.name, value);
+			}
+		}
+
+		private static IEnumerable<KeyValuePair<ParameterAttribute, PropertyInfo>> GetProperties<T>(T obj) where T : class
+		{
+			Type type = obj.GetType();
+
+			foreach (var attr in obj.GetType().GetAttributes<ParameterAttribute>(null))
+			{
+				BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+				var prop = obj.GetType().GetProperty(attr.name, bindingAttr, null, attr.type, new Type[0], null);
+				if (prop == null)
+					prop = obj.GetType().GetProperty("_" + attr.name, bindingAttr, null, attr.type, new Type[0], null);
+				if (prop == null)
+					RaiseError(type, "has no property for parameter '{0}'.", attr.name);
+				else if (!prop.CanWrite)
+					RaiseError(type, "has no settable property for parameter '{0}'.", attr.name);
+				else
+					yield return new KeyValuePair<ParameterAttribute, PropertyInfo>(attr, prop);
+			}
+
 		}
 
 		private static object FromString(Type pluginType, Type destType, string name, string value)
@@ -106,22 +143,13 @@ namespace Peach.Core
 			return val;
 		}
 
-		private static void ApplyProperty<T>(T obj, ParameterAttribute attr, string value) where T : class
+		private static void ApplyProperty<T>(T obj, PropertyInfo prop, ParameterAttribute attr, string value) where T : class
 		{
 			Type type = obj.GetType();
 
 			object val = FromString(type, attr, value);
 
-			BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-			var prop = obj.GetType().GetProperty(attr.name, bindingAttr, null, attr.type, new Type[0], null);
-			if (prop == null)
-				prop = obj.GetType().GetProperty("_" + attr.name, bindingAttr, null, attr.type, new Type[0], null);
-			if (prop == null)
-				RaiseError(type, "has no property for parameter '{0}'.", attr.name);
-			else if (!prop.CanWrite)
-				RaiseError(type, "has no settable property for parameter '{0}'.", attr.name);
-			else
-				prop.SetValue(obj, val, null);
+			prop.SetValue(obj, val, null);
 		}
 
 		private static object ChangeType(Type ownerType, string value, Type destType)

@@ -59,7 +59,7 @@ namespace Peach.Core.Test.Transformers.Compress
 			}; // on "abc"
 
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
     }
 }

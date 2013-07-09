@@ -55,9 +55,9 @@ namespace Peach.Core.Test.CrackingTests
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			BitStream val = dom.dataModels[0].Value;
+			BitwiseStream val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
-			Assert.AreEqual(13, val.LengthBytes);
+			Assert.AreEqual(13, val.Length);
 			Assert.AreEqual(13 * 8, val.LengthBits);
 
 			pub.Stream.Seek(0, SeekOrigin.Begin);
@@ -83,10 +83,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0xe6 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0xe6 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -97,10 +94,7 @@ namespace Peach.Core.Test.CrackingTests
 			var flag = flags[0] as Flag;
 			Assert.AreEqual(7, (int)flag.DefaultValue);
 
-			BitStream bad = new BitStream();
-			bad.LittleEndian();
-			bad.WriteBytes(new byte[] { 0x16 });
-			bad.SeekBits(0, SeekOrigin.Begin);
+			var bad = Bits.Fmt("{0}", new byte[] { 0x16 });
 
 			Assert.Throws<CrackingFailure>(delegate()
 			{
@@ -126,10 +120,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x00, 0xff });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x00, 0xff });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -183,14 +174,14 @@ namespace Peach.Core.Test.CrackingTests
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			BitStream val = dom.dataModels[0].Value;
+			BitwiseStream val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
-			Assert.AreEqual(3, val.LengthBytes);
+			Assert.AreEqual(3, val.Length);
 			Assert.AreEqual(3 * 8, val.LengthBits);
 
-			MemoryStream ms = val.Stream as MemoryStream;
-			byte[] buf = ms.GetBuffer();
+			byte[] buf = val.ToArray();
 
+			Assert.AreEqual(3, buf.Length);
 			Assert.AreEqual(0x02, buf[0]);
 			Assert.AreEqual(0x07, buf[1]);
 			Assert.AreEqual(0xff, buf[2]);

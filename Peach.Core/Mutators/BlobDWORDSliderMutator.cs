@@ -55,7 +55,7 @@ namespace Peach.Core.Mutators
         public BlobDWORDSliderMutator(DataElement obj)
         {
             position = 0;
-            length = (int)obj.Value.LengthBytes;
+            length = (int)obj.Value.Length;
             if (length <= 1)
                 length = 0;
             name = "BlobDWORDSliderMutator";
@@ -104,13 +104,13 @@ namespace Peach.Core.Mutators
         //
         public override void randomMutation(DataElement obj)
         {
-            if (obj.Value.LengthBytes <= 1)
+            if (obj.Value.Length <= 1)
             {
                 logger.Error("Error, length is " + length + ", unable to perform mutation.");
                 return;
             }
 
-            performMutation(obj, context.Random.Next((int)obj.Value.LengthBytes));
+            performMutation(obj, context.Random.Next((int)obj.Value.Length));
         }
 
         // PERFORM_MUTATION
@@ -119,21 +119,21 @@ namespace Peach.Core.Mutators
         {
             var stream = obj.Value;
 
-            System.Diagnostics.Debug.Assert(pos < stream.LengthBytes);
+            System.Diagnostics.Debug.Assert(pos < stream.Length);
 
-            int len = Math.Min((int)stream.LengthBytes - pos, inject.Length);
-            long cur = stream.TellBits();
+            int len = Math.Min((int)stream.Length - pos, inject.Length);
+            long cur = stream.PositionBits;
 
-            stream.SeekBytes(pos, System.IO.SeekOrigin.Begin);
+            stream.Seek(pos, System.IO.SeekOrigin.Begin);
 
             for (int i = 0; i < len; ++i)
                 stream.WriteByte(inject[i]);
 
             stream.SeekBits(cur, System.IO.SeekOrigin.Begin);
 
-            obj.MutatedValue = new Variant(obj.Value);
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            obj.MutatedValue = new Variant(stream);
+            obj.mutationFlags = MutateOverride.Default;
+            obj.mutationFlags |= MutateOverride.TypeTransform;
         }
     }
 }

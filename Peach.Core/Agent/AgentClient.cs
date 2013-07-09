@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent
 {
@@ -42,6 +43,7 @@ namespace Peach.Core.Agent
 	public delegate void AgentConnectClientEventHandler(AgentClient agent, string name, string url, string password);
 	public delegate void AgentDisconnectClientEventHandler(AgentClient agent);
 	public delegate void CreatePublisherClientEventHandler(AgentClient agent, string cls, SerializableDictionary<string, Variant> args);
+	public delegate void CreateBitwiseStreamClientEventHandler(AgentClient agent);
 	public delegate void StartMonitorClientEventHandler(AgentClient agent, string name, string cls, SerializableDictionary<string, Variant> args);
 	public delegate void StopMonitorClientEventHandler(AgentClient agent, string name);
 	public delegate void StopAllMonitorsClientEventHandler(AgentClient agent);
@@ -91,6 +93,13 @@ namespace Peach.Core.Agent
 		{
 			if (CreatePublisherEvent != null)
 				CreatePublisherEvent(this, cls, args);
+		}
+
+		public event CreateBitwiseStreamClientEventHandler CreateBitwiseStreamEvent;
+		protected void OnCreateBitwiseStreamEvent()
+		{
+			if (CreateBitwiseStreamEvent != null)
+				CreateBitwiseStreamEvent(this);
 		}
 
 		public event StartMonitorClientEventHandler StartMonitorEvent;
@@ -200,6 +209,12 @@ namespace Peach.Core.Agent
 		/// <param name="args">Arguments for publisher</param>
 		/// <returns>Instance of remote publisher</returns>
 		public abstract Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
+
+		/// <summary>
+		/// Creates a BitwiseStream on the remote agent
+		/// </summary>
+		/// <returns>Instance of BitwiseStream</returns>
+		public abstract BitwiseStream CreateBitwiseStream();
 
 		/// <summary>
 		/// Start a specific monitor

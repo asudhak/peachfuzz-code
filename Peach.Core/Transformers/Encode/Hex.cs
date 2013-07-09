@@ -27,10 +27,12 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using System.Security.Cryptography;
 
 namespace Peach.Core.Transformers.Encode
 {
@@ -40,55 +42,161 @@ namespace Peach.Core.Transformers.Encode
 	[Serializable]
 	public class Hex : Transformer
 	{
+		#region Hex Encoder Transform
+
+		class Encoder : ICryptoTransform
+		{
+			public bool CanReuseTransform
+			{
+				get { return true; }
+			}
+
+			public bool CanTransformMultipleBlocks
+			{
+				get { return false; }
+			}
+
+			public int InputBlockSize
+			{
+				get { return 1; }
+			}
+
+			public int OutputBlockSize
+			{
+				get { return 2; }
+			}
+
+			public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+			{
+				if ((outputBuffer.Length % 2) != 0)
+					throw new ArgumentOutOfRangeException("outputBuffer");
+				if ((outputOffset % 2) != 0)
+					throw new ArgumentOutOfRangeException("outputOffset");
+
+				int offset = outputOffset;
+				int end = inputOffset + inputCount;
+				for (int i = inputOffset; i < end; ++i)
+				{
+					outputBuffer[offset++] = GetChar(inputBuffer[i] >> 4);
+					outputBuffer[offset++] = GetChar(inputBuffer[i] & 0x0f);
+				}
+				return offset - outputOffset;
+			}
+
+			public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
+			{
+				var ret = new byte[inputCount * 2];
+				int len = TransformBlock(inputBuffer, inputOffset, inputCount, ret, 0);
+				System.Diagnostics.Debug.Assert(len == ret.Length);
+				return ret;
+			}
+
+			private byte GetChar(int nibble)
+			{
+				if (nibble > 0xf)
+					throw new ArgumentOutOfRangeException("nibble");
+
+				if (nibble < 0x0a)
+					return (byte)(nibble + 0x30);
+				else
+					return (byte)(nibble - 0x0a + 0x61);
+			}
+
+			public void Dispose()
+			{
+			}
+		}
+
+		#endregion
+
+		#region Hex Decoder Transform
+
+		class Decoder : ICryptoTransform
+		{
+			public bool CanReuseTransform
+			{
+				get { return true; }
+			}
+
+			public bool CanTransformMultipleBlocks
+			{
+				get { return false; }
+			}
+
+			public int InputBlockSize
+			{
+				get { return 2; }
+			}
+
+			public int OutputBlockSize
+			{
+				get { return 1; }
+			}
+
+			public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+			{
+				if ((inputCount % 2) != 0)
+					throw new ArgumentOutOfRangeException("inputCount");
+
+				int offset = outputOffset;
+				int end = inputOffset + inputCount;
+				for (int i = inputOffset; i < end; ++i)
+				{
+					outputBuffer[offset] = (byte)(GetNibble(inputBuffer[i++]) << 4);
+					outputBuffer[offset++] |= GetNibble(inputBuffer[i]);
+				}
+				return offset - outputOffset;
+			}
+
+			public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
+			{
+				if ((inputCount % 2) != 0)
+					throw new SoftException("Hex decode failed, invalid length.");
+
+				var ret = new byte[inputCount / 2];
+				var len = TransformBlock(inputBuffer, inputOffset, inputCount, ret, 0);
+				System.Diagnostics.Debug.Assert(len == ret.Length);
+				return ret;
+			}
+
+			private byte GetNibble(byte c)
+			{
+				if (c < '0')
+					throw new SoftException("Hex decode failed, invalid bytes.");
+				if (c <= '9')
+					return (byte)(c - '0');
+				if (c < 'A')
+					throw new SoftException("Hex decode failed, invalid bytes.");
+				if (c <= 'F')
+					return (byte)(c - 'A' + 0xA);
+				if (c < 'a')
+					throw new SoftException("Hex decode failed, invalid bytes.");
+				if (c <= 'f')
+					return (byte)(c - 'a' + 0xA);
+
+				throw new SoftException("Hex decode failed, invalid bytes.");
+			}
+
+			public void Dispose()
+			{
+			}
+		}
+
+		#endregion
+
 		public Hex(Dictionary<string, Variant> args)
 			: base(args)
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			var buf = data.Value;
-			StringBuilder sb = new StringBuilder(buf.Length * 2);
-
-			foreach (byte b in buf)
-				sb.AppendFormat("{0:x2}", b);
-
-			return new BitStream(Encoding.ASCII.GetBytes(sb.ToString()));
+			return CryptoStream(data, new Encoder(), CryptoStreamMode.Write);
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			var buf = data.Value;
-
-			if (buf.Length % 2 != 0)
-				//TODO: Transformer soft exception?
-				throw new Exception("Hex transfromer internalDecode failed: Invalid length.");
-
-			byte[] ret = new byte[buf.Length / 2];
-
-			for (int i = 0; i < buf.Length; i += 2)
-			{
-				int nibble1 = GetNibble(buf[i]);
-				int nibble2 = GetNibble(buf[i + 1]);
-
-				if (nibble1 < 0 || nibble1 > 0xF || nibble2 < 0 | nibble2 > 0xF)
-					//TODO: Transformer soft exception?
-					throw new Exception("Hex transfromer internalDecode failed: Invalid bytes.");
-
-				ret[i / 2] = (byte)((nibble1 << 4) | nibble2);
-			}
-
-			return new BitStream(ret);
-		}
-
-		private static int GetNibble(byte c)
-		{
-			if (c >= 'a')
-				return 0xA + (int)(c - 'a');
-			else if (c >= 'A')
-				return 0xA + (int)(c - 'A');
-			else
-				return (int)(c - '0');
+			return CryptoStream(data, new Decoder(), CryptoStreamMode.Read);
 		}
 	}
 }

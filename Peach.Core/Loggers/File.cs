@@ -38,6 +38,7 @@ using Peach.Core.Agent;
 using Peach.Core.Dom;
 
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Loggers
 {
@@ -136,6 +137,39 @@ namespace Peach.Core.Loggers
 			SaveFault(Category.Faults, fault);
 		}
 
+		// TODO: Figure out how to not do this!
+		private static byte[] ToByteArray(BitwiseStream data)
+		{
+			var length = (data.LengthBits + 7) / 8;
+			var buffer = new byte[length];
+			var offset = 0;
+			var count = buffer.Length;
+
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
+			int nread;
+			while ((nread = data.Read(buffer, offset, count)) != 0)
+			{
+				offset += nread;
+				count -= nread;
+			}
+
+			if (count != 0)
+			{
+				System.Diagnostics.Debug.Assert(count == 1);
+
+				ulong bits;
+				nread = data.ReadBits(out bits, 64);
+
+				System.Diagnostics.Debug.Assert(nread > 0);
+				System.Diagnostics.Debug.Assert(nread < 8);
+
+				buffer[offset] = (byte)(bits << (8 - nread));
+			}
+
+			return buffer;
+		}
+
 		private Fault combineFaults(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faults)
 		{
 			Fault ret = new Fault();
@@ -159,27 +193,10 @@ namespace Peach.Core.Loggers
 				throw new PeachException("Error, we should always have a fault with type = Fault!");
 
 			// Gather up data from the state model
-			int cnt = 0;
-			foreach (Dom.Action action in stateModel.dataActions)
+			foreach (var item in stateModel.dataActions)
 			{
-				logger.Debug("Saving action: " + action.name);
-
-				cnt++;
-				if (action.dataModel != null)
-				{
-					string fileName = string.Format("action_{0}_{1}_{2}.txt", cnt, action.type.ToString(), action.name);
-					ret.collectedData.Add(fileName, action.dataModel.Value.Value);
-				}
-				else if (action.parameters.Count > 0)
-				{
-					int pcnt = 0;
-					foreach (Dom.ActionParameter param in action.parameters)
-					{
-						pcnt++;
-						string fileName = string.Format("action_{0}-{1}_{2}_{3}.txt", cnt, pcnt, action.type.ToString(), action.name);
-						ret.collectedData.Add(fileName, param.dataModel.Value.Value);
-					}
-				}
+				logger.Debug("Saving action: " + item.Key);
+				ret.collectedData.Add(item.Key, ToByteArray(item.Value));
 			}
 
 			// Write out all collected data information

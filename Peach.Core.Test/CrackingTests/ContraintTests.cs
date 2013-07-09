@@ -59,17 +59,14 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 1, 2, 3, 4, 5 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.IsTrue(dom.dataModels[0][0] is Choice);
 			Assert.AreEqual("Blob5", ((Choice)dom.dataModels[0][0])[0].name);
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, ((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue.BitsToArray());
 		}
 
 		[Test]
@@ -87,17 +84,14 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 1, 2, 3, 4, 5 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 1, 2, 3, 4, 5 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.IsTrue(dom.dataModels[0][0] is Choice);
 			Assert.AreEqual("Blob10", ((Choice)dom.dataModels[0][0])[0].name);
-			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, (byte[])((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue);
+			Assert.AreEqual(new byte[] { 1, 2, 3, 4, 5 }, ((DataElementContainer)dom.dataModels[0][0])[0].DefaultValue.BitsToArray());
 		}
 
 		[Test]
@@ -116,10 +110,7 @@ namespace Peach.Core.Test.CrackingTests
 				PitParser parser = new PitParser();
 				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-				BitStream data = new BitStream();
-				data.LittleEndian();
-				data.WriteBytes(Encoding.ASCII.GetBytes("Hello"));
-				data.SeekBits(0, SeekOrigin.Begin);
+				var data = Bits.Fmt("{0}", "Hello");
 
 				DataCracker cracker = new DataCracker();
 				cracker.CrackData(dom.dataModels[0], data);

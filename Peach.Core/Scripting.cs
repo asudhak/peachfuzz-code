@@ -39,6 +39,7 @@ using Microsoft.Scripting.Hosting;
 using Microsoft.Scripting.Math;
 using System.Reflection;
 using System.IO;
+using Peach.Core.IO;
 
 namespace Peach.Core
 {
@@ -52,7 +53,7 @@ namespace Peach.Core
 	/// Scripting class provides easy to use
 	/// methods for using Python/Ruby with Peach.
 	/// </summary>
-	public class Scripting
+	public static class Scripting
 	{
 		static public ScriptingEngines DefaultScriptingEngine = ScriptingEngines.Python;
 		static public List<string> Imports = new List<string>();
@@ -63,7 +64,7 @@ namespace Peach.Core
 		private static class Engine
 		{
 			static public ScriptEngine Instance { get; private set; }
-			static public Dictionary<string, ScriptScope> Modules { get; private set; }
+			static public Dictionary<string, object> Modules { get; private set; }
 
 			static Engine()
 			{
@@ -81,7 +82,7 @@ namespace Peach.Core
 				Instance.SetSearchPaths(enginePaths);
 
 				// Import any modules
-				Modules = new Dictionary<string,ScriptScope>();
+				Modules = new Dictionary<string, object>();
 				foreach (string import in Imports)
 					if (!Modules.ContainsKey(import))
 						Modules.Add(import, Instance.ImportModule(import));
@@ -96,14 +97,9 @@ namespace Peach.Core
 
 			ScriptScope scope = Engine.Instance.CreateScope();
 
-			foreach (var kv in Engine.Modules)
-				scope.SetVariable(kv.Key, kv.Value);
-
-			foreach (var kv in GlobalScope)
-				scope.SetVariable(kv.Key, kv.Value);
-
-			foreach (var kv in localScope)
-				scope.SetVariable(kv.Key, kv.Value);
+			scope.Apply(Engine.Modules);
+			scope.Apply(GlobalScope);
+			scope.Apply(localScope);
 
 			try
 			{
@@ -130,14 +126,9 @@ namespace Peach.Core
 
 			ScriptScope scope = Engine.Instance.CreateScope();
 
-			foreach (var kv in Engine.Modules)
-				scope.SetVariable(kv.Key, kv.Value);
-
-			foreach (var kv in GlobalScope)
-				scope.SetVariable(kv.Key, kv.Value);
-
-			foreach (var kv in localScope)
-				scope.SetVariable(kv.Key, kv.Value);
+			scope.Apply(Engine.Modules);
+			scope.Apply(GlobalScope);
+			scope.Apply(localScope);
 
 			try
 			{
@@ -177,6 +168,36 @@ namespace Peach.Core
 				var names = scope.GetVariableNames().ToList();
 				foreach (var name in names)
 					scope.RemoveVariable(name);
+			}
+		}
+
+		private static void Apply(this ScriptScope scope, Dictionary<string, object> vars)
+		{
+			foreach (var item in vars)
+			{
+				string name = item.Key;
+				object value = item.Value;
+
+				var bs = value as BitwiseStream;
+				if (bs != null)
+				{
+					var buffer = new byte[bs.Length];
+					var offset = 0;
+					var count = buffer.Length;
+
+					bs.Seek(0, System.IO.SeekOrigin.Begin);
+
+					int nread;
+					while ((nread = bs.Read(buffer, offset, count)) != 0)
+					{
+						offset += nread;
+						count -= nread;
+					}
+
+					value = buffer;
+				}
+
+				scope.SetVariable(name, value);
 			}
 		}
 	}

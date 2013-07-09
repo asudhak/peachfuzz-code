@@ -240,7 +240,7 @@ namespace Peach.Core.Test
 
 			byte[] expected = new byte[] { 4, 0, 0, 0 };
 
-			Assert.AreEqual(expected, final.Value);
+			Assert.AreEqual(expected, final.ToArray());
 		}
 	}
 }

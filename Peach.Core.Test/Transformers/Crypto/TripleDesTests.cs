@@ -130,7 +130,7 @@ namespace Peach.Core.Test.Transformers.Crypto
             // verify values
             // -- this is the pre-calculated result on the blob: "Hello"
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(expected, values[0].Value);
+            Assert.AreEqual(expected, values[0].ToArray());
         }
     }
 }

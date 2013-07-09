@@ -11,17 +11,17 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using Peach.Core.Publishers;
 
 namespace Peach.Core.Test
 {
 	[TestFixture]
 	class RunTests
 	{
-		DateTime iterationStarted;
+		DateTime iterationStarted = DateTime.MinValue;
 		double iterationTimeSeconds = -1;
 
-		[Test]
-		public void TestWaitTime()
+		public void RunWaitTime(string waitTime, double min, double max)
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
 				"<Peach>" +
@@ -37,12 +37,15 @@ namespace Peach.Core.Test
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"Default\" waitTime=\"5\">" +
+				"   <Test name=\"Default\" waitTime=\"{0}\">".Fmt(waitTime) +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"Sequential\"/>" +
 				"   </Test>" +
 				"</Peach>";
+
+			iterationStarted = DateTime.MinValue;
+			iterationTimeSeconds = -1;
 
 			PitParser parser = new PitParser();
 
@@ -51,26 +54,33 @@ namespace Peach.Core.Test
 			dom.tests[0].includedMutators.Add("BlobMutator");
 
 			RunConfiguration config = new RunConfiguration();
-			config.singleIteration = true;
+			config.range = true;
+			config.rangeStart = 1;
+			config.rangeStop = 1;
 
 			Engine e = new Engine(null);
 			e.IterationStarting += new Engine.IterationStartingEventHandler(e_IterationStarting);
-			e.IterationFinished += new Engine.IterationFinishedEventHandler(e_IterationFinished);
 			e.startFuzzing(dom, config);
 
 			// verify values
-			Assert.GreaterOrEqual(5, iterationTimeSeconds);
-		}
-		void e_IterationFinished(RunContext context, uint currentIteration)
-		{
-			iterationTimeSeconds = (DateTime.Now - this.iterationStarted).TotalSeconds;
+			Assert.GreaterOrEqual(iterationTimeSeconds, min);
+			Assert.LessOrEqual(iterationTimeSeconds, max);
 		}
 
 		void e_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
-			this.iterationStarted = DateTime.Now;
+			if (this.iterationStarted == DateTime.MinValue)
+				this.iterationStarted = DateTime.Now;
+			else
+				this.iterationTimeSeconds = (DateTime.Now - this.iterationStarted).TotalSeconds;
 		}
 
+		[Test]
+		public void TestWaitTime()
+		{
+			RunWaitTime("2", 2.0, 2.1);
+			RunWaitTime("0.1", 0.1, 0.2);
+		}
 
 		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0)
 		{
@@ -482,5 +492,67 @@ namespace Peach.Core.Test
 
 		}
 
+		internal class WantBytesPub : StreamPublisher
+		{
+			static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+			protected override NLog.Logger Logger
+			{
+				get { return logger; }
+			}
+
+
+			public WantBytesPub(string name, Dictionary<string, Variant> args)
+				: base(args)
+			{
+				stream = new MemoryStream();
+			}
+
+			public override void WantBytes(long count)
+			{
+				if (stream.Length == 0)
+				{
+					stream.Write(Encoding.ASCII.GetBytes("12345678"), 0, 8);
+					stream.Seek(0, SeekOrigin.Begin);
+				}
+			}
+		}
+
+		[Test]
+		public void WantBytes()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Blob/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='initial'>
+		<State name='initial'>
+			<Action type='input'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].publishers[0] = new WantBytesPub("", new Dictionary<string, Variant>());
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var value = dom.tests[0].stateModel.states["initial"].actions[0].dataModel.Value;
+			Assert.AreEqual(8, value.Length);
+		}
 	}
 }

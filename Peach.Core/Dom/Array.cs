@@ -60,7 +60,6 @@ namespace Peach.Core.Dom
 		public int occurs = 1;
 
 		public bool hasExpanded = false;
-		public int? overrideCount = null;
 
 		public DataElement origionalElement = null;
 
@@ -98,7 +97,7 @@ namespace Peach.Core.Dom
 
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
-			long startPos = data.TellBits();
+			long startPos = data.PositionBits;
 			BitStream sizedData = ReadSizedData(data, size);
 
 			if (this.Count > 0)
@@ -128,7 +127,7 @@ namespace Peach.Core.Dom
 				logger.Debug("Crack: ======================");
 				logger.Debug("Crack: {0} Trying #{1}", origionalElement.debugName, i+1);
 
-				long pos = sizedData.TellBits();
+				long pos = sizedData.PositionBits;
 				if (pos == sizedData.LengthBits)
 				{
 					logger.Debug("Crack: Consumed all bytes. {0}", sizedData.Progress);
@@ -143,7 +142,7 @@ namespace Peach.Core.Dom
 					context.CrackData(clone, sizedData);
 
 					// If we used 0 bytes and met the minimum, we are done
-					if (pos == sizedData.TellBits() && i == min)
+					if (pos == sizedData.PositionBits && i == min)
 					{
 						RemoveAt(clone.parent.IndexOf(clone));
 						break;
@@ -170,7 +169,7 @@ namespace Peach.Core.Dom
 			}
 
 			if (size.HasValue && data != sizedData)
-				data.SeekBits(startPos + sizedData.TellBits(), System.IO.SeekOrigin.Begin);
+				data.SeekBits(startPos + sizedData.PositionBits, System.IO.SeekOrigin.Begin);
 		}
 
 		public new static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -238,12 +237,12 @@ namespace Peach.Core.Dom
 
 
 			var bs = new BitStream();
-			bs.Write(item.Value);
-			bs.ClearElementPositions();
+			item.Value.SeekBits(0, System.IO.SeekOrigin.Begin);
+			item.Value.CopyTo(bs);
 
 			var clone = item.Clone();
 			clone.MutatedValue = new Variant(bs);
-			clone.mutationFlags = DataElement.MUTATE_DEFAULT | DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+			clone.mutationFlags = MutateOverride.Default | MutateOverride.TypeTransform;
 
 			// Force the same element to be duplicated in the DataElementContainer
 			for (int i = Count; i < num; ++i)

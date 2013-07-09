@@ -34,6 +34,7 @@ using System.Text;
 using Peach.Core.Dom;
 using NLog;
 using Peach.Core.Agent;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent.Channels
 {
@@ -73,6 +74,11 @@ namespace Peach.Core.Agent.Channels
 		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
 		{
 			return agent.CreatePublisher(cls, args);
+		}
+
+		public override BitwiseStream CreateBitwiseStream()
+		{
+			return agent.CreateBitwiseStream();
 		}
 
 		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)

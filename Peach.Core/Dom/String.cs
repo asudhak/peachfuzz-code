@@ -110,15 +110,17 @@ namespace Peach.Core.Dom
 			try
 			{
 				StringBuilder sb = new StringBuilder();
-				int bufLen = 1;
 				char[] chars = new char[1];
+				byte[] buf = new byte[1];
 				var dec = encoding.GetDecoder();
 
 				while (maxCount == -1 || sb.Length < maxCount)
 				{
-					data.WantBytes(bufLen);
+					data.WantBytes(buf.Length);
 
-					if (data.TellBytes() >= data.LengthBytes)
+					int len = data.Read(buf, 0, buf.Length);
+
+					if (len == 0)
 					{
 						string msg = "";
 						if (!stopOnNull)
@@ -128,8 +130,6 @@ namespace Peach.Core.Dom
 								" could only crack '" + sb.Length + msg + "' characters " +
 								"before exhausting the input buffer.", this, data);
 					}
-
-					var buf = data.ReadBytes(bufLen);
 
 					if (dec.GetChars(buf, 0, buf.Length, chars, 0) == 0)
 						continue;
@@ -253,11 +253,24 @@ namespace Peach.Core.Dom
 		{
 			string final = null;
 
-			if (value.GetVariantType() == Variant.VariantType.BitStream || value.GetVariantType() == Variant.VariantType.ByteString)
+			if (value.GetVariantType() == Variant.VariantType.ByteString)
 			{
 				try
 				{
 					final = encoding.GetString((byte[])value);
+				}
+				catch (DecoderFallbackException)
+				{
+					throw new PeachException("Error, " + debugName + " value contains invalid " + stringType + " bytes.");
+				}
+			}
+			if (value.GetVariantType() == Variant.VariantType.BitStream)
+			{
+				try
+				{
+					var rdr = new BitReader((BitwiseStream)value);
+					rdr.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
+					final = rdr.ReadString(encoding);
 				}
 				catch (DecoderFallbackException)
 				{
@@ -470,22 +483,23 @@ namespace Peach.Core.Dom
 				debugName, value, _length, _lengthType.ToString().ToLower().TrimEnd('s'), _type));
 		}
 
-		protected override BitStream InternalValueToBitStream()
+		protected override BitwiseStream InternalValueToBitStream()
 		{
-			if ((mutationFlags & DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0 && MutatedValue != null)
+			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
-			string str = TryFormatNumber(InternalValue);
-
-			var bs = new BitStream(encoding.GetRawBytes(str));
+			var str = TryFormatNumber(InternalValue);
+			var buf = encoding.GetRawBytes(str);
+			var bs = new BitStream();
+			bs.Write(buf, 0, buf.Length);
 
 			if (!_hasLength && nullTerminated)
 			{
-				bs.SeekBits(0, System.IO.SeekOrigin.End);
-				bs.WriteBytes(encoding.GetRawBytes("\0"));
-				bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+				buf = encoding.GetRawBytes("\0");
+				bs.Write(buf, 0, buf.Length);
 			}
 
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			return bs;
 		}
 
@@ -541,7 +555,7 @@ namespace Peach.Core.Dom
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return Value.LengthBytes;
+							return Value.Length;
 						case LengthType.Bits:
 							return Value.LengthBits;
 						case LengthType.Chars:

@@ -14,7 +14,7 @@ deps = [
 	'NLog.dll',
 	'SharpPcap.dll',
 	'ZeroMQ.dll',
-	'Ionic.Zip.dll',
+	'Ionic.Zip.Reduced.dll',
 	
 	'IronPython.dll',
 	'IronRuby.dll',

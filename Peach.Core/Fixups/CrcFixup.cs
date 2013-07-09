@@ -64,11 +64,13 @@ namespace Peach.Core.Fixups
 		protected override Variant fixupImpl()
 		{
 			var elem = elements["ref"];
-			byte[] data = elem.Value.Value;
+			var data = elem.Value;
+
+			data.Seek(0, System.IO.SeekOrigin.Begin);
 
 			CRCTool crcTool = new CRCTool();
 			crcTool.Init(type);
-		
+
 			return new Variant((uint)crcTool.crctablefast(data));
 		}
 	}

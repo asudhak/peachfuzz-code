@@ -87,9 +87,9 @@ namespace Peach.Core.Test.PitParserTests
 				else
 					Assert.AreEqual(value, (ulong)num.DefaultValue);
 			}
-			BitStream val = num.Value;
+			BitwiseStream val = num.Value;
 			Assert.AreEqual(size, val.LengthBits);
-			Assert.AreEqual(expected, val.Value);
+			Assert.AreEqual(expected, val.ToArray());
 		}
 
 		[Test]
@@ -204,11 +204,8 @@ namespace Peach.Core.Test.PitParserTests
 			var final = num.Value;
 			Assert.NotNull(final);
 			Assert.AreEqual(12, final.LengthBits);
-			Assert.AreEqual(2, final.LengthBytes);
-			MemoryStream ms = final.Stream as MemoryStream;
-			Assert.NotNull(ms);
-			Assert.AreEqual(0, ms.GetBuffer()[0]);
-			Assert.AreEqual(0, ms.GetBuffer()[1]);
+			Assert.AreEqual(1, final.Length);
+			Assert.AreEqual(new byte[] { 0, 0 }, final.ToArray());
 		}
 
 		[Test]
@@ -228,9 +225,9 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(true, num.Signed);
 			Assert.AreEqual(false, num.LittleEndian);
 			Assert.AreEqual(0x01020304, (int)num.DefaultValue);
-			BitStream val = num.Value;
+			BitwiseStream val = num.Value;
 			Assert.AreEqual(32, val.LengthBits);
-			Assert.AreEqual(new byte[]{0x01, 0x02, 0x03, 0x04}, val.Value);
+			Assert.AreEqual(new byte[] { 0x01, 0x02, 0x03, 0x04 }, val.ToArray());
 		}
 
 		private void DoHexParse(bool throws, string value, int size)
@@ -259,7 +256,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(true, num.Signed);
 			Assert.AreEqual(false, num.LittleEndian);
 			Assert.AreNotEqual(0, (long)num.DefaultValue);
-			BitStream val = num.Value;
+			BitwiseStream val = num.Value;
 			Assert.AreEqual(size, val.LengthBits);
 		}
 

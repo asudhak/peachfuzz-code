@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -17,9 +18,9 @@ namespace Peach.Core.Publishers
 		{
 		}
 
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
-			Utilities.HexDump(buffer, offset, count, stream, BytesPerLine);
+			Utilities.HexDump(data, stream, BytesPerLine);
 		}
 	}
 }

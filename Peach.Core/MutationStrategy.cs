@@ -203,7 +203,7 @@ namespace Peach.Core
 		/// <returns>Returns true or false</returns>
 		protected bool SupportedDataElement(Type mutator, DataElement elem)
 		{
-			MethodInfo supportedDataElement = mutator.GetMethod("supportedDataElement");
+			MethodInfo supportedDataElement = mutator.GetMethod("supportedDataElement", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
 			object[] args = new object[1];
 			args[0] = elem;
@@ -219,7 +219,7 @@ namespace Peach.Core
 		/// <returns>Returns true or false</returns>
 		protected bool SupportedState(Type mutator, State elem)
 		{
-			MethodInfo supportedState = mutator.GetMethod("supportedState");
+			MethodInfo supportedState = mutator.GetMethod("supportedState", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 			if (supportedState == null)
 				return false;
 

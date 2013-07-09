@@ -71,7 +71,7 @@ namespace Peach.Core.Test.Mutators
             foreach (var item in mutations)
             {
                 Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
-                Assert.NotNull((byte[])item);
+                Assert.NotNull((BitwiseStream)item);
             }
         }
 
@@ -133,7 +133,7 @@ namespace Peach.Core.Test.Mutators
             foreach (var item in mutations)
             {
                 Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
-                Assert.NotNull((byte[])item);
+                Assert.NotNull((BitwiseStream)item);
             }
         }
 
@@ -155,7 +155,7 @@ namespace Peach.Core.Test.Mutators
 				stream = new MemoryStream(buffer);
 			}
 
-			protected override void OnOutput(byte[] buffer, int offset, int count)
+			protected override void OnOutput(BitwiseStream data)
 			{
 			}
 		}

@@ -112,6 +112,11 @@ namespace Peach.Core.Publishers
 
 			stream = null;
 		}
+
+		protected override void OnOutput(BitwiseStream data)
+		{
+			data.CopyTo(stream, BitwiseStream.BlockCopySize);
+		}
 	}
 }
 

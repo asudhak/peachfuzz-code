@@ -121,8 +121,7 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(dataBytes);
+			data.Write(dataBytes, 0, dataBytes.Length);
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
@@ -166,8 +165,7 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(dataBytes);
+			data.Write(dataBytes, 0, dataBytes.Length);
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
@@ -216,8 +214,7 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
 			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(dataBytes);
+			data.Write(dataBytes, 0, dataBytes.Length);
 			data.SeekBits(0, SeekOrigin.Begin);
 
 			DataCracker cracker = new DataCracker();
@@ -241,9 +238,7 @@ namespace Peach.Core.Test
 			<Relation of='OBJECT' type='size'/>
 		</Number>
 
-		<String name='FILENAME' occurs='1' nullTerminated='false'>
-			<Transformer class='encode.Utf16'/>
-		</String>
+		<String name='FILENAME' occurs='1' type='utf16' nullTerminated='false'/>
 
 		<Block name='OBJECT' occurs='1'>
 			<String value='END_MARKER'/>
@@ -257,14 +252,7 @@ namespace Peach.Core.Test
 			byte[] FILENAME = Encoding.Unicode.GetBytes("sample_mpeg4.mp4");
 			byte[] OBJECT = Encoding.ASCII.GetBytes("END_MARKER");
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(Encoding.ASCII.GetBytes("START_MARKER"));
-			data.WriteInt16((short)FILENAME.Length);
-			data.WriteInt32(OBJECT.Length);
-			data.WriteBytes(FILENAME);
-			data.WriteBytes(OBJECT);
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}{1:L16}{2:L32}{3}{4}", "START_MARKER", FILENAME.Length, OBJECT.Length, FILENAME, OBJECT);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);

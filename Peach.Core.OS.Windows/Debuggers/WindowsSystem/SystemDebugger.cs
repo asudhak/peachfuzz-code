@@ -438,27 +438,18 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			var Exception = DebugEv.u.Exception;
 
 			if (logger.IsTraceEnabled)
-				logger.Trace("  {0}", ExceptionToString(Exception));
+				logger.Trace("  Pid: {0}, Exception: {1}", DebugEv.dwProcessId, ExceptionToString(Exception));
 
 			bool notify = DebugEv.dwProcessId == this.dwProcessId && HandleAccessViolation != null;
 
+			// First chance: Pass this on to the system. 
+			// Last chance: Display an appropriate error. 
 			if (Exception.dwFirstChance == 0 && notify)
-			{
-				HandleAccessViolation(DebugEv);
-				notify = false;
 				result = DBG_CONTINUE;
-			}
 
 			switch (Exception.ExceptionRecord.ExceptionCode)
 			{
-				case EXCEPTION_ACCESS_VIOLATION:
-					// First chance: Pass this on to the system. 
-					// Last chance: Display an appropriate error. 
-					if (notify)
-						HandleAccessViolation(DebugEv);
-
-					break;
-
+				case STATUS_WX86_BREAKPOINT:
 				case EXCEPTION_BREAKPOINT:
 					// From: http://stackoverflow.com/questions/3799294/im-having-problems-with-waitfordebugevent-exception-debug-event
 					// If launch a process and expect to debug it using the Windows API calls,
@@ -470,6 +461,11 @@ namespace Peach.Core.Debuggers.WindowsSystem
 						result = DBG_CONTINUE;
 
 					initialBreak = true;
+					break;
+
+				default:
+					if (notify)
+						HandleAccessViolation(DebugEv);
 					break;
 			}
 

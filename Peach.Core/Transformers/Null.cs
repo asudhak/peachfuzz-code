@@ -14,18 +14,18 @@ namespace Peach.Core.Transformers
 	public class Null : Transformer
 	{
 		public Null(Dictionary<string, Variant> args)
-            : base(args)
-        {
-        }
+			: base(args)
+		{
+		}
 
-        protected override BitStream internalEncode(BitStream data)
-        {
+		protected override BitwiseStream internalEncode(BitwiseStream data)
+		{
 			return data;
-        }
+		}
 
-        protected override BitStream internalDecode(BitStream data)
-        {
+		protected override BitStream internalDecode(BitStream data)
+		{
 			return data;
-        }
+		}
 	}
 }

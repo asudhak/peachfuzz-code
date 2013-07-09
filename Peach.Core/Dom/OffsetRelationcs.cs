@@ -183,21 +183,17 @@ namespace Peach.Core.Dom
 						from.fullName + "' and '" + to.fullName + "'.");
 				}
 
-				BitStream stream = commonAncestor.Value;
+				BitwiseStream stream = commonAncestor.Value;
 				if (from != commonAncestor)
 				{
-					if (!stream.HasDataElement(from.fullName))
+					if (!stream.TryGetPosition(from.fullName, out fromPosition))
 						throw new PeachException("Error, unable to calculate offset between '" +
 							from.fullName + "' and '" + to.fullName + "'.");
-
-					fromPosition = stream.DataElementPosition(from);
 				}
 
-				if (!stream.HasDataElement(to.fullName))
+				if (!stream.TryGetPosition(to.fullName, out toPosition))
 					throw new PeachException("Error, unable to calculate offset between '" +
 						from.fullName + "' and '" + to.fullName + "'.");
-
-				toPosition = stream.DataElementPosition(to);
 			}
 			else
 			{
@@ -206,14 +202,12 @@ namespace Peach.Core.Dom
 					throw new PeachException("Error, unable to calculate offset between '" +
 						from.fullName + "' and '" + to.fullName + "'.");
 
-				BitStream stream = commonAncestor.Value;
+				BitwiseStream stream = commonAncestor.Value;
 				fromPosition = 0;
 
-				if (!stream.HasDataElement(to.fullName))
+				if (!stream.TryGetPosition(to.fullName, out toPosition))
 					throw new PeachException("Error, unable to calculate offset between '" +
 						from.fullName + "' and '" + to.fullName + "'.");
-
-				toPosition = stream.DataElementPosition(to);
 			}
 
 			return toPosition - fromPosition;
@@ -273,11 +267,25 @@ namespace Peach.Core.Dom
 			if (string.IsNullOrEmpty(relativeTo))
 				return;
 
+			Relation.Metadata m = null;
+
+			object obj;
+			if (ctx.metadata.TryGetValue(this, out obj))
+				m = (Relation.Metadata)obj;
+
 			var from = _from;
-			if (_from == null)
+			if (from == null && m != null)
+				from = m.from;
+
+			if (from == null)
 			{
-				if (_fromName != null)
-					from = parent.find(_fromName);
+				// If we are being cloned, but our parent is not, the parent
+				// gets moved into the metadata
+				var fromName = (m != null && m.fromName != null) ? m.fromName : _fromName;
+				var parent = (m != null && m.parent != null) ? m.parent : _parent;
+
+				if (fromName != null)
+					from = parent.find(fromName);
 				else
 					from = parent;
 			}

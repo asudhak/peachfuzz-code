@@ -131,7 +131,7 @@ namespace Peach.Core.Test.Mutators
             {
                 var item = mutations[i];
                 Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
-                Assert.AreEqual(expected[i], (byte[])item);
+                Assert.AreEqual(expected[i], ((BitwiseStream)item).ToArray());
             }
         }
 
@@ -190,7 +190,7 @@ namespace Peach.Core.Test.Mutators
             int max = int.MinValue;
             for (int i = 0; i < 999; ++i)
             {
-                var item = (byte[])mutations[i];
+                var item = ((BitwiseStream)mutations[i]).ToArray();
                 if (item.Length == 0)
                     continue;
 
@@ -260,7 +260,7 @@ namespace Peach.Core.Test.Mutators
 			{
 				var item = mutations[i];
 				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
-				Assert.AreEqual(expected[i], (byte[])item);
+				Assert.AreEqual(expected[i], ((BitwiseStream)item).ToArray());
 			}
 		}
 

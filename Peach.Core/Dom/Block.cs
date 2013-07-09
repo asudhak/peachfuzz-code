@@ -120,14 +120,13 @@ namespace Peach.Core.Dom
 
 			if (_mutatedValue == null)
 			{
-				BitStream stream = new BitStream();
-				foreach (DataElement child in this)
-					stream.Write(child.Value, child);
-
-				// TODO - Remove this debugging code!
-				//if (stream.TellBytes() != stream.Value.Length)
-				//    throw new ApplicationException("Whoa, something is way off here: " +
-				//        stream.TellBytes() + " != " + stream.Value.Length);
+				var stream = new BitStreamList();
+				foreach (var child in this)
+				{
+					var val = child.Value;
+					val.Name = child.fullName;
+					stream.Add(val);
+				}
 
 				value = new Variant(stream);
 			}
@@ -138,7 +137,7 @@ namespace Peach.Core.Dom
 
 			// 2. Relations
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			if (_mutatedValue != null && mutationFlags.HasFlag(MutateOverride.Relations))
 			{
 				return MutatedValue;
 			}
@@ -159,7 +158,7 @@ namespace Peach.Core.Dom
 
 			// 3. Fixup
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			if (_mutatedValue != null && mutationFlags.HasFlag(MutateOverride.Fixup))
 			{
 				return MutatedValue;
 			}

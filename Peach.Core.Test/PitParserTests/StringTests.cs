@@ -62,9 +62,9 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(3, value.LengthBytes);
-			Assert.AreEqual(Encoding.ASCII.GetBytes("abc"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(3, value.Length);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("abc"), value.ToArray());
 		}
 
 		[Test]
@@ -84,8 +84,8 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.utf7, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(Encoding.UTF7.GetBytes("abc"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(Encoding.UTF7.GetBytes("abc"), value.ToArray());
 		}
 
 		[Test]
@@ -105,8 +105,8 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.utf8, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(Encoding.UTF8.GetBytes("abc"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(Encoding.UTF8.GetBytes("abc"), value.ToArray());
 		}
 
 		[Test]
@@ -126,8 +126,8 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.utf16, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(Encoding.Unicode.GetBytes("abc"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(Encoding.Unicode.GetBytes("abc"), value.ToArray());
 		}
 
 		[Test]
@@ -147,8 +147,8 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.utf16be, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(Encoding.BigEndianUnicode.GetBytes("abc"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(Encoding.BigEndianUnicode.GetBytes("abc"), value.ToArray());
 		}
 
 		[Test]
@@ -168,8 +168,8 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.utf32, str.stringType);
 			Assert.AreEqual("abc", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(Encoding.UTF32.GetBytes("abc"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(Encoding.UTF32.GetBytes("abc"), value.ToArray());
 		}
 
 		[Test]
@@ -226,9 +226,9 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.utf32, str.stringType);
 			Assert.AreEqual("Hello", (string)str.DefaultValue);
 
-			BitStream value = str.Value;
-			Assert.AreEqual(20, value.LengthBytes);
-			Assert.AreEqual(Encoding.UTF32.GetBytes("Hello"), value.Value);
+			BitwiseStream value = str.Value;
+			Assert.AreEqual(20, value.Length);
+			Assert.AreEqual(Encoding.UTF32.GetBytes("Hello"), value.ToArray());
 		}
 
 		[Test]
@@ -272,7 +272,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(expected, (string)str.DefaultValue);
 			Assert.AreEqual(expected, (string)str.InternalValue);
 
-			var val = str.Value.Value;
+			var val = str.Value.ToArray();
 
 			Assert.AreEqual(finalLen, val.Length);
 			Assert.AreEqual(expected, Encoding.GetEncoding(enc).GetString(val));
@@ -411,7 +411,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(Dom.StringType.ascii, str.stringType);
 			Assert.AreEqual(Variant.VariantType.String, str.DefaultValue.GetVariantType());
 			Assert.AreEqual("Hello World", (string)str.DefaultValue);
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello World\0"), str.Value.Value);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello World\0"), str.Value.ToArray());
 		}
 
 		[Test]

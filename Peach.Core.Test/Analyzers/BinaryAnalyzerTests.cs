@@ -64,31 +64,32 @@ namespace Peach.Core.Test.Analyzers
 
             Random rnd = new Random(123);
 
-            BitStream data = new BitStream();
+            BitStream bs = new BitStream();
+            BitWriter data = new BitWriter(bs);
             data.LittleEndian();
 
             for (int cnt = 0; cnt < 100; cnt++)
                 data.WriteInt32(rnd.NextInt32());
 
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
+            data.WriteString("Hello World");
 
             for (int cnt = 0; cnt < 100; cnt++)
                 data.WriteInt32(rnd.NextInt32());
 
-            data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Peach Fuzzer"));
+            data.WriteString("Peach Fuzzer");
 
             for (int cnt = 0; cnt < 100; cnt++)
                 data.WriteInt32(rnd.NextInt32());
-            
-            data.SeekBits(0, SeekOrigin.Begin);
+
+            bs.SeekBits(0, SeekOrigin.Begin);
 
             DataCracker cracker = new DataCracker();
-            cracker.CrackData(dom.dataModels[0], data);
-            data.SeekBytes(0, SeekOrigin.Begin);
+            cracker.CrackData(dom.dataModels[0], bs);
+            bs.Seek(0, SeekOrigin.Begin);
 
             Assert.IsTrue(dom.dataModels["TheDataModel"][0] is Block);
             Assert.AreEqual("TheBlob", dom.dataModels["TheDataModel"][0].name);
-            Assert.AreEqual(data.Value, dom.dataModels["TheDataModel"].Value.Value);
+            Assert.AreEqual(bs.ToArray(), dom.dataModels["TheDataModel"].Value.ToArray());
 
             var block = dom.dataModels["TheDataModel"][0] as Block;
             Assert.IsTrue(block[5] is Dom.String);

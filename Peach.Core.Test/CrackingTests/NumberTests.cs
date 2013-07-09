@@ -58,24 +58,14 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteInt8(16);
-			data.WriteInt16(3000);
-			data.WriteInt8(25);
-			data.SeekBits(0, SeekOrigin.Begin);
-
-			Assert.AreEqual(16, data.ReadInt8());
-			Assert.AreEqual(3000, data.ReadInt16());
-			Assert.AreEqual(25, data.ReadInt8());
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1:L16}{2:L8}", 0x10, 0xbb8, 0x19);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			Assert.AreEqual(16, (int)dom.dataModels[0][0].DefaultValue);
-			Assert.AreEqual(3000, (int)dom.dataModels[0][1].DefaultValue);
-			Assert.AreEqual(25, (int)dom.dataModels[0][2].DefaultValue);
+			Assert.AreEqual(0x10, (int)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual(0xbb8, (int)dom.dataModels[0][1].DefaultValue);
+			Assert.AreEqual(0x19, (int)dom.dataModels[0][2].DefaultValue);
 		}
 
 		[Test]
@@ -93,7 +83,7 @@ namespace Peach.Core.Test.CrackingTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream(new byte[]{ 0xff, 0xff });
+			var data = Bits.Fmt("{0}", (ushort)0xffff);
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);

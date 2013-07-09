@@ -58,7 +58,7 @@ namespace Peach.Core.Test
 
 			Assert.AreEqual(4, dom.dataModels.Count);
 			var dm = dom.dataModels[3];
-			var val = dm.Value.Value;
+			var val = dm.Value.ToArray();
 
 			byte[] expected = Encoding.ISOLatin1.GetBytes("\x00\x00\x00\x0b\xa1\x43\xe2\x68Hello World");
 			Assert.AreEqual(expected, val);

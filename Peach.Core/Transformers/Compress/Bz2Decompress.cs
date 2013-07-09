@@ -48,32 +48,43 @@ namespace Peach.Core.Transformers.Compress
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
-			MemoryStream sin = new MemoryStream((byte[])data.Value);
-			MemoryStream sout = new MemoryStream();
+			BitStream ret = new BitStream();
 
-			try
+			using (var bzip2 = new BZip2InputStream(data, true))
 			{
-				BZip2InputStream bzip2 = new BZip2InputStream(sin);
-				bzip2.CopyTo(sout);
-			}
-			catch
-			{
+				try
+				{
+					// For some reason, Ionic decided the BZip2InputStream
+					// should return -1 from Read() when EOF is reached.  This
+					// breaks Stream.CopyTo() as it expects 0 on EOF.
+					// We need to use ReadByte() instead.
+					int val;
+					while ((val = bzip2.ReadByte()) != -1)
+						ret.WriteByte((byte)val);
+				}
+				catch (Exception ex)
+				{
+					throw new SoftException("Could not BZip decompress data.", ex);
+				}
 			}
 
-			return new BitStream(sout.ToArray());
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 
 		protected override BitStream internalDecode(BitStream data)
 		{
-			MemoryStream sin = new MemoryStream((byte[])data.Value);
-			MemoryStream sout = new MemoryStream();
-			BZip2OutputStream bzip2 = new BZip2OutputStream(sout);
-			sin.CopyTo(bzip2);
-			bzip2.Dispose();
+			BitStream ret = new BitStream();
 
-			return new BitStream(sout.ToArray());
+			using (var bzip2 = new BZip2OutputStream(ret, true))
+			{
+				data.CopyTo(bzip2);
+			}
+
+			ret.Seek(0, SeekOrigin.Begin);
+			return ret;
 		}
 	}
 }

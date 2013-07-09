@@ -62,7 +62,7 @@ namespace Peach.Core.Test.Fixups
             };
 
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcChecksum, values[0].Value);
+            Assert.AreEqual(precalcChecksum, values[0].ToArray());
         }
     }
 }

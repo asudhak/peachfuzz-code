@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 
 using NLog;
@@ -16,6 +15,7 @@ using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.Cracker;
 using Peach.Core.IO;
+using System.Text.RegularExpressions;
 
 namespace Peach
 {
@@ -28,7 +28,7 @@ namespace Peach
 
 		public override void WriteLine(string message)
 		{
-			StringBuilder sb = new StringBuilder();
+			var sb = new System.Text.StringBuilder();
 
 			sb.AppendLine("Assertion " + message);
 			sb.AppendLine(new System.Diagnostics.StackTrace(2, true).ToString());
