@@ -97,9 +97,8 @@ namespace Peach.Core.Test
 			Assert.AreEqual(fromRel.From, fromElem);
 			Assert.AreEqual(fromRel.Of, ofElem);
 
-			long size = 0;
 			Assert.AreEqual("Final.blk1.Length", fromRel.parent.fullName);
-			DataElement foo = fromRel.parent.Clone("Length_1", ref size);
+			DataElement foo = fromRel.parent.Clone("Length_1");
 			fromRel.parent.parent.Insert(fromRel.parent.parent.IndexOf(fromRel.parent), foo);
 
 			// Cloning Final.blk1.Length into Length_1 should yeild:
@@ -147,10 +146,6 @@ namespace Peach.Core.Test
 			IFormatter formatter = new BinaryFormatter();
 			Stream stream = new MemoryStream();
 			formatter.Serialize(stream, fromRel.parent);
-			long lenSimple = stream.Length;
-
-			Assert.GreaterOrEqual(lenSimple, size);
-			Assert.LessOrEqual(size, 5200);
 		}
 
 		[Test]

@@ -381,179 +381,34 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-		protected class Metadata
+		[OnCloned]
+		private void OnCloned(Relation original, object context)
 		{
-			public DataElement of = null;
-			public DataElement from = null;
-			public DataElement parent = null;
-			public string ofName = null;
-			public string fromName = null;
-		}
-
-		[Serializable]
-		private class FullNames
-		{
-			public string of = null;
-			public string from = null;
-			public string parent = null;
-		}
-
-		private FullNames _fullNames = null;
-
-		[OnSerializing]
-		private void OnSerializing(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			if (DataElement.DebugClone)
-				logger.Debug("Serializing From={0}, Of={1}",
-					_of == null ? "(null) " + _ofName : _of.fullName,
-					_from == null ? "(null) " + _fromName : _from.fullName);
-
-			System.Diagnostics.Debug.Assert(_fullNames == null);
-			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
-
-			string relName;
-			_fullNames = new FullNames();
-			Metadata m = new Metadata();
-
-			if (ctx.rename.Contains(_of))
-			{
-				m.ofName = _ofName;
-				_ofName = ctx.newName;
-			}
-			else if (_of != null && !_of.isChildOf(ctx.root, out relName))
-			{
-				_fullNames.of = relName;
-				ctx.elements[_fullNames.of] = _of;
-				m.of = _of;
-				_of = null;
-			}
-			else if (_ofName == ctx.oldName && parent.find(_ofName) == null)
-			{
-				if (_of == null && ctx.oldName == _ofName)
-					_of = ctx.root;
-
-				m.ofName = _ofName;
-				_ofName = ctx.newName;
-			}
-
-			if (ctx.rename.Contains(_from))
-			{
-				m.fromName = _fromName;
-				_fromName = ctx.newName;
-			}
-			else if (_from != null && !_from.isChildOf(ctx.root, out relName))
-			{
-				_fullNames.from = relName;
-				ctx.elements[_fullNames.from] = _from;
-				m.from = _from;
-				_from = null;
-			}
-			else if (_fromName == ctx.oldName && parent.find(_fromName) == null)
-			{
-				if (_from == null && ctx.oldName == _fromName)
-					_from = ctx.root;
-
-				m.fromName = _fromName;
-				_fromName = ctx.newName;
-			}
-
-			if (ctx.rename.Contains(_parent))
-			{
-				if (_of == null && _ofName == ctx.oldName)
-				{
-					m.ofName = _ofName;
-					_ofName = ctx.newName;
-				}
-				if (_from == null && _fromName == ctx.oldName)
-				{
-					m.fromName = _fromName;
-					_fromName = ctx.newName;
-				}
-			}
-			else if (_parent != null && !_parent.isChildOf(ctx.root, out relName))
-			{
-				_fullNames.parent = relName;
-				ctx.elements[_fullNames.parent] = _parent;
-				m.parent = _parent;
-				_parent = null;
-			}
-
-			if (m.from != null || m.of != null || m.parent != null || m.ofName != null || m.fromName != null)
-				ctx.metadata.Add(this, m);
-		}
-
-		[OnSerialized]
-		private void OnSerialized(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			System.Diagnostics.Debug.Assert(_fullNames != null);
-			_fullNames = null;
-
-			object obj;
-			if (!ctx.metadata.TryGetValue(this, out obj))
-				return;
-
-			Metadata m = obj as Metadata;
-
-			if (m.of != null)
-				this._of = m.of;
-			if (m.from != null)
-				this._from = m.from;
-			if (m.parent != null)
-				this._parent = m.parent;
-			if (m.ofName != null)
-				this._ofName = m.ofName;
-			if (m.fromName != null)
-				this._fromName = m.fromName;
-		}
-
-		[OnDeserializing]
-		private void OnDeserializing(StreamingContext context)
-		{
-		}
-
-		[OnDeserialized]
-		private void OnDeserialized(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			System.Diagnostics.Debug.Assert(_fullNames != null);
-
-			if (_of == null && !string.IsNullOrEmpty(_fullNames.of))
-			{
-				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.of));
-				_of = ctx.elements[_fullNames.of];
-				_of.relations.Add(this, false);
-			}
-
-			if (_from == null && !string.IsNullOrEmpty(_fullNames.from))
-			{
-				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.from));
-				_from = ctx.elements[_fullNames.from];
-				_from.relations.Add(this, false);
-			}
-
-			if (_parent == null && !string.IsNullOrEmpty(_fullNames.parent))
-			{
-				System.Diagnostics.Debug.Assert(ctx.elements.ContainsKey(_fullNames.parent));
-				_parent = ctx.elements[_fullNames.parent];
-			}
-
-			// Must always re-subscribe the invalidated event on deserialize
+			// DataElement.Invalidated is not serialized, so register for a re-subscribe to the event
 			if (_of != null)
 				_of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
-			_fullNames = null;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
+
+			if (ctx != null)
+			{
+				_fromName = ctx.UpdateRefName(original._parent, original._from, _fromName);
+				_ofName = ctx.UpdateRefName(original._parent, original._of, _ofName);
+
+				if (_from != null && _from == original._from)
+				{
+					System.Diagnostics.Debug.Assert(!original._from.relations.Contains(this));
+					_from.relations.Add(this, false);
+				}
+
+				if (_of != null && _of == original._of)
+				{
+					System.Diagnostics.Debug.Assert(!original._of.relations.Contains(this));
+					_of.relations.Add(this, false);
+				}
+			}
 		}
+
 	}
 
 	/// <summary>

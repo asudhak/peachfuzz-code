@@ -142,88 +142,54 @@ namespace Peach.Core.Dom
 
 		#region Clone
 
-		public static bool DebugClone = false;
-
 		public class CloneContext
 		{
-			public CloneContext(DataElement root, string newName)
+			public CloneContext(DataElement root, string name)
 			{
 				this.root = root;
-				this.oldName = root.name;
-				this.newName = newName;
-				rename.Add(root);
+				this.name = name;
+
+				rename = new List<DataElement>();
+
+				if (root.name != name)
+					rename.Add(root);
 			}
 
-			public DataElement root = null;
-			public string oldName = null;
-			public string newName = null;
-
-			public List<DataElement> rename = new List<DataElement>();
-			public Dictionary<string, DataElement> elements = new Dictionary<string, DataElement>();
-			public Dictionary<object, object> metadata = new Dictionary<object, object>();
-		}
-
-		private sealed class DataElementBinder : SerializationBinder
-		{
-			static Dictionary<string, Type> cache = new Dictionary<string, Type>();
-
-			public override Type BindToType(string assemblyName, string typeName)
+			public DataElement root
 			{
-				var key = assemblyName + "." + typeName;
-				Type value;
-
-				if (cache.TryGetValue(key, out value))
-					return value;
-
-				foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
-				{
-					if (asm.FullName == assemblyName)
-					{
-						value = asm.GetType(typeName);
-						cache.Add(key, value);
-						return value;
-					}
-				}
-
-				cache.Add(key, null);
-				return null;
-			}
-		}
-
-		protected class CloneCache
-		{
-			private CloneContext additional;
-			private StreamingContext context;
-			private BinaryFormatter formatter;
-			private MemoryStream stream;
-			private DataElementContainer parent;
-
-			public CloneCache(DataElement element, string newName)
-			{
-				parent = element._parent;
-				stream = new MemoryStream();
-				additional = new CloneContext(element, newName);
-				context = new StreamingContext(StreamingContextStates.All, additional);
-				formatter = new BinaryFormatter(null, context);
-				formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-				formatter.Binder = new DataElementBinder();
-
-				element._parent = null;
-				formatter.Serialize(stream, element);
-				element._parent = parent;
+				get; private set;
 			}
 
-			public long Size
+			public string name
 			{
-				get { return stream.Length; }
+				get; private set;
 			}
 
-			public DataElement Get()
+			public List<DataElement> rename
 			{
-				stream.Seek(0, SeekOrigin.Begin);
-				var copy = (DataElement)formatter.Deserialize(stream);
-				copy._parent = parent;
-				return copy;
+				get; private set;
+			}
+
+			public string UpdateRefName(DataElement parent, DataElement elem, string name)
+			{
+				if (parent == null || name == null)
+					return name;
+
+				// Expect parent and element to be in the source object graph
+				System.Diagnostics.Debug.Assert(InSourceGraph(parent));
+
+				if (elem == null)
+					elem = parent.find(name);
+				else
+					System.Diagnostics.Debug.Assert(InSourceGraph(elem));
+
+				return rename.Contains(elem) ? this.name : name;
+			}
+
+			private bool InSourceGraph(DataElement elem)
+			{
+				var top = root.getRoot();
+				return elem == top || elem.isChildOf(top);
 			}
 		}
 
@@ -233,40 +199,24 @@ namespace Peach.Core.Dom
 		/// <returns>Returns a copy of the DataElement.</returns>
 		public virtual DataElement Clone()
 		{
-			return Clone(name);
+			// If we have a parent, we need a CloneContext
+			if (this.parent != null)
+				return Clone(name);
+
+			// Slight optimization for cloning. No CloneContext is needed since
+			// we are cloning the whole dom w/o renaming the root.  This means
+			// fixups & relations will not try and update any name ref's
+			return ObjectCopier.Clone(this, null);
 		}
 
 		/// <summary>
 		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
 		/// </summary>
-		/// <param name="newName">What name to set on the cloned DataElement</param>
+		/// <param name="name">What name to set on the cloned DataElement</param>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public virtual DataElement Clone(string newName)
+		public virtual DataElement Clone(string name)
 		{
-			long size = 0;
-			return Clone(newName, ref size);
-		}
-
-		/// <summary>
-		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
-		/// </summary>
-		/// <param name="newName">What name to set on the cloned DataElement</param>
-		/// <param name="size">The size in bytes used when performing the copy. Useful for debugging statistics.</param>
-		/// <returns>Returns a copy of the DataElement.</returns>
-		public virtual DataElement Clone(string newName, ref long size)
-		{
-			if (DataElement.DebugClone)
-				logger.Debug("Clone {0} as {1}", fullName, newName);
-
-			var cache = new CloneCache(this, newName);
-			var copy = cache.Get();
-
-			size = cache.Size;
-
-			if (DataElement.DebugClone)
-				logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);
-
-			return copy;
+			return ObjectCopier.Clone(this, new CloneContext(this, name));
 		}
 
 		#endregion
@@ -1450,6 +1400,25 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
+		/// <summary>
+		/// Determines whether or not a DataElement is a child of this DataElement.
+		/// </summary>
+		/// <param name="dataElement">The DataElement to test for a child relationship.</param>
+		/// <returns>Returns true if 'dataElement' is a child, false otherwise.</returns>
+		public bool isChildOf(DataElement dataElement)
+		{
+			DataElement obj = _parent;
+			while (obj != null)
+			{
+				if (obj == dataElement)
+					return true;
+
+				obj = obj.parent;
+			}
+
+			return false;
+		}
+
 		public DataElement MoveTo(DataElementContainer newParent, int index)
 		{
 			// Locate any fixups so we can update them
@@ -1472,8 +1441,6 @@ namespace Peach.Core.Dom
 			for (int i = 0; newParent.ContainsKey(newName); i++)
 				newName = this.name + "_" + i;
 
-			oldParent.RemoveAt(oldParent.IndexOf(this));
-
 			if (newName == this.name)
 			{
 				newElem = this;
@@ -1484,6 +1451,7 @@ namespace Peach.Core.Dom
 				this.ClearRelations();
 			}
 
+			oldParent.RemoveAt(oldParent.IndexOf(this));
 			newParent.Insert(index, newElem);
 
 			foreach (Relation relation in newElem.relations)
@@ -1516,37 +1484,23 @@ namespace Peach.Core.Dom
 			return MoveTo(parent, offset);
 		}
 
-		[OnSerializing]
-		private void OnSerializing(StreamingContext context)
+		[OnCloning]
+		private bool OnCloning(object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
-			if (DataElement.DebugClone)
-				logger.Debug("Serializing {0}", fullName);
-
-			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
-
-			if (ctx.rename.Contains(this))
-			{
-				ctx.metadata.Add(this, _name);
-				_name = ctx.newName;
-			}
+			// If this element is under the root, clone it.
+			return ctx == null ? true : ctx.root == this || isChildOf(ctx.root);
 		}
 
-		[OnSerialized]
-		private void OnSerialized(StreamingContext context)
+		[OnCloned]
+		private void OnCloned(DataElement original, object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
-			object obj;
-			if (ctx.metadata.TryGetValue(this, out obj))
-				_name = obj as string;
+			if (ctx != null && ctx.rename.Contains(original))
+				this._name = ctx.name;
 		}
-
 	}
 }
 

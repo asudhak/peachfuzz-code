@@ -251,64 +251,15 @@ namespace Peach.Core.Dom
 			return null;
 		}
 
-		[NonSerialized]
-		private string tempRelativeTo = null;
-
-		[OnSerializing]
-		private void OnSerializing(StreamingContext context)
+		[OnCloned]
+		private void OnCloned(OffsetRelation original, object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
-			if (DataElement.DebugClone)
-				logger.Debug("Serializing relativeTo={0}", relativeTo);
-
-			if (string.IsNullOrEmpty(relativeTo))
-				return;
-
-			Relation.Metadata m = null;
-
-			object obj;
-			if (ctx.metadata.TryGetValue(this, out obj))
-				m = (Relation.Metadata)obj;
-
-			var from = _from;
-			if (from == null && m != null)
-				from = m.from;
-
-			if (from == null)
+			if (ctx != null)
 			{
-				// If we are being cloned, but our parent is not, the parent
-				// gets moved into the metadata
-				var fromName = (m != null && m.fromName != null) ? m.fromName : _fromName;
-				var parent = (m != null && m.parent != null) ? m.parent : _parent;
-
-				if (fromName != null)
-					from = parent.find(fromName);
-				else
-					from = parent;
+				relativeTo = ctx.UpdateRefName(original._from, null, relativeTo);
 			}
-
-			var elem = from.find(relativeTo);
-			if (elem == null && relativeTo == ctx.oldName)
-			{
-				tempRelativeTo = relativeTo;
-				relativeTo = ctx.newName;
-			}
-		}
-
-		[OnSerialized]
-		private void OnSerialized(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			if (tempRelativeTo != null)
-				relativeTo = tempRelativeTo;
-
-			tempRelativeTo = null;
 		}
 	}
 }

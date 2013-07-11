@@ -78,60 +78,13 @@ namespace Peach.Core.Dom
 		[NonSerialized]
 		public Action action = null;
 
-		[NonSerialized]
-		private CloneCache cache = null;
-
-		[NonSerialized]
-		private bool cracking = false;
-
 		public DataModel()
 		{
-			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
 		}
 
 		public DataModel(string name)
 			: base(name)
 		{
-			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
-		}
-
-		[OnDeserialized]
-		void OnDeserialized(StreamingContext context)
-		{
-			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
-		}
-
-		void  DataModel_Invalidated(object sender, EventArgs e)
-		{
-			cache = null;
-		}
-
-		public override DataElement Clone()
-		{
-			if (cracking)
-				return new CloneCache(this, this.name).Get();
-
-			if (cache == null)
-				cache = new CloneCache(this, this.name);
-
-			var ret = cache.Get() as DataModel;
-			ret.cache = this.cache;
-
-			return ret;
-		}
-
-		public override void Crack(Cracker.DataCracker context, IO.BitStream data, long? size)
-		{
-			try
-			{
-				cache = null;
-				cracking = true;
-				base.Crack(context, data, size);
-			}
-			finally
-			{
-				cracking = false;
-			}
 		}
 	}
 }
