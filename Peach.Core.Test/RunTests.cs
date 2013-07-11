@@ -78,8 +78,8 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestWaitTime()
 		{
-			RunWaitTime("2", 2.0, 2.1);
-			RunWaitTime("0.1", 0.1, 0.2);
+			RunWaitTime("2", 1.9, 2.1);
+			RunWaitTime("0.1", 0.09, 0.11);
 		}
 
 		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0)
