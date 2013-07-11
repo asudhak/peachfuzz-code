@@ -471,7 +471,7 @@ namespace Peach.Core.Test.MutationStrategies
 
 					Assert.AreNotEqual(null, str);
 					Assert.AreNotEqual(null, oldStr);
-					Assert.AreEqual(str.InternalValue, oldStr.InternalValue);
+					Assert.AreEqual((string)str.InternalValue, (string)oldStr.InternalValue);
 				}
 			}
 		}
@@ -853,7 +853,7 @@ namespace Peach.Core.Test.MutationStrategies
 				{
 					var lhs = oldDataModel[j].InternalValue;
 					var rhs = dataModel[j].InternalValue;
-					Assert.AreEqual(lhs, rhs);
+					Assert.AreEqual((string)lhs, (string)rhs);
 				}
 			}
 		}

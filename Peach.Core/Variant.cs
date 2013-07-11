@@ -581,34 +581,14 @@ namespace Peach.Core
 
 		public override bool Equals(object obj)
 		{
-			if (obj == null)
-				return false;
-
-			if (obj.GetType() != obj.GetType())
-				return false;
-
-			return ((Variant)obj) == this;
+			// This is a reference type so perform reference Equals
+			return base.Equals(obj);
 		}
 
 		public override int GetHashCode()
 		{
-			switch (_type)
-			{
-				case VariantType.Int:
-					return this._valueInt.GetHashCode();
-				case VariantType.Long:
-					return this._valueLong.GetHashCode();
-				case VariantType.ULong:
-					return this._valueULong.GetHashCode();
-				case VariantType.String:
-					return this._valueString.GetHashCode();
-				case VariantType.ByteString:
-					return _valueByteArray.GetHashCode();
-				case VariantType.BitStream:
-					return _valueBitStream.GetHashCode();
-				default:
-					return base.GetHashCode();
-			}
+			// This is a reference type so perform reference GetHashCode
+			return base.GetHashCode();
 		}
 
 		public override string ToString()
