@@ -589,8 +589,8 @@ namespace Peach.Core
 		/// Generates expression list to copy a single field in a complex object.
 		/// </summary>
 		/// <param name="fieldInfo">Field to copy</param>
-		/// <param name="original">Source object of type <paramref name="type"/></param>
-		/// <param name="clone">Destination object of type <paramref name="type"/></param>
+		/// <param name="original">Source object</param>
+		/// <param name="clone">Destination object</param>
 		/// <param name="exprs">Expression list to populate</param>
 		void CopyRefType(FieldInfo fieldInfo, Expression original, Expression clone, ExprList exprs)
 		{
