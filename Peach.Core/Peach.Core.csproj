@@ -565,6 +565,7 @@
     <Compile Include="Mutators\WordListMutator.cs" />
     <Compile Include="Mutators\XmlW3CMutator.cs" />
     <Compile Include="NetworkAdapter.cs" />
+    <Compile Include="ObjectCopier.cs" />
     <Compile Include="ParameterParser.cs" />
     <Compile Include="PeachException.cs" />
     <Compile Include="PitParsableAttribute.cs" />

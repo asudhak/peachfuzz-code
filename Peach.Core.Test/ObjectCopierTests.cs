@@ -8,6 +8,10 @@ using Peach.Core.IO;
 
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using System.Collections;
+using System.Runtime.Serialization;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace Peach.Core.Test
 {
@@ -165,6 +169,202 @@ namespace Peach.Core.Test
 				if (child is DataElementContainer)
 					ValidateListVsDictionary(child as DataElementContainer, elem);
 			}
+		}
+
+		public class TestClass
+		{
+			public int xqw = 1;
+		}
+
+		[Test]
+		public void NewCopier()
+		{
+			DataModel dm = new DataModel("root");
+			dm.Add(new Block("block1"));
+			dm.Add(new Block("block2"));
+
+			var t = new Hashtable();
+			t["foo"] = "bar";
+
+			var mi = typeof(Hashtable).GetMethod("get_Item");
+			object ret1 = mi.Invoke(t, new object[] { "foo" });
+			mi = typeof(Hashtable).GetMethod("set_Item");
+			mi.Invoke(t, new object[] { "foo", "qux" });
+
+			object ret2 = t["foo"];
+
+			Assert.AreEqual("bar", ret1);
+			Assert.AreEqual("qux", ret2);
+
+			string f = (string)t["bunk"];
+			Assert.AreEqual(f, null);
+
+			var c = ObjectCopier.Clone(new SimpleClass(), null);
+			Assert.NotNull(c);
+
+			var ret = ObjectCopier.Clone(dm, null);
+			Assert.NotNull(ret);
+		}
+
+		[Serializable]
+		public class ComplexClass : SimpleClass
+		{
+			[OnSerializing]
+			void OnSerializing(StreamingContext ctx)
+			{
+			}
+
+			[OnSerialized]
+			void OnSerialized(StreamingContext ctx)
+			{
+			}
+
+			[OnDeserializing]
+			void OnDeserializing(StreamingContext ctx)
+			{
+			}
+
+			[OnDeserialized]
+			void OnDeserialized(StreamingContext ctx)
+			{
+			}
+
+			[OnCloned]
+			void OnCloned(SimpleClass orig, object ctx)
+			{
+			}
+
+			[OnCloned]
+			void OnCloned2(SimpleClass orig, object ctx)
+			{
+			}
+
+			[OnCloning]
+			bool OnCloning(object ctx)
+			{
+				return true;
+			}
+
+			[OnCloning]
+			bool OnCloning2(object ctx)
+			{
+				return true;
+			}
+		}
+
+		[Serializable]
+		public class ByRefClass
+		{
+			public object member = new object();
+
+			[OnCloning]
+			bool OnCloning(object ctx)
+			{
+				return false;
+			}
+		}
+
+		[Serializable]
+		public class SimpleClass
+		{
+			public int member { get; set; }
+		}
+
+		[Serializable]
+		public struct SimpleStruct
+		{
+			public int one;
+			public int two;
+
+			public SimpleStruct(int one, int two)
+			{
+				this.one = one;
+				this.two = two;
+			}
+		}
+
+		[Serializable]
+		public abstract class ReadOnlyBase
+		{
+			public readonly string member;
+			public readonly SimpleStruct simpleStruct;
+			public readonly SimpleClass obj;
+
+			public ReadOnlyBase(string foo)
+			{
+				obj = new SimpleClass() { member = 100 };
+				member = foo;
+				simpleStruct = new SimpleStruct();
+			}
+		}
+
+		[Serializable]
+		public class ReadOnlyDerived : ReadOnlyBase
+		{
+			public string other;
+
+			public ReadOnlyDerived(string member, string other)
+				: base(member)
+			{
+				this.other = other;
+			}
+		}
+
+		[Test]
+		public void OnCloningAttrTest()
+		{
+			var src = new ByRefClass();
+			var copy = ObjectCopier.Clone(src, null);
+
+			Assert.NotNull(copy);
+			Assert.AreEqual(src.GetHashCode(), copy.GetHashCode());
+			Assert.AreEqual(src.member.GetHashCode(), copy.member.GetHashCode());
+		}
+
+		[Test]
+		public void ReadOnlyCloneTest()
+		{
+			var src = new ReadOnlyDerived("base", "derived");
+			var copy = ObjectCopier.Clone(src, null);
+
+			Assert.NotNull(copy);
+			Assert.AreNotEqual(src.GetHashCode(), copy.GetHashCode());
+
+			Assert.AreEqual(src.other, copy.other);
+			Assert.AreEqual(src.member, copy.member);
+			Assert.AreEqual(src.simpleStruct.one, copy.simpleStruct.one);
+			Assert.AreEqual(src.simpleStruct.two, copy.simpleStruct.two);
+
+			Assert.AreNotEqual(src.obj.GetHashCode(), copy.obj.GetHashCode());
+			Assert.AreEqual(src.obj.member, copy.obj.member);
+		}
+
+		[Test]
+		public void LotsOfObjects1()
+		{
+			var list = new List<SimpleClass>();
+			for (int i = 0; i < 20000; ++i)
+				list.Add(new ComplexClass() { member = i });
+
+			var copy = ObjectCopier.Clone(list);
+			Assert.NotNull(copy);
+			Assert.AreEqual(copy.Count, list.Count);
+		}
+
+		[Test]
+		public void LotsOfObjects2()
+		{
+			var list = new List<SimpleClass>();
+			for (int i = 0; i < 2000000; ++i)
+				list.Add(new ComplexClass() { member = i });
+
+			var sw = new Stopwatch();
+			sw.Start();
+			var copy = ObjectCopier.Clone(list, "Foo");
+			sw.Stop();
+			Assert.NotNull(copy);
+			Assert.AreEqual(copy.Count, list.Count);
+			Assert.LessOrEqual(sw.ElapsedMilliseconds, TimeSpan.FromSeconds(5).TotalMilliseconds);
 		}
 	}
 }
