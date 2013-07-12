@@ -10,6 +10,7 @@ using Peach.Core.IO;
 using Peach.Core.Agent;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
+using System.Runtime.InteropServices;
 
 namespace Peach.Core.Test.Monitors
 {
@@ -76,21 +77,25 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(testName, output[0]);
 		}
 
+		[DllImport("libc")]
+		private static extern int chmod(string path, int mode);
+
 		private string createScript(string testName, string tempFile)
 		{
-			string extension = "";
-			if (System.Environment.OSVersion.Platform == PlatformID.Win32NT)
-				extension = "bat";
-			else
-				extension = "sh";
+			var fileName = Path.GetTempFileName() + ".bat";
 
-			string command = "echo " + testName + ">" + tempFile;
-			string path = Path.GetTempPath();
-			string fileName = Guid.NewGuid().ToString() + "." + extension;
-			string file = Path.Combine(path, fileName);
-			System.IO.File.WriteAllText(@file, command);
+			using (var f = new StreamWriter(fileName))
+			{
+				if (Platform.GetOS() != Platform.OS.Windows)
+				{
+					chmod(fileName, Convert.ToInt32("777", 8));
+					f.WriteLine("#!/usr/bin/env sh");
+				}
 
-			return file;
+				f.WriteLine("echo {0}> {1}", testName, tempFile);
+			}
+
+			return fileName;
 		}
 
 		[Test]
