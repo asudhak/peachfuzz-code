@@ -182,6 +182,8 @@ namespace Peach.Core
 					DataElement elem;
 					if (original.elements == null || !original.elements.TryGetValue(kv.Key, out elem))
 						elem = null;
+					else if (elem != ctx.root.getRoot() && !elem.isChildOf(ctx.root.getRoot()))
+						continue; // ref'd element was removed by a mutator
 
 					string name = ctx.UpdateRefName(original.parent, elem, kv.Value);
 					if (name != kv.Value)
