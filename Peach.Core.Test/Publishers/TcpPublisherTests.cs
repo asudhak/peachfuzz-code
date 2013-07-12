@@ -193,7 +193,6 @@ namespace Peach.Core.Test.Publishers
 		<Publisher class=""{1}"">
 			<Param name=""{2}"" value=""127.0.0.1""/>
 			<Param name=""Port"" value=""{3}""/>
-			<Param name=""ConnectTimeout"" value=""3000""/>
 		</Publisher>
 	</Test>
 
@@ -317,8 +316,8 @@ namespace Peach.Core.Test.Publishers
 
 			var delta = sw.ElapsedMilliseconds;
 
-			Assert.Less(delta, 3500);
-			Assert.Greater(delta, 3000);
+			Assert.Less(delta, 10500);
+			Assert.Greater(delta, 10000);
 		}
 
 		[Test]
