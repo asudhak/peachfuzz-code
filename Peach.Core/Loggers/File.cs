@@ -274,6 +274,24 @@ namespace Peach.Core.Loggers
 			}
 		}
 
+		protected override void MutationStrategy_DataSetChanged(Dom.Action action, Data data)
+		{
+			if (data.DataType == DataType.File)
+			{
+				log.WriteLine(". {0}.{1} loaded data file '{2}'", action.parent.name, action.name, data.FileName);
+			}
+			else
+			{
+				log.WriteLine(". {0}.{1} applied data fields", action.parent.name, action.name);
+				foreach (var item in data.fields)
+				{
+					log.WriteLine("  {0} = {1}", item.Key, item.Value);
+				}
+			}
+
+			log.Flush();
+		}
+
 		protected override void Engine_TestStarting(RunContext context)
 		{
 			if (log != null)
