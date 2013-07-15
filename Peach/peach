@@ -8,4 +8,4 @@ case "$*" in
     ;;
 esac
 
-mono ${DEBUG} ${DIRNAME}/peach.exe $@
+mono --gc=sgen ${DEBUG} ${DIRNAME}/peach.exe $@
