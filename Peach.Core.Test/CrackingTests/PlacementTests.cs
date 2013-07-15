@@ -153,6 +153,7 @@ namespace Peach.Core.Test.CrackingTests
 		[Test]
 		public void FixupTest()
 		{
+			// The ref'd half of the fixup is moved
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<String name=\"TheString\" length=\"11\">" +
@@ -182,6 +183,40 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("TheDataModel.Data", item.Item2);
 			Assert.AreEqual("Hello World", dom.dataModels[0][0].InternalValue.BitsToString());
 			Assert.AreEqual("Hello World", dom.dataModels[0][2].DefaultValue.BitsToString());
+		}
+
+		[Test]
+		public void FixupTest2()
+		{
+			// The fixup is moved
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<String name=\"TheString\" length=\"11\"/>" +
+				"		<Block name=\"Block1\">" +
+				"			<Blob name=\"Data\">" +
+				"				<Placement after=\"Block1\"/>" +
+				"				<Fixup class=\"CopyValue\">" +
+				"					<Param name=\"ref\" value=\"TheString\"/>" +
+				"				</Fixup>" +
+				"			</Blob>" +
+				"		</Block>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0}", "HELLO WORLDHello World");
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(1, dom.dataModels[0][2].fixup.references.Count());
+			var item = dom.dataModels[0][2].fixup.references.First();
+			Assert.AreEqual("ref", item.Item1);
+			Assert.AreEqual("TheDataModel.TheString", item.Item2);
+			Assert.AreEqual("HELLO WORLD", (string)dom.dataModels[0][0].DefaultValue);
+			Assert.AreEqual("HELLO WORLD", dom.dataModels[0][2].InternalValue.BitsToString());
 		}
 
 		[Test]
@@ -224,6 +259,49 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.AreEqual(1, Block1[0].relations.Count);
 			Assert.AreEqual("TheDataModel.Data_0", Block1[0].relations[0].OfName);
+		}
+
+		[Test]
+		public void FixupInArray()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Block name=\"Block1\" occurs=\"2\">" +
+				"			<String name=\"TheString\" length=\"5\"/>" +
+				"			<Blob name=\"TheCopy\" length=\"5\">" +
+				"				<Placement before=\"Marker\"/>" +
+				"				<Fixup class=\"CopyValue\">" +
+				"					<Param name=\"ref\" value=\"TheString\"/>" +
+				"				</Fixup>" +
+				"			</Blob>" +
+				"		</Block>" +
+				"		<Block name=\"Marker\"/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0}", "helloworld1234567890");
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual(4, dom.dataModels[0].Count);
+
+			var array = dom.dataModels[0][0] as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(2, array.Count);
+
+			var f1 = dom.dataModels[0][1].fixup.references.First();
+			Assert.AreEqual("ref", f1.Item1);
+			Assert.AreEqual("TheDataModel.Block1.Block1.TheString", f1.Item2);
+
+			var f2 = dom.dataModels[0][2].fixup.references.First();
+			Assert.AreEqual("ref", f2.Item1);
+			Assert.AreEqual("TheDataModel.Block1.Block1_1.TheString", f2.Item2);
+
+			Assert.AreEqual("helloworldhelloworld", dom.dataModels[0].InternalValue.BitsToString());
 		}
 
 		[Test]
@@ -298,7 +376,7 @@ namespace Peach.Core.Test.CrackingTests
 			var fixup0_first = fixup0.references.First();
 			var fixup0_last = fixup0.references.Last();
 			Assert.AreEqual("ref1", fixup0_first.Item1);
-			Assert.AreEqual("TheString", fixup0_first.Item2);
+			Assert.AreEqual("TheDataModel.Block0.TheString", fixup0_first.Item2);
 			Assert.AreEqual("ref2", fixup0_last.Item1);
 			Assert.AreEqual("TheDataModel.Data", fixup0_last.Item2);
 

@@ -348,7 +348,7 @@ namespace Peach.Core.Cracker
 
 		void handlePlacelemt(DataElement element, BitStream data)
 		{
-			var fixups = new List<Tuple<Fixup, string>>();
+			var fixups = new List<Tuple<Fixup, string, string>>();
 			DataElementContainer oldParent = element.parent;
 
 			// Ensure relations are resolved
@@ -367,17 +367,24 @@ namespace Peach.Core.Cracker
 
 				foreach (var item in child.fixup.references)
 				{
-					if (item.Item2 != element.name)
-						continue;
-
 					var refElem = child.find(item.Item2);
 					if (refElem == null)
 						throw new CrackingFailure("Error, unable to resolve Fixup reference to match current element.", element, data);
 
 					if (refElem == element)
-						fixups.Add(new Tuple<Fixup, string>(child.fixup, item.Item1));
+						fixups.Add(new Tuple<Fixup, string, string>(child.fixup, item.Item1, null));
+					else if (!refElem.isChildOf(element))
+						fixups.Add(new Tuple<Fixup, string, string>(child.fixup, item.Item1, refElem.fullName));
 				}
 			}
+
+			// Update fixups
+			foreach (var fixup in fixups)
+			{
+				if (fixup.Item3 != null)
+					fixup.Item1.updateRef(fixup.Item2, fixup.Item3);
+			}
+
 
 			string debugName = element.debugName;
 			DataElement newElem = null;
@@ -402,7 +409,8 @@ namespace Peach.Core.Cracker
 			// Update fixups
 			foreach (var fixup in fixups)
 			{
-				fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
+				if (fixup.Item3 == null)
+					fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
 			}
 
 			// Clear placement now that it has occured
