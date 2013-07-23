@@ -1149,6 +1149,15 @@ namespace Peach.Core.Analyzers
 					elem.DefaultValue = new Variant(array);
 					break;
 				case "literal":
+
+					var localScope = new Dictionary<string, object>();
+					localScope["self"] = elem;
+					localScope["node"] = node;
+					localScope["Parser"] = this;
+					localScope["Context"] = this._dom.context;
+					
+					var obj = Scripting.EvalExpression(value, localScope);
+
 					throw new NotImplementedException("todo valueType");
 				case "string":
 					// No action requried, default behaviour
