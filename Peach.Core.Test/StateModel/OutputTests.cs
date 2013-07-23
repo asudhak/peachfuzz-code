@@ -266,6 +266,47 @@ namespace Peach.Core.Test.StateModel
 
 		}
 
+		[Test]
+		public void NonMutableElements()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num1' occurs='1' size='8' mutable='false'/>
+		<Number name='num2' occurs='1' size='8' mutable='false'/>
+		<Number name='num3' occurs='1' size='16' mutable='true'/>
+		<Number name='num4' occurs='1' size='32' mutable='false'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Send'>
+		<State name='Send'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Random'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 1;
+			config.rangeStop = 10;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			foreach (var item in allStrategies)
+				Assert.True(item.EndsWith(".num3"));
+		}
 
 	}
 }
