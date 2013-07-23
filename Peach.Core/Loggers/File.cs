@@ -354,7 +354,16 @@ namespace Peach.Core.Loggers
 				string reproDir = System.IO.Path.Combine(RootDir, Category.Reproducing.ToString());
 
 				if (Directory.Exists(reproDir))
-					Directory.Delete(reproDir, true);
+				{
+					try
+					{
+						Directory.Delete(reproDir, true);
+					}
+					catch (IOException)
+					{
+						// Can happen if a process has a file/subdirectory open...
+					}
+				}
 			}
 		}
 
