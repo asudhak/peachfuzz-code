@@ -44,9 +44,9 @@ namespace Peach.Core.Transformers.Encode
         {
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
-            var sids = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
+            var sids = new BitReader(data).ReadString();
 
             try
             {
@@ -55,18 +55,27 @@ namespace Peach.Core.Transformers.Encode
                 byte[] bsid = new byte[sid.BinaryLength];
                 sid.GetBinaryForm(bsid, 0);
 
-                return new BitStream(bsid);
+                var ret = new BitStream();
+                ret.Write(bsid, 0, bsid.Length);
+                ret.Seek(0, System.IO.SeekOrigin.Begin);
+                return ret;
             }
             catch(Exception ex)
             {
-                throw new PeachException("Error, Cannot convert string to sid" + sids, ex);
+                throw new SoftException("Error, cannot convert string '" + sids + "' to SID.", ex);
             }
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            var sid = new System.Security.Principal.SecurityIdentifier(data.Value, 0);
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sid.ToString()));
+            var len = data.Length;
+            var buf = new BitReader(data).ReadBytes((int)len);
+            var sid = new System.Security.Principal.SecurityIdentifier(buf, 0);
+            var ret = new BitStream();
+            var writer = new BitWriter(ret);
+            writer.WriteString(sid.ToString());
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
     }
 }

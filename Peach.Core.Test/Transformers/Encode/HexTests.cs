@@ -58,7 +58,7 @@ namespace Peach.Core.Test.Transformers.Encode
 			// verify values
 			// -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcResult, values[0].Value);
+			Assert.AreEqual(precalcResult, values[0].ToArray());
 		}
 
 		[Test]
@@ -76,10 +76,30 @@ namespace Peach.Core.Test.Transformers.Encode
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(precalcResult);
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", precalcResult);
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			Assert.AreEqual("Hello", (string)dom.dataModels[0][0].DefaultValue);
+		}
+
+		[Test, ExpectedException(typeof(SoftException), ExpectedMessage = "Hex decode failed, invalid length.")]
+		public void CrackBadLengthTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String/>
+		<Transformer class='Hex'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0}", (byte)'0');
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);

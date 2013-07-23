@@ -226,7 +226,7 @@ namespace Peach.Core.Cracker
 			{
 				if (_dataStack[i] != _dataStack[prev])
 				{
-					offset += _dataStack[prev].TellBits() - _dataStack[i].LengthBits;
+					offset += _dataStack[prev].PositionBits - _dataStack[i].LengthBits;
 					prev = i;
 				}
 			}
@@ -260,6 +260,9 @@ namespace Peach.Core.Cracker
 			_sizedElements = new OrderedDictionary<DataElement, Position>();
 			_sizeRelations = new List<SizeRelation>();
 			_elementsWithAnalyzer = new List<DataElement>();
+
+			// We want at least 1 byte before we begin
+			data.WantBytes(1);
 
 			// Crack the model
 			handleNode(element, data);
@@ -302,7 +305,7 @@ namespace Peach.Core.Cracker
 
 				if (elem.transformer != null)
 				{
-					long startPos = data.TellBits();
+					long startPos = data.PositionBits;
 					var sizedData = elem.ReadSizedData(data, pos.size);
 					var decodedData = elem.transformer.decode(sizedData);
 
@@ -345,7 +348,7 @@ namespace Peach.Core.Cracker
 
 		void handlePlacelemt(DataElement element, BitStream data)
 		{
-			var fixups = new List<Tuple<Fixup, string>>();
+			var fixups = new List<Tuple<Fixup, string, string>>();
 			DataElementContainer oldParent = element.parent;
 
 			// Ensure relations are resolved
@@ -364,17 +367,24 @@ namespace Peach.Core.Cracker
 
 				foreach (var item in child.fixup.references)
 				{
-					if (item.Item2 != element.name)
-						continue;
-
 					var refElem = child.find(item.Item2);
 					if (refElem == null)
 						throw new CrackingFailure("Error, unable to resolve Fixup reference to match current element.", element, data);
 
 					if (refElem == element)
-						fixups.Add(new Tuple<Fixup, string>(child.fixup, item.Item1));
+						fixups.Add(new Tuple<Fixup, string, string>(child.fixup, item.Item1, null));
+					else if (!refElem.isChildOf(element))
+						fixups.Add(new Tuple<Fixup, string, string>(child.fixup, item.Item1, refElem.fullName));
 				}
 			}
+
+			// Update fixups
+			foreach (var fixup in fixups)
+			{
+				if (fixup.Item3 != null)
+					fixup.Item1.updateRef(fixup.Item2, fixup.Item3);
+			}
+
 
 			string debugName = element.debugName;
 			DataElement newElem = null;
@@ -399,7 +409,8 @@ namespace Peach.Core.Cracker
 			// Update fixups
 			foreach (var fixup in fixups)
 			{
-				fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
+				if (fixup.Item3 == null)
+					fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
 			}
 
 			// Clear placement now that it has occured
@@ -421,7 +432,7 @@ namespace Peach.Core.Cracker
 			if (!offset.HasValue)
 				return;
 
-			offset += data.TellBits();
+			offset += data.PositionBits;
 
 			if (offset > data.LengthBits)
 				data.WantBytes((offset.Value + 7 - data.LengthBits) / 8);
@@ -454,7 +465,7 @@ namespace Peach.Core.Cracker
 				logger.Debug("Exception occured: {0}", e.ToString());
 			}
 
-			OnExceptionHandleNodeEvent(elem, data.TellBits(), data, e);
+			OnExceptionHandleNodeEvent(elem, data.PositionBits, data, e);
 		}
 
 		void handleConstraint(DataElement element, BitStream data)
@@ -467,7 +478,7 @@ namespace Peach.Core.Cracker
 			var iv = element.InternalValue;
 			if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
 			{
-				scope["value"] = (byte[])iv;
+				scope["value"] = (BitwiseStream)iv;
 				logger.Debug("Constraint, value=byte array.");
 			}
 			else
@@ -491,7 +502,7 @@ namespace Peach.Core.Cracker
 			long? size = getSize(elem, data);
 
 			var pos = new Position();
-			pos.begin = data.TellBits() + getDataOffset();
+			pos.begin = data.PositionBits + getDataOffset();
 			pos.size = size;
 
 			_sizedElements.Add(elem, pos);
@@ -548,7 +559,7 @@ namespace Peach.Core.Cracker
 			}
 
 			// Mark the end position of this element
-			pos.end = data.TellBits() + getDataOffset();
+			pos.end = data.PositionBits + getDataOffset();
 
 			OnExitHandleNodeEvent(elem, pos.end, data);
 		}
@@ -557,8 +568,6 @@ namespace Peach.Core.Cracker
 		{
 			logger.Debug("Crack: {0} Size: {1}, {2}", elem.debugName,
 				size.HasValue ? size.ToString() : "<null>", data.Progress);
-
-			data.MarkStartOfElement(elem);
 
 			elem.Crack(this, data, size);
 		}
@@ -608,15 +617,15 @@ namespace Peach.Core.Cracker
 			offset -= getDataOffset();
 
 			// Ensure the offset is not before our current position
-			if (offset < data.TellBits())
+			if (offset < data.PositionBits)
 			{
 				string msg = "{0} has offset of {1} bits but already read {2} bits.".Fmt(
-					elem.debugName, offset, data.TellBits());
+					elem.debugName, offset, data.PositionBits);
 				throw new CrackingFailure(msg, elem, data);
 			}
 
 			// Make offset relative to current position
-			offset -= data.TellBits();
+			offset -= data.PositionBits;
 
 			// Ensure the offset satisfies the minimum
 			if (offset < minOffset)
@@ -636,20 +645,20 @@ namespace Peach.Core.Cracker
 		/// <param name="token">BitStream to search for.</param>
 		/// <param name="offset">How many bits after the current position of data to start searching.</param>
 		/// <returns>The location of the token in data from the current position or null.</returns>
-		long? findToken(BitStream data, BitStream token, long offset)
+		long? findToken(BitStream data, BitwiseStream token, long offset)
 		{
 			while (true)
 			{
-				long start = data.TellBits();
+				long start = data.PositionBits;
 				long end = data.IndexOf(token, start + offset);
 
 				if (end >= 0)
 					return end - start;
 
-				long dataLen = data.LengthBytes;
-				data.WantBytes(token.LengthBytes);
+				long dataLen = data.Length;
+				data.WantBytes(token.Length);
 
-				if (dataLen == data.LengthBytes)
+				if (dataLen == data.Length)
 					return null;
 			}
 		}
@@ -947,7 +956,7 @@ namespace Peach.Core.Cracker
 
 			if (tokens.Count > 0 && ret.HasValue && ret.Value)
 			{
-				pos = data.LengthBits - (data.TellBits() + pos);
+				pos = data.LengthBits - (data.PositionBits + pos);
 				logger.Debug("getSize: <----- Missing Optional Token: {0}", pos);
 				return pos;
 			}
@@ -957,7 +966,7 @@ namespace Peach.Core.Cracker
 			{
 				if (ret.Value && (pos != 0 || !(elem is DataElementContainer)))
 				{
-					pos = data.LengthBits - (data.TellBits() + pos);
+					pos = data.LengthBits - (data.PositionBits + pos);
 					logger.Debug("getSize: <----- Last Unsized: {0}", pos);
 					return pos;
 				}

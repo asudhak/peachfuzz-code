@@ -85,64 +85,60 @@ namespace Peach.Core.Analyzers
 
             var blob = parent as Dom.Blob;
             var data = blob.Value;
-            Block block = new Block(blob.name);
 
-            if (data.LengthBytes == 0)
+            if (data.Length == 0)
                 return;
 
-            List<byte> currentBlob = new List<byte>();
+            var block = new Block(blob.name);
+            var bs = new BitStream();
+            long chars = 0;
 
-            while (data.TellBytes() < data.LengthBytes)
+            while (true)
             {
-                byte b = data.ReadByte();
+                int value = data.ReadByte();
+                if (value == -1)
+                    break;
 
                 //if (isGzip(b, data))
                 //{
                 //    throw new NotImplementedException("Handle Gzip data stream");
                 //}
-                if (isAsciiChar(b))
+
+                if (isAsciiChar(value))
                 {
-                    List<byte> possibleString = new List<byte>();
-
-                    while (isAsciiChar(b))
+                    ++chars;
+                }
+                else
+                {
+                    if (chars >= MINCHARS)
                     {
-                        possibleString.Add(b);
-                        b = data.ReadByte();
-                    }
+                        // Only treat this as a string if MINCHARS were found
+                        bs.Seek(-chars, SeekOrigin.End);
 
-                    if (possibleString.Count >= MINCHARS)
-                    {
-                        Blob newBlob = new Blob();
-                        newBlob.DefaultValue = new Variant(currentBlob.ToArray());
-                        currentBlob.Clear();
-                        block.Add(newBlob);
+                        var str = new Dom.String();
+                        str.DefaultValue = new Variant(bs.SliceBits(bs.LengthBits - bs.PositionBits));
 
-                        Dom.String str = new Dom.String();
-                        str.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetString(possibleString.ToArray()));
+                        bs.Seek(-chars, SeekOrigin.End);
+                        bs.SetLength(bs.Position);
+
+                        // Save off any data before the string 1st
+                        bs = saveData(block, bs);
+
+                        // Add the string 2nd
                         block.Add(str);
 
+                        // Potentially analyze the string further
                         if (analyzeStrings)
                             new StringTokenAnalyzer(args).asDataElement(str, str.DefaultValue);
                     }
-                    else
-                    {
-                        currentBlob.AddRange(possibleString);
-                    }
 
-                    // Backup so we don't use that last byte
-                    data.SeekBytes(-1, SeekOrigin.Current);
+                    chars = 0;
                 }
-                else
-                    currentBlob.Add(b);
+
+                bs.WriteByte((byte)value);
             }
 
-            if (currentBlob.Count > 0)
-            {
-                blob = new Blob();
-                blob.DefaultValue = new Variant(currentBlob.ToArray());
-                currentBlob.Clear();
-                block.Add(blob);
-            }
+            bs = saveData(block, bs);
 
             if (logger.IsDebugEnabled)
             {
@@ -153,23 +149,36 @@ namespace Peach.Core.Analyzers
             parent.parent[parent.name] = block;
         }
 
-        protected bool isGzip(byte b, BitStream data)
+        protected BitStream saveData(Block block, BitStream data)
+        {
+            if (data.Length == 0)
+                return data;
+
+            var elem = new Blob();
+            elem.DefaultValue = new Variant(data);
+
+            block.Add(elem);
+
+            return new BitStream();
+        }
+
+        protected bool isGzip(int b, BitStream data)
         {
             if (b == 0x1f)
             {
                 if (data.ReadByte() == 0x8b)
                 {
-                    data.SeekBytes(-1, SeekOrigin.Current);
+                    data.Seek(-1, SeekOrigin.Current);
                     return true;
                 }
 
-                data.SeekBytes(-1, SeekOrigin.Current);
+                data.Seek(-1, SeekOrigin.Current);
             }
 
             return false;
         }
 
-        protected bool isAsciiChar(byte b)
+        protected bool isAsciiChar(int b)
         {
             if (b == 0x09 || /* tab */
                 b == 0x0a || b == 0x0d || /* crlf */

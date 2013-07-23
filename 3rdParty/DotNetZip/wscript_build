@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+deps = [
+	'System.dll',
+	'System.Core.dll',
+]
+
+bld(
+	features = 'cs',
+	use = deps,
+	source = bld.path.ant_glob('**/*.cs'),
+	name = 'Ionic.Zip.Reduced.dll',
+	csflags = [ '/define:AESCRYPTO;BZIP;NO_SFX' ],
+	version = False,
+	csdoc = False,
+)

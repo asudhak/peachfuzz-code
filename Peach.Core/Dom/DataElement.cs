@@ -90,6 +90,48 @@ namespace Peach.Core.Dom
 	public delegate void InvalidatedEventHandler(object sender, EventArgs e);
 
 	/// <summary>
+	/// Mutated value override's fixupImpl
+	///
+	///  - Default Value
+	///  - Relation
+	///  - Fixup
+	///  - Type contraints
+	///  - Transformer
+	/// </summary>
+	[Flags]
+	public enum MutateOverride : uint
+	{
+		/// <summary>
+		/// No overrides have occured
+		/// </summary>
+		None = 0x00,
+		/// <summary>
+		/// Mutated value overrides fixups
+		/// </summary>
+		Fixup = 0x01,
+		/// <summary>
+		/// Mutated value overrides transformers
+		/// </summary>
+		Transformer = 0x02,
+		/// <summary>
+		/// Mutated value overrides type constraints (e.g. string length, null terminated, etc.)
+		/// </summary>
+		TypeConstraints = 0x04,
+		/// <summary>
+		/// Mutated value overrides relations.
+		/// </summary>
+		Relations = 0x08,
+		/// <summary>
+		/// Mutated value overrides type transforms.
+		/// </summary>
+		TypeTransform = 0x20,
+		/// <summary>
+		/// Default mutate value
+		/// </summary>
+		Default = Fixup,
+	}
+
+	/// <summary>
 	/// Base class for all data elements.
 	/// </summary>
 	[Serializable]
@@ -100,74 +142,54 @@ namespace Peach.Core.Dom
 
 		#region Clone
 
-		public static bool DebugClone = false;
-
 		public class CloneContext
 		{
-			public CloneContext(DataElement root, string newName)
+			public CloneContext(DataElement root, string name)
 			{
 				this.root = root;
-				this.oldName = root.name;
-				this.newName = newName;
-				rename.Add(root);
+				this.name = name;
+
+				rename = new List<DataElement>();
+
+				if (root.name != name)
+					rename.Add(root);
 			}
 
-			public DataElement root = null;
-			public string oldName = null;
-			public string newName = null;
-
-			public List<DataElement> rename = new List<DataElement>();
-			public Dictionary<string, DataElement> elements = new Dictionary<string, DataElement>();
-			public Dictionary<object, object> metadata = new Dictionary<object, object>();
-		}
-
-		private sealed class DataElementBinder : SerializationBinder
-		{
-			public override Type BindToType(string assemblyName, string typeName)
+			public DataElement root
 			{
-				foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
-				{
-					if (asm.FullName == assemblyName)
-						return asm.GetType(typeName);
-				}
-				return null;
-			}
-		}
-
-		protected class CloneCache
-		{
-			private CloneContext additional;
-			private StreamingContext context;
-			private BinaryFormatter formatter;
-			private MemoryStream stream;
-			private DataElementContainer parent;
-
-			public CloneCache(DataElement element, string newName)
-			{
-				parent = element._parent;
-				stream = new MemoryStream();
-				additional = new CloneContext(element, newName);
-				context = new StreamingContext(StreamingContextStates.All, additional);
-				formatter = new BinaryFormatter(null, context);
-				formatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-				formatter.Binder = new DataElementBinder();
-
-				element._parent = null;
-				formatter.Serialize(stream, element);
-				element._parent = parent;
+				get; private set;
 			}
 
-			public long Size
+			public string name
 			{
-				get { return stream.Length; }
+				get; private set;
 			}
 
-			public DataElement Get()
+			public List<DataElement> rename
 			{
-				stream.Seek(0, SeekOrigin.Begin);
-				var copy = (DataElement)formatter.Deserialize(stream);
-				copy._parent = parent;
-				return copy;
+				get; private set;
+			}
+
+			public string UpdateRefName(DataElement parent, DataElement elem, string name)
+			{
+				if (parent == null || name == null)
+					return name;
+
+				// Expect parent and element to be in the source object graph
+				System.Diagnostics.Debug.Assert(InSourceGraph(parent));
+
+				if (elem == null)
+					elem = parent.find(name);
+				else
+					System.Diagnostics.Debug.Assert(InSourceGraph(elem));
+
+				return rename.Contains(elem) ? this.name : name;
+			}
+
+			private bool InSourceGraph(DataElement elem)
+			{
+				var top = root.getRoot();
+				return elem == top || elem.isChildOf(top);
 			}
 		}
 
@@ -177,75 +199,27 @@ namespace Peach.Core.Dom
 		/// <returns>Returns a copy of the DataElement.</returns>
 		public virtual DataElement Clone()
 		{
-			return Clone(name);
+			// If we have a parent, we need a CloneContext
+			if (this.parent != null)
+				return Clone(name);
+
+			// Slight optimization for cloning. No CloneContext is needed since
+			// we are cloning the whole dom w/o renaming the root.  This means
+			// fixups & relations will not try and update any name ref's
+			return ObjectCopier.Clone(this, null);
 		}
 
 		/// <summary>
 		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
 		/// </summary>
-		/// <param name="newName">What name to set on the cloned DataElement</param>
+		/// <param name="name">What name to set on the cloned DataElement</param>
 		/// <returns>Returns a copy of the DataElement.</returns>
-		public virtual DataElement Clone(string newName)
+		public virtual DataElement Clone(string name)
 		{
-			long size = 0;
-			return Clone(newName, ref size);
-		}
-
-		/// <summary>
-		/// Creates a deep copy of the DataElement, and updates the appropriate Relations.
-		/// </summary>
-		/// <param name="newName">What name to set on the cloned DataElement</param>
-		/// <param name="size">The size in bytes used when performing the copy. Useful for debugging statistics.</param>
-		/// <returns>Returns a copy of the DataElement.</returns>
-		public virtual DataElement Clone(string newName, ref long size)
-		{
-			if (DataElement.DebugClone)
-				logger.Debug("Clone {0} as {1}", fullName, newName);
-
-			var cache = new CloneCache(this, newName);
-			var copy = cache.Get();
-
-			size = cache.Size;
-
-			if (DataElement.DebugClone)
-				logger.Debug("Clone {0} took {1} bytes", copy.fullName, size);
-
-			return copy;
+			return ObjectCopier.Clone(this, new CloneContext(this, name));
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Mutated vale override's fixupImpl
-		///
-		///  - Default Value
-		///  - Relation
-		///  - Fixup
-		///  - Type contraints
-		///  - Transformer
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_FIXUP = 0x1;
-		/// <summary>
-		/// Mutated value overrides transformers
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_TRANSFORMER = 0x2;
-		/// <summary>
-		/// Mutated value overrides type constraints (e.g. string length,
-		/// null terminated, etc.)
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_TYPE_CONSTRAINTS = 0x4;
-		/// <summary>
-		/// Mutated value overrides relations.
-		/// </summary>
-		public const uint MUTATE_OVERRIDE_RELATIONS = 0x8;
-        /// <summary>
-        /// Mutated value overrides type transforms.
-        /// </summary>
-        public const uint MUTATE_OVERRIDE_TYPE_TRANSFORM = 0x20;
-		/// <summary>
-		/// Default mutate value
-		/// </summary>
-		public const uint MUTATE_DEFAULT = MUTATE_OVERRIDE_FIXUP;
 
 		private string _name;
 
@@ -255,7 +229,7 @@ namespace Peach.Core.Dom
 		}
 
 		public bool isMutable = true;
-		public uint mutationFlags = MUTATE_DEFAULT;
+		public MutateOverride mutationFlags = MutateOverride.None;
 		public bool isToken = false;
 
 		public Analyzer analyzer = null;
@@ -279,7 +253,7 @@ namespace Peach.Core.Dom
 		private bool _readValueCache = true;
 		private bool _writeValueCache = true;
 		private Variant _internalValue;
-		private BitStream _value;
+		private BitwiseStream _value;
 
 		private bool _invalidated = false;
 
@@ -314,7 +288,7 @@ namespace Peach.Core.Dom
 		protected virtual Variant GetDefaultValue(BitStream data, long? size)
 		{
 			if (size.HasValue && size.Value == 0)
-				return new Variant(new byte[0]);
+				return new Variant(new BitStream());
 
 			var sizedData = ReadSizedData(data, size);
 			return new Variant(sizedData);
@@ -652,7 +626,7 @@ namespace Peach.Core.Dom
 					switch (_lengthType)
 					{
 						case LengthType.Bytes:
-							return Value.LengthBytes;
+							return Value.Length;
 						case LengthType.Bits:
 							return Value.LengthBits;
 						case LengthType.Chars:
@@ -775,7 +749,7 @@ namespace Peach.Core.Dom
         /// <summary>
         /// Get the final Value of this data element
         /// </summary>
-		public BitStream Value
+		public BitwiseStream Value
 		{
 			get
 			{
@@ -896,14 +870,14 @@ namespace Peach.Core.Dom
 
 			// 2. Check for type transformations
 
-			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			if (MutatedValue != null && mutationFlags.HasFlag(MutateOverride.TypeTransform))
 			{
 				return MutatedValue;
 			}
 
 			// 3. Relations
 
-			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_RELATIONS) != 0)
+			if (MutatedValue != null && mutationFlags.HasFlag(MutateOverride.Relations))
 			{
 				return MutatedValue;
 			}
@@ -924,7 +898,7 @@ namespace Peach.Core.Dom
 
 			// 4. Fixup
 
-			if (MutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_FIXUP) != 0)
+			if (MutatedValue != null && mutationFlags.HasFlag(MutateOverride.Fixup))
 			{
 				return MutatedValue;
 			}
@@ -935,12 +909,12 @@ namespace Peach.Core.Dom
 			return value;
 		}
 
-		protected virtual BitStream InternalValueToBitStream()
+		protected virtual BitwiseStream InternalValueToBitStream()
 		{
 			var ret = InternalValue;
 			if (ret == null)
 				return new BitStream();
-			return (BitStream)ret;
+			return (BitwiseStream)ret;
 		}
 
 		/// <summary>
@@ -953,24 +927,24 @@ namespace Peach.Core.Dom
 		/// Generate the final value of this data element
 		/// </summary>
 		/// <returns></returns>
-		protected BitStream GenerateValue()
+		protected BitwiseStream GenerateValue()
 		{
 			++GenerateCount;
 
-			BitStream value = null;
+			BitwiseStream value = null;
 
-			if (_mutatedValue != null && (mutationFlags & MUTATE_OVERRIDE_TYPE_TRANSFORM) != 0)
+			if (_mutatedValue != null && mutationFlags.HasFlag(MutateOverride.TypeTransform))
 			{
-				value = (BitStream)_mutatedValue;
+				value = (BitwiseStream)_mutatedValue;
 			}
 			else
 			{
 				value = InternalValueToBitStream();
 			}
 
-            if (_mutatedValue == null || (mutationFlags & MUTATE_OVERRIDE_TRANSFORMER) != 0)
-                if (_transformer != null)
-                    value = _transformer.encode(value);
+			if (_mutatedValue == null || !mutationFlags.HasFlag(MutateOverride.Transformer))
+				if (_transformer != null)
+					value = _transformer.encode(value);
 
 			return value;
 		}
@@ -1382,7 +1356,7 @@ namespace Peach.Core.Dom
 
 			long needed = size.Value - read;
 			data.WantBytes((needed + 7) / 8);
-			long remain = data.LengthBits - data.TellBits();
+			long remain = data.LengthBits - data.PositionBits;
 
 			if (needed > remain)
 			{
@@ -1391,8 +1365,12 @@ namespace Peach.Core.Dom
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			var ret = data.ReadBitsAsBitStream(needed);
-			System.Diagnostics.Debug.Assert(ret != null);
+			var slice = data.SliceBits(needed);
+			System.Diagnostics.Debug.Assert(slice != null);
+
+			var ret = new BitStream();
+			slice.CopyTo(ret);
+			ret.Seek(0, SeekOrigin.Begin);
 
 			return ret;
 		}
@@ -1422,6 +1400,25 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
+		/// <summary>
+		/// Determines whether or not a DataElement is a child of this DataElement.
+		/// </summary>
+		/// <param name="dataElement">The DataElement to test for a child relationship.</param>
+		/// <returns>Returns true if 'dataElement' is a child, false otherwise.</returns>
+		public bool isChildOf(DataElement dataElement)
+		{
+			DataElement obj = _parent;
+			while (obj != null)
+			{
+				if (obj == dataElement)
+					return true;
+
+				obj = obj.parent;
+			}
+
+			return false;
+		}
+
 		public DataElement MoveTo(DataElementContainer newParent, int index)
 		{
 			// Locate any fixups so we can update them
@@ -1430,11 +1427,19 @@ namespace Peach.Core.Dom
 
 			DataElementContainer oldParent = this.parent;
 
+			if (oldParent == newParent)
+			{
+				int oldIdx = oldParent.IndexOf(this);
+				oldParent.RemoveAt(oldIdx);
+				if (oldIdx < index)
+					--index;
+				newParent.Insert(index, this);
+				return this;
+			}
+
 			string newName = this.name;
 			for (int i = 0; newParent.ContainsKey(newName); i++)
 				newName = this.name + "_" + i;
-
-			oldParent.RemoveAt(oldParent.IndexOf(this));
 
 			if (newName == this.name)
 			{
@@ -1446,6 +1451,7 @@ namespace Peach.Core.Dom
 				this.ClearRelations();
 			}
 
+			oldParent.RemoveAt(oldParent.IndexOf(this));
 			newParent.Insert(index, newElem);
 
 			foreach (Relation relation in newElem.relations)
@@ -1478,37 +1484,23 @@ namespace Peach.Core.Dom
 			return MoveTo(parent, offset);
 		}
 
-		[OnSerializing]
-		private void OnSerializing(StreamingContext context)
+		[OnCloning]
+		private bool OnCloning(object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
-			if (DataElement.DebugClone)
-				logger.Debug("Serializing {0}", fullName);
-
-			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
-
-			if (ctx.rename.Contains(this))
-			{
-				ctx.metadata.Add(this, _name);
-				_name = ctx.newName;
-			}
+			// If this element is under the root, clone it.
+			return ctx == null ? true : ctx.root == this || isChildOf(ctx.root);
 		}
 
-		[OnSerialized]
-		private void OnSerialized(StreamingContext context)
+		[OnCloned]
+		private void OnCloned(DataElement original, object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
-			object obj;
-			if (ctx.metadata.TryGetValue(this, out obj))
-				_name = obj as string;
+			if (ctx != null && ctx.rename.Contains(original))
+				this._name = ctx.name;
 		}
-
 	}
 }
 

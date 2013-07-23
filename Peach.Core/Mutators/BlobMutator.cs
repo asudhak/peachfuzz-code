@@ -27,9 +27,11 @@
 // $Id$
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
@@ -53,10 +55,10 @@ namespace Peach.Core.Mutators
 
         // members
         //
-        protected delegate byte[] changeFcn(DataElement obj);
+        protected delegate BitwiseStream changeFcn(DataElement obj);
         protected List<changeFcn> changeFcns;
 
-        protected delegate byte[] generateFcn(byte[] buf, int index, int size);
+        protected delegate void generateFcn(BitwiseStream data, long size);
         protected List<generateFcn> generateFcns;
 
         uint pos;
@@ -137,14 +139,14 @@ namespace Peach.Core.Mutators
 
         // GET_RANGE
         //
-        private void getRange(int size, out int start, out int end, int delta = int.MaxValue)
+        private void getRange(long size, out long start, out long end, long delta = long.MaxValue)
         {
             start = context.Random.Next(size);
             end = context.Random.Next(size);
 
             if (start > end)
             {
-                int temp = end;
+                long temp = end;
                 end = start;
                 start = temp;
             }
@@ -153,225 +155,252 @@ namespace Peach.Core.Mutators
                 end = start + delta;
         }
 
+		/// <summary>
+		/// Returns a new BitStream composed of the first 'length' bytes of src.
+		/// When done, src is positioned at length bytes, and the returned
+		/// BitStream is positioned at SeekOrigin.End
+		/// </summary>
+		/// <param name="src"></param>
+		/// <param name="length"></param>
+		/// <returns></returns>
+		private BitStream copyBytes(BitwiseStream src, long length)
+		{
+			if (length > src.Length)
+				throw new ArgumentOutOfRangeException("length");
+
+			var buf = new byte[BitwiseStream.BlockCopySize];
+			var ret = new BitStream();
+			src.Seek(0, SeekOrigin.Begin);
+
+			while (length > 0)
+			{
+				int len = (int)Math.Min(length, buf.Length);
+				len = src.Read(buf, 0, len);
+				ret.Write(buf, 0, len);
+				length -= len;
+			}
+
+			return ret;
+		}
+
         // SEQUENTIAL_MUTATION
         //
         public override void sequentialMutation(DataElement obj)
         {
-            // The sequential logic relies on expand being thte 1st change function when we have generate functions
+            // The sequential logic relies on expand being the 1st change function when we have generate functions
             System.Diagnostics.Debug.Assert(generateFcns.Count == 0 || changeFcns[0] == changeExpandBuffer);
 
-            if (pos < generateFcns.Count)
-                obj.MutatedValue = new Variant(changeExpandBuffer(obj, generateFcns[(int)pos]));
-            else if (generateFcns.Count > 0)
-                obj.MutatedValue = new Variant(changeFcns[(int)pos - generateFcns.Count + 1](obj));
-            else
-                obj.MutatedValue = new Variant(changeFcns[(int)pos](obj));
+            BitwiseStream bs;
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            if (pos < generateFcns.Count)
+                bs = changeExpandBuffer(obj, generateFcns[(int)pos]);
+            else if (generateFcns.Count > 0)
+                bs = changeFcns[(int)pos - generateFcns.Count + 1](obj);
+            else
+                bs = changeFcns[(int)pos](obj);
+
+            bs.Seek(0, SeekOrigin.Begin);
+
+            obj.MutatedValue = new Variant(bs);
+
+            obj.mutationFlags = MutateOverride.Default;
+            obj.mutationFlags |= MutateOverride.TypeTransform;
         }
 
         // RANDOM_MUTAION
         //
         public override void randomMutation(DataElement obj)
         {
-            obj.MutatedValue = new Variant(context.Random.Choice(changeFcns)(obj));
+            var bs = context.Random.Choice(changeFcns)(obj);
+            bs.Seek(0, SeekOrigin.Begin);
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            obj.MutatedValue = new Variant(bs);
+
+            obj.mutationFlags = MutateOverride.Default;
+            obj.mutationFlags |= MutateOverride.TypeTransform;
         }
 
         // EXPAND_BUFFER
         //
-        private byte[] changeExpandBuffer(DataElement obj)
+        private BitwiseStream changeExpandBuffer(DataElement obj)
         {
             var how = context.Random.Choice(generateFcns);
             return changeExpandBuffer(obj, how);
         }
 
-        private byte[] changeExpandBuffer(DataElement obj, generateFcn generate)
+        private BitwiseStream changeExpandBuffer(DataElement obj, generateFcn generate)
         {
             // expand the size of our buffer
-            var data = obj.Value.Value;
-            int size = context.Random.Next(256);
-            int pos = context.Random.Next(data.Length);
+            var data = obj.Value;
+            long size = context.Random.Next(256);
+            long pos = context.Random.Next(data.Length);
 
-            return generate(data, pos, size);
+            // Copy first 'pos' bytes
+            var ret = copyBytes(data, pos);
+
+            // Generate 'size' bytes
+            generate(ret, size);
+
+            // Copy from 'pos' onwards
+            data.CopyTo(ret);
+
+            return ret;
         }
 
         // REDUCE_BUFFER
         //
-        private byte[] changeReduceBuffer(DataElement obj)
+        private BitwiseStream changeReduceBuffer(DataElement obj)
         {
             // reduce the size of our buffer
 
-            var data = obj.Value.Value;
-            int start = 0;
-            int end = 0;
+            var data = obj.Value;
+            long start = 0;
+            long end = 0;
 
             getRange(data.Length, out start, out end);
 
-            byte[] ret = new byte[data.Length - (end - start)];
-            Buffer.BlockCopy(data, 0, ret, 0, start);
-            Buffer.BlockCopy(data, end, ret, start, data.Length - end);
+            // Copy first 'start' bytes
+            var ret = copyBytes(data, start);
+
+            // Copy from end onwards
+            data.Seek(end, SeekOrigin.Begin);
+            data.CopyTo(ret);
 
             return ret;
         }
 
         // CHANGE_RANGE
         //
-        private byte[] changeChangeRange(DataElement obj)
+        private BitwiseStream changeChangeRange(DataElement obj)
         {
             // change a sequence of bytes in our buffer
 
-            var data = obj.Value.Value;
-            int start = 0;
-            int end = 0;
+            var data = obj.Value;
+            long start = 0;
+            long end = 0;
 
             getRange(data.Length, out start, out end, 100);
 
-            byte[] ret = new byte[data.Length];
-            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
+            data.Seek(start, SeekOrigin.Begin);
 
-            for (int i = start; i < end; ++i)
-                ret[i] = (byte)(context.Random.Next(256));
+            while (data.Position < end)
+                data.WriteByte((byte)context.Random.Next(256));
 
-            return ret;
+            return data;
         }
 
         // CHANGE_RANGE_SPECIAL
         //
-        private byte[] changeRangeSpecial(DataElement obj)
+        private BitwiseStream changeRangeSpecial(DataElement obj)
         {
             // change a sequence of bytes in our buffer to some special chars
 
-            var data = obj.Value.Value;
-            int start = 0;
-            int end = 0;
+            var data = obj.Value;
+            long start = 0;
+            long end = 0;
             byte[] special = { 0x00, 0x01, 0xFE, 0xFF };
 
             getRange(data.Length, out start, out end, 100);
 
-            byte[] ret = new byte[data.Length];
-            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
+            data.Seek(start, SeekOrigin.Begin);
 
-            for (int i = start; i < end; ++i)
-                ret[i] = context.Random.Choice(special);
+            while (data.Position < end)
+                data.WriteByte(context.Random.Choice(special));
 
-            return ret;
+            return data;
         }
 
         // NULL_RANGE
         //
-        private byte[] changeNullRange(DataElement obj)
+        private BitwiseStream changeNullRange(DataElement obj)
         {
             // change a range of bytes to null
 
-            var data = obj.Value.Value;
-            int start = 0;
-            int end = 0;
+            var data = obj.Value;
+            long start = 0;
+            long end = 0;
 
             getRange(data.Length, out start, out end, 100);
 
-            byte[] ret = new byte[data.Length];
-            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
+            data.Seek(start, SeekOrigin.Begin);
 
-            for (int i = start; i < end; ++i)
-                ret[i] = 0;
+            // Write null bytes until end
+            while (data.Position < end)
+                data.WriteByte(0);
 
-            return ret;
+            return data;
         }
 
         // UNNULL_RANGE
         //
-        private byte[] changeUnNullRange(DataElement obj)
+        private BitwiseStream changeUnNullRange(DataElement obj)
         {
             // change all zeros in a range to something else
 
-            var data = obj.Value.Value;
-            int start = 0;
-            int end = 0;
+            var data = obj.Value;
+            long start = 0;
+            long end = 0;
 
             getRange(data.Length, out start, out end, 100);
 
-            byte[] ret = new byte[data.Length];
-            Buffer.BlockCopy(data, 0, ret, 0, data.Length);
+            data.Seek(start, SeekOrigin.Begin);
 
-            for (int i = start; i < end; ++i)
-                if (ret[i] == 0)
-                    ret[i] = (byte)(context.Random.Next(1, 256));
+            // Write bytes until end changing nulls to non-null
+            while (data.Position < end)
+            {
+                int b = data.ReadByte();
 
-            return ret;
+                System.Diagnostics.Debug.Assert(b != -1);
+
+                if (b == 0)
+                    b = context.Random.Next(1, 256);
+
+                data.Seek(-1, SeekOrigin.Current);
+                data.WriteByte((byte)b);
+            }
+
+            return data;
         }
 
         // NEW_BYTES_SINGLE_RANDOM
         //
-        private byte[] generateNewBytesSingleRandom(byte[] buf, int index, int size)
+        private void generateNewBytesSingleRandom(BitwiseStream data, long size)
         {
-            // Grow buffer by size bytes starting at index, each byte is the same random number
-            byte[] ret = new byte[buf.Length + size];
-            Buffer.BlockCopy(buf, 0, ret, 0, index);
-            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
-
             byte val = (byte)(context.Random.Next(256));
 
-            for (int i = index; i < index + size; ++i)
-                ret[i] = val;
-
-            return ret;
+            while (size --> 0)
+                data.WriteByte(val);
         }
 
         // NEW_BYTES_INCREMENTING
         //
-        private byte[] generateNewBytesIncrementing(byte[] buf, int index, int size)
+        private void generateNewBytesIncrementing(BitwiseStream data, long size)
         {
-            // Pick a starting value between [0, size] and grow buffer by
+            // Pick a starting value between [0, 255-size] and grow buffer by
             // a max of size bytes of incrementing values from [value,255]
             System.Diagnostics.Debug.Assert(size < 256);
 
-            int val = context.Random.Next(size + 1);
-            int max = 256 - val;
-            if (size > max)
-                size = max;
+            // Starting value is 0 - (256 - size) inclusive, but rand max is exclusive
+            byte val = (byte)context.Random.Next((int)(257 - size));
 
-            byte[] ret = new byte[buf.Length + size];
-            Buffer.BlockCopy(buf, 0, ret, 0, index);
-            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
-
-            for (int i = 0; i < size; ++i)
-                ret[index + i] = (byte)(val + i);
-
-            return ret;
+            while (size --> 0)
+                data.WriteByte(val++);
         }
 
         // NEW_BYTES_ZERO
         //
-        private byte[] generateNewBytesZero(byte[] buf, int index, int size)
+        private void generateNewBytesZero(BitwiseStream data, long size)
         {
-            // Grow buffer by size bytes starting at index, each byte is zero (NULL)
-            byte[] ret = new byte[buf.Length + size];
-            Buffer.BlockCopy(buf, 0, ret, 0, index);
-            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
-
-            for (int i = index; i < index + size; ++i)
-                ret[i] = 0;
-
-            return ret;
+            while (size --> 0)
+                data.WriteByte(0);
         }
 
         // NEW_BYTES_ALL_RANDOM
         //
-        private byte[] generateNewBytesAllRandom(byte[] buf, int index, int size)
+        private void generateNewBytesAllRandom(BitwiseStream data, long size)
         {
-            // Grow buffer by size bytes starting at index, each byte is randomly generated
-            byte[] ret = new byte[buf.Length + size];
-            Buffer.BlockCopy(buf, 0, ret, 0, index);
-            Buffer.BlockCopy(buf, index, ret, index + size, buf.Length - index);
-
-            for (int i = index; i < index + size; ++i)
-                ret[i] = (byte)(context.Random.Next(256));
-
-            return ret;
+            while (size --> 0)
+                data.WriteByte((byte)context.Random.Next(256));
         }
     }
 }

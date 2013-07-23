@@ -24,6 +24,8 @@ namespace Peach.Core.Test.Publishers
 				: base(args)
 			{
 			}
+
+			public int req1 { get; set; }
 		}
 
 		[Publisher("testA1")]
@@ -33,6 +35,19 @@ namespace Peach.Core.Test.Publishers
 		{
 			protected override NLog.Logger Logger { get { return logger; } }
 			public PubDefaultName(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+
+			public int req1 { get; set; }
+		}
+
+		[Publisher("testA2.default", true)]
+		[Parameter("req1", typeof(int), "desc")]
+		class PubMissingParam : Publisher
+		{
+			protected override NLog.Logger Logger { get { return logger; } }
+			public PubMissingParam(Dictionary<string, Variant> args)
 				: base(args)
 			{
 			}
@@ -106,12 +121,12 @@ namespace Peach.Core.Test.Publishers
 			Assert.True(pe.Message.StartsWith("Publisher 'testA1.default' could not set parameter 'req1'.  Input string was not in"));
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'testA1.default' has no property for parameter 'req1'.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Publisher 'testA2.default' has no property for parameter 'req1'.")]
 		public void TestMissingProperty()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
 			args["req1"] = new Variant("100");
-			new PubDefaultName(args);
+			new PubMissingParam(args);
 		}
 
 		[Publisher("good")]

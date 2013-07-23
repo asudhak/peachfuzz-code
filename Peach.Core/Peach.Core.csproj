@@ -332,9 +332,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ionic.Zip">
-      <HintPath>..\3rdParty\DotNetZipLib-v1.9\zip-v1.9\Ionic.Zip.dll</HintPath>
-    </Reference>
     <Reference Include="IronPython">
       <HintPath>..\3rdParty\IronPython-2.7.3\IronPython.dll</HintPath>
     </Reference>
@@ -358,7 +355,7 @@
       <HintPath>..\3rdParty\IronPython-2.7.3\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\3rdParty\Json.net-5\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog" Condition="'$(Configuration)' == 'Debug - Windows'">
       <HintPath>..\3rdParty\NLog-v2.0.0.2000\.NET Framework 4.0\NLog.dll</HintPath>
@@ -381,7 +378,23 @@
     <Reference Include="Renci.SshNet">
       <HintPath>..\3rdParty\Renci.SshNet\Renci.SshNet.dll</HintPath>
     </Reference>
+    <Reference Include="SuperSocket.Common">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.Facility">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.Facility.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketBase">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.SocketBase.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperSocket.SocketEngine">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperSocket.SocketEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperWebSocket">
+      <HintPath>..\3rdParty\SuperWebSocket-0.7\SuperWebSocket.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
@@ -409,6 +422,7 @@
     <Compile Include="Agent\Monitors\CleanupFolderMonitor.cs" />
     <Compile Include="Agent\Monitors\PingMonitor.cs" />
     <Compile Include="Agent\Monitors\ProcessKillerMonitor.cs" />
+    <Compile Include="Agent\Monitors\RunCommand.cs" />
     <Compile Include="Agent\Monitors\SaveFileMonitor.cs" />
     <Compile Include="Agent\Monitors\IpPower9258Monitor.cs" />
     <Compile Include="Agent\Monitors\MemoryMonitor.cs" />
@@ -451,7 +465,11 @@
     <Compile Include="Fixups\ScriptFixup.cs" />
     <Compile Include="Fixups\TCPChecksumFixup.cs" />
     <Compile Include="Fixups\UDPChecksumFixup.cs" />
+    <Compile Include="IO\BitReader.cs" />
+    <Compile Include="IO\BitStreamList.cs" />
+    <Compile Include="IO\BitwiseStream.cs" />
     <Compile Include="IO\BitWriter.cs" />
+    <Compile Include="IO\Endian.cs" />
     <Compile Include="Dom\Monitor.cs" />
     <Compile Include="Dom\Padding.cs" />
     <Compile Include="Dom\Placement.cs" />
@@ -529,6 +547,7 @@
     <Compile Include="Mutators\NumericalVarianceMutator.cs" />
     <Compile Include="Mutators\SizedDataNumericalEdgeCasesMutator.cs" />
     <Compile Include="Mutators\SizedDataVaranceMutator.cs" />
+    <Compile Include="Mutators\SizedMutator.cs" />
     <Compile Include="Mutators\SizedNumericalEdgeCasesMutator.cs" />
     <Compile Include="Mutators\SizedVaranceMutator.cs" />
     <Compile Include="Mutators\StringCaseMutator.cs" />
@@ -546,6 +565,7 @@
     <Compile Include="Mutators\WordListMutator.cs" />
     <Compile Include="Mutators\XmlW3CMutator.cs" />
     <Compile Include="NetworkAdapter.cs" />
+    <Compile Include="ObjectCopier.cs" />
     <Compile Include="ParameterParser.cs" />
     <Compile Include="PeachException.cs" />
     <Compile Include="PitParsableAttribute.cs" />
@@ -582,6 +602,7 @@
     <Compile Include="Publishers\TcpPublisher.cs" />
     <Compile Include="Publishers\UdpPublisher.cs" />
     <Compile Include="Publishers\WebServicePublisher.cs" />
+    <Compile Include="Publishers\WebSocketPublisher.cs" />
     <Compile Include="Random.cs" />
     <Compile Include="RunConfig.cs" />
     <Compile Include="RunContext.cs" />
@@ -613,33 +634,18 @@
     <Compile Include="Transformers\Encode\Base64Encode.cs" />
     <Compile Include="Transformers\Encode\Base64Decode.cs" />
     <Compile Include="Transformers\Encode\Hex.cs" />
-    <Compile Include="Transformers\Encode\HexString.cs" />
     <Compile Include="Transformers\Encode\HtmlDecode.cs" />
     <Compile Include="Transformers\Encode\HtmlEncode.cs" />
-    <Compile Include="Transformers\Encode\HtmlEncodeAgressive.cs" />
     <Compile Include="Transformers\Encode\Ipv4StringToOctet.cs" />
-    <Compile Include="Transformers\Encode\Ipv4StringToNetworkOctet.cs" />
     <Compile Include="Transformers\Encode\Ipv6StringToOctet.cs" />
     <Compile Include="Transformers\Encode\JsEncode.cs" />
     <Compile Include="Transformers\Encode\NetBiosDecode.cs" />
     <Compile Include="Transformers\Encode\NetBiosEncode.cs" />
     <Compile Include="Transformers\Encode\SidStringToBytes.cs" />
     <Compile Include="Transformers\Encode\UrlEncode.cs" />
-    <Compile Include="Transformers\Encode\Utf16.cs" />
-    <Compile Include="Transformers\Encode\Utf16Be.cs" />
-    <Compile Include="Transformers\Encode\Utf16Le.cs" />
-    <Compile Include="Transformers\Encode\Utf8.cs" />
-    <Compile Include="Transformers\Encode\WideChar.cs" />
     <Compile Include="Transformers\Compress\GzipCompress.cs" />
     <Compile Include="Transformers\Eval.cs" />
-    <Compile Include="Transformers\Type\AsInt16.cs" />
-    <Compile Include="Transformers\Type\AsInt32.cs" />
-    <Compile Include="Transformers\Type\AsInt64.cs" />
-    <Compile Include="Transformers\Type\AsInt8.cs" />
     <Compile Include="Transformers\Type\IntToHex.cs" />
-    <Compile Include="Transformers\Type\NumberToString.cs" />
-    <Compile Include="Transformers\Type\StringToFloat.cs" />
-    <Compile Include="Transformers\Type\StringToInt.cs" />
     <Compile Include="Usage.cs" />
     <Compile Include="Utilities.cs">
       <SubType>Component</SubType>
@@ -685,6 +691,10 @@
     <ProjectReference Include="..\3rdParty\clrzmq\src\ZeroMQ\ZeroMQ.csproj">
       <Project>{6FFD872F-A4A4-4EFA-9B4D-4342BA6CF250}</Project>
       <Name>ZeroMQ</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdParty\DotNetZip\Zip Reduced\Zip Reduced.csproj">
+      <Project>{49A128D3-C3F2-46B1-8F7A-EECD209EA860}</Project>
+      <Name>Zip Reduced</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -48,10 +48,10 @@ namespace Peach.Core.Transformers.Crypto
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
 			HMAC hmacTool = HMAC.Create();
-			return new BitStream(hmacTool.ComputeHash(data.Value));
+			return new BitStream(hmacTool.ComputeHash(data));
 		}
 
 		protected override BitStream internalDecode(BitStream data)

@@ -48,10 +48,10 @@ namespace Peach.Core.Transformers.Crypto
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
 			MD5 md5Tool = MD5.Create();
-			return new BitStream(md5Tool.ComputeHash(data.Value));
+			return new BitStream(md5Tool.ComputeHash(data));
 		}
 
 		protected override BitStream internalDecode(BitStream data)

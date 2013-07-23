@@ -24,20 +24,17 @@ namespace Peach.Core.Transformers.Crypto
             GetEncryptionAlgorithm();           //Used for parameter validation
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
             ICryptoTransform ict = GetEncryptionAlgorithm().CreateEncryptor();
-            byte[] enc = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
-
-            return new BitStream(enc);
+            return CryptoStream(data, ict, CryptoStreamMode.Write);
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
             ICryptoTransform ict = GetEncryptionAlgorithm().CreateDecryptor();
-            byte[] dec = ict.TransformFinalBlock(data.Value, 0, data.Value.Length);
-
-            return new BitStream(dec);
+            return CryptoStream(data, ict, CryptoStreamMode.Read);
         }
+
     }
 }

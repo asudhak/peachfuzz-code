@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Transformers.Encode
             // -- this is the pre-calculated result from Peach2.3 on the blob: "192.168.1.1"
             byte[] precalcResult = new byte[] { 0xC0, 0xA8, 0x01, 0x01 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, can't transform IP to bytes, '192.168.1' is not a valid IP address.")]
@@ -113,10 +113,7 @@ namespace Peach.Core.Test.Transformers.Encode
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0xC0, 0xA8, 0x01, 0x01 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0xC0, 0xA8, 0x01, 0x01 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -142,11 +139,7 @@ namespace Peach.Core.Test.Transformers.Encode
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0xC0, 0xA8, 0x01, 0x01 });
-			data.WriteBytes(Encoding.ASCII.GetBytes("Hello"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}{1}", new byte[] { 0xC0, 0xA8, 0x01, 0x01 }, "Hello");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -170,10 +163,7 @@ namespace Peach.Core.Test.Transformers.Encode
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x3F, 0xFE, 0x19 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x3F, 0xFE, 0x19 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -194,10 +184,7 @@ namespace Peach.Core.Test.Transformers.Encode
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x3F, 0xFE, 0x19, 0x3F, 0xFE, 0x19, 0xFF });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x3F, 0xFE, 0x19, 0x3F, 0xFE, 0x19, 0xFF });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);

@@ -2443,6 +2443,11 @@
 								<xs:documentation>Convert a String containing XML into XmlElement and XmlAttribute data elements.</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
+						<xs:enumeration value="Asn1">
+							<xs:annotation>
+								<xs:documentation>Convert a String containing XML into XmlElement and XmlAttribute data elements.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>

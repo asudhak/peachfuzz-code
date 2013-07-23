@@ -74,7 +74,7 @@ namespace Peach.Core.Mutators
         {
             // remove the element from the data model
             obj.parent.Remove(obj);
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
 
         // RANDOM_MUTAION
@@ -82,7 +82,7 @@ namespace Peach.Core.Mutators
         public override void randomMutation(DataElement obj)
         {
             obj.parent.Remove(obj);
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
     }
 }

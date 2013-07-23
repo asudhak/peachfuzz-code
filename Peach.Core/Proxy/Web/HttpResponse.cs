@@ -44,16 +44,18 @@ namespace Peach.Core.Proxy.Web
 
 		public virtual byte[] ToByteArray()
 		{
-			BitStream msg = new BitStream();
-			msg.WriteBytes(ASCIIEncoding.ASCII.GetBytes(
-				string.Format("HTTP/{0} {1} {2}\r\n{3}\r\n",
+			var writer = new StreamWriter(new MemoryStream());
+
+			writer.Write("HTTP/{0} {1} {2}\r\n{3}\r\n",
 					Version,
 					Status,
 					Reason,
-					Headers.ToString())));
-			msg.WriteBytes(Body);
+					Headers.ToString());
 
-			return msg.Value;
+			var body = Body;
+
+			writer.BaseStream.Write(body, 0, body.Length);
+			return ((MemoryStream)writer.BaseStream).ToArray();
 		}
 
 		public override string ToString()
@@ -77,6 +79,7 @@ namespace Peach.Core.Proxy.Web
 				byte[] buff = new byte[stream.Length - stream.Position];
 				stream.Read(buff, 0, (int) (stream.Length - stream.Position));
 				BitStream dataBuffer = new BitStream(buff);
+				BitReader dataReader = new BitReader(dataBuffer);
 
 				string data = ReadLine(dataBuffer);
 				if (data == null)
@@ -107,13 +110,13 @@ namespace Peach.Core.Proxy.Web
 
 				res.ParseRequestHeader(headerData);
 
-				newPos += dataBuffer.TellBytes();
+				newPos += dataBuffer.Position;
 				match = null;
 
 				if (res.Headers.ContainsKey("content-length"))
 				{
 					int len = int.Parse(res.Headers["content-length"].Value);
-					if ((dataBuffer.LengthBytes - dataBuffer.TellBytes()) < len)
+					if ((dataBuffer.Length - dataBuffer.Position) < len)
 						return null;
 
 					if (len == 0)
@@ -122,13 +125,13 @@ namespace Peach.Core.Proxy.Web
 					}
 					else
 					{
-						res.Body = dataBuffer.ReadBytes(len);
+						res.Body = dataReader.ReadBytes(len);
 					}
 					pos = newPos + res.Body.Length;
 				}
 				else if(res.Headers.ContainsKey("transfer-encoding") && res.Headers["transfer-encoding"].Value == "chunked")
 				{
-					int startingPosistion = (int)dataBuffer.TellBytes();
+					int startingPosistion = (int)dataBuffer.Position;
 					res.Chunks = new List<byte[]>();
 					res.Body = null;
 					int length = 0;
@@ -157,27 +160,27 @@ namespace Peach.Core.Proxy.Web
 							break;
 
 						// not enough data
-						if (length > (dataBuffer.LengthBytes - dataBuffer.TellBytes()))
+						if (length > (dataBuffer.Length - dataBuffer.Position))
 							return null;
 
-						byte[] chunk = dataBuffer.ReadBytes(length);
-						dataBuffer.ReadBytes(2); // Skip \r\n at end of chunk
+						byte[] chunk = dataReader.ReadBytes(length);
+						dataReader.ReadBytes(2); // Skip \r\n at end of chunk
 
 						res.Chunks.Add(chunk);
 					}
 
-					pos = newPos + (dataBuffer.TellBytes() - startingPosistion);
+					pos = newPos + (dataBuffer.Position - startingPosistion);
 				}
 				else
 				{
-					if ((dataBuffer.LengthBytes - dataBuffer.TellBytes()) == 0)
+					if ((dataBuffer.Length - dataBuffer.Position) == 0)
 					{
 						res.Body = new byte[0];
 						pos = newPos;
 					}
 					else
 					{
-						res.Body = dataBuffer.ReadBytes(dataBuffer.LengthBytes - dataBuffer.TellBytes());
+						res.Body = dataReader.ReadBytes((int)(dataBuffer.Length - dataBuffer.Position));
 						pos = newPos + res.Body.Length;
 					}
 				}

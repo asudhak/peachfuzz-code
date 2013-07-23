@@ -61,7 +61,7 @@ namespace Peach.Core.Test.Fixups
             // -- this is the pre-calculated checksum from Peach2.3 on the blobs: { 1, 2, 3, 4, 5 } and { 6, 7, 8, 9 }
             byte[] precalcChecksum = new byte[] { 0x26, 0x39, 0xF4, 0xCB };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcChecksum, values[0].Value);
+            Assert.AreEqual(precalcChecksum, values[0].ToArray());
         }
 
 		[Test]
@@ -89,23 +89,12 @@ namespace Peach.Core.Test.Fixups
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.LittleEndian();
-			data.WriteBytes(new byte[] { 0x05, 0x11, 0x22, 0x33, 0x44, 0x55 });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x05, 0x11, 0x22, 0x33, 0x44, 0x55 });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
-			var val = dom.dataModels[0].Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
+			var actual = dom.dataModels[0].Value.ToArray();
 			byte[] expected = new byte[] { 0x05, 0x11, 0x56, 0x1e, 0xc6, 0x48 };
 			Assert.AreEqual(expected, actual);
 		}

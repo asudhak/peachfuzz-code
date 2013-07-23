@@ -127,17 +127,12 @@ namespace Peach.Core.Fixups
 			return Update(parent, dm.action, Offset, Once, false);
 		}
 
-		[OnDeserialized]
-		private void OnDeserialized(StreamingContext context)
+		[OnCloned]
+		private void OnCloned(SequenceIncrementFixup original, object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
 			Core.Dom.Action.Starting += new ActionStartingEventHandler(Action_Starting);
 			Core.Dom.StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
 		}
-
 	}
 }
 

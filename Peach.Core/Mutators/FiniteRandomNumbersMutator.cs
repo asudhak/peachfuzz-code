@@ -145,7 +145,7 @@ namespace Peach.Core.Mutators
             {
                 UInt32 value = context.Random.NextUInt32();
                 obj.MutatedValue = new Variant(value.ToString());
-                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                obj.mutationFlags = MutateOverride.Default;
                 return;
             }
 
@@ -175,7 +175,7 @@ namespace Peach.Core.Mutators
             }
 
             obj.MutatedValue = new Variant(val);
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+            obj.mutationFlags = MutateOverride.Default;
         }
     }
 }

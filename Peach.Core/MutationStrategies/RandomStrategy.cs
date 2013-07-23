@@ -235,13 +235,13 @@ namespace Peach.Core.MutationStrategies
 
 		private DataModel ApplyFileData(Dom.Action action, Data data)
 		{
-			byte[] fileBytes = null;
+			FileStream fileBytes = null;
 
 			for (int i = 0; i < 5 && fileBytes == null; ++i)
 			{
 				try
 				{
-					fileBytes = File.ReadAllBytes(data.FileName);
+					fileBytes = File.OpenRead(data.FileName);
 				}
 				catch (Exception ex)
 				{
@@ -328,13 +328,14 @@ namespace Peach.Core.MutationStrategies
 			if (val.options.Count < 2)
 				return;
 
+			Data option = null;
 			DataModel dataModel = null;
 
 			// Some of our sample files may not crack.  Loop through them until we
 			// find a good sample file.
 			while (val.options.Count > 0 && dataModel == null)
 			{
-				Data option = _randomDataSet.Choice(val.options);
+				option = _randomDataSet.Choice(val.options);
 
 				if (option.DataType == DataType.File)
 				{
@@ -377,6 +378,9 @@ namespace Peach.Core.MutationStrategies
 
 			// Save our current state
 			val.iteration = switchIteration;
+
+			// Notify the event
+			OnDataSetChanged(action, option);
 		}
 
 		private void GatherMutators(string modelName, DataElementContainer cont)
@@ -465,7 +469,7 @@ namespace Peach.Core.MutationStrategies
 					continue;
 
 				var elem = dataModel.find(item.Key.ElementName);
-				if (elem != null)
+				if (elem != null && elem.MutatedValue == null)
 				{
 					Mutator mutator = Random.Choice(item.Value);
 					OnMutating(item.Key.ElementName, mutator.name);

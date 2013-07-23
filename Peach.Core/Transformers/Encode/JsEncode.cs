@@ -44,26 +44,28 @@ namespace Peach.Core.Transformers.Encode
         {
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
-            StringBuilder sb = new StringBuilder((int)data.LengthBytes);
+            BitStream ret = new BitStream();
+            BitWriter writer = new BitWriter(ret);
+            int b;
 
-            foreach (byte b in data.Value)
+            while ((b = data.ReadByte()) != -1)
             {
                 if ((b >= 97 && b <= 122) ||
                     (b >= 65 && b <= 90) ||
                     (b >= 48 && b <= 57) ||
                     b == 32 || b == 44 || b == 46)
-                    sb.Append((Char)b);
+                    writer.WriteByte((byte)b);
                 else if (b <= 127)
-                    sb.AppendFormat("\\x{0:X2}", b);
+                    writer.WriteString(string.Format("\\x{0:X2}", b));
                 else
                     //NOTE: Doing at ASCII byte level.. might not not be necesarry here as the string is not typed...
-                    sb.AppendFormat("\\u{0:X4}", b);
-
+                    writer.WriteString(string.Format("\\u{0:X4}", b));
             }
 
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sb.ToString()));
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
 
         protected override BitStream internalDecode(BitStream data)

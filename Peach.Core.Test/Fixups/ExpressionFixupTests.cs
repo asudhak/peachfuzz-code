@@ -57,7 +57,7 @@ namespace Peach.Core.Test.Fixups
             // verify values
             byte[] expected = new byte[] { 42, 0x00, 0x00, 0x00 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(expected, values[0].Value);
+            Assert.AreEqual(expected, values[0].ToArray());
         }
 
         [Test]
@@ -104,7 +104,7 @@ namespace Peach.Core.Test.Fixups
             // verify values
             byte[] expected = new byte[] { 0x41, 0x41, 0x42, 0x42 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(expected, values[0].Value);
+            Assert.AreEqual(expected, values[0].ToArray());
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace Peach.Core.Test.Fixups
             // verify values
             byte[] expected = new byte[] { 0x00, 0x01, 0xff, 0x00 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(expected, values[0].Value);
+            Assert.AreEqual(expected, values[0].ToArray());
         }
 
 		[Test]
@@ -197,7 +197,7 @@ namespace Peach.Core.Test.Fixups
 			// verify values
 			byte[] expected = new byte[] { 0x02, 0x00, 0x00, 0x00 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(expected, values[0].Value);
+			Assert.AreEqual(expected, values[0].ToArray());
 		}
     }
 }

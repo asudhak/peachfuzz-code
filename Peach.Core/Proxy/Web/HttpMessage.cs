@@ -48,19 +48,19 @@ namespace Peach.Core.Proxy.Web
 			{
 				if(_body == null && _chunks != null)
 				{
-					BitStream data = new BitStream();
+					var writer = new StreamWriter(new MemoryStream());
 
 					// Build chunks body
 					foreach (byte[] chunk in _chunks)
 					{
-						data.WriteBytes(ASCIIEncoding.ASCII.GetBytes(Convert.ToString(chunk.Length, 16) + "\r\n"));
-						data.WriteBytes(chunk);
-						data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("\r\n"));
+						writer.Write(Convert.ToString(chunk.Length, 16) + "\r\n");
+						writer.BaseStream.Write(chunk, 0, chunk.Length);
+						writer.Write("\r\n");
 					}
 
-					data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("0\r\n\r\n"));
+					writer.Write("0\r\n\r\n");
 
-					return data.Value;
+					return ((MemoryStream)writer.BaseStream).ToArray();
 				}
 
 				return _body;
@@ -88,7 +88,7 @@ namespace Peach.Core.Proxy.Web
 
 		protected static string ReadLine(BitStream data)
 		{
-			int currentPosition = (int)data.TellBytes();
+			int currentPosition = (int)data.Position;
 
 			try
 			{
@@ -96,8 +96,17 @@ namespace Peach.Core.Proxy.Web
 
 				while (true)
 				{
-					byte b1 = data.ReadByte();
-					byte b2 = data.ReadByte();
+					int value = data.ReadByte();
+					if (value == -1)
+						break;
+
+					byte b1 = (byte)value;
+
+					value = data.ReadByte();
+					if (value == -1)
+						break;
+
+					byte b2 = (byte)value;
 
 					if (b1 == '\r' && b2 == '\n')
 					{
@@ -109,7 +118,7 @@ namespace Peach.Core.Proxy.Web
 					else
 					{
 						lineData.Add(b1);
-						data.SeekBytes(-1, SeekOrigin.Current);
+						data.Seek(-1, SeekOrigin.Current);
 					}
 				}
 			}
@@ -117,7 +126,7 @@ namespace Peach.Core.Proxy.Web
 			{
 			}
 
-			data.SeekBytes(currentPosition, SeekOrigin.Begin);
+			data.Seek(currentPosition, SeekOrigin.Begin);
 			return null;
 		}
     }

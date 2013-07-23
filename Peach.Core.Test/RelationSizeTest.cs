@@ -101,17 +101,13 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)("Hello World".Length - 5));
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("AAAAAAAAAAA"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 6, "Hello WorldAAAAAAAAAAA");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
 
 			Assert.AreEqual("Hello World".Length, (int)dom.dataModels[0][0].InternalValue);
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])dom.dataModels[0][1].InternalValue);
+			Assert.AreEqual("Hello World", dom.dataModels[0][1].InternalValue.BitsToString());
 		}
 
 		[Test]
@@ -182,10 +178,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8(5);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("HelloWorldMore"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 5, "HelloWorldMore");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -198,11 +191,11 @@ namespace Peach.Core.Test
 
 			Blob blob1 = dom.dataModels[0][1] as Blob;
 			Variant val2 = blob1.InternalValue;
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), (byte[])val2);
+			Assert.AreEqual("Hello", val2.BitsToString());
 
 			Blob blob2 = dom.dataModels[0][2] as Blob;
 			Variant val3 = blob2.InternalValue;
-			Assert.AreEqual(Encoding.ASCII.GetBytes("World"), (byte[])val3);
+			Assert.AreEqual("World", val3.BitsToString());
 		}
 
 		[Test]
@@ -263,7 +256,7 @@ namespace Peach.Core.Test
 
 				Blob blob = model[1] as Blob;
 				Variant val2 = blob.InternalValue;
-				int len = ((byte[])val2).Length;
+				int len = val2.BitsToArray().Length;
 				Assert.GreaterOrEqual(len, 8);
 
 				Number num2 = model[2] as Number;
@@ -316,11 +309,9 @@ namespace Peach.Core.Test
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, dataModels.Count);
-			BitStream val = dom.dataModels[0].Value;
-			Assert.NotNull(val);
-
-			byte[] expected = Encoding.ASCII.GetBytes("\x01\x01\x10\x00Hello World!");
-			Assert.AreEqual(expected, val.Value);
+			var actual = dom.dataModels[0].Value.ToArray();
+			var expected = Encoding.ASCII.GetBytes("\x01\x01\x10\x00Hello World!");
+			Assert.AreEqual(expected, actual);
 		}
 
 		[Test]
@@ -370,15 +361,15 @@ namespace Peach.Core.Test
 
 			byte[] act1 = Encoding.ASCII.GetBytes("\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[0].error);
-			Assert.AreEqual(act1, actions[0].dataModel.Value.Value);
+			Assert.AreEqual(act1, actions[0].dataModel.Value.ToArray());
 
 			byte[] act2 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[1].error);
-			Assert.AreEqual(act2, actions[1].dataModel.Value.Value);
+			Assert.AreEqual(act2, actions[1].dataModel.Value.ToArray());
 
 			byte[] act3 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[2].error);
-			Assert.AreEqual(act3, actions[2].dataModel.Value.Value);
+			Assert.AreEqual(act3, actions[2].dataModel.Value.ToArray());
 
 			Assert.True(actions[3].error);
 			try
@@ -496,9 +487,7 @@ namespace Peach.Core.Test
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Assert.AreEqual(2, dom.dataModels.Count);
 
-			BitStream data = new BitStream();
-			data.WriteBytes(new byte[] { 0x00, 0x10, 0x00, 0x06, 0x00, 0x04, 0xde, 0xad, 0xbe, 0xef });
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0}", new byte[] { 0x00, 0x10, 0x00, 0x06, 0x00, 0x04, 0xde, 0xad, 0xbe, 0xef });
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[1], data);
@@ -536,19 +525,13 @@ namespace Peach.Core.Test
 			Assert.AreEqual(6, (int)len.DefaultValue);
 			Assert.AreEqual(4, (int)length.DefaultValue);
 
-			var bs = (BitStream)blob.DefaultValue;
-			Assert.NotNull(bs);
+			var final = (BitStream)blob.DefaultValue;
+			Assert.NotNull(final);
 
-			MemoryStream ms = bs.Stream as MemoryStream;
-			Assert.NotNull(ms);
+			var actual = final.ToArray();
+			var expected = new byte[] { 0xde, 0xad, 0xbe, 0xef };
 
-			Assert.AreEqual(4, ms.Length);
-
-			var buf = ms.GetBuffer();
-			Assert.AreEqual(0xde, buf[0]);
-			Assert.AreEqual(0xad, buf[1]);
-			Assert.AreEqual(0xbe, buf[2]);
-			Assert.AreEqual(0xef, buf[3]);
+			Assert.AreEqual(actual, expected);
 		}
 
 		[Test]
@@ -586,7 +569,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
 
 			Assert.AreEqual(expected, final);
@@ -631,7 +614,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			var expected = new byte[] { 201, 10, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48 };
 
 			Assert.AreEqual(expected, final);
@@ -672,7 +655,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml2)));
 
-			var final = dom.dataModels[0].Value.Value;
+			var final = dom.dataModels[0].Value.ToArray();
 			var expected = new byte[] { 201, 0 };
 
 			Assert.AreEqual(expected, final);
@@ -773,11 +756,9 @@ namespace Peach.Core.Test
 			e.startFuzzing(dom, config);
 
 			Assert.AreEqual(1, dataModels.Count);
-			BitStream val = dom.dataModels[1].Value;
-			Assert.NotNull(val);
-
-			byte[] expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
-			Assert.AreEqual(expected, val.Value);
+			var actual = dom.dataModels[1].Value.ToArray();
+			var expected = Encoding.ASCII.GetBytes("\x03\x02\x30");
+			Assert.AreEqual(expected, actual);
 		}
 
 		[Test]
@@ -810,7 +791,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[3].Value.Value;
+			var val = dom.dataModels[3].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x5Hello"), val);
 		}
 
@@ -837,7 +818,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var val = dom.dataModels[1].Value.Value;
+			var val = dom.dataModels[1].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x40\x41\x42"), val);
 		}
 
@@ -867,7 +848,7 @@ namespace Peach.Core.Test
 			Assert.AreEqual(6, size);
 
 			// Ensure 'DM' has proper value
-			byte[] actual = dom.dataModels[0].Value.Value;
+			byte[] actual = dom.dataModels[0].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x6Hello"), actual);
 		}
 	}

@@ -59,6 +59,7 @@ namespace Peach.Core
 			engine.HaveCount += new Engine.HaveCountEventHandler(Engine_HaveCount);
 			engine.HaveParallel += new Engine.HaveParallelEventHandler(Engine_HaveParallel);
 
+			MutationStrategy.DataSetChanged += new MutationStrategy.DataSetChangedEventHandler(MutationStrategy_DataSetChanged);
 			MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
 			StateModel.Starting += new StateModelStartingEventHandler(StateModel_Starting);
 			StateModel.Finished += new StateModelFinishedEventHandler(StateModel_Finished);
@@ -71,6 +72,7 @@ namespace Peach.Core
 
 		public void Finalize(Engine engine, RunContext context)
 		{
+			MutationStrategy.DataSetChanged -= MutationStrategy_DataSetChanged;
 			MutationStrategy.Mutating -= MutationStrategy_Mutating;
 			StateModel.Starting -= StateModel_Starting;
 			StateModel.Finished -= StateModel_Finished;
@@ -79,6 +81,10 @@ namespace Peach.Core
 			State.ChangingState -= State_ChangingState;
 			Core.Dom.Action.Starting -= Action_Starting;
 			Core.Dom.Action.Finished -= Action_Finished;
+		}
+
+		protected virtual void MutationStrategy_DataSetChanged(Dom.Action action, Dom.Data data)
+		{
 		}
 
 		protected virtual void MutationStrategy_Mutating(string elementName, string mutatorName)

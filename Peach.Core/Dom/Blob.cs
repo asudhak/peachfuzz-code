@@ -67,13 +67,13 @@ namespace Peach.Core.Dom
 	{
 		public Blob()
 		{
-			_defaultValue = new Variant(new byte[0]);
+			_defaultValue = new Variant(new BitStream());
 		}
 		
 		public Blob(string name)
 			: base(name)
 		{
-			_defaultValue = new Variant(new byte[0]);
+			_defaultValue = new Variant(new BitStream());
 		}
 
 		public static DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
@@ -88,29 +88,34 @@ namespace Peach.Core.Dom
 			context.handleCommonDataElementValue(node, blob);
 
 			if (blob.DefaultValue == null)
-				blob.DefaultValue = new Variant(new byte[0]);
+				blob.DefaultValue = new Variant(new BitStream());
+
+			BitwiseStream bs;
 
 			if (blob.DefaultValue.GetVariantType() == Variant.VariantType.String)
-				blob.DefaultValue = new Variant(ASCIIEncoding.ASCII.GetBytes((string)blob.DefaultValue));
+			{
+				bs = new BitStream();
+				new BitWriter(bs).WriteString((string)blob.DefaultValue);
+			}
+			else
+			{
+				System.Diagnostics.Debug.Assert(blob.DefaultValue.GetVariantType() == Variant.VariantType.BitStream);
+				bs = (BitwiseStream)blob.DefaultValue;
+			}
+
+			bs.Seek(0, SeekOrigin.Begin);
+			blob.DefaultValue = new Variant(bs);
 
 			if (blob.hasLength)
 			{
-				BitStream bs = (BitStream)blob.DefaultValue;
 				if (bs.LengthBits > blob.lengthAsBits)
 					throw new PeachException("Error, value of " + blob.debugName + " is longer than specified length.");
-				else if (bs.LengthBits < blob.lengthAsBits)
-					ExpandDefaultValue(blob, bs);
+
+				if (bs.LengthBits < blob.lengthAsBits)
+					bs.SetLengthBits(blob.lengthAsBits);
 			}
 
 			return blob;
-		}
-
-		private static void ExpandDefaultValue(Blob blob, BitStream bs)
-		{
-			bs.SeekBits(blob.lengthAsBits - 1, SeekOrigin.Begin);
-			bs.WriteBit(0);
-			bs.SeekBits(0, SeekOrigin.Begin);
-			blob.DefaultValue = new Variant(bs);
 		}
 	}
 }

@@ -185,13 +185,9 @@ namespace Peach.Core.Dom
 
 		bool _inDefaultValue = false;
 
-		[OnDeserialized]
-		void OnDeserialized(StreamingContext context)
+		[OnCloned]
+		void OnCloned(Padding original, object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
 			// DataElement.Invalidated is not serialized, so re-subscribe to the event
 			if (_alignedTo != null)
 				_alignedTo.Invalidated += new InvalidatedEventHandler(_alignedTo_Invalidated);
@@ -202,7 +198,7 @@ namespace Peach.Core.Dom
 			get
 			{
 				if (_inDefaultValue)
-					return new Variant(new byte[0]);
+					return new Variant(new BitStream());
 
 				// Prevent recursion
 				_inDefaultValue = true;
@@ -214,12 +210,18 @@ namespace Peach.Core.Dom
 						alignedElement = _alignedTo;
 
 					long currentLength = alignedElement.CalcLengthBits();
+					long count = currentLength % _alignment;
+
+					if (count != 0)
+						count = _alignment - count;
 
 					BitStream data = new BitStream();
-
-					while (((currentLength + data.LengthBits) % _alignment) != 0)
-						data.WriteBit(0);
-
+					while (count > 0)
+					{
+						int bitlen = (int)Math.Min(count, 64);
+						data.WriteBits(0, bitlen);
+						count -= bitlen;
+					}
 					data.SeekBits(0, System.IO.SeekOrigin.Begin);
 
 					return new Variant(data);
@@ -234,6 +236,13 @@ namespace Peach.Core.Dom
 			{
 				throw new InvalidOperationException("DefaultValue cannot be set on Padding element!");
 			}
+		}
+
+		public void OnClone()
+		{
+			// DataElement.Invalidated is not serialized, so re-subscribe to the event
+			if (_alignedTo != null)
+				_alignedTo.Invalidated += new InvalidatedEventHandler(_alignedTo_Invalidated);
 		}
 	}
 }

@@ -1146,7 +1146,7 @@ namespace Peach.Core.Analyzers
 					if (array == null)
 						throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
 
-					elem.DefaultValue = new Variant(array);
+					elem.DefaultValue = new Variant(new BitStream(array));
 					break;
 				case "literal":
 

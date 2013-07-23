@@ -55,7 +55,7 @@ namespace Peach.Core.Test.Transformers.Encode
             // -- this is the pre-calculated result from Peach2.3 on the blob: "abcdef" (this becomes "EBECEDEEEFEG")
             byte[] precalcResult = Encoding.ASCII.GetBytes("EBECEDEEEFEG");
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
     }
 }

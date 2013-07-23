@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -136,9 +137,9 @@ namespace Peach.Core.Publishers
 			return _client.EndRead(asyncResult);
 		}
 
-		protected virtual void ClientWrite(byte[] buffer, int offset, int count)
+		protected virtual void ClientWrite(BitwiseStream data)
 		{
-			_client.Write(buffer, offset, count);
+			data.CopyTo(_client);
 		}
 
 		protected virtual void ClientShutdown()
@@ -221,16 +222,16 @@ namespace Peach.Core.Publishers
 			WantBytes(1);
 		}
 
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
 			lock (_clientLock)
 			{
 				try
 				{
                     if (Logger.IsDebugEnabled)
-                        Logger.Debug("\n\n" + Utilities.HexDump(buffer, offset, count));
+                        Logger.Debug("\n\n" + Utilities.HexDump(data));
 
-					ClientWrite(buffer, offset, count);
+					ClientWrite(data);
 				}
 				catch (Exception ex)
 				{

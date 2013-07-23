@@ -64,7 +64,7 @@ namespace Peach.Core.Test.Fixups
 			// -- this is the pre-calculated checksum from Peach2.3 on the blob: "Hello"
 			byte[] precalcChecksum = new byte[] { 0x2f, 0x84 };
 			Assert.AreEqual(1, values.Count);
-			Assert.AreEqual(precalcChecksum, values[0].Value);
+			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
 
 	}

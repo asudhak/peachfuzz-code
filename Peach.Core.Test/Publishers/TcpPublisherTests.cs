@@ -9,6 +9,7 @@ using Peach.Core.Analyzers;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
+using System.Diagnostics;
 
 namespace Peach.Core.Test.Publishers
 {
@@ -305,7 +306,18 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
+
+			var sw = new Stopwatch();
+			sw.Start();
+
 			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
+
+			sw.Stop();
+
+			var delta = sw.ElapsedMilliseconds;
+
+			Assert.Less(delta, 10500);
+			Assert.Greater(delta, 10000);
 		}
 
 		[Test]
@@ -359,14 +371,15 @@ namespace Peach.Core.Test.Publishers
 
 			Engine e = new Engine(null);
 
-			var before = DateTime.Now;
+			var sw = new Stopwatch();
+			sw.Start();
 			e.startFuzzing(dom, config);
-			var after = DateTime.Now;
+			sw.Stop();
 
-			var delta = after - before;
+			var delta = sw.ElapsedMilliseconds;
 
-			Assert.Less(delta, TimeSpan.FromSeconds(2));
-			Assert.Greater(delta, TimeSpan.FromSeconds(1));
+			Assert.Less(delta, 2000);
+			Assert.Greater(delta, 1000);
 
 		}
 	}

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups.Libraries
 {
@@ -195,6 +196,44 @@ namespace Peach.Core.Fixups.Libraries
             crc &= crcmask;
             return (crc);
         }
+
+		public ulong crctablefast(Stream stream)
+		{
+			// fast lookup table algorithm without augmented zero bytes, e.g. used in pkzip.
+			// only usable with polynom orders of 8, 16, 24 or 32.
+			ulong crc = crcinit_direct;
+			if (refin != 0)
+			{
+				crc = reflect(crc, order);
+			}
+			if (refin == 0)
+			{
+				var buffer = new byte[BitwiseStream.BlockCopySize];
+				int nread;
+				while ((nread = stream.Read(buffer, 0, buffer.Length)) != 0)
+				{
+					for (int i = 0; i < nread; ++i)
+						crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ buffer[i]];
+				}
+			}
+			else
+			{
+				var buffer = new byte[BitwiseStream.BlockCopySize];
+				int nread;
+				while ((nread = stream.Read(buffer, 0, buffer.Length)) != 0)
+				{
+					for (int i = 0; i < nread; ++i)
+						crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ buffer[i]];
+				}
+			}
+			if ((refout ^ refin) != 0)
+			{
+				crc = reflect(crc, order);
+			}
+			crc ^= crcxor;
+			crc &= crcmask;
+			return (crc);
+		}
 
 		public ulong crctable(byte[] p)
 		{

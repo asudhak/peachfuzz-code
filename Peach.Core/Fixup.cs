@@ -42,23 +42,20 @@ namespace Peach.Core
 		protected bool isRecursing = false;
 		protected DataElement parent = null;
 
-		[NonSerialized]
 		protected Dictionary<string, DataElement> elements = null;
 
-		// Needed for re-subscribing the Invalidated event on deserialize
-		private List<Tuple<string, DataElement>> refs = new List<Tuple<string, DataElement>>();
-		private bool resolvedRefs = false;
+		private Dictionary<string, string> refs = new Dictionary<string,string>();
 
-		// Returns a tuple of ref key to ref value, eg: ("ref1", "DataModel.Emenent_0")
+		/// <summary>
+		/// Returns mapping of ref key to ref value, eg: ("ref1", "DataModel.Emenent_0")
+		/// </summary>
 		public IEnumerable<Tuple<string, string>> references
 		{
 			get
 			{
 				foreach (var item in refs)
 				{
-					System.Diagnostics.Debug.Assert(args.ContainsKey(item.Item1));
-					var ret = new Tuple<string, string>(item.Item1, (string)args[item.Item1]);
-					yield return ret;
+					yield return new Tuple<string, string>(item.Key, item.Value);
 				}
 			}
 		}
@@ -92,41 +89,26 @@ namespace Peach.Core
 			}
 
 			foreach (var item in refs)
-				this.refs.Add(new Tuple<string, DataElement>(item, null));
+				this.refs.Add(item, (string)args[item]);
 		}
 
 		public void updateRef(string refKey, string refValue)
 		{
-			int i = 0;
-			for (i = 0; i < refs.Count; ++i)
+			refs[refKey] = refValue;
+
+			if (elements != null)
 			{
-				var item = refs[i];
-				
-				if (item.Item1 == refKey)
-				{
-					if (resolvedRefs)
-					{
-						System.Diagnostics.Debug.Assert(item.Item2 != null);
-						System.Diagnostics.Debug.Assert(elements.ContainsKey(refValue));
-						item.Item2.Invalidated -= OnInvalidated;
+				DataElement elem;
+				if (elements.TryGetValue(refKey, out elem))
+					elem.Invalidated -= OnInvalidated;
 
-						var newElem = parent.find(refValue);
-						if (newElem == null)
-							throw new PeachException(string.Format("{0} could not find ref element '{1}'", this.GetType().Name, refValue));
+				elem = parent.find(refValue);
+				if (elem == null)
+					throw new PeachException(string.Format("{0} could not find ref element '{1}'", this.GetType().Name, refValue));
 
-						newElem.Invalidated += new InvalidatedEventHandler(OnInvalidated);
-						elements[refValue] = newElem;
-					}
-
-					break;
-				}
+				elem.Invalidated += new InvalidatedEventHandler(OnInvalidated);
+				elements[refKey] = elem;
 			}
-
-			if (i == refs.Count)
-				throw new ArgumentOutOfRangeException("refKey", "Reference key could not be found.");
-
-			System.Diagnostics.Debug.Assert(args.ContainsKey(refKey));
-			args[refKey] = new Variant(refValue);
 		}
 
 		/// <summary>
@@ -154,26 +136,18 @@ namespace Peach.Core
 		{
 			System.Diagnostics.Debug.Assert(parent != null);
 
-			if (!resolvedRefs)
+			if (elements == null)
 			{
-				resolvedRefs = true;
+				elements = new Dictionary<string, DataElement>();
 
-				System.Diagnostics.Debug.Assert(elements == null);
-				elements = new Dictionary<string,DataElement>();
-
-				for (int i = 0; i < refs.Count; ++i)
+				foreach (var kv in refs)
 				{
-					System.Diagnostics.Debug.Assert(refs[i].Item2 == null);
-					string refName = refs[i].Item1;
-					string elemName = (string)args[refName];
-
-					var elem = obj.find(elemName);
+					var elem = obj.find(kv.Value);
 					if (elem == null)
-						throw new PeachException(string.Format("{0} could not find ref element '{1}'", this.GetType().Name, elemName));
+						throw new PeachException(string.Format("{0} could not find ref element '{1}'", this.GetType().Name, kv.Value));
 
 					elem.Invalidated += new InvalidatedEventHandler(OnInvalidated);
-					elements.Add(refName, elem);
-					refs[i] = new Tuple<string,DataElement>(refName, elem);
+					elements.Add(kv.Key, elem);
 				}
 			}
 
@@ -185,139 +159,42 @@ namespace Peach.Core
 			parent.Invalidate();
 		}
 
-		[Serializable]
-		class FullName
+		[OnCloned]
+		private void OnCloned(Fixup original, object context)
 		{
-			public FullName(string refName, string fullName)
+			if (elements != null)
 			{
-				this.refName = refName;
-				this.fullName = fullName;
-			}
-
-			public string refName;
-			public string fullName;
-		}
-
-		private List<FullName> fullNames = null;
-
-		class Metadata : Dictionary<string, string> {}
-
-		[OnSerializing]
-		private void OnSerializing(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			System.Diagnostics.Debug.Assert(fullNames == null);
-			fullNames = new List<FullName>();
-
-			System.Diagnostics.Debug.Assert(!ctx.metadata.ContainsKey(this));
-			Metadata m = new Metadata();
-
-			for (int i = 0; i < refs.Count; ++i)
-			{
-				string relName;
-				var name = refs[i].Item1;
-				var elemName = (string)args[name];
-				var elem = refs[i].Item2;
-
-				// Fixup references an element that is not a child of ctx.root
-				if (elem == null)
+				foreach (var kv in elements)
 				{
-					System.Diagnostics.Debug.Assert(!resolvedRefs);
-					elem = parent.find(elemName);
-					if (elem == null)
-					{
-						if (elemName != ctx.oldName)
-							continue;
-
-						elem = ctx.root;
-					}
-				}
-
-				if (ctx.rename.Contains(elem))
-				{
-					m.Add(name, elemName);
-					args[name] = new Variant(ctx.newName);
-				}
-				else if (!elem.isChildOf(ctx.root, out relName))
-				{
-					ctx.elements[relName] = elem;
-					fullNames.Add(new FullName(name, relName));
-					refs[i] = new Tuple<string, DataElement>(name, null);
+					// DataElement.Invalidated is not serialized, so register for a re-subscribe to the event
+					kv.Value.Invalidated += new InvalidatedEventHandler(OnInvalidated);
 				}
 			}
 
-			ctx.metadata.Add(this, m);
-		}
-
-		[OnSerialized]
-		private void OnSerialized(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			System.Diagnostics.Debug.Assert(fullNames != null);
-			fullNames = null;
-
-			System.Diagnostics.Debug.Assert(ctx.metadata.ContainsKey(this));
-			Metadata m = ctx.metadata[this] as Metadata;
-
-			for (int i = 0; i < refs.Count; ++i)
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
+			if (ctx != null)
 			{
-				string tgt = refs[i].Item1;
+				var toUpdate = new Dictionary<string, string>();
 
-				if (m.ContainsKey(tgt))
-					args[tgt] = new Variant(m[tgt]);
-
-				if (refs[i].Item2 == null && resolvedRefs)
-					refs[i] = new Tuple<string, DataElement>(tgt, elements[tgt]);
-			}
-		}
-
-		[OnDeserialized]
-		private void OnDeserialized(StreamingContext context)
-		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
-
-			// DataElement.Invalidated is not serialized, so re-subscribe to the event
-			// Can't use the Dictionary, must use a list
-			// See: http://stackoverflow.com/questions/457134/strange-behaviour-of-net-binary-serialization-on-dictionarykey-value
-
-			System.Diagnostics.Debug.Assert(fullNames != null);
-
-			// If we haven't resolved any references yet, there is nothing to do
-			if (!resolvedRefs)
-			{
-				fullNames = null;
-				return;
-			}
-
-			System.Diagnostics.Debug.Assert(elements == null);
-			elements = new Dictionary<string, DataElement>();
-
-			for (int i = 0; i < refs.Count; ++i)
-			{
-				if (refs[i].Item2 == null)
+				// Find all ref='xxx' values where the name should be changed to ref='yyy'
+				foreach (var kv in original.refs)
 				{
-					// DataElement is not a child of ctx.root, resolve it
-					string tgt = refs[i].Item1;
-					var rec = fullNames.Find(v => v.refName == tgt);
-					System.Diagnostics.Debug.Assert(rec != null);
-					var elem = ctx.elements[rec.fullName];
-					System.Diagnostics.Debug.Assert(elem != null);
-					refs[i] = new Tuple<string, DataElement>(tgt, elem);
+					DataElement elem;
+					if (original.elements == null || !original.elements.TryGetValue(kv.Key, out elem))
+						elem = null;
+					else if (elem != ctx.root.getRoot() && !elem.isChildOf(ctx.root.getRoot()))
+						continue; // ref'd element was removed by a mutator
+
+					string name = ctx.UpdateRefName(original.parent, elem, kv.Value);
+					if (name != kv.Value)
+						toUpdate.Add(kv.Key, name);
 				}
 
-				refs[i].Item2.Invalidated += new InvalidatedEventHandler(OnInvalidated);
-				elements.Add(refs[i].Item1, refs[i].Item2);
+				foreach (var kv in toUpdate)
+				{
+					updateRef(kv.Key, kv.Value);
+				}
 			}
-
-			fullNames = null;
 		}
 
 		protected abstract Variant fixupImpl();

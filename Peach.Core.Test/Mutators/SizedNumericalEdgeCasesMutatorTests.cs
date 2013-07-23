@@ -61,7 +61,7 @@ namespace Peach.Core.Test.Mutators
             foreach (var item in dataModels)
             {
                 Assert.AreEqual(Variant.VariantType.Long, item[0].InternalValue.GetVariantType());
-                Assert.AreEqual((long)item[0].InternalValue, item[1].Value.Value.Length);
+                Assert.AreEqual((long)item[0].InternalValue, item[1].Value.Length);
             }
         }
 
@@ -110,7 +110,7 @@ namespace Peach.Core.Test.Mutators
 				Assert.AreEqual(Variant.VariantType.Long, item[0].InternalValue.GetVariantType());
 				long len = (long)item[0].InternalValue;
 				Assert.GreaterOrEqual(len, 10);
-				Assert.AreEqual(len - 10, item[1].Value.Value.Length);
+				Assert.AreEqual(len - 10, item[1].Value.Length);
 			}
 		}
 

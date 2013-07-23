@@ -14,7 +14,7 @@ deps = [
 	'System.Core.dll',
 	'System.Data.dll',
 	'System.Web.dll',
-	'Ionic.Zip.dll',
+	'Ionic.Zip.Reduced.dll',
 	'IronPython.dll',
 	'IronPython.Modules.dll',
 	'IronRuby.dll',

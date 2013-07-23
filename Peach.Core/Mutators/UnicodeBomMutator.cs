@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
@@ -75,20 +76,26 @@ namespace Peach.Core.Mutators
         //
         public override void sequentialMutation(DataElement obj)
         {
-            obj.MutatedValue = new Variant(values[pos]);
+            var item = values[pos];
+            var bs = new BitStream();
+            bs.Write(item, 0, item.Length);
+            obj.MutatedValue = new Variant(bs);
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            obj.mutationFlags = MutateOverride.Default;
+            obj.mutationFlags |= MutateOverride.TypeTransform;
         }
 
         // RANDOM_MUTATION
         //
         public override void randomMutation(DataElement obj)
         {
-            obj.MutatedValue = new Variant(context.Random.Choice(values));
+            var item = context.Random.Choice(values);
+            var bs = new BitStream();
+            bs.Write(item, 0, item.Length);
+            obj.MutatedValue = new Variant(bs);
 
-            obj.mutationFlags = DataElement.MUTATE_DEFAULT;
-            obj.mutationFlags |= DataElement.MUTATE_OVERRIDE_TYPE_TRANSFORM;
+            obj.mutationFlags = MutateOverride.Default;
+            obj.mutationFlags |= MutateOverride.TypeTransform;
         }
     }
 }

@@ -40,6 +40,7 @@ using Peach.Core.Dom;
 using NLog;
 using Peach.Core.Agent;
 using System.Net.Sockets;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent.Channels
 {
@@ -140,10 +141,18 @@ namespace Peach.Core.Agent.Channels
 			RemoveProxy();
 
 			IDictionary props = new Hashtable() as IDictionary;
+			props["port"] = 0;
 			props["timeout"] = (uint)1000*60*1; // wait one minute max
 			props["connectionTimeout"] = (uint)1000*60*1; // wait one minute max
 
-			_channel = new TcpClientChannel(props, null);
+#if !MONO
+			if (RemotingConfiguration.CustomErrorsMode != CustomErrorsModes.Off)
+				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+#endif
+
+			BinaryClientFormatterSinkProvider clientProvider = new BinaryClientFormatterSinkProvider();
+
+			_channel = new TcpClientChannel(props, clientProvider);
 			ChannelServices.RegisterChannel(_channel, false); // Disable security for speed
 
 			proxy = (AgentServiceTcpRemote)Activator.GetObject(typeof(AgentServiceTcpRemote), _url);
@@ -217,6 +226,18 @@ namespace Peach.Core.Agent.Channels
 
 			Publisher ret = null;
 			PerformRemoting(delegate() { ret = proxy.CreatePublisher(cls, args); });
+
+			return ret;
+		}
+
+		public override BitwiseStream CreateBitwiseStream()
+		{
+			logger.Trace("CreateBitwiseStream");
+
+			OnCreateBitwiseStreamEvent();
+
+			BitwiseStream ret = null;
+			PerformRemoting(delegate() { ret = proxy.CreateBitwiseStream(); });
 
 			return ret;
 		}
@@ -386,6 +407,12 @@ namespace Peach.Core.Agent.Channels
 			return agent.CreatePublisher(cls, args);
 		}
 
+		public BitwiseStream CreateBitwiseStream()
+		{
+			logger.Trace("CreateBitwiseStream");
+			return new BitStream();
+		}
+
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
@@ -472,11 +499,15 @@ namespace Peach.Core.Agent.Channels
 				port = int.Parse(args["port"]);
 
 			//select channel to communicate
-			//IDictionary props = new Hashtable() as IDictionary;
-			//props["port"] = port;
+			IDictionary props = new Hashtable() as IDictionary;
+			props["port"] = port;
+			props["name"] = string.Empty;
 			//props["exclusiveAddressUse"] = false;
 			//var chan = new TcpServerChannel(props, null);
-			TcpChannel chan = new TcpChannel(port);
+			BinaryServerFormatterSinkProvider serverProvider = new BinaryServerFormatterSinkProvider();
+			serverProvider.TypeFilterLevel = System.Runtime.Serialization.Formatters.TypeFilterLevel.Full;
+			TcpChannel chan = new TcpChannel(props, null, serverProvider);
+
 			ChannelServices.RegisterChannel(chan, false);    //register channel
 
 			//register remote object

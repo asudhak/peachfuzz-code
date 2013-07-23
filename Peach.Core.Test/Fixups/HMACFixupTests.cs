@@ -59,7 +59,7 @@ namespace Peach.Core.Test.Fixups
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: { 1, 2, 3, 4, 5 }
             byte[] precalcChecksum = new byte[] { 0xD2, 0xF9, 0x7D, 0xE0, 0x65, 0x0F, 0xE1, 0x24, 0xB7, 0xCF, 0xA5, 0x7F, 0x70, 0xA6, 0xBD, 0x68, 0xC7, 0x14, 0xCC, 0x41};
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcChecksum, values[0].Value);
+            Assert.AreEqual(precalcChecksum, values[0].ToArray());
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace Peach.Core.Test.Fixups
             // -- this is the pre-calculated checksum from Peach2.3 on the blob: { 1, 2, 3, 4, 5 }
             byte[] precalcChecksum = new byte[] { 0x37, 0xf4, 0xbd, 0x2e, 0x44, 0x93, 0x01, 0x3c, 0x5d, 0x82, 0x99, 0xf2 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcChecksum, values[0].Value);
+            Assert.AreEqual(precalcChecksum, values[0].ToArray());
         }
 
         [Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to create instance of 'Fixup' named 'HMAC'.\nExtended error: Exception during object creation: The truncate length is greater than the hash size for the specified algorithm.")]

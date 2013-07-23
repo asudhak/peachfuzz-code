@@ -10,7 +10,7 @@ namespace Peach.Core.Test
 	public class DataModelCollector
 	{
 		protected List<Variant> mutations = null;
-		protected List<BitStream> values = null;
+		protected List<BitwiseStream> values = null;
 		protected List<Dom.DataModel> dataModels = null;
 		protected List<Dom.DataModel> mutatedDataModels = null;
 		protected List<Dom.Action> actions = null;
@@ -37,7 +37,7 @@ namespace Peach.Core.Test
 
 		protected void ResetContainers()
 		{
-			values = new List<BitStream>();
+			values = new List<BitwiseStream>();
 			mutations = new List<Variant>();
 			actions = new List<Dom.Action>();
 			dataModels = new List<Dom.DataModel>();

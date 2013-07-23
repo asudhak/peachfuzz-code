@@ -70,7 +70,7 @@ namespace Peach.Core
 		ulong? _valueULong;
 		string _valueString;
 		byte[] _valueByteArray;
-		BitStream _valueBitStream = null;
+		BitwiseStream _valueBitStream = null;
 
 		public Variant()
 		{
@@ -116,10 +116,10 @@ namespace Peach.Core
 
 		public Variant(byte[] v)
 		{
-			SetValue(v);
+			SetValue(new BitStream(v));
 		}
 
-		public Variant(BitStream v)
+		public Variant(BitwiseStream v)
 		{
 			SetValue(v);
 		}
@@ -164,15 +164,15 @@ namespace Peach.Core
 			_valueByteArray = null;
 		}
 
-		public void SetValue(byte[] v)
-		{
-			_type = VariantType.ByteString;
-			_valueByteArray = v;
-			_valueString = null;
-			_valueBitStream = null;
-		}
+		//public void SetValue(byte[] v)
+		//{
+		//    _type = VariantType.ByteString;
+		//    _valueByteArray = v;
+		//    _valueString = null;
+		//    _valueBitStream = null;
+		//}
 
-		public void SetValue(BitStream v)
+		public void SetValue(BitwiseStream v)
 		{
 			_type = VariantType.BitStream;
 			_valueBitStream = v;
@@ -219,27 +219,8 @@ namespace Peach.Core
 
 						return Convert.ToInt32(v._valueString);
 					case VariantType.ByteString:
-						BitStream bs = new BitStream(v._valueByteArray);
-						switch (bs.LengthBytes)
-						{
-							case 8:
-								return (int)bs.ReadInt8();
-							case 16:
-								return (int)bs.ReadInt16();
-							case 32:
-								return bs.ReadInt32();
-						}
-
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
-
 					case VariantType.BitStream:
-						if (v._valueInt != null)
-							return (int)v._valueInt;
-						if (v._valueLong != null)
-							return (int)v._valueLong;
-						if (v._valueULong != null)
-							return (int)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -281,27 +262,8 @@ namespace Peach.Core
 
 						return Convert.ToUInt32(v._valueString);
 					case VariantType.ByteString:
-						BitStream bs = new BitStream(v._valueByteArray);
-						switch (bs.LengthBytes)
-						{
-							case 8:
-								return (uint)bs.ReadUInt8();
-							case 16:
-								return (uint)bs.ReadUInt16();
-							case 32:
-								return bs.ReadUInt32();
-						}
-
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
-
 					case VariantType.BitStream:
-						if (v._valueInt != null)
-							return (uint)v._valueInt;
-						if (v._valueLong != null)
-							return (uint)v._valueLong;
-						if (v._valueULong != null)
-							return (uint)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -375,22 +337,8 @@ namespace Peach.Core
 
 						return Convert.ToUInt64(v._valueString);
 					case VariantType.ByteString:
-						if (v._valueInt != null)
-							return (ulong)v._valueInt;
-						if (v._valueLong != null)
-							return (ulong)v._valueLong;
-						if (v._valueULong != null)
-							return (ulong)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert byte[] to int type.");
 					case VariantType.BitStream:
-						if (v._valueInt != null)
-							return (ulong)v._valueInt;
-						if (v._valueLong != null)
-							return (ulong)v._valueLong;
-						if (v._valueULong != null)
-							return (ulong)v._valueULong;
-
 						throw new NotSupportedException("Unable to convert BitStream to int type.");
 					default:
 						throw new NotSupportedException("Unable to convert to unknown type.");
@@ -456,13 +404,13 @@ namespace Peach.Core
 				case VariantType.ByteString:
 					return v._valueByteArray;
 				case VariantType.BitStream:
-					return v._valueBitStream.Value;
+					throw new NotSupportedException("Unable to convert BitStream to byte[] type.");
 				default:
 					throw new NotSupportedException("Unable to convert to unknown type.");
 			}
 		}
 
-		public static explicit operator BitStream(Variant v)
+		public static explicit operator BitwiseStream(Variant v)
 		{
 			if (v == null)
 				throw new ApplicationException("Parameter v is null");
@@ -478,7 +426,7 @@ namespace Peach.Core
 				case VariantType.String:
 					throw new NotSupportedException("Unable to convert string to BitStream type.");
 				case VariantType.ByteString:
-					return new BitStream(v._valueByteArray);
+					throw new NotSupportedException("Unable to convert byte[] to BitStream type.");
 				case VariantType.BitStream:
 					return v._valueBitStream;
 				default:
@@ -520,29 +468,42 @@ namespace Peach.Core
 			if (((object)a == null) || ((object)b == null))
 				return false;
 
-			try
+			if (a.GetVariantType() == VariantType.BitStream && b.GetVariantType() == VariantType.BitStream)
 			{
-				string stra = (string)a;
-				string strb = (string)b;
+				BitStream aa = (BitStream)a;
+				BitStream bb = (BitStream)b;
 
-				if (stra.Equals(strb))
-					return true;
-				else
+				if (aa.Length != bb.Length)
 					return false;
+
+				aa.Seek(0, System.IO.SeekOrigin.Begin);
+				bb.Seek(0, System.IO.SeekOrigin.Begin);
+
+				while (true)
+				{
+					int lhs = aa.ReadByte();
+					int rhs = bb.ReadByte();
+
+					if (lhs != rhs)
+						return false;
+
+					if (lhs == -1)
+						break;
+				}
+
+				return true;
 			}
-			catch { }
 
-			byte[] aa = (byte[])a;
-			byte[] bb = (byte[])b;
+			if (a.GetVariantType() == VariantType.BitStream || b.GetVariantType() == VariantType.BitStream)
+				throw new NotSupportedException("Unable to compare BitStream to Non-BitStream.");
 
-			if (aa.Length != bb.Length)
+			string stra = (string)a;
+			string strb = (string)b;
+
+			if (stra.Equals(strb))
+				return true;
+			else
 				return false;
-
-			for (int cnt = 0; cnt < aa.Length; cnt++)
-				if (aa[cnt] != bb[cnt])
-					return false;
-
-			return true;
 		}
 
 		public static bool operator !=(Variant a, Variant b)
@@ -550,25 +511,52 @@ namespace Peach.Core
 			return !(a == b);
 		}
 
-		private static string BitsToString(BitStream bs)
+		private static string BitsToString(BitwiseStream bs)
 		{
-			long end = Math.Min(32, bs.LengthBytes);
-			if (end == 0)
-				return "";
-
-			long pos = bs.TellBits();
+			byte[] buf = new byte[32];
+			long pos = bs.PositionBits;
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
-			byte[] buf = bs.ReadBitsAsBytes(end * 8);
-			bs.SeekBits(pos, System.IO.SeekOrigin.Begin);
+			int len = bs.Read(buf, 0, buf.Length);
+
+			if (len == 0)
+				return "";
 
 			StringBuilder ret = new StringBuilder();
 			ret.AppendFormat("{0:x2}", buf[0]);
 
-			for (long i = 1; i < end; ++i)
+			int end = Math.Min(len, buf.Length);
+			for (int i = 1; i < end; ++i)
 				ret.AppendFormat(" {0:x2}", buf[i]);
 
-			if (end != bs.LengthBytes)
-				ret.AppendFormat(".. (Len: {0} bits)", bs.LengthBits);
+			long lengthBits = bs.LengthBits;
+
+			if ((len * 8) < lengthBits)
+			{
+				if (len < buf.Length)
+				{
+					ulong tmp;
+					int bits = bs.ReadBits(out tmp, 64);
+					System.Diagnostics.Debug.Assert(bits < 8);
+
+					tmp <<= (8 - bits);
+
+					if (len != 0)
+						ret.Append(" ");
+
+					ret.AppendFormat("{0:x2}", tmp);
+					ret.AppendFormat(" (Len: {0} bits)", lengthBits);
+				}
+				else if ((lengthBits % 8) == 0)
+				{
+					ret.AppendFormat(".. (Len: {0} bytes)", lengthBits / 8);
+				}
+				else
+				{
+					ret.AppendFormat(".. (Len: {0} bits)", lengthBits);
+				}
+			}
+
+			bs.SeekBits(pos, System.IO.SeekOrigin.Begin);
 
 			return ret.ToString();
 		}
@@ -593,34 +581,14 @@ namespace Peach.Core
 
 		public override bool Equals(object obj)
 		{
-			if (obj == null)
-				return false;
-
-			if (obj.GetType() != obj.GetType())
-				return false;
-
-			return ((Variant)obj) == this;
+			// This is a reference type so perform reference Equals
+			return base.Equals(obj);
 		}
 
 		public override int GetHashCode()
 		{
-			switch (_type)
-			{
-				case VariantType.Int:
-					return this._valueInt.GetHashCode();
-				case VariantType.Long:
-					return this._valueLong.GetHashCode();
-				case VariantType.ULong:
-					return this._valueULong.GetHashCode();
-				case VariantType.String:
-					return this._valueString.GetHashCode();
-				case VariantType.ByteString:
-					return _valueByteArray.GetHashCode();
-				case VariantType.BitStream:
-					return _valueBitStream.GetHashCode();
-				default:
-					return base.GetHashCode();
-			}
+			// This is a reference type so perform reference GetHashCode
+			return base.GetHashCode();
 		}
 
 		public override string ToString()
@@ -683,8 +651,8 @@ namespace Peach.Core
 					_valueByteArray = (byte[])serializer.Deserialize(reader);
 					break;
 				case VariantType.BitStream:
-					serializer = new XmlSerializer(typeof(BitStream));
-					_valueBitStream = (BitStream) serializer.Deserialize(reader);
+					serializer = new XmlSerializer(typeof(BitwiseStream));
+					_valueBitStream = (BitwiseStream) serializer.Deserialize(reader);
 					break;
 			}
 
@@ -720,7 +688,7 @@ namespace Peach.Core
 					serializer.Serialize(writer, _valueByteArray);
 					break;
 				case VariantType.BitStream:
-					serializer = new XmlSerializer(typeof(BitStream));
+					serializer = new XmlSerializer(typeof(BitwiseStream));
 					serializer.Serialize(writer, _valueBitStream);
 					break;
 			}

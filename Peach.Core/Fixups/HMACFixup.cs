@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups
 {
@@ -59,35 +60,31 @@ namespace Peach.Core.Fixups
 
         public HMACFixup(DataElement parent, Dictionary<string, Variant> args)
             : base(parent, args, "ref")
-		{
+        {
             ParameterParser.Parse(this, args);
             HMAC hashSizeTest = HMAC.Create(Hash.ToString());
             if (Length > (hashSizeTest.HashSize / 8))
                 throw new PeachException("The truncate length is greater than the hash size for the specified algorithm.");
             if (Length < 0)
                 throw new PeachException("The truncate length must be greater than or equal to 0.");
-		}
+        }
 
 		protected override Variant fixupImpl()
 		{
 			var from = elements["ref"];
-			byte[] data = from.Value.Value;
+			var data = from.Value;
 			HMAC hashTool = HMAC.Create(Hash.ToString());
-            hashTool.Key = Key.Value;
-            byte[] hash = hashTool.ComputeHash(data);
+			hashTool.Key = Key.Value;
+			byte[] hash = hashTool.ComputeHash(data);
 
-            byte[] truncatedHash;
-            if (Length == 0)
-            {
-                truncatedHash = hash;
-            }
-            else
-            {
-                truncatedHash = new byte[Length];
-                System.Array.Copy(hash, truncatedHash, Length);
-            }
+			var bs = new BitStream();
 
-			return new Variant(truncatedHash);
+			if (Length == 0)
+				bs.Write(hash, 0, hash.Length);
+			else
+				bs.Write(hash, 0, Length);
+
+			return new Variant(bs);
 		}
     }
 }

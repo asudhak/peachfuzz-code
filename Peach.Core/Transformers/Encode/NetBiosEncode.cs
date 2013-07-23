@@ -48,9 +48,9 @@ namespace Peach.Core.Transformers.Encode
             m_args = args;
         }
 
-        protected override BitStream internalEncode(BitStream data)
+        protected override BitwiseStream internalEncode(BitwiseStream data)
         {
-            string name = System.Text.ASCIIEncoding.ASCII.GetString(data.Value).ToUpper();
+            string name = new BitReader(data).ReadString().ToUpper();
             var sb = new System.Text.StringBuilder(32);
 
             if (m_args.ContainsKey("pad") && Boolean.Parse((string)m_args["pad"]))
@@ -77,17 +77,20 @@ namespace Peach.Core.Transformers.Encode
                 sret += "AA";
             }
 
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sret));
+            var ret = new BitStream();
+            var writer = new BitWriter(ret);
+            writer.WriteString(sret.ToString());
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
 
         protected override BitStream internalDecode(BitStream data)
         {
-            if (data.LengthBytes % 2 != 0)
-                throw new Exception("NetBiosDecode transformer internalEncode failed: Length must be divisible by two.");
+            if (data.Length % 2 != 0)
+                throw new SoftException("NetBiosDecode transformer internalEncode failed: Length must be divisible by two.");
 
-            var sb = new System.Text.StringBuilder((int)data.LengthBytes / 2);
-
-            var nbs = System.Text.ASCIIEncoding.ASCII.GetString(data.Value);
+            var sb = new System.Text.StringBuilder((int)data.Length / 2);
+            var nbs = new BitReader(data).ReadString();
 
             for (int i = 0; i < nbs.Length; i += 2)
             {
@@ -100,7 +103,11 @@ namespace Peach.Core.Transformers.Encode
                 sb.Append((Char)(part1 + part2));
             }
 
-            return new BitStream(System.Text.ASCIIEncoding.ASCII.GetBytes(sb.ToString()));
+            var ret = new BitStream();
+            var writer = new BitWriter(ret);
+            writer.WriteString(sb.ToString());
+            ret.Seek(0, System.IO.SeekOrigin.Begin);
+            return ret;
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Peach.Core.Test.Transformers.Encode
             // verify values
             byte[] precalcResult = Encoding.ASCII.GetBytes("base%2ftest+space%3ffoo%3dfoo+val%26bar%3dbar+val");
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
     }
 }

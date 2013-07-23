@@ -22,6 +22,7 @@
 //
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +34,7 @@ using Newtonsoft.Json.Linq;
 using SuperSocket.SocketBase;
 
 using Peach.Core;
+using Peach.Core.IO;
 using Peach.Core.Publishers;
 
 namespace Peach.Core.Publishers
@@ -97,24 +99,28 @@ namespace Peach.Core.Publishers
 			_socketServer.Stop();
 		}
 
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
 			_evaluated.Reset();
-			_session.Send(BuildMessage(buffer));
+			_session.Send(BuildMessage(data));
 			_evaluated.WaitOne();
 		}
 
-		protected string BuildTemplate(byte[] data)
+		protected string BuildTemplate(BitwiseStream data)
 		{
 			var value = Publish;
 
 			if (Publish == "base64")
-				value = Convert.ToBase64String((byte[])data);
+			{
+				data.Seek(0, SeekOrigin.Begin);
+				var buf = new BitReader(data).ReadBytes((int)data.Length);
+				value = Convert.ToBase64String(buf);
+			}
 
 			return _template.Replace(DataToken, value);
 		}
 
-		protected string BuildMessage(byte[] data)
+		protected string BuildMessage(BitwiseStream data)
 		{
 			var ret = new StringBuilder();
 			var msg = new JObject();

@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
 using Peach.Core.Dom;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups
 {
@@ -47,10 +48,13 @@ namespace Peach.Core.Fixups
 		protected override Variant fixupImpl()
 		{
 			var from = elements["ref"];
-			byte[] data = from.Value.Value;
+			var data = from.Value;
 			T hashTool = new T();
-			
-			return new Variant(hashTool.ComputeHash(data));
+
+			data.Seek(0, System.IO.SeekOrigin.Begin);
+
+			var hash = hashTool.ComputeHash(data);
+			return new Variant(new BitStream(hash));
 		}
 	}
 }

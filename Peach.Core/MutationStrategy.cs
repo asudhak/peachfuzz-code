@@ -50,8 +50,10 @@ namespace Peach.Core
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public delegate void MutationEventHandler(string elementName, string mutatorName);
+		public delegate void DataSetChangedEventHandler(Dom.Action action, Dom.Data data);
 
 		public static event MutationEventHandler Mutating;
+		public static event DataSetChangedEventHandler DataSetChanged;
 
 		protected RunContext _context;
 		protected Engine _engine;
@@ -185,6 +187,12 @@ namespace Peach.Core
 				Mutating(elementName, mutatorName);
 		}
 
+		protected void OnDataSetChanged(Dom.Action action, Dom.Data data)
+		{
+			if (DataSetChanged != null)
+				DataSetChanged(action, data);
+		}
+
 		/// <summary>
 		/// Allows mutation strategy to affect state change.
 		/// </summary>
@@ -203,7 +211,7 @@ namespace Peach.Core
 		/// <returns>Returns true or false</returns>
 		protected bool SupportedDataElement(Type mutator, DataElement elem)
 		{
-			MethodInfo supportedDataElement = mutator.GetMethod("supportedDataElement");
+			MethodInfo supportedDataElement = mutator.GetMethod("supportedDataElement", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
 			object[] args = new object[1];
 			args[0] = elem;
@@ -219,7 +227,7 @@ namespace Peach.Core
 		/// <returns>Returns true or false</returns>
 		protected bool SupportedState(Type mutator, State elem)
 		{
-			MethodInfo supportedState = mutator.GetMethod("supportedState");
+			MethodInfo supportedState = mutator.GetMethod("supportedState", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 			if (supportedState == null)
 				return false;
 

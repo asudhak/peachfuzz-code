@@ -56,8 +56,8 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), (byte[])blob.DefaultValue);
+			Assert.AreEqual(Variant.VariantType.BitStream, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World"), ((BitwiseStream)blob.DefaultValue).ToArray());
 		}
 
 		[Test]
@@ -73,8 +73,8 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
-			Assert.AreEqual(new byte[] { 0x41, 0x42, 0x43, 0x44 }, (byte[])blob.DefaultValue);
+			Assert.AreEqual(Variant.VariantType.BitStream, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(new byte[] { 0x41, 0x42, 0x43, 0x44 }, ((BitwiseStream)blob.DefaultValue).ToArray());
 		}
 
 		[Test]
@@ -90,8 +90,8 @@ namespace Peach.Core.Test.PitParserTests
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 			Blob blob = dom.dataModels[0][0] as Blob;
 
-			Assert.AreEqual(Variant.VariantType.ByteString, blob.DefaultValue.GetVariantType());
-			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), (byte[])blob.DefaultValue);
+			Assert.AreEqual(Variant.VariantType.BitStream, blob.DefaultValue.GetVariantType());
+			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("1234"), ((BitwiseStream)blob.DefaultValue).ToArray());
 		}
 
 		[Test]
@@ -108,20 +108,20 @@ namespace Peach.Core.Test.PitParserTests
 
 			var val = dom.dataModels[0].Value;
 			Assert.NotNull(val);
-			Assert.AreEqual(20, val.LengthBytes);
+			Assert.AreEqual(20, val.Length);
 		}
 
-		private void DoHexPad(bool throws, int length, string value)
+		private void DoHexPad(bool throws, int length, string value, bool token = false)
 		{
 			string attr = value == null ? "" : string.Format("value=\"{0}\"", value);
 
 			string template = "<Peach>\n" +
 				"	<DataModel name=\"TheDataModel\">" +
-				"		<Blob length=\"{0}\" valueType=\"hex\" {1}/>" +
+				"		<Blob length=\"{0}\" valueType=\"hex\" token=\"{2}\" {1}/>" +
 				"	</DataModel>" +
 				"</Peach>";
 
-			string xml = string.Format(template, length, attr);
+			string xml = string.Format(template, length, attr, token.ToString().ToLower());
 
 			PitParser parser = new PitParser();
 
@@ -143,7 +143,7 @@ namespace Peach.Core.Test.PitParserTests
 			var type = blob.DefaultValue.GetVariantType();
 			Assert.True(Variant.VariantType.BitStream == type ||Variant.VariantType.ByteString == type);
 			BitStream bs = (BitStream)blob.DefaultValue;
-			Assert.AreEqual(length, bs.LengthBytes);
+			Assert.AreEqual(length, bs.Length);
 		}
 
 		[Test]
@@ -153,6 +153,10 @@ namespace Peach.Core.Test.PitParserTests
 			DoHexPad(false, 4, "01 02 03 04");
 			DoHexPad(false, 4, "01 02 03");
 			DoHexPad(true, 4, "01 02 03 04 05");
+
+			DoHexPad(true, 4, "01 02 03 04 05", true);
+			DoHexPad(false, 4, "01 02 03", true);
+			DoHexPad(false, 4, "", true);
 		}
 	}
 }

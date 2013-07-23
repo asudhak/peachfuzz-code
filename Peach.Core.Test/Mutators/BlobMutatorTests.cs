@@ -85,7 +85,7 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var mutation in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, mutation.GetVariantType());
+				Assert.AreEqual(Variant.VariantType.BitStream, mutation.GetVariantType());
 			}
 		}
 
@@ -147,8 +147,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				if (val.Length < minLen)
 					minLen = val.Length;
@@ -184,7 +184,7 @@ namespace Peach.Core.Test.Mutators
 		[Test]
 		public void TestExpandIncrementing()
 		{
-			RunRandom(100000, "ExpandIncrementing", 4, 0);
+			RunRandom(2000, "ExpandIncrementing", 4, 0);
 
 			// Should expand by len bytes [0,255]
 			// When expanding, will stick len bytes somewhere in the blob
@@ -193,48 +193,43 @@ namespace Peach.Core.Test.Mutators
 
 			int minLen = int.MaxValue;
 			int maxLen = int.MinValue;
-			int[] minCount = new int[256];
-			int[] maxCount = new int[256];
+			int[] expanded = new int[256];
+			int[] nums = new int[256];
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				if (val.Length < minLen)
 					minLen = val.Length;
 				if (val.Length > maxLen)
 					maxLen = val.Length;
 
-				int expanded = val.Length - 4;
+				int expandedBy = val.Length - 4;
+				expanded[expandedBy] += 1;
 
 				byte max = val.Max();
 				byte min = (max == 0) ? (byte)0 : val.First(n => n != 0);
 
-				if (min == 1 && (max - min + 1 == expanded - 1))
-					min = 0;
-
-				if (max == 0 && min == 0)
-				{
-					Assert.True(expanded == 0 || expanded == 1);
-				}
-				else
-				{
-					Assert.AreEqual(expanded, max - min + 1);
-				}
-
-				minCount[min] += 1;
-				maxCount[max] += 1;
-
+				for (int i = min; i <= max; ++i)
+					nums[i] += 1;
 			}
-
-			int numMinMissed = minCount.Count(n => n == 0);
-			int numMaxMissed = maxCount.Count(n => n == 0);
 
 			Assert.AreEqual(4, minLen);
 			Assert.AreEqual(4 + 255, maxLen);
-			Assert.LessOrEqual(numMinMissed, 1);
-			Assert.AreEqual(0, numMaxMissed);
+
+			for (int i = 0; i < expanded.Length; ++i)
+			{
+				if (expanded[i] == 0)
+					Assert.Fail("Expanded '" + i + "' is zero.");
+			}
+
+			for (int i = 0; i < nums.Length; ++i)
+			{
+				if (nums[i] == 0)
+					Assert.Fail("Number '" + i + "' is zero.");
+			}
 		}
 
 		[Test]
@@ -250,8 +245,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int expanded = val.Length - 4;
 				Assert.GreaterOrEqual(expanded, 0);
@@ -284,8 +279,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int expanded = val.Length - 4;
 				Assert.GreaterOrEqual(expanded, 0);
@@ -316,8 +311,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int reduced = 100 - val.Length;
 				Assert.GreaterOrEqual(reduced, 0);
@@ -342,8 +337,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int nonZero = val.Count(n => n != 0);
 				int numChanged = nonZero;
@@ -376,8 +371,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int num00 = val.Count(n => n == 0x00);
 				int num01 = val.Count(n => n == 0x01);
@@ -416,8 +411,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int changed = val.Count(n => n == 0x00);
 				int unchanged = val.Count(n => n == 0xaa);
@@ -446,8 +441,8 @@ namespace Peach.Core.Test.Mutators
 
 			foreach (var item in mutations)
 			{
-				Assert.AreEqual(Variant.VariantType.ByteString, item.GetVariantType());
-				byte[] val = (byte[])item;
+				Assert.AreEqual(Variant.VariantType.BitStream, item.GetVariantType());
+				byte[] val = ((BitwiseStream)item).ToArray();
 
 				int changed = val.Count(n => n != 0);
 				int unchanged = val.Count(n => n == 0);

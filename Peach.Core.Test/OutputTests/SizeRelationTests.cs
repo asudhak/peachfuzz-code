@@ -59,10 +59,7 @@ namespace Peach.Core.Test.OutputTests
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			BitStream data = new BitStream();
-			data.WriteInt8((sbyte)"Hello World".Length);
-			data.WriteBytes(ASCIIEncoding.ASCII.GetBytes("Hello World"));
-			data.SeekBits(0, SeekOrigin.Begin);
+			var data = Bits.Fmt("{0:L8}{1}", 11, "Hello World");
 
 			DataCracker cracker = new DataCracker();
 			cracker.CrackData(dom.dataModels[0], data);
@@ -92,7 +89,7 @@ namespace Peach.Core.Test.OutputTests
 
 			try
 			{
-				var final = dom.dataModels[0].Value.Value;
+				var final = dom.dataModels[0].Value.ToArray();
 				Assert.AreEqual(expected, final);
 			}
 			catch (SoftException se)
@@ -131,11 +128,7 @@ namespace Peach.Core.Test.OutputTests
 			RunRelation("24", "13 Byte Len *", "utf8", "bits", expected, false);
 			RunRelation("8", "13 Byte Len *", "utf8", "bits", expected, true);
 
-			var bs = new BitStream();
-			bs.WriteBytes(Encoding.Unicode.GetBytes("010"));
-			bs.WriteBytes(Encoding.ASCII.GetBytes("13 Byte Len *"));
-			bs.SeekBits(0, SeekOrigin.Begin);
-			expected = bs.Value;
+			expected = Bits.Fmt("{0:utf16}{1:ascii}", "010", "13 Byte Len *").ToArray();
 
 			RunRelation("6", "13 Byte Len *", "utf16", "bytes", expected, false);
 			RunRelation("2", "13 Byte Len *", "utf16", "bytes", expected, true);
@@ -144,11 +137,7 @@ namespace Peach.Core.Test.OutputTests
 			RunRelation("48", "13 Byte Len *", "utf16", "bits", expected, false);
 			RunRelation("16", "13 Byte Len *", "utf16", "bits", expected, true);
 
-			bs = new BitStream();
-			bs.WriteBytes(Encoding.BigEndianUnicode.GetBytes("010"));
-			bs.WriteBytes(Encoding.ASCII.GetBytes("13 Byte Len *"));
-			bs.SeekBits(0, SeekOrigin.Begin);
-			expected = bs.Value;
+			expected = Bits.Fmt("{0:utf16be}{1:ascii}", "010", "13 Byte Len *").ToArray();
 
 			RunRelation("6", "13 Byte Len *", "utf16be", "bytes", expected, false);
 			RunRelation("2", "13 Byte Len *", "utf16be", "bytes", expected, true);
@@ -157,11 +146,7 @@ namespace Peach.Core.Test.OutputTests
 			RunRelation("48", "13 Byte Len *", "utf16be", "bits", expected, false);
 			RunRelation("16", "13 Byte Len *", "utf16be", "bits", expected, true);
 
-			bs = new BitStream();
-			bs.WriteBytes(Encoding.UTF32.GetBytes("010"));
-			bs.WriteBytes(Encoding.ASCII.GetBytes("13 Byte Len *"));
-			bs.SeekBits(0, SeekOrigin.Begin);
-			expected = bs.Value;
+			expected = Bits.Fmt("{0:utf32}{1:ascii}", "010", "13 Byte Len *").ToArray();
 
 			RunRelation("12", "13 Byte Len *", "utf32", "bytes", expected, false);
 			RunRelation("4", "13 Byte Len *", "utf32", "bytes", expected, true);

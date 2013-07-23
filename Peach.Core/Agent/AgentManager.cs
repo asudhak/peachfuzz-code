@@ -34,6 +34,7 @@ using System.Reflection;
 using Peach.Core.Dom;
 using NLog;
 using Peach.Core.Agent;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent
 {
@@ -138,6 +139,15 @@ namespace Peach.Core.Agent
 				throw new KeyNotFoundException("Could not find agent named '" + agentName + "'.");
 
 			return agent.CreatePublisher(pubName, args);
+		}
+
+		public virtual BitwiseStream CreateBitwiseStream(string agentName)
+		{
+			AgentClient agent;
+			if (!_agents.TryGetValue(agentName, out agent))
+				throw new KeyNotFoundException("Could not find agent named '" + agentName + "'.");
+
+			return agent.CreateBitwiseStream();
 		}
 
 		public virtual void StopAllMonitors()

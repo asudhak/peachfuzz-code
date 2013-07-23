@@ -47,7 +47,21 @@ namespace Peach.Core.Test
 
 			BitStream bs = new BitStream(bytes);
 			str = new Variant(bs).ToString();
-			Assert.AreEqual("4c 6f 72 65 6d 20 69 70 73 75 6d 20 64 6f 6c 6f 72 20 73 69 74 20 61 6d 65 74 2c 20 63 6f 6e 73.. (Len: 5536 bits)", str);
+			Assert.AreEqual("4c 6f 72 65 6d 20 69 70 73 75 6d 20 64 6f 6c 6f 72 20 73 69 74 20 61 6d 65 74 2c 20 63 6f 6e 73.. (Len: 692 bytes)", str);
+
+			bs.SeekBits(0, SeekOrigin.End);
+			bs.WriteBit(1);
+			str = new Variant(bs).ToString();
+			Assert.AreEqual("4c 6f 72 65 6d 20 69 70 73 75 6d 20 64 6f 6c 6f 72 20 73 69 74 20 61 6d 65 74 2c 20 63 6f 6e 73.. (Len: 5537 bits)", str);
+
+			bs.SetLengthBits(12);
+			str = new Variant(bs).ToString();
+			Assert.AreEqual("4c 60 (Len: 12 bits)", str);
+
+			bs.SetLengthBits(8);
+			str = new Variant(bs).ToString();
+			Assert.AreEqual("4c", str);
+
 		}
 	}
 }

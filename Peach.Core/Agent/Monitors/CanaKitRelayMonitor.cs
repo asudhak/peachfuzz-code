@@ -28,6 +28,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("ResetEveryIteration", typeof(bool), "Reset power on every iteration (default is false)", "false")]
 	[Parameter("OnOffPause", typeof(int), "Pause in milliseconds between off/on (default is 1/2 second)", "500")]
 	[Parameter("ResetOnStart", typeof(bool), "Reset device on start? (defaults to false)", "false")]
+	[Parameter("ReverseSwitch", typeof(bool), "Switches the order of the on off commands for when the NC port is used for power", "false")]
 	public class CanaKitRelayMonitor : Monitor
 	{
 		string _serialPort = null;
@@ -35,6 +36,7 @@ namespace Peach.Core.Agent.Monitors
 		int _powerPause = 500;
 		bool _everyIteration = false;
 		bool _resetOnStart = false;
+		bool _reverseSwitch = false;
 
 		public CanaKitRelayMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -49,6 +51,8 @@ namespace Peach.Core.Agent.Monitors
 				_powerPause = (int)args["PowerOnOffPause"];
 			if (args.ContainsKey("ResetOnStart"))
 				_resetOnStart = (string)args["ResetOnStart"] == "true";
+			if (args.ContainsKey("ReverseSwitch"))
+				_reverseSwitch = (string)args["ReverseSwitch"] == "true";
 		}
 
 		void resetPower(bool turnOff = true)
@@ -56,14 +60,26 @@ namespace Peach.Core.Agent.Monitors
 			using (var serial = new SerialPort(_serialPort, 115200, Parity.None, 8, StopBits.One))
 			{
 				serial.Open();
-
-				if (turnOff)
+				if (_reverseSwitch)
 				{
-					serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
-					System.Threading.Thread.Sleep(_powerPause);
-				}
+					if (turnOff)
+					{
+						serial.Write("REL" + _relayNumber + ".ON\r\n");
+						System.Threading.Thread.Sleep(_powerPause);
+					}
 
-				serial.Write("REL" + _relayNumber + ".ON\r\n");
+					serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
+				}
+				else
+				{
+					if (turnOff)
+					{
+						serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
+						System.Threading.Thread.Sleep(_powerPause);
+					}
+
+					serial.Write("REL" + _relayNumber + ".ON\r\n");
+				}
 			}
 		}
 

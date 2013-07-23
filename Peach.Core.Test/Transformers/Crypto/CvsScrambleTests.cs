@@ -7,6 +7,8 @@ using NUnit.Framework.Constraints;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
 namespace Peach.Core.Test.Transformers.Crypto
 {
@@ -23,7 +25,7 @@ namespace Peach.Core.Test.Transformers.Crypto
                 "   <DataModel name=\"TheDataModel\">" +
                 "       <Block name=\"TheBlock\">" +
                 "           <Transformer class=\"CvsScramble\"/>" +
-                "           <Blob name=\"Data\" value=\"Hello\"/>" +
+                "           <String name=\"Data\" value=\"Hello\"/>" +
                 "       </Block>" +
                 "   </DataModel>" +
 
@@ -53,9 +55,17 @@ namespace Peach.Core.Test.Transformers.Crypto
 
             // verify values
             // -- this is the pre-calculated result from Peach2.3 on the blob: "Hello"
-            byte[] precalcResult = new byte[] { 0x48, 0x26, 0x64, 0x27, 0x27, 0x30 };
+            byte[] precalcResult = new byte[] { 0x41, 0x26, 0x64, 0x27, 0x27, 0x30 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
+
+            DataCracker cracker = new DataCracker();
+            var bs = new BitStream(new MemoryStream(precalcResult));
+            cracker.CrackData(dom.dataModels[0], bs);
+
+            var elem = dom.dataModels[0].find("TheBlock.Data");
+            Assert.NotNull(elem);
+            Assert.AreEqual("Hello", (string)elem.DefaultValue);
         }
     }
 }

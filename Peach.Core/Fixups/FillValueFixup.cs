@@ -71,11 +71,11 @@ namespace Peach.Core.Fixups
 
 			int cycle = stop - start + 1;
 
-			for (int i = 0; i < val.LengthBytes; ++i)
+			for (int i = 0; i < val.Length; ++i)
 				bs.WriteByte((byte)((i % cycle) + start));
 
-			bs.SeekBits(val.LengthBits, System.IO.SeekOrigin.Begin);
-			bs.Truncate();
+			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
+			bs.SetLengthBits(val.LengthBits);
 
 			return new Variant(bs);
 		}

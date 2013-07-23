@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.Fixups.Libraries;
+using Peach.Core.IO;
 
 namespace Peach.Core.Fixups
 {
@@ -66,16 +67,15 @@ namespace Peach.Core.Fixups
 			var ref1 = elements["ref1"];
 			var ref2 = elements["ref2"];
 
-			byte[] data1 = ref1.Value.Value;
-			byte[] data2 = ref2.Value.Value;
-			byte[] data3 = new byte[data1.Length + data2.Length];
-			Buffer.BlockCopy(data1, 0, data3, 0, data1.Length);
-			Buffer.BlockCopy(data2, 0, data3, data1.Length, data2.Length);
+			var data = new BitStreamList();
+			data.Add(ref1.Value);
+			data.Add(ref2.Value);
+			data.Seek(0, System.IO.SeekOrigin.Begin);
 
 			CRCTool crcTool = new CRCTool();
 			crcTool.Init(type);
 
-			return new Variant((uint)crcTool.crctablefast(data3));
+			return new Variant((uint)crcTool.crctablefast(data));
 		}
 	}
 }

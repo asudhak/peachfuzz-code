@@ -48,10 +48,10 @@ namespace Peach.Core.Transformers.Crypto
 		{
 		}
 
-		protected override BitStream internalEncode(BitStream data)
+		protected override BitwiseStream internalEncode(BitwiseStream data)
 		{
 			SHA1 sha1Tool = SHA1.Create();
-			return new BitStream(sha1Tool.ComputeHash(data.Value));
+			return new BitStream(sha1Tool.ComputeHash(data));
 		}
 
 		protected override BitStream internalDecode(BitStream data)

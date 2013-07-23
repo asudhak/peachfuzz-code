@@ -96,7 +96,10 @@ namespace Peach.Core.Publishers
 			switch (v.GetVariantType())
 			{
 				case Variant.VariantType.BitStream:
-					return ((BitStream)v).Value;
+					var ms = new MemoryStream();
+					((BitwiseStream)v).Seek(0, SeekOrigin.Begin);
+					((BitwiseStream)v).CopyTo(ms);
+					return ms.ToArray();
 				case Variant.VariantType.Boolean:
 					return (bool)v;
 				case Variant.VariantType.ByteString:

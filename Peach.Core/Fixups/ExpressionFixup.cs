@@ -53,12 +53,11 @@ namespace Peach.Core.Fixups
 		{
 			var from = elements["ref"];
 			string expression = (string)args["expression"];
-			byte[] data = from.Value.Value;
 
 			Dictionary<string, object> state = new Dictionary<string, object>();
 			state["self"] = this;
 			state["ref"] = from;
-			state["data"] = data;
+			state["data"] = from.Value;
 			try
 			{
 				object value = Scripting.EvalExpression(expression, state);

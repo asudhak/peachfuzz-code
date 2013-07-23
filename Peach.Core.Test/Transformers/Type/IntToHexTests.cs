@@ -55,7 +55,7 @@ namespace Peach.Core.Test.Transformers.Type
             // -- this is the pre-calculated result from Peach2.3 on the blob: "12345"
             byte[] precalcResult = new byte[] { 0x33, 0x30, 0x33, 0x39 };
             Assert.AreEqual(1, values.Count);
-            Assert.AreEqual(precalcResult, values[0].Value);
+            Assert.AreEqual(precalcResult, values[0].ToArray());
         }
     }
 }

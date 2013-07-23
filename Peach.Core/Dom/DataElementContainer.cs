@@ -65,7 +65,7 @@ namespace Peach.Core.Dom
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
 			BitStream sizedData = ReadSizedData(data, size);
-			long startPosition = data.TellBits();
+			long startPosition = data.PositionBits;
 
 			// Handle children, iterate over a copy since cracking can modify the list
 			for (int i = 0; i < this.Count; )
@@ -81,13 +81,13 @@ namespace Peach.Core.Dom
 
 					if (size.HasValue)
 					{
-						long read = data.TellBits() - startPosition;
+						long read = data.PositionBits - startPosition;
 						sizedData = ReadSizedData(data, size, read);
 					}
 				}
 
 				int idx = IndexOf(child);
-				if (idx != -1)
+				if (idx == i)
 					i = idx + 1;
 			}
 
@@ -139,14 +139,31 @@ namespace Peach.Core.Dom
 			if (!size.HasValue)
 				return data;
 
+			if (size.Value < read)
+			{
+				string msg = "{0} has length of {1} bits but already read {2} bits.".Fmt(
+					debugName, size.Value, read);
+				throw new CrackingFailure(msg, this, data);
+			}
+
 			long needed = size.Value - read;
 			data.WantBytes((needed + 7) / 8);
-			long remain = data.LengthBits - data.TellBits();
+			long remain = data.LengthBits - data.PositionBits;
+
+			if (needed > remain)
+			{
+				string msg = "{0} has length of {1} bits{2}but buffer only has {3} bits left.".Fmt(
+					debugName, size.Value, read == 0 ? " " : ", already read " + read + " bits, ", remain);
+				throw new CrackingFailure(msg, this, data);
+			}
 
 			if (needed == remain)
 				return data;
 
-			 return base.ReadSizedData(data, size, read);
+			var ret = data.SliceBits(needed);
+			System.Diagnostics.Debug.Assert(ret != null);
+
+			return ret;
 		}
 
 		public override bool CacheValue

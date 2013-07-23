@@ -36,6 +36,7 @@ using System.Reflection;
 using Peach.Core.Dom;
 
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent
 {
@@ -223,6 +224,11 @@ namespace Peach.Core.Agent
 			{
 				throw new PeachException("Could not start publisher \"" + cls + "\".  " + ex.InnerException.Message, ex);
 			}
+		}
+
+		public BitwiseStream CreateBitwiseStream()
+		{
+			return new BitStream();
 		}
 
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)

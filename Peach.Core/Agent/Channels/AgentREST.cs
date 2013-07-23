@@ -35,6 +35,7 @@ using Newtonsoft;
 using Newtonsoft.Json; 
 using NLog;
 using Newtonsoft.Json.Linq;
+using Peach.Core.IO;
 
 namespace Peach.Core.Agent.Channels
 {
@@ -116,6 +117,14 @@ namespace Peach.Core.Agent.Channels
             OnCreatePublisherEvent(cls, args);
             throw new NotImplementedException();
         }
+
+        public override BitwiseStream CreateBitwiseStream()
+        {
+            logger.Trace("BitwiseStream");
+            OnCreateBitwiseStreamEvent();
+            throw new NotImplementedException();
+        }
+
 
         public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
         {

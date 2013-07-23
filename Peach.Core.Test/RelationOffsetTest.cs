@@ -75,17 +75,46 @@ namespace Peach.Core.Test
 			var dm = dom.dataModels[1];
 			Assert.AreEqual("TheDataModel", dm.name);
 
-			var val = dm.Value;
-			Assert.NotNull(val);
+			// "1234   12    4    test"
+			byte[] expected = new byte[] { 49, 50, 51, 52, 0, 0, 0, 12, 0, 0, 0, 4, 116, 101, 115, 116 };
+			byte[] actual = dm.Value.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
 
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
+		[Test]
+		public void FlagsTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Block'>
+		<Number size='32' endian='big'>
+			<Relation type='offset' of='StringData' relative='true' relativeTo='TheDataModel'/>
+		</Number>
+		<Flags size='16' endian='big'>
+		</Flags>
+		<Number size='16' endian='big'>
+			<Relation type='size' of='StringData'/>
+		</Number>
+		<String name='StringData' value='test'/>
+	</DataModel>
 
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
+	<DataModel name='TheDataModel'>
+		<String value='1234'/>
+		<Block ref='Block'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			var dm = dom.dataModels[1];
+			Assert.AreEqual("TheDataModel", dm.name);
 
 			// "1234   12    4    test"
 			byte[] expected = new byte[] { 49, 50, 51, 52, 0, 0, 0, 12, 0, 0, 0, 4, 116, 101, 115, 116 };
+			byte[] actual = dm.Value.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
 
@@ -120,17 +149,9 @@ namespace Peach.Core.Test
 			var dm = dom.dataModels[1];
 			Assert.AreEqual("TheDataModel", dm.name);
 
-			var val = dm.Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
 			// "1234   12    4    test"
 			byte[] expected = new byte[] { 49, 50, 51, 52, 0, 0, 0, 8, 0, 0, 0, 4, 116, 101, 115, 116 };
+			byte[] actual = dm.Value.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
 
@@ -169,17 +190,9 @@ namespace Peach.Core.Test
 			var dm = dom.dataModels[2];
 			Assert.AreEqual("TheDataModel", dm.name);
 
-			var val = dm.Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
 			// "1234   12    4    test"
 			byte[] expected = new byte[] { 49, 50, 51, 52, 0, 0, 0, 8, 0, 0, 0, 4, 116, 101, 115, 116 };
+			byte[] actual = dm.Value.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
 
@@ -241,21 +254,13 @@ namespace Peach.Core.Test
 			var dm = dom.dataModels[1];
 			Assert.AreEqual("TheDataModel", dm.name);
 
-			var val = dm.Value;
-			Assert.NotNull(val);
-
-			MemoryStream ms = val.Stream as MemoryStream;
-			Assert.NotNull(ms);
-
-			byte[] actual = new byte[ms.Length];
-			Buffer.BlockCopy(ms.GetBuffer(), 0, actual, 0, (int)ms.Length);
-
 			// "1234   12    4    test"
 			byte[] expected = new byte[] {
 				0,  0,  0, 36,    0,  0,  0,  2,   84, 97,103, 48,
 				0,  0,  0, 32,    0,  0,  0,  4,   84, 97,103, 49,
 				0,  0,  0, 32,    0,  0,  0,  4,  116,101,115,116,
 			};
+			byte[] actual = dm.Value.ToArray();
 			Assert.AreEqual(expected, actual);
 		}
 	}

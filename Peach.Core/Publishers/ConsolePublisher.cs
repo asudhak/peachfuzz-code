@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using NLog;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -63,14 +64,9 @@ namespace Peach.Core.Publishers
 			stream = null;
 		}
 
-		protected override void OnOutput(byte[] buffer, int offset, int count)
+		protected override void OnOutput(BitwiseStream data)
 		{
-			for (int written = 0; written < count; )
-			{
-				int toWrite = Math.Min(1024, count - written);
-				stream.Write(buffer, offset + written, toWrite);
-				written += toWrite;
-			}
+			data.CopyTo(stream);
 		}
 	}
 }

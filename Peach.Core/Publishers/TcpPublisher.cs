@@ -33,6 +33,7 @@ using Peach.Core.Dom;
 
 using NLog;
 using System.Net;
+using Peach.Core.IO;
 
 namespace Peach.Core.Publishers
 {
@@ -95,9 +96,13 @@ namespace Peach.Core.Publishers
 			_tcp.Client.Shutdown(SocketShutdown.Send);
 		}
 
-		protected override void ClientWrite(byte[] buffer, int offset, int count)
+		protected override void ClientWrite(BitwiseStream data)
 		{
-			_tcp.Client.Send(buffer, offset, count, SocketFlags.None);
+			var buffer = new byte[BitwiseStream.BlockCopySize];
+			int len = 0;
+
+			while ((len = data.Read(buffer, 0, buffer.Length)) != 0)
+				_tcp.Client.Send(buffer, 0, len, SocketFlags.None);
 		}
 	}
 }

@@ -188,7 +188,7 @@ namespace Peach.Core.Mutators
                     obj.MutatedValue = new Variant(value.ToString());
                 else
                     obj.MutatedValue = new Variant(value);
-                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                obj.mutationFlags = MutateOverride.Default;
             }
             else
             {
@@ -206,7 +206,7 @@ namespace Peach.Core.Mutators
                     obj.MutatedValue = new Variant(value.ToString());
                 else
                     obj.MutatedValue = new Variant(value);
-                obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                obj.mutationFlags = MutateOverride.Default;
             }
         }
 
@@ -225,7 +225,7 @@ namespace Peach.Core.Mutators
                         obj.MutatedValue = new Variant(finalValue.ToString());
                     else
                         obj.MutatedValue = new Variant(finalValue);
-                    obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                    obj.mutationFlags = MutateOverride.Default;
                 }
                 else
                 {
@@ -236,7 +236,7 @@ namespace Peach.Core.Mutators
                             obj.MutatedValue = new Variant(finalValue.ToString());
                         else
                             obj.MutatedValue = new Variant(finalValue);
-                        obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                        obj.mutationFlags = MutateOverride.Default;
                     }
                     else
                     {
@@ -245,7 +245,7 @@ namespace Peach.Core.Mutators
                             obj.MutatedValue = new Variant(finalValue.ToString());
                         else
                             obj.MutatedValue = new Variant(finalValue);
-                        obj.mutationFlags = DataElement.MUTATE_DEFAULT;
+                        obj.mutationFlags = MutateOverride.Default;
                     }
                 }
             }
