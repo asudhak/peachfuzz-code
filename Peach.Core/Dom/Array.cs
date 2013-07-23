@@ -189,6 +189,9 @@ namespace Peach.Core.Dom
 			if (node.hasAttr("occurs"))
 				array.occurs = node.getAttrInt("occurs");
 
+			if (node.hasAttr("mutable"))
+				array.isMutable = node.getAttrBool("mutable");
+
 			return array;
 		}
 
