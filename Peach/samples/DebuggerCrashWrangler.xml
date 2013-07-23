@@ -41,7 +41,7 @@
 			
 			<Action type="output">
 				<DataModel ref="TheDataModel"/>
-				<Data fileName="samples" />
+				<Data fileName="samples_png" />
 			</Action>
 			
 			<Action type="close" />
