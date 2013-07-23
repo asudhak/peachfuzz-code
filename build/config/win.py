@@ -25,7 +25,7 @@ def prepare(conf):
 	env = conf.env
 	j = os.path.join
 
-	env['MSVC_VERSIONS'] = ['msvc 10.0', 'msvc 11.0']
+	env['MSVC_VERSIONS'] = ['msvc 10.0', 'msvc 11.0', 'wsdk 7.1']
 	env['MSVC_TARGETS']  = 'x64' in env.SUBARCH and [ 'x64', 'x86_amd64' ] or [ 'x86' ]
 
 	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
@@ -33,7 +33,7 @@ def prepare(conf):
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
-			'MSVC'      : [ '10.0' ], 
+			'MSVC'      : [ 'msvc 10.0', 'wsdk 7.1' ], 
 			'INCLUDES'  : [
 				j(pin, 'source', 'include'),
 				j(pin, 'source', 'include', 'gen'),
@@ -64,7 +64,7 @@ def prepare(conf):
 
 	env['EXTERNALS_x64'] = {
 		'pin' : {
-			'MSVC'      : [ '10.0' ], 
+			'MSVC'      : [ 'msvc 10.0', 'wsdk 7.1' ], 
 			'INCLUDES'  : [
 				j(pin, 'source', 'include'),
 				j(pin, 'source', 'include', 'gen'),
