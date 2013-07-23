@@ -58,6 +58,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			var startInfo = new ProcessStartInfo();
 			startInfo.FileName = Command;
+			startInfo.RedirectStandardOutput = true;
 			startInfo.UseShellExecute = UseShellExecute;
 			startInfo.Arguments = Arguments;
 
@@ -70,8 +71,8 @@ namespace Peach.Core.Agent.Monitors
 					_output = "";
 					p.StartInfo = startInfo;
 					p.Start();
-					p.WaitForExit();
 					_output = p.StandardOutput.ReadToEnd();
+					p.WaitForExit();
 
 				}
 			}
