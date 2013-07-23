@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Threading;
 using System.IO;
+using System.Text.RegularExpressions;
 
 using Peach.Core.Dom;
 
@@ -17,6 +18,8 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", "")]
 	[Parameter("When", typeof(When), "Period _When the command should be ran")]
 	[Parameter("UseShellExecute", typeof(bool), "Use the operating system shell to run the command", "true")]
+	[Parameter("CheckValue", typeof(string), "Regex to match on response", "")]
+	[Parameter("FaultOnMatch", typeof(bool), "Fault if regex matches", "true")]
 	public class RunCommand  : Monitor
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -25,6 +28,14 @@ namespace Peach.Core.Agent.Monitors
 		public string Arguments { get; private set; }
 		public When _When { get; private set; }
 		public bool UseShellExecute { get; private set; }
+		public string CheckValue { get; protected set; }
+		public bool FaultOnMatch { get; protected set; }
+
+
+		private string _output = "";
+		private Fault _fault = null;
+		private Regex _regex = null;
+
 
 		public enum When {OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault};
 
@@ -32,6 +43,15 @@ namespace Peach.Core.Agent.Monitors
 			: base(agent, name, args)
 		{
 			ParameterParser.Parse(this, args);
+			try
+			{
+				_regex = new Regex(CheckValue ?? "", RegexOptions.Multiline);
+			}
+			catch (ArgumentException ex)
+			{
+				throw new PeachException("'CheckValue' is not a valid regular expression.  " + ex.Message, ex);
+			}
+
 		}
 
 		void _Start()
@@ -47,9 +67,12 @@ namespace Peach.Core.Agent.Monitors
 			{
 				using (var p = new System.Diagnostics.Process())
 				{
+					_output = "";
 					p.StartInfo = startInfo;
 					p.Start();
 					p.WaitForExit();
+					_output = p.StandardOutput.ReadToEnd();
+
 				}
 			}
 			catch (Exception ex)
@@ -66,7 +89,15 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool DetectedFault()
 		{
-			return false;
+			_fault.title = "Response";
+			_fault.description = _output;
+			_fault.type = FaultType.Data;
+			bool match = _regex.IsMatch(_fault.description);
+			if (match)
+				_fault.type = FaultOnMatch ? FaultType.Fault : FaultType.Data;
+			else
+				_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;
+			return _fault.type == FaultType.Fault;
 		}
 
 		public override Fault GetMonitorData()
