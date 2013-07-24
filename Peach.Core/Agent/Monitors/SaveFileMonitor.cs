@@ -52,9 +52,9 @@ namespace Peach.Core.Agent.Monitors
 		{
 			Fault fault = new Fault();
 			fault.type = FaultType.Data;
-			fault.collectedData["savefile_" + Path.GetFileName(_fileName)] = File.ReadAllBytes(_fileName);
 			fault.title = "Save File \"" + _fileName + "\"";
 			fault.detectionSource = "SaveFileMonitor";
+			fault.collectedData.Add(new Fault.Data("savefile_" + Path.GetFileName(_fileName), File.ReadAllBytes(_fileName)));
 
 			return fault;
 		}

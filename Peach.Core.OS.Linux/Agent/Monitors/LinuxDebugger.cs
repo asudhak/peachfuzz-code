@@ -50,7 +50,13 @@ handle SIGSEGV EXC_BAD_ACCESS EXC_BAD_INSTRUCTION EXC_ARITHMETIC stop print
 file {1}
 set args {2}
 
-start
+# Stripped prorgrma don't have main, so run 'info target'
+# and look for 'Entry point: 0x0123456789' line
+# and run 'breakpoint *0x0123456789'
+
+python gdb.execute('break *%s' % (__import__('re').compile('Entry point:\s+(0x[0-9a-fA-F]+)').search(str(gdb.execute('info target', False, True))).groups()[0] or '0x0'), False, True)
+
+run
 python with open('{4}', 'w') as f: f.write(str(gdb.inferiors()[0].pid))
 cont
 log_if_crash
@@ -339,7 +345,7 @@ quit
 			if (other.Success)
 				_fault.title += ", " + other.Groups[1].Value;
 
-			_fault.collectedData["StackTrace.txt"] = bytes;
+			_fault.collectedData.Add(new Fault.Data("StackTrace.txt", bytes));
 			_fault.description = output;
 
 			return true;

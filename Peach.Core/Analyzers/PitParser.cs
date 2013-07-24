@@ -1158,7 +1158,11 @@ namespace Peach.Core.Analyzers
 					
 					var obj = Scripting.EvalExpression(value, localScope);
 
-					throw new NotImplementedException("todo valueType");
+					if (obj == null)
+						throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid eval statement.");
+
+					elem.DefaultValue = new Variant(obj.ToString());
+					break;
 				case "string":
 					// No action requried, default behaviour
 					elem.DefaultValue = new Variant(value);

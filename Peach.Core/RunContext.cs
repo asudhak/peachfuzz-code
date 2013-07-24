@@ -281,6 +281,26 @@ namespace Peach.Core
     [Serializable]
     public class Fault
     {
+		/// <summary>
+		/// Data contained in fault.
+		/// </summary>
+		[Serializable]
+		public class Data
+		{
+			public Data()
+			{
+			}
+
+			public Data(string key, byte[] value)
+			{
+				Key = key;
+				Value = value;
+			}
+
+			public string Key { get; set; }
+			public byte[] Value { get; set; }
+		}
+
         public Fault()
         {
         }
@@ -346,7 +366,8 @@ namespace Peach.Core
         /// <summary>
         /// Binary data collected about fault.  Key is filename, value is content.
         /// </summary>
-        public SerializableDictionary<string, byte[]> collectedData = new SerializableDictionary<string, byte[]>();
+        public List<Data> collectedData = new List<Data>();
+        // Note: We can't use a Dictionary<> since it won't remote between mono and .net correctly
     }
 }
 

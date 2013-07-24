@@ -424,7 +424,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 				fault.exploitability = reClassification.Match(output).Groups[1].Value;
 				fault.title = reShortDescription.Match(output).Groups[1].Value;
 
-                fault.collectedData["StackTrace.txt"] = UTF8Encoding.UTF8.GetBytes(output);
+                fault.collectedData.Add(new Fault.Data("StackTrace.txt", Encoding.UTF8.GetBytes(output)));
                 fault.description = output;
 
 				_engine.crashInfo = fault;
