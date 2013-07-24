@@ -91,7 +91,7 @@ namespace Peach.Core.Agent.Monitors
 		public override bool DetectedFault()
 		{
 			_fault = new Fault();
-			_fault.title = "Response";
+			_fault.title = this.name + "-Response";
 			_fault.description = _output;
 			_fault.type = FaultType.Data;
 			bool match = _regex.IsMatch(_fault.description);
