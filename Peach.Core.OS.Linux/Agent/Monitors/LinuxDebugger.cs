@@ -56,7 +56,7 @@ set args {2}
 
 python gdb.execute('break *%s' % (__import__('re').compile('Entry point:\s+(0x[0-9a-fA-F]+)').search(str(gdb.execute('info target', False, True))).groups()[0] or '0x0'), False, True)
 
-start
+run
 python with open('{4}', 'w') as f: f.write(str(gdb.inferiors()[0].pid))
 cont
 log_if_crash
