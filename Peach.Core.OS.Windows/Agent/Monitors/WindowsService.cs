@@ -231,7 +231,7 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 				fault.description = "The windows service [" + _service + "] stopped early.";
 			else
 				fault.description = "The windows service [" + _service + "] on computer ["+ _machineName+"] stopped early.";
-			fault.collectedData["WindowsService.txt"] = ASCIIEncoding.ASCII.GetBytes(fault.description);
+			fault.collectedData.Add(new Fault.Data("WindowsService.txt", Encoding.UTF8.GetBytes(fault.description)));
 
 			return fault;
 		}

@@ -339,7 +339,7 @@ quit
 			if (other.Success)
 				_fault.title += ", " + other.Groups[1].Value;
 
-			_fault.collectedData["StackTrace.txt"] = bytes;
+			_fault.collectedData.Add(new Fault.Data("StackTrace.txt", bytes));
 			_fault.description = output;
 
 			return true;

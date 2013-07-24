@@ -104,7 +104,7 @@ namespace Peach.Core.Test.Monitors
             fault.folderName = "FaultingMonitor";
             fault.type = FaultType.Fault;
 
-            fault.collectedData["Output"] = Encoding.ASCII.GetBytes("Faulted on Iteration: "+curIter.ToString());
+            fault.collectedData.Add(new Fault.Data("Output", Encoding.ASCII.GetBytes("Faulted on Iteration: "+curIter.ToString())));
             return fault;
         }
 

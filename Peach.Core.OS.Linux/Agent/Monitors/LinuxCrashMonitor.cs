@@ -222,7 +222,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 					{
 						if (file.IndexOf(executable) != -1)
 						{
-							fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
+							fault.collectedData.Add(new Fault.Data(Path.GetFileName(file), File.ReadAllBytes(file)));
 							File.Delete(file);
 							break;
 						}
@@ -230,7 +230,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 					else
 					{
 						// Support multiple crash files
-						fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
+						fault.collectedData.Add(new Fault.Data(Path.GetFileName(file), File.ReadAllBytes(file)));
 						File.Delete(file);
 					}
 				}

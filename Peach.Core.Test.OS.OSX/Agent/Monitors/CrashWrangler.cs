@@ -367,9 +367,8 @@ namespace Peach.Core.Test.Agent.Monitors
 			Fault fault = w.GetMonitorData();
 			Assert.NotNull(fault);
 			Assert.AreEqual(1, fault.collectedData.Count);
-			Assert.True(fault.collectedData.ContainsKey("Log"));
-			Assert.Greater(fault.collectedData["Log"].Length, 0);
-			Assert.True(fault.description.StartsWith("Exploitable_Crash_0x"));
+			Assert.AreEqual("StackTrace.txt", fault.collectedData[0].Key);
+			Assert.Greater(fault.collectedData[0].Value.Length, 0);
 			w.SessionFinished();
 			w.StopMonitor();
 		}

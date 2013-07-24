@@ -172,7 +172,7 @@ namespace Peach.Core.Agent.Monitors
 			if (File.Exists(_cwLogFile))
 			{
 				fault.description = File.ReadAllText(_cwLogFile);
-				fault.collectedData["StackTrace.txt"] = File.ReadAllBytes(_cwLogFile);
+				fault.collectedData.Add(new Fault.Data("StackTrace.txt", File.ReadAllBytes(_cwLogFile)));
 
 				var s = new Summary(fault.description);
 
