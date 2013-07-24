@@ -107,7 +107,7 @@ namespace Peach.Core.Agent.Monitors
 			if (_When == When.OnFault)
 				_Start();
 
-			return null;
+			return _fault;
 		}
 
 		public override bool MustStop()
