@@ -90,6 +90,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override bool DetectedFault()
 		{
+			_fault = new Fault();
 			_fault.title = "Response";
 			_fault.description = _output;
 			_fault.type = FaultType.Data;
