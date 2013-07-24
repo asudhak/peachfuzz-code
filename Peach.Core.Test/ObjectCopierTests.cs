@@ -6,6 +6,7 @@ using System.Text;
 using NUnit.Framework;
 using Peach.Core.IO;
 
+using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using System.Collections;
@@ -365,6 +366,50 @@ namespace Peach.Core.Test
 			Assert.NotNull(copy);
 			Assert.AreEqual(copy.Count, list.Count);
 			Assert.LessOrEqual(sw.ElapsedMilliseconds, TimeSpan.FromSeconds(5).TotalMilliseconds);
+		}
+
+		bool VerifyField(FieldInfo field, Type type)
+		{
+			if (field.Attributes.HasFlag(FieldAttributes.NotSerialized))
+				return true;
+			
+			if (type.IsPrimitive || (type == typeof(string)))
+				return true;
+
+			if (type.IsArray)
+				return VerifyField(field, type.GetElementType());
+
+			if (field.DeclaringType == typeof(Delegate))
+				return true;
+
+			if (!type.IsSerializable)
+				return false;
+
+			return !type.Namespace.StartsWith("System");
+		}
+
+		[Test]
+		public void EnsureSerializable()
+		{
+			var fails = new List<string>();
+
+			foreach (var kv in ClassLoader.AssemblyCache)
+			{
+				if (!kv.Value.GetName().FullName.StartsWith("Peach"))
+					continue;
+
+				foreach (var type in kv.Value.GetTypes())
+				{
+					if (type.IsSerializable)
+					{
+						foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+						{
+							if (!VerifyField(field, field.FieldType))
+								fails.Add("{0}.{1}".Fmt(type.FullName, field.Name));
+						}
+					}
+				}
+			}
 		}
 	}
 }
