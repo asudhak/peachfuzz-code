@@ -101,9 +101,19 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(BitwiseStream data)
 		{
-			_evaluated.Reset();
-			_session.Send(BuildMessage(data));
-			_evaluated.WaitOne();
+			try
+			{
+				logger.Debug(">> OnOutput");
+				_evaluated.Reset();
+				_session.Send(BuildMessage(data));
+				_evaluated.WaitOne();
+				logger.Debug("<< OnOutput");
+			}
+			catch (Exception ex)
+			{
+				logger.Debug(ex.ToString());
+				throw;
+			}
 		}
 
 		protected string BuildTemplate(BitwiseStream data)
