@@ -246,20 +246,20 @@ namespace Peach.Core.Publishers
 			if (count == 0)
 				return;
 
-			lock (_clientLock)
-			{
-				// If the connection has been closed, we are not going to get anymore bytes.
-				if (_client == null)
-					return;
-
-				// If we have already timed out, 
-			}
-
 			DateTime start = DateTime.Now;
 
 			// Wait up to Timeout milliseconds to see if count bytes become available
 			while (true)
 			{
+				lock (_clientLock)
+				{
+					// If the connection has been closed, we are not going to get anymore bytes.
+					if (_client == null)
+						return;
+
+					// If we have already timed out, 
+				}
+
 				lock (_bufferLock)
 				{
 					if ((_buffer.Length - _buffer.Position) >= count || _timeout)
