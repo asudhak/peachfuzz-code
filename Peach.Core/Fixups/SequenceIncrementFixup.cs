@@ -63,7 +63,7 @@ namespace Peach.Core.Fixups
 		void Action_Starting(Action action)
 		{
 			var root = parent.getRoot() as DataModel;
-			if (root.action != action)
+			if (root == null || root.action != action)
 				return;
 
 			if (action.dataModel == root || action.parameters.Any(a => a.dataModel == root))

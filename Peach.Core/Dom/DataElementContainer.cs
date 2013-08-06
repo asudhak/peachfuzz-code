@@ -157,8 +157,8 @@ namespace Peach.Core.Dom
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			if (needed == remain)
-				return data;
+			// Always return a slice of data.  This way, if data
+			// is a stream publisher, it will be presented as having a fixed length.
 
 			var ret = data.SliceBits(needed);
 			System.Diagnostics.Debug.Assert(ret != null);
