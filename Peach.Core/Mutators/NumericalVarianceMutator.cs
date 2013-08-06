@@ -57,7 +57,7 @@ namespace Peach.Core.Mutators
 
             if (obj is Dom.String)
             {
-                signed = false;
+                signed = true;
                 minValue = Int32.MinValue;
                 maxValue = UInt32.MaxValue;
             }
