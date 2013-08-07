@@ -467,6 +467,14 @@ namespace Peach.Core.Dom
 			return ret;
 		}
 
+		public override void ClearRelations()
+		{
+			base.ClearRelations();
+
+			foreach (var child in this)
+				child.ClearRelations();
+		}
+
 		#endregion
 	}
 }
