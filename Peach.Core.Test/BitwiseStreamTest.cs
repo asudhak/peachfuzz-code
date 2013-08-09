@@ -569,6 +569,13 @@ namespace Peach.Core.Test
 			//                10 11 10 11 10 00 00 00 00 10 00 01 
 			//                0xbb        0x80        0x21
 			Assert.AreEqual(new byte[] { 0xbb, 0x80, 0x21, 0x00 }, buf);
+
+			lst.SeekBits(0, SeekOrigin.Begin);
+			int bits = (int)lst[0].LengthBits + 1;
+			ulong tmp;
+			int cnt = lst.ReadBits(out tmp, bits);
+
+			Assert.AreEqual(bits, cnt);
 		}
 	}
 }

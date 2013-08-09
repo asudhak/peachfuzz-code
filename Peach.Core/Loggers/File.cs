@@ -128,7 +128,7 @@ namespace Peach.Core.Loggers
 				foreach (var kv in reproFault.collectedData)
 				{
 					var key = System.IO.Path.Combine("Initial", reproFault.iteration.ToString(), kv.Key);
-					fault.collectedData.Add(key, kv.Value);
+					fault.collectedData.Add(new Fault.Data(key, kv.Value));
 				}
 
 				reproFault = null;
@@ -196,7 +196,7 @@ namespace Peach.Core.Loggers
 			foreach (var item in stateModel.dataActions)
 			{
 				logger.Debug("Saving action: " + item.Key);
-				ret.collectedData.Add(item.Key, ToByteArray(item.Value));
+				ret.collectedData.Add(new Fault.Data(item.Key, ToByteArray(item.Value)));
 			}
 
 			// Write out all collected data information
@@ -207,13 +207,13 @@ namespace Peach.Core.Loggers
 				foreach (var kv in fault.collectedData)
 				{
 					string fileName = fault.detectionSource + "_" + kv.Key;
-					ret.collectedData.Add(fileName, kv.Value);
+					ret.collectedData.Add(new Fault.Data(fileName, kv.Value));
 				}
 
 				if (fault.description != null)
 				{
 					string fileName = fault.detectionSource + "_" + "description.txt";
-					ret.collectedData.Add(fileName, Encoding.UTF8.GetBytes(fault.description));
+					ret.collectedData.Add(new Fault.Data(fileName, Encoding.UTF8.GetBytes(fault.description)));
 				}
 			}
 

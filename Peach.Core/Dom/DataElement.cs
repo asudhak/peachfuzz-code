@@ -1311,7 +1311,7 @@ namespace Peach.Core.Dom
 #endif
 		}
 
-		public void ClearRelations()
+		public virtual void ClearRelations()
 		{
 			foreach (var r in _relations)
 			{
@@ -1326,13 +1326,6 @@ namespace Peach.Core.Dom
 			}
 
 			_relations.Clear();
-
-			DataElementContainer cont = this as DataElementContainer;
-			if (cont == null)
-				return;
-
-			foreach (var child in cont)
-				child.ClearRelations();
 		}
 
 		/// <summary>

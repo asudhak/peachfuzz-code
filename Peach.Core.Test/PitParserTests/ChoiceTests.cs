@@ -269,5 +269,54 @@ namespace Peach.Core.Test.PitParserTests
 			var c2 = dom.dataModels[1][0] as Dom.Choice;
 			Assert.AreEqual(3, c2.choiceElements.Count);
 		}
+
+		[Test]
+		public void RemoveChoiceRelation()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Base'>
+		<Choice name='c'>
+			<Number name='n1' size='8'>
+				<Relation type='size' of='b'/>
+			</Number>
+			<Number name='n2' size='8'>
+				<Relation type='size' of='b'/>
+			</Number>
+			<Number name='n3' size='8'>
+				<Relation type='size' of='b'/>
+			</Number>
+		</Choice>
+		<Blob name='b'/>
+	</DataModel>
+
+	<DataModel name='Derived' ref='Base'>
+		<String name='c.s3' value='Hello'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var choice = dom.dataModels[0][0] as Choice;
+			Assert.AreEqual(null, choice.SelectedElement);
+			choice.SelectedElement = choice.choiceElements[0];
+			Assert.AreEqual(1, choice.Count);
+
+			var blob = dom.dataModels[0][1] as Blob;
+			Assert.NotNull(blob);
+			Assert.AreEqual(3, blob.relations.Of<SizeRelation>().Count());
+
+			// Remove the chosen element
+			choice.Remove(choice[0]);
+
+			// Removing chosen element removes choice
+			Assert.AreEqual(1, dom.dataModels[0].Count);
+
+			// Removing choice cleans up relations for choiceElements
+			Assert.AreEqual(0, blob.relations.Of<SizeRelation>().Count());
+		}
+
+
 	}
 }

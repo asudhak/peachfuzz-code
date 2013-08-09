@@ -78,7 +78,7 @@ namespace Peach.Core.Agent.Monitors
 			{
 				_fault.description = string.Format("Received {0} bytes from '{1}'.", data.Item2.Length, data.Item1);
 				_fault.type = FaultOnSuccess ? FaultType.Data : FaultType.Fault;
-				_fault.collectedData.Add("Response", data.Item2);
+				_fault.collectedData.Add(new Fault.Data("Response", data.Item2));
 			}
 			else
 			{

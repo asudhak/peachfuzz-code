@@ -158,6 +158,8 @@ namespace PeachLinuxCrashHandler
 
                     /// CERT Exploitable ///////////////////////////////
                     
+					// http://www.mail-archive.com/crash-catcher@lists.fedorahosted.org/msg02371.html
+
                     //// Load CERT code
                     //gdb.StandardInput.WriteLine("source /PeachGdb/exploitable/exploitable.py");
                     //gdb.WaitForInputIdle();

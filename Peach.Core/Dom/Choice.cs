@@ -248,6 +248,14 @@ namespace Peach.Core.Dom
 
 			return value;
 		}
+
+		public override void ClearRelations()
+		{
+			base.ClearRelations();
+
+			foreach (var opt in choiceElements)
+				opt.Value.ClearRelations();
+		}
 	}
 }
 

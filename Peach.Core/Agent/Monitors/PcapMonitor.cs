@@ -193,7 +193,7 @@ namespace Peach.Core.Agent.Monitors
 			fault.folderName = "PcapMonitor";
 			fault.type = FaultType.Data;
 			fault.description = "Collected " + _numPackets + " packets.";
-			fault.collectedData[this.Name + "_NetworkCapture.pcap"] = File.ReadAllBytes(_writer.Name);
+			fault.collectedData.Add(new Fault.Data(this.Name + "_NetworkCapture.pcap", File.ReadAllBytes(_writer.Name)));
 
 			return fault;
 		}

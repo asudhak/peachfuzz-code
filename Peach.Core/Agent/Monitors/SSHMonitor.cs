@@ -114,7 +114,7 @@ namespace Peach.Core.Agent.Monitors
 
 			try
 			{
-				using (SshCommand cmd = _sshClient.RunCommand(Command))
+				using (SshCommand cmd = _sshClient.CreateCommand(Command))
 				{
 					_fault.title = "Response";
 					_fault.description = cmd.Execute();

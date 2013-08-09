@@ -115,7 +115,8 @@ namespace Peach.Core.IO
 
 		public void WantBytes(long bytes)
 		{
-			if (bytes <= 0)
+			// If we are a slice, out length is fixed and can't change
+			if (bytes <= 0 || !_canWrite)
 				return;
 
 			Publisher pub = _stream as Publisher;
