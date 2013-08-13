@@ -37,6 +37,7 @@ using System.Reflection;
 
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
 
 namespace Peach.Core.Analyzers
 {
@@ -62,7 +63,7 @@ namespace Peach.Core.Analyzers
 		{
 		}
 
-		public override void asDataElement(DataElement parent, object dataBuffer)
+		public override void asDataElement(DataElement parent, Dictionary<DataElement, Position> positions)
 		{
 			if (!(parent is Dom.String))
 				throw new PeachException("Error, XmlAnalyzer analyzer only operates on String elements!");

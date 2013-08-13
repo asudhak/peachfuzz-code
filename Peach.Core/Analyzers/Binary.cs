@@ -38,6 +38,7 @@ using System.Reflection;
 
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
 
 using NLog;
 
@@ -78,7 +79,7 @@ namespace Peach.Core.Analyzers
 
         const int MINCHARS = 5;
 
-        public override void asDataElement(DataElement parent, object dataBuffer)
+        public override void asDataElement(DataElement parent, Dictionary<DataElement, Position> positions)
         {
             if (!(parent is Dom.Blob))
                 throw new PeachException("Error, Binary analyzer only operates on Blob elements!");
@@ -129,7 +130,7 @@ namespace Peach.Core.Analyzers
 
                         // Potentially analyze the string further
                         if (analyzeStrings)
-                            new StringTokenAnalyzer(args).asDataElement(str, str.DefaultValue);
+                            new StringTokenAnalyzer(args).asDataElement(str, positions);
                     }
 
                     chars = 0;
