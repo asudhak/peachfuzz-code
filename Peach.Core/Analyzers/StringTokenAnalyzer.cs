@@ -112,8 +112,8 @@ namespace Peach.Core.Analyzers
 				if (positions != null)
 				{
 					var end = str.Value.LengthBits;
-					positions[block] = new Position() { begin = 0, end = str.Value.LengthBits };
-					positions[str] = new Position() { begin = 0, end = str.Value.LengthBits };
+					positions[block] = new Position(0, end);
+					positions[str] = new Position(0, end);
 				}
 
 				// Start splitting string.
@@ -134,6 +134,7 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="el"></param>
 		/// <param name="token"></param>
+		/// <param name="offset"></param>
 		protected void splitOnToken(DataElement el, char token, ref long offset)
 		{
 			if (el is Dom.String)

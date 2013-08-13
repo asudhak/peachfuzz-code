@@ -56,6 +56,16 @@ namespace Peach.Core.Cracker
 		public long begin { get; set; }
 		public long end { get; set; }
 
+		public Position()
+		{
+		}
+
+		public Position(long begin, long end)
+		{
+			this.begin = begin;
+			this.end = end;
+		}
+
 		public override string ToString()
 		{
 			return "Begin: {0}, End: {1}".Fmt(begin, end);
