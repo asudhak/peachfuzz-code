@@ -125,6 +125,7 @@ namespace Peach.Core.Dom
 				return null;
 
 			Choice choice = DataElement.Generate<Choice>(node);
+			choice.parent = parent;
 
 			context.handleCommonDataElementAttributes(node, choice);
 			context.handleCommonDataElementChildren(node, choice);

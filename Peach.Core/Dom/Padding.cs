@@ -172,9 +172,12 @@ namespace Peach.Core.Dom
 					_alignedTo.Invalidated -= _alignedTo_Invalidated;
 
 				_alignedTo = value;
-				_alignedTo.Invalidated += new InvalidatedEventHandler(_alignedTo_Invalidated);
+				if (_alignedTo != null)
+				{
+					_alignedTo.Invalidated += new InvalidatedEventHandler(_alignedTo_Invalidated);
 
-				Invalidate();
+					Invalidate();
+				}
 			}
 		}
 

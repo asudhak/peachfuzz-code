@@ -103,6 +103,7 @@ namespace Peach.Core.Dom
 			else
 			{
 				block = DataElement.Generate<Block>(node);
+				block.parent = parent;
 			}
 
 			context.handleCommonDataElementAttributes(node, block);
