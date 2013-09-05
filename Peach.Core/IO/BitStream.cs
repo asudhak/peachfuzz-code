@@ -217,7 +217,7 @@ namespace Peach.Core.IO
 
 				// First read the high bits
 				int cur = _stream.ReadByte();
-				System.Diagnostics.Debug.Assert(cur != 1);
+				System.Diagnostics.Debug.Assert(cur != -1);
 
 				int end = offset + avail;
 				for (int i = offset; i < end; ++i)

@@ -95,6 +95,25 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void ReadMixed()
+		{
+			var bs = new BitStream(new byte[] { 0x01, 0x00 });
+
+			bs.Seek(0, SeekOrigin.Begin);
+
+			Assert.AreEqual(0, bs.ReadBit()); // 0
+			Assert.AreEqual(0, bs.ReadBit()); // 1
+			Assert.AreEqual(0, bs.ReadBit()); // 2
+			Assert.AreEqual(0, bs.ReadBit()); // 3
+			Assert.AreEqual(0, bs.ReadBit()); // 4
+			Assert.AreEqual(0, bs.ReadBit()); // 5
+			Assert.AreEqual(0, bs.ReadBit()); // 6
+
+			int val = bs.ReadByte();
+			Assert.AreEqual(0x80, val);
+		}
+
+		[Test]
 		public void ReadWriteBits()
 		{
 			BitStream bs = new BitStream();
