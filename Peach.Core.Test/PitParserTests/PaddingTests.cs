@@ -140,5 +140,47 @@ namespace Peach.Core.Test.PitParserTests
 
 			Assert.AreEqual(15, ((BitStream)padding.DefaultValue).LengthBits);
 		}
+
+		[Test]
+		public void PaddingTest5()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='data'>
+		<Block name='block1'>
+			<String value='top' />
+		</Block>
+		<Block name='block2'>
+			<Padding alignment='32' alignedTo='block1' />
+			<String value='middle' />
+		</Block>
+		<Block name='block3'>
+			<String value='bottom' />
+		</Block>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Padding padding = ((Block)dom.dataModels[0][1])[0] as Padding;
+
+			Assert.AreEqual(8, ((BitStream)padding.DefaultValue).LengthBits);
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, unable to resolve alignedTo 'missing'.")]
+		public void PaddingTest6()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String/>
+		<Padding alignedTo='missing'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		}
+
 	}
 }

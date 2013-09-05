@@ -1057,6 +1057,7 @@ namespace Peach.Core.Analyzers
 		{
 			var oldChild = parent[newChild.name];
 			oldChild.parent = null;
+			newChild.parent = null;
 
 			replaceRelations(newChild, oldChild, oldChild);
 
