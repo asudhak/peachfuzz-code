@@ -67,6 +67,8 @@ namespace Peach.Core.Runtime
 
 		public int exitCode = 1;
 
+		protected RunConfiguration config = null;
+
 		/// <summary>
 		/// Copyright message
 		/// </summary>
@@ -92,7 +94,7 @@ namespace Peach.Core.Runtime
 		{
 			AppDomain.CurrentDomain.DomainUnload += new EventHandler(CurrentDomain_DomainUnload);
 			Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
-			RunConfiguration config = new RunConfiguration();
+			config = new RunConfiguration();
 			config.debug = false;
 
 			try
