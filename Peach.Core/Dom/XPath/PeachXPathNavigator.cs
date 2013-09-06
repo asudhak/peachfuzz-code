@@ -81,7 +81,6 @@ namespace Peach.Core.Dom.XPath
 			AttributeMatrix[typeof(State)] = new string[] { "name" };
 			AttributeMatrix[typeof(Action)] = new string[] { "name", "type", "method", "property" };
 			AttributeMatrix[typeof(Test)] = new string[] { "name" };
-            AttributeMatrix[typeof(ActionResult)] = new string[] { "name" };
 
 			NodeTypeMap[typeof(Dom)] = PeachXPathNodeType.Root;
 			NodeTypeMap[typeof(DataElement)] = PeachXPathNodeType.DataModel;
@@ -89,7 +88,6 @@ namespace Peach.Core.Dom.XPath
 			NodeTypeMap[typeof(State)] = PeachXPathNodeType.StateModel;
 			NodeTypeMap[typeof(Action)] = PeachXPathNodeType.StateModel;
 			NodeTypeMap[typeof(Test)] = PeachXPathNodeType.Test;
-            NodeTypeMap[typeof(ActionResult)] = PeachXPathNodeType.ActionResult;
 		}
 
 		protected PeachXPathNodeType MapObjectToNodeType(object obj)

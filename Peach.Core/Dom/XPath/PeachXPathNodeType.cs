@@ -20,6 +20,5 @@ namespace Peach.Core.Dom.XPath
 		Agent,
 		Test,
 		Run,
-        ActionResult
 	}
 }
