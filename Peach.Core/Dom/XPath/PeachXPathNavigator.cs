@@ -241,17 +241,19 @@ namespace Peach.Core.Dom.XPath
 					return true;
 				}
 
-				if (action.parameters.Count == 0 && action.result == null) // no parameters and no result == no children (we visit parameters before result)
+				// no parameters and no result == no children (we visit parameters before result)
+				if (action.parameters.Count == 0 && action.result == null)
 					return false;
 
-                if (action.parameters.Count == 0) // no parameters == we have result, and it must have a DataModel child, return it
-                {
-                    currentNode = action.result.dataModel;
-                    currentNodeType = PeachXPathNodeType.DataModel;
-                    return true;
-                }
+				// no parameters == we have result, and it must have a DataModel child, return it
+				if (action.parameters.Count == 0)
+				{
+					currentNode = action.result.dataModel;
+					currentNodeType = PeachXPathNodeType.DataModel;
+					return true;
+				}
 
-                // We have parameters, each must have a DataModel child, return the first
+				// We have parameters, each must have a DataModel child, return the first
 				currentNode = action.parameters[0].dataModel;
 				currentNodeType = PeachXPathNodeType.DataModel;
 				return true;
@@ -315,12 +317,12 @@ namespace Peach.Core.Dom.XPath
 				if (action == null)
 					throw new Exception("Error, data model has weird parent!");
 
-                if (action.result != null && action.result.dataModel == currentNode)
-                    return false; // we are done, as we already visited parameters
+				if (action.result != null && action.result.dataModel == currentNode)
+					return false; // we are done, as we already visited parameters
 
 				if (action.dataModel == currentNode)
 				{
-                    if (action.parameters.Count == 0)
+					if (action.parameters.Count == 0)
 						return false;
 
 					currentNode = action.parameters[0].dataModel;
@@ -328,20 +330,20 @@ namespace Peach.Core.Dom.XPath
 					return true;
 				}
 
-                int idx = action.parameters.FindIndex(a => a.dataModel == currentNode);
+				int idx = action.parameters.FindIndex(a => a.dataModel == currentNode);
 				if (idx == -1)
 					throw new Exception("Error, data model missing from action parameters!");
 
-                if (++idx >= action.parameters.Count)
-                {
-                    if (action.result != null && action.result.dataModel != currentNode)
-                    {
-                        currentNode = action.result.dataModel;
-                        currentNodeType = PeachXPathNodeType.DataModel;
-                        return true;
-                    }
-                    return false;
-                }
+				if (++idx >= action.parameters.Count)
+				{
+					if (action.result != null && action.result.dataModel != currentNode)
+					{
+						currentNode = action.result.dataModel;
+						currentNodeType = PeachXPathNodeType.DataModel;
+						return true;
+					}
+					return false;
+				}
 
 				currentNode = action.parameters[idx].dataModel;
 				currentNodeType = PeachXPathNodeType.DataModel;
