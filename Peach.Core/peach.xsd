@@ -2509,17 +2509,7 @@
 											</xs:annotation>
 											<xs:complexType>
 												<xs:choice minOccurs="1" maxOccurs="unbounded">
-													<xs:element name="DataModel" maxOccurs="1" minOccurs="1">
-														<xs:complexType>
-															<xs:attribute name="ref" type="xs:string">
-																<xs:annotation>
-																	<xs:documentation>Reference a Template element to use for this test. Values are in
-																		"ns:parent.child.child" with the namespace being optional. Resolution always
-																		starts at the document root.</xs:documentation>
-																</xs:annotation>
-															</xs:attribute>
-														</xs:complexType>
-													</xs:element>
+													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
 													<xs:element ref="Data" maxOccurs="1" minOccurs="0" />
 												</xs:choice>
 												<xs:attribute name="name" type="xs:string">
@@ -2560,17 +2550,7 @@
 											</xs:annotation>
 											<xs:complexType>
 												<xs:choice minOccurs="1" maxOccurs="unbounded">
-													<xs:element name="DataModel" maxOccurs="1" minOccurs="1">
-														<xs:complexType>
-															<xs:attribute name="ref" type="xs:string">
-																<xs:annotation>
-																	<xs:documentation>Reference a Template element to use for this test. Values are in
-																		"ns:parent.child.child" with the namespace being optional. Resolution always
-																		starts at the document root.</xs:documentation>
-																</xs:annotation>
-															</xs:attribute>
-														</xs:complexType>
-													</xs:element>
+													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
 												</xs:choice>
 												<xs:attribute name="name" type="xs:string">
 													<xs:annotation>
