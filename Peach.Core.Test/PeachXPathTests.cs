@@ -355,6 +355,42 @@ namespace Peach.Core.Test
 			Assert.AreEqual(findMe3, ((PeachXPathNavigator)iter.Current).currentNode);
 			Assert.IsFalse(iter.MoveNext());
 		}
+
+		[Test, Ignore("Issue 432")]
+		public void ActionResult()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"FindMe\" size=\"8\"/>" +
+				"	</DataModel>" +
+				"	<StateModel name=\"TheState\" initialState=\"State1\">" +
+				"		<State name=\"State1\">" +
+				"			<Action name='call' type=\"call\" method=\"foo\">" +
+				"				<Result>" +
+				"					<DataModel name=\"DM1\" ref=\"TheDataModel\" />" +
+				"				</Result>" +
+				"			</Action>" +
+				"		</State>" +
+				"	</StateModel>" +
+				"	<Test name=\"Default\">" +
+				"		<StateModel ref=\"TheState\"/>" +
+				"		<Publisher class=\"Console\" />" +
+				"	</Test>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var action = dom.tests["Default"].stateModel.states["State1"].actions[0];
+			DataElement findMe1 = action.result.dataModel[0];
+			
+			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
+			XPathNodeIterator iter = navi.Select("//FindMe");
+
+			Assert.IsTrue(iter.MoveNext());
+			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
+			Assert.IsFalse(iter.MoveNext());
+		}
 	}
 }
 
