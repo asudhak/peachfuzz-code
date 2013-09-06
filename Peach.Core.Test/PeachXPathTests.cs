@@ -356,7 +356,7 @@ namespace Peach.Core.Test
 			Assert.IsFalse(iter.MoveNext());
 		}
 
-		[Test, Ignore("Issue 432")]
+		[Test]
 		public void ActionResult()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
@@ -367,7 +367,7 @@ namespace Peach.Core.Test
 				"		<State name=\"State1\">" +
 				"			<Action name='call' type=\"call\" method=\"foo\">" +
 				"				<Result>" +
-				"					<DataModel name=\"DM1\" ref=\"TheDataModel\" />" +
+				"					<DataModel ref=\"TheDataModel\" />" +
 				"				</Result>" +
 				"			</Action>" +
 				"		</State>" +
