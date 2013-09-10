@@ -253,6 +253,61 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
+		public void IncludeExcludeMutable2()
+		{
+			string xml =
+@"<Peach>
+	<DataModel name='TheDataModel'>
+		<String name='str' value='Hello World!'/>
+		<String name='str2' value='Hello World!'/>
+		<Choice name='ExcludeMe'>
+			<Block name='block'>
+				<Block name='subblock'>
+					<Blob name='blob'/>
+					<Number name='subnum' size='8'/>
+				</Block>
+				<Number name='num' size='8'/>
+			</Block>
+			<Block name='block2'>
+				<Number name='num' size='8'/>
+			</Block>
+		</Choice>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Exclude ref='ExcludeMe'/>
+	</Test>
+</Peach>";
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			
+			var dm = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
+			Assert.NotNull(dm);
+
+			// Should update the action's data model
+
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.subblock"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.subblock.blob"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.subblock.subnum"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.num"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block2"));
+			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block2.num"));
+		}
+
+		[Test]
 		public void TopDataElement()
 		{
 			string temp1 = Path.GetTempFileName();
