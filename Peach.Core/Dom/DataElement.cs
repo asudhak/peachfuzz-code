@@ -1261,7 +1261,7 @@ namespace Peach.Core.Dom
 			if (!_relations.Contains(r))
 				throw new ArgumentException(FmtMessage(r, this, "referenced by "));
 
-			if (r.From.parent == null)
+			if (r.From != null && r.From.parent == null)
 				throw new PeachException(FmtMessage(r, r.From, "valid parent in from="));
 
 			if (r.Of == null)
