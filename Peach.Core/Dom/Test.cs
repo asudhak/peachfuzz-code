@@ -161,22 +161,12 @@ namespace Peach.Core.Dom
 					var dataElement = ((XPath.PeachXPathNavigator)nodeIter.Current).currentNode as DataElement;
 
 					if (dataElement != null)
-						markMutable(dataElement, item.Item1);
+					{
+						dataElement.isMutable = item.Item1;
+						foreach (var child in dataElement.EnumerateAllElements())
+							child.isMutable = item.Item1;
+					}
 				}
-			}
-		}
-
-		private static void markMutable(DataElement elem, bool isMutable)
-		{
-			elem.isMutable = isMutable;
-
-			var cont = elem as DataElementContainer;
-			if (cont == null)
-				return;
-
-			foreach (var child in cont)
-			{
-				markMutable(child, isMutable);
 			}
 		}
 	}
