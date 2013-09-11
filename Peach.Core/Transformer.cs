@@ -72,10 +72,10 @@ namespace Peach.Core
 		/// <returns>Returns decoded value or null if decoding is not supported.</returns>
 		public virtual BitStream decode(BitStream data)
 		{
-			data.Seek(0, System.IO.SeekOrigin.Begin);
-
 			if (anotherTransformer != null)
 				data = anotherTransformer.decode(data);
+
+			data.Seek(0, System.IO.SeekOrigin.Begin);
 
 			return internalDecode(data);
 		}
