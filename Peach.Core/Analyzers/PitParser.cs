@@ -850,11 +850,11 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Fixup":
-						element.fixup = handlePlugin<Fixup, FixupAttribute>(child, element, true);
+						handleFixup(child, element);
 						break;
 
 					case "Transformer":
-						element.transformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
+						handleTransformer(child, element);
 						break;
 
 					case "Hint":
@@ -862,12 +862,54 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Analyzer":
-						element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(child, element, false);
+						handleAnalyzer(child, element);
 						break;
 
 					case "Placement":
 						handlePlacement(child, element);
 						break;
+				}
+			}
+		}
+
+		protected void handleFixup(XmlNode node, DataElement element)
+		{
+			if (element.fixup != null)
+				throw new PeachException("Error, multiple fixups defined on element '" + element.name + "'.");
+
+			element.fixup = handlePlugin<Fixup, FixupAttribute>(node, element, true);
+		}
+
+		protected void handleAnalyzer(XmlNode node, DataElement element)
+		{
+			if (element.analyzer != null)
+				throw new PeachException("Error, multiple analyzers are defined on element '" + element.name + "'.");
+
+			element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(node, element, false);
+		}
+
+		protected void handleTransformer(XmlNode node, DataElement element)
+		{
+			if (element.transformer != null)
+				throw new PeachException("Error, multiple transformers are defined on element '" + element.name + "'.");
+
+			element.transformer = handlePlugin<Transformer, TransformerAttribute>(node, element, false);
+
+			handleNestedTransformer(node, element, element.transformer);
+		}
+
+		protected void handleNestedTransformer(XmlNode node, DataElement element, Transformer transformer)
+		{
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Transformer")
+				{
+					if (transformer.anotherTransformer != null)
+						throw new PeachException("Error, multiple nested transformers are defined on element '" + element.name + "'.");
+
+					transformer.anotherTransformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
+
+					handleNestedTransformer(child, element, transformer.anotherTransformer);
 				}
 			}
 		}
