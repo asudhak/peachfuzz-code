@@ -43,6 +43,7 @@
 				<xs:element ref="Import" />
 				<xs:element ref="Include" />
 				<xs:element ref="Defaults" />
+				<xs:element ref="LangModel" />
 				<xs:element ref="DataModel" />
 				<xs:element ref="Data" />
 				<xs:element ref="Test" />
@@ -126,7 +127,32 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
-	
+
+	<xs:element name="LangModel">
+		<xs:annotation>
+			<xs:documentation>
+				Templates are top level elements that contain other data elements. Templates
+				can be based on other Templates or Blocks using the ref attribute. Templates behave much
+				like Blocks.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="name" type="xs:string"/>
+			<xs:attribute name="language" type="xs:string"/>
+			<xs:attribute name="ref" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference an element to use for this test. Values are in
+						"ns:parent.child.child" with the namespace being optional. Resolution always
+						starts at the document root.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+		<xs:unique name="templateKey2">
+			<xs:selector xpath="." />
+			<xs:field xpath="@name" />
+		</xs:unique>
+	</xs:element>
+
 	<xs:complexType name="tInclude">
 		<xs:attribute name="ref" />
 		<xs:attribute name="xpath"/>
@@ -2478,7 +2504,10 @@
 								</xs:annotation>
 								<xs:complexType>
 									<xs:choice minOccurs="0" maxOccurs="unbounded">
-										<xs:element ref="DataModel" maxOccurs="1"/>
+										<xs:choice maxOccurs="1">
+											<xs:element ref="LangModel" maxOccurs="1"/>
+											<xs:element ref="DataModel" maxOccurs="1"/>
+										</xs:choice>
 											<!--<xs:complexType>
 												<xs:attribute name="name" type="xs:string"/>
 												<xs:attribute name="ref" type="xs:string">
@@ -2509,7 +2538,10 @@
 											</xs:annotation>
 											<xs:complexType>
 												<xs:choice minOccurs="1" maxOccurs="unbounded">
-													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
+													<xs:choice maxOccurs="1">
+														<xs:element ref="LangModel" maxOccurs="1" minOccurs="1"/>
+														<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
+													</xs:choice>
 													<xs:element ref="Data" maxOccurs="1" minOccurs="0" />
 												</xs:choice>
 												<xs:attribute name="name" type="xs:string">
@@ -2549,8 +2581,9 @@
 												<xs:documentation>Used to capture return value of call.</xs:documentation>
 											</xs:annotation>
 											<xs:complexType>
-												<xs:choice minOccurs="1" maxOccurs="unbounded">
+												<xs:choice maxOccurs="1">
 													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
+													<xs:element ref="LangModel" maxOccurs="1" minOccurs="1"/>
 												</xs:choice>
 												<xs:attribute name="name" type="xs:string">
 													<xs:annotation>
