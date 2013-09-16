@@ -117,6 +117,7 @@ namespace Peach.Core.IO
 				{
 					SeekBits(idx * -8, SeekOrigin.Current);
 					i -= idx;
+					idx = 0;
 				}
 				else if (++idx == needle.Length)
 				{
