@@ -372,5 +372,23 @@ namespace Peach.Core.Test.Agent.Monitors
 			w.SessionFinished();
 			w.StopMonitor();
 		}
+
+		[Test]
+		public void TestCommandQuoting()
+		{
+			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
+			args["Command"] = new Variant("/Applications/Flash Player.app/Contents/MacOS/Flash Player");
+			args["Arguments"] = new Variant("");
+			args["RestartOnEachTest"] = new Variant("true");
+			args["FaultOnEarlyExit"] = new Variant("true");
+
+			CrashWrangler w = new CrashWrangler(null, "name", args);
+			w.SessionStarting();
+			Thread.Sleep(1000);
+
+			Assert.AreEqual(false, w.DetectedFault());
+			w.SessionFinished();
+			w.StopMonitor();
+		}
 	}
 }
