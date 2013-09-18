@@ -880,6 +880,7 @@ namespace Peach.Core.Analyzers
 		{
 			var hint = new Hint(node.getAttrString("name"), node.getAttrString("value"));
 			element.Hints.Add(hint.Name, hint);
+			logger.Debug("handleHint: " + hint.Name + ": " + hint.Value);
 		}
 
 		protected void handlePlacement(XmlNode node, DataElement element)

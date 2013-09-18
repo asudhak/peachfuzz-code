@@ -141,6 +141,7 @@ namespace Peach.Core.Publishers
 			ret.Append(msg.ToString(Newtonsoft.Json.Formatting.None));
 			ret.Append("\n");
 
+			// Compatability with older usage
 			msg["type"] = "msg";
 			msg["content"] = "evaluate";
 
@@ -157,7 +158,7 @@ namespace Peach.Core.Publishers
 			_msgReceived.Set();
 
 			var json = JObject.Parse(message);
-			if (((string)json["msg"]) == "Evaluation complete")
+			if (((string)json["msg"]) == "Evaluation complete" || ((string)json["msg"]) == "Client ready")
 				_evaluated.Set();
 		}
 	}
