@@ -66,7 +66,14 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(BitwiseStream data)
 		{
-			data.CopyTo(stream);
+		    try
+		    {
+		        data.CopyTo(stream);
+		    }
+            catch(IOException ioException)
+            {
+                throw new SoftException("Error, Console Output Too Large",ioException);
+            }
 		}
 	}
 }

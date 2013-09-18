@@ -577,5 +577,16 @@ namespace Peach.Core.Test
 
 			Assert.AreEqual(bits, cnt);
 		}
+
+		[Test]
+		public void TestFind()
+		{
+			var str = Bits.Fmt("{0}", "aabcd");
+			var token = Bits.Fmt("{0}", "abc");
+
+			var idx = str.IndexOf(token, 0);
+			Assert.AreEqual(idx, 8);
+		}
+
 	}
 }

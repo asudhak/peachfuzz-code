@@ -33,7 +33,7 @@ namespace Peach.Core.Test.Transformers
 							</Action>
 						</State>
 					</StateModel>
-					
+
 					<Test name=""Default"">
 						<StateModel ref=""TheState""/>
 						<Publisher class=""Null""/>

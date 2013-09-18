@@ -219,6 +219,8 @@ namespace Peach.Core.Publishers
 		{
 			// Try to make sure 1 byte is available for reading.  Without doing this,
 			// state models with an initial state of input can miss the message.
+			// Also, ensure the read timeout is reset on every input action.
+			_timeout = false;
 			WantBytes(1);
 		}
 

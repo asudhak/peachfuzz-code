@@ -554,5 +554,49 @@ namespace Peach.Core.Test
 			var value = dom.tests[0].stateModel.states["initial"].actions[0].dataModel.Value;
 			Assert.AreEqual(8, value.Length);
 		}
+
+		[Test]
+		public void ArrayOverride()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='ArrayTest'>
+		<Blob name='Data' minOccurs='3' maxOccurs='5' length='2' value='44 44' valueType='hex'  /> 
+	</DataModel>
+
+	<StateModel name='StateModel' initialState='State1'>
+		<State name='State1'>
+			<Action type='output'>
+				<DataModel ref='ArrayTest'/>
+				<Data >
+					<Field name='Data[2]' value='41 41' valueType='hex' />
+					<Field name='Data[1]' value='42 42' valueType='hex' />
+					<Field name='Data[0]' value='45 45' valueType='hex'/>
+				</Data>
+			</Action> 
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var value = dom.tests[0].stateModel.states["State1"].actions[0].dataModel.Value;
+			Assert.AreEqual(6, value.Length);
+
+			var expected = new byte[] { 0x45, 0x45, 0x42, 0x42, 0x41, 0x41 };
+			Assert.AreEqual(expected, value.ToArray());
+		}
 	}
 }

@@ -26,7 +26,12 @@ namespace Peach.Core
 		/// <summary>
 		/// XML element name that corresponds to this type.
 		/// </summary>
-		public string xmlElementName;
+		public string xmlElementName { get; set; }
+
+		/// <summary>
+		/// Is this a top level XML element.
+		/// </summary>
+		public bool topLevel { get; set; }
 
 		/// <summary>
 		/// Indicate a class implements methods required
@@ -36,6 +41,7 @@ namespace Peach.Core
 		public PitParsableAttribute(string xmlElementName)
 		{
 			this.xmlElementName = xmlElementName;
+			this.topLevel = false;
 		}
 	}
 

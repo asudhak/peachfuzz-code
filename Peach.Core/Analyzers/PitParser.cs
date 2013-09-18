@@ -71,13 +71,14 @@ namespace Peach.Core.Analyzers
 		/// Mapping of XML ELement names to type as provided by PitParsableAttribute
 		/// </summary>
 		static Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
+		static Dictionary<string, Type> dataModelPitParsable = new Dictionary<string, Type>();
 		static readonly string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
 
 		static PitParser()
 		{
 			PitParser.supportParser = true;
 			Analyzer.defaultParser = new PitParser();
-			populateDataElementPitParsable();
+			populatePitParsable();
 		}
 
 		public PitParser()
@@ -219,11 +220,14 @@ namespace Peach.Core.Analyzers
 			validatePit(xml);
 		}
 
-		static protected void populateDataElementPitParsable()
+		static protected void populatePitParsable()
 		{
 			foreach (var kv in ClassLoader.GetAllByAttribute<PitParsableAttribute>(null))
 			{
-				dataElementPitParsable[kv.Key.xmlElementName] = kv.Value;
+				if (kv.Key.topLevel)
+					dataModelPitParsable[kv.Key.xmlElementName] = kv.Value;
+				else
+					dataElementPitParsable[kv.Key.xmlElementName] = kv.Value;
 			}
 		}
 
@@ -400,9 +404,10 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node)
 			{
-				if (child.Name == "DataModel")
+				var dm = handleDataModel(child, null);
+
+				if (dm != null)
 				{
-					DataModel dm = handleDataModel(child);
 					dom.dataModels.Add(dm.name, dm);
 					finalUpdateRelations(new DataModel[] { dm });
 				}
@@ -722,37 +727,29 @@ namespace Peach.Core.Analyzers
 
 		#region Data Model
 
-		protected DataModel handleDataModel(XmlNode node)
+		protected DataModel handleDataModel(XmlNode node, DataModel old)
 		{
-			DataModel dataModel = null;
-			string name = node.getAttr("name", null);
-			string refName = node.getAttr("ref", null);
+			Type type;
+			if (!dataModelPitParsable.TryGetValue(node.Name, out type))
+				return old;
 
-			if (refName != null)
-			{
-				DataModel refObj = getRef<Dom.DataModel>(_dom, refName, a => a.dataModels);
-				if (refObj == null)
-					throw new PeachException("Error, DataModel {0}could not resolve ref '{1}'. XML:\n{2}".Fmt(
-						name == null ? "" : "'" + name + "' ", refName, node.OuterXml));
+			if (old != null)
+				throw new PeachException("Error, more than one {0} not allowed. XML:\n{1}".Fmt(
+					string.Join(",", dataModelPitParsable.Keys), node.OuterXml));
 
-				if (string.IsNullOrEmpty(name))
-					name = refName;
+			MethodInfo pitParsableMethod = type.GetMethod("PitParser");
+			if (pitParsableMethod == null)
+				throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + type.FullName);
 
-				dataModel = refObj.Clone(name) as DataModel;
-				dataModel.isReference = true;
-				dataModel.referenceName = refName;
-			}
-			else
-			{
-				if (string.IsNullOrEmpty(name))
-					throw new PeachException("Error, DataModel missing required 'name' attribute.");
+			PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
-				dataModel = new DataModel(name);
-			}
+			var elem = delegateAction(this, node, null);
+			if (elem == null)
+				throw new PeachException("Error, type failed to parse provided XML: " + type.FullName);
 
-			handleCommonDataElementAttributes(node, dataModel);
-			handleCommonDataElementChildren(node, dataModel);
-			handleDataElementContainer(node, dataModel);
+			var dataModel = elem as DataModel;
+			if (dataModel == null)
+				throw new PeachException("Error, type failed to return top level element: " + type.FullName);
 
 			return dataModel;
 		}
@@ -850,11 +847,11 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Fixup":
-						element.fixup = handlePlugin<Fixup, FixupAttribute>(child, element, true);
+						handleFixup(child, element);
 						break;
 
 					case "Transformer":
-						element.transformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
+						handleTransformer(child, element);
 						break;
 
 					case "Hint":
@@ -862,12 +859,54 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Analyzer":
-						element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(child, element, false);
+						handleAnalyzer(child, element);
 						break;
 
 					case "Placement":
 						handlePlacement(child, element);
 						break;
+				}
+			}
+		}
+
+		protected void handleFixup(XmlNode node, DataElement element)
+		{
+			if (element.fixup != null)
+				throw new PeachException("Error, multiple fixups defined on element '" + element.name + "'.");
+
+			element.fixup = handlePlugin<Fixup, FixupAttribute>(node, element, true);
+		}
+
+		protected void handleAnalyzer(XmlNode node, DataElement element)
+		{
+			if (element.analyzer != null)
+				throw new PeachException("Error, multiple analyzers are defined on element '" + element.name + "'.");
+
+			element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(node, element, false);
+		}
+
+		protected void handleTransformer(XmlNode node, DataElement element)
+		{
+			if (element.transformer != null)
+				throw new PeachException("Error, multiple transformers are defined on element '" + element.name + "'.");
+
+			element.transformer = handlePlugin<Transformer, TransformerAttribute>(node, element, false);
+
+			handleNestedTransformer(node, element, element.transformer);
+		}
+
+		protected void handleNestedTransformer(XmlNode node, DataElement element, Transformer transformer)
+		{
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Transformer")
+				{
+					if (transformer.anotherTransformer != null)
+						throw new PeachException("Error, multiple nested transformers are defined on element '" + element.name + "'.");
+
+					transformer.anotherTransformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
+
+					handleNestedTransformer(child, element, transformer.anotherTransformer);
 				}
 			}
 		}
@@ -1530,8 +1569,7 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Result")
 					action.result = handleActionResult(child, action);
 
-				if (child.Name == "DataModel")
-					action.dataModel = handleDataModel(child);
+				action.dataModel = handleDataModel(child, action.dataModel);
 
 				if (child.Name == "Data")
 				{
@@ -1565,8 +1603,8 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
-				if (child.Name == "DataModel")
-					param.dataModel = handleDataModel(child);
+				param.dataModel = handleDataModel(child, param.dataModel);
+
 				if (child.Name == "Data")
 					param.data = handleData(child);
 			}
@@ -1588,8 +1626,7 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
-				if (child.Name == "DataModel")
-					result.dataModel = handleDataModel(child);
+				result.dataModel = handleDataModel(child, result.dataModel);
 			}
 
 			if (result.dataModel == null)

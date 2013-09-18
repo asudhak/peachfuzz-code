@@ -515,6 +515,7 @@
     <Compile Include="Transformers\Encode\UrlEncodeTests.cs" />
     <Compile Include="Transformers\EvalTests.cs" />
     <Compile Include="Transformers\NullTests.cs" />
+    <Compile Include="Transformers\TransformerTests.cs" />
     <Compile Include="Transformers\Type\IntToHexTests.cs" />
     <Compile Include="UtilitiesTests.cs" />
     <Compile Include="VariantTests.cs" />

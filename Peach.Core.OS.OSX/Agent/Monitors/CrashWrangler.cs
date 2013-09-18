@@ -312,7 +312,7 @@ namespace Peach.Core.Agent.Monitors
 
 			var si = new ProcessStartInfo();
 			si.FileName = _execHandler;
-			si.Arguments = _command + (_arguments.Length == 0 ? "" : " ") + _arguments;
+			si.Arguments = "\"" + _command + "\"" + (_arguments.Length == 0 ? "" : " ") + _arguments;
 			si.UseShellExecute = false;
 
 			foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
