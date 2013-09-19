@@ -24,9 +24,9 @@ namespace PeachValidator
 		string windowTitlePit = "Peach Validator v3.0 - {0}";
 		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {1}";
 		string windowTitleSample = "Peach Validator v3.0 - None - {0}";
-		string sampleFileName = null;
-		string pitFileName = null;
-		string dataModel = null;
+		public string sampleFileName = null;
+		public string pitFileName = null;
+		public string dataModel = null;
 		Dictionary<string, object> parserArgs = new Dictionary<string, object>();
 		CrackModel crackModel = new CrackModel();
 		Dictionary<DataElement, CrackNode> crackMap = new Dictionary<DataElement, CrackNode>();
@@ -265,7 +265,22 @@ namespace PeachValidator
 				return;
 
 			var node = (CrackNode)treeViewAdv1.SelectedNode.Tag;
-			hexBox1.Select(node.Position, node.Length);
+			hexBox1.Select(node.StartBits / 8, (node.StopBits - node.StartBits + 7) / 8);
+		}
+
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			if (pitFileName != null)
+				toolStripButtonRefreshPit_Click(null, null);
+
+			if (sampleFileName != null)
+			{
+				DynamicFileByteProvider dynamicFileByteProvider;
+				dynamicFileByteProvider = new DynamicFileByteProvider(new FileStream(sampleFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+				hexBox1.ByteProvider = dynamicFileByteProvider;
+
+				toolStripButtonRefreshSample_Click(null, null);
+			}
 		}
 	}
 }

@@ -826,6 +826,11 @@
 						will be set to the size or count of the specified element.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="lengthType" type="tLengthType">
+				<xs:annotation>
+					<xs:documentation>An optional attribute that specifies the units for the size.  Default is bytes.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
 			<!--<xs:attribute name="when" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>A python expression that must evaluate to true or false.  Only used

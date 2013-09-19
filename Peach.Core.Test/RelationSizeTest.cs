@@ -851,6 +851,27 @@ namespace Peach.Core.Test
 			byte[] actual = dom.dataModels[0].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x6Hello"), actual);
 		}
+
+		[Test]
+		public void LengthInBits()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='Size' size='8' signed='false'>
+			<Relation type='size' of='DM' lengthType='bits' />
+		</Number>
+		<String value='Hello'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			byte[] actual = dom.dataModels[0].Value.ToArray();
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x30Hello"), actual);
+		}
 	}
 }
 

@@ -54,5 +54,12 @@ namespace Peach.Core.Cracker
 			this.element = element;
 			this.data = data;
 		}
+
+		public CrackingFailure(string msg, DataElement element, BitStream data, Exception innerException)
+			: base(msg, innerException)
+		{
+			this.element = element;
+			this.data = data;
+		}
 	}
 }

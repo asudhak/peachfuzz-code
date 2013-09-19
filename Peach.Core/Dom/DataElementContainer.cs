@@ -134,6 +134,18 @@ namespace Peach.Core.Dom
 			return ret;
 		}
 
+		public string UniqueName(string name)
+		{
+			string ret = name;
+
+			for (int i = 1; ContainsKey(ret); ++i)
+			{
+				ret = string.Format("{0}_{1}", name, i);
+			}
+
+			return ret;
+		}
+
 		public override BitStream  ReadSizedData(BitStream data, long? size, long read = 0)
 		{
 			if (!size.HasValue)

@@ -208,5 +208,20 @@ namespace Peach.Core.Test
 				Assert.Null(msg);
 			}
 		}
+
+		[Test]
+		public void UniqueNameTest()
+		{
+			DataElementContainer cont = new Block();
+
+			string unique1 = cont.UniqueName("child");
+			Assert.AreEqual("child", unique1);
+
+			cont.Add(new Blob("child"));
+
+			string unique2 = cont.UniqueName("child");
+			Assert.AreEqual("child_1", unique2);
+		}
+
 	}
 }
