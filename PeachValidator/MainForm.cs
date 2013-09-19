@@ -265,7 +265,7 @@ namespace PeachValidator
 				return;
 
 			var node = (CrackNode)treeViewAdv1.SelectedNode.Tag;
-			hexBox1.Select(node.Position, node.Length);
+			hexBox1.Select(node.StartBits / 8, (node.StopBits - node.StartBits + 7) / 8);
 		}
 	}
 }
