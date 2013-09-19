@@ -1292,6 +1292,13 @@ namespace Peach.Core.Analyzers
 						if (node.hasAttr("expressionSet"))
 							rel.ExpressionSet = node.getAttrString("expressionSet");
 
+						var strType = node.getAttr("lengthType", rel.lengthType.ToString());
+						LengthType lenType;
+						if (!Enum.TryParse(strType, true, out lenType))
+							throw new PeachException("Error, size relation on element '" + parent.name + "' has invalid lengthType '" + strType + "'.");
+
+						rel.lengthType = lenType;
+
 						parent.relations.Add(rel);
 					}
 
@@ -1339,7 +1346,7 @@ namespace Peach.Core.Analyzers
 					break;
 
 				default:
-					throw new PeachException("Error, element '" + parent.name + "' has nknown relation type '" + value + "'.");
+					throw new PeachException("Error, element '" + parent.name + "' has unknown relation type '" + value + "'.");
 			}
 		}
 
