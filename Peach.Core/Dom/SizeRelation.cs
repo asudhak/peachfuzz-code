@@ -50,7 +50,6 @@ namespace Peach.Core.Dom
 	[Parameter("from", typeof(string), "Element that receives relation value", "")]
 	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
 	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
-	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units to compute the size in", "bytes")]
 	public class SizeRelation : Relation
 	{
