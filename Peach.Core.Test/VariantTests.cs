@@ -62,6 +62,9 @@ namespace Peach.Core.Test
 			str = new Variant(bs).ToString();
 			Assert.AreEqual("4c", str);
 
+			bs.SetLengthBits(4);
+			str = new Variant(bs).ToString();
+			Assert.AreEqual("40 (Len: 4 bits)", str);
 		}
 	}
 }
