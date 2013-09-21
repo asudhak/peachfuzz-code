@@ -9,10 +9,10 @@ var output = null;
 var peachFrame = null;
 var timer = null;
 var interval = null;
-var debug = true;
+var debug = false;
 var buffer = "";
 var ready = false;
-var logDump = true;
+var logDump = false;
 var logBuffer = new Array();
 var isOpera = typeof window.opera !== 'undefined';
 var isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
@@ -138,8 +138,8 @@ function processJSONLine(data)
         ws.send('{"msg": "pong"}\n');
         break;
 		
-      default:
-        warnLog("Received unknown message from server: " + msg);
+//      default:
+//        warnLog("Received unknown message from server: " + msg);
     }
     break;
 	

@@ -32,6 +32,8 @@ using System.Text;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
+using NLog;
+
 namespace Peach.Core.Transformers.Encode
 {
     [Description("Encode on output as HTML (encoding < > & and \").")]
@@ -40,19 +42,45 @@ namespace Peach.Core.Transformers.Encode
     [Serializable]
     public class HtmlEncode : Transformer
     {
-        public HtmlEncode(Dictionary<string, Variant> args) : base(args)
+		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected NLog.Logger Logger { get { return logger; } }
+
+		public HtmlEncode(Dictionary<string, Variant> args)
+			: base(args)
         {
         }
 
+		protected string HtmlEncodeBytes(byte[] buf)
+		{
+			var ret = new StringBuilder(buf.Length);
+
+			foreach (byte b in buf)
+			{
+				ret.Append("&#");
+				ret.Append((int)b);
+				ret.Append(";");
+			}
+
+			return ret.ToString();
+		}
+
         protected override BitwiseStream internalEncode(BitwiseStream data)
         {
-            var s = new BitReader(data).ReadString();
-            var ds = System.Web.HttpUtility.HtmlAttributeEncode(s);
-            var ret = new BitStream();
-            var writer = new BitWriter(ret);
-            writer.WriteString(ds);
-            ret.Seek(0, System.IO.SeekOrigin.Begin);
-            return ret;
+			try
+			{
+				var s = new BitReader(data).ReadString();
+				var ds = System.Web.HttpUtility.HtmlAttributeEncode(s);
+				var ret = new BitStream();
+				var writer = new BitWriter(ret);
+				writer.WriteString(ds);
+				ret.Seek(0, System.IO.SeekOrigin.Begin);
+				return ret;
+			}
+			catch (System.Text.DecoderFallbackException ex)
+			{
+				logger.Warn("Caught DecoderFallbackException, throwing soft exception.");
+				throw new SoftException(ex);
+			}
         }
 
         protected override BitStream internalDecode(BitStream data)

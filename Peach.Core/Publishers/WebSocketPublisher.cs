@@ -45,6 +45,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Template", typeof(string), "Data template for publishing")]
 	[Parameter("Publish", typeof(string), "How to publish data, base64 or url.", "base64")]
 	[Parameter("DataToken", typeof(string), "Token to replace with data in template", "##DATA##")]
+	[Parameter("Timeout", typeof(int), "Time in milliseconds to wait for client response", "60000")]
 	public class WebSocketPublisher : Publisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -59,6 +60,7 @@ namespace Peach.Core.Publishers
 		public string Template { get; set; }
 		public string Publish { get; set; }
 		public string DataToken { get; set; }
+		public int Timeout { get; set; }
 
 		string _template;
 
@@ -104,9 +106,10 @@ namespace Peach.Core.Publishers
 			try
 			{
 				logger.Debug(">> OnOutput");
+				logger.Debug("Waiting for evaluated or client ready msg");
+				_evaluated.WaitOne(Timeout);
 				_evaluated.Reset();
 				_session.Send(BuildMessage(data));
-				_evaluated.WaitOne();
 				logger.Debug("<< OnOutput");
 			}
 			catch (Exception ex)
