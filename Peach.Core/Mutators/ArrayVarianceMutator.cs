@@ -61,6 +61,18 @@ namespace Peach.Core.Mutators
             currentCount = minCount;
         }
 
+        public int MinCount
+        {
+        	get { return minCount; }
+        	set { minCount = value; }
+        }
+
+        public int CurrentCount
+        {
+        	get { return currentCount; }
+        	set { currentCount = value; }
+        }
+        
         // GET N
         //
         public int getN(DataElement obj, int n)
