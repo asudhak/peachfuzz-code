@@ -601,16 +601,17 @@ namespace Peach.Core
 
 		private static string BitsToString(BitwiseStream bs)
 		{
+			if (bs.LengthBits == 0)
+				return "";
+
 			byte[] buf = new byte[32];
 			long pos = bs.PositionBits;
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			int len = bs.Read(buf, 0, buf.Length);
 
-			if (len == 0)
-				return "";
-
 			StringBuilder ret = new StringBuilder();
-			ret.AppendFormat("{0:x2}", buf[0]);
+			if (len > 0)
+				ret.AppendFormat("{0:x2}", buf[0]);
 
 			int end = Math.Min(len, buf.Length);
 			for (int i = 1; i < end; ++i)

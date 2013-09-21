@@ -50,12 +50,25 @@ namespace Peach.Core.Dom
 	[Parameter("from", typeof(string), "Element that receives relation value", "")]
 	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
 	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
+	[Parameter("lengthType", typeof(LengthType), "Units to compute the size in", "bytes")]
 	public class SizeRelation : Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 
 		protected bool _isRecursing = false;
-		protected bool _isByteRelation = true;
+		protected LengthType _lengthType = LengthType.Bytes;
+
+		public LengthType lengthType
+		{
+			get
+			{
+				return _lengthType;
+			}
+			set
+			{
+				_lengthType = value;
+			}
+		}
 
 		public override long GetValue()
 		{
@@ -78,7 +91,7 @@ namespace Peach.Core.Dom
 					size = Convert.ToInt64(value);
 				}
 
-				if (_isByteRelation)
+				if (lengthType == LengthType.Bytes)
 					size = size * 8;
 
 				return size;
@@ -105,7 +118,7 @@ namespace Peach.Core.Dom
 				_isRecursing = true;
 				long size = Of.Value.LengthBits;
 
-				if (_isByteRelation)
+				if (lengthType == LengthType.Bytes)
 				{
 					if (_expressionSet != null)
 					{

@@ -301,7 +301,16 @@ namespace Peach.Core.Cracker
 
 				var positions = new Dictionary<DataElement, Position>();
 				var parent = elem.parent;
-				elem.analyzer.asDataElement(elem, positions);
+
+				try
+				{
+					elem.analyzer.asDataElement(elem, positions);
+				}
+				catch (Exception ex)
+				{
+					throw new CrackingFailure("Exception in analyzer on '" + elem.fullName + "': " + ex.Message, elem, data, ex);
+				}
+
 				var de = parent[elem.name];
 				var pos = _sizedElements[elem];
 				positions[elem] = new Position() { begin = 0, end = pos.end - pos.begin };

@@ -235,6 +235,108 @@ namespace Peach.Core.Test.Mutators
 				Assert.AreEqual(len - 10, item[1].Value.Length);
 			}
 		}
+
+		[Test]
+		public void TestBitWiseEmpty()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Number name='Number' size='8' value='0'>
+			<Relation type='size' of='Blob' lengthType='bits'/>
+		</Number>
+		<Blob name='Blob'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("SizedVaranceMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			// verify values
+			Assert.AreEqual(51, dataModels.Count);
+
+			for (int i = 0; i < 51; ++i)
+			{
+				Assert.AreEqual(i, (int)dataModels[i][0].InternalValue);
+				Assert.AreEqual(8 + i, dataModels[i].Value.LengthBits);
+			}
+		}
+
+		[Test]
+		public void TestBitWiseNotEmpty()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Number name='Number' size='8' value='0'>
+			<Relation type='size' of='Blob' lengthType='bits'/>
+		</Number>
+		<Blob name='Blob' lengthType='bits' length='7'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("SizedVaranceMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			// verify values
+			Assert.AreEqual(1 + 50 + 7, dataModels.Count);
+
+			Assert.AreEqual(7, (int)dataModels[0][0].InternalValue);
+			Assert.AreEqual(8 + 7, dataModels[0].Value.LengthBits);
+
+			for (int i = 1; i < 58; ++i)
+			{
+				Assert.AreEqual(i, (int)dataModels[i][0].InternalValue);
+				Assert.AreEqual(8 + i, dataModels[i].Value.LengthBits);
+			}
+		}
+
     }
 }
 
