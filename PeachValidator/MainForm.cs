@@ -201,6 +201,9 @@ namespace PeachValidator
 
 		private void toolStripButtonRefreshPit_Click(object sender, EventArgs e)
 		{
+			if (string.IsNullOrEmpty(pitFileName))
+				return;
+
 			try
 			{
 				PitParser parser = new PitParser();
