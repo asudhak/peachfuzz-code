@@ -206,7 +206,6 @@ namespace Peach.Core.Mutators
 					tgtLen -= dataLen;
 				}
 
-				var buf = new byte[BitwiseStream.BlockCopySize];
 				var dst = new BitStream();
 
 				data.Seek(0, System.IO.SeekOrigin.Begin);
