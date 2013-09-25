@@ -61,13 +61,13 @@ namespace Peach.Core.Mutators
             currentCount = minCount;
         }
 
-        public int MinCount
+        protected int MinCount
         {
         	get { return minCount; }
         	set { minCount = value; }
         }
 
-        public int CurrentCount
+        protected int CurrentCount
         {
         	get { return currentCount; }
         	set { currentCount = value; }
