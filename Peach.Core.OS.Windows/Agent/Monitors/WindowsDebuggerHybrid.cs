@@ -631,8 +631,15 @@ namespace Peach.Core.Agent.Monitors
 				{
 					if ((DateTime.Now - startTimer).Minutes >= 1)
 					{
-						_debuggerProcess.Kill();
-						_debuggerProcess.Close();
+						try
+						{
+							_debuggerProcess.Kill();
+							_debuggerProcess.Close();
+						}
+						catch
+						{
+						}
+
 						throw;
 					}
 				}

@@ -234,7 +234,10 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 			count++;
 
-			dbgClient.AttachKernel((uint)Const.DEBUG_ATTACH_KERNEL_CONNECTION, ref connectionString);
+			System.Diagnostics.Debugger.Break();
+
+			dbgClient.AttachKernel((uint)Const.DEBUG_ATTACH_KERNEL_CONNECTION, connectionString);
+			dbgControl.WaitForEvent((uint)Const.DEBUG_WAIT_DEFAULT, 0xFFFFFFFF);
 
 			try
 			{
