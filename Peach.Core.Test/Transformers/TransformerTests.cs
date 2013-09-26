@@ -29,7 +29,7 @@ namespace Peach.Core.Test.Transformers
 
 			PitParser parser = new PitParser();
 
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 		}
 
 		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, multiple nested transformers are defined on element 'str'.")]
@@ -49,7 +49,7 @@ namespace Peach.Core.Test.Transformers
 
 			PitParser parser = new PitParser();
 
-			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)), false);
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)), false);
 
 		}
 
