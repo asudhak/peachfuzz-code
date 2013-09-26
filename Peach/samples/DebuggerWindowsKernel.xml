@@ -30,11 +30,7 @@
 	<StateModel name="State" initialState="Initial">
 		<State name="Initial">
 
-			<Action name="SendValue1" type="output">
-				<DataModel ref="TestTemplate" />
-			</Action>
-			
-			<Action name="SendValue2" type="output">
+			<Action type="output">
 				<DataModel ref="TestTemplate" />
 			</Action>
 			
@@ -42,14 +38,16 @@
 	</StateModel>
 
 	<Agent name="LocalAgent">
+		<Monitor class="Vmware">
+			<Param name="Vmx" value="C:\Users\mike\Documents\Virtual Machines\Amz Scada (Windows 7)\Amz Scada (Windows 7).vmx" />
+			<Param name="HostType" value="Workstation" />
+			<Param name="SnapshotName" value="Fuzzing" />
+			<Param name="WaitForToolsInGuest" value="false" />
+		</Monitor>
+
 		<Monitor class="WindowsDebugger">
 			<Param name="KernelConnectionString" value="com:pipe,port=\\.\pipe\KD,resets=0,reconnect" />
 			<!--<Param name="WinDbgPath" value="C:\Program Files (x86)\Debugging Tools for Windows (x86)" />-->
-		</Monitor>
-		
- 		<Monitor class="Process">
-			<Param name="Executable" value="CrashableServer.exe"/>
-			<Param name="Arguments" value="127.0.0.1 4242" />
 		</Monitor>
 	</Agent>
 
@@ -57,13 +55,13 @@
 		<Agent ref="LocalAgent" />
 
 		<StateModel ref="State"/>
-		<Publisher class="Tcp">
-			<Param name="Host" value="127.0.0.1" />
-			<Param name="Port" value="4244" />
+		<Publisher class="File">
+			<Param name="FileName" value="fuzzed.bin" />
 		</Publisher>
-		<Logger class="Filesystem">
+		
+		<!--<Logger class="Filesystem">
 			<Param name="Path" value="Logs" />
-		</Logger>
+		</Logger>-->
 	</Test>
 </Peach>
 <!-- end -->
