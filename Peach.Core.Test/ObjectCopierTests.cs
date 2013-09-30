@@ -73,10 +73,9 @@ namespace Peach.Core.Test
 			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_1"));
 			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations.Add(new SizeRelation());
+			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations.Add(new SizeRelation(((DataElementContainer)((DataElementContainer)dm[0])[0])[0]));
 
 			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string1_1_2";
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1_1_1";
 
 			var dmCopy = dm.Clone() as DataModel;
 			ValidateListVsDictionary(dmCopy, null);
@@ -107,12 +106,11 @@ namespace Peach.Core.Test
 			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_1"));
 			((DataElementContainer)((DataElementContainer)dm[1])[1]).Add(new Dom.String("string2_2_2"));
 
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations.Add(new SizeRelation());
+			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations.Add(new SizeRelation(((DataElementContainer)((DataElementContainer)dm[0])[0])[0]));
 
 			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].OfName = "string2_1_2";
-			((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0].FromName = "string1_1_1";
 
-			((DataElementContainer)((DataElementContainer)dm[1])[0])[1].relations.Add(((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0], false);
+			((DataElementContainer)((DataElementContainer)dm[1])[0])[1].relations.Add(((DataElementContainer)((DataElementContainer)dm[0])[0])[0].relations[0]);
 
 			dm.find("string1_1_1").DefaultValue = new Variant("10");
 			dm.find("string2_1_2").DefaultValue = new Variant("1234567890");
@@ -162,7 +160,7 @@ namespace Peach.Core.Test
 				Assert.AreEqual(countItem.GetHashCode(), dictItem.GetHashCode(), countItem.fullName);
 
 				foreach (var rel in countItem.relations)
-					Assert.AreEqual(rel.parent.getRoot().GetHashCode(), countItem.getRoot().GetHashCode(), countItem.fullName);
+					Assert.AreEqual(rel.From.getRoot().GetHashCode(), countItem.getRoot().GetHashCode(), countItem.fullName);
 			}
 
 			foreach (var child in elem)

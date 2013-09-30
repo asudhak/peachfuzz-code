@@ -143,18 +143,15 @@ namespace Peach.Core.Dom
 				return MutatedValue;
 			}
 
-			foreach (Relation r in _relations)
+			foreach (var r in relations.From<Relation>())
 			{
-				if (IsFromRelation(r))
-				{
-					// CalculateFromValue can return null sometimes
-					// when mutations mess up the relation.
-					// In that case use the exsiting value for this element.
+				// CalculateFromValue can return null sometimes
+				// when mutations mess up the relation.
+				// In that case use the exsiting value for this element.
 
-					var relationValue = r.CalculateFromValue();
-					if (relationValue != null)
-						value = relationValue;
-				}
+				var relationValue = r.CalculateFromValue();
+				if (relationValue != null)
+					value = relationValue;
 			}
 
 			// 3. Fixup

@@ -58,6 +58,11 @@ namespace Peach.Core.Dom
 		protected bool _isRecursing = false;
 		protected LengthType _lengthType = LengthType.Bytes;
 
+		public SizeRelation(DataElement parent)
+			: base(parent)
+		{
+		}
+
 		public LengthType lengthType
 		{
 			get
@@ -85,7 +90,7 @@ namespace Peach.Core.Dom
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["size"] = size;
 					state["value"] = size;
-					state["self"] = this._parent;
+					state["self"] = From;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
 					size = Convert.ToInt64(value);
@@ -125,7 +130,7 @@ namespace Peach.Core.Dom
 						Dictionary<string, object> state = new Dictionary<string, object>();
 						state["size"] = size / 8;
 						state["value"] = size / 8;
-						state["self"] = this._parent;
+						state["self"] = From;
 
 						object newValue = Scripting.EvalExpression(_expressionSet, state);
 						size = Convert.ToInt64(newValue) * 8;
@@ -140,7 +145,7 @@ namespace Peach.Core.Dom
 						Dictionary<string, object> state = new Dictionary<string, object>();
 						state["size"] = size;
 						state["value"] = size;
-						state["self"] = this._parent;
+						state["self"] = From;
 
 						object newValue = Scripting.EvalExpression(_expressionSet, state);
 						size = Convert.ToInt64(newValue);
@@ -164,13 +169,13 @@ namespace Peach.Core.Dom
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["size"] = size / 8;
 				state["value"] = size / 8;
-				state["self"] = this._parent;
+				state["self"] = From;
 
 				object newValue = Scripting.EvalExpression(_expressionSet, state);
 				size = Convert.ToInt32(newValue);
 			}
 
-			_from.DefaultValue = new Variant(size);
+			From.DefaultValue = new Variant(size);
 		}
 	}
 }

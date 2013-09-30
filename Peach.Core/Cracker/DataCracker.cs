@@ -390,7 +390,7 @@ namespace Peach.Core.Cracker
 			DataElementContainer oldParent = element.parent;
 
 			// Ensure relations are resolved
-			foreach (Relation relation in element.relations)
+			foreach (var relation in element.relations)
 			{
 				if (relation.Of != element && relation.From != element)
 					throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.", element, data);

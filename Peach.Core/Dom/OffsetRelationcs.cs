@@ -63,6 +63,11 @@ namespace Peach.Core.Dom
 
 		protected bool _isRecursing = false;
 
+		public OffsetRelation(DataElement parent)
+			: base(parent)
+		{
+		}
+
 		public override long GetValue()
 		{
 			if (_isRecursing)
@@ -78,7 +83,7 @@ namespace Peach.Core.Dom
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["offset"] = offset;
 					state["value"] = offset;
-					state["self"] = this._parent;
+					state["self"] = From;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
 					offset = Convert.ToInt64(value);
@@ -116,7 +121,7 @@ namespace Peach.Core.Dom
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["offset"] = offset;
 					state["value"] = offset;
-					state["self"] = this._parent;
+					state["self"] = From;
 
 					object value = Scripting.EvalExpression(_expressionSet, state);
 					offset = Convert.ToInt32(value);
@@ -144,13 +149,13 @@ namespace Peach.Core.Dom
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["offset"] = offset;
 				state["value"] = offset;
-				state["self"] = this._parent;
+				state["self"] = From;
 
 				object newValue = Scripting.EvalExpression(_expressionGet, state);
 				offset = Convert.ToInt32(newValue);
 			}
 
-			_from.DefaultValue = new Variant(offset);
+			From.DefaultValue = new Variant(offset);
 		}
 
 		/// <summary>
@@ -224,7 +229,7 @@ namespace Peach.Core.Dom
 		/// </remarks>
 		/// <param name="elem1"></param>
 		/// <param name="elem2"></param>
-		/// <returns></returns>
+		/// <returns></return>s
 		protected DataElementContainer findCommonRoot(DataElement elem1, DataElement elem2)
 		{
 			List<DataElementContainer> parentsElem1 = new List<DataElementContainer>();
@@ -258,7 +263,7 @@ namespace Peach.Core.Dom
 
 			if (ctx != null)
 			{
-				relativeTo = ctx.UpdateRefName(original._from, null, relativeTo);
+				relativeTo = ctx.UpdateRefName(original.From, null, relativeTo);
 			}
 		}
 	}

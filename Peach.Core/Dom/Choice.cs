@@ -147,13 +147,6 @@ namespace Peach.Core.Dom
 		{
 			get
 			{
-				//if (_selectedElement == null && choiceElements.Count > 0)
-				//{
-				//    this.Clear();
-				//    this.Add(choiceElements[0]);
-				//    _selectedElement = this[0];
-				//}
-
 				return _selectedElement;
 			}
 			set
@@ -223,18 +216,15 @@ namespace Peach.Core.Dom
 				return MutatedValue;
 			}
 
-			foreach (Relation r in _relations)
+			foreach (var r in relations.From<Relation>())
 			{
-				if (IsFromRelation(r))
-				{
-					// CalculateFromValue can return null sometimes
-					// when mutations mess up the relation.
-					// In that case use the exsiting value for this element.
+				// CalculateFromValue can return null sometimes
+				// when mutations mess up the relation.
+				// In that case use the exsiting value for this element.
 
-					var relationValue = r.CalculateFromValue();
-					if (relationValue != null)
-						value = relationValue;
-				}
+				var relationValue = r.CalculateFromValue();
+				if (relationValue != null)
+					value = relationValue;
 			}
 
 			// 3. Fixup
@@ -248,14 +238,6 @@ namespace Peach.Core.Dom
 				value = _fixup.fixup(this);
 
 			return value;
-		}
-
-		public override void ClearRelations()
-		{
-			base.ClearRelations();
-
-			foreach (var opt in choiceElements)
-				opt.Value.ClearRelations();
 		}
 	}
 }

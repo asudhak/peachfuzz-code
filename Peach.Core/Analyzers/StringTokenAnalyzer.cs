@@ -99,14 +99,8 @@ namespace Peach.Core.Analyzers
 				this.positions = positions;
 
 				Dom.Block block = new Block(str.name);
-				block.parent = str.parent;
 				block.parent[str.name] = block;
 				block.Add(str);
-
-				// Move over relations
-				foreach (var relation in str.relations)
-					block.relations.Add(relation);
-				str.relations.Clear();
 
 				// Mark the position of the block
 				if (positions != null)

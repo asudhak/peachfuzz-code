@@ -264,6 +264,89 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
+#if DISABLED
+				private static void replaceRelations(DataElement newChild, DataElement oldChild, DataElement elem)
+		{
+			foreach (var rel in elem.relations)
+			{
+				// Find the half of the relation that is not elem
+				DataElement which = rel.Of == elem ? rel.From : rel.Of;
+
+				if (rel.parent == elem)
+				{
+					// If the relation's parent is the old child, just remove the relation
+					which.relations.Remove(rel);
+					rel.Reset();
+					continue;
+				}
+
+				// If the other half if a child of oldChild, no fixing is needed
+				string relName;
+				if (which.isChildOf(oldChild, out relName))
+					continue;
+
+				var other = newChild.find(elem.fullName);
+
+				if (elem == other)
+					continue;
+
+				// If the other half no longer exists under newChild, reset the relation
+				if (other == null)
+				{
+					rel.Reset();
+					continue;
+				}
+
+				// Fix up the relation to be in the newChild branch of the DOM
+				other.relations.Add(rel);
+
+				if (rel.From == elem)
+					rel.From = other;
+
+				if (rel.Of == elem)
+					rel.Of = other;
+			}
+		}
+
+		private static void replaceChild(DataElementContainer parent, DataElement newChild)
+		{
+			var oldChild = parent[newChild.name];
+			oldChild.parent = null;
+			newChild.parent = null;
+
+			replaceRelations(newChild, oldChild, oldChild);
+
+			foreach (var elem in oldChild.EnumerateAllElements())
+			{
+				replaceRelations(newChild, oldChild, elem);
+			}
+
+			parent[newChild.name] = newChild;
+		}
+
+		private static void updateChoice(Choice parent, DataElement newChild)
+		{
+			if (!parent.choiceElements.ContainsKey(newChild.name))
+			{
+				parent.choiceElements.Add(newChild.name, newChild);
+				newChild.parent = parent;
+				return;
+			}
+
+			var oldChild = parent.choiceElements[newChild.name];
+			oldChild.parent = null;
+
+			replaceRelations(newChild, oldChild, oldChild);
+
+			foreach (var elem in oldChild.EnumerateAllElements())
+			{
+				replaceRelations(newChild, oldChild, elem);
+			}
+
+			parent.choiceElements[newChild.name] = newChild;
+		}
+#endif
+
 		/// <summary>
 		/// Create a pretty string representation of model from here.
 		/// </summary>
@@ -468,7 +551,8 @@ namespace Peach.Core.Dom
 			if (item.parent is Array && item.parent.Count == 1)
 				return parent.Remove(this);
 
-			item.ClearRelations();
+			// XXX Reset any resolved relations
+			//item.ResetBindings();
 
 			_childrenDict.Remove(item.name);
 			bool ret = _childrenList.Remove(item);
@@ -477,14 +561,6 @@ namespace Peach.Core.Dom
 			Invalidate();
 
 			return ret;
-		}
-
-		public override void ClearRelations()
-		{
-			base.ClearRelations();
-
-			foreach (var child in this)
-				child.ClearRelations();
 		}
 
 		#endregion

@@ -28,310 +28,138 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Runtime;
-using System.Reflection;
-using System.Runtime.Serialization;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Peach.Core.Dom
 {
-	/// <summary>
-	/// Abstract base class for DataElements that contain other
-	/// data elements.  Such as Block, Choice, or Flags.
-	/// </summary>
 	[Serializable]
-	public class RelationContainer : IEnumerable<Relation>, IList<Relation>
+	public class RelationContainer : List<Binding>
 	{
-		protected DataElement parent;
-		protected List<Relation> _childrenList = new List<Relation>();
+		private DataElement parent;
 
 		public RelationContainer(DataElement parent)
 		{
 			this.parent = parent;
 		}
 
-		public DataElement Parent
+		public IEnumerable<T> Of<T>() where T : Binding
 		{
-			get
+			VerifyBinding();
+
+			foreach (var item in this)
 			{
-				return parent;
-			}
-			set
-			{
-				parent = value;
-			}
-		}
-
-		public Relation this[int index]
-		{
-			get { return _childrenList[index]; }
-			set
-			{
-				if (value == null)
-					throw new ApplicationException("Cannot set null value");
-
-				_childrenList[index].parent = null;
-
-				_childrenList.RemoveAt(index);
-				_childrenList.Insert(index, value);
-
-				value.parent = parent;
+				var ret = item as T;
+				if (ret != null && ret.Of == parent)
+					yield return ret;
 			}
 		}
 
-		public IEnumerable<T> Of<T>() where T: class
+		public IEnumerable<T> From<T>() where T : Binding
 		{
-			foreach (Relation rel in _childrenList)
+			VerifyBinding();
+
+			foreach (var item in this)
 			{
-				T r = rel as T;
-				if (r != null && rel.Of == parent)
-					yield return r;
+				var ret = item as T;
+				if (ret != null && ret.From == parent)
+					yield return ret;
 			}
 		}
 
-		public IEnumerable<T> From<T>() where T : class
+		public bool HasOf<T>() where T : Binding
 		{
-			foreach (Relation rel in _childrenList)
-			{
-				T r = rel as T;
-				if (r != null && rel.From == parent)
-					yield return r;
-			}
+			return Of<T>().Any();
 		}
 
-		public bool hasOfSizeRelation
+		public bool HasFrom<T>() where T : Binding
 		{
-			get
-			{
-				foreach (Relation rel in _childrenList)
-					if (rel is SizeRelation && rel.Of == parent)
-						return true;
-
-				return false;
-			}
+			return From<T>().Any();
 		}
 
-		public bool hasOfOffsetRelation
+		[Conditional("DEBUG")]
+		private void VerifyBinding()
 		{
-			get
-			{
-				foreach (Relation rel in _childrenList)
-					if (rel is OffsetRelation && rel.Of == parent)
-						return true;
-
-				return false;
-			}
 		}
 
-		public bool hasOfCountRelation
+#if DISABLED
+				private static string FmtMessage(Relation r, DataElement obj, string who)
 		{
-			get
-			{
-				foreach (Relation rel in _childrenList)
-					if (rel is CountRelation && rel.Of == parent)
-						return true;
-
-				return false;
-			}
+			return string.Format("Relation Of=\"{0}\" From=\"{1}\" not {2}element \"{3}\"",
+					r.Of.fullName, r.From.fullName, who, obj.fullName);
 		}
 
-        public bool hasFromSizeRelation
-        {
-            get
-            {
-                foreach (Relation rel in _childrenList)
-                    if (rel is SizeRelation && rel.From == parent)
-                        return true;
-
-                return false;
-            }
-        }
-
-        public bool hasFromOffsetRelation
-        {
-            get
-            {
-                foreach (Relation rel in _childrenList)
-                    if (rel is OffsetRelation && rel.From == parent)
-                        return true;
-
-                return false;
-            }
-        }
-
-        public bool hasFromCountRelation
-        {
-            get
-            {
-                foreach (Relation rel in _childrenList)
-                    if (rel is CountRelation && rel.From == parent)
-                        return true;
-
-                return false;
-            }
-        }
-
-		public SizeRelation getOfSizeRelation()
+		private bool ContainsNamedRelation(Relation r)
 		{
-			foreach (Relation rel in _childrenList)
+			string fullFrom = r.From.fullName;
+			string fullOf = r.Of.fullName;
+
+			foreach (var item in _relations)
 			{
-				if (rel is SizeRelation && rel.Of == parent)
-					return rel as SizeRelation;
+				if (fullOf == item.Of.fullName && fullFrom == item.From.fullName)
+					return true;
 			}
 
-			return null;
+			return false;
 		}
 
-		public CountRelation getOfCountRelation()
+		protected bool IsFromRelation(Relation r)
 		{
-			foreach (Relation rel in _childrenList)
-			{
-				if (rel is CountRelation && rel.Of == parent)
-					return rel as CountRelation;
-			}
+#if DEBUG
+			if (!_relations.Contains(r))
+				throw new ArgumentException(FmtMessage(r, this, "referenced by "));
 
-			return null;
+			if (r.From != null && r.From.parent == null)
+				throw new PeachException(FmtMessage(r, r.From, "valid parent in from="));
+
+			if (r.Of == null)
+				return r.From == this;
+
+			// r.Of.parent can be null if r.Of is the data model
+
+			if (!r.From.ContainsNamedRelation(r))
+				throw new PeachException(FmtMessage(r, r.From, "referenced in from="));
+
+			if (!r.Of.ContainsNamedRelation(r))
+				throw new PeachException(FmtMessage(r, r.Of, "contained in of="));
+
+			if (!r.From.relations.Contains(r))
+				throw new PeachException(FmtMessage(r, r.From, "contained in from="));
+
+			if (!r.Of.relations.Contains(r))
+				throw new PeachException(FmtMessage(r, r.Of, "referenced in of="));
+
+			bool notFromStr = r.From.fullName != this.fullName;
+			bool notOfStr = r.Of.fullName != this.fullName;
+
+			if (notOfStr == notFromStr)
+				throw new PeachException(FmtMessage(r, this, "named from or of="));
+
+			bool notFrom = r.From != this;
+			bool notOf = r.Of != this;
+
+			if (notOf == notFrom)
+				throw new PeachException(FmtMessage(r, this, "from or of="));
+#endif
+			return r.From == this;
 		}
 
-		public OffsetRelation getOfOffsetRelation()
+		public void VerifyRelations()
 		{
-			foreach (Relation rel in _childrenList)
-			{
-				if (rel is OffsetRelation && rel.Of == parent)
-					return rel as OffsetRelation;
-			}
+#if DEBUG
+			foreach (var r in _relations)
+				IsFromRelation(r);
 
-			return null;
+			DataElementContainer cont = this as DataElementContainer;
+			if (cont == null)
+				return;
+
+			foreach (var c in cont)
+				c.VerifyRelations();
+#endif
 		}
-
-        public SizeRelation getFromSizeRelation()
-        {
-            foreach (Relation rel in _childrenList)
-            {
-                if (rel is SizeRelation && rel.From == parent)
-                    return rel as SizeRelation;
-            }
-
-            return null;
-        }
-
-        public CountRelation getFromCountRelation()
-        {
-            foreach (Relation rel in _childrenList)
-            {
-                if (rel is CountRelation && rel.From == parent)
-                    return rel as CountRelation;
-            }
-
-            return null;
-        }
-
-        public OffsetRelation getFromOffsetRelation()
-        {
-            foreach (Relation rel in _childrenList)
-            {
-                if (rel is OffsetRelation && rel.From == parent)
-                    return rel as OffsetRelation;
-            }
-
-            return null;
-        }
-
-		#region IEnumerable<Relation> Members
-
-		public IEnumerator<Relation> GetEnumerator()
-		{
-			return _childrenList.GetEnumerator();
-		}
-
-		#endregion
-
-		#region IEnumerable Members
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _childrenList.GetEnumerator();
-		}
-
-		#endregion
-
-		#region IList<Relation> Members
-
-		public int IndexOf(Relation item)
-		{
-			return _childrenList.IndexOf(item);
-		}
-
-		public void Insert(int index, Relation item)
-		{
-			_childrenList.Insert(index, item);
-			item.parent = parent;
-		}
-
-		public void RemoveAt(int index)
-		{
-			_childrenList[index].parent = null;
-			_childrenList.RemoveAt(index);
-		}
-
-		#endregion
-
-		#region ICollection<Relation> Members
-
-		public void Add(Relation item)
-		{
-			Add(item, true);
-		}
-
-		public void Add(Relation item, bool updateParent)
-		{
-			_childrenList.Add(item);
-
-			if (updateParent && item.parent != parent)
-				item.parent = parent;
-		}
-
-		public void Clear()
-		{
-			foreach (Relation e in _childrenList)
-				e.parent = null;
-
-			_childrenList.Clear();
-		}
-
-		public bool Contains(Relation item)
-		{
-			return _childrenList.Contains(item);
-		}
-
-		public void CopyTo(Relation[] array, int arrayIndex)
-		{
-			_childrenList.CopyTo(array, arrayIndex);
-		}
-
-		public int Count
-		{
-			get { return _childrenList.Count; }
-		}
-
-		public bool IsReadOnly
-		{
-			get { return false; }
-		}
-
-		public bool Remove(Relation item)
-		{
-			bool ret = _childrenList.Remove(item);
-			item.parent = null;
-
-			return ret;
-		}
-
-		#endregion
+#endif
 	}
-
 }
 
 // end
