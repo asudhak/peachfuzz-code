@@ -365,6 +365,7 @@ namespace Peach.Core.Test
 
 			byte[] act2 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00");
 			Assert.False(actions[1].error);
+			var exp = actions[1].dataModel.Value.ToArray();
 			Assert.AreEqual(act2, actions[1].dataModel.Value.ToArray());
 
 			byte[] act3 = Encoding.ASCII.GetBytes("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");

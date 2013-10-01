@@ -83,7 +83,7 @@ namespace Peach.Core.Dom
 			BitStream sizedData = ReadSizedData(data, size);
 			long startPosition = sizedData.PositionBits;
 
-			Clear(false);
+			Clear();
 			_selectedElement = null;
 
 			foreach (DataElement child in choiceElements.Values)
@@ -114,7 +114,7 @@ namespace Peach.Core.Dom
 
 		public void SelectDefault()
 		{
-			this.Clear();
+			Clear();
 			this.Add(choiceElements[0]);
 			_selectedElement = this[0];
 		}
@@ -138,9 +138,39 @@ namespace Peach.Core.Dom
 				elem.parent = choice;
 			}
 
-			choice.Clear(false);
+			choice.Clear();
 
 			return choice;
+		}
+
+		public override void ClearBindings(bool remove)
+		{
+			base.ClearBindings(remove);
+
+			foreach (var item in choiceElements)
+				item.Value.ClearBindings(remove);
+		}
+
+		public override void RemoveAt(int index)
+		{
+			base.RemoveAt(index);
+
+			if (this.Count == 0)
+				parent.Remove(this);
+		}
+
+		public override void ApplyReference(DataElement newElem)
+		{
+			DataElement oldChoice;
+
+			if (choiceElements.TryGetValue(newElem.name, out oldChoice))
+			{
+				oldChoice.parent = null;
+				newElem.UpdateBindings(oldChoice);
+			}
+
+			choiceElements[newElem.name] = newElem;
+			newElem.parent = this;
 		}
 
 		public DataElement SelectedElement
@@ -154,7 +184,7 @@ namespace Peach.Core.Dom
 				if (!choiceElements.Values.Contains(value))
 					throw new KeyNotFoundException("value was not found");
 
-				this.Clear();
+				Clear();
 				this.Add(value);
 				_selectedElement = value;
 				Invalidate();

@@ -955,22 +955,18 @@ namespace Peach.Core.Analyzers
 				// notation.
 				if (element.isReference)
 				{
+					var parent = element;
+
 					if (childName != null && childName.IndexOf(".") > -1)
 					{
 						var parentName = childName.Substring(0, childName.LastIndexOf('.'));
-						var parent = element.find(parentName) as DataElementContainer;
+						parent = element.find(parentName) as DataElementContainer;
 
 						if (parent == null)
 							throw new PeachException("Error, child name has dot notation but parent element not found: '" + parentName + ".");
+					}
 
-						// Allow overwriting already named element
-						parent[elem.name] = elem;
-					}
-					else
-					{
-						// Allow overwriting already named element
-						element[elem.name] = elem;
-					}
+					parent.ApplyReference(elem);
 				}
 				else
 				{

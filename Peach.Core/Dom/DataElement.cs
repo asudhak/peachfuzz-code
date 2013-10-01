@@ -1345,6 +1345,67 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
+		public void UpdateBindings(DataElement oldElem)
+		{
+			var oldParent = oldElem.parent;
+			var newParent = this.parent;
+
+			oldElem.parent = null;
+			this.parent = null;
+
+			UpdateBindings(oldElem, oldElem);
+
+			foreach (var elem in oldElem.EnumerateAllElements())
+				UpdateBindings(oldElem, elem);
+
+			oldElem.parent = oldParent;
+			this.parent = newParent;
+		}
+
+		private void UpdateBindings(DataElement oldElem, DataElement child)
+		{
+			// Make a copy since we will be modifying relations
+			foreach (var rel in child.relations.ToArray())
+			{
+				// If this element owns this relation, just remove the binding
+				if (rel.From == this)
+				{
+					rel.Clear();
+				}
+				else if (!rel.From.isChildOf(oldElem))
+				{
+					// The other half of the binding is not a child of oldChild, so attempt fixing
+
+					var other = this.find(child.fullName);
+
+					if (child == other)
+						continue;
+
+					if (other == null)
+					{
+						// If the other half no longer exists under newChild, reset the relation
+						rel.Clear();
+					}
+					else
+					{
+						// Fix up the relation to be in the newChild branch of the DOM
+						rel.Of = other;
+					}
+				}
+			}
+		}
+
+		public virtual void ClearBindings(bool remove)
+		{
+			foreach (var item in this.relations.ToArray())
+			{
+				if (remove)
+					item.From.relations.Remove(item);
+
+				item.Clear();
+			}
+		}
+
 		private DataElement MoveTo(DataElementContainer newParent, int index)
 		{
 			DataElementContainer oldParent = this.parent;
@@ -1379,8 +1440,11 @@ namespace Peach.Core.Dom
 				// clean up all old relations that were inside
 				// the old element tree.
 
-//				ClearRelations();
+				ClearBindings(true);
 			}
+
+			// Save off relations
+			var relations = newElem.relations.Of<Binding>().ToArray();
 
 			oldParent.RemoveAt(oldParent.IndexOf(this));
 			newParent.Insert(index, newElem);
@@ -1390,10 +1454,11 @@ namespace Peach.Core.Dom
 			// be able to locate the proper element, so set
 			// the 'OfName' to the full name of the new element.
 
-			//foreach (var rel in newElem.relations.Of<Binding>())
-			//{
-			//    rel.OfName = newElem.fullName;
-			//}
+			foreach (var rel in relations)
+			{
+				rel.OfName = newElem.fullName;
+				rel.Resolve();
+			}
 
 			return newElem;
 		}

@@ -8,13 +8,12 @@ using NLog;
 namespace Peach.Core.Dom
 {
 	[Serializable]
-	[DebuggerDisplay("From={FromName} Of={ofName}")]
+	[DebuggerDisplay("From={FromName} Of={OfName}")]
 	public class Binding
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		private DataElement of;
-		private string ofName;
 
 		public Binding(DataElement parent)
 		{
@@ -29,32 +28,35 @@ namespace Peach.Core.Dom
 		{
 			if (of != null)
 			{
-				of.relations.Remove(this);
+				bool removed = of.relations.Remove(this);
+				System.Diagnostics.Debug.Assert(removed);
+				of.Invalidated -= OfInvalidated;
 				of = null;
+
+				// When Of is lost, From needs to be invalidated
+				From.Invalidate();
 			}
 		}
 
 		public virtual void Resolve()
 		{
-			if (of != null)
-				return;
-
-			if (OfName == null)
-				return;
-
-			of = From.find(OfName);
-
-			if (of == null)
+			if (of == null && OfName != null)
 			{
-				logger.Error("Error, unable to resolve relation '" + ofName + "' attached to '" + From.fullName + "'.");
-			}
-			else if (From.CommonParent(of) is Choice)
-			{
-				logger.Error("Error, relation '" + ofName + "' attached to '" + From.fullName + "' cannot share a common parent that is of type 'Choice'.");
-			}
-			else
-			{
-				of.relations.Add(this);
+				of = From.find(OfName);
+
+				if (of == null)
+				{
+					logger.Error("Error, unable to resolve relation '" + OfName + "' attached to '" + From.fullName + "'.");
+				}
+				else if (From.CommonParent(of) is Choice)
+				{
+					logger.Error("Error, relation '" + OfName + "' attached to '" + From.fullName + "' cannot share a common parent that is of type 'Choice'.");
+				}
+				else
+				{
+					of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
+					of.relations.Add(this);
+				}
 			}
 		}
 
@@ -67,6 +69,11 @@ namespace Peach.Core.Dom
 		/// The name of the DataElement that owns the binding.
 		/// </summary>
 		public string FromName { get; private set; }
+
+		/// <summary>
+		/// The name of the DataElement on the remote side of the binding.
+		/// </summary>
+		public string OfName { get; set; }
 
 		/// <summary>
 		/// The DataElement on the remote side of the binding.
@@ -85,50 +92,22 @@ namespace Peach.Core.Dom
 				if (value == null)
 					throw new ArgumentNullException("value");
 
-				if (of != null)
-					throw new NotSupportedException("Property has already been set.");
+				if (From.CommonParent(value) is Choice)
+					throw new ArgumentException("Binding '" + value.fullName + "' attached to '" + From.fullName + "' cannot share a common parent that is of type 'Choice'.");
 
+				Clear();
+
+				OfName = value.name;
 				of = value;
-				ofName = value.name;
+				of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
+				of.relations.Add(this);
 
 				From.Invalidate();
 			}
 		}
 
-		/// <summary>
-		/// The name of the DataElement on the remote side of the binding.
-		/// </summary>
-		public string OfName
+		private void OfInvalidated(object sender, EventArgs e)
 		{
-			get
-			{
-				return ofName;
-			}
-			set
-			{
-				if (ofName == value)
-					return;
-
-				UpdateBinding(null, value);
-			}
-		}
-
-		private void UpdateBinding(DataElement elem, string name)
-		{
-			if (of != null)
-				of.relations.Remove(this);
-
-			// Ensure common parent is not choice
-			if (elem != null && From.CommonParent(elem) is Choice)
-				throw new NotSupportedException("Binding '" + name + "' attached to '" + From.fullName + "' cannot share a common parent that is of type 'Choice'.");
-
-			of = elem;
-			ofName = name;
-
-			if (of != null)
-				of.relations.Add(this);
-
-			// We need to invalidate now that we have a new of
 			From.Invalidate();
 		}
 
@@ -136,6 +115,8 @@ namespace Peach.Core.Dom
 		private void OnCloned(Relation original, object context)
 		{
 			// DataElement.Invalidated is not serialized, so register for a re-subscribe to the event
+			if (of != null)
+				of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
 
 			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
@@ -143,7 +124,7 @@ namespace Peach.Core.Dom
 			{
 				// If 'From' or 'Of' was renamed, ensure the name is correct
 				FromName = ctx.UpdateRefName(original.From, original.From, FromName);
-				ofName = ctx.UpdateRefName(original.From, original.of, ofName);
+				OfName = ctx.UpdateRefName(original.From, original.of, OfName);
 
 				// If this 'From' is the same as the original,
 				// then the data element was not a child of the data element

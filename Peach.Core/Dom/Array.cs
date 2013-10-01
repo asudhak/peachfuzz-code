@@ -95,6 +95,14 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public override void RemoveAt(int index)
+		{
+			base.RemoveAt(index);
+
+			if (this.Count == 0 && origionalElement == null)
+				parent.Remove(this);
+		}
+
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
 			long startPos = data.PositionBits;
@@ -103,7 +111,7 @@ namespace Peach.Core.Dom
 			if (this.Count > 0)
 			{
 				origionalElement = this[0];
-				Clear(false);
+				Clear();
 			}
 
 			long min = minOccurs;

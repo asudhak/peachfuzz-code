@@ -83,7 +83,7 @@ namespace Peach.Core.Dom
 		}
 
 #if DISABLED
-				private static string FmtMessage(Relation r, DataElement obj, string who)
+		private static string FmtMessage(Relation r, DataElement obj, string who)
 		{
 			return string.Format("Relation Of=\"{0}\" From=\"{1}\" not {2}element \"{3}\"",
 					r.Of.fullName, r.From.fullName, who, obj.fullName);

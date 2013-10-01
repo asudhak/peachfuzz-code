@@ -99,7 +99,7 @@ namespace Peach.Core.Analyzers
 				this.positions = positions;
 
 				Dom.Block block = new Block(str.name);
-				block.parent[str.name] = block;
+				str.parent[str.name] = block;
 				block.Add(str);
 
 				// Mark the position of the block
