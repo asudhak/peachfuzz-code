@@ -35,10 +35,14 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
 
+using NLog;
+
 namespace Peach.Core.WindowsDebugInstance
 {
 	class Program
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		static void Main(string[] args)
 		{
 			if (args.Length != 1)
@@ -51,6 +55,8 @@ namespace Peach.Core.WindowsDebugInstance
 
 				return;
 			}
+
+			logger.Debug("Starting up IPC listener: " + args[0]);
 
 			IpcChannel ipcChannel = new IpcChannel(args[0]);
 			ChannelServices.RegisterChannel(ipcChannel, false);
@@ -67,12 +73,22 @@ namespace Peach.Core.WindowsDebugInstance
 				{
 					Thread.Sleep(200);
 					if (Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.ExitInstance)
+					{
+						logger.Debug("ExitInstance is true!");
 						return;
+					}
 
 					// Timebomb!
-					if ((DateTime.Now - Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.LastHeartBeat).TotalSeconds > 30)
-						return;
+					//if ((DateTime.Now - Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.LastHeartBeat).TotalSeconds > 30)
+					//{
+					//	logger.Debug("Last heartbeat over 30 seconds, exiting!");
+					//	return;
+					//}
 				}
+			}
+			catch(Exception ex)
+			{
+				logger.Debug(ex.ToString());
 			}
 			finally
 			{

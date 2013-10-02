@@ -6,6 +6,7 @@ deps = [
 	'System.Runtime.Remoting.dll',
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
+	'NLog.dll',
 ]
 bld(
 	features = 'cs win',
