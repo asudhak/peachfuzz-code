@@ -951,6 +951,8 @@ namespace Peach.Core.Dom
 			List<DataElement> parents = new List<DataElement>();
 			DataElementContainer parent = null;
 
+			parents.Add(this);
+
 			parent = this.parent;
 			while (parent != null)
 			{

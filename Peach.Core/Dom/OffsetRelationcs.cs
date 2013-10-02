@@ -57,15 +57,81 @@ namespace Peach.Core.Dom
 	[Parameter("relativeTo", typeof(string), "Element to compute value relative to", "")]
 	public class OffsetRelation : Relation
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public bool isRelativeOffset;
-		public string relativeTo = null;
+		private class RelativeBinding : Binding
+		{
+			OffsetRelation rel;
 
-		protected bool _isRecursing = false;
+			public RelativeBinding(OffsetRelation rel, DataElement parent)
+				: base(parent)
+			{
+				this.rel = rel;
+			}
+
+			protected override void OnResolve()
+			{
+				rel.OnRelativeToResolve();
+			}
+		}
+
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		private Binding commonAncestor;
+		private RelativeBinding relativeElement;
+
+		private bool _isRecursing;
+
+		public bool isRelativeOffset
+		{
+			get;
+			set;
+		}
+
+		public string relativeTo
+		{
+			get
+			{
+				return relativeElement.OfName;
+			}
+			set
+			{
+				relativeElement.OfName = value;
+			}
+		}
 
 		public OffsetRelation(DataElement parent)
 			: base(parent)
 		{
+			commonAncestor = new Binding(parent);
+			relativeElement = new RelativeBinding(this, parent);
+
+			parent.relations.Add(commonAncestor);
+			parent.relations.Add(relativeElement);
+		}
+
+		protected override void OnResolve()
+		{
+			if (string.IsNullOrEmpty(relativeTo))
+				FindCommonParent(Of);
+		}
+
+		private void FindCommonParent(DataElement from)
+		{
+			var parent = from.CommonParent(Of);
+			if (parent == null)
+				throw new PeachException("Error resolving offset relation on {0}, couldn't find common parent between {0} and {1}.".Fmt(From.debugName, from.debugName, Of.debugName));
+
+			commonAncestor.Of = parent;
+		}
+
+		private void OnRelativeToResolve()
+		{
+			FindCommonParent(relativeElement.Of);
+		}
+
+		protected override void OnClear()
+		{
+			commonAncestor.Clear();
+			relativeElement.Clear();
 		}
 
 		public override long GetValue()
@@ -114,7 +180,7 @@ namespace Peach.Core.Dom
 
 				// calculateOffset can throw PeachException during mutations
 				// we will catch and return null;
-				long offset = calculateOffset(From, Of) / 8;
+				long offset = calculateOffset() / 8;
 
 				if (_expressionGet != null)
 				{
@@ -161,110 +227,52 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Caluclate the offset in bytes between two data elements.
 		/// </summary>
-		/// <param name="from"></param>
-		/// <param name="to"></param>
 		/// <returns>Returns the offset in bits between two elements.  Return can be negative.</returns>
-		protected long calculateOffset(DataElement from, DataElement to)
+		private long calculateOffset()
 		{
-			DataElementContainer commonAncestor = null;
+			System.Diagnostics.Debug.Assert(_isRecursing);
+			var where = commonAncestor.Of;
+			if (where == null)
+				Error("could not locate common ancestor");
+
+			var stream = where.Value;
+
 			long fromPosition = 0;
 			long toPosition = 0;
 
 			if (isRelativeOffset)
 			{
-				if (!string.IsNullOrEmpty(relativeTo))
+				if (relativeElement.OfName == null)
 				{
-					DataElement relative = from.find(relativeTo);
-					if (relative == null)
-						throw new PeachException(string.Format("Error, offset relation from element '{0}' couldn't locate relative to element '{1}'.", from.fullName, relativeTo));
-					from = relative;
+					if (!stream.TryGetPosition(From.fullName, out fromPosition))
+						Error("couldn't locate position of {0}".Fmt(From.debugName));
 				}
-
-				commonAncestor = findCommonRoot(from, to);
-
-				if (commonAncestor == null)
+				else if (relativeElement.Of != null)
 				{
-					throw new PeachException("Error, unable to calculate offset between '" +
-						from.fullName + "' and '" + to.fullName + "'.");
+					if (relativeElement.Of != where && !stream.TryGetPosition(relativeElement.Of.fullName, out fromPosition))
+						Error("could't locate position of {0}".Fmt(relativeElement.Of.debugName));
 				}
-
-				BitwiseStream stream = commonAncestor.Value;
-				if (from != commonAncestor)
+				else
 				{
-					if (!stream.TryGetPosition(from.fullName, out fromPosition))
-						throw new PeachException("Error, unable to calculate offset between '" +
-							from.fullName + "' and '" + to.fullName + "'.");
+					Error("could't locate element '{0}'".Fmt(relativeElement.OfName));
 				}
-
-				if (!stream.TryGetPosition(to.fullName, out toPosition))
-					throw new PeachException("Error, unable to calculate offset between '" +
-						from.fullName + "' and '" + to.fullName + "'.");
 			}
-			else
-			{
-				commonAncestor = findCommonRoot(from, to);
-				if (commonAncestor == null)
-					throw new PeachException("Error, unable to calculate offset between '" +
-						from.fullName + "' and '" + to.fullName + "'.");
 
-				BitwiseStream stream = commonAncestor.Value;
-				fromPosition = 0;
-
-				if (!stream.TryGetPosition(to.fullName, out toPosition))
-					throw new PeachException("Error, unable to calculate offset between '" +
-						from.fullName + "' and '" + to.fullName + "'.");
-			}
+			if (!stream.TryGetPosition(Of.fullName, out toPosition))
+				Error("could't locate position of {0}".Fmt(Of.debugName));
 
 			return toPosition - fromPosition;
 		}
 
-		/// <summary>
-		/// Locate the nearest common ancestor conainer.
-		/// </summary>
-		/// <remarks>
-		/// To calculate the offset of elem2 from elem1 we need a the
-		/// nearest common ancestor.  From that ancestor we can determine
-		/// the offset of the two elements.  If the elements do not share
-		/// a common ancestor we cannot calculate the offset.
-		/// </remarks>
-		/// <param name="elem1"></param>
-		/// <param name="elem2"></param>
-		/// <returns></return>s
-		protected DataElementContainer findCommonRoot(DataElement elem1, DataElement elem2)
+		private void Error(string error)
 		{
-			List<DataElementContainer> parentsElem1 = new List<DataElementContainer>();
+			string msg = string.Format(
+				"Error, unable to calculate offset between {0} and {1}, {2}.",
+				From.debugName,
+				Of.debugName,
+				error);
 
-			if (elem1 is DataElementContainer)
-				parentsElem1.Add((DataElementContainer)elem1);
-
-			DataElementContainer parent = elem1.parent;
-			while (parent != null)
-			{
-				parentsElem1.Add(parent);
-				parent = parent.parent;
-			}
-
-			parent = elem2.parent;
-			while (parent != null)
-			{
-				if (parentsElem1.Contains(parent))
-					return parent;
-
-				parent = parent.parent;
-			}
-
-			return null;
-		}
-
-		[OnCloned]
-		private void OnCloned(OffsetRelation original, object context)
-		{
-			DataElement.CloneContext ctx = context as DataElement.CloneContext;
-
-			if (ctx != null)
-			{
-				relativeTo = ctx.UpdateRefName(original.From, null, relativeTo);
-			}
+			throw new PeachException(msg);
 		}
 	}
 }

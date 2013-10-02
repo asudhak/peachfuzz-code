@@ -24,7 +24,7 @@ namespace Peach.Core.Dom
 			FromName = parent.name;
 		}
 
-		public virtual void Clear()
+		public void Clear()
 		{
 			if (of != null)
 			{
@@ -35,29 +35,38 @@ namespace Peach.Core.Dom
 
 				// When Of is lost, From needs to be invalidated
 				From.Invalidate();
+
+				OnClear();
 			}
 		}
 
-		public virtual void Resolve()
+		public void Resolve()
 		{
 			if (of == null && OfName != null)
 			{
-				of = From.find(OfName);
+				var elem = From.find(OfName);
 
-				if (of == null)
+				if (elem == null)
 				{
-					logger.Error("Error, unable to resolve relation '" + OfName + "' attached to '" + From.fullName + "'.");
+					logger.Error("Error, unable to resolve binding '" + OfName + "' attached to '" + From.fullName + "'.");
 				}
-				else if (From.CommonParent(of) is Choice)
+				else if (From.CommonParent(elem) is Choice)
 				{
-					logger.Error("Error, relation '" + OfName + "' attached to '" + From.fullName + "' cannot share a common parent that is of type 'Choice'.");
+					logger.Error("Error, binding '" + OfName + "' attached to '" + From.fullName + "' cannot share a common parent that is of type 'Choice'.");
 				}
 				else
 				{
-					of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
-					of.relations.Add(this);
+					SetOf(elem);
 				}
 			}
+		}
+
+		protected virtual void OnResolve()
+		{
+		}
+
+		protected virtual void OnClear()
+		{
 		}
 
 		/// <summary>
@@ -78,12 +87,13 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The DataElement on the remote side of the binding.
 		/// </summary>
-		[DebuggerDisplay("{of}")]
+		[DebuggerDisplay("{OfDebugName}")]
 		public DataElement Of
 		{
 			get
 			{
-				Resolve();
+				if (of == null)
+					Resolve();
 
 				return of;
 			}
@@ -98,12 +108,28 @@ namespace Peach.Core.Dom
 				Clear();
 
 				OfName = value.name;
-				of = value;
-				of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
-				of.relations.Add(this);
 
-				From.Invalidate();
+				SetOf(value);
 			}
+		}
+
+		private string OfDebugName
+		{
+			get
+			{
+				return of != null ? of.debugName : null;
+			}
+		}
+
+		private void SetOf(DataElement elem)
+		{
+			of = elem;
+			of.Invalidated += new InvalidatedEventHandler(OfInvalidated);
+			of.relations.Add(this);
+
+			From.Invalidate();
+
+			OnResolve();
 		}
 
 		private void OfInvalidated(object sender, EventArgs e)
@@ -112,7 +138,7 @@ namespace Peach.Core.Dom
 		}
 
 		[OnCloned]
-		private void OnCloned(Relation original, object context)
+		private void OnCloned(Binding original, object context)
 		{
 			// DataElement.Invalidated is not serialized, so register for a re-subscribe to the event
 			if (of != null)
