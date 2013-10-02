@@ -47,8 +47,6 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public abstract class Relation : Binding
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		protected string _expressionGet = null;
 		protected string _expressionSet = null;
 
