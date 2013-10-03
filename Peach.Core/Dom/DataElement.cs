@@ -1076,11 +1076,6 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public virtual IEnumerable<DataElement> Walk()
-		{
-			yield return this;
-		}
-
 		/// <summary>
 		/// Find data element with specific name.
 		/// </summary>
@@ -1369,8 +1364,8 @@ namespace Peach.Core.Dom
 			// Make a copy since we will be modifying relations
 			foreach (var rel in child.relations.ToArray())
 			{
-				// If this element owns this relation, just remove the binding
-				if (rel.From == this)
+				// If the child element owns this relation, just remove the binding
+				if (rel.From == child)
 				{
 					rel.Clear();
 				}
