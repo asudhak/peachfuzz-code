@@ -1143,8 +1143,6 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, size relation on element '" + parent.name + "' has invalid lengthType '" + strType + "'.");
 
 						rel.lengthType = lenType;
-
-						parent.relations.Add(rel);
 					}
 
 					break;
@@ -1160,8 +1158,6 @@ namespace Peach.Core.Analyzers
 
 						if (node.hasAttr("expressionSet"))
 							rel.ExpressionSet = node.getAttrString("expressionSet");
-
-						parent.relations.Add(rel);
 					}
 					break;
 
@@ -1185,8 +1181,6 @@ namespace Peach.Core.Analyzers
 							rel.isRelativeOffset = true;
 							rel.relativeTo = node.getAttrString("relativeTo");
 						}
-
-						parent.relations.Add(rel);
 					}
 					break;
 

@@ -22,6 +22,8 @@ namespace Peach.Core.Dom
 
 			From = parent;
 			FromName = parent.name;
+
+			parent.relations.Add(this);
 		}
 
 		public void Clear()
