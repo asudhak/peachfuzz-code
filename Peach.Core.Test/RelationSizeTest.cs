@@ -820,6 +820,64 @@ namespace Peach.Core.Test
 
 			var val = dom.dataModels[1].Value.ToArray();
 			Assert.AreEqual(Encoding.ASCII.GetBytes("\x40\x41\x42"), val);
+
+			var copy = dom.dataModels[1].Clone();
+			val = copy.Value.ToArray();
+			Assert.AreEqual(Encoding.ASCII.GetBytes("\x40\x41\x42"), val);
+		}
+
+		[Test]
+		public void RelatioDeepOverride()
+		{
+			string xml = @"
+<Peach>
+
+	<DataModel name=""DataModel1"">
+		<Number name=""RelOrStatic"" size=""8"">
+			<Relation type=""size"" of=""Data""/>
+		</Number>
+		<Blob name=""Data"" value=""AB""/>
+	</DataModel>
+
+	<DataModel name=""DataModel2"">
+		<Choice name=""opts"" minOccurs=""0"">
+			<Block name=""blk1"" ref=""DataModel1"">
+				<Number name=""RelOrStatic"" size=""8"" value=""0x40""/>
+				<Blob name=""Data"" value=""One""/>
+			</Block>
+			<Block name=""blk2"" ref=""DataModel1"">
+				<Blob name=""Data"" value=""Two""/>
+			</Block>
+		</Choice>
+	</DataModel>
+
+	<DataModel name=""DataModel3"">
+		<Block ref=""DataModel2""/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var copy = dom.dataModels[2].Clone();
+
+			var array = copy.find("opts") as Dom.Array;
+			Assert.NotNull(array);
+			Assert.AreEqual(0, array.Count);
+
+			array.Add(array.origionalElement.Clone("one"));
+			array.Add(array.origionalElement.Clone("two"));
+
+			var c1 = array[0] as Choice;
+			c1.SelectedElement = c1.choiceElements[0];
+
+			var c2 = array[1] as Choice;
+			c2.SelectedElement = c2.choiceElements[1];
+
+			var final = copy.Value.ToArray();
+			var exp = Encoding.ASCII.GetBytes("\x40One\x03Two");
+			Assert.AreEqual(exp, final);
 		}
 
 		[Test]

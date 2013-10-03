@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
@@ -51,7 +52,7 @@ namespace Peach.Core.Mutators
 		public new static bool supportedDataElement(DataElement obj)
 		{
 			// verify data element has size relation
-			if (obj.isMutable && obj.relations.hasFromSizeRelation)
+			if (obj.isMutable && obj.relations.From<SizeRelation>().Any())
 				return true;
 
 			return false;
@@ -73,7 +74,7 @@ namespace Peach.Core.Mutators
 
 			obj.mutationFlags = MutateOverride.Default;
 
-			var sizeRelation = obj.relations.getFromSizeRelation();
+			var sizeRelation = obj.relations.From<SizeRelation>().FirstOrDefault();
 			if (sizeRelation == null)
 			{
 				Logger.Error("Error, sizeRelation == null, unable to perform mutation.");

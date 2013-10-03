@@ -54,6 +54,11 @@ namespace Peach.Core.Dom
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 		protected bool _isRecursing = false;
 
+		public CountRelation(DataElement parent)
+			: base(parent)
+		{
+		}
+
 		public override long GetValue()
 		{
 			if (_isRecursing)
@@ -70,7 +75,7 @@ namespace Peach.Core.Dom
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["count"] = count;
 					state["value"] = count;
-					state["self"] = this._parent;
+					state["self"] = From;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
 					count = Convert.ToInt64(value);
@@ -99,7 +104,7 @@ namespace Peach.Core.Dom
 					return null;
 				}
 
-                Array OfArray = Of as Array;
+				Array OfArray = Of as Array;
 
 				if (OfArray == null)
 				{
@@ -117,7 +122,7 @@ namespace Peach.Core.Dom
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["count"] = count;
 					state["value"] = count;
-					state["self"] = this._parent;
+					state["self"] = From;
 
 					object value = Scripting.EvalExpression(_expressionSet, state);
 					count = Convert.ToInt32(value);
@@ -140,13 +145,13 @@ namespace Peach.Core.Dom
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["count"] = count;
 				state["value"] = count;
-				state["self"] = this._parent;
+				state["self"] = From;
 
 				object newValue = Scripting.EvalExpression(_expressionSet, state);
 				count = Convert.ToInt32(newValue);
 			}
 
-			_from.DefaultValue = new Variant(count);
+			From.DefaultValue = new Variant(count);
 		}
 	}
 }

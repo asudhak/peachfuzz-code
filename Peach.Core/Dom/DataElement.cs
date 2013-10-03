@@ -882,18 +882,15 @@ namespace Peach.Core.Dom
 				return MutatedValue;
 			}
 
-			foreach(Relation r in _relations)
+			foreach (var r in relations.From<Relation>())
 			{
-				if (IsFromRelation(r))
-				{
-					// CalculateFromValue can return null sometimes
-					// when mutations mess up the relation.
-					// In that case use the exsiting value for this element.
+				// CalculateFromValue can return null sometimes
+				// when mutations mess up the relation.
+				// In that case use the exsiting value for this element.
 
-					var relationValue = r.CalculateFromValue();
-					if (relationValue != null)
-						value = relationValue;
-				}
+				var relationValue = r.CalculateFromValue();
+				if (relationValue != null)
+					value = relationValue;
 			}
 
 			// 4. Fixup
@@ -947,6 +944,32 @@ namespace Peach.Core.Dom
 					value = _transformer.encode(value);
 
 			return value;
+		}
+
+		public DataElement CommonParent(DataElement elem)
+		{
+			List<DataElement> parents = new List<DataElement>();
+			DataElementContainer parent = null;
+
+			parents.Add(this);
+
+			parent = this.parent;
+			while (parent != null)
+			{
+				parents.Add(parent);
+				parent = parent.parent;
+			}
+
+			parent = elem.parent;
+			while (parent != null)
+			{
+				if (parents.Contains(parent))
+					return parent;
+
+				parent = parent.parent;
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -1235,99 +1258,6 @@ namespace Peach.Core.Dom
 			get { return _relations; }
 		}
 
-		private static string FmtMessage(Relation r, DataElement obj, string who)
-		{
-			return string.Format("Relation Of=\"{0}\" From=\"{1}\" not {2}element \"{3}\"",
-					r.Of.fullName, r.From.fullName, who, obj.fullName);
-		}
-
-		private bool ContainsNamedRelation(Relation r)
-		{
-			string fullFrom = r.From.fullName;
-			string fullOf = r.Of.fullName;
-
-			foreach (var item in _relations)
-			{
-				if (fullOf == item.Of.fullName && fullFrom == item.From.fullName)
-					return true;
-			}
-
-			return false;
-		}
-
-		protected bool IsFromRelation(Relation r)
-		{
-#if DEBUG
-			if (!_relations.Contains(r))
-				throw new ArgumentException(FmtMessage(r, this, "referenced by "));
-
-			if (r.From != null && r.From.parent == null)
-				throw new PeachException(FmtMessage(r, r.From, "valid parent in from="));
-
-			if (r.Of == null)
-				return r.From == this;
-
-			// r.Of.parent can be null if r.Of is the data model
-
-			if (!r.From.ContainsNamedRelation(r))
-				throw new PeachException(FmtMessage(r, r.From, "referenced in from="));
-
-			if (!r.Of.ContainsNamedRelation(r))
-				throw new PeachException(FmtMessage(r, r.Of, "contained in of="));
-
-			if (!r.From.relations.Contains(r))
-				throw new PeachException(FmtMessage(r, r.From, "contained in from="));
-
-			if (!r.Of.relations.Contains(r))
-				throw new PeachException(FmtMessage(r, r.Of, "referenced in of="));
-
-			bool notFromStr = r.From.fullName != this.fullName;
-			bool notOfStr = r.Of.fullName != this.fullName;
-
-			if (notOfStr == notFromStr)
-				throw new PeachException(FmtMessage(r, this, "named from or of="));
-
-			bool notFrom = r.From != this;
-			bool notOf = r.Of != this;
-
-			if (notOf == notFrom)
-				throw new PeachException(FmtMessage(r, this, "from or of="));
-#endif
-			return r.From == this;
-		}
-
-		public void VerifyRelations()
-		{
-#if DEBUG
-			foreach (var r in _relations)
-				IsFromRelation(r);
-
-			DataElementContainer cont = this as DataElementContainer;
-			if (cont == null)
-				return;
-
-			foreach (var c in cont)
-				c.VerifyRelations();
-#endif
-		}
-
-		public virtual void ClearRelations()
-		{
-			foreach (var r in _relations)
-			{
-				// Remove toasts r.parent, so resolve 'From' and 'Of' 1st
-				var from = r.From;
-				var of = r.Of;
-
-				if (from != this)
-					from.relations.Remove(r);
-				if (of != this)
-					of.relations.Remove(r);
-			}
-
-			_relations.Clear();
-		}
-
 		/// <summary>
 		/// Helper fucntion to obtain a bitstream sized for this element
 		/// </summary>
@@ -1412,12 +1342,69 @@ namespace Peach.Core.Dom
 			return false;
 		}
 
-		public DataElement MoveTo(DataElementContainer newParent, int index)
+		public void UpdateBindings(DataElement oldElem)
 		{
-			// Locate any fixups so we can update them
-			// Move element
-			DataElement newElem;
+			var oldParent = oldElem.parent;
+			var newParent = this.parent;
 
+			oldElem.parent = null;
+			this.parent = null;
+
+			UpdateBindings(oldElem, oldElem);
+
+			foreach (var elem in oldElem.EnumerateAllElements())
+				UpdateBindings(oldElem, elem);
+
+			oldElem.parent = oldParent;
+			this.parent = newParent;
+		}
+
+		private void UpdateBindings(DataElement oldElem, DataElement child)
+		{
+			// Make a copy since we will be modifying relations
+			foreach (var rel in child.relations.ToArray())
+			{
+				// If the child element owns this relation, just remove the binding
+				if (rel.From == child)
+				{
+					rel.Clear();
+				}
+				else if (!rel.From.isChildOf(oldElem))
+				{
+					// The other half of the binding is not a child of oldChild, so attempt fixing
+
+					var other = this.find(child.fullName);
+
+					if (child == other)
+						continue;
+
+					if (other == null)
+					{
+						// If the other half no longer exists under newChild, reset the relation
+						rel.Clear();
+					}
+					else
+					{
+						// Fix up the relation to be in the newChild branch of the DOM
+						rel.Of = other;
+					}
+				}
+			}
+		}
+
+		public virtual void ClearBindings(bool remove)
+		{
+			foreach (var item in this.relations.ToArray())
+			{
+				if (remove)
+					item.From.relations.Remove(item);
+
+				item.Clear();
+			}
+		}
+
+		private DataElement MoveTo(DataElementContainer newParent, int index)
+		{
 			DataElementContainer oldParent = this.parent;
 
 			if (oldParent == newParent)
@@ -1434,6 +1421,8 @@ namespace Peach.Core.Dom
 			for (int i = 0; newParent.ContainsKey(newName); i++)
 				newName = this.name + "_" + i;
 
+			DataElement newElem;
+
 			if (newName == this.name)
 			{
 				newElem = this;
@@ -1441,23 +1430,31 @@ namespace Peach.Core.Dom
 			else
 			{
 				newElem = this.Clone(newName);
-				this.ClearRelations();
+
+				// We are "moving" the element, but doing so by cloning
+				// into a new element.  The clone will duplicate relations
+				// that reach outside of the element tree, so we need to
+				// clean up all old relations that were inside
+				// the old element tree.
+
+				ClearBindings(true);
 			}
+
+			// Save off relations
+			var relations = newElem.relations.Of<Binding>().ToArray();
 
 			oldParent.RemoveAt(oldParent.IndexOf(this));
 			newParent.Insert(index, newElem);
 
-			foreach (Relation relation in newElem.relations)
+			// When an element is moved, the name can change.
+			// Additionally, the resolution algorithm might not
+			// be able to locate the proper element, so set
+			// the 'OfName' to the full name of the new element.
+
+			foreach (var rel in relations)
 			{
-				if (relation.Of == newElem)
-				{
-					relation.OfName = newElem.fullName;
-				}
-				
-				if (relation.From == newElem)
-				{
-					relation.FromName = newElem.fullName;
-				}
+				rel.OfName = newElem.fullName;
+				rel.Resolve();
 			}
 
 			return newElem;
