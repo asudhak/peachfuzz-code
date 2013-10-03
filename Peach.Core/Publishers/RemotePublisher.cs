@@ -40,7 +40,6 @@ namespace Peach.Core.Publishers
 			stream = new MemoryStream();
 		}
 
-
 		/// <summary>
 		/// Perform our remoting call with a forced timeout.
 		/// </summary>
