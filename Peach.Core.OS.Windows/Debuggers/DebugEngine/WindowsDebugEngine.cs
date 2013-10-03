@@ -32,19 +32,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Peach.Core.Debuggers.DebugEngine.Tlb;
 using System.Runtime.InteropServices;
 using System.Runtime;
 using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using System.Diagnostics;
 using System.Threading;
+
 using Peach.Core.Dom;
+using Peach.Core.Debuggers.DebugEngine.Tlb;
+
+using NLog;
 
 namespace Peach.Core.Debuggers.DebugEngine
 {
 	public class WindowsDebugEngine : IDisposable
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		private bool _disposed = false;
 
 		public string winDbgPath = null;
@@ -147,6 +152,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 		public WindowsDebugEngine(string winDbgPath)
 		{
+			logger.Debug("WindowsDebugEngine");
+
 			object obj = null;
 			Guid clsid = CLSID(typeof(IDebugClient5));
 
@@ -187,6 +194,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 			if (_disposed)
 				throw new ApplicationException("Object already disposed");
 
+			logger.Debug("CreateProcessAndAttach: " + CommandLine);
+
 			count++;
 
 			dbgClient.CreateProcessAndAttach(0,
@@ -197,11 +206,13 @@ namespace Peach.Core.Debuggers.DebugEngine
 				while (!exitDebugger.WaitOne(0, false) && !handledException.WaitOne(0, false))
 					dbgControl.WaitForEvent(0, 100);
 			}
-			catch
+			catch (Exception ex)
 			{
+				logger.Debug(ex.ToString());
 				//Debugger.Break();
 			}
 
+			logger.Debug("EndSession");
 			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
 		}
 
@@ -209,6 +220,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 		{
 			if (_disposed)
 				throw new ApplicationException("Object already disposed");
+
+			logger.Debug("AttachProcess: " + pid);
 
 			count++;
 
@@ -219,11 +232,13 @@ namespace Peach.Core.Debuggers.DebugEngine
 				while (!exitDebugger.WaitOne(0, false) && !handledException.WaitOne(0, false))
 					dbgControl.WaitForEvent(0, 100);
 			}
-			catch
+			catch (Exception ex)
 			{
+				logger.Debug(ex.ToString());
 				//Debugger.Break();
 			}
 
+			logger.Debug("EndSession");
 			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
 		}
 
@@ -232,20 +247,27 @@ namespace Peach.Core.Debuggers.DebugEngine
 			if (_disposed)
 				throw new ApplicationException("Object already disposed");
 
+			logger.Debug("AttachKernel: " + connectionString);
+
 			count++;
 
-			dbgClient.AttachKernel((uint)Const.DEBUG_ATTACH_KERNEL_CONNECTION, ref connectionString);
+			//System.Diagnostics.Debugger.Break();
+
+			dbgClient.AttachKernel((uint)Const.DEBUG_ATTACH_KERNEL_CONNECTION, connectionString);
+			dbgControl.WaitForEvent((uint)Const.DEBUG_WAIT_DEFAULT, 0xFFFFFFFF);
 
 			try
 			{
 				while (!exitDebugger.WaitOne(0, false) && !handledException.WaitOne(0, false))
 					dbgControl.WaitForEvent(0, 100);
 			}
-			catch
+			catch(Exception ex)
 			{
+				logger.Debug(ex.ToString());
 				//Debugger.Break();
 			}
 
+			logger.Debug("EndSession");
 			dbgClient.EndSession((uint)Const.DEBUG_END_ACTIVE_TERMINATE);
 		}
 
@@ -282,6 +304,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 	[Guid("F193F926-63C4-4837-8456-40C1CD1720D5")]
 	public class OutputCallbacks : IDebugOutputCallbacks
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		WindowsDebugEngine _engine;
 		public OutputCallbacks(WindowsDebugEngine engine)
 		{
@@ -301,6 +325,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 	[Guid("287D0DC2-2E79-49FB-9113-CA3F34941320")]
 	public class EventCallbacks : IDebugEventCallbacks
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		Regex reMajorHash = new Regex(@"^MAJOR_HASH:(0x.*)\r$", RegexOptions.Multiline);
 		Regex reMinorHash = new Regex(@"^MINOR_HASH:(0x.*)\r$", RegexOptions.Multiline);
 		Regex reClassification = new Regex(@"^CLASSIFICATION:(.*)\r$", RegexOptions.Multiline);
@@ -326,6 +352,8 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 		public void Exception(ref _EXCEPTION_RECORD64 Exception, uint FirstChance)
 		{
+			logger.Debug("Exception");
+
 			bool handle = false;
 			if(FirstChance == 1)
 			{

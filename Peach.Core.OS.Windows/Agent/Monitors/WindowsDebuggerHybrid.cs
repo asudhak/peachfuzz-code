@@ -292,6 +292,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
+			logger.Debug("SessionStarting");
+
 			if (_startOnCall != null)
 				return;
 
@@ -300,6 +302,8 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionFinished()
 		{
+			logger.Debug("SessionFinished");
+
 			_StopDebugger();
 			_FinishDebugger();
 		}
@@ -544,6 +548,8 @@ namespace Peach.Core.Agent.Monitors
 			{
 				try
 				{
+					logger.Debug("Trying to create DebuggerInstance: ipc://" + _debuggerChannelName + "/DebuggerInstance");
+
 					_debugger = (DebuggerInstance)Activator.GetObject(typeof(DebuggerInstance),
 						"ipc://" + _debuggerChannelName + "/DebuggerInstance");
 
@@ -558,10 +564,12 @@ namespace Peach.Core.Agent.Monitors
 					_debugger.noCpuKill = _noCpuKill;
 					_debugger.winDbgPath = _winDbgPath;
 
+					logger.Debug("Created!");
 					break;
 				}
-				catch
+				catch(Exception ex)
 				{
+					logger.Debug("IPC Failed: " + ex.Message);
 					if ((DateTime.Now - startTimer).Minutes >= 1)
 					{
 						_debuggerProcess.Kill();
@@ -579,6 +587,8 @@ namespace Peach.Core.Agent.Monitors
 		/// </summary>
 		protected void _StartDebuggerNonHybrid()
 		{
+			logger.Debug("_StartDebuggerNonHybrid");
+
 			if (_debuggerProcessUsage >= _debuggerProcessUsageMax && _debuggerProcess != null)
 			{
 				_FinishDebugger();
@@ -610,6 +620,7 @@ namespace Peach.Core.Agent.Monitors
 			{
 				try
 				{
+					logger.Debug("Creating DebuggerInstance: ipc://" + _debuggerChannelName + "/DebuggerInstance");
 					_debugger = (DebuggerInstance)Activator.GetObject(typeof(DebuggerInstance),
 						"ipc://" + _debuggerChannelName + "/DebuggerInstance");
 					//_debugger = new DebuggerInstance();
@@ -627,12 +638,22 @@ namespace Peach.Core.Agent.Monitors
 
 					break;
 				}
-				catch
+				catch(Exception ex)
 				{
+					logger.Debug("IPC Exception: " + ex.Message);
+
 					if ((DateTime.Now - startTimer).Minutes >= 1)
 					{
-						_debuggerProcess.Kill();
-						_debuggerProcess.Close();
+						try
+						{
+							logger.Debug("IPC Failed");
+							_debuggerProcess.Kill();
+							_debuggerProcess.Close();
+						}
+						catch
+						{
+						}
+
 						throw;
 					}
 				}
@@ -643,6 +664,8 @@ namespace Peach.Core.Agent.Monitors
 
 		protected void _FinishDebugger()
 		{
+			logger.Debug("_FinishDebugger");
+
 			_StopDebugger();
 
 			if (_systemDebugger != null)
@@ -688,6 +711,8 @@ namespace Peach.Core.Agent.Monitors
 
 		protected void _StopDebugger()
 		{
+			logger.Debug("_StopDebugger");
+
 			if (_systemDebugger != null)
 			{
 				try

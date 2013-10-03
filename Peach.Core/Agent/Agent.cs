@@ -233,7 +233,7 @@ namespace Peach.Core.Agent
 
 		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
 		{
-			logger.Trace("StartMonitor: {0} {1}", name, cls);
+			logger.Debug("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
 
 			var type = ClassLoader.FindTypeByAttribute<MonitorAttribute>((x, y) => y.Name == cls);
@@ -254,7 +254,7 @@ namespace Peach.Core.Agent
 
 		public void StopMonitor(string name)
 		{
-			logger.Trace("StopMonitor: {0}", name);
+			logger.Debug("StopMonitor: {0}", name);
 			OnStopMonitorEvent(name);
 			monitors[name].StopMonitor();
 			monitors.Remove(name);
@@ -273,22 +273,24 @@ namespace Peach.Core.Agent
 
 		public void SessionStarting()
 		{
-			logger.Trace("SessionStarting");
 			OnSessionStartingEvent();
 
 			foreach (Monitor monitor in monitors.Values)
+			{
+				logger.Debug("SessionStarting: " + monitor.Name);
 				monitor.SessionStarting();
+			}
 		}
 
 		public void SessionFinished()
 		{
-			logger.Trace("SessionFinished");
 			OnSessionFinishedEvent();
 
 			foreach (Monitor monitor in monitors.Values.Reverse())
 			{
 				try
 				{
+					logger.Debug("SessionFinished: " + monitor.Name);
 					monitor.SessionFinished();
 				}
 				catch (Exception ex)

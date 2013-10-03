@@ -96,8 +96,6 @@ namespace Peach.Core.Analyzers
 				xmlElement = handleXmlNode(node, parent.name);
 			}
 
-			xmlElement.parent = parent.parent;
-
 			parent.parent[parent.name] = xmlElement;
 		}
 

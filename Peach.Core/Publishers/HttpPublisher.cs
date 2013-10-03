@@ -50,6 +50,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Cookies", typeof(bool), "Track cookies (defaults to true)", "true")]
 	[Parameter("CookiesAcrossIterations", typeof(bool), "Track cookies across iterations (defaults to false)", "false")]
 	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("IgnoreCertErrors", typeof(bool), "Allow https regardless of cert status (defaults to false)", "false")]
 	public class HttpPublisher : BufferedStreamPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -63,6 +64,7 @@ namespace Peach.Core.Publishers
 		public string BaseUrl { get; set; }
 		public bool Cookies { get; set; }
 		public bool CookiesAcrossIterations { get; set; }
+		public bool IgnoreCertErrors { get; set; }
 
 		protected CookieContainer CookieJar = new CookieContainer();
 		protected HttpWebResponse Response { get; set; }
@@ -88,6 +90,12 @@ namespace Peach.Core.Publishers
 					credentials.Add(baseUrl, "NTLM", new NetworkCredential(Username, Password, Domain));
 					credentials.Add(baseUrl, "Digest", new NetworkCredential(Username, Password, Domain));
 				}
+			}
+			if (IgnoreCertErrors)
+			{
+				logger.Info("Ignoring Certificate Validation Check Errors");
+				ServicePointManager.ServerCertificateValidationCallback =
+					new System.Net.Security.RemoteCertificateValidationCallback(delegate { return true; });
 			}
 		}
 

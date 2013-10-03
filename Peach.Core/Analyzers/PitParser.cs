@@ -472,29 +472,13 @@ namespace Peach.Core.Analyzers
 
 			Console.WriteLine(sIndent + string.Format("{0}: {1}", elem.GetHashCode(), elem.name));
 
-			foreach (var rel in elem.relations)
-			{
-				if (rel.parent != elem)
-					Console.WriteLine("Relation.parent != parent");
+			var cont = elem as DataElementContainer;
 
-				if (rel.parent.getRoot() != elem.getRoot())
-					Console.WriteLine("Relation.parent.getRoot != parent.getRoot");
-
-				if (rel.Of.getRoot() != elem.getRoot())
-					Console.WriteLine("Relation root != element root");
-			}
-
-			if (!(elem is DataElementContainer))
+			if (cont == null)
 				return;
 
-			foreach (var child in ((DataElementContainer)elem))
+			foreach (var child in cont)
 			{
-				if (child.parent != elem)
-					Console.WriteLine("Child parent != actual parent");
-
-				if(child.getRoot() != elem.getRoot())
-					Console.WriteLine("Child getRoot != elem getRoor");
-
 				displayDataModel(child, indent+1);
 			}
 		}
@@ -591,56 +575,14 @@ namespace Peach.Core.Analyzers
 				{
 					//logger.Debug("finalUpdateRelations: " + elem.fullName);
 
-					foreach (Relation rel in elem.relations)
+					foreach (var rel in elem.relations.From<Binding>())
 					{
 						//logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
 
-						try
-						{
-							if (rel.From == elem)
-							{
-								rel.parent = elem;
-
-								DataElement of = rel.Of;
-								if (of == null)
-									continue;
-
-								if (!of.relations.Contains(rel))
-									of.relations.Add(rel, false);
-							}
-							else if (rel.Of == elem)
-							{
-								DataElement from = rel.From;
-								if (from == null)
-									continue;
-
-								if (!from.relations.Contains(rel))
-									from.relations.Add(rel, false);
-							}
-							else
-							{
-								logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
-								throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
-							}
-						}
-						catch (Exception ex)
-						{
-							logger.Debug("finalUpdateRelations: Exception: " + ex.Message);
-						}
+						rel.Resolve();
 					}
 				}
 			}
-		}
-
-		protected bool hasRelationShipFrom(DataElement from, Relation rel)
-		{
-			foreach (var relation in from.relations)
-			{
-				if (relation.From.fullName == from.fullName && relation.GetType() == rel.GetType())
-					return true;
-			}
-
-			return false;
 		}
 
 		protected virtual void handleDefaults(XmlNode node)
@@ -1013,122 +955,25 @@ namespace Peach.Core.Analyzers
 				// notation.
 				if (element.isReference)
 				{
+					var parent = element;
+
 					if (childName != null && childName.IndexOf(".") > -1)
 					{
 						var parentName = childName.Substring(0, childName.LastIndexOf('.'));
-						var parent = element.find(parentName) as DataElementContainer;
+						parent = element.find(parentName) as DataElementContainer;
 
 						if (parent == null)
 							throw new PeachException("Error, child name has dot notation but parent element not found: '" + parentName + ".");
+					}
 
-						var choice = parent as Choice;
-						if (choice != null)
-						{
-							updateChoice(choice, elem);
-						}
-						else
-						{
-							if (parent.ContainsKey(elem.name))
-								replaceChild(parent, elem);
-							else
-								parent.Add(elem);
-						}
-					}
-					else
-					{
-						if (element.ContainsKey(elem.name))
-							replaceChild(element, elem);
-						else
-							element.Add(elem);
-					}
+					parent.ApplyReference(elem);
 				}
-				// Otherwise enforce unique element names.
 				else
 				{
+					// Otherwise enforce unique element names.
 					element.Add(elem);
 				}
 			}
-		}
-
-		private static void replaceRelations(DataElement newChild, DataElement oldChild, DataElement elem)
-		{
-			foreach (var rel in elem.relations)
-			{
-				// Find the half of the relation that is not elem
-				DataElement which = rel.Of == elem ? rel.From : rel.Of;
-
-				if (rel.parent == elem)
-				{
-					// If the relation's parent is the old child, just remove the relation
-					which.relations.Remove(rel);
-					rel.Reset();
-					continue;
-				}
-
-				// If the other half if a child of oldChild, no fixing is needed
-				string relName;
-				if (which.isChildOf(oldChild, out relName))
-					continue;
-
-				var other = newChild.find(elem.fullName);
-
-				if (elem == other)
-					continue;
-
-				// If the other half no longer exists under newChild, reset the relation
-				if (other == null)
-				{
-					rel.Reset();
-					continue;
-				}
-
-				// Fix up the relation to be in the newChild branch of the DOM
-				other.relations.Add(rel);
-
-				if (rel.From == elem)
-					rel.From = other;
-
-				if (rel.Of == elem)
-					rel.Of = other;
-			}
-		}
-
-		private static void replaceChild(DataElementContainer parent, DataElement newChild)
-		{
-			var oldChild = parent[newChild.name];
-			oldChild.parent = null;
-			newChild.parent = null;
-
-			replaceRelations(newChild, oldChild, oldChild);
-
-			foreach (var elem in oldChild.EnumerateAllElements())
-			{
-				replaceRelations(newChild, oldChild, elem);
-			}
-
-			parent[newChild.name] = newChild;
-		}
-
-		private static void updateChoice(Choice parent, DataElement newChild)
-		{
-			if (!parent.choiceElements.ContainsKey(newChild.name))
-			{
-				parent.choiceElements.Add(newChild.name, newChild);
-				newChild.parent = parent;
-				return;
-			}
-
-			var oldChild = parent.choiceElements[newChild.name];
-			oldChild.parent = null;
-
-			replaceRelations(newChild, oldChild, oldChild);
-
-			foreach (var elem in oldChild.EnumerateAllElements())
-			{
-				replaceRelations(newChild, oldChild, elem);
-			}
-
-			parent.choiceElements[newChild.name] = newChild;
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
@@ -1283,7 +1128,7 @@ namespace Peach.Core.Analyzers
 				case "size":
 					if (node.hasAttr("of"))
 					{
-						SizeRelation rel = new SizeRelation();
+						SizeRelation rel = new SizeRelation(parent);
 						rel.OfName = node.getAttrString("of");
 
 						if (node.hasAttr("expressionGet"))
@@ -1307,7 +1152,7 @@ namespace Peach.Core.Analyzers
 				case "count":
 					if (node.hasAttr("of"))
 					{
-						CountRelation rel = new CountRelation();
+						CountRelation rel = new CountRelation(parent);
 						rel.OfName = node.getAttrString("of");
 
 						if (node.hasAttr("expressionGet"))
@@ -1323,7 +1168,7 @@ namespace Peach.Core.Analyzers
 				case "offset":
 					if (node.hasAttr("of"))
 					{
-						OffsetRelation rel = new OffsetRelation();
+						OffsetRelation rel = new OffsetRelation(parent);
 						rel.OfName = node.getAttrString("of");
 
 						if (node.hasAttr("expressionGet"))

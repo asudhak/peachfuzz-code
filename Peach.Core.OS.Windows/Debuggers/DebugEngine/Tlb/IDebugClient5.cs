@@ -8,7 +8,7 @@ namespace Peach.Core.Debuggers.DebugEngine.Tlb
     public interface IDebugClient5
     {
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
-        void AttachKernel([In] uint Flags, [In, Optional] ref string ConnectOptions);
+		void AttachKernel([In] [MarshalAs(UnmanagedType.U4)] uint Flags, [In, Optional] [MarshalAs(UnmanagedType.LPStr)] string ConnectOptions);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         void GetKernelConnectionOptions([Optional] out sbyte Buffer, [In, Optional] uint BufferSize, [Optional] out uint OptionsSize);
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]

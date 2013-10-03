@@ -84,22 +84,19 @@ namespace Peach.Core.Test
 			var fromRel = fromElem.relations[0];
 			var ofRel = ofElem.relations[0];
 
-			Assert.NotNull(fromRel.parent);
 			Assert.NotNull(fromRel.From);
 			Assert.NotNull(fromRel.Of);
 
-			Assert.NotNull(ofRel.parent);
 			Assert.NotNull(ofRel.From);
 			Assert.NotNull(ofRel.Of);
 
 			Assert.AreEqual(fromRel, ofRel);
-			Assert.AreEqual(fromRel.parent, fromElem);
 			Assert.AreEqual(fromRel.From, fromElem);
 			Assert.AreEqual(fromRel.Of, ofElem);
 
-			Assert.AreEqual("Final.blk1.Length", fromRel.parent.fullName);
-			DataElement foo = fromRel.parent.Clone("Length_1");
-			fromRel.parent.parent.Insert(fromRel.parent.parent.IndexOf(fromRel.parent), foo);
+			Assert.AreEqual("Final.blk1.Length", fromRel.From.fullName);
+			DataElement foo = fromRel.From.Clone("Length_1");
+			fromRel.From.parent.Insert(fromRel.From.parent.IndexOf(fromRel.From), foo);
 
 			// Cloning Final.blk1.Length into Length_1 should yeild:
 			// Final.blk1.Length           - 1 Relation Of="Final.blk1.Payload.Data"
@@ -113,7 +110,6 @@ namespace Peach.Core.Test
 			Assert.AreEqual(1, foo.relations.Count);
 			Assert.AreEqual("Length_1", foo.relations[0].FromName);
 			Assert.AreEqual(foo, foo.relations[0].From);
-			Assert.AreEqual(foo, foo.relations[0].parent);
 			Assert.AreEqual("Data", foo.relations[0].OfName);
 			Assert.AreEqual(fromRel.Of, foo.relations[0].Of);
 			Assert.AreEqual(2, fromRel.Of.relations.Count);
@@ -135,17 +131,16 @@ namespace Peach.Core.Test
 
 			Assert.AreEqual(2, bar.relations.Count);
 			Assert.AreEqual(2, foo.relations.Count);
-			Assert.AreEqual(2, fromRel.parent.relations.Count);
 
 			Assert.AreEqual("Length", bar.relations[0].FromName);
 			Assert.AreEqual("Length_1", bar.relations[1].FromName);
-			Assert.AreEqual(bar, fromRel.parent.relations[1].Of);
+			Assert.AreEqual(bar, fromRel.From.relations[1].Of);
 			Assert.AreEqual(bar, foo.relations[1].Of);
 
 			// Test size against regular binary serializer
 			IFormatter formatter = new BinaryFormatter();
 			Stream stream = new MemoryStream();
-			formatter.Serialize(stream, fromRel.parent);
+			formatter.Serialize(stream, fromRel.From);
 		}
 
 		[Test]
@@ -154,14 +149,12 @@ namespace Peach.Core.Test
 			Block root = new Block("root");
 			Number fromElem = new Number("from");
 			Blob ofElem = new Blob("of");
-			Relation r = new SizeRelation();
+			Relation r = new SizeRelation(fromElem);
 			root.Add(fromElem);
 			root.Add(ofElem);
 			fromElem.relations.Add(r);
 			ofElem.relations.Add(r);
-			r.parent = fromElem;
 			r.Of = ofElem;
-			r.From = fromElem;
 
 			Block copy = root.Clone() as Block;
 			Assert.NotNull(copy);

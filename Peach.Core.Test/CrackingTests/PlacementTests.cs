@@ -259,6 +259,10 @@ namespace Peach.Core.Test.CrackingTests
 
 			Assert.AreEqual(1, Block1[0].relations.Count);
 			Assert.AreEqual("TheDataModel.Data_0", Block1[0].relations[0].OfName);
+
+			var final = dom.dataModels[0].Value;
+
+			Assert.AreEqual(data.ToArray(), final.ToArray());
 		}
 
 		[Test]
