@@ -408,16 +408,11 @@ namespace Peach.Core.Analyzers
 
 				if (dm != null)
 				{
-				    try
-				    {
-				        dom.dataModels.Add(dm.name, dm);
-				        finalUpdateRelations(new DataModel[] {dm});
-				    }
-                    catch(Exception ex)
-                    {
-                        throw new PeachException("Error, a Data model named '" + dm.name + "' already exists."); 
-                    }
+					if (dom.dataModels.ContainsKey(dm.name))
+						throw new PeachException("Error, a Data model named '" + dm.name + "' already exists.");
 
+					dom.dataModels.Add(dm.name, dm);
+					finalUpdateRelations(new DataModel[] {dm});
 				}
 			}
 
