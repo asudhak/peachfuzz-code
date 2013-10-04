@@ -121,6 +121,7 @@ def configure(conf):
 	env.append_value('CSFLAGS', [
 		'/warn:4',
 		'/define:PEACH,UNIX,MONO',
+		'/warnaserror',
 		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 

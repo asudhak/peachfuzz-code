@@ -172,6 +172,7 @@ def configure(conf):
 		'/warn:4',
 		'/define:PEACH',
 		'/errorreport:prompt',
+		'/warnaserror',
 		'/nowarn:1591' # Missing XML comment for publicly visible type
 	])
 
