@@ -44,16 +44,7 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Agent.Channels
 {
-
 	#region RestProxyPublisher
-
-	public class CreatePublisherRequest
-	{
-		public uint iteration = 0;
-		public bool isControlIteration = false;
-		public string Cls = "";
-		public Dictionary<string, string> args = null;
-	}
 
 	public class RestProxyPublisher : Publisher
 	{
@@ -61,10 +52,18 @@ namespace Peach.Core.Agent.Channels
 		protected override NLog.Logger Logger { get { return logger; } }
 
 		public string Url = null;
-		//public AgentClientRest Agent = null;
 		public string Agent { get; set; }
 		public string Class { get; set; }
 		public Dictionary<string, string> Args { get; set; }
+
+		[Serializable]
+		public class CreatePublisherRequest
+		{
+			public uint iteration = 0;
+			public bool isControlIteration = false;
+			public string Cls = "";
+			public Dictionary<string, string> args = null;
+		}
 
 		[Serializable]
 		public class RestProxyPublisherResponse
@@ -225,7 +224,12 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[Serializable]
-		public class ResultMessage
+		public class ResultRequest
+		{
+			public string result = null;
+		}
+		[Serializable]
+		public class ResultResponse: RestProxyPublisherResponse
 		{
 			public string result = null;
 		}
@@ -234,11 +238,11 @@ namespace Peach.Core.Agent.Channels
 		{
 			get
 			{
-				return JsonConvert.DeserializeObject<ResultMessage>(Send("Get_Result")).result;
+				return JsonConvert.DeserializeObject<ResultRequest>(Send("Get_Result")).result;
 			}
 			set
 			{
-				var request = new ResultMessage();
+				var request = new ResultResponse();
 				request.result = value;
 
 				Send("Set_Result", JsonConvert.SerializeObject(request));
@@ -289,7 +293,7 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[Serializable]
-		public class OnCallResponse
+		public class OnCallResponse : RestProxyPublisherResponse
 		{
 			public Variant value = null;
 		}
@@ -336,7 +340,7 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[Serializable]
-		public class OnGetPropertyResponse
+		public class OnGetPropertyResponse : RestProxyPublisherResponse
 		{
 			public Variant value;
 		}
@@ -393,7 +397,7 @@ namespace Peach.Core.Agent.Channels
 		}
 
 		[Serializable]
-		public class ReadBytesResponse
+		public class ReadBytesResponse : RestProxyPublisherResponse
 		{
 			public byte[] data;
 		}
@@ -449,16 +453,6 @@ namespace Peach.Core.Agent.Channels
 	{
 		public Dictionary<string, string> args { get; set; }
 	}
-
-	//public class BitwiseStreamProxyClass : BitwiseStream
-	//{
-	//	BitwiseStream _stream;
-
-	//	public BitwiseStreamProxyClass()
-	//	{
-	//		_stream = new BitStream();
-	//	}
-	//}
 
 	[Agent("http", true)]
 	public class AgentClientRest : AgentClient
