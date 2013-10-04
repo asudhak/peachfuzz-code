@@ -1028,12 +1028,11 @@ namespace Peach.Core.Analyzers
 					value = value.Replace("\\x", "");
 
 					if (value.Length % 2 != 0)
-						value = "0" + value;
+						throw new PeachException("Error, the hex value of " + elem.debugName + " must contain an even number of characters.");
 
 					var array = HexString.ToArray(value);
-
 					if (array == null)
-						throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
+						throw new PeachException("Error, the value of " + elem.debugName + " contains invalid hex characters.");
 
 					elem.DefaultValue = new Variant(new BitStream(array));
 					break;
@@ -1048,7 +1047,7 @@ namespace Peach.Core.Analyzers
 					var obj = Scripting.EvalExpression(value, localScope);
 
 					if (obj == null)
-						throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid eval statement.");
+						throw new PeachException("Error, the value of " + elem.debugName + " is not a valid eval statement.");
 
 					elem.DefaultValue = new Variant(obj.ToString());
 					break;

@@ -342,7 +342,7 @@ namespace Peach.Core.Test.CrackingTests
 				"	<DataModel name=\"TheDataModel\">" +
 				"		<Block occurs=\"3\">" +
 				"			<Number name=\"num1\" size=\"8\" minOccurs=\"0\" constraint=\"str(element.DefaultValue) != '0'\" />" +
-				"			<Number name=\"num2\" size=\"8\" valueType=\"hex\" value=\"0\" />" +
+				"			<Number name=\"num2\" size=\"8\" valueType=\"hex\" value=\"00\" />" +
 				"		</Block>" +
 				"	</DataModel>" +
 				"</Peach>";
@@ -374,7 +374,7 @@ namespace Peach.Core.Test.CrackingTests
 				"		<Block minOccurs=\"0\">" +
 				"			<Number name=\"num1\" size=\"8\" constraint=\"str(element.DefaultValue) != '0'\" />" +
 				"		</Block>" +
-				"		<Number name=\"zero\" size=\"8\" valueType=\"hex\" value=\"0\" token=\"true\" />" +
+				"		<Number name=\"zero\" size=\"8\" valueType=\"hex\" value=\"00\" token=\"true\" />" +
 				"	</DataModel>" +
 				"</Peach>";
 

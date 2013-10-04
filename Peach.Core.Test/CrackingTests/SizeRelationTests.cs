@@ -292,7 +292,7 @@ namespace Peach.Core.Test.CrackingTests
 	<DataModel name=""DM"">
 		<Blob name=""Header"" length=""1""/>
 		<Block name=""Base1"" ref=""Base"" />
-		<Blob name=""Footer"" valueType=""hex"" value=""0"" length=""1"" token=""true"" />
+		<Blob name=""Footer"" valueType=""hex"" value=""00"" length=""1"" token=""true"" />
 	</DataModel>
 </Peach>";
 

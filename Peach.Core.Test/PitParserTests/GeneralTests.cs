@@ -654,5 +654,34 @@ namespace Peach.Core.Test.PitParserTests
 			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 		}
 
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, the hex value of Blob 'blob' must contain an even number of characters.")]
+		public void TestBadHexValueType1()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Blob name='blob' valueType='hex' value='00 a'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, the value of Blob 'blob' contains invalid hex characters.")]
+		public void TestBadHexValueType2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Blob name='blob' valueType='hex' value='00 aq'/>
+	</DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+		}
 	}
 }
