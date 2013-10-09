@@ -90,6 +90,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			get { return _dbg.processId; }
 		}
 
+		public void HeartBeat()
+		{
+			LastHeartBeat = DateTime.Now;
+		}
+
 		public bool IsRunning
 		{
 			get

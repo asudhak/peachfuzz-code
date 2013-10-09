@@ -102,6 +102,8 @@ namespace Peach.Core.Agent.Monitors
 		DebuggerInstance _debugger = null;
 		SystemDebuggerInstance _systemDebugger = null;
 		IpcChannel _ipcChannel = null;
+		Thread _ipcHeartBeatThread = null;
+		System.Threading.Mutex _ipcHeartBeatMutex = null;
 
 		public WindowsDebuggerHybrid(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -188,6 +190,27 @@ namespace Peach.Core.Agent.Monitors
 		~WindowsDebuggerHybrid()
 		{
 			_FinishDebugger();
+		}
+
+		/// <summary>
+		/// Send a hearbeat to the debugger process to keep it alive.
+		/// </summary>
+		public void IpcHeartBeat()
+		{
+			try
+			{
+				while (_ipcChannel != null && 
+					_debugger != null &&
+					_ipcHeartBeatMutex.WaitOne(10 * 1000) == false)
+				{
+					logger.Trace("_debugger.HeartBeat");
+					_debugger.HeartBeat();
+				}
+			}
+			catch(Exception ex)
+			{
+				logger.Warn("Exception while sending heartbeat: " + ex.Message);
+			}
 		}
 
 		public override object ProcessQueryMonitors(string query)
@@ -564,6 +587,13 @@ namespace Peach.Core.Agent.Monitors
 					_debugger.noCpuKill = _noCpuKill;
 					_debugger.winDbgPath = _winDbgPath;
 
+					// Start a thread to send heartbeats to ipc process
+					// otherwise ipc process will exit
+					_ipcHeartBeatMutex = new Mutex();
+					_ipcHeartBeatMutex.WaitOne();
+					_ipcHeartBeatThread = new Thread(new ThreadStart(IpcHeartBeat));
+					_ipcHeartBeatThread.Start();
+
 					logger.Debug("Created!");
 					break;
 				}
@@ -636,11 +666,19 @@ namespace Peach.Core.Agent.Monitors
 					_debugger.noCpuKill = _noCpuKill;
 					_debugger.winDbgPath = _winDbgPath;
 
+					// Start a thread to send heartbeats to ipc process
+					// otherwise ipc process will exit
+					_ipcHeartBeatMutex = new Mutex();
+					_ipcHeartBeatMutex.WaitOne();
+					_ipcHeartBeatThread = new Thread(new ThreadStart(IpcHeartBeat));
+					_ipcHeartBeatThread.Start();
+
 					break;
 				}
 				catch(Exception ex)
 				{
 					logger.Debug("IPC Exception: " + ex.Message);
+					logger.Debug("Retrying IPC connection");
 
 					if ((DateTime.Now - startTimer).Minutes >= 1)
 					{
@@ -688,6 +726,11 @@ namespace Peach.Core.Agent.Monitors
 				catch
 				{
 				}
+
+				_ipcHeartBeatMutex.ReleaseMutex();
+				_ipcHeartBeatThread.Join();
+				_ipcHeartBeatThread = null;
+				_ipcHeartBeatMutex = null;
 			}
 
 			_debugger = null;
