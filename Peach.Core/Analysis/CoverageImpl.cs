@@ -35,6 +35,8 @@ using System.Text;
 using System.Reflection;
 
 using Peach.Core;
+using System.Collections.Specialized;
+using System.Collections;
 
 namespace Peach.Core.Analysis
 {
@@ -49,30 +51,12 @@ namespace Peach.Core.Analysis
         string _traceFolder = null;
 
 		/// <summary>
-		/// Executables for pin tools by OS and architecture.
-		/// </summary>
-		static Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>> pinExecutables = new Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>>();
-
-		/// <summary>
 		/// Pin tool dll by os and architecture.
 		/// </summary>
 		static Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>> pinTool = new Dictionary<Platform.OS, Dictionary<Platform.Architecture, string>>();
 
 		static CoverageImpl()
 		{
-			pinExecutables.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
-			pinExecutables.Add(Platform.OS.Linux, new Dictionary<Platform.Architecture, string>());
-			pinExecutables.Add(Platform.OS.OSX, new Dictionary<Platform.Architecture, string>());
-
-			pinExecutables[Platform.OS.Windows][Platform.Architecture.x86] = @"pin\pin-2.12-54730-msvc10-windows\ia32\bin\pin.exe";
-			pinExecutables[Platform.OS.Windows][Platform.Architecture.x64] = @"pin\pin-2.12-54730-msvc10-windows\intel64\bin\pin.exe";
-
-			pinExecutables[Platform.OS.Linux][Platform.Architecture.x86] = @"pin/pin-2.12-54730-gcc.4.4.7-linux/ia32/bin/pinbin";
-			pinExecutables[Platform.OS.Linux][Platform.Architecture.x64] = @"pin/pin-2.12-54730-gcc.4.4.7-linux/intel64/bin/pinbin";
-
-			pinExecutables[Platform.OS.OSX][Platform.Architecture.x86] = @"pin/pin-2.12-54730-clang.3.0-mac/ia32/bin/pinbin";
-			pinExecutables[Platform.OS.OSX][Platform.Architecture.x64] = @"pin/pin-2.12-54730-clang.3.0-mac/intel64/bin/pinbin";
-
 			pinTool.Add(Platform.OS.Windows, new Dictionary<Platform.Architecture, string>());
 			pinTool.Add(Platform.OS.Linux, new Dictionary<Platform.Architecture, string>());
 			pinTool.Add(Platform.OS.OSX, new Dictionary<Platform.Architecture, string>());
@@ -80,12 +64,12 @@ namespace Peach.Core.Analysis
 			pinTool[Platform.OS.Windows][Platform.Architecture.x86] = @"bblocks32.dll";
 			pinTool[Platform.OS.Windows][Platform.Architecture.x64] = @"bblocks64.dll";
 
-			pinTool[Platform.OS.Linux][Platform.Architecture.x86] = @"libbblocks32.so";
-			pinTool[Platform.OS.Linux][Platform.Architecture.x64] = @"libbblocks64.so";
+			pinTool[Platform.OS.Linux][Platform.Architecture.x86] = @"bblocks32.so";
+			pinTool[Platform.OS.Linux][Platform.Architecture.x64] = @"bblocks64.so";
 
 			// OSX supports fat binaries
-			pinTool[Platform.OS.OSX][Platform.Architecture.x86] = @"libbblocks.dylib";
-			pinTool[Platform.OS.OSX][Platform.Architecture.x64] = @"libbblocks.dylib";
+			pinTool[Platform.OS.OSX][Platform.Architecture.x86] = @"bblocks.dylib";
+			pinTool[Platform.OS.OSX][Platform.Architecture.x64] = @"bblocks.dylib";
 		}
 
         public CoverageImpl()
@@ -144,20 +128,32 @@ namespace Peach.Core.Analysis
 				//}
 
 				var peachBinaries = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+				var tgtArch = FileInfo.Instance.GetArch(executable);
+				var toolPath = Path.Combine(peachBinaries, pinTool[Platform.GetOS()][tgtArch]);
+
+				if (!File.Exists(toolPath))
+					throw new PeachException("Error, cannot locate pin tool '" + toolPath + "'.");
 
                 var psi = new ProcessStartInfo();
 				
 				//psi.Arguments = "-t " + _pinTool + " -- " + executable + " " + arguments;
-				psi.Arguments = string.Format("-p32 {0} -p64 {1} -t {2} -t64 {3} -- {4} {5}",
-					Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x86]),
-					Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x64]),
-					Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.Architecture.x86]),
-					Path.Combine(peachBinaries, pinTool[Platform.GetOS()][Platform.Architecture.x64]),
-					executable, arguments);
+				psi.Arguments = string.Format("-t {0} -- {1} {2}", toolPath, executable, arguments);
 
-				psi.FileName = Path.Combine(peachBinaries, pinExecutables[Platform.GetOS()][Platform.Architecture.x86]);
+				psi.FileName = Path.Combine(peachBinaries, "pin", "pin");
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
+
+				foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+					psi.EnvironmentVariables[de.Key.ToString()] = de.Value.ToString();
+
+				if (Platform.GetOS() == Platform.OS.Linux)
+				{
+					var origin = Path.Combine(peachBinaries, "pin");
+					var libs = "{0}/ia32/runtime:{0}/intel64/runtime:{0}/ia32/runtime/glibc:{0}/intel64/runtime/glibc".Fmt(origin);
+					if (psi.EnvironmentVariables.ContainsKey("LD_LIBRARY_PATH"))
+						libs += ":" + psi.EnvironmentVariables["LD_LIBRARY_PATH"].ToString();
+					psi.EnvironmentVariables["LD_LIBRARY_PATH"] = libs;
+				}
 
 				using (var proc = new Process())
 				{

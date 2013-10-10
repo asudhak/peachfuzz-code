@@ -1,8 +1,25 @@
 #!/usr/bin/env python
 
-bld(
-	features = 'cxx cxxshlib pin release',
-	source = 'cedge.cpp',
-	target='Peach.Core.Analysis.Pin.CoveredEdge',
-)
+def make_bld(tgt, variant):
+	clone = bld.clone_env(variant)
+	if clone is None:
+		return
+	bld(
+		features = 'cxx cxxshlib pin release',
+		source = 'cedge.cpp',
+		target=tgt,
+		env=clone,
+	)
 
+if bld.env.DEST_OS is 'win32':
+	make_bld('cedge32', 'win_x86_release')
+	if bld.env.SUBARCH is 'x64':
+		make_bld('cedge64', 'win_x64_release')
+
+elif bld.env.DEST_OS is 'linux':
+	make_bld('cedge32', 'linux_x86_release')
+	if bld.env.SUBARCH is 'x86_64':
+		make_bld('cedge64', 'linux_x86_64_release')
+
+else:
+	make_bld('cedge', bld.variant)

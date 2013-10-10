@@ -42,7 +42,7 @@ def prepare(conf):
 	env['CC']   = 'clang'
 	env['CXX']  = 'clang++'
 
-	env['SYSROOT'] = find_directory( ['MacOSX10.7.sdk', 'MacOSX10.6.sdk'],
+	env['SYSROOT'] = find_directory( [ 'MacOSX10.8.sdk', 'MacOSX10.7.sdk', 'MacOSX10.6.sdk' ],
 	[
 		'/Developer/SDKs',
 		'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
@@ -55,14 +55,16 @@ def prepare(conf):
 	if '10.6' in env['SYSROOT']:
 		return
 
+	env['PIN_VER'] = 'pin-2.13-61206-clang.4.2-mac'
+
 	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
-	pin = j(pin_root, 'pin-2.12-54730-clang.3.0-mac')
+	pin = j(pin_root, env['PIN_VER'])
 
 	env['EXTERNALS'] = {
 		'pin' : {
 			'INCLUDES'  : [
-				j(pin, 'source', 'include'),
-				j(pin, 'source', 'include', 'gen'),
+				j(pin, 'source', 'include', 'pin'),
+				j(pin, 'source', 'include', 'pin', 'gen'),
 				j(pin, 'extras', 'components', 'include'),
 			],
 			'HEADERS'   : [ 'pin.h' ],
@@ -82,20 +84,24 @@ def prepare(conf):
 				'-Xarch_i386',   '-L%s' % j(pin, 'extras', 'xed2-ia32', 'lib'),
 				'-Xarch_i386',   '-l-lpin',
 				'-Xarch_i386',   '-l-lxed',
+				'-Xarch_i386',   '-l-lpindwarf',
 
 				'-Xarch_x86_64', '-L%s' % j(pin, 'intel64', 'lib'),
 				'-Xarch_x86_64', '-L%s' % j(pin, 'intel64', 'lib-ext'),
 				'-Xarch_x86_64', '-L%s' % j(pin, 'extras', 'xed2-intel64', 'lib'),
 				'-Xarch_x86_64', '-l-lpin',
 				'-Xarch_x86_64', '-l-lxed',
+				'-Xarch_x86_64', '-l-lpindwarf',
+
+				'-Wl,-exported_symbols_list',
+				'-Wl,%s/source/include/pin/pintool.exp' % pin,
 			],
+			'ENV'       : { 'cxxshlib_PATTERN' : '%s.dylib' },
 		},
 	}
 
 def configure(conf):
 	env = conf.env
-
-	env['IS_MONO'] = 'True'
 
 	env.append_value('supported_features', [
 		'osx',
@@ -170,7 +176,7 @@ def configure(conf):
 	env.append_value('DEFINES_debug', ['DEBUG'])
 
 	# Override g++ darwin defaults in tools/gxx.py
-	env['CXXFLAGS_cxxshlib'] = [ '-fPIC' ]
+	env['CXXFLAGS_cxxshlib'] = []
 
 	env['VARIANTS'] = [ 'debug', 'release' ]
 

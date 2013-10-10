@@ -75,10 +75,13 @@ def configure(conf):
 				Logs.warn('External library \'%s\' is not available: %s' % (k, e))
 
 @feature('*')
-@before_method('propagate_uselib_vars')
+@before_method('process_source')
 def apply_externals(self):
 	exts = set([ k for k in self.env['EXTERNALS'] ])
 	feat = set(self.to_list(getattr(self, 'features', [])))
-	use = set(self.to_list(getattr(self, 'use', [])))
-	use |= exts & feat
-	setattr(self, 'use', [ x for x in use ])
+	add = exts & feat
+	for ext in add:
+		opts = self.env['EXTERNALS'][ext]
+		env = opts.get('ENV', {})
+		for k,v in env.items():
+			self.env[k] = v

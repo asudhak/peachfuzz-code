@@ -29,57 +29,46 @@ def prepare(conf):
 	env['CC']   = 'gcc'
 	env['CXX']  = 'g++'
 
-	env['ARCH']    = ['-m%s' % ('64' in env.SUBARCH and '64' or '32')]
-	env['ARCH_ST'] = env['ARCH']
+	if env.SUBARCH == 'x86':
+		env['ARCH'] = [ '32' ]
+		pin_tgt = 'ia32'
+		pin_def = 'IA32'
+	else:
+		env['ARCH'] = [ '64' ]
+		pin_tgt = 'intel64'
+		pin_def = 'IA32E'
+
+	env['ARCH_ST'] = '-m%s'
+
+	env['PIN_VER'] = 'pin-2.13-61206-gcc.4.4.7-linux'
 
 	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
-	pin = j(pin_root, 'pin-2.12-54730-gcc.4.4.7-linux')
+	pin = j(pin_root, env['PIN_VER'])
 
-	env['EXTERNALS_x86'] = {
+	env['EXTERNALS'] = {
 		'pin' : {
 			'INCLUDES'  : [
-				j(pin, 'source', 'include'),
-				j(pin, 'source', 'include', 'gen'),
+				j(pin, 'source', 'include', 'pin'),
+				j(pin, 'source', 'include', 'pin', 'gen'),
 				j(pin, 'extras', 'components', 'include'),
-				j(pin, 'extras', 'xed2-ia32', 'include'),
+				j(pin, 'extras', 'xed2-%s' % pin_tgt, 'include'),
 			],
 			'HEADERS'   : [],
-			'STLIBPATH'   : [
-				j(pin, 'ia32', 'lib'),
-				j(pin, 'ia32', 'lib-ext'),
-				j(pin, 'extras', 'xed2-ia32', 'lib'),
+			'STLIBPATH' : [
+				j(pin, pin_tgt, 'lib'),
+				j(pin, pin_tgt, 'lib-ext'),
+				j(pin, 'extras', 'xed2-%s' % pin_tgt, 'lib'),
 			],
-			'STLIB'     : [ 'dwarf', 'elf', 'pin', 'xed' ],
-			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_LINUX', 'TARGET_IA32', 'HOST_IA32', 'USING_XED', ],
+			'LIBPATH'   : [],
+			'LIB'       : [],
+			'STLIB'     : [ 'pin', 'xed', 'dwarf', 'elf' ],
+			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_LINUX', 'TARGET_%s' % pin_def, 'HOST_%s' % pin_def, 'USING_XED', ],
 			'CFLAGS'    : [],
-			'CXXFLAGS'  : [],
+			'CXXFLAGS'  : [ '-fno-stack-protector', '-fomit-frame-pointer', '-fno-strict-aliasing' ],
 			'LINKFLAGS' : [],
+			'ENV'       : { 'STLIB_MARKER' : '-Wl,-Bsymbolic', 'SHLIB_MARKER' : '-Wl,-Bsymbolic', 'cxxshlib_PATTERN' : '%s.so' },
 		},
 	}
-
-	env['EXTERNALS_x86_64'] = {
-		'pin' : {
-			'INCLUDES'  : [
-				j(pin, 'source', 'include'),
-				j(pin, 'source', 'include', 'gen'),
-				j(pin, 'extras', 'components', 'include'),
-				j(pin, 'extras', 'xed2-intel64', 'include'),
-			],
-			'HEADERS'   : [],
-			'STLIBPATH'   : [
-				j(pin, 'intel64', 'lib'),
-				j(pin, 'intel64', 'lib-ext'),
-				j(pin, 'extras', 'xed2-intel64', 'lib'),
-			],
-			'STLIB'     : [ 'dwarf', 'elf', 'xed' ],
-			'DEFINES'   : [ 'BIGARRAY_MULTIPLIER=1', 'TARGET_LINUX', 'TARGET_IA32E', 'HOST_IA32E', 'USING_XED', ],
-			'CFLAGS'    : [],
-			'CXXFLAGS'  : [],
-			'LINKFLAGS' : [],
-		},
-	}
-
-	env['EXTERNALS'] = env['EXTERNALS_%s' % env.SUBARCH]
 
 	env.append_value('supported_features', [
 		'linux',
@@ -105,8 +94,6 @@ def prepare(conf):
 def configure(conf):
 	env = conf.env
 
-	env['IS_MONO'] = 'True'
-	
 	env.append_value('CSFLAGS', [
 		'/warn:4',
 		'/define:PEACH,UNIX,MONO',

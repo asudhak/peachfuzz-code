@@ -474,6 +474,7 @@
     <Compile Include="Dom\Binding.cs" />
     <Compile Include="Encoding.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="FileInfo.cs" />
     <Compile Include="Fixups\CiscoFixup.cs" />
     <Compile Include="Fixups\CrcFixup.cs" />
     <Compile Include="Fixups\FillValueFixup.cs" />
