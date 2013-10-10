@@ -92,6 +92,7 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 				else
 					logger.Debug("StartService(" + _service + ", " + _machineName + ")");
 
+				_serviceController.Refresh();
 				switch (_serviceController.Status)
 				{
 					case ServiceControllerStatus.ContinuePending:
@@ -142,6 +143,7 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 				else
 					logger.Debug("StopService(" + _service + ", "+_machineName+")");
 
+				_serviceController.Refresh();
 				switch (_serviceController.Status)
 				{
 					case ServiceControllerStatus.ContinuePending:
@@ -212,17 +214,17 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 
 		public override bool DetectedFault()
 		{
+			_serviceController.Refresh();
 			if (_faultOnEarlyExit && _serviceController.Status != ServiceControllerStatus.Running)
+			{
+				logger.Info("DetectedFault() - Fault detected, process exited early");
 				return true;
-
+			}
 			return false;
 		}
 
 		public override Fault GetMonitorData()
 		{
-			if (!(_faultOnEarlyExit && _serviceController.Status != ServiceControllerStatus.Running))
-				return null;
-
 			Fault fault = new Fault();
 			fault.type = FaultType.Fault;
 			fault.folderName = "WindowsService";
