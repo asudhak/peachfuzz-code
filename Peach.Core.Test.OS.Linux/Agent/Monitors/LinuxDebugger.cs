@@ -23,7 +23,7 @@ namespace Peach.Core.Test.OS.Linux.Agent.Monitors
 			var m = new LinuxDebugger(null, null, args);
 			m.SessionStarting();
 			m.IterationStarting(1, false);
-			Thread.Sleep(1000);
+			Thread.Sleep(5000);
 			m.IterationFinished();
 			Assert.AreEqual(true, m.DetectedFault());
 			Fault fault = m.GetMonitorData();
@@ -45,7 +45,7 @@ namespace Peach.Core.Test.OS.Linux.Agent.Monitors
 			var m = new LinuxDebugger(null, null, args);
 			m.SessionStarting();
 			m.IterationStarting(1, false);
-			Thread.Sleep(1000);
+			Thread.Sleep(5000);
 			m.IterationFinished();
 			Assert.AreEqual(false, m.DetectedFault());
 			m.SessionFinished();
