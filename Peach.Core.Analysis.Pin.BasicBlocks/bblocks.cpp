@@ -33,9 +33,12 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>      // std::ostringstream
 #include <stdio.h>
 #include <stdarg.h>
 #include <set>
+#include <map>
+#include <memory>
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -63,24 +66,21 @@ static FILE* existing = NULL;
 static set<ADDRINT> setKnownBlocks;
 
 // Existing known bblocks
-static set<ADDRINT> setExistingBlocks;
+static set<string*> setExistingBlocks;
+
+// images to exclude from coverage
+static set<string*> excludedImages;
 
 static pair<set<ADDRINT>::iterator,bool> ret;
 
-// Do we have an existing bblocks trace?
-int haveExisting = FALSE;
+// map of image name to low/high address
+static map<string*, pair<ADDRINT, ADDRINT> > imageList;
 
-#if defined(TARGET_IA32)
-# define FMT "%u\n"
-#elif defined(TARGET_IA32E)
-# if defined(TARGET_LINUX)
-#  define FMT "%lu\n"
-# else
-#  define FMT "%llu\n"
-# endif
-#else
-# error TARGET_IA32 or TARGET_IA32E must be defined
-#endif
+// Do we have an existing bblocks trace?
+char haveExisting = FALSE;
+
+// Do we have an image exclude list?
+char haveExclude = FALSE;
 
 class Logger
 {
@@ -120,21 +120,78 @@ private:
 //#define DBGLOG(x) Logger().Write x
 #define DBGLOG(x)
 
-// Method called every time an instrumented bblock is executed
-VOID PIN_FAST_ANALYSIS_CALL rememberBlock(ADDRINT bbl)
+// convert address into module + offset
+pair<string*, string*> ResolveAddress(ADDRINT address)
 {
-	ret = setKnownBlocks.insert(bbl);
+	map<string*, pair<ADDRINT, ADDRINT> >::const_iterator it;
+
+	for(it = imageList.begin(); it != imageList.end(); it++)
+	{
+		if(address >= (*it).second.first && address <= (*it).second.second)
+		{
+			ostringstream resolved;
+			resolved << *(*it).first << ":" << (address - (*it).second.first) << "\n";
+
+			return make_pair(new string(*(*it).first), new string(resolved.str()));
+		}
+	}
+
+	return make_pair((string*)NULL, (string*)NULL);
+}
+
+// Method called every time an instrumented bblock is executed
+VOID PIN_FAST_ANALYSIS_CALL rememberBlock(INS ins)
+{
+	ADDRINT address = INS_Address(ins);
+	ret = setKnownBlocks.insert(address);
 	if(ret.second == true)
 	{
-		fprintf(trace, FMT, bbl);
+		pair<string*,string*> resolvedAddress = ResolveAddress(address);
+		
+		// skip addresses that don't resolve
+		// an address will not resolve when we have
+		// blacklisted the module
+		if(resolvedAddress.first == NULL)
+			return;
+
+		fprintf(trace, "%s\n", resolvedAddress.second->c_str());
 		fflush(trace);
 
 		if(haveExisting)
 		{
-			fprintf(existing, FMT, bbl);
+			fprintf(trace, "%s\n", resolvedAddress.second->c_str());
 			fflush(existing);
 		}
 	}
+}
+
+// Strip path from image name
+string* ImageName(string* fullname)
+{
+	size_t found;
+
+#ifdef TARGET_WINDOWS
+	found = fullname->rfind('\\');
+#else
+	found = fullname->rfind('/');
+#endif
+	
+	return new string(fullname->substr(found+1));
+}
+
+// Called when an image is loaded
+VOID Image(IMG img, VOID* v)
+{
+	v;
+
+	string fullname = IMG_Name(img);
+	string* name = ImageName(&fullname);
+
+	// don't record images in our exclude list
+	if(excludedImages.find(name) != excludedImages.end())
+		return;
+
+	imageList[name] = make_pair(IMG_LowAddress(img), IMG_HighAddress(img));
 }
 
 // Called when new code segment loaded containing bblocks
@@ -144,8 +201,17 @@ VOID Trace(TRACE trace, VOID *v)
 
 	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
 	{
-		if(!haveExisting || setExistingBlocks.find(BBL_Address(bbl)) == setExistingBlocks.end())
-			BBL_InsertCall(bbl, IPOINT_ANYWHERE, AFUNPTR(rememberBlock), IARG_FAST_ANALYSIS_CALL, IARG_ADDRINT, BBL_Address(bbl), IARG_END);
+		pair<string*, string*> resolvedPair = ResolveAddress(INS_Address(BBL_InsHead(bbl)));
+		auto_ptr<string> imageName = auto_ptr<string>(resolvedPair.first);
+		auto_ptr<string> resolvedAddress = auto_ptr<string>(resolvedPair.second);
+
+		if(haveExclude && excludedImages.find(imageName.get()) != excludedImages.end())
+			return;
+
+		if(haveExisting && setExistingBlocks.find(resolvedAddress.get()) != setExistingBlocks.end())
+			continue;
+
+		BBL_InsertCall(bbl, IPOINT_ANYWHERE, AFUNPTR(rememberBlock), IARG_FAST_ANALYSIS_CALL, IARG_ADDRINT, BBL_InsHead(bbl), IARG_END);
 	}
 }
 
@@ -155,10 +221,19 @@ VOID Fini(INT32 code, VOID *v)
 	code;
 	v;
 
+	map<string*, pair<ADDRINT, ADDRINT> >::const_iterator mapIt;
+	set<string*>::const_iterator setIt;
+
 	fclose(trace);
 
 	if(haveExisting)
 		fclose(existing);
+
+	// free memory
+	for(mapIt = imageList.begin(); mapIt != imageList.end(); mapIt++)
+		delete (*mapIt).first;
+	for(setIt = setExistingBlocks.begin(); setIt != setExistingBlocks.end(); setIt++)
+		delete (*setIt);
 }
 
 // Called when the application starts
@@ -179,16 +254,33 @@ int main(int argc, char * argv[])
 {
 	DBGLOG(("bblocks main() PID: %d\n", PIN_GetPid()));
 
+	// Load image exclude list
+	FILE* fd = fopen("bblocks.exclude", "rb+");
+	if(fd != NULL)
+	{
+		char image[256];
+
+		haveExclude = TRUE;
+		while(!feof(fd))
+		{
+			if(fscanf(fd, "%s\n", image) < 4)
+				excludedImages.insert(new string(image));
+		}
+
+		fclose(fd);
+	}
+
 	// Load existing trace
-	ADDRINT block = 0;
 	existing = fopen("bblocks.existing", "rb+");
 	if(existing != NULL)
 	{
+		char offset[256];
+
 		haveExisting = TRUE;
 		while(!feof(existing))
 		{
-			if(fscanf(existing, FMT, &block) < 4)
-				setExistingBlocks.insert(block);
+			if(fscanf(existing, "%s\n", offset) < 4)
+				setExistingBlocks.insert(new string(offset));
 		}
 
 		// Make sure we are at end of file
@@ -199,7 +291,10 @@ int main(int argc, char * argv[])
 	
 	// Configure Pin Tools
 	PIN_Init(argc, argv);
+
+	IMG_AddInstrumentFunction(Image, 0);
 	TRACE_AddInstrumentFunction(Trace, 0);
+	
 	PIN_AddApplicationStartFunction(Start, 0);
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_StartProgram();
