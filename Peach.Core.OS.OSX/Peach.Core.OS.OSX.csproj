@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Agent\Monitors\CrashReporter.cs" />
     <Compile Include="Agent\Monitors\CrashWrangler.cs" />
+    <Compile Include="FileInfo.cs" />
     <Compile Include="NetworkAdapter.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
