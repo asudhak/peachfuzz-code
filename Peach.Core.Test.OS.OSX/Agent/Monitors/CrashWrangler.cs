@@ -377,7 +377,7 @@ namespace Peach.Core.Test.Agent.Monitors
 		public void TestCommandQuoting()
 		{
 			Dictionary<string, Variant> args = new Dictionary<string, Variant>();
-			args["Command"] = new Variant("/Applications/Flash Player.app/Contents/MacOS/Flash Player");
+			args["Command"] = new Variant("/Applications/QuickTime Player.app/Contents/MacOS/QuickTime Player");
 			args["Arguments"] = new Variant("");
 			args["RestartOnEachTest"] = new Variant("true");
 			args["FaultOnEarlyExit"] = new Variant("true");
