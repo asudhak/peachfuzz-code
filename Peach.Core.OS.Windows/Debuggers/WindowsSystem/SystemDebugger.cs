@@ -180,7 +180,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					0,				// lpProcessAttributes 
 					0,				// lpThreadAttributes 
 					false,			// bInheritHandles 
-					1,				// dwCreationFlags, DEBUG_PROCESS
+					3,				// dwCreationFlags, DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS
 					IntPtr.Zero,	// lpEnvironment 
 					null,			// lpCurrentDirectory 
 					ref startUpInfo, // lpStartupInfo 
