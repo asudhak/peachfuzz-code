@@ -87,6 +87,11 @@ namespace Peach.Core
 			set { _engine = value; }
 		}
 
+		public abstract bool UsesRandomSeed
+		{
+			get;
+		}
+
 		public abstract bool IsDeterministic
 		{
 			get;

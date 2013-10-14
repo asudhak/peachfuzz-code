@@ -51,6 +51,7 @@ namespace Peach.Core
 			engine.TestStarting += new Engine.TestStartingEventHandler(Engine_TestStarting);
 			engine.TestFinished += new Engine.TestFinishedEventHandler(Engine_TestFinished);
 			engine.TestError += new Engine.TestErrorEventHandler(Engine_TestError);
+			engine.TestWarning += new Engine.TestWarningEventHandler(Engine_TestWarning);
 			engine.IterationStarting += new Engine.IterationStartingEventHandler(Engine_IterationStarting);
 			engine.IterationFinished += new Engine.IterationFinishedEventHandler(Engine_IterationFinished);
 			engine.Fault += new Engine.FaultEventHandler(Engine_Fault);
@@ -156,6 +157,10 @@ namespace Peach.Core
 		}
 
 		protected virtual void Engine_TestStarting(RunContext context)
+		{
+		}
+
+		protected virtual void Engine_TestWarning(RunContext context, string msg)
 		{
 		}
 

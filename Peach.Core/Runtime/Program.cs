@@ -115,7 +115,6 @@ namespace Peach.Core.Runtime
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
 				Console.WriteLine(Copyright);
-				Console.WriteLine();
 				Console.ForegroundColor = color;
 
 				if (args.Length == 0)

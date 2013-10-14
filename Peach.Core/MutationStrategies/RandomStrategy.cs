@@ -152,6 +152,14 @@ namespace Peach.Core.MutationStrategies
 			return ret;
 		}
 
+		public override bool UsesRandomSeed
+		{
+			get
+			{
+				return true;
+			}
+		}
+
 		public override bool IsDeterministic
 		{
 			get
