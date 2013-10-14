@@ -556,6 +556,55 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void ArrayDisable()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num' size='32' minOccurs='0' occurs='2' value='1'/>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='StateModel' initialState='State1'>
+		<State name='State1'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data >
+					<Field name='num[-1]' value='' />
+					<Field name='str' value='Hello World' />
+				</Data>
+			</Action>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var value1 = dom.tests[0].stateModel.states["State1"].actions[0].dataModel.Value;
+			var exp1 = Bits.Fmt("{0}", "Hello World");
+			Assert.AreEqual(exp1.ToArray(), value1.ToArray());
+
+			var value2 = dom.tests[0].stateModel.states["State1"].actions[1].dataModel.Value;
+			var exp2 = Bits.Fmt("{0:L32}{1:L32}", 1, 1);
+			Assert.AreEqual(exp2.ToArray(), value2.ToArray());
+		}
+
+		[Test]
 		public void ArrayOverride()
 		{
 			string xml = @"

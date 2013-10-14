@@ -76,86 +76,92 @@ namespace Peach.Core.Dom
 			//  3. foo[N].bar[N].foo
 			//
 
-			foreach (string field in fields.Keys)
+			foreach (var kv in fields)
 			{
-				Variant value = fields[field];
-				DataElement elem = model;
-				DataElementContainer container = model;
-				var names = field.Split('.');
-
-				for(int i = 0; i<names.Length; i++)
-				{
-					string name = names[i];
-					Match m = Regex.Match(name, @"(.*)\[(-?\d+)\]$");
-
-					if (m.Success)
-					{
-						name = m.Groups[1].Value;
-						int index = int.Parse(m.Groups[2].Value);
-
-						if (!container.ContainsKey(name))
-							throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
-
-						var array = container[name] as Array;
-						if (array == null)
-							throw new PeachException("Error, cannot use array index syntax on field name unless target element is an array. Field: " + field);
-
-						// Are we disabling this array?
-						if (index == -1)
-						{
-							if (array.minOccurs > 0)
-								throw new PeachException("Error, cannot set array to zero elements when minOccurs > 0. Field: " + field + " Element: " + array.fullName);
-
-							// Remove all children
-							array.Clear();
-							return;
-						}
-
-						if (array.maxOccurs != -1 && index > array.maxOccurs)
-							throw new PeachException("Error, index larger that maxOccurs.  Field: " + field + " Element: " + array.fullName);
-
-						if (!array.hasExpanded && array.origionalElement == null)
-						{
-							array.origionalElement = array[0];
-							array.RemoveAt(0);
-						}
-
-						// Add elements upto our index
-						for (int x = array.Count; x <= index; x++)
-						{
-							string itemName = array.origionalElement.name + "_" + x;
-							var item = array.origionalElement.Clone(itemName);
-							array.Add(item);
-						}
-
-						array.hasExpanded = true;
-						elem = array[index];
-						container = elem as DataElementContainer;
-					}
-					else if (container is Choice)
-					{
-						elem = null;
-						var choice = container as Choice;
-						if(!choice.choiceElements.TryGetValue(name, out elem))
-							throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
-
-						container = elem as DataElementContainer;
-
-						choice.SelectedElement = elem;
-					}
-					else
-					{
-						if(!container.ContainsKey(name))
-							throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
-
-						elem = container[name];
-						container = elem as DataElementContainer;
-					}
-				}
-
-				if (!(elem is DataElementContainer))
-					elem.DefaultValue = value;
+				ApplyField(model, kv.Key, kv.Value);
 			}
+
+
+		}
+
+		private static void ApplyField(DataElementContainer model, string field, Variant value)
+		{
+			DataElement elem = model;
+			DataElementContainer container = model;
+			var names = field.Split('.');
+
+			for (int i = 0; i < names.Length; i++)
+			{
+				string name = names[i];
+				Match m = Regex.Match(name, @"(.*)\[(-?\d+)\]$");
+
+				if (m.Success)
+				{
+					name = m.Groups[1].Value;
+					int index = int.Parse(m.Groups[2].Value);
+
+					if (!container.ContainsKey(name))
+						throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
+
+					var array = container[name] as Array;
+					if (array == null)
+						throw new PeachException("Error, cannot use array index syntax on field name unless target element is an array. Field: " + field);
+
+					// Are we disabling this array?
+					if (index == -1)
+					{
+						if (array.minOccurs > 0)
+							throw new PeachException("Error, cannot set array to zero elements when minOccurs > 0. Field: " + field + " Element: " + array.fullName);
+
+						// Remove all children
+						array.Clear();
+						return;
+					}
+
+					if (array.maxOccurs != -1 && index > array.maxOccurs)
+						throw new PeachException("Error, index larger that maxOccurs.  Field: " + field + " Element: " + array.fullName);
+
+					if (!array.hasExpanded && array.origionalElement == null)
+					{
+						array.origionalElement = array[0];
+						array.RemoveAt(0);
+					}
+
+					// Add elements upto our index
+					for (int x = array.Count; x <= index; x++)
+					{
+						string itemName = array.origionalElement.name + "_" + x;
+						var item = array.origionalElement.Clone(itemName);
+						array.Add(item);
+					}
+
+					array.hasExpanded = true;
+					elem = array[index];
+					container = elem as DataElementContainer;
+				}
+				else if (container is Choice)
+				{
+					elem = null;
+					var choice = container as Choice;
+					if (!choice.choiceElements.TryGetValue(name, out elem))
+						throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
+
+					container = elem as DataElementContainer;
+
+					choice.SelectedElement = elem;
+				}
+				else
+				{
+					if (!container.ContainsKey(name))
+						throw new PeachException("Error, unable to resolve field \"" + field + "\" against \"" + model.fullName + "\".");
+
+					elem = container[name];
+					container = elem as DataElementContainer;
+				}
+			}
+
+			if (!(elem is DataElementContainer))
+				elem.DefaultValue = value;
 		}
 	}
 
