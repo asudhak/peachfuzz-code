@@ -51,6 +51,7 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 		bool _faultOnEarlyExit = false;
 		bool _restart = false;
 		ServiceController _serviceController = null;
+		Fault _fault = null;
 
 		public WindowsService(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -201,6 +202,8 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			_fault = null;
+
 			if (_restart)
 				StopService();
 
@@ -214,10 +217,14 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 
 		public override bool DetectedFault()
 		{
+			if (_fault != null)
+				return true;
+
 			_serviceController.Refresh();
 			if (_faultOnEarlyExit && _serviceController.Status != ServiceControllerStatus.Running)
 			{
 				logger.Info("DetectedFault() - Fault detected, process exited early");
+				MakeFault();
 				return true;
 			}
 			return false;
@@ -225,17 +232,22 @@ namespace Peach.Core.OS.Windows.Agent.Monitors
 
 		public override Fault GetMonitorData()
 		{
-			Fault fault = new Fault();
-			fault.type = FaultType.Fault;
-			fault.folderName = "WindowsService";
-			fault.detectionSource = "WindowsService";
-			if(_machineName == null)
-				fault.description = "The windows service [" + _service + "] stopped early.";
-			else
-				fault.description = "The windows service [" + _service + "] on computer ["+ _machineName+"] stopped early.";
-			fault.collectedData.Add(new Fault.Data("WindowsService.txt", Encoding.UTF8.GetBytes(fault.description)));
+			// Wil be called if a different monitor records a fault
+			// so don't assume the service has stopped early.
+			return _fault;
+		}
 
-			return fault;
+		private void MakeFault()
+		{
+			_fault = new Fault();
+			_fault.type = FaultType.Fault;
+			_fault.folderName = "WindowsService";
+			_fault.detectionSource = "WindowsService";
+			if(_machineName == null)
+				_fault.description = "The windows service [" + _service + "] stopped early.";
+			else
+				_fault.description = "The windows service [" + _service + "] on computer ["+ _machineName+"] stopped early.";
+			_fault.collectedData.Add(new Fault.Data("WindowsService.txt", Encoding.UTF8.GetBytes(_fault.description)));
 		}
 
 		public override bool MustStop()
