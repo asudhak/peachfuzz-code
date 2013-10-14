@@ -81,7 +81,7 @@ namespace Peach.Core.Dom
 				ApplyField(model, kv.Key, kv.Value);
 			}
 
-
+			model.evaulateAnalyzers();
 		}
 
 		private static void ApplyField(DataElementContainer model, string field, Variant value)

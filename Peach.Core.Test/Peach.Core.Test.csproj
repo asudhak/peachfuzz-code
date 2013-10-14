@@ -375,6 +375,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent\AgentTests.cs" />
+    <Compile Include="Analyzers\AnalyzerTests.cs" />
     <Compile Include="Analyzers\BinaryAnalyzerTests.cs" />
     <Compile Include="Analyzers\StringTokenTests.cs" />
     <Compile Include="Analyzers\XmlAnalyzerTests.cs" />
