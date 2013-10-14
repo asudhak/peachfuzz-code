@@ -317,6 +317,8 @@ namespace Peach.Core
 				context.controlIteration = true;
 				context.controlRecordingIteration = true;
 
+				test.markMutableElements();
+
 				OnTestStarting(context);
 
 				// Start agents

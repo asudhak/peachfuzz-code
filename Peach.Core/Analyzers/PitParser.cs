@@ -458,13 +458,6 @@ namespace Peach.Core.Analyzers
 					dom.tests.Add(test.name, test);
 				}
 			}
-
-			// Pass 8 - Mark mutated
-
-			foreach (Test test in dom.tests.Values)
-			{
-				test.markMutableElements();
-			}
 		}
 
 		public static void displayDataModel(DataElement elem, int indent = 0)

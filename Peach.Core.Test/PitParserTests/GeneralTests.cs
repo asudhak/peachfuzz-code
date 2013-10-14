@@ -231,6 +231,10 @@ namespace Peach.Core.Test.PitParserTests
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
+
 			DataElement de;
 
 			// Shouldn't update the top level data model
@@ -291,7 +295,11 @@ namespace Peach.Core.Test.PitParserTests
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
+
 			var dm = dom.tests[0].stateModel.states["Initial"].actions[0].dataModel;
 			Assert.NotNull(dm);
 
@@ -303,6 +311,10 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.subblock.blob"));
 			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.subblock.subnum"));
 			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block.num"));
+
+			var choice = dm["ExcludeMe"] as Dom.Choice;
+			choice.SelectedElement = choice.choiceElements[1];
+
 			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block2"));
 			Assert.False(dm.mutable("TheDataModel.ExcludeMe.block2.num"));
 		}
