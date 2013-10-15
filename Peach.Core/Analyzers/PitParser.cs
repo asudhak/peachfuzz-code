@@ -132,6 +132,27 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, unknown platform name \"" + node.getAttrString("platform") + "\" in definition file.");
 					}
 				}
+				else
+				{
+					switch (node.Name.ToLower())
+					{
+						case "osx":
+							if (Platform.GetOS() != Platform.OS.OSX)
+								continue;
+							break;
+						case "linux":
+							if (Platform.GetOS() != Platform.OS.Linux)
+								continue;
+							break;
+						case "windows":
+							if (Platform.GetOS() != Platform.OS.Windows)
+								continue;
+							break;
+						case "all":
+							break;
+						default:
+							throw new PeachException("Error, unknown node name \"" + node.Name + "\" in definition file. Expecting All, Linux, OSX, or Windows.");
+				}
 
 				string include = node.getAttr("include", null);
 				if (include != null)
