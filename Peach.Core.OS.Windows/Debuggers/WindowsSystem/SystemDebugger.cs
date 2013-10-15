@@ -163,6 +163,80 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		#endregion
 
+		class DebugPrivilege : IDisposable
+		{
+			private IntPtr hToken;
+
+			public DebugPrivilege()
+			{
+				int error;
+				IntPtr hThread = UnsafeMethods.GetCurrentThread();
+
+				if (!UnsafeMethods.OpenThreadToken(hThread, UnsafeMethods.TOKEN_ADJUST_PRIVILEGES | UnsafeMethods.TOKEN_QUERY, false, out hToken))
+				{
+					error = Marshal.GetLastWin32Error();
+
+					if (error != UnsafeMethods.ERROR_NO_TOKEN)
+						throw new Win32Exception(error);
+
+					if (!UnsafeMethods.ImpersonateSelf(UnsafeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation))
+					{
+						error = Marshal.GetLastWin32Error();
+						throw new Win32Exception(error);
+					}
+
+					if (!UnsafeMethods.OpenThreadToken(hThread, UnsafeMethods.TOKEN_ADJUST_PRIVILEGES | UnsafeMethods.TOKEN_QUERY, false, out hToken))
+					{
+						error = Marshal.GetLastWin32Error();
+						throw new Win32Exception(error);
+					}
+				}
+
+				if (!SetPrivilege(hToken, UnsafeMethods.SE_DEBUG_NAME, true))
+				{
+					error = Marshal.GetLastWin32Error();
+					UnsafeMethods.CloseHandle(hToken);
+					hToken = IntPtr.Zero;
+					throw new Win32Exception(error);
+				}
+			}
+
+			public void Dispose()
+			{
+				if (IntPtr.Zero != hToken)
+				{
+					SetPrivilege(hToken, UnsafeMethods.SE_DEBUG_NAME, false);
+					UnsafeMethods.CloseHandle(hToken);
+					hToken = IntPtr.Zero;
+				}
+			}
+
+			private static bool SetPrivilege(IntPtr hToken, string Privilege, bool bEnablePrivilege)
+			{
+				UnsafeMethods.TOKEN_PRIVILEGES tp;
+				UnsafeMethods.LUID luid;
+
+				if (!UnsafeMethods.LookupPrivilegeValue(null, Privilege, out luid))
+					return false;
+
+				tp.PrivilegeCount = 1;
+				tp.Luid = luid;
+				tp.Attributes = bEnablePrivilege ? UnsafeMethods.SE_PRIVILEGE_ENABLED : 0;
+
+				// Enable the privilege or disable all privileges.
+
+				if (!UnsafeMethods.AdjustTokenPrivileges(hToken, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero))
+					return false;
+
+				int err = Marshal.GetLastWin32Error();
+
+				if (err == UnsafeMethods.ERROR_NOT_ALL_ASSIGNED)
+					return false;
+
+				return true;
+			}
+		}
+
 		public HandleAccessViolation HandleAccessViolation = null;
 		public HandleBreakpoint HandleBreakPoint = null;
 		public HandleLoadDll HandleLoadDll = null;
@@ -199,9 +273,12 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		public static SystemDebugger AttachToProcess(int dwProcessId)
 		{
-			// DebugActiveProcess
-			if (!UnsafeMethods.DebugActiveProcess((uint)dwProcessId))
-				throw new Exception("System debugger could not attach to process id " + dwProcessId + ".");
+			using (var priv = new DebugPrivilege())
+			{
+				// DebugActiveProcess
+				if (!UnsafeMethods.DebugActiveProcess((uint)dwProcessId))
+					throw new Exception("System debugger could not attach to process id " + dwProcessId + ".");
+			}
 
 			UnsafeMethods.DebugSetProcessKillOnExit(true);
 
