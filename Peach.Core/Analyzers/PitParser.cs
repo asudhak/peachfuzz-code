@@ -152,6 +152,7 @@ namespace Peach.Core.Analyzers
 							break;
 						default:
 							throw new PeachException("Error, unknown node name \"" + node.Name + "\" in definition file. Expecting All, Linux, OSX, or Windows.");
+					}
 				}
 
 				string include = node.getAttr("include", null);
