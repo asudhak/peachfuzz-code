@@ -40,7 +40,7 @@
 	<Agent name="LocalAgent">
 
 		<Monitor class="Vmware">
-			<Param name="Vmx" value="C:\Users\mike\Documents\Virtual Machines\Amz Scada (Windows 7)\Amz Scada (Windows 7).vmx" />
+			<Param name="Vmx" value="Windows7.vmx" />
 			<Param name="HostType" value="Workstation" />
 			<Param name="SnapshotName" value="Fuzzing" />
 			<Param name="WaitForToolsInGuest" value="false" />
