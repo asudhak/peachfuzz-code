@@ -154,7 +154,7 @@ namespace Peach.Core.Runtime
 
 				// Do we have pit.xml.config file?
 				// If so load it as the first defines file.
-				if (File.Exists(extra[0]) &&
+				if (extra.Count > 0 && File.Exists(extra[0]) &&
 					extra[0].ToLower().EndsWith(".xml") &&
 					File.Exists(extra[0] + ".config"))
 				{
