@@ -133,7 +133,7 @@ namespace Peach.Core.Test.Monitors
 		{
 			string faultAgent = @"
 			<Monitor class='FaultingMonitor'>
-				<Param name='Iteration' value='1'/>
+				<Param name='Iteration' value='C'/>
 			</Monitor>";
 
 			try

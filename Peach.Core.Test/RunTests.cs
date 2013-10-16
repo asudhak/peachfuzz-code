@@ -82,7 +82,7 @@ namespace Peach.Core.Test
 			RunWaitTime("0.1", 0.09, 0.11);
 		}
 
-		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0, uint fault = 0)
+		public void RunTest(uint start, string faultIter, uint max = 100, string reproIter = "0")
 		{
 			string template = @"
 <Peach>
@@ -104,9 +104,7 @@ namespace Peach.Core.Test
 	<Agent name='LocalAgent'>
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
-			<Param name='Replay' value='true'/>
 			<Param name='Repro' value='{1}'/>
-			<Param name='Second' value='{2}'/>
 		</Monitor>
 	</Agent>
 
@@ -120,7 +118,7 @@ namespace Peach.Core.Test
 
 			iterationHistory.Clear();
 
-			string xml = string.Format(template, replay, repro, fault);
+			string xml = string.Format(template, faultIter, reproIter);
 
 			PitParser parser = new PitParser();
 
@@ -148,7 +146,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestFirstSearch()
 		{
-			RunTest(0, 1);
+			RunTest(0, "1");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -163,7 +161,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestSecondSearch()
 		{
-			RunTest(0, 2);
+			RunTest(0, "2");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -179,7 +177,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestMiddleSearch()
 		{
-			RunTest(1, 10);
+			RunTest(1, "10");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -199,7 +197,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeSearch()
 		{
-			RunTest(6, 10);
+			RunTest(6, "10");
 
 			uint[] expected = new uint[] {
 				6,  // Control
@@ -217,7 +215,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeBegin()
 		{
-			RunTest(6, 6);
+			RunTest(6, "6");
 
 			uint[] expected = new uint[] {
 				6, // Control
@@ -232,7 +230,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeMaxEqual()
 		{
-			RunTest(1, 10, 4);
+			RunTest(1, "10", 4);
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -250,7 +248,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeMaxLess()
 		{
-			RunTest(1, 10, 5);
+			RunTest(1, "10", 5);
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -268,7 +266,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeNotPastFaultOne()
 		{
-			RunTest(1, 4, 100, 3);
+			RunTest(1, "3,4", 100, "3");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -286,7 +284,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeNotPastFault()
 		{
-			RunTest(1, 10, 100, 3);
+			RunTest(1, "3,10", 100, "3");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -308,7 +306,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeNotPastFault2()
 		{
-			RunTest(1, 5, 100, 3, 5);
+			RunTest(1, "5", 100, "3");
 
 			uint[] expected = new uint[] {
 				1,  // Control

@@ -14,13 +14,13 @@ namespace Peach.Core.Test.Monitors
 	{
 		class Params : Dictionary<string, string> { }
 
-		private uint faultIteration;
+		private string faultIteration;
 		private Fault[] faults;
 
 		[SetUp]
 		public void SetUp()
 		{
-			faultIteration = 0;
+			faultIteration = "0";
 			faults = null;
 		}
 
@@ -144,7 +144,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestSuccessData()
 		{
-			faultIteration = 1;
+			faultIteration = "C";
 			Run(new Params { { "Host", "127.0.0.1" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
@@ -158,7 +158,7 @@ namespace Peach.Core.Test.Monitors
 		[Test]
 		public void TestFaultSuccessData()
 		{
-			faultIteration = 1;
+			faultIteration = "C";
 			Run(new Params { { "Host", "234.5.6.7" }, { "FaultOnSuccess", "true" } }, true);
 			Assert.NotNull(faults);
 			Assert.AreEqual(2, faults.Length);
