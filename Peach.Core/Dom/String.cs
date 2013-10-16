@@ -488,6 +488,9 @@ namespace Peach.Core.Dom
 			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
 				return (BitStream)MutatedValue;
 
+			if (InternalValue.GetVariantType() == Variant.VariantType.BitStream)
+				return (BitwiseStream)InternalValue;
+
 			var str = TryFormatNumber(InternalValue);
 			var buf = encoding.GetRawBytes(str);
 			var bs = new BitStream();

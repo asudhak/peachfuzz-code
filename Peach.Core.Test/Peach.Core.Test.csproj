@@ -402,6 +402,7 @@
     <Compile Include="DomGeneralTests.cs" />
     <Compile Include="EncodingTests.cs" />
     <Compile Include="FixupCloneTests.cs" />
+    <Compile Include="Fixups\CopyValueFixupTests.cs" />
     <Compile Include="Fixups\Crc32DualFixupTests.cs" />
     <Compile Include="Fixups\CrcFixupTests.cs" />
     <Compile Include="Fixups\ExpressionFixupTests.cs" />
