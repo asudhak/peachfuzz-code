@@ -23,6 +23,7 @@ namespace Peach.Core.Test.Monitors
         protected int Iter = 0;
         protected int curIter = 0;
         protected int ReproIter = 0;
+        protected int SecondIter = 0;
         protected bool replay = false;
         protected bool replaying = false;
         protected bool control = true;
@@ -33,6 +34,8 @@ namespace Peach.Core.Test.Monitors
         {
             if (args.ContainsKey("Iteration"))
                 Iter = (int)args["Iteration"];
+            if (args.ContainsKey("Second"))
+                SecondIter = (int)args["Second"];
             if (args.ContainsKey("Repro"))
                 ReproIter = (int)args["Repro"];
             if (args.ContainsKey("Replay"))
@@ -65,12 +68,15 @@ namespace Peach.Core.Test.Monitors
         {
 			if (curIter == ReproIter)
 			{
-				bool fault = !control;
-				control = false;
-				return fault;
+				if (SecondIter == 0 || replaying)
+				{
+					bool fault = !control;
+					control = false;
+					return fault;
+				}
 			}
 
-            if (curIter == Iter)
+            if (curIter == Iter || curIter == SecondIter)
             {
                 if (replay)
                 {

@@ -82,7 +82,7 @@ namespace Peach.Core.Test
 			RunWaitTime("0.1", 0.09, 0.11);
 		}
 
-		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0)
+		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0, uint fault = 0)
 		{
 			string template = @"
 <Peach>
@@ -106,6 +106,7 @@ namespace Peach.Core.Test
 			<Param name='Iteration' value='{0}'/>
 			<Param name='Replay' value='true'/>
 			<Param name='Repro' value='{1}'/>
+			<Param name='Second' value='{2}'/>
 		</Monitor>
 	</Agent>
 
@@ -119,7 +120,7 @@ namespace Peach.Core.Test
 
 			iterationHistory.Clear();
 
-			string xml = string.Format(template, replay, repro);
+			string xml = string.Format(template, replay, repro, fault);
 
 			PitParser parser = new PitParser();
 
@@ -299,6 +300,28 @@ namespace Peach.Core.Test
 				6,  // Move back 4
 				4,  // Move back 6
 				11, 12 };
+
+			uint[] actual = iterationHistory.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void TestRangeNotPastFault2()
+		{
+			RunTest(1, 5, 100, 3, 5);
+
+			uint[] expected = new uint[] {
+				1,  // Control
+				1, 2, 3, 4,
+				5, // Trigger replay
+				5, // Initial replay
+				4,
+				3, // Repro
+				4,
+				5, // Trigger Replay
+				5,
+				4, // Repro failed
+				6, 7, 8, 9, 10, 11, 12 };
 
 			uint[] actual = iterationHistory.ToArray();
 			Assert.AreEqual(expected, actual);
