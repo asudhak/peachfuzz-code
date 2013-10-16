@@ -132,7 +132,7 @@ namespace Peach.Core.Analyzers
 							throw new PeachException("Error, unknown platform name \"" + node.getAttrString("platform") + "\" in definition file.");
 					}
 				}
-				else
+				else if (!node.hasAttr("include"))
 				{
 					switch (node.Name.ToLower())
 					{
