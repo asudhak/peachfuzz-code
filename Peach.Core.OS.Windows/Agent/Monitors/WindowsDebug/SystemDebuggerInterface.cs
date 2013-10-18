@@ -217,7 +217,18 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					using (ServiceController srv = new ServiceController(service))
 					{
 						if (srv.Status == ServiceControllerStatus.Stopped)
+						{
 							srv.Start();
+
+							try
+							{
+								srv.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+							}
+							catch (Exception ex)
+							{
+								throw new PeachException("Timed out waiting for service '" + service + "' to start.", ex);
+							}
+						}
 
 						using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
 						{
