@@ -493,6 +493,11 @@ namespace Peach.Core.Agent.Channels
 
 		public void Run(Dictionary<string, string> args)
 		{
+#if !MONO
+			if (RemotingConfiguration.CustomErrorsMode != CustomErrorsModes.Off)
+				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+#endif
+
 			int port = 9001;
 
 			if (args.ContainsKey("port"))
