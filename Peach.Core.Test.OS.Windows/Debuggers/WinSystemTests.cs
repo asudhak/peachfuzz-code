@@ -185,5 +185,21 @@ namespace Peach.Core.Test.Debuggers
 				Assert.Null(dbg.crashInfo);
 			}
 		}
+
+		[Test]
+		public void BadProcess()
+		{
+			var dbg = new SystemDebuggerInstance() { commandLine = "foo.exe" };
+
+			try
+			{
+				dbg.StartDebugger();
+				Assert.Fail("Should throw");
+			}
+			catch (PeachException ex)
+			{
+				Assert.True(ex.Message.StartsWith("System debugger could not start process 'foo.exe'."));
+			}
+		}
 	}
 }

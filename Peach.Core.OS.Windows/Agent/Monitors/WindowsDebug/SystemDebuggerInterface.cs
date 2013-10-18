@@ -229,17 +229,17 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			}
 			finally
 			{
+				lock (mutex)
+				{
+					_dbg = null;
+				}
+
 				try
 				{
 					_dbgCreated.Set();
 				}
 				catch
 				{
-				}
-
-				lock (mutex)
-				{
-					_dbg = null;
 				}
 			}
 		}
