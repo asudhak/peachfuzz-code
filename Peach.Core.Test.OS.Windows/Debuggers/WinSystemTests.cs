@@ -40,6 +40,7 @@ using Peach.Core.IO;
 using Peach.Core.Debuggers.WindowsSystem;
 using Peach.Core.Agent.Monitors.WindowsDebug;
 using System.Threading;
+using System.ServiceProcess;
 
 namespace Peach.Core.Test.Debuggers
 {
@@ -167,22 +168,35 @@ namespace Peach.Core.Test.Debuggers
 		[Test]
 		public void ServiceTest()
 		{
-			using (var si = SingleInstance.CreateInstance("Peach.Core.Test.OS.Windows.WinSystemTests"))
+			try
 			{
-				si.Lock();
-
-				var dbg = new SystemDebuggerInstance() { service = "fax" };
-				dbg.StartDebugger();
-
-				for (int i = 0; i < 10; ++i)
+				using (var si = SingleInstance.CreateInstance("Peach.Core.Test.OS.Windows.WinSystemTests"))
 				{
-					Assert.True(dbg.IsRunning);
-					System.Threading.Thread.Sleep(100);
+					si.Lock();
+
+					var dbg = new SystemDebuggerInstance() { service = "iphlpsvc" };
+					dbg.StartDebugger();
+
+					for (int i = 0; i < 10; ++i)
+					{
+						Assert.True(dbg.IsRunning);
+						System.Threading.Thread.Sleep(100);
+					}
+
+					dbg.StopDebugger();
+
+					Assert.Null(dbg.crashInfo);
 				}
-
-				dbg.StopDebugger();
-
-				Assert.Null(dbg.crashInfo);
+			}
+			finally
+			{
+				using (ServiceController srv = new ServiceController("iphlpsvc"))
+				{
+					if (srv.Status == ServiceControllerStatus.Stopped)
+					{
+						srv.Start();
+					}
+				}
 			}
 		}
 

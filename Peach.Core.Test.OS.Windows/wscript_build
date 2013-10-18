@@ -7,6 +7,7 @@ deps = [
 	'System.Xml.dll',
 	'System.Core.dll',
 	'System.Windows.Forms.dll',
+	'System.ServiceProcess.dll',
 	'Microsoft.CSharp.dll',
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
