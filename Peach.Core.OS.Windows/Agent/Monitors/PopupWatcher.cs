@@ -177,11 +177,13 @@ namespace Peach.Core.Agent.Monitors
 
 			// Wait for the window closer thread to fire once more
 			var start = Interlocked.Read(ref workerCount);
+			var cnt = 0;
+
 			do
 			{
 				Thread.Sleep(100);
 			}
-			while (start == Interlocked.Read(ref workerCount));
+			while (start == Interlocked.Read(ref workerCount) && cnt++ < 10);
 
 			lock (_lock)
 			{
