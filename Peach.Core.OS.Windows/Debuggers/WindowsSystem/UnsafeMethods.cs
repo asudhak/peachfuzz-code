@@ -152,9 +152,6 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		public const UInt32 SE_PRIVILEGE_REMOVED = 0x00000004;
 		public const UInt32 SE_PRIVILEGE_USED_FOR_ACCESS = 0x80000000;
 
-		// LookupPrivilegeName lpName
-		public const string SE_DEBUG_NAME = "SeDebugPrivilege";
-
 		public const int ERROR_NO_TOKEN = 1008; //From VC\PlatformSDK\Include\WinError.h
 		public const int ERROR_NOT_ALL_ASSIGNED = 1300;
 
@@ -165,7 +162,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			bool OpenAsSelf,
 			out IntPtr TokenHandle);
 
-		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		[DllImport("advapi32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool LookupPrivilegeValue(string lpSystemName, string lpName, out LUID lpLuid);
 
@@ -221,8 +218,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern IntPtr GetCurrentThread();
 
-		[DllImport("kernel32.dll")]
-		public static extern bool TerminateProcess(int hProcess, uint uExitCode);
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool TerminateProcess(IntPtr hProcess, uint uExitCode);
 
 		[DllImport("kernel32.dll")]
 		public static extern int GetProcessId(int hProcess);
@@ -489,7 +486,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			debug_event = new DEBUG_EVENT();
 			int len = DEBUG_EVENT_SIZE;
 			IntPtr buf = Marshal.AllocHGlobal(len);
-			ZeroMemory(buf, IntPtr.Zero + len);
+			RtlZeroMemory(buf, IntPtr.Zero + len);
 			bool ret = WaitForDebugEvent(buf, dwMilliseconds);
 
 			if (ret)
@@ -538,21 +535,27 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			return ret;
 		}
 
-		[DllImport("kernel32.dll", EntryPoint = "WaitForDebugEvent")]
+		[DllImport("kernel32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool WaitForDebugEvent(IntPtr lpDebugEvent, uint dwMilliseconds);
 
-		[DllImport("kernel32.dll")]
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DebugBreakProcess(IntPtr hProcess);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool DebugActiveProcess(uint dwProcessId);
 
-		[DllImport("kernel32.dll")]
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool DebugActiveProcessStop(uint dwProcessId);
 
 		[DllImport("kernel32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool CloseHandle(IntPtr hObject);
 
-		[DllImport("Kernel32.dll", EntryPoint = "RtlZeroMemory", SetLastError = false)]
-		static extern void ZeroMemory(IntPtr dest, IntPtr size);
+		[DllImport("Kernel32.dll", SetLastError = false)]
+		static extern void RtlZeroMemory(IntPtr dest, IntPtr size);
 	}
 }

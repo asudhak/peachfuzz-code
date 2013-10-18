@@ -821,6 +821,7 @@
     <Compile Include="Debuggers\WindowsSystem\UnsafeMethods.cs" />
     <Compile Include="FileInfo.cs" />
     <Compile Include="NetworkAdapter.cs" />
+    <Compile Include="Privilege.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publishers\ComPublisher.cs" />

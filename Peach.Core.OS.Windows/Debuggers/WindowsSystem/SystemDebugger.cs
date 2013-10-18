@@ -34,35 +34,10 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using NLog;
 using System.ComponentModel;
+using Peach.Core.OS.Windows;
 
 namespace Peach.Core.Debuggers.WindowsSystem
 {
-	/// <summary>
-	/// Callback to handle an A/V exception
-	/// </summary>
-	/// <param name="e"></param>
-	public delegate void HandleAccessViolation(UnsafeMethods.DEBUG_EVENT e);
-
-	/// <summary>
-	/// Callback to handle a breakpoint
-	/// </summary>
-	/// <param name="e"></param>
-	public delegate void HandleBreakpoint(UnsafeMethods.DEBUG_EVENT e);
-
-	/// <summary>
-	/// Callback to handle a breakpoint
-	/// </summary>
-	/// <param name="e"></param>
-	/// <param name="moduleName"></param>
-	public delegate void HandleLoadDll(UnsafeMethods.DEBUG_EVENT e, string moduleName);
-
-	/// <summary>
-	/// Called every second to check if we should continue debugging
-	/// process.
-	/// </summary>
-	/// <returns></returns>
-	public delegate bool ContinueDebugging();
-
 	/// <summary>
 	/// A lightweight Windows debugger written using the 
 	/// system debugger APIs.
@@ -78,6 +53,8 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		#region Constants
+
+		public const int ERROR_SEM_TIMEOUT = 0x00000079;
 
 		public const uint DEBUG_ONLY_THIS_PROCESS = 0x00000002;
 		public const uint DEBUG_PROCESS = 0x00000001;
@@ -163,84 +140,18 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		#endregion
 
-		class DebugPrivilege : IDisposable
-		{
-			private IntPtr hToken;
+		/// <summary>
+		/// Callback to handle an A/V exception
+		/// </summary>
+		/// <returns>
+		/// true to keep debugging, false to stop debugging
+		/// </returns>
+		/// <param name="e"></param>
+		public delegate bool DebugEvent(UnsafeMethods.DEBUG_EVENT e);
+		public DebugEvent HandleAccessViolation = null;
 
-			public DebugPrivilege()
-			{
-				int error;
-				IntPtr hThread = UnsafeMethods.GetCurrentThread();
-
-				if (!UnsafeMethods.OpenThreadToken(hThread, UnsafeMethods.TOKEN_ADJUST_PRIVILEGES | UnsafeMethods.TOKEN_QUERY, false, out hToken))
-				{
-					error = Marshal.GetLastWin32Error();
-
-					if (error != UnsafeMethods.ERROR_NO_TOKEN)
-						throw new Win32Exception(error);
-
-					if (!UnsafeMethods.ImpersonateSelf(UnsafeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation))
-					{
-						error = Marshal.GetLastWin32Error();
-						throw new Win32Exception(error);
-					}
-
-					if (!UnsafeMethods.OpenThreadToken(hThread, UnsafeMethods.TOKEN_ADJUST_PRIVILEGES | UnsafeMethods.TOKEN_QUERY, false, out hToken))
-					{
-						error = Marshal.GetLastWin32Error();
-						throw new Win32Exception(error);
-					}
-				}
-
-				if (!SetPrivilege(hToken, UnsafeMethods.SE_DEBUG_NAME, true))
-				{
-					error = Marshal.GetLastWin32Error();
-					UnsafeMethods.CloseHandle(hToken);
-					hToken = IntPtr.Zero;
-					throw new Win32Exception(error);
-				}
-			}
-
-			public void Dispose()
-			{
-				if (IntPtr.Zero != hToken)
-				{
-					SetPrivilege(hToken, UnsafeMethods.SE_DEBUG_NAME, false);
-					UnsafeMethods.CloseHandle(hToken);
-					hToken = IntPtr.Zero;
-				}
-			}
-
-			private static bool SetPrivilege(IntPtr hToken, string Privilege, bool bEnablePrivilege)
-			{
-				UnsafeMethods.TOKEN_PRIVILEGES tp;
-				UnsafeMethods.LUID luid;
-
-				if (!UnsafeMethods.LookupPrivilegeValue(null, Privilege, out luid))
-					return false;
-
-				tp.PrivilegeCount = 1;
-				tp.Luid = luid;
-				tp.Attributes = bEnablePrivilege ? UnsafeMethods.SE_PRIVILEGE_ENABLED : 0;
-
-				// Enable the privilege or disable all privileges.
-
-				if (!UnsafeMethods.AdjustTokenPrivileges(hToken, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero))
-					return false;
-
-				int err = Marshal.GetLastWin32Error();
-
-				if (err == UnsafeMethods.ERROR_NOT_ALL_ASSIGNED)
-					return false;
-
-				return true;
-			}
-		}
-
-		public HandleAccessViolation HandleAccessViolation = null;
-		public HandleBreakpoint HandleBreakPoint = null;
-		public HandleLoadDll HandleLoadDll = null;
-		public ContinueDebugging ContinueDebugging = () => { return true; };
+		public delegate void ProcessEvent();
+		public ProcessEvent ProcessCreated = null;
 
 		public static SystemDebugger CreateProcess(string command)
 		{
@@ -254,30 +165,33 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					0,				// lpProcessAttributes 
 					0,				// lpThreadAttributes 
 					false,			// bInheritHandles 
-					3,				// dwCreationFlags, DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS
+					DEBUG_PROCESS,	// dwCreationFlags, DEBUG_PROCESS
 					IntPtr.Zero,	// lpEnvironment 
 					null,			// lpCurrentDirectory 
 					ref startUpInfo, // lpStartupInfo 
 					out processInformation)) // lpProcessInformation 
 			{
 				var ex = new Win32Exception(Marshal.GetLastWin32Error());
-				throw new Exception("System debugger could not start process '" + command + "'.  " + ex.Message, ex);
+				throw new PeachException("System debugger could not start process '" + command + "'.  " + ex.Message, ex);
 			}
 
 			UnsafeMethods.CloseHandle(processInformation.hProcess);
 			UnsafeMethods.CloseHandle(processInformation.hThread);
 			UnsafeMethods.DebugSetProcessKillOnExit(true);
 
-			return new SystemDebugger(startUpInfo, processInformation);
+			return new SystemDebugger(processInformation.dwProcessId);
 		}
 
 		public static SystemDebugger AttachToProcess(int dwProcessId)
 		{
-			using (var priv = new DebugPrivilege())
+			using (var priv = new Privilege(Privilege.SeDebugPrivilege))
 			{
 				// DebugActiveProcess
 				if (!UnsafeMethods.DebugActiveProcess((uint)dwProcessId))
-					throw new Exception("System debugger could not attach to process id " + dwProcessId + ".");
+				{
+					var ex = new Win32Exception(Marshal.GetLastWin32Error());
+					throw new PeachException("System debugger could not attach to process id " + dwProcessId + ".  " + ex.Message, ex);
+				}
 			}
 
 			UnsafeMethods.DebugSetProcessKillOnExit(true);
@@ -285,83 +199,93 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			return new SystemDebugger(dwProcessId);
 		}
 
-		public int dwProcessId = 0;
-		public bool processExit = false;
-		public bool verbose = false;
-		bool initialBreak = false;
-		Dictionary<uint, IntPtr> _openHandles = new Dictionary<uint, IntPtr>();
-		UnsafeMethods.STARTUPINFO _startUpInfo;
-		UnsafeMethods.PROCESS_INFORMATION _processInformation;
-		public ManualResetEvent processStarted = new ManualResetEvent(false);
+		public int ProcessId { get; private set; }
 
-		public Dictionary<ulong, byte> _breakpointOrigionalInstructions = new Dictionary<ulong, byte>();
-		public Dictionary<string, IntPtr> _moduleBaseAddresses = new Dictionary<string, IntPtr>();
+		List<IntPtr> processHandles = new List<IntPtr>();
+		Dictionary<uint, IntPtr> openHandles = new Dictionary<uint, IntPtr>();
+		object mutex = new object();
 
-		protected SystemDebugger(int dwProcessId)
+		private SystemDebugger(int dwProcessId)
 		{
-			this.dwProcessId = dwProcessId;
-		}
-
-		protected SystemDebugger(UnsafeMethods.STARTUPINFO startUpInfo, UnsafeMethods.PROCESS_INFORMATION processInformation)
-		{
-			_startUpInfo = startUpInfo;
-			_processInformation = processInformation;
-			dwProcessId = processInformation.dwProcessId;
-		}
-
-		public bool Verbose
-		{
-			get { return verbose; }
-			set { verbose = value; }
+			ProcessId = dwProcessId;
 		}
 
 		public void MainLoop()
 		{
-			UnsafeMethods.DEBUG_EVENT debug_event;
-			processStarted.Set();
-
-			while (!processExit && ContinueDebugging())
+			try
 			{
-				if (!UnsafeMethods.WaitForDebugEvent(out debug_event, 100))
-					continue;
+				UnsafeMethods.DEBUG_EVENT debug_event;
 
-				uint dwContinueStatus = ProcessDebugEvent(ref debug_event);
-
-				for (;;)
+				do
 				{
-					try
+					if (!UnsafeMethods.WaitForDebugEvent(out debug_event, 1000))
 					{
-						if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId, debug_event.dwThreadId, dwContinueStatus))
-						{
-							var err = new Win32Exception(Marshal.GetLastWin32Error());
-							var ex = new Exception("Failed to continue debugging.  " + err.Message, err);
-							if (!processExit)
-								throw ex;
+						var err = new Win32Exception(Marshal.GetLastWin32Error());
+						if (err.NativeErrorCode == ERROR_SEM_TIMEOUT)
+							continue;
 
-							logger.Trace(ex.Message);
-						}
-
-						break;
+						var ex = new PeachException("Failed to wait for debug event.  " + err.Message, err);
+						logger.Trace(ex.Message);
+						throw ex;
 					}
-					catch (SEHException)
+
+					uint dwContinueStatus = ProcessDebugEvent(ref debug_event);
+
+					for (; ; )
 					{
-						logger.Trace("SEH when continuing debugging. Trying again...");
+						try
+						{
+							if (!UnsafeMethods.ContinueDebugEvent(debug_event.dwProcessId, debug_event.dwThreadId, dwContinueStatus))
+							{
+								var err = new Win32Exception(Marshal.GetLastWin32Error());
+								var ex = new PeachException("Failed to continue debugging.  " + err.Message, err);
+								logger.Trace(ex.Message);
+								throw ex;
+							}
+
+							break;
+						}
+						catch (SEHException)
+						{
+							logger.Trace("SEH when continuing debugging. Trying again...");
+							continue;
+						}
+					}
+				}
+				while (openHandles.Count > 0);
+			}
+			finally
+			{
+				lock (mutex)
+				{
+					processHandles.Clear();
+				}
+
+				foreach (var kv in openHandles)
+					UnsafeMethods.CloseHandle(kv.Value);
+
+				openHandles.Clear();
+			}
+		}
+
+		public void TerminateProcess()
+		{
+			lock (mutex)
+			{
+				for (int i = processHandles.Count - 1; i >= 0; --i)
+				{
+					var proc = processHandles[i];
+
+					if (!UnsafeMethods.TerminateProcess(proc, 0))
+					{
+						var ex = new Win32Exception(Marshal.GetLastWin32Error());
+						logger.Trace("Failed to stop process 0x{0:X}.  {1}", proc.ToInt32(), ex.Message);
 					}
 				}
 			}
-
-			foreach (var handle in _openHandles)
-				UnsafeMethods.CloseHandle(handle.Value);
-
-			_openHandles.Clear();
 		}
 
-		public void Close()
-		{
-			processStarted.Close();
-		}
-
-		protected uint ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
+		private uint ProcessDebugEvent(ref UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
 			uint dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
 
@@ -457,6 +381,31 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		private uint OnOutputDebugStringEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
+			if (!logger.IsTraceEnabled)
+				return DBG_CONTINUE;
+
+			var hProc = openHandles[DebugEv.dwProcessId];
+			var DebugString = DebugEv.u.DebugString;
+
+			int len = DebugString.nDebugStringLength;
+			if (DebugString.fUnicode != 0)
+				len *= 2;
+
+			byte[] buf = new byte[len];
+			uint lenRead;
+
+			if (!UnsafeMethods.ReadProcessMemory(hProc, DebugString.lpDebugStringData, buf, (uint)len, out lenRead))
+			{
+				var ex = new Win32Exception(Marshal.GetLastWin32Error());
+				logger.Trace("  Failed to read debug string.  {0}.", ex.Message);
+			}
+			else
+			{
+				var encoding = DebugString.fUnicode != 0 ? Encoding.Unicode : Encoding.ISOLatin1;
+				string str = encoding.GetString(buf, 0, (int)lenRead);
+				logger.Trace("  {0}", str);
+
+			}
 			return DBG_CONTINUE;
 		}
 
@@ -474,7 +423,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 
 		private uint OnExitThreadDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
-			_openHandles.Remove(DebugEv.dwThreadId);
+			openHandles.Remove(DebugEv.dwThreadId);
 			return DBG_CONTINUE;
 		}
 
@@ -482,47 +431,47 @@ namespace Peach.Core.Debuggers.WindowsSystem
 		{
 			var CreateProcessInfo = DebugEv.u.CreateProcessInfo;
 			UnsafeMethods.CloseHandle(CreateProcessInfo.hFile);
-			_openHandles.Add(DebugEv.dwProcessId, CreateProcessInfo.hProcess);
-			_openHandles.Add(DebugEv.dwThreadId, CreateProcessInfo.hThread);
+
+			lock (mutex)
+			{
+				processHandles.Add(CreateProcessInfo.hProcess);
+			}
+
+			openHandles.Add(DebugEv.dwProcessId, CreateProcessInfo.hProcess);
+			openHandles.Add(DebugEv.dwThreadId, CreateProcessInfo.hThread);
+
+			if (ProcessId == DebugEv.dwProcessId && ProcessCreated != null)
+				ProcessCreated();
+
 			return DBG_CONTINUE;
 		}
 
 		private uint OnCreateThreadDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
 			var CreateThread = DebugEv.u.CreateThread;
-			_openHandles.Add(DebugEv.dwThreadId, CreateThread.hThread);
+			openHandles.Add(DebugEv.dwThreadId, CreateThread.hThread);
 			return DBG_CONTINUE;
 		}
 
 		private uint OnExitProcessDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
-			if (dwProcessId == DebugEv.dwProcessId)
+			lock (mutex)
 			{
-				processExit = true;
+				processHandles.Remove(openHandles[DebugEv.dwProcessId]);
 			}
 
-			_openHandles.Remove(DebugEv.dwProcessId);
+			openHandles.Remove(DebugEv.dwProcessId);
+			openHandles.Remove(DebugEv.dwThreadId);
+
 			return DBG_CONTINUE;
 		}
 
 		private uint OnExceptionDebugEvent(UnsafeMethods.DEBUG_EVENT DebugEv)
 		{
-			// Filter for target process id.  It is possible to get a 2nd
-			// chance exception for a process that we stopped wanting
-			// to monitor after processing a 1st chance exception. Or anytime
-			// the ContinueDebugging callback returns false before processExit is true.
-			uint result = DBG_EXCEPTION_NOT_HANDLED;
 			var Exception = DebugEv.u.Exception;
 
 			if (logger.IsTraceEnabled)
 				logger.Trace("  Pid: {0}, Exception: {1}", DebugEv.dwProcessId, ExceptionToString(Exception));
-
-			bool notify = DebugEv.dwProcessId == this.dwProcessId && HandleAccessViolation != null;
-
-			// First chance: Pass this on to the system. 
-			// Last chance: Display an appropriate error. 
-			if (Exception.dwFirstChance == 0 && notify)
-				result = DBG_CONTINUE;
 
 			switch (Exception.ExceptionRecord.ExceptionCode)
 			{
@@ -534,22 +483,26 @@ namespace Peach.Core.Debuggers.WindowsSystem
 					// when it first loads. You must DEBUG_CONTINUE this first breakpoint
 					// exception... if you DBG_EXCEPTION_NOT_HANDLED you will get the popup
 					// message box: The application failed to initialize properly (0x80000003).
-					if (!initialBreak)
-						result = DBG_CONTINUE;
-
-					initialBreak = true;
-					break;
-
-				default:
-					if (notify)
-						HandleAccessViolation(DebugEv);
-					break;
+					return DBG_CONTINUE;
 			}
 
-			return result;
+			bool stop = HandleAccessViolation == null ? false : !HandleAccessViolation(DebugEv);
+
+			// If 1st chance, only stop if HandleAccessViolation returns false
+			// If 2nd chance, always stop
+
+			// Stop by calling TerminateProcess and continuing
+			// so we get thread & process exit notifications
+			if (stop || Exception.dwFirstChance == 0)
+			{
+				TerminateProcess();
+				return DBG_CONTINUE;
+			}
+
+			return DBG_EXCEPTION_NOT_HANDLED;
 		}
 
-		string GetFileNameFromHandle(IntPtr hFile)
+		static string GetFileNameFromHandle(IntPtr hFile)
 		{
 			StringBuilder pszFilename = new StringBuilder(256);
 			IntPtr hFileMap;
@@ -592,7 +545,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			return pszFilename.ToString();
 		}
 
-		private static string ExceptionToString(UnsafeMethods.EXCEPTION_DEBUG_INFO Exception)
+		static string ExceptionToString(UnsafeMethods.EXCEPTION_DEBUG_INFO Exception)
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.Append(ExceptionCodeToString(Exception.ExceptionRecord.ExceptionCode));
@@ -606,7 +559,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 			return sb.ToString();
 		}
 
-		private static string ExceptionCodeToString(uint code)
+		static string ExceptionCodeToString(uint code)
 		{
 			switch (code)
 			{

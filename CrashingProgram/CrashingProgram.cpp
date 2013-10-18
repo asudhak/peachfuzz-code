@@ -51,13 +51,54 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	fprintf(stderr, "Crashing Program v0.1\n");
 
-	__try
+#ifdef WIN32
+	if (argc > 2)
+	{
+		STARTUPINFO StartInfo;
+		PROCESS_INFORMATION ProcInfo;
+
+		ZeroMemory(&StartInfo, sizeof(StartInfo));
+		ZeroMemory(&ProcInfo, sizeof(ProcInfo));
+
+		fprintf(stderr, "Creating child...\n");
+
+		if (!CreateProcess(
+			argv[0],
+			TEXT(""),
+			NULL,
+			NULL,
+			FALSE,
+			0,
+			NULL,
+			NULL,
+			&StartInfo,
+			&ProcInfo))
+		{
+			fprintf(stderr, "Child failed!\n");
+		}
+		else
+		{
+			WaitForSingleObject(ProcInfo.hProcess, INFINITE);
+		}
+	}
+	else
+#endif
+	if (argc > 1)
+	{
+		fprintf(stderr, "Guarding for AV exception.\n");
+
+		__try
+		{
+			Bar();
+		}
+		__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
+		{
+			fprintf(stderr, "Caught AV exception.\n");
+		}
+	}
+	else
 	{
 		Bar();
-	}
-	__except(GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION)
-	{
-		fprintf(stderr, "Caught AV exception.\n");
 	}
 
 	fprintf(stderr, "done...\n");
