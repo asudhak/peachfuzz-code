@@ -93,13 +93,13 @@ namespace Peach.Core.Analyzers
 				if (node.Name.StartsWith("#"))
 					continue;
 
-				xmlElement = handleXmlNode(node, parent.name);
+				xmlElement = handleXmlNode(node, parent.name, strElement.stringType);
 			}
 
 			parent.parent[parent.name] = xmlElement;
 		}
 
-		protected Dom.XmlElement handleXmlNode(XmlNode node, string name)
+		protected Dom.XmlElement handleXmlNode(XmlNode node, string name, StringType type)
 		{
 			Dom.XmlElement elem = null;
 
@@ -113,33 +113,33 @@ namespace Peach.Core.Analyzers
 
 			foreach (System.Xml.XmlAttribute attrib in node.Attributes)
 			{
-				elem.Add(handleXmlAttribute(attrib));
+				elem.Add(handleXmlAttribute(attrib, type));
 			}
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "#text")
 				{
-					var str = new Dom.String();
+					var str = new Dom.String() { stringType = type };
 					str.DefaultValue = new Variant(child.Value);
 					elem.Add(str);
 				}
 				else if (!child.Name.StartsWith("#"))
 				{
-					elem.Add(handleXmlNode(child, null));
+					elem.Add(handleXmlNode(child, null, type));
 				}
 			}
 
 			return elem;
 		}
 
-		protected Dom.XmlAttribute handleXmlAttribute(System.Xml.XmlAttribute attrib)
+		protected Dom.XmlAttribute handleXmlAttribute(System.Xml.XmlAttribute attrib, StringType type)
 		{
 			var xmlAttrib = new Dom.XmlAttribute();
 			xmlAttrib.attributeName = attrib.Name;
 			xmlAttrib.ns = attrib.NamespaceURI;
 
-			var strValue = new Dom.String();
+			var strValue = new Dom.String() { stringType = type };
 			strValue.DefaultValue = new Variant(attrib.Value);
 
 			xmlAttrib.Add(strValue);

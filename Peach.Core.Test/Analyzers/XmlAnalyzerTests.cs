@@ -97,7 +97,40 @@ namespace Peach.Core.Test.Analyzers
 			var result = dom.dataModels[0].Value;
 			Assert.NotNull(result);
 		}
-    }
+
+		[Test]
+		public void UnicodeTest()
+		{
+			string xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Peach>
+	<DataModel name=""TheDataModel"">
+
+		<String type=""utf8"" value=""&lt;Root&gt;
+		                &lt;Element1 attrib1=&quot;{0} Attrib1Value&quot;&gt;
+		                Hello {1}
+		                &lt;/Element1&gt;
+		                &lt;/Root&gt;"">
+			<Analyzer class=""Xml""/>
+		</String>
+
+	</DataModel>
+</Peach>".Fmt("\u0134", "\x0298");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.UTF8.GetBytes(xml)));
+
+			Assert.IsTrue(dom.dataModels["TheDataModel"][0] is Dom.XmlElement);
+
+			var elem1 = dom.dataModels["TheDataModel"][0] as Dom.XmlElement;
+
+			Assert.AreEqual("Root", elem1.elementName);
+
+			var result = dom.dataModels[0].Value;
+			var str = Encoding.UTF8.GetString(result.ToArray());
+			Assert.NotNull(result);
+			Assert.NotNull(str);
+		}
+	}
 }
 
 // end
