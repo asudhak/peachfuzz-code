@@ -519,6 +519,7 @@
     <Compile Include="Transformers\Crypto\HmacTests.cs" />
     <Compile Include="Transformers\Crypto\Md5Tests.cs" />
     <Compile Include="Transformers\Crypto\Sha1Tests.cs" />
+    <Compile Include="Transformers\Crypto\Sha256Tests.cs" />
     <Compile Include="Transformers\Crypto\TripleDesTests.cs" />
     <Compile Include="Transformers\Crypto\UnixMd5CryptTests.cs" />
     <Compile Include="Transformers\Encode\Base64DecodeTests.cs" />
