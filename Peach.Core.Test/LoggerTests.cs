@@ -32,7 +32,11 @@ namespace Peach.Core.Test
 
 			string xml = @"
 <Peach>
-	<DataModel name='RequestModel'>
+	<DataModel name='CallModel'>
+		<String name='Value' value='Hello'/>
+	</DataModel>
+
+<DataModel name='RequestModel'>
 		<Number name='Sequence' size='8'/>
 		<String name='Method' length='1'/>
 	</DataModel>
@@ -47,7 +51,20 @@ namespace Peach.Core.Test
 		<String name='Response' value='Y Response'/>
 	</DataModel>
 
-	<StateModel name='SM' initialState='Request'>
+	<StateModel name='SM' initialState='initial'>
+		<State name='initial'>
+			<Action name='DoCall' type='call' method='foo'>
+				<Param>
+					<DataModel ref='CallModel'/>
+				</Param>
+				<Param name='MyParam2'>
+					<DataModel ref='CallModel'/>
+				</Param>
+			</Action>
+
+			<Action type='changeState' ref='Request'/>
+		</State>
+
 		<State name='Request'>
 			<Action name='RecvReq' type='input'>
 				<DataModel ref='RequestModel'/>
@@ -141,24 +158,30 @@ namespace Peach.Core.Test
 			var fullPath = Path.Combine(logger.Path, subdir, dir, "FaultingMonitor", currentIteration.ToString());
 
 			var files = Directory.EnumerateFiles(fullPath, "action*.txt").ToList();
-			Assert.AreEqual(6, files.Count);
+			Assert.AreEqual(8, files.Count);
 
-			var actual = File.ReadAllBytes(Path.Combine(fullPath, "action_1_Input_RecvReq.txt"));
+			var actual = File.ReadAllBytes(Path.Combine(fullPath, "action_1-1_Call_DoCall.txt"));
+			Assert.Greater(actual.Length, 0);
+
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_1-2_Call_DoCall.txt"));
+			Assert.Greater(actual.Length, 0);
+
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_2_Input_RecvReq.txt"));
 			Assert.AreEqual(new byte[] { 1, (byte)'X' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_2_Output_OutputX.txt"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_3_Output_OutputX.txt"));
 			Assert.AreEqual(pub.outputs[0], actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_3_Input_RecvReq.txt"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_4_Input_RecvReq.txt"));
 			Assert.AreEqual(new byte[] { 2, (byte)'X' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_4_Output_OutputX.txt"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_5_Output_OutputX.txt"));
 			Assert.AreEqual(pub.outputs[1], actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_5_Input_RecvReq.txt"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_6_Input_RecvReq.txt"));
 			Assert.AreEqual(new byte[] { 3, (byte)'Y' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_6_Output_OutputY.txt"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "action_7_Output_OutputY.txt"));
 			Assert.AreEqual(pub.outputs[2], actual);
 		}
 
@@ -202,6 +225,11 @@ namespace Peach.Core.Test
 			protected override void OnOutput(BitwiseStream data)
 			{
 				outputs.Add(data.ToArray());
+			}
+
+			protected override Variant OnCall(string method, List<ActionParameter> args)
+			{
+				return null;
 			}
 		}
 	}
