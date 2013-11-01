@@ -186,5 +186,75 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(0x07, buf[1]);
 			Assert.AreEqual(0xff, buf[2]);
 		}
+
+		public void CrackLittleFlag(int size, BitStream data)
+		{
+			string xml = @"
+<Peach>
+	<DataModel name=""Model"">
+		<Flags name=""fields"" size=""{0}"" endian=""little"">
+			<Flag name=""a"" size=""1""  position=""0"" value=""1""/>
+			<Flag name=""b"" size=""2""  position=""1"" value=""2""/>
+			<Flag name=""c"" size=""3""  position=""3"" value=""3""/>
+			<Flag name=""d"" size=""4""  position=""6"" value=""4""/>
+			<Flag name=""e"" size=""5""  position=""10"" value=""5""/>
+		</Flags>
+	</DataModel>
+</Peach>
+".Fmt(size);
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[0], data);
+
+			var flags = dom.dataModels[0][0] as Flags;
+			Assert.NotNull(flags);
+
+			Assert.AreEqual(1, (int)flags["a"].DefaultValue);
+			Assert.AreEqual(2, (int)flags["b"].DefaultValue);
+			Assert.AreEqual(3, (int)flags["c"].DefaultValue);
+			Assert.AreEqual(4, (int)flags["d"].DefaultValue);
+			Assert.AreEqual(5, (int)flags["e"].DefaultValue);
+
+			var final = dom.dataModels[0].Value;
+
+			Assert.AreEqual(data.ToArray(), final.ToArray());
+
+		}
+
+		[Test]
+		public void CrackLittleFlags16()
+		{
+			// Little Endian 16-bit:
+			// struct { a:1,b:2,c:3,d:4,e:5 } fields;
+			// Buffer: [0x1D 0x15]
+			// Memory: __ E5 E4 E3 E2 E1 D4 D3 D2 D1 C3 C2 C1 B2 B1 A1
+			//         |--  1  --| |--  5  --| |--  1  --| |--  D  --|
+			// Bits:    0  0  0  1  0  1  0  1  0  0  0  1  1  1  0  1
+			// Final:  A=1, B=2, C=3, D=4, E=5
+
+			var data = Bits.Fmt("{0}", new byte[] { 0x1D, 0x15 });
+
+			CrackLittleFlag(16, data);
+		}
+
+		[Test]
+		public void CrackLittleFlags15()
+		{
+			// Little Endian 15-bit:
+			// struct { a:1,b:2,c:3,d:4,e:5 } fields;
+			// Buffer: [0x1D 0x2A]
+			// Memory: E5 E4 E3 E2 E1 D4 D3    D2 D1 C3 C2 C1 B2 B1 A1
+			//         |--  2  --| |--  5  --| |--  1  --| |--  D  --|
+			// Bits:    0  0  1  0  1  0  1  0  0  0  1  1  1  0  1
+			// Final:  A=1, B=2, C=3, D=4, E=5
+
+			var data = Bits.Fmt("{0}", new byte[] { 0x1D, 0x2A });
+			data.SetLengthBits(15);
+
+			CrackLittleFlag(15, data);
+		}
+
 	}
 }

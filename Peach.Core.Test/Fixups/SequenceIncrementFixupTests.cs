@@ -1156,6 +1156,56 @@ namespace Peach.Core.Test.Fixups
 				Assert.AreEqual(3, (int)dataModels[i + 2][0].InternalValue);
 			}
 		}
+
+		[Test]
+		public void ElementRemoved()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num' size='16'>
+			<Fixup class='SequenceIncrementFixup'/>
+		</Number>
+		<String value='Hello World'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<Mutators mode='include'>
+			<Mutator class='DataElementRemoveMutator'/>
+			<Mutator class='DataElementDuplicateMutator'/>
+		</Mutators>
+
+		<Strategy class='Random'/>
+
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 0;
+			config.rangeStop = 10;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			// Ensure we don't crash if the element was removed
+			Assert.True(this.allStrategies.Contains("DataElementRemoveMutator | DM.num"));
+		}
+
 	}
 }
 

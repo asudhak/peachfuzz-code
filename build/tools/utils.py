@@ -41,10 +41,7 @@ def dummy_platform(self):
 
 @feature('fake_lib')
 @after_method('process_lib')
-def install_csshlib(self):
-	if self.link_task.__class__.__name__ != 'fake_csshlib':
-		return
-
+def install_fake_lib(self):
 	# install 3rdParty libs into ${LIBDIR}
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
 
@@ -53,6 +50,18 @@ def install_csshlib(self):
 		config = lib.parent.find_resource(lib.name + '.config')
 		if config:
 			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
+
+		name = lib.name
+		ext='.pdb'
+		k = name.rfind('.')
+		if k >= 0:
+			name = name[:k] + ext
+		else:
+			name = name + ext
+
+		pdb = lib.parent.find_resource(name)
+		if pdb:
+			self.bld.install_files('${LIBDIR}', pdb, chmod=Utils.O755)
 
 @feature('cs', 'msbuild')
 @before_method('apply_cs', 'apply_mbuild')

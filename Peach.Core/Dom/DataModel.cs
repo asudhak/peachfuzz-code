@@ -37,6 +37,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 
 using System.Linq;
+using Peach.Core.Analyzers;
 
 namespace Peach.Core.Dom
 {
@@ -45,8 +46,8 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[Serializable]
 	[DataElement("DataModel")]
-	[PitParsable("DataModel")]
-	[Parameter("name", typeof(string), "Model name", "")]
+	[PitParsable("DataModel", topLevel = true)]
+	[Parameter("name", typeof(string), "Model name")]
 	[Parameter("ref", typeof(string), "Model to reference", "")]
 	public class DataModel : Block
 	{
@@ -78,60 +79,49 @@ namespace Peach.Core.Dom
 		[NonSerialized]
 		public Action action = null;
 
-		[NonSerialized]
-		private CloneCache cache = null;
-
-		[NonSerialized]
-		private bool cracking = false;
-
 		public DataModel()
 		{
-			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
 		}
 
 		public DataModel(string name)
 			: base(name)
 		{
-			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
 		}
 
-		[OnDeserialized]
-		void OnDeserialized(StreamingContext context)
+		public static new DataElement PitParser(PitParser context, XmlNode node, DataElementContainer parent)
 		{
-			this.Invalidated += new InvalidatedEventHandler(DataModel_Invalidated);
-		}
+			string name = node.getAttr("name", null);
+			string refName = node.getAttr("ref", null);
 
-		void  DataModel_Invalidated(object sender, EventArgs e)
-		{
-			cache = null;
-		}
+			DataModel dataModel = null;
 
-		public override DataElement Clone()
-		{
-			if (cracking)
-				return new CloneCache(this, this.name).Get();
-
-			if (cache == null)
-				cache = new CloneCache(this, this.name);
-
-			var ret = cache.Get() as DataModel;
-			ret.cache = this.cache;
-
-			return ret;
-		}
-
-		public override void Crack(Cracker.DataCracker context, IO.BitStream data, long? size)
-		{
-			try
+			if (refName != null)
 			{
-				cache = null;
-				cracking = true;
-				base.Crack(context, data, size);
+				var refObj = context.getReference(refName, parent) as DataModel;
+				if (refObj == null)
+					throw new PeachException("Error, DataModel {0}could not resolve ref '{1}'. XML:\n{2}".Fmt(
+						name == null ? "" : "'" + name + "' ", refName, node.OuterXml));
+
+				if (string.IsNullOrEmpty(name))
+					name = refName;
+
+				dataModel = refObj.Clone(name) as DataModel;
+				dataModel.isReference = true;
+				dataModel.referenceName = refName;
 			}
-			finally
+			else
 			{
-				cracking = false;
+				if (string.IsNullOrEmpty(name))
+					throw new PeachException("Error, DataModel missing required 'name' attribute.");
+
+				dataModel = new DataModel(name);
 			}
+
+			context.handleCommonDataElementAttributes(node, dataModel);
+			context.handleCommonDataElementChildren(node, dataModel);
+			context.handleDataElementContainer(node, dataModel);
+
+			return dataModel;
 		}
 	}
 }

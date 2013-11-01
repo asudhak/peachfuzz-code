@@ -148,7 +148,7 @@ namespace Peach.Core.Agent.Monitors
 								client.DeleteFile(File);
 
 							sout.Position = 0;
-							fault.collectedData[Path.GetFileName(File)] = sout.ToArray();
+							fault.collectedData.Add(new Fault.Data(Path.GetFileName(File), sout.ToArray()));
 						}
 
 						fault.description = File;
@@ -179,7 +179,7 @@ namespace Peach.Core.Agent.Monitors
 									client.DeleteFile(file.FullName);
 
 								sout.Position = 0;
-								fault.collectedData[Path.GetFileName(file.FullName)] = sout.ToArray();
+								fault.collectedData.Add(new Fault.Data(Path.GetFileName(file.FullName), sout.ToArray()));
 
 								fault.description += file.FullName + "\n";
 							}

@@ -173,6 +173,9 @@ namespace Peach.Core.Publishers
 
 			if (data != null)
 			{
+				if (Logger.IsDebugEnabled)
+					Logger.Debug("\n\n" + Utilities.HexDump(data));
+
 				try
 				{
 					using (var sout = request.GetRequestStream())

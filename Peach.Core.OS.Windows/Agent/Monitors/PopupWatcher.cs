@@ -70,6 +70,7 @@ namespace Peach.Core.Agent.Monitors
 		SortedSet<string> _closedWindows = new SortedSet<string>();
 		object _lock = new object();
 		bool _continue = true;
+		long workerCount = 0;
 		Fault _fault = null;
 
 		public PopupWatcher(IAgent agent, string name, Dictionary<string, Variant> args)
@@ -117,15 +118,17 @@ namespace Peach.Core.Agent.Monitors
 
 		public void Work()
 		{
-			do
+			while (!_event.WaitOne(200))
 			{
 				// Reset continue for subsequent enum call
 				_continue = true;
 
 				// Find top level windows
 				EnumWindows(EnumHandler, IntPtr.Zero);
+
+				// Increment counter
+				Interlocked.Increment(ref workerCount);
 			}
-			while (!_event.WaitOne(200));
 		}
 
 		public override void StopMonitor()
@@ -165,11 +168,22 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			Interlocked.Exchange(ref workerCount, 0);
 		}
 
 		public override bool IterationFinished()
 		{
 			_fault = null;
+
+			// Wait for the window closer thread to fire once more
+			var start = Interlocked.Read(ref workerCount);
+			var cnt = 0;
+
+			do
+			{
+				Thread.Sleep(100);
+			}
+			while (start == Interlocked.Read(ref workerCount) && cnt++ < 10);
 
 			lock (_lock)
 			{

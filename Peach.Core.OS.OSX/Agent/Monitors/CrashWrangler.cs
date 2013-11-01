@@ -172,7 +172,7 @@ namespace Peach.Core.Agent.Monitors
 			if (File.Exists(_cwLogFile))
 			{
 				fault.description = File.ReadAllText(_cwLogFile);
-				fault.collectedData["StackTrace.txt"] = File.ReadAllBytes(_cwLogFile);
+				fault.collectedData.Add(new Fault.Data("StackTrace.txt", File.ReadAllBytes(_cwLogFile)));
 
 				var s = new Summary(fault.description);
 
@@ -312,7 +312,7 @@ namespace Peach.Core.Agent.Monitors
 
 			var si = new ProcessStartInfo();
 			si.FileName = _execHandler;
-			si.Arguments = _command + (_arguments.Length == 0 ? "" : " ") + _arguments;
+			si.Arguments = "\"" + _command + "\"" + (_arguments.Length == 0 ? "" : " ") + _arguments;
 			si.UseShellExecute = false;
 
 			foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())

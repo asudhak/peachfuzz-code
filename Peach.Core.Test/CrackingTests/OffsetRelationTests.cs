@@ -259,7 +259,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Hello World", (string)dom.dataModels[0].find("block.Data").DefaultValue);
 		}
 
-		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.block.Data' has offset of 240 bits but buffer only has 184 bits.")]
+		[Test, ExpectedException(typeof(CrackingFailure), ExpectedMessage = "String 'TheDataModel.block.Data' has offset of 224 bits but buffer only has 168 bits.")]
 		public void BadOffsetInSizedBlock()
 		{
 			string xml = @"<?xml version='1.0' encoding='utf-8'?>

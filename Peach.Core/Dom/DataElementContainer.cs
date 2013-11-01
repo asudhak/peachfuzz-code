@@ -134,6 +134,18 @@ namespace Peach.Core.Dom
 			return ret;
 		}
 
+		public string UniqueName(string name)
+		{
+			string ret = name;
+
+			for (int i = 1; ContainsKey(ret); ++i)
+			{
+				ret = string.Format("{0}_{1}", name, i);
+			}
+
+			return ret;
+		}
+
 		public override BitStream  ReadSizedData(BitStream data, long? size, long read = 0)
 		{
 			if (!size.HasValue)
@@ -157,8 +169,8 @@ namespace Peach.Core.Dom
 				throw new CrackingFailure(msg, this, data);
 			}
 
-			if (needed == remain)
-				return data;
+			// Always return a slice of data.  This way, if data
+			// is a stream publisher, it will be presented as having a fixed length.
 
 			var ret = data.SliceBits(needed);
 			System.Diagnostics.Debug.Assert(ret != null);
@@ -289,15 +301,24 @@ namespace Peach.Core.Dom
 			set
 			{
 				if (value == null)
-					throw new ApplicationException("Cannot set null value");
+					throw new ArgumentNullException("value");
 
-				_childrenDict.Remove(_childrenList[index].name);
-				_childrenDict.Add(value.name, value);
+				if (index == _childrenList.Count)
+				{
+					Insert(index, value);
+					return;
+				}
 
-				_childrenList[index].parent = null;
+				var oldElem = _childrenList[index];
+				oldElem.parent = null;
 
+				_childrenDict.Remove(oldElem.name);
 				_childrenList.RemoveAt(index);
+
+				_childrenDict.Add(value.name, value);
 				_childrenList.Insert(index, value);
+
+				value.UpdateBindings(oldElem);
 
 				value.parent = this;
 
@@ -311,19 +332,47 @@ namespace Peach.Core.Dom
 			set
 			{
 				if (value == null)
-					throw new ApplicationException("Cannot set null value");
+					throw new ArgumentNullException("value");
 
-				int index = _childrenList.IndexOf(_childrenDict[key]);
-				_childrenList.RemoveAt(index);
-				_childrenDict[key].parent = null;
-				_childrenDict[key] = value;
-				_childrenList.Insert(index, value);
+				DataElement child;
+				if (_childrenDict.TryGetValue(key, out child))
+				{
+					int index = _childrenList.IndexOf(child);
+					this[index] = value;
+				}
+				else
+				{
+					if (key != value.name)
+						throw new ArgumentException("Key must be the same as the DataElement name.");
 
-				value.parent = this;
-
-				Invalidate();
+					Add(value);
+				}
 			}
 		}
+
+		public virtual void ApplyReference(DataElement newElem)
+		{
+			this[newElem.name] = newElem;
+		}
+
+		public override void ClearBindings(bool remove)
+		{
+			base.ClearBindings(remove);
+
+			foreach (var item in this)
+				item.ClearBindings(remove);
+		}
+
+		public void SwapElements(int first, int second)
+		{
+			if (first >= _childrenList.Count || second >= _childrenList.Count)
+				throw new ArgumentException();
+
+			var tmp = _childrenList[first];
+			_childrenList[first] = _childrenList[second];
+			_childrenList[second] = tmp;
+		}
+
 
 		#region IEnumerable<Element> Members
 
@@ -352,24 +401,29 @@ namespace Peach.Core.Dom
 
 		public void Insert(int index, DataElement item)
 		{
-			foreach (string k in _childrenDict.Keys)
-				if (k == item.name)
-					throw new ApplicationException(
-						string.Format("Child DataElement named {0} already exists.", item.name));
-
+			// Add throws if key already exists
+			_childrenDict.Add(item.name, item);
 			_childrenList.Insert(index, item);
-			_childrenDict[item.name] = item;
 
 			item.parent = this;
 
 			Invalidate();
 		}
 
-		public void RemoveAt(int index)
+		public virtual void RemoveAt(int index)
 		{
-			_childrenDict.Remove(_childrenList[index].name);
-			_childrenList[index].parent = null;
+			// Index operator throws if index out of range
+			var item = _childrenList[index];
+
+			System.Diagnostics.Debug.Assert(item.parent == this);
+
+			item.parent = null;
+			bool removed = _childrenDict.Remove(item.name);
 			_childrenList.RemoveAt(index);
+			System.Diagnostics.Debug.Assert(removed);
+
+			// Clear any bindings this element has to other elements
+			item.ClearBindings(false);
 
 			Invalidate();
 		}
@@ -380,13 +434,10 @@ namespace Peach.Core.Dom
 
 		public void Add(DataElement item)
 		{
-			foreach (string k in _childrenDict.Keys)
-				if (k == item.name)
-					throw new ApplicationException(
-						string.Format("Child DataElement named {0} already exists.", item.name));
-
+			// Add throws if key already exists
+			_childrenDict.Add(item.name, item);
 			_childrenList.Add(item);
-			_childrenDict[item.name] = item;
+
 			item.parent = this;
 
 			Invalidate();
@@ -394,15 +445,6 @@ namespace Peach.Core.Dom
 
 		public void Clear()
 		{
-			Clear(true);
-		}
-
-		protected void Clear(bool resetParent)
-		{
-			if (resetParent)
-				foreach (DataElement e in _childrenList)
-					e.parent = null;
-
 			_childrenList.Clear();
 			_childrenDict.Clear();
 
@@ -417,13 +459,6 @@ namespace Peach.Core.Dom
 		public void CopyTo(DataElement[] array, int arrayIndex)
 		{
 			_childrenList.CopyTo(array, arrayIndex);
-			foreach (DataElement e in array)
-			{
-				_childrenDict[e.name] = e;
-				e.parent = this;
-			}
-
-			Invalidate();
 		}
 
 		public int Count
@@ -436,35 +471,17 @@ namespace Peach.Core.Dom
 			get { return false; }
 		}
 
-		public void SwapElements(int first, int second)
-		{
-			if (first >= _childrenList.Count || second >= _childrenList.Count)
-				throw new ArgumentException();
-
-			var tmp = _childrenList[first];
-			_childrenList[first] = _childrenList[second];
-			_childrenList[second] = tmp;
-		}
-
 		public bool Remove(DataElement item)
 		{
-			System.Diagnostics.Debug.Assert(item.parent == this);
+			int index = IndexOf(item);
 
-			if (item.parent is Choice)
-				return parent.Remove(item.parent);
+			if (index >= 0)
+			{
+				RemoveAt(index);
+				return true;
+			}
 
-			if (item.parent is Array && item.parent.Count == 1)
-				return parent.Remove(this);
-
-			item.ClearRelations();
-
-			_childrenDict.Remove(item.name);
-			bool ret = _childrenList.Remove(item);
-			item.parent = null;
-
-			Invalidate();
-
-			return ret;
+			return false;
 		}
 
 		#endregion

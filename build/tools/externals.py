@@ -34,11 +34,11 @@ def config_uselib(conf, var, name, ext):
 def config_external(conf, name, ext):
 	msvc = Utils.to_list(ext.get('MSVC', []))
 	if msvc:
-		ver = conf.env['MSVC_VERSION']
-		conf.msg('Checking for msvc ' + str(msvc), ver)
+		ver = '%s %s' % (conf.env['MSVC_COMPILER'], conf.env['MSVC_VERSION'])
+		conf.msg('Checking for ' + str(msvc), ver)
 		conf.to_log('msvc external=%r supported=%r -> %r' % (name, msvc, ver))
 		if str(ver) not in msvc:
-			conf.fatal('msvc version %s not in supported list of %s' % (ver, msvc))
+			conf.fatal('Compiler \'%s\' not in supported list of %s' % (ver, msvc))
 
 	paths = ext.get('INCLUDES', conf.env['INCLUDES'])
 	for x in ext.get('HEADERS', []):
@@ -75,10 +75,13 @@ def configure(conf):
 				Logs.warn('External library \'%s\' is not available: %s' % (k, e))
 
 @feature('*')
-@before_method('propagate_uselib_vars')
+@before_method('process_source')
 def apply_externals(self):
 	exts = set([ k for k in self.env['EXTERNALS'] ])
 	feat = set(self.to_list(getattr(self, 'features', [])))
-	use = set(self.to_list(getattr(self, 'use', [])))
-	use |= exts & feat
-	setattr(self, 'use', [ x for x in use ])
+	add = exts & feat
+	for ext in add:
+		opts = self.env['EXTERNALS'][ext]
+		env = opts.get('ENV', {})
+		for k,v in env.items():
+			self.env[k] = v

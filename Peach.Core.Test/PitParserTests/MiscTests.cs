@@ -64,14 +64,14 @@ namespace Peach.Core.Test.PitParserTests
 
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, the value of element 'blob' is not a valid hex string.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, the value of Blob 'blob' contains invalid hex characters.")]
 		public void TestBadHex()
 		{
 			// Verify good error message when parsing bad hex value
 			string xml =
 @"<Peach>
 	<DataModel name=""DM"">
-		<Blob name=""blob"" valueType=""hex"" value=""hello world""/>
+		<Blob name=""blob"" valueType=""hex"" value=""Helloworld""/>
 	</DataModel>
 </Peach>";
 			PitParser parser = new PitParser();

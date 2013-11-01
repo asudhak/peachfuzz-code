@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
@@ -13,33 +14,36 @@ using NUnit.Framework.Constraints;
 
 namespace Peach.Core.Test.Monitors
 {
+    /// <summary>
+    /// Faults on iterations in the 'Iteration' parameter.
+    /// Reproduces faults on iterations in the 'Repro' parameter.
+    /// If Iteration is omitted, faults on all non-control iterations.
+    /// If Repro is omitted, reproduces all faults.
+    /// If 'C' is in the 'Iteration' parameter, faults on a control iteration.
+    /// If 'Iteration' parameter is '0', no faults will occur.
+    /// If 'Repro' parameter is '0', no faults will reproduce.
+    /// </summary>
     [Monitor("FaultingMonitor", true)]
-    [Parameter("Iteration", typeof(int), "Iteration to Fault on")]
-    [Parameter("FaultAlways", typeof(bool), "Fault on non control iterations")]
-    [Parameter("Replay", typeof(bool), "Don't fault on replay", "false")]
-    [Parameter("Repro", typeof(int), "Repro faults on this iteration", "0")]
+    [Parameter("Iteration", typeof(string), "List of iterations to fault on", "")]
+    [Parameter("Repro", typeof(string), "List of iterations to repro fault on", "")]
     public class FaultingMonitor : Peach.Core.Agent.Monitor
     {
-        protected int Iter = 0;
+        protected string[] iters = new string[0];
+        protected string[] reproIters = new string[0];
         protected int curIter = 0;
-        protected int ReproIter = 0;
         protected bool replay = false;
-        protected bool replaying = false;
+        protected bool fault = false;
         protected bool control = true;
-        protected bool faultAlways = false;
 
         public FaultingMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
             : base(agent, name, args)
         {
             if (args.ContainsKey("Iteration"))
-                Iter = (int)args["Iteration"];
+                iters = ((string)args["Iteration"]).Split(',');
             if (args.ContainsKey("Repro"))
-                ReproIter = (int)args["Repro"];
-            if (args.ContainsKey("Replay"))
-                replay = ((string) args["Replay"]).ToLower() == "true";
-            if (args.ContainsKey("FaultAlways"))
-                faultAlways = ((string) args["FaultAlways"]).ToLower() == "true";
+                reproIters = ((string)args["Repro"]).Split(',');
         }
+
         public override void StopMonitor()
         {
             SessionFinished();
@@ -53,45 +57,27 @@ namespace Peach.Core.Test.Monitors
         public override void IterationStarting(uint iterationCount, bool isReproduction) 
         {
             curIter = (int)iterationCount;
-            replaying = isReproduction;
+            replay = isReproduction;
         }
 
         public override bool IterationFinished()
         {
+            var iter = control ? "C" : curIter.ToString();
+
+            if (replay)
+                fault = reproIters.Length == 0 || reproIters.Contains(iter);
+            else if (iters.Length == 0)
+                fault = !control;
+            else
+                fault = iters.Contains(iter);
+
+            control = false;
             return false;
         }
 
         public override bool DetectedFault()
         {
-			if (curIter == ReproIter)
-			{
-				bool fault = !control;
-				control = false;
-				return fault;
-			}
-
-            if (curIter == Iter)
-            {
-                if (replay)
-                {
-                    bool fault = !control && !replaying;
-                    control = false;
-                    return fault;
-                }
-
-                control = false;
-                return true;
-            }
-
-			if (faultAlways)
-			{
-				bool fault = !control;
-				control = false;
-				return fault;
-			}
-
-            control = false;
-            return false;
+            return fault;
         }
 
         public override Fault GetMonitorData()
@@ -104,7 +90,7 @@ namespace Peach.Core.Test.Monitors
             fault.folderName = "FaultingMonitor";
             fault.type = FaultType.Fault;
 
-            fault.collectedData["Output"] = Encoding.ASCII.GetBytes("Faulted on Iteration: "+curIter.ToString());
+            fault.collectedData.Add(new Fault.Data("Output", Encoding.ASCII.GetBytes("Faulted on Iteration: "+curIter.ToString())));
             return fault;
         }
 
@@ -181,12 +167,12 @@ namespace Peach.Core.Test.Monitors
         uint expectedFaults;
 
         [Test]
-        public void FirstIterTest()
+        public void ControlIterTest()
         {
             string agent_xml =
                 "	<Agent name=\"LocalAgent\">" +
                 "		<Monitor class=\"FaultingMonitor\">" +
-                "			<Param name=\"Iteration\" value=\"1\"/>" +
+                "			<Param name=\"Iteration\" value=\"C\"/>" +
                 "		</Monitor>" +
                 "	</Agent>";
             expectedFaultIteration = 1;
@@ -213,6 +199,19 @@ namespace Peach.Core.Test.Monitors
             testResults.Add("Success");
         }
 
+        [Test]
+        public void FirstIterTest()
+        {
+            string agent_xml =
+                "	<Agent name=\"LocalAgent\">" +
+                "		<Monitor class=\"FaultingMonitor\">" +
+                "			<Param name=\"Iteration\" value=\"1\"/>" +
+                "		</Monitor>" +
+                "	</Agent>";
+            expectedFaultIteration = 1;
+            expectedFaults = 1;
+            RunTest(agent_xml, 10, new Engine.FaultEventHandler(_Fault));
+        }
 
         [Test]
         public void SecondIterTest()

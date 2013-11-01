@@ -364,5 +364,57 @@ namespace Peach.Core.Test
 				Assert.AreEqual("Hello", (string)b[0].DefaultValue);
 			}
 		}
+
+		[Test]
+		public void NumericString()
+		{
+			// Ensure numeric strings of -1 don't cause exceptions
+			// And are mutated as numbers
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String name='str' value='-1'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='State1'>
+		<State name='State1'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<Mutators mode='include'>
+			<Mutator class='StringCaseMutator'/>
+			<Mutator class='NumericalEdgeCaseMutator'/>
+			<Mutator class='NumericalVarianceMutator'/>
+		</Mutators>
+		<Strategy class='Sequential'/>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.IterationFinished += new Engine.IterationFinishedEventHandler(e_IterationFinished);
+			e.startFuzzing(dom, config);
+
+			// Numeric mutators should be used
+			Assert.AreNotEqual(3, engineCount);
+		}
+
+		void e_IterationFinished(RunContext context, uint currentIteration)
+		{
+			engineCount = currentIteration;
+		}
+
+		uint engineCount = 0;
 	}
 }

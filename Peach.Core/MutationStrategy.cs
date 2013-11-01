@@ -50,8 +50,10 @@ namespace Peach.Core
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public delegate void MutationEventHandler(string elementName, string mutatorName);
+		public delegate void DataSetChangedEventHandler(Dom.Action action, Dom.Data data);
 
 		public static event MutationEventHandler Mutating;
+		public static event DataSetChangedEventHandler DataSetChanged;
 
 		protected RunContext _context;
 		protected Engine _engine;
@@ -83,6 +85,11 @@ namespace Peach.Core
 		{
 			get { return _engine; }
 			set { _engine = value; }
+		}
+
+		public abstract bool UsesRandomSeed
+		{
+			get;
 		}
 
 		public abstract bool IsDeterministic
@@ -183,6 +190,12 @@ namespace Peach.Core
 		{
 			if (Mutating != null)
 				Mutating(elementName, mutatorName);
+		}
+
+		protected void OnDataSetChanged(Dom.Action action, Dom.Data data)
+		{
+			if (DataSetChanged != null)
+				DataSetChanged(action, data);
 		}
 
 		/// <summary>

@@ -71,13 +71,14 @@ namespace Peach.Core.Analyzers
 		/// Mapping of XML ELement names to type as provided by PitParsableAttribute
 		/// </summary>
 		static Dictionary<string, Type> dataElementPitParsable = new Dictionary<string, Type>();
+		static Dictionary<string, Type> dataModelPitParsable = new Dictionary<string, Type>();
 		static readonly string[] dataElementCommon = { "Relation", "Fixup", "Transformer", "Hint", "Analyzer", "Placement" };
 
 		static PitParser()
 		{
 			PitParser.supportParser = true;
 			Analyzer.defaultParser = new PitParser();
-			populateDataElementPitParsable();
+			populatePitParsable();
 		}
 
 		public PitParser()
@@ -129,6 +130,28 @@ namespace Peach.Core.Analyzers
 							break;
 						default:
 							throw new PeachException("Error, unknown platform name \"" + node.getAttrString("platform") + "\" in definition file.");
+					}
+				}
+				else if (!node.hasAttr("include"))
+				{
+					switch (node.Name.ToLower())
+					{
+						case "osx":
+							if (Platform.GetOS() != Platform.OS.OSX)
+								continue;
+							break;
+						case "linux":
+							if (Platform.GetOS() != Platform.OS.Linux)
+								continue;
+							break;
+						case "windows":
+							if (Platform.GetOS() != Platform.OS.Windows)
+								continue;
+							break;
+						case "all":
+							break;
+						default:
+							throw new PeachException("Error, unknown node name \"" + node.Name + "\" in definition file. Expecting All, Linux, OSX, or Windows.");
 					}
 				}
 
@@ -219,11 +242,14 @@ namespace Peach.Core.Analyzers
 			validatePit(xml);
 		}
 
-		static protected void populateDataElementPitParsable()
+		static protected void populatePitParsable()
 		{
 			foreach (var kv in ClassLoader.GetAllByAttribute<PitParsableAttribute>(null))
 			{
-				dataElementPitParsable[kv.Key.xmlElementName] = kv.Value;
+				if (kv.Key.topLevel)
+					dataModelPitParsable[kv.Key.xmlElementName] = kv.Value;
+				else
+					dataElementPitParsable[kv.Key.xmlElementName] = kv.Value;
 			}
 		}
 
@@ -400,11 +426,15 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node)
 			{
-				if (child.Name == "DataModel")
+				var dm = handleDataModel(child, null);
+
+				if (dm != null)
 				{
-					DataModel dm = handleDataModel(child);
+					if (dom.dataModels.ContainsKey(dm.name))
+						throw new PeachException("Error, a Data model named '" + dm.name + "' already exists.");
+
 					dom.dataModels.Add(dm.name, dm);
-					finalUpdateRelations(new DataModel[] { dm });
+					finalUpdateRelations(new DataModel[] {dm});
 				}
 			}
 
@@ -450,13 +480,6 @@ namespace Peach.Core.Analyzers
 					dom.tests.Add(test.name, test);
 				}
 			}
-
-			// Pass 8 - Mark mutated
-
-			foreach (Test test in dom.tests.Values)
-			{
-				test.markMutableElements();
-			}
 		}
 
 		public static void displayDataModel(DataElement elem, int indent = 0)
@@ -467,29 +490,13 @@ namespace Peach.Core.Analyzers
 
 			Console.WriteLine(sIndent + string.Format("{0}: {1}", elem.GetHashCode(), elem.name));
 
-			foreach (var rel in elem.relations)
-			{
-				if (rel.parent != elem)
-					Console.WriteLine("Relation.parent != parent");
+			var cont = elem as DataElementContainer;
 
-				if (rel.parent.getRoot() != elem.getRoot())
-					Console.WriteLine("Relation.parent.getRoot != parent.getRoot");
-
-				if (rel.Of.getRoot() != elem.getRoot())
-					Console.WriteLine("Relation root != element root");
-			}
-
-			if (!(elem is DataElementContainer))
+			if (cont == null)
 				return;
 
-			foreach (var child in ((DataElementContainer)elem))
+			foreach (var child in cont)
 			{
-				if (child.parent != elem)
-					Console.WriteLine("Child parent != actual parent");
-
-				if(child.getRoot() != elem.getRoot())
-					Console.WriteLine("Child getRoot != elem getRoor");
-
 				displayDataModel(child, indent+1);
 			}
 		}
@@ -586,56 +593,14 @@ namespace Peach.Core.Analyzers
 				{
 					//logger.Debug("finalUpdateRelations: " + elem.fullName);
 
-					foreach (Relation rel in elem.relations)
+					foreach (var rel in elem.relations.From<Binding>())
 					{
 						//logger.Debug("finalUpdateRelations: Relation " + rel.GetType().Name);
 
-						try
-						{
-							if (rel.From == elem)
-							{
-								rel.parent = elem;
-
-								DataElement of = rel.Of;
-								if (of == null)
-									continue;
-
-								if (!of.relations.Contains(rel))
-									of.relations.Add(rel, false);
-							}
-							else if (rel.Of == elem)
-							{
-								DataElement from = rel.From;
-								if (from == null)
-									continue;
-
-								if (!from.relations.Contains(rel))
-									from.relations.Add(rel, false);
-							}
-							else
-							{
-								logger.Debug("finalUpdateRelations: From/Of don't be a matching our element");
-								throw new PeachException("Error, relation attached to element \"" + elem.fullName + "\" is not resolving correctly.");
-							}
-						}
-						catch (Exception ex)
-						{
-							logger.Debug("finalUpdateRelations: Exception: " + ex.Message);
-						}
+						rel.Resolve();
 					}
 				}
 			}
-		}
-
-		protected bool hasRelationShipFrom(DataElement from, Relation rel)
-		{
-			foreach (var relation in from.relations)
-			{
-				if (relation.From.fullName == from.fullName && relation.GetType() == rel.GetType())
-					return true;
-			}
-
-			return false;
 		}
 
 		protected virtual void handleDefaults(XmlNode node)
@@ -722,37 +687,29 @@ namespace Peach.Core.Analyzers
 
 		#region Data Model
 
-		protected DataModel handleDataModel(XmlNode node)
+		protected DataModel handleDataModel(XmlNode node, DataModel old)
 		{
-			DataModel dataModel = null;
-			string name = node.getAttr("name", null);
-			string refName = node.getAttr("ref", null);
+			Type type;
+			if (!dataModelPitParsable.TryGetValue(node.Name, out type))
+				return old;
 
-			if (refName != null)
-			{
-				DataModel refObj = getRef<Dom.DataModel>(_dom, refName, a => a.dataModels);
-				if (refObj == null)
-					throw new PeachException("Error, DataModel {0}could not resolve ref '{1}'. XML:\n{2}".Fmt(
-						name == null ? "" : "'" + name + "' ", refName, node.OuterXml));
+			if (old != null)
+				throw new PeachException("Error, more than one {0} not allowed. XML:\n{1}".Fmt(
+					string.Join(",", dataModelPitParsable.Keys), node.OuterXml));
 
-				if (string.IsNullOrEmpty(name))
-					name = refName;
+			MethodInfo pitParsableMethod = type.GetMethod("PitParser");
+			if (pitParsableMethod == null)
+				throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + type.FullName);
 
-				dataModel = refObj.Clone(name) as DataModel;
-				dataModel.isReference = true;
-				dataModel.referenceName = refName;
-			}
-			else
-			{
-				if (string.IsNullOrEmpty(name))
-					throw new PeachException("Error, DataModel missing required 'name' attribute.");
+			PitParserDelegate delegateAction = Delegate.CreateDelegate(typeof(PitParserDelegate), pitParsableMethod) as PitParserDelegate;
 
-				dataModel = new DataModel(name);
-			}
+			var elem = delegateAction(this, node, null);
+			if (elem == null)
+				throw new PeachException("Error, type failed to parse provided XML: " + type.FullName);
 
-			handleCommonDataElementAttributes(node, dataModel);
-			handleCommonDataElementChildren(node, dataModel);
-			handleDataElementContainer(node, dataModel);
+			var dataModel = elem as DataModel;
+			if (dataModel == null)
+				throw new PeachException("Error, type failed to return top level element: " + type.FullName);
 
 			return dataModel;
 		}
@@ -850,11 +807,11 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Fixup":
-						element.fixup = handlePlugin<Fixup, FixupAttribute>(child, element, true);
+						handleFixup(child, element);
 						break;
 
 					case "Transformer":
-						element.transformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
+						handleTransformer(child, element);
 						break;
 
 					case "Hint":
@@ -862,12 +819,54 @@ namespace Peach.Core.Analyzers
 						break;
 
 					case "Analyzer":
-						element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(child, element, false);
+						handleAnalyzer(child, element);
 						break;
 
 					case "Placement":
 						handlePlacement(child, element);
 						break;
+				}
+			}
+		}
+
+		protected void handleFixup(XmlNode node, DataElement element)
+		{
+			if (element.fixup != null)
+				throw new PeachException("Error, multiple fixups defined on element '" + element.name + "'.");
+
+			element.fixup = handlePlugin<Fixup, FixupAttribute>(node, element, true);
+		}
+
+		protected void handleAnalyzer(XmlNode node, DataElement element)
+		{
+			if (element.analyzer != null)
+				throw new PeachException("Error, multiple analyzers are defined on element '" + element.name + "'.");
+
+			element.analyzer = handlePlugin<Analyzer, AnalyzerAttribute>(node, element, false);
+		}
+
+		protected void handleTransformer(XmlNode node, DataElement element)
+		{
+			if (element.transformer != null)
+				throw new PeachException("Error, multiple transformers are defined on element '" + element.name + "'.");
+
+			element.transformer = handlePlugin<Transformer, TransformerAttribute>(node, element, false);
+
+			handleNestedTransformer(node, element, element.transformer);
+		}
+
+		protected void handleNestedTransformer(XmlNode node, DataElement element, Transformer transformer)
+		{
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				if (child.Name == "Transformer")
+				{
+					if (transformer.anotherTransformer != null)
+						throw new PeachException("Error, multiple nested transformers are defined on element '" + element.name + "'.");
+
+					transformer.anotherTransformer = handlePlugin<Transformer, TransformerAttribute>(child, element, false);
+
+					handleNestedTransformer(child, element, transformer.anotherTransformer);
 				}
 			}
 		}
@@ -880,6 +879,7 @@ namespace Peach.Core.Analyzers
 		{
 			var hint = new Hint(node.getAttrString("name"), node.getAttrString("value"));
 			element.Hints.Add(hint.Name, hint);
+			logger.Debug("handleHint: " + hint.Name + ": " + hint.Value);
 		}
 
 		protected void handlePlacement(XmlNode node, DataElement element)
@@ -973,121 +973,25 @@ namespace Peach.Core.Analyzers
 				// notation.
 				if (element.isReference)
 				{
+					var parent = element;
+
 					if (childName != null && childName.IndexOf(".") > -1)
 					{
 						var parentName = childName.Substring(0, childName.LastIndexOf('.'));
-						var parent = element.find(parentName) as DataElementContainer;
+						parent = element.find(parentName) as DataElementContainer;
 
 						if (parent == null)
 							throw new PeachException("Error, child name has dot notation but parent element not found: '" + parentName + ".");
+					}
 
-						var choice = parent as Choice;
-						if (choice != null)
-						{
-							updateChoice(choice, elem);
-						}
-						else
-						{
-							if (parent.ContainsKey(elem.name))
-								replaceChild(parent, elem);
-							else
-								parent.Add(elem);
-						}
-					}
-					else
-					{
-						if (element.ContainsKey(elem.name))
-							replaceChild(element, elem);
-						else
-							element.Add(elem);
-					}
+					parent.ApplyReference(elem);
 				}
-				// Otherwise enforce unique element names.
 				else
 				{
+					// Otherwise enforce unique element names.
 					element.Add(elem);
 				}
 			}
-		}
-
-		private static void replaceRelations(DataElement newChild, DataElement oldChild, DataElement elem)
-		{
-			foreach (var rel in elem.relations)
-			{
-				// Find the half of the relation that is not elem
-				DataElement which = rel.Of == elem ? rel.From : rel.Of;
-
-				if (rel.parent == elem)
-				{
-					// If the relation's parent is the old child, just remove the relation
-					which.relations.Remove(rel);
-					rel.Reset();
-					continue;
-				}
-
-				// If the other half if a child of oldChild, no fixing is needed
-				string relName;
-				if (which.isChildOf(oldChild, out relName))
-					continue;
-
-				var other = newChild.find(elem.fullName);
-
-				if (elem == other)
-					continue;
-
-				// If the other half no longer exists under newChild, reset the relation
-				if (other == null)
-				{
-					rel.Reset();
-					continue;
-				}
-
-				// Fix up the relation to be in the newChild branch of the DOM
-				other.relations.Add(rel);
-
-				if (rel.From == elem)
-					rel.From = other;
-
-				if (rel.Of == elem)
-					rel.Of = other;
-			}
-		}
-
-		private static void replaceChild(DataElementContainer parent, DataElement newChild)
-		{
-			var oldChild = parent[newChild.name];
-			oldChild.parent = null;
-
-			replaceRelations(newChild, oldChild, oldChild);
-
-			foreach (var elem in oldChild.EnumerateAllElements())
-			{
-				replaceRelations(newChild, oldChild, elem);
-			}
-
-			parent[newChild.name] = newChild;
-		}
-
-		private static void updateChoice(Choice parent, DataElement newChild)
-		{
-			if (!parent.choiceElements.ContainsKey(newChild.name))
-			{
-				parent.choiceElements.Add(newChild.name, newChild);
-				newChild.parent = parent;
-				return;
-			}
-
-			var oldChild = parent.choiceElements[newChild.name];
-			oldChild.parent = null;
-
-			replaceRelations(newChild, oldChild, oldChild);
-
-			foreach (var elem in oldChild.EnumerateAllElements())
-			{
-				replaceRelations(newChild, oldChild, elem);
-			}
-
-			parent.choiceElements[newChild.name] = newChild;
 		}
 
 		Regex _hexWhiteSpace = new Regex(@"[h{},\s\r\n]+", RegexOptions.Singleline);
@@ -1139,17 +1043,29 @@ namespace Peach.Core.Analyzers
 					value = value.Replace("\\x", "");
 
 					if (value.Length % 2 != 0)
-						value = "0" + value;
+						throw new PeachException("Error, the hex value of " + elem.debugName + " must contain an even number of characters.");
 
 					var array = HexString.ToArray(value);
-
 					if (array == null)
-						throw new PeachException("Error, the value of element '" + elem.name + "' is not a valid hex string.");
+						throw new PeachException("Error, the value of " + elem.debugName + " contains invalid hex characters.");
 
 					elem.DefaultValue = new Variant(new BitStream(array));
 					break;
 				case "literal":
-					throw new NotImplementedException("todo valueType");
+
+					var localScope = new Dictionary<string, object>();
+					localScope["self"] = elem;
+					localScope["node"] = node;
+					localScope["Parser"] = this;
+					localScope["Context"] = this._dom.context;
+					
+					var obj = Scripting.EvalExpression(value, localScope);
+
+					if (obj == null)
+						throw new PeachException("Error, the value of " + elem.debugName + " is not a valid eval statement.");
+
+					elem.DefaultValue = new Variant(obj.ToString());
+					break;
 				case "string":
 					// No action requried, default behaviour
 					elem.DefaultValue = new Variant(value);
@@ -1229,7 +1145,7 @@ namespace Peach.Core.Analyzers
 				case "size":
 					if (node.hasAttr("of"))
 					{
-						SizeRelation rel = new SizeRelation();
+						SizeRelation rel = new SizeRelation(parent);
 						rel.OfName = node.getAttrString("of");
 
 						if (node.hasAttr("expressionGet"))
@@ -1238,7 +1154,12 @@ namespace Peach.Core.Analyzers
 						if (node.hasAttr("expressionSet"))
 							rel.ExpressionSet = node.getAttrString("expressionSet");
 
-						parent.relations.Add(rel);
+						var strType = node.getAttr("lengthType", rel.lengthType.ToString());
+						LengthType lenType;
+						if (!Enum.TryParse(strType, true, out lenType))
+							throw new PeachException("Error, size relation on element '" + parent.name + "' has invalid lengthType '" + strType + "'.");
+
+						rel.lengthType = lenType;
 					}
 
 					break;
@@ -1246,7 +1167,7 @@ namespace Peach.Core.Analyzers
 				case "count":
 					if (node.hasAttr("of"))
 					{
-						CountRelation rel = new CountRelation();
+						CountRelation rel = new CountRelation(parent);
 						rel.OfName = node.getAttrString("of");
 
 						if (node.hasAttr("expressionGet"))
@@ -1254,15 +1175,13 @@ namespace Peach.Core.Analyzers
 
 						if (node.hasAttr("expressionSet"))
 							rel.ExpressionSet = node.getAttrString("expressionSet");
-
-						parent.relations.Add(rel);
 					}
 					break;
 
 				case "offset":
 					if (node.hasAttr("of"))
 					{
-						OffsetRelation rel = new OffsetRelation();
+						OffsetRelation rel = new OffsetRelation(parent);
 						rel.OfName = node.getAttrString("of");
 
 						if (node.hasAttr("expressionGet"))
@@ -1279,13 +1198,11 @@ namespace Peach.Core.Analyzers
 							rel.isRelativeOffset = true;
 							rel.relativeTo = node.getAttrString("relativeTo");
 						}
-
-						parent.relations.Add(rel);
 					}
 					break;
 
 				default:
-					throw new PeachException("Error, element '" + parent.name + "' has nknown relation type '" + value + "'.");
+					throw new PeachException("Error, element '" + parent.name + "' has unknown relation type '" + value + "'.");
 			}
 		}
 
@@ -1515,8 +1432,7 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Result")
 					action.result = handleActionResult(child, action);
 
-				if (child.Name == "DataModel")
-					action.dataModel = handleDataModel(child);
+				action.dataModel = handleDataModel(child, action.dataModel);
 
 				if (child.Name == "Data")
 				{
@@ -1550,8 +1466,8 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
-				if (child.Name == "DataModel")
-					param.dataModel = handleDataModel(child);
+				param.dataModel = handleDataModel(child, param.dataModel);
+
 				if (child.Name == "Data")
 					param.data = handleData(child);
 			}
@@ -1573,8 +1489,7 @@ namespace Peach.Core.Analyzers
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
-				if (child.Name == "DataModel")
-					result.dataModel = handleDataModel(child);
+				result.dataModel = handleDataModel(child, result.dataModel);
 			}
 
 			if (result.dataModel == null)

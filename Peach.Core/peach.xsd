@@ -5,7 +5,7 @@
 
 	<!--
 		
-		Copyright (c) 2007-2012 Michael Eddington
+		Copyright (c) Michael Eddington
 		
 		Permission is hereby granted, free of charge, to any person obtaining a copy 
 		of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 				<xs:element ref="Import" />
 				<xs:element ref="Include" />
 				<xs:element ref="Defaults" />
+				<xs:element ref="LangModel" />
 				<xs:element ref="DataModel" />
 				<xs:element ref="Data" />
 				<xs:element ref="Test" />
@@ -126,7 +127,32 @@
 			<xs:field xpath="@name" />
 		</xs:unique>
 	</xs:element>
-	
+
+	<xs:element name="LangModel">
+		<xs:annotation>
+			<xs:documentation>
+				Templates are top level elements that contain other data elements. Templates
+				can be based on other Templates or Blocks using the ref attribute. Templates behave much
+				like Blocks.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="name" type="xs:string"/>
+			<xs:attribute name="language" type="xs:string"/>
+			<xs:attribute name="ref" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference an element to use for this test. Values are in
+						"ns:parent.child.child" with the namespace being optional. Resolution always
+						starts at the document root.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+		<xs:unique name="templateKey2">
+			<xs:selector xpath="." />
+			<xs:field xpath="@name" />
+		</xs:unique>
+	</xs:element>
+
 	<xs:complexType name="tInclude">
 		<xs:attribute name="ref" />
 		<xs:attribute name="xpath"/>
@@ -773,12 +799,6 @@
 									this relationship must set minOccurs or maxOccurs.</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
-						<!--<xs:enumeration value="when">
-							<xs:annotation>
-								<xs:documentation>A when relationship says this element is only used if the expression 
-									in the &quot;when&quot; attribute evaulates to true.</xs:documentation>
-							</xs:annotation>
-						</xs:enumeration>-->
 						<xs:enumeration value="offset">
 							<xs:annotation>
 								<xs:documentation>The position or offset from beginning of data that element of is located 
@@ -800,12 +820,11 @@
 						will be set to the size or count of the specified element.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
-			<!--<xs:attribute name="when" type="xs:string">
+			<xs:attribute name="lengthType" type="tLengthType">
 				<xs:annotation>
-					<xs:documentation>A python expression that must evaluate to true or false.  Only used
-						when type is when.</xs:documentation>
+					<xs:documentation>An optional attribute that specifies the units for the size.  Default is bytes.</xs:documentation>
 				</xs:annotation>
-			</xs:attribute>-->
+			</xs:attribute>
 			<xs:attribute name="expressionGet" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>An optional python expression that returns the value of count or length when we are
@@ -1276,160 +1295,6 @@
 		</xs:complexType>
 	</xs:element>
 	
-	<!--<xs:element name="Mutator">
-		<xs:annotation>
-			<xs:documentation>Includes a Mutator in this test.  Mutators provide methods for modifying templates and states to produce fuzzing cases.
-				If no Mutators are specified the default GeneratorMutator is used.</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:attribute name="class" use="required">
-				<xs:annotation>
-					<xs:documentation>Class name of the Mutator to use</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:union>
-						<xs:simpleType>
-							<xs:restriction base="xs:string">
-								<xs:maxLength value="1024"/>
-							</xs:restriction>
-						</xs:simpleType>
-						<xs:simpleType>
-							<xs:restriction base="xs:string">
-								<xs:enumeration value="string.StringMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.XmlW3CMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.PathMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.HostnameMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.FilenameMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.StringCaseMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.UnicodeBomMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="string.UnicodeStringsMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="number.NumericalEdgeCaseMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="number.NumericalVarianceMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="number.FiniteRandomNumbersMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="blob.BitFlipperMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="blob.DWORDSliderMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="datatree.DataTreeRemoveMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="datatree.DataTreeDuplicateMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="datatree.DataTreeSwapNearNodesMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								
-								<xs:enumeration value="size.SizedVaranceMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="size.SizedNumericalEdgeCasesMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								
-								<xs:enumeration value="array.ArrayVarianceMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="array.ArrayNumericalEdgeCasesMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="array.ArrayReverseOrderMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="array.ArrayRandomizeOrderMutator">
-									<xs:annotation>
-										<xs:documentation></xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-							</xs:restriction>
-						</xs:simpleType>
-					</xs:union>
-				</xs:simpleType>
-			</xs:attribute>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="Mutators">
-		<xs:annotation>
-			<xs:documentation>Defines default mutators to use for testing.</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:choice>
-				<xs:element ref="Mutator" minOccurs="1" maxOccurs="unbounded"/>
-			</xs:choice>
-			<xs:attribute name="name" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Name for default mutators block.</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-		</xs:complexType>
-	</xs:element>-->
-	
 	<xs:element name="Test">
 		<xs:annotation>
 			<xs:documentation>Define a test to run. Currently a test is defined as a combination of a
@@ -1802,6 +1667,80 @@
 									</xs:simpleType>
 									<xs:simpleType>
 										<xs:restriction base="xs:string">
+											<xs:enumeration value="Com">
+												<xs:annotation>
+													<xs:documentation>
+														A simple COM publisher that will pass a test case as a
+														parameter to a single method call.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="ConsoleHex">
+												<xs:annotation>
+													<xs:documentation>
+														Print tests to console in hex and ASCII format. No
+														parameters.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Console">
+												<xs:annotation>
+													<xs:documentation>
+														Print tests to console. No
+														parameters.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="File">
+												<xs:annotation>
+													<xs:documentation>
+														Read and Writes data from a file. Requires parameter named
+														&quot;FileName&quot;.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="FilePerIteration">
+												<xs:annotation>
+													<xs:documentation>
+														Writes tests to a series of files. Requires parameter
+														named &quot;FileName&quot;. The value of this parameter must be
+														in format &quot;c:\path\file{0}.ext&quot; where {0} will become
+														the test count #.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Http">
+												<xs:annotation>
+													<xs:documentation>
+														An HTTP protocol publisher for sending fuzzed data over HTTP.
+													</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawIPv4">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for TCP v4.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawV4">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for IPv4.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="RawV6">
+												<xs:annotation>
+													<xs:documentation>Raw socket publisher for IPv6.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="Remote">
+												<xs:annotation>
+													<xs:documentation>Remote another publisher to an Agent process.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="SerialPort">
+												<xs:annotation>
+													<xs:documentation>Serial Port publisher.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
 											<xs:enumeration value="Tcp">
 												<xs:annotation>
 													<xs:documentation>Send tests to TCP port. Requires parameters named
@@ -1823,75 +1762,14 @@
 													&quot;port&quot;.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
-											<xs:enumeration value="Console">
-												<xs:annotation>
-													<xs:documentation>Print tests to console. No
-													parameters.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="ConsoleHex">
-												<xs:annotation>
-													<xs:documentation>Print tests to console in hex and ASCII format. No
-													parameters.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>											
-											<xs:enumeration value="File">
-												<xs:annotation>
-													<xs:documentation>Read and Writes data from a file. Requires parameter named
-														&quot;FileName&quot;.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="FilePerIteration">
-												<xs:annotation>
-													<xs:documentation>Writes tests to a series of files. Requires parameter
-														named &quot;fileName&quot;. The value of this parameter must be
-														in format &quot;c:\path\file%d.ext&quot; where %d will become
-														the test count #.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="Com">
-												<xs:annotation>
-													<xs:documentation>A simple COM publisher that will pass a test case as a
-														parameter to a single method call. Requires a parameters named
-														&quot;clsid&quot; and &quot;methodFormat&quot;. The
-														methodFormat parameter is in format:
-														FunctionName(&quot;%s&quot;) where %s will be replaced with the
-														test case.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="Http">
-												<xs:annotation>
-													<xs:documentation>A simple COM publisher that will pass a test case as a
-														parameter to a single method call. Requires a parameters named
-														&quot;clsid&quot; and &quot;methodFormat&quot;. The
-														methodFormat parameter is in format:
-														FunctionName(&quot;%s&quot;) where %s will be replaced with the
-														test case.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="RawIPv4">
-												<xs:annotation>
-													<xs:documentation>Raw socket publisher for TCP v4.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="RawV4">
-												<xs:annotation>
-													<xs:documentation>Raw socket publisher for IPv4.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="RawV6">
-												<xs:annotation>
-													<xs:documentation>Raw socket publisher for IPv6.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
-											<xs:enumeration value="SerialPort">
-												<xs:annotation>
-													<xs:documentation>Serial Port publisher.</xs:documentation>
-												</xs:annotation>
-											</xs:enumeration>
 											<xs:enumeration value="WebService">
 												<xs:annotation>
 													<xs:documentation>Web Service (SOAP) publisher.</xs:documentation>
+												</xs:annotation>
+											</xs:enumeration>
+											<xs:enumeration value="WebSocket">
+												<xs:annotation>
+													<xs:documentation>WebSocket publisher.</xs:documentation>
 												</xs:annotation>
 											</xs:enumeration>
 										</xs:restriction>
@@ -2073,14 +1951,22 @@
 						</xs:simpleType>
 						<xs:simpleType>
 							<xs:restriction base="xs:string">
-								<xs:enumeration value="GzipCompress">
+								<xs:enumeration value="ApacheMd5Crypt">
 									<xs:annotation>
-										<xs:documentation>Gzip compression</xs:documentation>
+										<xs:documentation>
+											Apache style MD5 crypt. Optional parameter with name of
+											&quot;salt&quot; can be specified.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="GzipDecompress">
+								<xs:enumeration value="Base64Encode">
 									<xs:annotation>
-										<xs:documentation>Gzip decompression </xs:documentation>
+										<xs:documentation>Base64 encode.</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Base64Decode">
+									<xs:annotation>
+										<xs:documentation>Base64 decode.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="Bz2Compress">
@@ -2095,22 +1981,11 @@
 								</xs:enumeration>
 								<xs:enumeration value="Crypt">
 									<xs:annotation>
-										<xs:documentation>UNIX style crypt. Optional parameter with name of
+										<xs:documentation>
+											UNIX style crypt. Optional parameter with name of
 											&quot;salt&quot; can be used to specify the crypt salt
-											value.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="UnixMd5Crypt">
-									<xs:annotation>
-										<xs:documentation>UNIX style MD5 crypt. Optional parameters with names of
-											&quot;salt&quot; and &quot;magic&quot; can be
-											specified.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="ApacheMd5Crypt">
-									<xs:annotation>
-										<xs:documentation>Apache style MD5 crypt. Optional parameter with name of
-											&quot;salt&quot; can be specified.</xs:documentation>
+											value.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="CvsScramble">
@@ -2118,33 +1993,69 @@
 										<xs:documentation>CVS pserver password scramble</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="Md5">
+								<xs:enumeration value="Eval">
 									<xs:annotation>
-										<xs:documentation>MD5 transform (binary)</xs:documentation>
+										<xs:documentation>Evaluate expression, takes parameter eval.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="Sha1">
+								<xs:enumeration value="GzipCompress">
 									<xs:annotation>
-										<xs:documentation>SHA-1 transform (binary)</xs:documentation>
+										<xs:documentation>Gzip compression</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="GzipDecompress">
+									<xs:annotation>
+										<xs:documentation>Gzip decompression </xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Hex">
+									<xs:annotation>
+										<xs:documentation>Transforms a number into a hex string (10 becomes A).</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="Hmac">
 									<xs:annotation>
-										<xs:documentation>HMAC as described in RFC 2104. A required parameter of name
+										<xs:documentation>
+											HMAC as described in RFC 2104. A required parameter of name
 											&quot;key&quot; is needed. Additionally an optional parameter of
 											&quot;digestmod&quot; can be specified with a value of md5 or
-											sha.</xs:documentation>
+											sha.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="SidStringToBytes">
+								<xs:enumeration value="HtmlEncode">
 									<xs:annotation>
-										<xs:documentation>Convert a string representation SID to a byte
-											form.</xs:documentation>
+										<xs:documentation>
+											Perform standard HTML encoding of &gt; &lt; &amp;
+											and &quot;
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="UrlEncode">
+								<xs:enumeration value="HtmlDecode">
 									<xs:annotation>
-										<xs:documentation>URL encode w/o pluses.</xs:documentation>
+										<xs:documentation>Decode HTML encoded string</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="IntToHex">
+									<xs:annotation>
+										<xs:documentation>Transform an integer into hex.</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Ipv4StringToOctet">
+									<xs:annotation>
+										<xs:documentation>Convert a dot notation IPV4 address into a 4 byte octect
+											representation.</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Ipv6StringToOctet">
+									<xs:annotation>
+										<xs:documentation>Convert a collen notation IPV6 address into a 4 byte octect
+											representation.</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Md5">
+									<xs:annotation>
+										<xs:documentation>MD5 transform (binary)</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 								<xs:enumeration value="NetBiosDecode">
@@ -2157,64 +2068,38 @@
 										<xs:documentation>NetBiosName Encoded</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="UrlEncodePlus">
+								<xs:enumeration value="Sha1">
 									<xs:annotation>
-										<xs:documentation>URL encode with spaces turned to pluses</xs:documentation>
+										<xs:documentation>SHA-1 transform (binary)</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="Base64Encode">
+								<xs:enumeration value="SidStringToBytes">
 									<xs:annotation>
-										<xs:documentation>Base64 encode.</xs:documentation>
+										<xs:documentation>
+											Convert a string representation SID to a byte
+											form.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="Base64Decode">
+								<xs:enumeration value="TripleDes">
 									<xs:annotation>
-										<xs:documentation>Base64 decode.</xs:documentation>
+										<xs:documentation>
+											3DES encrypt/decrypt a value. Takes two parameters IV, and Key.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="HtmlEncodeAgressive">
+								<xs:enumeration value="UnixMd5Crypt">
 									<xs:annotation>
-										<xs:documentation>Perform aggressive HTML encoding.</xs:documentation>
+										<xs:documentation>
+											UNIX style MD5 crypt. Optional parameters with names of
+											&quot;salt&quot; and &quot;magic&quot; can be
+											specified.
+										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="HtmlEncode">
+								<xs:enumeration value="UrlEncode">
 									<xs:annotation>
-										<xs:documentation>Perform standard HTML encoding of &gt; &lt; &amp;
-											and &quot;</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="HtmlDecode">
-									<xs:annotation>
-										<xs:documentation>Decode HTML encoded string</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Ipv4StringToOctet">
-									<xs:annotation>
-										<xs:documentation>Convert a dot notation IPV4 address into a 4 byte octect
-											representation.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Ipv4StringToNetworkOctet">
-									<xs:annotation>
-										<xs:documentation>Convert a dot notation IPV4 address into a 4 byte octect
-											representation.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Ipv6StringToOctet">
-									<xs:annotation>
-										<xs:documentation>Convert a collen notation IPV6 address into a 4 byte octect
-											representation.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Hex">
-									<xs:annotation>
-										<xs:documentation>Transforms a number into a hex string (10 becomes A).</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="HexString">
-									<xs:annotation>
-										<xs:documentation>Transforms a string of bytes into the specified Hex
-											format.  Example: "22"  becomes "32 32", "A" becomes "42".</xs:documentation>
+										<xs:documentation>URL encode w/o pluses.</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
 							</xs:restriction>
@@ -2252,6 +2137,65 @@
 						</xs:simpleType>
 						<xs:simpleType>
 							<xs:restriction base="xs:string">
+								<xs:enumeration value="CiscoFixup">
+									<xs:annotation>
+										<xs:documentation>Cisco Checksum Fixup</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="CopyValueFixup">
+									<xs:annotation>
+										<xs:documentation>Will copy another elements value into us. Used in testing.</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Crc32Fixup">
+									<xs:annotation>
+										<xs:documentation>Standard CRC32 as defined in ISO 3309.  Used by PNG, ZIP, etc.</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="Crc32DualFixup">
+									<xs:annotation>
+										<xs:documentation>
+											Standard CRC32 as defined in ISO 3309.  This version takes
+											two ref arguments and will calculate the first CRC32 and then add the 2nd.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="ExpressionFixup">
+									<xs:annotation>
+										<xs:documentation>
+											Run a scripting expression to generate fixup data.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="FillValue">
+									<xs:annotation>
+										<xs:documentation>
+											Will fill element with incrementing values from 'start' to 'stop'.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="HMAC">
+									<xs:annotation>
+										<xs:documentation>
+											Standard HMAC.  Requires key, hashtype, and length in bytes to return.
+										</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="IcmpChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>ICMP Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="IcmpV6ChecksumFixup">
+									<xs:annotation>
+										<xs:documentation>ICMP v6 Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
+								<xs:enumeration value="LRCFixup">
+									<xs:annotation>
+										<xs:documentation>LRC Checksum</xs:documentation>
+									</xs:annotation>
+								</xs:enumeration>
 								<xs:enumeration value="MD5Fixup">
 									<xs:annotation>
 										<xs:documentation>Standard MD5</xs:documentation>
@@ -2282,39 +2226,6 @@
 										<xs:documentation>Standard SHA512</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="Crc32Fixup">
-									<xs:annotation>
-										<xs:documentation>Standard CRC32 as defined in ISO 3309.  Used by PNG, ZIP, etc.</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="Crc32DualFixup">
-									<xs:annotation>
-										<xs:documentation>
-											Standard CRC32 as defined in ISO 3309.  This version takes
-											two ref arguments and will calculate the first CRC32 and then add the 2nd.
-										</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="EthernetChecksumFixup">
-									<xs:annotation>
-										<xs:documentation>Ethernet Checksum</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="IcmpChecksumFixup">
-									<xs:annotation>
-										<xs:documentation>ICMP Checksum</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="IcmpV6ChecksumFixup">
-									<xs:annotation>
-										<xs:documentation>ICMP v6 Checksum</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="LRCFixup">
-									<xs:annotation>
-										<xs:documentation>LRC Checksum</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
 								<xs:enumeration value="TCPChecksumFixup">
 									<xs:annotation>
 										<xs:documentation>TCP Checksum</xs:documentation>
@@ -2339,24 +2250,10 @@
 										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
-								<xs:enumeration value="ExpressionFixup">
-									<xs:annotation>
-										<xs:documentation>
-											Run a scripting expression to generate fixup data.
-										</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
 								<xs:enumeration value="ScriptFixup">
 									<xs:annotation>
 										<xs:documentation>
 											Use a scripting implemented fixup.
-										</xs:documentation>
-									</xs:annotation>
-								</xs:enumeration>
-								<xs:enumeration value="HMAC">
-									<xs:annotation>
-										<xs:documentation>
-											Standard HMAC.  Requires key, hashtype, and length in bytes to return.
 										</xs:documentation>
 									</xs:annotation>
 								</xs:enumeration>
@@ -2443,6 +2340,11 @@
 								<xs:documentation>Convert a String containing XML into XmlElement and XmlAttribute data elements.</xs:documentation>
 							</xs:annotation>
 						</xs:enumeration>
+						<xs:enumeration value="Asn1">
+							<xs:annotation>
+								<xs:documentation>Convert a String containing XML into XmlElement and XmlAttribute data elements.</xs:documentation>
+							</xs:annotation>
+						</xs:enumeration>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
@@ -2473,7 +2375,10 @@
 								</xs:annotation>
 								<xs:complexType>
 									<xs:choice minOccurs="0" maxOccurs="unbounded">
-										<xs:element ref="DataModel" maxOccurs="1"/>
+										<xs:choice maxOccurs="1">
+											<xs:element ref="LangModel" maxOccurs="1"/>
+											<xs:element ref="DataModel" maxOccurs="1"/>
+										</xs:choice>
 											<!--<xs:complexType>
 												<xs:attribute name="name" type="xs:string"/>
 												<xs:attribute name="ref" type="xs:string">
@@ -2504,17 +2409,10 @@
 											</xs:annotation>
 											<xs:complexType>
 												<xs:choice minOccurs="1" maxOccurs="unbounded">
-													<xs:element name="DataModel" maxOccurs="1" minOccurs="1">
-														<xs:complexType>
-															<xs:attribute name="ref" type="xs:string">
-																<xs:annotation>
-																	<xs:documentation>Reference a Template element to use for this test. Values are in
-																		"ns:parent.child.child" with the namespace being optional. Resolution always
-																		starts at the document root.</xs:documentation>
-																</xs:annotation>
-															</xs:attribute>
-														</xs:complexType>
-													</xs:element>
+													<xs:choice maxOccurs="1">
+														<xs:element ref="LangModel" maxOccurs="1" minOccurs="1"/>
+														<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
+													</xs:choice>
 													<xs:element ref="Data" maxOccurs="1" minOccurs="0" />
 												</xs:choice>
 												<xs:attribute name="name" type="xs:string">
@@ -2554,18 +2452,9 @@
 												<xs:documentation>Used to capture return value of call.</xs:documentation>
 											</xs:annotation>
 											<xs:complexType>
-												<xs:choice minOccurs="1" maxOccurs="unbounded">
-													<xs:element name="DataModel" maxOccurs="1" minOccurs="1">
-														<xs:complexType>
-															<xs:attribute name="ref" type="xs:string">
-																<xs:annotation>
-																	<xs:documentation>Reference a Template element to use for this test. Values are in
-																		"ns:parent.child.child" with the namespace being optional. Resolution always
-																		starts at the document root.</xs:documentation>
-																</xs:annotation>
-															</xs:attribute>
-														</xs:complexType>
-													</xs:element>
+												<xs:choice maxOccurs="1">
+													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
+													<xs:element ref="LangModel" maxOccurs="1" minOccurs="1"/>
 												</xs:choice>
 												<xs:attribute name="name" type="xs:string">
 													<xs:annotation>

@@ -110,7 +110,27 @@ namespace Peach.Core
 		/// If the same SEED value is specified the same
 		/// iterations will be performed with same values.
 		/// </remarks>
-		public uint randomSeed = (uint)DateTime.Now.Ticks & 0x0000FFFF;
+		public uint randomSeed
+		{
+			get
+			{
+				return _randomSeed;
+			}
+			set
+			{
+				_randomSeed = value;
+				userDefinedSeed = true;
+			}
+		}
+
+		/// <summary>
+		/// Was randomSeed set by the user.
+		/// </summary>
+		public bool userDefinedSeed
+		{
+			get;
+			private set;
+		}
 
 		/// <summary>
 		/// Peach version currently running (used by logger)
@@ -132,6 +152,8 @@ namespace Peach.Core
 		/// Called every iteration by the engine to check if it should stop
 		/// </summary>
 		public StopHandler shouldStop = null;
+
+		private uint _randomSeed = (uint)DateTime.Now.Ticks & 0x0000FFFF;
 	}
 }
 

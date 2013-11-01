@@ -281,6 +281,57 @@ namespace Peach.Core
     [Serializable]
     public class Fault
     {
+		/// <summary>
+		/// Data contained in fault.
+		/// </summary>
+		[Serializable]
+		public class Data
+		{
+			public Data()
+			{
+			}
+
+			public Data(string key, byte[] value)
+			{
+				Key = key;
+				Value = value;
+			}
+
+			public string Key { get; set; }
+			public byte[] Value { get; set; }
+		}
+
+		[Serializable]
+		public class Mutation
+		{
+			public string element { get; set; }
+			public string mutator { get; set; }
+		}
+
+		[Serializable]
+		public class Model
+		{
+			public string dataSet { get; set; }
+			public string parameter { get; set; }
+			public string name { get; set; }
+			public List<Mutation> mutations { get; set; }
+		}
+
+		[Serializable]
+		public class Action
+		{
+			public string name;
+			public string type;
+			public List<Model> models { get; set; }
+		}
+
+		[Serializable]
+		public class State
+		{
+			public string name { get; set; }
+			public List<Action> actions { get; set; }
+		}
+
         public Fault()
         {
         }
@@ -328,10 +379,12 @@ namespace Peach.Core
         /// Major hash of fault used for bucketting.
         /// </summary>
         public string majorHash = null;
+
         /// <summary>
         /// Minor hash of fault used for bucketting.
         /// </summary>
         public string minorHash = null;
+
         /// <summary>
         /// Exploitability of fault, used for bucketting.
         /// </summary>
@@ -346,7 +399,13 @@ namespace Peach.Core
         /// <summary>
         /// Binary data collected about fault.  Key is filename, value is content.
         /// </summary>
-        public SerializableDictionary<string, byte[]> collectedData = new SerializableDictionary<string, byte[]>();
+        public List<Data> collectedData = new List<Data>();
+        // Note: We can't use a Dictionary<> since it won't remote between mono and .net correctly
+
+        /// <summary>
+        /// List of all states run when fault was detected.
+        /// </summary>
+        public List<State> states = new List<State>();
     }
 }
 

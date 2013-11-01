@@ -61,25 +61,20 @@ namespace Peach.Core.Analysis
 				TraceCompleted(this, fileName, count, totalCount);
 		}
 
-		static bool Is64BitProcess
-		{
-			get { return IntPtr.Size == 8; }
-		}
-
 		/// <summary>
 		/// Load the blocks
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-		static List<int> LoadBlocks(string fileName)
+		static List<ulong> LoadBlocks(string fileName)
 		{
 			using (StreamReader sin = File.OpenText(fileName))
 			{
 				string line;
-				List<int> blocks = new List<int>();
+				List<ulong> blocks = new List<ulong>();
 
 				while ((line = sin.ReadLine()) != null)
-					blocks.Add(int.Parse(line));
+					blocks.Add(ulong.Parse(line));
 
 				return blocks;
 			}
@@ -97,25 +92,25 @@ namespace Peach.Core.Analysis
 		public string[] RunCoverage(string [] sampleFiles, string [] traceFiles)
 		{
 			// All blocks we are covering
-			var coveredBlocks = new List<int>();
+			var coveredBlocks = new List<ulong>();
 			var minset = new List<string>();
 
 			// Number of blocks in trace file
-			var blocksInTraceFile = new Dictionary<string, List<int>>();
+			var blocksInTraceFile = new Dictionary<string, List<ulong>>();
 
 			// Load blocks
 			foreach (string traceFile in traceFiles)
 				blocksInTraceFile[traceFile] = LoadBlocks(traceFile);
 
 			// List of items sorted by count of blocks
-			var sortedTraceBlocksByCount = new List<KeyValuePair<string, List<int>>>(blocksInTraceFile.ToArray < KeyValuePair<string, List<int>>>());
+			var sortedTraceBlocksByCount = new List<KeyValuePair<string, List<ulong>>>(blocksInTraceFile.ToArray<KeyValuePair<string, List<ulong>>>());
 			sortedTraceBlocksByCount.Sort((firstPair, nextPair) =>
 					{
 						return firstPair.Value.Count.CompareTo(nextPair.Value.Count);
 					}
 				);
 
-			foreach(KeyValuePair<string, List<int>> keyValue in sortedTraceBlocksByCount)
+			foreach (KeyValuePair<string, List<ulong>> keyValue in sortedTraceBlocksByCount)
 			{
 				if(coveredBlocks.Count == 0)
 				{
@@ -148,11 +143,11 @@ namespace Peach.Core.Analysis
 		/// <param name="child"></param>
 		/// <param name="master"></param>
 		/// <returns></returns>
-		protected List<int> Delta(List<int> child, List<int> master)
+		protected List<ulong> Delta(List<ulong> child, List<ulong> master)
 		{
-			List<int> delta = new List<int>();
+			List<ulong> delta = new List<ulong>();
 
-			foreach (int bblock in child)
+			foreach (ulong bblock in child)
 			{
 				if (!master.Contains(bblock))
 					delta.Add(bblock);

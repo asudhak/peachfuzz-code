@@ -198,14 +198,14 @@ namespace PeachValidator
 			set;
 		}
 
-		public int Position
+		public string Position
 		{
-			get { return (int)(StartBits / 8); }
+			get { return FmtBits(StartBits); }
 		}
 
-		public int Length
+		public string Length
 		{
-			get { return StopBits == 0 ? 0 : (int)((StopBits - StartBits + 7) / 8); }
+			get { return FmtBits(StopBits - StartBits); }
 		}
 
 		public bool Error
@@ -220,6 +220,17 @@ namespace PeachValidator
 			{
 				return DataElement.DefaultValue == null ? "" : DataElement.DefaultValue.ToString();
 			}
+		}
+
+		private static string FmtBits(long bits)
+		{
+			long bytes = bits / 8;
+			long remain = bits % 8;
+
+			if (remain == 0)
+				return bytes.ToString();
+
+			return string.Format("{0}-{1}", bytes, remain);
 		}
 
 		public List<CrackNode> Children = new List<CrackNode>();

@@ -18,13 +18,13 @@ namespace Peach.Core.Test.Agent.Monitors
 		class Params : Dictionary<string, string> { }
 
 		private Fault[] faults;
-		private uint faultIteration;
+		private string faultIteration;
 
 		[SetUp]
 		public void SetUp()
 		{
 			faults = null;
-			faultIteration = 0;
+			faultIteration = "0";
 		}
 
 		void _Fault(RunContext context, uint currentIteration, Dom.StateModel stateModel, Fault[] faults)
@@ -152,7 +152,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			th.Start(windowName);
 			evt.WaitOne();
 
-			faultIteration = 1;
+			faultIteration = "C";
 
 			try
 			{
@@ -181,7 +181,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			th.Start(windowName);
 			evt.WaitOne();
 
-			faultIteration = 1;
+			faultIteration = "C";
 
 			try
 			{

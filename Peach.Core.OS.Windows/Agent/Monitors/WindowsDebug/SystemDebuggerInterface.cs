@@ -46,25 +46,25 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 	public class SystemDebuggerInstance
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-		public static bool ExitInstance = false;
+
+		object mutex = new object();
+
 		SystemDebugger _dbg = null;
 		Thread _dbgThread = null;
+		ManualResetEvent _dbgCreated;
+		Exception _exception = null;
 
 		public string commandLine = null;
 		public string processName = null;
 		public string service = null;
-
 		public string startOnCall = null;
 
 		public bool ignoreFirstChanceGuardPage = false;
 		public bool ignoreSecondChanceGuardPage = false;
 		public bool noCpuKill = false;
 
-		public bool dbgExited = false;
+		public bool caughtException { get { return crashInfo != null; } }
 		public Fault crashInfo = null;
-
-		ManualResetEvent _dbgCreated;
-		Exception runException = null;
 		
 		public SystemDebuggerInstance()
 		{
@@ -72,115 +72,93 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public int ProcessId
 		{
-			get { return (int)_dbg.dwProcessId; }
-		}
-
-		public bool caughtException
-		{
-			get
-			{
-				return crashInfo != null;
-			}
+			get; private set;
 		}
 
 		public bool IsRunning
 		{
 			get
 			{
-				if (_dbg == null)
-					return false;
-
-				try
+				lock (mutex)
 				{
-					using (var p = System.Diagnostics.Process.GetProcessById(_dbg.dwProcessId))
-					{
-						if (p != null && !p.HasExited)
-							return true;
-					}
+					return _dbg != null;
 				}
-				catch (ArgumentException)
-				{
-					return false;
-				}
-				catch (System.Runtime.InteropServices.COMException)
-				{
-					// Handle closed out from underneeth?
-					return true;
-				}
-
-				dbgExited = true;
-				StopDebugger();
-
-				return false;
 			}
 		}
 
 		public void StartDebugger()
 		{
-			if (_dbg != null || _dbgThread != null)
-				FinishDebugging();
+			FinishDebugging();
+
+			System.Diagnostics.Debug.Assert(_dbg == null);
+			System.Diagnostics.Debug.Assert(_dbgCreated == null);
+			System.Diagnostics.Debug.Assert(_dbgThread == null);
+			System.Diagnostics.Debug.Assert(_exception == null);
+			System.Diagnostics.Debug.Assert(crashInfo == null);
 
 			_dbgCreated = new ManualResetEvent(false);
-			runException = null;
-
 			_dbgThread = new Thread(new ThreadStart(Run));
 			_dbgThread.Start();
 
-			// Wait for process to start up.
+			// Wait for worker thread to start the process to up.
 			_dbgCreated.WaitOne();
 
 			if(_dbg == null)
 			{
-				System.Diagnostics.Debug.Assert(runException != null);
-				var ex = runException;
-				runException = null;
+				_dbgThread.Join();
+				_dbgThread = null;
+				_dbgCreated.Close();
+				_dbgThread = null;
+
+				System.Diagnostics.Debug.Assert(_exception != null);
+				var ex = _exception;
+
+				StopDebugger();
+
 				throw new PeachException(ex.Message, ex);
 			}
 
-			_dbg.processStarted.WaitOne();
+			ProcessId = _dbg.ProcessId;
 		}
 
 		public void StopDebugger()
 		{
-			if (_dbg == null)
-				return;
+			lock (mutex)
+			{
+				if (_dbg != null)
+				{
+					_dbg.TerminateProcess();
+					_dbg = null;
+				}
+			}
 
-			_dbg.processExit = true;
-
-			if(_dbgThread.IsAlive)
+			if (_dbgThread != null)
+			{
 				_dbgThread.Join();
+				_dbgThread = null;
+			}
 
-			// remember if we caught an exception
-			var b = this.caughtException;
+			if (_dbgCreated != null)
+			{
+				_dbgCreated.Close();
+				_dbgCreated = null;
+			}
 
-			dbgExited = true;
-			_dbg.Close();
-			_dbg = null;
-			_dbgThread = null;
-			_dbgCreated.Close();
-			_dbgCreated = null;
+			_exception = null;
 		}
 
 		public void FinishDebugging()
 		{
-			//if (_thread.IsAlive)
 			StopDebugger();
-			_dbg = null;
+
 			crashInfo = null;
-
-			//ExitInstance = true;
 		}
 
-		bool continueDebugging()
-		{
-			return !caughtException;
-		}
-
-		public void Run()
+		void Run()
 		{
 			try
 			{
-				_dbg = null;
+				System.Diagnostics.Debug.Assert(_dbg == null);
 
 				if (commandLine != null)
 				{
@@ -217,7 +195,18 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					using (ServiceController srv = new ServiceController(service))
 					{
 						if (srv.Status == ServiceControllerStatus.Stopped)
+						{
 							srv.Start();
+
+							try
+							{
+								srv.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+							}
+							catch (Exception ex)
+							{
+								throw new PeachException("Timed out waiting for service '" + service + "' to start.", ex);
+							}
+						}
 
 						using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
 						{
@@ -229,17 +218,22 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					_dbg = SystemDebugger.AttachToProcess(processId);
 				}
 
-				_dbgCreated.Set();
-				_dbg.HandleAccessViolation = new HandleAccessViolation(HandleAccessViolation);
+				_dbg.HandleAccessViolation = HandleAccessViolation;
+				_dbg.ProcessCreated = ProcessCreated;
 				_dbg.MainLoop();
 			}
 			catch (Exception ex)
 			{
 				logger.Error("Run(): Caught exception starting debugger: " + ex.ToString());
-				runException = ex;
+				_exception = ex;
 			}
 			finally
 			{
+				lock (mutex)
+				{
+					_dbg = null;
+				}
+
 				try
 				{
 					_dbgCreated.Set();
@@ -250,35 +244,39 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			}
 		}
 
-		public void HandleAccessViolation(UnsafeMethods.DEBUG_EVENT DebugEv)
+		void ProcessCreated()
 		{
-			bool handle = false;
+			_dbgCreated.Set();
+		}
 
+		bool HandleAccessViolation(UnsafeMethods.DEBUG_EVENT DebugEv)
+		{
 			if (DebugEv.u.Exception.dwFirstChance == 1)
 			{
 				// Only some first chance exceptions are interesting
+				bool handled = false;
 
 				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0x80000001 ||
 					DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC000001D)
 				{
-					handle = true;
+					handled = true;
 				}
 
 				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
 				{
 					// A/V on EIP || DEP
 					if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
-						handle = true;
+						handled = true;
 
 					// write a/v not near null
 					else if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 1 &&
 						DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[1].ToInt64() != 0)
-						handle = true;
+						handled = true;
 				}
 
 				// Skip uninteresting first chance
-				if (handle == false)
-					return;
+				if (!handled)
+					return true;
 			}
 
 			Fault fault = new Fault();
@@ -306,7 +304,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			fault.description = output.ToString();
 
 			crashInfo = fault;
-			_dbg.processExit = true;
+
+			return false;
 		}
 	}
 }

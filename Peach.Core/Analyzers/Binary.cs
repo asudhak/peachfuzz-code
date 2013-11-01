@@ -38,6 +38,7 @@ using System.Reflection;
 
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
 
 using NLog;
 
@@ -78,7 +79,7 @@ namespace Peach.Core.Analyzers
 
         const int MINCHARS = 5;
 
-        public override void asDataElement(DataElement parent, object dataBuffer)
+        public override void asDataElement(DataElement parent, Dictionary<DataElement, Position> positions)
         {
             if (!(parent is Dom.Blob))
                 throw new PeachException("Error, Binary analyzer only operates on Blob elements!");
@@ -112,24 +113,40 @@ namespace Peach.Core.Analyzers
                 {
                     if (chars >= MINCHARS)
                     {
+                        long len = bs.LengthBits;
+
                         // Only treat this as a string if MINCHARS were found
                         bs.Seek(-chars, SeekOrigin.End);
 
+                        var bits = bs.SliceBits(bs.LengthBits - bs.PositionBits);
                         var str = new Dom.String();
-                        str.DefaultValue = new Variant(bs.SliceBits(bs.LengthBits - bs.PositionBits));
-
+                        str.DefaultValue = new Variant(bits);
                         bs.Seek(-chars, SeekOrigin.End);
                         bs.SetLength(bs.Position);
 
                         // Save off any data before the string 1st
-                        bs = saveData(block, bs);
+                        bs = saveData(block, bs, positions, data.PositionBits - 8 - len);
 
                         // Add the string 2nd
                         block.Add(str);
 
+                        long end = data.PositionBits - 8;
+                        long begin = end - (8 * chars);
+
+                        if (positions != null)
+                            positions[str] = new Position(begin, end);
+
                         // Potentially analyze the string further
                         if (analyzeStrings)
-                            new StringTokenAnalyzer(args).asDataElement(str, str.DefaultValue);
+                        {
+                            var other = positions != null ? new Dictionary<DataElement, Position>() : null;
+
+                            new StringTokenAnalyzer(args).asDataElement(str, other);
+
+                            if (other != null)
+                                foreach (var kv in other)
+                                    positions[kv.Key] = new Position(kv.Value.begin + begin, kv.Value.end + begin);
+                        }
                     }
 
                     chars = 0;
@@ -138,7 +155,7 @@ namespace Peach.Core.Analyzers
                 bs.WriteByte((byte)value);
             }
 
-            bs = saveData(block, bs);
+            bs = saveData(block, bs, positions, data.LengthBits - bs.LengthBits);
 
             if (logger.IsDebugEnabled)
             {
@@ -147,9 +164,11 @@ namespace Peach.Core.Analyzers
             }
 
             parent.parent[parent.name] = block;
+            if (positions != null)
+                positions[block] = new Position(0, data.LengthBits);
         }
 
-        protected BitStream saveData(Block block, BitStream data)
+        protected BitStream saveData(Block block, BitStream data, Dictionary<DataElement, Position> positions, long offset)
         {
             if (data.Length == 0)
                 return data;
@@ -158,6 +177,9 @@ namespace Peach.Core.Analyzers
             elem.DefaultValue = new Variant(data);
 
             block.Add(elem);
+
+            if (positions != null)
+                positions[elem] = new Position(offset, offset + data.LengthBits);
 
             return new BitStream();
         }

@@ -214,6 +214,58 @@ namespace Peach.Core.Test.Analyzers
             Assert.AreEqual(@"\t\n\r ", dom.dataModels[0][0].InternalValue.BitsToString());
             Assert.AreEqual(3, ((DataElementContainer) ((DataElementContainer) dom.dataModels[0][0])[0]).Count);                      
         }
+
+		[Test]
+		public void StringTokenSizeTracking()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String>
+			<Analyzer class='StringToken'/>
+		</String>
+	</DataModel>
+</Peach>";
+
+			var history = new List<string>();
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			var data = Bits.Fmt("{0}", @"<Peach>");
+			var cracker = new DataCracker();
+
+			cracker.EnterHandleNodeEvent += (elem, pos, bs) => { history.Add("Enter: " + pos.ToString()); };
+			cracker.ExitHandleNodeEvent += (elem, pos, bs) => { history.Add("Exit: " + pos.ToString()); };
+			cracker.AnalyzerEvent += (elem, bs) => { history.Add("Analyze Elem"); };
+
+			cracker.CrackData(dom.dataModels[0], data);
+
+			var expected = new string[]
+			{
+				"Enter: 0", // Begin DataModel
+				"Enter: 0", // Begin String
+				"Exit: 56", // End String
+				"Exit: 56", // End Data Model
+				"Analyze Elem",
+				"Enter: 0", // Top level block
+				    "Enter: 0",     // '<' Token Block
+				       "Enter: 0",
+				       "Exit: 0",
+				       "Enter: 0",  // '<' Token begin
+				       "Exit: 8",   // '<' Token end
+				       "Enter: 8",
+				           "Enter: 8", // 'Peach' begin
+				           "Exit: 48", // 'Peach' end
+				           "Enter: 48", // '>' Token begin
+				           "Exit: 56",  // '>' Token end
+				           "Enter: 56",
+				           "Exit: 56",
+				       "Exit: 56",
+				    "Exit: 56",
+				"Exit: 56",
+			};
+
+			Assert.AreEqual(expected, history.ToArray());
+		}
     }
 }
 

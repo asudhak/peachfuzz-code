@@ -318,19 +318,19 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual(3, faults.Length);
 
 			Assert.AreEqual("Collected 0 packets.", faults[0].description);
-			Assert.AreEqual(1, faults[0].collectedData.Keys.Count);
-			Assert.True(faults[0].collectedData.ContainsKey("Mon0_NetworkCapture.pcap"));
-			Assert.Greater(faults[0].collectedData["Mon0_NetworkCapture.pcap"].Length, 0);
+			Assert.AreEqual(1, faults[0].collectedData.Count);
+			Assert.AreEqual("Mon0_NetworkCapture.pcap", faults[0].collectedData[0].Key);
+			Assert.Greater(faults[0].collectedData[0].Value.Length, 0);
 
 			Assert.AreEqual("Collected 1 packets.", faults[1].description);
-			Assert.AreEqual(1, faults[1].collectedData.Keys.Count);
-			Assert.True(faults[1].collectedData.ContainsKey("Mon1_NetworkCapture.pcap"));
-			Assert.Greater(faults[1].collectedData["Mon1_NetworkCapture.pcap"].Length, 0);
+			Assert.AreEqual(1, faults[1].collectedData.Count);
+			Assert.AreEqual("Mon1_NetworkCapture.pcap", faults[1].collectedData[0].Key);
+			Assert.Greater(faults[1].collectedData[0].Value.Length, 0);
 
 			Assert.AreEqual("Collected 2 packets.", faults[2].description);
-			Assert.AreEqual(1, faults[2].collectedData.Keys.Count);
-			Assert.True(faults[2].collectedData.ContainsKey("Mon2_NetworkCapture.pcap"));
-			Assert.Greater(faults[2].collectedData["Mon2_NetworkCapture.pcap"].Length, 0);
+			Assert.AreEqual(1, faults[2].collectedData.Count);
+			Assert.AreEqual("Mon2_NetworkCapture.pcap", faults[2].collectedData[0].Key);
+			Assert.Greater(faults[2].collectedData[0].Value.Length, 0);
 
 			testResults.Add("Success");
 		}

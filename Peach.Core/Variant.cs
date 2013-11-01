@@ -60,7 +60,8 @@ namespace Peach.Core
 			String,
 			ByteString,
 			BitStream,
-			Boolean
+			Boolean,
+			Double,
 		}
 
 		VariantType _type = VariantType.Unknown;
@@ -71,6 +72,7 @@ namespace Peach.Core
 		string _valueString;
 		byte[] _valueByteArray;
 		BitwiseStream _valueBitStream = null;
+		double? _valueDouble;
 
 		public Variant()
 		{
@@ -91,6 +93,11 @@ namespace Peach.Core
 			SetValue(v);
 		}
 
+		public Variant(double v)
+		{
+			SetValue(v);
+		}
+
 		public Variant(string v)
 		{
 			SetValue(v);
@@ -102,6 +109,9 @@ namespace Peach.Core
 			{
 				case "system.int32":
 					SetValue(Int32.Parse(v));
+					break;
+				case "system.double":
+					SetValue(Double.Parse(v));
 					break;
 				case "system.string":
 					SetValue(v);
@@ -156,6 +166,15 @@ namespace Peach.Core
 			_valueByteArray = null;
 		}
 
+		public void SetValue(double v)
+		{
+			_type = VariantType.Double;
+			_valueDouble = v;
+			_valueString = null;
+			_valueBitStream = null;
+			_valueByteArray = null;
+		}
+		
 		public void SetValue(string v)
 		{
 			_type = VariantType.String;
@@ -213,6 +232,11 @@ namespace Peach.Core
 							throw new ApplicationException("Converting this ulong to an int would cause loss of data [" + v._valueULong + "]");
 
 						return (int)v._valueULong;
+					case VariantType.Double:
+						if (v._valueDouble > int.MaxValue)
+							throw new ApplicationException("Converting this double to an int would cause loss of data [" + v._valueULong + "]");
+
+						return (int)v._valueDouble;
 					case VariantType.String:
 						if (v._valueString == string.Empty)
 							return 0;
@@ -256,6 +280,11 @@ namespace Peach.Core
 							throw new ApplicationException("Converting this ulong to an int would cause loss of data");
 
 						return (uint)v._valueULong;
+					case VariantType.Double:
+						if (v._valueDouble > uint.MaxValue)
+							throw new ApplicationException("Converting this double to an int would cause loss of data");
+
+						return (uint)v._valueDouble;
 					case VariantType.String:
 						if (v._valueString == string.Empty)
 							return 0;
@@ -298,6 +327,14 @@ namespace Peach.Core
 						{
 							return (long)v._valueULong;
 						}
+					case VariantType.Double:
+						if (v._valueDouble > long.MaxValue)
+							throw new ApplicationException("Converting this double to a long would cause loss of data");
+
+						unchecked
+						{
+							return (long)v._valueDouble;
+						}
 					case VariantType.String:
 						if (v._valueString == string.Empty)
 							return 0;
@@ -331,6 +368,8 @@ namespace Peach.Core
 						return (ulong)v._valueLong;
 					case VariantType.ULong:
 						return (ulong)v._valueULong;
+					case VariantType.Double:
+						return (ulong)v._valueDouble;
 					case VariantType.String:
 						if (v._valueString == string.Empty)
 							return 0;
@@ -346,6 +385,47 @@ namespace Peach.Core
 			}
 		}
 
+		/// <summary>
+		/// Access variant as an double value.
+		/// </summary>
+		/// <param name="v">Variant to cast</param>
+		/// <returns>int representation of value</returns>
+		public static explicit operator double(Variant v)
+		{
+			if (v == null)
+				throw new ApplicationException("Parameter v is null");
+			unchecked
+			{
+				switch (v._type)
+				{
+					case VariantType.Int:
+						return (double)v._valueInt;
+					case VariantType.Long:
+						if (v._valueLong > double.MaxValue || v._valueLong < double.MinValue)
+							throw new ApplicationException("Converting this long to an double would cause loss of data [" + v._valueLong + "]");
+
+						return (double)v._valueLong;
+					case VariantType.ULong:
+						if (v._valueULong > double.MaxValue)
+							throw new ApplicationException("Converting this ulong to an double would cause loss of data [" + v._valueULong + "]");
+
+						return (double)v._valueULong;
+					case VariantType.Double:
+						return (double)v._valueDouble;
+					case VariantType.String:
+						if (v._valueString == string.Empty)
+							return 0.0;
+
+						return Convert.ToDouble(v._valueString);
+					case VariantType.ByteString:
+						throw new NotSupportedException("Unable to convert byte[] to int type.");
+					case VariantType.BitStream:
+						throw new NotSupportedException("Unable to convert BitStream to int type.");
+					default:
+						throw new NotSupportedException("Unable to convert to unknown type.");
+				}
+			}
+		}
 		/// <summary>
 		/// Access variant as string value.
 		/// </summary>
@@ -364,6 +444,8 @@ namespace Peach.Core
 					return Convert.ToString(v._valueLong);
 				case VariantType.ULong:
 					return Convert.ToString(v._valueULong);
+				case VariantType.Double:
+					return Convert.ToString(v._valueDouble);
 				case VariantType.String:
 					return v._valueString;
 				case VariantType.Boolean:
@@ -399,6 +481,8 @@ namespace Peach.Core
 					throw new NotSupportedException("Unable to convert long to byte[] type.");
 				case VariantType.ULong:
 					throw new NotSupportedException("Unable to convert ulong to byte[] type.");
+				case VariantType.Double:
+					throw new NotSupportedException("Unable to convert double to byte[] type.");
 				case VariantType.String:
 					throw new NotSupportedException("Unable to convert string to byte[] type.");
 				case VariantType.ByteString:
@@ -423,6 +507,8 @@ namespace Peach.Core
 					throw new NotSupportedException("Unable to convert long to BitStream type.");
 				case VariantType.ULong:
 					throw new NotSupportedException("Unable to convert ulong to BitStream type.");
+				case VariantType.Double:
+					throw new NotSupportedException("Unable to convert double to BitStream type.");
 				case VariantType.String:
 					throw new NotSupportedException("Unable to convert string to BitStream type.");
 				case VariantType.ByteString:
@@ -449,6 +535,8 @@ namespace Peach.Core
 					throw new NotSupportedException("Unable to convert long to bool type.");
 				case VariantType.ULong:
 					throw new NotSupportedException("Unable to convert ulong to bool type.");
+				case VariantType.Double:
+					throw new NotSupportedException("Unable to convert double to bool type.");
 				case VariantType.String:
 					throw new NotSupportedException("Unable to convert string to bool type.");
 				case VariantType.ByteString:
@@ -513,16 +601,17 @@ namespace Peach.Core
 
 		private static string BitsToString(BitwiseStream bs)
 		{
+			if (bs.LengthBits == 0)
+				return "";
+
 			byte[] buf = new byte[32];
 			long pos = bs.PositionBits;
 			bs.SeekBits(0, System.IO.SeekOrigin.Begin);
 			int len = bs.Read(buf, 0, buf.Length);
 
-			if (len == 0)
-				return "";
-
 			StringBuilder ret = new StringBuilder();
-			ret.AppendFormat("{0:x2}", buf[0]);
+			if (len > 0)
+				ret.AppendFormat("{0:x2}", buf[0]);
 
 			int end = Math.Min(len, buf.Length);
 			for (int i = 1; i < end; ++i)
@@ -581,34 +670,14 @@ namespace Peach.Core
 
 		public override bool Equals(object obj)
 		{
-			if (obj == null)
-				return false;
-
-			if (obj.GetType() != obj.GetType())
-				return false;
-
-			return ((Variant)obj) == this;
+			// This is a reference type so perform reference Equals
+			return base.Equals(obj);
 		}
 
 		public override int GetHashCode()
 		{
-			switch (_type)
-			{
-				case VariantType.Int:
-					return this._valueInt.GetHashCode();
-				case VariantType.Long:
-					return this._valueLong.GetHashCode();
-				case VariantType.ULong:
-					return this._valueULong.GetHashCode();
-				case VariantType.String:
-					return this._valueString.GetHashCode();
-				case VariantType.ByteString:
-					return _valueByteArray.GetHashCode();
-				case VariantType.BitStream:
-					return _valueBitStream.GetHashCode();
-				default:
-					return base.GetHashCode();
-			}
+			// This is a reference type so perform reference GetHashCode
+			return base.GetHashCode();
 		}
 
 		public override string ToString()
@@ -621,6 +690,8 @@ namespace Peach.Core
 					return this._valueLong.ToString();
 				case VariantType.ULong:
 					return this._valueULong.ToString();
+				case VariantType.Double:
+					return this._valueDouble.ToString();
 				case VariantType.String:
 					if (this._valueString.Length <= 80)
 						return this._valueString.ToString();
@@ -663,6 +734,9 @@ namespace Peach.Core
 				case VariantType.ULong:
 					_valueULong = (ulong) reader.ReadContentAsLong();
 					break;
+				case VariantType.Double:
+					_valueDouble = (double) reader.ReadContentAsDouble();
+					break;
 				case VariantType.String:
 					_valueString = reader.ReadContentAsString();
 					break;
@@ -699,6 +773,9 @@ namespace Peach.Core
 					break;
 				case VariantType.ULong:
 					writer.WriteValue(_valueULong);
+					break;
+				case VariantType.Double:
+					writer.WriteValue(_valueDouble);
 					break;
 				case VariantType.String:
 					writer.WriteValue(_valueString);

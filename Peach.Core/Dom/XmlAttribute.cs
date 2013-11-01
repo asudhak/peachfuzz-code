@@ -124,7 +124,12 @@ namespace Peach.Core.Dom
 			var elem = this[0];
 			var xmlAttrib = doc.doc.CreateAttribute(attributeName, ns);
 			xmlAttrib.Value = "|||" + elem.fullName + "|||";
-			doc.values.Add(xmlAttrib.Value, elem.InternalValue);
+
+			if (elem is Number)
+				doc.values.Add(xmlAttrib.Value, new Variant((string)elem.InternalValue));
+			else
+				doc.values.Add(xmlAttrib.Value, new Variant(elem.Value));
+
 			return xmlAttrib;
 		}
 

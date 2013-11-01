@@ -182,12 +182,6 @@ namespace Peach.Core.Test.Mutators
 			// Ensure we don't crash by trying to run the ArrayVarianceMutator after removing the str data element
 
 			Assert.AreEqual(30, dataModels.Count);
-
-			foreach (var item in iterStrategies)
-			{
-				if (item.StartsWith("DataElementRemove"))
-					Assert.AreEqual(-1, item.LastIndexOf(';'));
-			}
 		}
 
 		[Test]

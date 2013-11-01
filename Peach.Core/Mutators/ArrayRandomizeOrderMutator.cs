@@ -95,7 +95,9 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj is Dom.Array && obj.isMutable)
+            var array = obj as Dom.Array;
+
+            if ( array != null && array.isMutable && array.Count > 1 )
                 return true;
 
             return false;

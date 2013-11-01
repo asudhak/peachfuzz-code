@@ -6,6 +6,7 @@ using Peach.Core.Agent;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 using System.Text.RegularExpressions;
+using System.Net.Sockets;
 
 namespace Peach.Core.Agent.Monitors
 {
@@ -79,6 +80,38 @@ namespace Peach.Core.Agent.Monitors
 			}
 		}
 
+		string TryRunCommand()
+		{
+			using (var cmd = _sshClient.CreateCommand(Command))
+			{
+				return cmd.Execute();
+			}
+		}
+
+		string RunCommand()
+		{
+			if (_sshClient == null)
+			{
+				SessionStarting();
+			}
+			try
+			{
+				return TryRunCommand();
+			}
+			catch (SocketException)
+			{
+				SessionFinished();
+				SessionStarting();
+				return TryRunCommand();
+			}
+			catch (SshConnectionException)
+			{
+				SessionFinished();
+				SessionStarting();
+				return TryRunCommand();
+			}
+		}
+
 		public override void SessionStarting()
 		{
 			if (KeyPath != null)
@@ -100,7 +133,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (_sshClient != null)
 			{
-				_sshClient.Disconnect();
+				_sshClient.Dispose();
 				_sshClient = null;
 			}
 		}
@@ -114,18 +147,15 @@ namespace Peach.Core.Agent.Monitors
 
 			try
 			{
-				using (SshCommand cmd = _sshClient.RunCommand(Command))
-				{
-					_fault.title = "Response";
-					_fault.description = cmd.Execute();
+				_fault.title = "Response";
+				_fault.description = RunCommand();
 
-					bool match = _regex.IsMatch(_fault.description);
+				bool match = _regex.IsMatch(_fault.description);
 
-					if (match)
-						_fault.type = FaultOnMatch ? FaultType.Fault : FaultType.Data;
-					else
-						_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;
-				}
+				if (match)
+					_fault.type = FaultOnMatch ? FaultType.Fault : FaultType.Data;
+				else
+					_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;
 			}
 			catch (Exception ex)
 			{

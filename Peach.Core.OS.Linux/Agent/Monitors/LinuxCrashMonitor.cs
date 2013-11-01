@@ -81,9 +81,20 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 			if (!File.Exists(handler))
 				throw new PeachException("Error, LinuxCrashMonitor did not find crash handler located at '" + handler + "'.");
 
-			origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
+            try
+            {
+                origionalCorePattern = File.ReadAllText("/proc/sys/kernel/core_pattern", System.Text.Encoding.ASCII);
+            }
+            catch(UnauthorizedAccessException ae)
+            {
+                throw new PeachException("Error, Peach does not have permissions to access core_pattern: re-run Peach as root or elevated user", ae);
+            }
+            catch(Exception ex)
+            {
+                throw new PeachException("Error, accessing core_pattern failed",ex);
+            }
 
-			if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) == -1)
+		    if (origionalCorePattern.IndexOf(linuxCrashHandlerExe) == -1)
 			{
 				// Register our crash handler via proc file system
 
@@ -222,7 +233,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 					{
 						if (file.IndexOf(executable) != -1)
 						{
-							fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
+							fault.collectedData.Add(new Fault.Data(Path.GetFileName(file), File.ReadAllBytes(file)));
 							File.Delete(file);
 							break;
 						}
@@ -230,7 +241,7 @@ namespace Peach.Core.OS.Linux.Agent.Monitors
 					else
 					{
 						// Support multiple crash files
-						fault.collectedData[Path.GetFileName(file)] = File.ReadAllBytes(file);
+						fault.collectedData.Add(new Fault.Data(Path.GetFileName(file), File.ReadAllBytes(file)));
 						File.Delete(file);
 					}
 				}

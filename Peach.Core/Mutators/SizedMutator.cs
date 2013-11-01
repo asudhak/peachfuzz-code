@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using Peach.Core.Dom;
 using Peach.Core.IO;
 
@@ -51,7 +52,7 @@ namespace Peach.Core.Mutators
 		public new static bool supportedDataElement(DataElement obj)
 		{
 			// verify data element has size relation
-			if (obj.isMutable && obj.relations.hasFromSizeRelation)
+			if (obj.isMutable && obj.relations.From<SizeRelation>().Any())
 				return true;
 
 			return false;
@@ -73,7 +74,7 @@ namespace Peach.Core.Mutators
 
 			obj.mutationFlags = MutateOverride.Default;
 
-			var sizeRelation = obj.relations.getFromSizeRelation();
+			var sizeRelation = obj.relations.From<SizeRelation>().FirstOrDefault();
 			if (sizeRelation == null)
 			{
 				Logger.Error("Error, sizeRelation == null, unable to perform mutation.");
@@ -107,6 +108,17 @@ namespace Peach.Core.Mutators
 			}
 
 			var data = objOf.Value;
+
+			if (sizeRelation.lengthType == LengthType.Bytes)
+				data = GrowByBytes(data, growBy);
+			else
+				data = GrowByBits(data, growBy);
+
+			objOf.MutatedValue = new Variant(data);
+		}
+
+		private static BitwiseStream GrowByBytes(BitwiseStream data, long growBy)
+		{
 			var dataLen = data.Length;
 			var tgtLen = dataLen + growBy;
 
@@ -158,8 +170,65 @@ namespace Peach.Core.Mutators
 
 				data = lst;
 			}
+			return data;
+		}
 
-			objOf.MutatedValue = new Variant(data);
+		private static BitwiseStream GrowByBits(BitwiseStream data, long growBy)
+		{
+			var dataLen = data.LengthBits;
+			var tgtLen = dataLen + growBy;
+
+			if (tgtLen <= 0)
+			{
+				// Return empty if size is negative
+				data = new BitStream();
+			}
+			else if (data.LengthBits == 0)
+			{
+				// If objOf is a block, data is a BitStreamList
+				data = new BitStream();
+
+				// Fill with 'A' if we don't have any data
+				while (data.LengthBits < growBy)
+					data.WriteByte((byte)'A');
+
+				// Truncate to the correct bit length
+				data.SetLengthBits(growBy);
+			}
+			else
+			{
+				// Loop data over and over until we get to our target length
+
+				var lst = new BitStreamList();
+
+				while (tgtLen > dataLen)
+				{
+					lst.Add(data);
+					tgtLen -= dataLen;
+				}
+
+				var dst = new BitStream();
+
+				data.Seek(0, System.IO.SeekOrigin.Begin);
+
+				while (tgtLen > 0)
+				{
+					ulong bits;
+					int len = data.ReadBits(out bits, (int)Math.Min(tgtLen, 64));
+
+					if (len == 0)
+						data.Seek(0, System.IO.SeekOrigin.Begin);
+					else
+						dst.WriteBits(bits, len);
+
+					tgtLen -= len;
+				}
+
+				lst.Add(dst);
+
+				data = lst;
+			}
+			return data;
 		}
 	}
 }

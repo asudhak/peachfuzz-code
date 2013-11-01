@@ -19,6 +19,6 @@ namespace Peach.Core.Dom.XPath
 		StateModel,
 		Agent,
 		Test,
-		Run
+		Run,
 	}
 }

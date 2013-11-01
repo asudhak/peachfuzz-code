@@ -67,6 +67,8 @@ namespace Peach.Core.Runtime
 
 		public int exitCode = 1;
 
+		protected RunConfiguration config = null;
+
 		/// <summary>
 		/// Copyright message
 		/// </summary>
@@ -92,7 +94,7 @@ namespace Peach.Core.Runtime
 		{
 			AppDomain.CurrentDomain.DomainUnload += new EventHandler(CurrentDomain_DomainUnload);
 			Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
-			RunConfiguration config = new RunConfiguration();
+			config = new RunConfiguration();
 			config.debug = false;
 
 			try
@@ -113,7 +115,6 @@ namespace Peach.Core.Runtime
 				Console.Write("[[ ");
 				Console.ForegroundColor = ConsoleColor.DarkCyan;
 				Console.WriteLine(Copyright);
-				Console.WriteLine();
 				Console.ForegroundColor = color;
 
 				if (args.Length == 0)
@@ -134,6 +135,7 @@ namespace Peach.Core.Runtime
 					{ "a|agent=", v => agent = v},
 					{ "D|define=", v => AddNewDefine(v) },
 					{ "definedvalues=", v => definedValues.Add(v) },
+					{ "config=", v => definedValues.Add(v) },
 					{ "parseonly", v => parseOnly = true },
 					{ "bob", var => bob() },
 					{ "charlie", var => Charlie() },
@@ -149,6 +151,15 @@ namespace Peach.Core.Runtime
 				Platform.LoadAssembly();
 
 				AddNewDefine("Peach.Cwd=" + Environment.CurrentDirectory);
+
+				// Do we have pit.xml.config file?
+				// If so load it as the first defines file.
+				if (extra.Count > 0 && File.Exists(extra[0]) &&
+					extra[0].ToLower().EndsWith(".xml") &&
+					File.Exists(extra[0] + ".config"))
+				{
+					definedValues.Insert(0, extra[0] + ".config");
+				}
 
 				foreach (var definedValuesFile in definedValues)
 				{
@@ -303,7 +314,7 @@ to use Peach XML files.  Currently this runtime is still in development
 but already exposes several abilities to the end-user such as performing
 simple fuzzer runs and performing parsing tests of Peach XML files.
 
-Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.
+Please submit any bugs to https://forums.peachfuzzer.com.
 
 Syntax:
 
@@ -334,7 +345,7 @@ Syntax:
   --range N,M                Provide a range of test #'s to be run.
   -D/define=KEY=VALUE        Define a substitution value.  In your PIT you can
                              ##KEY## and it will be replaced for VALUE.
-  --definedvalues=FILENAME   XML file containing defined values
+  --config=FILENAME          XML file containing defined values
 
 
 Peach Agent

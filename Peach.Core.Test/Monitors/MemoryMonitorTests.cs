@@ -26,7 +26,7 @@ namespace Peach.Core.Test.Monitors
 		class Params : Dictionary<string, string> { }
 
 		int thisPid;
-		private uint faultIteration;
+		private string faultIteration;
 		private Fault[] faults;
 
 		[SetUp]
@@ -37,7 +37,7 @@ namespace Peach.Core.Test.Monitors
 				thisPid = p.Id;
 			}
 
-			faultIteration = 0;
+			faultIteration = "0";
 			faults = null;
 		}
 
@@ -169,7 +169,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestFaultData()
 		{
 			// If fault occurs, monitor should always return data
-			faultIteration = 1;
+			faultIteration = "C";
 
 			Run(new Params { { "Pid", thisPid.ToString() } }, true);
 

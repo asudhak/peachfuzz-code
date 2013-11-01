@@ -109,6 +109,50 @@ namespace Peach.Core.Test.Fixups
 			Assert.AreEqual(1, values.Count);
 			Assert.AreEqual(precalcChecksum, values[0].ToArray());
 		}
+
+		[Test]
+		public void Test3()
+		{
+			/* Sample TCP Packet from Wireshark
+0000   f0 de f1 e3 1b 6a 00 1b 21 75 7a 40 08 00 45 20  .....j..!uz@..E 
+0010   00 34 7d de 00 00 2a 06 a8 a5 4a 7d 14 65 0a 00  .4}...*...J}.e..
+0020   01 3f 01 bb d1 dc 0b d8 60 51 19 66 92 c7 80 10  .?......`Q.f....
+0030   02 95 c8 be 00 00 01 01 05 0a 19 66 92 c6 19 66  ...........f...f
+0040   92 c7                                            ..
+			*/
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Blob name='TcpPkt1' valueType='hex' value='01bbd1dc0bd86051196692c780100295'/>
+
+		<Number name='Checksum' endian='big' size='16'>
+			<Fixup class='TCPChecksumFixup'>
+				<Param name='ref' value='DM'/>
+				<Param name='src' value='74.125.20.101'/>
+				<Param name='dst' value='10.0.1.63'/>
+			</Fixup>
+		</Number>
+
+		<Blob name='TcpPkt2' valueType='hex' value='00000101050a196692c6196692c7'/>
+	</DataModel>
+</Peach>
+";
+			// From Packet, Checksum is: c8 be
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var val = dom.dataModels[0].Value;
+			val = dom.dataModels[0][1].Value;
+
+			// verify values
+			byte[] precalcChecksum = new byte[] { 0xc8, 0xbe };
+			Assert.AreEqual(precalcChecksum, val.ToArray());
+
+		}
+
 	}
 }
 

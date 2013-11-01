@@ -159,7 +159,7 @@ namespace Peach.Core.Agent.Monitors
 			foreach (string file in _crashLogs)
 			{
 				string key = Path.GetFileName(file);
-				fault.collectedData[key] = File.ReadAllBytes(file);
+				fault.collectedData.Add(new Fault.Data(key, File.ReadAllBytes(file)));
 			}
 
 			return fault;

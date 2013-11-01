@@ -38,6 +38,8 @@ using System.Management;
 using Peach.Core.Dom;
 using Peach.Core.Agent.Monitors;
 
+using NLog;
+
 namespace Peach.Core.Agent.Monitors.WindowsDebug
 {
 	/// <summary>
@@ -50,6 +52,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 	/// </remarks>
 	public class DebuggerInstance : MarshalByRefObject
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public static bool ExitInstance = false;
 		public static DateTime LastHeartBeat = DateTime.MaxValue;
 		public static DebuggerInstance Instance = null;
@@ -75,6 +79,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public DebuggerInstance()
 		{
+			logger.Debug("DebuggerInstance");
+
 			Instance = this;
 			LastHeartBeat = DateTime.Now;
 		}
@@ -82,6 +88,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		public int ProcessId
 		{
 			get { return _dbg.processId; }
+		}
+
+		public void HeartBeat()
+		{
+			LastHeartBeat = DateTime.Now;
 		}
 
 		public bool IsRunning
@@ -95,6 +106,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void StartDebugger()
 		{
+			logger.Debug("StartDebugger");
+
 			LastHeartBeat = DateTime.Now;
 			_thread = new Thread(new ThreadStart(Run));
 			_thread.Start();
@@ -108,19 +121,30 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void StopDebugger()
 		{
+			logger.Debug(">> StopDebugger");
+
 			LastHeartBeat = DateTime.Now;
 			_dbg.exitDebugger.Set();
 
 			for (int cnt = 0; _thread.IsAlive && cnt < 100; cnt++)
 				Thread.Sleep(100);
 
-			_thread.Abort();
-			_thread.Join();
+			if (_thread.IsAlive)
+			{
+				logger.Debug("Aborting thread...");
+				_thread.Abort();
+			}
 
+			logger.Debug("Joining thread...");
+			_thread.Join(1000);
+
+			logger.Debug("<< StopDebugger");
 		}
 
 		public void FinishDebugging()
 		{
+			logger.Debug("FinishDebugging");
+
 			LastHeartBeat = DateTime.Now;
 			if (_thread.IsAlive)
 				StopDebugger();
@@ -130,6 +154,8 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public void Run()
 		{
+			logger.Debug("Run");
+
 			using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine(winDbgPath))
 			{
 				_dbg.dbgSymbols.SetSymbolPath(symbolsPath);

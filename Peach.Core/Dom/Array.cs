@@ -95,6 +95,14 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public override void RemoveAt(int index)
+		{
+			base.RemoveAt(index);
+
+			if (this.Count == 0 && origionalElement == null)
+				parent.Remove(this);
+		}
+
 		public override void Crack(DataCracker context, BitStream data, long? size)
 		{
 			long startPos = data.PositionBits;
@@ -103,7 +111,7 @@ namespace Peach.Core.Dom
 			if (this.Count > 0)
 			{
 				origionalElement = this[0];
-				Clear(false);
+				Clear();
 			}
 
 			long min = minOccurs;
@@ -189,6 +197,9 @@ namespace Peach.Core.Dom
 			if (node.hasAttr("occurs"))
 				array.occurs = node.getAttrInt("occurs");
 
+			if (node.hasAttr("mutable"))
+				array.isMutable = node.getAttrBool("mutable");
+
 			return array;
 		}
 
@@ -206,17 +217,20 @@ namespace Peach.Core.Dom
 			return clone;
 		}
 
-		[OnSerializing]
-		private void OnSerializing(StreamingContext context)
+		[OnCloning]
+		private bool OnCloning(object context)
 		{
-			DataElement.CloneContext ctx = context.Context as DataElement.CloneContext;
-			if (ctx == null)
-				return;
+			DataElement.CloneContext ctx = context as DataElement.CloneContext;
 
-			// If we are the root of the clone operation, and we have a child
-			// that shares our name, so tell the cloner to rename our 1st child
-			if (this == ctx.root && this.Count > 0 && ctx.oldName == this[0].name)
-				ctx.rename.Add(this[0]);
+			if (ctx != null)
+			{
+				// If we are being renamed and our 1st child has the same name
+				// as us, it needs to be renamed as well
+				if (ctx.rename.Contains(this) && Count > 0 && name == this[0].name)
+					ctx.rename.Add(this[0]);
+			}
+
+			return true;
 		}
 
 		/// <summary>

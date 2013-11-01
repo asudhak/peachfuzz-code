@@ -112,7 +112,7 @@ namespace Peach.Core.IO
 					long offset = item.PositionBits;
 					item.PositionBits = PositionBits - pos;
 					ulong tmp;
-					int len = item.ReadBits(out tmp, count);
+					int len = item.ReadBits(out tmp, needed);
 					item.PositionBits = offset;
 
 					bits <<= len;

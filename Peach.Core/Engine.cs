@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Threading;
+using System.Linq;
 
 using Peach.Core.Agent;
 using Peach.Core.Dom;
@@ -64,6 +65,7 @@ namespace Peach.Core
 		public delegate void ReproFaultEventHandler(RunContext context, uint currentIteration, StateModel stateModel, Fault[] faultData);
 		public delegate void ReproFailedEventHandler(RunContext context, uint currentIteration);
 		public delegate void TestFinishedEventHandler(RunContext context);
+		public delegate void TestWarningEventHandler(RunContext context, string msg);
 		public delegate void TestErrorEventHandler(RunContext context, Exception e);
 		public delegate void HaveCountEventHandler(RunContext context, uint totalIterations);
 		public delegate void HaveParallelEventHandler(RunContext context, uint startIteration, uint stopIteration);
@@ -100,7 +102,11 @@ namespace Peach.Core
 		/// </summary>
 		public event TestFinishedEventHandler TestFinished;
 		/// <summary>
-		/// Fired when an error occurs during a Test.
+		/// Fired when a recoverable warning occurs during a Test.
+		/// </summary>
+		public event TestWarningEventHandler TestWarning;
+		/// <summary>
+		/// Fired when we know the count of iterations the Test will take.
 		/// </summary>
 		public event TestErrorEventHandler TestError;
 		/// <summary>
@@ -155,6 +161,11 @@ namespace Peach.Core
 		{
 			if (TestError != null)
 				TestError(context, e);
+		}
+		public void OnTestWarning(RunContext context, string msg)
+		{
+			if (TestWarning != null)
+				TestWarning(context, msg);
 		}
 		public void OnHaveCount(RunContext context, uint totalIterations)
 		{
@@ -223,16 +234,15 @@ namespace Peach.Core
 				if (watcher != null)
 					watcher.Initialize(this, context);
 
-				foreach (var logger in context.test.loggers)
+				foreach (var logger in test.loggers)
 					logger.Initialize(this, context);
 
 				runTest(context.dom, context.test, context);
 			}
 			finally
 			{
-				if (context.test != null)
-					foreach (var logger in context.test.loggers)
-						logger.Finalize(this, context);
+				foreach (var logger in test.loggers)
+					logger.Finalize(this, context);
 
 				if (watcher != null)
 					watcher.Finalize(this, context);
@@ -269,6 +279,14 @@ namespace Peach.Core
 				context.agentManager = new AgentManager(context);
 				context.reproducingFault = false;
 				context.reproducingIterationJumpCount = 1;
+
+				if (context.config.userDefinedSeed && !test.strategy.UsesRandomSeed)
+				{
+					var attr = ClassLoader.GetAttributes<MutationStrategyAttribute>(test.strategy.GetType(), null).Where(a => a.IsDefault == true).FirstOrDefault();
+					var name = attr != null ? attr.Name : test.strategy.GetType().Name;
+					var msg = "The '{0}' mutation strategy does not allow setting the random seed.".Fmt(name);
+					OnTestWarning(context, msg);
+				}
 
 				// Get mutation strategy
 				MutationStrategy mutationStrategy = test.strategy;
@@ -317,6 +335,8 @@ namespace Peach.Core
 				// First iteration is always a control/recording iteration
 				context.controlIteration = true;
 				context.controlRecordingIteration = true;
+
+				test.markMutableElements();
 
 				OnTestStarting(context);
 

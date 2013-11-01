@@ -153,6 +153,13 @@ namespace Peach.Core.Runtime
 			Console.WriteLine("Test '" + context.test.name + "' error: " + e.Message);
 		}
 
+		protected override void Engine_TestWarning(RunContext context, string msg)
+		{
+			Console.Write("\n");
+			WriteErrorMark();
+			Console.WriteLine(msg);
+		}
+
 		protected override void Engine_TestFinished(RunContext context)
 		{
 			Console.Write("\n");
@@ -162,6 +169,8 @@ namespace Peach.Core.Runtime
 
 		protected override void Engine_TestStarting(RunContext context)
 		{
+			Console.Write("\n");
+
 			if (context.config.countOnly)
 			{
 				WriteInfoMark();

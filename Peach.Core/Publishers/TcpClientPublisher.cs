@@ -37,6 +37,7 @@ using System.Net.Sockets;
 using Peach.Core.Dom;
 
 using NLog;
+using System.Diagnostics;
 
 namespace Peach.Core.Publishers
 {
@@ -45,13 +46,15 @@ namespace Peach.Core.Publishers
 	[Publisher("tcp.Tcp")]
 	[Parameter("Host", typeof(string), "Hostname or IP address of remote host")]
 	[Parameter("Port", typeof(ushort), "Local port to listen on")]
-	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data/connection (default 3000)", "3000")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data (default 3000)", "3000")]
+	[Parameter("ConnectTimeout", typeof(int), "Max milliseconds to wait for connection (default 10000)", "10000")]
 	public class TcpClientPublisher : TcpPublisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
 
 		public string Host { get; set; }
+		public int ConnectTimeout { get; set; }
 
 		public TcpClientPublisher(Dictionary<string, Variant> args)
 			: base(args)
@@ -62,30 +65,43 @@ namespace Peach.Core.Publishers
 		{
 			base.OnOpen();
 
-			for (int cnt = 0; cnt < 10 && _tcp == null; ++cnt)
+			var timeout = ConnectTimeout;
+			var sw = new Stopwatch();
+
+			for (int i = 1; _tcp == null; i *= 2)
 			{
 				try
 				{
 					// Must build a new client object after every failed attempt to connect.
 					// For some reason, just calling BeginConnect again does not work on mono.
 					_tcp = new TcpClient();
+
+					sw.Restart();
+
 					var ar = _tcp.BeginConnect(Host, Port, null, null);
-					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(Timeout)))
+					if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(timeout)))
 						throw new TimeoutException();
 					_tcp.EndConnect(ar);
 				}
 				catch (Exception ex)
 				{
+					sw.Stop();
+
 					if (_tcp != null)
 					{
 						_tcp.Close();
 						_tcp = null;
 					}
 
-					if (cnt < 9)
+					timeout -= (int)sw.ElapsedMilliseconds;
+
+					if (timeout > 0)
 					{
-						Logger.Warn("open: Warn, Unable to connect to remote host {0} on port {1}.  Trying again...", Host, Port);
-						Thread.Sleep(500);
+						int waitTime = Math.Min(timeout, i);
+						timeout -= waitTime;
+
+						Logger.Warn("open: Warn, Unable to connect to remote host {0} on port {1}.  Trying again in {2}ms...", Host, Port, waitTime);
+						Thread.Sleep(waitTime);
 					}
 					else
 					{

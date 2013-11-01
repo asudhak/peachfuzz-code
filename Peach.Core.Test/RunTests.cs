@@ -78,11 +78,11 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestWaitTime()
 		{
-			RunWaitTime("2", 2.0, 2.1);
-			RunWaitTime("0.1", 0.1, 0.2);
+			RunWaitTime("2", 1.9, 2.1);
+			RunWaitTime("0.1", 0.09, 0.11);
 		}
 
-		public void RunTest(uint start, uint replay, uint max = 100, uint repro = 0)
+		public void RunTest(uint start, string faultIter, uint max = 100, string reproIter = "0")
 		{
 			string template = @"
 <Peach>
@@ -104,7 +104,6 @@ namespace Peach.Core.Test
 	<Agent name='LocalAgent'>
 		<Monitor class='FaultingMonitor'>
 			<Param name='Iteration' value='{0}'/>
-			<Param name='Replay' value='true'/>
 			<Param name='Repro' value='{1}'/>
 		</Monitor>
 	</Agent>
@@ -119,7 +118,7 @@ namespace Peach.Core.Test
 
 			iterationHistory.Clear();
 
-			string xml = string.Format(template, replay, repro);
+			string xml = string.Format(template, faultIter, reproIter);
 
 			PitParser parser = new PitParser();
 
@@ -147,7 +146,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestFirstSearch()
 		{
-			RunTest(0, 1);
+			RunTest(0, "1");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -162,7 +161,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestSecondSearch()
 		{
-			RunTest(0, 2);
+			RunTest(0, "2");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -178,7 +177,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestMiddleSearch()
 		{
-			RunTest(1, 10);
+			RunTest(1, "10");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -198,7 +197,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeSearch()
 		{
-			RunTest(6, 10);
+			RunTest(6, "10");
 
 			uint[] expected = new uint[] {
 				6,  // Control
@@ -216,7 +215,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeBegin()
 		{
-			RunTest(6, 6);
+			RunTest(6, "6");
 
 			uint[] expected = new uint[] {
 				6, // Control
@@ -231,7 +230,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeMaxEqual()
 		{
-			RunTest(1, 10, 4);
+			RunTest(1, "10", 4);
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -249,7 +248,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeMaxLess()
 		{
-			RunTest(1, 10, 5);
+			RunTest(1, "10", 5);
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -267,7 +266,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeNotPastFaultOne()
 		{
-			RunTest(1, 4, 100, 3);
+			RunTest(1, "3,4", 100, "3");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -285,7 +284,7 @@ namespace Peach.Core.Test
 		[Test]
 		public void TestRangeNotPastFault()
 		{
-			RunTest(1, 10, 100, 3);
+			RunTest(1, "3,10", 100, "3");
 
 			uint[] expected = new uint[] {
 				1,  // Control
@@ -299,6 +298,28 @@ namespace Peach.Core.Test
 				6,  // Move back 4
 				4,  // Move back 6
 				11, 12 };
+
+			uint[] actual = iterationHistory.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void TestRangeNotPastFault2()
+		{
+			RunTest(1, "5", 100, "3");
+
+			uint[] expected = new uint[] {
+				1,  // Control
+				1, 2, 3, 4,
+				5, // Trigger replay
+				5, // Initial replay
+				4,
+				3, // Repro
+				4,
+				5, // Trigger Replay
+				5,
+				4, // Repro failed
+				6, 7, 8, 9, 10, 11, 12 };
 
 			uint[] actual = iterationHistory.ToArray();
 			Assert.AreEqual(expected, actual);
@@ -553,6 +574,99 @@ namespace Peach.Core.Test
 
 			var value = dom.tests[0].stateModel.states["initial"].actions[0].dataModel.Value;
 			Assert.AreEqual(8, value.Length);
+		}
+
+		[Test]
+		public void ArrayDisable()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Number name='num' size='32' minOccurs='0' occurs='2' value='1'/>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='StateModel' initialState='State1'>
+		<State name='State1'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data >
+					<Field name='num[-1]' value='' />
+					<Field name='str' value='Hello World' />
+				</Data>
+			</Action>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var value1 = dom.tests[0].stateModel.states["State1"].actions[0].dataModel.Value;
+			var exp1 = Bits.Fmt("{0}", "Hello World");
+			Assert.AreEqual(exp1.ToArray(), value1.ToArray());
+
+			var value2 = dom.tests[0].stateModel.states["State1"].actions[1].dataModel.Value;
+			var exp2 = Bits.Fmt("{0:L32}{1:L32}", 1, 1);
+			Assert.AreEqual(exp2.ToArray(), value2.ToArray());
+		}
+
+		[Test]
+		public void ArrayOverride()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='ArrayTest'>
+		<Blob name='Data' minOccurs='3' maxOccurs='5' length='2' value='44 44' valueType='hex'  /> 
+	</DataModel>
+
+	<StateModel name='StateModel' initialState='State1'>
+		<State name='State1'>
+			<Action type='output'>
+				<DataModel ref='ArrayTest'/>
+				<Data >
+					<Field name='Data[2]' value='41 41' valueType='hex' />
+					<Field name='Data[1]' value='42 42' valueType='hex' />
+					<Field name='Data[0]' value='45 45' valueType='hex'/>
+				</Data>
+			</Action> 
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			var value = dom.tests[0].stateModel.states["State1"].actions[0].dataModel.Value;
+			Assert.AreEqual(6, value.Length);
+
+			var expected = new byte[] { 0x45, 0x45, 0x42, 0x42, 0x41, 0x41 };
+			Assert.AreEqual(expected, value.ToArray());
 		}
 	}
 }

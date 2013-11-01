@@ -219,6 +219,8 @@ namespace Peach.Core.Publishers
 		{
 			// Try to make sure 1 byte is available for reading.  Without doing this,
 			// state models with an initial state of input can miss the message.
+			// Also, ensure the read timeout is reset on every input action.
+			_timeout = false;
 			WantBytes(1);
 		}
 
@@ -246,20 +248,20 @@ namespace Peach.Core.Publishers
 			if (count == 0)
 				return;
 
-			lock (_clientLock)
-			{
-				// If the connection has been closed, we are not going to get anymore bytes.
-				if (_client == null)
-					return;
-
-				// If we have already timed out, 
-			}
-
 			DateTime start = DateTime.Now;
 
 			// Wait up to Timeout milliseconds to see if count bytes become available
 			while (true)
 			{
+				lock (_clientLock)
+				{
+					// If the connection has been closed, we are not going to get anymore bytes.
+					if (_client == null)
+						return;
+
+					// If we have already timed out, 
+				}
+
 				lock (_bufferLock)
 				{
 					if ((_buffer.Length - _buffer.Position) >= count || _timeout)

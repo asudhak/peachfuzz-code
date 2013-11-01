@@ -45,6 +45,7 @@ namespace Peach.Core.Publishers
 	[Parameter("Template", typeof(string), "Data template for publishing")]
 	[Parameter("Publish", typeof(string), "How to publish data, base64 or url.", "base64")]
 	[Parameter("DataToken", typeof(string), "Token to replace with data in template", "##DATA##")]
+	[Parameter("Timeout", typeof(int), "Time in milliseconds to wait for client response", "60000")]
 	public class WebSocketPublisher : Publisher
 	{
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -59,6 +60,7 @@ namespace Peach.Core.Publishers
 		public string Template { get; set; }
 		public string Publish { get; set; }
 		public string DataToken { get; set; }
+		public int Timeout { get; set; }
 
 		string _template;
 
@@ -101,9 +103,20 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(BitwiseStream data)
 		{
-			_evaluated.Reset();
-			_session.Send(BuildMessage(data));
-			_evaluated.WaitOne();
+			try
+			{
+				logger.Debug(">> OnOutput");
+				logger.Debug("Waiting for evaluated or client ready msg");
+				_evaluated.WaitOne(Timeout);
+				_evaluated.Reset();
+				_session.Send(BuildMessage(data));
+				logger.Debug("<< OnOutput");
+			}
+			catch (Exception ex)
+			{
+				logger.Debug(ex.ToString());
+				throw;
+			}
 		}
 
 		protected string BuildTemplate(BitwiseStream data)
@@ -131,6 +144,7 @@ namespace Peach.Core.Publishers
 			ret.Append(msg.ToString(Newtonsoft.Json.Formatting.None));
 			ret.Append("\n");
 
+			// Compatability with older usage
 			msg["type"] = "msg";
 			msg["content"] = "evaluate";
 
@@ -147,7 +161,7 @@ namespace Peach.Core.Publishers
 			_msgReceived.Set();
 
 			var json = JObject.Parse(message);
-			if (((string)json["msg"]) == "Evaluation complete")
+			if (((string)json["msg"]) == "Evaluation complete" || ((string)json["msg"]) == "Client ready")
 				_evaluated.Set();
 		}
 	}

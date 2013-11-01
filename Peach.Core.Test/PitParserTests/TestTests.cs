@@ -59,24 +59,19 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"   <Agent name=\"AgentWindows\"> " +
-				"		<Monitor class=\"WindowsDebugEngine\"> " +
-				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
-				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
-				"		</Monitor>" +
-				"	</Agent>" +
 				"	<Test name=\"Default\">" +
-				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
-				"		<Publisher class=\"File\">" +
-				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
-				"		</Publisher>" +
+				"		<Publisher class=\"Null\" />" +
 				"		<Exclude/>" +
 				"	</Test> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
 
 			Assert.AreEqual(true, dom.dataModels[0][0].isMutable);
 			Assert.AreEqual(true, dom.dataModels[0][1].isMutable);
@@ -99,24 +94,19 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"   <Agent name=\"AgentWindows\"> " +
-				"		<Monitor class=\"WindowsDebugEngine\"> " +
-				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
-				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
-				"		</Monitor>" +
-				"	</Agent>" +
 				"	<Test name=\"Default\">" +
-				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
-				"		<Publisher class=\"File\">" +
-				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
-				"		</Publisher>" +
+				"		<Publisher class=\"Null\" />" +
 				"		<Exclude/>" +
 				"	</Test> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
 
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -139,18 +129,9 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"   <Agent name=\"AgentWindows\"> " +
-				"		<Monitor class=\"WindowsDebugEngine\"> " +
-				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
-				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
-				"		</Monitor>" +
-				"	</Agent>" +
 				"	<Test name=\"Default\">" +
-				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
-				"		<Publisher class=\"File\">" +
-				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
-				"		</Publisher>" +
+				"		<Publisher class=\"Null\" />" +
 				"		<Exclude/>" +
 				"		<Include xpath=\"//Blob2\"/>" +
 				"	</Test> " +
@@ -158,6 +139,10 @@ namespace Peach.Core.Test.PitParserTests
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
 
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(true,  dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -184,18 +169,9 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"   <Agent name=\"AgentWindows\"> " +
-				"		<Monitor class=\"WindowsDebugEngine\"> " +
-				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
-				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
-				"		</Monitor>" +
-				"	</Agent>" +
 				"	<Test name=\"Default\">" +
-				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
-				"		<Publisher class=\"File\">" +
-				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
-				"		</Publisher>" +
+				"		<Publisher class=\"Null\" />" +
 				"		<Exclude/>" +
 				"		<Include xpath=\"//Block2\"/>" +
 				"	</Test> " +
@@ -203,6 +179,10 @@ namespace Peach.Core.Test.PitParserTests
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
 
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -234,24 +214,19 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"   <Agent name=\"AgentWindows\"> " +
-				"		<Monitor class=\"WindowsDebugEngine\"> " +
-				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
-				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
-				"		</Monitor>" +
-				"	</Agent>" +
 				"	<Test name=\"Default\">" +
-				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
-				"		<Publisher class=\"File\">" +
-				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
-				"		</Publisher>" +
+				"		<Publisher class=\"Null\" />" +
 				"		<Exclude xpath=\"//Blob2\"/>" +
 				"	</Test> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
 
 			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -278,24 +253,19 @@ namespace Peach.Core.Test.PitParserTests
 				"			</Action>" +
 				"		</State>" +
 				"	</StateModel>" +
-				"   <Agent name=\"AgentWindows\"> " +
-				"		<Monitor class=\"WindowsDebugEngine\"> " +
-				"			<Param name=\"CommandLine\" value=\"C:\\Peach3\\Release\\CrashableServer.exe 127.0.0.1 4244\" /> " +
-				"			<Param name=\"WinDbgPath\" value=\"C:\\Program Files (x86)\\Debugging Tools for Windows (x86)\" /> " +
-				"		</Monitor>" +
-				"	</Agent>" +
 				"	<Test name=\"Default\">" +
-				"		<Agent ref=\"AgentWindows\" platform=\"windows\"/>" +
 				"		<StateModel ref=\"TheStateModel\" />" +
-				"		<Publisher class=\"File\">" +
-				"			<Param name=\"FileName\" value=\"test.fuzzed.txt\" /> " +
-				"		</Publisher>" +
+				"		<Publisher class=\"Null\" />" +
 				"		<Exclude xpath=\"//Block2\"/>" +
 				"	</Test> " +
 				"</Peach>";
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration() { singleIteration = true };
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
 
 			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
 			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
@@ -309,6 +279,56 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(1, cont.Count);
 			Assert.AreEqual(false, cont.isMutable);
 			Assert.AreEqual(false, cont[0].isMutable);
+		}
+
+		[Test]
+		public void IncludeExcludeScope()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str'/>
+		<Number name='num' size='32'/>
+		<Blob name='blob'/>
+	</DataModel>
+
+	<StateModel name='StateModel' initialState='initial'>
+		<State name='initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action> 
+		</State>
+	</StateModel>
+
+	<Test name='Test0'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+		<Exclude xpath='//str'/>
+	</Test>
+
+	<Test name='Test1'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+		<Exclude xpath='//blob'/>
+	</Test>
+</Peach>
+";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration();
+			config.singleIteration = true;
+			config.runName = "Test1";
+
+			var engine = new Engine(null);
+			engine.startFuzzing(dom, config);
+
+			var dm = dom.tests[1].stateModel.states["initial"].actions[0].dataModel;
+			Assert.AreEqual(3, dm.Count);
+			Assert.True(dm[0].isMutable);
+			Assert.True(dm[1].isMutable);
+			Assert.False(dm[2].isMutable);
 		}
 
 		[Test]

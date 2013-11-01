@@ -168,13 +168,13 @@ namespace Peach.Core.Test.Monitors
 
 		class Params : Dictionary<string, string> { }
 
-		private uint faultIteration;
+		private string faultIteration;
 		private Fault[] faults;
 
 		[SetUp]
 		public void SetUp()
 		{
-			faultIteration = 0;
+			faultIteration = "0";
 			faults = null;
 		}
 
@@ -274,7 +274,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestNoConnOtherFault()
 		{
 			// Different monitor faults, SocketMonitor returns FaultType.Data
-			faultIteration = 1;
+			faultIteration = "C";
 
 			ushort port = TestBase.MakePort(41000, 42000);
 
@@ -309,7 +309,7 @@ namespace Peach.Core.Test.Monitors
 			// If 'Host' is specified, use the interface that has the best route to 'Host'
 			// Otherwise, use "0.0.0.0".
 
-			faultIteration = 1;
+			faultIteration = "C";
 
 			ushort port = TestBase.MakePort(43000, 44000);
 
@@ -384,7 +384,7 @@ namespace Peach.Core.Test.Monitors
 		public void TestConnNoFaultOtherFault()
 		{
 			// receive connection, FaultOnSuccess = true results in fault data when other monitor faults
-			faultIteration = 1;
+			faultIteration = "C";
 
 			ushort port = TestBase.MakePort(45000, 46000);
 			string desc;
@@ -431,8 +431,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 
 		[Test, ExpectedException(ExpectedException = typeof(PeachException), ExpectedMessage = "Could not start monitor \"Socket\".  Multicast hosts are not supported with the tcp protocol.")]
@@ -467,8 +467,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 
 		[Test]
@@ -496,8 +496,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 
 		[Test]
@@ -517,8 +517,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 
 		[Test]
@@ -538,8 +538,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 
 		[Test]
@@ -559,8 +559,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 
 		[Test]
@@ -580,8 +580,8 @@ namespace Peach.Core.Test.Monitors
 			Assert.AreEqual("SocketMonitor", faults[0].detectionSource);
 			Assert.AreEqual(FaultType.Fault, faults[0].type);
 			Assert.AreEqual(desc, faults[0].description);
-			Assert.True(faults[0].collectedData.ContainsKey("Response"));
-			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData["Response"]);
+			Assert.AreEqual("Response", faults[0].collectedData[0].Key);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("Hello"), faults[0].collectedData[0].Value);
 		}
 	}
 }

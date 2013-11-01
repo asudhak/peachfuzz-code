@@ -50,12 +50,30 @@ namespace Peach.Core.Dom
 	[Parameter("from", typeof(string), "Element that receives relation value", "")]
 	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
 	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
+	[Parameter("lengthType", typeof(LengthType), "Units to compute the size in", "bytes")]
 	public class SizeRelation : Relation
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger(); 
 
 		protected bool _isRecursing = false;
-		protected bool _isByteRelation = true;
+		protected LengthType _lengthType = LengthType.Bytes;
+
+		public SizeRelation(DataElement parent)
+			: base(parent)
+		{
+		}
+
+		public LengthType lengthType
+		{
+			get
+			{
+				return _lengthType;
+			}
+			set
+			{
+				_lengthType = value;
+			}
+		}
 
 		public override long GetValue()
 		{
@@ -72,13 +90,13 @@ namespace Peach.Core.Dom
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["size"] = size;
 					state["value"] = size;
-					state["self"] = this._parent;
+					state["self"] = From;
 
 					object value = Scripting.EvalExpression(_expressionGet, state);
 					size = Convert.ToInt64(value);
 				}
 
-				if (_isByteRelation)
+				if (lengthType == LengthType.Bytes)
 					size = size * 8;
 
 				return size;
@@ -105,14 +123,14 @@ namespace Peach.Core.Dom
 				_isRecursing = true;
 				long size = Of.Value.LengthBits;
 
-				if (_isByteRelation)
+				if (lengthType == LengthType.Bytes)
 				{
 					if (_expressionSet != null)
 					{
 						Dictionary<string, object> state = new Dictionary<string, object>();
 						state["size"] = size / 8;
 						state["value"] = size / 8;
-						state["self"] = this._parent;
+						state["self"] = From;
 
 						object newValue = Scripting.EvalExpression(_expressionSet, state);
 						size = Convert.ToInt64(newValue) * 8;
@@ -127,7 +145,7 @@ namespace Peach.Core.Dom
 						Dictionary<string, object> state = new Dictionary<string, object>();
 						state["size"] = size;
 						state["value"] = size;
-						state["self"] = this._parent;
+						state["self"] = From;
 
 						object newValue = Scripting.EvalExpression(_expressionSet, state);
 						size = Convert.ToInt64(newValue);
@@ -151,13 +169,13 @@ namespace Peach.Core.Dom
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["size"] = size / 8;
 				state["value"] = size / 8;
-				state["self"] = this._parent;
+				state["self"] = From;
 
 				object newValue = Scripting.EvalExpression(_expressionSet, state);
 				size = Convert.ToInt32(newValue);
 			}
 
-			_from.DefaultValue = new Variant(size);
+			From.DefaultValue = new Variant(size);
 		}
 	}
 }

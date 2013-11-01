@@ -102,7 +102,7 @@ namespace Peach.Core.Publishers
 				if (ret == null)
 					return null;
 
-                return new Variant(ret.ToString());
+                return new Variant(Encoding.UTF8.GetBytes(ret.ToString()));
             }
             catch (Exception ex)
             {

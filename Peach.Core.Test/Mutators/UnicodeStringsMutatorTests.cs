@@ -63,6 +63,52 @@ namespace Peach.Core.Test.Mutators
             Assert.AreEqual(val3, (string)mutations[mutations.Count - 2]);
             Assert.AreEqual(val4, (string)mutations[mutations.Count - 1]);
         }
+
+		[Test]
+		public void XmlTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<XmlElement elementName='Root'>
+			<XmlAttribute attributeName='Attr'>
+				<String type='utf8' name='attr' value='Value'/>
+			</XmlAttribute>
+			<XmlElement elementName='Child'>
+				<String type='utf8' name='child' value='Child Value'/>
+			</XmlElement>
+		</XmlElement>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+		<Mutators mode='include'>
+			<Mutator class='UnicodeStringsMutator'/>
+		</Mutators>
+	</Test>
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration();
+
+			var e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.Greater(dataModels.Count, 201);
+		}
+
     }
 }
 

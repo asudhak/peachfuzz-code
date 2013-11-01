@@ -41,6 +41,7 @@ using Peach.Core.IO;
 using Peach.Core.Cracker;
 
 using NLog;
+using System.IO;
 
 namespace Peach.Core.Dom
 {
@@ -77,12 +78,27 @@ namespace Peach.Core.Dom
 			BitStream sizedData = ReadSizedData(data, size);
 			long pos = sizedData.PositionBits;
 
+			if (_isLittleEndian)
+			{
+				ulong value;
+				int len = sizedData.ReadBits(out value, (int)lengthAsBits);
+				System.Diagnostics.Debug.Assert(len == lengthAsBits);
+				value <<= (8 - (len % 8)) % 8;
+				var buf = Endian.Little.GetBytes(value, len);
+
+				sizedData = new BitStream(buf);
+				sizedData.SetLengthBits(lengthAsBits);
+				pos = 0;
+			}
+
 			foreach (DataElement child in this)
 			{
-				if (!(child is Flag))
+				var flag = child as Flag;
+
+				if (flag == null)
 					throw new CrackingFailure("Found non-Flag child.", this, data);
 
-				sizedData.SeekBits(((Flag)child).position + pos, System.IO.SeekOrigin.Begin);
+				sizedData.SeekBits(flag.position + pos, SeekOrigin.Begin);
 				context.CrackData(child, sizedData);
 			}
 		}
@@ -188,24 +204,25 @@ namespace Peach.Core.Dom
 				if (flag == null)
 					throw new ApplicationException("Flags has child thats not a flag!");
 
-				bits.SeekBits(flag.position + shift, System.IO.SeekOrigin.Begin);
-				flag.Value.SeekBits(0, System.IO.SeekOrigin.Begin);
+				bits.SeekBits(flag.position + shift, SeekOrigin.Begin);
+				flag.Value.SeekBits(0, SeekOrigin.Begin);
 				flag.Value.CopyTo(bits);
 			}
 
+
 			if (_isLittleEndian)
 			{
-				bits.SeekBits(0, System.IO.SeekOrigin.Begin);
+				bits.SeekBits(0, SeekOrigin.Begin);
 				ulong value;
 				int len = bits.ReadBits(out value, 64);
 				System.Diagnostics.Debug.Assert(len == 64);
 				ulong final = Endian.Little.GetBits(value, (int)lengthAsBits);
-				bits.Seek(0, System.IO.SeekOrigin.Begin);
+				bits.Seek(0, SeekOrigin.Begin);
 				bits.WriteBits(final, (int)lengthAsBits);
 				bits.SetLengthBits(bits.PositionBits);
 			}
 
-			bits.Seek(0, System.IO.SeekOrigin.Begin);
+			bits.Seek(0, SeekOrigin.Begin);
 
 			return new Variant(bits);
 		}

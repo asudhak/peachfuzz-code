@@ -32,6 +32,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 using Peach.Core.Dom;
+using Peach.Core.Cracker;
 
 namespace Peach.Core
 {
@@ -135,7 +136,7 @@ namespace Peach.Core
 			throw new NotImplementedException();
 		}
 
-		public virtual void asDataElement(DataElement parent, object dataBuffer)
+		public virtual void asDataElement(DataElement parent, Dictionary<DataElement, Position> positions)
 		{
 			throw new NotImplementedException();
 		}

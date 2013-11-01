@@ -36,7 +36,6 @@ namespace Peach.Core.Test.Monitors
 
                 "   <Agent name=\"LocalAgent\">" +
                 "       <Monitor class=\"FaultingMonitor\">" +
-                "           <Param name=\"FaultAlways\" value=\"true\"/>" +
                 "       </Monitor>" +
                 "   </Agent>" +
 
@@ -86,7 +85,7 @@ namespace Peach.Core.Test.Monitors
 
 	<Agent name='LocalAgent'>
 		<Monitor class='FaultingMonitor'>
-			<Param name='Iteration' value='1'/>
+			<Param name='Iteration' value='C'/>
 		</Monitor>
 	</Agent>
 

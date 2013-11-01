@@ -9,6 +9,7 @@ using Peach.Core.Analyzers;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
+using System.Diagnostics;
 
 namespace Peach.Core.Test.Publishers
 {
@@ -78,6 +79,66 @@ namespace Peach.Core.Test.Publishers
 		}
 	}
 
+	class SimpleTcpEcho : IDisposable
+	{
+		private EndPoint localEP;
+		private Socket Socket;
+		private Socket DataSocket;
+
+		public SimpleTcpEcho()
+		{
+			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			localEP = new IPEndPoint(IPAddress.Loopback, 0);
+			Socket.Bind(localEP);
+			localEP = Socket.LocalEndPoint;
+			Socket.Listen(8);
+			Socket.BeginAccept(OnAccept, null);
+		}
+
+		public int LocalPort
+		{
+			get
+			{
+				return ((IPEndPoint)localEP).Port;
+			}
+		}
+
+		public void OnAccept(IAsyncResult ar)
+		{
+			try
+			{
+				DataSocket = Socket.EndAccept(ar);
+
+				while (true)
+				{
+					byte[] recv = new byte[1024];
+					int len = DataSocket.Receive(recv);
+
+					System.Threading.Thread.Sleep(500);
+
+					DataSocket.Send(recv, len, SocketFlags.None);
+				}
+			}
+			catch
+			{
+			}
+		}
+
+		public void Dispose()
+		{
+			if (Socket != null)
+			{
+				Socket.Close();
+				Socket = null;
+			}
+
+			if (DataSocket != null)
+			{
+				DataSocket.Close();
+				DataSocket = null;
+			}
+		}
+	}
 
 	class SimpleTcpServer
 	{
@@ -305,7 +366,18 @@ namespace Peach.Core.Test.Publishers
 			config.singleIteration = true;
 
 			Engine e = new Engine(null);
+
+			var sw = new Stopwatch();
+			sw.Start();
+
 			Assert.Throws<PeachException>(delegate() { e.startFuzzing(dom, config); });
+
+			sw.Stop();
+
+			var delta = sw.ElapsedMilliseconds;
+
+			Assert.Less(delta, 10500);
+			Assert.Greater(delta, 10000);
 		}
 
 		[Test]
@@ -359,15 +431,89 @@ namespace Peach.Core.Test.Publishers
 
 			Engine e = new Engine(null);
 
-			var before = DateTime.Now;
+			var sw = new Stopwatch();
+			sw.Start();
 			e.startFuzzing(dom, config);
-			var after = DateTime.Now;
+			sw.Stop();
 
-			var delta = after - before;
+			var delta = sw.ElapsedMilliseconds;
 
-			Assert.Less(delta, TimeSpan.FromSeconds(2));
-			Assert.Greater(delta, TimeSpan.FromSeconds(1));
+			Assert.Less(delta, 2000);
+			Assert.Greater(delta, 1000);
 
+		}
+
+		[Test]
+		public void TcpTimeout2()
+		{
+			/*
+			 * Use a lazy echo server that waits 1/2 sec to reply.
+			 * Have a 1sec input timeout on the tcp publisher
+			 * Should sucessfully receive data in every input action
+			 */
+			using (var cli = new SimpleTcpEcho())
+			{
+				string xml = @"
+<Peach>
+	<DataModel name=""input"">
+		<Choice>
+			<String length=""100""/>
+			<String />
+		</Choice>
+	</DataModel>
+
+	<DataModel name=""output"">
+		<String name=""str""/>
+	</DataModel>
+
+	<StateModel name=""SM"" initialState=""InitialState"">
+		<State name=""InitialState"">
+			<Action type=""output"">
+				<DataModel ref=""output""/>
+				<Data>
+					<Field name=""str"" value=""Hello""/>
+				</Data>
+			</Action>
+			<Action type=""input"">
+				<DataModel ref=""input""/>
+			</Action>
+			<Action type=""output"">
+				<DataModel ref=""output""/>
+				<Data>
+					<Field name=""str"" value=""World""/>
+				</Data>
+			</Action>
+			<Action type=""input"">
+				<DataModel ref=""input""/>
+			</Action>
+		</State>
+	</StateModel>
+
+<Test name=""Default"">
+		<StateModel ref=""SM""/>
+		<Publisher class=""TcpClient"">
+			<Param name=""Host"" value=""127.0.0.1""/>
+			<Param name=""Port"" value=""{0}""/>
+			<Param name=""Timeout"" value=""1000""/>
+		</Publisher>
+	</Test>
+</Peach>".Fmt(cli.LocalPort);
+
+				PitParser parser = new PitParser();
+				Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+				RunConfiguration config = new RunConfiguration();
+				config.singleIteration = true;
+
+				Engine e = new Engine(null);
+
+				e.startFuzzing(dom, config);
+
+				Assert.AreEqual("Hello", dom.tests[0].stateModel.states["InitialState"].actions[0].dataModel.InternalValue.BitsToString());
+				Assert.AreEqual("Hello", dom.tests[0].stateModel.states["InitialState"].actions[1].dataModel.InternalValue.BitsToString());
+				Assert.AreEqual("World", dom.tests[0].stateModel.states["InitialState"].actions[2].dataModel.InternalValue.BitsToString());
+				Assert.AreEqual("World", dom.tests[0].stateModel.states["InitialState"].actions[3].dataModel.InternalValue.BitsToString());
+			}
 		}
 	}
 }

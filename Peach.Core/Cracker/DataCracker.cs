@@ -49,6 +49,30 @@ namespace Peach.Core.Cracker
 	#endregion
 
 	/// <summary>
+	/// Class for tracking the positions of elements.
+	/// </summary>
+	public class Position
+	{
+		public long begin { get; set; }
+		public long end { get; set; }
+
+		public Position()
+		{
+		}
+
+		public Position(long begin, long end)
+		{
+			this.begin = begin;
+			this.end = end;
+		}
+
+		public override string ToString()
+		{
+			return "Begin: {0}, End: {1}".Fmt(begin, end);
+		}
+	}
+
+	/// <summary>
 	/// Crack data into a DataModel.
 	/// </summary>
 	public class DataCracker
@@ -60,13 +84,12 @@ namespace Peach.Core.Cracker
 		#region Position Class
 
 		/// <summary>
-		/// Helper class for tracking positions of cracked elements
+		/// Helper class for tracking positions of cracked elements using
+		/// optionally available sizing information.
 		/// </summary>
-		class Position
+		class SizedPosition : Position
 		{
-			public long begin;
-			public long end;
-			public long? size;
+			public long? size { get; set; }
 
 			public override string ToString()
 			{
@@ -82,7 +105,7 @@ namespace Peach.Core.Cracker
 		/// <summary>
 		/// Collection of all elements that have been cracked so far.
 		/// </summary>
-		OrderedDictionary<DataElement, Position> _sizedElements;
+		Dictionary<DataElement, SizedPosition> _sizedElements;
 
 		/// <summary>
 		/// List of all unresolved size relations.
@@ -235,18 +258,22 @@ namespace Peach.Core.Cracker
 			return offset;
 		}
 
-		void addElements(DataElement de, BitStream data, long start, long end)
+		void addElements(DataElement de, BitStream data, Dictionary<DataElement, Position> positions, long offset)
 		{
-			OnEnterHandleNodeEvent(de, start, data);
+			Position pos;
+			if (!positions.TryGetValue(de, out pos))
+				pos = new Position() { begin = -offset, end = -offset };
+
+			OnEnterHandleNodeEvent(de, offset + pos.begin, data);
 
 			var cont = de as DataElementContainer;
 			if (cont != null)
 			{
 				foreach (var child in cont)
-					addElements(child, data, 0, 0);
+					addElements(child, data, positions, offset);
 			}
 
-			OnExitHandleNodeEvent(de, end, data);
+			OnExitHandleNodeEvent(de, offset + pos.end, data);
 		}
 
 		#endregion
@@ -257,7 +284,7 @@ namespace Peach.Core.Cracker
 
 		void handleRoot(DataElement element, BitStream data)
 		{
-			_sizedElements = new OrderedDictionary<DataElement, Position>();
+			_sizedElements = new Dictionary<DataElement, SizedPosition>();
 			_sizeRelations = new List<SizeRelation>();
 			_elementsWithAnalyzer = new List<DataElement>();
 
@@ -272,11 +299,22 @@ namespace Peach.Core.Cracker
 			{
 				OnAnalyzerEvent(elem, data);
 
-				DataElementContainer parent = elem.parent;
-				elem.analyzer.asDataElement(elem, null);
+				var positions = new Dictionary<DataElement, Position>();
+				var parent = elem.parent;
+
+				try
+				{
+					elem.analyzer.asDataElement(elem, positions);
+				}
+				catch (Exception ex)
+				{
+					throw new CrackingFailure("Exception in analyzer on '" + elem.fullName + "': " + ex.Message, elem, data, ex);
+				}
+
 				var de = parent[elem.name];
 				var pos = _sizedElements[elem];
-				addElements(de, data, pos.begin, pos.end);
+				positions[elem] = new Position() { begin = 0, end = pos.end - pos.begin };
+				addElements(de, data, positions, pos.begin);
 			}
 		}
 
@@ -348,11 +386,11 @@ namespace Peach.Core.Cracker
 
 		void handlePlacelemt(DataElement element, BitStream data)
 		{
-			var fixups = new List<Tuple<Fixup, string>>();
+			var fixups = new List<Tuple<Fixup, string, string>>();
 			DataElementContainer oldParent = element.parent;
 
 			// Ensure relations are resolved
-			foreach (Relation relation in element.relations)
+			foreach (var relation in element.relations)
 			{
 				if (relation.Of != element && relation.From != element)
 					throw new CrackingFailure("Error, unable to resolve Relations of/from to match current element.", element, data);
@@ -367,17 +405,24 @@ namespace Peach.Core.Cracker
 
 				foreach (var item in child.fixup.references)
 				{
-					if (item.Item2 != element.name)
-						continue;
-
 					var refElem = child.find(item.Item2);
 					if (refElem == null)
 						throw new CrackingFailure("Error, unable to resolve Fixup reference to match current element.", element, data);
 
 					if (refElem == element)
-						fixups.Add(new Tuple<Fixup, string>(child.fixup, item.Item1));
+						fixups.Add(new Tuple<Fixup, string, string>(child.fixup, item.Item1, null));
+					else if (!refElem.isChildOf(element))
+						fixups.Add(new Tuple<Fixup, string, string>(child.fixup, item.Item1, refElem.fullName));
 				}
 			}
+
+			// Update fixups
+			foreach (var fixup in fixups)
+			{
+				if (fixup.Item3 != null)
+					fixup.Item1.updateRef(fixup.Item2, fixup.Item3);
+			}
+
 
 			string debugName = element.debugName;
 			DataElement newElem = null;
@@ -402,7 +447,8 @@ namespace Peach.Core.Cracker
 			// Update fixups
 			foreach (var fixup in fixups)
 			{
-				fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
+				if (fixup.Item3 == null)
+					fixup.Item1.updateRef(fixup.Item2, newElem.fullName);
 			}
 
 			// Clear placement now that it has occured
@@ -485,7 +531,7 @@ namespace Peach.Core.Cracker
 				throw new CrackingFailure("Constraint failed.", element, data);
 		}
 
-		Position handleNodeBegin(DataElement elem, BitStream data)
+		SizedPosition handleNodeBegin(DataElement elem, BitStream data)
 		{
 			handleOffsetRelation(elem, data);
 
@@ -493,7 +539,7 @@ namespace Peach.Core.Cracker
 
 			long? size = getSize(elem, data);
 
-			var pos = new Position();
+			var pos = new SizedPosition();
 			pos.begin = data.PositionBits + getDataOffset();
 			pos.size = size;
 
@@ -596,7 +642,7 @@ namespace Peach.Core.Cracker
 						elem.debugName + "'.", elem, data);
 
 				// Get the position we are related to
-				Position pos;
+				SizedPosition pos;
 				if (!_sizedElements.TryGetValue(from, out pos))
 					return null;
 

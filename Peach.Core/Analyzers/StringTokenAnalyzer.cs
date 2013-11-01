@@ -36,6 +36,8 @@ using System.IO;
 using System.Reflection;
 using Peach.Core.Dom;
 using Peach.Core.IO;
+using Peach.Core.Cracker;
+using System.Linq;
 
 namespace Peach.Core.Analyzers
 {
@@ -55,6 +57,8 @@ namespace Peach.Core.Analyzers
 		protected string tokens = TOKENS;
 		protected Dictionary<string, Variant> args = null;
 		protected StringType encodingType = StringType.ascii;
+		protected Encoding encoding = null;
+		protected Dictionary<DataElement, Position> positions = null;
 
 		static StringTokenAnalyzer()
 		{
@@ -73,7 +77,7 @@ namespace Peach.Core.Analyzers
 			this.args = args;
 		}
 
-		public override void asDataElement(DataElement parent, object dataBuffer)
+		public override void asDataElement(DataElement parent, Dictionary<DataElement, Position> positions)
 		{
 			if (args != null && args.ContainsKey("Tokens"))
 				tokens = (string)args["Tokens"];
@@ -83,34 +87,40 @@ namespace Peach.Core.Analyzers
 
 			var str = parent as Dom.String;
 			encodingType = str.stringType;
+			encoding = Encoding.GetEncoding(encodingType.ToString());
 
 			// Are our tokens present in this string?
-			bool foundToken = false;
-			foreach (char c in (string)str.InternalValue)
-			{
-				if (tokens.IndexOf(c) > -1)
-				{
-					foundToken = true;
-					break;
-				}
-			}
-
-			if (!foundToken)
+			var val = (string)str.InternalValue;
+			if (!val.Any(c => tokens.IndexOf(c) > -1))
 				return;
 
-			Dom.Block block = new Block(str.name);
-			block.parent = str.parent;
-			block.parent[str.name] = block;
-			block.Add(str);
+			try
+			{
+				this.positions = positions;
 
-			// Move over relations
-			foreach (var relation in str.relations)
-				block.relations.Add(relation);
-			str.relations.Clear();
+				Dom.Block block = new Block(str.name);
+				str.parent[str.name] = block;
+				block.Add(str);
 
-			// Start splitting string.
-			foreach (char token in tokens)
-				splitOnToken(block, token);
+				// Mark the position of the block
+				if (positions != null)
+				{
+					var end = str.Value.LengthBits;
+					positions[block] = new Position(0, end);
+					positions[str] = new Position(0, end);
+				}
+
+				// Start splitting string.
+				foreach (char token in tokens)
+				{
+					long offset = 0;
+					splitOnToken(block, token, ref offset);
+				}
+			}
+			finally
+			{
+				this.positions = null;
+			}
 		}
 
 		/// <summary>
@@ -118,7 +128,8 @@ namespace Peach.Core.Analyzers
 		/// </summary>
 		/// <param name="el"></param>
 		/// <param name="token"></param>
-		protected void splitOnToken(DataElement el, char token)
+		/// <param name="offset"></param>
+		protected void splitOnToken(DataElement el, char token, ref long offset)
 		{
 			if (el is Dom.String)
 			{
@@ -126,8 +137,12 @@ namespace Peach.Core.Analyzers
 				var str = (string) el.DefaultValue;
 				var tokenIndex = str.IndexOf(token);
 
-				if(tokenIndex == -1)
+				if (tokenIndex == -1)
+				{
+					if (positions != null)
+						offset = positions[el].end;
 					return;
+				}
 
 				var preString = new Dom.String() { stringType = strEl.stringType };
 				var tokenString = new Dom.String() { stringType = strEl.stringType };
@@ -147,7 +162,27 @@ namespace Peach.Core.Analyzers
 				block.Add(postString);
 				el.parent[el.name] = block;
 
-				splitOnToken(postString, token);
+				if (positions != null)
+				{
+					var lenPre = 8 * encoding.GetByteCount((string)preString.DefaultValue);
+					var lenToken = 8 * encoding.GetByteCount((string)tokenString.DefaultValue);
+					var lenPost = 8 * encoding.GetByteCount((string)postString.DefaultValue);
+
+					var prePos = new Position() { begin = offset, end = offset + lenPre };
+					var tokenPos = new Position() { begin = prePos.end, end = prePos.end + lenToken };
+					var postPos = new Position() { begin = tokenPos.end, end = tokenPos.end + lenPost };
+					var blockPos = new Position() { begin = prePos.begin, end = postPos.end };
+
+					positions.Remove(el);
+					positions[block] = blockPos;
+					positions[preString] = prePos;
+					positions[tokenString] = tokenPos;
+					positions[postString] = postPos;
+
+					offset = postPos.begin;
+				}
+
+				splitOnToken(postString, token, ref offset);
 			}
 			else if (el is Dom.Block)
 			{
@@ -157,7 +192,7 @@ namespace Peach.Core.Analyzers
 					children.Add(child);
 
 				foreach (DataElement child in children)
-					splitOnToken(child, token);
+					splitOnToken(child, token, ref offset);
 			}
 		}
 	}

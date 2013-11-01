@@ -21,7 +21,8 @@ namespace Peach.Core.Fixups.Libraries
 
 		public virtual void Update(uint value)
 		{
-			sum += value;
+			sum += (value >> 16);
+			sum += (value & 0xffff);
 		}
 
 		public virtual void Update(byte[] buf, int offset, int count)

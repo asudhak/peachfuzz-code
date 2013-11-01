@@ -23,14 +23,14 @@ namespace Peach.Core.Test.OS.Linux.Agent.Monitors
 			var m = new LinuxDebugger(null, null, args);
 			m.SessionStarting();
 			m.IterationStarting(1, false);
-			Thread.Sleep(1000);
+			Thread.Sleep(5000);
 			m.IterationFinished();
 			Assert.AreEqual(true, m.DetectedFault());
 			Fault fault = m.GetMonitorData();
 			Assert.NotNull(fault);
 			Assert.AreEqual(1, fault.collectedData.Count);
-			Assert.True(fault.collectedData.ContainsKey("StackTrace.txt"));
-			Assert.Greater(fault.collectedData["StackTrace.txt"].Length, 0);
+			Assert.AreEqual("StackTrace.txt", fault.collectedData[0].Key);
+			Assert.Greater(fault.collectedData[0].Value.Length, 0);
 			Assert.True(fault.description.Contains("PossibleStackCorruption"));
 			m.SessionFinished();
 			m.StopMonitor();
@@ -45,7 +45,7 @@ namespace Peach.Core.Test.OS.Linux.Agent.Monitors
 			var m = new LinuxDebugger(null, null, args);
 			m.SessionStarting();
 			m.IterationStarting(1, false);
-			Thread.Sleep(1000);
+			Thread.Sleep(5000);
 			m.IterationFinished();
 			Assert.AreEqual(false, m.DetectedFault());
 			m.SessionFinished();

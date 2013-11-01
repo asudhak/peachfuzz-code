@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-bld(
+app = bld(
 	features = 'cxx cxxprogram debug',
 	source = 'CrashingProgram.cpp',
 	target='CrashingProgram',
 )
 
+if 'win' == tgt:
+	# Disable buffer security checks so we get 2nd chance AV exceptions
+	app.env.append_value('CXXFLAGS', [ '/GS-' ])

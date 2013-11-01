@@ -361,6 +361,7 @@ namespace Peach.Core.Dom
 
 			var bs = new BitStream();
 			bs.WriteBits(bits, (int)lengthAsBits);
+			bs.Seek(0, System.IO.SeekOrigin.Begin);
 			return bs;
 		}
 	}
