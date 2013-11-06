@@ -320,7 +320,6 @@ namespace Peach.Core.Test
 				"	<StateModel name=\"TheState\" initialState=\"State1\">" +
 				"		<State name=\"State1\">" +
 				"			<Action name='call' type=\"call\" method=\"foo\">" +
-				"				<DataModel ref=\"TheDataModel\" />" +
 				"				<Param>" +
 				"					<DataModel ref=\"TheDataModel\" />" +
 				"				</Param>" +
@@ -339,10 +338,9 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var action = dom.tests["Default"].stateModel.states["State1"].actions[0];
-			DataElement findMe1 = action.dataModel[0];
-			DataElement findMe2 = action.parameters[0].dataModel[0];
-			DataElement findMe3 = action.parameters[1].dataModel[0]; 
+			var action = dom.tests["Default"].stateModel.states["State1"].actions[0] as Dom.Actions.Call;
+			DataElement findMe1 = action.parameters[0].dataModel[0];
+			DataElement findMe2 = action.parameters[1].dataModel[0]; 
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
 			XPathNodeIterator iter = navi.Select("//FindMe");
@@ -351,8 +349,6 @@ namespace Peach.Core.Test
 			Assert.AreEqual(findMe1, ((PeachXPathNavigator)iter.Current).currentNode);
 			Assert.IsTrue(iter.MoveNext());
 			Assert.AreEqual(findMe2, ((PeachXPathNavigator)iter.Current).currentNode);
-			Assert.IsTrue(iter.MoveNext());
-			Assert.AreEqual(findMe3, ((PeachXPathNavigator)iter.Current).currentNode);
 			Assert.IsFalse(iter.MoveNext());
 		}
 
@@ -381,7 +377,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var action = dom.tests["Default"].stateModel.states["State1"].actions[0];
+			var action = dom.tests["Default"].stateModel.states["State1"].actions[0] as Dom.Actions.Call;
 			DataElement findMe1 = action.result.dataModel[0];
 			
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);
@@ -423,7 +419,7 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 
-			var action = dom.tests["Default"].stateModel.states["State1"].actions[0];
+			var action = dom.tests["Default"].stateModel.states["State1"].actions[0] as Dom.Actions.Call;
 
 
 			PeachXPathNavigator navi = new PeachXPathNavigator(dom);

@@ -784,19 +784,19 @@ namespace Peach.Core.Test.Publishers
 
 	<StateModel name=""TheStateModel"" initialState=""InitialState"">
 		<State name=""InitialState"">
-			<Action name=""Recv"" type=""input"">
+			<Action name=""Recv1"" type=""input"">
 				<DataModel ref=""TheDataModel""/>
 			</Action>
 
-			<Action name=""Send"" type=""output"">
+			<Action name=""Send1"" type=""output"">
 				<DataModel ref=""TheDataModel""/>
 			</Action>
 
-			<Action name=""Recv"" type=""input"">
+			<Action name=""Recv2"" type=""input"">
 				<DataModel ref=""TheDataModel""/>
 			</Action>
 
-			<Action name=""Recv"" type=""input"">
+			<Action name=""Recv3"" type=""input"">
 				<DataModel ref=""TheDataModel""/>
 			</Action>
 

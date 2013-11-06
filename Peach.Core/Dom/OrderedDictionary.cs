@@ -40,7 +40,7 @@ namespace Peach.Core
 	/// </summary>
 	/// <typeparam name="TKey">The type of the keys in the dictionary</typeparam>
 	/// <typeparam name="TValue">The type of the values in the dictionary</typeparam>
-	public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+	public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ITryGetValue<TKey, TValue>
 	{
 		/// <summary>
 		/// Inserts a new entry into the <see cref="T:IOrderedDictionary`2">IOrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.

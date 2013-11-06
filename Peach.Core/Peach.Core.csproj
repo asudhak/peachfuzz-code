@@ -464,6 +464,23 @@
     <Compile Include="Cracker\ICrackable.cs" />
     <Compile Include="Cracker\NotEnoughDataException.cs" />
     <Compile Include="Dom\Action.cs" />
+    <Compile Include="Dom\ActionData.cs" />
+    <Compile Include="Dom\ActionParameter.cs" />
+    <Compile Include="Dom\Actions\Accept.cs" />
+    <Compile Include="Dom\Actions\Call.cs" />
+    <Compile Include="Dom\Actions\ChangeState.cs" />
+    <Compile Include="Dom\Actions\Close.cs" />
+    <Compile Include="Dom\Actions\Connect.cs" />
+    <Compile Include="Dom\Actions\GetProperty.cs" />
+    <Compile Include="Dom\Actions\Input.cs" />
+    <Compile Include="Dom\Actions\Open.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Dom\Actions\Output.cs" />
+    <Compile Include="Dom\Actions\SetProperty.cs" />
+    <Compile Include="Dom\Actions\Slurp.cs" />
+    <Compile Include="Dom\Actions\Start.cs" />
+    <Compile Include="Dom\Actions\Stop.cs" />
     <Compile Include="Dom\Agent.cs" />
     <Compile Include="Dom\Data.cs" />
     <Compile Include="Dom\DataElementContainer.cs" />
@@ -584,6 +601,7 @@
     <Compile Include="Mutators\ValidValuesMutator.cs" />
     <Compile Include="Mutators\WordListMutator.cs" />
     <Compile Include="Mutators\XmlW3CMutator.cs" />
+    <Compile Include="NamedCollection.cs" />
     <Compile Include="NetworkAdapter.cs" />
     <Compile Include="ObjectCopier.cs" />
     <Compile Include="ParameterParser.cs" />

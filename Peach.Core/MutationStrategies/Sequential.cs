@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using Peach.Core.Dom;
 using System.Reflection;
+using System.Linq;
 
 using NLog;
 
@@ -178,7 +179,7 @@ namespace Peach.Core.MutationStrategies
 		private void Action_Starting(Core.Dom.Action action)
 		{
 			// Is this a supported action?
-			if (!(action.type == ActionType.Output || action.type == ActionType.SetProperty || action.type == ActionType.Call))
+			if (!action.outputData.Any())
 				return;
 
 			if (!_context.controlIteration)
@@ -198,17 +199,17 @@ namespace Peach.Core.MutationStrategies
 					if (SupportedState(t, state))
 					{
 						var mutator = GetMutatorInstance(t, state);
-						_iterations.Add(new Tuple<string, Mutator, string>("STATE_"+state.name, mutator, null));
+						var key = "Run_{0}.{1}".Fmt(state.runCount, state.name);
+						_iterations.Add(new Tuple<string, Mutator, string>(key, mutator, null));
 						_count += (uint)mutator.count;
 					}
 				}
 			}
 		}
 
-
 		// Recursivly walk all DataElements in a container.
 		// Add the element and accumulate any supported mutators.
-		private void GatherMutators(string modelName, DataElementContainer cont)
+		private void GatherMutators(string instanceName, DataElementContainer cont)
 		{
 			List<DataElement> allElements = new List<DataElement>();
 			RecursevlyGetElements(cont, allElements);
@@ -222,7 +223,7 @@ namespace Peach.Core.MutationStrategies
 					if (SupportedDataElement(t, elem))
 					{
 						var mutator = GetMutatorInstance(t, elem);
-						_iterations.Add(new Tuple<string, Mutator, string>(elementName, mutator, modelName));
+						_iterations.Add(new Tuple<string, Mutator, string>(elementName, mutator, instanceName));
 						_count += (uint)mutator.count;
 					}
 				}
@@ -234,21 +235,10 @@ namespace Peach.Core.MutationStrategies
 			// ParseDataModel should only be called during iteration 0
 			System.Diagnostics.Debug.Assert(_context.controlIteration && _context.controlRecordingIteration);
 
-			if (action.dataModel != null)
+			foreach (var item in action.outputData)
 			{
-				string modelName = GetDataModelName(action);
-				GatherMutators(modelName, action.dataModel as DataElementContainer);
-			}
-			else if (action.parameters != null && action.parameters.Count > 0)
-			{
-				foreach (ActionParameter param in action.parameters)
-				{
-					if (param.dataModel != null)
-					{
-						string modelName = GetDataModelName(action, param);
-						GatherMutators(modelName, param.dataModel as DataElementContainer);
-					}
-				}
+				var instanceName = item.instanceName;
+				GatherMutators(instanceName, item.dataModel);
 			}
 		}
 
@@ -262,9 +252,10 @@ namespace Peach.Core.MutationStrategies
 			if (_context.controlIteration)
 				return state;
 
-			if ("STATE_" + state.name == _enumerator.Current.Item1)
+			var key = "Run_{0}.{1}".Fmt(state.runCount, state.name);
+			if (key == _enumerator.Current.Item1)
 			{
-				OnMutating(state.name, _enumerator.Current.Item2.name);
+				OnStateMutating(state, _enumerator.Current.Item2);
 				logger.Debug("MutateChangingState: Fuzzing state change: " + state.name);
 				logger.Debug("MutateChangingState: Mutator: " + _enumerator.Current.Item2.name);
 				return _enumerator.Current.Item2.changeState(state);
@@ -273,19 +264,19 @@ namespace Peach.Core.MutationStrategies
 			return state;
 		}
 
-		private void ApplyMutation(string modelName, DataModel dataModel)
+		private void ApplyMutation(ActionData data)
 		{
 			// Ensure we are on the right model
-			if (_enumerator.Current.Item3 != modelName)
+			if (_enumerator.Current.Item3 != data.instanceName)
 				return;
 
 			var fullName = _enumerator.Current.Item1;
-			var dataElement = dataModel.find(fullName);
+			var dataElement = data.dataModel.find(fullName);
 
 			if (dataElement != null)
 			{
 				var mutator = _enumerator.Current.Item2;
-				OnMutating(fullName, mutator.name);
+				OnDataMutating(data, dataElement, mutator);
 				logger.Debug("ApplyMutation: Fuzzing: " + fullName);
 				logger.Debug("ApplyMutation: Mutator: " + mutator.name);
 				mutator.sequentialMutation(dataElement);
@@ -299,21 +290,9 @@ namespace Peach.Core.MutationStrategies
 			System.Diagnostics.Debug.Assert(_iteration > 0);
 			System.Diagnostics.Debug.Assert(!_context.controlIteration);
 
-			if (action.dataModel != null)
+			foreach (var item in action.outputData)
 			{
-				string modelName = GetDataModelName(action);
-				ApplyMutation(modelName, action.dataModel);
-			}
-			else if (action.parameters != null && action.parameters.Count > 0)
-			{
-				foreach (ActionParameter param in action.parameters)
-				{
-					if (param.dataModel != null)
-					{
-						string modelName = GetDataModelName(action, param);
-						ApplyMutation(modelName, param.dataModel);
-					}
-				}
+				ApplyMutation(item);
 			}
 		}
 

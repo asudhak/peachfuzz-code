@@ -62,7 +62,7 @@ namespace Peach.Core.Test.StateModel
 			var stateModel = dom.tests[0].stateModel;
 			var state = stateModel.initialState;
 
-			Assert.AreEqual(ActionType.Input, state.actions.First().type);
+			Assert.AreEqual("Input", state.actions.First().type);
 			Assert.AreEqual(ASCIIEncoding.ASCII.GetBytes("Hello World!"), state.actions[0].dataModel.Value.ToArray());
 		}
 	}

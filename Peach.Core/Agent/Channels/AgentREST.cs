@@ -282,7 +282,7 @@ namespace Peach.Core.Agent.Channels
 		{
 			public string name;
 			public byte[] data;
-			public ActionParameterType type;
+			public ActionParameter.Type type;
 		}
 
 		[Serializable]

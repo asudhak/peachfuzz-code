@@ -39,29 +39,13 @@ namespace Peach.Core.Dom
 	/// Specify a set of Data for a DataModel
 	/// </summary>
 	[Serializable]
-	public class DataSet : INamed
+	public class DataSet : List<Data>, INamed
 	{
-		static int nameNum = 0;
-		string _name = "Unknown DataSet " + (++nameNum);
-
-		/// <summary>
-		/// Collection of Data objects
-		/// </summary>
-		public List<Data> Datas = new List<Data>();
-
-		public DataSet()
-		{
-		}
-
-		#region INamed Members
-
 		public string name
 		{
-			get { return _name; }
-			set { _name = value; }
+			get;
+			set;
 		}
-
-		#endregion
 	}
 }
 

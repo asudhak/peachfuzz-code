@@ -36,6 +36,7 @@ using Peach.Core;
 using Peach.Core.Agent;
 
 using NLog;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Runtime
 {
@@ -181,12 +182,20 @@ namespace Peach.Core.Runtime
 			Console.WriteLine("Test '" + context.test.name + "' starting with random seed " + context.config.randomSeed + ".");
 		}
 
-		protected override void MutationStrategy_Mutating(string elementName, string mutatorName)
+		protected override void MutationStrategy_DataMutating(ActionData actionData, DataElement element, Mutator mutator)
 		{
 			WriteInfoMark();
-			Console.WriteLine("Fuzzing: {0}", elementName);
+			Console.WriteLine("Fuzzing: {0}", element.fullName);
 			WriteInfoMark();
-			Console.WriteLine("Mutator: {0}", mutatorName);
+			Console.WriteLine("Mutator: {0}", mutator.name);
+		}
+
+		protected override void MutationStrategy_StateMutating(State state, Mutator mutator)
+		{
+			WriteInfoMark();
+			Console.WriteLine("Fuzzing State: {0}", state.name);
+			WriteInfoMark();
+			Console.WriteLine("Mutator: {0}", mutator.name);
 		}
 
 		public static void WriteInfoMark()

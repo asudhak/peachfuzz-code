@@ -33,19 +33,19 @@ namespace Peach.Core.Test.StateModel
 		protected override Variant OnCall(string method, List<ActionParameter> args)
 		{
 			Assert.AreEqual(args[0].name, "Named Param 1");
-			Assert.AreEqual(args[0].type, ActionParameterType.In);
+			Assert.AreEqual(args[0].type, ActionParameter.Type.In);
 			Assert.AreEqual("Param1", (string)args[0].dataModel[0].InternalValue);
 
 			Assert.AreEqual(args[1].name, "Named Param 2");
-			Assert.AreEqual(args[1].type, ActionParameterType.Out);
+			Assert.AreEqual(args[1].type, ActionParameter.Type.Out);
 			Assert.AreEqual("Param2", (string)args[1].dataModel[0].InternalValue);
 
-			Assert.AreEqual(args[2].name, "Named Param 3");
-			Assert.AreEqual(args[2].type, ActionParameterType.InOut);
+			Assert.AreEqual(args[2].name, "Param");
+			Assert.AreEqual(args[2].type, ActionParameter.Type.InOut);
 			Assert.AreEqual("Param3", (string)args[2].dataModel[0].InternalValue);
 
-			Assert.True(args[3].name.StartsWith("Unknown Parameter"));
-			Assert.AreEqual(args[3].type, ActionParameterType.In);
+			Assert.AreEqual(args[3].name, "Param_1");
+			Assert.AreEqual(args[3].type, ActionParameter.Type.In);
 			Assert.AreEqual("Param4", (string)args[3].dataModel[0].InternalValue);
 
 			return new Variant(Encoding.ASCII.GetBytes("The Result!"));
@@ -55,7 +55,7 @@ namespace Peach.Core.Test.StateModel
 	[TestFixture]
 	class ActionTests
 	{
-		void RunAction(string action, string children)
+		void RunAction(string action, string children, string attr)
 		{
 			string xml = @"
 <Peach>
@@ -65,7 +65,7 @@ namespace Peach.Core.Test.StateModel
 
 	<StateModel name='SM' initialState='Initial'>
 		<State name='Initial'>
-			<Action name='action' type='{0}'>
+			<Action name='action' type='{0}' {2} >
 {1}
 			</Action>
 		</State>
@@ -76,7 +76,7 @@ namespace Peach.Core.Test.StateModel
 		<Publisher class='Null'/>
 		<Strategy class='RandomDeterministic'/>
 	</Test>
-</Peach>".Fmt(action, children);
+</Peach>".Fmt(action, children, attr);
 
 			PitParser parser = new PitParser();
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
@@ -94,37 +94,37 @@ namespace Peach.Core.Test.StateModel
 			// These actions do not require a <DataModel> child for the action
 			string[] actions = new string[] { "start", "stop", "open", "close" };
 			foreach (var action in actions)
-				RunAction(action, "");
+				RunAction(action, "", "");
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'action' is missing required child element <DataModel>.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'SM.Initial.action' is missing required child element <DataModel>.")]
 		public void Test2()
 		{
-			RunAction("input", "");
+			RunAction("input", "", "");
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'action' is missing required child element <DataModel>.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'SM.Initial.action' is missing required child element <DataModel>.")]
 		public void Test3()
 		{
-			RunAction("output", "");
+			RunAction("output", "", "");
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'action' is missing required child element <DataModel>.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'SM.Initial.action' is missing required child element <DataModel>.")]
 		public void Test4()
 		{
-			RunAction("setProperty", "");
+			RunAction("setProperty", "", "property='foo'");
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'action' is missing required child element <DataModel>.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'SM.Initial.action' is missing required child element <DataModel>.")]
 		public void Test5()
 		{
-			RunAction("getProperty", "");
+			RunAction("getProperty", "", "property='foo'");
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, <Param> child of action 'action' is missing required child element <DataModel>.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, <Param> child of action 'SM.Initial.action' is missing required child element <DataModel>.")]
 		public void Test6()
 		{
-			RunAction("call", "<Param/>");
+			RunAction("call", "<Param/>", "method='foo'");
 		}
 
 		[Test]
@@ -143,7 +143,7 @@ namespace Peach.Core.Test.StateModel
 
 	<StateModel name='SM' initialState='Initial'>
 		<State name='Initial'>
-			<Action name='action' type='call'>
+			<Action name='action' type='call' method='foo'>
 				<Param name='Named Param 1' type='in'>
 					<DataModel ref='DM1'/>
 					<Data>
@@ -156,7 +156,7 @@ namespace Peach.Core.Test.StateModel
 						<Field name='str1' value='Param2'/>
 					</Data>
 				</Param>
-				<Param name='Named Param 3' type='inout'>
+				<Param type='inout'>
 					<DataModel ref='DM1'/>
 					<Data>
 						<Field name='str1' value='Param3'/>
@@ -195,7 +195,7 @@ namespace Peach.Core.Test.StateModel
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
 
-			var act = dom.tests[0].stateModel.states["Initial"].actions[0];
+			var act = dom.tests[0].stateModel.states["Initial"].actions[0] as Dom.Actions.Call;
 
 			Assert.NotNull(act.result);
 			Assert.AreEqual("res", act.result.name);

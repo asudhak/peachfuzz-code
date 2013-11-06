@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Peach.Core.IO;
+using Peach.Core.Dom;
 
 namespace Peach.Core.Test
 {
@@ -25,14 +26,14 @@ namespace Peach.Core.Test
 			cloneActions = false;
 			ResetContainers();
 			Dom.Action.Finished += new Dom.ActionFinishedEventHandler(Action_Finished);
-			Peach.Core.MutationStrategy.Mutating += new MutationStrategy.MutationEventHandler(MutationStrategy_Mutating);
+			Peach.Core.MutationStrategy.DataMutating += new MutationStrategy.DataMutationEventHandler(MutationStrategy_DataMutating);
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
 			Dom.Action.Finished -= Action_Finished;
-			Peach.Core.MutationStrategy.Mutating -= MutationStrategy_Mutating;
+			Peach.Core.MutationStrategy.DataMutating -= MutationStrategy_DataMutating;
 		}
 
 		protected void ResetContainers()
@@ -49,22 +50,14 @@ namespace Peach.Core.Test
 
 		protected void Action_Finished(Dom.Action action)
 		{
+			if (!action.allData.Any())
+				return;
+
 			var dom = action.parent.parent.parent as Dom.Dom;
 
-			if (action.dataModel == null)
+			foreach (var item in action.allData)
 			{
-				var models = action.parameters.Select(a => a.dataModel).Where(a => a != null);
-				if (!models.Any())
-					return;
-
-				foreach (var model in models)
-				{
-					SaveDataModel(dom, model);
-				}
-			}
-			else
-			{
-				SaveDataModel(dom, action.dataModel);
+				SaveDataModel(dom, item.dataModel);
 			}
 
 			if (cloneActions)
@@ -87,10 +80,10 @@ namespace Peach.Core.Test
 			dataModels.Add(model);
 		}
 
-		void MutationStrategy_Mutating(string elementName, string mutatorName)
+		void MutationStrategy_DataMutating(ActionData actionData, DataElement element, Mutator mutator)
 		{
 			int len = strategies.Count;
-			string item = mutatorName + " | " + elementName;
+			string item = mutator.name + " | " + element.fullName;
 			allStrategies.Add(item);
 			if (len == 0 || strategies[len - 1] != item)
 				strategies.Add(item);

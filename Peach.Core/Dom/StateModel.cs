@@ -54,14 +54,12 @@ namespace Peach.Core.Dom
 		protected State _initialState = null;
 
 		protected Dictionary<string, BitwiseStream> _dataActions = new Dictionary<string, BitwiseStream>();
-		protected int _dataActionsCount = 0;
 
 		public IEnumerable<KeyValuePair<string, BitwiseStream>> dataActions
 		{
 			get
 			{
-				foreach (var item in _dataActions)
-					yield return item;
+				return _dataActions.AsEnumerable();
 			}
 		}
 
@@ -92,25 +90,21 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public void SaveData(Action action)
+		public void SaveData(ActionData data, string suffix)
 		{
-			_dataActionsCount++;
+			var args = new[]
+			{
+				(_dataActions.Count + 1).ToString(),
+				data.action.parent.name,
+				data.action.name,
+				data.name,
+				"bin"
+			};
 
-			if (action.dataModel != null)
-			{
-				var key = "action_{0}_{1}_{2}.txt".Fmt(_dataActionsCount, action.type, action.name);
-				var val = action.dataModel.Value;
-				_dataActions.Add(key, val);
-			}
-			else
-			{
-				for (int i = 0; i < action.parameters.Count; ++i)
-				{
-					var key = "action_{0}-{1}_{2}_{3}.txt".Fmt(_dataActionsCount, i + 1, action.type, action.name);
-					var val = action.parameters[i].dataModel.Value;
-					_dataActions.Add(key, val);
-				}
-			}
+			var key = string.Join(".", args.Where(s => s != null));
+			var value = data.dataModel.Value;
+
+			_dataActions.Add(key, value);
 		}
 
 		/// <summary>
@@ -154,142 +148,12 @@ namespace Peach.Core.Dom
 				}
 
 				_dataActions.Clear();
-				_dataActionsCount = 0;
-
-				// Prior to starting our state model, on iteration #1 lets
-				// locate all data sets and load our initial data.
-				//
-				// Additionally this is were we setup origionalDataModel.
-				//
-				if (context.needDataModel)
-				{
-					context.needDataModel = false;
-
-					foreach (State state in states.Values)
-					{
-						foreach (Action action in state.actions)
-						{
-							if (action.dataModel != null && action.dataSet != null && action.dataSet.Datas.Count > 0)
-							{
-								Data data = action.dataSet.Datas[0];
-								string fileName = null;
-
-								if (data.DataType == DataType.File)
-								{
-									fileName = data.FileName;
-
-									try
-									{
-										logger.Debug("Trying to crack " + fileName);
-										Cracker.DataCracker cracker = new Cracker.DataCracker();
-										cracker.CrackData(action.dataModel,
-											new BitStream(File.OpenRead(fileName)));
-									}
-									catch (Cracker.CrackingFailure ex)
-									{
-										throw new PeachException("Error, failed to crack \"" + fileName +
-											"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
-									}
-								}
-								else if (data.DataType == DataType.Files)
-								{
-									bool success = false;
-									foreach (var fn in data.Files)
-									{
-										try
-										{
-											logger.Debug("Trying to crack " + fn);
-											fileName = fn;
-
-											Cracker.DataCracker cracker = new Cracker.DataCracker();
-											cracker.CrackData(action.dataModel,
-												new BitStream(File.OpenRead(fileName)));
-
-											success = true;
-											break;
-										}
-										catch
-										{
-											logger.Debug("Cracking failed, trying next file");
-										}
-									}
-									
-									if(!success)
-										throw new PeachException("Error, failed to crack any of the files specified by action \"" + action.name + "\".");
-								}
-								
-								// Always apply fields if we have them
-								if (data.fields.Count > 0)
-								{
-									data.ApplyFields(action.dataModel);
-								}
-
-								var value = action.dataModel.Value;
-								System.Diagnostics.Debug.Assert(value != null);
-
-								// Update our origional copy to have data!
-								action.origionalDataModel = action.dataModel.Clone() as DataModel;
-							}
-							else if (action.dataModel != null)
-							{
-								var value = action.dataModel.Value;
-								System.Diagnostics.Debug.Assert(value != null);
-
-								// Update our origional copy to have data!
-								action.origionalDataModel = action.dataModel.Clone() as DataModel;
-							}
-							else if (action.parameters.Count > 0)
-							{
-								foreach (ActionParameter param in action.parameters)
-								{
-									if (param.dataModel != null && param.data != null)
-									{
-										Data data = param.data as Data;
-										string fileName = null;
-
-										if (data.DataType == DataType.File)
-											fileName = data.FileName;
-										else if (data.DataType == DataType.Files)
-											fileName = data.Files[0];
-										else
-											data.ApplyFields(param.dataModel);
-
-										if (fileName != null)
-										{
-											try
-											{
-												Cracker.DataCracker cracker = new Cracker.DataCracker();
-												cracker.CrackData(param.dataModel,
-													new BitStream(File.OpenRead(fileName)));
-											}
-											catch (Cracker.CrackingFailure ex)
-											{
-												throw new PeachException("Error, failed to crack \"" + fileName + 
-													"\" into \"" + action.dataModel.fullName + "\": " + ex.Message, ex);
-											}
-										}
-									}
-
-									// Invalidate model and produce value
-									var value = param.dataModel.Value;
-									System.Diagnostics.Debug.Assert(value != null);
-
-									// Update our origional copy to have data!
-									param.origionalDataModel = param.dataModel.Clone() as DataModel;
-								}
-							}
-						}
-					}
-				}
 
 				// Update all data model to clones of origionalDataModel
 				// before we start down the state path.
 				foreach (State state in states.Values)
 				{
-					state.runCount = 0;
-
-					foreach (Action action in state.actions)
-						action.UpdateToOrigionalDataModel();
+					state.UpdateToOriginalDataModel();
 				}
 
 				State currentState = _initialState;

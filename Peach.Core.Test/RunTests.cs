@@ -400,10 +400,14 @@ namespace Peach.Core.Test
 			PitParser parser = new PitParser();
 			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 			Assert.AreEqual(2, dom.datas.Count);
-			Assert.AreEqual(1, dom.datas[0].fields.Count);
-			Assert.AreEqual("bar", (string)dom.datas[0].fields[0]);
-			Assert.AreEqual(1, dom.datas[1].fields.Count);
-			Assert.AreEqual("baz", (string)dom.datas[1].fields[0]);
+			Assert.AreEqual(1, dom.datas[0].Count);
+			Assert.AreEqual(1, dom.datas[1].Count);
+			Assert.True(dom.datas[0][0] is DataField);
+			Assert.True(dom.datas[1][0] is DataField);
+			Assert.AreEqual(1, ((DataField)dom.datas[0][0]).Fields.Count);
+			Assert.AreEqual("bar", (string)((DataField)dom.datas[0][0]).Fields[0].Value);
+			Assert.AreEqual(1, ((DataField)dom.datas[1][0]).Fields.Count);
+			Assert.AreEqual("baz", (string)((DataField)dom.datas[1][0]).Fields[0].Value);
 		}
 
 		[Test]

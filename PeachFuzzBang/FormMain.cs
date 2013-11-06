@@ -198,20 +198,16 @@ namespace PeachFuzzBang
 				DataModel dataModel = null;
 
 				// Data Set
-				Data fileData = new Data();
+				var fileData = new Peach.Core.Dom.DataSet() { name = "Data" };
 				if (Directory.Exists(textBoxTemplateFiles.Text))
 				{
-					List<string> files = new List<string>();
 					foreach (string fileName in Directory.GetFiles(textBoxTemplateFiles.Text))
-						files.Add(fileName);
+						fileData.Add(new DataFile() { FileName = fileName });
 
-					fileData.DataType = DataType.Files;
-					fileData.Files = files;
 				}
 				else if (File.Exists(textBoxTemplateFiles.Text))
 				{
-					fileData.DataType = DataType.File;
-					fileData.FileName = textBoxTemplateFiles.Text;
+					fileData.Add(new DataFile() { FileName = textBoxTemplateFiles.Text });
 				}
 				else
 				{
@@ -247,19 +243,20 @@ namespace PeachFuzzBang
 				state.name = "TheState";
 				state.parent = stateModel;
 
-				Peach.Core.Dom.Action actionOutput = new Peach.Core.Dom.Action();
-				actionOutput.type = ActionType.Output;
-				actionOutput.dataModel = dataModel;
-				actionOutput.dataSet = new Peach.Core.Dom.DataSet();
-				actionOutput.dataSet.Datas.Add(fileData);
-				actionOutput.parent = state;
+				Peach.Core.Dom.Actions.Output actionOutput = new Peach.Core.Dom.Actions.Output();
+				actionOutput.data = new ActionData()
+				{
+					dataModel = dataModel,
+					action = actionOutput,
+				};
 
-				Peach.Core.Dom.Action actionClose = new Peach.Core.Dom.Action();
-				actionClose.type = ActionType.Close;
+				if (fileData.Count > 0)
+					actionOutput.data.dataSets.Add(fileData);
+
+				Peach.Core.Dom.Actions.Close actionClose = new Peach.Core.Dom.Actions.Close();
 				actionClose.parent = state;
 
-				Peach.Core.Dom.Action actionCall = new Peach.Core.Dom.Action();
-				actionCall.type = ActionType.Call;
+				Peach.Core.Dom.Actions.Call actionCall = new Peach.Core.Dom.Actions.Call();
 				actionCall.publisher = "Peach.Agent";
 				actionCall.method = "ScoobySnacks";
 				actionCall.parent = state;
