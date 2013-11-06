@@ -262,8 +262,11 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					handled = true;
 				}
 
+				// Access violation
 				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
 				{
+					handled = true;
+
 					// A/V on EIP || DEP
 					if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
 						handled = true;
@@ -271,6 +274,10 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					// write a/v not near null
 					else if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 1 &&
 						DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[1].ToInt64() != 0)
+						handled = true;
+
+					// DEP
+					else if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 8)
 						handled = true;
 				}
 
