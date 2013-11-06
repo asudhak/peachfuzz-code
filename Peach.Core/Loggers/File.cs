@@ -40,6 +40,8 @@ using Peach.Core.Dom;
 using NLog;
 using Peach.Core.IO;
 
+using Newtonsoft.Json;
+
 namespace Peach.Core.Loggers
 {
 	/// <summary>
@@ -55,6 +57,7 @@ namespace Peach.Core.Loggers
 
 		Fault reproFault = null;
 		TextWriter log = null;
+		List<Fault.State> states = null;
 
 		public FileLogger(Dictionary<string, Variant> args)
 		{
@@ -225,6 +228,10 @@ namespace Peach.Core.Loggers
 			else
 				ret.folderName = string.Format("{0}_{1}_{2}", coreFault.exploitability, coreFault.majorHash, coreFault.minorHash);
 
+			// Save log of all the states
+			var json = JsonConvert.SerializeObject(states, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+			ret.collectedData.Add(new Fault.Data("states.json", Encoding.UTF8.GetBytes(json)));
+
 			ret.controlIteration = coreFault.controlIteration;
 			ret.controlRecordingIteration = coreFault.controlRecordingIteration;
 			ret.description = coreFault.description;
@@ -235,12 +242,15 @@ namespace Peach.Core.Loggers
 			ret.minorHash = coreFault.minorHash;
 			ret.title = coreFault.title;
 			ret.type = coreFault.type;
+			ret.states = states;
 
 			return ret;
 		}
 
 		protected override void Engine_IterationStarting(RunContext context, uint currentIteration, uint? totalIterations)
 		{
+			states = new List<Fault.State>();
+
 			if (currentIteration != 1 && currentIteration % 100 != 0)
 				return;
 
@@ -254,6 +264,54 @@ namespace Peach.Core.Loggers
 				log.WriteLine(". Iteration {0} : {1}", currentIteration, DateTime.Now.ToString());
 				log.Flush();
 			}
+		}
+
+		protected override void State_Starting(Core.Dom.State state)
+		{
+			states.Add(
+				new Fault.State()
+				{
+					name = state.name,
+					actions = new List<Fault.Action>()
+				});
+		}
+
+		protected override void Action_Starting(Core.Dom.Action action)
+		{
+			var rec = new Fault.Action()
+			{
+				name = action.name,
+				type = action.type.ToString(),
+				models = new List<Fault.Model>()
+			};
+
+			if (action.dataModel != null)
+			{
+				rec.models.Add(new Fault.Model()
+				{
+					name = action.dataModel.name,
+					parameter = null,
+					dataSet = null, // TODO: Set me!
+				});
+			}
+
+			if (action.parameters != null)
+			{
+				foreach (var param in action.parameters)
+				{
+					rec.models.Add(new Fault.Model()
+					{
+						name = param.dataModel.name,
+						parameter = param.name,
+						dataSet = null, // TODO: Set me!
+					});
+				}
+			}
+
+			if (rec.models.Count == 0)
+				rec.models = null;
+
+			states.Last().actions.Add(rec);
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
