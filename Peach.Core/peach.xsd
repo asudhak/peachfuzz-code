@@ -2463,11 +2463,6 @@
 													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
 													<xs:element ref="LangModel" maxOccurs="1" minOccurs="1"/>
 												</xs:choice>
-												<xs:attribute name="name" type="xs:string">
-													<xs:annotation>
-														<xs:documentation>Name of this Action</xs:documentation>
-													</xs:annotation>
-												</xs:attribute>												
 											</xs:complexType>
 										</xs:element>
 									</xs:choice>

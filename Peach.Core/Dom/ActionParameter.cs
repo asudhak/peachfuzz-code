@@ -5,6 +5,11 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class ActionParameter : ActionData
 	{
+		public ActionParameter(string name)
+		{
+			this.name = name;
+		}
+
 		/// <summary>
 		/// Type of parameter used when calling a method.
 		/// 'In' means output the data on call
@@ -22,7 +27,7 @@ namespace Peach.Core.Dom
 		/// Full input name of this parameter.
 		/// 'Out' parameters are input
 		/// </summary>
-		public override string inputName { get { return base.outputName + ".Out"; } }
+		public override string inputName { get { return base.inputName + ".Out"; } }
 
 		/// <summary>
 		/// Full output name of this parameter.

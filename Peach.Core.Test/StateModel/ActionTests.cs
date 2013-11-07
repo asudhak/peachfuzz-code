@@ -193,7 +193,7 @@ namespace Peach.Core.Test.StateModel
 						<Field name='str1' value='Param4'/>
 					</Data>
 				</Param>
-				<Result name='res'>
+				<Result>
 					<DataModel ref='DM2'/>
 				</Result>
 			</Action>
@@ -223,7 +223,6 @@ namespace Peach.Core.Test.StateModel
 			var act = dom.tests[0].stateModel.states["Initial"].actions[0] as Dom.Actions.Call;
 
 			Assert.NotNull(act.result);
-			Assert.AreEqual("res", act.result.name);
 			Assert.NotNull(act.result.dataModel);
 			string str = (string)act.result.dataModel[0].InternalValue;
 			Assert.AreEqual("The Result!", str);

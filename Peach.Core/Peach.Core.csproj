@@ -466,6 +466,7 @@
     <Compile Include="Dom\Action.cs" />
     <Compile Include="Dom\ActionData.cs" />
     <Compile Include="Dom\ActionParameter.cs" />
+    <Compile Include="Dom\ActionResult.cs" />
     <Compile Include="Dom\Actions\Accept.cs" />
     <Compile Include="Dom\Actions\Call.cs" />
     <Compile Include="Dom\Actions\ChangeState.cs" />

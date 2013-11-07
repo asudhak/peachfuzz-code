@@ -1329,9 +1329,9 @@ namespace Peach.Core.Analyzers
 					action.parent.name,
 					action.name));
 
-			var data = new ActionParameter()
+			var name = node.getAttr("name", action.parameters.UniqueName());
+			var data = new ActionParameter(name)
 			{
-				name = node.getAttr("name", action.parameters.UniqueName()),
 				action = action,
 				type = type,
 			};
@@ -1344,9 +1344,8 @@ namespace Peach.Core.Analyzers
 
 		protected virtual void handleActionResult(XmlNode node, Dom.Actions.Call action)
 		{
-			action.result = new ActionData()
+			action.result = new ActionResult()
 			{
-				name = node.getAttr("name", "Result"),
 				action = action
 			};
 
@@ -1388,7 +1387,6 @@ namespace Peach.Core.Analyzers
 			action.property = node.getAttrString("property");
 			action.data = new ActionData()
 			{
-				name = null,
 				action = action
 			};
 
@@ -1402,7 +1400,6 @@ namespace Peach.Core.Analyzers
 			action.property = node.getAttrString("property");
 			action.data = new ActionData()
 			{
-				name = null,
 				action = action
 			};
 
@@ -1415,7 +1412,6 @@ namespace Peach.Core.Analyzers
 		{
 			action.data = new ActionData()
 			{
-				name = null,
 				action = action
 			};
 
@@ -1428,7 +1424,6 @@ namespace Peach.Core.Analyzers
 		{
 			action.data = new ActionData()
 			{
-				name = null,
 				action = action
 			};
 

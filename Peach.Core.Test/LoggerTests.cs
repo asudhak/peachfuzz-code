@@ -71,6 +71,9 @@ namespace Peach.Core.Test
 				<Param name='MyParam4' type='out'>
 					<DataModel ref='CallModel'/>
 				</Param>
+				<Result>
+					<DataModel ref='CallModel'/>
+				</Result>
 			</Action>
 
 			<Action type='changeState' ref='Request'/>
@@ -169,7 +172,7 @@ namespace Peach.Core.Test
 			var fullPath = Path.Combine(logger.Path, subdir, dir, "FaultingMonitor", currentIteration.ToString());
 
 			var files = Directory.EnumerateFiles(fullPath, "*.bin").ToList();
-			Assert.AreEqual(11, files.Count);
+			Assert.AreEqual(12, files.Count);
 
 			var actual = File.ReadAllBytes(Path.Combine(fullPath, "1.Initial.DoCall.Param.In.bin"));
 			Assert.AreEqual(actual, pub.outputs[0]);
@@ -190,22 +193,25 @@ namespace Peach.Core.Test
 			actual = File.ReadAllBytes(Path.Combine(fullPath, "5.Initial.DoCall.MyParam4.Out.bin"));
 			Assert.AreEqual(actual, Encoding.ASCII.GetBytes("MyParam4"));
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "6.Request.RecvReq.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "6.Initial.DoCall.Result.bin"));
+			Assert.AreEqual(actual, Encoding.ASCII.GetBytes("Result!"));
+
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "7.Request.RecvReq.bin"));
 			Assert.AreEqual(new byte[] { 1, (byte)'X' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "7.XResponse.OutputX.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "8.XResponse.OutputX.bin"));
 			Assert.AreEqual(pub.outputs[3], actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "8.Request.RecvReq.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "9.Request.RecvReq.bin"));
 			Assert.AreEqual(new byte[] { 2, (byte)'X' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "9.XResponse.OutputX.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "10.XResponse.OutputX.bin"));
 			Assert.AreEqual(pub.outputs[4], actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "10.Request.RecvReq.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "11.Request.RecvReq.bin"));
 			Assert.AreEqual(new byte[] { 3, (byte)'Y' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "11.YResponse.OutputY.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "12.YResponse.OutputY.bin"));
 			Assert.AreEqual(pub.outputs[5], actual);
 		}
 
@@ -260,7 +266,7 @@ namespace Peach.Core.Test
 					if (item.type != ActionParameter.Type.In)
 						item.Crack(new BitStream(Encoding.ASCII.GetBytes(item.name)));
 				}
-				return null;
+				return new Variant(new BitStream(Encoding.ASCII.GetBytes("Result!")));
 			}
 		}
 	}

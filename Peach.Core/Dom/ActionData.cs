@@ -59,7 +59,7 @@ namespace Peach.Core.Dom
 		/// The name of this record.  Non-null when actions have multiple data models
 		/// (Action.Call) and null otherwise (Input/Output/SetProperty/GetProperty).
 		/// </summary>
-		public string name { get; set; }
+		public string name { get; protected set; }
 
 		/// <summary>
 		/// Full name of this record when viewed as input data
