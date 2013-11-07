@@ -17,5 +17,17 @@ namespace Peach.Core.Dom
 		/// The type of this parameter.
 		/// </summary>
 		public Type type { get; set; }
+
+		/// <summary>
+		/// Full input name of this parameter.
+		/// 'Out' parameters are input
+		/// </summary>
+		public override string inputName { get { return base.outputName + ".Out"; } }
+
+		/// <summary>
+		/// Full output name of this parameter.
+		/// 'In' parameters are input
+		/// </summary>
+		public override string outputName { get { return base.outputName + ".In"; } }
 	}
 }

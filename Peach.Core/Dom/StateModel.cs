@@ -90,19 +90,9 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public void SaveData(ActionData data, string suffix)
+		public void SaveData(string name, BitwiseStream value)
 		{
-			var args = new[]
-			{
-				(_dataActions.Count + 1).ToString(),
-				data.action.parent.name,
-				data.action.name,
-				data.name,
-				"bin"
-			};
-
-			var key = string.Join(".", args.Where(s => s != null));
-			var value = data.dataModel.Value;
+			var key = "{0}.{1}.bin".Fmt(_dataActions.Count + 1, name);
 
 			_dataActions.Add(key, value);
 		}

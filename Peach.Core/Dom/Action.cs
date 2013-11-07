@@ -306,13 +306,13 @@ namespace Peach.Core.Dom
 
 				// Save output data
 				foreach (var item in outputData)
-					parent.parent.SaveData(item, "out");
+					parent.parent.SaveData(item.outputName, item.dataModel.Value);
 
 				OnRun(publisher, context);
 
 				// Save input data
 				foreach (var item in inputData)
-					parent.parent.SaveData(item, "in");
+					parent.parent.SaveData(item.inputName, item.dataModel.Value);
 
 				finished = true;
 			}

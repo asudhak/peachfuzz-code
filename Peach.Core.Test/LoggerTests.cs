@@ -53,11 +53,22 @@ namespace Peach.Core.Test
 
 	<StateModel name='SM' initialState='Initial'>
 		<State name='Initial'>
+			<Action type='open'/>
+
 			<Action name='DoCall' type='call' method='foo'>
 				<Param>
 					<DataModel ref='CallModel'/>
 				</Param>
 				<Param name='MyParam2'>
+					<DataModel ref='CallModel'/>
+				</Param>
+				<Param name='MyParam3' type='inout'>
+					<DataModel ref='CallModel'/>
+					<Data>
+						<Field name='Value' value='inout'/>
+					</Data>
+				</Param>
+				<Param name='MyParam4' type='out'>
 					<DataModel ref='CallModel'/>
 				</Param>
 			</Action>
@@ -147,7 +158,7 @@ namespace Peach.Core.Test
 		{
 			var pub = context.dom.tests[0].publishers[0] as TestPub;
 			Assert.NotNull(pub);
-			Assert.AreEqual(3, pub.outputs.Count);
+			Assert.AreEqual(6, pub.outputs.Count);
 
 			var logger = context.dom.tests[0].loggers[0] as FileLogger;
 			Assert.NotNull(logger);
@@ -158,31 +169,44 @@ namespace Peach.Core.Test
 			var fullPath = Path.Combine(logger.Path, subdir, dir, "FaultingMonitor", currentIteration.ToString());
 
 			var files = Directory.EnumerateFiles(fullPath, "*.bin").ToList();
-			Assert.AreEqual(8, files.Count);
+			Assert.AreEqual(11, files.Count);
 
-			var actual = File.ReadAllBytes(Path.Combine(fullPath, "1.Initial.DoCall.Param.bin"));
-			Assert.Greater(actual.Length, 0);
+			var actual = File.ReadAllBytes(Path.Combine(fullPath, "1.Initial.DoCall.Param.In.bin"));
+			Assert.AreEqual(actual, pub.outputs[0]);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "2.Initial.DoCall.MyParam2.bin"));
-			Assert.Greater(actual.Length, 0);
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "2.Initial.DoCall.MyParam2.In.bin"));
+			Assert.AreEqual(actual, pub.outputs[1]);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "3.Request.RecvReq.bin"));
+			// In half of param
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "3.Initial.DoCall.MyParam3.In.bin"));
+			Assert.AreEqual(actual, Encoding.ASCII.GetBytes("inout"));
+			Assert.AreEqual(actual, pub.outputs[2]);
+
+			// Out half of param
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "4.Initial.DoCall.MyParam3.Out.bin"));
+			Assert.AreEqual(actual, Encoding.ASCII.GetBytes("MyParam3"));
+
+			// Out param
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "5.Initial.DoCall.MyParam4.Out.bin"));
+			Assert.AreEqual(actual, Encoding.ASCII.GetBytes("MyParam4"));
+
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "6.Request.RecvReq.bin"));
 			Assert.AreEqual(new byte[] { 1, (byte)'X' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "4.XResponse.OutputX.bin"));
-			Assert.AreEqual(pub.outputs[0], actual);
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "7.XResponse.OutputX.bin"));
+			Assert.AreEqual(pub.outputs[3], actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "5.Request.RecvReq.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "8.Request.RecvReq.bin"));
 			Assert.AreEqual(new byte[] { 2, (byte)'X' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "6.XResponse.OutputX.bin"));
-			Assert.AreEqual(pub.outputs[1], actual);
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "9.XResponse.OutputX.bin"));
+			Assert.AreEqual(pub.outputs[4], actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "7.Request.RecvReq.bin"));
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "10.Request.RecvReq.bin"));
 			Assert.AreEqual(new byte[] { 3, (byte)'Y' }, actual);
 
-			actual = File.ReadAllBytes(Path.Combine(fullPath, "8.YResponse.OutputY.bin"));
-			Assert.AreEqual(pub.outputs[2], actual);
+			actual = File.ReadAllBytes(Path.Combine(fullPath, "11.YResponse.OutputY.bin"));
+			Assert.AreEqual(pub.outputs[5], actual);
 		}
 
 		class TestPub : StreamPublisher
@@ -229,6 +253,13 @@ namespace Peach.Core.Test
 
 			protected override Variant OnCall(string method, List<ActionParameter> args)
 			{
+				foreach (var item in args)
+				{
+					if (item.type != ActionParameter.Type.Out)
+						outputs.Add(item.dataModel.Value.ToArray());
+					if (item.type != ActionParameter.Type.In)
+						item.Crack(new BitStream(Encoding.ASCII.GetBytes(item.name)));
+				}
 				return null;
 			}
 		}

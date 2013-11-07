@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Peach.Core.IO;
+using Peach.Core.Cracker;
 
 namespace Peach.Core.Dom
 {
@@ -60,6 +62,34 @@ namespace Peach.Core.Dom
 		public string name { get; set; }
 
 		/// <summary>
+		/// Full name of this record when viewed as input data
+		/// </summary>
+		public virtual string inputName
+		{
+			get
+			{
+				if (name == null)
+					return string.Format("{0}.{1}", action.parent.name, action.name);
+				else
+					return string.Format("{0}.{1}.{2}", action.parent.name, action.name, name);
+			}
+		}
+
+		/// <summary>
+		/// Full name of this record when viewed as output data
+		/// </summary>
+		public virtual string outputName
+		{
+			get
+			{
+				if (name == null)
+					return string.Format("{0}.{1}", action.parent.name, action.name);
+				else
+					return string.Format("{0}.{1}.{2}", action.parent.name, action.name, name);
+			}
+		}
+
+		/// <summary>
 		/// Initialize dataModel to its original state.
 		/// If this is the first time through and a dataSet exists,
 		/// the data will be applied to the model.
@@ -96,7 +126,6 @@ namespace Peach.Core.Dom
 				dataModel = originalDataModel.Clone() as DataModel;
 			}
 
-			// If dataOption == null and have 
 			dataModel.action = action;
 		}
 
@@ -118,8 +147,39 @@ namespace Peach.Core.Dom
 			System.Diagnostics.Debug.Assert(val != null);
 
 			originalDataModel = copy;
+			selectedData = option;
 
 			UpdateToOriginalDataModel();
+		}
+
+		/// <summary>
+		/// Crack the BitStream into the data model.
+		/// Will automatically update to the original model
+		/// prior to cracking.  Used by InOut action parameters.
+		/// </summary>
+		/// <param name="bs"></param>
+		public void Crack(BitStream bs)
+		{
+			DataModel copy;
+
+			if (selectedData != null)
+			{
+				// If we have selected data, we need to have the un-cracked data model
+				System.Diagnostics.Debug.Assert(sourceDataModel != null);
+				copy = sourceDataModel.Clone() as DataModel;
+			}
+			else
+			{
+				// If we have never selected data, originalDataModel is fine
+				System.Diagnostics.Debug.Assert(sourceDataModel == null);
+				copy = originalDataModel.Clone() as DataModel;
+			}
+
+			var cracker = new DataCracker();
+			cracker.CrackData(copy, bs);
+
+			dataModel = copy;
+			dataModel.action = action;
 		}
 
 		/// <summary>
