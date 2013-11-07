@@ -38,7 +38,7 @@ namespace Peach.Core.Test.StateModel
 
 			Assert.AreEqual(args[1].name, "Named Param 2");
 			Assert.AreEqual(args[1].type, ActionParameter.Type.Out);
-			Assert.AreEqual("Param2", (string)args[1].dataModel[0].InternalValue);
+			Assert.AreEqual("Hello", (string)args[1].dataModel[0].InternalValue);
 
 			Assert.AreEqual(args[2].name, "Param");
 			Assert.AreEqual(args[2].type, ActionParameter.Type.InOut);
@@ -127,6 +127,34 @@ namespace Peach.Core.Test.StateModel
 			RunAction("call", "<Param/>", "method='foo'");
 		}
 
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'SM.Initial.action' has unsupported child element <Data>.")]
+		public void Test7()
+		{
+			// Input should error with <Data>
+			RunAction("input", "<DataModel ref='DM'/><Data/>", "");
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, action 'SM.Initial.action' has unsupported child element <Data>.")]
+		public void Test8()
+		{
+			// GetProperty should error with <Data>
+			RunAction("getProperty", "<DataModel ref='DM'/><Data/>", "property='foo'");
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, <Param> child of action 'SM.Initial.action' has unsupported child element <Data>.")]
+		public void Test9()
+		{
+			// Call w/Out param should error with <Data>
+			RunAction("call", "<Param type='out'><DataModel ref='DM'/><Data/></Param>", "method='foo'");
+		}
+
+		[Test, ExpectedException(typeof(PeachException))]
+		public void Test10()
+		{
+			// Call w/ <Result> should error with <Data>
+			RunAction("call", "<Result><DataModel ref='DM'/><Data/></Result>", "method='foo'");
+		}
+
 		[Test]
 		public void TestActionParam()
 		{
@@ -152,9 +180,6 @@ namespace Peach.Core.Test.StateModel
 				</Param>
 				<Param name='Named Param 2' type='out'>
 					<DataModel ref='DM1'/>
-					<Data>
-						<Field name='str1' value='Param2'/>
-					</Data>
 				</Param>
 				<Param type='inout'>
 					<DataModel ref='DM1'/>

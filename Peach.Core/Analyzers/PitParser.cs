@@ -1336,7 +1336,8 @@ namespace Peach.Core.Analyzers
 				type = type,
 			};
 
-			handleActionData(node, data, "<Param> child of ");
+			// 'Out' params are input and can't have <Data>
+			handleActionData(node, data, "<Param> child of ", type != ActionParameter.Type.Out);
 
 			action.parameters.Add(data);
 		}
@@ -1349,7 +1350,7 @@ namespace Peach.Core.Analyzers
 				action = action
 			};
 
-			handleActionData(node, action.result, "<Result> child of ");
+			handleActionData(node, action.result, "<Result> child of ", false);
 		}
 
 		protected virtual void handleActionCall(XmlNode node, Dom.Actions.Call action)
@@ -1391,7 +1392,7 @@ namespace Peach.Core.Analyzers
 				action = action
 			};
 
-			handleActionData(node, action.data, "");
+			handleActionData(node, action.data, "", true);
 
 			handleActionAttr(node, action, "ref", "method", "setXpath", "valueXpath");
 		}
@@ -1405,7 +1406,7 @@ namespace Peach.Core.Analyzers
 				action = action
 			};
 
-			handleActionData(node, action.data, "");
+			handleActionData(node, action.data, "", false);
 
 			handleActionAttr(node, action, "ref", "method", "setXpath", "valueXpath");
 		}
@@ -1418,7 +1419,7 @@ namespace Peach.Core.Analyzers
 				action = action
 			};
 
-			handleActionData(node, action.data, "");
+			handleActionData(node, action.data, "", true);
 
 			handleActionAttr(node, action, "ref", "method", "property", "setXpath", "valueXpath");
 		}
@@ -1431,12 +1432,12 @@ namespace Peach.Core.Analyzers
 				action = action
 			};
 
-			handleActionData(node, action.data, "");
+			handleActionData(node, action.data, "", false);
 
 			handleActionAttr(node, action, "ref", "method", "property", "setXpath", "valueXpath");
 		}
 
-		protected virtual void handleActionData(XmlNode node, ActionData data, string type)
+		protected virtual void handleActionData(XmlNode node, ActionData data, string type, bool hasData)
 		{
 			foreach (XmlNode child in node.ChildNodes)
 			{
@@ -1450,6 +1451,13 @@ namespace Peach.Core.Analyzers
 
 				if (child.Name == "Data")
 				{
+					if (!hasData)
+						throw new PeachException("Error, {0}action '{1}.{2}.{3}' has unsupported child element <Data>.".Fmt(
+							type,
+							data.action.parent.parent.name,
+							data.action.parent.name,
+							data.action.name));
+
 					var item = handleData(child, data.dataSets.UniqueName());
 					data.dataSets.Add(item);
 				}
