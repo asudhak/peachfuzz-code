@@ -142,33 +142,20 @@ namespace Peach.Core.Dom
 						xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
 					}
 				}
-				else if (child is String)
-				{
-					var fullName = child.fullName;
-					xmlNode.InnerText = "|||" + fullName + "|||";
-					doc.values.Add(xmlNode.InnerText, new Variant(child.Value));
-				}
 				else if (child is Number)
 				{
 					xmlNode.InnerText = (string)child.InternalValue;
 				}
-				else if (child is XmlElement)
+				else if (child is XmlElement && !child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
 				{
-					if (child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
-					{
-						var key = "|||" + child.fullName + "|||";
-						var text = doc.doc.CreateTextNode(key);
-						xmlNode.AppendChild(text);
-						doc.values.Add(key, child.InternalValue);
-					}
-					else
-					{
-						xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
-					}
+					xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
 				}
 				else
 				{
-					throw new PeachException("Error, XmlElements can only contain XmlElement, XmlAttribute, and a single Number or String element.");
+					var key = "|||" + child.fullName + "|||";
+					var text = doc.doc.CreateTextNode(key);
+					xmlNode.AppendChild(text);
+					doc.values.Add(key, new Variant(child.Value));
 				}
 			}
 

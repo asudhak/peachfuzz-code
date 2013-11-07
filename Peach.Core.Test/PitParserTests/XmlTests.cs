@@ -92,7 +92,56 @@ namespace Peach.Core.Test.PitParserTests
             Assert.AreEqual(2, ((Dom.XmlElement)elem).Count);
         }
 
-        [Test]
+		[Test]
+		public void BlockXmlElement()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM1'>
+		<Block name='Payload'>
+			<XmlElement elementName='request'>
+				<Block>
+					<Transformer class='Base64Encode' />
+					<Blob value='hi;' />
+				</Block>
+			</XmlElement>
+		</Block>
+	</DataModel>
+
+	<DataModel name='DM2'>
+		<XmlElement elementName='test'>
+			<String value='ok:ok'>
+				<Analyzer class='StringToken'/>
+			</String>
+		</XmlElement>
+	</DataModel>
+
+	<DataModel name='DM3'>
+		<XmlElement elementName='test' occurs='2'>
+			<String value='ok:ok'/>
+		</XmlElement>
+	</DataModel>
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(3, dom.dataModels.Count);
+
+			var act1 = dom.dataModels[0].Value.ToArray();
+			var exp1 = Encoding.ASCII.GetBytes("<request>aGk7</request>");
+			Assert.AreEqual(exp1, act1);
+
+			var act2 = dom.dataModels[1].Value.ToArray();
+			var exp2 = Encoding.ASCII.GetBytes("<test>ok:ok</test>");
+			Assert.AreEqual(exp2, act2);
+
+			var act3 = dom.dataModels[2].Value.ToArray();
+			var exp3 = Encoding.ASCII.GetBytes("<test>ok:ok</test><test>ok:ok</test>");
+			Assert.AreEqual(exp3, act3);
+		}
+
+		[Test]
 		public void SimpleXPath()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
