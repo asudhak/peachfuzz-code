@@ -77,7 +77,7 @@ namespace Peach.Core.Test.Mutators
                 "       </State>" +
                 "   </StateModel>" +
 
-                "   <Test name=\"Default\">" +
+                "   <Test name=\"Default\" controlIteration=\"200\">" +
                 "       <StateModel ref=\"TheState\"/>" +
                 "       <Publisher class=\"Null\"/>" +
                 "       <Strategy class=\"Random\"/>" +

@@ -207,13 +207,20 @@ namespace Peach.Core.MutationStrategies
 				_iteration = value;
 				SeedRandom();
 
-				if (_iteration == GetSwitchIteration() && _lastIteration != _iteration)
-					_randomDataSet = null;
-
-				if (_randomDataSet == null)
+				if (_lastIteration != _iteration &&
+					_iteration == GetSwitchIteration() &&
+					_dataSets != null &&
+					_dataSets.Where(d => d.Options.Count > 1).Any())
 				{
 					logger.Debug("Iteration: Switch iteration, setting controlIteration and controlRecordingIteration.");
 
+					// Only enable switch iteration if there is at least one data set
+					// with two or more options.
+					_randomDataSet = null;
+				}
+
+				if (_randomDataSet == null)
+				{
 					_randomDataSet = new Random(this.Seed + GetSwitchIteration());
 
 					_context.controlIteration = true;
