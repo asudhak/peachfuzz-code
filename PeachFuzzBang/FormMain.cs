@@ -346,7 +346,7 @@ namespace PeachFuzzBang
 				}
 
 				agent.monitors.Add(monitor);
-				dom.agents.Add(agent.name, agent);
+				dom.agents.Add(agent);
 
 				// Send WM_CLOSE messages?
 				if (checkBoxEnableWmClose.Checked)

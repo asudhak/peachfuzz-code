@@ -48,7 +48,7 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, Dom> ns = new OrderedDictionary<string, Dom>();
 		public OrderedDictionary<string, DataModel> dataModels = new OrderedDictionary<string, DataModel>();
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
-		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
+		public NamedCollection<Agent> agents = new NamedCollection<Agent>();
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
 		public NamedCollection<DataSet> datas = new NamedCollection<DataSet>();
 
@@ -58,12 +58,7 @@ namespace Peach.Core.Dom
 
 			dataModels.AddEvent += new AddEventHandler<string, DataModel>(dataModels_AddEvent);
 			stateModels.AddEvent += new AddEventHandler<string, StateModel>(stateModels_AddEvent);
-			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
 			tests.AddEvent += new AddEventHandler<string, Test>(tests_AddEvent);
-		}
-
-		void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
-		{
 		}
 
 		#region OrderedDictionary AddEvent Handlers

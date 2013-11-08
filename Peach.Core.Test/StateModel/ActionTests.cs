@@ -316,6 +316,32 @@ namespace Peach.Core.Test.StateModel
 			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 		}
 
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Agent> element named 'myAgent' already exists.")]
+		public void Test20()
+		{
+			string xml = @"
+<Peach>
+	<Agent name='myAgent'/>
+	<Agent name='myAgent'/>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Monitor> element named 'mon' already exists in agent 'myAgent'.")]
+		public void Test21()
+		{
+			string xml = @"
+<Peach>
+	<Agent name='myAgent'>
+		<Monitor name='mon' class='FaultingMonitor'/>
+		<Monitor name='mon' class='FaultingMonitor'/>
+	</Agent>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
 
 		[Test]
 		public void TestActionParam()
@@ -401,6 +427,18 @@ namespace Peach.Core.Test.StateModel
 	<DataModel name='DM'>
 		<String name='str' value='Hello'/>
 	</DataModel>
+
+	<Agent name='MyAgent'>
+		<Monitor class='FaultingMonitor'/>
+		<Monitor class='FaultingMonitor'/>
+		<Monitor class='FaultingMonitor'/>
+	</Agent>
+
+	<Agent name='MyAgent2'>
+		<Monitor class='FaultingMonitor'/>
+		<Monitor class='FaultingMonitor'/>
+		<Monitor class='FaultingMonitor'/>
+	</Agent>
 
 	<StateModel name='SM' initialState='Initial'>
 		<State name='Initial'>
@@ -513,6 +551,15 @@ namespace Peach.Core.Test.StateModel
 
 			var parser = new PitParser();
 			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.agents.Count);
+			foreach (var agent in dom.agents)
+			{
+				Assert.AreEqual(3, agent.monitors.Count);
+				Assert.AreEqual("Monitor", agent.monitors[0].name);
+				Assert.AreEqual("Monitor_1", agent.monitors[1].name);
+				Assert.AreEqual("Monitor_2", agent.monitors[2].name);
+			}
 
 			Assert.AreEqual(2, dom.tests[0].stateModel.states.Count);
 

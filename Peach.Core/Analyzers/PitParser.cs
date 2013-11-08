@@ -486,7 +486,15 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Agent")
 				{
 					Dom.Agent agent = handleAgent(child);
-					dom.agents[agent.name] = agent;
+
+					try
+					{
+						dom.agents.Add(agent);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Agent> element named '" + agent.name + "' already exists.");
+					}
 				}
 			}
 
@@ -703,10 +711,17 @@ namespace Peach.Core.Analyzers
 					Dom.Monitor monitor = new Monitor();
 
 					monitor.cls = child.getAttrString("class");
-					monitor.name = child.getAttr("name", null);
+					monitor.name = child.getAttr("name", agent.monitors.UniqueName());
 					monitor.parameters = handleParamsOrdered(child);
 
-					agent.monitors.Add(monitor);
+					try
+					{
+						agent.monitors.Add(monitor);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Monitor> element named '{0}' already exists in agent '{1}'.".Fmt(monitor.name, agent.name));
+					}
 				}
 			}
 
