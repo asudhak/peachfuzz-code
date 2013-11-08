@@ -292,6 +292,7 @@ namespace Peach.Core.Loggers
 					name = data.dataModel.name,
 					parameter = data.name ?? "",
 					dataSet = data.selectedData != null ? data.selectedData.name : "",
+					mutations = new List<Fault.Mutation>(),
 				});
 			}
 
@@ -299,6 +300,32 @@ namespace Peach.Core.Loggers
 				rec.models = null;
 
 			states.Last().actions.Add(rec);
+		}
+
+		protected override void Action_Finished(Dom.Action action)
+		{
+			var rec = states.Last().actions.Last();
+			if (rec.models == null)
+				return;
+
+			foreach (var model in rec.models)
+			{
+				if (model.mutations.Count == 0)
+					model.mutations = null;
+			}
+		}
+
+		protected override void MutationStrategy_DataMutating(ActionData data, DataElement element, Mutator mutator)
+		{
+			var rec = states.Last().actions.Last();
+
+			var tgtName = data.dataModel.name;
+			var tgtParam = data.name ?? "";
+			var tgtDataSet = data.selectedData != null ? data.selectedData.name : "";
+			var model = rec.models.Where(m => m.name == tgtName && m.parameter == tgtParam && m.dataSet == tgtDataSet).FirstOrDefault();
+			System.Diagnostics.Debug.Assert(model != null);
+
+			model.mutations.Add(new Fault.Mutation() { element = element.fullName, mutator = mutator.name });
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
