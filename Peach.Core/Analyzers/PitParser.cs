@@ -189,8 +189,19 @@ namespace Peach.Core.Analyzers
 			return asParser(args, data, true);
 		}
 
+		class Resetter : DataElement
+		{
+			public static void Reset()
+			{
+				DataElement._uniqueName = 0;
+			}
+		}
+
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
+			// Reset the data element auto-name suffix back to zero
+			Resetter.Reset();
+
 			string xml = readWithDefines(args, data);
 
 			if (doValidatePit)
