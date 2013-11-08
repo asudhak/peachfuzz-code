@@ -155,6 +155,168 @@ namespace Peach.Core.Test.StateModel
 			RunAction("call", "<Result><DataModel ref='DM'/><Data/></Result>", "method='foo'");
 		}
 
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Data> element named 'myData' already exists.")]
+		public void Test11()
+		{
+			string xml = @"
+<Peach>
+	<Data name='myData'><Field name='foo' value='bar'/></Data>
+	<Data name='myData'><Field name='foo' value='bar'/></Data>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <DataModel> element named 'dm' already exists.")]
+		public void Test12()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='dm'/>
+	<DataModel name='dm'/>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <StateModel> element named 'sm' already exists.")]
+		public void Test13()
+		{
+			string xml = @"
+<Peach>
+	<StateModel name='sm' initialState='Initial'>
+		<State name='Initial'/>
+	</StateModel>
+	<StateModel name='sm' initialState='Initial'>
+		<State name='Initial'/>
+	</StateModel>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Test> element named 'Default' already exists.")]
+		public void Test14()
+		{
+			string xml = @"
+<Peach>
+	<StateModel name='sm' initialState='Initial'>
+		<State name='Initial'/>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='sm'/>
+		<Publisher class='Null'/>
+	</Test>
+
+	<Test name='Default'>
+		<StateModel ref='sm'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <State> element named 'Initial' already exists in state model 'sm'.")]
+		public void Test15()
+		{
+			string xml = @"
+<Peach>
+	<StateModel name='sm' initialState='Initial'>
+		<State name='Initial'/>
+		<State name='Initial'/>
+	</StateModel>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Action> element named 'stuff' already exists in state 'sm.initial'.")]
+		public void Test16()
+		{
+			string xml = @"
+<Peach>
+	<StateModel name='sm' initialState='initial'>
+		<State name='initial'>
+			<Action name='stuff' type='open'/>
+			<Action name='stuff' type='open'/>
+		</State>
+	</StateModel>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Data> element named 'myData' already exists in action 'sm.initial.stuff'.")]
+		public void Test17()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='dm'/>
+
+	<StateModel name='sm' initialState='initial'>
+		<State name='initial'>
+			<Action name='stuff' type='output'>
+				<DataModel ref='dm'/>
+				<Data name='myData'><Field name='foo' value='bar'/></Data>
+				<Data name='myData'><Field name='foo' value='bar'/></Data>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Param> element named 'myParam' already exists in action 'sm.initial.stuff'.")]
+		public void Test18()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='dm'/>
+
+	<StateModel name='sm' initialState='initial'>
+		<State name='initial'>
+			<Action name='stuff' type='call' method='foo'>
+				<Param name='myParam'>
+					<DataModel ref='dm'/>
+				</Param>
+				<Param name='myParam'>
+					<DataModel ref='dm'/>
+				</Param>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Data> element named 'myData' already exists in <Param> child of action 'sm.initial.stuff'.")]
+		public void Test19()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='dm'/>
+
+	<StateModel name='sm' initialState='initial'>
+		<State name='initial'>
+			<Action name='stuff' type='call' method='foo'>
+				<Param name='myParam'>
+					<DataModel ref='dm'/>
+					<Data name='myData'><Field name='foo' value='bar'/></Data>
+					<Data name='myData'><Field name='foo' value='bar'/></Data>
+				</Param>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
+
+
 		[Test]
 		public void TestActionParam()
 		{

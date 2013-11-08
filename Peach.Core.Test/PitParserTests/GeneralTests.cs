@@ -650,7 +650,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(expected, final);
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a Data model named 'DM' already exists.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <DataModel> element named 'DM' already exists.")]
 		public void TestDupeModelNames()
 		{
 			string xml = @"

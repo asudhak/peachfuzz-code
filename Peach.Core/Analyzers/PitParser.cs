@@ -220,9 +220,10 @@ namespace Peach.Core.Analyzers
 			data.Position = 0;
 			string xml = new StreamReader(data).ReadToEnd();
 
-			if (args != null && args.ContainsKey(DEFINED_VALUES))
+			object obj;
+			if (args != null && args.TryGetValue(DEFINED_VALUES, out obj))
 			{
-				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
+				var definedValues = obj as Dictionary<string, string>;
 				var sb = new StringBuilder(xml);
 
 				foreach (string key in definedValues.Keys)
@@ -430,10 +431,17 @@ namespace Peach.Core.Analyzers
 
 				if (dm != null)
 				{
-					if (dom.dataModels.ContainsKey(dm.name))
-						throw new PeachException("Error, a Data model named '" + dm.name + "' already exists.");
+					try
+					{
+						dom.dataModels.Add(dm.name, dm);
+					}
+					catch (ArgumentException)
+					{
+						var entry = dataModelPitParsable.Where(kv => kv.Value == dm.GetType()).Select(kv => kv.Key).FirstOrDefault();
+						var name = entry != null ? "<" + entry + ">" : "Data Model";
+						throw new PeachException("Error, a " + name + " element named '" + dm.name + "' already exists.");
+					}
 
-					dom.dataModels.Add(dm.name, dm);
 					finalUpdateRelations(new DataModel[] {dm});
 				}
 			}
@@ -446,10 +454,14 @@ namespace Peach.Core.Analyzers
 				{
 					var data = handleData(child, dom.datas.UniqueName());
 
-					if (dom.datas.Contains(data.name))
-						throw new PeachException("Error, a Data element named '" + data.name + "' already exists.");
-
-					dom.datas.Add(data);
+					try
+					{
+						dom.datas.Add(data);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Data> element named '" + data.name + "' already exists.");
+					}
 				}
 			}
 
@@ -460,7 +472,15 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "StateModel")
 				{
 					StateModel sm = handleStateModel(child, dom);
-					dom.stateModels.Add(sm.name, sm);
+
+					try
+					{
+						dom.stateModels.Add(sm.name, sm);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <StateModel> element named '" + sm.name + "' already exists.");
+					}
 				}
 
 				if (child.Name == "Agent")
@@ -477,7 +497,15 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Test")
 				{
 					Test test = handleTest(child, dom);
-					dom.tests.Add(test.name, test);
+
+					try
+					{
+						dom.tests.Add(test.name, test);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Test> element named '" + test.name + "' already exists.");
+					}
 				}
 			}
 		}
@@ -911,7 +939,9 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "#comment")
 					continue;
 
-				if (!dataElementPitParsable.ContainsKey(child.Name))
+				Type dataElementType;
+				
+				if (!dataElementPitParsable.TryGetValue(child.Name, out dataElementType))
 				{
 					if (((IList<string>)dataElementCommon).Contains(child.Name))
 						continue;
@@ -919,7 +949,6 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
 				}
 
-				Type dataElementType = dataElementPitParsable[child.Name];
 				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParser");
 				if (pitParsableMethod == null)
 					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + dataElementType.FullName);
@@ -1277,7 +1306,16 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "State")
 				{
 					State state = handleState(child, stateModel);
-					stateModel.states.Add(state.name, state);
+
+					try
+					{
+						stateModel.states.Add(state.name, state);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <State> element named '" + state.name + "' already exists in state model '" + stateModel.name + "'.");
+					}
+
 					if (state.name == initialState)
 						stateModel.initialState = state;
 				}
@@ -1300,7 +1338,15 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Action")
 				{
 					Core.Dom.Action action = handleAction(child, state);
-					state.actions.Add(action);
+
+					try
+					{
+						state.actions.Add(action);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Action> element named '" + action.name + "' already exists in state '" + state.parent.name + "." + state.name + "'.");
+					}
 				}
 			}
 
@@ -1339,7 +1385,18 @@ namespace Peach.Core.Analyzers
 			// 'Out' params are input and can't have <Data>
 			handleActionData(node, data, "<Param> child of ", type != ActionParameter.Type.Out);
 
-			action.parameters.Add(data);
+			try
+			{
+				action.parameters.Add(data);
+			}
+			catch (ArgumentException)
+			{
+				throw new PeachException("Error, a <Param> element named '{0}' already exists in action '{1}.{2}.{3}'.".Fmt(
+					data.name,
+					action.parent.parent.name,
+					action.parent.name,
+					action.name));
+			}
 		}
 
 		protected virtual void handleActionResult(XmlNode node, Dom.Actions.Call action)
@@ -1454,7 +1511,20 @@ namespace Peach.Core.Analyzers
 							data.action.name));
 
 					var item = handleData(child, data.dataSets.UniqueName());
-					data.dataSets.Add(item);
+
+					try
+					{
+						data.dataSets.Add(item);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Data> element named '{0}' already exists in {1}action '{2}.{3}.{4}'.".Fmt(
+							item.name,
+							type,
+							data.action.parent.parent.name,
+							data.action.parent.name,
+							data.action.name));
+					}
 				}
 			}
 
