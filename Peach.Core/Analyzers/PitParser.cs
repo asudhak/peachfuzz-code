@@ -1842,16 +1842,26 @@ namespace Peach.Core.Analyzers
 				// Publisher
 				if (child.Name == "Publisher")
 				{
-					string name;
-					if (!child.hasAttr("name"))
-					{
-						name = "Pub_" + _uniquePublisherName;
-						_uniquePublisherName++;
-					}
-					else
-						name = child.getAttrString("name");
 
-					test.publishers.Add(name, handlePlugin<Publisher, PublisherAttribute>(child, null, false));
+					string name = child.getAttr("name", null);
+					if (name == null)
+					{
+						int i = 0;
+						name = "Pub";
+						while (test.publishers.ContainsKey(name))
+							name = "Pub_" + (++i).ToString();
+					}
+
+					var pub = handlePlugin<Publisher, PublisherAttribute>(child, null, false);
+
+					try
+					{
+						test.publishers.Add(name, pub);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Publisher> element named '{0}' already exists in test '{1}'.".Fmt(name, test.name));
+					}
 				}
 
 				// Mutator

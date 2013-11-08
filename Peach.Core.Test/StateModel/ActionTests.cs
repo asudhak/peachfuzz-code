@@ -342,6 +342,29 @@ namespace Peach.Core.Test.StateModel
 			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
 		}
 
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <Publisher> element named 'myPub' already exists in test 'Default'.")]
+		public void Test22()
+		{
+			string xml = @"
+<Peach>
+	<StateModel name='sm' initialState='Initial'>
+		<State name='Initial'/>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='sm'/>
+		<Publisher class='Null'/>
+	</Test>
+
+	<Test name='Default'>
+		<StateModel ref='sm'/>
+		<Publisher name='myPub' class='Null'/>
+		<Publisher name='myPub' class='Null'/>
+	</Test>
+</Peach>
+";
+			new PitParser().asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+		}
 
 		[Test]
 		public void TestActionParam()
@@ -542,6 +565,8 @@ namespace Peach.Core.Test.StateModel
 	<Test name='Default'>
 		<StateModel ref='SM'/>
 		<Publisher class='Null'/>
+		<Publisher class='Null'/>
+		<Publisher class='Null'/>
 		<Strategy class='RandomDeterministic'/>
 	</Test>
 </Peach>".Fmt(tmp);
@@ -560,6 +585,11 @@ namespace Peach.Core.Test.StateModel
 				Assert.AreEqual("Monitor_1", agent.monitors[1].name);
 				Assert.AreEqual("Monitor_2", agent.monitors[2].name);
 			}
+
+			Assert.AreEqual(3, dom.tests[0].publishers.Count);
+			Assert.True(dom.tests[0].publishers.ContainsKey("Pub"));
+			Assert.True(dom.tests[0].publishers.ContainsKey("Pub_1"));
+			Assert.True(dom.tests[0].publishers.ContainsKey("Pub_2"));
 
 			Assert.AreEqual(2, dom.tests[0].stateModel.states.Count);
 
