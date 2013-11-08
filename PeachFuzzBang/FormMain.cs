@@ -202,12 +202,12 @@ namespace PeachFuzzBang
 				if (Directory.Exists(textBoxTemplateFiles.Text))
 				{
 					foreach (string fileName in Directory.GetFiles(textBoxTemplateFiles.Text))
-						fileData.Add(new DataFile() { FileName = fileName });
+						fileData.Add(new DataFile(fileData, fileName));
 
 				}
 				else if (File.Exists(textBoxTemplateFiles.Text))
 				{
-					fileData.Add(new DataFile() { FileName = textBoxTemplateFiles.Text });
+					fileData.Add(new DataFile(fileData, textBoxTemplateFiles.Text));
 				}
 				else
 				{

@@ -14,7 +14,7 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public ActionData()
 		{
-			dataSets = new NamedCollection<DataSet>();
+			dataSets = new NamedCollection<DataSet>("Data");
 		}
 
 		/// <summary>

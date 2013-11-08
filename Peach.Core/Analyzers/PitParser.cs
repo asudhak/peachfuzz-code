@@ -1546,7 +1546,7 @@ namespace Peach.Core.Analyzers
 						dir = Path.GetFullPath(dir);
 						string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
 						foreach (var item in files)
-							dataSet.Add(new DataFile() { FileName = item });
+							dataSet.Add(new DataFile(dataSet, item));
 					}
 					catch (ArgumentException ex)
 					{
@@ -1566,14 +1566,14 @@ namespace Peach.Core.Analyzers
 						if (Directory.Exists(normalized))
 						{
 							foreach (string fileName in Directory.GetFiles(normalized))
-								dataSet.Add(new DataFile() { FileName = fileName });
+								dataSet.Add(new DataFile(dataSet, fileName));
 
 							if (dataSet.Count == 0)
 								throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
 						}
 						else if (File.Exists(normalized))
 						{
-							dataSet.Add(new DataFile() { FileName = normalized });
+							dataSet.Add(new DataFile(dataSet, normalized));
 						}
 						else
 						{
@@ -1598,10 +1598,9 @@ namespace Peach.Core.Analyzers
 
 				// Ensure there is a field data record we can populate
 				if (dataSet.Count == 0)
-					dataSet.Add(new DataField());
+					dataSet.Add(new DataField(dataSet));
 
 				var fieldData = (DataField)dataSet[0];
-				fieldData.name = dataSet.name;
 
 				var dupes = new HashSet<string>();
 

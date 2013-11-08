@@ -53,6 +53,12 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class DataFile : Data
 	{
+		public DataFile(DataSet dataSet, string fileName)
+		{
+			name = "{0}/{1}".Fmt(dataSet.name, Path.GetFileName(fileName));
+			FileName = fileName;
+		}
+
 		public void Apply(DataModel model)
 		{
 			try
@@ -69,13 +75,14 @@ namespace Peach.Core.Dom
 
 		public string name
 		{
-			get { return FileName; }
+			get;
+			private set;
 		}
 
 		public string FileName
 		{
 			get;
-			set;
+			private set;
 		}
 	}
 
@@ -101,15 +108,16 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public DataField()
+		public DataField(DataSet dataSet)
 		{
+			name = dataSet.name;
 			Fields = new FieldCollection();
 		}
 
 		public string name
 		{
 			get;
-			set;
+			private set;
 		}
 
 		public FieldCollection Fields

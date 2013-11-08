@@ -228,5 +228,166 @@ namespace Peach.Core.Test.StateModel
 			Assert.AreEqual("The Result!", str);
 
 		}
+
+		[Test]
+		public void TestUniqueNames()
+		{
+			var tmp = Path.GetTempFileName();
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str' value='Hello'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='call' method='foo' >
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+			</Action>
+			<Action type='call' method='foo' >
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+			</Action>
+		</State>
+		<State name='Second'>
+			<Action type='call' method='foo' >
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+			</Action>
+			<Action type='call' method='foo' >
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+				<Param>
+					<DataModel ref='DM'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data fileName='{0}'/>
+					<Data><Field name='str' value='other'/></Data>
+				</Param>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
+	</Test>
+</Peach>".Fmt(tmp);
+
+			var tmpName = Path.GetFileName(tmp);
+			Assert.False(tmpName.Contains(Path.DirectorySeparatorChar));
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.tests[0].stateModel.states.Count);
+
+			foreach (var kv in dom.tests[0].stateModel.states)
+			{
+				var state = kv.Value;
+				Assert.AreEqual(2, state.actions.Count);
+				Assert.AreEqual("Action", state.actions[0].name);
+				Assert.AreEqual("Action_1", state.actions[1].name);
+
+				foreach (var action in state.actions)
+				{
+					var actionData = action.allData.ToList();
+					Assert.AreEqual(3, actionData.Count);
+					Assert.AreEqual("Param", actionData[0].name);
+					Assert.AreEqual("Param_1", actionData[1].name);
+					Assert.AreEqual("Param_2", actionData[2].name);
+
+					foreach (var item in actionData)
+					{
+						Assert.AreEqual(4, item.dataSets.Count);
+						Assert.AreEqual("Data", item.dataSets[0].name);
+						Assert.AreEqual("Data_1", item.dataSets[1].name);
+						Assert.AreEqual("Data_2", item.dataSets[2].name);
+						Assert.AreEqual("Data_3", item.dataSets[3].name);
+
+						var data = item.allData.ToList();
+						Assert.AreEqual(4, item.dataSets.Count);
+						Assert.AreEqual("Data/" + tmpName, data[0].name);
+						Assert.AreEqual("Data_1/" + tmpName, data[1].name);
+						Assert.AreEqual("Data_2/" + tmpName, data[2].name);
+						Assert.AreEqual("Data_3", data[3].name);
+					}
+				}
+
+			}
+		}
+
 	}
 }
