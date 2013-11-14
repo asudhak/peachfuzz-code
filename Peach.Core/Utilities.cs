@@ -191,6 +191,8 @@ namespace Peach.Core
 
 		public static HexString Parse(string s)
 		{
+
+			s = s.Replace(" ", ""); 
 			if (s.Length % 2 == 0)
 			{
 				var array = ToArray(s);
