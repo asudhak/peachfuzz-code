@@ -364,6 +364,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 				if(Exception.ExceptionCode == 0x80000001 || Exception.ExceptionCode == 0xC000001D)
 					handle = true;
 
+				// Access violation
 				if(Exception.ExceptionCode == 0xC0000005)
 				{
 					// A/V on EIP
@@ -375,7 +376,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 						handle = true;
 
 					// DEP
-					else if (Exception.ExceptionInformation[0] == 0)
+					else if (Exception.ExceptionInformation[0] == 8)
 						handle = true;
 				}
 

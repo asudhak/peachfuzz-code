@@ -259,9 +259,11 @@ namespace Peach.Core.Test.PitParserTests
 
 	<StateModel name=""StateSlurp"" initialState=""Initial"">
 		<State name=""Initial"">
-			<Action type=""slurp"" valueXpath=""//slurp"" setXpath=""//str"">
+			<Action type=""output"" publisher=""pub2"">
 				<DataModel ref=""Foo"" />
 			</Action>
+
+			<Action type=""slurp"" valueXpath=""//slurp"" setXpath=""//str""/>
 
 			<Action type=""output"">
 				<DataModel ref=""example:HelloWorldTemplate"" />
@@ -274,6 +276,7 @@ namespace Peach.Core.Test.PitParserTests
 		<Publisher class=""File"">
 			<Param name=""FileName"" value=""{1}""/>
 		</Publisher>
+		<Publisher class=""Null"" name=""pub2""/>
 	</Test>
 
 	<Test name=""Override"">

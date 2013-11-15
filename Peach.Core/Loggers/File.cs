@@ -281,37 +281,51 @@ namespace Peach.Core.Loggers
 			var rec = new Fault.Action()
 			{
 				name = action.name,
-				type = action.type.ToString(),
+				type = action.type,
 				models = new List<Fault.Model>()
 			};
 
-			if (action.dataModel != null)
+			foreach (var data in action.allData)
 			{
 				rec.models.Add(new Fault.Model()
 				{
-					name = action.dataModel.name,
-					parameter = null,
-					dataSet = null, // TODO: Set me!
+					name = data.dataModel.name,
+					parameter = data.name ?? "",
+					dataSet = data.selectedData != null ? data.selectedData.name : "",
+					mutations = new List<Fault.Mutation>(),
 				});
-			}
-
-			if (action.parameters != null)
-			{
-				foreach (var param in action.parameters)
-				{
-					rec.models.Add(new Fault.Model()
-					{
-						name = param.dataModel.name,
-						parameter = param.name,
-						dataSet = null, // TODO: Set me!
-					});
-				}
 			}
 
 			if (rec.models.Count == 0)
 				rec.models = null;
 
 			states.Last().actions.Add(rec);
+		}
+
+		protected override void Action_Finished(Dom.Action action)
+		{
+			var rec = states.Last().actions.Last();
+			if (rec.models == null)
+				return;
+
+			foreach (var model in rec.models)
+			{
+				if (model.mutations.Count == 0)
+					model.mutations = null;
+			}
+		}
+
+		protected override void MutationStrategy_DataMutating(ActionData data, DataElement element, Mutator mutator)
+		{
+			var rec = states.Last().actions.Last();
+
+			var tgtName = data.dataModel.name;
+			var tgtParam = data.name ?? "";
+			var tgtDataSet = data.selectedData != null ? data.selectedData.name : "";
+			var model = rec.models.Where(m => m.name == tgtName && m.parameter == tgtParam && m.dataSet == tgtDataSet).FirstOrDefault();
+			System.Diagnostics.Debug.Assert(model != null);
+
+			model.mutations.Add(new Fault.Mutation() { element = element.fullName, mutator = mutator.name });
 		}
 
 		protected override void Engine_TestError(RunContext context, Exception e)
@@ -330,24 +344,6 @@ namespace Peach.Core.Loggers
 				log.Dispose();
 				log = null;
 			}
-		}
-
-		protected override void MutationStrategy_DataSetChanged(Dom.Action action, Data data)
-		{
-			if (data.DataType == DataType.File)
-			{
-				log.WriteLine(". {0}.{1} loaded data file '{2}'", action.parent.name, action.name, data.FileName);
-			}
-			else
-			{
-				log.WriteLine(". {0}.{1} applied data fields", action.parent.name, action.name);
-				foreach (var item in data.fields)
-				{
-					log.WriteLine("  {0} = {1}", item.Key, item.Value);
-				}
-			}
-
-			log.Flush();
 		}
 
 		protected override void Engine_TestStarting(RunContext context)

@@ -189,8 +189,19 @@ namespace Peach.Core.Analyzers
 			return asParser(args, data, true);
 		}
 
+		class Resetter : DataElement
+		{
+			public static void Reset()
+			{
+				DataElement._uniqueName = 0;
+			}
+		}
+
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
+			// Reset the data element auto-name suffix back to zero
+			Resetter.Reset();
+
 			string xml = readWithDefines(args, data);
 
 			if (doValidatePit)
@@ -220,9 +231,10 @@ namespace Peach.Core.Analyzers
 			data.Position = 0;
 			string xml = new StreamReader(data).ReadToEnd();
 
-			if (args != null && args.ContainsKey(DEFINED_VALUES))
+			object obj;
+			if (args != null && args.TryGetValue(DEFINED_VALUES, out obj))
 			{
-				var definedValues = args[DEFINED_VALUES] as Dictionary<string, string>;
+				var definedValues = obj as Dictionary<string, string>;
 				var sb = new StringBuilder(xml);
 
 				foreach (string key in definedValues.Keys)
@@ -430,10 +442,17 @@ namespace Peach.Core.Analyzers
 
 				if (dm != null)
 				{
-					if (dom.dataModels.ContainsKey(dm.name))
-						throw new PeachException("Error, a Data model named '" + dm.name + "' already exists.");
+					try
+					{
+						dom.dataModels.Add(dm.name, dm);
+					}
+					catch (ArgumentException)
+					{
+						var entry = dataModelPitParsable.Where(kv => kv.Value == dm.GetType()).Select(kv => kv.Key).FirstOrDefault();
+						var name = entry != null ? "<" + entry + ">" : "Data Model";
+						throw new PeachException("Error, a " + name + " element named '" + dm.name + "' already exists.");
+					}
 
-					dom.dataModels.Add(dm.name, dm);
 					finalUpdateRelations(new DataModel[] {dm});
 				}
 			}
@@ -444,12 +463,16 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "Data")
 				{
-					var data = handleData(child);
+					var data = handleData(child, dom.datas.UniqueName());
 
-					if (dom.datas.ContainsKey(data.name))
-						throw new PeachException("Error, a Data element named '" + data.name + "' already exists.");
-
-					dom.datas.Add(data.name, data);
+					try
+					{
+						dom.datas.Add(data);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Data> element named '" + data.name + "' already exists.");
+					}
 				}
 			}
 
@@ -460,13 +483,29 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "StateModel")
 				{
 					StateModel sm = handleStateModel(child, dom);
-					dom.stateModels.Add(sm.name, sm);
+
+					try
+					{
+						dom.stateModels.Add(sm.name, sm);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <StateModel> element named '" + sm.name + "' already exists.");
+					}
 				}
 
 				if (child.Name == "Agent")
 				{
 					Dom.Agent agent = handleAgent(child);
-					dom.agents[agent.name] = agent;
+
+					try
+					{
+						dom.agents.Add(agent);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Agent> element named '" + agent.name + "' already exists.");
+					}
 				}
 			}
 
@@ -477,7 +516,15 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Test")
 				{
 					Test test = handleTest(child, dom);
-					dom.tests.Add(test.name, test);
+
+					try
+					{
+						dom.tests.Add(test.name, test);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Test> element named '" + test.name + "' already exists.");
+					}
 				}
 			}
 		}
@@ -563,7 +610,7 @@ namespace Peach.Core.Analyzers
 		/// <param name="refName">Name of reference</param>
 		/// <param name="predicate">Selector predicate that returns the element collection</param>
 		/// <returns></returns>
-		protected T getRef<T>(Dom.Dom dom, string refName, Func<Dom.Dom, OrderedDictionary<string, T>> predicate)
+		protected T getRef<T>(Dom.Dom dom, string refName, Func<Dom.Dom, ITryGetValue<string, T>> predicate)
 		{
 			return dom.getRef<T>(refName, predicate);
 		}
@@ -675,10 +722,17 @@ namespace Peach.Core.Analyzers
 					Dom.Monitor monitor = new Monitor();
 
 					monitor.cls = child.getAttrString("class");
-					monitor.name = child.getAttr("name", null);
+					monitor.name = child.getAttr("name", agent.monitors.UniqueName());
 					monitor.parameters = handleParamsOrdered(child);
 
-					agent.monitors.Add(monitor);
+					try
+					{
+						agent.monitors.Add(monitor);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Monitor> element named '{0}' already exists in agent '{1}'.".Fmt(monitor.name, agent.name));
+					}
 				}
 			}
 
@@ -911,7 +965,9 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "#comment")
 					continue;
 
-				if (!dataElementPitParsable.ContainsKey(child.Name))
+				Type dataElementType;
+				
+				if (!dataElementPitParsable.TryGetValue(child.Name, out dataElementType))
 				{
 					if (((IList<string>)dataElementCommon).Contains(child.Name))
 						continue;
@@ -919,7 +975,6 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error, found unknown data element in pit file: " + child.Name);
 				}
 
-				Type dataElementType = dataElementPitParsable[child.Name];
 				MethodInfo pitParsableMethod = dataElementType.GetMethod("PitParser");
 				if (pitParsableMethod == null)
 					throw new PeachException("Error, type with PitParsableAttribute is missing static PitParser(...) method: " + dataElementType.FullName);
@@ -1277,7 +1332,16 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "State")
 				{
 					State state = handleState(child, stateModel);
-					stateModel.states.Add(state.name, state);
+
+					try
+					{
+						stateModel.states.Add(state.name, state);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <State> element named '" + state.name + "' already exists in state model '" + stateModel.name + "'.");
+					}
+
 					if (state.name == initialState)
 						stateModel.initialState = state;
 				}
@@ -1300,231 +1364,269 @@ namespace Peach.Core.Analyzers
 				if (child.Name == "Action")
 				{
 					Core.Dom.Action action = handleAction(child, state);
-					state.actions.Add(action);
+
+					try
+					{
+						state.actions.Add(action);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Action> element named '" + action.name + "' already exists in state '" + state.parent.name + "." + state.name + "'.");
+					}
 				}
 			}
 
 			return state;
 		}
 
-		protected virtual Core.Dom.Action handleAction(XmlNode node, State parent)
+		protected virtual void handleActionAttr(XmlNode node, Dom.Action action, params string[] badAttrs)
 		{
-			Core.Dom.Action action = new Core.Dom.Action();
-			action.parent = parent;
+			foreach (var attr in badAttrs)
+				if (node.hasAttr(attr))
+					throw new PeachException("Error, action '{0}.{1}.{2}' has invalid attribute '{3}'.".Fmt(
+						action.parent.parent.name,
+						action.parent.name,
+						action.name,
+						attr));
+		}
 
-			if (node.hasAttr("name"))
-				action.name = node.getAttrString("name");
+		protected virtual void handleActionParameter(XmlNode node, Dom.Actions.Call action)
+		{
+			string strType = node.getAttr("type", "in");
+			ActionParameter.Type type;
+			if (!Enum.TryParse(strType, true, out type))
+				throw new PeachException("Error, type attribute '{0}' on <Param> child of action '{1}.{2}.{3}' is invalid.".Fmt(
+					strType,
+					action.parent.parent.name,
+					action.parent.name,
+					action.name));
 
-			if (node.hasAttr("when"))
-				action.when = node.getAttrString("when");
-
-			if (node.hasAttr("publisher"))
-				action.publisher = node.getAttrString("publisher");
-
-			if (node.hasAttr("type"))
+			var name = node.getAttr("name", action.parameters.UniqueName());
+			var data = new ActionParameter(name)
 			{
-				string type = node.getAttrString("type");
-				switch (type.ToLower())
-				{
-					case "accept":
-						action.type = ActionType.Accept;
-						break;
-					case "call":
-						action.type = ActionType.Call;
-						break;
-					case "changestate":
-						action.type = ActionType.ChangeState;
-						break;
-					case "close":
-						action.type = ActionType.Close;
-						break;
-					case "connect":
-						action.type = ActionType.Connect;
-						break;
-					case "getproperty":
-						action.type = ActionType.GetProperty;
-						break;
-					case "input":
-						action.type = ActionType.Input;
-						break;
-					case "open":
-						action.type = ActionType.Open;
-						break;
-					case "output":
-						action.type = ActionType.Output;
-						break;
-					case "setproperty":
-						action.type = ActionType.SetProperty;
-						break;
-					case "slurp":
-						action.type = ActionType.Slurp;
-						break;
-					case "start":
-						action.type = ActionType.Start;
-						break;
-					case "stop":
-						action.type = ActionType.Stop;
-						break;
-					default:
-						throw new PeachException("Error, state '" + parent.name + "' has an invalid action type '" + type + "'.");
-				}
-			}
+				action = action,
+				type = type,
+			};
 
-			if (node.hasAttr("onStart"))
-				action.onStart = node.getAttrString("onStart");
+			// 'Out' params are input and can't have <Data>
+			handleActionData(node, data, "<Param> child of ", type != ActionParameter.Type.Out);
 
-			if (node.hasAttr("onComplete"))
-				action.onComplete = node.getAttrString("onComplete");
-
-			if (node.hasAttr("ref"))
+			try
 			{
-				if (action.type != ActionType.ChangeState)
-					throw new PeachException("Error, only Actions of type ChangeState are allowed to use the 'ref' attribute");
-
-				action.reference = node.getAttrString("ref");
+				action.parameters.Add(data);
 			}
-
-			if (node.hasAttr("method"))
+			catch (ArgumentException)
 			{
-				if (action.type != ActionType.Call)
-					throw new PeachException("Error, only Actions of type Call are allowed to use the 'method' attribute");
-
-				action.method = node.getAttrString("method");
+				throw new PeachException("Error, a <Param> element named '{0}' already exists in action '{1}.{2}.{3}'.".Fmt(
+					data.name,
+					action.parent.parent.name,
+					action.parent.name,
+					action.name));
 			}
+		}
 
-			if (node.hasAttr("property"))
+		protected virtual void handleActionResult(XmlNode node, Dom.Actions.Call action)
+		{
+			action.result = new ActionResult()
 			{
-				if (action.type != ActionType.GetProperty && action.type != ActionType.SetProperty)
-					throw new PeachException("Error, only Actions of type GetProperty and SetProperty are allowed to use the 'property' attribute");
+				action = action
+			};
 
-				action.property = node.getAttrString("property");
-			}
+			handleActionData(node, action.result, "<Result> child of ", false);
+		}
 
-			if (node.hasAttr("setXpath"))
-			{
-				if (action.type != ActionType.Slurp)
-					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'setXpath' attribute");
-
-				action.setXpath = node.getAttrString("setXpath");
-			}
-
-			if (node.hasAttr("valueXpath"))
-			{
-				if (action.type != ActionType.Slurp)
-					throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'valueXpath' attribute");
-
-				action.valueXpath = node.getAttrString("valueXpath");
-			}
-
-			//if (node.hasAttr("value"))
-			//{
-			//    if (action.type != ActionType.Slurp)
-			//        throw new PeachException("Error, only Actions of type Slurp are allowed to use the 'value' attribute");
-
-			//    action.value = node.getAttrString("value");
-			//}
+		protected virtual void handleActionCall(XmlNode node, Dom.Actions.Call action)
+		{
+			action.method = node.getAttrString("method");
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "Param")
-					action.parameters.Add(handleActionParameter(child, action));
+					handleActionParameter(child, action);
+				else if (child.Name == "Result")
+					handleActionResult(child, action);
+			}
 
-				if (child.Name == "Result")
-					action.result = handleActionResult(child, action);
+			handleActionAttr(node, action, "ref", "property", "setXpath", "valueXpath");
+		}
 
-				action.dataModel = handleDataModel(child, action.dataModel);
+		protected virtual void handleActionChangeState(XmlNode node, Dom.Actions.ChangeState action)
+		{
+			action.reference = node.getAttrString("ref");
+
+			handleActionAttr(node, action, "method", "property", "setXpath", "valueXpath");
+		}
+
+		protected virtual void handleActionSlurp(XmlNode node, Dom.Actions.Slurp action)
+		{
+			action.setXpath = node.getAttrString("setXpath");
+			action.valueXpath = node.getAttrString("valueXpath");
+
+			handleActionAttr(node, action, "ref", "method", "property");
+		}
+
+		protected virtual void handleActionSetProperty(XmlNode node, Dom.Actions.SetProperty action)
+		{
+			action.property = node.getAttrString("property");
+			action.data = new ActionData()
+			{
+				action = action
+			};
+
+			handleActionData(node, action.data, "", true);
+
+			handleActionAttr(node, action, "ref", "method", "setXpath", "valueXpath");
+		}
+
+		protected virtual void handleActionGetProperty(XmlNode node, Dom.Actions.GetProperty action)
+		{
+			action.property = node.getAttrString("property");
+			action.data = new ActionData()
+			{
+				action = action
+			};
+
+			handleActionData(node, action.data, "", false);
+
+			handleActionAttr(node, action, "ref", "method", "setXpath", "valueXpath");
+		}
+
+		protected virtual void handleActionOutput(XmlNode node, Dom.Actions.Output action)
+		{
+			action.data = new ActionData()
+			{
+				action = action
+			};
+
+			handleActionData(node, action.data, "", true);
+
+			handleActionAttr(node, action, "ref", "method", "property", "setXpath", "valueXpath");
+		}
+
+		protected virtual void handleActionInput(XmlNode node, Dom.Actions.Input action)
+		{
+			action.data = new ActionData()
+			{
+				action = action
+			};
+
+			handleActionData(node, action.data, "", false);
+
+			handleActionAttr(node, action, "ref", "method", "property", "setXpath", "valueXpath");
+		}
+
+		protected virtual void handleActionData(XmlNode node, ActionData data, string type, bool hasData)
+		{
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				data.dataModel = handleDataModel(child, data.dataModel);
+
+				if (data.dataModel != null)
+				{
+					data.dataModel.dom = null;
+					data.dataModel.action = data.action;
+				}
 
 				if (child.Name == "Data")
 				{
-					if (action.dataSet == null)
-						action.dataSet = new DataSet();
-					action.dataSet.Datas.Add(handleData(child));
+					if (!hasData)
+						throw new PeachException("Error, {0}action '{1}.{2}.{3}' has unsupported child element <Data>.".Fmt(
+							type,
+							data.action.parent.parent.name,
+							data.action.parent.name,
+							data.action.name));
+
+					var item = handleData(child, data.dataSets.UniqueName());
+
+					try
+					{
+						data.dataSets.Add(item);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Data> element named '{0}' already exists in {1}action '{2}.{3}.{4}'.".Fmt(
+							item.name,
+							type,
+							data.action.parent.parent.name,
+							data.action.parent.name,
+							data.action.name));
+					}
 				}
 			}
 
-			if (action.dataModelRequired && action.dataModel == null)
-				throw new PeachException("Error, action '" + action.name + "' is missing required child element <DataModel>.");
+			if (data.dataModel == null)
+				throw new PeachException("Error, {0}action '{1}.{2}.{3}' is missing required child element <DataModel>.".Fmt(
+					type,
+					data.action.parent.parent.name,
+					data.action.parent.name,
+					data.action.name));
+		}
 
-			if (action.dataSet != null && action.dataModel == null)
-				throw new PeachException("Error, action '" + action.name + "' has child element <Data> but is missing child element <DataModel>.");
+		protected virtual Core.Dom.Action handleAction(XmlNode node, State parent)
+		{
+			var strType = node.getAttrString("type");
+			var type = ClassLoader.FindTypeByAttribute<ActionAttribute>((t, a) => 0 == string.Compare(a.Name, strType, true));
+			if (type == null)
+				throw new PeachException("Error, state '" + parent.name + "' has an invalid action type '" + strType + "'.");
+
+			var name = node.getAttr("name", parent.actions.UniqueName());
+
+			var action = (Dom.Action)Activator.CreateInstance(type);
+
+			action.name = name;
+			action.parent = parent;
+			action.when = node.getAttr("when",null);
+			action.publisher = node.getAttr("publisher", null);
+			action.onStart = node.getAttr("onStart", null);
+			action.onComplete = node.getAttr("onComplete", null);
+
+			if (action is Dom.Actions.Call)
+				handleActionCall(node, (Dom.Actions.Call)action);
+			else if (action is Dom.Actions.ChangeState)
+				handleActionChangeState(node, (Dom.Actions.ChangeState)action);
+			else if (action is Dom.Actions.Slurp)
+				handleActionSlurp(node, (Dom.Actions.Slurp)action);
+			else if (action is Dom.Actions.GetProperty)
+				handleActionGetProperty(node, (Dom.Actions.GetProperty)action);
+			else if (action is Dom.Actions.SetProperty)
+				handleActionSetProperty(node, (Dom.Actions.SetProperty)action);
+			else if (action is Dom.Actions.Input)
+				handleActionInput(node, (Dom.Actions.Input)action);
+			else if (action is Dom.Actions.Output)
+				handleActionOutput(node, (Dom.Actions.Output)action);
 
 			return action;
 		}
 
-		protected virtual ActionParameter handleActionParameter(XmlNode node, Dom.Action parent)
+
+		protected virtual DataSet handleData(XmlNode node, string uniqueName)
 		{
-			ActionParameter param = new ActionParameter();
-
-			if (node.hasAttr("name"))
-				param.name = node.getAttrString("name");
-
-			string strType = node.getAttr("type", "in");
-			ActionParameterType type;
-			if (!Enum.TryParse(strType, true, out type))
-				throw new PeachException("Error, type attribute '" + strType + "' on <Param> child of action '" + parent.name + "' is invalid");
-			param.type = type;
-
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				param.dataModel = handleDataModel(child, param.dataModel);
-
-				if (child.Name == "Data")
-					param.data = handleData(child);
-			}
-
-			if (param.dataModel == null)
-				throw new PeachException("Error, <Param> child of action '" + parent.name + "' is missing required child element <DataModel>.");
-
-			param.dataModel.action = parent;
-
-			return param;
-		}
-
-		protected virtual ActionResult handleActionResult(XmlNode node, Dom.Action parent)
-		{
-			ActionResult result = new ActionResult();
-
-			if (node.hasAttr("name"))
-				result.name = node.getAttrString("name");
-
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				result.dataModel = handleDataModel(child, result.dataModel);
-			}
-
-			if (result.dataModel == null)
-				throw new PeachException("Error, <Result> child of action '" + parent.name + "' is missing required child element <DataModel>.");
-
-			result.dataModel.action = parent;
-
-			return result;
-		}
-
-		protected virtual Data handleData(XmlNode node)
-		{
-			Data data = null;
+			DataSet dataSet = null;
 
 			if (node.hasAttr("ref"))
 			{
 				string refName = node.getAttrString("ref");
 
-				Data other = getRef<Data>(_dom, refName, a => a.datas);
+				var other = getRef<DataSet>(_dom, refName, a => a.datas);
 				if (other == null)
 					throw new PeachException("Error, could not resolve Data element ref attribute value '" + refName + "'.");
 
-				data = ObjectCopier.Clone(other);
-				data.name = node.getAttr("name", new Data().name);
+				dataSet = ObjectCopier.Clone(other);
 			}
 			else
 			{
-				data = new Data();
-
-				if (node.hasAttr("name"))
-					data.name = node.getAttrString("name");
+				dataSet = new DataSet();
 			}
+
+			dataSet.name = node.getAttr("name", uniqueName);
 
 			if (node.hasAttr("fileName"))
 			{
+				if (node.ChildNodes.AsEnumerable().Where(n => n.Name == "Field").Any())
+					throw new PeachException("Can't specify fields and file names.");
+
+				dataSet.Clear();
+
 				string dataFileName = node.getAttrString("fileName");
 
 				if (dataFileName.Contains('*'))
@@ -1539,7 +1641,8 @@ namespace Peach.Core.Analyzers
 					{
 						dir = Path.GetFullPath(dir);
 						string[] files = Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly);
-						data.Files.AddRange(files);
+						foreach (var item in files)
+							dataSet.Add(new DataFile(dataSet, item));
 					}
 					catch (ArgumentException ex)
 					{
@@ -1547,10 +1650,8 @@ namespace Peach.Core.Analyzers
 						throw new PeachException("Error parsing Data element, fileName contains invalid characters: " + dataFileName, ex);
 					}
 
-					if (data.Files.Count == 0)
+					if (dataSet.Count == 0)
 						throw new PeachException("Error parsing Data element, no matching files found: " + dataFileName);
-
-					data.DataType = DataType.Files;
 				}
 				else
 				{
@@ -1560,20 +1661,15 @@ namespace Peach.Core.Analyzers
 
 						if (Directory.Exists(normalized))
 						{
-							List<string> files = new List<string>();
 							foreach (string fileName in Directory.GetFiles(normalized))
-								files.Add(fileName);
+								dataSet.Add(new DataFile(dataSet, fileName));
 
-							if (files.Count == 0)
+							if (dataSet.Count == 0)
 								throw new PeachException("Error parsing Data element, folder contains no files: " + dataFileName);
-
-							data.DataType = DataType.Files;
-							data.Files = files;
 						}
 						else if (File.Exists(normalized))
 						{
-							data.DataType = DataType.File;
-							data.FileName = normalized;
+							dataSet.Add(new DataFile(dataSet, normalized));
 						}
 						else
 						{
@@ -1586,29 +1682,47 @@ namespace Peach.Core.Analyzers
 					}
 				}
 			}
-
-			var names = new HashSet<string>();
-
-			foreach (XmlNode child in node.ChildNodes)
+			else if (node.ChildNodes.AsEnumerable().Where(n => n.Name == "Field").Any())
 			{
-				if (child.Name == "Field")
+				// Ensure <Field> and fileName="" aren't used together
+				if (node.hasAttr("fileName"))
+					throw new PeachException("Can't specify fields and file names.");
+
+				// If this ref'd an existing Data element, clear all non FieldData children
+				if (dataSet.Where(o => !(o is DataField)).Any())
+					dataSet.Clear();
+
+				// Ensure there is a field data record we can populate
+				if (dataSet.Count == 0)
+					dataSet.Add(new DataField(dataSet));
+
+				var fieldData = (DataField)dataSet[0];
+
+				var dupes = new HashSet<string>();
+
+				foreach (XmlNode child in node.ChildNodes)
 				{
-					string name = child.getAttrString("name");
+					if (child.Name == "Field")
+					{
+						string name = child.getAttrString("name");
 
-					if (!names.Add(name))
-						throw new PeachException("Error, Data element has multiple entries for field '" + name + "'.");
+						if (!dupes.Add(name))
+							throw new PeachException("Error, Data element has multiple entries for field '" + name + "'.");
 
-					data.DataType = DataType.Fields;
+						// Hack to call common value parsing code.
+						Blob tmp = new Blob();
+						handleCommonDataElementValue(child, tmp);
 
-					// Hack to call common value parsing code.
-					Blob tmp = new Blob();
-					handleCommonDataElementValue(child, tmp);
-
-					data.fields[name] = tmp.DefaultValue;
+						fieldData.Fields.Remove(name);
+						fieldData.Fields.Add(new DataField.Field() { Name = name, Value = tmp.DefaultValue });
+					}
 				}
 			}
 
-			return data;
+			if (dataSet.Count == 0)
+				throw new PeachException("Error, <Data> element is missing required 'fileName' attribute or <Field> child element.");
+
+			return dataSet;
 		}
 
 		protected virtual List<string> handleMutators(XmlNode node)
@@ -1739,16 +1853,26 @@ namespace Peach.Core.Analyzers
 				// Publisher
 				if (child.Name == "Publisher")
 				{
-					string name;
-					if (!child.hasAttr("name"))
-					{
-						name = "Pub_" + _uniquePublisherName;
-						_uniquePublisherName++;
-					}
-					else
-						name = child.getAttrString("name");
 
-					test.publishers.Add(name, handlePlugin<Publisher, PublisherAttribute>(child, null, false));
+					string name = child.getAttr("name", null);
+					if (name == null)
+					{
+						int i = 0;
+						name = "Pub";
+						while (test.publishers.ContainsKey(name))
+							name = "Pub_" + (++i).ToString();
+					}
+
+					var pub = handlePlugin<Publisher, PublisherAttribute>(child, null, false);
+
+					try
+					{
+						test.publishers.Add(name, pub);
+					}
+					catch (ArgumentException)
+					{
+						throw new PeachException("Error, a <Publisher> element named '{0}' already exists in test '{1}'.".Fmt(name, test.name));
+					}
 				}
 
 				// Mutator

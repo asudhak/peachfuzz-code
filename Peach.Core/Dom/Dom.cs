@@ -48,9 +48,9 @@ namespace Peach.Core.Dom
 		public OrderedDictionary<string, Dom> ns = new OrderedDictionary<string, Dom>();
 		public OrderedDictionary<string, DataModel> dataModels = new OrderedDictionary<string, DataModel>();
 		public OrderedDictionary<string, StateModel> stateModels = new OrderedDictionary<string, StateModel>();
-		public OrderedDictionary<string, Agent> agents = new OrderedDictionary<string, Agent>();
+		public NamedCollection<Agent> agents = new NamedCollection<Agent>();
 		public OrderedDictionary<string, Test> tests = new OrderedDictionary<string, Test>();
-		public OrderedDictionary<string, Data> datas = new OrderedDictionary<string, Data>();
+		public NamedCollection<DataSet> datas = new NamedCollection<DataSet>();
 
 		public Dom()
 		{
@@ -58,12 +58,7 @@ namespace Peach.Core.Dom
 
 			dataModels.AddEvent += new AddEventHandler<string, DataModel>(dataModels_AddEvent);
 			stateModels.AddEvent += new AddEventHandler<string, StateModel>(stateModels_AddEvent);
-			agents.AddEvent += new AddEventHandler<string, Agent>(agents_AddEvent);
 			tests.AddEvent += new AddEventHandler<string, Test>(tests_AddEvent);
-		}
-
-		void agents_AddEvent(OrderedDictionary<string, Agent> sender, string key, Agent value)
-		{
 		}
 
 		#region OrderedDictionary AddEvent Handlers
@@ -99,13 +94,9 @@ namespace Peach.Core.Dom
 				{
 					foreach (Action action in state.actions)
 					{
-						if (action.dataModel != null)
-							action.dataModel.evaulateAnalyzers();
-
-						foreach (ActionParameter ap in action.parameters)
+						foreach (var data in action.allData)
 						{
-							if (ap.dataModel != null)
-								ap.dataModel.evaulateAnalyzers();
+							data.dataModel.evaulateAnalyzers();
 						}
 					}
 				}
@@ -119,7 +110,7 @@ namespace Peach.Core.Dom
 		/// <param name="refName">Name of reference</param>
 		/// <param name="predicate">Selector predicate that returns the element collection</param>
 		/// <returns>The named Dom element or null if not found.</returns>
-		public T getRef<T>(string refName, Func<Dom, OrderedDictionary<string, T>> predicate)
+		public T getRef<T>(string refName, Func<Dom, ITryGetValue<string, T>> predicate)
 		{
 			int i = refName.IndexOf(':');
 			if (i > -1)

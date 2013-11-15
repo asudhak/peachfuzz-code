@@ -74,14 +74,14 @@ namespace Peach.Core.Fixups
 
 		void Action_Starting(Dom.Action action)
 		{
-			if (action.type != ActionType.Output)
-				return;
-
-			var elem = action.dataModel.find(parent.fullName);
-			if (elem != null)
+			foreach (var item in action.outputData)
 			{
-				elem.Invalidate();
-				GetRandom(elem, action, true);
+				var elem = item.dataModel.find(parent.fullName);
+				if (elem != null)
+				{
+					elem.Invalidate();
+					GetRandom(elem, action, true);
+				}
 			}
 		}
 

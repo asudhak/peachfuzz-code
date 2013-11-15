@@ -1,5 +1,4 @@
-﻿
-//
+﻿//
 // Copyright (c) Michael Eddington
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -27,47 +26,107 @@
 // $Id$
 
 using System;
-using System.Collections.Generic;
-using System.Collections;
-using System.Text;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Text.RegularExpressions;
-using Peach.Core.Agent;
-using System.Runtime.Serialization;
+
+using Peach.Core.Cracker;
+using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
 	/// <summary>
-	/// Data specification for a DataModel
+	/// Interface for Data
+	/// </summary>
+	public interface Data : INamed
+	{
+		/// <summary>
+		/// Applies the Data to the specified data model
+		/// </summary>
+		/// <param name="model"></param>
+		void Apply(DataModel model);
+	}
+
+	/// <summary>
+	/// Data that comes from a file
 	/// </summary>
 	[Serializable]
-	public class Data : INamed
+	public class DataFile : Data
 	{
-		static int nameNum = 0;
-		string _name = "Unknown Data " + (++nameNum);
-
-		public OrderedDictionary<string, Variant> fields = new OrderedDictionary<string, Variant>();
-
-		public Data()
+		public DataFile(DataSet dataSet, string fileName)
 		{
-			DataType = Core.Dom.DataType.Fields;
-			FileName = null;
+			name = "{0}/{1}".Fmt(dataSet.name, Path.GetFileName(fileName));
+			FileName = fileName;
 		}
 
-		public DataType DataType { get; set; }
-		public List<string> Files = new List<string>();
-		public string FileName { get; set; }
-
-		#region INamed Members
+		public void Apply(DataModel model)
+		{
+			try
+			{
+				DataCracker cracker = new DataCracker();
+				cracker.CrackData(model, new BitStream(File.OpenRead(FileName)));
+			}
+			catch (Cracker.CrackingFailure ex)
+			{
+				throw new PeachException("Error, failed to crack \"" + FileName +
+					"\" into \"" + model.fullName + "\": " + ex.Message, ex);
+			}
+		}
 
 		public string name
 		{
-			get { return _name; }
-			set { _name = value; }
+			get;
+			private set;
 		}
 
-		#endregion
+		public string FileName
+		{
+			get;
+			private set;
+		}
+	}
 
-		public void ApplyFields(DataElementContainer model)
+	/// <summary>
+	/// Data that comes from fields
+	/// </summary>
+	[Serializable]
+	public class DataField : Data
+	{
+		[Serializable]
+		public class Field
+		{
+			public string Name { get; set; }
+			public Variant Value { get; set; }
+		}
+
+		[Serializable]
+		public class FieldCollection : KeyedCollection<string, Field>
+		{
+			protected override string GetKeyForItem(Field item)
+			{
+				return item.Name;
+			}
+		}
+
+		public DataField(DataSet dataSet)
+		{
+			name = dataSet.name;
+			Fields = new FieldCollection();
+		}
+
+		public string name
+		{
+			get;
+			private set;
+		}
+
+		public FieldCollection Fields
+		{
+			get;
+			private set;
+		}
+
+		public void Apply(DataModel model)
 		{
 			// Examples of valid field names:
 			//
@@ -76,15 +135,15 @@ namespace Peach.Core.Dom
 			//  3. foo[N].bar[N].foo
 			//
 
-			foreach (var kv in fields)
+			foreach (var kv in Fields)
 			{
-				ApplyField(model, kv.Key, kv.Value);
+				ApplyField(model, kv.Name, kv.Value);
 			}
 
 			model.evaulateAnalyzers();
 		}
 
-		private static void ApplyField(DataElementContainer model, string field, Variant value)
+		static void ApplyField(DataElementContainer model, string field, Variant value)
 		{
 			DataElement elem = model;
 			DataElementContainer container = model;
@@ -164,17 +223,5 @@ namespace Peach.Core.Dom
 				elem.DefaultValue = value;
 		}
 	}
-
-	/// <summary>
-	/// Type of Data
-	/// </summary>
-	public enum DataType
-	{
-		Fields,
-		File,
-		Files
-	}
 }
 
-
-// END

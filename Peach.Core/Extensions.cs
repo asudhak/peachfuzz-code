@@ -72,6 +72,19 @@ namespace Peach.Core
 	public static class XmlExtensions
 	{
 		/// <summary>
+		/// Presents an xml node list as an IEnumerable&lt;XmlNode&gt;
+		/// </summary>
+		/// <param name="list">Xml node list</param>
+		/// <returns></returns>
+		public static IEnumerable<XmlNode> AsEnumerable(this XmlNodeList list)
+		{
+			foreach (XmlNode item in list)
+			{
+				yield return item;
+			}
+		}
+
+		/// <summary>
 		/// Tests if an attribute exists on an XmlNode
 		/// </summary>
 		/// <param name="node">Node to test</param>

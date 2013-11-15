@@ -1819,6 +1819,13 @@
 					<xs:documentation>How often we should perform a control iteration.  Defaults to 0.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="nonDeterministicActions" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>
+						Are action run counts non-deterministic.  Defaults to 'false'.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 
@@ -2456,11 +2463,6 @@
 													<xs:element ref="DataModel" maxOccurs="1" minOccurs="1"/>
 													<xs:element ref="LangModel" maxOccurs="1" minOccurs="1"/>
 												</xs:choice>
-												<xs:attribute name="name" type="xs:string">
-													<xs:annotation>
-														<xs:documentation>Name of this Action</xs:documentation>
-													</xs:annotation>
-												</xs:attribute>												
 											</xs:complexType>
 										</xs:element>
 									</xs:choice>

@@ -91,7 +91,7 @@ namespace Peach.Core.Test.StateModel
 			string xml = @"
 <Peach>
 	<DataModel name='Foo'>
-		<String name='str1' value='Foo Data Model'/>
+		<String name='str1' value='Foo Data Model' mutable='false'/>
 	</DataModel>
 
 	<DataModel name='DM'>
@@ -106,9 +106,10 @@ namespace Peach.Core.Test.StateModel
 
 	<StateModel name='SM' initialState='Initial'>
 		<State name='Initial'>
-			<Action type='slurp' valueXpath='//Foo/str1' setXpath='//DM/str2'>
+			<Action type='output'>
 				<DataModel ref='Foo'/>
 			</Action>
+			<Action type='slurp' valueXpath='//Foo/str1' setXpath='//DM/str2'/>
 			<Action type='changeState' ref='Send'/>
 		</State>
 
@@ -188,7 +189,7 @@ namespace Peach.Core.Test.StateModel
 			string xml = @"
 <Peach>
 	<DataModel name='Foo'>
-		<String name='str1' value='Foo Data Model'/>
+		<String name='str1' value='Foo Data Model' mutable='false'/>
 	</DataModel>
 
 	<DataModel name='DM'>
@@ -203,13 +204,14 @@ namespace Peach.Core.Test.StateModel
 
 	<StateModel name='SM' initialState='Send'>
 		<State name='Send'>
-			<Action type='slurp' valueXpath='//Foo/str1' setXpath='//DM/str2'>
+			<Action type='output'>
 				<DataModel ref='Foo'/>
 			</Action>
+			<Action type='slurp' valueXpath='//Foo/str1' setXpath='//DM/str2'/>
 			<Action type='output'>
 				<DataModel ref='DM'/>
 			</Action>
-			<Action type='changeState' ref='Send' when='int(state.actions[1].dataModel[&quot;num&quot;].InternalValue) &lt; 5'/>
+			<Action type='changeState' ref='Send' when='int(state.actions[2].dataModel[&quot;num&quot;].InternalValue) &lt; 5'/>
 		</State>
 
 	</StateModel>

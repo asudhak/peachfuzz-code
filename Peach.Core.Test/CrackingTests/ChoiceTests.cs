@@ -178,9 +178,6 @@ namespace Peach.Core.Test.CrackingTests
 		<State name='Initial'>
 			<Action type='input'>
 				<DataModel ref='DM' />
-				<Data DataModel='DM'>
-					<Field name='choice.token2' value='' />
-				</Data>
 			</Action>
 		</State>
 	</StateModel>

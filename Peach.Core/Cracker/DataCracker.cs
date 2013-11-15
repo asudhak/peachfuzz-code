@@ -839,8 +839,9 @@ namespace Peach.Core.Cracker
 				}
 				else
 				{
+					// If the size relation has not been resolved, keep cracking until it has
 					logger.Debug("scan: {0} -> Pos: {1}, Size relation: ???", elem.debugName, pos);
-					return null;
+					return false;
 				}
 			}
 

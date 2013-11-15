@@ -353,10 +353,11 @@ namespace Peach.Core.Test.PitParserTests
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			var ds = dom.stateModels[0].states["Initial"].actions[0].dataSet;
+			var ds = dom.stateModels[0].states["Initial"].actions[0].allData.First().dataSets;
 			Assert.NotNull(ds);
-			Assert.AreEqual(1, ds.Datas.Count);
-			Assert.AreEqual(temp1, ds.Datas[0].FileName);
+			Assert.AreEqual(1, ds.Count);
+			Assert.AreEqual(1, ds[0].Count());
+			Assert.AreEqual(temp1, ((DataFile)ds[0].First()).FileName);
 		}
 
 		[Test]
@@ -395,11 +396,13 @@ namespace Peach.Core.Test.PitParserTests
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
-			var ds = dom.stateModels[0].states["Initial"].actions[0].dataSet;
+			var ds = dom.stateModels[0].states["Initial"].actions[0].allData.First().dataSets;
 			Assert.NotNull(ds);
-			Assert.AreEqual(1, ds.Datas.Count);
-			Assert.AreEqual(temp2, ds.Datas[0].FileName);
-			Assert.AreEqual(temp1, dom.datas[0].FileName);
+			Assert.AreEqual(1, ds.Count);
+			Assert.AreEqual(1, ds[0].Count);
+			Assert.True(ds[0][0] is DataFile);
+			Assert.AreEqual(temp2, ((DataFile)ds[0][0]).FileName);
+			Assert.AreEqual(temp1, ((DataFile)dom.datas[0][0]).FileName);
 		}
 
 		[Test]
@@ -423,7 +426,7 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(1, dom.datas.Count);
 				Assert.True(dom.datas.ContainsKey("data"));
 				var ds = dom.datas["data"];
-				Assert.Greater(ds.Files.Count, 0);
+				Assert.Greater(ds.Count, 0);
 			}
 
 			Assert.Throws<PeachException>(delegate()
@@ -454,7 +457,7 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(1, dom.datas.Count);
 				Assert.True(dom.datas.ContainsKey("data"));
 				var ds = dom.datas["data"];
-				Assert.AreEqual(6, ds.Files.Count);
+				Assert.AreEqual(6, ds.Count);
 			}
 
 			{
@@ -464,7 +467,7 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(1, dom.datas.Count);
 				Assert.True(dom.datas.ContainsKey("data"));
 				var ds = dom.datas["data"];
-				Assert.AreEqual(3, ds.Files.Count);
+				Assert.AreEqual(3, ds.Count);
 			}
 
 			{
@@ -474,7 +477,7 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(1, dom.datas.Count);
 				Assert.True(dom.datas.ContainsKey("data"));
 				var ds = dom.datas["data"];
-				Assert.AreEqual(2, ds.Files.Count);
+				Assert.AreEqual(2, ds.Count);
 			}
 
 			{
@@ -484,7 +487,7 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(1, dom.datas.Count);
 				Assert.True(dom.datas.ContainsKey("data"));
 				var ds = dom.datas["data"];
-				Assert.AreEqual(2, ds.Files.Count);
+				Assert.AreEqual(2, ds.Count);
 			}
 
 			{
@@ -494,7 +497,7 @@ namespace Peach.Core.Test.PitParserTests
 				Assert.AreEqual(1, dom.datas.Count);
 				Assert.True(dom.datas.ContainsKey("data"));
 				var ds = dom.datas["data"];
-				Assert.AreEqual(2, ds.Files.Count);
+				Assert.AreEqual(2, ds.Count);
 			}
 		}
 
@@ -647,7 +650,7 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(expected, final);
 		}
 
-		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a Data model named 'DM' already exists.")]
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, a <DataModel> element named 'DM' already exists.")]
 		public void TestDupeModelNames()
 		{
 			string xml = @"

@@ -47,13 +47,11 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class MutationStrategy
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		public delegate void DataMutationEventHandler(ActionData actionData, DataElement element, Mutator mutator);
+		public delegate void StateMutationEventHandler(State state, Mutator mutator);
 
-		public delegate void MutationEventHandler(string elementName, string mutatorName);
-		public delegate void DataSetChangedEventHandler(Dom.Action action, Dom.Data data);
-
-		public static event MutationEventHandler Mutating;
-		public static event DataSetChangedEventHandler DataSetChanged;
+		public static event DataMutationEventHandler DataMutating;
+		public static event StateMutationEventHandler StateMutating;
 
 		protected RunContext _context;
 		protected Engine _engine;
@@ -121,81 +119,21 @@ namespace Peach.Core
 			}
 		}
 
-		protected string[] GetAllDataModelNames(Dom.Action action)
-		{
-
-			if(action.dataModel != null)
-				return new string[] { GetDataModelName(action) };
-
-			if(action.parameters.Count == 0)
-				throw new ArgumentException();
-
-			var names = new List<string>();
-
-			foreach (var parameter in action.parameters)
-				names.Add(GetDataModelName(action, parameter));
-
-			return names.ToArray();
-		}
-
-		protected string GetDataModelName(Dom.Action action)
-		{
-			if (action.dataModel == null)
-			{
-				logger.Error("Error, in GetDataModelName, action.dataModel is null for action \""+action.name+"\".");
-				throw new ArgumentException();
-			}
-
-			StringBuilder sb = new StringBuilder();
-
-			sb.Append("Run ");
-			sb.Append(action.parent.runCount);
-			sb.Append('.');
-			sb.Append(action.parent.name);
-			sb.Append('.');
-			sb.Append(action.name);
-			sb.Append('.');
-			sb.Append(action.dataModel.name);
-
-			return sb.ToString();
-		}
-
-		protected string GetDataModelName(Dom.Action action, ActionParameter param)
-		{
-			if (param.dataModel == null)
-				throw new ArgumentException();
-
-			StringBuilder sb = new StringBuilder();
-
-			sb.Append("Run ");
-			sb.Append(action.parent.runCount);
-			sb.Append('.');
-			sb.Append(action.parent.name);
-			sb.Append('.');
-			sb.Append(action.name);
-			sb.Append('.');
-			sb.Append(action.parameters.IndexOf(param));
-			sb.Append('.');
-			sb.Append(param.dataModel.name);
-
-			return sb.ToString();
-		}
-
 		protected void SeedRandom()
 		{
 			_random = new Random(Seed + Iteration);
 		}
 
-		protected void OnMutating(string elementName, string mutatorName)
+		protected void OnDataMutating(ActionData actionData, DataElement element, Mutator mutator)
 		{
-			if (Mutating != null)
-				Mutating(elementName, mutatorName);
+			if (DataMutating != null)
+				DataMutating(actionData, element, mutator);
 		}
 
-		protected void OnDataSetChanged(Dom.Action action, Dom.Data data)
+		protected void OnStateMutating(State state, Mutator mutator)
 		{
-			if (DataSetChanged != null)
-				DataSetChanged(action, data);
+			if (StateMutating != null)
+				StateMutating(state, mutator);
 		}
 
 		/// <summary>

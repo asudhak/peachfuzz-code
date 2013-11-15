@@ -234,27 +234,12 @@ namespace Peach.Core.Dom.XPath
 			else if (currentNode is Action)
 			{
 				var action = currentNode as Action;
-				if (action.dataModel != null)
-				{
-					currentNode = action.dataModel;
-					currentNodeType = PeachXPathNodeType.DataModel;
-					return true;
-				}
 
-				// no parameters and no result == no children (we visit parameters before result)
-				if (action.parameters.Count == 0 && action.result == null)
+				var data = action.allData.FirstOrDefault();
+				if (data == null)
 					return false;
 
-				// no parameters == we have result, and it must have a DataModel child, return it
-				if (action.parameters.Count == 0)
-				{
-					currentNode = action.result.dataModel;
-					currentNodeType = PeachXPathNodeType.DataModel;
-					return true;
-				}
-
-				// We have parameters, each must have a DataModel child, return the first
-				currentNode = action.parameters[0].dataModel;
+				currentNode = data.dataModel;
 				currentNodeType = PeachXPathNodeType.DataModel;
 				return true;
 			}
@@ -317,35 +302,13 @@ namespace Peach.Core.Dom.XPath
 				if (action == null)
 					throw new Exception("Error, data model has weird parent!");
 
-				if (action.result != null && action.result.dataModel == currentNode)
-					return false; // we are done, as we already visited parameters
+				// Find the first action data that is after the current data model
+				var next = action.allData.SkipWhile(d => d.dataModel != currentNode).ElementAtOrDefault(1);
 
-				if (action.dataModel == currentNode)
-				{
-					if (action.parameters.Count == 0)
-						return false;
-
-					currentNode = action.parameters[0].dataModel;
-					currentNodeType = PeachXPathNodeType.DataModel;
-					return true;
-				}
-
-				int idx = action.parameters.FindIndex(a => a.dataModel == currentNode);
-				if (idx == -1)
-					throw new Exception("Error, data model missing from action parameters!");
-
-				if (++idx >= action.parameters.Count)
-				{
-					if (action.result != null && action.result.dataModel != currentNode)
-					{
-						currentNode = action.result.dataModel;
-						currentNodeType = PeachXPathNodeType.DataModel;
-						return true;
-					}
+				if (next == null)
 					return false;
-				}
 
-				currentNode = action.parameters[idx].dataModel;
+				currentNode = next.dataModel;
 				currentNodeType = PeachXPathNodeType.DataModel;
 				return true;
 			}
@@ -563,12 +526,14 @@ namespace Peach.Core.Dom.XPath
 				}
 				else if (currentNode is Action)
 				{
-					switch (attr)
-					{
-						case "type": return ((Action)currentNode).type.ToString();
-						case "method": return ((Action)currentNode).method;
-						case "property": return ((Action)currentNode).property;
-					}
+					if (attr == "type")
+						return ((Action)currentNode).GetType().Name;
+					if (attr == "method" && currentNode is Actions.Call)
+						return ((Actions.Call)currentNode).method;
+					if (attr == "property" && currentNode is Actions.SetProperty)
+						return ((Actions.SetProperty)currentNode).property;
+					if (attr == "property" && currentNode is Actions.GetProperty)
+						return ((Actions.GetProperty)currentNode).property;
 				}
 
 				return string.Empty;

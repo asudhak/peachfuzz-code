@@ -47,7 +47,7 @@ namespace Peach.Core.Dom
 	{
 		static int nameNum = 0;
 		public string _name = "Unknown State " + (++nameNum);
-		public List<Action> actions = new List<Action>();
+		public NamedCollection<Action> actions = new NamedCollection<Action>();
 
 		public StateModel parent = null;
 
@@ -55,10 +55,12 @@ namespace Peach.Core.Dom
 		/// State is starting to execute.
 		/// </summary>
 		public static event StateStartingEventHandler Starting;
+
 		/// <summary>
 		/// State has finished executing.
 		/// </summary>
 		public static event StateFinishedEventHandler Finished;
+
 		/// <summary>
 		/// Changing to another state.
 		/// </summary>
@@ -73,19 +75,22 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Has the state started?
 		/// </summary>
-		public bool started { get; set; }
+		public bool started { get; private set; }
+
 		/// <summary>
 		/// Has the start completed?
 		/// </summary>
-		public bool finished { get; set; }
+		public bool finished { get; private set; }
+
 		/// <summary>
 		/// Has an error occured?
 		/// </summary>
-		public bool error { get; set; }
+		public bool error { get; private set; }
+
 		/// <summary>
 		/// How many times has this state run
 		/// </summary>
-		public uint runCount { get; set; }
+		public uint runCount { get; private set; }
 
 		protected virtual void OnStarting()
 		{
@@ -119,42 +124,36 @@ namespace Peach.Core.Dom
 				error = false;
 
 				if (++runCount > 1)
-				{
-					foreach (Action action in actions)
-						action.UpdateToOrigionalDataModel();
-				}
+					UpdateToOriginalDataModel(runCount);
 
 				OnStarting();
 
 				foreach (Action action in actions)
 					action.Run(context);
-
-				finished = true;
 			}
 			catch
 			{
 				error = true;
-				finished = true;
 				throw;
 			}
 			finally
 			{
+				finished = true;
 				OnFinished();
 			}
 		}
 
-		public Action this[string key]
+		public void UpdateToOriginalDataModel()
 		{
-			get
-			{
-				foreach (Action action in actions)
-				{
-					if (action.name == key)
-						return action;
-				}
+			UpdateToOriginalDataModel(0);
+		}
 
-				return null;
-			}
+		private void UpdateToOriginalDataModel(uint runCount)
+		{
+			this.runCount = runCount;
+
+			foreach (var action in actions)
+				action.UpdateToOriginalDataModel();
 		}
 	}
 }

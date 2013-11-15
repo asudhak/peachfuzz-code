@@ -42,12 +42,12 @@ namespace Peach.Core.Dom
 	/// A dom element to hold Agent configuration information
 	/// </summary>
 	[Serializable]
-	public class Agent
+	public class Agent : INamed
 	{
 		/// <summary>
 		/// Name for agent
 		/// </summary>
-		public string name;
+		public string name { get; set; }
 
 		/// <summary>
 		/// URL of agent
@@ -68,7 +68,7 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// List of monitors Agent should spin up.
 		/// </summary>
-		public List<Monitor> monitors = new List<Monitor>();
+		public NamedCollection<Monitor> monitors = new NamedCollection<Monitor>();
 	}
 }
 

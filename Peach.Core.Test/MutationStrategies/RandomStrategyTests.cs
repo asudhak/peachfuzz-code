@@ -75,7 +75,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"Default\">" +
+				"   <Test name=\"Default\" controlIteration=\"200\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"RandomStrategy\"/>" +
@@ -133,7 +133,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"Default\">" +
+				"   <Test name=\"Default\" controlIteration=\"200\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"RandomStrategy\">" +
@@ -194,7 +194,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"Default\">" +
+				"   <Test name=\"Default\" controlIteration=\"200\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"RandomStrategy\"/>" +
@@ -262,7 +262,7 @@ namespace Peach.Core.Test.MutationStrategies
 				"       </State>" +
 				"   </StateModel>" +
 
-				"   <Test name=\"Default\">" +
+				"   <Test name=\"Default\" controlIteration=\"200\">" +
 				"       <StateModel ref=\"TheState\"/>" +
 				"       <Publisher class=\"Null\"/>" +
 				"       <Strategy class=\"RandomStrategy\"/>" +
@@ -875,6 +875,52 @@ namespace Peach.Core.Test.MutationStrategies
 
 			Engine e = new Engine(null);
 			e.startFuzzing(dom, config);
+		}
+
+		[Test]
+		public void TestNoSwitch()
+		{
+			// Switching data sets causes a control iteration every time
+			// the switch takes place.  Even if the user sets the 'SwitchCount'
+			// value really low, the strategy should only switch when
+			// there are multiple data sets on an action
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str' value='Hello'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='Data Field 1'/>
+				</Data>
+			</Action>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data>
+					<Field name='str' value='Data Field 2'/>
+				</Data>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='Random'>
+			<Param name='SwitchCount' value='1'/>
+		</Strategy>
+	</Test>
+</Peach>";
+
+			RunSwitchTest(xml, 1, 20);
+
+			// 20 iterations, 1 control, 2 data models per iteration
+			Assert.AreEqual(42, dataModels.Count);
 		}
 	}
 }

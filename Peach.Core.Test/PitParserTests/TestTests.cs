@@ -361,5 +361,35 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(10.5, dom.tests[0].waitTime);
 			Assert.AreEqual(99.9, dom.tests[0].faultWaitTime);
 		}
+
+		[Test]
+		public void NonDeterministic()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='StateModel' initialState='initial'>
+		<State name='initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action> 
+		</State>
+	</StateModel>
+
+	<Test name='Default' nonDeterministicActions='true'>
+		<StateModel ref='StateModel'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>
+";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.True(dom.tests[0].nonDeterministicActions);
+		}
 	}
 }
