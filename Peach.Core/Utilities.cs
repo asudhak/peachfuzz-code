@@ -238,6 +238,21 @@ namespace Peach.Core
 	/// </summary>
 	public class Utilities
 	{
+		public static string FindProgram(string path, string program, string parameter)
+		{
+			var paths = path == null ? Environment.GetEnvironmentVariable("PATH") : path;
+			var dirs = paths.Split(Path.PathSeparator);
+			foreach (var dir in dirs)
+			{
+				var candidate = Path.Combine(dir, program);
+				if (File.Exists(candidate))
+					return candidate;
+			}
+
+			throw new PeachException("Error, unable to locate '{0}'{1} '{2}' parameter.".Fmt(
+				program, path != null ? " in specified" : ", please specify using", parameter));
+		}
+
         public static string FormatAsPrettyHex(byte[] data, int startPos = 0, int length = -1)
         {
             StringBuilder sb = new StringBuilder();
