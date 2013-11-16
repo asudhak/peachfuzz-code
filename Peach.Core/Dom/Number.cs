@@ -272,6 +272,35 @@ namespace Peach.Core.Dom
 				return new Variant((ulong)value);
 		}
 
+		private dynamic DoubleToInteger(double value)
+		{
+			if (Math.Floor(value) != value)
+				throw new PeachException(string.Format("Error, {0} value '{1}' can not be converted to a {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+
+			if (value < 0)
+			{
+				try
+				{
+					return Convert.ToInt64(value);
+				}
+				catch (OverflowException)
+				{
+					throw new PeachException(string.Format("Error, {0} value '{1}' is less than the minimum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+				}
+			}
+			else
+			{
+				try
+				{
+					return Convert.ToUInt64(value);
+				}
+				catch (OverflowException)
+				{
+					throw new PeachException(string.Format("Error, {0} value '{1}' is greater than the maximum {2}-bit {3} number.", debugName, value, lengthAsBits, Signed ? "signed" : "unsigned"));
+				}
+			}
+		}
+
 		private dynamic GetNumber(Variant variant)
 		{
 			dynamic value = 0;
@@ -294,8 +323,11 @@ namespace Peach.Core.Dom
 				case Variant.VariantType.ULong:
 					value = (ulong)variant;
 					break;
+				case Variant.VariantType.Double:
+					value = DoubleToInteger((double)variant);
+					break;
 				default:
-					throw new ArgumentException("Variant type is unsupported.", "variant");
+					throw new ArgumentException("Variant type '" + variant.GetVariantType().ToString() + "' is unsupported.", "variant");
 			}
 
 			return value;
