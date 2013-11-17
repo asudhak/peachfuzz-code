@@ -64,6 +64,29 @@ namespace Peach.Core.Test.PitParserTests
 			Assert.AreEqual(0, (int)num.DefaultValue);
 		}
 
+		[Test]
+		public void NumberValues()
+		{
+			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
+				"	<DataModel name=\"TheDataModel\">" +
+				"		<Number name=\"TheNumber\" size=\"8\" signed='true'/>" +
+				"	</DataModel>" +
+				"</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			Number num = dom.dataModels[0][0] as Number;
+
+			Assert.AreEqual(0, (int)num.DefaultValue);
+
+			num.DefaultValue = new Variant("100");
+			Assert.AreEqual(100, (int)num.DefaultValue);
+
+			num.DefaultValue = new Variant(-10.0);
+			Assert.AreEqual(-10, (int)num.DefaultValue);
+		}
+
+
 		public void TestString<T>(T value, byte[] expected, int size, bool signed, bool isLittleEndian)
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Peach>\n" +
