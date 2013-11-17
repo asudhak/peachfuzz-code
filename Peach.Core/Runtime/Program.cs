@@ -95,7 +95,7 @@ namespace Peach.Core.Runtime
 			AppDomain.CurrentDomain.DomainUnload += new EventHandler(CurrentDomain_DomainUnload);
 			Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
 			config = new RunConfiguration();
-			config.debug = false;
+			config.debug = 0;
 
 			try
 			{
@@ -124,7 +124,8 @@ namespace Peach.Core.Runtime
 				{
 					{ "h|?|help", v => Syntax() },
 					{ "analyzer=", v => analyzer = v },
-					{ "debug", v => config.debug = true },
+					{ "debug", v => config.debug = 1 },
+					{ "trace", v => config.debug = 2 },
 					{ "1", v => config.singleIteration = true},
 					{ "range=", v => ParseRange(config, v)},
 					{ "t|test", v => test = true},
@@ -174,14 +175,14 @@ namespace Peach.Core.Runtime
 				}
 
 				// Enable debugging if asked for
-				if (config.debug)
+				if (config.debug > 0)
 				{
 					var nconfig = new LoggingConfiguration();
 					var consoleTarget = new ColoredConsoleTarget();
 					nconfig.AddTarget("console", consoleTarget);
 					consoleTarget.Layout = "${logger} ${message}";
 
-					var rule = new LoggingRule("*", LogLevel.Debug, consoleTarget);
+					var rule = new LoggingRule("*", config.debug == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
 					nconfig.LoggingRules.Add(rule);
 
 					LogManager.Configuration = nconfig;
@@ -276,7 +277,7 @@ namespace Peach.Core.Runtime
 			}
 			catch (PeachException ee)
 			{
-				if (config.debug)
+				if (config.debug > 0)
 					Console.WriteLine(ee);
 				else
 					Console.WriteLine(ee.Message + "\n");
@@ -334,6 +335,7 @@ Syntax:
   --debug                    Enable debug messages. Usefull when debugging
                              your Peach XML file.  Warning: Messages are very
                              cryptic sometimes.
+  --trace                    Enable even more verbose debug messages.
   --seed N                   Sets the seed used by the random number generator
   --parseonly                Test parse a Peach XML file
   --showenv                  Print a list of all DataElements, Fixups, Monitors
