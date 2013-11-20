@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DB3442E5-BAD7-41DC-B9CA-3DC859933848}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>PeachCoreAnalyzsisPinBasicBlocks</RootNamespace>
+    <RootNamespace>PeachCoreAnalysisPinBasicBlocks</RootNamespace>
     <ProjectName>Peach.Core.Analysis.Pin.BasicBlocks</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -64,125 +64,115 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <GenerateManifest>false</GenerateManifest>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>bblocks32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <GenerateManifest>false</GenerateManifest>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>bblocks64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
+    <TargetName>bblocks32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
+    <TargetName>bblocks64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PEACHCOREANALYZSISPINBASICBLOCKS_EXPORTS;%(PreprocessorDefinitions);TARGET_IA32;HOST_IA32;TARGET_WINDOWS;USING_XED</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\components\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include\gen;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/MT /EHs- /EHa- /wd4530 /DTARGET_WINDOWS /DBIGARRAY_MULTIPLIER=1
-/DUSING_XED /D_CRT_SECURE_NO_DEPRECATE /D_SECURE_SCL=0 /nologo /DTARGET_IA32 /DHOST_IA32 %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>TARGET_IA32;HOST_IA32;TARGET_WINDOWS;USING_XED;BIGARRAY_MULTIPLIER=1;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin\gen;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\components\include;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-ia32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>NotSet</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib-ext;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\lib;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/DLL /EXPORT:main %(AdditionalOptions)</AdditionalOptions>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\ia32\lib;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\ia32\lib-ext;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/EXPORT:main</AdditionalOptions>
       <AdditionalDependencies>ntdll-32.lib;libxed.lib;pin.lib;pinvm.lib;libcmt.lib;libcpmt.lib;kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>Ptrace_DllMainCRTStartup@12</EntryPointSymbol>
       <BaseAddress>0x55000000</BaseAddress>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>false</DataExecutionPrevention>
-      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PEACHCOREANALYZSISPINBASICBLOCKS_EXPORTS;%(PreprocessorDefinitions);TARGET_IA32;HOST_IA32;TARGET_WINDOWS;USING_XED</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\components\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include\gen;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/MT /EHs- /EHa- /wd4530 /DTARGET_WINDOWS /DBIGARRAY_MULTIPLIER=1
-/DUSING_XED /D_CRT_SECURE_NO_DEPRECATE /D_SECURE_SCL=0 /nologo /DTARGET_IA32 /DHOST_IA32 %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>TARGET_IA32E;HOST_IA32E;TARGET_WINDOWS;USING_XED;BIGARRAY_MULTIPLIER=1;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;BBLOCKS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin\gen;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\components\include;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-ia32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>NotSet</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib-ext;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\lib;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/DLL /EXPORT:main %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ntdll-32.lib;libxed.lib;pin.lib;pinvm.lib;libcmt.lib;libcpmt.lib;kernel32.lib</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\intel64\lib;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\intel64\lib-ext;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-intel64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ntdll-64.lib;libxed.lib;pin.lib;pinvm.lib;libcmt.lib;libcpmt.lib;kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <EntryPointSymbol>Ptrace_DllMainCRTStartup@12</EntryPointSymbol>
-      <BaseAddress>0x55000000</BaseAddress>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>false</DataExecutionPrevention>
-      <EnableUAC>false</EnableUAC>
+      <EntryPointSymbol>Ptrace_DllMainCRTStartup</EntryPointSymbol>
+      <BaseAddress>0xC5000000</BaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PEACHCOREANALYZSISPINBASICBLOCKS_EXPORTS;%(PreprocessorDefinitions);TARGET_IA32;HOST_IA32;TARGET_WINDOWS;USING_XED</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\components\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include\gen;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/MT /EHs- /EHa- /wd4530 /DTARGET_WINDOWS /DBIGARRAY_MULTIPLIER=1
-/DUSING_XED /D_CRT_SECURE_NO_DEPRECATE /D_SECURE_SCL=0 /nologo /DTARGET_IA32 /DHOST_IA32</AdditionalOptions>
+      <PreprocessorDefinitions>TARGET_IA32;HOST_IA32;TARGET_WINDOWS;USING_XED;BIGARRAY_MULTIPLIER=1;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin\gen;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\components\include;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-ia32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib-ext;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\lib;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/DLL /EXPORT:main /NODEFAULTLIB /NOLOGO /ENTRY:Ptrace_DllMainCRTStartup@12 ntdll-32.lib libxed.lib pin.lib pinvm.lib libcmt.lib libcpmt.lib /DEBUG</AdditionalOptions>
+      <AdditionalLibraryDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\ia32\lib;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\ia32\lib-ext;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/EXPORT:main</AdditionalOptions>
+      <AdditionalDependencies>ntdll-32.lib;libxed.lib;pin.lib;pinvm.lib;libcmt.lib;libcpmt.lib;kernel32.lib</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <EntryPointSymbol>Ptrace_DllMainCRTStartup@12</EntryPointSymbol>
+      <BaseAddress>0x55000000</BaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PEACHCOREANALYZSISPINBASICBLOCKS_EXPORTS;%(PreprocessorDefinitions);TARGET_IA32;HOST_IA32;TARGET_WINDOWS;USING_XED</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\components\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\include;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include\gen;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/MT /EHs- /EHa- /wd4530 /DTARGET_WINDOWS /DBIGARRAY_MULTIPLIER=1
-/DUSING_XED /D_CRT_SECURE_NO_DEPRECATE /D_SECURE_SCL=0 /nologo /DTARGET_IA32 /DHOST_IA32</AdditionalOptions>
+      <PreprocessorDefinitions>TARGET_IA32E;HOST_IA32E;TARGET_WINDOWS;USING_XED;BIGARRAY_MULTIPLIER=1;_SECURE_SCL=0;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;BBLOCKS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\source\include\pin\gen;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\components\include;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-ia32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib-ext;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\extras\xed2-ia32\lib;C:\Peach3\3rdParty\pin-msvc10-ia32_intel64-windows\ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/DLL /EXPORT:main /NODEFAULTLIB /NOLOGO /ENTRY:Ptrace_DllMainCRTStartup@12 ntdll-32.lib libxed.lib pin.lib pinvm.lib libcmt.lib libcpmt.lib /DEBUG</AdditionalOptions>
+      <AdditionalLibraryDirectories>..\3rdParty\pin\pin-2.13-61206-msvc10-windows\intel64\lib;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\intel64\lib-ext;..\3rdParty\pin\pin-2.13-61206-msvc10-windows\extras\xed2-intel64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ntdll-64.lib;libxed.lib;pin.lib;pinvm.lib;libcmt.lib;libcpmt.lib;kernel32.lib</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <EntryPointSymbol>Ptrace_DllMainCRTStartup</EntryPointSymbol>
+      <BaseAddress>0xC5000000</BaseAddress>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <None Include="make.bat" />
-    <None Include="ReadMe.txt" />
-  </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bblocks.cpp" />
   </ItemGroup>
