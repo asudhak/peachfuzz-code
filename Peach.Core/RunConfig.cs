@@ -76,7 +76,7 @@ namespace Peach.Core
 		/// <summary>
 		/// Enable or disable debugging output
 		/// </summary>
-		public bool debug = false;
+		public int debug = 0;
 
 		/// <summary>
 		/// Fuzzing strategy to use

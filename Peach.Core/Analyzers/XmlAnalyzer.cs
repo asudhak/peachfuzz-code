@@ -111,11 +111,14 @@ namespace Peach.Core.Analyzers
 			elem.elementName = node.Name;
 			elem.ns = node.NamespaceURI;
 
-			foreach (System.Xml.XmlAttribute attrib in node.Attributes)
+			//Attributes are null when node is not of type XmlNodeType.Element
+			if (node.Attributes != null)
 			{
-				elem.Add(handleXmlAttribute(attrib, type));
+				foreach (System.Xml.XmlAttribute attrib in node.Attributes)
+				{
+					elem.Add(handleXmlAttribute(attrib, type));
+				}
 			}
-
 			foreach (XmlNode child in node.ChildNodes)
 			{
 				if (child.Name == "#text")
