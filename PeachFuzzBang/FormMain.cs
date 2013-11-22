@@ -243,9 +243,10 @@ namespace PeachFuzzBang
 				state.name = "TheState";
 				state.parent = stateModel;
 
-				Peach.Core.Dom.Actions.Output actionOutput = new Peach.Core.Dom.Actions.Output();
+				Peach.Core.Dom.Actions.Output actionOutput = new Peach.Core.Dom.Actions.Output() { name = "ActionOutputName" };
 				actionOutput.data = new ActionData()
 				{
+
 					dataModel = dataModel,
 					action = actionOutput,
 				};
@@ -253,13 +254,14 @@ namespace PeachFuzzBang
 				if (fileData.Count > 0)
 					actionOutput.data.dataSets.Add(fileData);
 
-				Peach.Core.Dom.Actions.Close actionClose = new Peach.Core.Dom.Actions.Close();
+				Peach.Core.Dom.Actions.Close actionClose = new Peach.Core.Dom.Actions.Close() { name = "ActionCloseName" };
 				actionClose.parent = state;
 
-				Peach.Core.Dom.Actions.Call actionCall = new Peach.Core.Dom.Actions.Call();
+				Peach.Core.Dom.Actions.Call actionCall = new Peach.Core.Dom.Actions.Call() { name = "ActionCallName" };
 				actionCall.publisher = "Peach.Agent";
 				actionCall.method = "ScoobySnacks";
 				actionCall.parent = state;
+				actionOutput.parent = state;
 
 				state.actions.Add(actionOutput);
 				state.actions.Add(actionClose);
