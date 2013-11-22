@@ -176,6 +176,9 @@
   <ItemGroup>
     <ClCompile Include="bblocks.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="uthash.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
