@@ -137,6 +137,7 @@ def configure(conf):
 	])
 
 	cppflags = [
+		'/Z7',
 		'/W4',
 		'/WX',
 	]
