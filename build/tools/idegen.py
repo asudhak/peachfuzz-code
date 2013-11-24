@@ -420,7 +420,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		# Add ide_inst task generator outputs as post build copy
 		# Using abspath since macros like $(ProjectDir) don't seem to work
 
-		post_evts = []
+		ide_inst = []
 		names = names = tg.to_list(getattr(tg, 'ide_inst', []))
 		for x in names:
 			y = tg.bld.get_tgen_by_name(x)
@@ -429,16 +429,13 @@ class vsnode_cs_target(msvs.vsnode_project):
 			if not tsk:
 				self.bld.fatal('cs task has no link task for ide_inst %r' % self)
 
-			o = y.link_task.outputs[0]
-			src = o.abspath()
-			dst = out_node.make_node(o.name).abspath()
-			cmd = '%s "%s" "%s"' % (idegen.copy_cmd, src, dst)
-			post_evts.append(cmd)
+			src = y.link_task.outputs[0]
+			dst = out_node.make_node(src.name)
+			ide_inst.append((src, dst))
 
-		joined = os.linesep.join(post_evts)
-		if joined:
-			p['PostBuildEvent'] = joined
-			#self.post_build = joined
+		(inst_cmd, inst_args) = self.ctx.get_ide_inst(ide_inst)
+		if inst_args:
+			p[inst_cmd] = inst_args
 
 class idegen(msvs.msvs_generator):
 	all_projs = OrderedDict()
@@ -462,6 +459,7 @@ class idegen(msvs.msvs_generator):
 			self.project_extension = '.cproj'
 			self.get_platform = self.get_platform_mono
 			self.get_config = self.get_config_mono
+			self.get_ide_inst = self.get_ide_inst_mono
 			idegen.copy_cmd = 'cp'
 
 		self.vsnode_cs_target = vsnode_cs_target
@@ -478,6 +476,26 @@ class idegen(msvs.msvs_generator):
 
 	def get_platform_mono(self, env):
 		return 'Win32'
+
+	def get_ide_inst(self, items):
+		args = []
+		for (src, dst) in items:
+			args.append('copy "%s" "%s"' % (src.abspath(), dst.abspath()))
+		return ('PostBuildEvent', os.linesep.join(args))
+
+	def get_ide_inst_mono(self, items):
+        	# <Command type="AfterBuild" command="cp &quot;foo bar&quot; &quot;bax quux&quot;" />
+		args = []
+		for (src, dst) in items:
+			args.append('        <Command type="AfterBuild" command="cp &quot;%s&quot; &quot;%s&quot;" />' % (src.abspath(), dst.abspath()))
+
+		if args:
+			args.insert(0, '')
+			args.insert(1, '      <CustomCommands>')
+			args.append('      </CustomCommands>')
+			args.append('    ')
+
+		return ('CustomCommands', os.linesep.join(args))
 
 	def execute(self):
 		idegen.depth += 1
