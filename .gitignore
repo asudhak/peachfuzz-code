@@ -53,6 +53,7 @@ _ReSharper.Peach.net/*
 *.sln
 *.lastbuildstate
 *.unsuccessfulbuild
+*.userprefs
 
 # Don't ignore anything in 3rdParty
 !/3rdParty/*
