@@ -308,7 +308,7 @@ namespace Peach.Core.Agent
 
 		public virtual Variant Message(string name, Variant data)
 		{
-			logger.Trace("Message: {0}", name);
+			logger.Debug("Message: {0} => {1}", name, data.ToString());
 			Variant ret = null;
 			Variant tmp = null;
 
