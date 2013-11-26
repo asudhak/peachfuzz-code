@@ -103,13 +103,13 @@ namespace Peach.Core.Agent.Monitors
 			}
 			else
 			{
-				logger.Debug("_Start(): Process already running, ignore");
+				logger.Trace("_Start(): Process already running, ignore");
 			}
 		}
 
 		void _Stop()
 		{
-			logger.Debug("_Stop()");
+			logger.Trace("_Stop()");
 
 			for (int i = 0; i < 100 && _IsRunning(); i++)
 			{
@@ -135,7 +135,7 @@ namespace Peach.Core.Agent.Monitors
 			}
 			else
 			{
-				logger.Debug("_Stop(): _process == null, done!");
+				logger.Trace("_Stop(): _process == null, done!");
 			}
 		}
 
@@ -276,8 +276,6 @@ namespace Peach.Core.Agent.Monitors
 
 		public override Variant Message(string name, Variant data)
 		{
-			logger.Debug("Message(" + name + ", " + (string)data + ")");
-
 			if (name == "Action.Call" && ((string)data) == StartOnCall)
 			{
 				_Stop();
@@ -288,10 +286,6 @@ namespace Peach.Core.Agent.Monitors
 				_messageExit = true; 
 				_WaitForExit(false);
 				_Stop();
-			}
-			else
-			{
-				logger.Debug("Unknown msg: " + name + " data: " + (string)data);
 			}
 
 			return null;
