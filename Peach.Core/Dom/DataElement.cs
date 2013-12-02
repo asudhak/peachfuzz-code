@@ -960,6 +960,9 @@ namespace Peach.Core.Dom
 				parent = parent.parent;
 			}
 
+			if (parents.Contains(elem))
+				return elem;
+
 			parent = elem.parent;
 			while (parent != null)
 			{
