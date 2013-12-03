@@ -27,8 +27,9 @@ namespace Peach.Core.Agent.Monitors
 		public string StartOnCall { get; private set; }
 		public When _When { get; private set; }
 		public bool UseShellExecute { get; private set; }
+		private bool faulted = false;
 
-		public enum When {OnCall, OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault};
+		public enum When {OnCall, OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault, OnIterationStartAfterFault};
 
 		public RunCommand(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -62,8 +63,9 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
-			if (_When == When.OnIterationStart)
+			if (_When == When.OnIterationStart || ( faulted && _When == When.OnIterationStartAfterFault))
 				_Start();
+			faulted = false;
 		}
 
 		public override bool DetectedFault()
@@ -75,7 +77,7 @@ namespace Peach.Core.Agent.Monitors
 		{
 			if (_When == When.OnFault)
 				_Start();
-
+			faulted = true;
 			return null;
 		}
 
