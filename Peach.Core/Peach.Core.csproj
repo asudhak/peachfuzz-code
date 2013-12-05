@@ -609,6 +609,7 @@
     <Compile Include="PeachException.cs" />
     <Compile Include="PitParsableAttribute.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="SubProcess.cs" />
     <Compile Include="ProcessInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxy\Connection.cs" />
@@ -742,6 +743,7 @@
       <Link>IronPython.StdLib.zip</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="NLog.config.template" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
