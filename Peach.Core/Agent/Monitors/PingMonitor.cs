@@ -3,18 +3,23 @@ using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Net.Sockets;
+using NLog;
 
 namespace Peach.Core.Agent.Monitors
 {
 	[Monitor("Ping", true)]
 	[Parameter("Host", typeof(string), "Host to ping")]
 	[Parameter("Timeout", typeof(int), "Ping timeout in milliseconds", "1000")]
+	[Parameter("RetryCount", typeof(int), "Number of times to try again after first ping before issuing a fault", "0")]
 	[Parameter("Data", typeof(string), "Data to send", "")]
 	[Parameter("FaultOnSuccess", typeof(bool), "Fault if ping is successful", "false")]
 	public class PingMonitor : Peach.Core.Agent.Monitor
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public string Host    { get; private set; }
 		public int Timeout { get; private set; }
+		public int RetryCount { get; private set; }
 		public string Data { get; private set; }
 		public bool FaultOnSuccess { get; private set; }
 
@@ -77,22 +82,33 @@ namespace Peach.Core.Agent.Monitors
 			_fault = new Fault();
 			_fault.type = FaultType.Fault;
 			_fault.detectionSource = "PingMonitor";
-
 			try
 			{
 				using (var ping = new Ping())
 				{
 					PingReply reply = null;
-
-					if (string.IsNullOrEmpty(Data))
-						reply = ping.Send(Host, Timeout);
-					else
-						reply = ping.Send(Host, Timeout, ASCIIEncoding.ASCII.GetBytes(Data));
+					int count = 0;
+					do
+					{
+						count++;
+						logger.Debug("DetectedFault(): Checking for fault, attempt #" + count +" to ping " + Host);
+						if (string.IsNullOrEmpty(Data))
+							reply = ping.Send(Host, Timeout);
+						else
+							reply = ping.Send(Host, Timeout, ASCIIEncoding.ASCII.GetBytes(Data));
+					} while (RetryCount >= count && reply.Status != IPStatus.Success);
 
 					if (reply.Status == IPStatus.Success)
+					{
+						logger.Debug("DetectedFault(): " + Host + " replied after " + Timeout + "ms");
 						_fault.type = FaultOnSuccess ? FaultType.Fault : FaultType.Data;
+					}
 					else
+					{
+						logger.Debug("DetectedFault(): " + Host + " timed out after " + Timeout + "ms");
 						_fault.type = FaultOnSuccess ? FaultType.Data : FaultType.Fault;
+
+					}
 
 					_fault.title = "Ping Reply";
 					_fault.description = MakeDescription(reply);
