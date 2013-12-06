@@ -59,7 +59,11 @@ namespace Peach.Core.Agent
 
         void context_CollectFaults(RunContext context)
         {
-            if (DetectedFault())
+			// If the engine has recorded faults or any monitor detected a fault,
+			// gather data from all monitors.
+			// NOTE: We must test DetectedFault() first, as monitors expect this
+			// call to occur before any call to GetMonitorData()
+            if (DetectedFault() || context.faults.Count > 0)
             {
 				logger.Debug("Fault detected.  Collecting monitor data.");
 
