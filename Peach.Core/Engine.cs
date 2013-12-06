@@ -416,12 +416,19 @@ namespace Peach.Core
 							// They indicate we should move to the next
 							// iteration.
 
-							if (context.controlIteration)
+							if (context.controlRecordingIteration)
 							{
-								logger.Debug("runTest: SoftException on control iteration");
+								logger.Debug("runTest: SoftException on control recording iteration");
 								if (se.InnerException != null)
 									throw new PeachException(se.InnerException.Message, se);
 								throw new PeachException(se.Message, se);
+							}
+
+							if (context.controlIteration)
+							{
+								logger.Debug("runTest: SoftException on control iteration, saving as fault");
+								var ex = se.InnerException ?? se;
+								OnControlFault(context, iterationCount, "SoftException Detected:\n" + ex.ToString());
 							}
 
 							logger.Debug("runTest: SoftException, skipping to next iteration");
