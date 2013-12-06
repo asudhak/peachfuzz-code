@@ -82,6 +82,43 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void BasicBlockTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Block'>
+		<Number size='32' endian='big'>
+			<Relation type='offset' of='BlockData' relative='true' relativeTo='TheDataModel'/>
+		</Number>
+		<Number size='32' endian='big'>
+			<Relation type='size' of='BlockData'/>
+		</Number>
+		<Block name='BlockData'>
+			<String name='StringData' value='test'/>
+		</Block>
+	</DataModel>
+
+	<DataModel name='TheDataModel'>
+		<String value='1234'/>
+		<Block ref='Block'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			var dm = dom.dataModels[1];
+			Assert.AreEqual("TheDataModel", dm.name);
+
+			// "1234   12    4    test"
+			byte[] expected = new byte[] { 49, 50, 51, 52, 0, 0, 0, 12, 0, 0, 0, 4, 116, 101, 115, 116 };
+			byte[] actual = dm.Value.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
 		public void FlagsTest()
 		{
 			string xml = @"
