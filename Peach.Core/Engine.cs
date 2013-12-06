@@ -548,7 +548,7 @@ to execute same as initial control.  State " + state.name + "was not performed."
 							else
 								OnReproFault(context, iterationCount, test.stateModel, context.faults.ToArray());
 
-							if (context.controlIteration && (!test.replayEnabled || context.reproducingFault))
+							if (context.controlRecordingIteration && (!test.replayEnabled || context.reproducingFault))
 							{
 								logger.Debug("runTest: Fault detected on control iteration");
 								throw new PeachException("Fault detected on control iteration.");
