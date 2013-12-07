@@ -163,8 +163,11 @@ def build(bld):
 		bld.recurse(subdirs)
 		return
 
+	# Find the topmost directories that contain wscript_build, up to maxpath in depth
 	maxdepth = getattr(Context.g_module, 'maxdepth', 1)
-	subdirs = [ x.parent.nice_path() for x in bld.path.ant_glob('**/wscript_build', maxdepth=maxdepth ) ]
+	dirs = [ x.parent for x in bld.path.ant_glob('**/wscript_build', maxdepth=maxdepth ) ]
+	subdirs = [ x.nice_path() for x in dirs if x.parent not in dirs ]
+
 	what = Options.options.variant or ''
 	variants = what.split(',')
 
