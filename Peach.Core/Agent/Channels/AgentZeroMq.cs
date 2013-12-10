@@ -63,6 +63,7 @@ namespace Peach.Core.Agent.Channels
 
 		public AgentClientZeroMq(string name, string uri, string password)
 		{
+			this.name = name;
 		}
 
 		public override bool SupportedProtocol(string protocol)

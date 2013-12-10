@@ -69,15 +69,16 @@ namespace Peach.Core.Agent
 
                 var agentFaults = GetMonitorData();
 
-                foreach (var agent in agentFaults.Keys)
+                foreach (var item in agentFaults)
                 {
-                    var faults = agentFaults[agent];
+                    var faults = item.Value;
 
                     foreach (var fault in faults)
                     {
                         if (fault == null)
                             continue;
 
+                        fault.agentName = item.Key.name;
                         context.faults.Add(fault);
                     }
                 }

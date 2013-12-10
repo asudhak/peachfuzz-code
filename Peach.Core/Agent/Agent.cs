@@ -364,7 +364,13 @@ namespace Peach.Core.Agent
 			{
 				try
 				{
-					faults.Add(monitor.GetMonitorData());
+					var fault = monitor.GetMonitorData();
+
+					if (fault != null)
+					{
+						fault.monitorName = monitor.Name;
+						faults.Add(fault);
+					}
 				}
 				catch (Exception ex)
 				{
