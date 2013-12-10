@@ -111,7 +111,7 @@ namespace Peach.Core.Dom
 		protected override void OnResolve()
 		{
 			if (string.IsNullOrEmpty(relativeTo))
-				FindCommonParent(Of);
+				FindCommonParent(From);
 		}
 
 		private void FindCommonParent(DataElement from)
