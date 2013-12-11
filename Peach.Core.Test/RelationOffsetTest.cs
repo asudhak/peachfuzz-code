@@ -119,6 +119,36 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void BasicBlockTest2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+
+	<Number size='32'> <Relation type='offset' of='Blk1'/> </Number>
+	<Number size='32'> <Relation type='size' of='Blk1'/> </Number>
+
+	<Block name='Blk1'>
+		<Number size='32' value='0xffffffff'/>
+	</Block>
+
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(1, dom.dataModels.Count);
+
+			var dm = dom.dataModels[0];
+			Assert.AreEqual("TheDataModel", dm.name);
+
+			byte[] expected = new byte[] { 8, 0, 0, 0, 4, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF };
+			byte[] actual = dm.Value.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
 		public void FlagsTest()
 		{
 			string xml = @"
