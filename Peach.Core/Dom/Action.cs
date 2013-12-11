@@ -150,34 +150,27 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnStarting()
 		{
-			if (!string.IsNullOrEmpty(onStart))
-			{
-				Dictionary<string, object> state = new Dictionary<string, object>();
-				state["action"] = this;
-				state["state"] = this.parent;
-				state["self"] = this;
-
-				Scripting.EvalExpression(onStart, state);
-			}
-
 			if (Starting != null)
 				Starting(this);
 		}
 
 		protected virtual void OnFinished()
 		{
-			if (!string.IsNullOrEmpty(onComplete))
+			if (Finished != null)
+				Finished(this);
+		}
+
+		protected virtual void RunScript(string expr)
+		{
+			if (!string.IsNullOrEmpty(expr))
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["action"] = this;
 				state["state"] = this.parent;
 				state["self"] = this;
 
-				Scripting.EvalExpression(onComplete, state);
+				Scripting.EvalExpression(expr, state);
 			}
-
-			if (Finished != null)
-				Finished(this);
 		}
 
 		/// <summary>
@@ -304,6 +297,8 @@ namespace Peach.Core.Dom
 
 				logger.Debug("ActionType.{0}", GetType().Name.ToString());
 
+				RunScript(onStart);
+
 				// Save output data
 				foreach (var item in outputData)
 					parent.parent.SaveData(item.outputName, item.dataModel.Value);
@@ -313,6 +308,8 @@ namespace Peach.Core.Dom
 				// Save input data
 				foreach (var item in inputData)
 					parent.parent.SaveData(item.inputName, item.dataModel.Value);
+
+				RunScript(onComplete);
 
 				finished = true;
 			}
