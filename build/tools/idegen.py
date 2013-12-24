@@ -309,8 +309,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 		p['WarningLevel'] = self.combine_flags('/warn:')
 		p['NoWarn'] = self.combine_flags('/nowarn:')
 		p['TreatWarningsAsErrors'] = '/warnaserror' in tg.env.CSFLAGS
-		p['DocumentationFile'] = getattr(tg, 'csdoc', tg.env.CSDOC) and out + os.sep + asm_name + '.xml'
-		p['AllowUnsafeBlocks'] = False
+		p['DocumentationFile'] = getattr(tg, 'csdoc', tg.env.CSDOC) and out + os.sep + asm_name + '.xml' or ''
+		p['AllowUnsafeBlocks'] = getattr(tg, 'unsafe', False)
 
 
 class idegen(msvs.msvs_generator):
