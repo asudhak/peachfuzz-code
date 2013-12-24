@@ -21,5 +21,6 @@ bld(
 	keyfile = 'key.snk',
 	version = False,
 	csdoc = False,
+	ide_path = bld.path,
 )
 

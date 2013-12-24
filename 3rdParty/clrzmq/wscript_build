@@ -21,5 +21,6 @@ bld(
 	csflags = [ '/nowarn:1635' ],
 	version = False,
 	csdoc = False,
+	ide_path = bld.path,
 )
 

@@ -21,5 +21,6 @@ bld(
 	keyfile = 'HexBox.snk',
 	version = False,
 	csdoc = False,
+	ide_path = bld.path,
 )
 
