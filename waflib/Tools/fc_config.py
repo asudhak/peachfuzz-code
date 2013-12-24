@@ -91,8 +91,8 @@ def fortran_modifier_darwin(conf):
 	Define fortran flags and extensions for the OSX systems
 	"""
 	v = conf.env
-	v['FCFLAGS_fcshlib']   = ['-fPIC', '-compatibility_version', '1', '-current_version', '1']
-	v['LINKFLAGS_fcshlib'] = ['-dynamiclib']
+	v['FCFLAGS_fcshlib']   = ['-fPIC']
+	v['LINKFLAGS_fcshlib'] = ['-dynamiclib', '-Wl,-compatibility_version,1', '-Wl,-current_version,1']
 	v['fcshlib_PATTERN']   = 'lib%s.dylib'
 	v['FRAMEWORKPATH_ST']  = '-F%s'
 	v['FRAMEWORK_ST']      = '-framework %s'

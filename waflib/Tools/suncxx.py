@@ -29,6 +29,8 @@ def find_sxx(conf):
 
 	v['CXX']  = cc
 	v['CXX_NAME'] = 'sun'
+	conf.get_suncc_version(cc)
+
 
 @conf
 def sxx_common_flags(conf):

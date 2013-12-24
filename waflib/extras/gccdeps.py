@@ -86,7 +86,7 @@ def post_run(self):
 	name = self.outputs[0].abspath()
 	name = re_o.sub('.d', name)
 	txt = Utils.readf(name)
-	#os.unlink(name)
+	#os.remove(name)
 
 	# Compilers have the choice to either output the file's dependencies
 	# as one large Makefile rule:

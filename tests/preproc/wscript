@@ -142,6 +142,21 @@ def build(bld):
 		'e' : 'e a || b || c || d'
 	}
 
+
+	def test_pasting():
+		main = bld.path.find_resource('src/pasting.c')
+		defs = ['PREFIX_VAL=', 'SUFFIX_VAL=']
+		bld.env['DEFINES'] = ["%s %s" %(x[0], trimquotes('='.join(x[1:]))) for x in [y.split('=') for y in defs]]
+		gruik = c_preproc.c_parser([main.parent])
+		gruik.start(main, bld.env)
+		if len(gruik.nodes) == 1 and gruik.nodes[0].name == 'a.h':
+			color = "GREEN"
+		else:
+			color = "RED"
+		pprint(color, "token pasting -> %r (expected a.h)" % gruik.nodes)
+
+	test_pasting()
+
 	def test(x, result):
 		toks = c_preproc.tokenize(x)
 		c_preproc.reduce_tokens(toks, defs, [])
@@ -155,6 +170,7 @@ def build(bld):
 	test('a||b||c||d', 1)
 	test('a&&b&&c&&d', 0)
 	test('e', 1)
+
 
 	return
 	test("1?1,(0?5:9):3,4", 0) # <- invalid expression
