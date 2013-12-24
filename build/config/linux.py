@@ -102,11 +102,11 @@ def configure(conf):
 	])
 
 	env.append_value('CSFLAGS_debug', [
-		'/define:DEBUG,TRACE,MONO',
+		'/define:DEBUG;TRACE;MONO',
 	])
 
 	env.append_value('CSFLAGS_release', [
-		'/define:TRACE,MONO',
+		'/define:TRACE;MONO',
 		'/optimize+',
 	])
 
