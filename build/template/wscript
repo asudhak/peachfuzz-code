@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+# Import wscript contents from build/tools/wscript.py
+
+import os.path
+from tools import wscript
+
+# build temp directory
+out = 'slag'
+
+# build output directory
+inst = 'output'
+
+# How deep to scan for wscript_build files
+maxdepth = 1
+
+# appname should be the name of this build project
+appname = SETME
+
+# Returns true if the variant should be supported
+def supported_variant(name):
+	return True;
+
+def init(ctx):
+	wscript.init(ctx)
+
+def options(opt):
+	wscript.options(opt)
+
+def configure(ctx):
+	wscript.configure(ctx)
+
+def build(ctx):
+	wscript.build(ctx)
