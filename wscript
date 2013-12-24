@@ -7,7 +7,7 @@ from tools import wscript
 
 out = 'slag'
 inst = 'output'
-appname = 'peach'
+appname = 'Peach'
 
 def supported_variant(name):
 	return True;
