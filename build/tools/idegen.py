@@ -1,5 +1,6 @@
 import os
 import os.path
+import sys
 
 from collections import OrderedDict
 
@@ -210,18 +211,21 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 			if cs and resx:
 				# If cs & resx, 's' & 'resx' are dependent upon 'cs'
-				#print 'Designer: cs & resx - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: cs & resx - %s' % k.abspath()
 				v.attrs['DependentUpon'] = cs.node.name
 				cs.attrs['SubType'] = 'Form'
 				resx.attrs['DependentUpon'] = cs.node.name
 			elif cs:
 				# If cs only, 's' is dependent upon 'cs'
-				#print 'Designer: cs - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: cs - %s' % k.abspath()
 				v.attrs['DependentUpon'] = cs.node.name
 				cs.attrs['SubType'] = 'Form'
 			elif resx:
 				# If resx only, 's' is autogen
-				#print 'Designer: resx - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: resx - %s' % k.abspath()
 				v.attrs['AutoGen'] = True
 				v.attrs['DependentUpon'] = resx.node.name
 				v.attrs['DesignTime'] = True
@@ -229,7 +233,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 				resx.attrs['LastGenOutput'] = k.name
 			elif setting:
 				# If settings, add to source file list
-				#print 'Designer: settings - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: settings - %s' % k.abspath()
 				f = source_file('None', self, setting)
 				f.attrs['Generator'] = 'SettingsSingleFileGenerator'
 				f.attrs['LastGenOutput'] = k.name
@@ -337,15 +342,26 @@ class idegen(msvs.msvs_generator):
 			# Move up all the projects one level
 			remove = {}
 			for p in self.all_projects:
-				if hasattr(p, 'tg'):
+				if not hasattr(p, 'tg'):
+					continue
+
+				parent = getattr(p.tg, 'ide_path', p.tg.path).parent
+				path = p.tg.path
+
+				while path != parent:
 					remove.setdefault(p.parent)
 					p.parent = p.parent.parent
+					path = path.parent
 
 			idegen.all_projs[self.variant] = [ p for p in self.all_projects if p not in remove ]
 
 		idegen.depth -= 1
 		if idegen.depth == 0:
 			self.all_projects = self.flatten_projects()
+
+			if Logs.verbose == 0:
+				sys.stderr.write('\n')
+
 			msvs.msvs_generator.write_files(self)
 
 	def flatten_projects(self):
@@ -405,3 +421,7 @@ class idegen(msvs.msvs_generator):
 				p.collect_source() # delegate this processing
 				p.collect_properties()
 				self.all_projects.append(p)
+
+				if Logs.verbose == 0:
+					sys.stderr.write('.')
+					sys.stderr.flush()
