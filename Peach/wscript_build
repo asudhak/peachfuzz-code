@@ -11,7 +11,8 @@ bld(
 	features = 'cs',
 	use = 'NLog.dll SharpPcap.dll Peach.Core.dll System.dll System.Xml.dll',
 	source = bld.path.ant_glob('**/*.cs'),
-	name = name,
+	name = 'Peach.exe',
+	gen = name,
 	namespace = 'Peach',
 	ver_product = 'Peach Fuzzing Platfom',
 	install = bld.path.ant_glob('template.xml samples/*')
