@@ -78,18 +78,20 @@ Checking for program g++,c++             : /usr/bin/g++
 Checking for program ar                  : /usr/bin/ar
 'configure' finished successfully (0.118s)
 Waf: Entering directory `/tmp/scenarios_compiler/build'
-[1/5] cxx: comp.cpp -> build/comp.cpp.0.o
-10:21:14 runner ['/usr/bin/g++', '../comp.cpp', '-c', '-o', 'comp.cpp.0.o']
-[2/5] cxxprogram: build/comp.cpp.0.o -> build/comp <1>
-10:21:14 runner ['/usr/bin/g++', 'comp.cpp.0.o', '-o', '/tmp/scenarios_compiler/build/comp']
-[3/5] cxx: main.cpp -> build/main.cpp.1.o
-10:21:15 runner ['/usr/bin/g++', '../main.cpp', '-c', '-o', 'main.cpp.1.o']
-[4/5] src2cpp: a.src -> build/a.cpp
-10:21:15 runner ['/tmp/scenarios_compiler/build/comp', '../a.src', 'a.cpp'] <2>
-[5/5] cxxprogram: build/main.cpp.1.o -> build/foo <3>
-10:21:15 runner ['/usr/bin/g++', 'main.cpp.1.o', '-o', 'foo']
+[1/6] cxx: comp.cpp -> build/comp.cpp.1.o
+01:06:00 runner ['/usr/bin/g++', '../comp.cpp', '-c', '-o', 'comp.cpp.1.o']
+[2/6] cxxprogram: build/comp.cpp.1.o -> build/comp <1>
+01:06:00 runner ['/usr/bin/g++', 'comp.cpp.1.o', '-o', 'build/comp', '-Wl,-Bstatic', '-Wl,-Bdynamic']
+[3/6] cxx: main.cpp -> build/main.cpp.2.o
+01:06:00 runner ['/usr/bin/g++', '../main.cpp', '-c', '-o', 'main.cpp.2.o']
+[4/6] src2cpp: build/comp a.src -> build/a.cpp
+01:06:00 runner ['build/comp', 'scenarios_compiler/a.src', 'a.cpp'] <2>
+[5/6] cxx: build/a.cpp -> build/a.cpp.2.o
+01:06:00 runner ['/usr/bin/g++', 'a.cpp', '-c', '-o', 'a.cpp.2.o']
+[6/6] cxxprogram: build/main.cpp.2.o build/a.cpp.2.o -> build/foo <3>
+01:06:00 runner ['/usr/bin/g++', 'main.cpp.2.o', 'a.cpp.2.o', '-o', 'build/foo', '-Wl,-Bstatic', '-Wl,-Bdynamic']
 Waf: Leaving directory `/tmp/scenarios_compiler/build'
-'build' finished successfully (1.009s)
+'build' finished successfully (0.171s)
 ---------------
 
 <1> Creation of the 'comp' program

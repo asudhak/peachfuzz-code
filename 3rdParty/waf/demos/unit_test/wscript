@@ -3,8 +3,9 @@
 # Richard Quirk, 2008
 
 """
-execute tests during the build
-requires cppunit
+Execute tests during the build - requires cppunit
+
+To force all tests, run with "waf build --alltests"
 """
 
 from waflib.Tools import waf_unit_test

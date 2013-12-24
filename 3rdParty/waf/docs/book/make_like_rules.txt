@@ -337,7 +337,7 @@ Waf: Leaving directory `/tmp/rule/out'
 
 Although r2 *depends* on 'r1.txt', r2 was not executed in the second build. As a matter of fact, the signature of the task r1 has not changed, and r1 was only set to be executed each time, regardless of its signature. Since the signature of the 'r1.txt' does not change, the signature of r2 will not change either, and 'r2.txt' is considered up-to-date.
 
-We will now illustrate how to make certain that the outputs reflect the file contents and trigger the rebuild for dependent tasks by enabling the attribute 'on_results':
+We will now illustrate how to make certain that the outputs reflect the file contents and trigger the rebuild for dependent tasks by enabling the attribute 'update_outputs':
 
 [source,python]
 ---------------
@@ -353,7 +353,7 @@ def build(bld):
 		target = 'r1.txt',
 		rule   = '(date > ${TGT}) && cat ${TGT}',
 		always = True,
-		on_results = True,
+		update_outputs = True,
 	)
 
 	bld(

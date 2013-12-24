@@ -11,19 +11,19 @@ They may be used alone, although the support for programming languages or compil
 
    digraph module_deps {
 		size="8.0, 12.0";
-		"Build" [style="setlinewidth(0.5)",URL="Build.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"ConfigSet" [style="setlinewidth(0.5)",URL="ConfigSet.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Configure" [style="setlinewidth(0.5)",URL="Configure.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Context" [style="setlinewidth(0.5)",URL="Context.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Logs" [style="setlinewidth(0.5)",URL="Logs.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Node" [style="setlinewidth(0.5)",URL="Node.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Options" [style="setlinewidth(0.5)",URL="Options.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Runner" [style="setlinewidth(0.5)",URL="Runner.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Scripting" [style="setlinewidth(0.5)",URL="Scripting.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"TaskGen" [style="setlinewidth(0.5)",URL="TaskGen.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Task" [style="setlinewidth(0.5)",URL="Task.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Utils" [style="setlinewidth(0.5)",URL="Utils.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
-		"Errors" [style="setlinewidth(0.5)",URL="Errors.html",fontname=Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans,height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Build" [style="setlinewidth(0.5)",URL="Build.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"ConfigSet" [style="setlinewidth(0.5)",URL="ConfigSet.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Configure" [style="setlinewidth(0.5)",URL="Configure.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Context" [style="setlinewidth(0.5)",URL="Context.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Logs" [style="setlinewidth(0.5)",URL="Logs.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Node" [style="setlinewidth(0.5)",URL="Node.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Options" [style="setlinewidth(0.5)",URL="Options.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Runner" [style="setlinewidth(0.5)",URL="Runner.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Scripting" [style="setlinewidth(0.5)",URL="Scripting.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"TaskGen" [style="setlinewidth(0.5)",URL="TaskGen.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Task" [style="setlinewidth(0.5)",URL="Task.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Utils" [style="setlinewidth(0.5)",URL="Utils.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
+		"Errors" [style="setlinewidth(0.5)",URL="Errors.html",fontname="Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans",height=0.25,shape=box,fontsize=10,fillcolor="#fffea6",style=filled];
 
 		"Build" -> "Runner" [arrowsize=0.5,style="setlinewidth(0.5)"];
 		"Build" -> "TaskGen" [arrowsize=0.5,style="setlinewidth(0.5)"];

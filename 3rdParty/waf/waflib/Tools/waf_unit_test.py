@@ -55,10 +55,10 @@ class utest(Task.Task):
 	def runnable_status(self):
 		"""
 		Always execute the task if `waf --alltests` was used or no
-                tests if ``waf --notests`` was used
+		tests if ``waf --notests`` was used
 		"""
-                if getattr(Options.options, 'no_tests', False):
-                        return Task.SKIP_ME
+		if getattr(Options.options, 'no_tests', False):
+			return Task.SKIP_ME
 
 		ret = super(utest, self).runnable_status()
 		if ret == Task.SKIP_ME:
@@ -75,18 +75,22 @@ class utest(Task.Task):
 		filename = self.inputs[0].abspath()
 		self.ut_exec = getattr(self.generator, 'ut_exec', [filename])
 		if getattr(self.generator, 'ut_fun', None):
+			# FIXME waf 1.8 - add a return statement here?
 			self.generator.ut_fun(self)
 
 		try:
 			fu = getattr(self.generator.bld, 'all_test_paths')
 		except AttributeError:
+			# this operation may be performed by at most #maxjobs
 			fu = os.environ.copy()
 
 			lst = []
 			for g in self.generator.bld.groups:
 				for tg in g:
 					if getattr(tg, 'link_task', None):
-						lst.append(tg.link_task.outputs[0].parent.abspath())
+						s = tg.link_task.outputs[0].parent.abspath()
+						if s not in lst:
+							lst.append(s)
 
 			def add_path(dct, path, var):
 				dct[var] = os.pathsep.join(Utils.to_list(path) + [os.environ.get(var, '')])
@@ -103,9 +107,9 @@ class utest(Task.Task):
 
 		cwd = getattr(self.generator, 'ut_cwd', '') or self.inputs[0].parent.abspath()
 
-                testcmd = getattr(Options.options, 'testcmd', False)
-                if testcmd:
-                        self.ut_exec = (testcmd % self.ut_exec[0]).split(' ')
+		testcmd = getattr(Options.options, 'testcmd', False)
+		if testcmd:
+			self.ut_exec = (testcmd % self.ut_exec[0]).split(' ')
 
 		proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=Utils.subprocess.PIPE, stdout=Utils.subprocess.PIPE)
 		(stdout, stderr) = proc.communicate()
@@ -151,36 +155,36 @@ def summary(bld):
 				Logs.pprint('CYAN', '    %s' % f)
 
 def set_exit_code(bld):
-        """
-        If any of the tests fail waf will exit with that exit code.
-        This is useful if you have an automated build system which need
-        to report on errors from the tests.
-        You may use it like this:
+	"""
+	If any of the tests fail waf will exit with that exit code.
+	This is useful if you have an automated build system which need
+	to report on errors from the tests.
+	You may use it like this:
 
 		def build(bld):
 			bld(features='cxx cxxprogram test', source='main.c', target='app')
 			from waflib.Tools import waf_unit_test
 			bld.add_post_fun(waf_unit_test.set_exit_code)
-        """
-        lst = getattr(bld, 'utest_results', [])
-        for (f, code, out, err) in lst:
-                if code:
-                        msg = []
-                        if out:
-                                msg.append('stdout:%s%s' % (os.linesep, out.decode('utf-8')))
-                        if err:
-                                msg.append('stderr:%s%s' % (os.linesep, err.decode('utf-8')))
-                        bld.fatal(os.linesep.join(msg))
+	"""
+	lst = getattr(bld, 'utest_results', [])
+	for (f, code, out, err) in lst:
+		if code:
+			msg = []
+			if out:
+				msg.append('stdout:%s%s' % (os.linesep, out.decode('utf-8')))
+			if err:
+				msg.append('stderr:%s%s' % (os.linesep, err.decode('utf-8')))
+			bld.fatal(os.linesep.join(msg))
 
 
 def options(opt):
 	"""
 	Provide the ``--alltests``, ``--notests`` and ``--testcmd`` command-line options.
 	"""
-        opt.add_option('--notests', action='store_true', default=False, help='Exec no unit tests', dest='no_tests')
+	opt.add_option('--notests', action='store_true', default=False, help='Exec no unit tests', dest='no_tests')
 	opt.add_option('--alltests', action='store_true', default=False, help='Exec all unit tests', dest='all_tests')
-        opt.add_option('--testcmd', action='store', default=False,
-                       help = 'Run the unit tests using the test-cmd string'
-                              ' example "--test-cmd="valgrind --error-exitcode=1'
-                              ' %s" to run under valgrind', dest='testcmd')
+	opt.add_option('--testcmd', action='store', default=False,
+	 help = 'Run the unit tests using the test-cmd string'
+	 ' example "--test-cmd="valgrind --error-exitcode=1'
+	 ' %s" to run under valgrind', dest='testcmd')
 

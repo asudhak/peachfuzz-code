@@ -252,6 +252,9 @@ Global
 			${if getattr(p, 'is_active', None)}
 		{${p.uuid}}.${b.configuration}|${b.platform}.Build.0 = ${b.configuration}|${b.platform}
 			${endif}
+			${if getattr(p, 'is_deploy', None)}
+		{${p.uuid}}.${b.configuration}|${b.platform}.Deploy.0 = ${b.configuration}|${b.platform}
+			${endif}
 			${endfor}
 			${endif}
 		${endfor}

@@ -10,7 +10,7 @@ To add a tool that does not exist in the folder compat15, pass an absolute path:
 """
 
 
-VERSION="1.7.9"
+VERSION="1.7.14"
 APPNAME='waf'
 REVISION=''
 
@@ -204,34 +204,42 @@ def process_decorators(body):
 	return "\n".join(accu+all_deco)
 
 def sfilter(path):
-	if sys.version_info[0] >= 3 and Options.options.strip_comments:
-		f = open(path, "rb")
-		try:
-			tk = tokenize.tokenize(f.readline)
-			next(tk) # the first one is always tokenize.ENCODING for Python 3, ignore it
-			cnt = process_tokens(tk)
-		finally:
-			f.close()
-	elif Options.options.strip_comments and path.endswith('.py'):
-		f = open(path, "r")
-		try:
-			cnt = process_tokens(tokenize.generate_tokens(f.readline))
-		finally:
-			f.close()
-	else:
-		f = open(path, "r")
-		try:
-			cnt = f.read()
-		finally:
-			f.close()
 
 	if path.endswith('.py') :
+		if Options.options.strip_comments:
+			if sys.version_info[0] >= 3:
+				f = open(path, "rb")
+				try:
+					tk = tokenize.tokenize(f.readline)
+					next(tk) # the first one is always tokenize.ENCODING for Python 3, ignore it
+					cnt = process_tokens(tk)
+				finally:
+					f.close()
+			else:
+				f = open(path, "r")
+				try:
+					cnt = process_tokens(tokenize.generate_tokens(f.readline))
+				finally:
+					f.close()
+		else:
+			f = open(path, "r")
+			try:
+				cnt = f.read()
+			finally:
+				f.close()
 		# WARNING: since we now require python 2.4, we do not process the decorators anymore
 		# if you need such a thing, uncomment the code below:
 		#cnt = process_decorators(cnt)
 		#if cnt.find('set(') > -1:
 		#	cnt = 'import sys\nif sys.hexversion < 0x020400f0: from sets import Set as set\n' + cnt
 		cnt = '#! /usr/bin/env python\n# encoding: utf-8\n# WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file\n\n' + cnt
+
+	else:
+		f = open(path, "r")
+		try:
+			cnt = f.read()
+		finally:
+			f.close()
 
 	if sys.hexversion > 0x030000f0:
 		return (io.BytesIO(cnt.encode('utf-8')), len(cnt), cnt)
@@ -352,7 +360,7 @@ def create_waf(*k, **kw):
 
 	if sys.platform != 'win32':
 		os.chmod('waf', Utils.O755)
-	os.unlink('%s.tar.%s' % (mw, zipType))
+	os.remove('%s.tar.%s' % (mw, zipType))
 
 def make_copy(inf, outf):
 	(a, b, cnt) = sfilter(inf)

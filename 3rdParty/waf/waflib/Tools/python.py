@@ -269,7 +269,7 @@ def check_python_headers(conf):
 	#name = 'python' + env['PYTHON_VERSION']
 
 	# TODO simplify this
-	for name in ('python' + env['PYTHON_VERSION'], 'python' + env['PYTHON_VERSION'].replace('.', '')):
+	for name in ('python' + env['PYTHON_VERSION'], 'python' + env['PYTHON_VERSION'] + 'm', 'python' + env['PYTHON_VERSION'].replace('.', '')):
 
 		# LIBPATH_PYEMBED is already set; see if it works.
 		if not result and env['LIBPATH_PYEMBED']:
@@ -355,13 +355,19 @@ def check_python_headers(conf):
 	except conf.errors.ConfigurationError:
 		# python3.2, oh yeah
 		xx = conf.env.CXX_NAME and 'cxx' or 'c'
-		conf.check_cfg(msg='Asking python-config for the flags (pyembed)',
-			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=['--cflags', '--libs', '--ldflags'])
+
+		flags = ['--cflags', '--libs', '--ldflags']
+
+		for f in flags:
+			conf.check_cfg(msg='Asking python-config for pyembed %s flags' % f,
+				path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEMBED', args=[f])
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyembed flags from python-config',
 			fragment=FRAG, errmsg='Could not build a python embedded interpreter',
 			features='%s %sprogram pyembed' % (xx, xx))
-		conf.check_cfg(msg='Asking python-config for the flags (pyext)',
-			path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEXT', args=['--cflags', '--libs', '--ldflags'])
+
+		for f in flags:
+			conf.check_cfg(msg='Asking python-config for pyext %s flags' % f,
+				path=conf.env.PYTHON_CONFIG, package='', uselib_store='PYEXT', args=[f])
 		conf.check(header_name='Python.h', define_name='HAVE_PYTHON_H', msg='Getting pyext flags from python-config',
 			features='%s %sshlib pyext' % (xx, xx), fragment=FRAG, errmsg='Could not build python extensions')
 

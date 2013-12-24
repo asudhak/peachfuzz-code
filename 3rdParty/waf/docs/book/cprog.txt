@@ -683,7 +683,7 @@ The outputs are written in the build directory into the file 'config.log':
 [source,shishell]
 ------------------
 # project  configured on Tue Aug 31 17:30:21 2010 by
-# waf 1.7.9 (abi 98, python 20605f0 on linux2)
+# waf 1.7.11 (abi 98, python 20605f0 on linux2)
 # using /home/waf/bin/waf configure
 #
 ---

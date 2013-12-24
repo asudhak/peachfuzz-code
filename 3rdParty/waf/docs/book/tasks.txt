@@ -551,20 +551,35 @@ def build(ctx):
     )
 ---------------
 
-===== File hashes
+===== File hashes and dependencies
 
-To detect if the outputs have really been produced by a task, the task signature is used as the signature of the task nodes outputs. As a consequence, files created in the source directory are going to be rebuilt each time. To avoid this, the node signature should match the actual file contents. This is enforced by using the function 'waflib.Task.update_outputs' on task classes. It replaces the methods _post_run_ and _runnable_status_ of a task class to set the hash file contents to the output nodes.
+Nodes created by tasks during the build inherit the signature of the task that created them.
+Tasks consuming such nodes as inputs will be executed whenever the first tasks are executed.
+This is usually a desirable behaviour, as the tasks will propagate the dependencies in a transitive manner.
 
-For convenience, rule-based task generators can declare the *update_outputs* attribute to achieve the same results:
+In a few contexts though, there can be an excess of downstream rebuilds even if the output files content have not changed.
+This will also cause build files in the source directory to be rebuild whenever a new build is initiated (files in the source directory are hashed).
+The function 'waflib.Task.update_outputs' is used to enable file hashes in task classes, it is used in the same way as 'waflib.Task.always_run'.
+
+For convenience, rule-based task generators can provide the *update_outputs* attribute to simplify the declaration:
 
 [source,python]
 ---------------
 def build(ctx):
     ctx(
-        rule           = 'cp ${SRC} ${TGT}',
-        source         = 'wcript',
+        rule           = 'touch ${TGT}',
+        source         = 'wscript',
         target         = ctx.path.make_node('wscript2'),
         update_outputs = True
     )
+    ctx(
+        rule           = 'cp ${SRC} ${TGT}',
+        source         = ctx.path.make_node('wscript2'),
+        target         = 'wscript3'
+    )
 ---------------
+
+In this example, the file *wscript2* is created in the source directory.
+The *update_outputs* keyword is therefore necessary to prevent unnecessary rebuilds.
+Additionally, *wscript3* is only rebuilt when the contents of *wscript2* change.
 

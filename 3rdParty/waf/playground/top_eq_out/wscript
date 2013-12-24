@@ -58,5 +58,5 @@ def distclean(ctx):
 			if os.path.isdir(fn):
 				shutil.rmtree(fn)
 			else:
-				os.unlink(fn)
+				os.remove(fn)
 
