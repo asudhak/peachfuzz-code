@@ -181,13 +181,14 @@ class vsnode_cs_target(msvs.vsnode_project):
 		srcs = tg.to_nodes(getattr(tg, 'resource', []))
 		for x in srcs:
 			r = source_file('EmbeddedResource', self, x)
-			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
 			lst[x] = r
 
 		# Process installed files
 		srcs = tg.to_nodes(getattr(tg, 'install', []))
 		for x in srcs:
-			r = source_file('Content', self, x)
+			r = lst.get(x, None)
+			if not r:
+				r = source_file('Content', self, x)
 			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
 			lst[x] = r
 
