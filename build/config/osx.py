@@ -28,7 +28,6 @@ def find_directory(dirs, paths):
 	raise Errors.WafError('Could not find directory \'%s\'' % dirs)
 
 def prepare(conf):
-	root = conf.path.abspath()
 	env = conf.env
 	j = os.path.join
 
@@ -57,8 +56,7 @@ def prepare(conf):
 
 	env['PIN_VER'] = 'pin-2.13-61206-clang.4.2-mac'
 
-	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
-	pin = j(pin_root, env['PIN_VER'])
+	pin = j(conf.get_peach_dir(), '3rdParty', 'pin', env['PIN_VER'])
 
 	env['EXTERNALS'] = {
 		'pin' : {
@@ -140,7 +138,7 @@ def configure(conf):
 		'/optimize+',
 	])
 
-	env['CSPLATFORM'] = 'anycpu'
+	env['CSPLATFORM'] = 'AnyCPU'
 	env['CSDOC'] = True
 
 	arch_flags = [

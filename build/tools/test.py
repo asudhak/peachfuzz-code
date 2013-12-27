@@ -172,7 +172,9 @@ class utest(Task.Task):
 			testlock.release()
 
 def configure(conf):
-	root = conf.path.abspath()
-	nunit_path = conf.env['NUNIT_PATH'] or os.path.join(root, '3rdParty', 'NUnit-2.6.0.12051', 'bin')
+	j = os.path.join
+
+	conf.env['NUNIT_VER'] = 'NUnit-2.6.0.12051'
+	nunit_path = j(conf.get_peach_dir(), '3rdParty', conf.env['NUNIT_VER'], 'bin')
 	nunit_name = '64' in conf.env.SUBARCH and 'nunit-console' or 'nunit-console-x86'
 	conf.find_program([nunit_name], var='NUNIT', exts='.exe', path_list=[nunit_path])

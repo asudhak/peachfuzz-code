@@ -21,7 +21,6 @@ tools = [
 ]
 
 def prepare(conf):
-	root = conf.path.abspath()
 	env = conf.env
 	j = os.path.join
 
@@ -42,8 +41,7 @@ def prepare(conf):
 
 	env['PIN_VER'] = 'pin-2.13-61206-gcc.4.4.7-linux'
 
-	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
-	pin = j(pin_root, env['PIN_VER'])
+	pin = j(conf.get_peach_dir(), '3rdParty', 'pin', env['PIN_VER'])
 
 	env['EXTERNALS'] = {
 		'pin' : {
@@ -110,7 +108,7 @@ def configure(conf):
 		'/optimize+',
 	])
 
-	env['CSPLATFORM'] = 'anycpu'
+	env['CSPLATFORM'] = 'AnyCPU'
 	env['CSDOC'] = True
 
 	env.append_value('DEFINES_debug', [

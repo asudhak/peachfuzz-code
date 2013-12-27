@@ -4,6 +4,7 @@ import os.path, re
 from optparse import OptionValueError
 from waflib.TaskGen import feature, after_method, before_method
 from waflib.Build import InstallContext
+from waflib.Configure import conf
 from waflib import Utils, Logs, Configure, Context, Options, Errors
 from tools import pkg, hooks
 
@@ -22,6 +23,11 @@ LIBDIR = 'output\\win_x64_release\\bin'
 DOCDIR = 'output\\win_x64_release\\doc'
 
 """
+
+@conf
+def get_peach_dir(self):
+	subdir = getattr(Context.g_module, 'peach')
+	return self.path.find_dir(subdir).abspath()
 
 class TestContext(InstallContext):
 	'''runs the unit tests'''
