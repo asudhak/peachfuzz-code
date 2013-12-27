@@ -9,7 +9,7 @@ bld(
 	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
-	name = 'Ionic.Zip.Reduced.dll',
+	name = 'Ionic.Zip.dll',
 	csflags = [ '/define:AESCRYPTO;BZIP;NO_SFX' ],
 	version = False,
 	csdoc = False,
