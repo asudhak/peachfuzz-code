@@ -36,9 +36,6 @@ deps = [
 	'log4net.dll',
 ]
 
-if bld.env['IS_MONO'] == 'True':
-	deps.append('Mono.Posix.dll')
-
 bld(
 	features = 'cs',
 	use = deps,
