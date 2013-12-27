@@ -6,6 +6,6 @@ app = bld(
 	target='CrashingProgram',
 )
 
-if 'win' == tgt:
+if 'msvc' == app.env.CC_NAME:
 	# Disable buffer security checks so we get 2nd chance AV exceptions
 	app.env.append_value('CXXFLAGS', [ '/GS-' ])
