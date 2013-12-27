@@ -13,6 +13,7 @@ using System.Text;
 namespace Peach.Core.Test.Agent.Monitors
 {
 	[TestFixture]
+	[Platform("Win")]
 	public class PopupWatcherTest
 	{
 		class Params : Dictionary<string, string> { }

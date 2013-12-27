@@ -3,6 +3,7 @@
 deps = [
 	'System.dll',
 	'System.Core.dll',
+	'System.Xml.dll',
 	'nunit.framework.dll',
 	'NLog.dll',
 	'Peach.Core.dll',
@@ -10,7 +11,7 @@ deps = [
 ]
 
 bld(
-	features = 'cs osx test',
+	features = 'cs test',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.Core.Test.OS.OSX.dll',

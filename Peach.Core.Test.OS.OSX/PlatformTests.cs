@@ -10,6 +10,7 @@ using NLog;
 namespace Peach.Core.Test.OS.OSX
 {
 	[TestFixture]
+	[Platform("MacOsX")]
 	public class PlatformTests
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

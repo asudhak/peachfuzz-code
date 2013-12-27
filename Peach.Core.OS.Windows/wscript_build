@@ -13,10 +13,12 @@ deps = [
 	'System.ServiceProcess.dll',
 ]
 
-bld(
-	features = 'cs win',
+asm = bld(
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.Core.OS.Windows.dll',
-	install_755 = bld.path.ant_glob('Debuggers/DebugEngine/*.dll'),
 )
+
+if 'win' in bld.env['supported_features']:
+	asm.install_755 = bld.path.ant_glob('Debuggers/DebugEngine/*.dll')

@@ -2,7 +2,6 @@
 
 deps = [
 	'NLog.dll',
-	'SharpPcap.dll',
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',
@@ -23,10 +22,12 @@ deps = [
 	'Mono.Posix.dll',
 ]
 
-bld(
-	features = 'cs linux',
+asm = bld(
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.OS.Linux.dll',
-	install_755 = bld.path.ant_glob('gdb/**/*'),
 )
+
+if 'linux' in bld.env['supported_features']:
+	asm.install_755 = bld.path.ant_glob('gdb/**/*')

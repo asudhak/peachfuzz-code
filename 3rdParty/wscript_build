@@ -40,3 +40,7 @@ if bld.env.MCS:
 
 if bld.env.BASENAME == 'osx':
 	bld.install_files('${BINDIR}', bld.path.ant_glob('CrashWrangler/*'))
+
+# Allow for compilation of all c# on windows
+if bld.env.CS_NAME == 'csc':
+	bld.read_csshlib('Mono.Posix.dll', paths=['Mono.2.10.9'])

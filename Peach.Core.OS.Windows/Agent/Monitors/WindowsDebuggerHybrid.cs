@@ -73,7 +73,6 @@ namespace Peach.Core.Agent.Monitors
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		string _name = null;
 		string _commandLine = null;
 		string _processName = null;
 		string _kernelConnectionString = null;
@@ -108,8 +107,6 @@ namespace Peach.Core.Agent.Monitors
 		public WindowsDebuggerHybrid(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
-			_name = name;
-
 			//var color = Console.ForegroundColor;
 			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 			{

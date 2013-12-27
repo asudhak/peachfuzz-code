@@ -9,7 +9,7 @@ deps = [
 	'NLog.dll',
 ]
 bld(
-	features = 'cs win',
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.WindowsDebugInstance.exe',

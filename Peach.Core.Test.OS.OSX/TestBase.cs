@@ -16,8 +16,6 @@ namespace Peach
 	[SetUpFixture]
 	public class TestBase
 	{
-		SingleInstance si;
-
 		[SetUp]
 		public void Initialize()
 		{
@@ -31,17 +29,6 @@ namespace Peach
 			config.LoggingRules.Add(rule);
 
 			LogManager.Configuration = config;
-
-			// Ensure only 1 instance of the platform tests runs at a time
-			si = SingleInstance.CreateInstance("Peach.Core.Test.OS.OSX.dll");
-			si.Lock();
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			si.Dispose();
-			si = null;
 		}
 	}
 }

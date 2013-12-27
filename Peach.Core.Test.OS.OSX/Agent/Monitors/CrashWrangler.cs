@@ -9,8 +9,26 @@ using NUnit.Framework;
 namespace Peach.Core.Test.Agent.Monitors
 {
 	[TestFixture]
+	[Platform("MacOsX")]
 	public class CrashWranglerTest
 	{
+		SingleInstance si;
+
+		[SetUp]
+		public void Initialize()
+		{
+			// Ensure only 1 instance of the platform tests runs at a time
+			si = SingleInstance.CreateInstance("Peach.Core.Test.OS.OSX.dll");
+			si.Lock();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			si.Dispose();
+			si = null;
+		}
+
 		[Test]
 		public void BadHandler()
 		{

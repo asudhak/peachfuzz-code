@@ -42,6 +42,7 @@ using Peach.Core.IO;
 namespace Peach.Core.Test.Agent
 {
 	[TestFixture]
+	[Platform("Win")]
 	public class AgentPlatformAttributeTests
 	{
 		[Test]
