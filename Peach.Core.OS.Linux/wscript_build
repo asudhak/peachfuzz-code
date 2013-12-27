@@ -28,5 +28,5 @@ bld(
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.OS.Linux.dll',
-	install = bld.path.ant_glob('gdb/**/*'),
+	install_755 = bld.path.ant_glob('gdb/**/*'),
 )

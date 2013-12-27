@@ -18,5 +18,5 @@ bld(
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.Core.OS.Windows.dll',
-	install = bld.path.ant_glob('Debuggers/DebugEngine/*.dll'),
+	install_755 = bld.path.ant_glob('Debuggers/DebugEngine/*.dll'),
 )

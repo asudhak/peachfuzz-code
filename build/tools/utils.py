@@ -26,13 +26,17 @@ def install_extras(self):
 		inst_to = hasattr(self, 'link_task') and getattr(self.link_task.__class__, 'inst_to', None)
 
 	if not inst_to:
-		if getattr(self, 'install', []):
+		if getattr(self, 'install_644', []) or getattr(self, 'install_755', []):
 			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, self.install))
 		return
 
-	extras = self.to_nodes(getattr(self, 'install', []))
+	extras = self.to_nodes(Utils.to_list(getattr(self, 'install_644', [])))
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
+
+	extras = self.to_nodes(Utils.to_list(getattr(self, 'install_755', [])))
+	if extras:
+		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O755)
 
 @feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
