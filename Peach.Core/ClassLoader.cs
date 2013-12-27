@@ -44,6 +44,7 @@ namespace Peach.Core
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		public static Dictionary<string, Assembly> AssemblyCache = new Dictionary<string, Assembly>();
+		static Dictionary<Type, object[]> AttributeCache = new Dictionary<Type, object[]>();
 		static string[] searchPath = GetSearchPath();
 
 		static string[] GetSearchPath()
@@ -128,6 +129,27 @@ namespace Peach.Core
 			return true;
 		}
 
+		static object[] GetCustomAttributes(Type type)
+		{
+			object[] attrs;
+
+			if (AttributeCache.TryGetValue(type, out attrs))
+				return attrs;
+
+			try
+			{
+				attrs = type.GetCustomAttributes(true);
+			}
+			catch (TypeLoadException)
+			{
+				attrs = new object[0];
+			}
+
+			AttributeCache.Add(type, attrs);
+
+			return attrs;
+		}
+
 		public static string FindFile(string fileName)
 		{
 			if (Path.IsPathRooted(fileName))
@@ -178,7 +200,7 @@ namespace Peach.Core
 		public static IEnumerable<A> GetAttributes<A>(this Type type, Func<Type, A, bool> predicate)
 			where A : Attribute
 		{
-			foreach (var attr in type.GetCustomAttributes(true))
+			foreach (var attr in GetCustomAttributes(type))
 			{
 				var concrete = attr as A;
 				if (concrete != null && (predicate == null || predicate(type, concrete)))
