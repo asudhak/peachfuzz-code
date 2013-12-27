@@ -53,7 +53,7 @@ def install_fake_lib(self):
 	for lib in self.link_task.outputs:
 		config = lib.parent.find_resource(lib.name + '.config')
 		if config:
-			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
+			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O644)
 
 		name = lib.name
 		ext='.pdb'
@@ -128,7 +128,7 @@ def cs_resource(self):
 	if cfg:
 		setattr(self, 'app_config', cfg)
 		inst_to = getattr(self, 'install_path', '${BINDIR}')
-		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O755)
+		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O644)
 
 @conf
 def clone_env(self, variant):
