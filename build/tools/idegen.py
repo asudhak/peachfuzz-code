@@ -184,7 +184,9 @@ class vsnode_cs_target(msvs.vsnode_project):
 			lst[x] = r
 
 		# Process installed files
-		srcs = tg.to_nodes(getattr(tg, 'install', []))
+		srcs = []
+		srcs.extend(tg.to_nodes(getattr(tg, 'install_644', [])))
+		srcs.extend(tg.to_nodes(getattr(tg, 'install_755', [])))
 		for x in srcs:
 			r = lst.get(x, None)
 			if not r:
