@@ -27,6 +27,12 @@ def find_program(self, filename, **kw):
 
 # Context
 def add_to_group(self, tgen, group=None):
+	this = getattr(tgen, 'name', None)
+	if this:
+		for item in self.get_group(group):
+			if this == getattr(item, 'name', None):
+				raise Errors.WafError('Duplicate tasks detected!\n%r\n%r' % (item, tgen))
+
 	features = set(Utils.to_list(getattr(tgen, 'features', [])))
 	available = set(Utils.to_list(tgen.env['supported_features']))
 	intersect = features & available
