@@ -19,6 +19,8 @@ deps = [
 	'Microsoft.Scripting.Metadata.dll',
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
 
 bld(

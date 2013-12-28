@@ -19,6 +19,8 @@ deps = [
 	'Microsoft.Scripting.dll',
 	'Microsoft.Scripting.Metadata.dll',
 	'Peach.Core.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 	'Mono.Posix.dll',
 ]
 

@@ -3,6 +3,8 @@
 deps = [
 	'NLog.dll',
 	'Peach.Core.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 	'System.Runtime.Remoting.dll',
 	'System.dll',
 	'System.Management.dll',

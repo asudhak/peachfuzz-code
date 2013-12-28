@@ -8,6 +8,8 @@ deps = [
 	'NLog.dll',
 	'Peach.Core.dll',
 	'Peach.Core.OS.Linux.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
 
 bld(

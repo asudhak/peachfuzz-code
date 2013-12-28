@@ -7,7 +7,10 @@ deps = [
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
 	'NLog.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
+
 bld(
 	features = 'cs',
 	use = deps,

@@ -12,6 +12,8 @@ deps = [
 	'Microsoft.Scripting.Metadata.dll',
 	'IronPython.dll',
 	'IronPython.Modules.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
 
 bld(

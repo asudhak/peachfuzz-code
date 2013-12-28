@@ -5,7 +5,7 @@ name = 'Peach.exe'
 
 app = bld(
 	features = 'cs',
-	use = 'NLog.dll SharpPcap.dll Peach.Core.dll System.dll System.Xml.dll',
+	use = 'NLog.dll SharpPcap.dll PacketDotNet.dll Peach.Core.dll System.dll System.Xml.dll',
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.exe',
 	ver_product = 'Peach Fuzzing Platfom',

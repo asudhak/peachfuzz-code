@@ -12,6 +12,8 @@ deps = [
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
 	'Peach.Core.Test.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
 
 # Even though this should build via mono, this assembly causes mcs to segfault

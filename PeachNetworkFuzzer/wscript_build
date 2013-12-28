@@ -7,7 +7,8 @@ deps = [
 	'System.Data.dll',
 	'System.Drawing.dll',
 	'Peach.Core.dll',
-	
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
 
 bld(
