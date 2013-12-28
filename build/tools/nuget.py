@@ -33,8 +33,9 @@ class PackageHandler(xml.sax.handler.ContentHandler):
 
 		content = path.find_node('content')
 		if content:
-			print 'Install content: %s' % content.abspath()
-			x.y = 1
+			pass
+			#print 'Install content: %s' % content.abspath()
+			#x.y = 1
 
 @conf
 def read_nuget(self, config, excl=None):
