@@ -6,7 +6,7 @@ from waflib.TaskGen import feature, after_method, before_method
 from waflib.Build import InstallContext
 from waflib.Configure import conf
 from waflib import Utils, Logs, Configure, Context, Options, Errors
-from tools import pkg, hooks
+from tools import pkg, hooks, nuget
 
 targets = [ 'win', 'linux', 'osx', 'doc' ]
 
