@@ -75,12 +75,15 @@ namespace Peach.Core.Test.Agent.Monitors
 			<Param name='Host' value='127.0.0.1'/>
 			<Param name='Port' value='44444'/>
 		</Publisher>
+		<Strategy class='Sequential'/>
 	</Test>
 </Peach>";
 
-		[Test, Ignore]
+		[Test]
 		public void TestNoFault()
 		{
+			VerifyArch();
+
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
@@ -96,17 +99,20 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.Null(this.faults);
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void TestFault()
 		{
+			VerifyArch();
+
 			PitParser parser = new PitParser();
 
 			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators.Add("StringMutator");
 
 			RunConfiguration config = new RunConfiguration();
 			config.range = true;
-			config.rangeStart = 2;
-			config.rangeStop = 2;
+			config.rangeStart = 83;
+			config.rangeStop = 83;
 
 			Engine e = new Engine(null);
 			e.Fault += _Fault;
@@ -116,6 +122,14 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.AreEqual(1, this.faults.Length);
 			Assert.AreEqual(FaultType.Fault, this.faults[0].type);
 			Assert.AreEqual("WindowsDebuggerHybrid", this.faults[0].detectionSource);
+		}
+
+		void VerifyArch()
+		{
+			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
+				Assert.Ignore("Can't run the 32bit version of test on a 64bit operating system.");
+			else if (Environment.Is64BitProcess && !Environment.Is64BitOperatingSystem)
+				Assert.Ignore("Can't run the 64bit version of test on a 32bit operating system.");
 		}
 
 		[Test]
