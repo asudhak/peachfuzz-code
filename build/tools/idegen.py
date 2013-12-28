@@ -332,11 +332,6 @@ class idegen(msvs.msvs_generator):
 		if not getattr(self, 'vsnode_cs_target', None):
 			self.vsnode_cs_target = vsnode_cs_target
 
-	# Defer filtering of features vs supported_features
-	# until we generate the project and then set the is_active member
-	def add_to_group(self, tgen, group=None):
-		BuildContext.base_add_to_group(self, tgen, group)
-
 	def execute(self):
 		idegen.depth += 1
 		msvs.msvs_generator.execute(self)
