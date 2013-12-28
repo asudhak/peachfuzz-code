@@ -49,9 +49,11 @@ def install_fake_lib(self):
 	# install 3rdParty libs into ${LIBDIR}
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
 
-	# install any .config files into ${LIBDIR}
+	# install any pdb or .config files into ${LIBDIR}
+
 	for lib in self.link_task.outputs:
-		config = lib.parent.find_resource(lib.name + '.config')
+		# only look for .config if we are mono - as they are the only ones that support this
+		config = self.env.CS_NAME == 'mono' and lib.parent.find_resource(lib.name + '.config')
 		if config:
 			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O644)
 
@@ -121,8 +123,9 @@ def cs_resource(self):
 	if 'exe' in self.cs_task.env.CSTYPE:
 		# if this is an exe, require app.config and install to ${BINDIR}
 		cfg = self.path.find_or_declare('app.config')
-	else:
-		# if this is an assembly, app.config is optional
+	elif self.env.CS_NAME == 'mono':
+		# if this is an assembly, app.config is optional and
+		# only supported by mono
 		cfg = self.path.find_resource('app.config')
 
 	if cfg:

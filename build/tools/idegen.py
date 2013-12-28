@@ -14,7 +14,7 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">${project.build_properties[0].configuration}</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">${project.build_properties[0].platform}</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">${project.build_properties[0].platform_target}</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     ${for k, v in project.globals.iteritems()}
@@ -23,7 +23,7 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   </PropertyGroup>
 
   ${for props in project.build_properties}
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform}' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform_target}' ">
     ${for k, v in props.properties.iteritems()}
     <${k}>${str(v)}</${k}>
     ${endfor}
@@ -385,7 +385,8 @@ class idegen(msvs.msvs_generator):
 
 				prop = msvs.build_property()
 				prop.configuration = '%s_%s' % (env.TARGET, env.VARIANT)
-				prop.platform = p.properties['PlatformTarget']
+				prop.platform_target = p.properties['PlatformTarget']
+				prop.platform = prop.platform_target.replace('AnyCPU', 'Any CPU')
 				prop.properties = p.properties
 
 				configs.setdefault(prop.configuration)
