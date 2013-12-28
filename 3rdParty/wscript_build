@@ -4,11 +4,12 @@ subdirs = [
 	'DotNetZip',
 	'pin',
 	'TreeViewAdv',
-	'Be.HexEditor.150',
 	'VMware-VIX-1.12.1-894247',
 ]
 
 bld.recurse(subdirs)
+
+bld.read_csshlib('Be.Windows.Forms.HexBox.dll', paths=['Be.HexEditor.150/bin'])
 
 nlog = bld.env.CS_NAME == 'mono' and 'Mono 2.x' or '.NET Framework 4.0'
 
