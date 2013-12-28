@@ -127,6 +127,8 @@ def cs_resource(self):
 		# if this is an assembly, app.config is optional and
 		# only supported by mono
 		cfg = self.path.find_resource('app.config')
+	else:
+		cfg = None
 
 	if cfg:
 		setattr(self, 'app_config', cfg)
