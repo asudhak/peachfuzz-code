@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
 subdirs = [
-	'clrzmq',
 	'DotNetZip',
 	'pin',
 	'TreeViewAdv',
 	'Be.HexEditor.150',
 	'VMware-VIX-1.12.1-894247',
-	'zeromq3-x',
 ]
 
 bld.recurse(subdirs)

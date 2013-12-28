@@ -13,7 +13,6 @@ deps = [
 
 	'NLog.dll',
 	'SharpPcap.dll',
-	'ZeroMQ.dll',
 	'PacketDotNet.dll',
 	'Ionic.Zip.dll',
 	
