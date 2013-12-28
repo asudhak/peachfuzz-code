@@ -47,7 +47,10 @@ test-results/
 
 _ReSharper.Peach.net/*
 
+# waf generated sln options
 /.depproj/
+*.csproj
+*.sln
 
 # Don't ignore anything in 3rdParty
 !/3rdParty/*
