@@ -159,7 +159,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 			dep = msvs.build_property()
 			dep.path = other.path_from(self.base)
 			dep.uuid = msvs.make_uuid(other.abspath())
-			dep.name = y.name
+			dep.name = os.path.splitext(y.name)[0]
 
 			self.project_refs.append(dep)
 
