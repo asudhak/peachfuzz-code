@@ -94,7 +94,7 @@ namespace Peach.Core.Test.Agent
 				List<string> paths = new List<string>();
 				paths.Add(Environment.CurrentDirectory);
 				paths.AddRange(process.StartInfo.EnvironmentVariables["PATH"].Split(Path.PathSeparator));
-				string peach = "peach.exe";
+				string peach = "Peach.exe";
 				foreach (var dir in paths)
 				{
 					var candidate = Path.Combine(dir, peach);
