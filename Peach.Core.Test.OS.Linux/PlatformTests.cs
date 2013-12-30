@@ -10,7 +10,6 @@ using NLog;
 namespace Peach.Core.Test.OS.Linux
 {
 	[TestFixture]
-	[Platform("Linux")]
 	public class PlatformTests
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

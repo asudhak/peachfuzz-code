@@ -13,7 +13,6 @@ using System.Text;
 namespace Peach.Core.Test.Agent.Monitors
 {
 	[TestFixture]
-	[Platform("Win")]
 	public class WindowsDebuggerHybridTest
 	{
 		Fault[] faults = null;

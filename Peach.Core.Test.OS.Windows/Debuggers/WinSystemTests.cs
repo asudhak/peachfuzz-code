@@ -45,7 +45,6 @@ using System.ServiceProcess;
 namespace Peach.Core.Test.Debuggers
 {
 	[TestFixture]
-	[Platform("Win")]
 	class WinSystemTests
 	{
 		SystemDebugger dbg = null;

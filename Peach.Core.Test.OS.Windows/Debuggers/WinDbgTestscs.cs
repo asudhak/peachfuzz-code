@@ -7,7 +7,6 @@ using NUnit.Framework;
 namespace Peach.Core.Test.Debuggers
 {
 	[TestFixture]
-	[Platform("Win")]
 	class WinDbgTestscs
 	{
 	}

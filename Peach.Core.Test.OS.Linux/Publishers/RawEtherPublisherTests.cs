@@ -14,7 +14,6 @@ using System.Net.NetworkInformation;
 namespace Peach.Core.Test.Publishers
 {
 	[TestFixture]
-	[Platform("Linux")]
 	class RawEtherPublisherTests
 	{
 

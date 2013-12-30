@@ -17,6 +17,10 @@ namespace Peach
 		[SetUp]
 		public void Initialize()
 		{
+			// NUnit [Platform] attribute doesn't differentiate MacOSX/Linux
+			if (Peach.Core.Platform.GetOS() != Peach.Core.Platform.OS.Linux)
+				Assert.Ignore("Only supported on Linux");
+
 			ColoredConsoleTarget consoleTarget = new ColoredConsoleTarget();
 			consoleTarget.Layout = "${date:format=HH\\:MM\\:ss} ${logger} ${message}";
 

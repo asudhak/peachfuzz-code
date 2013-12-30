@@ -10,7 +10,6 @@ using System.Threading;
 namespace Peach.Core.Test.OS.Linux.Agent.Monitors
 {
 	[TestFixture]
-	[Platform("Linux")]
 	public class LinuxDebuggerTests
 	{
 		[Test]
