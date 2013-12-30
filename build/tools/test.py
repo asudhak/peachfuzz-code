@@ -1,99 +1,66 @@
 import os, os.path, sys
+from waflib.Build import InstallContext
 from waflib.TaskGen import feature, after_method
 from waflib import Utils, Task, Logs, Options, Errors
-import xml.sax.handler
+
 testlock = Utils.threading.Lock()
 
-class NunitCounter(xml.sax.handler.ContentHandler):
-	def __init__(self):
-		self.num_passed = 0;
-		self.num_failed = 0;
-		self.num_skipped = 0;
-
-	def startElement(self, name, attrs):
-		if name == 'test-case':
-			if attrs['executed'] == 'False':
-				self.num_skipped += 1
-			elif attrs['success'] == 'True':
-				self.num_passed += 1
-			else:
-				self.num_failed += 1
-
-def get_nunit_stats(filename):
-	if not filename:
-		return ''
-
-	handler = NunitCounter()
-	parser = xml.sax.make_parser()
-	parser.setContentHandler(handler)
-	parser.parse(filename)
-	return '     |   Passed: %s, Failed: %s, Skipped: %s' % (handler.num_passed, handler.num_failed, handler.num_skipped)
-
-def summary(bld):
-	lst = getattr(bld, 'utest_results', [])
-	if lst:
-		Logs.pprint('CYAN', 'execution summary')
-
-		total = len(lst)
-		tfail = len([x for x in lst if x[1]])
-
-		Logs.pprint('CYAN', '  tests that pass %d/%d' % (total-tfail, total))
-		for (f, code, xml) in lst:
-			if not code:
-				Logs.pprint('CYAN', '    %s%s' % (f.ljust(30), get_nunit_stats(xml)))
-
-		Logs.pprint('CYAN', '  tests that fail %d/%d' % (tfail, total))
-		for (f, code, xml) in lst:
-			if code:
-				Logs.pprint('CYAN', '    %-20s%s' % (f.ljust(30), get_nunit_stats(xml)))
-
-		if tfail:
-			raise Errors.WafError(msg='%d out of %d test suites failed' % (tfail, total))
-
 def prepare_nunit_test(self):
+	self.ut_nunit = True
 	self.ut_exec = []
 
-	if (Utils.unversioned_sys_platform() != 'win32'):
+	if (self.env.CS_NAME == 'mono'):
 		self.ut_exec = [ 'mono', '--debug' ]
 
+	self.outputs[0].parent.mkdir()
+
 	self.ut_exec.extend([
-		self.generator.bld.env.NUNIT,
+		self.env.NUNIT,
 		self.inputs[0].abspath(),
 		'-nologo',
 		'-out:%s' % self.outputs[1].abspath(),
 		'-xml:%s' % self.outputs[0].abspath(),
 	])
 
+def get_inst_node(self, dest, name):
+	dest = Utils.subst_vars(dest, self.env)
+	dest = dest.replace('/', os.sep)
+	if Options.options.destdir:
+		dest = os.path.join(Options.options.destdir, os.path.splitdrive(dest)[1].lstrip(os.sep))
+
+	return self.bld.srcnode.make_node([dest, name])
+
 @feature('test')
 @after_method('apply_link')
 def make_test(self):
-	if summary not in getattr(self.bld, 'post_funs', []):
-		self.bld.add_post_fun(summary)
-
 	inputs = []
 	outputs = []
 
 	if getattr(self, 'link_task', None):
-		inputs = [ self.link_task.outputs[0] ]
+		dest = getattr(self, 'install_path', self.link_task.__class__.inst_to)
+		inputs = [ get_inst_node(self, dest, self.link_task.outputs[0].name) ]
 
 	if getattr(self, 'cs_task', None):
-		inputs = [ self.cs_task.outputs[0] ]
+		bintype = getattr(self, 'bintype', self.gen.endswith('.dll') and 'library' or 'exe')
+		dest = getattr(self, 'install_path', bintype=='exe' and '${BINDIR}' or '${LIBDIR}')
+		inputs = [ get_inst_node(self, dest, self.cs_task.outputs[0].name) ]
+
 		if self.gen.endswith('.dll'):
-			self.ut_nunit = True
 			self.ut_fun = prepare_nunit_test
 			name = os.path.splitext(inputs[0].name)[0]
-			xml = inputs[0].parent.find_or_declare('utest/%s.xml' % name)
-			outputs = [ xml, xml.change_ext('.log') ]
+			xml = get_inst_node(self, '${PREFIX}/utest', name + '.xml')
+			log = get_inst_node(self, '${PREFIX}/utest', name + '.log')
+			outputs = [ xml, log ]
 
 	if not inputs:
 		raise Errors.WafError('No test to run at: %r' % self)
 
 	test = self.create_task('utest', inputs, outputs)
-	if outputs and getattr(self.bld, 'is_test', None):
-		self.bld.install_files('${PREFIX}/utest', test.outputs)
 
 class utest(Task.Task):
 	vars = []
+
+	after = ['vnum', 'inst']
 
 	def runnable_status(self):
 		ret = Task.SKIP_ME
@@ -106,59 +73,25 @@ class utest(Task.Task):
 		return ret
 
 	def run(self):
+		if not os.path.isfile(self.inputs[0].abspath()):
+			raise Errors.WafError('Could not find test input: %s' % self.inputs[0].abspath())
+
 		self.ut_exec = getattr(self, 'ut_exec', [ self.inputs[0].abspath() ])
 		if getattr(self.generator, 'ut_fun', None):
 			self.generator.ut_fun(self)
-
-		try:
-			fu = getattr(self.generator.bld, 'all_test_paths')
-		except AttributeError:
-			fu = os.environ.copy()
-			self.generator.bld.all_test_paths = fu
-
-			lst = []
-			asm = []
-			for g in self.generator.bld.groups:
-				for tg in g:
-					if getattr(tg, 'link_task', None):
-						if tg.link_task.__class__.__name__ == 'fake_csshlib':
-							asm.append(tg.link_task.outputs[0].parent.abspath())
-						lst.append(tg.link_task.outputs[0].parent.abspath())
-					if getattr(tg, 'cs_task', None):
-						if tg.gen.endswith('.dll'):
-							asm.append(tg.cs_task.outputs[0].parent.abspath())
-						lst.append(tg.cs_task.outputs[0].parent.abspath())
-					if getattr(tg, 'install', None):
-						lst.append(tg.path.get_src().abspath())
-
-			def add_path(dct, path, var):
-				dct[var] = os.pathsep.join(Utils.to_list(path) + [os.environ.get(var, '')])
-
-			add_path(fu, lst, 'PATH')
-
-			if Utils.unversioned_sys_platform() == 'darwin':
-				add_path(fu, lst, 'DYLD_LIBRARY_PATH')
-				add_path(fu, lst, 'LD_LIBRARY_PATH')
-			else:
-				add_path(fu, lst, 'LD_LIBRARY_PATH')
-
-			path_var = self.generator.env.CS_NAME == 'mono' and 'MONO_PATH' or 'DEVPATH'
-			fu[path_var] = os.pathsep.join(asm)
 
 		Logs.debug('runner: %r' % self.ut_exec)
 		cwd = getattr(self.generator, 'ut_cwd', '') or self.inputs[0].parent.abspath()
 
 		stderr = stdout = None
-		if Logs.verbose == 0:
+		if Logs.verbose < 0:
 			stderr = stdout = Utils.subprocess.PIPE
 
-		proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, env=fu, stderr=stderr, stdout=stdout)
+		proc = Utils.subprocess.Popen(self.ut_exec, cwd=cwd, stderr=stderr, stdout=stdout)
 		(stdout, stderr) = proc.communicate()
 
-		xml = getattr(self.generator, 'ut_nunit', False) and self.outputs[0].abspath() or None
-
-		tup = (self.inputs[0].name, proc.returncode, xml)
-		self.generator.utest_result = tup
+		tup = (self.inputs[0].name, proc.returncode)
+		self.generator.test_result = tup
 
 		testlock.acquire()
 		try:
@@ -178,3 +111,22 @@ def configure(conf):
 	nunit_path = j(conf.get_peach_dir(), '3rdParty', conf.env['NUNIT_VER'], 'tools')
 	nunit_name = '64' in conf.env.SUBARCH and 'nunit-console' or 'nunit-console-x86'
 	conf.find_program([nunit_name], var='NUNIT', exts='.exe', path_list=[nunit_path])
+
+def options(opt):
+	pass
+
+class TestContext(InstallContext):
+	'''runs the unit tests'''
+
+	cmd = 'test'
+
+	def __init__(self, **kw):
+		super(TestContext, self).__init__(**kw)
+		self.is_test = True
+		self.add_post_fun(TestContext.summary)
+
+	def summary(self):
+		lst = getattr(self, 'utest_results', [])
+		err = ', '.join(t[0] for t in filter(lambda x: x[1] != 0, lst))
+		if err:
+			raise Errors.WafError('Failures detected in test suites: %s' % err)
