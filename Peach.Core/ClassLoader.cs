@@ -50,8 +50,8 @@ namespace Peach.Core
 		static string[] GetSearchPath()
 		{
 			var ret = new List<string> {
-				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 				Directory.GetCurrentDirectory(),
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 			};
 
 			string devpath = Environment.GetEnvironmentVariable("DEVPATH");
@@ -62,7 +62,7 @@ namespace Peach.Core
 			if (!string.IsNullOrEmpty(mono_path))
 				ret.AddRange(mono_path.Split(Path.PathSeparator));
 
-			return ret.ToArray();
+			return ret.Distinct().ToArray();
 		}
 
 		static ClassLoader()
@@ -148,6 +148,14 @@ namespace Peach.Core
 			AttributeCache.Add(type, attrs);
 
 			return attrs;
+		}
+
+		public static string[] SearchPaths
+		{
+			get
+			{
+				return searchPath;
+			}
 		}
 
 		public static string FindFile(string fileName)

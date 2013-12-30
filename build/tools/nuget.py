@@ -31,11 +31,10 @@ class PackageHandler(xml.sax.handler.ContentHandler):
 		for n in nodes:
 			ctx.read_csshlib(n.name, paths = [ n.parent ])
 
-		content = path.find_node('content')
+		content = path.find_dir('content')
 		if content:
-			pass
-			#print 'Install content: %s' % content.abspath()
-			#x.y = 1
+			extras = content.ant_glob('**/*')
+			self.ctx.install_files('${BINDIR}', extras, env=self.ctx.env, cwd=content, relative_trick=True)
 
 @conf
 def read_nuget(self, config, excl=None):

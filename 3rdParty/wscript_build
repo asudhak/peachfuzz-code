@@ -22,8 +22,5 @@ bld.recurse(subdirs)
 if bld.env.CS_NAME == 'csc':
 	bld.read_csshlib('Mono.Posix.dll', paths=['Mono.2.10.9'])
 
-if bld.env.MCS:
-	bld.install_files('${BINDIR}', 'IronPython-2.7.3/IronPython.StdLib.zip')
-
 if bld.env.BASENAME == 'osx':
 	bld.install_files('${BINDIR}', bld.path.ant_glob('CrashWrangler/**/*'))
