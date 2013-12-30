@@ -54,14 +54,6 @@ namespace Peach.Core
 				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 			};
 
-			string devpath = Environment.GetEnvironmentVariable("DEVPATH");
-			if (!string.IsNullOrEmpty(devpath))
-				ret.AddRange(devpath.Split(Path.PathSeparator));
-
-			string mono_path = Environment.GetEnvironmentVariable("MONO_PATH");
-			if (!string.IsNullOrEmpty(mono_path))
-				ret.AddRange(mono_path.Split(Path.PathSeparator));
-
 			return ret.Distinct().ToArray();
 		}
 
