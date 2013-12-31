@@ -126,6 +126,16 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
+  ${if any([x for x in project.build_properties if x.post_build])}
+  <PropertyGroup>
+    ${for p in project.build_properties}
+    ${if p.post_build}
+    <PostBuildEvent Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform_tgt}' ">${p.post_build}</PostBuildEvent>
+    ${endif}
+    ${endfor}
+  </PropertyGroup>
+  ${endif}
+
 </Project>'''
 
 # Note, no newline at end of template file!
@@ -249,21 +259,6 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 			self.project_refs.append(dep)
 
-		# Add ide_use task generator outputs as Content to the csproj
-		names = tg.to_list(getattr(tg, 'ide_use', []))
-
-		for x in names:
-			y = get(x)
-			y.post()
-			tsk = getattr(y, 'link_task', None)
-			if not tsk:
-				self.bld.fatal('cs task has no link task for ide_use %r' % self)
-
-			o = y.link_task.outputs[0]
-			r = source_file('Content', self, o)
-			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
-			self.source_files[o.abspath()] = r
-
 	def collect_source(self):
 		tg = self.tg
 		lst = self.source_files
@@ -378,7 +373,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 		platform = getattr(tg, 'platform', 'AnyCPU')
 		config = self.ctx.get_config(tg.bld, tg.env)
 
-		out = base.make_node(['bin', platform, config]).path_from(self.base)
+		out_node = base.make_node(['bin', platform, config])
+		out = out_node.path_from(self.base)
 
 		# Order matters!
 		g['ProjectGuid'] = '{%s}' % self.uuid
@@ -421,12 +417,35 @@ class vsnode_cs_target(msvs.vsnode_project):
 		p['DocumentationFile'] = getattr(tg, 'csdoc', tg.env.CSDOC) and out + os.sep + asm_name + '.xml' or ''
 		p['AllowUnsafeBlocks'] = getattr(tg, 'unsafe', False)
 
+		# Add ide_inst task generator outputs as post build copy
+		# Using abspath since macros like $(ProjectDir) don't seem to work
+
+		post_evts = []
+		names = names = tg.to_list(getattr(tg, 'ide_inst', []))
+		for x in names:
+			y = tg.bld.get_tgen_by_name(x)
+			y.post()
+			tsk = getattr(y, 'link_task', None)
+			if not tsk:
+				self.bld.fatal('cs task has no link task for ide_inst %r' % self)
+
+			o = y.link_task.outputs[0]
+			src = o.abspath()
+			dst = out_node.make_node(o.name).abspath()
+			cmd = '%s "%s" "%s"' % (idegen.copy_cmd, src, dst)
+			post_evts.append(cmd)
+
+		joined = os.linesep.join(post_evts)
+		if joined:
+			p['PostBuildEvent'] = joined
+			#self.post_build = joined
 
 class idegen(msvs.msvs_generator):
 	all_projs = OrderedDict()
 	sln_configs = OrderedDict() # Variant -> build_property
 	is_idegen = True
 	depth = 0
+	copy_cmd = 'copy'
 
 	def init(self):
 		msvs.msvs_generator.init(self)
@@ -443,6 +462,7 @@ class idegen(msvs.msvs_generator):
 			self.project_extension = '.cproj'
 			self.get_platform = self.get_platform_mono
 			self.get_config = self.get_config_mono
+			idegen.copy_cmd = 'cp'
 
 		self.vsnode_cs_target = vsnode_cs_target
 		self.vsnode_target = vsnode_target
@@ -596,7 +616,12 @@ class idegen(msvs.msvs_generator):
 					prop.platform_sln = prop.platform
 					prop.properties = p.properties
 					prop.sources = []
+					prop.post_build = getattr(p, 'post_build', None)
 
+					# MonoDevelop doesn't let us do conditions on a per
+					# source basis. Condition only works on PropertyGroup
+					# and Reference elements.
+					'''
 					if main != p:
 						cur_src = set( main.source_files.iterkeys())
 						new_src = set(p.source_files.iterkeys())
@@ -617,8 +642,7 @@ class idegen(msvs.msvs_generator):
 							# Item's in from_new need to be tracked per variant
 							main.cond_source = True
 							prop.sources.append(p.source_files[item])
-
-
+					'''
 				else:
 					prop = p.build_properties[0]
 					prop.platform_tgt = env.CSPLATFORM
