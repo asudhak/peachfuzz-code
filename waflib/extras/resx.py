@@ -13,6 +13,18 @@ def configure(conf):
 def resx_file(self, node):
 	"""
 	Bind the .resx extension to a resgen task
+
+	Example compiles 'Some/Resource.resx' to
+	'MyProgram.Some.Resource.resources'
+	and include as a resource for cs tool.
+
+	def build(bld):
+		bld(
+			features='cs',
+			gen='prog.exe',
+			source='prog.cs Some/Resource.resx',
+			namespace='MyProgram')
+
 	"""
 	if not getattr(self, 'cs_task', None):
 		self.bld.fatal('resx_file has no link task for use %r' % self)
