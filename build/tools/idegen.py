@@ -150,6 +150,7 @@ class source_file(object):
 class vsnode_target(msvs.vsnode_target):
 	def __init__(self, ctx, tg):
 		msvs.vsnode_target.__init__(self, ctx, tg)
+		self.proj_configs = OrderedDict() # Variant -> build_property
 
 	def collect_properties(self):
 		msvs.vsnode_target.collect_properties(self)
@@ -203,6 +204,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		self.references   = OrderedDict() # Name -> HintPath
 		self.source_files = OrderedDict() # Abspath -> Record
 		self.project_refs = [] # uuid
+		self.proj_configs = OrderedDict() # Variant -> build_property
 
 	def combine_flags(self, flag):
 		tg = self.tg
@@ -374,7 +376,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 		env = tg.env
 		platform = getattr(tg, 'platform', 'AnyCPU')
-		config = self.ctx.get_config(tg)
+		config = self.ctx.get_config(tg.bld, tg.env)
 
 		out = base.make_node(['bin', platform, config]).path_from(self.base)
 
@@ -422,6 +424,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 class idegen(msvs.msvs_generator):
 	all_projs = OrderedDict()
+	sln_configs = OrderedDict() # Variant -> build_property
 	is_idegen = True
 	depth = 0
 
@@ -444,11 +447,11 @@ class idegen(msvs.msvs_generator):
 		self.vsnode_cs_target = vsnode_cs_target
 		self.vsnode_target = vsnode_target
 
-	def get_config(self, tg):
-		return '%s_%s' % (tg.env.TARGET, tg.env.VARIANT)
+	def get_config(self, bld, env):
+		return '%s_%s' % (env.TARGET, env.VARIANT)
 
-	def get_config_mono(self, tg):
-		return tg.bld.variant
+	def get_config_mono(self, bld, env):
+		return bld.variant
 
 	def get_platform(self, env):
 		return env.SUBARCH.replace('x86', 'Win32')
@@ -462,6 +465,15 @@ class idegen(msvs.msvs_generator):
 
 	def write_files(self):
 		if self.all_projects:
+			# Generate the sln config|plat for this variant
+			prop = msvs.build_property()
+			prop.platform_tgt = self.env.CSPLATFORM
+			prop.platform = self.get_platform(self.env)
+			prop.platform_sln = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
+			prop.configuration = self.get_config(self, self.env)
+			prop.variant = self.variant
+
+			idegen.sln_configs[prop.variant] = prop
 			idegen.all_projs[self.variant] = self.all_projects
 
 		idegen.depth -= 1
@@ -471,7 +483,19 @@ class idegen(msvs.msvs_generator):
 			if Logs.verbose == 0:
 				sys.stderr.write('\n')
 
-			msvs.msvs_generator.write_files(self)
+			for p in self.all_projects:
+				p.write()
+
+			self.make_sln_configs()
+
+			# and finally write the solution file
+			node = self.get_solution_node()
+			node.parent.mkdir()
+			Logs.warn('Creating %r' % node)
+			template1 = msvs.compile_template(msvs.SOLUTION_TEMPLATE)
+			sln_str = template1(self)
+			sln_str = msvs.rm_blank_lines(sln_str)
+			node.stealth_write(sln_str)
 
 	def collect_dirs(self):
 		"""
@@ -514,10 +538,39 @@ class idegen(msvs.msvs_generator):
 			if p.iter_path.height() > self.srcnode.height():
 				make_parents(p)
 
+	def project_configurations(self):
+		ret = []
+		for k,v in idegen.sln_configs.iteritems():
+			ret.append((v.configuration, v.platform_sln))
+		return ret
+
+	def make_sln_configs(self):
+		sln_cfg = idegen.sln_configs
+
+		for p in self.all_projects:
+			if not hasattr(p, 'tg'):
+				continue
+
+			if len(sln_cfg) == len(p.build_properties):
+				continue
+
+			props = []
+
+			for k, v in sln_cfg.iteritems():
+				other = p.proj_configs.get(k, None)
+				if other:
+					prop = msvs.build_property()
+					prop.configuration = v.configuration
+					prop.platform_sln = v.platform_sln
+					prop.platform = other.platform
+					prop.is_active = True
+					props.append(prop)
+					#print '%s %s %s|%s -> %s|%s' % (p.name, k, prop.configuration, prop.platform_sln, prop.configuration, prop.platform)
+
+			p.build_properties = props
+
 	def flatten_projects(self):
 		ret = OrderedDict()
-		configs = OrderedDict()
-		platforms = OrderedDict()
 
 		# TODO: Might need to implement conditional project refereces
 		# as well as assembly references based on the selected
@@ -533,7 +586,7 @@ class idegen(msvs.msvs_generator):
 				main = ret[p.uuid]
 
 				env = p.tg.env
-				config = self.get_config(p.tg)
+				config = self.get_config(p.tg.bld, p.tg.env)
 
 				if isinstance(p, vsnode_cs_target):
 					prop = msvs.build_property()
@@ -576,13 +629,10 @@ class idegen(msvs.msvs_generator):
 				prop.configuration = config
 				prop.variant = k
 
-				platforms.setdefault(prop.platform_sln)
-				configs.setdefault(prop.configuration)
+				main.proj_configs[k] = prop
 
-				main.build_properties.append(prop)
-
-		self.configurations = configs.keys()
-		self.platforms = platforms.keys()
+				if not any([ x for x in main.build_properties if x.platform == prop.platform and x.configuration == config ]):
+					main.build_properties.append(prop)
 
 		return ret.values()
 
