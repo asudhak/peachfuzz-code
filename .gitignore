@@ -51,6 +51,8 @@ _ReSharper.Peach.net/*
 /.depproj/
 *.csproj
 *.sln
+*.lastbuildstate
+*.unsuccessfulbuild
 
 # Don't ignore anything in 3rdParty
 !/3rdParty/*
