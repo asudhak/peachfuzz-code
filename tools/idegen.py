@@ -1,5 +1,6 @@
 import os
 import os.path
+import sys
 
 from collections import OrderedDict
 
@@ -9,11 +10,54 @@ from waflib import Utils, TaskGen, Logs, Task, Context, Node, Options, Errors
 
 msvs.msvs_generator.cmd = 'msvs2010'
 
+MONO_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">${project.build_properties[0].configuration}</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">${project.build_properties[0].platform_tgt}</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{${project.uuid}}</ProjectGuid>
+    <Compiler>
+      <Compiler ctype="GppCompiler" />
+    </Compiler>
+    <Language>CPP</Language>
+    <Target>Bin</Target>
+  </PropertyGroup>
+
+
+  ${for b in project.build_properties}
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '${b.configuration}|${b.platform}' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>${b.outdir}</OutputPath>
+    <OutputName>${b.output_file}</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <DefineSymbols>${xml:b.preprocessor_definitions}</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Clean" command="${xml:project.get_clean_command(b)}" workingdir="${project.ctx.path.abspath()}" />
+        <Command type="Build" command="${xml:project.get_build_command(b)}" workingdir="${project.ctx.path.abspath()}" />
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  ${endfor}
+
+  <ItemGroup>
+    ${for x in project.source}
+    <${project.get_mono_key(x)} Include='${x.path_from(project.ctx.path)}'>
+      <Link>${x.path_from(project.tg.path)}</Link>
+    </${project.get_mono_key(x)}>
+    ${endfor}
+  </ItemGroup>
+
+</Project>'''
+
 CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">${project.build_properties[0].configuration}</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">${project.build_properties[0].platform}</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">${project.build_properties[0].platform_tgt}</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     ${for k, v in project.globals.iteritems()}
@@ -22,7 +66,7 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   </PropertyGroup>
 
   ${for props in project.build_properties}
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform}' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform_tgt}' ">
     ${for k, v in props.properties.iteritems()}
     <${k}>${str(v)}</${k}>
     ${endfor}
@@ -66,6 +110,20 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   </ItemGroup>
   ${endif}
 
+  ${if getattr(project, 'cond_source', False)}
+  <ItemGroup>
+    ${for p in project.build_properties}
+    ${for src in p.sources}
+    <${src.how} Include="${src.name}" Condition=" '$(Configuration)|$(Platform)' == '${p.configuration}|${p.platform_tgt}' "${if not src.attrs} />${else}>
+      ${for k,v in src.attrs.iteritems()}
+      <${k}>${str(v)}</${k}>
+      ${endfor}
+    </${src.how}>${endif}
+    ${endfor}
+    ${endfor}
+  </ItemGroup>
+  ${endif}
+
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
 </Project>'''
@@ -88,6 +146,35 @@ class source_file(object):
 
 		if proj_path != rel_path:
 			self.attrs['Link'] = proj_path
+
+class vsnode_target(msvs.vsnode_target):
+	def __init__(self, ctx, tg):
+		msvs.vsnode_target.__init__(self, ctx, tg)
+
+	def collect_properties(self):
+		msvs.vsnode_target.collect_properties(self)
+		self.is_active = True
+
+	def get_mono_key(self, node):
+		"""
+		required for writing the source files
+		"""
+		name = node.name
+		if name.endswith('.cpp') or name.endswith('.c'):
+			return 'Compile'
+		return 'None'
+
+	def get_waf(self):
+		return 'cd /d "%s" & "%s" %s' % (self.ctx.srcnode.abspath(), sys.executable, getattr(self.ctx, 'waf_command', 'waf'))
+
+	def get_waf_mono(self):
+		return '%s %s' % (sys.executable, getattr(self.ctx, 'waf_command', 'waf'))
+
+	def get_build_params(self, props):
+		(waf, opt) = msvs.vsnode_target.get_build_params(self, props)
+		opt += " --variant=%s" % props.variant
+		return (waf, opt)
+
 
 class vsnode_cs_target(msvs.vsnode_project):
 	VS_GUID_CSPROJ = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
@@ -114,7 +201,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		self.globals      = OrderedDict()
 		self.properties   = OrderedDict()
 		self.references   = OrderedDict() # Name -> HintPath
-		self.source_files = OrderedDict() # Node -> Record
+		self.source_files = OrderedDict() # Abspath -> Record
 		self.project_refs = [] # uuid
 
 	def combine_flags(self, flag):
@@ -129,11 +216,9 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 	def collect_use(self):
 		tg = self.tg
-
-		self.other_tgen = []
+		get = tg.bld.get_tgen_by_name
 
 		names = tg.to_list(getattr(tg, 'use', []))
-		get = tg.bld.get_tgen_by_name
 
 		for x in names:
 			asm_name = os.path.splitext(x)[0]
@@ -158,9 +243,24 @@ class vsnode_cs_target(msvs.vsnode_project):
 			dep = msvs.build_property()
 			dep.path = other.path_from(self.base)
 			dep.uuid = msvs.make_uuid(other.abspath())
-			dep.name = y.name
+			dep.name = os.path.splitext(y.name)[0]
 
 			self.project_refs.append(dep)
+
+		# Add ide_use task generator outputs as Content to the csproj
+		names = tg.to_list(getattr(tg, 'ide_use', []))
+
+		for x in names:
+			y = get(x)
+			y.post()
+			tsk = getattr(y, 'link_task', None)
+			if not tsk:
+				self.bld.fatal('cs task has no link task for ide_use %r' % self)
+
+			o = y.link_task.outputs[0]
+			r = source_file('Content', self, o)
+			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
+			self.source_files[o.abspath()] = r
 
 	def collect_source(self):
 		tg = self.tg
@@ -169,70 +269,81 @@ class vsnode_cs_target(msvs.vsnode_project):
 		# Process compiled sources
 		srcs = tg.to_nodes(tg.cs_task.inputs, [])
 		for x in srcs:
-			lst[x] = source_file('Compile', self, x)
+			lst[x.abspath()] = source_file('Compile', self, x)
 
 		# Process compiled resx files
 		for tsk in filter(lambda x: x.__class__.__name__ is 'resgen', tg.tasks):
 			r = source_file('EmbeddedResource', self, tsk.inputs[0])
-			lst[r.node] = r
+			lst[r.node.abspath()] = r
 
 		# Process embedded resources
 		srcs = tg.to_nodes(getattr(tg, 'resource', []))
 		for x in srcs:
 			r = source_file('EmbeddedResource', self, x)
-			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
-			lst[x] = r
+			lst[x.abspath()] = r
 
 		# Process installed files
-		srcs = tg.to_nodes(getattr(tg, 'install', []))
+		srcs = []
+		srcs.extend(tg.to_nodes(getattr(tg, 'install_644', [])))
+		srcs.extend(tg.to_nodes(getattr(tg, 'install_755', [])))
 		for x in srcs:
-			r = source_file('Content', self, x)
+			r = lst.get(x.abspath(), None)
+			if not r:
+				r = source_file('Content', self, x)
 			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
-			lst[x] = r
+			lst[x.abspath()] = r
 
 		# Add app.config
 		cfg = getattr(tg, 'app_config', None)
 		if cfg:
-			lst[cfg] = source_file('None', self, cfg)
+			lst[cfg.abspath()] = source_file('None', self, cfg)
 
 		settings = []
 
 		# Try and glue up Designer files
 		for k,v in lst.iteritems():
-			if not k.name.endswith('.Designer.cs'):
+			n = v.node
+
+			if not n.name.endswith('.Designer.cs'):
 				continue
 
-			name = k.name[:-12]
+			name = n.name[:-12]
 
-			cs      = lst.get(k.parent.find_resource(name + '.cs'), None)
-			resx    = lst.get(k.parent.find_resource(name + '.resx'), None)
-			setting = k.parent.find_resource(name + '.settings')
+			cs = n.parent.find_resource(name + '.cs')
+			if cs: cs = lst.get(cs.abspath(), None)
+			resx = lst.get(n.parent.find_resource(name + '.resx'), None)
+			if resx: resx = lst.get(resx.abspath(), None)
+			setting = n.parent.find_resource(name + '.settings')
 
 			if cs and resx:
 				# If cs & resx, 's' & 'resx' are dependent upon 'cs'
-				#print 'Designer: cs & resx - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: cs & resx - %s' % k
 				v.attrs['DependentUpon'] = cs.node.name
 				cs.attrs['SubType'] = 'Form'
 				resx.attrs['DependentUpon'] = cs.node.name
 			elif cs:
 				# If cs only, 's' is dependent upon 'cs'
-				#print 'Designer: cs - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: cs - %s' % k
 				v.attrs['DependentUpon'] = cs.node.name
 				cs.attrs['SubType'] = 'Form'
 			elif resx:
 				# If resx only, 's' is autogen
-				#print 'Designer: resx - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: resx - %s' % k
 				v.attrs['AutoGen'] = True
 				v.attrs['DependentUpon'] = resx.node.name
 				v.attrs['DesignTime'] = True
 				resx.attrs['Generator'] = 'ResXFileCodeGenerator'
-				resx.attrs['LastGenOutput'] = k.name
+				resx.attrs['LastGenOutput'] = n.name
 			elif setting:
 				# If settings, add to source file list
-				#print 'Designer: settings - %s' % k.abspath()
+				if Logs.verbose > 0:
+					print 'Designer: settings - %s' % k
 				f = source_file('None', self, setting)
 				f.attrs['Generator'] = 'SettingsSingleFileGenerator'
-				f.attrs['LastGenOutput'] = k.name
+				f.attrs['LastGenOutput'] = n.name
 				v.attrs['AutoGen'] = True
 				v.attrs['DependentUpon'] = f.node.name
 				v.attrs['DesignTimeSharedInput'] = True
@@ -241,7 +352,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 				settings.append(f)
 
 		for x in settings:
-			lst[x.node] = x
+			lst[x.node.abspath()] = x
 
 		self.collect_use()
 
@@ -263,7 +374,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 		env = tg.env
 		platform = getattr(tg, 'platform', 'AnyCPU')
-		config = '%s_%s' % (env.TARGET, env.VARIANT)
+		config = self.ctx.get_config(tg)
 
 		out = base.make_node(['bin', platform, config]).path_from(self.base)
 
@@ -283,13 +394,14 @@ class vsnode_cs_target(msvs.vsnode_project):
 		g['TargetFrameworkVersion'] = 'v4.0'
 		g['TargetFrameworkProfile'] = os.linesep + '    '
 		g['FileAlignment'] = '512'
+		g['ResolveAssemblyReferenceIgnoreTargetFrameworkAttributeVersionMismatch'] = True
 
 		keyfile = tg.to_nodes(getattr(tg, 'keyfile', []))
 		if keyfile:
 			f = source_file('None', self, keyfile[0])
 			g['SignAssembly'] = True
 			g['AssemblyOriginatorKeyFile'] = f.name
-			self.source_files[f.node] = f
+			self.source_files[f.node.abspath()] = f
 
 		p = self.properties
 
@@ -304,8 +416,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 		p['WarningLevel'] = self.combine_flags('/warn:')
 		p['NoWarn'] = self.combine_flags('/nowarn:')
 		p['TreatWarningsAsErrors'] = '/warnaserror' in tg.env.CSFLAGS
-		p['DocumentationFile'] = getattr(tg, 'csdoc', tg.env.CSDOC) and out + os.sep + asm_name + '.xml'
-		p['AllowUnsafeBlocks'] = False
+		p['DocumentationFile'] = getattr(tg, 'csdoc', tg.env.CSDOC) and out + os.sep + asm_name + '.xml' or ''
+		p['AllowUnsafeBlocks'] = getattr(tg, 'unsafe', False)
 
 
 class idegen(msvs.msvs_generator):
@@ -320,13 +432,29 @@ class idegen(msvs.msvs_generator):
 		#self.csproj_in_tree = False
 		self.solution_name = self.env.APPNAME + '.sln'
 
-		if not getattr(self, 'vsnode_cs_target', None):
-			self.vsnode_cs_target = vsnode_cs_target
+		# Make monodevelop csproj
+		if (Utils.unversioned_sys_platform() != 'win32'):
+			msvs.PROJECT_TEMPLATE = MONO_PROJECT_TEMPLATE
+			msvs.vsnode_project.VS_GUID_VCPROJ = '2857B73E-F847-4B02-9238-064979017E93'
+			vsnode_target.get_waf = vsnode_target.get_waf_mono
+			self.project_extension = '.cproj'
+			self.get_platform = self.get_platform_mono
+			self.get_config = self.get_config_mono
 
-	# Defer filtering of features vs supported_features
-	# until we generate the project and then set the is_active member
-	def add_to_group(self, tgen, group=None):
-		BuildContext.base_add_to_group(self, tgen, group)
+		self.vsnode_cs_target = vsnode_cs_target
+		self.vsnode_target = vsnode_target
+
+	def get_config(self, tg):
+		return '%s_%s' % (tg.env.TARGET, tg.env.VARIANT)
+
+	def get_config_mono(self, tg):
+		return tg.bld.variant
+
+	def get_platform(self, env):
+		return env.SUBARCH.replace('x86', 'Win32')
+
+	def get_platform_mono(self, env):
+		return 'Win32'
 
 	def execute(self):
 		idegen.depth += 1
@@ -334,19 +462,57 @@ class idegen(msvs.msvs_generator):
 
 	def write_files(self):
 		if self.all_projects:
-			# Move up all the projects one level
-			remove = {}
-			for p in self.all_projects:
-				if hasattr(p, 'tg'):
-					remove.setdefault(p.parent)
-					p.parent = p.parent.parent
-
-			idegen.all_projs[self.variant] = [ p for p in self.all_projects if p not in remove ]
+			idegen.all_projs[self.variant] = self.all_projects
 
 		idegen.depth -= 1
 		if idegen.depth == 0:
 			self.all_projects = self.flatten_projects()
+
+			if Logs.verbose == 0:
+				sys.stderr.write('\n')
+
 			msvs.msvs_generator.write_files(self)
+
+	def collect_dirs(self):
+		"""
+		Create the folder structure in the Visual studio project view
+		"""
+		seen = {}
+		def make_parents(proj):
+			# look at a project, try to make a parent
+			if getattr(proj, 'parent', None):
+				# aliases already have parents
+				return
+			x = proj.iter_path
+			if x in seen:
+				proj.parent = seen[x]
+				return
+
+			# There is not vsnode_vsdir for x.
+			# So create a project representing the folder "x"
+			n = proj.parent = seen[x] = self.vsnode_vsdir(self, msvs.make_uuid(x.abspath()), x.name)
+			n.iter_path = x.parent
+			self.all_projects.append(n)
+
+			# recurse up to the project directory
+			if x.height() > self.srcnode.height() + 1:
+				make_parents(n)
+
+		for p in self.all_projects[:]: # iterate over a copy of all projects
+			if not getattr(p, 'tg', None):
+				# but only projects that have a task generator
+				continue
+
+			# make a folder for each task generator
+			path = p.tg.path.parent
+			ide_path = getattr(p.tg, 'ide_path', '.')
+			if os.path.isabs(ide_path):
+				p.iter_path = self.path.make_node(ide_path)
+			else:
+				p.iter_path = path.make_node(ide_path)
+
+			if p.iter_path.height() > self.srcnode.height():
+				make_parents(p)
 
 	def flatten_projects(self):
 		ret = OrderedDict()
@@ -367,20 +533,57 @@ class idegen(msvs.msvs_generator):
 				main = ret[p.uuid]
 
 				env = p.tg.env
+				config = self.get_config(p.tg)
 
-				prop = msvs.build_property()
-				prop.configuration = '%s_%s' % (env.TARGET, env.VARIANT)
-				prop.platform = p.properties['PlatformTarget']
-				prop.properties = p.properties
+				if isinstance(p, vsnode_cs_target):
+					prop = msvs.build_property()
+					prop.platform_tgt = p.properties['PlatformTarget']
+					# Solution needs 'Any CPU' not 'AnyCPU'
+					prop.platform = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
+					prop.platform_sln = prop.platform
+					prop.properties = p.properties
+					prop.sources = []
 
+					if main != p:
+						cur_src = set( main.source_files.iterkeys())
+						new_src = set(p.source_files.iterkeys())
+
+						in_both = new_src & cur_src
+						from_old = cur_src.difference(in_both)
+						from_new = new_src.difference(in_both)
+
+						for item in from_old:
+							# Item's in from_old need to be removed from source_list
+							# and tracked per variant
+							main.cond_source = True
+							rec = main.source_files.pop(item)
+							for other_prop in main.build_properties:
+								other_prop.sources.append(rec)
+
+						for item in from_new:
+							# Item's in from_new need to be tracked per variant
+							main.cond_source = True
+							prop.sources.append(p.source_files[item])
+
+
+				else:
+					prop = p.build_properties[0]
+					prop.platform_tgt = env.CSPLATFORM
+					prop.platform = self.get_platform(env)
+					prop.platform_sln = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
+					p.build_properties = []
+
+				prop.configuration = config
+				prop.variant = k
+
+				platforms.setdefault(prop.platform_sln)
 				configs.setdefault(prop.configuration)
-				platforms.setdefault(prop.platform)
 
 				main.build_properties.append(prop)
 
 		self.configurations = configs.keys()
 		self.platforms = platforms.keys()
-		
+
 		return ret.values()
 
 	def add_aliases(self):
@@ -395,13 +598,56 @@ class idegen(msvs.msvs_generator):
 				if not isinstance(tg, TaskGen.task_gen):
 					continue
 
-				# TODO: Look for c/c++ link_task and add vcxproj
+				if not hasattr(tg, 'msvs_includes'):
+					tg.msvs_includes = tg.to_list(getattr(tg, 'includes', [])) + tg.to_list(getattr(tg, 'export_includes', []))
 
 				tg.post()
-				if not getattr(tg, 'cs_task', None):
+
+				if 'fake_lib' in getattr(tg, 'features', ''):
+					continue
+				elif hasattr(tg, 'link_task'):
+					p = self.vsnode_target(self, tg)
+				elif hasattr(tg, 'cs_task'):
+					p = self.vsnode_cs_target(self, tg)
+				else:
 					continue
 
-				p = self.vsnode_cs_target(self, tg)
 				p.collect_source() # delegate this processing
 				p.collect_properties()
 				self.all_projects.append(p)
+
+				if Logs.verbose == 0:
+					sys.stderr.write('.')
+					sys.stderr.flush()
+
+def options(ctx):
+	"""
+	If the msvs option is used, try to detect if the build is made from visual studio
+	"""
+	ctx.add_option('--execsolution', action='store', help='when building with visual studio, use a build state file')
+
+	old = BuildContext.execute
+	def override_build_state(ctx):
+		def lock(rm, add):
+			uns = ctx.options.execsolution.replace('.sln', rm)
+			uns = ctx.root.make_node(uns)
+			try:
+				uns.delete()
+			except:
+				pass
+
+			uns = ctx.options.execsolution.replace('.sln', add)
+			uns = ctx.root.make_node(uns)
+			try:
+				uns.write('')
+			except:
+				pass
+
+		if ctx.options.execsolution:
+			ctx.launch_dir = Context.top_dir # force a build for the whole project (invalid cwd when called by visual studio)
+			lock('.lastbuildstate', '.unsuccessfulbuild')
+			old(ctx)
+			lock('.unsuccessfulbuild', '.lastbuildstate')
+		else:
+			old(ctx)
+	BuildContext.execute = override_build_state
