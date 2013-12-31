@@ -110,19 +110,19 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   </ItemGroup>
   ${endif}
 
-  ${if getattr(project, 'cond_source', False)}
-  <ItemGroup>
-    ${for p in project.build_properties}
+  ${for p in project.build_properties}
+  ${if p.sources}
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == '${p.configuration}|${p.platform_tgt}' ">
     ${for src in p.sources}
-    <${src.how} Include="${src.name}" Condition=" '$(Configuration)|$(Platform)' == '${p.configuration}|${p.platform_tgt}' "${if not src.attrs} />${else}>
+    <${src.how} Include="${src.name}" ${if not src.attrs} />${else}>
       ${for k,v in src.attrs.iteritems()}
       <${k}>${str(v)}</${k}>
       ${endfor}
     </${src.how}>${endif}
     ${endfor}
-    ${endfor}
   </ItemGroup>
   ${endif}
+  ${endfor}
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
