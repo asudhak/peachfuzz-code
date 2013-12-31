@@ -123,7 +123,6 @@ def configure(conf):
 		'cxxprogram',
 		'fake_lib',
 		'cs',
-		'test',
 		'debug',
 		'release',
 		'emit',

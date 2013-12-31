@@ -107,10 +107,16 @@ class utest(Task.Task):
 def configure(conf):
 	j = os.path.join
 
-	conf.env['NUNIT_VER'] = 'NUnit.Runners.2.6.3'
-	nunit_path = j(conf.get_peach_dir(), '3rdParty', conf.env['NUNIT_VER'], 'tools')
-	nunit_name = '64' in conf.env.SUBARCH and 'nunit-console' or 'nunit-console-x86'
-	conf.find_program([nunit_name], var='NUNIT', exts='.exe', path_list=[nunit_path])
+	try:
+		conf.env['NUNIT_VER'] = 'NUnit.Runners.2.6.3'
+		nunit_path = j(conf.get_peach_dir(), '3rdParty', conf.env['NUNIT_VER'], 'tools')
+		nunit_name = '64' in conf.env.SUBARCH and 'nunit-console' or 'nunit-console-x86'
+		conf.find_program([nunit_name], var='NUNIT', exts='.exe', path_list=[nunit_path])
+		conf.env.append_value('supported_features', [ 'test' ])
+	except Exception, e:
+		conf.env.append_value('missing_features', [ 'test' ])
+		if Logs.verbose:
+			Logs.warn('Unit test feature is not available: %s' % (e))
 
 def options(opt):
 	pass

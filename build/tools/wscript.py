@@ -26,7 +26,7 @@ DOCDIR = 'output\\win_x64_release\\doc'
 
 @conf
 def get_peach_dir(self):
-	subdir = getattr(Context.g_module, 'peach')
+	subdir = getattr(Context.g_module, 'peach', '.')
 	return self.path.find_dir(subdir).abspath()
 
 class MonoDocContext(InstallContext):
