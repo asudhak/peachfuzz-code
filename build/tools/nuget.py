@@ -42,6 +42,9 @@ def read_nuget(self, config, excl=None):
 	Parse nuget packages.config and run read_csslib on each line
 	"""
 
+	if not self.env.MCS:
+		return
+
 	src = self.path.find_resource(config)
 	if src:
 		handler = PackageHandler(self, excl)
