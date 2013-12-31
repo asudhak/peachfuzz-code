@@ -4,8 +4,9 @@ import os.path, re
 from optparse import OptionValueError
 from waflib.TaskGen import feature, after_method, before_method
 from waflib.Build import InstallContext
+from waflib.Configure import conf
 from waflib import Utils, Logs, Configure, Context, Options, Errors
-from tools import pkg, hooks
+from tools import pkg, hooks, nuget, test
 
 targets = [ 'win', 'linux', 'osx', 'doc' ]
 
@@ -23,14 +24,10 @@ DOCDIR = 'output\\win_x64_release\\doc'
 
 """
 
-class TestContext(InstallContext):
-	'''runs the unit tests'''
-
-	cmd = 'test'
-
-	def __init__(self, **kw):
-		super(TestContext, self).__init__(**kw)
-		self.is_test = True
+@conf
+def get_peach_dir(self):
+	subdir = getattr(Context.g_module, 'peach', '.')
+	return self.path.find_dir(subdir).abspath()
 
 class MonoDocContext(InstallContext):
 	'''create api docs for .NET classes'''
@@ -48,6 +45,7 @@ def store_version(option, opt, value, parser):
 
 def options(opt):
 	opt.load('tools.idegen')
+	opt.load('tools.test')
 
 	opt.add_option('--variant',
 	               action = 'store',

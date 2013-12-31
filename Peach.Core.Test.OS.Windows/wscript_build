@@ -12,13 +12,15 @@ deps = [
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
 	'Peach.Core.Test.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
 
 # Even though this should build via mono, this assembly causes mcs to segfault
 # so noly build on windows fore the time being...
 
 bld(
-	features = 'cs win test',
+	features = 'cs test',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.Core.Test.OS.Windows.dll',

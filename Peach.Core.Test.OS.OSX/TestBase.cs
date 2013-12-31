@@ -21,6 +21,10 @@ namespace Peach
 		[SetUp]
 		public void Initialize()
 		{
+			// NUnit [Platform] attribute doesn't differentiate MacOSX/Linux
+			if (Peach.Core.Platform.GetOS() != Peach.Core.Platform.OS.OSX)
+				Assert.Ignore("Only supported on MacOSX");
+
 			ColoredConsoleTarget consoleTarget = new ColoredConsoleTarget();
 			consoleTarget.Layout = "${date:format=HH\\:MM\\:ss} ${logger} ${message}";
 
@@ -40,8 +44,11 @@ namespace Peach
 		[TearDown]
 		public void TearDown()
 		{
-			si.Dispose();
-			si = null;
+			if (si != null)
+			{
+				si.Dispose();
+				si = null;
+			}
 		}
 	}
 }

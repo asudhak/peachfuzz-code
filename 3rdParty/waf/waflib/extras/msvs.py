@@ -248,12 +248,12 @@ Global
 		${for p in project.all_projects}
 			${if hasattr(p, 'source')}
 			${for b in p.build_properties}
-		{${p.uuid}}.${b.configuration}|${b.platform}.ActiveCfg = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.ActiveCfg = ${b.configuration}|${b.platform}
 			${if getattr(p, 'is_active', None)}
-		{${p.uuid}}.${b.configuration}|${b.platform}.Build.0 = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Build.0 = ${b.configuration}|${b.platform}
 			${endif}
 			${if getattr(p, 'is_deploy', None)}
-		{${p.uuid}}.${b.configuration}|${b.platform}.Deploy.0 = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Deploy.0 = ${b.configuration}|${b.platform}
 			${endif}
 			${endfor}
 			${endif}
@@ -554,6 +554,7 @@ class vsnode_project(vsnode):
 
 				x.configuration = c
 				x.platform = p
+				x.platform_sln = p
 
 				x.preprocessor_definitions = ''
 				x.includes_search_path = ''

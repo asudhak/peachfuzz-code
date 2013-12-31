@@ -21,7 +21,6 @@ tools = [
 ]
 
 def prepare(conf):
-	root = conf.path.abspath()
 	env = conf.env
 	j = os.path.join
 
@@ -30,8 +29,7 @@ def prepare(conf):
 
 	env['PIN_VER'] = 'pin-2.13-61206-msvc10-windows'
 
-	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
-	pin = j(pin_root, env['PIN_VER'])
+	pin = j(conf.get_peach_dir(), '3rdParty', 'pin', env['PIN_VER'])
 
 	env['EXTERNALS_x86'] = {
 		'pin' : {
@@ -113,8 +111,6 @@ def configure(conf):
 
 	env = conf.env
 
-	env['IS_MONO'] = 'False'
-	
 	env.append_value('supported_features', [
 		'win',
 		'c',
@@ -127,7 +123,6 @@ def configure(conf):
 		'cxxprogram',
 		'fake_lib',
 		'cs',
-		'test',
 		'debug',
 		'release',
 		'emit',

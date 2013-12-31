@@ -9,7 +9,7 @@
 		
 		Syntax:
 		
-		  peach.exe samples\CrashableServer.xml
+		  peach samples\CrashableServer.xml
 		
 		Output:
 		

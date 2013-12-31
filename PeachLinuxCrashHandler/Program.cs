@@ -156,7 +156,7 @@ namespace PeachLinuxCrashHandler
                     gdb.StandardInput.WriteLine("info registers");
                     gdb.WaitForInputIdle();
 
-                    /// CERT Exploitable ///////////////////////////////
+                    // CERT Exploitable ///////////////////////////////
                     
 					// http://www.mail-archive.com/crash-catcher@lists.fedorahosted.org/msg02371.html
 

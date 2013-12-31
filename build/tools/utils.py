@@ -26,13 +26,17 @@ def install_extras(self):
 		inst_to = hasattr(self, 'link_task') and getattr(self.link_task.__class__, 'inst_to', None)
 
 	if not inst_to:
-		if getattr(self, 'install', []):
+		if getattr(self, 'install_644', []) or getattr(self, 'install_755', []):
 			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, self.install))
 		return
 
-	extras = self.to_nodes(getattr(self, 'install', []))
+	extras = self.to_nodes(Utils.to_list(getattr(self, 'install_644', [])))
 	if extras:
 		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
+
+	extras = self.to_nodes(Utils.to_list(getattr(self, 'install_755', [])))
+	if extras:
+		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O755)
 
 @feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
@@ -45,11 +49,13 @@ def install_fake_lib(self):
 	# install 3rdParty libs into ${LIBDIR}
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
 
-	# install any .config files into ${LIBDIR}
+	# install any pdb or .config files into ${LIBDIR}
+
 	for lib in self.link_task.outputs:
-		config = lib.parent.find_resource(lib.name + '.config')
+		# only look for .config if we are mono - as they are the only ones that support this
+		config = self.env.CS_NAME == 'mono' and lib.parent.find_resource(lib.name + '.config')
 		if config:
-			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
+			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O644)
 
 		name = lib.name
 		ext='.pdb'
@@ -117,14 +123,17 @@ def cs_resource(self):
 	if 'exe' in self.cs_task.env.CSTYPE:
 		# if this is an exe, require app.config and install to ${BINDIR}
 		cfg = self.path.find_or_declare('app.config')
-	else:
-		# if this is an assembly, app.config is optional
+	elif self.env.CS_NAME == 'mono':
+		# if this is an assembly, app.config is optional and
+		# only supported by mono
 		cfg = self.path.find_resource('app.config')
+	else:
+		cfg = None
 
 	if cfg:
 		setattr(self, 'app_config', cfg)
 		inst_to = getattr(self, 'install_path', '${BINDIR}')
-		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O755)
+		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O644)
 
 @conf
 def clone_env(self, variant):

@@ -13,8 +13,8 @@ deps = [
 
 	'NLog.dll',
 	'SharpPcap.dll',
-	'ZeroMQ.dll',
-	'Ionic.Zip.Reduced.dll',
+	'PacketDotNet.dll',
+	'Ionic.Zip.dll',
 	
 	'IronPython.dll',
 	'IronRuby.dll',
@@ -29,21 +29,16 @@ deps = [
 	'Renci.SshNet.dll',
 	'Newtonsoft.Json.dll',
 	'SuperSocket.Common.dll',
-	'SuperSocket.Facility.dll',
 	'SuperSocket.SocketBase.dll',
 	'SuperWebSocket.dll',
-	'SuperSocket.SocketEngine.dll',
 	'log4net.dll',
 ]
-
-if bld.env['IS_MONO'] == 'True':
-	deps.append('Mono.Posix.dll')
 
 bld(
 	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	resource = 'peach.xsd xmltests.zip',
-	install = 'peach.xsd NLog.config.template',
+	install_644 = 'peach.xsd NLog.config.template',
 	name = 'Peach.Core.dll',
 )

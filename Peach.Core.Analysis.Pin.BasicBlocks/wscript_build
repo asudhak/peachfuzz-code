@@ -9,6 +9,7 @@ def make_bld(tgt, variant):
 		source = 'bblocks.cpp',
 		target=tgt,
 		env=clone,
+		ide_path='Peach.Core.Analysis.Pin.BasicBlocks',
 	)
 
 if bld.env.DEST_OS is 'win32':
