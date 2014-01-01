@@ -1,6 +1,7 @@
 import os
 import os.path
 import sys
+import re
 
 from collections import OrderedDict
 
@@ -9,6 +10,8 @@ from waflib.Build import BuildContext
 from waflib import Utils, TaskGen, Logs, Task, Context, Node, Options, Errors
 
 msvs.msvs_generator.cmd = 'msvs2010'
+
+form_re = re.compile('Windows Form Designer generated code')
 
 MONO_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -318,30 +321,35 @@ class vsnode_cs_target(msvs.vsnode_project):
 		for k,v in lst.iteritems():
 			n = v.node
 
-			if not n.name.endswith('.Designer.cs'):
+			if not n.name.lower().endswith('.designer.cs'):
 				continue
+
+			if form_re.search(n.read()):
+				subtype = 'Form'
+			else:
+				subtype = 'Component'
 
 			name = n.name[:-12]
 
 			cs = n.parent.find_resource(name + '.cs')
 			if cs: cs = lst.get(cs.abspath(), None)
-			resx = lst.get(n.parent.find_resource(name + '.resx'), None)
+			resx = n.parent.find_resource(name + '.resx')
 			if resx: resx = lst.get(resx.abspath(), None)
 			setting = n.parent.find_resource(name + '.settings')
 
 			if cs and resx:
 				# If cs & resx, 's' & 'resx' are dependent upon 'cs'
 				if Logs.verbose > 0:
-					print 'Designer: cs & resx - %s' % k
+					print 'Designer: cs & resx - %s %s' % (subtype, k)
 				v.attrs['DependentUpon'] = cs.node.name
-				cs.attrs['SubType'] = 'Form'
+				cs.attrs['SubType'] = subtype
 				resx.attrs['DependentUpon'] = cs.node.name
 			elif cs:
 				# If cs only, 's' is dependent upon 'cs'
 				if Logs.verbose > 0:
-					print 'Designer: cs - %s' % k
+					print 'Designer: cs - %s %s' % (subtype, k)
 				v.attrs['DependentUpon'] = cs.node.name
-				cs.attrs['SubType'] = 'Form'
+				cs.attrs['SubType'] = subtype
 			elif resx:
 				# If resx only, 's' is autogen
 				if Logs.verbose > 0:
