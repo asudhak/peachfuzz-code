@@ -141,16 +141,20 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 # Note, no newline at end of template file!
 
 class source_file(object):
-	def __init__(self, how, ctx, node):
+	def __init__(self, how, ctx, node, cwd=None):
 		self.how = how
 		self.node = node
 		self.attrs = OrderedDict()
 
-		proj_path = node.path_from(ctx.tg.path)
+		if not cwd:
+			cwd = ctx.tg.path
+
 		rel_path = node.path_from(ctx.base)
 
-		if not node.is_child_of(ctx.tg.path):
+		if not node.is_child_of(cwd):
 			proj_path = node.name
+		else:
+			proj_path = node.path_from(cwd)
 
 		self.name = rel_path
 
@@ -259,6 +263,25 @@ class vsnode_cs_target(msvs.vsnode_project):
 
 			self.project_refs.append(dep)
 
+	def collect_install(self, lst, attr):
+		val = getattr(self.tg, attr, [])
+
+		if isinstance(val, dict):
+			for cwd, items in val.iteritems():
+				self.collect_install2(lst, items, cwd)
+		else:
+			self.collect_install2(lst, val, self.tg.path)
+
+	def collect_install2(self, lst, items, path):
+		extras = self.tg.to_nodes(items, path=path)
+
+		for x in extras:
+			r = lst.get(x.abspath(), None)
+			if not r:
+				r = source_file('Content', self, x, path)
+			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
+			lst[x.abspath()] = r
+
 	def collect_source(self):
 		tg = self.tg
 		lst = self.source_files
@@ -280,15 +303,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 			lst[x.abspath()] = r
 
 		# Process installed files
-		srcs = []
-		srcs.extend(tg.to_nodes(getattr(tg, 'install_644', [])))
-		srcs.extend(tg.to_nodes(getattr(tg, 'install_755', [])))
-		for x in srcs:
-			r = lst.get(x.abspath(), None)
-			if not r:
-				r = source_file('Content', self, x)
-			r.attrs['CopyToOutputDirectory'] = 'PreserveNewest'
-			lst[x.abspath()] = r
+		self.collect_install(lst, 'install_644')
+		self.collect_install(lst, 'install_755')
 
 		# Add app.config
 		cfg = getattr(tg, 'app_config', None)
