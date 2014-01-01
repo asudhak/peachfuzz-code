@@ -25,18 +25,32 @@ def install_extras(self):
 	except AttributeError:
 		inst_to = hasattr(self, 'link_task') and getattr(self.link_task.__class__, 'inst_to', None)
 
-	if not inst_to:
-		if getattr(self, 'install_644', []) or getattr(self, 'install_755', []):
-			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, self.install))
-		return
+	# For the attributes install_644 and install_755
+	# The value can be a string: 'file1 file2 file3'
+	# An array (string || nodes): ['file1', self.find_resource('file2')]
+	# A dict of { cwd : string|array }
+	# Will install files to ${BINDIR} relative to cwd or self.path
 
-	extras = self.to_nodes(Utils.to_list(getattr(self, 'install_644', [])))
-	if extras:
-		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
+	do_install(self, inst_to, 'install_644', Utils.O644)
+	do_install(self, inst_to, 'install_755', Utils.O755)
 
-	extras = self.to_nodes(Utils.to_list(getattr(self, 'install_755', [])))
+def do_install(self, inst_to, attr, chmod):
+	val = getattr(self, attr, [])
+
+	if isinstance(val, dict):
+		for cwd,items in val.iteritems():
+			do_install2(self, inst_to, cwd, items, chmod)
+	else:
+		do_install2(self, inst_to, self.path, val, chmod)
+
+def do_install2(self, inst_to, cwd, items, chmod):
+	extras = self.to_nodes(Utils.to_list(items), path=cwd)
+
 	if extras:
-		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O755)
+		if not inst_to:
+			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, extras))
+		else:
+			self.bld.install_files(inst_to, extras, env=self.env, cwd=cwd, relative_trick=True, chmod=chmod)
 
 @feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
