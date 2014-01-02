@@ -442,23 +442,23 @@ class vsnode_cs_target(msvs.vsnode_project):
 		p['DocumentationFile'] = getattr(tg, 'csdoc', tg.env.CSDOC) and out + os.sep + asm_name + '.xml' or ''
 		p['AllowUnsafeBlocks'] = getattr(tg, 'unsafe', False)
 
-		# Add ide_inst task generator outputs as post build copy
+		# Add ide_use task generator outputs as post build copy
 		# Using abspath since macros like $(ProjectDir) don't seem to work
 
-		ide_inst = []
-		names = names = tg.to_list(getattr(tg, 'ide_inst', []))
+		ide_use = []
+		names = names = tg.to_list(getattr(tg, 'ide_use', []))
 		for x in names:
 			y = tg.bld.get_tgen_by_name(x)
 			y.post()
 			tsk = getattr(y, 'link_task', None)
 			if not tsk:
-				self.bld.fatal('cs task has no link task for ide_inst %r' % self)
+				self.bld.fatal('cs task has no link task for ide_use %r' % self)
 
 			src = y.link_task.outputs[0]
 			dst = out_node.make_node(src.name)
-			ide_inst.append((src, dst))
+			ide_use.append((src, dst))
 
-		(inst_cmd, inst_args) = self.ctx.get_ide_inst(ide_inst)
+		(inst_cmd, inst_args) = self.ctx.get_ide_use(ide_use)
 		if inst_args:
 			p[inst_cmd] = inst_args
 
@@ -484,7 +484,7 @@ class idegen(msvs.msvs_generator):
 			self.project_extension = '.cproj'
 			self.get_platform = self.get_platform_mono
 			self.get_config = self.get_config_mono
-			self.get_ide_inst = self.get_ide_inst_mono
+			self.get_ide_use = self.get_ide_use_mono
 			idegen.copy_cmd = 'cp'
 
 		self.vsnode_cs_target = vsnode_cs_target
@@ -502,13 +502,13 @@ class idegen(msvs.msvs_generator):
 	def get_platform_mono(self, env):
 		return 'Win32'
 
-	def get_ide_inst(self, items):
+	def get_ide_use(self, items):
 		args = []
 		for (src, dst) in items:
 			args.append('copy "%s" "%s"' % (src.abspath(), dst.abspath()))
 		return ('PostBuildEvent', os.linesep.join(args))
 
-	def get_ide_inst_mono(self, items):
+	def get_ide_use_mono(self, items):
         	# <Command type="AfterBuild" command="cp &quot;foo bar&quot; &quot;bax quux&quot;" />
 		args = []
 		for (src, dst) in items:
