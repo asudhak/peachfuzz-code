@@ -9,7 +9,8 @@ from waflib.extras import msvs
 from waflib.Build import BuildContext
 from waflib import Utils, TaskGen, Logs, Task, Context, Node, Options, Errors
 
-msvs.msvs_generator.cmd = 'msvs2010'
+delattr(msvs.msvs_generator, 'cmd')
+delattr(msvs.msvs_2008_generator, 'cmd')
 
 form_re = re.compile('Windows Form Designer generated code')
 
@@ -468,6 +469,7 @@ class idegen(msvs.msvs_generator):
 	is_idegen = True
 	depth = 0
 	copy_cmd = 'copy'
+	cmd = 'msvs2010'
 
 	def init(self):
 		msvs.msvs_generator.init(self)
