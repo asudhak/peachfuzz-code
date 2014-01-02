@@ -59,6 +59,10 @@ MONO_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 
 CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  ${if getattr(project, 'csproj_imports', None)}
+  ${project.csproj_imports}
+  ${endif}
+
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">${project.build_properties[0].configuration}</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">${project.build_properties[0].platform_tgt}</Platform>
@@ -169,6 +173,7 @@ class vsnode_target(msvs.vsnode_target):
 	def __init__(self, ctx, tg):
 		msvs.vsnode_target.__init__(self, ctx, tg)
 		self.proj_configs = OrderedDict() # Variant -> build_property
+		self.platform_toolset = getattr(ctx, 'platform_toolset', None)
 
 	def collect_properties(self):
 		msvs.vsnode_target.collect_properties(self)
@@ -193,7 +198,6 @@ class vsnode_target(msvs.vsnode_target):
 		(waf, opt) = msvs.vsnode_target.get_build_params(self, props)
 		opt += " --variant=%s" % props.variant
 		return (waf, opt)
-
 
 class vsnode_cs_target(msvs.vsnode_project):
 	VS_GUID_CSPROJ = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
@@ -463,6 +467,11 @@ class vsnode_cs_target(msvs.vsnode_project):
 		if inst_args:
 			p[inst_cmd] = inst_args
 
+class vsnode_cs_target2012(vsnode_cs_target):
+	def __init__(self, ctx, tg):
+		vsnode_cs_target.__init__(self, ctx, tg)
+		self.csproj_imports = '''<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />'''
+
 class idegen(msvs.msvs_generator):
 	all_projs = OrderedDict()
 	sln_configs = OrderedDict() # Variant -> build_property
@@ -511,7 +520,6 @@ class idegen(msvs.msvs_generator):
 		return ('PostBuildEvent', os.linesep.join(args))
 
 	def get_ide_use_mono(self, items):
-        	# <Command type="AfterBuild" command="cp &quot;foo bar&quot; &quot;bax quux&quot;" />
 		args = []
 		for (src, dst) in items:
 			args.append('        <Command type="AfterBuild" command="cp &quot;%s&quot; &quot;%s&quot;" />' % (src.abspath(), dst.abspath()))
@@ -640,7 +648,7 @@ class idegen(msvs.msvs_generator):
 		# TODO: Might need to implement conditional project refereces
 		# as well as assembly references based on the selected
 		# configuration/platform
-		for k,v in idegen.all_projs.iteritems():
+		for _,v in idegen.all_projs.iteritems():
 			for p in v:
 				p.ctx = self
 				ret.setdefault(p.uuid, p)
@@ -696,9 +704,9 @@ class idegen(msvs.msvs_generator):
 					p.build_properties = []
 
 				prop.configuration = config
-				prop.variant = k
+				prop.variant = p.ctx.variant
 
-				main.proj_configs[k] = prop
+				main.proj_configs[prop.variant] = prop
 
 				if not any([ x for x in main.build_properties if x.platform == prop.platform and x.configuration == config ]):
 					main.build_properties.append(prop)
@@ -738,6 +746,18 @@ class idegen(msvs.msvs_generator):
 				if Logs.verbose == 0:
 					sys.stderr.write('.')
 					sys.stderr.flush()
+
+class idegen2012(idegen):
+	'''generates a visual studio 2012 solution'''
+	cmd = 'msvs2012'
+	fun = idegen.fun
+
+	def init(self):
+		idegen.init(self)
+		self.numver = '12.00'
+		self.vsver  = '2012'
+		self.platform_toolset = 'v110'
+		self.vsnode_cs_target = vsnode_cs_target2012
 
 def options(ctx):
 	"""
