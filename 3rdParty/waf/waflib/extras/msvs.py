@@ -252,10 +252,10 @@ Global
 			${if hasattr(p, 'source')}
 			${for b in p.build_properties}
 		{${p.uuid}}.${b.configuration}|${b.platform_sln}.ActiveCfg = ${b.configuration}|${b.platform}
-			${if getattr(p, 'is_active', None)}
+			${if getattr(b, 'is_active', getattr(p, 'is_active', None))}
 		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Build.0 = ${b.configuration}|${b.platform}
 			${endif}
-			${if getattr(p, 'is_deploy', None)}
+			${if getattr(b, 'is_deploy', getattr(p, 'is_deploy', None))}
 		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Deploy.0 = ${b.configuration}|${b.platform}
 			${endif}
 			${endfor}
