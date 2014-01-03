@@ -214,13 +214,6 @@ class vsnode_cs_target(msvs.vsnode_project):
 		self.name = namespace
 		self.tg = tg # task generators
 
-		features = set(Utils.to_list(getattr(tg, 'features', [])))
-		available = set(Utils.to_list(tg.env['supported_features']))
-		intersect = features & available
-
-		# Mark this project as active if the features are all supported
-		self.is_active = intersect == features
-
 		# Note: Must use ordered dict so order is preserved
 		self.globals      = OrderedDict()
 		self.properties   = OrderedDict()
@@ -473,8 +466,8 @@ class vsnode_cs_target2012(vsnode_cs_target):
 		self.csproj_imports = '''<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />'''
 
 class idegen(msvs.msvs_generator):
-	all_projs = OrderedDict()
-	sln_configs = OrderedDict() # Variant -> build_property
+	all_projs = {} # Variant -> all_projects
+	sln_configs = {} # Variant -> build_property
 	is_idegen = True
 	depth = 0
 	copy_cmd = 'copy'
@@ -631,25 +624,35 @@ class idegen(msvs.msvs_generator):
 
 			for k, v in sln_cfg.iteritems():
 				other = p.proj_configs.get(k, None)
+				prop = msvs.build_property()
+				prop.configuration = v.configuration
+				prop.platform_sln = v.platform_sln
+
 				if other:
-					prop = msvs.build_property()
-					prop.configuration = v.configuration
-					prop.platform_sln = v.platform_sln
 					prop.platform = other.platform
 					prop.is_active = True
-					props.append(prop)
-					#print '%s %s %s|%s -> %s|%s' % (p.name, k, prop.configuration, prop.platform_sln, prop.configuration, prop.platform)
+				else:
+					prop.platform = p.build_properties[0].platform
+					prop.is_active = False
+
+				#print '%s %s %s|%s -> %s|%s %s' % (p.name, k, prop.configuration, prop.platform_sln, prop.configuration, prop.platform, prop.is_active)
+
+				props.append(prop)
 
 			p.build_properties = props
 
 	def flatten_projects(self):
 		ret = OrderedDict()
 
+		# Sort the solution configs
+		idegen.sln_configs = OrderedDict(sorted(idegen.sln_configs.iteritems(), key=lambda x: '%s|%s' % (x[1].configuration, x[1].platform_sln)))
+
 		# TODO: Might need to implement conditional project refereces
 		# as well as assembly references based on the selected
 		# configuration/platform
-		for _,v in idegen.all_projs.iteritems():
-			for p in v:
+
+		for variant,_ in idegen.sln_configs.iteritems():
+			for p in idegen.all_projs[variant]:
 				p.ctx = self
 				ret.setdefault(p.uuid, p)
 
@@ -701,12 +704,11 @@ class idegen(msvs.msvs_generator):
 					prop.platform_tgt = env.CSPLATFORM
 					prop.platform = self.get_platform(env)
 					prop.platform_sln = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
-					p.build_properties = []
 
 				prop.configuration = config
-				prop.variant = p.ctx.variant
+				prop.variant = variant
 
-				main.proj_configs[prop.variant] = prop
+				main.proj_configs[variant] = prop
 
 				if not any([ x for x in main.build_properties if x.platform == prop.platform and x.configuration == config ]):
 					main.build_properties.append(prop)
