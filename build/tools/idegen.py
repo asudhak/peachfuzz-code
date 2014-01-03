@@ -466,6 +466,8 @@ class vsnode_cs_target2012(vsnode_cs_target):
 		self.csproj_imports = '''<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />'''
 
 class idegen(msvs.msvs_generator):
+	'''generates a visual studio 2010 solution'''
+
 	all_projs = {} # Variant -> all_projects
 	sln_configs = {} # Variant -> build_property
 	is_idegen = True
