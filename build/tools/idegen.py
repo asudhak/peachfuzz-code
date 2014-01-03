@@ -177,7 +177,6 @@ class vsnode_target(msvs.vsnode_target):
 
 	def collect_properties(self):
 		msvs.vsnode_target.collect_properties(self)
-		self.is_active = True
 
 	def get_mono_key(self, node):
 		"""
@@ -213,7 +212,6 @@ class vsnode_cs_target(msvs.vsnode_project):
 		msvs.vsnode_project.__init__(self, ctx, node)
 		self.name = namespace
 		self.tg = tg # task generators
-		self.is_active = True
 
 		# Note: Must use ordered dict so order is preserved
 		self.globals      = OrderedDict()
@@ -711,6 +709,7 @@ class idegen(msvs.msvs_generator):
 
 				prop.configuration = config
 				prop.variant = variant
+				prop.is_active = True
 
 				main.proj_configs[variant] = prop
 
