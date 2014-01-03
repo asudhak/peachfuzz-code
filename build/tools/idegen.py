@@ -213,6 +213,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		msvs.vsnode_project.__init__(self, ctx, node)
 		self.name = namespace
 		self.tg = tg # task generators
+		self.is_active = True
 
 		# Note: Must use ordered dict so order is preserved
 		self.globals      = OrderedDict()
