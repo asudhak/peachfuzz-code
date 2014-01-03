@@ -149,6 +149,38 @@ def cs_resource(self):
 		inst_to = getattr(self, 'install_path', '${BINDIR}')
 		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O644)
 
+target_framework_template = '''using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=${TARGET_FRAMEWORK}", FrameworkDisplayName = "${TARGET_FRAMEWORK_NAME}")]
+'''
+
+@feature('cs')
+@before_method('apply_cs')
+def apply_target_framework(self):
+	if self.bld.is_idegen:
+		return
+
+	# Add TargetFrameworkAttribute to the assembly
+	self.env.EMIT_SOURCE = Utils.subst_vars(target_framework_template, self.env)
+	name = '.NETFramework,Version=%s.AssemblyAttributes.cs' % self.env.TARGET_FRAMEWORK
+	target = self.path.find_or_declare(name)
+	tsk = self.create_task('emit', None, [ target ])
+	self.source = self.to_nodes(self.source) + tsk.outputs
+
+	# For any use entries that can't be resolved to a task generator
+	# assume they are system reference assemblies and add them to the
+	# ASSEMBLIES variable so they get full path linkage automatically added
+	filtered = []
+	names = self.to_list(getattr(self, 'use', []))
+	get = self.bld.get_tgen_by_name
+	for x in names:
+		try:
+			y = get(x)
+			filtered.append(x)
+		except Errors.WafError:
+			self.env.append_value('ASSEMBLIES', x)
+	self.use = filtered
+
 @conf
 def clone_env(self, variant):
 	env = self.all_envs.get(variant, None)

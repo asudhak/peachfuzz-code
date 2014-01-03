@@ -98,18 +98,25 @@ def prepare(conf):
 	# This is lame, the resgen that vcvars for x64 finds is the .net framework 3.5 version.
 	# The .net 4 version is in the x86 search path.
 	if env.SUBARCH == 'x64':
+		env['MCS'] = getattr(conf.all_envs.get('win_x86'), 'MCS', None)
 		env['RESGEN'] = getattr(conf.all_envs.get('win_x86'), 'RESGEN', None)
 
-	windir = os.getenv('WINDIR')
-	env['MCS_x86'] = os.path.join(windir, 'Microsoft.NET', 'Framework', 'v4.0.30319', 'csc.exe')
-	env['MCS_x64'] = os.path.join(windir, 'Microsoft.NET', 'Framework64', 'v4.0.30319', 'csc.exe')
-	env['MCS'] = env['MCS_%s' % env.SUBARCH]
+	pfiles = os.getenv('PROGRAMFILES(X86)', os.getenv('PROGRAMFILES'))
+	env['TARGET_FRAMEWORK'] = 'v4.0'
+	env['TARGET_FRAMEWORK_NAME'] = '.NET Framework 4'
+	env['REFERENCE_ASSEMBLIES'] = j(pfiles, 'Reference Assemblies', 'Microsoft', 'Framework', '.NETFramework', '${TARGET_FRAMEWORK}')
 
 def configure(conf):
 	conf.ensure_version('CXX', ['16.00.40219.01', '17.00.50727.1'])
-	conf.ensure_version('MCS', '4.0.30319.1')
 
 	env = conf.env
+
+	# Ensure reference assembly folder exists
+	if not os.path.isdir(env.REFERENCE_ASSEMBLIES):
+		raise Errors.WafError("Could locate .NET Framework %s reference assemblies in: %s" % (env.TARGET_FRAMEWORK, env.REFERENCE_ASSEMBLIES))
+
+	# Make sure all ASSEMBLY entries are fully pathed
+	env.ASS_ST = '/reference:%s%s%%s' % (env.REFERENCE_ASSEMBLIES, os.sep)
 
 	env.append_value('supported_features', [
 		'win',
@@ -171,7 +178,7 @@ def configure(conf):
 		'/define:PEACH',
 		'/errorreport:prompt',
 		'/warnaserror',
-		'/nowarn:1591' # Missing XML comment for publicly visible type
+		'/nowarn:1591', # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [

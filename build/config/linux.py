@@ -68,6 +68,9 @@ def prepare(conf):
 		},
 	}
 
+	env['TARGET_FRAMEWORK'] = 'v4.0'
+	env['TARGET_FRAMEWORK_NAME'] = '.NET Framework 4'
+
 	env.append_value('supported_features', [
 		'linux',
 		'c',
@@ -95,7 +98,7 @@ def configure(conf):
 		'/warn:4',
 		'/define:PEACH,UNIX,MONO',
 		'/warnaserror',
-		'/nowarn:1591' # Missing XML comment for publicly visible type
+		'/nowarn:1591', # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [

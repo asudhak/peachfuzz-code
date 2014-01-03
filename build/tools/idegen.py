@@ -412,7 +412,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		g['AppDesignerFolder'] = 'Properties'
 		g['RootNamespace'] = self.name
 		g['AssemblyName'] = asm_name
-		g['TargetFrameworkVersion'] = 'v4.0'
+		g['TargetFrameworkVersion'] = tg.env.TARGET_FRAMEWORK
 		g['TargetFrameworkProfile'] = os.linesep + '    '
 		g['FileAlignment'] = '512'
 		g['ResolveAssemblyReferenceIgnoreTargetFrameworkAttributeVersionMismatch'] = True
