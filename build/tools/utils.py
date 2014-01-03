@@ -157,7 +157,7 @@ using System.Reflection;
 @feature('cs')
 @before_method('apply_cs')
 def apply_target_framework(self):
-	if self.bld.is_idegen:
+	if getattr(self.bld, 'is_idegen', False):
 		return
 
 	# Add TargetFrameworkAttribute to the assembly

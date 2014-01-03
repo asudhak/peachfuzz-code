@@ -104,7 +104,7 @@ def prepare(conf):
 	pfiles = os.getenv('PROGRAMFILES(X86)', os.getenv('PROGRAMFILES'))
 	env['TARGET_FRAMEWORK'] = 'v4.0'
 	env['TARGET_FRAMEWORK_NAME'] = '.NET Framework 4'
-	env['REFERENCE_ASSEMBLIES'] = j(pfiles, 'Reference Assemblies', 'Microsoft', 'Framework', '.NETFramework', '${TARGET_FRAMEWORK}')
+	env['REFERENCE_ASSEMBLIES'] = j(pfiles, 'Reference Assemblies', 'Microsoft', 'Framework', '.NETFramework', env['TARGET_FRAMEWORK'])
 
 def configure(conf):
 	conf.ensure_version('CXX', ['16.00.40219.01', '17.00.50727.1'])
