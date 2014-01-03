@@ -164,12 +164,13 @@ class mcs(Task.Task):
 		try:
 			tmp = None
 			if isinstance(cmd, list) and len(' '.join(cmd)) >= 8192:
-				program = cmd[0] #unquoted program name, otherwise exec_command will fail
+				self.cmdline = [ cmd[0] ] #unquoted program name, otherwise exec_command will fail
 				cmd = [self.quote_response_command(x) for x in cmd]
 				(fd, tmp) = tempfile.mkstemp()
 				os.write(fd, '\r\n'.join(i.replace('\\', '\\\\') for i in cmd[1:]).encode())
 				os.close(fd)
-				cmd = [program, '@' + tmp]
+				self.cmdline.append('@' + tmp)
+				cmd = self.cmdline
 			# no return here, that's on purpose
 			ret = self.generator.bld.exec_command(cmd, **kw)
 		finally:
@@ -182,7 +183,9 @@ class mcs(Task.Task):
 
 	def quote_response_command(self, flag):
 		# /noconfig is not allowed when using response files
+		# it needs to stay on the command line
 		if flag.lower() == '/noconfig':
+			self.cmdline.append(flag)
 			return ''
 
 		if flag.find(' ') > -1:
