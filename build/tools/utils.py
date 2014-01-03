@@ -170,7 +170,7 @@ def ensure_version(self, tool, ver_exp):
 	cmd = self.cmd_to_list(env[tool])
 	(out,err) = self.cmd_and_log(cmd + ['/help'], env=environ, output=Context.BOTH)
 	exe = os.path.split(cmd[0])[1].lower()
-	ver_re = re.compile('.*ersion (\d+\.\d+\.\d+\.\d+)')
+	ver_re = re.compile('.*ersion (\d+\.\d+\.\d+(\.\d+)?)')
 	m = ver_re.match(out)
 	if not m:
 		m = ver_re.match(err)
