@@ -256,12 +256,13 @@ class vsnode_cs_target(msvs.vsnode_project):
 				continue
 
 			base = self.base == tg.path and y.path or self.base
-			other = base.make_node(os.path.splitext(y.name)[0] + '.csproj')
+			name = os.path.splitext(getattr(y, 'namespace', y.name))[0]
+			other = base.make_node(name + '.csproj')
 			
 			dep = msvs.build_property()
 			dep.path = other.path_from(self.base)
 			dep.uuid = msvs.make_uuid(other.abspath())
-			dep.name = os.path.splitext(y.name)[0]
+			dep.name = name
 
 			self.project_refs.append(dep)
 
