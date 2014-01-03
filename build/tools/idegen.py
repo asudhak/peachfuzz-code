@@ -226,7 +226,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		final = OrderedDict()
 		for item in tg.env.CSFLAGS:
 			if item.startswith(flag):
-				opt = item[len(flag):].subst(',', ';')
+				opt = item[len(flag):].replace(',', ';')
 				for x in opt.split(';'):
 					final.setdefault(x)
 		return ';'.join(final.keys())
