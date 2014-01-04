@@ -238,6 +238,13 @@ SOLUTION_TEMPLATE = '''Microsoft Visual Studio Solution File, Format Version ${p
 # Visual Studio ${project.vsver}
 ${for p in project.all_projects}
 Project("{${p.ptype()}}") = "${p.name}", "${p.title}", "{${p.uuid}}"
+${if getattr(p, 'project_dependencies', [])}
+	ProjectSection(ProjectDependencies) = postProject
+		${for d in p.project_dependencies}
+		{${d}} = {${d}}
+		${endfor}
+	EndProjectSection
+${endif}
 EndProject${endfor}
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
