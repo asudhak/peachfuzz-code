@@ -2,6 +2,7 @@ import os
 import os.path
 import sys
 import re
+import random
 
 from collections import OrderedDict
 
@@ -69,7 +70,11 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     ${for k, v in project.globals.iteritems()}
+    ${if v is None}
+    <${k} />
+    ${else}
     <${k}>${str(v)}</${k}>
+    ${endif}
     ${endfor}
   </PropertyGroup>
 
@@ -132,7 +137,38 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   ${endif}
   ${endfor}
 
+  ${if getattr(project.tg, 'ide_aspnet', False)}
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  ${endif}
+
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  ${if getattr(project.tg, 'ide_aspnet', False)}
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>${project.aspnet_port}</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  ${endif}
 
   ${if any([x for x in project.build_properties if x.post_build])}
   <PropertyGroup>
@@ -306,6 +342,12 @@ class vsnode_cs_target(msvs.vsnode_project):
 			r = source_file('EmbeddedResource', self, x)
 			lst[x.abspath()] = r
 
+		# Process ide_content attribute
+		srcs = tg.to_nodes(getattr(tg, 'ide_content', []))
+		for x in srcs:
+			r = source_file('Content', self, x)
+			lst[x.abspath()] = r
+
 		# Process installed files
 		self.collect_install(lst, 'install_644')
 		self.collect_install(lst, 'install_755')
@@ -315,29 +357,63 @@ class vsnode_cs_target(msvs.vsnode_project):
 		if cfg:
 			lst[cfg.abspath()] = source_file('None', self, cfg)
 
+		# Check for Web.config
+		if getattr(tg, 'ide_aspnet', False):
+			cfg = tg.path.find_resource('Web.config')
+			if not cfg:
+				self.ctx.fatal('Could not find Web.config for ide_aspnet taskgen: %s', tg)
+			r = source_file('Content', self, cfg)
+			r.attrs['SubType'] = 'Designer'
+			lst[cfg.abspath()] = r
+
+			config = self.ctx.get_config(tg.bld, tg.env)
+
+			cfg_config = tg.path.find_resource('Web.%s.config' % config)
+			if cfg_config:
+				r = source_file('None', self, cfg_config)
+				r.attrs['DependentUpon'] = cfg.name
+				lst[cfg_config.abspath()] = r
+
 		settings = []
 
 		# Try and glue up Designer files
 		for k,v in lst.iteritems():
 			n = v.node
 
-			if not n.name.lower().endswith('.designer.cs'):
-				continue
+			lower = n.name.lower()
 
-			if form_re.search(n.read()):
-				subtype = 'Form'
-			else:
-				subtype = 'Component'
+			if lower.endswith('.asax'):
+				dep = lst.get(n.abspath() + '.cs', None)
+				if dep:
+					dep.attrs['DependentUpon'] = n.name
+			elif not lower.endswith('.designer.cs'):
+				continue
 
 			name = n.name[:-12]
 
+			aspx = name.endswith('.aspx') and n.parent.find_resource(name)
+			if aspx: aspx = lst.get(aspx.abspath(), None)
 			cs = n.parent.find_resource(name + '.cs')
 			if cs: cs = lst.get(cs.abspath(), None)
 			resx = n.parent.find_resource(name + '.resx')
 			if resx: resx = lst.get(resx.abspath(), None)
 			setting = n.parent.find_resource(name + '.settings')
 
-			if cs and resx:
+			if aspx:
+				subtype = 'ASPXCodeBehind'
+			elif form_re.search(n.read()):
+				subtype = 'Form'
+			else:
+				subtype = 'Component'
+
+			if aspx:
+				if Logs.verbose > 0:
+					print 'Designer: aspx - %s' % k
+				v.attrs['DependentUpon'] = aspx.node.name
+				if cs:
+					cs.attrs['DependentUpon'] = aspx.node.name
+					cs.attrs['SubType'] = subtype
+			elif cs and resx:
 				# If cs & resx, 's' & 'resx' are dependent upon 'cs'
 				if Logs.verbose > 0:
 					print 'Designer: cs & resx - %s %s' % (subtype, k)
@@ -399,10 +475,16 @@ class vsnode_cs_target(msvs.vsnode_project):
 		config = self.ctx.get_config(tg.bld, tg.env)
 
 		out_node = base.make_node(['bin', platform, config])
-		out = out_node.path_from(self.base)
+
+		if getattr(tg, 'ide_aspnet', False):
+			out = 'bin'
+		else:
+			out = out_node.path_from(self.base)
 
 		# Order matters!
 		g['ProjectGuid'] = '{%s}' % self.uuid
+		if getattr(tg, 'ide_aspnet', False):
+			g['ProjectTypeGuids'] = '{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}'
 		g['OutputType'] = getattr(tg, 'bintype', tg.gen.endswith('.dll') and 'library' or 'exe')
 		g['BaseIntermediateOutputPath'] = base.make_node('obj').path_from(self.base)
 
@@ -427,6 +509,16 @@ class vsnode_cs_target(msvs.vsnode_project):
 			g['SignAssembly'] = True
 			g['AssemblyOriginatorKeyFile'] = f.name
 			self.source_files[f.node.abspath()] = f
+
+		if getattr(tg, 'ide_aspnet', False):
+			g['UseIISExpress'] = 'true'
+			g['IISExpressSSLPort'] = None
+			g['IISExpressAnonymousAuthentication'] = None
+			g['IISExpressWindowsAuthentication'] = None
+			g['IISExpressUseClassicPipelineMode'] = None
+			# Keep ports random but deterministic, use uuid as seed
+			random.seed(str(self.uuid))
+			self.aspnet_port = str(random.randint(60000, 65535))
 
 		p = self.properties
 
@@ -680,6 +772,10 @@ class idegen(msvs.msvs_generator):
 					prop.properties = p.properties
 					prop.sources = []
 					prop.post_build = getattr(p, 'post_build', None)
+
+					# Ensure all files are accounted for
+					if main != p:
+						main.source_files = OrderedDict(main.source_files.items() + p.source_files.items())
 
 					# MonoDevelop doesn't let us do conditions on a per
 					# source basis. Condition only works on PropertyGroup
