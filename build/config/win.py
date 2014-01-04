@@ -24,7 +24,7 @@ def prepare(conf):
 	env = conf.env
 	j = os.path.join
 
-	env['MSVC_VERSIONS'] = ['msvc 10.0', 'msvc 11.0', 'wsdk 7.1']
+	env['MSVC_VERSIONS'] = ['msvc 10.0', 'wsdk 7.1', 'msvc 11.0']
 	env['MSVC_TARGETS']  = 'x64' in env.SUBARCH and [ 'x64', 'x86_amd64' ] or [ 'x86' ]
 
 	env['PIN_VER'] = 'pin-2.13-61206-msvc10-windows'
@@ -107,7 +107,7 @@ def prepare(conf):
 	env['REFERENCE_ASSEMBLIES'] = j(pfiles, 'Reference Assemblies', 'Microsoft', 'Framework', '.NETFramework', env['TARGET_FRAMEWORK'])
 
 def configure(conf):
-	conf.ensure_version('CXX', ['16.00.40219.01', '17.00.50727.1'])
+	conf.ensure_version('CXX', ['16.00.40219.01', '17.00.61030'])
 
 	env = conf.env
 
