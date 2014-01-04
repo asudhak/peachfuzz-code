@@ -172,6 +172,7 @@ class source_file(object):
 class vsnode_target(msvs.vsnode_target):
 	def __init__(self, ctx, tg):
 		msvs.vsnode_target.__init__(self, ctx, tg)
+		tg.uuid = self.uuid
 		self.proj_configs = OrderedDict() # Variant -> build_property
 		self.platform_toolset = getattr(ctx, 'platform_toolset', None)
 
@@ -220,6 +221,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		self.source_files = OrderedDict() # Abspath -> Record
 		self.project_refs = [] # uuid
 		self.proj_configs = OrderedDict() # Variant -> build_property
+		self.project_dependencies = [] # List of UUID
 
 	def combine_flags(self, flag):
 		tg = self.tg
@@ -455,6 +457,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 			src = y.link_task.outputs[0]
 			dst = out_node.make_node(src.name)
 			ide_use.append((src, dst))
+			self.project_dependencies.append(y.uuid)
 
 		(inst_cmd, inst_args) = self.ctx.get_ide_use(ide_use)
 		if inst_args:
