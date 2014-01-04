@@ -417,7 +417,9 @@ class vsnode_cs_target(msvs.vsnode_project):
 		g['TargetFrameworkVersion'] = tg.env.TARGET_FRAMEWORK
 		g['TargetFrameworkProfile'] = os.linesep + '    '
 		g['FileAlignment'] = '512'
-		g['ResolveAssemblyReferenceIgnoreTargetFrameworkAttributeVersionMismatch'] = True
+
+		# Uncomment the following line to ignore framework mismatch errors
+		#g['ResolveAssemblyReferenceIgnoreTargetFrameworkAttributeVersionMismatch'] = True
 
 		keyfile = tg.to_nodes(getattr(tg, 'keyfile', []))
 		if keyfile:
