@@ -393,7 +393,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		base = getattr(self.ctx, 'projects_dir', None) or tg.path
 
 		env = tg.env
-		platform = getattr(tg, 'platform', 'AnyCPU')
+		platform = tg.env.CSPLATFORM
 		config = self.ctx.get_config(tg.bld, tg.env)
 
 		out_node = base.make_node(['bin', platform, config])
@@ -427,7 +427,7 @@ class vsnode_cs_target(msvs.vsnode_project):
 		p = self.properties
 
 		# Order matters!
-		p['PlatformTarget'] = platform
+		p['PlatformTarget'] = getattr(tg, 'platform', 'AnyCPU')
 		p['DebugSymbols'] = getattr(tg, 'csdebug', tg.env.CSDEBUG) and True or False
 		p['DebugType'] = getattr(tg, 'csdebug', tg.env.CSDEBUG)
 		p['Optimize'] = '/optimize+' in tg.env.CSFLAGS
@@ -668,7 +668,7 @@ class idegen(msvs.msvs_generator):
 
 				if isinstance(p, vsnode_cs_target):
 					prop = msvs.build_property()
-					prop.platform_tgt = p.properties['PlatformTarget']
+					prop.platform_tgt = p.tg.env.CSPLATFORM
 					# Solution needs 'Any CPU' not 'AnyCPU'
 					prop.platform = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
 					prop.platform_sln = prop.platform

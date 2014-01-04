@@ -99,7 +99,8 @@ def cs_helpers(self):
 		self.env.append_value('CSFLAGS', csflags)
 
 	# ensure the appropriate platform is being set on the command line
-	setattr(self, 'platform', self.env.CSPLATFORM)
+	if not getattr(self, 'platform', None):
+		setattr(self, 'platform', self.env.CSPLATFORM)
 
 	# ensure install_path is set
 	if not getattr(self, 'install_path', None):
