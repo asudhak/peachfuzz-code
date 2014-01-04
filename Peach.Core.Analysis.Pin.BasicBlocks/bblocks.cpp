@@ -38,6 +38,7 @@
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // Unreferenced formal parameter
+#pragma warning(disable: 4244) // Conversion has possible loss of data
 #pragma warning(disable: 4245) // Signed/unsigned mismatch
 #pragma warning(disable: 4512) // Assignment operator could not be generated
 #endif
