@@ -22,7 +22,7 @@ class PackageHandler(xml.sax.handler.ContentHandler):
 
 		pat = 'lib/*.dll lib/net/*.dll lib/%s/*.dll' % target
 
-		excl=self.excl.get(name, None)
+		excl=self.excl and self.excl.get(name, None) or None
 		if excl:
 			nodes = path.ant_glob(pat, excl=excl, ignorecase=True)
 		else:
