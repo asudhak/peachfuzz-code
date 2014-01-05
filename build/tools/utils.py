@@ -208,6 +208,12 @@ def clone_env(self, variant):
 	return copy
 
 @conf
+def read_all_csshlibs(self, subdir):
+	libs = self.path.find_dir(subdir).ant_glob('*.dll')
+	for x in libs:
+		self.read_csshlib(x.name, paths=[x.parent.path_from(self.path)])
+
+@conf
 def ensure_version(self, tool, ver_exp):
 	ver_exp = Utils.to_list(ver_exp)
 	env = self.env
