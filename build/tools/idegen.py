@@ -89,16 +89,32 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   ${if project.references}
   <ItemGroup>
     ${for k,v in project.references.iteritems()}
-    ${if v}
-    <Reference Include="${k}">
-      <HintPath>${v}</HintPath>
+    ${if v.path}
+    <Reference Include="${v.name}">
+      <HintPath>${v.path}</HintPath>
     </Reference>
     ${else}
-    <Reference Include="${k}" />
+    <Reference Include="${v.name}" />
     ${endif}
     ${endfor}
   </ItemGroup>
   ${endif}
+
+  ${for props in project.build_properties}
+  ${if getattr(props, 'references', [])}
+  <ItemGroup>
+    ${for v in props.references}
+    ${if v.path}
+    <Reference Include="${v.name}"  Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform_tgt}' ">
+      <HintPath>${v.path}</HintPath>
+    </Reference>
+    ${else}
+    <Reference Include="${v.name}"  Condition=" '$(Configuration)|$(Platform)' == '${props.configuration}|${props.platform_tgt}' " />
+    ${endif}
+    ${endfor}
+  </ItemGroup>
+  ${endif}
+  ${endfor}
 
   ${if project.project_refs}
   <ItemGroup>
@@ -124,9 +140,9 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
   ${endif}
 
   ${for p in project.build_properties}
-  ${if p.sources}
+  ${if getattr(p, 'source_files', [])}
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == '${p.configuration}|${p.platform_tgt}' ">
-    ${for src in p.sources}
+    ${for src in p.source_files}
     <${src.how} Include="${src.name}" ${if not src.attrs} />${else}>
       ${for k,v in src.attrs.iteritems()}
       <${k}>${str(v)}</${k}>
@@ -183,6 +199,16 @@ CS_PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="utf-8"?>
 </Project>'''
 
 # Note, no newline at end of template file!
+
+class reference(object):
+	def __init__(self, cwd, name, node):
+		self.name = name
+		if node:
+			self.path = node.path_from(cwd)
+			self.key = node.abspath()
+		else:
+			self.path = None
+			self.key = name
 
 class source_file(object):
 	def __init__(self, how, ctx, node, cwd=None):
@@ -280,7 +306,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 			try:
 				y = get(x)
 			except Errors.WafError:
-				self.references.setdefault(asm_name)
+				r = reference(self.base, asm_name, None)
+				self.references[r.key] = r
 				continue
 			y.post()
 
@@ -289,7 +316,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 				self.bld.fatal('cs task has no link task for use %r' % self)
 
 			if 'fake_lib' in y.features:
-				self.references[asm_name] = y.link_task.outputs[0].path_from(self.base)
+				r = reference(self.base, asm_name, y.link_task.outputs[0])
+				self.references[r.key] = r
 				continue
 
 			base = self.base == tg.path and y.path or self.base
@@ -738,6 +766,34 @@ class idegen(msvs.msvs_generator):
 
 			p.build_properties = props
 
+	def check_conditionals(self, left, right, attr, prop):
+		lhs = getattr(left, attr)
+		rhs = getattr(right, attr)
+
+		cur_keys = set(lhs.iterkeys())
+		new_keys = set(rhs.iterkeys())
+
+		in_both = new_keys & cur_keys
+		from_old = cur_keys.difference(in_both)
+		from_new = new_keys.difference(in_both)
+
+		for key in from_old:
+			# Item's in from_old need to be removed from source_list
+			# and tracked per variant
+			print 'FromOld: %s' % key
+			item = lhs.pop(key)
+			for other_prop in left.build_properties:
+				v = getattr(other_prop, attr, [])
+				v.append(item)
+				setattr(other_prop, attr, v)
+
+		for key in from_new:
+			# Item's in from_new need to be tracked per variant
+			print 'FromNew: %s' % key
+			v = getattr(prop, attr, [])
+			v.append(rhs[key])
+			setattr(prop, attr, v)
+
 	def flatten_projects(self):
 		ret = OrderedDict()
 
@@ -778,28 +834,8 @@ class idegen(msvs.msvs_generator):
 					# MonoDevelop doesn't let us do conditions on a per
 					# source basis. Condition only works on PropertyGroup
 					# and Reference elements.
-					'''
 					if main != p:
-						cur_src = set( main.source_files.iterkeys())
-						new_src = set(p.source_files.iterkeys())
-
-						in_both = new_src & cur_src
-						from_old = cur_src.difference(in_both)
-						from_new = new_src.difference(in_both)
-
-						for item in from_old:
-							# Item's in from_old need to be removed from source_list
-							# and tracked per variant
-							main.cond_source = True
-							rec = main.source_files.pop(item)
-							for other_prop in main.build_properties:
-								other_prop.sources.append(rec)
-
-						for item in from_new:
-							# Item's in from_new need to be tracked per variant
-							main.cond_source = True
-							prop.sources.append(p.source_files[item])
-					'''
+						self.check_conditionals(main, p, 'references', prop)
 				else:
 					prop = p.build_properties[0]
 					prop.platform_tgt = env.CSPLATFORM
