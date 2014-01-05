@@ -781,7 +781,6 @@ class idegen(msvs.msvs_generator):
 		for key in from_old:
 			# Item's in from_old need to be removed from source_list
 			# and tracked per variant
-			print 'FromOld: %s' % key
 			item = lhs.pop(key)
 			for other_prop in left.build_properties:
 				v = getattr(other_prop, attr, [])
@@ -790,7 +789,6 @@ class idegen(msvs.msvs_generator):
 
 		for key in from_new:
 			# Item's in from_new need to be tracked per variant
-			print 'FromNew: %s' % key
 			v = getattr(prop, attr, [])
 			v.append(rhs[key])
 			setattr(prop, attr, v)
