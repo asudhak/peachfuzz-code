@@ -409,10 +409,11 @@ class vsnode_cs_target(msvs.vsnode_project):
 			n = v.node
 
 			if not n.name.lower().endswith('.designer.cs'):
-				basename = os.path.splitext(n.abspath())[0]
-				dep = lst.get(basename, None)
-				if dep:
-					v.attrs['DependentUpon'] = dep.name
+				basename = os.path.splitext(n.abspath())
+				if basename[1]:
+					dep = lst.get(basename[0], None)
+					if dep:
+						v.attrs['DependentUpon'] = dep.name
 				continue
 
 			name = n.name[:-12]
