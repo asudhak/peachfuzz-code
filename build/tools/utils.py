@@ -64,6 +64,28 @@ def install_fake_lib(self):
 	if name is not 'fake_csshlib':
 		install_outputs(self)
 
+@feature('cs')
+@after_method('apply_cs')
+def install_content(self):
+	names = self.to_list(getattr(self, 'content', []))
+	get = self.bld.get_tgen_by_name
+	for x in names:
+		try:
+			y = get(x)
+			install_content2(y)
+		except Errors.WafError:
+			self.bld.fatal('cs task has no taskgen for content %r' % self)
+
+def install_content2(self):
+	if getattr(self, 'has_installed', False):
+		return
+
+	self.has_installed = True
+
+	content = getattr(self, 'content', [])
+	if content:
+		self.bld.install_files('${BINDIR}', content, cwd=self.path, relative_trick=True)
+
 def install_outputs(self):
 	if getattr(self, 'has_installed', False):
 		return

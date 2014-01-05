@@ -38,8 +38,7 @@ class PackageHandler(xml.sax.handler.ContentHandler):
 
 		content = path.find_dir('content')
 		if content:
-			extras = content.ant_glob('**/*')
-			self.ctx.install_files('${BINDIR}', extras, env=self.ctx.env, cwd=content, relative_trick=True)
+			self.ctx(name=name, path=content, content=content.ant_glob('**/*'))
 
 @conf
 def read_nuget(self, config, excl=None, mapping=None):

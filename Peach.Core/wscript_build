@@ -39,6 +39,7 @@ bld(
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	resource = 'peach.xsd xmltests.zip',
+	content = 'IronPython.StdLib',
 	install_644 = 'peach.xsd NLog.config.template',
 	name = 'Peach.Core.dll',
 )
