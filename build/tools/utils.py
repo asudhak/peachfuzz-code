@@ -60,6 +60,16 @@ def dummy_platform(self):
 @feature('fake_lib')
 @after_method('process_lib')
 def install_fake_lib(self):
+	name = self.link_task.__class__.__name__
+	if name is not 'fake_csshlib':
+		install_outputs(self)
+
+def install_outputs(self):
+	if getattr(self, 'has_installed', False):
+		return
+
+	self.has_installed = True
+
 	# install 3rdParty libs into ${LIBDIR}
 	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
 
@@ -177,6 +187,9 @@ def apply_target_framework(self):
 	for x in names:
 		try:
 			y = get(x)
+			if 'fake_lib' in getattr(y, 'features', ''):
+				y.post()
+				install_outputs(y)
 			filtered.append(x)
 		except Errors.WafError:
 			self.env.append_value('ASSEMBLIES', x)
