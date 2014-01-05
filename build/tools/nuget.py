@@ -3,9 +3,10 @@ import xml.sax.handler
 from waflib.Configure import conf
 
 class PackageHandler(xml.sax.handler.ContentHandler):
-	def __init__(self, ctx, excl):
+	def __init__(self, ctx, excl, mapping):
 		self.ctx = ctx
 		self.excl = excl
+		self.mapping = mapping
 
 	def startElement(self, name, attrs):
 		if name != 'package':
@@ -18,6 +19,10 @@ class PackageHandler(xml.sax.handler.ContentHandler):
 		path = ctx.path.find_dir(['%s.%s' % (name, version)])
 
 		if not path:
+			return
+
+		basename = self.ctx.env.BASENAME
+		if self.mapping and basename != self.mapping.get(name, basename):
 			return
 
 		pat = 'lib/*.dll lib/net/*.dll lib/%s/*.dll' % target
@@ -37,7 +42,7 @@ class PackageHandler(xml.sax.handler.ContentHandler):
 			self.ctx.install_files('${BINDIR}', extras, env=self.ctx.env, cwd=content, relative_trick=True)
 
 @conf
-def read_nuget(self, config, excl=None):
+def read_nuget(self, config, excl=None, mapping=None):
 	"""
 	Parse nuget packages.config and run read_csslib on each line
 	"""
@@ -47,7 +52,7 @@ def read_nuget(self, config, excl=None):
 
 	src = self.path.find_resource(config)
 	if src:
-		handler = PackageHandler(self, excl)
+		handler = PackageHandler(self, excl, mapping)
 		parser = xml.sax.make_parser()
 		parser.setContentHandler(handler)
 		parser.parse(src.abspath())
