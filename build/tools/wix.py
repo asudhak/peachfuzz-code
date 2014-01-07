@@ -32,21 +32,6 @@ def wxs_scan(task):
 	# Dep nodes, Unresolved names
 	return ([], [])
 
-def exec_command_wix(self, cmd, **kw):
-	if self.env['PATH']:
-		env = dict(self.env.env or os.environ)
-		env.update(PATH = ';'.join(self.env['PATH']))
-		kw['env'] = env
-		print env
-
-	bld = self.generator.bld
-	try:
-		if not kw.get('cwd', None):
-			kw['cwd'] = bld.cwd
-	except AttributeError:
-		bld.cwd = kw['cwd'] = bld.variant_dir
-	return bld.exec_command(cmd, **kw)
-
 class candle(PkgTask):
 	"Compile wxs files into object files"
 	#run_str = '${CC} ${ARCH_ST:ARCH} ${CFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CC_SRC_F}${SRC} ${CC_TGT_F}${TGT}'
@@ -77,8 +62,16 @@ def wxs_hook(self, node):
 @feature('msi')
 @after_method('process_source')
 def apply_msi(self):
+	flags = []
 	for ext in Utils.to_list(getattr(self, 'extensions', '')):
-		self.env.append_value('LIGHT_FLAGS', ['-ext', ext ])
+		flags.extend(['-ext', ext ])
+
+	bindir = self.bld.srcnode.find_dir(self.env.BINDIR)
+
+	flags.extend(['-b', 'BINDIR=%s' % bindir.abspath()])
+	flags.extend(['-b', 'SRCDIR=%s' % self.path.abspath()])
+
+	self.env.append_value('LIGHT_FLAGS', flags)
 
 @feature('msi')
 @after_method('process_source')
@@ -86,7 +79,6 @@ def apply_candle(self):
 	objs = [t.outputs[0] for t in getattr(self, 'compiled_tasks', [])]
 	self.link_task = self.create_task('light', objs)
 	ext_out = self.link_task.__class__.ext_out[0]
-	print self.target
 	target = self.path.find_or_declare(self.target + ext_out)
 	self.link_task.set_outputs(target)
 
