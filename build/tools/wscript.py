@@ -4,19 +4,30 @@ import os.path, re
 from optparse import OptionValueError
 from waflib.TaskGen import feature, after_method, before_method
 from waflib.Build import InstallContext
+from waflib.Configure import conf
 from waflib import Utils, Logs, Configure, Context, Options, Errors
-from tools import pkg, hooks
+from tools import pkg, hooks, nuget, test
 
 targets = [ 'win', 'linux', 'osx', 'doc' ]
 
-class TestContext(InstallContext):
-	'''runs the unit tests'''
+"""
+Variables:
 
-	cmd = 'test'
+BASENAME = 'win_x64'
+TARGET = 'win'
+SUBARCH = 'x64'
+VARIANT = 'release'
+PREFIX = 'output\\win_x64_release'
+BINDIR = 'output\\win_x64_release\\bin'
+LIBDIR = 'output\\win_x64_release\\bin'
+DOCDIR = 'output\\win_x64_release\\doc'
 
-	def __init__(self, **kw):
-		super(TestContext, self).__init__(**kw)
-		self.is_test = True
+"""
+
+@conf
+def get_peach_dir(self):
+	subdir = getattr(Context.g_module, 'peach', '.')
+	return self.path.find_dir(subdir).abspath()
 
 class MonoDocContext(InstallContext):
 	'''create api docs for .NET classes'''
@@ -33,6 +44,9 @@ def store_version(option, opt, value, parser):
 	setattr(parser.values, option.dest, value)
 
 def options(opt):
+	opt.load('tools.idegen')
+	opt.load('tools.test')
+
 	opt.add_option('--variant',
 	               action = 'store',
 	               default = None,
@@ -163,8 +177,11 @@ def build(bld):
 		bld.recurse(subdirs)
 		return
 
+	# Find the topmost directories that contain wscript_build, up to maxpath in depth
 	maxdepth = getattr(Context.g_module, 'maxdepth', 1)
-	subdirs = [ x.parent.nice_path() for x in bld.path.ant_glob('**/wscript_build', maxdepth=maxdepth ) ]
+	dirs = [ x.parent for x in bld.path.ant_glob('**/wscript_build', maxdepth=maxdepth ) ]
+	subdirs = [ x.nice_path() for x in dirs if x.parent not in dirs ]
+
 	what = Options.options.variant or ''
 	variants = what.split(',')
 

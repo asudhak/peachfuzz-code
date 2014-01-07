@@ -105,6 +105,9 @@ PROJECT_TEMPLATE = r'''<?xml version="1.0" encoding="UTF-8"?>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='${b.configuration}|${b.platform}'" Label="Configuration">
 		<ConfigurationType>Makefile</ConfigurationType>
 		<OutDir>${b.outdir}</OutDir>
+		${if getattr(project, 'platform_toolset', None)}
+		<PlatformToolset>${project.platform_toolset}</PlatformToolset>
+		${endif}
 	</PropertyGroup>
 	${endfor}
 
@@ -235,6 +238,13 @@ SOLUTION_TEMPLATE = '''Microsoft Visual Studio Solution File, Format Version ${p
 # Visual Studio ${project.vsver}
 ${for p in project.all_projects}
 Project("{${p.ptype()}}") = "${p.name}", "${p.title}", "{${p.uuid}}"
+${if getattr(p, 'project_dependencies', [])}
+	ProjectSection(ProjectDependencies) = postProject
+		${for d in p.project_dependencies}
+		{${d}} = {${d}}
+		${endfor}
+	EndProjectSection
+${endif}
 EndProject${endfor}
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -248,9 +258,12 @@ Global
 		${for p in project.all_projects}
 			${if hasattr(p, 'source')}
 			${for b in p.build_properties}
-		{${p.uuid}}.${b.configuration}|${b.platform}.ActiveCfg = ${b.configuration}|${b.platform}
-			${if getattr(p, 'is_active', None)}
-		{${p.uuid}}.${b.configuration}|${b.platform}.Build.0 = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.ActiveCfg = ${b.configuration}|${b.platform}
+			${if getattr(b, 'is_active', getattr(p, 'is_active', None))}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Build.0 = ${b.configuration}|${b.platform}
+			${endif}
+			${if getattr(b, 'is_deploy', getattr(p, 'is_deploy', None))}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Deploy.0 = ${b.configuration}|${b.platform}
 			${endif}
 			${endfor}
 			${endif}
@@ -551,6 +564,7 @@ class vsnode_project(vsnode):
 
 				x.configuration = c
 				x.platform = p
+				x.platform_sln = p
 
 				x.preprocessor_definitions = ''
 				x.includes_search_path = ''

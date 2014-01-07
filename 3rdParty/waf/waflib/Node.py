@@ -52,6 +52,7 @@ exclude_regs = '''
 **/{arch}
 **/_darcs
 **/_darcs/**
+**/.intlcache
 **/.DS_Store'''
 """
 Ant patterns for files and folders to exclude while doing the
@@ -184,10 +185,10 @@ class Node(object):
 	def delete(self):
 		"""Delete the file/folders, and remove this node from the tree. It becomes invalid after that"""
 		try:
-			if getattr(self, 'children', None):
+			if hasattr(self, 'children'):
 				shutil.rmtree(self.abspath())
 			else:
-				os.unlink(self.abspath())
+				os.remove(self.abspath())
 		except OSError:
 			pass
 		self.evict()

@@ -175,17 +175,25 @@ namespace Peach.Core.Runtime
 				}
 
 				// Enable debugging if asked for
+				// If configuration was already done by a .config file, don't change anything
 				if (config.debug > 0)
 				{
-					var nconfig = new LoggingConfiguration();
-					var consoleTarget = new ColoredConsoleTarget();
-					nconfig.AddTarget("console", consoleTarget);
-					consoleTarget.Layout = "${logger} ${message}";
+					if (LogManager.Configuration.LoggingRules.Count > 0)
+					{
+						Console.WriteLine("Logging was configured by a .config file, not changing the configuration.");
+					}
+					else
+					{
+						var nconfig = new LoggingConfiguration();
+						var consoleTarget = new ConsoleTarget();
+						nconfig.AddTarget("console", consoleTarget);
+						consoleTarget.Layout = "${logger} ${message}";
 
-					var rule = new LoggingRule("*", config.debug == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
-					nconfig.LoggingRules.Add(rule);
+						var rule = new LoggingRule("*", config.debug == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
+						nconfig.LoggingRules.Add(rule);
 
-					LogManager.Configuration = nconfig;
+						LogManager.Configuration = nconfig;
+					}
 				}
 
 				if (agent != null)

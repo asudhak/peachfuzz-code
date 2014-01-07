@@ -4,6 +4,7 @@
 top = '.'
 out = 'bin'
 
+import os
 from waflib import Utils
 
 def configure(conf):
@@ -35,6 +36,20 @@ def build(bld):
 	def fun(task, text):
 		return text
 	bld(features='subst', subst_fun=fun, source='wscript', target='wscript2')
+
+	def hlink(task):
+		try:
+			link = os.link
+		except NameError:
+			task.outputs[0].write(task.inputs[0].read('rb'), 'wb')
+		else:
+			for x, y in zip(task.inputs, task.outputs):
+				try:
+					os.remove(y.abspath())
+				except OSError:
+					pass
+				os.link(x.abspath(), y.abspath())
+	bld(features='subst', fun=hlink, source='wscript', target='wscript3')
 
 	# this one is just a reminder that simple files can be created (and a test too)
 	#bld(rule='echo "การไฟ่" > ${TGT}', target='foo.txt')

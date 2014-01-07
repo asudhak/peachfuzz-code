@@ -79,6 +79,7 @@ namespace Peach.Core.Agent.Channels
 
 		public AgentClientTcpRemoting(string name, string uri, string password)
 		{
+			this.name = name;
 		}
 
 		/// <summary>

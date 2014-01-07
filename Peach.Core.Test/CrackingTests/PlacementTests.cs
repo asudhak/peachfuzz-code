@@ -652,6 +652,52 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("DataPlaced", DataPlaced.name);
 			Assert.AreEqual(new byte[] { 0x42 }, DataPlaced.DefaultValue.BitsToArray());
 		}
+
+		[Test]
+		public void SizedPlaced()
+		{
+			// Ensure relations to elements inside a moved block are maintained when placement occurs
+			string xml = @"
+<Peach>
+  <DataModel name='repro'>
+
+    <Number size='8' name='size_of_element'>
+      <Relation type='size' of='element' />
+    </Number>
+
+    <Number size='8' name='offset_of_element_container'>
+      <Relation type='offset' of='element_placement' />
+    </Number>
+
+    <Block name='element_placement'>
+      <Placement before='tail_placement'/>
+      <String name='element' />
+    </Block>
+  </DataModel>
+
+
+  <DataModel name='file'>
+    <Block name='the_repro' ref='repro' />
+    <Block name='tail_placement' />
+  </DataModel>
+</Peach>
+";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var data = Bits.Fmt("{0:b8}{1:b8}{2}", 2, 5, "AAABBCCC");
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual(3, dom.dataModels[1].Count);
+			var blk = dom.dataModels[1][1] as Dom.Block;
+			Assert.AreEqual(1, blk.Count);
+			var str = blk[0] as Dom.String;
+			Assert.NotNull(str);
+			Assert.AreEqual("BB", (string)str.DefaultValue);
+		}
 	}
 }
 

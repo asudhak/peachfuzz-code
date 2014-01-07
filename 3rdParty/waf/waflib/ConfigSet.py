@@ -42,7 +42,7 @@ class ConfigSet(object):
 		Enable the *in* syntax::
 
 			if 'foo' in env:
-				print env['foo']
+				print(env['foo'])
 		"""
 		if key in self.table: return True
 		try: return self.parent.__contains__(key)
@@ -275,18 +275,20 @@ class ConfigSet(object):
 		except OSError:
 			pass
 
-		f = None
+		buf = []
+		merged_table = self.get_merged_dict()
+		keys = list(merged_table.keys())
+		keys.sort()
+
 		try:
-			f = open(filename, 'w')
-			merged_table = self.get_merged_dict()
-			keys = list(merged_table.keys())
-			keys.sort()
-			for k in keys:
-				if k != 'undo_stack':
-					f.write('%s = %r\n' % (k, merged_table[k]))
-		finally:
-			if f:
-				f.close()
+			fun = ascii
+		except NameError:
+			fun = repr
+
+		for k in keys:
+			if k != 'undo_stack':
+				buf.append('%s = %s\n' % (k, fun(merged_table[k])))
+		Utils.writef(filename, ''.join(buf))
 
 	def load(self, filename):
 		"""

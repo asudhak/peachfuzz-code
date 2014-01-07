@@ -3,16 +3,14 @@ from waflib import Utils
 
 name = 'Peach.exe'
 
-if bld.env.MCS and bld.env.DEST_OS != 'win32':
-	name = 'peach.exe'
-	bld.install_files('${BINDIR}', 'peach', chmod=Utils.O755)
-
-bld(
+app = bld(
 	features = 'cs',
-	use = 'NLog.dll SharpPcap.dll Peach.Core.dll System.dll System.Xml.dll',
+	use = 'NLog.dll SharpPcap.dll PacketDotNet.dll Peach.Core.dll System.dll System.Xml.dll',
 	source = bld.path.ant_glob('**/*.cs'),
-	name = name,
-	namespace = 'Peach',
+	name = 'Peach.exe',
 	ver_product = 'Peach Fuzzing Platfom',
-	install = bld.path.ant_glob('template.xml samples/*')
+	install_644 = bld.path.ant_glob('template.xml samples/*')
 )
+
+if bld.env.MCS and bld.env.DEST_OS != 'win32':
+	app.install_755 = 'peach'

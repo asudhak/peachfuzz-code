@@ -121,7 +121,7 @@ namespace Peach.Core.Dom
 
 			if (_mutatedValue == null)
 			{
-				var stream = new BitStreamList();
+				var stream = new BitStreamList() { Name = fullName };
 				foreach (var child in this)
 				{
 					var val = child.Value;

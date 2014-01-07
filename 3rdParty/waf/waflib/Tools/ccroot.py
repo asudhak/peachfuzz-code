@@ -7,7 +7,7 @@ Classes and methods shared by tools providing support for C-like language such
 as C/C++/D/Assembly/Go (this support module is almost never used alone).
 """
 
-import os
+import os, re
 from waflib import Task, Utils, Node, Errors
 from waflib.TaskGen import after_method, before_method, feature, taskgen_method, extension
 from waflib.Tools import c_aliases, c_preproc, c_config, c_osx, c_tests
@@ -146,11 +146,14 @@ class link_task(Task.Task):
 				pattern = '%s'
 			folder, name = os.path.split(target)
 
-			if self.__class__.__name__.find('shlib') > 0:
-				if self.env.DEST_BINFMT == 'pe' and getattr(self.generator, 'vnum', None):
+			if self.__class__.__name__.find('shlib') > 0 and getattr(self.generator, 'vnum', None):
+				nums = self.generator.vnum.split('.')
+				if self.env.DEST_BINFMT == 'pe':
 					# include the version in the dll file name,
 					# the import lib file name stays unversionned.
-					name = name + '-' + self.generator.vnum.split('.')[0]
+					name = name + '-' + nums[0]
+				elif self.env.DEST_OS == 'openbsd':
+					pattern = '%s.%s.%s' % (pattern, nums[0], nums[1])
 
 			tmp = folder + os.sep + pattern % name
 			target = self.generator.path.find_or_declare(tmp)
@@ -328,6 +331,10 @@ def process_use(self):
 		if getattr(y, 'export_includes', None):
 			self.includes.extend(y.to_incnodes(y.export_includes))
 
+		if getattr(y, 'export_defines', None):
+			self.env.append_value('DEFINES', self.to_list(y.export_defines))
+
+
 	# and finally, add the uselib variables (no recursion needed)
 	for x in names:
 		try:
@@ -457,6 +464,7 @@ def apply_implib(self):
 
 # ============ the code above must not know anything about vnum processing on unix platforms =========
 
+re_vnum = re.compile('^([1-9]\\d*|0)[.]([1-9]\\d*|0)[.]([1-9]\\d*|0)$')
 @feature('cshlib', 'cxxshlib', 'dshlib', 'fcshlib', 'vnum')
 @after_method('apply_link', 'propagate_uselib_vars')
 def apply_vnum(self):
@@ -475,6 +483,8 @@ def apply_vnum(self):
 		return
 
 	link = self.link_task
+	if not re_vnum.match(self.vnum):
+		raise Errors.WafError('Invalid version %r for %r' % (self.vnum, self))
 	nums = self.vnum.split('.')
 	node = link.outputs[0]
 
@@ -492,16 +502,23 @@ def apply_vnum(self):
 		self.env.append_value('LINKFLAGS', v.split())
 
 	# the following task is just to enable execution from the build dir :-/
-	self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
+
+	if self.env.DEST_OS != 'openbsd':
+		self.create_task('vnum', node, [node.parent.find_or_declare(name2), node.parent.find_or_declare(name3)])
 
 	if getattr(self, 'install_task', None):
 		self.install_task.hasrun = Task.SKIP_ME
 		bld = self.bld
 		path = self.install_task.dest
-		t1 = bld.install_as(path + os.sep + name3, node, env=self.env, chmod=self.link_task.chmod)
-		t2 = bld.symlink_as(path + os.sep + name2, name3)
-		t3 = bld.symlink_as(path + os.sep + libname, name3)
-		self.vnum_install_task = (t1, t2, t3)
+		if self.env.DEST_OS == 'openbsd':
+			libname = self.link_task.outputs[0].name
+			t1 = bld.install_as('%s%s%s' % (path, os.sep, libname), node, env=self.env, chmod=self.link_task.chmod)
+			self.vnum_install_task = (t1,)
+		else:
+			t1 = bld.install_as(path + os.sep + name3, node, env=self.env, chmod=self.link_task.chmod)
+			t2 = bld.symlink_as(path + os.sep + name2, name3)
+			t3 = bld.symlink_as(path + os.sep + libname, name3)
+			self.vnum_install_task = (t1, t2, t3)
 
 	if '-dynamiclib' in self.env['LINKFLAGS']:
 		# this requires after(propagate_uselib_vars)
@@ -561,7 +578,7 @@ class fake_stlib(stlink_task):
 		return Task.SKIP_ME
 
 @conf
-def read_shlib(self, name, paths=[]):
+def read_shlib(self, name, paths=[], export_includes=[], export_defines=[]):
 	"""
 	Read a system shared library, enabling its use as a local library. Will trigger a rebuild if the file changes::
 
@@ -569,14 +586,14 @@ def read_shlib(self, name, paths=[]):
 			bld.read_shlib('m')
 			bld.program(source='main.c', use='m')
 	"""
-	return self(name=name, features='fake_lib', lib_paths=paths, lib_type='shlib')
+	return self(name=name, features='fake_lib', lib_paths=paths, lib_type='shlib', export_includes=export_includes, export_defines=export_defines)
 
 @conf
-def read_stlib(self, name, paths=[]):
+def read_stlib(self, name, paths=[], export_includes=[], export_defines=[]):
 	"""
 	Read a system static library, enabling a use as a local library. Will trigger a rebuild if the file changes.
 	"""
-	return self(name=name, features='fake_lib', lib_paths=paths, lib_type='stlib')
+	return self(name=name, features='fake_lib', lib_paths=paths, lib_type='stlib', export_includes=export_includes, export_defines=export_defines)
 
 lib_patterns = {
 	'shlib' : ['lib%s.so', '%s.so', 'lib%s.dylib', 'lib%s.dll', '%s.dll'],

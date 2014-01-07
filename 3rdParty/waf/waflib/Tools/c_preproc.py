@@ -84,9 +84,7 @@ re_pragma_once = re.compile('^\s*once\s*', re.IGNORECASE)
 re_nl = re.compile('\\\\\r*\n', re.MULTILINE)
 """Match newlines"""
 
-re_cpp = re.compile(
-	r"""(/\*[^*]*\*+([^/*][^*]*\*+)*/)|//[^\n]*|("(\\.|[^"\\])*"|'(\\.|[^'\\])*'|.[^/"'\\]*)""",
-	re.MULTILINE)
+re_cpp = re.compile(r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"', re.DOTALL | re.MULTILINE )
 """Filter C/C++ comments"""
 
 trig_def = [('??'+a, b) for a, b in zip("=-/!'()<>", r'#~\|^[]{}')]
@@ -138,10 +136,10 @@ skipped   = 's'
 
 def repl(m):
 	"""Replace function used with :py:attr:`waflib.Tools.c_preproc.re_cpp`"""
-	s = m.group(1)
-	if s:
+	s = m.group(0)
+	if s.startswith('/'):
 		return ' '
-	return m.group(3) or ''
+	return s
 
 def filter_comments(filename):
 	"""
@@ -480,7 +478,7 @@ def reduce_tokens(lst, defs, ban=[]):
 							if one_param: args.append(one_param)
 							break
 						elif v2 == ',':
-							if not one_param: raise PreprocError("empty param in funcall %s" % p)
+							if not one_param: raise PreprocError("empty param in funcall %s" % v)
 							args.append(one_param)
 							one_param = []
 						else:
@@ -647,7 +645,11 @@ def extract_macro(txt):
 		return (name, [params, t[i+1:]])
 	else:
 		(p, v) = t[0]
-		return (v, [[], t[1:]])
+		if len(t) > 1:
+			return (v, [[], t[1:]])
+		else:
+			# empty define, assign an empty token
+			return (v, [[], [('T','')]])
 
 re_include = re.compile('^\s*(<(?P<a>.*)>|"(?P<b>.*)")')
 def extract_include(txt, defs):
@@ -853,7 +855,7 @@ class c_parser(object):
 				break
 			found = self.cached_find_resource(n, filename)
 
-		if found:
+		if found and not found in self.ban_includes:
 			# TODO the duplicates do not increase the no-op build times too much, but they may be worth removing
 			self.nodes.append(found)
 			if filename[-4:] != '.moc':
@@ -921,6 +923,7 @@ class c_parser(object):
 			bld.parse_cache = {}
 			self.parse_cache = bld.parse_cache
 
+		self.current_file = node
 		self.addlines(node)
 
 		# macros may be defined on the command-line, so they must be parsed as if they were part of the file
@@ -970,12 +973,11 @@ class c_parser(object):
 					else: state[-1] = accepted
 				elif token == 'include' or token == 'import':
 					(kind, inc) = extract_include(line, self.defs)
-					if inc in self.ban_includes:
-						continue
-					if token == 'import': self.ban_includes.add(inc)
 					if ve: debug('preproc: include found %s    (%s) ', inc, kind)
 					if kind == '"' or not strict_quotes:
-						self.tryfind(inc)
+						self.current_file = self.tryfind(inc)
+						if token == 'import':
+							self.ban_includes.add(self.current_file)
 				elif token == 'elif':
 					if state[-1] == accepted:
 						state[-1] = skipped
@@ -997,7 +999,7 @@ class c_parser(object):
 						#print "undef %s" % name
 				elif token == 'pragma':
 					if re_pragma_once.match(line.lower()):
-						self.ban_includes.add(self.curfile)
+						self.ban_includes.add(self.current_file)
 			except Exception as e:
 				if Logs.verbose:
 					debug('preproc: line parsing failed (%s): %s %s', e, line, Utils.ex_stack())

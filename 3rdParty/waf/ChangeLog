@@ -1,3 +1,55 @@
+NEW IN WAF 1.7.14
+-----------------
+* Fixes for Python 3.3 and 3.4
+* Extra tool for memory reduction some large builds
+* Fix for nasm trailing slashes #1379
+* Fix for eclipse project generators #1377
+* Qt5 tool
+* Handle empty defines when pasting tokens
+* Fix for syms.py on python3 #1361
+* Swig fixes
+* Doxygen recursive dependencies
+
+NEW IN WAF 1.7.13
+-----------------
+* Fix for library installation on OpenBSD #1355
+* Intel compiler detection fix when using Python3 #1356
+
+NEW IN WAF 1.7.12
+-----------------
+* Fix for systems without threading #1323
+* Fix for library installation on OpenBSD
+* Propagate the max_depth argument in ant_glob #1328
+* wsdk detection fix #1335
+
+NEW IN WAF 1.7.11
+-----------------
+* Node.delete remove empty folders #1278
+* Detection of 'convert' in parallel_debug #1300
+* Bibtopic support #1299
+* Safer encoding in ConfigSet dump files #1297
+* Missing Qt defines on Windows #1272
+* QtDesigner library detection #1315
+* Redundant 'check_dir' call causing random uninstall failures #1313
+* Append to moc flags instead of replacing #1317
+* Share moc tasks in the Qt processing #1318
+* Disable a source of unnecessary rebuilds in the Qt processing
+* Use LIB/INCLUDE environment variables in boost library detection on windows #1310
+* Reduce the amount of paths in the unit test execution #1319
+* Enabled export_defines/export_includes attribute on read_shlib/read_stlib
+
+NEW IN WAF 1.7.10
+-----------------
+* Enhancements in the LaTeX support #1248
+* Codelite plugin by Christian Klein
+* Validate the versioned library number #1180
+* New export_defines keyword for C/C++/Fortran libraries
+* Python config tests enhancements #1231 #1261
+* Enable the distribution of non-python data files #1265
+* Improved the boost configuration output #1266
+* Exclude intltoolcache from waf dist # 1267
+* Use Utils.readf/Utils.writef to prevent build cache loss on windows platforms
+
 NEW IN WAF 1.7.9
 ----------------
 * Improved the patch submitted in #1237 as it caused regressions

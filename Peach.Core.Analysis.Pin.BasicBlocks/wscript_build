@@ -9,17 +9,18 @@ def make_bld(tgt, variant):
 		source = 'bblocks.cpp',
 		target=tgt,
 		env=clone,
+		ide_path='Peach.Core.Analysis.Pin.BasicBlocks',
 	)
 
 if bld.env.DEST_OS is 'win32':
-	make_bld('bblocks32', 'win_x86_release')
+	make_bld('bblocks32', 'win_x86_%s' % bld.env.VARIANT)
 	if bld.env.SUBARCH is 'x64':
-		make_bld('bblocks64', 'win_x64_release')
+		make_bld('bblocks64', 'win_x64_%s' % bld.env.VARIANT)
 
 elif bld.env.DEST_OS is 'linux':
-	make_bld('bblocks32', 'linux_x86_release')
+	make_bld('bblocks32', 'linux_x86_%s' % bld.env.VARIANT)
 	if bld.env.SUBARCH is 'x86_64':
-		make_bld('bblocks64', 'linux_x86_64_release')
+		make_bld('bblocks64', 'linux_x86_64_%s' % bld.env.VARIANT)
 
 else:
 	make_bld('bblocks', bld.variant)

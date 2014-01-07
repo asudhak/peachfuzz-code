@@ -89,6 +89,7 @@ The first three tools in the following list may be used for detecting D compiler
 
 	tools/compiler_d
 	tools/dmd
+	tools/ldc2
 	tools/gdc
 	tools/d_config
 	tools/d

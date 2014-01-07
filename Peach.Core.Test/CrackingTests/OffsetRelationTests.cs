@@ -589,6 +589,69 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual("Payload", (string)dom.dataModels[0][1].DefaultValue);
 		}
 
+		[Test]
+		public void RelativeToDataModel()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<String length='4'/>
+		<Choice>
+		<Block>
+			<String length='4'>
+				<Relation type='offset' of='Data' relative='true' relativeTo='TheDataModel'/>
+			</String>
+			<String name='Data' length='4' />
+		</Block>
+		</Choice>
+		<String/>
+	</DataModel>
+
+	<DataModel name='DM2' ref='TheDataModel'/>
+
+</Peach>";
+
+			var data = Bits.Fmt("{0}", "abcd0010  dataend");
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			DataCracker cracker = new DataCracker();
+			cracker.CrackData(dom.dataModels[1], data);
+
+			Assert.AreEqual("abcd", (string)dom.dataModels[1][0].DefaultValue);
+			Assert.AreEqual("end", (string)dom.dataModels[1][2].DefaultValue);
+		}
+
+		[Test]
+		public void RelationInChoice()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Table'>
+		<Choice maxOccurs='10'>
+			<Block name='BASE'>
+				<Blob name='tag' length='4' value='BASE' token='true'/>
+				<Number name='Offset' size='32' signed='false' endian='big'>
+					<Relation type='offset' of='baseTableData' relative='true'/>
+				</Number>
+				<Number name='length' size='32' signed='false' endian='big'>
+					<Relation type='size' of='baseTableData'/>
+				</Number>
+				<Block name='baseTableData'>
+					<Placement after='OffsetTable'/>
+				</Block>
+			</Block>
+		</Choice>
+	</DataModel>
+</Peach>
+";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.NotNull(dom);
+		}
 	}
 }
 

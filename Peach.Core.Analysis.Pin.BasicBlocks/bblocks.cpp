@@ -31,19 +31,14 @@
 //  Code based on examples from PIN documentation.
 //
 
-#include <iostream>
-#include <fstream>
-#include <sstream>      // std::ostringstream
-#include <stdio.h>
-#include <stdarg.h>
-#include <set>
-#include <map>
-#include <memory>
+#define UNUSED_ARG(x) x;
 
 #if defined(_MSC_VER)
+#pragma warning(disable: 4127) // Conditional expression is constant
+
 #pragma warning(push)
 #pragma warning(disable: 4100) // Unreferenced formal parameter
-#pragma warning(disable: 4127) // Conditional expression is constant
+#pragma warning(disable: 4244) // Conversion has possible loss of data
 #pragma warning(disable: 4245) // Signed/unsigned mismatch
 #pragma warning(disable: 4512) // Assignment operator could not be generated
 #endif
@@ -54,48 +49,280 @@
 #pragma warning(pop)
 #endif
 
-using namespace std;
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
-// Trace file for new blocks
-static FILE* trace = NULL;
+#include "uthash.h"
 
-// Trace file for existing and new blocks
-static FILE* existing = NULL;
+#if 0
 
-// New basic blocks
-static set<ADDRINT> setKnownBlocks;
+extern "C"
+{
+	void __stdcall OutputDebugStringA(const char* lpOutputString);
+}
 
-// Existing known bblocks
-static set<string*> setExistingBlocks;
+#else
 
-// images to exclude from coverage
-static set<string*> excludedImages;
+void OutputDebugStringA(const char* str)
+{
+	UNUSED_ARG(str);
+}
 
-static pair<set<ADDRINT>::iterator,bool> ret;
+#endif
 
-// map of image name to low/high address
-static map<string*, pair<ADDRINT, ADDRINT> > imageList;
+#define DBG(x) do { if (KnobDebug) fileDbg.Dbg x; } while (0)
 
-// Do we have an existing bblocks trace?
-char haveExisting = FALSE;
+template <bool b>
+struct StaticAssert {};
 
-// Do we have an image exclude list?
-char haveExclude = FALSE;
+template <>
+struct StaticAssert<true>
+{
+	static void assert() {}
+};
 
-class Logger
+
+static std::string MakeFileName(const std::string& fullName)
+{
+#ifdef TARGET_WINDOWS
+	char sep = '\\';
+#else
+	char sep = '/';
+#endif
+	size_t idx = fullName.rfind(sep);
+	return fullName.substr(idx + 1);
+}
+
+class NonCopyable
+{
+protected:
+	NonCopyable() {}
+	~NonCopyable() {}
+
+private:
+	NonCopyable(const NonCopyable&);
+	NonCopyable operator=(const NonCopyable&);
+};
+
+class ImageRec;
+
+class ImageName : NonCopyable
 {
 public:
-	Logger()
+	typedef const std::string& key_type;
+
+	ImageName(const ImageRec* pImg);
+
+	const ImageRec*    record;
+	size_t             keylen;
+	const char*        key;
+	UT_hash_handle     hh;
+};
+
+class ImageRec : NonCopyable
+{
+private:
+
+public:
+	typedef size_t key_type;
+
+	ImageRec(IMG img)
+		: fullName(IMG_Name(img))
+		, fileName(MakeFileName(fullName))
+		, lowAddress(IMG_LowAddress(img))
+		, highAddress(IMG_HighAddress(img))
+		, excluded(false)
+		, conflict(NULL)
+		, key(IMG_Id(img))
 	{
-		m_log = fopen("bblocks.log", "a");
 	}
 
-	~Logger()
+	const std::string fullName;    // Full absolute path to file
+	const std::string fileName;    // Just the name of the file
+	const ADDRINT     lowAddress;
+	const ADDRINT     highAddress;
+	bool              excluded;
+	const ImageName*  conflict;
+
+	size_t            key;
+	UT_hash_handle    hh;
+};
+
+ImageName::ImageName(const ImageRec* pImg)
+	: record(pImg)
+	, keylen(pImg->fileName.size())
+	, key(pImg->fileName.c_str())
+{
+}
+
+class BlockRec : NonCopyable
+{
+private:
+	static std::string MakeTrace(const ImageRec& img, ADDRINT addr)
 	{
-		if (m_log)
+		if (img.excluded)
+			return "";
+
+		std::stringstream ss;
+		ss << img.fileName << ": " << (addr - img.lowAddress) << std::endl;
+		return ss.str();
+	}
+
+public:
+	typedef size_t key_type;
+
+	BlockRec(const ImageRec& img, ADDRINT addr)
+		: trace(MakeTrace(img, addr))
+		, fileName(img.fileName)
+		, countRun(0)
+		, countAdd(1)
+		, excluded(img.excluded)
+		, existing(false)
+		, key(addr)
+	{
+	}
+
+	const BlockRec* Next() const
+	{
+		return (const BlockRec*)hh.next;
+	}
+
+	const std::string  trace;    // Name of trace
+	const std::string& fileName; // Name of image address is part of
+	size_t             countRun; // Count of BlockExecuted()
+	size_t             countAdd; // Count of Trace()
+	bool               excluded;
+	bool               existing;
+	size_t             key;
+	UT_hash_handle     hh;
+};
+
+class StringRec : NonCopyable
+{
+public:
+	typedef const std::string key_type;
+
+	StringRec(const std::string& val)
+		: value(val)
+		, keylen(value.size())
+		, key(value.c_str())
+	{
+	}
+
+	const std::string value;
+	size_t            keylen;
+	const char*       key;
+	UT_hash_handle    hh;
+};
+
+template<typename TVal>
+class HashTable : NonCopyable
+{
+	typedef typename TVal::key_type TKey;
+
+public:
+	HashTable()
+		: table(NULL)
+	{
+	}
+
+	~HashTable()
+	{
+		TVal *cur, *tmp;
+
+		HASH_ITER(hh, table, cur, tmp)
 		{
-			fclose(m_log);
-			m_log = NULL;
+			HASH_DEL(table, cur);
+			delete tmp;
+		}
+	}
+
+	TVal* Find(const TKey& key)
+	{
+		return FindImpl(key);
+	}
+
+	void Add(TVal* value)
+	{
+		AddImpl(value->key, value);
+	}
+
+	size_t Count() const
+	{
+		return HASH_COUNT(table);
+	}
+
+	const TVal* Head() const
+	{
+		return table;
+	}
+
+private:
+	TVal* FindImpl(size_t key)
+	{
+		TVal* value;
+		HASH_FIND_INT(table, &key, value);
+		return value;
+	}
+
+	TVal* FindImpl(const std::string& key)
+	{
+		TVal* value;
+		const char* str = key.c_str();
+		size_t strlen = key.size();
+		HASH_FIND(hh, table, str, (unsigned)strlen, value);
+		return value;
+	}
+
+	void AddImpl(size_t, TVal* value)
+	{
+		HASH_ADD_INT(table, key, value);
+	}
+
+	void AddImpl(const std::string&, TVal* value)
+	{
+		HASH_ADD_KEYPTR(hh, table, value->key, (unsigned)value->keylen, value);
+	}
+
+	TVal*  table;
+};
+
+struct File : NonCopyable
+{
+public:
+	File()
+		: m_pFile(NULL)
+	{
+	}
+
+	~File()
+	{
+		Close();
+	}
+
+	void Open(const std::string& name, const std::string& mode)
+	{
+		Close();
+
+		m_pFile = fopen(name.c_str(), mode.c_str());
+	}
+
+	void Close()
+	{
+		if (m_pFile)
+		{
+			fclose(m_pFile);
+			m_pFile = NULL;
+		}
+	}
+
+	void Write(const std::string& value)
+	{
+		if (m_pFile)
+		{
+			fwrite(value.c_str(), 1, value.size(), m_pFile);
 		}
 	}
 
@@ -104,202 +331,292 @@ public:
 		va_list args;
 		va_start(args, fmt);
 
-		if (m_log)
+		if (m_pFile)
 		{
-			vfprintf(m_log, fmt, args);
-			fflush(m_log);
+			vfprintf(m_pFile, fmt, args);
 		}
 
 		va_end(args);
 	}
 
+	void Dbg(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+
+		if (m_pFile)
+		{
+			char buf[2048];
+			int len = vsnprintf(buf, sizeof(buf) - 2, fmt, args);
+			if (len == -1)
+				len = sizeof(buf) - 2;
+			buf[len++] = '\n';
+			buf[len] = '\0';
+
+			fwrite(buf, 1, len, m_pFile);
+
+			OutputDebugStringA(buf);
+		}
+
+
+		va_end(args);
+	}
+
 private:
-	FILE *m_log;
+	FILE* m_pFile;
 };
 
-//#define DBGLOG(x) Logger().Write x
-#define DBGLOG(x)
+typedef HashTable<StringRec> Strings_t;
+typedef HashTable<BlockRec> Blocks_t;
+typedef HashTable<ImageRec> Images_t;
+typedef HashTable<ImageName> ImageNames_t;
 
-// convert address into module + offset
-pair<string*, string*> ResolveAddress(ADDRINT address)
+static Strings_t excludedImages;
+static Strings_t existingTraces;
+static ImageNames_t includedImages;
+static Blocks_t blocks;
+static Images_t images;
+
+File fileOut;
+File fileExisting;
+File fileDbg;
+
+KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
+
+bool ReadAllLines(const std::string& fileName, Strings_t& lines)
 {
-	map<string*, pair<ADDRINT, ADDRINT> >::const_iterator it;
+	std::ifstream fin(fileName.c_str(), std::ifstream::binary);
+	if (!fin)
+		return false;
 
-	for(it = imageList.begin(); it != imageList.end(); it++)
+	std::string line;
+	while (std::getline(fin, line))
 	{
-		if(address >= (*it).second.first && address <= (*it).second.second)
-		{
-			ostringstream resolved;
-			resolved << *(*it).first << ":" << (address - (*it).second.first) << "\n";
+		size_t end = line.size() - 1;
+		if (end > 0 && line[end] == '\r')
+			line.resize(end);
 
-			return make_pair(new string(*(*it).first), new string(resolved.str()));
-		}
+		if (!lines.Find(line))
+			lines.Add(new StringRec(line));
 	}
 
-	return make_pair((string*)NULL, (string*)NULL);
+	return !fin.bad();
 }
 
-// Method called every time an instrumented bblock is executed
-VOID PIN_FAST_ANALYSIS_CALL rememberBlock(INS ins)
+// Prints the usage and exits
+INT32 Usage()
 {
-	ADDRINT address = INS_Address(ins);
-	ret = setKnownBlocks.insert(address);
-	if(ret.second == true)
+	PIN_ERROR( "This Pintool prints a trace of all basic blocks\n"
+		+ KNOB_BASE::StringKnobSummary() + "\n");
+	return -1;
+}
+
+// Called whenever a basic block is executed
+VOID PIN_FAST_ANALYSIS_CALL BlockExecuted(VOID* v)
+{
+	BlockRec* pBlock = reinterpret_cast<BlockRec*>(v);
+
+	if (pBlock->countRun++ == 0)
 	{
-		pair<string*,string*> resolvedAddress = ResolveAddress(address);
-		
-		// skip addresses that don't resolve
-		// an address will not resolve when we have
-		// blacklisted the module
-		if(resolvedAddress.first == NULL)
-			return;
-
-		fprintf(trace, "%s\n", resolvedAddress.second->c_str());
-		fflush(trace);
-
-		if(haveExisting)
-		{
-			fprintf(trace, "%s\n", resolvedAddress.second->c_str());
-			fflush(existing);
-		}
+		fileOut.Write(pBlock->trace);
+		fileExisting.Write(pBlock->trace);
 	}
 }
 
-// Strip path from image name
-string* ImageName(string* fullname)
-{
-	size_t found;
-
-#ifdef TARGET_WINDOWS
-	found = fullname->rfind('\\');
-#else
-	found = fullname->rfind('/');
-#endif
-	
-	return new string(fullname->substr(found+1));
-}
-
-// Called when an image is loaded
+// Called every time a new image is loaded
 VOID Image(IMG img, VOID* v)
 {
-	v;
+	UNUSED_ARG(v);
 
-	string fullname = IMG_Name(img);
-	string* name = ImageName(&fullname);
+	ImageRec* pImg = new ImageRec(img);
+	pImg->excluded = !!excludedImages.Find(pImg->fileName);
+	pImg->conflict = includedImages.Find(pImg->fileName);
 
-	// don't record images in our exclude list
-	if(excludedImages.find(name) != excludedImages.end())
-		return;
+	images.Add(pImg);
 
-	imageList[name] = make_pair(IMG_LowAddress(img), IMG_HighAddress(img));
+	if (pImg->excluded)
+	{
+		DBG(("Excluding image: %s", pImg->fullName.c_str()));
+	}
+	else if (pImg->conflict)
+	{
+		const ImageRec* pOther = pImg->conflict->record;
+
+		if (pImg->fullName == pOther->fullName)
+		{
+			// Add for tracking - is the same fullName
+			DBG(("Duplicate image names detected: %s", pImg->fileName.c_str()));
+			includedImages.Add(new ImageName(pImg));
+		}
+		else
+		{
+			// Ignore, since we have two different fullNames
+			DBG(("Conflicting image names detected: %s", pImg->fileName.c_str()));
+		}
+
+		DBG(("  Id: %lu, Name: %s", (unsigned long)pOther->key, pOther->fullName.c_str()));
+		DBG(("  Id: %lu, Name: %s", (unsigned long)pImg->key, pOther->fullName.c_str()));
+	}
+	else
+	{
+		includedImages.Add(new ImageName(pImg));
+		DBG(("Loaded image: %s", pImg->fullName.c_str()));
+	}
 }
 
-// Called when new code segment loaded containing bblocks
+// Called every time a new trace is encountered
 VOID Trace(TRACE trace, VOID *v)
 {
-	v;
+	UNUSED_ARG(v);
 
 	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
 	{
-		pair<string*, string*> resolvedPair = ResolveAddress(INS_Address(BBL_InsHead(bbl)));
-		auto_ptr<string> imageName = auto_ptr<string>(resolvedPair.first);
-		auto_ptr<string> resolvedAddress = auto_ptr<string>(resolvedPair.second);
+		// Grab the first instruction of the block
+		INS ins = BBL_InsHead(bbl);
+		if (!ins.is_valid())
+		{
+			DBG(("Could not get 1st instruction for basic block: %zu", (size_t)BBL_Address(bbl)));
+			continue;
+		}
 
-		if(haveExclude && excludedImages.find(imageName.get()) != excludedImages.end())
-			return;
+		ADDRINT addr = INS_Address(ins);
 
-		if(haveExisting && setExistingBlocks.find(resolvedAddress.get()) != setExistingBlocks.end())
+		// If we have visited this basic block before, ignore
+		BlockRec* pBlock = blocks.Find(addr);
+		if (pBlock != NULL)
+		{
+			if (!pBlock->existing && !pBlock->excluded)
+			{
+				DBG(("Ignoring duplicate trace for basic block '%s: %llu'",
+					pBlock->fileName.c_str(), (unsigned long long)pBlock->key));
+			}
+
+			pBlock->countAdd++;
+			continue;
+		}
+
+		// If image could not be resolved, ignore
+		IMG img = IMG_FindByAddress(addr);
+		if (!img.is_valid())
+		{
+			DBG(("Could not get image for basic block: %llu", (unsigned long long)addr));
+			continue;
+		}
+
+		// Build a record for tracking this basic block
+		ImageRec* pImg = images.Find(IMG_Id(img));
+		pBlock = new BlockRec(*pImg, addr);
+
+		// Check if trace for block already exists
+		pBlock->existing = !!existingTraces.Find(pBlock->trace);
+
+		// Ensure we are tracking this basic block record
+		blocks.Add(pBlock);
+
+		// If trace is already captured or is excluded, ignore
+		if (pBlock->existing || pBlock->excluded)
 			continue;
 
-		BBL_InsertCall(bbl, IPOINT_ANYWHERE, AFUNPTR(rememberBlock), IARG_FAST_ANALYSIS_CALL, IARG_ADDRINT, BBL_InsHead(bbl), IARG_END);
+		// Record basic block when it is executed
+		BBL_InsertCall(
+			bbl,
+			IPOINT_ANYWHERE,
+			AFUNPTR(BlockExecuted),
+			IARG_FAST_ANALYSIS_CALL,
+			IARG_PTR,
+			pBlock,
+			IARG_END);
 	}
-}
-
-// Called at end of run
-VOID Fini(INT32 code, VOID *v)
-{
-	code;
-	v;
-
-	map<string*, pair<ADDRINT, ADDRINT> >::const_iterator mapIt;
-	set<string*>::const_iterator setIt;
-
-	fclose(trace);
-
-	if(haveExisting)
-		fclose(existing);
-
-	// free memory
-	for(mapIt = imageList.begin(); mapIt != imageList.end(); mapIt++)
-		delete (*mapIt).first;
-	for(setIt = setExistingBlocks.begin(); setIt != setExistingBlocks.end(); setIt++)
-		delete (*setIt);
 }
 
 // Called when the application starts
 VOID Start(VOID* v)
 {
-	v;
+	UNUSED_ARG(v);
 
-	FILE* pid = fopen("bblocks.pid", "wb+");
-	if (pid)
-	{
-		fprintf(pid, "%d", PIN_GetPid());
-		fclose(pid);
-		pid = NULL;
-	}
+	std::ofstream fout("bblocks.pid", std::ofstream::binary | std::ofstream::trunc);
+	fout << PIN_GetPid();
 }
 
-int main(int argc, char * argv[])
+// Called when the application exits
+VOID Fini(INT32 code, VOID *v)
 {
-	DBGLOG(("bblocks main() PID: %d\n", PIN_GetPid()));
+	UNUSED_ARG(code);
+	UNUSED_ARG(v);
 
-	// Load image exclude list
-	FILE* fd = fopen("bblocks.exclude", "rb+");
-	if(fd != NULL)
+	unsigned long existing = 0, excluded = 0, dupes = 0, run = 0;
+
+	for (const BlockRec* it = blocks.Head(); it != NULL; it = it->Next())
 	{
-		char image[256];
+		if (it->existing)
+			++existing;
 
-		haveExclude = TRUE;
-		while(!feof(fd))
-		{
-			if(fscanf(fd, "%s\n", image) < 4)
-				excludedImages.insert(new string(image));
-		}
+		if (it->excluded)
+			++excluded;
 
-		fclose(fd);
+		if (it->countAdd > 1)
+			++dupes;
+
+		if (it->countRun > 0)
+			++run;
 	}
 
-	// Load existing trace
-	existing = fopen("bblocks.existing", "rb+");
-	if(existing != NULL)
+	DBG(("Finished:"));
+	DBG((" All Images     : %lu", (unsigned long)images.Count()));
+	DBG((" Excluded Images: %lu",(unsigned long) excludedImages.Count()));
+	DBG((" Included Images: %lu", (unsigned long)includedImages.Count()));
+	DBG((" Existing Traces: %lu", (unsigned long)existingTraces.Count()));
+	DBG((" Basic Blocks   : %lu", (unsigned long)blocks.Count()));
+	DBG(("  Existing      : %lu", existing));
+	DBG(("  Excluded      : %lu", excluded));
+	DBG(("  Duplicates    : %lu", dupes));
+	DBG(("  Executed      : %lu", run));
+}
+
+int main(int argc, char* argv[])
+{
+	// Expect size_t and ADDRINT to be the same
+	StaticAssert<sizeof(size_t) == sizeof(ADDRINT)>::assert();
+
+	// Ensure library initializes correctly
+	if (PIN_Init(argc, argv))
+		return Usage();
+
 	{
-		char offset[256];
+		Strings_t foo;
+		foo.Add(new StringRec("Hello"));
 
-		haveExisting = TRUE;
-		while(!feof(existing))
-		{
-			if(fscanf(existing, "%s\n", offset) < 4)
-				setExistingBlocks.insert(new string(offset));
-		}
+		std::stringstream ss;
+		ss << "He" << "llo";
+		std::string tgt = ss.str();
 
-		// Make sure we are at end of file
-		fseek(existing, 0L, SEEK_END);
+		StringRec* pRec = foo.Find(tgt);
+		if (pRec == NULL)
+			return 1;
 	}
 
-	trace = fopen("bblocks.out", "wb+");
-	
-	// Configure Pin Tools
-	PIN_Init(argc, argv);
+	// Read images to ignore
+	ReadAllLines("bblocks.exclude", excludedImages);
 
-	IMG_AddInstrumentFunction(Image, 0);
-	TRACE_AddInstrumentFunction(Trace, 0);
-	
-	PIN_AddApplicationStartFunction(Start, 0);
-	PIN_AddFiniFunction(Fini, 0);
+	// If we can read existing traces, open file for updates with new traces
+	if (ReadAllLines("bblocks.existing", existingTraces))
+		fileExisting.Open("bblocks.existing", "ab");
+
+	// Open file to log new traces to
+	fileOut.Open("bblocks.out", "wb");
+
+	if (KnobDebug)
+		fileDbg.Open("bblocks.log", "wb");
+
+	// Register callbacks
+	IMG_AddInstrumentFunction(Image, NULL);
+	TRACE_AddInstrumentFunction(Trace, NULL);
+	PIN_AddApplicationStartFunction(Start, NULL);
+	PIN_AddFiniFunction(Fini, NULL);
+
+	// Start program, never returns
 	PIN_StartProgram();
 
 	return 0;
 }
 
-// end

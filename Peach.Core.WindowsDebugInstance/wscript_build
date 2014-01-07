@@ -7,9 +7,12 @@ deps = [
 	'Peach.Core.dll',
 	'Peach.Core.OS.Windows.dll',
 	'NLog.dll',
+	'SharpPcap.dll',
+	'PacketDotNet.dll',	
 ]
+
 bld(
-	features = 'cs win',
+	features = 'cs',
 	use = deps,
 	source = bld.path.ant_glob('**/*.cs'),
 	name='Peach.Core.WindowsDebugInstance.exe',

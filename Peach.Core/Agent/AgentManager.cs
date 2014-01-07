@@ -59,21 +59,26 @@ namespace Peach.Core.Agent
 
         void context_CollectFaults(RunContext context)
         {
-            if (DetectedFault())
+			// If the engine has recorded faults or any monitor detected a fault,
+			// gather data from all monitors.
+			// NOTE: We must test DetectedFault() first, as monitors expect this
+			// call to occur before any call to GetMonitorData()
+            if (DetectedFault() || context.faults.Count > 0)
             {
 				logger.Debug("Fault detected.  Collecting monitor data.");
 
                 var agentFaults = GetMonitorData();
 
-                foreach (var agent in agentFaults.Keys)
+                foreach (var item in agentFaults)
                 {
-                    var faults = agentFaults[agent];
+                    var faults = item.Value;
 
                     foreach (var fault in faults)
                     {
                         if (fault == null)
                             continue;
 
+                        fault.agentName = item.Key.name;
                         context.faults.Add(fault);
                     }
                 }
@@ -155,14 +160,10 @@ namespace Peach.Core.Agent
 			logger.Trace("StopAllMonitors");
 			foreach (var agent in _agents.Values.Reverse())
 			{
-				try
+				Guard("StopAllMonitors", () =>
 				{
 					agent.StopAllMonitors();
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling StopAllMonitors: " + ex.Message);
-				}
+				});
 			}
 		}
 
@@ -171,14 +172,10 @@ namespace Peach.Core.Agent
 			logger.Trace("Shutdown");
 			foreach (AgentClient agent in _agents.Values.Reverse())
 			{
-				try
+				Guard("Shutdown", () =>
 				{
 					agent.AgentDisconnect();
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling Shutdown: " + ex.Message);
-				}
+				});
 			}
 		}
 
@@ -196,14 +193,10 @@ namespace Peach.Core.Agent
 			logger.Trace("SessionFinished");
 			foreach (AgentClient agent in _agents.Values.Reverse())
 			{
-				try
+				Guard("SessionFinished", () =>
 				{
 					agent.SessionFinished();
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling SessionFinished: " + ex.Message);
-				}
+				});
 			}
 		}
 
@@ -212,14 +205,10 @@ namespace Peach.Core.Agent
 			logger.Trace("IterationStarting");
 			foreach (AgentClient agent in _agents.Values)
 			{
-				try
+				Guard("IterationStarting", () =>
 				{
 					agent.IterationStarting(iterationCount, isReproduction);
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling IterationStarting: " + ex.Message);
-				}
+				});
 			}
 		}
 
@@ -230,15 +219,11 @@ namespace Peach.Core.Agent
 
 			foreach (AgentClient agent in _agents.Values.Reverse())
 			{
-				try
+				Guard("IterationFinished", () =>
 				{
 					if (agent.IterationFinished())
 						ret = true;
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling IterationFinished on agent: " + ex.Message);
-				}
+				});
 			}
 
 			return ret;
@@ -250,15 +235,11 @@ namespace Peach.Core.Agent
 
 			foreach (AgentClient agent in _agents.Values)
 			{
-				try
+				Guard("DetectedFault", () =>
 				{
 					if (agent.DetectedFault())
 						ret = true;
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling DetectedFault: " + ex.Message);
-				}
+				});
 			}
 
 			logger.Trace("DetectedFault: {0}", ret);
@@ -272,14 +253,10 @@ namespace Peach.Core.Agent
 
 			foreach (AgentClient agent in _agents.Values)
 			{
-				try
+				Guard("GetMonitorData", () =>
 				{
 					faults[agent] = agent.GetMonitorData();
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling GetMonitorData: " + ex.Message);
-				}
+				});
 			}
 
 			return faults;
@@ -291,15 +268,11 @@ namespace Peach.Core.Agent
 
 			foreach (AgentClient agent in _agents.Values)
 			{
-				try
+				Guard("MustStop", () =>
 				{
 					if (agent.MustStop())
 						ret = true;
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling MustStop: " + ex.Message);
-				}
+				});
 			}
 
 			logger.Trace("MustStop: {0}", ret.ToString());
@@ -308,31 +281,41 @@ namespace Peach.Core.Agent
 
 		public virtual Variant Message(string name, Variant data)
 		{
-			logger.Trace("Message: {0}", name);
+			logger.Debug("Message: {0} => {1}", name, data.ToString());
 			Variant ret = null;
 			Variant tmp = null;
 
 			foreach (AgentClient agent in _agents.Values)
 			{
-				try
+				Guard("Message", () =>
 				{
 					tmp = agent.Message(name, data);
 					if (tmp != null)
 						ret = tmp;
-				}
-				catch (PeachException)
-				{
-					// Allow peach exceptions to bubble up for things like
-					// StartOnCall with an invalid process
-					throw;
-				}
-				catch (Exception ex)
-				{
-					logger.Warn("Ignoring exception calling Message: " + ex.Message);
-				}
+				});
 			}
 
 			return ret;
+		}
+
+		private static void Guard(string what, System.Action action)
+		{
+			try
+			{
+				action();
+			}
+			catch (SoftException)
+			{
+				throw;
+			}
+			catch (PeachException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				logger.Warn("Ignoring exception calling {0}: {1}", what, ex.Message);
+			}
 		}
 
 		#endregion

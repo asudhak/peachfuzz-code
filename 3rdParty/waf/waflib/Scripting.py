@@ -256,13 +256,13 @@ def distclean_dir(dirname):
 			if _can_distclean(f):
 				fname = root + os.sep + f
 				try:
-					os.unlink(fname)
+					os.remove(fname)
 				except OSError:
 					Logs.warn('Could not remove %r' % fname)
 
 	for x in [Context.DBFILE, 'config.log']:
 		try:
-			os.unlink(x)
+			os.remove(x)
 		except OSError:
 			pass
 
@@ -300,9 +300,11 @@ def distclean(ctx):
 					if e.errno != errno.ENOENT:
 						Logs.warn('file %r cannot be removed' % f)
 
-		# remove the local waf cache
-		if f.startswith('.waf') and not Options.commands:
-			shutil.rmtree(f, ignore_errors=True)
+		# remove local waf cache folders
+		if not Options.commands:
+			for x in '.waf-1. waf-1. .waf3-1. waf3-1.'.split():
+				if f.startswith(x):
+					shutil.rmtree(f, ignore_errors=True)
 
 class Dist(Context.Context):
 	'''creates an archive containing the project source code'''
@@ -518,7 +520,7 @@ class DistCheck(Dist):
 			cfg = [x for x in sys.argv if x.startswith('-')]
 
 		instdir = tempfile.mkdtemp('.inst', self.get_base_name())
-		ret = Utils.subprocess.Popen([sys.argv[0], 'configure', 'install', 'uninstall', '--destdir=' + instdir] + cfg, cwd=self.get_base_name()).wait()
+		ret = Utils.subprocess.Popen([sys.executable, sys.argv[0], 'configure', 'install', 'uninstall', '--destdir=' + instdir] + cfg, cwd=self.get_base_name()).wait()
 		if ret:
 			raise Errors.WafError('distcheck failed with code %i' % ret)
 
@@ -565,7 +567,7 @@ def autoconfigure(execute_method):
 			else:
 				h = 0
 				for f in env['files']:
-					h = hash((h, Utils.readf(f, 'rb')))
+					h = Utils.h_list((h, Utils.readf(f, 'rb')))
 				do_config = h != env.hash
 
 		if do_config:
