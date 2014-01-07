@@ -79,7 +79,7 @@ def configure(ctx):
 
 	base_env = ctx.env
 	base_env.APPNAME = appname
-	base_env.OUTPUT = base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = base_env.DOCDIR = inst
+	base_env.OUTPUT = base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = base_env.DOCDIR = base_env.PKGDIR = inst
 	base_env.BUILDTAG = Options.options.buildtag
 
 	tool_dir =  [
@@ -119,6 +119,7 @@ def configure(ctx):
 				arch_env.SUBARCH = arch;
 				arch_env.PREFIX = os.path.join(base_env.PREFIX, name)
 				arch_env.BINDIR = os.path.join(base_env.BINDIR, name)
+				arch_env.PKGDIR = os.path.join(base_env.PKGDIR, name)
 				arch_env.LIBDIR = os.path.join(base_env.LIBDIR, name)
 				arch_env.DOCDIR = os.path.join(base_env.DOCDIR, name)
 				config.prepare(ctx)
@@ -139,6 +140,7 @@ def configure(ctx):
 					cfg_env.PREFIX = os.path.join(base_env.BINDIR, variant)
 					cfg_env.BINDIR = os.path.join(base_env.BINDIR, variant, 'bin')
 					cfg_env.LIBDIR = os.path.join(base_env.LIBDIR, variant, 'bin')
+					cfg_env.PKGDIR = os.path.join(base_env.BINDIR, variant, 'pkg')
 					cfg_env.DOCDIR = os.path.join(base_env.DOCDIR, variant, 'doc')
 					cfg_env.VARIANT = cfg
 					cfg_func = getattr(config, cfg)
