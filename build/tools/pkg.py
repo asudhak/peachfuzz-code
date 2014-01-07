@@ -1,11 +1,11 @@
 from waflib.Build import InstallContext
-from waflib import Utils, Logs, Configure, Context, Options, Errors
+from waflib import Task, Utils, Logs, Configure, Context, Options, Errors
 import os, zipfile, sys
 
-class PkgContext(InstallContext):
+class ZipContext(InstallContext):
 	'''zip contents of output directory'''
 
-	cmd = 'pkg'
+	cmd = 'zip'
 
 	def __init__(self, **kw):
 		super(PkgContext, self).__init__(**kw)
@@ -77,3 +77,19 @@ class PkgContext(InstallContext):
 		dgst.write('SHA1(%s.zip)= %s\n' % (name, digest))
 
 		Logs.warn('New archive created: %s (sha1=%s)' % (arch_name, digest))
+
+class PkgContext(InstallContext):
+	'''create product installers'''
+
+	cmd = 'pkg'
+
+	def __init__(self, **kw):
+		super(PkgContext, self).__init__(**kw)
+		self.is_pkg = True
+
+class PkgTask(Task.Task):
+	def runnable_status(self):
+		if getattr(self.generator.bld, 'is_pkg', None):
+			return super(PkgTask, self).runnable_status()
+		else:
+			return Task.SKIP_ME
