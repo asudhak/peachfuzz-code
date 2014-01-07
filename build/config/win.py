@@ -18,6 +18,7 @@ tools = [
 	'tools.test',
 	'tools.version',
 	'tools.mdoc',
+	'tools.wix',
 ]
 
 def prepare(conf):
