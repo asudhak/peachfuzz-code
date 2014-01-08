@@ -26,11 +26,10 @@ class ZipContext(InstallContext):
 		args = [ env.APPNAME, version, env.TARGET ]
 		if env.SUBARCH: args.append(env.SUBARCH)
 		if env.VARIANT: args.append(env.VARIANT)
-		name = '-'.join(args)
 
 		base_path = self.path.make_node(env.BINDIR)
-		base_name = name
-		arch_name = '%s.zip' % (os.path.join(env.OUTPUT, name))
+		base_name = '-'.join(args).lower()
+		arch_name = '%s.zip' % (os.path.join(env.OUTPUT, base_name))
 
 		Logs.warn('Creating archive: %s' % arch_name)
 
@@ -74,7 +73,7 @@ class ZipContext(InstallContext):
 			dgst.delete()
 		except Exception:
 			pass
-		dgst.write('SHA1(%s.zip)= %s\n' % (name, digest))
+		dgst.write('SHA1(%s.zip)= %s\n' % (base_name, digest))
 
 		Logs.warn('New archive created: %s (sha1=%s)' % (arch_name, digest))
 
