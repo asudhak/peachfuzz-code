@@ -877,6 +877,9 @@ class idegen(msvs.msvs_generator):
 				if not isinstance(tg, TaskGen.task_gen):
 					continue
 
+				if not getattr(tg, 'ide', True):
+					continue
+
 				if not hasattr(tg, 'msvs_includes'):
 					tg.msvs_includes = tg.to_list(getattr(tg, 'includes', [])) + tg.to_list(getattr(tg, 'export_includes', []))
 
