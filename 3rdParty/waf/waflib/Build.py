@@ -746,7 +746,7 @@ class BuildContext(Context.Context):
 				except AttributeError:
 					pass
 				else:
-					if tg.path and tg.path.is_child_of(ln):
+					if tg.path.is_child_of(ln):
 						f()
 
 	def get_tasks_group(self, idx):
