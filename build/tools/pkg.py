@@ -8,15 +8,15 @@ class ZipContext(InstallContext):
 	cmd = 'zip'
 
 	def __init__(self, **kw):
-		super(PkgContext, self).__init__(**kw)
+		super(self.__class__, self).__init__(**kw)
 		self.installed_files = []
 
 	def do_install(self, src, tgt, chmod=Utils.O644):
 		self.installed_files.append(tgt)
-		super(PkgContext, self).do_install(src, tgt, chmod)
+		super(self.__class__, self).do_install(src, tgt, chmod)
 
 	def execute(self):
-		super(PkgContext, self).execute()
+		super(self.__class__, self).execute()
 		if self.installed_files:
 			self.archive()
 
@@ -84,7 +84,7 @@ class PkgContext(InstallContext):
 	cmd = 'pkg'
 
 	def __init__(self, **kw):
-		super(PkgContext, self).__init__(**kw)
+		super(self.__class__, self).__init__(**kw)
 		self.is_pkg = True
 
 class PkgTask(Task.Task):
