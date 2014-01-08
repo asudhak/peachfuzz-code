@@ -241,6 +241,14 @@ class vsnode_target(msvs.vsnode_target):
 	def collect_properties(self):
 		msvs.vsnode_target.collect_properties(self)
 
+	def collect_source(self):
+		# Try and find the wscript_build
+		wscript = self.tg.path.find_resource('wscript_build')
+		if wscript:
+			self.source.append(wscript)
+
+		msvs.vsnode_target.collect_source(self)
+
 	def get_mono_key(self, node):
 		"""
 		required for writing the source files
@@ -379,6 +387,11 @@ class vsnode_cs_target(msvs.vsnode_project):
 		# Process installed files
 		self.collect_install(lst, 'install_644')
 		self.collect_install(lst, 'install_755')
+
+		# Try and find the wscript_build
+		wscript = tg.path.find_resource('wscript_build')
+		if wscript:
+			lst[wscript.abspath()] = source_file('None', self, wscript)
 
 		# Add app.config
 		cfg = getattr(tg, 'app_config', None)
