@@ -74,8 +74,6 @@ namespace Peach.Core.Dom
 		/// </summary>
 		[XmlEnum("chars")]
 		Chars,
-		[XmlEnum("calc")]
-		Calc
 	}
 
 	public enum ValueType
