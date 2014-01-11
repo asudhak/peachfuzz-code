@@ -57,10 +57,21 @@ namespace Peach.Core.Dom
 	/// </remarks>
 	public enum LengthType
 	{
+		/// <summary>
+		/// Indicates the length is specified in units of bytes.
+		/// </summary>
 		[XmlEnum("bytes")]
 		Bytes,
+
+		/// <summary>
+		/// Indicates the length is specified in units of bits.
+		/// </summary>
 		[XmlEnum("bits")]
 		Bits,
+
+		/// <summary>
+		/// Indicates the length is specified in units of characters.
+		/// </summary>
 		[XmlEnum("chars")]
 		Chars,
 		[XmlEnum("calc")]
@@ -69,20 +80,43 @@ namespace Peach.Core.Dom
 
 	public enum ValueType
 	{
+		/// <summary>
+		/// Regular string. C style &quot;\&quot; escaping can be used such as: \r, \n, \t, and \\.
+		/// </summary>
 		[XmlEnum("string")]
 		String,
+
+		/// <summary>
+		/// Hex string. Allows specifying binary data.
+		/// </summary>
 		[XmlEnum("hex")]
 		Hex,
+
+		/// <summary>
+		/// Treated as a python literal string.
+		/// An example is "[1,2,3,4]" which would evaluate to a python list.
+		/// </summary>
 		[XmlEnum("literal")]
 		Literal
 	}
 
 	public enum EndianType
 	{
+		/// <summary>
+		/// Big endian encoding.
+		/// </summary>
 		[XmlEnum("big")]
 		Big,
+
+		/// <summary>
+		/// Little endian encoding.
+		/// </summary>
 		[XmlEnum("little")]
 		Little,
+
+		/// <summary>
+		/// Big endian encoding.
+		/// </summary>
 		[XmlEnum("network")]
 		Network,
 	}

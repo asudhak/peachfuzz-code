@@ -47,11 +47,34 @@ namespace Peach.Core.Dom
 {
 	public enum StringType
 	{
+		/// <summary>
+		/// Single byte characters.
+		/// </summary>
 		ascii,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-7.
+		/// </summary>
 		utf7,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-8.
+		/// </summary>
 		utf8,
+
+		/// <summary>
+		/// Double byte characters as commonly used with Windows applications.
+		/// </summary>
 		utf16,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-16 big endian.
+		/// </summary>
 		utf16be,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-32.
+		/// </summary>
 		utf32
 	}
 	

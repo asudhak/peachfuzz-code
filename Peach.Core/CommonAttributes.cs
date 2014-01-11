@@ -63,7 +63,7 @@ namespace Peach.Core
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+	[AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
 	public class DescriptionAttribute : Attribute
 	{
 		public string Description { get; private set; }
