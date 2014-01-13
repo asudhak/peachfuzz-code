@@ -327,7 +327,7 @@ namespace Peach.Core.Xsd
 
 	#region XmlDocFetcher
 
-	public static class XmlDocFetcher
+	internal static class XmlDocFetcher
 	{
 		static Dictionary<Assembly, XPathDocument> Cache = new Dictionary<Assembly, XPathDocument>();
 		static Regex Whitespace = new Regex(@"\r\n\s+", RegexOptions.Compiled);
@@ -400,37 +400,37 @@ namespace Peach.Core.Xsd
 
 	#endregion
 
-	public static class SchemaBuilder
-	{
-		#region Extension Methods
+	#region Extension Methods
 
-		static XmlNode[] ToNodeArray(this string text)
+	internal static class Extensions
+	{
+		public static XmlNode[] ToNodeArray(this string text)
 		{
 			XmlDocument doc = new XmlDocument();
 			return new XmlNode[1] { doc.CreateTextNode(text) };
 		}
 
-		static void SetText(this XmlSchemaDocumentation doc, string text)
+		public static void SetText(this XmlSchemaDocumentation doc, string text)
 		{
 			doc.Markup = text.ToNodeArray();
 		}
 
-		static void Annotate(this XmlSchemaAnnotated item, PropertyInfo pi)
+		public static void Annotate(this XmlSchemaAnnotated item, PropertyInfo pi)
 		{
 			item.Annotate(XmlDocFetcher.GetSummary(pi));
 		}
 
-		static void Annotate(this XmlSchemaAnnotated item, Type type)
+		public static void Annotate(this XmlSchemaAnnotated item, Type type)
 		{
 			item.Annotate(XmlDocFetcher.GetSummary(type));
 		}
 
-		static void Annotate(this XmlSchemaAnnotated item, FieldInfo fi)
+		public static void Annotate(this XmlSchemaAnnotated item, FieldInfo fi)
 		{
 			item.Annotate(XmlDocFetcher.GetSummary(fi));
 		}
 
-		static void Annotate(this XmlSchemaAnnotated item, string text)
+		public static void Annotate(this XmlSchemaAnnotated item, string text)
 		{
 			if (string.IsNullOrEmpty(text))
 				return;
@@ -443,275 +443,277 @@ namespace Peach.Core.Xsd
 
 			item.Annotation = anno;
 		}
+	}
 
-		#endregion
+	#endregion
 
-		private class Builder
+	public class SchemaBuilder
+	{
+		Dictionary<Type, XmlSchemaSimpleType> enumTypeCache;
+		Dictionary<Type, XmlSchemaObject> objTypeCache;
+
+		XmlSchema schema;
+
+		public SchemaBuilder(Type type)
 		{
-			Dictionary<Type, XmlSchemaSimpleType> enumTypeCache;
-			XmlSchema schema;
+			enumTypeCache = new Dictionary<Type, XmlSchemaSimpleType>();
+			objTypeCache = new Dictionary<Type, XmlSchemaObject>();
 
-			public Builder(Type type)
-			{
-				enumTypeCache = new Dictionary<Type, XmlSchemaSimpleType>();
+			var root = type.GetAttributes<XmlRootAttribute>().First();
 
-				var root = type.GetAttributes<XmlRootAttribute>().First();
+			schema = new XmlSchema();
+			schema.TargetNamespace = root.Namespace;
+			schema.ElementFormDefault = XmlSchemaForm.Qualified;
 
-				schema = new XmlSchema();
-				schema.TargetNamespace = root.Namespace;
-				schema.ElementFormDefault = XmlSchemaForm.Qualified;
-
-				AddElement(root.ElementName, type);
-			}
-
-			public XmlSchema Compile()
-			{
-				var schemaSet = new XmlSchemaSet();
-				schemaSet.ValidationEventHandler += ValidationEventHandler;
-				schemaSet.Add(schema);
-				schemaSet.Compile();
-
-				var compiled = schemaSet.Schemas().OfType<XmlSchema>().First();
-
-				return compiled;
-			}
-
-			T MakeItem<T>(string name, Type type) where T : XmlSchemaAnnotated, new()
-			{
-				if (type.IsGenericType)
-					throw new ArgumentException();
-
-				var item = new T();
-
-				var mi = typeof(T).GetProperty("Name");
-				mi.SetValue(item, name, null);
-
-				item.Annotate(type);
-
-				// Add even though we haven't filled everything out yet
-				schema.Items.Add(item);
-
-				return item;
-			}
-
-			void AddElement(string name, Type type)
-			{
-				var schemaElem = MakeItem<XmlSchemaElement>(name, type);
-
-				var complexType = new XmlSchemaComplexType();
-
-				PopulateComplexType(complexType, type);
-
-				schemaElem.SchemaType = complexType;
-			}
-
-			void PopulateComplexType(XmlSchemaComplexType complexType, Type type)
-			{
-				var schemaParticle = new XmlSchemaSequence();
-
-				foreach (var pi in type.GetProperties())
-				{
-					var attrAttr = pi.GetAttributes<XmlAttributeAttribute>().FirstOrDefault();
-					if (attrAttr != null)
-					{
-						var attr = MakeAttribute(attrAttr.AttributeName, pi);
-						complexType.Attributes.Add(attr);
-						continue;
-					}
-
-					var elemAttr = pi.GetAttributes<XmlElementAttribute>().FirstOrDefault();
-					if (elemAttr != null)
-					{
-						var elem = MakeElement(elemAttr.ElementName, pi);
-						schemaParticle.Items.Add(elem);
-						continue;
-					}
-				}
-
-				if (schemaParticle.Items.Count > 0)
-					complexType.Particle = schemaParticle;
-			}
-
-			void AddComplexType(string name, Type type)
-			{
-				var complexType = MakeItem<XmlSchemaComplexType>(name, type);
-
-				PopulateComplexType(complexType, type);
-			}
-
-			void ValidationEventHandler(object sender, ValidationEventArgs e)
-			{
-				Console.WriteLine(e.Exception);
-				Console.WriteLine(e.Message);
-			}
-
-			XmlQualifiedName GetSchemaType(Type type)
-			{
-				if (type == typeof(char))
-					return new XmlQualifiedName("string", XmlSchema.Namespace);
-
-				if (type == typeof(string))
-					return new XmlQualifiedName("string", XmlSchema.Namespace);
-
-				if (type == typeof(bool))
-					return new XmlQualifiedName("boolean", XmlSchema.Namespace);
-
-				if (type == typeof(uint))
-					return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
-
-				if (type == typeof(int))
-					return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
-
-				throw new NotImplementedException();
-			}
-
-			XmlSchemaAttribute MakeAttribute(string name, PropertyInfo pi)
-			{
-				if (string.IsNullOrEmpty(name))
-					name = pi.Name;
-
-				var defaultValue = pi.GetAttributes<DefaultValueAttribute>().FirstOrDefault();
-
-				var attr = new XmlSchemaAttribute();
-				attr.Name = name;
-				attr.Annotate(pi);
-
-				if (pi.PropertyType.IsEnum)
-				{
-					attr.SchemaType = GetEnumType(pi.PropertyType);
-				}
-				else
-				{
-					attr.SchemaTypeName = GetSchemaType(pi.PropertyType);
-				}
-
-				if (defaultValue != null)
-				{
-					attr.Use = XmlSchemaUse.Optional;
-
-					if (defaultValue.Value != null)
-					{
-						var valStr = defaultValue.Value.ToString();
-						var valType = defaultValue.Value.GetType();
-
-						if (valType == typeof(bool))
-						{
-							valStr = XmlConvert.ToString((bool)defaultValue.Value);
-						}
-						else if (valType.IsEnum)
-						{
-							var enumType = valType.GetField(valStr);
-							var enumAttr = enumType.GetAttributes<XmlEnumAttribute>().FirstOrDefault();
-							if (enumAttr != null)
-								valStr = enumAttr.Name;
-						}
-
-						attr.DefaultValue = valStr;
-					}
-					else if (pi.PropertyType.IsEnum)
-					{
-						var content = (XmlSchemaSimpleTypeRestriction)attr.SchemaType.Content;
-						var facet = (XmlSchemaEnumerationFacet)content.Facets[0];
-						attr.DefaultValue = facet.Value;
-					}
-				}
-				else
-				{
-					attr.Use = XmlSchemaUse.Required;
-				}
-
-				return attr;
-			}
-
-			XmlSchemaSimpleType GetEnumType(Type type)
-			{
-				XmlSchemaSimpleType ret;
-				if (enumTypeCache.TryGetValue(type, out ret))
-					return ret;
-
-				var content = new XmlSchemaSimpleTypeRestriction()
-				{
-					BaseTypeName = new XmlQualifiedName("string", XmlSchema.Namespace),
-				};
-
-				foreach (var item in type.GetFields(BindingFlags.Static | BindingFlags.Public))
-				{
-					var attr = item.GetAttributes<XmlEnumAttribute>().FirstOrDefault();
-
-					var facet = new XmlSchemaEnumerationFacet();
-					facet.Value = attr != null ? attr.Name : item.Name;
-					facet.Annotate(item);
-
-					content.Facets.Add(facet);
-				}
-
-				ret = new XmlSchemaSimpleType()
-				{
-					Content = content,
-				};
-
-				enumTypeCache.Add(type, ret);
-
-				return ret;
-			}
-
-			XmlSchemaElement MakeElement(string name, PropertyInfo pi)
-			{
-				if (string.IsNullOrEmpty(name))
-					name = pi.Name;
-
-				var type = pi.PropertyType;
-				var defaultValue = pi.GetAttributes<DefaultValueAttribute>().FirstOrDefault();
-				var isArray = type.IsArray;
-
-				if (type.IsGenericType)
-				{
-					if (type.GetGenericTypeDefinition() != typeof(List<>))
-						throw new NotSupportedException();
-
-					var args = type.GetGenericArguments();
-					if (args.Length != 1)
-						throw new NotSupportedException();
-
-					type = args[0];
-					isArray = true;
-				}
-
-				var schemaElem = new XmlSchemaElement();
-				schemaElem.MinOccursString = defaultValue != null ? "0" : "1";
-				schemaElem.MaxOccursString = isArray ? "unbounded" : "1";
-
-				if (name != type.Name)
-				{
-					schemaElem.Name = name;
-					schemaElem.SchemaTypeName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
-
-					AddComplexType(type.Name, type);
-				}
-				else
-				{
-					schemaElem.RefName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
-
-					AddElement(name, type);
-				}
-
-				return schemaElem;
-			}
+			AddElement(root.ElementName, type);
 		}
 
-		public static void Test()
+		public XmlSchema Compile()
 		{
-			var stream = new MemoryStream();
+			var schemaSet = new XmlSchemaSet();
+			schemaSet.ValidationEventHandler += ValidationEventHandler;
+			schemaSet.Add(schema);
+			schemaSet.Compile();
+
+			var compiled = schemaSet.Schemas().OfType<XmlSchema>().First();
+
+			return compiled;
+		}
+
+		public static void Generate(Type type, Stream stream)
+		{
 			var settings = new XmlWriterSettings() { Indent = true, Encoding = System.Text.Encoding.UTF8 };
 			var writer = XmlWriter.Create(stream, settings);
-			var compiled = new Builder(typeof(Dom)).Compile();
+			var compiled = new SchemaBuilder(type).Compile();
 
 			compiled.Write(writer);
+		}
 
-			var buf = stream.ToArray();
-			var str = Encoding.UTF8.GetString(buf);
+		T MakeItem<T>(string name, Type type) where T : XmlSchemaAnnotated, new()
+		{
+			if (type.IsGenericType)
+				throw new ArgumentException();
 
-			Console.WriteLine(str);
+			var item = new T();
+
+			var mi = typeof(T).GetProperty("Name");
+			mi.SetValue(item, name, null);
+
+			item.Annotate(type);
+
+			// Add even though we haven't filled everything out yet
+			schema.Items.Add(item);
+
+			// Cache this so we don't do this more than once
+			objTypeCache.Add(type, item);
+
+			return item;
+		}
+
+		void AddElement(string name, Type type)
+		{
+			var schemaElem = MakeItem<XmlSchemaElement>(name, type);
+
+			var complexType = new XmlSchemaComplexType();
+
+			PopulateComplexType(complexType, type);
+
+			schemaElem.SchemaType = complexType;
+		}
+
+		void PopulateComplexType(XmlSchemaComplexType complexType, Type type)
+		{
+			var schemaParticle = new XmlSchemaSequence();
+
+			foreach (var pi in type.GetProperties())
+			{
+				var attrAttr = pi.GetAttributes<XmlAttributeAttribute>().FirstOrDefault();
+				if (attrAttr != null)
+				{
+					var attr = MakeAttribute(attrAttr.AttributeName, pi);
+					complexType.Attributes.Add(attr);
+					continue;
+				}
+
+				var elemAttr = pi.GetAttributes<XmlElementAttribute>().FirstOrDefault();
+				if (elemAttr != null)
+				{
+					var elem = MakeElement(elemAttr.ElementName, pi);
+					schemaParticle.Items.Add(elem);
+					continue;
+				}
+			}
+
+			if (schemaParticle.Items.Count > 0)
+				complexType.Particle = schemaParticle;
+		}
+
+		void AddComplexType(string name, Type type)
+		{
+			var complexType = MakeItem<XmlSchemaComplexType>(name, type);
+
+			PopulateComplexType(complexType, type);
+		}
+
+		void ValidationEventHandler(object sender, ValidationEventArgs e)
+		{
+			Console.WriteLine(e.Exception);
+			Console.WriteLine(e.Message);
+		}
+
+		XmlQualifiedName GetSchemaType(Type type)
+		{
+			if (type == typeof(char))
+				return new XmlQualifiedName("string", XmlSchema.Namespace);
+
+			if (type == typeof(string))
+				return new XmlQualifiedName("string", XmlSchema.Namespace);
+
+			if (type == typeof(bool))
+				return new XmlQualifiedName("boolean", XmlSchema.Namespace);
+
+			if (type == typeof(uint))
+				return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
+
+			if (type == typeof(int))
+				return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
+
+			throw new NotImplementedException();
+		}
+
+		XmlSchemaAttribute MakeAttribute(string name, PropertyInfo pi)
+		{
+			if (string.IsNullOrEmpty(name))
+				name = pi.Name;
+
+			var defaultValue = pi.GetAttributes<DefaultValueAttribute>().FirstOrDefault();
+
+			var attr = new XmlSchemaAttribute();
+			attr.Name = name;
+			attr.Annotate(pi);
+
+			if (pi.PropertyType.IsEnum)
+			{
+				attr.SchemaType = GetEnumType(pi.PropertyType);
+			}
+			else
+			{
+				attr.SchemaTypeName = GetSchemaType(pi.PropertyType);
+			}
+
+			if (defaultValue != null)
+			{
+				attr.Use = XmlSchemaUse.Optional;
+
+				if (defaultValue.Value != null)
+				{
+					var valStr = defaultValue.Value.ToString();
+					var valType = defaultValue.Value.GetType();
+
+					if (valType == typeof(bool))
+					{
+						valStr = XmlConvert.ToString((bool)defaultValue.Value);
+					}
+					else if (valType.IsEnum)
+					{
+						var enumType = valType.GetField(valStr);
+						var enumAttr = enumType.GetAttributes<XmlEnumAttribute>().FirstOrDefault();
+						if (enumAttr != null)
+							valStr = enumAttr.Name;
+					}
+
+					attr.DefaultValue = valStr;
+				}
+				else if (pi.PropertyType.IsEnum)
+				{
+					var content = (XmlSchemaSimpleTypeRestriction)attr.SchemaType.Content;
+					var facet = (XmlSchemaEnumerationFacet)content.Facets[0];
+					attr.DefaultValue = facet.Value;
+				}
+			}
+			else
+			{
+				attr.Use = XmlSchemaUse.Required;
+			}
+
+			return attr;
+		}
+
+		XmlSchemaSimpleType GetEnumType(Type type)
+		{
+			XmlSchemaSimpleType ret;
+			if (enumTypeCache.TryGetValue(type, out ret))
+				return ret;
+
+			var content = new XmlSchemaSimpleTypeRestriction()
+			{
+				BaseTypeName = new XmlQualifiedName("string", XmlSchema.Namespace),
+			};
+
+			foreach (var item in type.GetFields(BindingFlags.Static | BindingFlags.Public))
+			{
+				var attr = item.GetAttributes<XmlEnumAttribute>().FirstOrDefault();
+
+				var facet = new XmlSchemaEnumerationFacet();
+				facet.Value = attr != null ? attr.Name : item.Name;
+				facet.Annotate(item);
+
+				content.Facets.Add(facet);
+			}
+
+			ret = new XmlSchemaSimpleType()
+			{
+				Content = content,
+			};
+
+			enumTypeCache.Add(type, ret);
+
+			return ret;
+		}
+
+		XmlSchemaElement MakeElement(string name, PropertyInfo pi)
+		{
+			if (string.IsNullOrEmpty(name))
+				name = pi.Name;
+
+			var type = pi.PropertyType;
+			var defaultValue = pi.GetAttributes<DefaultValueAttribute>().FirstOrDefault();
+			var isArray = type.IsArray;
+
+			if (type.IsGenericType)
+			{
+				if (type.GetGenericTypeDefinition() != typeof(List<>))
+					throw new NotSupportedException();
+
+				var args = type.GetGenericArguments();
+				if (args.Length != 1)
+					throw new NotSupportedException();
+
+				type = args[0];
+				isArray = true;
+			}
+
+			var schemaElem = new XmlSchemaElement();
+			schemaElem.MinOccursString = defaultValue != null ? "0" : "1";
+			schemaElem.MaxOccursString = isArray ? "unbounded" : "1";
+
+			if (name != type.Name)
+			{
+				schemaElem.Name = name;
+				schemaElem.SchemaTypeName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
+
+				if (!objTypeCache.ContainsKey(type))
+					AddComplexType(type.Name, type);
+			}
+			else
+			{
+				schemaElem.RefName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
+
+				if (!objTypeCache.ContainsKey(type))
+					AddElement(name, type);
+			}
+
+			return schemaElem;
 		}
 	}
 }
