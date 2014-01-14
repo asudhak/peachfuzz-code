@@ -1755,7 +1755,7 @@ namespace Peach.Core.Analyzers
 				test.faultWaitTime = decimal.Parse(node.getAttrString("faultWaitTime"));
 
 			if (node.hasAttr("controlIteration"))
-				test.controlIterationEvery = int.Parse(node.getAttrString("controlIteration"));
+				test.controlIteration = int.Parse(node.getAttrString("controlIteration"));
 
 			if (node.hasAttr("replayEnabled"))
 				test.replayEnabled = node.getAttrBool("replayEnabled");

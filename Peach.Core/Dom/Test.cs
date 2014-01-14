@@ -28,29 +28,94 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Text;
 using System.Runtime.Serialization;
-using System.Xml.XPath;
-
-using Peach.Core.Agent;
-using System.Xml;
-using System.Reflection;
+using System.Xml.Serialization;
 
 using System.Linq;
+using System.ComponentModel;
+
 namespace Peach.Core.Dom
 {
+	/*
+	 *  - Logger     0-unbounded
+	 *  - Include    0-unbounded
+	 *  - Exclude    0-unbounded
+	 *  - Mutators   0-unbounded
+	 *  - AgentRef   0-unbounded
+
+	 *  - Strategy   0-1
+	 *  - StateModel 1
+	 *  - Publisher  1-unbounded
+	 */
+
+	/// <summary>
+	/// Define a test to run. Currently a test is defined as a combination of a
+	/// Template and optionally a Data set. In the future this will expand to include a state model,
+	/// defaults for generation, etc.
+	/// </summary>
 	[Serializable]
 	public class Test : INamed
 	{
-		public string _name = null;
-		public object parent = null;
-		public int controlIterationEvery = 0;
+		#region Attributes
 
 		/// <summary>
-		/// Do not fault when actions miss-match
+		/// Name of test case.
 		/// </summary>
-		public bool nonDeterministicActions = false;
+		[XmlAttribute]
+		public string name { get; set; }
+
+		/// <summary>
+		/// Description of test case.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string description { get; set; }
+
+		/// <summary>
+		/// Time to wait in seconds between each test case. Value can be fractional
+		/// (0.25). Defaults to zero (0).
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(0.0)]
+		public decimal waitTime { get; set; }
+
+		/// <summary>
+		/// Time to wait in seconds between each iteration when in fault reproduction mode.
+		/// This occurs when a fault has been detected and is being verified. Value can
+		/// be fractional (0.25). Defaults to two (2) seconds.
+		/// </summary>
+		/// <remarks>
+		/// This value should be large enough to make sure a fault is detected at the correct
+		/// iteration.  We only wait this time when verifying a fault was detected.
+		/// </remarks>
+		[XmlAttribute]
+		[DefaultValue(2.0)]
+		public decimal faultWaitTime { get; set; }
+
+		/// <summary>
+		/// Should iterations be replayed when a fault occurs.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(true)]
+		public bool replayEnabled { get; set; }
+
+		/// <summary>
+		/// How often we should perform a control iteration.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(0)]
+		public int controlIteration { get; set; }
+
+		/// <summary>
+		/// Are action run counts non-deterministic.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(false)]
+		public bool nonDeterministicActions { get; set; }
+
+		#endregion
+
+		public object parent;
 
 		[NonSerialized]
 		public List<Logger> loggers = new List<Logger>();
@@ -111,32 +176,6 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-		public string name
-		{
-			get { return _name; }
-			set { _name = value; }
-		}
-
-		/// <summary>
-		/// Should iterations be replayed when a fault occurs.
-		/// </summary>
-		public bool replayEnabled { get; set; }
-
-		/// <summary>
-		/// Time to wait in seconds between each test case. Value can be fractional
-		/// (0.25). Defaults to zero (0).
-		/// </summary>
-		public decimal waitTime { get; set; }
-
-		/// <summary>
-		/// Time to wait in seconds between each test case when reproducing faults. Value can be fractional
-		/// (0.25). Defaults to two (2) seconds.
-		/// </summary>
-		/// <remarks>
-		/// This value should be large enough to make sure a fault is detected at the correct
-		/// iteration.  We only wait this time when verifying a fault was detected.
-		/// </remarks>
-		public decimal faultWaitTime { get; set; }
 
 		public void markMutableElements()
 		{
@@ -150,11 +189,10 @@ namespace Peach.Core.Dom
 				throw new PeachException("Parent is crazy type!");
 
 			var nav = new XPath.PeachXPathNavigator(dom);
-			XPathNodeIterator nodeIter = null;
 
 			foreach (Tuple<bool, string> item in mutables)
 			{
-				nodeIter = nav.Select(item.Item2);
+				var nodeIter = nav.Select(item.Item2);
 
 				while (nodeIter.MoveNext())
 				{

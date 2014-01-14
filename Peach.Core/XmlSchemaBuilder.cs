@@ -79,9 +79,13 @@ namespace Peach.Core.Xsd
 		[DefaultValue(null)]
 		public Defaults Defaults { get; set; }
 
-		[XmlElement]
+		[XmlElement("Agent")]
 		[DefaultValue(null)]
-		public NamedCollection<Peach.Core.Dom.Agent> Agent { get; set; }
+		public NamedCollection<Peach.Core.Dom.Agent> Agents { get; set; }
+
+		[XmlElement("Test")]
+		[DefaultValue(null)]
+		public NamedCollection<Peach.Core.Dom.Test> Tests { get; set; }
 
 		/*
 		 * Ocl
@@ -685,6 +689,9 @@ namespace Peach.Core.Xsd
 
 			if (type == typeof(int))
 				return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
+
+			if (type == typeof(decimal))
+				return new XmlQualifiedName("decimal", XmlSchema.Namespace);
 
 			throw new NotImplementedException();
 		}
