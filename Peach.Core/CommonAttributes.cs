@@ -89,4 +89,17 @@ namespace Peach.Core
 			this.IsDefault = isDefault;
 		}
 	}
+
+	[AttributeUsageAttribute(AttributeTargets.Property | AttributeTargets.Field)]
+	public class PluginElementAttribute : Attribute
+	{
+		public string AttributeName { get; private set; }
+		public Type PluginType { get; private set; }
+
+		public PluginElementAttribute(string attributeName, Type pluginType)
+		{
+			AttributeName = attributeName;
+			PluginType = pluginType;
+		}
+	}
 }
