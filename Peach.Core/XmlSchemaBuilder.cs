@@ -323,6 +323,24 @@ namespace Peach.Core.Xsd
 		public BlobDefaults Blob { get; set; }
 	}
 
+	/// <summary>
+	/// Param elements provide parameters for the parent element.
+	/// </summary>
+	public class PluginParam
+	{
+		/// <summary>
+		/// Name of the parameter.
+		/// </summary>
+		[XmlAttribute]
+		public string name { get; set; }
+
+		/// <summary>
+		/// Value of the parameter.
+		/// </summary>
+		[XmlAttribute]
+		public string value { get; set; }
+	}
+
 	#endregion
 
 	#region XmlDocFetcher
@@ -465,7 +483,7 @@ namespace Peach.Core.Xsd
 			schema.TargetNamespace = root.Namespace;
 			schema.ElementFormDefault = XmlSchemaForm.Qualified;
 
-			AddElement(root.ElementName, type);
+			AddElement(root.ElementName, type, null);
 		}
 
 		public XmlSchema Compile()
@@ -510,15 +528,95 @@ namespace Peach.Core.Xsd
 			return item;
 		}
 
-		void AddElement(string name, Type type)
+		void AddElement(string name, Type type, PluginElementAttribute pluginAttr)
 		{
 			var schemaElem = MakeItem<XmlSchemaElement>(name, type);
 
 			var complexType = new XmlSchemaComplexType();
 
-			PopulateComplexType(complexType, type);
+			Populate(complexType, type, pluginAttr);
 
 			schemaElem.SchemaType = complexType;
+		}
+
+		void Populate(XmlSchemaComplexType complexType, Type type, PluginElementAttribute pluginAttr)
+		{
+			if (pluginAttr == null)
+				PopulateComplexType(complexType, type);
+			else
+				PopulatePluginType(complexType, pluginAttr);
+		}
+
+		void PopulatePluginType(XmlSchemaComplexType complexType, PluginElementAttribute pluginAttr)
+		{
+			if (typeof(Peach.Core.Dom.INamed).IsAssignableFrom(pluginAttr.PluginType))
+			{
+				var nameAttr = new XmlSchemaAttribute();
+				nameAttr.Name = "name";
+				nameAttr.Annotate("{0} name.".Fmt(pluginAttr.PluginType.Name));
+				nameAttr.Use = XmlSchemaUse.Optional;
+
+				complexType.Attributes.Add(nameAttr);
+			}
+
+			var typeAttr = new XmlSchemaAttribute();
+			typeAttr.Name = pluginAttr.AttributeName;
+			typeAttr.Use = XmlSchemaUse.Required;
+			typeAttr.Annotate("Specify the class name of a Peach {0}. You can implement your own {1}s as needed.".Fmt(
+				pluginAttr.PluginType.Name,
+				pluginAttr.PluginType.Name.ToLower()
+				));
+
+			var restrictEnum = new XmlSchemaSimpleTypeRestriction();
+			restrictEnum.BaseTypeName = new XmlQualifiedName("string", XmlSchema.Namespace);
+
+			foreach (var item in ClassLoader.GetAllByAttribute<PluginAttribute>((t, a) => a.Type == pluginAttr.PluginType && a.IsDefault && !a.IsTest))
+			{
+				var facet = new XmlSchemaEnumerationFacet();
+				facet.Value = item.Key.Name;
+
+				var descAttr = item.Value.GetAttributes<DescriptionAttribute>().FirstOrDefault();
+				if (descAttr != null)
+					facet.Annotate(descAttr.Description);
+				else
+					facet.Annotate(item.Value);
+
+				restrictEnum.Facets.Add(facet);
+			}
+
+			var enumType = new XmlSchemaSimpleType();
+			enumType.Content = restrictEnum;
+
+			var restrictLen = new XmlSchemaSimpleTypeRestriction();
+			restrictLen.BaseTypeName = new XmlQualifiedName("string", XmlSchema.Namespace);
+			restrictLen.Facets.Add(new XmlSchemaMaxLengthFacet() { Value = "1024" });
+
+			var userType = new XmlSchemaSimpleType();
+			userType.Content = restrictLen;
+
+			var union = new XmlSchemaSimpleTypeUnion();
+			union.BaseTypes.Add(userType);
+			union.BaseTypes.Add(enumType);
+
+			var schemaType = new XmlSchemaSimpleType();
+			schemaType.Content = union;
+
+			typeAttr.SchemaType = schemaType;
+
+			complexType.Attributes.Add(typeAttr);
+
+			if (!objTypeCache.ContainsKey(typeof(PluginParam)))
+				AddElement("Param", typeof(PluginParam), null);
+
+			var schemaElem = new XmlSchemaElement();
+			schemaElem.MinOccursString = "0";
+			schemaElem.MaxOccursString = "unbounded";
+			schemaElem.RefName = new XmlQualifiedName("Param", schema.TargetNamespace);
+
+			var schemaParticle = new XmlSchemaSequence();
+			schemaParticle.Items.Add(schemaElem);
+
+			complexType.Particle = schemaParticle;
 		}
 
 		void PopulateComplexType(XmlSchemaComplexType complexType, Type type)
@@ -538,7 +636,15 @@ namespace Peach.Core.Xsd
 				var elemAttr = pi.GetAttributes<XmlElementAttribute>().FirstOrDefault();
 				if (elemAttr != null)
 				{
-					var elem = MakeElement(elemAttr.ElementName, pi);
+					var elem = MakeElement(elemAttr.ElementName, pi, null);
+					schemaParticle.Items.Add(elem);
+					continue;
+				}
+
+				var pluginAttr = pi.GetAttributes<PluginElementAttribute>().FirstOrDefault();
+				if (pluginAttr != null)
+				{
+					var elem = MakeElement(pluginAttr.PluginType.Name, pi, pluginAttr);
 					schemaParticle.Items.Add(elem);
 					continue;
 				}
@@ -548,11 +654,11 @@ namespace Peach.Core.Xsd
 				complexType.Particle = schemaParticle;
 		}
 
-		void AddComplexType(string name, Type type)
+		void AddComplexType(string name, Type type, PluginElementAttribute pluginAttr)
 		{
 			var complexType = MakeItem<XmlSchemaComplexType>(name, type);
 
-			PopulateComplexType(complexType, type);
+			Populate(complexType, type, pluginAttr);
 		}
 
 		void ValidationEventHandler(object sender, ValidationEventArgs e)
@@ -671,7 +777,23 @@ namespace Peach.Core.Xsd
 			return ret;
 		}
 
-		XmlSchemaElement MakeElement(string name, PropertyInfo pi)
+		bool IsGenericCollection(Type type)
+		{
+			var ifaces = type.GetInterfaces();
+			foreach (var iface in ifaces)
+			{
+				if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(ICollection<>))
+					return true;
+			}
+
+			var baseType = type.BaseType;
+			if (baseType == null)
+				return false;
+
+			return IsGenericCollection(baseType);
+		}
+
+		XmlSchemaElement MakeElement(string name, PropertyInfo pi, PluginElementAttribute pluginAttr)
 		{
 			if (string.IsNullOrEmpty(name))
 				name = pi.Name;
@@ -682,7 +804,7 @@ namespace Peach.Core.Xsd
 
 			if (type.IsGenericType)
 			{
-				if (type.GetGenericTypeDefinition() != typeof(List<>))
+				if (!IsGenericCollection(type))
 					throw new NotSupportedException();
 
 				var args = type.GetGenericArguments();
@@ -703,14 +825,14 @@ namespace Peach.Core.Xsd
 				schemaElem.SchemaTypeName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
 
 				if (!objTypeCache.ContainsKey(type))
-					AddComplexType(type.Name, type);
+					AddComplexType(type.Name, type, pluginAttr);
 			}
 			else
 			{
 				schemaElem.RefName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
 
 				if (!objTypeCache.ContainsKey(type))
-					AddElement(name, type);
+					AddElement(name, type, pluginAttr);
 			}
 
 			return schemaElem;
