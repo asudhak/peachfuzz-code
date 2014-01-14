@@ -15,16 +15,26 @@ namespace Peach.Core.Test
 
 	public class SchemaTests
 	{
-		public void Test1()
+		private void TestType(Type type)
 		{
 			var stream = new MemoryStream();
 
-			SchemaBuilder.Generate(typeof(TestElement), stream);
+			SchemaBuilder.Generate(type, stream);
 
 			var buf = stream.ToArray();
 			var xsd = Encoding.UTF8.GetString(buf);
 
 			Console.WriteLine(xsd);
+		}
+
+		public void Test1()
+		{
+			TestType(typeof(Peach.Core.Xsd.Dom));
+		}
+
+		public void Test2()
+		{
+			TestType(typeof(TestElement));
 		}
 	}
 }

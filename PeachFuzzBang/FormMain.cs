@@ -275,7 +275,7 @@ namespace PeachFuzzBang
 				// Agent
 				Peach.Core.Dom.Agent agent = new Peach.Core.Dom.Agent();
 				agent.name = "TheAgent";
-				agent.url = "local://";
+				agent.location = "local://";
 
 				Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
 

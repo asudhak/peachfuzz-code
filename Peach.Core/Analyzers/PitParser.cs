@@ -709,11 +709,11 @@ namespace Peach.Core.Analyzers
 			Dom.Agent agent = new Dom.Agent();
 
 			agent.name = node.getAttrString("name");
-			agent.url = node.getAttr("location", null);
+			agent.location = node.getAttr("location", null);
 			agent.password = node.getAttr("password", null);
 
-			if (agent.url == null)
-				agent.url = "local://";
+			if (agent.location == null)
+				agent.location = "local://";
 
 			foreach (XmlNode child in node.ChildNodes)
 			{

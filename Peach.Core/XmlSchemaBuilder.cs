@@ -79,15 +79,17 @@ namespace Peach.Core.Xsd
 		[DefaultValue(null)]
 		public Defaults Defaults { get; set; }
 
+		[XmlElement]
+		[DefaultValue(null)]
+		public NamedCollection<Peach.Core.Dom.Agent> Agent { get; set; }
+
 		/*
 		 * Ocl
-		 * LangModel
-		 * DataModel
+		 * DataModel / LangModel
 		 * Data
 		 * Test
 		 * Agent
 		 * StateModel
-		 * Python
 		 * Analyzer (Top Level)
 		 */
 	}
