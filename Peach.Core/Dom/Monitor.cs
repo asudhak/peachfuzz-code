@@ -37,7 +37,10 @@ using System.Xml;
 namespace Peach.Core.Dom
 {
 	/// <summary>
-	/// A dom element to hold Monitor config information
+	/// Monitors are agent modules that can perform a number of tasks such as
+	/// monitoring a target application to detect faults, restarting virtual machines,
+	/// recording network traffic, etc. Custom monitors can easily be created and used along
+	/// with the included monitors.
 	/// </summary>
 	[Serializable]
 	public class Monitor : INamed
