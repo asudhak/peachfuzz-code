@@ -252,9 +252,9 @@ namespace Peach.Core.Agent.Monitors
 			dbgPaths.Add("Debugging Tools for Windows (x86)");
 			dbgPaths.Add("Windows Kits\\8.0\\Debuggers\\x64");
 			dbgPaths.Add("Windows Kits\\8.0\\Debuggers\\x86");
-            dbgPaths.Add("Windows Kits\\8.1\\Debuggers\\x64");
-            dbgPaths.Add("Windows Kits\\8.1\\Debuggers\\x86");
-
+			dbgPaths.Add("Windows Kits\\8.1\\Debuggers\\x64");
+			dbgPaths.Add("Windows Kits\\8.1\\Debuggers\\x86");
+			
 			foreach (string path in pgPaths)
 			{
 				foreach (string dpath in dbgPaths)
