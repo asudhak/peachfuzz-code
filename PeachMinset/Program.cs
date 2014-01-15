@@ -35,7 +35,7 @@ using System.Reflection;
 
 using Peach.Core;
 using Peach.Core.Analysis;
-using Peach.Options;
+using Peach.Core.Runtime;
 
 namespace PeachMinset
 {
