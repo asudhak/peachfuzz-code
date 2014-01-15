@@ -41,9 +41,40 @@ namespace PeachMinset
 {
 	class Program
 	{
+		class SyntaxException : Exception
+		{
+			public SyntaxException()
+				: base("")
+			{
+			}
+
+			public SyntaxException(string message)
+				: base(message)
+			{
+			}
+		}
+
 		static void Main(string[] args)
 		{
-			new Program(args);
+			try
+			{
+				new Program(args);
+			}
+			catch (OptionException ex)
+			{
+				Console.WriteLine(ex.Message + "\n");
+			}
+			catch (SyntaxException ex)
+			{
+				if (!string.IsNullOrEmpty(ex.Message))
+					Console.WriteLine(ex.Message + "\n");
+				else
+					Syntax();
+			}
+			catch (PeachException ex)
+			{
+				Console.WriteLine(ex.Message + "\n");
+			}
 		}
 
 		public Program(string[] args)
@@ -56,7 +87,7 @@ namespace PeachMinset
 			string traces = null;
 			bool kill = false;
 			string executable = null;
-			string arguments = "";
+			string arguments = null;
 			string minset = null;
 
 			var p = new OptionSet()
@@ -68,34 +99,26 @@ namespace PeachMinset
 					{ "m|minset=", v => minset = v }
 				};
 
-			List<string> extra = p.Parse(args);
+			var extra = p.Parse(args);
 
-			if (extra.Count == 0 && samples == null && traces == null && minset == null)
-				Syntax();
+			executable = extra.FirstOrDefault();
+			arguments = string.Join(" ", extra.Skip(1));
 
-			if (extra.Count != 0 && samples == null && traces == null)
-				Syntax();
+			if (args.Length == 0)
+				throw new SyntaxException();
 
-			// Build command line
-			if (extra.Count > 0)
-			{
-				foreach (string e in extra)
-				{
-					if (executable == null)
-						executable = e;
-					else
-						arguments += e + " ";
-				}
+			if (samples == null)
+				throw new SyntaxException("Error, 'samples' argument is required.");
 
-				if (arguments.IndexOf("%s") == -1)
-				{
-					Console.WriteLine("Error, command missing '%s'.\n");
-					return;
-				}
-			}
+			if (traces == null)
+				throw new SyntaxException("Error, 'traces' argument is required.");
 
-			// Ensure peach platform assemblies are loaded
-			Platform.LoadAssembly();
+			if (minset == null && executable == null)
+				throw new SyntaxException("Error, 'minset' or command argument is required.");
+
+			if (executable != null && arguments.IndexOf("%s") == -1)
+				throw new SyntaxException("Error, command argument missing '%s'.");
+
 
             var ms = new Minset();
             ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
@@ -176,7 +199,7 @@ namespace PeachMinset
 			return filenames;
 		}
 
-		void Syntax()
+		static void Syntax()
 		{
 			Console.WriteLine(@"
 
@@ -197,19 +220,22 @@ Collect Traces
 --------------
 
 Perform code coverage using all files in the 'samples' folder.  Collect
-the .trace files for later analysis.
+the .trace files in the 'traces' folder for later analysis.
 
 Syntax:
   PeachMinset [-k] -s samples -t traces command.exe args %s
 
 Note:
   %s will be replaced by sample filename.
+  -k will terminate command.exe when CPU becomes idle.
+
 
 Compute Minimum Set
 -------------------
 
-Analyzes all .trace files to determin the minimum set of samples to use
-during fuzzing.
+Analyzes all .trace files in the 'traces' folder to determin the minimum
+set of samples to use during fuzzing. The minimum set of samples will
+be copied from the 'samples' folder to the 'minset' folder.
 
 Syntax:
   PeachMinset -s samples -t traces -m minset
@@ -221,10 +247,11 @@ All-In-One
 Both tracing and computing can be performed in a single step.
 
 Syntax:
-  PeachMinset [-k] -s samples -m minset command.exe args %s
+  PeachMinset [-k] -s samples -t traces -m minset command.exe args %s
 
 Note:
   %s will be replaced by sample filename.
+  -k will terminate command.exe when CPU becomes idle.
 
 
 Distributing Minset
@@ -235,7 +262,6 @@ distributing the collecting of traces to multiple machines.  The
 final compute minimum set cannot be distributed.
 
 ");
-
 		}
 	}
 }
