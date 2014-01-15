@@ -73,7 +73,10 @@ namespace PeachMinset
 			}
 			catch (PeachException ex)
 			{
-				Console.WriteLine(ex.Message + "\n");
+				Console.WriteLine("{0}\n", ex.Message);
+
+				if (ex.InnerException != null)
+					Console.WriteLine("{0}\n", ex.InnerException.Message);
 			}
 		}
 
@@ -119,47 +122,55 @@ namespace PeachMinset
 			if (executable != null && arguments.IndexOf("%s") == -1)
 				throw new SyntaxException("Error, command argument missing '%s'.");
 
+			var sampleFiles = GetFiles(samples, "sample");
+
+			// If we are generating traces, ensure we can write to the traces folder
+			if (executable != null)
+				VerifyDirectory(traces);
+
+			// If we are generating minset, ensure we can write to the minset folder
+			if (minset != null)
+				VerifyDirectory(minset);
 
             var ms = new Minset();
             ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
             ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
-            var both = false;
 
-            if (extra.Count > 0 && minset != null && traces != null && samples != null)
-            {
-                both = true;
-                Console.WriteLine("[*] Running both trace and coverage analysis");
-            }
+			if (minset != null && executable != null)
+				Console.WriteLine("[*] Running both trace and coverage analysis\n");
 
-            if (both || (executable != null && minset == null))
-            {
-                var sampleFiles = GetFiles(samples);
-
-                Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
-                ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
-
-                Console.WriteLine("\n[*] Finished");
-            }
-
-			if (both || (extra.Count == 0 && minset != null && traces != null && samples != null))
+			if (executable != null)
 			{
+				Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
+
+				ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
+
+				Console.WriteLine("\n[*] Finished\n");
+			}
+
+			if (minset != null)
+			{
+				var traceFiles = GetFiles(traces, "trace");
+
 				Console.WriteLine("[*] Running coverage analysis...");
-				var sampleFiles = GetFiles(samples);
-				var minsetFiles = ms.RunCoverage(sampleFiles, GetFiles(traces));
 
-				Console.WriteLine("[-]   " + minsetFiles.Length + " files were selected from a total of " + sampleFiles.Count() + ".");
+				var minsetFiles = ms.RunCoverage(sampleFiles, traceFiles);
+
+				Console.WriteLine("[-]   {0} files were selected from a total of {1}.", minsetFiles.Length, sampleFiles.Length);
 				Console.WriteLine("[*] Copying over selected files...");
-
-				if (!Directory.Exists(minset))
-					Directory.CreateDirectory(minset);
 
 				foreach (string fileName in minsetFiles)
 				{
-					Console.WriteLine("[-]   " + Path.Combine(samples, Path.GetFileName(fileName)) + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
-					File.Copy(Path.Combine(samples, Path.GetFileName(fileName)), Path.Combine(minset, Path.GetFileName(fileName)), true);
+					var file = Path.GetFileName(fileName);
+					var src = Path.Combine(samples, file);
+					var dst = Path.Combine(minset, file);
+
+					Console.WriteLine("[-]   {0} -> {1}", src, dst);
+
+					File.Copy(src, dst, true);
 				}
 
-				Console.WriteLine("\n[*] Finished");
+				Console.WriteLine("\n[*] Finished\n");
 			}
 		}
 
@@ -174,29 +185,52 @@ namespace PeachMinset
 			Console.WriteLine("done.");
 		}
 
-		string[] GetFiles(string path)
+		static string[] GetFiles(string path, string what)
 		{
-			string[] filenames;
+			string[] fileNames;
 
-			if (path.IndexOf("*") > -1)
+			try
 			{
-				try
+				if (path.IndexOf("*") > -1)
 				{
-					filenames = Directory.GetFiles(Path.GetDirectoryName(path), Path.GetFileName(path));
+					fileNames = Directory.GetFiles(Path.GetDirectoryName(path), Path.GetFileName(path));
 				}
-				catch
+				else
 				{
-					filenames = Directory.GetFiles(".", Path.GetFileName(path));
+					fileNames = Directory.GetFiles(path);
 				}
 			}
-			else
+			catch (IOException ex)
 			{
-				filenames = Directory.GetFiles(path);
+				var err = "Error, unable to get the list of {0} files.".Fmt(what);
+				throw new PeachException(err, ex);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				var err = "Error, unable to get the list of {0} files.".Fmt(what);
+				throw new PeachException(err, ex);
 			}
 
-			Array.Sort(filenames);
+			Array.Sort(fileNames);
 
-			return filenames;
+			return fileNames;
+		}
+
+		static void VerifyDirectory(string path)
+		{
+			try
+			{
+				if (!Directory.Exists(path))
+					Directory.CreateDirectory(path);
+			}
+			catch (IOException ex)
+			{
+				throw new PeachException(ex.Message, ex);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				throw new PeachException(ex.Message, ex);
+			}
 		}
 
 		static void Syntax()
