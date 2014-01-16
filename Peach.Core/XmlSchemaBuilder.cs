@@ -643,7 +643,7 @@ namespace Peach.Core.Xsd
 			if (type.IsAbstract)
 				complexType.IsAbstract = true;
 
-			var schemaParticle = new XmlSchemaSequence();
+			XmlSchemaGroupBase schemaParticle = new XmlSchemaSequence();
 
 			foreach (var pi in type.GetProperties())
 			{
@@ -695,6 +695,48 @@ namespace Peach.Core.Xsd
 					schemaParticle.Items.Add(elem);
 					continue;
 				}
+			}
+
+			// See if there is a better way to do this.
+			// If particle contains a single element, use xs:sequence
+			// If all items are [0|1,1], use xs:all
+			// Else, use xs:choice [0, unbounded]
+			while (schemaParticle.Items.Count > 1)
+			{
+				var items = schemaParticle.Items.OfType<XmlSchemaParticle>();
+				if (!items.Where(i => i.MaxOccursString != "1").Any())
+				{
+					// All maxOccurs are "1", check minOccurs...
+					var disinct = items.Select(a => a.MinOccursString).Distinct();
+					var value = disinct.FirstOrDefault();
+					var moreThanOne = disinct.Skip(1).Any();
+
+					if (!moreThanOne && (value == "0" || value == "1"))
+					{
+						// minOccurs is "0" or "1", convert to xs:all
+						var allParticle = new XmlSchemaAll();
+						allParticle.MinOccursString = value;
+						allParticle.MaxOccursString = "1";
+
+						foreach (var item in schemaParticle.Items)
+							allParticle.Items.Add(item);
+
+						schemaParticle = allParticle;
+
+						break;
+					}
+				}
+
+				var choiceParticle = new XmlSchemaChoice();
+				choiceParticle.MinOccursString = "0";
+				choiceParticle.MaxOccursString = "unbounded";
+
+				foreach (var item in schemaParticle.Items)
+					choiceParticle.Items.Add(item);
+
+				schemaParticle = choiceParticle;
+
+				break;
 			}
 
 			if (type.BaseType != typeof(object))
