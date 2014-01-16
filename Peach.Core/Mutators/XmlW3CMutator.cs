@@ -37,7 +37,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
+    [Mutator("XmlW3CParserTestsMutator")]
+    [Description("Performs the W3C parser tests. Only works on <String> elements with a <Hint name=\"type\" value=\"xml\">")]
     [Hint("type", "Allows string to be mutated by the XmlW3CMutator.")]
     public class XmlW3CParserTestsMutator : Mutator
     {
