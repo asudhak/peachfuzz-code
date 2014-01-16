@@ -23,12 +23,6 @@ namespace Peach.Core.Dom
 		public Action action { get; set; }
 
 		/// <summary>
-		/// A cached copy of the clean data model.  Has fields/data applied
-		/// when applicable.
-		/// </summary>
-		public DataModel originalDataModel { get; private set; }
-
-		/// <summary>
 		/// The data model we use for input/output when running the state model.
 		/// </summary>
 		public DataModel dataModel { get; set; }
@@ -54,6 +48,12 @@ namespace Peach.Core.Dom
 		/// the clean model.
 		/// </summary>
 		private DataModel sourceDataModel { get; set; }
+
+		/// <summary>
+		/// A cached copy of the clean data model.  Has fields/data applied
+		/// when applicable.
+		/// </summary>
+		private DataModel originalDataModel { get; set; }
 
 		/// <summary>
 		/// The name of this record.  Non-null when actions have multiple data models

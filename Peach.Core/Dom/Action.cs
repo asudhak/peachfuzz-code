@@ -53,10 +53,12 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Performs an Action such as sending output, calling a method, etc.
 	/// </summary>
-	[Serializable]
 	public abstract class Action : INamed
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		[NonSerialized]
+		private State _parent;
 
 		#region Common Action Properties
 
@@ -121,7 +123,17 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The state this action belongs to
 		/// </summary>
-		public State parent { get; set; }
+		public State parent
+		{
+			get
+			{
+				return _parent;
+			}
+			set
+			{
+				_parent = value;
+			}
+		}
 
 		/// <summary>
 		/// Provides backwards compatibility to the unit tests.

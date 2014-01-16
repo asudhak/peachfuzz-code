@@ -36,24 +36,84 @@ using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
-	/*
-	 *  - Logger     0-unbounded
-	 *  - Include    0-unbounded
-	 *  - Exclude    0-unbounded
-	 *  - Mutators   0-unbounded
-	 *  - AgentRef   0-unbounded
+	/// <summary>
+	/// Mark state model/data models as mutable at runtime.
+	/// </summary>
+	public class IncludeMutable : MarkMutable
+	{
+		public override bool mutable { get { return true; } }
+	}
 
-	 *  - Strategy   0-1
-	 *  - StateModel 1
-	 *  - Publisher  1-unbounded
-	 */
+	/// <summary>
+	/// Mark state model/data models as non-mutable at runtime.
+	/// </summary>
+	public class ExcludeMutable : MarkMutable
+	{
+		public override bool mutable { get { return true; } }
+	}
+
+	/// <summary>
+	/// Mark state model/data models as mutable true/false at runtime.
+	/// </summary>
+	public abstract class MarkMutable
+	{
+		[XmlIgnore]
+		public abstract bool mutable { get; }
+
+		/// <summary>
+		/// Name of element to mark as mutable/non-mutable.
+		/// </summary>
+		[XmlAttribute("ref")]
+		[DefaultValue(null)]
+		public string refName { get; set; }
+
+		/// <summary>
+		/// Xpath to elements to mark as mutable/non-mutable.
+		/// </summary>
+		[XmlAttribute("xpath")]
+		[DefaultValue(null)]
+		public string xpath { get; set; }
+	}
+
+	public class MutatorFilter
+	{
+		public enum Mode
+		{
+			[XmlEnum("include")]
+			Include,
+
+			[XmlEnum("exclude")]
+			Exclude,
+		}
+
+		[XmlAttribute]
+		public Mode mode { get; set; }
+
+		[PluginElement("class", typeof(Peach.Core.Mutator))]
+		public List<Peach.Core.Mutator> Mutators { get; set; }
+	}
+
+	public class AgentRef
+	{
+		[XmlAttribute("ref")]
+		public string refName { get; set; }
+
+		[XmlAttribute("platform")]
+		[DefaultValue(Platform.OS.All)]
+		public Platform.OS platform { get; set; }
+	}
+
+	public class StateModelRef
+	{
+		[XmlAttribute("ref")]
+		public string refName { get; set; }
+	}
 
 	/// <summary>
 	/// Define a test to run. Currently a test is defined as a combination of a
 	/// Template and optionally a Data set. In the future this will expand to include a state model,
 	/// defaults for generation, etc.
 	/// </summary>
-	[Serializable]
 	public class Test : INamed
 	{
 		#region Attributes
@@ -115,18 +175,59 @@ namespace Peach.Core.Dom
 
 		#endregion
 
-		public object parent;
+		[OnCloning]
+		private bool OnCloning(object context)
+		{
+			throw new NotSupportedException();
+		}
 
-		[NonSerialized]
-		public List<Logger> loggers = new List<Logger>();
+		#region Elements
+
+		[PluginElement("class", typeof(Logger))]
+		[DefaultValue(null)]
+		public List<Logger> loggers { get; set; }
+
+		[XmlElement("Include", typeof(IncludeMutable))]
+		[XmlElement("Exclude", typeof(ExcludeMutable))]
+		[DefaultValue(null)]
+		public List<MarkMutable> mutables { get; set; }
+
+		[XmlElement("Mutator")]
+		[DefaultValue(null)]
+		public List<MutatorFilter> mutators { get; set; }
+
+		[PluginElement("Strategy", "class", typeof(MutationStrategy))]
+		[DefaultValue(null)]
+		public MutationStrategy strategy { get; set; }
+
+		#endregion
+
+		#region Schema Elements
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Agent")]
+		[DefaultValue(null)]
+		public List<AgentRef> agentRef { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("StateModel")]
+		public StateModelRef stateModelRef { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[PluginElement("class", typeof(Publisher))]
+		public List<Publisher> pubs { get; set; }
+
+		#endregion
+
+		public Dom parent { get; set; }
 
 		public StateModel stateModel = null;
-
-		[NonSerialized]
-		public MutationStrategy strategy = null;
-
-		//[NonSerialized]
-		//public OrderedDictionary<string, Logger> loggers = new OrderedDictionary<string, Logger>();
 
 		[NonSerialized]
 		public OrderedDictionary<string, Publisher> publishers = new OrderedDictionary<string, Publisher>();
@@ -151,13 +252,6 @@ namespace Peach.Core.Dom
 		/// </remarks>
 		public List<string> excludedMutators = new List<string>();
 
-		/// <summary>
-		/// Collection of xpaths to mark state model/data models as mutable true/false
-		/// at runtime.  This collection is set using Include and Exclude elements in a
-		/// Test definition.
-		/// </summary>
-		public List<Tuple<bool, string>> mutables = new List<Tuple<bool, string>>();
-
 		public Test()
 		{
 			publishers.AddEvent += new AddEventHandler<string, Publisher>(publishers_AddEvent);
@@ -165,6 +259,12 @@ namespace Peach.Core.Dom
 			replayEnabled = true;
 			waitTime = 0;
 			faultWaitTime = 2;
+
+			loggers = new List<Logger>();
+			mutables = new List<MarkMutable>();
+			mutators = new List<MutatorFilter>();
+			agentRef = new List<AgentRef>();
+			pubs = new List<Publisher>();
 		}
 
 		#region OrderedDictionary AddEvent Handlers
@@ -179,20 +279,11 @@ namespace Peach.Core.Dom
 
 		public void markMutableElements()
 		{
-			Dom dom;
+			var nav = new XPath.PeachXPathNavigator(parent);
 
-			if (parent is Dom)
-				dom = parent as Dom;
-			else if (parent is Test)
-				dom = (parent as Test).parent as Dom;
-			else
-				throw new PeachException("Parent is crazy type!");
-
-			var nav = new XPath.PeachXPathNavigator(dom);
-
-			foreach (Tuple<bool, string> item in mutables)
+			foreach (var item in mutables)
 			{
-				var nodeIter = nav.Select(item.Item2);
+				var nodeIter = nav.Select(item.xpath);
 
 				while (nodeIter.MoveNext())
 				{
@@ -200,9 +291,9 @@ namespace Peach.Core.Dom
 
 					if (dataElement != null)
 					{
-						dataElement.isMutable = item.Item1;
+						dataElement.isMutable = item.mutable;
 						foreach (var child in dataElement.EnumerateAllElements())
-							child.isMutable = item.Item1;
+							child.isMutable = item.mutable;
 					}
 				}
 			}

@@ -93,11 +93,20 @@ namespace Peach.Core
 	[AttributeUsageAttribute(AttributeTargets.Property | AttributeTargets.Field)]
 	public class PluginElementAttribute : Attribute
 	{
+		public string ElementName { get; private set; }
 		public string AttributeName { get; private set; }
 		public Type PluginType { get; private set; }
 
+		public PluginElementAttribute(string elementName, string attributeName, Type pluginType)
+		{
+			ElementName = elementName;
+			AttributeName = attributeName;
+			PluginType = pluginType;
+		}
+
 		public PluginElementAttribute(string attributeName, Type pluginType)
 		{
+			ElementName = pluginType.Name;
 			AttributeName = attributeName;
 			PluginType = pluginType;
 		}

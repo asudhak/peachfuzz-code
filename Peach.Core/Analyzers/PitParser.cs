@@ -1781,7 +1781,7 @@ namespace Peach.Core.Analyzers
 					if (attr == null)
 						attr = "//*";
 
-					test.mutables.Add(new Tuple<bool, string>(true, attr));
+					test.mutables.Add(new IncludeMutable() { xpath = attr });
 				}
 
 				// Exclude
@@ -1797,7 +1797,7 @@ namespace Peach.Core.Analyzers
 					if (attr == null)
 						attr = "//*";
 
-					test.mutables.Add(new Tuple<bool, string>(false, attr));
+					test.mutables.Add(new ExcludeMutable() { xpath = attr });
 				}
 
 				// Strategy

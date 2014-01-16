@@ -6,18 +6,11 @@ using System.Text;
 namespace Peach.Core
 {
 	// Mark a class as a Peach Mutator
-	public class MutatorAttribute : Attribute
+	public class MutatorAttribute : PluginAttribute
 	{
-		public string description = null;
-
-		public MutatorAttribute()
+		public MutatorAttribute(string name)
+			: base(typeof(Mutator), name, true)
 		{
-			description = "Unknown";
-		}
-
-		public MutatorAttribute(string description)
-		{
-			this.description = description;
 		}
 	}
 }

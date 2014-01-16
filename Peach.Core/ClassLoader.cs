@@ -191,23 +191,6 @@ namespace Peach.Core
 		}
 
 		/// <summary>
-		/// Extension to the MemberInfo class. Return all attributes matching the specified type.
-		/// </summary>
-		/// <typeparam name="A">Attribute type to find.</typeparam>
-		/// <param name="mi">MemberInfo in which the search should run over.</param>
-		/// <returns>A generator which yields the attributes specified.</returns>
-		public static IEnumerable<A> GetAttributes<A>(this MemberInfo mi)
-			where A : Attribute
-		{
-			foreach (var attr in mi.GetCustomAttributes(true))
-			{
-				var concrete = attr as A;
-				if (concrete != null)
-					yield return concrete;
-			}
-		}
-
-		/// <summary>
 		/// Extension to the Type class. Return all attributes matching the specified type and predicate.
 		/// </summary>
 		/// <typeparam name="A">Attribute type to find.</typeparam>

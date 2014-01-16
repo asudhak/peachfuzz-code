@@ -467,6 +467,19 @@ namespace Peach.Core.Xsd
 
 			item.Annotation = anno;
 		}
+
+		/// <summary>
+		/// Extension to the MemberInfo class. Return all attributes matching the specified type.
+		/// </summary>
+		/// <typeparam name="A">Attribute type to find.</typeparam>
+		/// <param name="mi">MemberInfo in which the search should run over.</param>
+		/// <returns>A generator which yields the attributes specified.</returns>
+		public static IEnumerable<A> GetAttributes<A>(this MemberInfo mi)
+			where A : Attribute
+		{
+			var attrs = System.Attribute.GetCustomAttributes(mi, typeof(A), false);
+			return attrs.OfType<A>();
+		}
 	}
 
 	#endregion
@@ -627,10 +640,16 @@ namespace Peach.Core.Xsd
 
 		void PopulateComplexType(XmlSchemaComplexType complexType, Type type)
 		{
+			if (type.IsAbstract)
+				complexType.IsAbstract = true;
+
 			var schemaParticle = new XmlSchemaSequence();
 
 			foreach (var pi in type.GetProperties())
 			{
+				if (pi.DeclaringType != type)
+					continue;
+
 				var attrAttr = pi.GetAttributes<XmlAttributeAttribute>().FirstOrDefault();
 				if (attrAttr != null)
 				{
@@ -639,10 +658,32 @@ namespace Peach.Core.Xsd
 					continue;
 				}
 
-				var elemAttr = pi.GetAttributes<XmlElementAttribute>().FirstOrDefault();
-				if (elemAttr != null)
+				var elemAttrs = pi.GetAttributes<XmlElementAttribute>();
+
+				if (elemAttrs.Skip(1).Any())
 				{
-					var elem = MakeElement(elemAttr.ElementName, pi, null);
+					// If there is more than 1 XmlElement attribute, make a sequence of choice of elements
+					var elemChoice = new XmlSchemaChoice();
+
+					foreach (var elemAttr in elemAttrs)
+					{
+						var elem = MakeElement(elemAttr.ElementName, elemAttr.Type, pi, null);
+
+						elemChoice.MinOccursString = elem.MinOccursString;
+						elemChoice.MaxOccursString = elem.MaxOccursString;
+						elem.MinOccursString = "0";
+						elem.MaxOccursString = "1";
+
+						elemChoice.Items.Add(elem);
+					}
+
+					schemaParticle.Items.Add(elemChoice);
+				}
+				else if (elemAttrs.Any())
+				{
+					var elemAttr = elemAttrs.First();
+					var elem = MakeElement(elemAttr.ElementName, null, pi, null);
+
 					schemaParticle.Items.Add(elem);
 					continue;
 				}
@@ -650,14 +691,30 @@ namespace Peach.Core.Xsd
 				var pluginAttr = pi.GetAttributes<PluginElementAttribute>().FirstOrDefault();
 				if (pluginAttr != null)
 				{
-					var elem = MakeElement(pluginAttr.PluginType.Name, pi, pluginAttr);
+					var elem = MakeElement(pluginAttr.ElementName, null, pi, pluginAttr);
 					schemaParticle.Items.Add(elem);
 					continue;
 				}
 			}
 
-			if (schemaParticle.Items.Count > 0)
+			if (type.BaseType != typeof(object))
+			{
+				var ext = new XmlSchemaComplexContentExtension();
+				ext.BaseTypeName = new XmlQualifiedName(type.BaseType.Name, schema.TargetNamespace);
+
+				if (schemaParticle.Items.Count > 0)
+					ext.Particle = schemaParticle;
+
+				var content = new XmlSchemaComplexContent();
+				content.IsMixed = false;
+				content.Content = ext;
+
+				complexType.ContentModel = content;
+			}
+			else if (schemaParticle.Items.Count > 0)
+			{
 				complexType.Particle = schemaParticle;
+			}
 		}
 
 		void AddComplexType(string name, Type type, PluginElementAttribute pluginAttr)
@@ -665,6 +722,13 @@ namespace Peach.Core.Xsd
 			var complexType = MakeItem<XmlSchemaComplexType>(name, type);
 
 			Populate(complexType, type, pluginAttr);
+
+			if (type.BaseType != typeof(object))
+			{
+				System.Diagnostics.Debug.Assert(pluginAttr == null);
+				if (!objTypeCache.ContainsKey(type.BaseType))
+					AddComplexType(type.BaseType.Name, type.BaseType, null);
+			}
 		}
 
 		void ValidationEventHandler(object sender, ValidationEventArgs e)
@@ -802,10 +866,10 @@ namespace Peach.Core.Xsd
 			return IsGenericCollection(baseType);
 		}
 
-		XmlSchemaElement MakeElement(string name, PropertyInfo pi, PluginElementAttribute pluginAttr)
+		XmlSchemaElement MakeElement(string name, Type attrType, PropertyInfo pi, PluginElementAttribute pluginAttr)
 		{
 			if (string.IsNullOrEmpty(name))
-				name = pi.Name;
+				name = attrType == null ? pi.Name : attrType.Name;
 
 			var type = pi.PropertyType;
 			var defaultValue = pi.GetAttributes<DefaultValueAttribute>().FirstOrDefault();
@@ -828,13 +892,15 @@ namespace Peach.Core.Xsd
 			schemaElem.MinOccursString = defaultValue != null ? "0" : "1";
 			schemaElem.MaxOccursString = isArray ? "unbounded" : "1";
 
-			if (name != type.Name)
+			var destType = attrType ?? type;
+
+			if (name != type.Name || type != destType)
 			{
 				schemaElem.Name = name;
-				schemaElem.SchemaTypeName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
+				schemaElem.SchemaTypeName = new XmlQualifiedName(destType.Name, schema.TargetNamespace);
 
-				if (!objTypeCache.ContainsKey(type))
-					AddComplexType(type.Name, type, pluginAttr);
+				if (!objTypeCache.ContainsKey(destType))
+					AddComplexType(destType.Name, destType, pluginAttr);
 			}
 			else
 			{
