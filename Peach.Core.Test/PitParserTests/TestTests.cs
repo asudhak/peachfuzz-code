@@ -108,9 +108,9 @@ namespace Peach.Core.Test.PitParserTests
 			var engine = new Engine(null);
 			engine.startFuzzing(dom, config);
 
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[2].isMutable);
 		}
 
 		[Test]
@@ -144,9 +144,9 @@ namespace Peach.Core.Test.PitParserTests
 			var engine = new Engine(null);
 			engine.startFuzzing(dom, config);
 
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(true,  dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(true,  dom.tests[0].stateModel.states[0].actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[2].isMutable);
 		}
 
 		[Test]
@@ -184,11 +184,11 @@ namespace Peach.Core.Test.PitParserTests
 			var engine = new Engine(null);
 			engine.startFuzzing(dom, config);
 
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states[0].actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[2].isMutable);
 
-			var cont = dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1] as DataElementContainer;
+			var cont = dom.tests[0].stateModel.states[0].actions[0].dataModel[1] as DataElementContainer;
 			Assert.NotNull(cont);
 			Assert.AreEqual(1, cont.Count);
 			cont = cont[0] as DataElementContainer;
@@ -228,9 +228,9 @@ namespace Peach.Core.Test.PitParserTests
 			var engine = new Engine(null);
 			engine.startFuzzing(dom, config);
 
-			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states[0].actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states[0].actions[0].dataModel[2].isMutable);
 		}
 
 		[Test]
@@ -267,11 +267,11 @@ namespace Peach.Core.Test.PitParserTests
 			var engine = new Engine(null);
 			engine.startFuzzing(dom, config);
 
-			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[0].isMutable);
-			Assert.AreEqual(false, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1].isMutable);
-			Assert.AreEqual(true, dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[2].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states[0].actions[0].dataModel[0].isMutable);
+			Assert.AreEqual(false, dom.tests[0].stateModel.states[0].actions[0].dataModel[1].isMutable);
+			Assert.AreEqual(true, dom.tests[0].stateModel.states[0].actions[0].dataModel[2].isMutable);
 
-			var cont = dom.tests[0].stateModel.states.Values.ElementAt(0).actions[0].dataModel[1] as DataElementContainer;
+			var cont = dom.tests[0].stateModel.states[0].actions[0].dataModel[1] as DataElementContainer;
 			Assert.NotNull(cont);
 			Assert.AreEqual(1, cont.Count);
 			cont = cont[0] as DataElementContainer;

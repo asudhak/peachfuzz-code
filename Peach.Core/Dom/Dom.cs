@@ -90,7 +90,7 @@ namespace Peach.Core.Dom
 
 			foreach (Test test in tests.Values)
 			{
-				foreach (State state in test.stateModel.states.Values)
+				foreach (State state in test.stateModel.states)
 				{
 					foreach (Action action in state.actions)
 					{

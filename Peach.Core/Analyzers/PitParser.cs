@@ -1335,7 +1335,7 @@ namespace Peach.Core.Analyzers
 
 					try
 					{
-						stateModel.states.Add(state.name, state);
+						stateModel.states.Add(state);
 					}
 					catch (ArgumentException)
 					{
@@ -1357,7 +1357,7 @@ namespace Peach.Core.Analyzers
 		{
 			State state = new State();
 			state.parent = parent;
-			state.name = node.getAttrString("name");
+			state.name = node.getAttr("name", parent.states.UniqueName());
 
 			foreach (XmlNode child in node.ChildNodes)
 			{
