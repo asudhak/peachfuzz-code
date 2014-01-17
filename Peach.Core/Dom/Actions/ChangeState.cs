@@ -1,4 +1,6 @@
 using System;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom.Actions
 {
@@ -8,6 +10,8 @@ namespace Peach.Core.Dom.Actions
 		/// <summary>
 		/// Name of state to change to, type=ChangeState
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string reference { get; set; }
 
 		protected override void OnRun(Publisher publisher, RunContext context)

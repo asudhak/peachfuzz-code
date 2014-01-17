@@ -81,6 +81,7 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The actions contained in this state.
 		/// </summary>
+		[PluginElement("type", typeof(Action), Combine = true)]
 		public NamedCollection<Action> actions { get; set; }
 
 		/// <summary>

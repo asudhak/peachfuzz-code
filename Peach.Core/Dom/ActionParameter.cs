@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
@@ -21,7 +24,16 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The type of this parameter.
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(Type.In)]
 		public Type type { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement]
+		[DefaultValue(null)]
+		public List<Peach.Core.Xsd.DataRef> Data { get; set; }
 
 		/// <summary>
 		/// Full input name of this parameter.

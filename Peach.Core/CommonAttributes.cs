@@ -93,6 +93,7 @@ namespace Peach.Core
 	[AttributeUsageAttribute(AttributeTargets.Property | AttributeTargets.Field)]
 	public class PluginElementAttribute : Attribute
 	{
+		public bool Combine { get; set; }
 		public string ElementName { get; private set; }
 		public string AttributeName { get; private set; }
 		public Type PluginType { get; private set; }

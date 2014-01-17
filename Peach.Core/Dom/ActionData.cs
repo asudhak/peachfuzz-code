@@ -3,12 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Peach.Core.IO;
 using Peach.Core.Cracker;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
 	[Serializable]
 	public class ActionData : INamed
 	{
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.DataModel schemaModel { get; set; }
+
 		/// <summary>
 		/// Constructor
 		/// </summary>

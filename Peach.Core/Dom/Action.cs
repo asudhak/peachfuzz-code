@@ -29,6 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 using NLog;
 
@@ -38,7 +40,7 @@ namespace Peach.Core.Dom
 	/// Used to indicate a class is a valid Action and 
 	/// provide it's invoking name used in the Pit XML file.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 	public class ActionAttribute : PluginAttribute
 	{
 		public ActionAttribute(string name)
@@ -59,6 +61,31 @@ namespace Peach.Core.Dom
 
 		[NonSerialized]
 		private State _parent;
+
+		#region Schema Elements
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("DataModel")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.DataModel schemaModel { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Data")]
+		[DefaultValue(null)]
+		public List<Peach.Core.Xsd.DataRef> schemaData { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Ocl")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.OclRef schemaOcl { get; set; }
+
+		#endregion
 
 		#region Common Action Properties
 
@@ -84,26 +111,36 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Name of this action
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string name { get; set; }
 
 		/// <summary>
 		/// Name of publisher to use
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string publisher { get; set; }
 
 		/// <summary>
 		/// Only run action when expression is true
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string when { get; set; }
 
 		/// <summary>
 		/// Expression to run when action is starting
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string onStart { get; set; }
 
 		/// <summary>
 		/// Expression to run when action is completed
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string onComplete { get; set; }
 
 		#endregion

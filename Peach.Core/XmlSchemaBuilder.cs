@@ -79,6 +79,15 @@ namespace Peach.Core.Xsd
 		[DefaultValue(null)]
 		public Defaults Defaults { get; set; }
 
+		[XmlElement("Data")]
+		public List<Data> Datas { get; set; }
+
+		[XmlElement("DataModel")]
+		public List<DataModel> DataModels { get; set; }
+
+		[XmlElement("Ocl")]
+		public List<Ocl> Ocls { get; set; }
+
 		[XmlElement("StateModel")]
 		public NamedCollection<Peach.Core.Dom.StateModel> StateModels { get; set; }
 
@@ -89,11 +98,43 @@ namespace Peach.Core.Xsd
 		public NamedCollection<Peach.Core.Dom.Test> Tests { get; set; }
 
 		/*
-		 * Ocl
-		 * DataModel / LangModel
-		 * Data
+		 * DataModel
 		 * Analyzer (Top Level)
 		 */
+	}
+
+	public class DataModel
+	{
+	}
+
+	/// <summary>
+	/// Provide OCL script inside of cdata.
+	/// </summary>
+	public class Ocl
+	{
+		/// <summary>
+		/// Only use these OCL Contexts on Control or Record iterations.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(false)]
+		public bool controlOnly { get; set; }
+
+		[XmlText]
+		public string Text { get; set; }
+	}
+
+	/// <summary>
+	/// Provide an OCL script or reference existing context.
+	/// </summary>
+	public class OclRef
+	{
+		/// <summary>
+		/// Reference existing OCL Context.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string context { get; set; }
+
 	}
 
 	/// <summary>
@@ -345,6 +386,71 @@ namespace Peach.Core.Xsd
 		public string value { get; set; }
 	}
 
+	/// <summary>
+	/// Specifies a set of default data values for a template.
+	/// </summary>
+	public class Data
+	{
+		/// <summary>
+		/// Specifies a value for a field in a template.
+		/// </summary>
+		public class Field
+		{
+			/// <summary>
+			/// Name of field to specify a default value for.
+			/// Format of name is: "Element" or "Block.Block.Element".
+			/// </summary>
+			[XmlAttribute]
+			public string name { get; set; }
+
+			/// <summary>
+			/// Default value for template field.
+			/// </summary>
+			[XmlAttribute]
+			public string value { get; set; }
+
+			/// <summary>
+			/// Format of value attribute.
+			/// </summary>
+			[XmlAttribute]
+			[DefaultValue(Peach.Core.Dom.ValueType.String)]
+			public Peach.Core.Dom.ValueType valueType { get; set; }
+
+		}
+
+		/// <summary>
+		/// Name of the data template.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string name { get; set; }
+
+		/// <summary>
+		/// Use contents of file to populate data model.
+		/// Peach will try and crack the file  based on the data model.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string fileName { get; set; }
+
+		[XmlElement("Field")]
+		[DefaultValue(null)]
+		public List<Field> Fields { get; set; }
+	}
+
+	/// <summary>
+	/// Specifies a set of default data values for a template.
+	/// </summary>
+	public class DataRef : Data
+	{
+		/// <summary>
+		/// Name of other data template to reference.
+		/// </summary>
+		[XmlAttribute("ref")]
+		[DefaultValue(null)]
+		public string refData { get; set; }
+	}
+
 	#endregion
 
 	#region XmlDocFetcher
@@ -560,8 +666,75 @@ namespace Peach.Core.Xsd
 		{
 			if (pluginAttr == null)
 				PopulateComplexType(complexType, type);
+			else if (pluginAttr.Combine)
+				CombinePluginType(complexType, pluginAttr);
 			else
 				PopulatePluginType(complexType, pluginAttr);
+		}
+
+		void CombinePluginType(XmlSchemaComplexType complexType, PluginElementAttribute pluginAttr)
+		{
+			var addedAttrs = new Dictionary<string, XmlSchemaAttribute>();
+			var addedElems = new Dictionary<string, XmlSchemaElement>();
+
+			var schemaParticle = new XmlSchemaChoice();
+			schemaParticle.MinOccursString = "0";
+			schemaParticle.MaxOccursString = "unbounded";
+
+			var restrictEnum = new XmlSchemaSimpleTypeRestriction();
+			restrictEnum.BaseTypeName = new XmlQualifiedName("string", XmlSchema.Namespace);
+
+			foreach (var item in ClassLoader.GetAllByAttribute<PluginAttribute>((t, a) => a.Type == pluginAttr.PluginType && a.IsDefault && !a.IsTest))
+			{
+				restrictEnum.Facets.Add(MakePluginFacet(item.Key, item.Value));
+
+				foreach (var pi in item.Value.GetProperties())
+				{
+					var attrAttr = pi.GetAttributes<XmlAttributeAttribute>().FirstOrDefault();
+					if (attrAttr != null)
+					{
+						var attr = MakeAttribute(attrAttr.AttributeName, pi);
+						if (!addedAttrs.ContainsKey(attr.Name))
+						{
+							complexType.Attributes.Add(attr);
+							addedAttrs.Add(attr.Name, attr);
+						}
+						continue;
+					}
+
+					var elemAttr = pi.GetAttributes<XmlElementAttribute>().FirstOrDefault();
+
+					if (elemAttr != null)
+					{
+						var elem = MakeElement(elemAttr.ElementName, null, pi, null);
+						var key = elem.Name ?? elem.RefName.Name;
+						if (!addedElems.ContainsKey(key))
+						{
+							elem.MinOccursString = null;
+							elem.MaxOccursString = null;
+							schemaParticle.Items.Add(elem);
+							addedElems.Add(key, elem);
+						}
+					}
+				}
+			}
+
+			var enumType = new XmlSchemaSimpleType();
+			enumType.Content = restrictEnum;
+
+			var typeAttr = new XmlSchemaAttribute();
+			typeAttr.Name = pluginAttr.AttributeName;
+			typeAttr.Use = XmlSchemaUse.Required;
+			typeAttr.SchemaType = enumType;
+			typeAttr.Annotate("Specify the {0} of a Peach {1}.".Fmt(
+				pluginAttr.AttributeName,
+				pluginAttr.PluginType.Name.ToLower()
+				));
+
+			complexType.Attributes.Add(typeAttr);
+
+			if (schemaParticle.Items.Count > 0)
+				complexType.Particle = schemaParticle;
 		}
 
 		void PopulatePluginType(XmlSchemaComplexType complexType, PluginElementAttribute pluginAttr)
@@ -589,16 +762,7 @@ namespace Peach.Core.Xsd
 
 			foreach (var item in ClassLoader.GetAllByAttribute<PluginAttribute>((t, a) => a.Type == pluginAttr.PluginType && a.IsDefault && !a.IsTest))
 			{
-				var facet = new XmlSchemaEnumerationFacet();
-				facet.Value = item.Key.Name;
-
-				var descAttr = item.Value.GetAttributes<DescriptionAttribute>().FirstOrDefault();
-				if (descAttr != null)
-					facet.Annotate(descAttr.Description);
-				else
-					facet.Annotate(item.Value);
-
-				restrictEnum.Facets.Add(facet);
+				restrictEnum.Facets.Add(MakePluginFacet(item.Key, item.Value));
 			}
 
 			var enumType = new XmlSchemaSimpleType();
@@ -636,6 +800,20 @@ namespace Peach.Core.Xsd
 			complexType.Particle = schemaParticle;
 		}
 
+		private XmlSchemaObject MakePluginFacet(PluginAttribute pluginAttribute, Type type)
+		{
+			var facet = new XmlSchemaEnumerationFacet();
+			facet.Value = pluginAttribute.Name;
+
+			var descAttr = type.GetAttributes<DescriptionAttribute>().FirstOrDefault();
+			if (descAttr != null)
+				facet.Annotate(descAttr.Description);
+			else
+				facet.Annotate(type);
+
+			return facet;
+		}
+
 		void PopulateComplexType(XmlSchemaComplexType complexType, Type type)
 		{
 			if (type.IsAbstract)
@@ -647,6 +825,13 @@ namespace Peach.Core.Xsd
 			{
 				if (pi.DeclaringType != type)
 					continue;
+
+				var textAttr = pi.GetAttributes<XmlTextAttribute>().FirstOrDefault();
+				if (textAttr != null)
+				{
+					complexType.IsMixed = true;
+					continue;
+				}
 
 				var attrAttr = pi.GetAttributes<XmlAttributeAttribute>().FirstOrDefault();
 				if (attrAttr != null)
@@ -729,15 +914,19 @@ namespace Peach.Core.Xsd
 				choiceParticle.MinOccursString = "0";
 				choiceParticle.MaxOccursString = "unbounded";
 
-				foreach (var item in schemaParticle.Items)
+				foreach (var item in items)
+				{
+					item.MinOccursString = null;
+					item.MaxOccursString = null;
 					choiceParticle.Items.Add(item);
+				}
 
 				schemaParticle = choiceParticle;
 
 				break;
 			}
 
-			if (type.BaseType != typeof(object))
+			if (type.BaseType != typeof(object) && type.BaseType != null)
 			{
 				var ext = new XmlSchemaComplexContentExtension();
 				ext.BaseTypeName = new XmlQualifiedName(type.BaseType.Name, schema.TargetNamespace);
@@ -763,7 +952,7 @@ namespace Peach.Core.Xsd
 
 			Populate(complexType, type, pluginAttr);
 
-			if (type.BaseType != typeof(object))
+			if (type.BaseType != typeof(object) && type.BaseType != null)
 			{
 				System.Diagnostics.Debug.Assert(pluginAttr == null);
 				if (!objTypeCache.ContainsKey(type.BaseType))
@@ -928,6 +1117,9 @@ namespace Peach.Core.Xsd
 				isArray = true;
 			}
 
+			if (type == typeof(DataModel))
+				return MakeDataModel();
+
 			var schemaElem = new XmlSchemaElement();
 			schemaElem.MinOccursString = defaultValue != null ? "0" : "1";
 			schemaElem.MaxOccursString = isArray ? "unbounded" : "1";
@@ -949,6 +1141,23 @@ namespace Peach.Core.Xsd
 				if (!objTypeCache.ContainsKey(type))
 					AddElement(name, type, pluginAttr);
 			}
+
+			return schemaElem;
+		}
+
+		private XmlSchemaElement MakeDataModel()
+		{
+			var name = "DataModel";
+			var type = typeof(DataModel);
+
+			var schemaElem = new XmlSchemaElement();
+			schemaElem.MinOccursString = "0";
+			schemaElem.MaxOccursString = "1";
+
+			schemaElem.RefName = new XmlQualifiedName(name, schema.TargetNamespace);
+
+			if (!objTypeCache.ContainsKey(type))
+				AddElement(name, type, null);
 
 			return schemaElem;
 		}
