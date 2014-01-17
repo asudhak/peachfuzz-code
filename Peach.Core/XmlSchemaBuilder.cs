@@ -79,21 +79,19 @@ namespace Peach.Core.Xsd
 		[DefaultValue(null)]
 		public Defaults Defaults { get; set; }
 
+		[XmlElement("StateModel")]
+		public NamedCollection<Peach.Core.Dom.StateModel> StateModels { get; set; }
+
 		[XmlElement("Agent")]
-		[DefaultValue(null)]
 		public NamedCollection<Peach.Core.Dom.Agent> Agents { get; set; }
 
 		[XmlElement("Test")]
-		[DefaultValue(null)]
 		public NamedCollection<Peach.Core.Dom.Test> Tests { get; set; }
 
 		/*
 		 * Ocl
 		 * DataModel / LangModel
 		 * Data
-		 * Test
-		 * Agent
-		 * StateModel
 		 * Analyzer (Top Level)
 		 */
 	}

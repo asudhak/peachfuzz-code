@@ -192,10 +192,6 @@ namespace Peach.Core.Dom
 		[DefaultValue(null)]
 		public List<MarkMutable> mutables { get; set; }
 
-		[XmlElement("Mutator")]
-		[DefaultValue(null)]
-		public List<MutatorFilter> mutators { get; set; }
-
 		[PluginElement("Strategy", "class", typeof(MutationStrategy))]
 		[DefaultValue(null)]
 		public MutationStrategy strategy { get; set; }
@@ -203,6 +199,13 @@ namespace Peach.Core.Dom
 		#endregion
 
 		#region Schema Elements
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Mutator")]
+		[DefaultValue(null)]
+		public MutatorFilter mutators { get; set; }
 
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.
@@ -262,7 +265,6 @@ namespace Peach.Core.Dom
 
 			loggers = new List<Logger>();
 			mutables = new List<MarkMutable>();
-			mutators = new List<MutatorFilter>();
 			agentRef = new List<AgentRef>();
 			pubs = new List<Publisher>();
 		}
