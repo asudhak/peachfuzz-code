@@ -706,14 +706,17 @@ namespace Peach.Core.Xsd
 
 					if (elemAttr != null)
 					{
-						var elem = MakeElement(elemAttr.ElementName, null, pi, null);
-						var key = elem.Name ?? elem.RefName.Name;
-						if (!addedElems.ContainsKey(key))
+						var elems = MakeElement(elemAttr.ElementName, null, pi, null);
+						foreach (var elem in elems)
 						{
-							elem.MinOccursString = null;
-							elem.MaxOccursString = null;
-							schemaParticle.Items.Add(elem);
-							addedElems.Add(key, elem);
+							var key = elem.Name ?? elem.RefName.Name;
+							if (!addedElems.ContainsKey(key))
+							{
+								elem.MinOccursString = null;
+								elem.MaxOccursString = null;
+								schemaParticle.Items.Add(elem);
+								addedElems.Add(key, elem);
+							}
 						}
 					}
 				}
@@ -850,14 +853,17 @@ namespace Peach.Core.Xsd
 
 					foreach (var elemAttr in elemAttrs)
 					{
-						var elem = MakeElement(elemAttr.ElementName, elemAttr.Type, pi, null);
+						var elems = MakeElement(elemAttr.ElementName, elemAttr.Type, pi, null);
 
-						elemChoice.MinOccursString = elem.MinOccursString;
-						elemChoice.MaxOccursString = elem.MaxOccursString;
-						elem.MinOccursString = "0";
-						elem.MaxOccursString = "1";
+						foreach (var elem in elems)
+						{
+							elemChoice.MinOccursString = elem.MinOccursString;
+							elemChoice.MaxOccursString = elem.MaxOccursString;
+							elem.MinOccursString = "0";
+							elem.MaxOccursString = "1";
 
-						elemChoice.Items.Add(elem);
+							elemChoice.Items.Add(elem);
+						}
 					}
 
 					schemaParticle.Items.Add(elemChoice);
@@ -865,17 +871,22 @@ namespace Peach.Core.Xsd
 				else if (elemAttrs.Any())
 				{
 					var elemAttr = elemAttrs.First();
-					var elem = MakeElement(elemAttr.ElementName, null, pi, null);
+					var elems = MakeElement(elemAttr.ElementName, null, pi, null);
 
-					schemaParticle.Items.Add(elem);
+					foreach (var elem in elems)
+						schemaParticle.Items.Add(elem);
+
 					continue;
 				}
 
 				var pluginAttr = pi.GetAttributes<PluginElementAttribute>().FirstOrDefault();
 				if (pluginAttr != null)
 				{
-					var elem = MakeElement(pluginAttr.ElementName, null, pi, pluginAttr);
-					schemaParticle.Items.Add(elem);
+					var elems = MakeElement(pluginAttr.ElementName, null, pi, pluginAttr);
+
+					foreach (var elem in elems)
+						schemaParticle.Items.Add(elem);
+
 					continue;
 				}
 			}
@@ -1095,7 +1106,7 @@ namespace Peach.Core.Xsd
 			return IsGenericCollection(baseType);
 		}
 
-		XmlSchemaElement MakeElement(string name, Type attrType, PropertyInfo pi, PluginElementAttribute pluginAttr)
+		XmlSchemaElement[] MakeElement(string name, Type attrType, PropertyInfo pi, PluginElementAttribute pluginAttr)
 		{
 			if (string.IsNullOrEmpty(name))
 				name = attrType == null ? pi.Name : attrType.Name;
@@ -1117,12 +1128,12 @@ namespace Peach.Core.Xsd
 				isArray = true;
 			}
 
-			if (type == typeof(DataModel))
-				return MakeDataModel();
-
 			var schemaElem = new XmlSchemaElement();
 			schemaElem.MinOccursString = defaultValue != null ? "0" : "1";
 			schemaElem.MaxOccursString = isArray ? "unbounded" : "1";
+
+			if (type == typeof(DataModel))
+				return MakeDataModel(schemaElem.MinOccursString, schemaElem.MaxOccursString);
 
 			var destType = attrType ?? type;
 
@@ -1142,24 +1153,40 @@ namespace Peach.Core.Xsd
 					AddElement(name, type, pluginAttr);
 			}
 
-			return schemaElem;
+			return new XmlSchemaElement[] { schemaElem };
 		}
 
-		private XmlSchemaElement MakeDataModel()
+		private XmlSchemaElement[] MakeDataModel(string minOccurs, string maxOccurrs)
 		{
-			var name = "DataModel";
-			var type = typeof(DataModel);
+			var ret = new List<XmlSchemaElement>();
 
-			var schemaElem = new XmlSchemaElement();
-			schemaElem.MinOccursString = "0";
-			schemaElem.MaxOccursString = "1";
+			foreach (var item in ClassLoader.GetAllByAttribute<PitParsableAttribute>((t,a) => a.topLevel))
+			{
+				var name = item.Key.xmlElementName;
+				var type = item.Value;
 
-			schemaElem.RefName = new XmlQualifiedName(name, schema.TargetNamespace);
+				var schemaElem = new XmlSchemaElement();
+				schemaElem.MinOccursString = minOccurs;
+				schemaElem.MaxOccursString = maxOccurrs;
 
-			if (!objTypeCache.ContainsKey(type))
-				AddElement(name, type, null);
+				schemaElem.RefName = new XmlQualifiedName(name, schema.TargetNamespace);
 
-			return schemaElem;
+				if (!objTypeCache.ContainsKey(type))
+					AddDataModel(name, type);
+
+				ret.Add(schemaElem);
+			}
+
+			return ret.ToArray();
+		}
+
+		void AddDataModel(string name, Type type)
+		{
+			var schemaElem = MakeItem<XmlSchemaElement>(name, type);
+
+			var complexType = new XmlSchemaComplexType();
+
+			schemaElem.SchemaType = complexType;
 		}
 	}
 }
