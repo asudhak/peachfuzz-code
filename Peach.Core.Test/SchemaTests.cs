@@ -76,7 +76,6 @@ namespace Peach.Core.Test
 	public class ComplexObjext
 	{
 		[XmlAttribute("default")]
-		[TypeConverter(typeof(ObjRefResolver))]
 		public TestObject def { get; set; }
 
 		[XmlElement("Object")]
