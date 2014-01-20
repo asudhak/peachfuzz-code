@@ -86,9 +86,8 @@ namespace Peach.Core.Dom
 	/// Strings also support standard attributes such as length, null termination,
 	/// etc.
 	/// </summary>
-	[DataElement("String")]
+	[DataElement("String", DataElementTypes.NonDataElements)]
 	[PitParsable("String")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]

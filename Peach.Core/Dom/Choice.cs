@@ -53,7 +53,6 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Choice")]
 	[PitParsable("Choice")]
-	[DataElementChildSupported(DataElementTypes.Any)]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]

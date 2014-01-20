@@ -49,7 +49,6 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Block")]
 	[PitParsable("Block")]
-	[DataElementChildSupported(DataElementTypes.Any)]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("ref", typeof(string), "Element to reference", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]

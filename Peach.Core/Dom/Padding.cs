@@ -47,9 +47,8 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Providing padding bytes to a DataElementContainer.
 	/// </summary>
-	[DataElement("Padding")]
+	[DataElement("Padding", DataElementTypes.NonDataElements)]
 	[PitParsable("Padding")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", "8")]
 	[Parameter("alignedTo", typeof(DataElement), "Name of element to base our padding on", "")]

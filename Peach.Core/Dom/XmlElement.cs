@@ -48,8 +48,6 @@ namespace Peach.Core.Dom
 
 	[DataElement("XmlElement")]
 	[PitParsable("XmlElement")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("name", typeof(string), "Name of element", "")]
 	[Parameter("attributeName", typeof(string), "Name of XML element")]
 	[Parameter("ns", typeof(string), "XML Namespace", "")]

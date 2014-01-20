@@ -51,7 +51,7 @@ namespace Peach.Core.Dom
 	/// zero or more elements.
 	/// </summary>
 	[Serializable]
-	[DataElement("Array")]
+	// Is an inferred data element based on minOccurs/maxOccurs [DataElement("Array")]
 	public class Array : Block
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

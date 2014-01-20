@@ -46,6 +46,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[Serializable]
 	[DataElement("DataModel")]
+	[DataElementParentSupported(null)]
 	[PitParsable("DataModel", topLevel = true)]
 	[Parameter("name", typeof(string), "Model name")]
 	[Parameter("ref", typeof(string), "Model to reference", "")]

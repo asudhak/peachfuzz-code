@@ -96,15 +96,25 @@ namespace Peach.Core.Xsd
 
 		[XmlElement("Test")]
 		public NamedCollection<Peach.Core.Dom.Test> Tests { get; set; }
-
-		/*
-		 * DataModel
-		 * Analyzer (Top Level)
-		 */
 	}
 
 	public class DataModel
 	{
+		[PluginElement("class", typeof(Peach.Core.Fixup))]
+		public Peach.Core.Fixup Fixup { get; set; }
+
+		[PluginElement("class", typeof(Peach.Core.Transformer))]
+		public Peach.Core.Transformer Transformer { get; set; }
+
+		[PluginElement("class", typeof(Peach.Core.Analyzer))]
+		public Peach.Core.Analyzer Analyzer { get; set; }
+
+		[PluginElement("type", typeof(Peach.Core.Dom.Relation), Combine = true)]
+		public Peach.Core.Dom.Relation Relation { get; set; }
+
+		[XmlElement("Hint")]
+		[DefaultValue(null)]
+		public List<Peach.Core.Dom.Hint> Hint { get; set; }
 	}
 
 	/// <summary>
@@ -720,6 +730,16 @@ namespace Peach.Core.Xsd
 						}
 					}
 				}
+
+				foreach (var prop in item.Value.GetAttributes<ParameterAttribute>())
+				{
+					var attr = MakeAttribute(prop.name, prop);
+					if (!addedAttrs.ContainsKey(attr.Name))
+					{
+						complexType.Attributes.Add(attr);
+						addedAttrs.Add(attr.Name, attr);
+					}
+				}
 			}
 
 			var enumType = new XmlSchemaSimpleType();
@@ -792,12 +812,29 @@ namespace Peach.Core.Xsd
 			if (!objTypeCache.ContainsKey(typeof(PluginParam)))
 				AddElement("Param", typeof(PluginParam), null);
 
+
 			var schemaElem = new XmlSchemaElement();
-			schemaElem.MinOccursString = "0";
-			schemaElem.MaxOccursString = "unbounded";
 			schemaElem.RefName = new XmlQualifiedName("Param", schema.TargetNamespace);
 
-			var schemaParticle = new XmlSchemaSequence();
+			XmlSchemaGroupBase schemaParticle;
+
+			if (pluginAttr.PluginType == typeof(Transformer))
+			{
+				schemaParticle = new XmlSchemaChoice();
+				schemaParticle.MinOccursString = "0";
+				schemaParticle.MaxOccursString = "unbounded";
+
+				var transElem = new XmlSchemaElement();
+				transElem.RefName = new XmlQualifiedName("Transformer", schema.TargetNamespace);
+				schemaParticle.Items.Add(transElem);
+			}
+			else
+			{
+				schemaParticle = new XmlSchemaSequence();
+				schemaElem.MinOccursString = "0";
+				schemaElem.MaxOccursString = "unbounded";
+			}
+
 			schemaParticle.Items.Add(schemaElem);
 
 			complexType.Particle = schemaParticle;
@@ -979,6 +1016,9 @@ namespace Peach.Core.Xsd
 
 		XmlQualifiedName GetSchemaType(Type type)
 		{
+			if (IsGenericType(type, typeof(Nullable<>)))
+				type = type.GetGenericArguments()[0];
+
 			if (type == typeof(char))
 				return new XmlQualifiedName("string", XmlSchema.Namespace);
 
@@ -996,6 +1036,9 @@ namespace Peach.Core.Xsd
 
 			if (type == typeof(decimal))
 				return new XmlQualifiedName("decimal", XmlSchema.Namespace);
+
+			if (type == typeof(Peach.Core.Dom.DataElement))
+				return new XmlQualifiedName("string", XmlSchema.Namespace);
 
 			throw new NotImplementedException();
 		}
@@ -1058,6 +1101,54 @@ namespace Peach.Core.Xsd
 			return attr;
 		}
 
+		XmlSchemaAttribute MakeAttribute(string name, ParameterAttribute paramAttr)
+		{
+			name = paramAttr.name;
+
+			var attr = new XmlSchemaAttribute();
+			attr.Name = name;
+			attr.Annotate(paramAttr.description);
+
+			if (paramAttr.type.IsEnum)
+			{
+				attr.SchemaType = GetEnumType(paramAttr.type);
+			}
+			else
+			{
+				attr.SchemaTypeName = GetSchemaType(paramAttr.type);
+			}
+
+			if (!paramAttr.required)
+			{
+				attr.Use = XmlSchemaUse.Optional;
+
+				if (!string.IsNullOrEmpty(paramAttr.defaultValue))
+				{
+					var valStr = paramAttr.defaultValue;
+					var valType = paramAttr.type;
+
+					if (valType == typeof(bool))
+					{
+						valStr = XmlConvert.ToString(bool.Parse(valStr));
+					}
+
+					attr.DefaultValue = valStr;
+				}
+				else if (paramAttr.type.IsEnum)
+				{
+					var content = (XmlSchemaSimpleTypeRestriction)attr.SchemaType.Content;
+					var facet = (XmlSchemaEnumerationFacet)content.Facets[0];
+					attr.DefaultValue = facet.Value;
+				}
+			}
+			else
+			{
+				attr.Use = XmlSchemaUse.Required;
+			}
+
+			return attr;
+		}
+
 		XmlSchemaSimpleType GetEnumType(Type type)
 		{
 			XmlSchemaSimpleType ret;
@@ -1090,20 +1181,28 @@ namespace Peach.Core.Xsd
 			return ret;
 		}
 
-		bool IsGenericCollection(Type type)
+		bool IsGenericType(Type sourceType, Type targetType)
 		{
-			var ifaces = type.GetInterfaces();
+			if (sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == targetType)
+				return true;
+
+			var ifaces = sourceType.GetInterfaces();
 			foreach (var iface in ifaces)
 			{
-				if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(ICollection<>))
+				if (iface.IsGenericType && iface.GetGenericTypeDefinition() == targetType)
 					return true;
 			}
 
-			var baseType = type.BaseType;
+			var baseType = sourceType.BaseType;
 			if (baseType == null)
 				return false;
 
-			return IsGenericCollection(baseType);
+			return IsGenericType(baseType, targetType);
+		}
+
+		bool IsGenericCollection(Type type)
+		{
+			return IsGenericType(type, typeof(ICollection<>));
 		}
 
 		XmlSchemaElement[] MakeElement(string name, Type attrType, PropertyInfo pi, PluginElementAttribute pluginAttr)
@@ -1165,28 +1264,115 @@ namespace Peach.Core.Xsd
 				var name = item.Key.xmlElementName;
 				var type = item.Value;
 
-				var schemaElem = new XmlSchemaElement();
-				schemaElem.MinOccursString = minOccurs;
-				schemaElem.MaxOccursString = maxOccurrs;
+				var elem = MakeDataElement(name, type);
+				elem.MinOccursString = minOccurs;
+				elem.MaxOccursString = maxOccurrs;
 
-				schemaElem.RefName = new XmlQualifiedName(name, schema.TargetNamespace);
-
-				if (!objTypeCache.ContainsKey(type))
-					AddDataModel(name, type);
-
-				ret.Add(schemaElem);
+				ret.Add(elem);
 			}
 
 			return ret.ToArray();
 		}
 
-		void AddDataModel(string name, Type type)
+		XmlSchemaElement MakeDataElement(string name, Type type)
+		{
+			var schemaElem = new XmlSchemaElement();
+
+			schemaElem.RefName = new XmlQualifiedName(name, schema.TargetNamespace);
+
+			if (!objTypeCache.ContainsKey(type))
+				AddDataElement(name, type);
+
+			return schemaElem;
+		}
+
+		void AddDataElement(string name, Type type)
 		{
 			var schemaElem = MakeItem<XmlSchemaElement>(name, type);
 
 			var complexType = new XmlSchemaComplexType();
 
+			var schemaParticle = new XmlSchemaChoice();
+			schemaParticle.MinOccursString = "0";
+			schemaParticle.MaxOccursString = "unbounded";
+
+			foreach (var prop in type.GetAttributes<ParameterAttribute>())
+			{
+				var attr = MakeAttribute(prop.name, prop);
+				complexType.Attributes.Add(attr);
+			}
+
+			var deAttr = type.GetAttributes<Peach.Core.Dom.DataElementAttribute>().First();
+
+			if (deAttr.elementTypes.HasFlag(Peach.Core.Dom.DataElementTypes.DataElements))
+			{
+				foreach (var kv in ClassLoader.GetAllByAttribute<Peach.Core.Dom.DataElementAttribute>(null))
+				{
+					var parents = kv.Value.GetAttributes<Peach.Core.Dom.DataElementParentSupportedAttribute>();
+					if (parents.Any() && !parents.Any(a => a.elementName == name))
+						continue;
+
+					var elem = MakeDataElement(kv.Key.elementName, kv.Value);
+					schemaParticle.Items.Add(elem);
+				}
+			}
+
+			foreach (var child in type.GetAttributes<Peach.Core.Dom.DataElementChildSupportedAttribute>())
+			{
+				var childType = ClassLoader.FindTypeByAttribute<Peach.Core.Dom.DataElementAttribute>((t, a) => a.elementName == child.elementName);
+				var elem = MakeDataElement(child.elementName, childType);
+				schemaParticle.Items.Add(elem);
+			}
+
+			if (deAttr.elementTypes.HasFlag(Peach.Core.Dom.DataElementTypes.Fixup))
+			{
+				PopulateDataElement(schemaParticle, "Fixup");
+			}
+
+			if (deAttr.elementTypes.HasFlag(Peach.Core.Dom.DataElementTypes.Hint))
+			{
+				var elems = MakeElement("Hint", null, typeof(DataModel).GetProperty("Hint"), null);
+
+				foreach (var elem in elems)
+				{
+					elem.MinOccursString = null;
+					elem.MaxOccursString = null;
+					schemaParticle.Items.Add(elem);
+				}
+			}
+
+			if (deAttr.elementTypes.HasFlag(Peach.Core.Dom.DataElementTypes.Transformer))
+			{
+				PopulateDataElement(schemaParticle, "Transformer");
+			}
+
+			if (deAttr.elementTypes.HasFlag(Peach.Core.Dom.DataElementTypes.Relation))
+			{
+				PopulateDataElement(schemaParticle, "Relation");
+			}
+
+			if (deAttr.elementTypes.HasFlag(Peach.Core.Dom.DataElementTypes.Analyzer))
+			{
+				PopulateDataElement(schemaParticle, "Analyzer");
+			}
+
+			if (schemaParticle.Items.Count > 0)
+				complexType.Particle = schemaParticle;
+
 			schemaElem.SchemaType = complexType;
+		}
+
+		private void PopulateDataElement(XmlSchemaChoice schemaParticle, string child)
+		{
+			var pi = typeof(DataModel).GetProperty(child);
+			var pluginAttr = pi.GetAttributes<PluginElementAttribute>().FirstOrDefault();
+			var elems = MakeElement(null, null, pi, pluginAttr);
+			foreach (var elem in elems)
+			{
+				elem.MinOccursString = null;
+				elem.MaxOccursString = null;
+				schemaParticle.Items.Add(elem);
+			}
 		}
 	}
 }

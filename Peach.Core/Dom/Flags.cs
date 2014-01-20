@@ -45,9 +45,8 @@ using System.IO;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("Flags")]
+	[DataElement("Flags", DataElementTypes.NonDataElements)]
 	[PitParsable("Flags")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[DataElementChildSupported("Flag")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]")]
