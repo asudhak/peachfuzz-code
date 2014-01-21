@@ -142,6 +142,7 @@ namespace Peach.Core.Runtime
 					{ "charlie", var => Charlie() },
 					{ "showdevices", var => ShowDevices() },
 					{ "showenv", var => ShowEnvironment() },
+					{ "makexsd", var => MakeSchema() },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -346,6 +347,7 @@ Syntax:
   --trace                    Enable even more verbose debug messages.
   --seed N                   Sets the seed used by the random number generator
   --parseonly                Test parse a Peach XML file
+  --makexsd                  Generate peach.xsd
   --showenv                  Print a list of all DataElements, Fixups, Monitors
                              Publishers and their associated parameters.
   --showdevices              Display the list of PCAP devices
@@ -579,6 +581,28 @@ Debug Peach XML File
 		{
 			Peach.Core.Usage.Print();
 			throw new SyntaxException();
+		}
+
+		public void MakeSchema()
+		{
+			try
+			{
+				Console.WriteLine();
+
+				using (var stream = new FileStream("peach.xsd", FileMode.Create, FileAccess.Write))
+				{
+					Xsd.SchemaBuilder.Generate(typeof(Xsd.Dom), stream);
+
+					Console.WriteLine("Successfully generated {0}", stream.Name);
+				}
+
+				throw new SyntaxException();
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				throw new PeachException("Error creating schema. {0}".Fmt(ex.Message), ex);
+			}
+
 		}
 
 		protected virtual Watcher GetUIWatcher()
