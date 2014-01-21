@@ -49,7 +49,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class ExcludeMutable : MarkMutable
 	{
-		public override bool mutable { get { return true; } }
+		public override bool mutable { get { return false; } }
 	}
 
 	/// <summary>
