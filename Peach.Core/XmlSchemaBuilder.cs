@@ -601,14 +601,16 @@ namespace Peach.Core.Xsd
 	public class SchemaBuilder
 	{
 		Dictionary<Type, XmlSchemaSimpleType> enumTypeCache;
-		Dictionary<Type, XmlSchemaObject> objTypeCache;
+		Dictionary<Type, XmlSchemaComplexType> objTypeCache;
+		Dictionary<Type, XmlSchemaElement> objElemCache;
 
 		XmlSchema schema;
 
 		public SchemaBuilder(Type type)
 		{
 			enumTypeCache = new Dictionary<Type, XmlSchemaSimpleType>();
-			objTypeCache = new Dictionary<Type, XmlSchemaObject>();
+			objTypeCache = new Dictionary<Type, XmlSchemaComplexType>();
+			objElemCache = new Dictionary<Type, XmlSchemaElement>();
 
 			var root = type.GetAttributes<XmlRootAttribute>().First();
 
@@ -640,7 +642,7 @@ namespace Peach.Core.Xsd
 			compiled.Write(writer);
 		}
 
-		T MakeItem<T>(string name, Type type) where T : XmlSchemaAnnotated, new()
+		T MakeItem<T>(string name, Type type, Dictionary<Type, T> cache) where T : XmlSchemaAnnotated, new()
 		{
 			if (type.IsGenericType)
 				throw new ArgumentException();
@@ -656,14 +658,14 @@ namespace Peach.Core.Xsd
 			schema.Items.Add(item);
 
 			// Cache this so we don't do this more than once
-			objTypeCache.Add(type, item);
+			cache.Add(type, item);
 
 			return item;
 		}
 
 		void AddElement(string name, Type type, PluginElementAttribute pluginAttr)
 		{
-			var schemaElem = MakeItem<XmlSchemaElement>(name, type);
+			var schemaElem = MakeItem<XmlSchemaElement>(name, type, objElemCache);
 
 			var complexType = new XmlSchemaComplexType();
 
@@ -809,7 +811,7 @@ namespace Peach.Core.Xsd
 
 			complexType.Attributes.Add(typeAttr);
 
-			if (!objTypeCache.ContainsKey(typeof(PluginParam)))
+			if (!objElemCache.ContainsKey(typeof(PluginParam)))
 				AddElement("Param", typeof(PluginParam), null);
 
 
@@ -996,7 +998,7 @@ namespace Peach.Core.Xsd
 
 		void AddComplexType(string name, Type type, PluginElementAttribute pluginAttr)
 		{
-			var complexType = MakeItem<XmlSchemaComplexType>(name, type);
+			var complexType = MakeItem<XmlSchemaComplexType>(name, type, objTypeCache);
 
 			Populate(complexType, type, pluginAttr);
 
@@ -1248,7 +1250,7 @@ namespace Peach.Core.Xsd
 			{
 				schemaElem.RefName = new XmlQualifiedName(type.Name, schema.TargetNamespace);
 
-				if (!objTypeCache.ContainsKey(type))
+				if (!objElemCache.ContainsKey(type))
 					AddElement(name, type, pluginAttr);
 			}
 
@@ -1280,7 +1282,7 @@ namespace Peach.Core.Xsd
 
 			schemaElem.RefName = new XmlQualifiedName(name, schema.TargetNamespace);
 
-			if (!objTypeCache.ContainsKey(type))
+			if (!objElemCache.ContainsKey(type))
 				AddDataElement(name, type);
 
 			return schemaElem;
@@ -1288,7 +1290,7 @@ namespace Peach.Core.Xsd
 
 		void AddDataElement(string name, Type type)
 		{
-			var schemaElem = MakeItem<XmlSchemaElement>(name, type);
+			var schemaElem = MakeItem<XmlSchemaElement>(name, type, objElemCache);
 
 			var complexType = new XmlSchemaComplexType();
 
