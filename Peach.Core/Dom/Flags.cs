@@ -45,15 +45,15 @@ using System.IO;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("Flags")]
+	[DataElement("Flags", DataElementTypes.NonDataElements)]
 	[PitParsable("Flags")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
 	[DataElementChildSupported("Flag")]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]")]
 	[Parameter("endian", typeof(string), "Byte order of number (default 'little')", "little")]
 	[Parameter("token", typeof(bool), "Is element a token", "false")]
-	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "true")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
 	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]

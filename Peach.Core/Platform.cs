@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Linq;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace Peach.Core
 {
@@ -64,7 +65,22 @@ namespace Peach.Core
 	/// </summary>
 	public static class Platform
 	{
-		public enum OS { None = 0, Windows = 1, OSX = 2, Linux = 4, Unix = 6, All = 7 };
+		public enum OS
+		{
+			[XmlEnum("none")]
+			None = 0,
+			[XmlEnum("windows")]
+			Windows = 1,
+			[XmlEnum("osx")]
+			OSX = 2,
+			[XmlEnum("linux")]
+			Linux = 4,
+			[XmlEnum("unix")]
+			Unix = 6,
+			[XmlEnum("all")]
+			All = 7
+		};
+
 		public enum Architecture { x64, x86 };
 
 		public static Architecture GetArch()

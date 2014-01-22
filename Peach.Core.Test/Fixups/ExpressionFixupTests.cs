@@ -68,7 +68,7 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Blob name=\"CRC\" length='4' signed=\"false\">" +
+                "       <Blob name=\"CRC\" length='4'>" +
                 "           <Fixup class=\"ExpressionFixup\">" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "               <Param name=\"expression\" value=\"'AABB'\"/>" +
@@ -115,7 +115,7 @@ namespace Peach.Core.Test.Fixups
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +
                 "<Peach>" +
                 "   <DataModel name=\"TheDataModel\">" +
-                "       <Blob name=\"CRC\" length=\"4\" signed=\"false\">" +
+                "       <Blob name=\"CRC\" length=\"4\">" +
                 "           <Fixup class=\"ExpressionFixup\">" +
                 "               <Param name=\"ref\" value=\"Data\"/>" +
                 "               <Param name=\"expression\" value=\"'\\x00\\x01\\xff\\x00'\"/>" +

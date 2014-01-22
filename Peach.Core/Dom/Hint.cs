@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using Peach.Core;
 
 namespace Peach.Core.Dom
@@ -39,7 +40,6 @@ namespace Peach.Core.Dom
 	/// for mutators.
 	/// </summary>
 	[Serializable]
-	[DataElement("Hint")]
 	[Parameter("Name", typeof(string), "Name of hint")]
 	[Parameter("Value", typeof(string), "Value of hint")]
 	public class Hint
@@ -50,18 +50,14 @@ namespace Peach.Core.Dom
 			Value = value;
 		}
 
-		public Hint(Dictionary<string, Variant> args)
-		{
-			Name = (string)args["Name"];
-			Value = (string)args["Value"];
-		}
-
+		[XmlAttribute("name")]
 		public string Name
 		{
 			get;
 			set;
 		}
 
+		[XmlAttribute("value")]
 		public string Value
 		{
 			get;

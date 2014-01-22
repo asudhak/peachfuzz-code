@@ -2,6 +2,8 @@ using System;
 using System.Xml;
 using System.Collections.Generic;
 using Peach.Core.Dom.XPath;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom.Actions
 {
@@ -15,6 +17,8 @@ namespace Peach.Core.Dom.Actions
 		/// Can return multiple elements.  All returned elements
 		/// will be updated with a new value.
 		/// </remarks>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string setXpath { get; set; }
 
 		/// <summary>
@@ -23,6 +27,8 @@ namespace Peach.Core.Dom.Actions
 		/// <remarks>
 		/// Must return a single element.
 		/// </remarks>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string valueXpath { get; set; }
 
 		protected override void OnRun(Publisher publisher, RunContext context)

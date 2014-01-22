@@ -363,9 +363,9 @@ namespace Peach.Core
 					context.iterationStateStore.Clear();
 
 					// Should we perform a control iteration?
-					if (test.controlIterationEvery > 0 && !context.reproducingFault)
+					if (test.controlIteration > 0 && !context.reproducingFault)
 					{
-						if ((test.controlIterationEvery == 1 || iterationCount % test.controlIterationEvery == 1) && lastControlIteration != iterationCount)
+						if ((test.controlIteration == 1 || iterationCount % test.controlIteration == 1) && lastControlIteration != iterationCount)
 							context.controlIteration = true;
 					}
 

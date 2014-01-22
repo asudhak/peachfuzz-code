@@ -47,7 +47,6 @@ namespace Peach.Core.Dom
 	[Relation("size", true)]
 	[Description("Byte size relation")]
 	[Parameter("of", typeof(string), "Element used to generate relation value", "")]
-	[Parameter("from", typeof(string), "Element that receives relation value", "")]
 	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
 	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units to compute the size in", "bytes")]

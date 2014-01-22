@@ -47,11 +47,34 @@ namespace Peach.Core.Dom
 {
 	public enum StringType
 	{
+		/// <summary>
+		/// Single byte characters.
+		/// </summary>
 		ascii,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-7.
+		/// </summary>
 		utf7,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-8.
+		/// </summary>
 		utf8,
+
+		/// <summary>
+		/// Double byte characters as commonly used with Windows applications.
+		/// </summary>
 		utf16,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-16 big endian.
+		/// </summary>
 		utf16be,
+
+		/// <summary>
+		/// Multibyte unicode characters encoded in UTF-32.
+		/// </summary>
 		utf32
 	}
 	
@@ -63,18 +86,19 @@ namespace Peach.Core.Dom
 	/// Strings also support standard attributes such as length, null termination,
 	/// etc.
 	/// </summary>
-	[DataElement("String")]
+	[DataElement("String", DataElementTypes.NonDataElements)]
 	[PitParsable("String")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
 	[Parameter("nullTerminated", typeof(bool), "Is string null terminated?", "false")]
+	[Parameter("padCharacter", typeof(char), "Character to pad length with.", "")]
 	[Parameter("type", typeof(StringType), "Type of string (encoding)", "ascii")]
 	[Parameter("value", typeof(string), "Default value", "")]
 	[Parameter("valueType", typeof(ValueType), "Format of value attribute", "string")]
 	[Parameter("token", typeof(bool), "Is element a token", "false")]
-	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "true")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
 	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]

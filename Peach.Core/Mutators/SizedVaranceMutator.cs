@@ -35,7 +35,8 @@ using NLog;
 
 namespace Peach.Core.Mutators
 {
-	[Mutator("Change the length of sizes to count - N to count + N")]
+	[Mutator("SizedVaranceMutator")]
+	[Description("Change the length of sizes to count - N to count + N")]
 	[Hint("SizedVaranceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class SizedVaranceMutator : SizedMutator
 	{

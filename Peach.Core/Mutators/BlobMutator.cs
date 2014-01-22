@@ -35,7 +35,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
+    [Mutator("BlobMutator")]
+    [Description("Can perform more changes than BlobBitFlipper. We will grow the blob, shrink the blob, etc.")]
     [Hint("BlobMutator-How", "Comma seperated list of: ExpandSingleRandom,ExpandIncrementing,ExpandZero,ExpandAllRandom,Reduce,ChangeRange,RangeSpecial,NullRange,UnNullRange")]
     public class BlobMutator : Mutator
     {
