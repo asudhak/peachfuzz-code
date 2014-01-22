@@ -50,7 +50,6 @@ namespace Peach.Core.Dom
 	[Relation("offset", true)]
 	[Description("Byte offset relation")]
 	[Parameter("of", typeof(string), "Element used to generate relation value", "")]
-	[Parameter("from", typeof(string), "Element that receives relation value", "")]
 	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
 	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
 	[Parameter("relative", typeof(bool), "Is the offset relative", "false")]

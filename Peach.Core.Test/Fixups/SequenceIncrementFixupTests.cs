@@ -156,7 +156,7 @@ namespace Peach.Core.Test.Fixups
 
 			<Action type='output' publisher='null'>
 				<DataModel ref='DM'/>
-				<Data DataModel='DM'>
+				<Data>
 					<Field name='num' value='100' />
 				</Data>
 			</Action>
@@ -321,7 +321,7 @@ namespace Peach.Core.Test.Fixups
 		<State name='Initial'>
 			<Action type='output' publisher='null'>
 				<DataModel ref='DM'/>
-				<Data DataModel='DM'>
+				<Data>
 					<Field name='num' value='100' />
 				</Data>
 			</Action>

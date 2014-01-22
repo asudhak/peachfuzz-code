@@ -36,7 +36,8 @@ using NLog;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Flip a % of total bits in a blob. Default is 20%.")]
+    [Mutator("BlobBitFlipperMutator")]
+    [Description("Flip a % of total bits in a blob. Default is 20%.")]
     [Hint("BlobBitFlipperMutator-N", "Gets N by checking node for hint, or returns default (20).")]
     public class BlobBitFlipperMutator : Mutator
     {

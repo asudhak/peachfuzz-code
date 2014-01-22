@@ -32,7 +32,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Allows a word list of different valid values to be specified")]
+    [Mutator("WordListMutator")]
+    [Description("Allows a word list of different valid values to be specified")]
     [Hint("WordList", "Wordlist Containing newline seperated valid strings.")]
     public class WordListMutator : Mutator
     {

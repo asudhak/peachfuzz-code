@@ -48,9 +48,9 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// A numerical data element.
 	/// </summary>
-	[DataElement("Number")]
+	[DataElement("Number", DataElementTypes.NonDataElements)]
 	[PitParsable("Number")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("size", typeof(uint), "Size in bits")]
 	[Parameter("signed", typeof(bool), "Is number signed", "false")]

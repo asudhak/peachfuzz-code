@@ -63,7 +63,7 @@ namespace Peach.Core
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+	[AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
 	public class DescriptionAttribute : Attribute
 	{
 		public string Description { get; private set; }
@@ -87,6 +87,30 @@ namespace Peach.Core
 			this.Name = name;
 			this.Type = type;
 			this.IsDefault = isDefault;
+		}
+	}
+
+	[AttributeUsageAttribute(AttributeTargets.Property | AttributeTargets.Field)]
+	public class PluginElementAttribute : Attribute
+	{
+		public bool Named { get; set; }
+		public bool Combine { get; set; }
+		public string ElementName { get; private set; }
+		public string AttributeName { get; private set; }
+		public Type PluginType { get; private set; }
+
+		public PluginElementAttribute(string elementName, string attributeName, Type pluginType)
+		{
+			ElementName = elementName;
+			AttributeName = attributeName;
+			PluginType = pluginType;
+		}
+
+		public PluginElementAttribute(string attributeName, Type pluginType)
+		{
+			ElementName = pluginType.Name;
+			AttributeName = attributeName;
+			PluginType = pluginType;
 		}
 	}
 }

@@ -44,8 +44,8 @@ using NLog;
 
 namespace Peach.Core.Dom
 {
-	[DataElement("Flag")]
-	[DataElementChildSupported(DataElementTypes.NonDataElements)]
+	[DataElement("Flag", DataElementTypes.NonDataElements)]
+	[DataElementParentSupported("Flags")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("position", typeof(int), "Bit position of flag")]
 	[Parameter("size", typeof(int), "size in bits")]

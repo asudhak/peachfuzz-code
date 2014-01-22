@@ -32,26 +32,34 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using System.Xml.Serialization;
 using System.Linq;
 
 using Peach.Core;
 using Peach.Core.IO;
 
 using NLog;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
 	public delegate void StateModelStartingEventHandler(StateModel model);
 	public delegate void StateModelFinishedEventHandler(StateModel model);
 
-	[Serializable]
+	/// <summary>
+	/// Defines a state machine to use during a fuzzing test.  State machines in Peach are intended to be
+	/// fairly simple and allow for only the basic modeling typically required for fuzzing state aware protocols or 
+	/// call sequences.  State machines are made up of one or more States which are in them selves make up of
+	/// one or more Action.  As Actions are executed the data can be moved between them as needed.
+	/// </summary>
 	public class StateModel : INamed
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		public string _name = null;
-		public object parent;
-		protected State _initialState = null;
+		public StateModel()
+		{
+			states = new NamedCollection<State>();
+		}
 
 		protected Dictionary<string, BitwiseStream> _dataActions = new Dictionary<string, BitwiseStream>();
 
@@ -66,41 +74,36 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// All states in state model.
 		/// </summary>
-		public Dictionary<string, State> states = new Dictionary<string, State>();
+		[XmlElement("State")]
+		public NamedCollection<State> states { get; set; }
 
-		public string name
-		{
-			get { return _name; }
-			set { _name = value; }
-		}
+		/// <summary>
+		/// The name of this state model.
+		/// </summary>
+		[XmlAttribute("name")]
+		public string name { get; set; }
+
+		/// <summary>
+		/// Name of the state to execute first.
+		/// </summary>
+		[XmlAttribute("initialState")]
+		public string initialStateName { get; set; }
+
+		/// <summary>
+		/// The Dom that owns this state model.
+		/// </summary>
+		public Dom parent { get; set; }
 
 		/// <summary>
 		/// The initial state to run when state machine executes.
 		/// </summary>
-		public State initialState
-		{
-			get
-			{
-				return _initialState;
-			}
-
-			set
-			{
-				_initialState = value;
-			}
-		}
-
-		public void SaveData(string name, BitwiseStream value)
-		{
-			var key = "{0}.{1}.bin".Fmt(_dataActions.Count + 1, name);
-
-			_dataActions.Add(key, value);
-		}
+		public State initialState { get; set; }
 
 		/// <summary>
 		/// StateModel is starting to execute.
 		/// </summary>
 		public static event StateModelStartingEventHandler Starting;
+
 		/// <summary>
 		/// StateModel has finished executing.
 		/// </summary>
@@ -116,6 +119,18 @@ namespace Peach.Core.Dom
 		{
 			if (Finished != null)
 				Finished(this);
+		}
+
+		/// <summary>
+		/// Saves the data produced/consumed by an action for future logging.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		public void SaveData(string name, BitwiseStream value)
+		{
+			var key = "{0}.{1}.bin".Fmt(_dataActions.Count + 1, name);
+
+			_dataActions.Add(key, value);
 		}
 
 		/// <summary>
@@ -141,12 +156,12 @@ namespace Peach.Core.Dom
 
 				// Update all data model to clones of origionalDataModel
 				// before we start down the state path.
-				foreach (State state in states.Values)
+				foreach (State state in states)
 				{
 					state.UpdateToOriginalDataModel();
 				}
 
-				State currentState = _initialState;
+				State currentState = initialState;
 
 				while (true)
 				{

@@ -219,7 +219,7 @@ namespace Peach.Core.Dom.XPath
 				if (stateModel.states.Count == 0)
 					return false;
 
-				currentNode = stateModel.states.Values.First();
+				currentNode = stateModel.states[0];
 				return true;
 			}
 			else if (currentNode is State)
@@ -342,19 +342,19 @@ namespace Peach.Core.Dom.XPath
 			{
 				var stateModel = parent as StateModel;
 				int index = 0;
-				for (int cnt = 0; cnt < stateModel.states.Values.Count; cnt++)
+				for (int cnt = 0; cnt < stateModel.states.Count; cnt++)
 				{
-					if (stateModel.states.Values.ElementAt(cnt) == currentNode)
+					if (stateModel.states[cnt] == currentNode)
 					{
 						index = cnt;
 						break;
 					}
 				}
 
-				if (stateModel.states.Values.Count <= (index + 1))
+				if (stateModel.states.Count <= (index + 1))
 					return false;
 
-				currentNode = stateModel.states.Values.ElementAt(index + 1);
+				currentNode = stateModel.states[index + 1];
 				return true;
 			}
 			else if (currentNode is Action)

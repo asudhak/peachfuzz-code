@@ -48,10 +48,8 @@ namespace Peach.Core.Dom
 
 	[DataElement("XmlElement")]
 	[PitParsable("XmlElement")]
-	[DataElementChildSupported(DataElementTypes.Any)]
-	[DataElementRelationSupported(DataElementRelations.Any)]
 	[Parameter("name", typeof(string), "Name of element", "")]
-	[Parameter("attributeName", typeof(string), "Name of XML element")]
+	[Parameter("elementName", typeof(string), "Name of XML element")]
 	[Parameter("ns", typeof(string), "XML Namespace", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]

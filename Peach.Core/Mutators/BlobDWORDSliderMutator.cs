@@ -35,7 +35,8 @@ using Peach.Core.IO;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Slides a DWORD through the blob")]
+    [Mutator("BlobDWORDSliderMutator")]
+    [Description("Slides a DWORD through the blob")]
     [Hint("BlobDWORDSliderMutator", "Ability to disable this mutator.")]
     public class BlobDWORDSliderMutator : Mutator
     {

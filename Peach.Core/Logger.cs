@@ -34,7 +34,7 @@ using System.IO;
 namespace Peach.Core
 {
 	/// <summary>
-	/// Base class for different logging methods.
+	/// A logging mechanism for fuzzing runs.
 	/// </summary>
 	public abstract class Logger : Watcher
 	{
