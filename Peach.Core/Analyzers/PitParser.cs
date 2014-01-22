@@ -205,7 +205,7 @@ namespace Peach.Core.Analyzers
 			string xml = readWithDefines(args, data);
 
 			if (doValidatePit)
-				validatePit(xml);
+				validatePit(xml, getName(data));
 
 			XmlDocument xmldoc = new XmlDocument();
 			xmldoc.LoadXml(xml);
@@ -251,7 +251,7 @@ namespace Peach.Core.Analyzers
 		public override void asParserValidation(Dictionary<string, object> args, Stream data)
 		{
 			string xml = readWithDefines(args, data);
-			validatePit(xml);
+			validatePit(xml, getName(data));
 		}
 
 		static protected void populatePitParsable()
@@ -265,11 +265,18 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
+		private string getName(Stream data)
+		{
+			var fs = data as FileStream;
+			return fs != null ? fs.Name : null;
+		}
+
 		/// <summary>
 		/// Validate PIT XML using Schema file.
 		/// </summary>
 		/// <param name="xmlData">Pit file to validate</param>
-		private void validatePit(string xmlData)
+		/// <param name="sourceName">Name of pit file</param>
+		private void validatePit(string xmlData, string sourceName)
 		{
 			// Collect the errors
 			var errors = new StringBuilder();
@@ -314,7 +321,12 @@ namespace Peach.Core.Analyzers
 			}
 
 			if (errors.Length > 0)
-				throw new PeachException("Error, Pit file failed to validate: \r\n" + errors.ToString());
+			{
+				if (!string.IsNullOrEmpty(sourceName))
+					throw new PeachException("Error, Pit file \"{0}\" failed to validate: \r\n{1}".Fmt(sourceName, errors));
+				else
+					throw new PeachException("Error, Pit file failed to validate: \r\n{0}".Fmt(errors));
+			}
 		}
 
 		/// <summary>
