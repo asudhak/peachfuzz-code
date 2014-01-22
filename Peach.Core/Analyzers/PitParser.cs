@@ -271,58 +271,50 @@ namespace Peach.Core.Analyzers
 		/// <param name="xmlData">Pit file to validate</param>
 		private void validatePit(string xmlData)
 		{
-			XmlSchemaSet set = new XmlSchemaSet();
+			// Collect the errors
+			var errors = new StringBuilder();
+
+			// Load the schema
+			var set = new XmlSchemaSet();
 			var xsd = Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd");
 			using (var tr = XmlReader.Create(xsd))
 			{
-				set.Add(null, tr);
+				set.Add(PEACH_NAMESPACE_URI, tr);
 			}
 
-			var doc = new XmlDocument();
-			doc.Schemas = set;
-			// Mono has issues reading utf-32 BOM when just calling doc.Load(data)
-
-			try
+			var settings = new XmlReaderSettings();
+			settings.ValidationType = ValidationType.Schema;
+			settings.Schemas = set;
+			settings.NameTable = new NameTable();
+			settings.ValidationEventHandler += delegate(object sender, ValidationEventArgs e)
 			{
-				doc.LoadXml(xmlData);
-			}
-			catch (XmlException ex)
-			{
-				throw new PeachException("Error: XML Failed to load: " + ex.Message, ex);
-			}
+				var ex = e.Exception;
 
-			// Right now XSD validation is disabled on Mono :(
-			// Still load the doc to verify well formed xml
-			Type t = Type.GetType("Mono.Runtime");
-			if (t != null)
-				return;
+				errors.AppendFormat("Line: {0}, Position: {1} - ", ex.LineNumber, ex.LinePosition);
+				errors.Append(ex.Message);
+				errors.AppendLine();
+			};
 
-			foreach (XmlNode root in doc.ChildNodes)
+			// Default the namespace to peach
+			var nsMgr = new XmlNamespaceManager(settings.NameTable);
+			nsMgr.AddNamespace("", PEACH_NAMESPACE_URI);
+
+			var parserCtx = new XmlParserContext(settings.NameTable, nsMgr, null, XmlSpace.Default);
+
+			using (var rdr = XmlReader.Create(new StringReader(xmlData), settings, parserCtx))
 			{
-				if (root.Name == "Peach")
+				try
 				{
-					if (string.IsNullOrEmpty(root.NamespaceURI))
-					{
-						var element = root as System.Xml.XmlElement;
-						element.SetAttribute("xmlns", PEACH_NAMESPACE_URI);
-					}
-
-					var ms = new MemoryStream();
-					doc.Save(ms);
-					ms.Position = 0;
-					doc.Load(ms);
-					break;
+					new XmlDocument().Load(rdr);
+				}
+				catch (XmlException ex)
+				{
+					throw new PeachException("Error: XML Failed to load: " + ex.Message, ex);
 				}
 			}
 
-			string errors = "";
-			doc.Validate(delegate(object sender, ValidationEventArgs e)
-			{
-				errors += e.Message + "\r\n";
-			});
-
-			if (!string.IsNullOrEmpty(errors))
-				throw new PeachException("Error, Pit file failed to validate: " + errors);
+			if (errors.Length > 0)
+				throw new PeachException("Error, Pit file failed to validate: \r\n" + errors.ToString());
 		}
 
 		/// <summary>
