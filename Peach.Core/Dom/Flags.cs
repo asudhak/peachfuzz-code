@@ -48,6 +48,7 @@ namespace Peach.Core.Dom
 	[DataElement("Flags", DataElementTypes.NonDataElements)]
 	[PitParsable("Flags")]
 	[DataElementChildSupported("Flag")]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("size", typeof(uint), "size in bits.  Typically [8, 16, 24, 32, 64]")]
 	[Parameter("endian", typeof(string), "Byte order of number (default 'little')", "little")]

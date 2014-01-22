@@ -76,7 +76,7 @@ namespace Peach.Core.Dom
 		/// </summary>
 		[XmlElement("Data")]
 		[DefaultValue(null)]
-		public List<Peach.Core.Xsd.DataRef> schemaData { get; set; }
+		public List<Peach.Core.Xsd.Data> schemaData { get; set; }
 
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.

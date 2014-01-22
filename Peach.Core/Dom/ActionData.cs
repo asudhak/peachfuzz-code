@@ -65,9 +65,14 @@ namespace Peach.Core.Dom
 		private DataModel originalDataModel { get; set; }
 
 		/// <summary>
-		/// The name of this record.  Non-null when actions have multiple data models
-		/// (Action.Call) and null otherwise (Input/Output/SetProperty/GetProperty).
+		/// The name of this record.
 		/// </summary>
+		/// <remarks>
+		/// Non-null when actions have multiple data models
+		/// (Action.Call) and null otherwise (Input/Output/SetProperty/GetProperty).
+		/// </remarks>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string name { get; protected set; }
 
 		/// <summary>

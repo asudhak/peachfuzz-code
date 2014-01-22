@@ -19,7 +19,15 @@ namespace Peach.Core.Dom
 		/// 'Out' means input the data after the call
 		/// 'InOut' means the data is output on call and input afterwards
 		/// </summary>
-		public enum Type { In, Out, InOut };
+		public enum Type
+		{
+			[XmlEnum("in")]
+			In,
+			[XmlEnum("out")]
+			Out,
+			[XmlEnum("inout")]
+			InOut
+		};
 
 		/// <summary>
 		/// The type of this parameter.
@@ -33,7 +41,7 @@ namespace Peach.Core.Dom
 		/// </summary>
 		[XmlElement]
 		[DefaultValue(null)]
-		public List<Peach.Core.Xsd.DataRef> Data { get; set; }
+		public List<Peach.Core.Xsd.Data> Data { get; set; }
 
 		/// <summary>
 		/// Full input name of this parameter.

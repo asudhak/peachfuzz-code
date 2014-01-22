@@ -88,10 +88,12 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("String", DataElementTypes.NonDataElements)]
 	[PitParsable("String")]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]
 	[Parameter("nullTerminated", typeof(bool), "Is string null terminated?", "false")]
+	[Parameter("padCharacter", typeof(char), "Character to pad length with.", "")]
 	[Parameter("type", typeof(StringType), "Type of string (encoding)", "ascii")]
 	[Parameter("value", typeof(string), "Default value", "")]
 	[Parameter("valueType", typeof(ValueType), "Format of value attribute", "string")]

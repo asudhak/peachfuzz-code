@@ -50,6 +50,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Number", DataElementTypes.NonDataElements)]
 	[PitParsable("Number")]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("size", typeof(uint), "Size in bits")]
 	[Parameter("signed", typeof(bool), "Is number signed", "false")]

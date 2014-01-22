@@ -429,6 +429,13 @@ namespace Peach.Core.Xsd
 		}
 
 		/// <summary>
+		/// Name of other data template to reference.
+		/// </summary>
+		[XmlAttribute("ref")]
+		[DefaultValue(null)]
+		public string refData { get; set; }
+
+		/// <summary>
 		/// Name of the data template.
 		/// </summary>
 		[XmlAttribute]
@@ -446,19 +453,6 @@ namespace Peach.Core.Xsd
 		[XmlElement("Field")]
 		[DefaultValue(null)]
 		public List<Field> Fields { get; set; }
-	}
-
-	/// <summary>
-	/// Specifies a set of default data values for a template.
-	/// </summary>
-	public class DataRef : Data
-	{
-		/// <summary>
-		/// Name of other data template to reference.
-		/// </summary>
-		[XmlAttribute("ref")]
-		[DefaultValue(null)]
-		public string refData { get; set; }
 	}
 
 	#endregion
@@ -633,6 +627,7 @@ namespace Peach.Core.Xsd
 			return compiled;
 		}
 
+
 		public static void Generate(Type type, Stream stream)
 		{
 			var settings = new XmlWriterSettings() { Indent = true, Encoding = System.Text.Encoding.UTF8 };
@@ -764,7 +759,7 @@ namespace Peach.Core.Xsd
 
 		void PopulatePluginType(XmlSchemaComplexType complexType, PluginElementAttribute pluginAttr)
 		{
-			if (typeof(Peach.Core.Dom.INamed).IsAssignableFrom(pluginAttr.PluginType))
+			if (pluginAttr.Named)
 			{
 				var nameAttr = new XmlSchemaAttribute();
 				nameAttr.Name = "name";
@@ -846,6 +841,11 @@ namespace Peach.Core.Xsd
 		{
 			var facet = new XmlSchemaEnumerationFacet();
 			facet.Value = pluginAttribute.Name;
+
+			// Lame: For actions, everyone expects title case (SetProperty) but
+			// the schema expects camel case (setProperty).
+			if (pluginAttribute.Type == typeof(Peach.Core.Dom.Action))
+				facet.Value = Char.ToLowerInvariant(facet.Value[0]) + facet.Value.Substring(1);
 
 			var descAttr = type.GetAttributes<DescriptionAttribute>().FirstOrDefault();
 			if (descAttr != null)
@@ -981,6 +981,11 @@ namespace Peach.Core.Xsd
 				var ext = new XmlSchemaComplexContentExtension();
 				ext.BaseTypeName = new XmlQualifiedName(type.BaseType.Name, schema.TargetNamespace);
 
+				foreach (var attr in complexType.Attributes)
+					ext.Attributes.Add(attr);
+
+				complexType.Attributes.Clear();
+
 				if (schemaParticle.Items.Count > 0)
 					ext.Particle = schemaParticle;
 
@@ -1034,7 +1039,7 @@ namespace Peach.Core.Xsd
 				return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
 
 			if (type == typeof(int))
-				return new XmlQualifiedName("unsignedInt", XmlSchema.Namespace);
+				return new XmlQualifiedName("int", XmlSchema.Namespace);
 
 			if (type == typeof(decimal))
 				return new XmlQualifiedName("decimal", XmlSchema.Namespace);

@@ -50,6 +50,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[DataElement("Blob", DataElementTypes.NonDataElements)]
 	[PitParsable("Blob")]
+	[DataElementChildSupported("Placement")]
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("length", typeof(uint?), "Length in data element", "")]
 	[Parameter("lengthType", typeof(LengthType), "Units of the length attribute", "bytes")]

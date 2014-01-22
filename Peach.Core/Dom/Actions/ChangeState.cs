@@ -10,7 +10,7 @@ namespace Peach.Core.Dom.Actions
 		/// <summary>
 		/// Name of state to change to, type=ChangeState
 		/// </summary>
-		[XmlAttribute]
+		[XmlAttribute("ref")]
 		[DefaultValue(null)]
 		public string reference { get; set; }
 

@@ -203,7 +203,7 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.
 		/// </summary>
-		[XmlElement("Mutator")]
+		[XmlElement("Mutators")]
 		[DefaultValue(null)]
 		public MutatorFilter mutators { get; set; }
 
@@ -223,7 +223,7 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.
 		/// </summary>
-		[PluginElement("class", typeof(Publisher))]
+		[PluginElement("class", typeof(Publisher), Named = true)]
 		public List<Publisher> pubs { get; set; }
 
 		#endregion

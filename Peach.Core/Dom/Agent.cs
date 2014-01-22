@@ -84,7 +84,8 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// List of monitors Agent should spin up.
 		/// </summary>
-		[PluginElement("class", typeof(Peach.Core.Agent.Monitor))]
+		[PluginElement("class", typeof(Peach.Core.Agent.Monitor), Named = true)]
+		[DefaultValue(null)]
 		public NamedCollection<Monitor> monitors { get; set; }
 	}
 }
