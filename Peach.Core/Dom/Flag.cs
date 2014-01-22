@@ -52,7 +52,7 @@ namespace Peach.Core.Dom
 	[Parameter("value", typeof(string), "Default value", "")]
 	[Parameter("valueType", typeof(ValueType), "Format of value attribute", "string")]
 	[Parameter("token", typeof(bool), "Is element a token", "false")]
-	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "true")]
 	[Serializable]
 	public class Flag : Number
 	{

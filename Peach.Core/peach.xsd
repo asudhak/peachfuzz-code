@@ -517,7 +517,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Actual occurances</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -670,7 +670,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1195,7 +1195,7 @@ for mutation by the mutators.</xs:documentation>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1240,7 +1240,7 @@ for mutation by the mutators.</xs:documentation>
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1352,7 +1352,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1453,7 +1453,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Element name</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1478,7 +1478,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
         <xs:element ref="tns:Relation" />
         <xs:element ref="tns:Analyzer" />
       </xs:choice>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1606,7 +1606,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Is element a token</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1725,7 +1725,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           <xs:documentation>Length in data element</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>
@@ -1825,7 +1825,7 @@ An example is "[1,2,3,4]" which would evaluate to a python list.</xs:documentati
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute default="false" name="mutable" type="xs:boolean" use="optional">
+      <xs:attribute default="true" name="mutable" type="xs:boolean" use="optional">
         <xs:annotation>
           <xs:documentation>Is element mutable</xs:documentation>
         </xs:annotation>

@@ -53,7 +53,7 @@ namespace Peach.Core.Dom
 	[Parameter("name", typeof(string), "Element name", "")]
 	[Parameter("alignment", typeof(int), "Align to this byte boundry (e.g. 8, 16, etc.)", "8")]
 	[Parameter("alignedTo", typeof(DataElement), "Name of element to base our padding on", "")]
-	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "true")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Serializable]
 	public class Padding : DataElement

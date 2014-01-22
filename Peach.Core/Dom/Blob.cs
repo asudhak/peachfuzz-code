@@ -57,7 +57,7 @@ namespace Peach.Core.Dom
 	[Parameter("value", typeof(string), "Default value", "")]
 	[Parameter("valueType", typeof(ValueType), "Format of value attribute", "string")]
 	[Parameter("token", typeof(bool), "Is element a token", "false")]
-	[Parameter("mutable", typeof(bool), "Is element mutable", "false")]
+	[Parameter("mutable", typeof(bool), "Is element mutable", "true")]
 	[Parameter("constraint", typeof(string), "Scripting expression that evaluates to true or false", "")]
 	[Parameter("minOccurs", typeof(int), "Minimum occurances", "1")]
 	[Parameter("maxOccurs", typeof(int), "Maximum occurances", "1")]
