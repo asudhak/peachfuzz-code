@@ -88,7 +88,7 @@ namespace Peach.Core.Agent.Monitors
 				string postData = "Username=" + _user + "&Response=" + sb.ToString() + "&Challenge=&Password=";
 
 				string prepend = "";
-				for (int i = 0; i < Convert.ToInt32(_port); i++)
+				for (int i = 0; i < Convert.ToInt32(_port)-1; i++)
 				{
 					prepend += "P60=On&P60_TS=0&P60_TC=On&";
 				}
