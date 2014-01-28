@@ -109,8 +109,17 @@ namespace Peach.Core.Dom
 
 		protected override void OnResolve()
 		{
-			if (string.IsNullOrEmpty(relativeTo))
+			if (!isRelativeOffset)
+			{
+				// Non-relative offsets are computed from the root
+				commonAncestor.Of = From.getRoot();
+			}
+			else if (string.IsNullOrEmpty(relativeTo))
+			{
+				// If this is a relative offset but not relativeTo a specific item
+				// the offset should be relative to 'From'
 				FindCommonParent(From);
+			}
 		}
 
 		private void FindCommonParent(DataElement from)
