@@ -91,6 +91,7 @@ namespace PeachMinset
 			Console.WriteLine("] Peach 3 -- Minset");
 			Console.WriteLine("] Copyright (c) Deja vu Security\n");
 
+			int verbose = 0;
 			string samples = null;
 			string traces = null;
 			bool kill = false;
@@ -102,6 +103,7 @@ namespace PeachMinset
 				{
 					{ "h|?|help", v => Syntax() },
 					{ "k", v => kill = true },
+					{ "v", v => verbose = 1 },
 					{ "s|samples=", v => samples = v },
 					{ "t|traces=", v => traces = v},
 					{ "m|minset=", v => minset = v }
@@ -126,6 +128,8 @@ namespace PeachMinset
 
 			if (executable != null && arguments.IndexOf("%s") == -1)
 				throw new SyntaxException("Error, command argument missing '%s'.");
+
+			Peach.Core.Runtime.Program.ConfigureLogging(verbose);
 
 			var sampleFiles = GetFiles(samples, "sample");
 
@@ -262,11 +266,12 @@ Perform code coverage using all files in the 'samples' folder.  Collect
 the .trace files in the 'traces' folder for later analysis.
 
 Syntax:
-  PeachMinset [-k] -s samples -t traces command.exe args %s
+  PeachMinset [-k -v] -s samples -t traces command.exe args %s
 
 Note:
   %s will be replaced by sample filename.
   -k will terminate command.exe when CPU becomes idle.
+  -v will enable debug log messages.
 
 
 Compute Minimum Set
@@ -286,11 +291,12 @@ All-In-One
 Both tracing and computing can be performed in a single step.
 
 Syntax:
-  PeachMinset [-k] -s samples -t traces -m minset command.exe args %s
+  PeachMinset [-k -v] -s samples -t traces -m minset command.exe args %s
 
 Note:
   %s will be replaced by sample filename.
   -k will terminate command.exe when CPU becomes idle.
+  -v will enable debug log messages.
 
 
 Distributing Minset
