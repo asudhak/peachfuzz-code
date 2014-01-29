@@ -535,8 +535,8 @@ VOID Start(VOID* v)
 {
 	UNUSED_ARG(v);
 
-
-	std::ofstream fout(KnobOutput.Value() + ".pid", std::ofstream::binary | std::ofstream::trunc);
+	std::string pidFile = KnobOutput.Value() + ".pid";
+	std::ofstream fout(pidFile.c_str(), std::ofstream::binary | std::ofstream::trunc);
 	fout << PIN_GetPid();
 }
 
