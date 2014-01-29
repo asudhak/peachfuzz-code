@@ -21,8 +21,8 @@ def remove(path):
 	try:
 		try:
 			os.listdir(path)
-		except:
-			os.unlink(path)
+		except OSError:
+			os.remove(path)
 		else:
 			shutil.rmtree(path)
 	except:

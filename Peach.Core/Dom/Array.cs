@@ -52,6 +52,7 @@ namespace Peach.Core.Dom
 	/// </summary>
 	[Serializable]
 	[DataElement("Array")]
+	[DataElementParentSupported(null)]
 	public class Array : Block
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();

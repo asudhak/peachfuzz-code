@@ -29,6 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 using NLog;
 
@@ -38,7 +40,7 @@ namespace Peach.Core.Dom
 	/// Used to indicate a class is a valid Action and 
 	/// provide it's invoking name used in the Pit XML file.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 	public class ActionAttribute : PluginAttribute
 	{
 		public ActionAttribute(string name)
@@ -53,10 +55,37 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Performs an Action such as sending output, calling a method, etc.
 	/// </summary>
-	[Serializable]
 	public abstract class Action : INamed
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		[NonSerialized]
+		private State _parent;
+
+		#region Schema Elements
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("DataModel")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.DataModel schemaModel { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Data")]
+		[DefaultValue(null)]
+		public List<Peach.Core.Xsd.Data> schemaData { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Ocl")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.OclRef schemaOcl { get; set; }
+
+		#endregion
 
 		#region Common Action Properties
 
@@ -82,26 +111,36 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Name of this action
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string name { get; set; }
 
 		/// <summary>
 		/// Name of publisher to use
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string publisher { get; set; }
 
 		/// <summary>
 		/// Only run action when expression is true
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string when { get; set; }
 
 		/// <summary>
 		/// Expression to run when action is starting
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string onStart { get; set; }
 
 		/// <summary>
 		/// Expression to run when action is completed
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string onComplete { get; set; }
 
 		#endregion
@@ -121,7 +160,17 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The state this action belongs to
 		/// </summary>
-		public State parent { get; set; }
+		public State parent
+		{
+			get
+			{
+				return _parent;
+			}
+			set
+			{
+				_parent = value;
+			}
+		}
 
 		/// <summary>
 		/// Provides backwards compatibility to the unit tests.
@@ -150,34 +199,27 @@ namespace Peach.Core.Dom
 
 		protected virtual void OnStarting()
 		{
-			if (!string.IsNullOrEmpty(onStart))
-			{
-				Dictionary<string, object> state = new Dictionary<string, object>();
-				state["action"] = this;
-				state["state"] = this.parent;
-				state["self"] = this;
-
-				Scripting.EvalExpression(onStart, state);
-			}
-
 			if (Starting != null)
 				Starting(this);
 		}
 
 		protected virtual void OnFinished()
 		{
-			if (!string.IsNullOrEmpty(onComplete))
+			if (Finished != null)
+				Finished(this);
+		}
+
+		protected virtual void RunScript(string expr)
+		{
+			if (!string.IsNullOrEmpty(expr))
 			{
 				Dictionary<string, object> state = new Dictionary<string, object>();
 				state["action"] = this;
 				state["state"] = this.parent;
 				state["self"] = this;
 
-				Scripting.EvalExpression(onComplete, state);
+				Scripting.EvalExpression(expr, state);
 			}
-
-			if (Finished != null)
-				Finished(this);
 		}
 
 		/// <summary>
@@ -304,6 +346,8 @@ namespace Peach.Core.Dom
 
 				logger.Debug("ActionType.{0}", GetType().Name.ToString());
 
+				RunScript(onStart);
+
 				// Save output data
 				foreach (var item in outputData)
 					parent.parent.SaveData(item.outputName, item.dataModel.Value);
@@ -313,6 +357,8 @@ namespace Peach.Core.Dom
 				// Save input data
 				foreach (var item in inputData)
 					parent.parent.SaveData(item.inputName, item.dataModel.Value);
+
+				RunScript(onComplete);
 
 				finished = true;
 			}

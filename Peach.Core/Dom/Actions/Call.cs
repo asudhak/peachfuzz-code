@@ -3,6 +3,8 @@ using Peach.Core.IO;
 using Peach.Core.Cracker;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom.Actions
 {
@@ -17,16 +19,22 @@ namespace Peach.Core.Dom.Actions
 		/// <summary>
 		/// Method to call
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string method { get; set; }
 
 		/// <summary>
 		/// Array of parameters for a method call
 		/// </summary>
+		[XmlElement("Param")]
+		[DefaultValue(null)]
 		public NamedCollection<ActionParameter> parameters { get; private set; }
 
 		/// <summary>
 		/// Action result for a method call
 		/// </summary>
+		[XmlElement("Result")]
+		[DefaultValue(null)]
 		public ActionData result { get; set; }
 
 		public override IEnumerable<ActionData> allData

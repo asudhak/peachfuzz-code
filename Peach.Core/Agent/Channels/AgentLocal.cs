@@ -50,6 +50,8 @@ namespace Peach.Core.Agent.Channels
 
 		public AgentServerLocal(string name, string uri, string password)
 		{
+			this.name = name;
+
 			agent = new Agent(name);
 		}
 

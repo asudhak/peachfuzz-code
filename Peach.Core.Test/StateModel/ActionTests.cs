@@ -55,6 +55,90 @@ namespace Peach.Core.Test.StateModel
 	[TestFixture]
 	class ActionTests
 	{
+		bool started;
+		bool finished;
+
+		void TestDelegate(string attr)
+		{
+			// If onStart or onComplete throws, ensure Action.Start/Action.Finished delegates are notified
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String value='Hello'/>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action name='action' type='output' {0}='foo' >
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+		<Strategy class='RandomDeterministic'/>
+	</Test>
+</Peach>".Fmt(attr);
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+
+			started = false;
+			finished = false;
+
+			Dom.Action.Starting +=new ActionStartingEventHandler(Action_Starting);
+			Dom.Action.Finished += new ActionFinishedEventHandler(Action_Finished);
+
+			try
+			{
+				e.startFuzzing(dom, config);
+				Assert.Fail("should throw");
+			}
+			catch (PeachException)
+			{
+			}
+			finally
+			{
+				Dom.Action.Starting -= new ActionStartingEventHandler(Action_Starting);
+				Dom.Action.Finished -= new ActionFinishedEventHandler(Action_Finished);
+			}
+
+			Assert.AreEqual(true, started);
+			Assert.AreEqual(true, finished);
+		}
+
+		void Action_Finished(Dom.Action action)
+		{
+			Assert.AreEqual(false, finished);
+			finished = true;
+		}
+
+		void Action_Starting(Dom.Action action)
+		{
+			Assert.AreEqual(false, started);
+			started = true;
+		}
+
+		[Test]
+		public void TestOnStartThrow()
+		{
+			TestDelegate("onStart");
+		}
+
+		[Test]
+		public void TestOnCompleteThrow()
+		{
+			TestDelegate("onComplete");
+		}
+
 		void RunAction(string action, string children, string attr)
 		{
 			string xml = @"
@@ -593,9 +677,8 @@ namespace Peach.Core.Test.StateModel
 
 			Assert.AreEqual(2, dom.tests[0].stateModel.states.Count);
 
-			foreach (var kv in dom.tests[0].stateModel.states)
+			foreach (var state in dom.tests[0].stateModel.states)
 			{
-				var state = kv.Value;
 				Assert.AreEqual(2, state.actions.Count);
 				Assert.AreEqual("Action", state.actions[0].name);
 				Assert.AreEqual("Action_1", state.actions[1].name);

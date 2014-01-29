@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<targets>
+		<target name="console" xsi:type="Console" layout="${logger} ${message}" />
+		<target name="file" xsi:type="File" fileName="peach.log" layout="${longdate} ${logger} ${message}" />
+	</targets>
+
+	<rules>
+		<logger name="*" minlevel="Debug" writeTo="console" />
+		<logger name="*" minlevel="Trace" writeTo="file" />
+	</rules>
+</nlog>

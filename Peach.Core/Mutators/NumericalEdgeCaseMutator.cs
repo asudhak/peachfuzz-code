@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
+    [Mutator("NumericalEdgeCaseMutator")]
+    [Description("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
     [Hint("NumericalEdgeCaseMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class NumericalEdgeCaseMutator : Mutator
     {

@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-	[Mutator("Perform common string mutations")]
+	[Mutator("StringMutator")]
+	[Description("Perform common string mutations")]
 	public partial class StringMutator : Mutator
 	{
 		uint pos = 0;

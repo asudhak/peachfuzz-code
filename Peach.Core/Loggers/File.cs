@@ -214,13 +214,13 @@ namespace Peach.Core.Loggers
 
 				foreach (var kv in fault.collectedData)
 				{
-					string fileName = fault.detectionSource + "_" + kv.Key;
+					string fileName = string.Join(".", new[] { fault.agentName, fault.monitorName, fault.detectionSource, kv.Key }.Where(a => !string.IsNullOrEmpty(a)));
 					ret.collectedData.Add(new Fault.Data(fileName, kv.Value));
 				}
 
-				if (fault.description != null)
+				if (!string.IsNullOrEmpty(fault.description))
 				{
-					string fileName = fault.detectionSource + "_" + "description.txt";
+					string fileName = string.Join(".", new[] { fault.agentName, fault.monitorName, fault.detectionSource, "description.txt" }.Where(a => !string.IsNullOrEmpty(a)));
 					ret.collectedData.Add(new Fault.Data(fileName, Encoding.UTF8.GetBytes(fault.description)));
 				}
 			}
@@ -275,6 +275,8 @@ namespace Peach.Core.Loggers
 			ret.controlRecordingIteration = coreFault.controlRecordingIteration;
 			ret.description = coreFault.description;
 			ret.detectionSource = coreFault.detectionSource;
+			ret.monitorName = coreFault.monitorName;
+			ret.agentName = coreFault.agentName;
 			ret.exploitability = coreFault.exploitability;
 			ret.iteration = currentIteration;
 			ret.majorHash = coreFault.majorHash;

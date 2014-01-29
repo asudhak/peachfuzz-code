@@ -10,7 +10,7 @@
 		
 		Syntax:
 		
-		  peach.exe samples\Debugger.xml
+		  peach samples\Debugger.xml
 		
 		Output:
 		

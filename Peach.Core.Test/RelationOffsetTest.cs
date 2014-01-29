@@ -82,6 +82,73 @@ namespace Peach.Core.Test
 		}
 
 		[Test]
+		public void BasicBlockTest()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='Block'>
+		<Number size='32' endian='big'>
+			<Relation type='offset' of='BlockData' relative='true' relativeTo='TheDataModel'/>
+		</Number>
+		<Number size='32' endian='big'>
+			<Relation type='size' of='BlockData'/>
+		</Number>
+		<Block name='BlockData'>
+			<String name='StringData' value='test'/>
+		</Block>
+	</DataModel>
+
+	<DataModel name='TheDataModel'>
+		<String value='1234'/>
+		<Block ref='Block'/>
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(2, dom.dataModels.Count);
+
+			var dm = dom.dataModels[1];
+			Assert.AreEqual("TheDataModel", dm.name);
+
+			// "1234   12    4    test"
+			byte[] expected = new byte[] { 49, 50, 51, 52, 0, 0, 0, 12, 0, 0, 0, 4, 116, 101, 115, 116 };
+			byte[] actual = dm.Value.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
+		public void BasicBlockTest2()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+
+	<Number size='32'> <Relation type='offset' of='Blk1'/> </Number>
+	<Number size='32'> <Relation type='size' of='Blk1'/> </Number>
+
+	<Block name='Blk1'>
+		<Number size='32' value='0xffffffff'/>
+	</Block>
+
+	</DataModel>
+</Peach>";
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(1, dom.dataModels.Count);
+
+			var dm = dom.dataModels[0];
+			Assert.AreEqual("TheDataModel", dm.name);
+
+			byte[] expected = new byte[] { 8, 0, 0, 0, 4, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF };
+			byte[] actual = dm.Value.ToArray();
+			Assert.AreEqual(expected, actual);
+		}
+
+		[Test]
 		public void FlagsTest()
 		{
 			string xml = @"
@@ -445,6 +512,72 @@ namespace Peach.Core.Test
 				uint offset = rdr.ReadUInt32();
 
 				Assert.AreEqual((4 + beginLen + 2 + offset) * 8, len);
+			}
+		}
+
+		[Test]
+		public void TestAbsolute()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='TheDataModel'>
+		<Number name='len' size='32' signed='false' endian='big'>
+			<Relation type='size' of='begin'/>
+		</Number>
+		<String name='begin'/>
+		<String name='eol' mutable='false' value='\r\n'/>
+		<Block>
+			<Number name='num' size='32' signed='false' endian='big'>
+				<Relation type='offset' of='blob'/>
+			</Number>
+			<String name='str'/>
+			<Blob name='blob'/>
+		</Block>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='TheDataModel'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='TheState'/>
+		<Publisher class='Null'/>
+		<Strategy class='Sequential'/>
+	</Test>
+</Peach>";
+
+			PitParser parser = new PitParser();
+
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("StringMutator");
+
+			RunConfiguration config = new RunConfiguration();
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(4759, dataModels.Count);
+
+			foreach (var dm in dataModels)
+			{
+				var val = dm.Value;
+				var len = val.LengthBits;
+				Assert.GreaterOrEqual(len, 32);
+
+				val.Seek(0, SeekOrigin.Begin);
+				var rdr = new BitReader(val);
+				rdr.BigEndian();
+				uint beginLen = rdr.ReadUInt32();
+
+				val.Seek(beginLen + 2, SeekOrigin.Current);
+				uint offset = rdr.ReadUInt32();
+
+				Assert.AreEqual(len, offset * 8);
 			}
 		}
 	}

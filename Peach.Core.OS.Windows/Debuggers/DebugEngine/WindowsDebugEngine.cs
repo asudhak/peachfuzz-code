@@ -304,8 +304,6 @@ namespace Peach.Core.Debuggers.DebugEngine
 	[Guid("F193F926-63C4-4837-8456-40C1CD1720D5")]
 	public class OutputCallbacks : IDebugOutputCallbacks
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		WindowsDebugEngine _engine;
 		public OutputCallbacks(WindowsDebugEngine engine)
 		{
@@ -440,7 +438,6 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 				_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, "!exploitable -m", (uint)Const.DEBUG_EXECUTE_ECHO);
 
-				Dictionary<string, Variant> crashInfo = new Dictionary<string, Variant>();
 				_engine.output.Replace("\x0a", "\r\n");
 
 				string output = _engine.output.ToString();

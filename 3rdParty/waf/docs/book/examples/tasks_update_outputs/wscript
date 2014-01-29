@@ -1,0 +1,16 @@
+#! /usr/bin/env python
+
+def configure(ctx):
+	pass
+
+def build(ctx):
+    ctx(
+        rule           = 'touch ${TGT}',
+        source         = 'wscript',
+        target         = ctx.path.make_node('wscript2'),
+    )
+    ctx(
+        rule           = 'cp ${SRC} ${TGT}',
+        source         = ctx.path.make_node('wscript2'),
+        target         = ctx.path.make_node('wscript3')
+    )

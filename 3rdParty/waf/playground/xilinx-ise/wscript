@@ -239,14 +239,14 @@ run
 		for tgen in bld.get_all_task_gen():
 			for tgt in waflib.Utils.to_list(tgen.target):
 				if os.path.exists(tgt):
-					os.unlink(tgt)
+					os.remove(tgt)
 		for x in (
 		 'usage_statistics_webtalk.html',
 		 'webtalk_pn.xml',
 		 'webtalk.log',
 		 ):
 			if os.path.exists(x):
-				os.unlink(x)
+				os.remove(x)
 
 		for x in (
 		 '_ngo',
@@ -271,6 +271,6 @@ def distclean(ctx):
 			if os.path.isdir(fn):
 				shutil.rmtree(fn)
 			else:
-				os.unlink(fn)
+				os.remove(fn)
 
 

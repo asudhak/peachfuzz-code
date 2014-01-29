@@ -37,7 +37,6 @@ namespace Peach.Core.Test
 	<DataModel name=""Msg_A"" ref=""Base"">
 		<Block name=""Payload"">
 			<Block name=""Data"">
-				<Relation type=""size"" from=""Length"" />
 				<Number name=""num"" size=""8"" />
 			</Block>
 		</Block>
@@ -46,7 +45,6 @@ namespace Peach.Core.Test
 	<DataModel name=""Msg_B"" ref=""Base"">
 		<Block name=""Payload"">
 			<Block name=""Data"">
-				<Relation type=""size"" from=""Length"" />
 				<String name=""str"" value=""Hello World"" />
 			</Block>
 		</Block>

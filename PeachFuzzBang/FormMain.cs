@@ -267,7 +267,7 @@ namespace PeachFuzzBang
 				state.actions.Add(actionClose);
 				state.actions.Add(actionCall);
 
-				stateModel.states.Add(state.name, state);
+				stateModel.states.Add(state);
 				stateModel.initialState = state;
 
 				dom.stateModels.Add(stateModel.name, stateModel);
@@ -275,7 +275,7 @@ namespace PeachFuzzBang
 				// Agent
 				Peach.Core.Dom.Agent agent = new Peach.Core.Dom.Agent();
 				agent.name = "TheAgent";
-				agent.url = "local://";
+				agent.location = "local://";
 
 				Peach.Core.Dom.Monitor monitor = new Peach.Core.Dom.Monitor();
 
@@ -398,7 +398,7 @@ namespace PeachFuzzBang
 				test.agents.Add(agent.name, agent);
 				test.publishers.Add("FileWriter", file);
 				test.strategy = strat;
-				stateModel.parent = test;
+				stateModel.parent = dom;
 
 				dom.tests.Add(test.name, test);
 

@@ -462,6 +462,8 @@ namespace Peach.Core.Agent.Channels
 		private static string _url;
 		public AgentClientRest(string name, string uri, string password)
 		{
+			this.name = name;
+
 			_url = uri + "/Agent";
 			if (string.IsNullOrEmpty(uri))
 				throw new PeachException("Uri for rest agent cannot be empty");

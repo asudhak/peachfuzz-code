@@ -142,6 +142,7 @@ namespace Peach.Core.Runtime
 					{ "charlie", var => Charlie() },
 					{ "showdevices", var => ShowDevices() },
 					{ "showenv", var => ShowEnvironment() },
+					{ "makexsd", var => MakeSchema() },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -175,17 +176,25 @@ namespace Peach.Core.Runtime
 				}
 
 				// Enable debugging if asked for
+				// If configuration was already done by a .config file, don't change anything
 				if (config.debug > 0)
 				{
-					var nconfig = new LoggingConfiguration();
-					var consoleTarget = new ColoredConsoleTarget();
-					nconfig.AddTarget("console", consoleTarget);
-					consoleTarget.Layout = "${logger} ${message}";
+					if (LogManager.Configuration.LoggingRules.Count > 0)
+					{
+						Console.WriteLine("Logging was configured by a .config file, not changing the configuration.");
+					}
+					else
+					{
+						var nconfig = new LoggingConfiguration();
+						var consoleTarget = new ConsoleTarget();
+						nconfig.AddTarget("console", consoleTarget);
+						consoleTarget.Layout = "${logger} ${message}";
 
-					var rule = new LoggingRule("*", config.debug == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
-					nconfig.LoggingRules.Add(rule);
+						var rule = new LoggingRule("*", config.debug == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
+						nconfig.LoggingRules.Add(rule);
 
-					LogManager.Configuration = nconfig;
+						LogManager.Configuration = nconfig;
+					}
 				}
 
 				if (agent != null)
@@ -338,6 +347,7 @@ Syntax:
   --trace                    Enable even more verbose debug messages.
   --seed N                   Sets the seed used by the random number generator
   --parseonly                Test parse a Peach XML file
+  --makexsd                  Generate peach.xsd
   --showenv                  Print a list of all DataElements, Fixups, Monitors
                              Publishers and their associated parameters.
   --showdevices              Display the list of PCAP devices
@@ -571,6 +581,28 @@ Debug Peach XML File
 		{
 			Peach.Core.Usage.Print();
 			throw new SyntaxException();
+		}
+
+		public void MakeSchema()
+		{
+			try
+			{
+				Console.WriteLine();
+
+				using (var stream = new FileStream("peach.xsd", FileMode.Create, FileAccess.Write))
+				{
+					Xsd.SchemaBuilder.Generate(typeof(Xsd.Dom), stream);
+
+					Console.WriteLine("Successfully generated {0}", stream.Name);
+				}
+
+				throw new SyntaxException();
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				throw new PeachException("Error creating schema. {0}".Fmt(ex.Message), ex);
+			}
+
 		}
 
 		protected virtual Watcher GetUIWatcher()

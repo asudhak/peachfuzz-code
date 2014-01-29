@@ -366,6 +366,22 @@ namespace Peach.Core
         public string detectionSource = null;
 
         /// <summary>
+        /// Name of monitor instance that created this fault
+        /// </summary>
+        /// <remarks>
+        /// Set by the agent
+        /// </remarks>
+        public string monitorName = null;
+
+        /// <summary>
+        /// Agent this fault came from
+        /// </summary>
+        /// <remarks>
+        /// Set by the AgentManager
+        /// </remarks>
+        public string agentName = null;
+
+        /// <summary>
         /// Title of finding
         /// </summary>
         public string title = null;

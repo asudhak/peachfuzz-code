@@ -47,6 +47,8 @@ namespace Peach.Core
 	/// <summary>
 	/// Helper class to add a debug listener so asserts get written to the console.
 	/// </summary>
+	// NOTE: Tell msvs this is not a 'Component' (must be fully namespaced)
+	[System.ComponentModel.DesignerCategory("Code")]
 	public class AssertWriter : System.Diagnostics.TraceListener
 	{
 		public static void Register()

@@ -12,6 +12,7 @@ def build(ctx):
 only the symbols starting with 'mylib_' will be exported.
 """
 
+import os
 import re
 from waflib.Context import STDOUT
 from waflib.Task import Task
@@ -21,16 +22,24 @@ from waflib.TaskGen import feature, after_method
 class gen_sym(Task):
 	def run(self):
 		obj = self.inputs[0]
+		kw = {}
 		if 'msvc' in (self.env.CC_NAME, self.env.CXX_NAME):
 			re_nm = re.compile(r'External\s+\|\s+_(' + self.generator.export_symbols_regex + r')\b')
-			cmd = ['dumpbin', '/symbols', obj.abspath()]
+			cmd = [self.env.DUMPBIN or 'dumpbin', '/symbols', obj.abspath()]
+
+			# Dumpbin requires custom environment sniffed out by msvc.py earlier
+			if self.env['PATH']:
+				env = dict(self.env.env or os.environ)
+				env.update(PATH = os.pathsep.join(self.env['PATH']))
+				kw['env'] = env
+
 		else:
 			if self.env.DEST_BINFMT == 'pe': #gcc uses nm, and has a preceding _ on windows
 				re_nm = re.compile(r'T\s+_(' + self.generator.export_symbols_regex + r')\b')
 			else:
 				re_nm = re.compile(r'T\s+(' + self.generator.export_symbols_regex + r')\b')
-			cmd = ['nm', '-g', obj.abspath()]
-		syms = re_nm.findall(self.generator.bld.cmd_and_log(cmd, quiet=STDOUT))
+			cmd = [self.env.NM or 'nm', '-g', obj.abspath()]
+		syms = re_nm.findall(self.generator.bld.cmd_and_log(cmd, quiet=STDOUT, **kw))
 		self.outputs[0].write('%r' % syms)
 
 class compile_sym(Task):
@@ -40,7 +49,7 @@ class compile_sym(Task):
 			slist = eval(x.read())
 			for s in slist:
 				syms[s] = 1
-		lsyms = syms.keys()
+		lsyms = dict(syms.keys())
 		lsyms.sort()
 		if self.env.DEST_BINFMT == 'pe':
 			self.outputs[0].write('EXPORTS\n' + '\n'.join(lsyms))
@@ -59,7 +68,7 @@ def do_the_symbol_stuff(self):
 			       [x.outputs[0] for x in self.gen_sym_tasks],
 			       self.path.find_or_declare(getattr(self, 'sym_filename', self.target + '.def')))
 	self.link_task.set_run_after(tsk)
-	self.link_task.dep_nodes = [tsk.outputs[0]]
+	self.link_task.dep_nodes.append(tsk.outputs[0])
 	if 'msvc' in (self.env.CC_NAME, self.env.CXX_NAME):
 		self.link_task.env.append_value('LINKFLAGS', ['/def:' + tsk.outputs[0].bldpath()])
 	elif self.env.DEST_BINFMT == 'pe': #gcc on windows takes *.def as an additional input

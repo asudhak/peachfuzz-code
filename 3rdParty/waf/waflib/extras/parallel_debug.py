@@ -30,6 +30,9 @@ def options(opt):
 	opt.add_option('--dband', action='store', type='int', help='band width', default=22, dest='dband')
 	opt.add_option('--dmaxtime', action='store', type='float', help='maximum time, for drawing fair comparisons', default=0, dest='dmaxtime')
 
+def configure(conf):
+	conf.find_program('convert', var='CONVERT_BIN')
+
 # red   #ff4d4d
 # green #4da74d
 # lila  #a751ff
@@ -130,6 +133,9 @@ def name2class(name):
 
 def process_colors(producer):
 	# first, cast the parameters
+	if not hasattr(producer.bld, 'path'):
+		return
+
 	tmp = []
 	try:
 		while True:
@@ -160,6 +166,7 @@ def process_colors(producer):
 	for x in tmp:
 		thread_count += x[6]
 		acc.append("%d %d %f %r %d %d %d" % (x[0], x[1], x[2] - ini, x[3], x[4], x[5], thread_count))
+
 	data_node = producer.bld.path.make_node('pdebug.dat')
 	data_node.write('\n'.join(acc))
 
@@ -338,5 +345,5 @@ function hideInfo(evt) {
 	Logs.warn('Created the diagram %r' % node.abspath())
 
 	p = node.parent.abspath()
-	producer.bld.exec_command(['convert', p + os.sep + 'pdebug.svg', p + os.sep + 'pdebug.png'])
+	producer.bld.exec_command([producer.bld.env.CONVERT_BIN or 'convert', p + os.sep + 'pdebug.svg', p + os.sep + 'pdebug.png'])
 

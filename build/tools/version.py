@@ -103,6 +103,9 @@ def apply_version(self, name, inputs, exts):
 @before_method('apply_cs', 'apply_msbuild')
 @after_method('cs_helpers', 'msbuild_helpers')
 def apply_version_cs(self):
+	if getattr(self.bld, 'is_idegen', False):
+		return
+
 	if not getattr(self, 'version', True):
 		return
 
@@ -124,6 +127,9 @@ def apply_version_cs(self):
 @feature('cxxprogram', 'cxxshlib')
 @before_method('process_source')
 def apply_version_cxx(self):
+	if getattr(self.bld, 'is_idegen', False):
+		return
+
 	exts = [ '.cpp' ]
 	if self.env.CC_NAME == 'msvc':
 		exts.append('.rc')
@@ -132,6 +138,9 @@ def apply_version_cxx(self):
 @feature('cprogram', 'cshlib')
 @before_method('process_source')
 def apply_version_c(self):
+	if getattr(self.bld, 'is_idegen', False):
+		return
+
 	exts = [ '.c' ]
 	if self.env.CC_NAME == 'msvc':
 		exts.append('.rc')

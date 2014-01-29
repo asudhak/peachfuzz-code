@@ -50,7 +50,6 @@ namespace Peach.Core.Dom
 	[Relation("offset", true)]
 	[Description("Byte offset relation")]
 	[Parameter("of", typeof(string), "Element used to generate relation value", "")]
-	[Parameter("from", typeof(string), "Element that receives relation value", "")]
 	[Parameter("expressionGet", typeof(string), "Scripting expression that is run when getting the value", "")]
 	[Parameter("expressionSet", typeof(string), "Scripting expression that is run when setting the value", "")]
 	[Parameter("relative", typeof(bool), "Is the offset relative", "false")]
@@ -110,8 +109,17 @@ namespace Peach.Core.Dom
 
 		protected override void OnResolve()
 		{
-			if (string.IsNullOrEmpty(relativeTo))
-				FindCommonParent(Of);
+			if (!isRelativeOffset)
+			{
+				// Non-relative offsets are computed from the root
+				commonAncestor.Of = From.getRoot();
+			}
+			else if (string.IsNullOrEmpty(relativeTo))
+			{
+				// If this is a relative offset but not relativeTo a specific item
+				// the offset should be relative to 'From'
+				FindCommonParent(From);
+			}
 		}
 
 		private void FindCommonParent(DataElement from)

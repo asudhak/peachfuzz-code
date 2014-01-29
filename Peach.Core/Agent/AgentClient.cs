@@ -61,7 +61,7 @@ namespace Peach.Core.Agent
 	/// <summary>
 	/// Abstract base class for all Agent servers.
 	/// </summary>
-	public abstract class AgentClient
+	public abstract class AgentClient : INamed
 	{
 		public object parent;
 
@@ -181,6 +181,7 @@ namespace Peach.Core.Agent
 
 		#endregion
 
+		public string name { get; protected set; }
 
 		/// <summary>
 		/// Does AgentServer instance support specified protocol?  For example, if

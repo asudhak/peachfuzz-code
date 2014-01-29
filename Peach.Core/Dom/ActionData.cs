@@ -3,12 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Peach.Core.IO;
 using Peach.Core.Cracker;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
 	[Serializable]
 	public class ActionData : INamed
 	{
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.DataModel schemaModel { get; set; }
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -21,12 +30,6 @@ namespace Peach.Core.Dom
 		/// The action that this belongs to
 		/// </summary>
 		public Action action { get; set; }
-
-		/// <summary>
-		/// A cached copy of the clean data model.  Has fields/data applied
-		/// when applicable.
-		/// </summary>
-		public DataModel originalDataModel { get; private set; }
 
 		/// <summary>
 		/// The data model we use for input/output when running the state model.
@@ -56,9 +59,20 @@ namespace Peach.Core.Dom
 		private DataModel sourceDataModel { get; set; }
 
 		/// <summary>
-		/// The name of this record.  Non-null when actions have multiple data models
-		/// (Action.Call) and null otherwise (Input/Output/SetProperty/GetProperty).
+		/// A cached copy of the clean data model.  Has fields/data applied
+		/// when applicable.
 		/// </summary>
+		private DataModel originalDataModel { get; set; }
+
+		/// <summary>
+		/// The name of this record.
+		/// </summary>
+		/// <remarks>
+		/// Non-null when actions have multiple data models
+		/// (Action.Call) and null otherwise (Input/Output/SetProperty/GetProperty).
+		/// </remarks>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string name { get; protected set; }
 
 		/// <summary>

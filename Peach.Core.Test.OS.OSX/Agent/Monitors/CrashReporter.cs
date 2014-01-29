@@ -9,6 +9,7 @@ using System.Threading;
 namespace Peach.Core.Test.Agent.Monitors
 {
 	[TestFixture]
+	[Platform("MacOsX")]
 	public class CrashReporterTest
 	{
 		[Test]

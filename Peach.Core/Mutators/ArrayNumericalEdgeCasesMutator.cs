@@ -37,7 +37,8 @@ using NLog;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Change the length of arrays to numerical edge cases")]
+    [Mutator("ArrayNumericalEdgeCasesMutator")]
+    [Description("Change the length of arrays to numerical edge cases")]
     [Hint("ArrayNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class ArrayNumericalEdgeCasesMutator : Mutator
     {

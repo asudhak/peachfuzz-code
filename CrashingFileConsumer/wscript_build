@@ -4,5 +4,6 @@ bld(
 	features = 'cxx cxxprogram',
 	source = 'CrashingFileConsumer.cpp',
 	target = 'CrashingFileConsumer',
+	ide_path='Test Programs',
 )
 

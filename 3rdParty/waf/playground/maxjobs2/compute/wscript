@@ -46,9 +46,9 @@ def lock_maxjob(self):
 
 def release_maxjob(self):
 	# release the lock file
-	print "> long task %d" % (time.time() - self.start_time)
+	print("> long task %d" % (time.time() - self.start_time))
 	try:
-		os.unlink(self.generator.bld.lockfile)
+		os.remove(self.generator.bld.lockfile)
 		os.close(self.lockfd)
 	except OSError, e:
 		# of someone else has removed the lock... bad luck! but do not fail here
