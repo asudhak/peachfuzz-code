@@ -55,22 +55,7 @@
 #include <string>
 
 #include "uthash.h"
-
-#if 0
-
-extern "C"
-{
-	void __stdcall OutputDebugStringA(const char* lpOutputString);
-}
-
-#else
-
-void OutputDebugStringA(const char* str)
-{
-	UNUSED_ARG(str);
-}
-
-#endif
+#include "compat.h"
 
 #define DBG(x) do { if (KnobDebug) fileDbg.Dbg x; } while (0)
 
@@ -137,6 +122,11 @@ public:
 		, conflict(NULL)
 		, key(IMG_Id(img))
 	{
+	}
+
+	const ImageRec* Next() const
+	{
+		return (const ImageRec*)hh.next;
 	}
 
 	const std::string fullName;    // Full absolute path to file
@@ -209,6 +199,11 @@ public:
 		, keylen(value.size())
 		, key(value.c_str())
 	{
+	}
+
+	const StringRec* Next() const
+	{
+		return (const StringRec*)hh.next;
 	}
 
 	const std::string value;
@@ -355,7 +350,7 @@ public:
 
 			fwrite(buf, 1, len, m_pFile);
 
-			OutputDebugStringA(buf);
+			DebugWrite(buf);
 		}
 
 
@@ -383,6 +378,29 @@ File fileDbg;
 
 KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
+
+#ifdef WIN32
+
+KNOB<BOOL> KnobFast(KNOB_MODE_WRITEONCE, "pintool", "fast", "0", "Don't trace windows system libraries.");
+
+bool shouldExclude(const ImageRec& img)
+{
+	static WinDirHelper h(KnobFast);
+
+	if (img.key > 1 && h.IsSystem(img.fullName))
+		return true;
+
+	return !!excludedImages.Find(img.fileName);
+}
+
+#else
+
+bool shouldExclude(const ImageRec& img)
+{
+	return !!excludedImages.Find(img.fileName);
+}
+
+#endif
 
 bool ReadAllLines(const std::string& fileName, Strings_t& lines)
 {
@@ -413,15 +431,11 @@ INT32 Usage()
 }
 
 // Called whenever a basic block is executed
-VOID PIN_FAST_ANALYSIS_CALL BlockExecuted(VOID* v)
+VOID PIN_FAST_ANALYSIS_CALL BlockExecuted(BlockRec* pBlock)
 {
-	BlockRec* pBlock = reinterpret_cast<BlockRec*>(v);
-
-	if (pBlock->countRun++ == 0)
-	{
-		fileOut.Write(pBlock->trace);
-		fileExisting.Write(pBlock->trace);
-	}
+	// Keep conditionals and lookups out of this
+	// callback so pin can inline it
+	pBlock->countRun++;
 }
 
 // Called every time a new image is loaded
@@ -430,7 +444,7 @@ VOID Image(IMG img, VOID* v)
 	UNUSED_ARG(v);
 
 	ImageRec* pImg = new ImageRec(img);
-	pImg->excluded = !!excludedImages.Find(pImg->fileName);
+	pImg->excluded = shouldExclude(*pImg);
 	pImg->conflict = includedImages.Find(pImg->fileName);
 
 	images.Add(pImg);
@@ -546,7 +560,7 @@ VOID Fini(INT32 code, VOID *v)
 	UNUSED_ARG(code);
 	UNUSED_ARG(v);
 
-	unsigned long existing = 0, excluded = 0, dupes = 0, run = 0;
+	unsigned long existing = 0, excluded = 0, imgIncl = 0, imgExcl = 0, dupes = 0, run = 0;
 
 	for (const BlockRec* it = blocks.Head(); it != NULL; it = it->Next())
 	{
@@ -560,13 +574,25 @@ VOID Fini(INT32 code, VOID *v)
 			++dupes;
 
 		if (it->countRun > 0)
+		{
 			++run;
+			fileOut.Write(it->trace);
+			fileExisting.Write(it->trace);
+		}
+	}
+
+	for (const ImageRec* it = images.Head(); it != NULL; it = it->Next())
+	{
+		if (it->excluded)
+			++imgIncl;
+		else
+			++imgExcl;
 	}
 
 	DBG(("Finished:"));
 	DBG((" All Images     : %lu", (unsigned long)images.Count()));
-	DBG((" Excluded Images: %lu",(unsigned long) excludedImages.Count()));
-	DBG((" Included Images: %lu", (unsigned long)includedImages.Count()));
+	DBG((" Excluded Images: %lu", imgExcl));
+	DBG((" Included Images: %lu", imgIncl));
 	DBG((" Existing Traces: %lu", (unsigned long)existingTraces.Count()));
 	DBG((" Basic Blocks   : %lu", (unsigned long)blocks.Count()));
 	DBG(("  Existing      : %lu", existing));
