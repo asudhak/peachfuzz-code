@@ -39,6 +39,8 @@ namespace Peach.Core.Agent.Monitors
 		private bool _last_was_fault = false;
 		private Regex _regex = null;
 		private string _cmd_output = null;
+		bool _run_attempted = false;
+		bool _run_success = false; 
 
 		public enum When {OnCall, OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault, OnIterationStartAfterFault};
 
@@ -60,6 +62,7 @@ namespace Peach.Core.Agent.Monitors
 
 		void _Start()
 		{
+			_run_attempted = true;
 			var startInfo = new ProcessStartInfo();
 			startInfo.FileName = Command;
 			startInfo.UseShellExecute = UseShellExecute;
@@ -77,12 +80,24 @@ namespace Peach.Core.Agent.Monitors
 					p.Start();
 					if (Timeout != 0)
 					{
-						p.WaitForExit(Timeout * 1000); //input in milliseconds, _timeout is in seconds
+						logger.Debug("_Start(): Waiting for " + Timeout +  " seconds for command to exit");
+						_run_success = p.WaitForExit(Timeout * 1000); //input in milliseconds, Timeout is in seconds
+						if (_run_success)
+						{
+							logger.Debug("_Start(): command exited cleanly");
+						}
+						else
+						{
+							logger.Debug("_Start(): timeout, killing");	
+							p.Kill();
+						}
 					}
 					else
 					{
 						p.WaitForExit();
+						_run_success = true;
 					}
+					
 					if(System.String.IsNullOrEmpty(CheckValue))
 						_cmd_output = "";
 					else
@@ -98,6 +113,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
+			_run_attempted = false; //reset for next run
 			if (_When == When.OnIterationStart || ( _last_was_fault && _When == When.OnIterationStartAfterFault))
 				_Start();
 			_last_was_fault = false;
@@ -118,18 +134,34 @@ namespace Peach.Core.Agent.Monitors
 				_fault.description = _cmd_output;
 
 				bool match = _regex.IsMatch(_fault.description);
-
-				if (match && !System.String.IsNullOrEmpty(CheckValue))
+				
+				logger.Debug("DetectedFault(): Checking for faults during run of command " + Command);
+				if (!_run_attempted)
+					_fault.type = FaultType.Data;
+				else if (!_run_success)
+				{
+					logger.Debug("DetectedFault(): Execution of command" + Command + " failed");
+					_fault.type = FaultType.Fault;
+					_fault.description = "Run timed out:" + _cmd_output;
+				}
+				else if (match && !System.String.IsNullOrEmpty(CheckValue))
+				{
+					logger.Debug("DetectedFault(): match found");
 					_fault.type = FaultOnMatch ? FaultType.Fault : FaultType.Data;
+					
+				}
 				else
-					_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;
+				{
+					logger.Debug("DetectedFault(): match not found");
+					_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;					
+				}
 			}
 			catch (Exception ex)
 			{
 				_fault.title = "Exception";
 				_fault.description = ex.Message;
 			}
-
+			
 			return _fault.type == FaultType.Fault;
 
 		}
