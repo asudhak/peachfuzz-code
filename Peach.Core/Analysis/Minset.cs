@@ -37,8 +37,7 @@ using Peach.Core;
 
 namespace Peach.Core.Analysis
 {
-	public delegate void TraceStartingEventHandler(Minset sender, string fileName, int count, int totalCount);
-	public delegate void TraceCompletedEventHandler(Minset sender, string fileName, int count, int totalCount);
+	public delegate void TraceEventHandler(Minset sender, string fileName, int count, int totalCount);
 
 	/// <summary>
 	/// Perform analysis on sample sets to identify the smallest sample set
@@ -46,8 +45,8 @@ namespace Peach.Core.Analysis
 	/// </summary>
 	public class Minset
 	{
-		public event TraceStartingEventHandler TraceStarting;
-		public event TraceCompletedEventHandler TraceCompleted;
+		public event TraceEventHandler TraceStarting;
+		public event TraceEventHandler TraceCompleted;
 
 		protected void OnTraceStarting(string fileName, int count, int totalCount)
 		{

@@ -132,9 +132,9 @@ namespace PeachMinset
 			if (minset != null)
 				VerifyDirectory(minset);
 
-            var ms = new Minset();
-            ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
-            ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
+			var ms = new Minset();
+			ms.TraceCompleted += new TraceEventHandler(ms_TraceCompleted);
+			ms.TraceStarting += new TraceEventHandler(ms_TraceStarting);
 
 			if (minset != null && executable != null)
 				Console.WriteLine("[*] Running both trace and coverage analysis\n");
