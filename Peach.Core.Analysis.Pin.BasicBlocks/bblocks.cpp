@@ -381,6 +381,7 @@ File fileOut;
 File fileExisting;
 File fileDbg;
 
+KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
 
 bool ReadAllLines(const std::string& fileName, Strings_t& lines)
@@ -534,7 +535,8 @@ VOID Start(VOID* v)
 {
 	UNUSED_ARG(v);
 
-	std::ofstream fout("bblocks.pid", std::ofstream::binary | std::ofstream::trunc);
+
+	std::ofstream fout(KnobOutput.Value() + ".pid", std::ofstream::binary | std::ofstream::trunc);
 	fout << PIN_GetPid();
 }
 
@@ -582,31 +584,21 @@ int main(int argc, char* argv[])
 	if (PIN_Init(argc, argv))
 		return Usage();
 
-	{
-		Strings_t foo;
-		foo.Add(new StringRec("Hello"));
-
-		std::stringstream ss;
-		ss << "He" << "llo";
-		std::string tgt = ss.str();
-
-		StringRec* pRec = foo.Find(tgt);
-		if (pRec == NULL)
-			return 1;
-	}
+	// Get the base name to use for all outputs
+	const std::string& outFile = KnobOutput.Value();
 
 	// Read images to ignore
-	ReadAllLines("bblocks.exclude", excludedImages);
+	ReadAllLines(outFile + ".exclude", excludedImages);
 
 	// If we can read existing traces, open file for updates with new traces
-	if (ReadAllLines("bblocks.existing", existingTraces))
-		fileExisting.Open("bblocks.existing", "ab");
+	if (ReadAllLines(outFile + ".existing", existingTraces))
+		fileExisting.Open(outFile + ".existing", "ab");
 
 	// Open file to log new traces to
-	fileOut.Open("bblocks.out", "wb");
+	fileOut.Open(outFile + ".out", "wb");
 
 	if (KnobDebug)
-		fileDbg.Open("bblocks.log", "wb");
+		fileDbg.Open(outFile + ".log", "wb");
 
 	// Register callbacks
 	IMG_AddInstrumentFunction(Image, NULL);
