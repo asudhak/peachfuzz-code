@@ -12,6 +12,7 @@ def make_bld(tgt, variant):
 	bld(
 		features = 'cxx cxxshlib pin',
 		source = 'bblocks.cpp compat.cpp',
+		includes = '.',
 		target=tgt,
 		env=clone,
 		ide_path='Peach.Core.Analysis.Pin.BasicBlocks',
