@@ -78,6 +78,11 @@ namespace PeachMinset
 				if (ex.InnerException != null)
 					Console.WriteLine("{0}\n", ex.InnerException.Message);
 			}
+			finally
+			{
+				// HACK - Required on Mono with NLog 2.0
+				Peach.Core.Runtime.Program.ConfigureLogging(-1);
+			}
 		}
 
 		public Program(string[] args)
