@@ -10,7 +10,7 @@ namespace Peach.Core.Agent.Monitors
 	[Monitor("Ping", true)]
 	[Parameter("Host", typeof(string), "Host to ping")]
 	[Parameter("Timeout", typeof(int), "Ping timeout in milliseconds", "1000")]
-	[Parameter("RetryCount", typeof(int), "Number of times to try again after first ping before issuing a fault", "0")]
+	[Parameter("RetryCount", typeof(int), "Number of times to retry before issuing a fault", "0")]
 	[Parameter("Data", typeof(string), "Data to send", "")]
 	[Parameter("FaultOnSuccess", typeof(bool), "Fault if ping is successful", "false")]
 	public class PingMonitor : Peach.Core.Agent.Monitor
@@ -91,7 +91,7 @@ namespace Peach.Core.Agent.Monitors
 					do
 					{
 						count++;
-						logger.Debug("DetectedFault(): Checking for fault, attempt #" + count +" to ping " + Host);
+						logger.Trace("DetectedFault(): Checking for fault, attempt #{0} to ping {1}", count, Host);
 						if (string.IsNullOrEmpty(Data))
 							reply = ping.Send(Host, Timeout);
 						else
@@ -100,12 +100,12 @@ namespace Peach.Core.Agent.Monitors
 
 					if (reply.Status == IPStatus.Success)
 					{
-						logger.Debug("DetectedFault(): " + Host + " replied after " + Timeout + "ms");
+						logger.Debug("DetectedFault(): {0} replied after {1}ms", Host, Timeout);
 						_fault.type = FaultOnSuccess ? FaultType.Fault : FaultType.Data;
 					}
 					else
 					{
-						logger.Debug("DetectedFault(): " + Host + " timed out after " + Timeout + "ms");
+						logger.Debug("DetectedFault(): {0} timed out after {1}ms", Host, Timeout);
 						_fault.type = FaultOnSuccess ? FaultType.Data : FaultType.Fault;
 
 					}
