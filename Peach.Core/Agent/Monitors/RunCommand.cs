@@ -18,10 +18,8 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("Arguments", typeof(string), "Optional command line arguments", "")]
 	[Parameter("When", typeof(When), "Period _When the command should be ran", "OnCall")]
 	[Parameter("StartOnCall", typeof(string), "Run when signaled by the state machine", "")]
-	[Parameter("CheckValue", typeof(string), "Regex to match on response", "")]
-	[Parameter("FaultOnMatch", typeof(bool), "Fault if regex matches", "true")]
-	[Parameter("Timeout", typeof(int), "Fail if process takes more than Timeout seconds where zero is no timeout ", "0")]
-	[Parameter("UseShellExecute", typeof(bool), "Use the operating system shell to run the command (conflicts with CheckValue)", "true")]
+	[Parameter("FaultOnNonZeroExit", typeof(bool), "Fault if exit code is non-zero", "false")]
+	[Parameter("Timeout", typeof(int), "Fault if process takes more than Timeout seconds where -1 is infinite timeout ", "-1")]
 	public class RunCommand  : Monitor
 	{
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
@@ -30,78 +28,61 @@ namespace Peach.Core.Agent.Monitors
 		public string Arguments { get; private set; }
 		public string StartOnCall { get; private set; }
 		public When _When { get; private set; }
-		public bool UseShellExecute { get; private set; }
 		public string CheckValue { get; protected set; }
 		public int Timeout { get; private set; }
-		public bool FaultOnMatch { get; protected set; }
+		public bool FaultOnNonZeroExit { get; protected set; }
 
 		private Fault _fault = null;
-		private bool _last_was_fault = false;
-		private Regex _regex = null;
-		private string _cmd_output = null;
-		bool _run_attempted = false;
-		bool _run_success = false; 
+		private bool _lastWasFault = false;
 
-		public enum When {OnCall, OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault, OnIterationStartAfterFault};
+		public enum When { OnCall, OnStart, OnEnd, OnIterationStart, OnIterationEnd, OnFault, OnIterationStartAfterFault };
 
 		public RunCommand(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
 			ParameterParser.Parse(this, args);
-			try
-			{
-				_regex = new Regex(CheckValue ?? "", RegexOptions.Multiline);
-				if(UseShellExecute & !System.String.IsNullOrEmpty(CheckValue))
-					throw new PeachException("'CheckValue' conflicts with 'UseShellExecute'");
-			}
-			catch (ArgumentException ex)
-			{
-				throw new PeachException("'CheckValue' is not a valid regular expression.  " + ex.Message, ex);
-			}
 		}
 
 		void _Start()
 		{
-			_run_attempted = true;
+			_fault = null;
+
 			var startInfo = new ProcessStartInfo();
 			startInfo.FileName = Command;
-			startInfo.UseShellExecute = UseShellExecute;
 			startInfo.UseShellExecute = false;
 			startInfo.Arguments = Arguments;
-			startInfo.RedirectStandardOutput = !UseShellExecute;
+			startInfo.RedirectStandardOutput = true;
+			startInfo.RedirectStandardError = true;
 
 			logger.Debug("_Start(): Running command " + Command + " with arguments " + Arguments);
 
 			try
 			{
-				using (var p = new System.Diagnostics.Process())
+				var p = SubProcess.Run(Command, Arguments, Timeout);
+
+				var stdout = p.StdOut.ToString();
+				var stderr = p.StdErr.ToString();
+
+				_fault = new Fault();
+				_fault.detectionSource = "RunCommand";
+				_fault.folderName = "RunCommand";
+				_fault.collectedData.Add(new Fault.Data("stdout", Encoding.ASCII.GetBytes(stdout)));
+				_fault.collectedData.Add(new Fault.Data("stderr", Encoding.ASCII.GetBytes(stderr)));
+
+				if (p.Timeout)
 				{
-					p.StartInfo = startInfo;
-					p.Start();
-					if (Timeout != 0)
-					{
-						logger.Debug("_Start(): Waiting for " + Timeout +  " seconds for command to exit");
-						_run_success = p.WaitForExit(Timeout * 1000); //input in milliseconds, Timeout is in seconds
-						if (_run_success)
-						{
-							logger.Debug("_Start(): command exited cleanly");
-						}
-						else
-						{
-							logger.Debug("_Start(): timeout, killing");	
-							p.Kill();
-						}
-					}
-					else
-					{
-						p.WaitForExit();
-						_run_success = true;
-					}
-					
-					if(System.String.IsNullOrEmpty(CheckValue))
-						_cmd_output = "";
-					else
-						_cmd_output = p.StandardOutput.ReadToEnd();
+					_fault.description = "Process failed to exit in alotted time.";
+					_fault.type = FaultType.Fault;
+				}
+				else if (FaultOnNonZeroExit && p.ExitCode != 0)
+				{
+					_fault.description = "Process exited with code {0}.".Fmt(p.ExitCode);
+					_fault.type = FaultType.Fault;
+				}
+				else
+				{
+					_fault.description = stdout;
+					_fault.type = FaultType.Data;
 				}
 			}
 			catch (Exception ex)
@@ -113,64 +94,27 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
-			_run_attempted = false; //reset for next run
-			if (_When == When.OnIterationStart || ( _last_was_fault && _When == When.OnIterationStartAfterFault))
+			// Sync _lastWasFault incase _Start() throws
+			bool lastWasFault = _lastWasFault;
+			_lastWasFault = false;
+
+			if (_When == When.OnIterationStart || (lastWasFault && _When == When.OnIterationStartAfterFault))
 				_Start();
-			_last_was_fault = false;
-			_fault = null;
-			_cmd_output = "";
 		}
 
 		public override bool DetectedFault()
 		{
-			_fault = new Fault();
-			_fault.type = FaultType.Fault;
-			_fault.detectionSource = "RunCommand";
-			_fault.folderName = "RunCommand";
-
-			try
-			{
-				_fault.title = "Response";
-				_fault.description = _cmd_output;
-
-				bool match = _regex.IsMatch(_fault.description);
-				
-				logger.Debug("DetectedFault(): Checking for faults during run of command " + Command);
-				if (!_run_attempted)
-					_fault.type = FaultType.Data;
-				else if (!_run_success)
-				{
-					logger.Debug("DetectedFault(): Execution of command" + Command + " failed");
-					_fault.type = FaultType.Fault;
-					_fault.description = "Run timed out:" + _cmd_output;
-				}
-				else if (match && !System.String.IsNullOrEmpty(CheckValue))
-				{
-					logger.Debug("DetectedFault(): match found");
-					_fault.type = FaultOnMatch ? FaultType.Fault : FaultType.Data;
-					
-				}
-				else
-				{
-					logger.Debug("DetectedFault(): match not found");
-					_fault.type = FaultOnMatch ? FaultType.Data : FaultType.Fault;					
-				}
-			}
-			catch (Exception ex)
-			{
-				_fault.title = "Exception";
-				_fault.description = ex.Message;
-			}
-			
-			return _fault.type == FaultType.Fault;
-
+			return _fault != null && _fault.type == FaultType.Fault;
 		}
 
 		public override Fault GetMonitorData()
 		{
+			// Some monitor triggered a fault
+			_lastWasFault = true;
+
 			if (_When == When.OnFault)
 				_Start();
-			_last_was_fault = true;
+
 			return _fault;
 		}
 
@@ -207,9 +151,7 @@ namespace Peach.Core.Agent.Monitors
 		public override Variant Message(string name, Variant data)
 		{
 			if (name == "Action.Call" && ((string)data) == StartOnCall && _When == When.OnCall)
-			{
 				_Start();
-			}
 
 			return null;
 		}

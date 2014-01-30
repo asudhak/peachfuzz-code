@@ -2,21 +2,30 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.IO;
+using System.Text;
 
 namespace Peach.Core
 {
 	public class SubProcess
 	{
-		public static int Run(string fileName, string arguments)
+		public bool Timeout { get; private set; }
+		public int ExitCode { get; private set; }
+		public StringBuilder StdErr { get; private set; }
+		public StringBuilder StdOut { get; private set; }
+
+		public static SubProcess Run(string fileName, string arguments, int timeout = -1)
 		{
-			return new SubProcess(fileName, arguments).Run();
+			var ret = new SubProcess(fileName, arguments, timeout);
+			ret.Run();
+			return ret;
 		}
 
 		static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
 		ProcessStartInfo psi;
+		int waitForExit = 0;
 
-		private SubProcess(string fileName, string arguments)
+		private SubProcess(string fileName, string arguments, int timeout)
 		{
 			psi = new ProcessStartInfo()
 			{
@@ -28,76 +37,164 @@ namespace Peach.Core
 				RedirectStandardError = true,
 				RedirectStandardOutput = true,
 			};
+
+			waitForExit = timeout;
 		}
 
-		private int Run()
+		private void Run()
 		{
-			using (var p = Process.Start(psi))
+			var endEvt = new AutoResetEvent(false);
+			var errEvt = new AutoResetEvent(false);
+			var outEvt = new AutoResetEvent(false);
+
+			try
 			{
-				string name = "{0} (0x{1:X})".Fmt(Path.GetFileName(psi.FileName), p.Id);
+				StdOut = new StringBuilder();
+				StdErr = new StringBuilder();
 
-				var t1 = new Thread(new ThreadStart(delegate
+				using (var p = Process.Start(psi))
 				{
-					try
-					{
-						using (var sr = p.StandardError)
-						{
-							while (!sr.EndOfStream)
-							{
-								var line = sr.ReadLine();
+					string name = "{0} (0x{1:X})".Fmt(Path.GetFileName(psi.FileName), p.Id);
 
-								if (!string.IsNullOrEmpty(line) && logger.IsTraceEnabled)
-									logger.Trace("{0}: {1}", name, line);
+					var t1 = new Thread(new ThreadStart(delegate
+					{
+						try
+						{
+							using (var sr = p.StandardError)
+							{
+								while (!sr.EndOfStream)
+								{
+									var line = sr.ReadLine();
+
+									StdErr.AppendLine(line ?? "");
+
+									if (!string.IsNullOrEmpty(line) && logger.IsTraceEnabled)
+										logger.Trace("{0}: {1}", name, line);
+								}
 							}
 						}
-					}
-					catch
-					{
-					}
-				}));
-
-				Thread t2 = new Thread(new ThreadStart(delegate
-				{
-					try
-					{
-						using (var sr = p.StandardOutput)
+						catch
 						{
-							while (!sr.EndOfStream)
-							{
-								var line = sr.ReadLine();
+						}
+						finally
+						{
+							errEvt.Set();
+						}
+					}));
 
-								if (!string.IsNullOrEmpty(line) && logger.IsTraceEnabled)
-									logger.Trace("{0}: {1}", name, line);
+					Thread t2 = new Thread(new ThreadStart(delegate
+					{
+						try
+						{
+							using (var sr = p.StandardOutput)
+							{
+								while (!sr.EndOfStream)
+								{
+									var line = sr.ReadLine();
+
+									StdOut.AppendLine(line ?? "");
+
+									if (!string.IsNullOrEmpty(line) && logger.IsTraceEnabled)
+										logger.Trace("{0}: {1}", name, line);
+								}
 							}
 						}
+						catch
+						{
+						}
+						finally
+						{
+							outEvt.Set();
+						}
+					}));
+
+					Thread t3 = new Thread(new ThreadStart(delegate
+					{
+						try
+						{
+							p.WaitForExit();
+						}
+						finally
+						{
+							endEvt.Set();
+						}
+					}));
+
+					t1.Start();
+					t2.Start();
+					t3.Start();
+
+					if (!WaitHandle.WaitAll(new[] { errEvt, outEvt, endEvt }, waitForExit))
+					{
+						Timeout = true;
+
+						try
+						{
+							p.Kill();
+						}
+						catch
+						{
+						}
+
+						try
+						{
+							t1.Abort();
+						}
+						catch
+						{
+						}
+
+						try
+						{
+							t2.Abort();
+						}
+						catch
+						{
+						}
+
+						try
+						{
+							t3.Abort();
+						}
+						catch
+						{
+						}
 					}
-					catch
+
+					try
+					{
+						t1.Join();
+					}
+					catch (ThreadInterruptedException)
 					{
 					}
-				}));
 
-				t1.Start();
-				t2.Start();
+					try
+					{
+						t2.Join();
+					}
+					catch (ThreadInterruptedException)
+					{
+					}
 
-				try
-				{
-					t1.Join();
+					try
+					{
+						t3.Join();
+					}
+					catch (ThreadInterruptedException)
+					{
+					}
+
+					p.WaitForExit();
+
+					ExitCode = p.ExitCode;
 				}
-				catch (ThreadInterruptedException)
-				{
-				}
-
-				try
-				{
-					t2.Join();
-				}
-				catch (ThreadInterruptedException)
-				{
-				}
-
-				p.WaitForExit();
-
-				return p.ExitCode;
+			}
+			finally
+			{
+				outEvt.Dispose();
+				errEvt.Dispose();
+				endEvt.Dispose();
 			}
 		}
 	}
