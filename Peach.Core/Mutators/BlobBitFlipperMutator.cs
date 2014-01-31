@@ -106,8 +106,8 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj is Dom.Blob && obj.isMutable)
-                return true;
+			if ((obj is Dom.Blob || obj is Dom.DataElementContainer) && obj.isMutable)
+				return true;
 
             return false;
         }
