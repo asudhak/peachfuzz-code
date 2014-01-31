@@ -13,6 +13,7 @@ using NLog;
 
 using Peach;
 using Peach.Core.IO;
+using System.ComponentModel;
 
 namespace Peach.Core.Publishers
 {
@@ -215,8 +216,10 @@ namespace Peach.Core.Publishers
 					return SocketError.NoBufferSpaceAvailable;
 				case 12: // ENOMEM -> WSAENOBUFS
 					return SocketError.NoBufferSpaceAvailable;
-				case 93: // EPROTONOTSUPPORT -> WSAEPROTONOSUPPORT
+				case 93: //Linux: EPROTONOTSUPPORT -> WSAEPROTONOSUPPORT
 					return SocketError.ProtocolNotSupported;
+                case 41: //OSX: EPROTONOTSUPPORT -> WSAEPROTONOSUPPORT
+                    return SocketError.ProtocolNotSupported;
 				default:
 					return SocketError.SocketError;
 			}
@@ -325,6 +328,13 @@ namespace Peach.Core.Publishers
 				// Open a new file descriptor for the correct protocol
 				int family = af == AddressFamily.InterNetwork ? AF_INET : AF_INET6;
 				int fd = socket(family, (int)SocketType.Raw, protocol);
+                var err = WSAGetLastError();
+                var rawErr = Marshal.GetLastWin32Error();
+
+                if (fd == -1)  
+                {
+                    Logger.Debug("Failed to open raw socket. Errno: {0}", new Win32Exception(rawErr).Message);
+                }
 
 				if (fd != oldfd)
 				{
@@ -332,7 +342,7 @@ namespace Peach.Core.Publishers
 					temp.Close();
 
 					if (fd == -1)
-						throw new SocketException((int)WSAGetLastError());
+						throw new SocketException((int)err);
 
 					continue;
 				}
