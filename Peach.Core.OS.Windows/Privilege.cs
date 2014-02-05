@@ -2,6 +2,7 @@ using System;
 using Peach.Core.Debuggers.WindowsSystem;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.Security.Principal;
 
 namespace Peach.Core.OS.Windows
 {
@@ -45,6 +46,27 @@ namespace Peach.Core.OS.Windows
 				hToken = IntPtr.Zero;
 				throw new Win32Exception(error);
 			}
+		}
+
+		public static bool IsUserAdministrator()
+		{
+			bool isAdmin;
+			try
+			{
+				//get the currently logged in user
+				var user = WindowsIdentity.GetCurrent();
+				var principal = new WindowsPrincipal(user);
+				isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+			}
+			catch (UnauthorizedAccessException)
+			{
+				isAdmin = false;
+			}
+			catch (Exception)
+			{
+				isAdmin = false;
+			}
+			return isAdmin;
 		}
 
 		public void Dispose()
