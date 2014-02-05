@@ -114,6 +114,10 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
+            // Ignore numbers <= 8 bits, they will be mutated with the
+            // NumericalEdgeCaseMutator
+
+
             if (obj is Number && obj.isMutable)
                 if (((Number)obj).lengthAsBits > 8)
                     return true;
