@@ -81,7 +81,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if ((obj is Dom.Blob || obj is Dom.DataElementContainer) && obj.isMutable)
+            if (obj is Dom.Blob && obj.isMutable)
             {
                 Hint h = null;
                 if (obj.Hints.TryGetValue("BlobDWORDSliderMutator", out h))
