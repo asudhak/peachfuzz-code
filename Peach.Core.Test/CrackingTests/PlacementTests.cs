@@ -653,7 +653,7 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.AreEqual(new byte[] { 0x42 }, DataPlaced.DefaultValue.BitsToArray());
 		}
 
-		[Test]
+		[Test, Ignore("Issue #480")]
 		public void SizedPlaced()
 		{
 			// Ensure relations to elements inside a moved block are maintained when placement occurs
