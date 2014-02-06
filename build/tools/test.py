@@ -17,6 +17,7 @@ def prepare_nunit_test(self):
 	self.ut_exec.extend([
 		self.env.NUNIT,
 		'/nologo',
+		'/noshadow',
 		'/out=%s' % self.outputs[1].abspath(),
 		'/xml=%s' % self.outputs[0].abspath(),
 	])

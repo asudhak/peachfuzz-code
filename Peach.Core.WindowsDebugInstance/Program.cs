@@ -39,6 +39,8 @@ using Peach.Core.Runtime;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
+using System.Runtime.Serialization.Formatters;
+using System.Collections;
 
 namespace Peach.Core.WindowsDebugInstance
 {
@@ -122,7 +124,14 @@ namespace Peach.Core.WindowsDebugInstance
 
 			logger.Debug("Starting up IPC listener: {0}", channelName);
 
-			IpcChannel ipcChannel = new IpcChannel(channelName);
+			var provider = new BinaryServerFormatterSinkProvider();
+			provider.TypeFilterLevel = TypeFilterLevel.Full;
+
+			IDictionary props = new Hashtable() as IDictionary;
+			props["name"] = "ipc";
+			props["portName"] = channelName;
+
+			IpcChannel ipcChannel = new IpcChannel(props, null, provider);
 			ChannelServices.RegisterChannel(ipcChannel, false);
 			Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance.LastHeartBeat = DateTime.Now;
 
