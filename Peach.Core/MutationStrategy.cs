@@ -252,14 +252,16 @@ namespace Peach.Core
 
 		protected void RecursevlyGetElements(DataElementContainer d, List<DataElement> all)
 		{
+			all.Add(d);
+
 			foreach (DataElement elem in d)
 			{
-				all.Add(elem);
+				var cont = elem as DataElementContainer;
 
-				if (elem is DataElementContainer)
-				{
-					RecursevlyGetElements(elem as DataElementContainer, all);
-				}
+				if (cont != null)
+					RecursevlyGetElements(cont, all);
+				else
+					all.Add(elem);
 			}
 		}
 	}
