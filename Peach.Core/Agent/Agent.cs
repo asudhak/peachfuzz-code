@@ -45,8 +45,8 @@ namespace Peach.Core.Agent
 
 	public delegate void AgentConnectEventHandler(Agent agent);
 	public delegate void AgentDisconnectEventHandler(Agent agent);
-	public delegate void CreatePublisherEventHandler(Agent agent, string cls, SerializableDictionary<string, Variant> args);
-	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, SerializableDictionary<string, Variant> args);
+	public delegate void CreatePublisherEventHandler(Agent agent, string cls, Dictionary<string, Variant> args);
+	public delegate void StartMonitorEventHandler(Agent agent, string name, string cls, Dictionary<string, Variant> args);
 	public delegate void StopMonitorEventHandler(Agent agent, string name);
 	public delegate void StopAllMonitorsEventHandler(Agent agent);
 	public delegate void SessionStartingEventHandler(Agent agent);
@@ -87,14 +87,14 @@ namespace Peach.Core.Agent
 		}
 
 		public event CreatePublisherEventHandler CreatePublisherEvent;
-		protected void OnCreatePublisherEvent(string cls, SerializableDictionary<string, Variant> args)
+		protected void OnCreatePublisherEvent(string cls, Dictionary<string, Variant> args)
 		{
 			if (CreatePublisherEvent != null)
 				CreatePublisherEvent(this, cls, args);
 		}
 
 		public event StartMonitorEventHandler StartMonitorEvent;
-		protected void OnStartMonitorEvent(string name, string cls, SerializableDictionary<string, Variant> args)
+		protected void OnStartMonitorEvent(string name, string cls, Dictionary<string, Variant> args)
 		{
 			if (StartMonitorEvent != null)
 				StartMonitorEvent(this, name, cls, args);
@@ -202,7 +202,13 @@ namespace Peach.Core.Agent
 			monitors.Clear();
 		}
 
-		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		public Publisher CreatePublisher(string cls, IEnumerable<KeyValuePair<string, Variant>> args)
+		{
+			var newArgs = AsDict(args);
+			return CreatePublisher(cls, newArgs);
+		}
+
+		public Publisher CreatePublisher(string cls, Dictionary<string, Variant> args)
 		{
 			logger.Trace("CreatePublisher: {0}", cls);
 			OnCreatePublisherEvent(cls, args);
@@ -213,11 +219,7 @@ namespace Peach.Core.Agent
 
 			try
 			{
-				Dictionary<string, Variant> copy = new Dictionary<string, Variant>();
-				foreach (var kv in args)
-					copy.Add(kv.Key, kv.Value);
-
-				var pub = Activator.CreateInstance(type, copy) as Publisher;
+				var pub = Activator.CreateInstance(type, args) as Publisher;
 				return pub;
 			}
 			catch (TargetInvocationException ex)
@@ -231,7 +233,13 @@ namespace Peach.Core.Agent
 			return new BitStream();
 		}
 
-		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
+		public void StartMonitor(string name, string cls, IEnumerable<KeyValuePair<string, Variant>> args)
+		{
+			var newArgs = AsDict(args);
+			StartMonitor(name, cls, newArgs);
+		}
+
+		public void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
 			logger.Debug("StartMonitor: {0} {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
@@ -242,7 +250,7 @@ namespace Peach.Core.Agent
 
 			try
 			{
-				var monitor = Activator.CreateInstance(type, (IAgent) this, name, args) as Monitor;
+				var monitor = Activator.CreateInstance(type, (IAgent)this, name, args) as Monitor;
 				this.monitors.Add(name, monitor);
 			}
 			catch (TargetInvocationException ex)
@@ -458,14 +466,28 @@ namespace Peach.Core.Agent
 			get;
 			protected set;
 		}
+
+		private static Dictionary<string, Variant> AsDict(IEnumerable<KeyValuePair<string, Variant>> sequence)
+		{
+			var ret = new Dictionary<string, Variant>();
+
+			foreach (var item in sequence)
+				ret.Add(item.Key, item.Value);
+
+			return ret;
+		}
 	}
 
 	public interface IAgent
 	{
+		// Note: We can't remote Dictionary<> objects properly between
+		// windows and linux using the BinaryFormatter.  For the IPC
+		// channel use a List<> instead.
+
 		void AgentConnect(string password);
 		void AgentDisconnect();
-		Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
-		void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
+		Publisher CreatePublisher(string cls, IEnumerable<KeyValuePair<string, Variant>> args);
+		void StartMonitor(string name, string cls, IEnumerable<KeyValuePair<string, Variant>> args);
 		void StopMonitor(string name);
 		void StopAllMonitors();
 		void SessionStarting();

@@ -75,7 +75,7 @@ namespace Peach.Core.Agent.Channels
 		///   * args
 		/// 
 		/// </remarks>
-		List<Tuple<string, string, SerializableDictionary<string, Variant>>> _monitors = new List<Tuple<string, string, SerializableDictionary<string, Variant>>>();
+		List<Tuple<string, string, List<KeyValuePair<string, Variant>>>> _monitors = new List<Tuple<string, string, List<KeyValuePair<string, Variant>>>>();
 
 		public AgentClientTcpRemoting(string name, string uri, string password)
 		{
@@ -219,14 +219,16 @@ namespace Peach.Core.Agent.Channels
 			}
 		}
 
-		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		public override Publisher CreatePublisher(string cls, Dictionary<string, Variant> args)
 		{
 			logger.Trace("CreatePublisher: {0}", cls);
 
 			OnCreatePublisherEvent(cls, args);
 
 			Publisher ret = null;
-			PerformRemoting(delegate() { ret = proxy.CreatePublisher(cls, args); });
+
+			// Remote 'args' as a List to support mono/microsoft interoperability
+			PerformRemoting(delegate() { ret = proxy.CreatePublisher(cls, args.ToList()); });
 
 			return ret;
 		}
@@ -243,14 +245,16 @@ namespace Peach.Core.Agent.Channels
 			return ret;
 		}
 
-		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
+		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 
-			_monitors.Add(new Tuple<string, string, SerializableDictionary<string, Variant>>(name, cls, args));
+			// Remote 'args' as a List to support mono/microsoft interoperability
+			var asList = args.ToList();
+			_monitors.Add(new Tuple<string, string, List<KeyValuePair<string, Variant>>>(name, cls, asList));
 
 			OnStartMonitorEvent(name, cls, args);
-			PerformRemoting(delegate() { proxy.StartMonitor(name, cls, args); });
+			PerformRemoting(delegate() { proxy.StartMonitor(name, cls, asList); });
 		}
 
 		public override void StopMonitor(string name)
@@ -402,7 +406,7 @@ namespace Peach.Core.Agent.Channels
 			agent.AgentDisconnect();
 		}
 
-		public Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		public Publisher CreatePublisher(string cls, IEnumerable<KeyValuePair<string, Variant>> args)
 		{
 			logger.Trace("CreatePublisher: {0}", cls);
 			return agent.CreatePublisher(cls, args);
@@ -414,7 +418,7 @@ namespace Peach.Core.Agent.Channels
 			return new BitStream();
 		}
 
-		public void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
+		public void StartMonitor(string name, string cls, IEnumerable<KeyValuePair<string, Variant>> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 			agent.StartMonitor(name, cls, args);

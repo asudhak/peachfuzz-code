@@ -47,7 +47,7 @@ namespace Peach.Core.Dom
 	{
 		public string cls;
 		public string name { get; set; }
-		public SerializableDictionary<string, Variant> parameters = new SerializableDictionary<string, Variant>();
+		public Dictionary<string, Variant> parameters = new Dictionary<string, Variant>();
 	}
 
 }

@@ -727,7 +727,7 @@ namespace Peach.Core.Analyzers
 
 					monitor.cls = child.getAttrString("class");
 					monitor.name = child.getAttr("name", agent.monitors.UniqueName());
-					monitor.parameters = handleParamsOrdered(child);
+					monitor.parameters = handleParams(child);
 
 					try
 					{
@@ -1272,12 +1272,7 @@ namespace Peach.Core.Analyzers
 			var pluginType = typeof(T).Name;
 
 			var cls = node.getAttrString("class");
-			IDictionary<string,Variant> arg;
-
-			if (typeof(T) == typeof(Monitor))
-				arg = handleParamsOrdered(node);
-			else
-				arg = handleParams(node);
+			var arg = handleParams(node);
 
 			var type = ClassLoader.FindTypeByAttribute<A>((x, y) => y.Name == cls);
 			if (type == null)
@@ -1289,17 +1284,11 @@ namespace Peach.Core.Analyzers
 			{
 				if (useParent)
 				{
-					if (arg is Dictionary<string, Variant>)
-						return Activator.CreateInstance(type, parent, (Dictionary<string, Variant>)arg) as T;
-					else
-						return Activator.CreateInstance(type, parent, (SerializableDictionary<string, Variant>)arg) as T;
+					return Activator.CreateInstance(type, parent, arg) as T;
 				}
 				else
 				{
-					if (arg is Dictionary<string, Variant>)
-						return Activator.CreateInstance(type, (Dictionary<string, Variant>) arg) as T;
-					else
-						return Activator.CreateInstance(type, (SerializableDictionary<string, Variant>)arg) as T;
+					return Activator.CreateInstance(type, arg) as T;
 				}
 			}
 			catch (Exception e)
@@ -1992,31 +1981,6 @@ namespace Peach.Core.Analyzers
 
 			return ret;
 		}
-
-		protected SerializableDictionary<string, Variant> handleParamsOrdered(XmlNode node)
-		{
-			SerializableDictionary<string, Variant> ret = new SerializableDictionary<string, Variant>();
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				if (child.Name != "Param")
-					continue;
-
-				string name = child.getAttrString("name");
-				string value = child.getAttrString("value");
-
-				if (child.hasAttr("valueType"))
-				{
-					ret.Add(name, new Variant(value, child.getAttrString("valueType")));
-				}
-				else
-				{
-					ret.Add(name, new Variant(value));
-				}
-			}
-
-			return ret;
-		}
-
 		#endregion
 	}
 }

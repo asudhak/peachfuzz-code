@@ -441,7 +441,7 @@ namespace Peach.Core.Test.Agent
 		[Monitor("LoggingMonitor", true, IsTest = true)]
 		public class LoggingMonitor : Peach.Core.Agent.Monitor
 		{
-			public LoggingMonitor(IAgent agent, string name, SerializableDictionary<string, Variant> args)
+			public LoggingMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
 				: base(agent, name, args)
 			{
 				history.Add(Name + ".LoggingMonitor");
