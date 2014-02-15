@@ -334,7 +334,6 @@ namespace Peach.Core.Test.Publishers
 
 			Assert.AreEqual("Hello World", send);
 			Assert.AreEqual("Recv 11 bytes!", recv);
-
 		}
 
 		[Test]
@@ -376,6 +375,7 @@ namespace Peach.Core.Test.Publishers
 
 				Assert.AreEqual("Hello World", send);
 				Assert.AreEqual("SendOnly!", recv);
+
 			}
 			finally
 			{
