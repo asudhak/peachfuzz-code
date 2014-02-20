@@ -419,6 +419,47 @@ namespace Peach.Core.Agent.Channels
 			return response.data;
 		}
 
+		[Serializable]
+		public class ReadRequest
+		{
+			public int offset = 0;
+			public int count = 0;
+		}
+		[Serializable]
+		public class ReadResponse : RestProxyPublisherResponse
+		{
+			public int count;
+			public byte[] data;
+		}
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			var request = new ReadRequest();
+			request.offset = offset;
+			request.count = count;
+
+			var json = Send("Read", JsonConvert.SerializeObject(request));
+			var response = JsonConvert.DeserializeObject<ReadResponse>(json);
+
+			System.Array.Copy(response.data, buffer, response.count);
+
+			return response.count;
+		}
+
+		[Serializable]
+		public class ReadByteResponse : RestProxyPublisherResponse
+		{
+			public int data;
+		}
+
+		public override int ReadByte()
+		{
+			var json = Send("ReadByte");
+			var response = JsonConvert.DeserializeObject<ReadByteResponse>(json);
+
+			return response.data;
+		}
+
 		public byte[] ReadAllBytes()
 		{
 			var json = Send("ReadAllBytes");
