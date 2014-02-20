@@ -6,5 +6,10 @@ pin_ver = bld.env.PIN_VER
 
 if pin_ver:
 	path = bld.path.find_dir(pin_ver)
-	src = path.ant_glob('pin pin.exe LICENSE README */runtime/** */bin/**')
-	bld.install_files('${BINDIR}/pin', src, cwd=path, chmod=Utils.O755, relative_trick=True)
+
+	bld(
+		name='pin',
+		path=path,
+		install_path = '${BINDIR}/pin',
+		install_755 = path.ant_glob('pin pin.exe LICENSE README */runtime/** */bin/**')
+	)

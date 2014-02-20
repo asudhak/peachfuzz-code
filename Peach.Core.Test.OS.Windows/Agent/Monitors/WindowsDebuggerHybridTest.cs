@@ -33,7 +33,7 @@ namespace Peach.Core.Test.Agent.Monitors
 		{
 			Assert.Null(this.faults);
 			Assert.True(context.reproducingFault);
-			Assert.AreEqual(1, context.reproducingInitialIteration);
+			Assert.AreEqual(83, context.reproducingInitialIteration);
 			this.faults = faults;
 		}
 
@@ -120,7 +120,7 @@ namespace Peach.Core.Test.Agent.Monitors
 			Assert.NotNull(this.faults);
 			Assert.AreEqual(1, this.faults.Length);
 			Assert.AreEqual(FaultType.Fault, this.faults[0].type);
-			Assert.AreEqual("WindowsDebuggerHybrid", this.faults[0].detectionSource);
+			Assert.AreEqual("WindowsDebugEngine", this.faults[0].detectionSource);
 		}
 
 		void VerifyArch()

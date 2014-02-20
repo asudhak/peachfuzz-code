@@ -137,7 +137,7 @@ namespace Peach.Core.Agent
 
 		#region AgentServer
 
-		public virtual Publisher CreatePublisher(string agentName, string pubName, SerializableDictionary<string, Variant> args)
+		public virtual Publisher CreatePublisher(string agentName, string pubName, Dictionary<string, Variant> args)
 		{
 			AgentClient agent;
 			if (!_agents.TryGetValue(agentName, out agent))

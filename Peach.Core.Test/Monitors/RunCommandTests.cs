@@ -22,7 +22,7 @@ namespace Peach.Core.Test.Monitors
 			string template = @"
 			<Peach>
 				<DataModel name='TheDataModel'>
-					<String value='Hello' mutable='false'/>
+					<String value='Hello'/>
 				</DataModel>
 
 				<StateModel name='TheState' initialState='Initial'>
@@ -38,7 +38,6 @@ namespace Peach.Core.Test.Monitors
 						<Param name='Command' value='{0}'/>
 						<Param name='Arguments' value='{1}'/>
 						<Param name='When' value='{2}'/>
-						<Param name='UseShell' value='true'/>
 					</Monitor>
 
 					{3}
@@ -146,5 +145,36 @@ namespace Peach.Core.Test.Monitors
 				Assert.AreEqual("Fault detected on control iteration.", ex.Message);
 			}
 		}
+
+		[Test]
+		public void TestIterAfterFault()
+		{
+			string faultAgent = @"
+			<Monitor class='FaultingMonitor'>
+				<Param name='Iteration' value='1'/>
+			</Monitor>";
+
+			string testName = "OnIterationStartAfterFault";
+			string tempFile = Path.GetTempFileName();
+			string testFile = createScript(testName, tempFile);
+			string xml = MakeXml(new string[] { testFile, "", testName, faultAgent });
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.range = true;
+			config.rangeStart = 1;
+			config.rangeStop = 2;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			string[] output = File.ReadAllLines(tempFile);
+
+			Assert.AreEqual(1, output.Length);
+			Assert.AreEqual(testName, output[0]);
+		}
+
 	}
 }

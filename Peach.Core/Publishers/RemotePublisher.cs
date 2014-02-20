@@ -20,7 +20,7 @@ namespace Peach.Core.Publishers
 	{
 		public string Agent { get; protected set; }
 		public string Class { get; protected set; }
-		public SerializableDictionary<string, Variant> Args { get; protected set; }
+		public Dictionary<string, Variant> Args { get; protected set; }
 
 		private static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 		protected override NLog.Logger Logger { get { return logger; } }
@@ -32,10 +32,7 @@ namespace Peach.Core.Publishers
 		public RemotePublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			this.Args = new SerializableDictionary<string,Variant>();
-
-			foreach (var kv in args)
-				this.Args.Add(kv.Key, kv.Value);
+			this.Args = args;
 
 			stream = new MemoryStream();
 		}

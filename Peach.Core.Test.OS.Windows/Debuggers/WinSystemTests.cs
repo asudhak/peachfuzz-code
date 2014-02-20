@@ -41,12 +41,15 @@ using Peach.Core.Debuggers.WindowsSystem;
 using Peach.Core.Agent.Monitors.WindowsDebug;
 using System.Threading;
 using System.ServiceProcess;
+using NLog;
 
 namespace Peach.Core.Test.Debuggers
 {
 	[TestFixture]
 	class WinSystemTests
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		SystemDebugger dbg = null;
 		string caughtException;
 		bool firstChance;
@@ -130,7 +133,7 @@ namespace Peach.Core.Test.Debuggers
 						e.u.Exception.ExceptionRecord.ExceptionCode == 0xC000001D)
 					{
 						// Internesting!
-						Console.Error.WriteLine("HandleAccessViolation: First chance guard page or illegal op");
+						logger.Debug("HandleAccessViolation: First chance guard page or illegal op");
 						break;
 					}
 
@@ -140,14 +143,14 @@ namespace Peach.Core.Test.Debuggers
 							e.u.Exception.ExceptionRecord.ExceptionInformation[1].ToInt64() != 0)
 						{
 							// is write a/v?
-							Console.Error.WriteLine("HandleAccessViolation: First chance write a/v");
+							logger.Debug("HandleAccessViolation: First chance write a/v");
 							break;
 						}
 
 						if (e.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
 						{
 							// is DEP?
-							Console.Error.WriteLine("HandleAccessViolation: First chance DEP");
+							logger.Debug("HandleAccessViolation: First chance DEP");
 							break;
 						}
 					}
@@ -157,7 +160,7 @@ namespace Peach.Core.Test.Debuggers
 				}
 
 				// Second chance we capture all
-				Console.Error.WriteLine("HandleAccessViolation: Second chance exception, w00t");
+				logger.Debug("HandleAccessViolation: Second chance exception, w00t");
 			} while (false);
 
 			caughtException = e.u.Exception.dwFirstChance == 0 ? "SecondChance" : "FirstChance";
@@ -168,6 +171,9 @@ namespace Peach.Core.Test.Debuggers
 		[Test]
 		public void ServiceTest()
 		{
+			if (!Peach.Core.OS.Windows.Privilege.IsUserAdministrator())
+				Assert.Ignore("User is not an administrator.");
+
 			try
 			{
 				using (var si = SingleInstance.CreateInstance("Peach.Core.Test.OS.Windows.WinSystemTests"))

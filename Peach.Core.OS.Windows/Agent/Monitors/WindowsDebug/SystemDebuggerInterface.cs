@@ -262,10 +262,12 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 					handled = true;
 				}
 
+				// http://msdn.microsoft.com/en-us/library/windows/desktop/aa363082(v=vs.85).aspx
+
 				// Access violation
 				if (DebugEv.u.Exception.ExceptionRecord.ExceptionCode == 0xC0000005)
 				{
-					// A/V on EIP || DEP
+					// A/V on EIP
 					if (DebugEv.u.Exception.ExceptionRecord.ExceptionInformation[0].ToInt64() == 0)
 						handled = true;
 

@@ -167,6 +167,9 @@ namespace Peach.Core.Mutators
                 if (obj.Hints.ContainsKey("NumericalString"))
                     return true;
 
+            // Ignore numbers <= 8 bits, they will be mutated with the
+            // NumericalEdgeCaseMutator
+
             if (obj is Number && obj.isMutable)
                 if (((Number)obj).lengthAsBits > 8)
                     return true;

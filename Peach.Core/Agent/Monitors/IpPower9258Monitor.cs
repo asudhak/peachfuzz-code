@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using NLog;
 
 using Peach.Core;
 
@@ -35,6 +36,7 @@ namespace Peach.Core.Agent.Monitors
 		string _port = null;
 		int _powerPause = 500;
 		bool _everyIteration = false;
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public IpPower9258Monitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -84,13 +86,20 @@ namespace Peach.Core.Agent.Monitors
 				client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
 
 				string postData = "Username=" + _user + "&Response=" + sb.ToString() + "&Challenge=&Password=";
-				client.UploadString("http://"+_host+"/tgi/login.tgi", postData);
 
+				string prepend = "";
+				for (int i = 0; i < Convert.ToInt32(_port)-1; i++)
+				{
+					prepend += "P60=On&P60_TS=0&P60_TC=On&";
+				}
+
+				client.UploadString("http://"+_host+"/tgi/login.tgi", postData);
 				if (turnOff)
 				{
 					// Off
 
-					postData = "P6" + _port + "=Off&ButtonName=Apply";
+					postData =  prepend + "P6" + _port + "=Off&ButtonName=Apply";
+					logger.Debug("Resetting power posting " +  postData + " to " + _host + "/tgi/iocontrol.tgi");
 					client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
 
 					// Pause
@@ -99,7 +108,8 @@ namespace Peach.Core.Agent.Monitors
 
 				// On
 
-				postData = "P6" + _port + "=On&ButtonName=Apply";
+				postData = prepend + "P6" + _port + "=On&ButtonName=Apply";
+				logger.Debug("Resetting power posting " +  postData + " to " + _host + "/tgi/iocontrol.tgi");
 				client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
 			}
 		}

@@ -9,5 +9,5 @@ if base:
 	dll = bld.env['cshlib_PATTERN'] % '*'
 	src = base.ant_glob(dll)[0]
 	dst = bld.env['cshlib_PATTERN'] % 'VixAllProducts'
-	bld.install_as('${BINDIR}/%s' % dst, src, chmod=Utils.O755)
 
+	bld( name='VMware-VIX' ).install_as('${BINDIR}/%s' % dst, src, chmod=Utils.O755)

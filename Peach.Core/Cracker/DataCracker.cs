@@ -513,7 +513,10 @@ namespace Peach.Core.Cracker
 			Dictionary<string, object> scope = new Dictionary<string, object>();
 			scope["element"] = element;
 
-			var iv = element.InternalValue;
+			// Use DefaultValue for constraint, it is the actual cracked value.
+			// InternalValue will have relations/fixups applied
+
+			var iv = element.DefaultValue;
 			if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
 			{
 				scope["value"] = (BitwiseStream)iv;

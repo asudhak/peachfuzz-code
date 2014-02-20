@@ -1,7 +1,22 @@
 import os.path, re
-from waflib.TaskGen import feature, before_method, after_method
+from waflib.TaskGen import feature, before_method, after_method, taskgen_method
 from waflib.Configure import conf
 from waflib import Utils, Logs, Task, Context, Errors
+
+@taskgen_method
+def install_files(self, dest, files, env=None, chmod=Utils.O644, relative_trick=False, cwd=None, add=True, postpone=True):
+	inst_task = self.bld.install_files(dest, files, env, chmod, relative_trick, cwd, add, postpone)
+	save_inst_task(self, inst_task)
+
+@taskgen_method
+def install_as(self, dest, srcfile, env=None, chmod=Utils.O644, cwd=None, add=True, postpone=True):
+	inst_task = self.bld.install_as(dest, srcfile, env, chmod, cwd, add, postpone)
+	save_inst_task(self, inst_task)
+
+def save_inst_task(self, inst_task):
+	extras = getattr(self, 'install_extras', [])
+	extras.append(inst_task)
+	self.install_extras = extras
 
 @feature('*')
 @before_method('process_source')
@@ -19,7 +34,7 @@ def default_variant(self):
 
 @feature('*')
 @after_method('process_source')
-def install_extras(self):
+def apply_install(self):
 	try:
 		inst_to = self.install_path
 	except AttributeError:
@@ -50,7 +65,7 @@ def do_install2(self, inst_to, cwd, items, chmod):
 		if not inst_to:
 			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, extras))
 		else:
-			self.bld.install_files(inst_to, extras, env=self.env, cwd=cwd, relative_trick=True, chmod=chmod)
+			self.install_files(inst_to, extras, env=self.env, cwd=cwd, relative_trick=True, chmod=chmod)
 
 @feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
@@ -84,7 +99,7 @@ def install_content2(self):
 
 	content = getattr(self, 'content', [])
 	if content:
-		self.bld.install_files('${BINDIR}', content, cwd=self.path, relative_trick=True)
+		self.install_files('${BINDIR}', content, cwd=self.path, relative_trick=True)
 
 def install_outputs(self):
 	if getattr(self, 'has_installed', False):
@@ -93,7 +108,7 @@ def install_outputs(self):
 	self.has_installed = True
 
 	# install 3rdParty libs into ${LIBDIR}
-	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
+	self.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
 
 	# install any pdb or .config files into ${LIBDIR}
 
@@ -101,7 +116,7 @@ def install_outputs(self):
 		# only look for .config if we are mono - as they are the only ones that support this
 		config = self.env.CS_NAME == 'mono' and lib.parent.find_resource(lib.name + '.config')
 		if config:
-			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O644)
+			self.install_files('${LIBDIR}', config, chmod=Utils.O644)
 
 		name = lib.name
 		ext='.pdb'
@@ -113,7 +128,7 @@ def install_outputs(self):
 
 		pdb = lib.parent.find_resource(name)
 		if pdb:
-			self.bld.install_files('${LIBDIR}', pdb, chmod=Utils.O755)
+			self.install_files('${LIBDIR}', pdb, chmod=Utils.O755)
 
 @feature('cs', 'msbuild')
 @before_method('apply_cs', 'apply_mbuild')

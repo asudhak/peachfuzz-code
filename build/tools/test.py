@@ -14,13 +14,21 @@ def prepare_nunit_test(self):
 
 	self.outputs[0].parent.mkdir()
 
+	# Note: must use '-option' rather than '/option'
+	# for linux compatibility
 	self.ut_exec.extend([
 		self.env.NUNIT,
-		self.inputs[0].abspath(),
 		'-nologo',
-		'-out:%s' % self.outputs[1].abspath(),
-		'-xml:%s' % self.outputs[0].abspath(),
+		'-noshadow',
+		'-out=%s' % self.outputs[1].abspath(),
+		'-xml=%s' % self.outputs[0].abspath(),
 	])
+
+	opts = self.generator.bld.options
+	if opts.testcase:
+		self.ut_exec.extend(['/run=%s' % opts.testcase])
+
+	self.ut_exec.extend([ x.abspath() for x in self.inputs ])
 
 def get_inst_node(self, dest, name):
 	dest = Utils.subst_vars(dest, self.env)
@@ -35,6 +43,7 @@ def get_inst_node(self, dest, name):
 def make_test(self):
 	inputs = []
 	outputs = []
+	test = None
 
 	if getattr(self, 'link_task', None):
 		dest = getattr(self, 'install_path', self.link_task.__class__.inst_to)
@@ -46,16 +55,23 @@ def make_test(self):
 		inputs = [ get_inst_node(self, dest, self.cs_task.outputs[0].name) ]
 
 		if self.gen.endswith('.dll'):
-			self.ut_fun = prepare_nunit_test
-			name = os.path.splitext(inputs[0].name)[0]
-			xml = get_inst_node(self, '${PREFIX}/utest', name + '.xml')
-			log = get_inst_node(self, '${PREFIX}/utest', name + '.log')
-			outputs = [ xml, log ]
+			test = getattr(self.bld, 'nunit_task', None)
+			if not test:
+				xml = get_inst_node(self, '${PREFIX}/utest', 'nunit.xml')
+				log = get_inst_node(self, '${PREFIX}/utest', 'nunit.log')
+				outputs = [ xml, log ]
+				tg = self.bld(name = '')
+				test = tg.create_task('utest', inputs, outputs)
+				setattr(self.bld, 'nunit_task', test)
+				tg.ut_fun = prepare_nunit_test
+			else:
+				test.inputs.extend(inputs)
 
 	if not inputs:
 		raise Errors.WafError('No test to run at: %r' % self)
 
-	test = self.create_task('utest', inputs, outputs)
+	if not test:
+		test = self.create_task('utest', inputs, outputs)
 
 class utest(Task.Task):
 	vars = []
@@ -119,7 +135,7 @@ def configure(conf):
 			Logs.warn('Unit test feature is not available: %s' % (e))
 
 def options(opt):
-	pass
+	opt.add_option('--testcase', action='store', help='Name of test case/fixture to execute')
 
 class TestContext(InstallContext):
 	'''runs the unit tests'''

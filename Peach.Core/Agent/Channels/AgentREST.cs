@@ -75,10 +75,14 @@ namespace Peach.Core.Agent.Channels
 		public RestProxyPublisher(Dictionary<string, Variant> args)
 			: base(args)
 		{
-			this.Args = new SerializableDictionary<string,string>();
+			this.Args = new Dictionary<string,string>();
 
 			foreach (var kv in args)
-				this.Args.Add(kv.Key, kv.Value.ToString());
+			{
+				// Note: Cast to string rather than ToString()
+				// since ToString can include debugging information.
+				this.Args.Add(kv.Key, (string)kv.Value);
+			}
 		}
 
 		public string Send(string query)
@@ -86,13 +90,15 @@ namespace Peach.Core.Agent.Channels
 			return Send(query, "");
 		}
 
-		public string Send(string query, SerializableDictionary<string, Variant> args)
+		public string Send(string query, Dictionary<string, Variant> args)
 		{
-			Dictionary<string, string> newArg = new Dictionary<string, string>();
+			var newArg = new Dictionary<string, string>();
 
-			foreach (string key in args.Keys)
+			foreach (var kv in args)
 			{
-				newArg[key] = args[key].ToString();
+				// NOTE: cast to string, rather than .ToString() since
+				// .ToString() can include debugging information.
+				newArg.Add(kv.Key, (string)kv.Value);
 			}
 
 			JsonArgsRequest request = new JsonArgsRequest();
@@ -429,7 +435,7 @@ namespace Peach.Core.Agent.Channels
 	{
 		public string Method = null;
 		public object[] Arguments = null;
-		public SerializableDictionary<string, Variant> Parameters = null;
+		public Dictionary<string, Variant> Parameters = null;
 	}
 
 	[Serializable]
@@ -512,19 +518,13 @@ namespace Peach.Core.Agent.Channels
 			Send("AgentDisconnect");
 		}
 
-		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		public override Publisher CreatePublisher(string cls, Dictionary<string, Variant> args)
 		{
-			var newargs = new Dictionary<string, string>();
-			foreach (var key in args.Keys)
-			{
-				newargs[key] = args[key].ToString();
-			}
-
 			logger.Trace("CreatePublisher: {0}", cls);
 			OnCreatePublisherEvent(cls, args);
 			var pub = new RestProxyPublisher(args);
 			pub.Class = cls;
-			pub.Args = newargs;
+			//pub.Args = newargs;
 			pub.Url = _url;
 
 			return pub;
@@ -537,7 +537,7 @@ namespace Peach.Core.Agent.Channels
 			return new BitStream();
 		}
 
-		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
+		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
 			logger.Trace("StartMonitor: {0}, {1}", name, cls);
 			OnStartMonitorEvent(name, cls, args);
@@ -637,13 +637,15 @@ namespace Peach.Core.Agent.Channels
 			return Send(query, "");
 		}
 
-		public string Send(string query, SerializableDictionary<string, Variant> args)
+		public string Send(string query, Dictionary<string, Variant> args)
 		{
-			Dictionary<string, string> newArg = new Dictionary<string, string>();
+			var newArg = new Dictionary<string, string>();
 
-			foreach (string key in args.Keys)
+			foreach (var kv in args)
 			{
-				newArg[key] = args[key].ToString();
+				// Note: Cast rather than call .ToString() since
+				// ToString() can include debugging information
+				newArg.Add(kv.Key, (string)kv.Value);
 			}
 
 			JsonArgsRequest request = new JsonArgsRequest();
