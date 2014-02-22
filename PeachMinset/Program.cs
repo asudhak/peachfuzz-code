@@ -75,7 +75,7 @@ namespace PeachMinset
 			{
 				Console.WriteLine("{0}\n", ex.Message);
 
-				if (ex.InnerException != null)
+				if (ex.InnerException != null && ex.InnerException.Message != ex.Message)
 					Console.WriteLine("{0}\n", ex.InnerException.Message);
 			}
 			finally
