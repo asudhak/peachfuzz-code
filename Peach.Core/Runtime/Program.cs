@@ -85,7 +85,7 @@ namespace Peach.Core.Runtime
 			if (level == 0)
 				return;
 
-			if (LogManager.Configuration.LoggingRules.Count > 0)
+			if (LogManager.Configuration != null && LogManager.Configuration.LoggingRules.Count > 0)
 			{
 				Console.WriteLine("Logging was configured by a .config file, not changing the configuration.");
 				return;
