@@ -34,6 +34,7 @@ using System.Text;
 using System.Reflection;
 
 using Peach.Core;
+using NLog;
 
 namespace Peach.Core.Analysis
 {
@@ -45,8 +46,11 @@ namespace Peach.Core.Analysis
 	/// </summary>
 	public class Minset
 	{
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		public event TraceEventHandler TraceStarting;
 		public event TraceEventHandler TraceCompleted;
+		public event TraceEventHandler TraceFailed;
 
 		protected void OnTraceStarting(string fileName, int count, int totalCount)
 		{
@@ -58,6 +62,12 @@ namespace Peach.Core.Analysis
 		{
 			if (TraceCompleted != null)
 				TraceCompleted(this, fileName, count, totalCount);
+		}
+
+		public void OnTraceFaled(string fileName, int count, int totalCount)
+		{
+			if (TraceFailed != null)
+				TraceFailed(this, fileName, count, totalCount);
 		}
 
 		/// <summary>
@@ -170,39 +180,78 @@ namespace Peach.Core.Analysis
 		/// <returns>Returns a collection of trace files</returns>
 		public string[] RunTraces(string executable, string arguments, string tracesFolder, string[] sampleFiles, bool needsKilling = false)
 		{
-			if (!Directory.Exists(tracesFolder))
-				Directory.CreateDirectory(tracesFolder);
-
-			using (Coverage coverage = Coverage.CreateInstance())
+			try
 			{
-				int count = 0;
-				string traceFilename = null;
-				List<string> traces = new List<string>();
-				List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable, needsKilling);
+				var cov = new Coverage(executable, arguments, needsKilling);
+				var ret = new List<string>();
 
-				foreach (string fileName in sampleFiles)
+				for (int i = 0; i < sampleFiles.Length; ++i)
 				{
-					count++;
-					OnTraceStarting(fileName, count, sampleFiles.Length);
+					var sampleFile = sampleFiles[i];
+					var traceFile = Path.Combine(tracesFolder, Path.GetFileName(sampleFile) + ".trace");
 
-					// Output trace into the specified tracesFolder
-					traceFilename = Path.Combine(tracesFolder, Path.GetFileName(fileName) + ".trace");
+					OnTraceStarting(sampleFile, i + 1, sampleFiles.Length);
 
-					if (RunSingleTrace(coverage,
-						traceFilename,
-						executable,
-						arguments.Replace("%s", fileName),
-						basicBlocks,
-						needsKilling))
+					try
 					{
-						traces.Add(traceFilename);
+						cov.Run(sampleFile, traceFile);
+						ret.Add(traceFile);
+						OnTraceCompleted(sampleFile, i + 1, sampleFiles.Length);
 					}
+					catch (Exception ex)
+					{
+						logger.Debug("Failed to generate trace.\n{0}", ex);
 
-					OnTraceCompleted(fileName, count, sampleFiles.Length);
+						OnTraceFaled(sampleFile, i + 1, sampleFiles.Length);
+					}
 				}
 
-				return traces.ToArray();
+				return ret.ToArray();
 			}
+			catch (Exception ex)
+			{
+				logger.Debug("Failed to create coverage.\n{0}", ex);
+
+				throw new PeachException(ex.Message, ex);
+			}
+
+
+			//var cov = Coverage.CreateInstance();
+
+
+			//if (!Directory.Exists(tracesFolder))
+			//	Directory.CreateDirectory(tracesFolder);
+
+			//using (Coverage coverage = Coverage.CreateInstance())
+			//{
+			//	int count = 0;
+			//	string traceFilename = null;
+			//	List<string> traces = new List<string>();
+			//	List<ulong> basicBlocks = coverage.BasicBlocksForExecutable(executable, needsKilling);
+
+			//	foreach (string fileName in sampleFiles)
+			//	{
+			//		count++;
+			//		OnTraceStarting(fileName, count, sampleFiles.Length);
+
+			//		// Output trace into the specified tracesFolder
+			//		traceFilename = Path.Combine(tracesFolder, Path.GetFileName(fileName) + ".trace");
+
+			//		if (RunSingleTrace(coverage,
+			//			traceFilename,
+			//			executable,
+			//			arguments.Replace("%s", fileName),
+			//			basicBlocks,
+			//			needsKilling))
+			//		{
+			//			traces.Add(traceFilename);
+			//		}
+
+			//		OnTraceCompleted(fileName, count, sampleFiles.Length);
+			//	}
+
+			//	return traces.ToArray();
+			//}
 		}
 
 		/// <summary>
@@ -217,23 +266,23 @@ namespace Peach.Core.Analysis
 		/// <returns>True on success, false if a failure occured.</returns>
 		public bool RunSingleTrace(Coverage cov, string traceFile, string executable, string arguments, List<ulong> basicBlocks, bool needsKilling = false)
 		{
-			List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, needsKilling, basicBlocks);
+		//	List<ulong> coverage = cov.CodeCoverageForExecutable(executable, arguments, needsKilling, basicBlocks);
 
-			// Delete existing trace file
-			if (File.Exists(traceFile))
-				File.Delete(traceFile);
+			//// Delete existing trace file
+			//if (File.Exists(traceFile))
+			//	File.Delete(traceFile);
 
-			// Create trace file
-			using(FileStream fout = File.Create(traceFile))
-			{
-				using(StreamWriter sout = new StreamWriter(fout))
-				{
-					foreach(ulong addr in coverage)
-					{
-						sout.WriteLine(addr.ToString());
-					}
-				}
-			}
+			//// Create trace file
+			//using(FileStream fout = File.Create(traceFile))
+			//{
+			//	using(StreamWriter sout = new StreamWriter(fout))
+			//	{
+			//		foreach(ulong addr in coverage)
+			//		{
+			//			sout.WriteLine(addr.ToString());
+			//		}
+			//	}
+			//}
 
 			return true;
 		}

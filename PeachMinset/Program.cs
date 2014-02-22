@@ -142,8 +142,13 @@ namespace PeachMinset
 				VerifyDirectory(minset);
 
 			var ms = new Minset();
-			ms.TraceCompleted += new TraceEventHandler(ms_TraceCompleted);
-			ms.TraceStarting += new TraceEventHandler(ms_TraceStarting);
+
+			if (verbose == 0)
+			{
+				ms.TraceCompleted += new TraceEventHandler(ms_TraceCompleted);
+				ms.TraceStarting += new TraceEventHandler(ms_TraceStarting);
+				ms.TraceFailed += new TraceEventHandler(ms_TraceFailed);
+			}
 
 			if (minset != null && executable != null)
 				Console.WriteLine("[*] Running both trace and coverage analysis\n");
@@ -191,7 +196,12 @@ namespace PeachMinset
 
 		void ms_TraceCompleted(Minset sender, string fileName, int count, int totalCount)
 		{
-			Console.WriteLine("done.");
+			Console.WriteLine(" Completed");
+		}
+
+		void ms_TraceFailed(Minset sender, string fileName, int count, int totalCount)
+		{
+			Console.WriteLine(" Failed");
 		}
 
 		static string[] GetFiles(string path, string what)
