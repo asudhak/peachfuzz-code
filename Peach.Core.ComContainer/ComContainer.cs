@@ -109,7 +109,7 @@ namespace Peach.Core.ComContainer
 			Dictionary<string, object> state = new Dictionary<string, object>();
 			state["ComObject"] = comObject;
 
-			string cmd = "getattr(ComObject, '" + property + "')";
+			string cmd = "ComObject." + property;
 			return Peach.Core.Scripting.EvalExpression(cmd, state);
 		}
 
@@ -122,7 +122,7 @@ namespace Peach.Core.ComContainer
 			state["ComObject"] = comObject;
 			state["ComArg"] = value;
 
-			string cmd = "setattr(ComObject, '" + property + "', ComArg)";
+			string cmd = "ComObject." + property + " = ComArg";
 			Scripting.EvalExpression(cmd, state);
 		}
 
