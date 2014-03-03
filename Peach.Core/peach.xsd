@@ -1902,7 +1902,17 @@ by attaching python expressions to actions via the onStart/onComplete/when attri
           <xs:documentation>The name of this state.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-    </xs:complexType>
+		<xs:attribute name="onStart" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation>Expression to run when state is starting</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="onComplete" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation>Expression to run when state has completed</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
   </xs:element>
   <xs:element name="Action">
     <xs:annotation>

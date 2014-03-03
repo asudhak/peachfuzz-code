@@ -10,7 +10,7 @@ using NLog;
 namespace Peach.Core.Publishers
 {
     [Publisher("SerialPort", true)]
-    [Parameter("PortName", typeof(string), "Com interface for the device to connect to/")]
+    [Parameter("PortName", typeof(string), "Com interface for the device to connect to")]
     [Parameter("Baudrate", typeof(int), "The serial baud rate.")]
     [Parameter("Parity", typeof(Parity), "The parity-checking protocol.")]
     [Parameter("DataBits", typeof(int), "Standard length of data bits per byte.")]

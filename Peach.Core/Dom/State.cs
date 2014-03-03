@@ -51,6 +51,8 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class State : INamed
 	{
+		protected Dictionary<string, object> scope = new Dictionary<string, object>();
+
 		public State()
 		{
 			actions = new NamedCollection<Action>();
@@ -77,6 +79,20 @@ namespace Peach.Core.Dom
 		[XmlAttribute]
 		[DefaultValue(null)]
 		public string name { get; set; }
+
+		/// <summary>
+		/// Expression to run when action is starting
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string onStart { get; set; }
+
+		/// <summary>
+		/// Expression to run when action is completed
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string onComplete { get; set; }
 
 		/// <summary>
 		/// The actions contained in this state.
@@ -128,10 +144,29 @@ namespace Peach.Core.Dom
 				ChangingState(this, toState);
 		}
 
+		protected virtual void RunScript(string expr)
+		{
+			if (!string.IsNullOrEmpty(expr))
+			{
+				Scripting.EvalExpression(expr, scope);
+			}
+		}
+
 		public void Run(RunContext context)
 		{
 			try
 			{
+				// Setup scope for any scripting expressions
+				scope["context"] = context;
+				scope["Context"] = context;
+				scope["state"] = this;
+				scope["State"] = this;
+				scope["StateModel"] = parent;
+				scope["stateModel"] = parent;
+				scope["Test"] = parent.parent;
+				scope["test"] = parent.parent;
+				scope["self"] = this;
+
 				if (context.controlIteration && context.controlRecordingIteration)
 					context.controlRecordingStatesExecuted.Add(this);
 				else if (context.controlIteration)
@@ -146,8 +181,12 @@ namespace Peach.Core.Dom
 
 				OnStarting();
 
+				RunScript(onStart);
+
 				foreach (Action action in actions)
 					action.Run(context);
+
+				RunScript(onComplete);
 			}
 			catch
 			{

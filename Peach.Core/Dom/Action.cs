@@ -58,6 +58,7 @@ namespace Peach.Core.Dom
 	public abstract class Action : INamed
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+		protected Dictionary<string, object> scope = new Dictionary<string, object>();
 
 		[NonSerialized]
 		private State _parent;
@@ -213,12 +214,7 @@ namespace Peach.Core.Dom
 		{
 			if (!string.IsNullOrEmpty(expr))
 			{
-				Dictionary<string, object> state = new Dictionary<string, object>();
-				state["action"] = this;
-				state["state"] = this.parent;
-				state["self"] = this;
-
-				Scripting.EvalExpression(expr, state);
+				Scripting.EvalExpression(expr, scope);
 			}
 		}
 
@@ -282,19 +278,19 @@ namespace Peach.Core.Dom
 		{
 			logger.Trace("Run({0}): {1}", name, GetType().Name);
 
+			// Setup scope for any scripting expressions
+			scope["context"] = context;
+			scope["Context"] = context;
+			scope["action"] = this;
+			scope["Action"] = this;
+			scope["state"] = parent;
+			scope["State"] = parent;
+			scope["StateModel"] = parent.parent;
+			scope["Test"] = parent.parent.parent;
+			scope["self"] = this;
+
 			if (when != null)
 			{
-				Dictionary<string, object> scope = new Dictionary<string, object>();
-				scope["context"] = context;
-				scope["Context"] = context;
-				scope["action"] = this;
-				scope["Action"] = this;
-				scope["state"] = parent;
-				scope["State"] = parent;
-				scope["StateModel"] = parent.parent;
-				scope["Test"] = parent.parent.parent;
-				scope["self"] = this;
-
 				object value = Scripting.EvalExpression(when, scope);
 				if (!(value is bool))
 				{
