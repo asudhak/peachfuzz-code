@@ -363,6 +363,7 @@ static Blocks_t blocks;
 static Images_t images;
 
 File fileDbg;
+INT pid = 0;
 
 KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
@@ -510,9 +511,13 @@ VOID Start(VOID* v)
 {
 	UNUSED_ARG(v);
 
+	pid = PIN_GetPid();
+
 	std::string pidFile = KnobOutput.Value() + ".pid";
 	std::ofstream fout(pidFile.c_str(), std::ofstream::binary | std::ofstream::trunc);
-	fout << PIN_GetPid();
+	fout << pid;
+
+	DBG(("Application started, pid: %d", pid));
 }
 
 // Called when the application exits
@@ -520,6 +525,14 @@ VOID Fini(INT32 code, VOID *v)
 {
 	UNUSED_ARG(code);
 	UNUSED_ARG(v);
+
+	// Ensure exit is happening on the parent pid
+	INT thisPid = PIN_GetPid();
+	if (pid != thisPid)
+	{
+		DBG(("Child application finished, pid: %d", PIN_GetPid()));
+		return;
+	}
 
 	// Open file to log new traces to
 	File fileOut;
@@ -551,7 +564,7 @@ VOID Fini(INT32 code, VOID *v)
 		}
 	}
 
-	DBG(("Finished:"));
+	DBG(("Application finished, pid: %d", PIN_GetPid()));
 	DBG((" All Images     : %lu", (unsigned long)images.Count()));
 	DBG((" Basic Blocks   : %lu", (unsigned long)blocks.Count()));
 	DBG(("  Executed      : %lu", run));
