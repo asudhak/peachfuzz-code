@@ -620,6 +620,9 @@ int main(int argc, char* argv[])
 	if (KnobDebug)
 		fileDbg.Open(outFile + ".log", "wb");
 
+	// Must be called before IMG_AddInstrumentFunction
+	PIN_InitSymbols();
+
 	// Register callbacks
 	IMG_AddInstrumentFunction(Image, NULL);
 	TRACE_AddInstrumentFunction(Trace, NULL);
