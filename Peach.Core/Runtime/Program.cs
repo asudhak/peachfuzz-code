@@ -153,6 +153,7 @@ namespace Peach.Core.Runtime
 				Platform.LoadAssembly();
 
 				AddNewDefine("Peach.Cwd=" + Environment.CurrentDirectory);
+				AddNewDefine("Peach.Pwd=" + Path.GetDirectoryName(Assembly.GetCallingAssembly().Location));
 
 				// Do we have pit.xml.config file?
 				// If so load it as the first defines file.
