@@ -118,11 +118,20 @@ uint64_t GetProcessTicks(int pid)
 
 #elif defined(__APPLE__)
 
-static uint64_t ticks = 0;
+#include <sys/time.h>
+#include <sys/proc.h>
+#include <sys/proc_info.h>
+#include <libproc.h>
 
 uint64_t GetProcessTicks(int pid)
 {
-	return ++ticks;
+	struct proc_taskinfo ti;
+	int err = proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &ti, sizeof(ti));
+
+	if (err != sizeof(ti))
+		return 0;
+
+	return (uint64_t)ti.pti_total_user + (uint64_t)ti.pti_total_system;
 }
 
 #else
