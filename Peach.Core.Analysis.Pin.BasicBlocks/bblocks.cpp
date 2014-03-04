@@ -118,7 +118,6 @@ public:
 		, fileName(MakeFileName(fullName))
 		, lowAddress(IMG_LowAddress(img))
 		, highAddress(IMG_HighAddress(img))
-		, excluded(false)
 		, conflict(NULL)
 		, key(IMG_Id(img))
 	{
@@ -133,7 +132,6 @@ public:
 	const std::string fileName;    // Just the name of the file
 	const ADDRINT     lowAddress;
 	const ADDRINT     highAddress;
-	bool              excluded;
 	const ImageName*  conflict;
 
 	size_t            key;
@@ -149,29 +147,21 @@ ImageName::ImageName(const ImageRec* pImg)
 
 class BlockRec : NonCopyable
 {
-private:
-	static std::string MakeTrace(const ImageRec& img, ADDRINT addr)
-	{
-		if (img.excluded)
-			return "";
-
-		std::stringstream ss;
-		ss << img.fileName << ": " << (addr - img.lowAddress) << std::endl;
-		return ss.str();
-	}
-
 public:
 	typedef size_t key_type;
 
-	BlockRec(const ImageRec& img, ADDRINT addr)
-		: trace(MakeTrace(img, addr))
-		, fileName(img.fileName)
-		, countRun(0)
+	BlockRec(ADDRINT addr)
+		: countRun(0)
 		, countAdd(1)
-		, excluded(img.excluded)
-		, existing(false)
 		, key(addr)
 	{
+	}
+
+	std::string MakeTrace(const ImageRec& img) const
+	{
+		std::stringstream ss;
+		ss << img.fileName << ": " << (key - img.lowAddress) << std::endl;
+		return ss.str();
 	}
 
 	const BlockRec* Next() const
@@ -179,12 +169,8 @@ public:
 		return (const BlockRec*)hh.next;
 	}
 
-	const std::string  trace;    // Name of trace
-	const std::string& fileName; // Name of image address is part of
 	size_t             countRun; // Count of BlockExecuted()
 	size_t             countAdd; // Count of Trace()
-	bool               excluded;
-	bool               existing;
 	size_t             key;
 	UT_hash_handle     hh;
 };
@@ -242,6 +228,11 @@ public:
 	void Add(TVal* value)
 	{
 		AddImpl(value->key, value);
+	}
+
+	void Remove(TVal* value)
+	{
+		HASH_DEL(table, value);
 	}
 
 	size_t Count() const
@@ -367,42 +358,26 @@ typedef HashTable<BlockRec> Blocks_t;
 typedef HashTable<ImageRec> Images_t;
 typedef HashTable<ImageName> ImageNames_t;
 
-static Strings_t excludedImages;
-static Strings_t existingTraces;
 static ImageNames_t includedImages;
 static Blocks_t blocks;
 static Images_t images;
 
-File fileOut;
-File fileExisting;
 File fileDbg;
 
 KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
 KNOB<BOOL> KnobCpuKill(KNOB_MODE_WRITEONCE, "pintool", "cpukill", "0", "Kill process when cpu becomes idle.");
 
-#ifdef WIN32
-
-KNOB<BOOL> KnobFast(KNOB_MODE_WRITEONCE, "pintool", "fast", "0", "Don't trace windows system libraries.");
-
-bool shouldExclude(const ImageRec& img)
+const ImageRec* FindImageByAddr(ADDRINT addr)
 {
-	static WinDirHelper h(KnobFast);
+	for (const ImageRec* it = images.Head(); it != NULL; it = it->Next())
+	{
+		if (it->lowAddress <= addr && addr <= it->highAddress)
+			return it;
+	}
 
-	if (img.key > 1 && h.IsSystem(img.fullName))
-		return true;
-
-	return !!excludedImages.Find(img.fileName);
+	return NULL;
 }
-
-#else
-
-bool shouldExclude(const ImageRec& img)
-{
-	return !!excludedImages.Find(img.fileName);
-}
-
-#endif
 
 bool ReadAllLines(const std::string& fileName, Strings_t& lines)
 {
@@ -437,6 +412,7 @@ VOID PIN_FAST_ANALYSIS_CALL BlockExecuted(BlockRec* pBlock)
 {
 	// Keep conditionals and lookups out of this
 	// callback so pin can inline it
+
 	pBlock->countRun++;
 }
 
@@ -446,16 +422,11 @@ VOID Image(IMG img, VOID* v)
 	UNUSED_ARG(v);
 
 	ImageRec* pImg = new ImageRec(img);
-	pImg->excluded = shouldExclude(*pImg);
 	pImg->conflict = includedImages.Find(pImg->fileName);
 
 	images.Add(pImg);
 
-	if (pImg->excluded)
-	{
-		DBG(("Excluding image: %s", pImg->fullName.c_str()));
-	}
-	else if (pImg->conflict)
+	if (pImg->conflict)
 	{
 		const ImageRec* pOther = pImg->conflict->record;
 
@@ -477,7 +448,8 @@ VOID Image(IMG img, VOID* v)
 	else
 	{
 		includedImages.Add(new ImageName(pImg));
-		DBG(("Loaded image: %s", pImg->fullName.c_str()));
+		DBG(("Loaded image: %s [%llu -> %llu]", pImg->fullName.c_str(),
+			pImg->lowAddress, pImg->highAddress));
 	}
 }
 
@@ -502,37 +474,24 @@ VOID Trace(TRACE trace, VOID *v)
 		BlockRec* pBlock = blocks.Find(addr);
 		if (pBlock != NULL)
 		{
-			if (!pBlock->existing && !pBlock->excluded)
-			{
-				DBG(("Ignoring duplicate trace for basic block '%s: %llu'",
-					pBlock->fileName.c_str(), (unsigned long long)pBlock->key));
-			}
+			//if (!pBlock->existing && !pBlock->excluded)
+			//{
+			//	DBG(("Ignoring duplicate trace for basic block '%s: %llu'",
+			//		pBlock->fileName.c_str(), (unsigned long long)pBlock->key));
+			//}
 
 			pBlock->countAdd++;
 			continue;
 		}
 
-		// If image could not be resolved, ignore
-		IMG img = IMG_FindByAddress(addr);
-		if (!img.is_valid())
-		{
-			DBG(("Could not get image for basic block: %llu", (unsigned long long)addr));
-			continue;
-		}
+		// We can't resolve the image this address belongs to,
+		// because there is a chance it has not been loaded yet.
 
 		// Build a record for tracking this basic block
-		ImageRec* pImg = images.Find(IMG_Id(img));
-		pBlock = new BlockRec(*pImg, addr);
-
-		// Check if trace for block already exists
-		pBlock->existing = !!existingTraces.Find(pBlock->trace);
+		pBlock = new BlockRec(addr);
 
 		// Ensure we are tracking this basic block record
 		blocks.Add(pBlock);
-
-		// If trace is already captured or is excluded, ignore
-		if (pBlock->existing || pBlock->excluded)
-			continue;
 
 		// Record basic block when it is executed
 		BBL_InsertCall(
@@ -562,45 +521,42 @@ VOID Fini(INT32 code, VOID *v)
 	UNUSED_ARG(code);
 	UNUSED_ARG(v);
 
-	unsigned long existing = 0, excluded = 0, imgIncl = 0, imgExcl = 0, dupes = 0, run = 0;
+	// Open file to log new traces to
+	File fileOut;
+	const std::string& outFile = KnobOutput.Value();
+	fileOut.Open(outFile + ".out", "wb");
+
+	unsigned long unresolved = 0, dupes = 0, run = 0;
 
 	for (const BlockRec* it = blocks.Head(); it != NULL; it = it->Next())
 	{
-		if (it->existing)
-			++existing;
-
-		if (it->excluded)
-			++excluded;
-
 		if (it->countAdd > 1)
 			++dupes;
 
 		if (it->countRun > 0)
 		{
 			++run;
-			fileOut.Write(it->trace);
-			fileExisting.Write(it->trace);
-		}
-	}
 
-	for (const ImageRec* it = images.Head(); it != NULL; it = it->Next())
-	{
-		if (it->excluded)
-			++imgIncl;
-		else
-			++imgExcl;
+			const ImageRec* pImg = FindImageByAddr(it->key);
+
+			if (NULL == pImg)
+			{
+				DBG(("Could not get image for basic block: %llu", (unsigned long long)it->key));
+				++unresolved;
+			}
+			else
+			{
+				fileOut.Write(it->MakeTrace(*pImg));
+			}
+		}
 	}
 
 	DBG(("Finished:"));
 	DBG((" All Images     : %lu", (unsigned long)images.Count()));
-	DBG((" Excluded Images: %lu", imgExcl));
-	DBG((" Included Images: %lu", imgIncl));
-	DBG((" Existing Traces: %lu", (unsigned long)existingTraces.Count()));
 	DBG((" Basic Blocks   : %lu", (unsigned long)blocks.Count()));
-	DBG(("  Existing      : %lu", existing));
-	DBG(("  Excluded      : %lu", excluded));
-	DBG(("  Duplicates    : %lu", dupes));
 	DBG(("  Executed      : %lu", run));
+	DBG(("  Unresolved    : %lu", unresolved));
+	DBG(("  Duplicates    : %lu", dupes));
 }
 
 // Internal worker thread
@@ -622,8 +578,7 @@ VOID ThreadProc(VOID *v)
 		if (check && oldTicks == newTicks)
 		{
 			DBG(("Detected idle CPU after %d ticks, exiting proces", (unsigned long)oldTicks));
-			Fini(0, NULL);
-			PIN_ExitProcess(0);
+			PIN_ExitApplication(0);
 			break;
 		}
 
@@ -648,16 +603,6 @@ int main(int argc, char* argv[])
 
 	// Get the base name to use for all outputs
 	const std::string& outFile = KnobOutput.Value();
-
-	// Read images to ignore
-	ReadAllLines(outFile + ".exclude", excludedImages);
-
-	// If we can read existing traces, open file for updates with new traces
-	if (ReadAllLines(outFile + ".existing", existingTraces))
-		fileExisting.Open(outFile + ".existing", "ab");
-
-	// Open file to log new traces to
-	fileOut.Open(outFile + ".out", "wb");
 
 	if (KnobDebug)
 		fileDbg.Open(outFile + ".log", "wb");
