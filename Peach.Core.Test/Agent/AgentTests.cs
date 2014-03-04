@@ -13,6 +13,7 @@ using System.Threading;
 using Peach.Core.Analyzers;
 using System.IO;
 using Peach.Core.Agent;
+using System.Text;
 
 namespace Peach.Core.Test.Agent
 {
@@ -588,6 +589,130 @@ namespace Peach.Core.Test.Agent
 
 			Assert.AreEqual(expected, history.ToArray());
 
+		}
+
+		[Publisher("TestRemoteFile", true, IsTest = true)]
+		[Parameter("FileName", typeof(string), "Name of file to open for reading/writing")]
+		public class TestRemoteFilePublisher : Publisher
+		{
+			private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+			protected override NLog.Logger Logger { get { return logger; } }
+
+			public string FileName { get; set; }
+
+			public TestRemoteFilePublisher(Dictionary<string, Variant> args)
+				: base(args)
+			{
+			}
+
+			protected override Variant OnCall(string method, List<Dom.ActionParameter> args)
+			{
+				var sb = new StringBuilder();
+
+				for (int i = 0; i < args.Count; ++i)
+				{
+					sb.AppendFormat("Param{0}: {1}", i + 1, Encoding.ASCII.GetString(args[i].dataModel.Value.ToArray()));
+					sb.AppendLine();
+				}
+
+				File.WriteAllText(FileName, sb.ToString());
+
+				return new Variant(Bits.Fmt("{0:L8}{1}", 7, "Success"));
+			}
+		}
+
+		[Test]
+		[Ignore("See issue #496")]
+		public void TestRemotePublisher()
+		{
+			string tmp = Path.GetTempFileName();
+
+			string xml = @"
+<Peach>
+	<DataModel name='Param1'>
+		<Number size='8' value='0x7c'/>
+	</DataModel>
+
+	<DataModel name='Param2'>
+		<String value='Hello'/>
+	</DataModel>
+
+	<DataModel name='Param3'>
+		<Blob value='World'/>
+	</DataModel>
+
+	<DataModel name='Result'>
+		<Number size='8'>
+			<Relation type='size' of='str'/>
+		</Number>
+		<String name='str'/>
+	</DataModel>
+
+	<StateModel name='TheState' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='call' method='foo'>
+				<Param>
+					<DataModel ref='Param1'/>
+				</Param>
+				<Param>
+					<DataModel ref='Param2'/>
+				</Param>
+				<Param>
+					<DataModel ref='Param3'/>
+				</Param>
+				<Result>
+					<DataModel ref='Result'/>
+				</Result>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'/>
+
+	<Test name='Default' replayEnabled='false'>
+		<Agent ref='RemoteAgent'/>
+		<StateModel ref='TheState'/>
+		<Publisher class='Remote'>
+			<Param name='Class' value='TestRemoteFile'/>
+			<Param name='Agent' value='RemoteAgent'/>
+			<Param name='FileName' value='{0}'/>
+		</Publisher>
+		<Strategy class='RandomDeterministic'/>
+	</Test>
+</Peach>".Fmt(tmp);
+
+			try
+			{
+				StartAgent();
+
+				var parser = new PitParser();
+				var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+				var config = new RunConfiguration();
+				config.singleIteration = true;
+
+				var e = new Engine(null);
+				e.startFuzzing(dom, config);
+
+				var contents = File.ReadAllLines(tmp);
+				Assert.AreEqual(3, contents.Length);
+				Assert.AreEqual("Param1: \x7c", contents[0]);
+				Assert.AreEqual("Param2: Hello", contents[1]);
+				Assert.AreEqual("Param3: World", contents[2]);
+
+				var act = dom.tests[0].stateModel.states[0].actions[0] as Dom.Actions.Call;
+				Assert.NotNull(act);
+				Assert.NotNull(act.result);
+				Assert.NotNull(act.result.dataModel);
+				Assert.AreEqual(2, act.result.dataModel.Count);
+				Assert.AreEqual(7, (int)act.result.dataModel[0].DefaultValue);
+				Assert.AreEqual("Success", (string)act.result.dataModel[1].DefaultValue);
+			}
+			finally
+			{
+				if (process != null)
+					StopAgent();
+			}
 		}
 	}
 }

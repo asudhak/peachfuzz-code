@@ -40,6 +40,8 @@ using System.Collections;
 
 namespace Peach.Core.Analysis
 {
+# if DISABLED
+	//public class Coverage
     /// <summary>
     /// Coverage implementation that utalizes PinTools
     /// </summary>
@@ -272,4 +274,5 @@ namespace Peach.Core.Analysis
 				Directory.Delete(_traceFolder, true);
 		}
     }
+#endif
 }
