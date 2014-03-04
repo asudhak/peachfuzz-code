@@ -290,7 +290,7 @@ namespace Peach.Core.Dom
 			scope["StateModel"] = parent.parent;
 			scope["stateModel"] = parent.parent;
 			scope["Test"] = parent.parent.parent;
-			scope["est"] = parent.parent.parent;
+			scope["test"] = parent.parent.parent;
 			scope["self"] = this;
 
 			if (when != null)
