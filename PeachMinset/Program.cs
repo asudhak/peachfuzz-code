@@ -173,24 +173,79 @@ namespace PeachMinset
 
 				Console.WriteLine("[*] Running coverage analysis...");
 
+				ValidateTraces(ref sampleFiles, ref traceFiles);
+
 				var minsetFiles = ms.RunCoverage(sampleFiles, traceFiles);
 
 				Console.WriteLine("[-]   {0} files were selected from a total of {1}.", minsetFiles.Length, sampleFiles.Length);
-				Console.WriteLine("[*] Copying over selected files...");
 
-				foreach (string fileName in minsetFiles)
+				if (minsetFiles.Length > 0)
+					Console.WriteLine("[*] Copying over selected files...");
+
+				foreach (var src in minsetFiles)
 				{
-					var file = Path.GetFileName(fileName);
-					var src = Path.Combine(samples, file);
+					var file = Path.GetFileName(src);
 					var dst = Path.Combine(minset, file);
 
-					Console.WriteLine("[-]   {0} -> {1}", src, dst);
+					Console.Write("[-]   {0} -> {1}", src, dst);
 
-					File.Copy(src, dst, true);
+					try
+					{
+						File.Copy(src, dst, true);
+						Console.WriteLine();
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine(" failed: {0}", ex.Message);
+					}
 				}
 
 				Console.WriteLine("\n[{0}] Finished\n", sw.Elapsed);
 			}
+		}
+
+		bool ValidateTraces(ref string[] samples, ref string[] traces)
+		{
+			// Arrays are already sorted before this function
+			var newSamples = new List<string>();
+			var badSamples = new List<string>();
+			var newTraces = new List<string>();
+			var badTraces = new List<string>();
+
+			int s = 0;
+			int t = 0;
+
+			while (s < samples.Length || t < traces.Length)
+			{
+				var sample = s == samples.Length ? "" : Path.GetFileName(samples[s]) + ".trace";
+				var trace = t == traces.Length ? "" : Path.GetFileName(traces[t]);
+				var cmp = string.Compare(sample, trace);
+
+				if (trace == "" || (sample != "" && cmp < 0))
+				{
+					badSamples.Add(samples[s++]);
+				}
+				else if (sample == "" || (trace != "" && cmp > 0))
+				{
+					badTraces.Add(traces[t++]);
+				}
+				else
+				{
+					newSamples.Add(samples[s++]);
+					newTraces.Add(traces[t++]);
+				}
+			}
+
+			if (badSamples.Count > 0)
+				Console.WriteLine("[-] Ignoring samples because of missing trace files: '{0}'", string.Join("', '", badSamples));
+
+			if (badTraces.Count > 0)
+				Console.WriteLine("[-] Ignoring traces because of missing sample files: '{0}'", string.Join("', '", badTraces));
+
+			samples = newSamples.ToArray();
+			traces = newTraces.ToArray();
+
+			return badSamples.Count == 0 && badTraces.Count == 0;
 		}
 
 		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)
