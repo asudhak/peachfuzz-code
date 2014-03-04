@@ -4,8 +4,13 @@ def make_bld(tgt, variant):
 	clone = bld.clone_env(variant)
 	if clone is None:
 		return
+
+	flags = clone['CPPFLAGS_debug']
+	clone['CPPFLAGS_debug'] = [ x for x in flags if not x.startswith('/MT') ]
+	clone['DEFINES_debug'] = []
+
 	bld(
-		features = 'cxx cxxshlib pin release',
+		features = 'cxx cxxshlib pin',
 		source = 'cedge.cpp',
 		target=tgt,
 		env=clone,
