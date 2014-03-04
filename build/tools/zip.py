@@ -74,10 +74,10 @@ def apply_zip_srcs(self):
 		srcs = [ x[0] for x in self.zip_inputs ]
 		dest = self.path.find_or_declare(self.name + '.zip')
 		self.zip_task = self.create_task('zip', srcs, dest)
+		self.sha_task = self.create_task('sha', self.zip_task.outputs, dest.change_ext('.zip.sha1'))
 
 		inst_to = getattr(self, 'install_path', '${OUTPUT}')
-		self.install_files(inst_to, self.zip_task.outputs)
-
+		self.install_files(inst_to, self.zip_task.outputs + self.sha_task.outputs)
 
 class zip(Task.Task):
 	color = 'PINK'
@@ -100,4 +100,20 @@ class zip(Task.Task):
 			zi.external_attr = attr
 
 		z.close()
+
+class sha(Task.Task):
+	color = 'PINK'
+
+	def run(self):
+		try:
+			from hashlib import sha1 as sha
+		except ImportError:
+			from sha import sha
+
+		src = self.inputs[0]
+		dst = self.outputs[0]
+
+		digest = sha(src.read()).hexdigest()
+
+		dst.write('SHA1(%s)= %s\n' % (src.name, digest))
 
