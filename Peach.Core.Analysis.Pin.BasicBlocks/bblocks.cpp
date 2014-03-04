@@ -349,6 +349,7 @@ public:
 			buf[len] = '\0';
 
 			fwrite(buf, 1, len, m_pFile);
+			fflush(m_pFile);
 
 			DebugWrite(buf);
 		}
