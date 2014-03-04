@@ -58,6 +58,8 @@ namespace Peach.Core.Dom
 	public abstract class Action : INamed
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		[NonSerialized]
 		protected Dictionary<string, object> scope = new Dictionary<string, object>();
 
 		[NonSerialized]
