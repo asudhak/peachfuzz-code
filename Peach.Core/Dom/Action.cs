@@ -214,7 +214,7 @@ namespace Peach.Core.Dom
 		{
 			if (!string.IsNullOrEmpty(expr))
 			{
-				Scripting.EvalExpression(expr, scope);
+				Scripting.Exec(expr, scope);
 			}
 		}
 
@@ -274,6 +274,11 @@ namespace Peach.Core.Dom
 			}
 		}
 
+		public void print()
+		{
+			System.Console.WriteLine("Hello from action");
+		}
+
 		public void Run(RunContext context)
 		{
 			logger.Trace("Run({0}): {1}", name, GetType().Name);
@@ -287,7 +292,7 @@ namespace Peach.Core.Dom
 			scope["State"] = parent;
 			scope["StateModel"] = parent.parent;
 			scope["Test"] = parent.parent.parent;
-			scope["self"] = this;
+			//scope["self"] = this;
 
 			if (when != null)
 			{
