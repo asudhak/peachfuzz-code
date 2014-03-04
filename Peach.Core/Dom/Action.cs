@@ -276,11 +276,6 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public void print()
-		{
-			System.Console.WriteLine("Hello from action");
-		}
-
 		public void Run(RunContext context)
 		{
 			logger.Trace("Run({0}): {1}", name, GetType().Name);
@@ -293,8 +288,10 @@ namespace Peach.Core.Dom
 			scope["state"] = parent;
 			scope["State"] = parent;
 			scope["StateModel"] = parent.parent;
+			scope["stateModel"] = parent.parent;
 			scope["Test"] = parent.parent.parent;
-			//scope["self"] = this;
+			scope["test"] = parent.parent.parent;
+			scope["self"] = this;
 
 			if (when != null)
 			{

@@ -148,7 +148,7 @@ namespace Peach.Core.Dom
 		{
 			if (!string.IsNullOrEmpty(expr))
 			{
-				Scripting.EvalExpression(expr, scope);
+				Scripting.Exec(expr, scope);
 			}
 		}
 
