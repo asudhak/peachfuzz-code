@@ -379,6 +379,7 @@ File fileDbg;
 
 KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
+KNOB<BOOL> KnobCpuKill(KNOB_MODE_WRITEONCE, "pintool", "cpukill", "0", "Kill process when cpu becomes idle.");
 
 #ifdef WIN32
 
@@ -602,6 +603,40 @@ VOID Fini(INT32 code, VOID *v)
 	DBG(("  Executed      : %lu", run));
 }
 
+// Internal worker thread
+VOID ThreadProc(VOID *v)
+{
+	UNUSED_ARG(v);
+
+	uint64_t oldTicks = 0, newTicks = 0;
+	bool check = false;
+	int pid = PIN_GetPid();
+
+	while (!PIN_IsProcessExiting())
+	{
+		if (!check)
+			DBG(("Starting CPU thread for pid: %d", pid));
+
+		newTicks = GetProcessTicks(pid);
+
+		if (check && oldTicks == newTicks)
+		{
+			DBG(("Detected idle CPU after %d ticks, exiting proces", (unsigned long)oldTicks));
+			Fini(0, NULL);
+			PIN_ExitProcess(0);
+			break;
+		}
+
+		oldTicks = newTicks;
+		check = true;
+
+		PIN_Sleep(200);
+	}
+
+	DBG(("CPU monitor thread exiting"));
+	PIN_ExitThread(0);
+}
+
 int main(int argc, char* argv[])
 {
 	// Expect size_t and ADDRINT to be the same
@@ -632,6 +667,10 @@ int main(int argc, char* argv[])
 	TRACE_AddInstrumentFunction(Trace, NULL);
 	PIN_AddApplicationStartFunction(Start, NULL);
 	PIN_AddFiniFunction(Fini, NULL);
+
+	// Create internal thread to monitor cpu usage
+	if (KnobCpuKill.Value())
+		PIN_SpawnInternalThread(ThreadProc, NULL, 0, NULL);
 
 	// Start program, never returns
 	PIN_StartProgram();

@@ -8,7 +8,11 @@
 
 #define UNUSED_ARG(x) x;
 
+#include <stdint.h>
+
 void DebugWrite(const char* msg);
+
+uint64_t GetProcessTicks(int pid); 
 
 class WinDirHelper
 {
