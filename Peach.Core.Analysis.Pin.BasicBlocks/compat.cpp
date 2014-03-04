@@ -131,7 +131,12 @@ uint64_t GetProcessTicks(int pid)
 	if (err != sizeof(ti))
 		return 0;
 
-	return (uint64_t)ti.pti_total_user + (uint64_t)ti.pti_total_system;
+	// Is in nanoseconds, convert to milliseconds
+	// otherwise we will probably never be idle
+	uint64_t ret = ti.pti_total_user;
+	ret += ti.pti_total_system;
+	ret /= 1000000;
+	return ret;
 }
 
 #else
