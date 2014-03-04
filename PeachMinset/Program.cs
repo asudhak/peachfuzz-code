@@ -86,6 +86,8 @@ namespace PeachMinset
 			}
 		}
 
+		private Stopwatch sw = new Stopwatch();
+
 		public Program(string[] args)
 		{
 			Console.WriteLine();
@@ -144,6 +146,8 @@ namespace PeachMinset
 
 			var ms = new Minset();
 
+			sw.Start();
+
 			if (verbose == 0)
 			{
 				ms.TraceCompleted += new TraceEventHandler(ms_TraceCompleted);
@@ -160,7 +164,7 @@ namespace PeachMinset
 
 				ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
 
-				Console.WriteLine("\n[*] Finished\n");
+				Console.WriteLine("\n[{0}] Finished\n", sw.Elapsed);
 			}
 
 			if (minset != null)
@@ -185,14 +189,14 @@ namespace PeachMinset
 					File.Copy(src, dst, true);
 				}
 
-				Console.WriteLine("\n[*] Finished\n");
+				Console.WriteLine("\n[{0}] Finished\n", sw.Elapsed);
 			}
 		}
 
 		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)
 		{
-			Console.Write("[{0}:{1}]   Converage trace of {2}...", 
-				count, totalCount, fileName);
+			Console.Write("[{0}] ({1}:{2}) Converage trace of {3}...", 
+				sw.Elapsed, count, totalCount, fileName);
 		}
 
 		void ms_TraceCompleted(Minset sender, string fileName, int count, int totalCount)
