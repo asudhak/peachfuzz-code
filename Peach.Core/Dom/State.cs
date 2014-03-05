@@ -31,10 +31,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using System.Xml.Serialization;
 
 using Peach.Core;
 
 using NLog;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
@@ -42,14 +44,19 @@ namespace Peach.Core.Dom
 	public delegate void StateFinishedEventHandler(State state);
 	public delegate void StateChangingStateEventHandler(State state, State toState);
 
-	[Serializable]
+	/// <summary>
+	/// The State element defines a sequence of Actions to perform.  Actions can cause a 
+	/// change to another State.  Such changes can occur dynamically based on content received or sent
+	/// by attaching python expressions to actions via the onStart/onComplete/when attributes.
+	/// </summary>
 	public class State : INamed
 	{
-		static int nameNum = 0;
-		public string _name = "Unknown State " + (++nameNum);
-		public NamedCollection<Action> actions = new NamedCollection<Action>();
+		protected Dictionary<string, object> scope = new Dictionary<string, object>();
 
-		public StateModel parent = null;
+		public State()
+		{
+			actions = new NamedCollection<Action>();
+		}
 
 		/// <summary>
 		/// State is starting to execute.
@@ -66,11 +73,38 @@ namespace Peach.Core.Dom
 		/// </summary>
 		public static event StateChangingStateEventHandler ChangingState;
 
-		public string name
-		{
-			get { return _name; }
-			set { _name = value; }
-		}
+		/// <summary>
+		/// The name of this state.
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string name { get; set; }
+
+		/// <summary>
+		/// Expression to run when action is starting
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string onStart { get; set; }
+
+		/// <summary>
+		/// Expression to run when action is completed
+		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string onComplete { get; set; }
+
+		/// <summary>
+		/// The actions contained in this state.
+		/// </summary>
+		[PluginElement("type", typeof(Action), Combine = true)]
+		[DefaultValue(null)]
+		public NamedCollection<Action> actions { get; set; }
+
+		/// <summary>
+		/// The state model that owns this state.
+		/// </summary>
+		public StateModel parent { get; set; }
 
 		/// <summary>
 		/// Has the state started?
@@ -110,10 +144,29 @@ namespace Peach.Core.Dom
 				ChangingState(this, toState);
 		}
 
+		protected virtual void RunScript(string expr)
+		{
+			if (!string.IsNullOrEmpty(expr))
+			{
+				Scripting.Exec(expr, scope);
+			}
+		}
+
 		public void Run(RunContext context)
 		{
 			try
 			{
+				// Setup scope for any scripting expressions
+				scope["context"] = context;
+				scope["Context"] = context;
+				scope["state"] = this;
+				scope["State"] = this;
+				scope["StateModel"] = parent;
+				scope["stateModel"] = parent;
+				scope["Test"] = parent.parent;
+				scope["test"] = parent.parent;
+				scope["self"] = this;
+
 				if (context.controlIteration && context.controlRecordingIteration)
 					context.controlRecordingStatesExecuted.Add(this);
 				else if (context.controlIteration)
@@ -128,8 +181,12 @@ namespace Peach.Core.Dom
 
 				OnStarting();
 
+				RunScript(onStart);
+
 				foreach (Action action in actions)
 					action.Run(context);
+
+				RunScript(onComplete);
 			}
 			catch
 			{

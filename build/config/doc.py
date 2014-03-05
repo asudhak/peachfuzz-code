@@ -18,7 +18,6 @@ def prepare(conf):
 def configure(conf):
 	env = conf.env
 
-	env['IS_MONO'] = 'False'
 	env.append_value('supported_features', [
 		'asciidoc',
 		'emit',

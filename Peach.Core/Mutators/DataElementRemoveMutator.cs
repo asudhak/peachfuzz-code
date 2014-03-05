@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Remove nodes from a data tree")]
+    [Mutator("DataElementRemoveMutator")]
+    [Description("Remove nodes from a data tree")]
     public class DataElementRemoveMutator : Mutator
     {
         // CTOR
@@ -62,7 +63,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj.isMutable && !(obj is Flag))
+            if (obj.isMutable && obj.parent != null && !(obj is Flag))
                 return true;
 
             return false;

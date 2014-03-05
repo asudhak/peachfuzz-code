@@ -57,7 +57,18 @@ namespace Peach.Core.Test.Publishers
 
 		public void SendRaw(IPAddress remote, int port = 5000)
 		{
-			Socket = new Socket(remote.AddressFamily, SocketType.Raw, ProtocolType.Pup);
+			try
+			{
+				Socket = new Socket(remote.AddressFamily, SocketType.Raw, ProtocolType.Pup);
+			}
+			catch (SocketException ex)
+			{
+				if (ex.SocketErrorCode == SocketError.AccessDenied)
+					Assert.Ignore("User doesn't have permission to use raw sockets.");
+
+				throw;
+			}
+
 			remoteEP = new IPEndPoint(remote, port);
 			RecvBuf = Encoding.ASCII.GetBytes("SendOnly!");
 			Socket.BeginSendTo(RecvBuf, 0, RecvBuf.Length, SocketFlags.None, remoteEP, new AsyncCallback(OnSend), null);

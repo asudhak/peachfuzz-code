@@ -25,7 +25,7 @@ how to create a waf file using the compat15 module:
 $ ./waf-light --tools=compat15 --prelude=$'\tfrom waflib.extras import compat15\n'
 
 Any kind of initialization is possible, though one may prefer the build system kit (folder build_system_kit):
-$ ./waf-light --make-waf --tools=compat15,/comp/waf/aba.py --prelude=$'\tfrom waflib.extras import compat15\n\tprint "ok"'
+$ ./waf-light --make-waf --tools=compat15,/comp/waf/aba.py --prelude=$'\tfrom waflib.extras import compat15\n\tprint("ok")'
 
 HOW TO TRY THE EXAMPLES
 -----------------------
@@ -46,5 +46,5 @@ $ git remote add code https://code.google.com/p/waf.docs/
 $ git push code
 
 ---------------------------
-Thomas Nagy, 2012 (ita)
+Thomas Nagy, 2013 (ita)
 

@@ -10,12 +10,14 @@ using NLog;
 namespace Peach.Core.Publishers
 {
     [Publisher("SerialPort", true)]
-    [Parameter("PortName", typeof(string), "Com interface for the device to connect to/")]
+    [Parameter("PortName", typeof(string), "Com interface for the device to connect to")]
     [Parameter("Baudrate", typeof(int), "The serial baud rate.")]
     [Parameter("Parity", typeof(Parity), "The parity-checking protocol.")]
     [Parameter("DataBits", typeof(int), "Standard length of data bits per byte.")]
     [Parameter("StopBits", typeof(StopBits), "The standard number of stopbits per byte.")]
     [Parameter("Handshake", typeof(Handshake), "The handshaking protocol for serial port transmission of data.", "None")]
+    [Parameter("DtrEnable", typeof(bool), "Enables the Data Terminal Ready (DTR) signal during serial communication.", "false")]
+    [Parameter("RtsEnable", typeof(bool), "Enables the Request To Transmit (RTS) signal during serial communication.", "false")]
     [Parameter("Timeout", typeof(int), "How many milliseconds to wait for data (default 3000)", "3000")]
     public class SerialPortPublisher : BufferedStreamPublisher
     {
@@ -28,6 +30,8 @@ namespace Peach.Core.Publishers
         public int DataBits { get; protected set; }
         public StopBits StopBits { get; protected set; }
         public Handshake Handshake { get; protected set; }
+        public bool DtrEnable { get; protected set; }
+        public bool RtsEnable { get; protected set; }
 
         protected SerialPort _serial;
 
@@ -44,6 +48,8 @@ namespace Peach.Core.Publishers
             {
                 _serial = new SerialPort(PortName, Baudrate, Parity, DataBits, StopBits);
                 _serial.Handshake = Handshake;
+                _serial.DtrEnable = DtrEnable;
+                _serial.RtsEnable = RtsEnable;
                 _serial.Open();
                 _clientName = _serial.PortName;
                 _client = _serial.BaseStream;

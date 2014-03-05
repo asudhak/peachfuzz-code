@@ -4,11 +4,18 @@ def make_bld(tgt, variant):
 	clone = bld.clone_env(variant)
 	if clone is None:
 		return
+
+	flags = clone['CPPFLAGS_debug']
+	clone['CPPFLAGS_debug'] = [ x for x in flags if not x.startswith('/MT') ]
+	clone['DEFINES_debug'] = []
+
 	bld(
-		features = 'cxx cxxshlib pin release',
-		source = 'bblocks.cpp',
+		features = 'cxx cxxshlib pin',
+		source = 'bblocks.cpp compat.cpp',
+		includes = '.',
 		target=tgt,
 		env=clone,
+		ide_path='Peach.Core.Analysis.Pin.BasicBlocks',
 	)
 
 if bld.env.DEST_OS is 'win32':

@@ -14,8 +14,11 @@ inst = 'output'
 # How deep to scan for wscript_build files
 maxdepth = 1
 
-# appname should be the name of this build project
+# appname should be the name of this build project, eg: 'Peach'
 appname = SETME
+
+# peach should be the path to the Peach submodule, eg: '.'
+peach = PEACH_SUBMODULE_PATH
 
 # Returns true if the variant should be supported
 def supported_variant(name):

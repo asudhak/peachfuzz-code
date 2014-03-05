@@ -4,22 +4,28 @@ def make_bld(tgt, variant):
 	clone = bld.clone_env(variant)
 	if clone is None:
 		return
+
+	flags = clone['CPPFLAGS_debug']
+	clone['CPPFLAGS_debug'] = [ x for x in flags if not x.startswith('/MT') ]
+	clone['DEFINES_debug'] = []
+
 	bld(
-		features = 'cxx cxxshlib pin release',
+		features = 'cxx cxxshlib pin',
 		source = 'cedge.cpp',
 		target=tgt,
 		env=clone,
+		ide_path='Peach.Core.Analysis.Pin.CoveredEdge',
 	)
 
 if bld.env.DEST_OS is 'win32':
-	make_bld('cedge32', 'win_x86_release')
+	make_bld('cedge32', 'win_x86_%s' % bld.env.VARIANT)
 	if bld.env.SUBARCH is 'x64':
-		make_bld('cedge64', 'win_x64_release')
+		make_bld('cedge64', 'win_x64_%s' % bld.env.VARIANT)
 
 elif bld.env.DEST_OS is 'linux':
-	make_bld('cedge32', 'linux_x86_release')
+	make_bld('cedge32', 'linux_x86_%s' % bld.env.VARIANT)
 	if bld.env.SUBARCH is 'x86_64':
-		make_bld('cedge64', 'linux_x86_64_release')
+		make_bld('cedge64', 'linux_x86_64_%s' % bld.env.VARIANT)
 
 else:
 	make_bld('cedge', bld.variant)

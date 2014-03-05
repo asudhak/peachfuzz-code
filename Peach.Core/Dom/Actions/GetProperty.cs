@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom.Actions
 {
@@ -9,6 +11,8 @@ namespace Peach.Core.Dom.Actions
 		/// <summary>
 		/// Property to operate on
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string property { get; set; }
 
 		/// <summary>

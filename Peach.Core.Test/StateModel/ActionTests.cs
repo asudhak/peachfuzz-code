@@ -677,9 +677,8 @@ namespace Peach.Core.Test.StateModel
 
 			Assert.AreEqual(2, dom.tests[0].stateModel.states.Count);
 
-			foreach (var kv in dom.tests[0].stateModel.states)
+			foreach (var state in dom.tests[0].stateModel.states)
 			{
-				var state = kv.Value;
 				Assert.AreEqual(2, state.actions.Count);
 				Assert.AreEqual("Action", state.actions[0].name);
 				Assert.AreEqual("Action_1", state.actions[1].name);

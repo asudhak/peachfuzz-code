@@ -55,7 +55,7 @@ You also need to edit your sources accordingly:
         self.includes = list(incs)
 
 Note: another tool provides Qt processing that does not require
-.moc includes, see ``playground/slow_qt/``self.
+.moc includes, see 'playground/slow_qt/'.
 
 A few options (--qt{dir,bin,...}) and environment variables
 (QT4_{ROOT,DIR,MOC,UIC,XCOMPILE}) allow finer tuning of the tool,
@@ -99,9 +99,9 @@ EXT_QT4 = ['.cpp', '.cc', '.cxx', '.C']
 File extensions of C++ files that may require a .moc processing
 """
 
-QT4_LIBS = "QtCore QtGui QtUiTools QtNetwork QtOpenGL QtSql QtSvg QtTest QtXml QtXmlPatterns QtWebKit Qt3Support QtHelp QtScript QtDeclarative"
+QT4_LIBS = "QtCore QtGui QtUiTools QtNetwork QtOpenGL QtSql QtSvg QtTest QtXml QtXmlPatterns QtWebKit Qt3Support QtHelp QtScript QtDeclarative QtDesigner"
 
-class qxx(cxx.cxx):
+class qxx(Task.classes['cxx']):
 	"""
 	Each C++ file can have zero or several .moc files to create.
 	They are known only when the files are scanned (preprocessor)
@@ -115,14 +115,21 @@ class qxx(cxx.cxx):
 		self.moc_done = 0
 
 	def scan(self):
-		"""Re-use the C/C++ scanner, but remove the moc files from the dependencies"""
+		"""
+		Re-use the C/C++ scanner, but remove the moc files from the dependencies
+		since the .cpp file already depends on all the headers
+		"""
 		(nodes, names) = c_preproc.scan(self)
-		# for some reasons (variants) the moc node may end in the list of node deps
+		lst = []
 		for x in nodes:
+			# short lists, no need to use sets
 			if x.name.endswith('.moc'):
-				nodes.remove(x)
-				names.append(x.path_from(self.inputs[0].parent.get_bld()))
-		return (nodes, names)
+				s = x.path_from(self.inputs[0].parent.get_bld())
+				if s not in names:
+					names.append(s)
+			else:
+				lst.append(x)
+		return (lst, names)
 
 	def runnable_status(self):
 		"""
@@ -138,6 +145,34 @@ class qxx(cxx.cxx):
 					return Task.ASK_LATER
 			self.add_moc_tasks()
 			return Task.Task.runnable_status(self)
+
+	def create_moc_task(self, h_node, m_node):
+		"""
+		If several libraries use the same classes, it is possible that moc will run several times (Issue 1318)
+		It is not possible to change the file names, but we can assume that the moc transformation will be identical,
+		and the moc tasks can be shared in a global cache.
+
+		The defines passed to moc will then depend on task generator order. If this is not acceptable, then
+		use the tool slow_qt4 instead (and enjoy the slow builds... :-( )
+		"""
+		try:
+			moc_cache = self.generator.bld.moc_cache
+		except AttributeError:
+			moc_cache = self.generator.bld.moc_cache = {}
+
+		try:
+			return moc_cache[h_node]
+		except KeyError:
+			tsk = moc_cache[h_node] = Task.classes['moc'](env=self.env, generator=self.generator)
+			tsk.set_inputs(h_node)
+			tsk.set_outputs(m_node)
+
+			# direct injection in the build phase (safe because called from the main thread)
+			gen = self.generator.bld.producer
+			gen.outstanding.insert(0, tsk)
+			gen.total += 1
+
+			return tsk
 
 	def add_moc_tasks(self):
 		"""
@@ -206,15 +241,7 @@ class qxx(cxx.cxx):
 			bld.node_deps[(self.inputs[0].parent.abspath(), m_node.name)] = h_node
 
 			# create the task
-			task = Task.classes['moc'](env=self.env, generator=self.generator)
-			task.set_inputs(h_node)
-			task.set_outputs(m_node)
-
-			# direct injection in the build phase (safe because called from the main thread)
-			gen = bld.producer
-			gen.outstanding.insert(0, task)
-			gen.total += 1
-
+			task = self.create_moc_task(h_node, m_node)
 			moctasks.append(task)
 
 		# remove raw deps except the moc files to save space (optimization)
@@ -225,14 +252,7 @@ class qxx(cxx.cxx):
 		for d in lst:
 			name = d.name
 			if name.endswith('.moc'):
-				task = Task.classes['moc'](env=self.env, generator=self.generator)
-				task.set_inputs(bld.node_deps[(self.inputs[0].parent.abspath(), name)]) # 1st element in a tuple
-				task.set_outputs(d)
-
-				gen = bld.producer
-				gen.outstanding.insert(0, task)
-				gen.total += 1
-
+				task = self.create_moc_task(bld.node_deps[(self.inputs[0].parent.abspath(), name)], d)
 				moctasks.append(task)
 
 		# simple scheduler dependency: run the moc task before others
@@ -335,7 +355,7 @@ def apply_qt4(self):
 				lst.append('-' + flag[1:])
 			else:
 				lst.append(flag)
-	self.env['MOC_FLAGS'] = lst
+	self.env.append_value('MOC_FLAGS', lst)
 
 @extension(*EXT_QT4)
 def cxx_hook(self, node):
@@ -422,6 +442,7 @@ def configure(self):
 	"""
 	self.find_qt4_binaries()
 	self.set_qt4_libs_to_check()
+	self.set_qt4_defines()
 	self.find_qt4_libraries()
 	self.add_qt4_rpath()
 	self.simplify_qt4_libs()
@@ -640,7 +661,7 @@ def simplify_qt4_libs(self):
 def add_qt4_rpath(self):
 	# rpath if wanted
 	env = self.env
-	if Options.options.want_rpath:
+	if getattr(Options.options, 'want_rpath', False):
 		def process_rpath(vars_, coreval):
 			for d in vars_:
 				var = d.upper()
@@ -665,6 +686,15 @@ def set_qt4_libs_to_check(self):
 	if not hasattr(self, 'qt4_vars_debug'):
 		self.qt4_vars_debug = [a + '_debug' for a in self.qt4_vars]
 	self.qt4_vars_debug = Utils.to_list(self.qt4_vars_debug)
+
+@conf
+def set_qt4_defines(self):
+	if sys.platform != 'win32':
+		return
+	for x in self.qt4_vars:
+		y = x[2:].upper()
+		self.env.append_unique('DEFINES_%s' % x.upper(), 'QT_%s_LIB' % y)
+		self.env.append_unique('DEFINES_%s_DEBUG' % x.upper(), 'QT_%s_LIB' % y)
 
 def options(opt):
 	"""

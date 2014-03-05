@@ -38,6 +38,7 @@
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // Unreferenced formal parameter
+#pragma warning(disable: 4244) // Conversion has possible loss of data
 #pragma warning(disable: 4245) // Signed/unsigned mismatch
 #pragma warning(disable: 4512) // Assignment operator could not be generated
 #endif
@@ -54,22 +55,7 @@
 #include <string>
 
 #include "uthash.h"
-
-#if 0
-
-extern "C"
-{
-	void __stdcall OutputDebugStringA(const char* lpOutputString);
-}
-
-#else
-
-void OutputDebugStringA(const char* str)
-{
-	UNUSED_ARG(str);
-}
-
-#endif
+#include "compat.h"
 
 #define DBG(x) do { if (KnobDebug) fileDbg.Dbg x; } while (0)
 
@@ -132,17 +118,20 @@ public:
 		, fileName(MakeFileName(fullName))
 		, lowAddress(IMG_LowAddress(img))
 		, highAddress(IMG_HighAddress(img))
-		, excluded(false)
 		, conflict(NULL)
 		, key(IMG_Id(img))
 	{
+	}
+
+	const ImageRec* Next() const
+	{
+		return (const ImageRec*)hh.next;
 	}
 
 	const std::string fullName;    // Full absolute path to file
 	const std::string fileName;    // Just the name of the file
 	const ADDRINT     lowAddress;
 	const ADDRINT     highAddress;
-	bool              excluded;
 	const ImageName*  conflict;
 
 	size_t            key;
@@ -158,29 +147,21 @@ ImageName::ImageName(const ImageRec* pImg)
 
 class BlockRec : NonCopyable
 {
-private:
-	static std::string MakeTrace(const ImageRec& img, ADDRINT addr)
-	{
-		if (img.excluded)
-			return "";
-
-		std::stringstream ss;
-		ss << img.fileName << ": " << (addr - img.lowAddress) << std::endl;
-		return ss.str();
-	}
-
 public:
 	typedef size_t key_type;
 
-	BlockRec(const ImageRec& img, ADDRINT addr)
-		: trace(MakeTrace(img, addr))
-		, fileName(img.fileName)
-		, countRun(0)
+	BlockRec(ADDRINT addr)
+		: countRun(0)
 		, countAdd(1)
-		, excluded(img.excluded)
-		, existing(false)
 		, key(addr)
 	{
+	}
+
+	std::string MakeTrace(const ImageRec& img) const
+	{
+		std::stringstream ss;
+		ss << img.fileName << ": " << (key - img.lowAddress) << std::endl;
+		return ss.str();
 	}
 
 	const BlockRec* Next() const
@@ -188,12 +169,8 @@ public:
 		return (const BlockRec*)hh.next;
 	}
 
-	const std::string  trace;    // Name of trace
-	const std::string& fileName; // Name of image address is part of
 	size_t             countRun; // Count of BlockExecuted()
 	size_t             countAdd; // Count of Trace()
-	bool               excluded;
-	bool               existing;
 	size_t             key;
 	UT_hash_handle     hh;
 };
@@ -208,6 +185,11 @@ public:
 		, keylen(value.size())
 		, key(value.c_str())
 	{
+	}
+
+	const StringRec* Next() const
+	{
+		return (const StringRec*)hh.next;
 	}
 
 	const std::string value;
@@ -246,6 +228,11 @@ public:
 	void Add(TVal* value)
 	{
 		AddImpl(value->key, value);
+	}
+
+	void Remove(TVal* value)
+	{
+		HASH_DEL(table, value);
 	}
 
 	size_t Count() const
@@ -353,8 +340,9 @@ public:
 			buf[len] = '\0';
 
 			fwrite(buf, 1, len, m_pFile);
+			fflush(m_pFile);
 
-			OutputDebugStringA(buf);
+			DebugWrite(buf);
 		}
 
 
@@ -370,17 +358,27 @@ typedef HashTable<BlockRec> Blocks_t;
 typedef HashTable<ImageRec> Images_t;
 typedef HashTable<ImageName> ImageNames_t;
 
-static Strings_t excludedImages;
-static Strings_t existingTraces;
 static ImageNames_t includedImages;
 static Blocks_t blocks;
 static Images_t images;
 
-File fileOut;
-File fileExisting;
 File fileDbg;
+INT pid = 0;
 
+KNOB<std::string> KnobOutput(KNOB_MODE_WRITEONCE,  "pintool", "o", "bblocks", "specify base file name for output");
 KNOB<BOOL> KnobDebug(KNOB_MODE_WRITEONCE, "pintool", "debug", "0", "Enable debug logging.");
+KNOB<BOOL> KnobCpuKill(KNOB_MODE_WRITEONCE, "pintool", "cpukill", "0", "Kill process when cpu becomes idle.");
+
+const ImageRec* FindImageByAddr(ADDRINT addr)
+{
+	for (const ImageRec* it = images.Head(); it != NULL; it = it->Next())
+	{
+		if (it->lowAddress <= addr && addr <= it->highAddress)
+			return it;
+	}
+
+	return NULL;
+}
 
 bool ReadAllLines(const std::string& fileName, Strings_t& lines)
 {
@@ -411,15 +409,12 @@ INT32 Usage()
 }
 
 // Called whenever a basic block is executed
-VOID PIN_FAST_ANALYSIS_CALL BlockExecuted(VOID* v)
+VOID PIN_FAST_ANALYSIS_CALL BlockExecuted(BlockRec* pBlock)
 {
-	BlockRec* pBlock = reinterpret_cast<BlockRec*>(v);
+	// Keep conditionals and lookups out of this
+	// callback so pin can inline it
 
-	if (pBlock->countRun++ == 0)
-	{
-		fileOut.Write(pBlock->trace);
-		fileExisting.Write(pBlock->trace);
-	}
+	pBlock->countRun++;
 }
 
 // Called every time a new image is loaded
@@ -428,16 +423,11 @@ VOID Image(IMG img, VOID* v)
 	UNUSED_ARG(v);
 
 	ImageRec* pImg = new ImageRec(img);
-	pImg->excluded = !!excludedImages.Find(pImg->fileName);
 	pImg->conflict = includedImages.Find(pImg->fileName);
 
 	images.Add(pImg);
 
-	if (pImg->excluded)
-	{
-		DBG(("Excluding image: %s", pImg->fullName.c_str()));
-	}
-	else if (pImg->conflict)
+	if (pImg->conflict)
 	{
 		const ImageRec* pOther = pImg->conflict->record;
 
@@ -459,7 +449,8 @@ VOID Image(IMG img, VOID* v)
 	else
 	{
 		includedImages.Add(new ImageName(pImg));
-		DBG(("Loaded image: %s", pImg->fullName.c_str()));
+		DBG(("Loaded image: %s [%llu -> %llu]", pImg->fullName.c_str(),
+			pImg->lowAddress, pImg->highAddress));
 	}
 }
 
@@ -484,37 +475,24 @@ VOID Trace(TRACE trace, VOID *v)
 		BlockRec* pBlock = blocks.Find(addr);
 		if (pBlock != NULL)
 		{
-			if (!pBlock->existing && !pBlock->excluded)
-			{
-				DBG(("Ignoring duplicate trace for basic block '%s: %llu'",
-					pBlock->fileName.c_str(), (unsigned long long)pBlock->key));
-			}
+			//if (!pBlock->existing && !pBlock->excluded)
+			//{
+			//	DBG(("Ignoring duplicate trace for basic block '%s: %llu'",
+			//		pBlock->fileName.c_str(), (unsigned long long)pBlock->key));
+			//}
 
 			pBlock->countAdd++;
 			continue;
 		}
 
-		// If image could not be resolved, ignore
-		IMG img = IMG_FindByAddress(addr);
-		if (!img.is_valid())
-		{
-			DBG(("Could not get image for basic block: %llu", (unsigned long long)addr));
-			continue;
-		}
+		// We can't resolve the image this address belongs to,
+		// because there is a chance it has not been loaded yet.
 
 		// Build a record for tracking this basic block
-		ImageRec* pImg = images.Find(IMG_Id(img));
-		pBlock = new BlockRec(*pImg, addr);
-
-		// Check if trace for block already exists
-		pBlock->existing = !!existingTraces.Find(pBlock->trace);
+		pBlock = new BlockRec(addr);
 
 		// Ensure we are tracking this basic block record
 		blocks.Add(pBlock);
-
-		// If trace is already captured or is excluded, ignore
-		if (pBlock->existing || pBlock->excluded)
-			continue;
 
 		// Record basic block when it is executed
 		BBL_InsertCall(
@@ -533,8 +511,13 @@ VOID Start(VOID* v)
 {
 	UNUSED_ARG(v);
 
-	std::ofstream fout("bblocks.pid", std::ofstream::binary | std::ofstream::trunc);
-	fout << PIN_GetPid();
+	pid = PIN_GetPid();
+
+	std::string pidFile = KnobOutput.Value() + ".pid";
+	std::ofstream fout(pidFile.c_str(), std::ofstream::binary | std::ofstream::trunc);
+	fout << pid;
+
+	DBG(("Application started, pid: %d", pid));
 }
 
 // Called when the application exits
@@ -543,33 +526,83 @@ VOID Fini(INT32 code, VOID *v)
 	UNUSED_ARG(code);
 	UNUSED_ARG(v);
 
-	unsigned long existing = 0, excluded = 0, dupes = 0, run = 0;
+	// Ensure exit is happening on the parent pid
+	INT thisPid = PIN_GetPid();
+	if (pid != thisPid)
+	{
+		DBG(("Child application finished, pid: %d", PIN_GetPid()));
+		return;
+	}
+
+	// Open file to log new traces to
+	File fileOut;
+	const std::string& outFile = KnobOutput.Value();
+	fileOut.Open(outFile + ".out", "wb");
+
+	unsigned long unresolved = 0, dupes = 0, run = 0;
 
 	for (const BlockRec* it = blocks.Head(); it != NULL; it = it->Next())
 	{
-		if (it->existing)
-			++existing;
-
-		if (it->excluded)
-			++excluded;
-
 		if (it->countAdd > 1)
 			++dupes;
 
 		if (it->countRun > 0)
+		{
 			++run;
+
+			const ImageRec* pImg = FindImageByAddr(it->key);
+
+			if (NULL == pImg)
+			{
+				DBG(("Could not get image for basic block: %llu", (unsigned long long)it->key));
+				++unresolved;
+			}
+			else
+			{
+				fileOut.Write(it->MakeTrace(*pImg));
+			}
+		}
 	}
 
-	DBG(("Finished:"));
+	DBG(("Application finished, pid: %d", PIN_GetPid()));
 	DBG((" All Images     : %lu", (unsigned long)images.Count()));
-	DBG((" Excluded Images: %lu",(unsigned long) excludedImages.Count()));
-	DBG((" Included Images: %lu", (unsigned long)includedImages.Count()));
-	DBG((" Existing Traces: %lu", (unsigned long)existingTraces.Count()));
 	DBG((" Basic Blocks   : %lu", (unsigned long)blocks.Count()));
-	DBG(("  Existing      : %lu", existing));
-	DBG(("  Excluded      : %lu", excluded));
-	DBG(("  Duplicates    : %lu", dupes));
 	DBG(("  Executed      : %lu", run));
+	DBG(("  Unresolved    : %lu", unresolved));
+	DBG(("  Duplicates    : %lu", dupes));
+}
+
+// Internal worker thread
+VOID ThreadProc(VOID *v)
+{
+	UNUSED_ARG(v);
+
+	uint64_t oldTicks = 0, newTicks = 0;
+	bool check = false;
+	int pid = PIN_GetPid();
+
+	while (!PIN_IsProcessExiting())
+	{
+		if (!check)
+			DBG(("Starting CPU thread for pid: %d", pid));
+
+		newTicks = GetProcessTicks(pid);
+
+		if (check && oldTicks == newTicks)
+		{
+			DBG(("Detected idle CPU after %d ticks, exiting proces", (unsigned long)oldTicks));
+			PIN_ExitApplication(0);
+			break;
+		}
+
+		oldTicks = newTicks;
+		check = true;
+
+		PIN_Sleep(200);
+	}
+
+	DBG(("CPU monitor thread exiting"));
+	PIN_ExitThread(0);
 }
 
 int main(int argc, char* argv[])
@@ -581,37 +614,24 @@ int main(int argc, char* argv[])
 	if (PIN_Init(argc, argv))
 		return Usage();
 
-	{
-		Strings_t foo;
-		foo.Add(new StringRec("Hello"));
-
-		std::stringstream ss;
-		ss << "He" << "llo";
-		std::string tgt = ss.str();
-
-		StringRec* pRec = foo.Find(tgt);
-		if (pRec == NULL)
-			return 1;
-	}
-
-	// Read images to ignore
-	ReadAllLines("bblocks.exclude", excludedImages);
-
-	// If we can read existing traces, open file for updates with new traces
-	if (ReadAllLines("bblocks.existing", existingTraces))
-		fileExisting.Open("bblocks.existing", "ab");
-
-	// Open file to log new traces to
-	fileOut.Open("bblocks.out", "wb");
+	// Get the base name to use for all outputs
+	const std::string& outFile = KnobOutput.Value();
 
 	if (KnobDebug)
-		fileDbg.Open("bblocks.log", "wb");
+		fileDbg.Open(outFile + ".log", "wb");
+
+	// Must be called before IMG_AddInstrumentFunction
+	PIN_InitSymbols();
 
 	// Register callbacks
 	IMG_AddInstrumentFunction(Image, NULL);
 	TRACE_AddInstrumentFunction(Trace, NULL);
 	PIN_AddApplicationStartFunction(Start, NULL);
 	PIN_AddFiniFunction(Fini, NULL);
+
+	// Create internal thread to monitor cpu usage
+	if (KnobCpuKill.Value())
+		PIN_SpawnInternalThread(ThreadProc, NULL, 0, NULL);
 
 	// Start program, never returns
 	PIN_StartProgram();

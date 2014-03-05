@@ -532,7 +532,7 @@ namespace Peach.Core.Debuggers.WindowsSystem
 				if (pMem != IntPtr.Zero)
 				{
 					uint maxSize = 256;
-					uint size = UnsafeMethods.GetMappedFileName(
+					UnsafeMethods.GetMappedFileName(
 						UnsafeMethods.GetCurrentProcess(),
 						pMem, ref pszFilename, maxSize);
 

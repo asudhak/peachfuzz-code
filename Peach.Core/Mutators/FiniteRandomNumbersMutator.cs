@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Produce a finite number of random numbers for each <Number> element")]
+    [Mutator("FiniteRandomNumbersMutator")]
+    [Description("Produce a finite number of random numbers for each <Number> element")]
     [Hint("FiniteRandomNumbersMutator-N", "Gets N by checking node for hint, or returns default (5000).")]
     public class FiniteRandomNumbersMutator : Mutator
     {
@@ -113,6 +114,10 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
+            // Ignore numbers <= 8 bits, they will be mutated with the
+            // NumericalEdgeCaseMutator
+
+
             if (obj is Number && obj.isMutable)
                 if (((Number)obj).lengthAsBits > 8)
                     return true;

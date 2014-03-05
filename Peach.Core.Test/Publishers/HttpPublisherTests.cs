@@ -28,7 +28,14 @@ namespace Peach.Core.Test.Publishers
 		public void Stop()
 		{
 			this.stop = true;
-			listener.Stop();
+
+			try
+			{
+				listener.Stop();
+			}
+			catch
+			{
+			}
 		}
 
 		// This example requires the System and System.Net namespaces. 

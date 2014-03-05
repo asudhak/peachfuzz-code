@@ -73,7 +73,6 @@ namespace Peach.Core.Agent.Monitors
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
-		string _name = null;
 		string _commandLine = null;
 		string _processName = null;
 		string _kernelConnectionString = null;
@@ -108,8 +107,6 @@ namespace Peach.Core.Agent.Monitors
 		public WindowsDebuggerHybrid(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
-			_name = name;
-
 			//var color = Console.ForegroundColor;
 			if (!Environment.Is64BitProcess && Environment.Is64BitOperatingSystem)
 			{
@@ -255,7 +252,9 @@ namespace Peach.Core.Agent.Monitors
 			dbgPaths.Add("Debugging Tools for Windows (x86)");
 			dbgPaths.Add("Windows Kits\\8.0\\Debuggers\\x64");
 			dbgPaths.Add("Windows Kits\\8.0\\Debuggers\\x86");
-
+			dbgPaths.Add("Windows Kits\\8.1\\Debuggers\\x64");
+			dbgPaths.Add("Windows Kits\\8.1\\Debuggers\\x86");
+			
 			foreach (string path in pgPaths)
 			{
 				foreach (string dpath in dbgPaths)
@@ -552,13 +551,31 @@ namespace Peach.Core.Agent.Monitors
 
 				// Launch the server process
 				_debuggerProcess = new System.Diagnostics.Process();
+
 				_debuggerProcess.StartInfo.CreateNoWindow = true;
 				_debuggerProcess.StartInfo.UseShellExecute = false;
 				_debuggerProcess.StartInfo.Arguments = _debuggerChannelName;
 				_debuggerProcess.StartInfo.FileName = Path.Combine(
 					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 					"Peach.Core.WindowsDebugInstance.exe");
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.EnableRaisingEvents = true;
+					_debuggerProcess.StartInfo.Arguments += " --debug";
+					_debuggerProcess.OutputDataReceived += _debuggerProcess_OutputDataReceived;
+					_debuggerProcess.ErrorDataReceived += _debuggerProcess_ErrorDataReceived;
+					_debuggerProcess.StartInfo.RedirectStandardError = true;
+					_debuggerProcess.StartInfo.RedirectStandardOutput = true;
+				}
+
 				_debuggerProcess.Start();
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.BeginErrorReadLine();
+					_debuggerProcess.BeginOutputReadLine();
+				}
 
 				// Let the process get started.
 				Thread.Sleep(2000);
@@ -638,7 +655,24 @@ namespace Peach.Core.Agent.Monitors
 				_debuggerProcess.StartInfo.FileName = Path.Combine(
 					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 					"Peach.Core.WindowsDebugInstance.exe");
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.EnableRaisingEvents = true;
+					_debuggerProcess.StartInfo.Arguments += " --debug";
+					_debuggerProcess.OutputDataReceived += _debuggerProcess_OutputDataReceived;
+					_debuggerProcess.ErrorDataReceived += _debuggerProcess_ErrorDataReceived;
+					_debuggerProcess.StartInfo.RedirectStandardError = true;
+					_debuggerProcess.StartInfo.RedirectStandardOutput = true;
+				}
+
 				_debuggerProcess.Start();
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.BeginErrorReadLine();
+					_debuggerProcess.BeginOutputReadLine();
+				}
 			}
 
 			_debuggerProcessUsage++;
@@ -698,6 +732,18 @@ namespace Peach.Core.Agent.Monitors
 			}
 
 			_debugger.StartDebugger();
+		}
+
+		void _debuggerProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(e.Data))
+				logger.Debug(e.Data);
+		}
+
+		void _debuggerProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(e.Data))
+				logger.Debug(e.Data);
 		}
 
 		protected void _FinishDebugger()

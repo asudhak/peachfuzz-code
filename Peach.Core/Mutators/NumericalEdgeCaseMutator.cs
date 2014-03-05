@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
+    [Mutator("NumericalEdgeCaseMutator")]
+    [Description("This is a straight up generation class. Produces values that have nothing to do with defaultValue")]
     [Hint("NumericalEdgeCaseMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class NumericalEdgeCaseMutator : Mutator
     {
@@ -99,7 +100,15 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues()
         {
-            if (!isULong)
+            if (size <= 8)
+            {
+                // For <= 8bits, just use every available number
+                List<long> listVals = new List<long>();
+                for (long i = minValue; i <= (long)maxValue; ++i)
+                    listVals.Add(i);
+                values[size] = listVals.ToArray();
+            }
+            else if (!isULong)
             {
                 // generate numbers
                 long[] edges8 = NumberGenerator.GenerateBadNumbers(8, n);

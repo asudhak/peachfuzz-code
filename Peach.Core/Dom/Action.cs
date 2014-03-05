@@ -29,6 +29,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 using NLog;
 
@@ -38,7 +40,7 @@ namespace Peach.Core.Dom
 	/// Used to indicate a class is a valid Action and 
 	/// provide it's invoking name used in the Pit XML file.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 	public class ActionAttribute : PluginAttribute
 	{
 		public ActionAttribute(string name)
@@ -53,10 +55,40 @@ namespace Peach.Core.Dom
 	/// <summary>
 	/// Performs an Action such as sending output, calling a method, etc.
 	/// </summary>
-	[Serializable]
 	public abstract class Action : INamed
 	{
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
+		[NonSerialized]
+		protected Dictionary<string, object> scope = new Dictionary<string, object>();
+
+		[NonSerialized]
+		private State _parent;
+
+		#region Schema Elements
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("DataModel")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.DataModel schemaModel { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Data")]
+		[DefaultValue(null)]
+		public List<Peach.Core.Xsd.Data> schemaData { get; set; }
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Ocl")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.OclRef schemaOcl { get; set; }
+
+		#endregion
 
 		#region Common Action Properties
 
@@ -82,26 +114,36 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Name of this action
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string name { get; set; }
 
 		/// <summary>
 		/// Name of publisher to use
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string publisher { get; set; }
 
 		/// <summary>
 		/// Only run action when expression is true
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string when { get; set; }
 
 		/// <summary>
 		/// Expression to run when action is starting
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string onStart { get; set; }
 
 		/// <summary>
 		/// Expression to run when action is completed
 		/// </summary>
+		[XmlAttribute]
+		[DefaultValue(null)]
 		public string onComplete { get; set; }
 
 		#endregion
@@ -121,7 +163,17 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The state this action belongs to
 		/// </summary>
-		public State parent { get; set; }
+		public State parent
+		{
+			get
+			{
+				return _parent;
+			}
+			set
+			{
+				_parent = value;
+			}
+		}
 
 		/// <summary>
 		/// Provides backwards compatibility to the unit tests.
@@ -164,12 +216,7 @@ namespace Peach.Core.Dom
 		{
 			if (!string.IsNullOrEmpty(expr))
 			{
-				Dictionary<string, object> state = new Dictionary<string, object>();
-				state["action"] = this;
-				state["state"] = this.parent;
-				state["self"] = this;
-
-				Scripting.EvalExpression(expr, state);
+				Scripting.Exec(expr, scope);
 			}
 		}
 
@@ -233,19 +280,21 @@ namespace Peach.Core.Dom
 		{
 			logger.Trace("Run({0}): {1}", name, GetType().Name);
 
+			// Setup scope for any scripting expressions
+			scope["context"] = context;
+			scope["Context"] = context;
+			scope["action"] = this;
+			scope["Action"] = this;
+			scope["state"] = parent;
+			scope["State"] = parent;
+			scope["StateModel"] = parent.parent;
+			scope["stateModel"] = parent.parent;
+			scope["Test"] = parent.parent.parent;
+			scope["test"] = parent.parent.parent;
+			scope["self"] = this;
+
 			if (when != null)
 			{
-				Dictionary<string, object> scope = new Dictionary<string, object>();
-				scope["context"] = context;
-				scope["Context"] = context;
-				scope["action"] = this;
-				scope["Action"] = this;
-				scope["state"] = parent;
-				scope["State"] = parent;
-				scope["StateModel"] = parent.parent;
-				scope["Test"] = parent.parent.parent;
-				scope["self"] = this;
-
 				object value = Scripting.EvalExpression(when, scope);
 				if (!(value is bool))
 				{

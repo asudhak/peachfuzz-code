@@ -35,40 +35,58 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.Xml;
 using System.Xml.XPath;
+using System.ComponentModel;
 
 namespace Peach.Core.Dom
 {
 	/// <summary>
-	/// A dom element to hold Agent configuration information
+	/// Configure a local or remote agent. Agents can perform various tasks during
+	/// a fuzzing run. This element must include at least one Monitor child.
 	/// </summary>
 	[Serializable]
+	// TODO: Old XSD defines <PythonPath> and <Import> children
 	public class Agent : INamed
 	{
+		public Agent()
+		{
+			platform = Platform.OS.All;
+			monitors = new NamedCollection<Monitor>();
+		}
+
 		/// <summary>
-		/// Name for agent
+		/// Name of agent. May not contain spaces or periods (.).
 		/// </summary>
+		[XmlAttribute]
 		public string name { get; set; }
 
 		/// <summary>
-		/// URL of agent
+		/// Specify location of agent. Value is "&lt;channel%gt;://&lt;hostname&gt;" where
+		/// &lt;channel%gt; specifies the remoting channel (tcp or local) and
+		/// &lt;hostname%gt; specifies the hostname/ipaddress of the agent.
+		/// If this attribute is not set a local agent will be used.
 		/// </summary>
-		public string url;
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string location { get; set; }
 
 		/// <summary>
-		/// Optional password for agent
+		/// Password to the remote agent if needed.
 		/// </summary>
-		public string password;
+		[XmlAttribute]
+		[DefaultValue(null)]
+		public string password { get; set; }
 
 		/// <summary>
-		/// Limit Agent to specific platform.  Platform of unknown is 
-		/// any OS.
+		/// Limit Agent to specific platform.
 		/// </summary>
-		public Platform.OS platform = Platform.OS.All;
+		public Platform.OS platform { get; set; }
 
 		/// <summary>
 		/// List of monitors Agent should spin up.
 		/// </summary>
-		public NamedCollection<Monitor> monitors = new NamedCollection<Monitor>();
+		[PluginElement("class", typeof(Peach.Core.Agent.Monitor), Named = true)]
+		[DefaultValue(null)]
+		public NamedCollection<Monitor> monitors { get; set; }
 	}
 }
 

@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Duplicate a node's value starting from 1x - 50x")]
+    [Mutator("DataElementDuplicateMutator")]
+    [Description("Duplicate a node's value starting from 1x - 50x")]
     public class DataElementDuplicateMutator : Mutator
     {
         // members
@@ -71,7 +72,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj.isMutable && !(obj is Flag))
+            if (obj.isMutable && obj.parent != null && !(obj is Flag))
                 return true;
 
             return false;

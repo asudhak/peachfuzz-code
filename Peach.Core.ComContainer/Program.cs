@@ -70,8 +70,6 @@ namespace Peach.Core.ComContainer
 
 			try
 			{
-				Type commonInterfaceType = typeof(Peach.Core.Agent.Monitors.WindowsDebug.DebuggerInstance);
-
 				RemotingConfiguration.RegisterWellKnownServiceType(
 					typeof(ComContainer), "PeachComContainer", WellKnownObjectMode.Singleton);
 

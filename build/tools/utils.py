@@ -1,7 +1,22 @@
 import os.path, re
-from waflib.TaskGen import feature, before_method, after_method
+from waflib.TaskGen import feature, before_method, after_method, taskgen_method
 from waflib.Configure import conf
 from waflib import Utils, Logs, Task, Context, Errors
+
+@taskgen_method
+def install_files(self, dest, files, env=None, chmod=Utils.O644, relative_trick=False, cwd=None, add=True, postpone=True):
+	inst_task = self.bld.install_files(dest, files, env, chmod, relative_trick, cwd, add, postpone)
+	save_inst_task(self, inst_task)
+
+@taskgen_method
+def install_as(self, dest, srcfile, env=None, chmod=Utils.O644, cwd=None, add=True, postpone=True):
+	inst_task = self.bld.install_as(dest, srcfile, env, chmod, cwd, add, postpone)
+	save_inst_task(self, inst_task)
+
+def save_inst_task(self, inst_task):
+	extras = getattr(self, 'install_extras', [])
+	extras.append(inst_task)
+	self.install_extras = extras
 
 @feature('*')
 @before_method('process_source')
@@ -19,20 +34,38 @@ def default_variant(self):
 
 @feature('*')
 @after_method('process_source')
-def install_extras(self):
+def apply_install(self):
 	try:
 		inst_to = self.install_path
 	except AttributeError:
 		inst_to = hasattr(self, 'link_task') and getattr(self.link_task.__class__, 'inst_to', None)
 
-	if not inst_to:
-		if getattr(self, 'install', []):
-			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, self.install))
-		return
+	# For the attributes install_644 and install_755
+	# The value can be a string: 'file1 file2 file3'
+	# An array (string || nodes): ['file1', self.find_resource('file2')]
+	# A dict of { cwd : string|array }
+	# Will install files to ${BINDIR} relative to cwd or self.path
 
-	extras = self.to_nodes(getattr(self, 'install', []))
+	do_install(self, inst_to, 'install_644', Utils.O644)
+	do_install(self, inst_to, 'install_755', Utils.O755)
+
+def do_install(self, inst_to, attr, chmod):
+	val = getattr(self, attr, [])
+
+	if isinstance(val, dict):
+		for cwd,items in val.iteritems():
+			do_install2(self, inst_to, cwd, items, chmod)
+	else:
+		do_install2(self, inst_to, self.path, val, chmod)
+
+def do_install2(self, inst_to, cwd, items, chmod):
+	extras = self.to_nodes(Utils.to_list(items), path=cwd)
+
 	if extras:
-		self.bld.install_files(inst_to, extras, env=self.env, cwd=self.path, relative_trick=True, chmod=Utils.O644)
+		if not inst_to:
+			Logs.warn('\'%s\' has no install path but is supposed to install: %s' % (self.name, extras))
+		else:
+			self.install_files(inst_to, extras, env=self.env, cwd=cwd, relative_trick=True, chmod=chmod)
 
 @feature('win', 'linux', 'osx', 'debug', 'release', 'com', 'pin', 'network')
 def dummy_platform(self):
@@ -42,14 +75,48 @@ def dummy_platform(self):
 @feature('fake_lib')
 @after_method('process_lib')
 def install_fake_lib(self):
-	# install 3rdParty libs into ${LIBDIR}
-	self.bld.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
+	name = self.link_task.__class__.__name__
+	if name is not 'fake_csshlib':
+		install_outputs(self)
 
-	# install any .config files into ${LIBDIR}
+@feature('cs')
+@after_method('apply_cs')
+def install_content(self):
+	names = self.to_list(getattr(self, 'content', []))
+	get = self.bld.get_tgen_by_name
+	for x in names:
+		try:
+			y = get(x)
+			install_content2(y)
+		except Errors.WafError:
+			self.bld.fatal('cs task has no taskgen for content %r' % self)
+
+def install_content2(self):
+	if getattr(self, 'has_installed', False):
+		return
+
+	self.has_installed = True
+
+	content = getattr(self, 'content', [])
+	if content:
+		self.install_files('${BINDIR}', content, cwd=self.path, relative_trick=True)
+
+def install_outputs(self):
+	if getattr(self, 'has_installed', False):
+		return
+
+	self.has_installed = True
+
+	# install 3rdParty libs into ${LIBDIR}
+	self.install_files('${LIBDIR}', self.link_task.outputs, chmod=Utils.O755)
+
+	# install any pdb or .config files into ${LIBDIR}
+
 	for lib in self.link_task.outputs:
-		config = lib.parent.find_resource(lib.name + '.config')
+		# only look for .config if we are mono - as they are the only ones that support this
+		config = self.env.CS_NAME == 'mono' and lib.parent.find_resource(lib.name + '.config')
 		if config:
-			self.bld.install_files('${LIBDIR}', config, chmod=Utils.O755)
+			self.install_files('${LIBDIR}', config, chmod=Utils.O644)
 
 		name = lib.name
 		ext='.pdb'
@@ -61,7 +128,7 @@ def install_fake_lib(self):
 
 		pdb = lib.parent.find_resource(name)
 		if pdb:
-			self.bld.install_files('${LIBDIR}', pdb, chmod=Utils.O755)
+			self.install_files('${LIBDIR}', pdb, chmod=Utils.O755)
 
 @feature('cs', 'msbuild')
 @before_method('apply_cs', 'apply_mbuild')
@@ -79,7 +146,8 @@ def cs_helpers(self):
 		self.env.append_value('CSFLAGS', csflags)
 
 	# ensure the appropriate platform is being set on the command line
-	setattr(self, 'platform', self.env.CSPLATFORM)
+	if not getattr(self, 'platform', None):
+		setattr(self, 'platform', self.env.CSPLATFORM)
 
 	# ensure install_path is set
 	if not getattr(self, 'install_path', None):
@@ -117,13 +185,52 @@ def cs_resource(self):
 	if 'exe' in self.cs_task.env.CSTYPE:
 		# if this is an exe, require app.config and install to ${BINDIR}
 		cfg = self.path.find_or_declare('app.config')
-	else:
-		# if this is an assembly, app.config is optional
+	elif self.env.CS_NAME == 'mono':
+		# if this is an assembly, app.config is optional and
+		# only supported by mono
 		cfg = self.path.find_resource('app.config')
+	else:
+		cfg = None
 
 	if cfg:
+		setattr(self, 'app_config', cfg)
 		inst_to = getattr(self, 'install_path', '${BINDIR}')
-		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O755)
+		self.bld.install_as('%s/%s.config' % (inst_to, self.gen), cfg, env=self.env, chmod=Utils.O644)
+
+target_framework_template = '''using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=${TARGET_FRAMEWORK}", FrameworkDisplayName = "${TARGET_FRAMEWORK_NAME}")]
+'''
+
+@feature('cs')
+@before_method('apply_cs')
+def apply_target_framework(self):
+	if getattr(self.bld, 'is_idegen', False):
+		return
+
+	# Add TargetFrameworkAttribute to the assembly
+	self.env.EMIT_SOURCE = Utils.subst_vars(target_framework_template, self.env)
+	name = '.NETFramework,Version=%s.AssemblyAttributes.cs' % self.env.TARGET_FRAMEWORK
+	target = self.path.find_or_declare(name)
+	tsk = self.create_task('emit', None, [ target ])
+	self.source = self.to_nodes(self.source) + tsk.outputs
+
+	# For any use entries that can't be resolved to a task generator
+	# assume they are system reference assemblies and add them to the
+	# ASSEMBLIES variable so they get full path linkage automatically added
+	filtered = []
+	names = self.to_list(getattr(self, 'use', []))
+	get = self.bld.get_tgen_by_name
+	for x in names:
+		try:
+			y = get(x)
+			if 'fake_lib' in getattr(y, 'features', ''):
+				y.post()
+				install_outputs(y)
+			filtered.append(x)
+		except Errors.WafError:
+			self.env.append_value('ASSEMBLIES', x)
+	self.use = filtered
 
 @conf
 def clone_env(self, variant):
@@ -138,6 +245,12 @@ def clone_env(self, variant):
 	return copy
 
 @conf
+def read_all_csshlibs(self, subdir):
+	libs = self.path.find_dir(subdir).ant_glob('*.dll')
+	for x in libs:
+		self.read_csshlib(x.name, paths=[x.parent.path_from(self.path)])
+
+@conf
 def ensure_version(self, tool, ver_exp):
 	ver_exp = Utils.to_list(ver_exp)
 	env = self.env
@@ -146,7 +259,7 @@ def ensure_version(self, tool, ver_exp):
 	cmd = self.cmd_to_list(env[tool])
 	(out,err) = self.cmd_and_log(cmd + ['/help'], env=environ, output=Context.BOTH)
 	exe = os.path.split(cmd[0])[1].lower()
-	ver_re = re.compile('.*ersion (\d+\.\d+\.\d+\.\d+)')
+	ver_re = re.compile('.*ersion (\d+\.\d+\.\d+(\.\d+)?)')
 	m = ver_re.match(out)
 	if not m:
 		m = ver_re.match(err)

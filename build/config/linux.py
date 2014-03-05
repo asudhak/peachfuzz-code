@@ -18,10 +18,10 @@ tools = [
 	'tools.version',
 	'tools.xcompile',
 	'tools.mdoc',
+	'tools.zip',
 ]
 
 def prepare(conf):
-	root = conf.path.abspath()
 	env = conf.env
 	j = os.path.join
 
@@ -42,8 +42,7 @@ def prepare(conf):
 
 	env['PIN_VER'] = 'pin-2.13-61206-gcc.4.4.7-linux'
 
-	pin_root = env['PIN_ROOT'] or j(root, '3rdParty', 'pin')
-	pin = j(pin_root, env['PIN_VER'])
+	pin = j(conf.get_peach_dir(), '3rdParty', 'pin', env['PIN_VER'])
 
 	env['EXTERNALS'] = {
 		'pin' : {
@@ -70,6 +69,9 @@ def prepare(conf):
 		},
 	}
 
+	env['TARGET_FRAMEWORK'] = 'v4.0'
+	env['TARGET_FRAMEWORK_NAME'] = '.NET Framework 4'
+
 	env.append_value('supported_features', [
 		'linux',
 		'c',
@@ -82,7 +84,6 @@ def prepare(conf):
 		'cxxprogram',
 		'fake_lib',
 		'cs',
-		'test',
 		'debug',
 		'release',
 		'emit',
@@ -98,19 +99,19 @@ def configure(conf):
 		'/warn:4',
 		'/define:PEACH,UNIX,MONO',
 		'/warnaserror',
-		'/nowarn:1591' # Missing XML comment for publicly visible type
+		'/nowarn:1591', # Missing XML comment for publicly visible type
 	])
 
 	env.append_value('CSFLAGS_debug', [
-		'/define:DEBUG,TRACE,MONO',
+		'/define:DEBUG;TRACE;MONO',
 	])
 
 	env.append_value('CSFLAGS_release', [
-		'/define:TRACE,MONO',
+		'/define:TRACE;MONO',
 		'/optimize+',
 	])
 
-	env['CSPLATFORM'] = 'anycpu'
+	env['CSPLATFORM'] = 'AnyCPU'
 	env['CSDOC'] = True
 
 	env.append_value('DEFINES_debug', [

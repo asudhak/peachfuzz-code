@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Produce numbers that are defaultValue - N to defaultValue + N")]
+    [Mutator("NumericalVarianceMutator")]
+    [Description("Produce numbers that are defaultValue - N to defaultValue + N")]
     [Hint("NumericalVarianceMutator-N", "Gets N by checking node for hint, or returns default (50).")]
     public class NumericalVarianceMutator : Mutator
     {
@@ -165,6 +166,9 @@ namespace Peach.Core.Mutators
             if (obj is Dom.String && obj.isMutable)
                 if (obj.Hints.ContainsKey("NumericalString"))
                     return true;
+
+            // Ignore numbers <= 8 bits, they will be mutated with the
+            // NumericalEdgeCaseMutator
 
             if (obj is Number && obj.isMutable)
                 if (((Number)obj).lengthAsBits > 8)

@@ -59,7 +59,6 @@ namespace Peach.Core
 		static public List<string> Imports = new List<string>();
 		static public List<string> Paths = new List<string>();
 		static public Dictionary<string, object> GlobalScope = new Dictionary<string, object>();
-		static public string StdLib = ClassLoader.FindFile("IronPython.StdLib.zip");
 
 		private static class Engine
 		{
@@ -78,7 +77,8 @@ namespace Peach.Core
 				ICollection<string> enginePaths = Instance.GetSearchPaths();
 				foreach (string path in Paths)
 					enginePaths.Add(path);
-				enginePaths.Add(StdLib);
+				foreach (string path in ClassLoader.SearchPaths)
+					enginePaths.Add(Path.Combine(path, "Lib"));
 				Instance.SetSearchPaths(enginePaths);
 
 				// Import any modules

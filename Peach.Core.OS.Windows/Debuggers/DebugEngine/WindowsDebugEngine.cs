@@ -304,8 +304,6 @@ namespace Peach.Core.Debuggers.DebugEngine
 	[Guid("F193F926-63C4-4837-8456-40C1CD1720D5")]
 	public class OutputCallbacks : IDebugOutputCallbacks
 	{
-		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
-
 		WindowsDebugEngine _engine;
 		public OutputCallbacks(WindowsDebugEngine engine)
 		{
@@ -352,12 +350,12 @@ namespace Peach.Core.Debuggers.DebugEngine
 
 		public void Exception(ref _EXCEPTION_RECORD64 Exception, uint FirstChance)
 		{
-			logger.Debug("Exception");
+			logger.Debug("Exception: Code: 0x{0:x8}, First Chance: {1}", Exception.ExceptionCode, FirstChance);
 
 			bool handle = false;
 			if(FirstChance == 1)
 			{
-				if(_engine.skipFirstChanceGuardPageException && Exception.ExceptionCode == 0x80000001)
+				if (_engine.skipFirstChanceGuardPageException && Exception.ExceptionCode == 0x80000001)
 					return;
 
 				// Guard page or illegal op
@@ -367,8 +365,10 @@ namespace Peach.Core.Debuggers.DebugEngine
 				// Access violation
 				if(Exception.ExceptionCode == 0xC0000005)
 				{
+					// http://msdn.microsoft.com/en-us/library/windows/desktop/aa363082(v=vs.85).aspx
+
 					// A/V on EIP
-					if(Exception.ExceptionInformation[0] == 0 && Exception.ExceptionInformation[1] == Exception.ExceptionAddress)
+					if(Exception.ExceptionInformation[0] == 0)
 						handle = true;
 
 					// write a/v
@@ -381,11 +381,11 @@ namespace Peach.Core.Debuggers.DebugEngine
 				}
 
 				// Skip uninteresting first chance
-				if(!handle)
+				if (!handle)
 					return;
 			}
 
-			if(_engine.skipSecondChangeGuardPageException && FirstChance == 0 && Exception.ExceptionCode == 0x80000001)
+			if (_engine.skipSecondChangeGuardPageException && FirstChance == 0 && Exception.ExceptionCode == 0x80000001)
 				return;
 
 			// Don't recurse
@@ -393,7 +393,6 @@ namespace Peach.Core.Debuggers.DebugEngine
 				return;
 
 			// ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 			try
 			{
 				_engine.handlingException.Set();
@@ -427,7 +426,7 @@ namespace Peach.Core.Debuggers.DebugEngine
 					string path = Assembly.GetExecutingAssembly().Location;
 					path = Path.GetDirectoryName(path);
 					path = Path.Combine(path, "Debuggers\\DebugEngine\\msec86.dll");
-					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load "+path, (uint)Const.DEBUG_EXECUTE_ECHO);
+					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load " + path, (uint)Const.DEBUG_EXECUTE_ECHO);
 				}
 				else
 				{
@@ -435,28 +434,32 @@ namespace Peach.Core.Debuggers.DebugEngine
 					string path = Assembly.GetExecutingAssembly().Location;
 					path = Path.GetDirectoryName(path);
 					path = Path.Combine(path, "Debuggers\\DebugEngine\\msec64.dll");
-					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load "+path, (uint)Const.DEBUG_EXECUTE_ECHO);
+					_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, ".load " + path, (uint)Const.DEBUG_EXECUTE_ECHO);
 				}
 
 				_engine.dbgControl.Execute((uint)Const.DEBUG_OUTCTL_THIS_CLIENT, "!exploitable -m", (uint)Const.DEBUG_EXECUTE_ECHO);
 
-				Dictionary<string, Variant> crashInfo = new Dictionary<string, Variant>();
 				_engine.output.Replace("\x0a", "\r\n");
 
 				string output = _engine.output.ToString();
 
-                Fault fault = new Fault();
-                fault.type = FaultType.Fault;
+				Fault fault = new Fault();
+				fault.type = FaultType.Fault;
 				fault.detectionSource = "WindowsDebugEngine";
 				fault.majorHash = reMajorHash.Match(output).Groups[1].Value;
 				fault.minorHash = reMinorHash.Match(output).Groups[1].Value;
 				fault.exploitability = reClassification.Match(output).Groups[1].Value;
 				fault.title = reShortDescription.Match(output).Groups[1].Value;
 
-                fault.collectedData.Add(new Fault.Data("StackTrace.txt", Encoding.UTF8.GetBytes(output)));
-                fault.description = output;
+				fault.collectedData.Add(new Fault.Data("StackTrace.txt", Encoding.UTF8.GetBytes(output)));
+				fault.description = output;
 
 				_engine.crashInfo = fault;
+			}
+			catch (Exception ex)
+			{
+				logger.Debug(ex);
+				throw;
 			}
 			finally
 			{

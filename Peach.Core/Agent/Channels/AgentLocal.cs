@@ -73,7 +73,7 @@ namespace Peach.Core.Agent.Channels
 			agent.AgentDisconnect();
 		}
 
-		public override Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args)
+		public override Publisher CreatePublisher(string cls, Dictionary<string, Variant> args)
 		{
 			return agent.CreatePublisher(cls, args);
 		}
@@ -83,7 +83,7 @@ namespace Peach.Core.Agent.Channels
 			return agent.CreateBitwiseStream();
 		}
 
-		public override void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args)
+		public override void StartMonitor(string name, string cls, Dictionary<string, Variant> args)
 		{
 			agent.StartMonitor(name, cls, args);
 		}

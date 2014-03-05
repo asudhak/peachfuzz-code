@@ -96,7 +96,6 @@ namespace Peach.Core.Test
             <Block name=""0"">
                 <Number name=""1"" size=""32""/>
                 <Block name=""2"">
-                    <Relation type=""size"" from=""4""/>
                     <Number name=""3"" size=""32""/>
                     <Number name=""4"" size=""32"">
                         <Relation type=""size"" of=""2""/>
@@ -140,7 +139,6 @@ namespace Peach.Core.Test
             <Block name=""0"">
                 <Number name=""1"" size=""32""/>
                 <Block name=""2"">
-                    <Relation type=""size"" from=""4""/>
                     <Number name=""3"" size=""32""/>
                     <Number name=""4"" size=""32"">
                         <Relation type=""size"" of=""2""/>
@@ -189,7 +187,6 @@ namespace Peach.Core.Test
 <DataModel name=""GeneratedModel"">
             <Block name=""0"">
                 <Block name=""1"">
-                    <Relation type=""size"" from=""4""/>
                     <Number name=""3"" size=""32"">
                         <Relation type=""size"" of=""2""/>
                     </Number>
@@ -198,7 +195,6 @@ namespace Peach.Core.Test
                     </Number>
                 </Block>
                 <Blob name=""2"">
-                    <Relation type=""size"" from=""3""/>
                 </Blob>
             </Block>
     </DataModel>

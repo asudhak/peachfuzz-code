@@ -73,7 +73,7 @@ def try_compress(self):
 			store[1] = siz
 			os.rename(filename, self.generator.bld.bldnode.abspath() + os.sep + 'max%d.tar.%s' % (siz, ext))
 		else:
-			os.unlink(filename)
+			os.remove(filename)
 	finally:
 		lock.release()
 

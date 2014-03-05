@@ -33,7 +33,8 @@ using Peach.Core.Dom;
 
 namespace Peach.Core.Mutators
 {
-    [Mutator("Swap two nodes in the data model that are near each other")]
+    [Mutator("DataElementSwapNearNodesMutator")]
+    [Description("Swap two nodes in the data model that are near each other")]
     public class DataElementSwapNearNodesMutator : Mutator
     {
         // CTOR
@@ -62,7 +63,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj.isMutable && !(obj is Flag))
+            if (obj.isMutable && obj.parent != null && !(obj is Flag))
                 return true;
 
             return false;

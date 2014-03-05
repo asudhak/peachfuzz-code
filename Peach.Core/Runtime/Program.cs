@@ -62,7 +62,47 @@ namespace Peach.Core.Runtime
 
 		public static ConsoleColor DefaultForground = Console.ForegroundColor;
 
-		public Dictionary<string, string> DefinedValues = new Dictionary<string,string>();
+		/// <summary>
+		/// Configure NLog.
+		/// </summary>
+		/// <remarks>
+		/// Level &lt; 0 --&gt; Clear Config
+		/// Level = 0 --&gt; Do nothing
+		/// Level = 1 --&gt; Debug
+		/// Leven &gt; 1 --&gt; Trace
+		/// </remarks>
+		/// <param name="level"></param>
+		public static void ConfigureLogging(int level)
+		{
+			if (level < 0)
+			{
+				// Need to reset configuration to null for NLog 2.0 on mono
+				// so we don't hang on exit.
+				LogManager.Configuration = null;
+				return;
+			}
+
+			if (level == 0)
+				return;
+
+			if (LogManager.Configuration != null && LogManager.Configuration.LoggingRules.Count > 0)
+			{
+				Console.WriteLine("Logging was configured by a .config file, not changing the configuration.");
+				return;
+			}
+
+			var nconfig = new LoggingConfiguration();
+			var consoleTarget = new ConsoleTarget();
+			nconfig.AddTarget("console", consoleTarget);
+			consoleTarget.Layout = "${logger} ${message}";
+
+			var rule = new LoggingRule("*", level == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
+			nconfig.LoggingRules.Add(rule);
+
+			LogManager.Configuration = nconfig;
+		}
+
+		public Dictionary<string, string> DefinedValues = new Dictionary<string, string>();
 		public Peach.Core.Dom.Dom dom;
 
 		public int exitCode = 1;
@@ -142,6 +182,7 @@ namespace Peach.Core.Runtime
 					{ "charlie", var => Charlie() },
 					{ "showdevices", var => ShowDevices() },
 					{ "showenv", var => ShowEnvironment() },
+					{ "makexsd", var => MakeSchema() },
 				};
 
 				List<string> extra = p.Parse(args);
@@ -152,6 +193,7 @@ namespace Peach.Core.Runtime
 				Platform.LoadAssembly();
 
 				AddNewDefine("Peach.Cwd=" + Environment.CurrentDirectory);
+				AddNewDefine("Peach.Pwd=" + Path.GetDirectoryName(Assembly.GetCallingAssembly().Location));
 
 				// Do we have pit.xml.config file?
 				// If so load it as the first defines file.
@@ -175,26 +217,8 @@ namespace Peach.Core.Runtime
 				}
 
 				// Enable debugging if asked for
-				// If configuration was already done by a .config file, don't change anything
-				if (config.debug > 0)
-				{
-					if (LogManager.Configuration.LoggingRules.Count > 0)
-					{
-						Console.WriteLine("Logging was configured by a .config file, not changing the configuration.");
-					}
-					else
-					{
-						var nconfig = new LoggingConfiguration();
-						var consoleTarget = new ConsoleTarget();
-						nconfig.AddTarget("console", consoleTarget);
-						consoleTarget.Layout = "${logger} ${message}";
-
-						var rule = new LoggingRule("*", config.debug == 1 ? LogLevel.Debug : LogLevel.Trace, consoleTarget);
-						nconfig.LoggingRules.Add(rule);
-
-						LogManager.Configuration = nconfig;
-					}
-				}
+				// If configuration was already done by a .config file, nothing will be changed
+				ConfigureLogging(config.debug);
 
 				if (agent != null)
 				{
@@ -293,7 +317,7 @@ namespace Peach.Core.Runtime
 			finally
 			{
 				// HACK - Required on Mono with NLog 2.0
-				LogManager.Configuration = null;
+				ConfigureLogging(-1);
 
 				// Reset console colors
 				Console.ForegroundColor = DefaultForground;
@@ -346,6 +370,7 @@ Syntax:
   --trace                    Enable even more verbose debug messages.
   --seed N                   Sets the seed used by the random number generator
   --parseonly                Test parse a Peach XML file
+  --makexsd                  Generate peach.xsd
   --showenv                  Print a list of all DataElements, Fixups, Monitors
                              Publishers and their associated parameters.
   --showdevices              Display the list of PCAP devices
@@ -579,6 +604,28 @@ Debug Peach XML File
 		{
 			Peach.Core.Usage.Print();
 			throw new SyntaxException();
+		}
+
+		public void MakeSchema()
+		{
+			try
+			{
+				Console.WriteLine();
+
+				using (var stream = new FileStream("peach.xsd", FileMode.Create, FileAccess.Write))
+				{
+					Xsd.SchemaBuilder.Generate(typeof(Xsd.Dom), stream);
+
+					Console.WriteLine("Successfully generated {0}", stream.Name);
+				}
+
+				throw new SyntaxException();
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				throw new PeachException("Error creating schema. {0}".Fmt(ex.Message), ex);
+			}
+
 		}
 
 		protected virtual Watcher GetUIWatcher()

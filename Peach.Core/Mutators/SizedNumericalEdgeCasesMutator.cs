@@ -37,7 +37,8 @@ using NLog;
 
 namespace Peach.Core.Mutators
 {
-	[Mutator("Change the length of sizes to numerical edge cases")]
+	[Mutator("SizedNumericalEdgeCasesMutator")]
+	[Description("Change the length of sizes to numerical edge cases")]
 	[Hint("SizedNumericalEdgeCasesMutator-N", "Gets N by checking node for hint, or returns default (50).")]
 	public class SizedNumericalEdgeCasesMutator : SizedMutator
 	{

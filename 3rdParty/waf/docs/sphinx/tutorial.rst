@@ -103,7 +103,7 @@ Here is a script for a more complicated project::
 		opt.load('compiler_c compiler_cxx')
 	def configure(cnf):
 		cnf.load('compiler_c compiler_cxx')
-		conf.check(features='cxx cxxprogram', lib=['m'], cflags=['-Wall'], defines=['var=foo'], uselib_store='M')
+		cnf.check(features='cxx cxxprogram', lib=['m'], cflags=['-Wall'], defines=['var=foo'], uselib_store='M')
 	def build(bld):
 		bld(features='c cshlib', source='b.c', target='mylib')
 		bld(features='c cxx cxxprogram', source='a.c main.cpp', target='app', use=['M','mylib'], lib=['dl'])

@@ -303,6 +303,16 @@ def exec_cfg(self, kw):
 	for key, val in defi.items():
 		lst.append('--define-variable=%s=%s' % (key, val))
 
+	static = False
+	if 'args' in kw:
+		args = Utils.to_list(kw['args'])
+		if '--static' in args or '--static-libs' in args:
+			static = True
+		lst += args
+
+	# tools like pkgconf expect the package argument after the -- ones -_-
+	lst.extend(Utils.to_list(kw['package']))
+
 	# retrieving variables of a module
 	if 'variables' in kw:
 		env = kw.get('env', self.env)
@@ -315,16 +325,6 @@ def exec_cfg(self, kw):
 		if not 'okmsg' in kw:
 			kw['okmsg'] = 'yes'
 		return
-
-	static = False
-	if 'args' in kw:
-		args = Utils.to_list(kw['args'])
-		if '--static' in args or '--static-libs' in args:
-			static = True
-		lst += args
-
-	# tools like pkgconf expect the package argument after the -- ones -_-
-	lst.extend(Utils.to_list(kw['package']))
 
 	# so we assume the command-line will output flags to be parsed afterwards
 	ret = self.cmd_and_log(lst)
@@ -602,14 +602,12 @@ def post_check(self, *k, **kw):
 
 		for k in _vars:
 			lk = k.lower()
-			if k == 'INCLUDES': lk = 'includes'
-			if k == 'DEFINES': lk = 'defines'
 			if lk in kw:
 				val = kw[lk]
 				# remove trailing slash
 				if isinstance(val, str):
 					val = val.rstrip(os.path.sep)
-				self.env.append_unique(k + '_' + kw['uselib_store'], val)
+				self.env.append_unique(k + '_' + kw['uselib_store'], Utils.to_list(val))
 	return is_success
 
 @conf
@@ -1055,7 +1053,7 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 	if gcc:
 		if out.find('__INTEL_COMPILER') >= 0:
 			conf.fatal('The intel compiler pretends to be gcc')
-		if out.find('__GNUC__') < 0:
+		if out.find('__GNUC__') < 0 and out.find('__clang__') < 0:
 			conf.fatal('Could not determine the compiler type')
 
 	if icc and out.find('__INTEL_COMPILER') < 0:
@@ -1093,9 +1091,9 @@ def get_cc_version(conf, cc, gcc=False, icc=False):
 
 		if isD('__ELF__'):
 			conf.env.DEST_BINFMT = 'elf'
-		elif isD('__WINNT__') or isD('__CYGWIN__'):
+		elif isD('__WINNT__') or isD('__CYGWIN__') or isD('_WIN32'):
 			conf.env.DEST_BINFMT = 'pe'
-			conf.env.LIBDIR = conf.env['PREFIX'] + '/bin'
+			conf.env.LIBDIR = conf.env.BINDIR
 		elif isD('__APPLE__'):
 			conf.env.DEST_BINFMT = 'mac-o'
 
@@ -1139,6 +1137,31 @@ def get_xlc_version(conf, cc):
 			break
 	else:
 		conf.fatal('Could not determine the XLC version.')
+
+@conf
+def get_suncc_version(conf, cc):
+	"""Get the compiler version"""
+
+	cmd = cc + ['-V']
+	try:
+		out, err = conf.cmd_and_log(cmd, output=0)
+	except Errors.WafError as e:
+		# Older versions of the compiler exit with non-zero status when reporting their version
+		if not (hasattr(e, 'returncode') and hasattr(e, 'stdout') and hasattr(e, 'stderr')):
+			conf.fatal('Could not find suncc %r' % cmd)
+		out = e.stdout
+		err = e.stderr
+
+	version = (out or err)
+	version = version.split('\n')[0]
+
+	version_re = re.compile(r'cc:\s+sun\s+(c\+\+|c)\s+(?P<major>\d*)\.(?P<minor>\d*)', re.I).search
+	match = version_re(version)
+	if match:
+		k = match.groupdict()
+		conf.env['CC_VERSION'] = (k['major'], k['minor'])
+	else:
+		conf.fatal('Could not determine the suncc version.')
 
 # ============ the --as-needed flag should added during the configuration, not at runtime =========
 

@@ -186,7 +186,7 @@ namespace Peach.Core.Test.CrackingTests
 		<State name='Initial'>
 			<Action type='output'>
 				<DataModel ref='DM' />
-				<Data DataModel='DM'>
+				<Data>
 					<Field name='choice.token2' value='' />
 				</Data>
 			</Action>
@@ -517,7 +517,7 @@ namespace Peach.Core.Test.CrackingTests
 		<State name='Initial'>
 			<Action type='output'>
 				<DataModel ref='DM' />
-				<Data DataModel='DM'>
+				<Data>
 					<Field name='Root[0].Choice.C1.str2' value='foo,' />
 					<Field name='Root[1].Choice.C2.str2' value='bar' />
 				</Data>

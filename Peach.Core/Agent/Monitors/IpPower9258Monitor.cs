@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using NLog;
 
 using Peach.Core;
 
@@ -35,6 +36,7 @@ namespace Peach.Core.Agent.Monitors
 		string _port = null;
 		int _powerPause = 500;
 		bool _everyIteration = false;
+		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public IpPower9258Monitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
@@ -57,51 +59,66 @@ namespace Peach.Core.Agent.Monitors
 		{
 			string challenge;
 
-			using (WebClientEx client = new WebClientEx())
-			{
-				client.Headers[HttpRequestHeader.UserAgent] = "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)";
+      try
+      {
+        using (WebClientEx client = new WebClientEx())
+        {
+          client.Headers[HttpRequestHeader.UserAgent] = "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)";
 
-				using (Stream sin = client.OpenRead("http://" + _host + "/"))
-				using (StreamReader srin = new StreamReader(sin))
-				{
-					string data = srin.ReadToEnd();
-					var m = Regex.Match(data, "NAME=\"Challenge\" VALUE=\"(.*)\"> <input");
-					challenge = m.Groups[1].Value;
-				}
+          using (Stream sin = client.OpenRead("http://" + _host + "/"))
+          using (StreamReader srin = new StreamReader(sin))
+          {
+            string data = srin.ReadToEnd();
+            var m = Regex.Match(data, "NAME=\"Challenge\" VALUE=\"(.*)\"> <input");
+            challenge = m.Groups[1].Value;
+          }
 
-				var md5 = MD5.Create();
-				var hash = md5.ComputeHash(ASCIIEncoding.ASCII.GetBytes(_user + _pass + challenge));
+          var md5 = MD5.Create();
+          var hash = md5.ComputeHash(ASCIIEncoding.ASCII.GetBytes(_user + _pass + challenge));
 
-				// step 2, convert byte array to hex string
-				StringBuilder sb = new StringBuilder();
-				for (int i = 0; i < hash.Length; i++)
-				{
-					sb.Append(hash[i].ToString("x2"));
-				}
+          // step 2, convert byte array to hex string
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < hash.Length; i++)
+          {
+            sb.Append(hash[i].ToString("x2"));
+          }
 
-				// Make final web requests
+          // Make final web requests
 
-				client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+          client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
 
-				string postData = "Username=" + _user + "&Response=" + sb.ToString() + "&Challenge=&Password=";
-				client.UploadString("http://"+_host+"/tgi/login.tgi", postData);
+          string postData = "Username=" + _user + "&Response=" + sb.ToString() + "&Challenge=&Password=";
 
-				if (turnOff)
-				{
-					// Off
+          string prepend = "";
+          for (int i = 0; i < Convert.ToInt32(_port) - 1; i++)
+          {
+            prepend += "P60=On&P60_TS=0&P60_TC=On&";
+          }
 
-					postData = "P6" + _port + "=Off&ButtonName=Apply";
-					client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
+          client.UploadString("http://" + _host + "/tgi/login.tgi", postData);
+          if (turnOff)
+          {
+            // Off
 
-					// Pause
-					System.Threading.Thread.Sleep(_powerPause);
-				}
+            postData = prepend + "P6" + _port + "=Off&ButtonName=Apply";
+            logger.Debug("Resetting power posting " + postData + " to " + _host + "/tgi/iocontrol.tgi");
+            client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
 
-				// On
+            // Pause
+            System.Threading.Thread.Sleep(_powerPause);
+          }
 
-				postData = "P6" + _port + "=On&ButtonName=Apply";
-				client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
-			}
+          // On
+
+          postData = prepend + "P6" + _port + "=On&ButtonName=Apply";
+          logger.Debug("Resetting power posting " + postData + " to " + _host + "/tgi/iocontrol.tgi");
+          client.UploadString("http://" + _host + "/tgi/iocontrol.tgi", postData);
+        }
+      }
+      catch (Exception e)
+      {
+        throw new PeachException("IpPower failure : " + e.Message, e); 
+      }
 		}
 
 		public override void StopMonitor()

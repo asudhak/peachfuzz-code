@@ -23,7 +23,7 @@ def configure(conf):
 def build(bld):
 	app = bld (
 		features = 'c cprogram glib2',
-		uselib   = 'GLIB GOBJECT',
+		use      = 'GLIB GOBJECT',
 		source   = 'main.c',
 		target   = 'gsettings-test'
 
