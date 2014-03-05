@@ -314,8 +314,8 @@ namespace Peach.Core.Agent.Channels
 			}
 
 			proxy.AgentConnect(null);
-			proxy.SessionStarting();
 			RecreateMonitors();
+			proxy.SessionStarting();
 			proxy.IterationStarting(iterationCount, isReproduction);
 		}
 

@@ -38,6 +38,76 @@ namespace Peach.Core.Test.Agent
 
 		public System.Diagnostics.Process process;
 
+		[Monitor("TestLogFunctions", true, IsTest = true)]
+		public class TestLogMonitor : Peach.Core.Agent.Monitor
+		{
+			string fileName;
+
+			void log(string msg, params object[] args)
+			{
+				using (var writer = new StreamWriter(fileName, true))
+				{
+					writer.WriteLine(msg, args);
+				}
+			}
+
+			public TestLogMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
+				: base(agent, name, args)
+			{
+				fileName = (string)args["FileName"];
+			}
+
+			public override void StopMonitor()
+			{
+				log("StopMonitor");
+			}
+
+			public override void SessionStarting()
+			{
+				log("SessionStarting");
+			}
+
+			public override void SessionFinished()
+			{
+				log("SessionFinished");
+			}
+
+			public override void IterationStarting(uint iterationCount, bool isReproduction)
+			{
+				log("IterationStarting {0} {1}", iterationCount, isReproduction.ToString().ToLower());
+			}
+
+			public override bool IterationFinished()
+			{
+				log("IterationFinished");
+				return false;
+			}
+
+			public override bool DetectedFault()
+			{
+				log("DetectedFault");
+				return false;
+			}
+
+			public override Fault GetMonitorData()
+			{
+				log("GetMonitorData");
+				return null;
+			}
+
+			public override bool MustStop()
+			{
+				log("MustStop");
+				return false;
+			}
+
+			public override Variant Message(string name, Variant data)
+			{
+				log("Message {0}", name);
+				return null;
+			}
+		}
+
 		[Publisher("AgentKiller", true, IsTest = true)]
 		public class AgentKillerPublisher : Peach.Core.Publisher
 		{
@@ -162,6 +232,7 @@ namespace Peach.Core.Test.Agent
 		public void TestReconnect()
 		{
 			ushort port = TestBase.MakePort(20000, 21000);
+			string tmp = Path.GetTempFileName();
 
 			string agent = @"
 	<Agent name='RemoteAgent' location='tcp://127.0.0.1:9001'>
@@ -169,6 +240,9 @@ namespace Peach.Core.Test.Agent
 			<Param name='CommandLine' value='CrashableServer.exe 127.0.0.1 {0}'/>
 			<Param name='RestartOnEachTest' value='true'/>
 			<Param name='FaultOnEarlyExit' value='true'/>
+		</Monitor>
+		<Monitor class='TestLogFunctions'>
+			<Param name='FileName' value='{1}'/>
 		</Monitor>
 	</Agent>
 ";
@@ -182,6 +256,9 @@ namespace Peach.Core.Test.Agent
 			<Param name='RestartOnEachTest' value='true'/>
 			<Param name='FaultOnEarlyExit' value='true'/>
 		</Monitor>
+		<Monitor class='TestLogFunctions'>
+			<Param name='FileName' value='{1}'/>
+		</Monitor>
 	</Agent>
 ";
 			}
@@ -194,7 +271,7 @@ namespace Peach.Core.Test.Agent
 					Assert.Ignore("Cannot run the 64bit version of this test on a 32bit operating system.");
 			}
 
-			agent = agent.Fmt(port);
+			agent = agent.Fmt(port, tmp);
 
 			string xml = @"
 <Peach>
@@ -241,18 +318,42 @@ namespace Peach.Core.Test.Agent
 				RunConfiguration config = new RunConfiguration();
 				config.range = true;
 				config.rangeStart = 1;
-				config.rangeStop = 5;
+				config.rangeStop = 6;
 
 				Engine e = new Engine(null);
 				e.Fault += new Engine.FaultEventHandler(e_Fault);
 				e.startFuzzing(dom, config);
 
 				Assert.Greater(faults.Count, 0);
+
+				var contents = File.ReadAllLines(tmp);
+				var expected = new string[] {
+// Iteration 1 (Control & Record)
+"SessionStarting", "IterationStarting 1 false", "IterationFinished", "DetectedFault", "MustStop", 
+// Iteration 1 - Agent is killed (IterationFinished is a hack to kill CrashableServer)
+"IterationStarting 1 false", "IterationFinished", 
+// Agent is restarted & fault is detected
+"SessionStarting", "IterationStarting 2 false", "IterationFinished", "DetectedFault", "GetMonitorData", "MustStop", 
+// Agent is killed
+"IterationStarting 3 false", "IterationFinished", 
+// Agent is restarted & fault is detected
+"SessionStarting", "IterationStarting 4 false", "IterationFinished", "DetectedFault", "GetMonitorData", "MustStop", 
+// Agent is killed
+"IterationStarting 5 false", "IterationFinished", 
+// Agent is restarted & fault is not detected
+"SessionStarting", "IterationStarting 6 false", "IterationFinished", "DetectedFault", "MustStop",
+// Fussing stops
+"SessionFinished", "StopMonitor"
+				};
+
+				Assert.AreEqual(expected, contents);
 			}
 			finally
 			{
 				if (process != null)
 					StopAgent();
+
+				File.Delete(tmp);
 			}
 		}
 
