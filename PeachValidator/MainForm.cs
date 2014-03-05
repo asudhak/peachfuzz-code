@@ -105,12 +105,18 @@ namespace PeachValidator
 				{
 					MessageBox.Show("Error cracking \"" + ex.element.fullName + "\".\n" + ex.Message, "Error Cracking");
 
+					long endPos = -1;
 					foreach (var element in exceptions)
 					{
 						CrackNode currentModel;
 						if (crackMap.TryGetValue(element, out currentModel))
 						{
-							currentModel.StopBits = currentModel.StartBits;
+							currentModel.Error = true;
+
+							if (endPos == -1)
+								endPos = currentModel.StartBits;
+
+							currentModel.StopBits = endPos;
 
 							if (element.parent != null && crackMap.ContainsKey(element.parent))
 								crackMap[element.parent].Children.Add(currentModel);
@@ -165,6 +171,13 @@ namespace PeachValidator
 
 		void cracker_ExceptionHandleNodeEvent(DataElement element, long position, BitStream data, Exception e)
 		{
+			if (!crackMap.ContainsKey(element))
+			{
+				// If offsets can't be figured out - we will get a crack exception
+				// before getting a begin element.
+				crackMap.Add(element, new CrackNode(crackModel, element, position, 0));
+			}
+
 			exceptions.Add(element);
 		}
 
