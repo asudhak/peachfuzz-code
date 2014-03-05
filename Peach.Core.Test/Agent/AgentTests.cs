@@ -38,7 +38,7 @@ namespace Peach.Core.Test.Agent
 
 		public System.Diagnostics.Process process;
 
-		[Publisher("AgentKiller", true)]
+		[Publisher("AgentKiller", true, IsTest = true)]
 		public class AgentKillerPublisher : Peach.Core.Publisher
 		{
 			public AgentTests owner;

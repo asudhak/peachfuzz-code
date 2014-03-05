@@ -46,7 +46,7 @@ using System.Net.Sockets;
 
 namespace Peach.Core.Test.Monitors
 {
-	[Monitor("TestMonitor", true)]
+	[Monitor("TestMonitor", true, IsTest = true)]
 	public class TestMonitor : Peach.Core.Agent.Monitor
 	{
 		private IPAddress _dest;
