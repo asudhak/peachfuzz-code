@@ -39,9 +39,10 @@ class MonoDocContext(InstallContext):
 		self.is_mdoc = True
 
 def store_version(option, opt, value, parser):
-	if not re.match('^\d+\.\d+\.\d+(\.\d+)?$', value):
+	if not re.match('^\d+\.\d+\.\d+$', value):
 		raise OptionValueError('%s option is not valid - must be <int>.<int>.<int>' % opt)
-	setattr(parser.values, option.dest, value)
+	branch = getattr(Context.g_module, 'branch', '0')
+	setattr(parser.values, option.dest, value + '.' + str(branch))
 
 def options(opt):
 	opt.load('tools.idegen')
