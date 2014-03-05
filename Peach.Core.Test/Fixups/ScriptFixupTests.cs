@@ -75,14 +75,10 @@ class FixupReturningString:
                 Assert.AreEqual(1, dataModels.Count);
                 Assert.AreEqual(expected, dataModels[0].Value.ToArray());
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Caught exception {0}.".Fmt(ex.Message));
-                throw ex;
-            }
             finally
             {
                 File.Delete(tmpFile);
+                Scripting.Imports.Clear();
             }
         }
     }
