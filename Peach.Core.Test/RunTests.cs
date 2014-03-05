@@ -672,5 +672,38 @@ namespace Peach.Core.Test
 			var expected = new byte[] { 0x45, 0x45, 0x42, 0x42, 0x41, 0x41 };
 			Assert.AreEqual(expected, value.ToArray());
 		}
+
+		[Test, ExpectedException(typeof(PeachException), ExpectedMessage = "Error, Action 'Action' couldn't find publisher named 'Bad'.")]
+		public void MissingPublisher()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Blob/> 
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output' publisher='Bad'>
+				<DataModel ref='DM'/>
+			</Action> 
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			var config = new RunConfiguration();
+			config.singleIteration = true;
+
+			var e = new Engine(null);
+			e.startFuzzing(dom, config);
+		}
 	}
 }
