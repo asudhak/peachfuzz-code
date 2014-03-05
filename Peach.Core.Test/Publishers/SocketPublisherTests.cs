@@ -334,7 +334,6 @@ namespace Peach.Core.Test.Publishers
 
 			Assert.AreEqual("Hello World", send);
 			Assert.AreEqual("Recv 11 bytes!", recv);
-			
 		}
 
 		[Test]
@@ -903,5 +902,79 @@ namespace Peach.Core.Test.Publishers
 			if (numEcho1 > 0 && numEcho2 > 0)
 				context.config.shouldStop = new RunConfiguration.StopHandler(delegate() { return true; });
 		}
+
+
+		[Test, Ignore("Issue #493")]
+		public void UdpGetPropertyCrackTest()
+		{
+			string getproptemplate = @"
+<Peach>
+
+	<DataModel name=""IPv4Addr"">
+		<Number name=""Byte1"" size=""8"" />
+		<Number name=""Byte2"" size=""8""/>
+		<Number name=""Byte3"" size=""8""/>
+		<Number name=""Byte4"" size=""8""/>
+	</DataModel>
+
+	<StateModel name=""TheStateModel"" initialState=""InitialState"">
+		<State name=""InitialState"">
+
+			<Action name=""Addr"" type=""getProperty"" property=""LastRecvAddr"">
+				<DataModel name=""LastRecvAddr"" ref=""IPv4Addr""/>
+			</Action>
+
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheStateModel""/>
+		<Publisher class=""{0}"">
+			<Param name=""Host"" value=""{1}""/>
+			<Param name=""Port"" value=""{2}""/>
+			<Param name=""SrcPort"" value=""{3}""/>
+		</Publisher>
+		<Strategy class=""RandomDeterministic""/>
+	</Test>
+
+</Peach>
+";
+
+			SocketEcho echo = new SocketEcho();
+			echo.Start(IPAddress.Loopback);
+			IPEndPoint ep = echo.Socket.LocalEndPoint as IPEndPoint;
+
+			string xml = string.Format(getproptemplate, "Udp", IPAddress.Loopback, ep.Port, "0");
+
+			PitParser parser = new PitParser();
+			Dom.Dom dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			RunConfiguration config = new RunConfiguration();
+			config.singleIteration = true;
+
+			Engine e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			Assert.AreEqual(1, actions.Count);
+
+			var addrb1 = actions[0].dataModel.find("Byte1").DefaultValue;
+			Assert.NotNull(addrb1);
+			Assert.AreEqual(addrb1.ToString(), "127");
+
+			var addrb2 = actions[0].dataModel.find("Byte2").DefaultValue;
+			Assert.NotNull(addrb2);
+			Assert.AreEqual(addrb2.ToString(), "0");
+
+			var addrb3 = actions[0].dataModel.find("Byte3").DefaultValue;
+			Assert.NotNull(addrb3);
+			Assert.AreEqual(addrb3.ToString(), "0");
+
+			var addrb4 = actions[0].dataModel.find("Byte4").DefaultValue;
+			Assert.NotNull(addrb4);
+			Assert.AreEqual(addrb4.ToString(), "1");
+
+		}
 	}
+
+
 }
