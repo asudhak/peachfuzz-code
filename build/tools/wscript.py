@@ -42,7 +42,8 @@ def store_version(option, opt, value, parser):
 	if not re.match('^\d+\.\d+\.\d+$', value):
 		raise OptionValueError('%s option is not valid - must be <int>.<int>.<int>' % opt)
 	branch = getattr(Context.g_module, 'branch', '0')
-	setattr(parser.values, option.dest, value + '.' + str(branch))
+	setattr(parser.values, option.dest, value)
+	setattr(parser.values, 'ver_branch', str(branch))
 
 def options(opt):
 	opt.load('tools.idegen')
@@ -82,6 +83,7 @@ def configure(ctx):
 	base_env.APPNAME = appname
 	base_env.OUTPUT = base_env.PREFIX = base_env.BINDIR = base_env.LIBDIR = base_env.DOCDIR = base_env.PKGDIR = inst
 	base_env.BUILDTAG = Options.options.buildtag
+	base_env.VER_BRANCH = getattr(Options.options, 'ver_branch', '0')
 
 	tool_dir =  [
 		os.path.join(Context.waf_dir, 'waflib', 'Tools'),
