@@ -72,6 +72,13 @@ namespace Peach.Core.Dom
 		}
 
 		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Godel")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.Godel schemaGodel { get; set; }
+
+		/// <summary>
 		/// All states in state model.
 		/// </summary>
 		[XmlElement("State")]

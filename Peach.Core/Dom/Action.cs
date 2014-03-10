@@ -84,9 +84,9 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.
 		/// </summary>
-		[XmlElement("Ocl")]
+		[XmlElement("Godel")]
 		[DefaultValue(null)]
-		public Peach.Core.Xsd.OclRef schemaOcl { get; set; }
+		public Peach.Core.Xsd.Godel schemaGodel { get; set; }
 
 		#endregion
 
