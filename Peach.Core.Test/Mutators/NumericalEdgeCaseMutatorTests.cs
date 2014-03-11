@@ -8,6 +8,7 @@ using Peach.Core;
 using Peach.Core.Dom;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using System.Linq;
 
 namespace Peach.Core.Test.Mutators
 {
@@ -55,11 +56,14 @@ namespace Peach.Core.Test.Mutators
 
             // verify values
             Assert.Greater(mutations.Count, 0);
+            Dictionary<long, object> results = new Dictionary<long, object>();
             foreach (var item in mutations)
             {
                 Assert.AreEqual(Variant.VariantType.Long, item.GetVariantType());
-                Assert.NotNull(Convert.ToSByte((long)item));
+                results[(long)item] = null;
             }
+
+            Assert.AreEqual(256, results.Count);
         }
 
         [Test]

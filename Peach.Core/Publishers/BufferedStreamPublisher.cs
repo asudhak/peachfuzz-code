@@ -217,6 +217,13 @@ namespace Peach.Core.Publishers
 
 		protected override void OnInput()
 		{
+			//Check to make sure buffer has been initilized before continuing. 
+			lock (_bufferLock)
+			{
+				if (_buffer == null)
+					throw new SoftException("Error on data input, the buffer is not initalized.");
+			}
+
 			// Try to make sure 1 byte is available for reading.  Without doing this,
 			// state models with an initial state of input can miss the message.
 			// Also, ensure the read timeout is reset on every input action.
@@ -230,6 +237,10 @@ namespace Peach.Core.Publishers
 			{
 				try
 				{
+					//Check to make sure buffer has been initilized before continuing. 
+					if (_client == null)
+						throw new PeachException("Error on data output, the client is not initalized.");
+
                     if (Logger.IsDebugEnabled)
                         Logger.Debug("\n\n" + Utilities.HexDump(data));
 

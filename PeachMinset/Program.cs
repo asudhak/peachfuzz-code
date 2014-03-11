@@ -32,19 +32,61 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Diagnostics;
 
 using Peach.Core;
 using Peach.Core.Analysis;
-using Peach.Options;
+using Peach.Core.Runtime;
 
 namespace PeachMinset
 {
 	class Program
 	{
+		class SyntaxException : Exception
+		{
+			public SyntaxException()
+				: base("")
+			{
+			}
+
+			public SyntaxException(string message)
+				: base(message)
+			{
+			}
+		}
+
 		static void Main(string[] args)
 		{
-			new Program(args);
+			try
+			{
+				new Program(args);
+			}
+			catch (OptionException ex)
+			{
+				Console.WriteLine(ex.Message + "\n");
+			}
+			catch (SyntaxException ex)
+			{
+				if (!string.IsNullOrEmpty(ex.Message))
+					Console.WriteLine(ex.Message + "\n");
+				else
+					Syntax();
+			}
+			catch (PeachException ex)
+			{
+				Console.WriteLine("{0}\n", ex.Message);
+
+				if (ex.InnerException != null && ex.InnerException.Message != ex.Message)
+					Console.WriteLine("{0}\n", ex.InnerException.Message);
+			}
+			finally
+			{
+				// HACK - Required on Mono with NLog 2.0
+				Peach.Core.Runtime.Program.ConfigureLogging(-1);
+			}
 		}
+
+		private Stopwatch sw = new Stopwatch();
 
 		public Program(string[] args)
 		{
@@ -52,131 +94,225 @@ namespace PeachMinset
 			Console.WriteLine("] Peach 3 -- Minset");
 			Console.WriteLine("] Copyright (c) Deja vu Security\n");
 
+			int verbose = 0;
 			string samples = null;
 			string traces = null;
 			bool kill = false;
 			string executable = null;
-			string arguments = "";
+			string arguments = null;
 			string minset = null;
 
 			var p = new OptionSet()
 				{
 					{ "h|?|help", v => Syntax() },
 					{ "k", v => kill = true },
+					{ "v", v => verbose = 1 },
 					{ "s|samples=", v => samples = v },
 					{ "t|traces=", v => traces = v},
 					{ "m|minset=", v => minset = v }
 				};
 
-			List<string> extra = p.Parse(args);
+			var extra = p.Parse(args);
 
-			if (extra.Count == 0 && samples == null && traces == null && minset == null)
-				Syntax();
+			executable = extra.FirstOrDefault();
+			arguments = string.Join(" ", extra.Skip(1));
 
-			if (extra.Count != 0 && samples == null && traces == null)
-				Syntax();
+			if (args.Length == 0)
+				throw new SyntaxException();
 
-			// Build command line
-			if (extra.Count > 0)
+			if (samples == null)
+				throw new SyntaxException("Error, 'samples' argument is required.");
+
+			if (traces == null)
+				throw new SyntaxException("Error, 'traces' argument is required.");
+
+			if (minset == null && executable == null)
+				throw new SyntaxException("Error, 'minset' or command argument is required.");
+
+			if (executable != null && arguments.IndexOf("%s") == -1)
+				throw new SyntaxException("Error, command argument missing '%s'.");
+
+			Peach.Core.Runtime.Program.ConfigureLogging(verbose);
+
+			var sampleFiles = GetFiles(samples, "sample");
+
+			// If we are generating traces, ensure we can write to the traces folder
+			if (executable != null)
+				VerifyDirectory(traces);
+
+			// If we are generating minset, ensure we can write to the minset folder
+			if (minset != null)
+				VerifyDirectory(minset);
+
+			var ms = new Minset();
+
+			sw.Start();
+
+			if (verbose == 0)
 			{
-				foreach (string e in extra)
-				{
-					if (executable == null)
-						executable = e;
-					else
-						arguments += e + " ";
-				}
-
-				if (arguments.IndexOf("%s") == -1)
-				{
-					Console.WriteLine("Error, command missing '%s'.\n");
-					return;
-				}
+				ms.TraceCompleted += new TraceEventHandler(ms_TraceCompleted);
+				ms.TraceStarting += new TraceEventHandler(ms_TraceStarting);
+				ms.TraceFailed += new TraceEventHandler(ms_TraceFailed);
 			}
 
-			// Ensure peach platform assemblies are loaded
-			Platform.LoadAssembly();
+			if (minset != null && executable != null)
+				Console.WriteLine("[*] Running both trace and coverage analysis\n");
 
-            var ms = new Minset();
-            ms.TraceCompleted += new TraceCompletedEventHandler(ms_TraceCompleted);
-            ms.TraceStarting += new TraceStartingEventHandler(ms_TraceStarting);
-            var both = false;
-
-            if (extra.Count > 0 && minset != null && traces != null && samples != null)
-            {
-                both = true;
-                Console.WriteLine("[*] Running both trace and coverage analysis");
-            }
-
-            if (both || (executable != null && minset == null))
-            {
-                var sampleFiles = GetFiles(samples);
-
-                Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
-                ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
-
-                Console.WriteLine("\n[*] Finished");
-            }
-
-			if (both || (extra.Count == 0 && minset != null && traces != null && samples != null))
+			if (executable != null)
 			{
+				Console.WriteLine("[*] Running trace analysis on " + sampleFiles.Length + " samples...");
+
+				ms.RunTraces(executable, arguments, traces, sampleFiles, kill);
+
+				Console.WriteLine("\n[{0}] Finished\n", sw.Elapsed);
+			}
+
+			if (minset != null)
+			{
+				var traceFiles = GetFiles(traces, "trace");
+
 				Console.WriteLine("[*] Running coverage analysis...");
-				var sampleFiles = GetFiles(samples);
-				var minsetFiles = ms.RunCoverage(sampleFiles, GetFiles(traces));
 
-				Console.WriteLine("[-]   " + minsetFiles.Length + " files were selected from a total of " + sampleFiles.Count() + ".");
-				Console.WriteLine("[*] Copying over selected files...");
+				ValidateTraces(ref sampleFiles, ref traceFiles);
 
-				if (!Directory.Exists(minset))
-					Directory.CreateDirectory(minset);
+				var minsetFiles = ms.RunCoverage(sampleFiles, traceFiles);
 
-				foreach (string fileName in minsetFiles)
+				Console.WriteLine("[-]   {0} files were selected from a total of {1}.", minsetFiles.Length, sampleFiles.Length);
+
+				if (minsetFiles.Length > 0)
+					Console.WriteLine("[*] Copying over selected files...");
+
+				foreach (var src in minsetFiles)
 				{
-					Console.WriteLine("[-]   " + Path.Combine(samples, Path.GetFileName(fileName)) + " -> " + Path.Combine(minset, Path.GetFileName(fileName)));
-					File.Copy(Path.Combine(samples, Path.GetFileName(fileName)), Path.Combine(minset, Path.GetFileName(fileName)), true);
+					var file = Path.GetFileName(src);
+					var dst = Path.Combine(minset, file);
+
+					Console.Write("[-]   {0} -> {1}", src, dst);
+
+					try
+					{
+						File.Copy(src, dst, true);
+						Console.WriteLine();
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine(" failed: {0}", ex.Message);
+					}
 				}
 
-				Console.WriteLine("\n[*] Finished");
+				Console.WriteLine("\n[{0}] Finished\n", sw.Elapsed);
 			}
+		}
+
+		bool ValidateTraces(ref string[] samples, ref string[] traces)
+		{
+			// Arrays are already sorted before this function
+			var newSamples = new List<string>();
+			var badSamples = new List<string>();
+			var newTraces = new List<string>();
+			var badTraces = new List<string>();
+
+			int s = 0;
+			int t = 0;
+
+			while (s < samples.Length || t < traces.Length)
+			{
+				var sample = s == samples.Length ? "" : Path.GetFileName(samples[s]) + ".trace";
+				var trace = t == traces.Length ? "" : Path.GetFileName(traces[t]);
+				var cmp = string.Compare(sample, trace);
+
+				if (trace == "" || (sample != "" && cmp < 0))
+				{
+					badSamples.Add(samples[s++]);
+				}
+				else if (sample == "" || (trace != "" && cmp > 0))
+				{
+					badTraces.Add(traces[t++]);
+				}
+				else
+				{
+					newSamples.Add(samples[s++]);
+					newTraces.Add(traces[t++]);
+				}
+			}
+
+			if (badSamples.Count > 0)
+				Console.WriteLine("[-] Ignoring samples because of missing trace files: '{0}'", string.Join("', '", badSamples));
+
+			if (badTraces.Count > 0)
+				Console.WriteLine("[-] Ignoring traces because of missing sample files: '{0}'", string.Join("', '", badTraces));
+
+			samples = newSamples.ToArray();
+			traces = newTraces.ToArray();
+
+			return badSamples.Count == 0 && badTraces.Count == 0;
 		}
 
 		void ms_TraceStarting(Minset sender, string fileName, int count, int totalCount)
 		{
-			Console.Write("[{0}:{1}]   Converage trace of {2}...", 
-				count, totalCount, fileName);
+			Console.Write("[{0}] ({1}:{2}) Converage trace of {3}...", 
+				sw.Elapsed, count, totalCount, fileName);
 		}
 
 		void ms_TraceCompleted(Minset sender, string fileName, int count, int totalCount)
 		{
-			Console.WriteLine("done.");
+			Console.WriteLine(" Completed");
 		}
 
-		string[] GetFiles(string path)
+		void ms_TraceFailed(Minset sender, string fileName, int count, int totalCount)
 		{
-			string[] filenames;
-
-			if (path.IndexOf("*") > -1)
-			{
-				try
-				{
-					filenames = Directory.GetFiles(Path.GetDirectoryName(path), Path.GetFileName(path));
-				}
-				catch
-				{
-					filenames = Directory.GetFiles(".", Path.GetFileName(path));
-				}
-			}
-			else
-			{
-				filenames = Directory.GetFiles(path);
-			}
-
-			Array.Sort(filenames);
-
-			return filenames;
+			Console.WriteLine(" Failed");
 		}
 
-		void Syntax()
+		static string[] GetFiles(string path, string what)
+		{
+			string[] fileNames;
+
+			try
+			{
+				if (path.IndexOf("*") > -1)
+				{
+					fileNames = Directory.GetFiles(Path.GetDirectoryName(path), Path.GetFileName(path));
+				}
+				else
+				{
+					fileNames = Directory.GetFiles(path);
+				}
+			}
+			catch (IOException ex)
+			{
+				var err = "Error, unable to get the list of {0} files.".Fmt(what);
+				throw new PeachException(err, ex);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				var err = "Error, unable to get the list of {0} files.".Fmt(what);
+				throw new PeachException(err, ex);
+			}
+
+			Array.Sort(fileNames);
+
+			return fileNames;
+		}
+
+		static void VerifyDirectory(string path)
+		{
+			try
+			{
+				if (!Directory.Exists(path))
+					Directory.CreateDirectory(path);
+			}
+			catch (IOException ex)
+			{
+				throw new PeachException(ex.Message, ex);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				throw new PeachException(ex.Message, ex);
+			}
+		}
+
+		static void Syntax()
 		{
 			Console.WriteLine(@"
 
@@ -197,19 +333,23 @@ Collect Traces
 --------------
 
 Perform code coverage using all files in the 'samples' folder.  Collect
-the .trace files for later analysis.
+the .trace files in the 'traces' folder for later analysis.
 
 Syntax:
-  PeachMinset [-k] -s samples -t traces command.exe args %s
+  PeachMinset [-k -v] -s samples -t traces command.exe args %s
 
 Note:
   %s will be replaced by sample filename.
+  -k will terminate command.exe when CPU becomes idle.
+  -v will enable debug log messages.
+
 
 Compute Minimum Set
 -------------------
 
-Analyzes all .trace files to determin the minimum set of samples to use
-during fuzzing.
+Analyzes all .trace files in the 'traces' folder to determin the minimum
+set of samples to use during fuzzing. The minimum set of samples will
+be copied from the 'samples' folder to the 'minset' folder.
 
 Syntax:
   PeachMinset -s samples -t traces -m minset
@@ -221,10 +361,12 @@ All-In-One
 Both tracing and computing can be performed in a single step.
 
 Syntax:
-  PeachMinset [-k] -s samples -m minset command.exe args %s
+  PeachMinset [-k -v] -s samples -t traces -m minset command.exe args %s
 
 Note:
   %s will be replaced by sample filename.
+  -k will terminate command.exe when CPU becomes idle.
+  -v will enable debug log messages.
 
 
 Distributing Minset
@@ -235,7 +377,6 @@ distributing the collecting of traces to multiple machines.  The
 final compute minimum set cannot be distributed.
 
 ");
-
 		}
 	}
 }

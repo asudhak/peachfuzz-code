@@ -223,5 +223,64 @@ namespace Peach.Core.Test
 			Assert.AreEqual("child_1", unique2);
 		}
 
+		private class TestStrategy : MutationStrategy
+		{
+			public TestStrategy()
+				: base(new Dictionary<string, Variant>())
+			{
+			}
+
+			public override bool UsesRandomSeed
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public override bool IsDeterministic
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public override uint Count
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public override uint Iteration
+			{
+				get
+				{
+					throw new NotImplementedException();
+				}
+				set
+				{
+					throw new NotImplementedException();
+				}
+			}
+
+			public void TestRecurseAllElements(DataElementContainer c, List<DataElement> list)
+			{
+				RecursevlyGetElements(c, list);
+			}
+		}
+
+		[Test]
+		public void CollectAllElements()
+		{
+			var e = new Blob("element");
+			var c = new Block("block");
+			var m = new DataModel("model");
+
+			c.Add(e);
+			m.Add(c);
+
+			var items = new List<DataElement>();
+
+			new TestStrategy().TestRecurseAllElements(m, items);
+
+			Assert.AreEqual(3, items.Count);
+			Assert.AreEqual(m, items[0]);
+			Assert.AreEqual(c, items[1]);
+			Assert.AreEqual(e, items[2]);
+		}
 	}
 }

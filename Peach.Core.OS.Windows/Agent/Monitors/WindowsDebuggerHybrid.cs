@@ -551,13 +551,31 @@ namespace Peach.Core.Agent.Monitors
 
 				// Launch the server process
 				_debuggerProcess = new System.Diagnostics.Process();
+
 				_debuggerProcess.StartInfo.CreateNoWindow = true;
 				_debuggerProcess.StartInfo.UseShellExecute = false;
 				_debuggerProcess.StartInfo.Arguments = _debuggerChannelName;
 				_debuggerProcess.StartInfo.FileName = Path.Combine(
 					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 					"Peach.Core.WindowsDebugInstance.exe");
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.EnableRaisingEvents = true;
+					_debuggerProcess.StartInfo.Arguments += " --debug";
+					_debuggerProcess.OutputDataReceived += _debuggerProcess_OutputDataReceived;
+					_debuggerProcess.ErrorDataReceived += _debuggerProcess_ErrorDataReceived;
+					_debuggerProcess.StartInfo.RedirectStandardError = true;
+					_debuggerProcess.StartInfo.RedirectStandardOutput = true;
+				}
+
 				_debuggerProcess.Start();
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.BeginErrorReadLine();
+					_debuggerProcess.BeginOutputReadLine();
+				}
 
 				// Let the process get started.
 				Thread.Sleep(2000);
@@ -637,7 +655,24 @@ namespace Peach.Core.Agent.Monitors
 				_debuggerProcess.StartInfo.FileName = Path.Combine(
 					Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
 					"Peach.Core.WindowsDebugInstance.exe");
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.EnableRaisingEvents = true;
+					_debuggerProcess.StartInfo.Arguments += " --debug";
+					_debuggerProcess.OutputDataReceived += _debuggerProcess_OutputDataReceived;
+					_debuggerProcess.ErrorDataReceived += _debuggerProcess_ErrorDataReceived;
+					_debuggerProcess.StartInfo.RedirectStandardError = true;
+					_debuggerProcess.StartInfo.RedirectStandardOutput = true;
+				}
+
 				_debuggerProcess.Start();
+
+				if (logger.IsTraceEnabled)
+				{
+					_debuggerProcess.BeginErrorReadLine();
+					_debuggerProcess.BeginOutputReadLine();
+				}
 			}
 
 			_debuggerProcessUsage++;
@@ -697,6 +732,18 @@ namespace Peach.Core.Agent.Monitors
 			}
 
 			_debugger.StartDebugger();
+		}
+
+		void _debuggerProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(e.Data))
+				logger.Debug(e.Data);
+		}
+
+		void _debuggerProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(e.Data))
+				logger.Debug(e.Data);
 		}
 
 		protected void _FinishDebugger()

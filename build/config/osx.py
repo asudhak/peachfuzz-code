@@ -17,6 +17,7 @@ tools = [
 	'tools.test',
 	'tools.version',
 	'tools.mdoc',
+	'tools.zip',
 ]
 
 def find_directory(dirs, paths):

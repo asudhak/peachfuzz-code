@@ -63,7 +63,7 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
-            if (obj.isMutable && !(obj is Flag))
+            if (obj.isMutable && obj.parent != null && !(obj is Flag))
                 return true;
 
             return false;

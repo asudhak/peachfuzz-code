@@ -56,7 +56,6 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public static bool ExitInstance = false;
 		public static DateTime LastHeartBeat = DateTime.MaxValue;
-		public static DebuggerInstance Instance = null;
 		Thread _thread = null;
 		Debuggers.DebugEngine.WindowsDebugEngine _dbg = null;
 
@@ -75,13 +74,13 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 
 		public bool dbgExited = false;
 		public bool caughtException = false;
+
 		public Fault crashInfo = null;
 
 		public DebuggerInstance()
 		{
 			logger.Debug("DebuggerInstance");
 
-			Instance = this;
 			LastHeartBeat = DateTime.Now;
 		}
 
@@ -124,7 +123,14 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 			logger.Debug(">> StopDebugger");
 
 			LastHeartBeat = DateTime.Now;
-			_dbg.exitDebugger.Set();
+
+			try
+			{
+				_dbg.exitDebugger.Set();
+			}
+			catch
+			{
+			}
 
 			for (int cnt = 0; _thread.IsAlive && cnt < 100; cnt++)
 				Thread.Sleep(100);
@@ -156,73 +162,85 @@ namespace Peach.Core.Agent.Monitors.WindowsDebug
 		{
 			logger.Debug("Run");
 
-			using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine(winDbgPath))
+			try
 			{
-				_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
-				_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
-				_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;
+				using (_dbg = new Debuggers.DebugEngine.WindowsDebugEngine(winDbgPath))
+				{
+					_dbg.dbgSymbols.SetSymbolPath(symbolsPath);
+					_dbg.skipFirstChanceGuardPageException = ignoreFirstChanceGuardPage;
+					_dbg.skipSecondChangeGuardPageException = ignoreSecondChanceGuardPage;
 
-				if (commandLine != null)
-				{
-					_dbg.CreateProcessAndAttach(commandLine);
-				}
-				else if (processName != null)
-				{
-					int pid = 0;
-					System.Diagnostics.Process proc = null;
-					var procs = System.Diagnostics.Process.GetProcessesByName(processName);
-					if (procs != null && procs.Length > 0)
+					if (commandLine != null)
 					{
-						proc = procs[0];
-						for (int i = 1; i < procs.Length; ++i)
-							procs[i].Close();
+						_dbg.CreateProcessAndAttach(commandLine);
 					}
-
-					if (proc == null && int.TryParse(processName, out pid))
-						proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
-
-					if(proc == null)
-						throw new Exception("Unable to locate process by \""+processName+"\".");
-
-					pid = proc.Id;
-
-					proc.Dispose();
-
-					_dbg.AttachProcess(pid);
-				}
-				else if (kernelConnectionString != null)
-				{
-					_dbg.AttachKernel(kernelConnectionString);
-				}
-				else if (service != null)
-				{
-					int processId = 0;
-
-					using (ServiceController srv = new ServiceController(service))
+					else if (processName != null)
 					{
-						if (srv.Status == ServiceControllerStatus.Stopped)
-							srv.Start();
-
-						using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
+						int pid = 0;
+						System.Diagnostics.Process proc = null;
+						var procs = System.Diagnostics.Process.GetProcessesByName(processName);
+						if (procs != null && procs.Length > 0)
 						{
-							object o = manageService.GetPropertyValue("ProcessId");
-							processId = (int)((UInt32)o);
+							proc = procs[0];
+							for (int i = 1; i < procs.Length; ++i)
+								procs[i].Close();
 						}
+
+						if (proc == null && int.TryParse(processName, out pid))
+							proc = System.Diagnostics.Process.GetProcessById(int.Parse(processName));
+
+						if (proc == null)
+							throw new Exception("Unable to locate process by \"" + processName + "\".");
+
+						pid = proc.Id;
+
+						proc.Dispose();
+
+						_dbg.AttachProcess(pid);
+					}
+					else if (kernelConnectionString != null)
+					{
+						_dbg.AttachKernel(kernelConnectionString);
+					}
+					else if (service != null)
+					{
+						int processId = 0;
+
+						using (ServiceController srv = new ServiceController(service))
+						{
+							if (srv.Status == ServiceControllerStatus.Stopped)
+								srv.Start();
+
+							using (ManagementObject manageService = new ManagementObject(@"Win32_service.Name='" + srv.ServiceName + "'"))
+							{
+								object o = manageService.GetPropertyValue("ProcessId");
+								processId = (int)((UInt32)o);
+							}
+						}
+
+						_dbg.AttachProcess(processId);
 					}
 
-					_dbg.AttachProcess(processId);
-				}
-
-				if (_dbg.handledException.WaitOne(0, false))
-				{
-					// Caught exception!
-					caughtException = true;
-					crashInfo = _dbg.crashInfo;
+					if (_dbg.handledException.WaitOne(0, false))
+					{
+						// Caught exception!
+						caughtException = true;
+						crashInfo = _dbg.crashInfo;
+					}
 				}
 			}
+			catch (Exception ex)
+			{
+				// Log and re-throw
+				logger.Debug(ex.ToString());
 
-			dbgExited = true;
-			_dbg = null;
+				throw;
+			}
+			finally
+			{
+				dbgExited = true;
+				_dbg = null;
+			}
 		}
 	}
 }

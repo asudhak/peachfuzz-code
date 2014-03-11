@@ -23,4 +23,8 @@ if bld.env.CS_NAME == 'csc':
 	bld.read_csshlib('Mono.Posix.dll', paths=['Mono.2.10.9'])
 
 if bld.env.BASENAME == 'osx':
-	bld.install_files('${BINDIR}', bld.path.ant_glob('CrashWrangler/**/*'))
+	bld(
+		name='CrashWrangler',
+		install_path = '${BINDIR}',
+		install_644 = bld.path.ant_glob('CrashWrangler/**/*'),
+	)

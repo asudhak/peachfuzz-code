@@ -85,8 +85,8 @@ namespace Peach.Core.Xsd
 		[XmlElement("DataModel")]
 		public List<DataModel> DataModels { get; set; }
 
-		[XmlElement("Ocl")]
-		public List<Ocl> Ocls { get; set; }
+		[XmlElement("Godel")]
+		public List<Godel> Godels { get; set; }
 
 		[XmlElement("StateModel")]
 		public NamedCollection<Peach.Core.Dom.StateModel> StateModels { get; set; }
@@ -117,34 +117,10 @@ namespace Peach.Core.Xsd
 		public List<Peach.Core.Dom.Hint> Hint { get; set; }
 	}
 
-	/// <summary>
-	/// Provide OCL script inside of cdata.
-	/// </summary>
-	public class Ocl
+	public class Godel
 	{
-		/// <summary>
-		/// Only use these OCL Contexts on Control or Record iterations.
-		/// </summary>
-		[XmlAttribute]
-		[DefaultValue(false)]
-		public bool controlOnly { get; set; }
-
-		[XmlText]
-		public string Text { get; set; }
-	}
-
-	/// <summary>
-	/// Provide an OCL script or reference existing context.
-	/// </summary>
-	public class OclRef
-	{
-		/// <summary>
-		/// Reference existing OCL Context.
-		/// </summary>
-		[XmlAttribute]
-		[DefaultValue(null)]
-		public string context { get; set; }
-
+		[XmlAnyAttribute]
+		public XmlAttribute[] Attributes { get; set; }
 	}
 
 	/// <summary>
@@ -710,7 +686,6 @@ namespace Peach.Core.Xsd
 					}
 
 					var elemAttr = pi.GetAttributes<XmlElementAttribute>().FirstOrDefault();
-
 					if (elemAttr != null)
 					{
 						var elems = MakeElement(elemAttr.ElementName, null, pi, null);
@@ -725,6 +700,13 @@ namespace Peach.Core.Xsd
 								addedElems.Add(key, elem);
 							}
 						}
+					}
+
+					var anyAttr = pi.GetAttributes<XmlAnyAttributeAttribute>().FirstOrDefault();
+					if (anyAttr != null)
+					{
+						complexType.AnyAttribute = new XmlSchemaAnyAttribute() { ProcessContents = XmlSchemaContentProcessing.Skip };
+						continue;
 					}
 				}
 
@@ -880,6 +862,13 @@ namespace Peach.Core.Xsd
 				{
 					var attr = MakeAttribute(attrAttr.AttributeName, pi);
 					complexType.Attributes.Add(attr);
+					continue;
+				}
+
+				var anyAttr = pi.GetAttributes<XmlAnyAttributeAttribute>().FirstOrDefault();
+				if (anyAttr != null)
+				{
+					complexType.AnyAttribute = new XmlSchemaAnyAttribute() { ProcessContents = XmlSchemaContentProcessing.Skip };
 					continue;
 				}
 

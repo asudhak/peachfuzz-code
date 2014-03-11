@@ -69,7 +69,13 @@ namespace Peach.Core.Transformers.Compress
 			{
 				try
 				{
-					bzip2.CopyTo(ret);
+					// For some reason, Ionic decided the BZip2InputStream
+					// should return -1 from Read() when EOF is reached.  This
+					// breaks Stream.CopyTo() as it expects 0 on EOF.
+					// We need to use ReadByte() instead.
+					int val;
+					while ((val = bzip2.ReadByte()) != -1)
+						ret.WriteByte((byte)val);
 				}
 				catch (Exception ex)
 				{

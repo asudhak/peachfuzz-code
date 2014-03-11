@@ -104,7 +104,25 @@ namespace PeachValidator
 				catch (CrackingFailure ex)
 				{
 					MessageBox.Show("Error cracking \"" + ex.element.fullName + "\".\n" + ex.Message, "Error Cracking");
-					crackMap[dom.dataModels[dataModel]].Error = true;
+
+					long endPos = -1;
+					foreach (var element in exceptions)
+					{
+						CrackNode currentModel;
+						if (crackMap.TryGetValue(element, out currentModel))
+						{
+							currentModel.Error = true;
+
+							if (endPos == -1)
+								endPos = currentModel.StartBits;
+
+							currentModel.StopBits = endPos;
+
+							if (element.parent != null && crackMap.ContainsKey(element.parent))
+								crackMap[element.parent].Children.Add(currentModel);
+						}
+					}
+
 				}
 
 				foreach (var node in crackMap.Values)
@@ -133,7 +151,10 @@ namespace PeachValidator
 
 		void RemoveElement(DataElement element)
 		{
-			var currentModel = crackMap[element];
+			CrackNode currentModel;
+			if (!crackMap.TryGetValue(element, out currentModel))
+				return;
+
 			if (element.parent != null && crackMap.ContainsKey(element.parent))
 				crackMap[element.parent].Children.Remove(currentModel);
 			crackMap.Remove(element);
@@ -146,9 +167,18 @@ namespace PeachValidator
 			}
 		}
 
+		List<DataElement> exceptions = new List<DataElement>();
+
 		void cracker_ExceptionHandleNodeEvent(DataElement element, long position, BitStream data, Exception e)
 		{
-			RemoveElement(element);
+			if (!crackMap.ContainsKey(element))
+			{
+				// If offsets can't be figured out - we will get a crack exception
+				// before getting a begin element.
+				crackMap.Add(element, new CrackNode(crackModel, element, position, 0));
+			}
+
+			exceptions.Add(element);
 		}
 
 		void cracker_AnalyzerEvent(DataElement element, BitStream data)
@@ -158,6 +188,10 @@ namespace PeachValidator
 
 		void cracker_ExitHandleNodeEvent(DataElement element, long position, BitStream data)
 		{
+			foreach (var item in exceptions)
+				RemoveElement(item);
+			exceptions.Clear();
+
 			var currentModel = crackMap[element];
 			currentModel.StopBits = position;
 
@@ -225,7 +259,7 @@ namespace PeachValidator
 				if ((previouslySelectedModelName != null) && toolStripComboBoxDataModel.Items.Contains(previouslySelectedModelName))
 					newModelIndex = toolStripComboBoxDataModel.Items.IndexOf(previouslySelectedModelName);
 				else
-					newModelIndex = 0;
+					newModelIndex = toolStripComboBoxDataModel.Items.Count - 1;
 
 				if (toolStripComboBoxDataModel.Items.Count > 0)
 					toolStripComboBoxDataModel.SelectedIndex = newModelIndex;

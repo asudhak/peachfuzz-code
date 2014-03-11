@@ -100,7 +100,15 @@ namespace Peach.Core.Mutators
         //
         private void PopulateValues()
         {
-            if (!isULong)
+            if (size <= 8)
+            {
+                // For <= 8bits, just use every available number
+                List<long> listVals = new List<long>();
+                for (long i = minValue; i <= (long)maxValue; ++i)
+                    listVals.Add(i);
+                values[size] = listVals.ToArray();
+            }
+            else if (!isULong)
             {
                 // generate numbers
                 long[] edges8 = NumberGenerator.GenerateBadNumbers(8, n);

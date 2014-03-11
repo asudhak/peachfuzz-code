@@ -42,9 +42,9 @@ namespace Peach.Core.Agent
 	public delegate void SupportedProtocolClientEventHandler(AgentClient agent, string protocol);
 	public delegate void AgentConnectClientEventHandler(AgentClient agent, string name, string url, string password);
 	public delegate void AgentDisconnectClientEventHandler(AgentClient agent);
-	public delegate void CreatePublisherClientEventHandler(AgentClient agent, string cls, SerializableDictionary<string, Variant> args);
+	public delegate void CreatePublisherClientEventHandler(AgentClient agent, string cls, Dictionary<string, Variant> args);
 	public delegate void CreateBitwiseStreamClientEventHandler(AgentClient agent);
-	public delegate void StartMonitorClientEventHandler(AgentClient agent, string name, string cls, SerializableDictionary<string, Variant> args);
+	public delegate void StartMonitorClientEventHandler(AgentClient agent, string name, string cls, Dictionary<string, Variant> args);
 	public delegate void StopMonitorClientEventHandler(AgentClient agent, string name);
 	public delegate void StopAllMonitorsClientEventHandler(AgentClient agent);
 	public delegate void SessionStartingClientEventHandler(AgentClient agent);
@@ -89,7 +89,7 @@ namespace Peach.Core.Agent
 		}
 
 		public event CreatePublisherClientEventHandler CreatePublisherEvent;
-		protected void OnCreatePublisherEvent(string cls, SerializableDictionary<string, Variant> args)
+		protected void OnCreatePublisherEvent(string cls, Dictionary<string, Variant> args)
 		{
 			if (CreatePublisherEvent != null)
 				CreatePublisherEvent(this, cls, args);
@@ -103,7 +103,7 @@ namespace Peach.Core.Agent
 		}
 
 		public event StartMonitorClientEventHandler StartMonitorEvent;
-		protected void OnStartMonitorEvent(string name, string cls, SerializableDictionary<string, Variant> args)
+		protected void OnStartMonitorEvent(string name, string cls, Dictionary<string, Variant> args)
 		{
 			if (StartMonitorEvent != null)
 				StartMonitorEvent(this, name, cls, args);
@@ -209,7 +209,7 @@ namespace Peach.Core.Agent
 		/// <param name="cls">Class of publisher to create</param>
 		/// <param name="args">Arguments for publisher</param>
 		/// <returns>Instance of remote publisher</returns>
-		public abstract Publisher CreatePublisher(string cls, SerializableDictionary<string, Variant> args);
+		public abstract Publisher CreatePublisher(string cls, Dictionary<string, Variant> args);
 
 		/// <summary>
 		/// Creates a BitwiseStream on the remote agent
@@ -223,7 +223,7 @@ namespace Peach.Core.Agent
 		/// <param name="name">Name for monitor instance</param>
 		/// <param name="cls">Class of monitor to start</param>
 		/// <param name="args">Arguments</param>
-		public abstract void StartMonitor(string name, string cls, SerializableDictionary<string, Variant> args);
+		public abstract void StartMonitor(string name, string cls, Dictionary<string, Variant> args);
 		/// <summary>
 		/// Stop a specific monitor by name
 		/// </summary>

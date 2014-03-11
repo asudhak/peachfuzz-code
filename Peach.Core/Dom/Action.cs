@@ -60,6 +60,9 @@ namespace Peach.Core.Dom
 		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		[NonSerialized]
+		protected Dictionary<string, object> scope = new Dictionary<string, object>();
+
+		[NonSerialized]
 		private State _parent;
 
 		#region Schema Elements
@@ -81,9 +84,9 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.
 		/// </summary>
-		[XmlElement("Ocl")]
+		[XmlElement("Godel")]
 		[DefaultValue(null)]
-		public Peach.Core.Xsd.OclRef schemaOcl { get; set; }
+		public Peach.Core.Xsd.Godel schemaGodel { get; set; }
 
 		#endregion
 
@@ -213,12 +216,7 @@ namespace Peach.Core.Dom
 		{
 			if (!string.IsNullOrEmpty(expr))
 			{
-				Dictionary<string, object> state = new Dictionary<string, object>();
-				state["action"] = this;
-				state["state"] = this.parent;
-				state["self"] = this;
-
-				Scripting.EvalExpression(expr, state);
+				Scripting.Exec(expr, scope);
 			}
 		}
 
@@ -282,19 +280,21 @@ namespace Peach.Core.Dom
 		{
 			logger.Trace("Run({0}): {1}", name, GetType().Name);
 
+			// Setup scope for any scripting expressions
+			scope["context"] = context;
+			scope["Context"] = context;
+			scope["action"] = this;
+			scope["Action"] = this;
+			scope["state"] = parent;
+			scope["State"] = parent;
+			scope["StateModel"] = parent.parent;
+			scope["stateModel"] = parent.parent;
+			scope["Test"] = parent.parent.parent;
+			scope["test"] = parent.parent.parent;
+			scope["self"] = this;
+
 			if (when != null)
 			{
-				Dictionary<string, object> scope = new Dictionary<string, object>();
-				scope["context"] = context;
-				scope["Context"] = context;
-				scope["action"] = this;
-				scope["Action"] = this;
-				scope["state"] = parent;
-				scope["State"] = parent;
-				scope["StateModel"] = parent.parent;
-				scope["Test"] = parent.parent.parent;
-				scope["self"] = this;
-
 				object value = Scripting.EvalExpression(when, scope);
 				if (!(value is bool))
 				{
@@ -317,7 +317,7 @@ namespace Peach.Core.Dom
 					if (!context.test.publishers.ContainsKey(this.publisher))
 					{
 						logger.Debug("Run: Publisher '" + this.publisher + "' not found!");
-						throw new PeachException("Error, Action '" + name + "' publisher value '" + this.publisher + "' was not found!");
+						throw new PeachException("Error, Action '" + name + "' couldn't find publisher named '" + this.publisher + "'.");
 					}
 
 					publisher = context.test.publishers[this.publisher];

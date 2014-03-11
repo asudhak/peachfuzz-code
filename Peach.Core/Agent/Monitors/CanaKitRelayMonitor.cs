@@ -17,9 +17,9 @@ namespace Peach.Core.Agent.Monitors
 	/// the on/off occur before every iteration.
 	/// </summary>
 	/// <remarks>
-	/// This monitor is used for embedded device fuzzing when you want to 
+	/// This monitor is used for embedded device fuzzing when you want to
 	/// turn power or signal on/off while fuzzing.
-	/// 
+	///
 	/// http://www.canakit.com/4-port-usb-relay-controller.html
 	/// </remarks>
 	[Monitor("CanaKitRelay", true)]
@@ -46,30 +46,37 @@ namespace Peach.Core.Agent.Monitors
 
 		void resetPower(bool turnOff = true)
 		{
-			using (var serial = new SerialPort(SerialPort, 115200, Parity.None, 8, StopBits.One))
-			{
-				serial.Open();
-				if (ReverseSwitch)
-				{
-					if (turnOff)
-					{
-						serial.Write("REL" + RelayNumber + ".ON\r\n");
-						System.Threading.Thread.Sleep(OnOffPause);
-					}
+      try
+      {
+        using (var serial = new SerialPort(_serialPort, 115200, Parity.None, 8, StopBits.One))
+        {
+          serial.Open();
+          if (_reverseSwitch)
+          {
+            if (turnOff)
+            {
+              serial.Write("REL" + _relayNumber + ".ON\r\n");
+              System.Threading.Thread.Sleep(_powerPause);
+            }
 
-					serial.Write("\r\nREL" + RelayNumber + ".OFF\r\n");
-				}
-				else
-				{
-					if (turnOff)
-					{
-						serial.Write("\r\nREL" + RelayNumber + ".OFF\r\n");
-						System.Threading.Thread.Sleep(OnOffPause);
-					}
+            serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
+          }
+          else
+          {
+            if (turnOff)
+            {
+              serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
+              System.Threading.Thread.Sleep(_powerPause);
+            }
 
-					serial.Write("REL" + RelayNumber + ".ON\r\n");
-				}
-			}
+            serial.Write("REL" + _relayNumber + ".ON\r\n");
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        throw new PeachException("Canakit failure: " + e.Message , e);
+      }
 		}
 
 		public override void StopMonitor()

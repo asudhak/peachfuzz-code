@@ -698,5 +698,56 @@ namespace Peach.Core.Test.PitParserTests
 			PitParser parser = new PitParser();
 			parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
 		}
+
+		[Test]
+		public void TestDataModelMutable()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM' mutable='false'>
+		<Blob name='blob' valueType='hex' value='00 ab'/>
+	</DataModel>
+
+	<DataModel name='DM2' ref='DM'>
+		<Blob name='blob2' valueType='hex' value='00 ab'/>
+	</DataModel>
+
+	<DataModel name='DM3'>
+		<Block ref='DM'>
+			<Blob name='blob2' valueType='hex' value='00 ab'/>
+		</Block>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+			</Action>
+		</State>
+	</StateModel>
+</Peach>
+";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(3, dom.dataModels.Count);
+			Assert.AreEqual(false, dom.dataModels[0].isMutable);
+			Assert.AreEqual(true, dom.dataModels[0][0].isMutable);
+
+			Assert.AreEqual(false, dom.dataModels[1].isMutable);
+			Assert.AreEqual(true, dom.dataModels[1][0].isMutable);
+			Assert.AreEqual(true, dom.dataModels[1][1].isMutable);
+
+			Assert.AreEqual(true, dom.dataModels[2].isMutable);
+			Assert.AreEqual(false, dom.dataModels[2][0].isMutable);
+			var c = dom.dataModels[2][0] as DataElementContainer;
+			Assert.NotNull(c);
+			Assert.AreEqual(true, c[0].isMutable);
+			Assert.AreEqual(true, c[1].isMutable);
+
+			Assert.AreEqual(false, dom.stateModels[0].states[0].actions[0].dataModel.isMutable);
+
+		}
 	}
 }

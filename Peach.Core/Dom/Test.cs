@@ -178,6 +178,9 @@ namespace Peach.Core.Dom
 		[OnCloning]
 		private bool OnCloning(object context)
 		{
+			// We should not ever get here.  This means
+			// some other object is being cloned and has a member
+			// that should be marked NonSerialized
 			throw new NotSupportedException();
 		}
 
