@@ -51,6 +51,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class State : INamed
 	{
+		[NonSerialized]
+		private StateModel _parent;
+
 		protected Dictionary<string, object> scope = new Dictionary<string, object>();
 
 		public State()
@@ -111,7 +114,11 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The state model that owns this state.
 		/// </summary>
-		public StateModel parent { get; set; }
+		public StateModel parent
+		{
+			get { return _parent; }
+			set { _parent = value; }
+		}
 
 		/// <summary>
 		/// Has the state started?
