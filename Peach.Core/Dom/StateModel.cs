@@ -158,8 +158,6 @@ namespace Peach.Core.Dom
 		{
 			try
 			{
-				OnStarting();
-
 				foreach (Publisher publisher in context.test.publishers.Values)
 				{
 					publisher.Iteration = context.test.strategy.Iteration;
@@ -176,6 +174,8 @@ namespace Peach.Core.Dom
 				}
 
 				State currentState = initialState;
+
+				OnStarting();
 
 				while (true)
 				{
