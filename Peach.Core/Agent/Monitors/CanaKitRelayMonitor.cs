@@ -46,37 +46,37 @@ namespace Peach.Core.Agent.Monitors
 
 		void resetPower(bool turnOff = true)
 		{
-      try
-      {
-        using (var serial = new SerialPort(_serialPort, 115200, Parity.None, 8, StopBits.One))
-        {
-          serial.Open();
-          if (_reverseSwitch)
-          {
-            if (turnOff)
-            {
-              serial.Write("REL" + _relayNumber + ".ON\r\n");
-              System.Threading.Thread.Sleep(_powerPause);
-            }
+		  try
+		  {
+			  using (var serial = new SerialPort(SerialPort, 115200, Parity.None, 8, StopBits.One))
+			{
+			  serial.Open();
+			  if (ReverseSwitch)
+			  {
+				if (turnOff)
+				{
+					serial.Write("REL" + RelayNumber + ".ON\r\n");
+					System.Threading.Thread.Sleep(OnOffPause);
+				}
 
-            serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
-          }
-          else
-          {
-            if (turnOff)
-            {
-              serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
-              System.Threading.Thread.Sleep(_powerPause);
-            }
+				serial.Write("\r\nREL" + RelayNumber + ".OFF\r\n");
+			  }
+			  else
+			  {
+				if (turnOff)
+				{
+					serial.Write("\r\nREL" + RelayNumber + ".OFF\r\n");
+				  System.Threading.Thread.Sleep(OnOffPause);
+				}
 
-            serial.Write("REL" + _relayNumber + ".ON\r\n");
-          }
-        }
-      }
-      catch (Exception e)
-      {
-        throw new PeachException("Canakit failure: " + e.Message , e);
-      }
+				serial.Write("REL" + RelayNumber + ".ON\r\n");
+			  }
+			}
+		  }
+		  catch (Exception e)
+		  {
+			throw new PeachException("Canakit failure: " + e.Message , e);
+		  }
 		}
 
 		public override void StopMonitor()
