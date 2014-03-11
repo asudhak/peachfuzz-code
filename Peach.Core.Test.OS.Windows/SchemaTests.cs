@@ -31,7 +31,7 @@ namespace Peach.Core.Test.OS.Windows
 			catch (PeachException ex)
 			{
 				var lines = ex.Message.Split('\n');
-				Assert.AreEqual(6, lines.Length);
+				Assert.AreEqual(5, lines.Length);
 
 				Assert.True(lines[0].Contains("file failed to validate"));
 				Assert.True(lines[1].StartsWith("Line: 3, Position: 13"));
@@ -40,8 +40,6 @@ namespace Peach.Core.Test.OS.Windows
 				Assert.True(lines[2].Contains("The required attribute 'name' is missing."));
 				Assert.True(lines[3].StartsWith("Line: 5, Position: 3"));
 				Assert.True(lines[3].Contains("The required attribute 'initialState' is missing."));
-				Assert.True(lines[4].StartsWith("Line: 5, Position: 3"));
-				Assert.True(lines[4].Contains("incomplete content"));
 			}
 		}
 	}
