@@ -54,6 +54,7 @@ namespace Peach.Core.Dom
 		[NonSerialized]
 		private StateModel _parent;
 
+		[NonSerialized]
 		protected Dictionary<string, object> scope = new Dictionary<string, object>();
 
 		public State()
