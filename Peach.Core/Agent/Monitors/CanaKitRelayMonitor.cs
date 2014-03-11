@@ -17,9 +17,9 @@ namespace Peach.Core.Agent.Monitors
 	/// the on/off occur before every iteration.
 	/// </summary>
 	/// <remarks>
-	/// This monitor is used for embedded device fuzzing when you want to 
+	/// This monitor is used for embedded device fuzzing when you want to
 	/// turn power or signal on/off while fuzzing.
-	/// 
+	///
 	/// http://www.canakit.com/4-port-usb-relay-controller.html
 	/// </remarks>
 	[Monitor("CanaKitRelay", true)]
@@ -31,63 +31,52 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("ReverseSwitch", typeof(bool), "Switches the order of the on off commands for when the NC port is used for power", "false")]
 	public class CanaKitRelayMonitor : Monitor
 	{
-		string _serialPort = null;
-		string _relayNumber = null;
-		int _powerPause = 500;
-		bool _everyIteration = false;
-		bool _resetOnStart = false;
-		bool _reverseSwitch = false;
+		public string SerialPort { get; private set; }
+		public int RelayNumber { get; protected set; }
+		public int OnOffPause { get; private set; }
+		public bool ResetEveryIteration { get; private set; }
+		public bool ResetOnStart { get; private set; }
+		public bool ReverseSwitch { get; private set; }
 
 		public CanaKitRelayMonitor(IAgent agent, string name, Dictionary<string, Variant> args)
 			: base(agent, name, args)
 		{
-			if (args.ContainsKey("SerialPort"))
-				_serialPort = (string)args["SerialPort"];
-			if (args.ContainsKey("RelayNumber"))
-				_relayNumber = (string)args["RelayNumber"];
-			if (args.ContainsKey("ResetEveryIteration"))
-				_everyIteration = (string)args["ResetEveryIteration"] == "true";
-			if (args.ContainsKey("PowerOnOffPause"))
-				_powerPause = (int)args["PowerOnOffPause"];
-			if (args.ContainsKey("ResetOnStart"))
-				_resetOnStart = (string)args["ResetOnStart"] == "true";
-			if (args.ContainsKey("ReverseSwitch"))
-				_reverseSwitch = (string)args["ReverseSwitch"] == "true";
+			ParameterParser.Parse(this, args);
 		}
 
 		void resetPower(bool turnOff = true)
 		{
-      try
-      {
-        using (var serial = new SerialPort(_serialPort, 115200, Parity.None, 8, StopBits.One))
-        {
-          serial.Open();
-          if (_reverseSwitch)
-          {
-            if (turnOff)
-            {
-              serial.Write("REL" + _relayNumber + ".ON\r\n");
-              System.Threading.Thread.Sleep(_powerPause);
-            }
+		  try
+		  {
+			  using (var serial = new SerialPort(SerialPort, 115200, Parity.None, 8, StopBits.One))
+			{
+			  serial.Open();
+			  if (ReverseSwitch)
+			  {
+				if (turnOff)
+				{
+					serial.Write("REL" + RelayNumber + ".ON\r\n");
+					System.Threading.Thread.Sleep(OnOffPause);
+				}
 
-            serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
-          }
-          else
-          {
-            if (turnOff)
-            {
-              serial.Write("\r\nREL" + _relayNumber + ".OFF\r\n");
-              System.Threading.Thread.Sleep(_powerPause);
-            }
+				serial.Write("\r\nREL" + RelayNumber + ".OFF\r\n");
+			  }
+			  else
+			  {
+				if (turnOff)
+				{
+					serial.Write("\r\nREL" + RelayNumber + ".OFF\r\n");
+				  System.Threading.Thread.Sleep(OnOffPause);
+				}
 
-            serial.Write("REL" + _relayNumber + ".ON\r\n");
-          }
-        }
-      }
-      catch (Exception e)
-      {
-        throw new PeachException("Canakit failure: " + e.Message , e); 
-      }
+				serial.Write("REL" + RelayNumber + ".ON\r\n");
+			  }
+			}
+		  }
+		  catch (Exception e)
+		  {
+			throw new PeachException("Canakit failure: " + e.Message , e);
+		  }
 		}
 
 		public override void StopMonitor()
@@ -96,7 +85,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void SessionStarting()
 		{
-			if (!_resetOnStart)
+			if (!ResetOnStart)
 			{
 				resetPower(false);
 				System.Threading.Thread.Sleep(250);
@@ -116,7 +105,7 @@ namespace Peach.Core.Agent.Monitors
 
 		public override void IterationStarting(uint iterationCount, bool isReproduction)
 		{
-			if (_everyIteration)
+			if (ResetEveryIteration)
 			{
 				resetPower();
 			}
@@ -137,7 +126,7 @@ namespace Peach.Core.Agent.Monitors
 			// This indicates a fault was detected and we
 			// should reset a port.
 
-			if (!_everyIteration)
+			if (!ResetEveryIteration)
 				resetPower();
 
 			return null;
