@@ -197,6 +197,11 @@ namespace Peach.Core.Analyzers
 			}
 		}
 
+		protected virtual Dom.Dom getNewDom()
+		{
+			return new Dom.Dom();
+		}
+
 		public virtual Dom.Dom asParser(Dictionary<string, object> args, Stream data, bool doValidatePit)
 		{
 			// Reset the data element auto-name suffix back to zero
@@ -210,7 +215,7 @@ namespace Peach.Core.Analyzers
 			XmlDocument xmldoc = new XmlDocument();
 			xmldoc.LoadXml(xml);
 
-			_dom = new Dom.Dom();
+			_dom = getNewDom();
 
 			foreach (XmlNode child in xmldoc.ChildNodes)
 			{
