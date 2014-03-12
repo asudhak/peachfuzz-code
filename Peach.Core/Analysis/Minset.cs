@@ -71,25 +71,6 @@ namespace Peach.Core.Analysis
 		}
 
 		/// <summary>
-		/// Load the blocks
-		/// </summary>
-		/// <param name="fileName"></param>
-		/// <returns></returns>
-		static List<ulong> LoadBlocks(string fileName)
-		{
-			using (StreamReader sin = File.OpenText(fileName))
-			{
-				string line;
-				List<ulong> blocks = new List<ulong>();
-
-				while ((line = sin.ReadLine()) != null)
-					blocks.Add(ulong.Parse(line));
-
-				return blocks;
-			}
-		}
-
-		/// <summary>
 		/// Perform coverage analysis of trace files.
 		/// </summary>
 		/// <remarks>
@@ -100,69 +81,42 @@ namespace Peach.Core.Analysis
 		/// <returns>Returns the minimum set of smaple files.</returns>
 		public string[] RunCoverage(string [] sampleFiles, string [] traceFiles)
 		{
-			// All blocks we are covering
-			var coveredBlocks = new List<ulong>();
-			var minset = new List<string>();
+			// Expect samples and traces to correlate 1 <-> 1
+			if (sampleFiles.Length != traceFiles.Length)
+				throw new ArgumentException();
 
-			// Number of blocks in trace file
-			var blocksInTraceFile = new Dictionary<string, List<ulong>>();
+			var ret = new List<string>();
+			var lines = new HashSet<string>();
+			string line;
 
-			// Load blocks
-			foreach (string traceFile in traceFiles)
-				blocksInTraceFile[traceFile] = LoadBlocks(traceFile);
-
-			// List of items sorted by count of blocks
-			var sortedTraceBlocksByCount = new List<KeyValuePair<string, List<ulong>>>(blocksInTraceFile.ToArray<KeyValuePair<string, List<ulong>>>());
-			sortedTraceBlocksByCount.Sort((firstPair, nextPair) =>
-					{
-						return firstPair.Value.Count.CompareTo(nextPair.Value.Count);
-					}
-				);
-
-			foreach (KeyValuePair<string, List<ulong>> keyValue in sortedTraceBlocksByCount)
+			for (int i = 0; i < traceFiles.Length; ++i)
 			{
-				if(coveredBlocks.Count == 0)
+				bool unique = false;
+
+				try
 				{
-					coveredBlocks.AddRange(keyValue.Value);
-					minset.Add(keyValue.Key);
-					continue;
+					using (var rdr = new StreamReader(traceFiles[i]))
+					{
+						for (int cnt = 0; (line = rdr.ReadLine()) != null; ++cnt)
+						{
+							if (lines.Add(line) && !unique)
+							{
+								logger.Debug("Including '{0}', unique at line #{1}: {2}", traceFiles[i], cnt + 1, line);
+								unique = true;
+							}
+						}
+					}
+
+					if (unique)
+						ret.Add(sampleFiles[i]);
 				}
-
-				var delta = Delta(keyValue.Value, coveredBlocks);
-
-				if(delta.Count == 0)
-					continue;
-
-				minset.Add(keyValue.Key);
-				coveredBlocks.AddRange(delta);
+				catch (Exception ex)
+				{
+					logger.Debug("Error processing trace {0}\n{1}", traceFiles[i], ex);
+				}
 			}
 
-			// Strip the .trace and path off
-			for (int cnt = 0; cnt < minset.Count; cnt++)
-			{
-				minset[cnt] = Path.GetFileNameWithoutExtension(minset[cnt]);
-			}
-
-			return minset.ToArray();
-		}
-
-		/// <summary>
-		/// Are any of the childs items missing from master.
-		/// </summary>
-		/// <param name="child"></param>
-		/// <param name="master"></param>
-		/// <returns></returns>
-		protected List<ulong> Delta(List<ulong> child, List<ulong> master)
-		{
-			List<ulong> delta = new List<ulong>();
-
-			foreach (ulong bblock in child)
-			{
-				if (!master.Contains(bblock))
-					delta.Add(bblock);
-			}
-
-			return delta;
+			return ret.ToArray();
 		}
 
 		/// <summary>

@@ -54,6 +54,9 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class StateModel : INamed
 	{
+		[NonSerialized]
+		private Dom _parent;
+
 		static NLog.Logger logger = LogManager.GetCurrentClassLogger();
 
 		public StateModel()
@@ -70,6 +73,13 @@ namespace Peach.Core.Dom
 				return _dataActions.AsEnumerable();
 			}
 		}
+
+		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Godel")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.Godel schemaGodel { get; set; }
 
 		/// <summary>
 		/// All states in state model.
@@ -92,7 +102,11 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The Dom that owns this state model.
 		/// </summary>
-		public Dom parent { get; set; }
+		public Dom parent
+		{
+			get { return _parent; }
+			set { _parent = value; }
+		}
 
 		/// <summary>
 		/// The initial state to run when state machine executes.
@@ -144,8 +158,6 @@ namespace Peach.Core.Dom
 		{
 			try
 			{
-				OnStarting();
-
 				foreach (Publisher publisher in context.test.publishers.Values)
 				{
 					publisher.Iteration = context.test.strategy.Iteration;
@@ -162,6 +174,8 @@ namespace Peach.Core.Dom
 				}
 
 				State currentState = initialState;
+
+				OnStarting();
 
 				while (true)
 				{

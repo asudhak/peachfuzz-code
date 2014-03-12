@@ -148,7 +148,7 @@ def apply_version_c(self):
 
 class version(Task.Task):
 	color = 'PINK'
-	vars = [ 'BUILDTAG', 'VER_COMPANY', 'VER_TITLE', 'VER_DESC', 'VER_PRODUCT', 'VER_TEMPLATE' ]
+	vars = [ 'BUILDTAG', 'VER_COMPANY', 'VER_TITLE', 'VER_DESC', 'VER_PRODUCT', 'VER_TEMPLATE', 'VER_BRANCH' ]
 
 	def run(self):
 		parts = self.env.BUILDTAG.split('.')
@@ -183,7 +183,7 @@ class version(Task.Task):
 			'VER0'      : parts[0],
 			'VER1'      : parts[1],
 			'VER2'      : parts[2],
-			'VER3'      : len(parts) == 4 and parts[3] or '0',
+			'VER3'      : len(parts) == 4 and parts[3] or self.env.VER_BRANCH,
 			'FILEFLAGS' : fileflags,
 			'FILETYPE'  : filetype,
 			'FILENAME'  : tsk.outputs[0].name,

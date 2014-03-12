@@ -89,17 +89,32 @@ namespace Peach.Core
 			}
 		}
 
-		public static void Exec(string code, Dictionary<string, object> localScope)
+		private static ScriptScope Prepare(Dictionary<string, object> localScope)
 		{
+			var paths = Paths.Except(Engine.Instance.GetSearchPaths()).ToList();
+			if (paths.Count > 0)
+			{
+				var list = Engine.Instance.GetSearchPaths().ToList();
+				list.AddRange(paths);
+				Engine.Instance.SetSearchPaths(list);
+			}
+
 			var missing = Imports.Except(Engine.Modules.Keys).ToList();
-			foreach (string import in missing)
+			foreach (var import in missing)
 				Engine.Modules.Add(import, Engine.Instance.ImportModule(import));
 
-			ScriptScope scope = Engine.Instance.CreateScope();
+			var scope = Engine.Instance.CreateScope();
 
 			scope.Apply(Engine.Modules);
 			scope.Apply(GlobalScope);
 			scope.Apply(localScope);
+
+			return scope;
+		}
+
+		public static void Exec(string code, Dictionary<string, object> localScope)
+		{
+			var scope = Prepare(localScope);
 
 			try
 			{
@@ -120,15 +135,7 @@ namespace Peach.Core
 
 		public static object EvalExpression(string code, Dictionary<string, object> localScope)
 		{
-			var missing = Imports.Except(Engine.Modules.Keys).ToList();
-			foreach (string import in missing)
-				Engine.Modules.Add(import, Engine.Instance.ImportModule(import));
-
-			ScriptScope scope = Engine.Instance.CreateScope();
-
-			scope.Apply(Engine.Modules);
-			scope.Apply(GlobalScope);
-			scope.Apply(localScope);
+			var scope = Prepare(localScope);
 
 			try
 			{

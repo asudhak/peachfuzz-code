@@ -84,9 +84,9 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// Currently unused.  Exists for schema generation.
 		/// </summary>
-		[XmlElement("Ocl")]
+		[XmlElement("Godel")]
 		[DefaultValue(null)]
-		public Peach.Core.Xsd.OclRef schemaOcl { get; set; }
+		public Peach.Core.Xsd.Godel schemaGodel { get; set; }
 
 		#endregion
 
@@ -317,7 +317,7 @@ namespace Peach.Core.Dom
 					if (!context.test.publishers.ContainsKey(this.publisher))
 					{
 						logger.Debug("Run: Publisher '" + this.publisher + "' not found!");
-						throw new PeachException("Error, Action '" + name + "' publisher value '" + this.publisher + "' was not found!");
+						throw new PeachException("Error, Action '" + name + "' couldn't find publisher named '" + this.publisher + "'.");
 					}
 
 					publisher = context.test.publishers[this.publisher];

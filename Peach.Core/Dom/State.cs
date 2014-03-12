@@ -51,6 +51,10 @@ namespace Peach.Core.Dom
 	/// </summary>
 	public class State : INamed
 	{
+		[NonSerialized]
+		private StateModel _parent;
+
+		[NonSerialized]
 		protected Dictionary<string, object> scope = new Dictionary<string, object>();
 
 		public State()
@@ -74,6 +78,13 @@ namespace Peach.Core.Dom
 		public static event StateChangingStateEventHandler ChangingState;
 
 		/// <summary>
+		/// Currently unused.  Exists for schema generation.
+		/// </summary>
+		[XmlElement("Godel")]
+		[DefaultValue(null)]
+		public Peach.Core.Xsd.Godel schemaGodel { get; set; }
+
+		/// <summary>
 		/// The name of this state.
 		/// </summary>
 		[XmlAttribute]
@@ -81,14 +92,14 @@ namespace Peach.Core.Dom
 		public string name { get; set; }
 
 		/// <summary>
-		/// Expression to run when action is starting
+		/// Expression to run when state is starting
 		/// </summary>
 		[XmlAttribute]
 		[DefaultValue(null)]
 		public string onStart { get; set; }
 
 		/// <summary>
-		/// Expression to run when action is completed
+		/// Expression to run when state is completed
 		/// </summary>
 		[XmlAttribute]
 		[DefaultValue(null)]
@@ -104,7 +115,11 @@ namespace Peach.Core.Dom
 		/// <summary>
 		/// The state model that owns this state.
 		/// </summary>
-		public StateModel parent { get; set; }
+		public StateModel parent
+		{
+			get { return _parent; }
+			set { _parent = value; }
+		}
 
 		/// <summary>
 		/// Has the state started?

@@ -419,8 +419,8 @@ namespace Peach.Core
 							if (context.controlRecordingIteration)
 							{
 								logger.Debug("runTest: SoftException on control recording iteration");
-								if (se.InnerException != null)
-									throw new PeachException(se.InnerException.Message, se);
+								if (se.InnerException != null && string.IsNullOrEmpty(se.Message))
+										throw new PeachException(se.InnerException.Message, se);
 								throw new PeachException(se.Message, se);
 							}
 
