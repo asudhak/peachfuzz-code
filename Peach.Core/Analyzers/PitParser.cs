@@ -1351,6 +1351,8 @@ namespace Peach.Core.Analyzers
 			State state = new State();
 			state.parent = parent;
 			state.name = node.getAttr("name", parent.states.UniqueName());
+			state.onStart = node.getAttr("onStart", null);
+			state.onComplete = node.getAttr("onComplete", null);
 
 			foreach (XmlNode child in node.ChildNodes)
 			{

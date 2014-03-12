@@ -117,7 +117,7 @@ namespace Peach.Core.Dom
 		public bool finished { get; private set; }
 
 		/// <summary>
-		/// Has an error occured?
+		/// Has an error occurred?
 		/// </summary>
 		public bool error { get; private set; }
 
@@ -186,7 +186,12 @@ namespace Peach.Core.Dom
 				foreach (Action action in actions)
 					action.Run(context);
 
-				RunScript(onComplete);
+				// onComplete script run from finally.
+			}
+			catch(ActionChangeStateException)
+			{
+				// this is not an error
+				throw;
 			}
 			catch
 			{
@@ -196,6 +201,8 @@ namespace Peach.Core.Dom
 			finally
 			{
 				finished = true;
+
+				RunScript(onComplete);
 				OnFinished();
 			}
 		}
