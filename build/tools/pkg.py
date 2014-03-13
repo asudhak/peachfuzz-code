@@ -48,7 +48,7 @@ class ZipContext(InstallContext):
 				raise Errors.WafError("Source not found: %s" % x)
 			if not n.is_child_of(base_path):
 				continue
-			archive_name = os.path.join(base_name, n.path_from(base_path))
+			archive_name = n.path_from(base_path)
 			if Logs.verbose > 0:
 				Logs.info(' + add %s (from %s)' % (archive_name, x))
 			else:
