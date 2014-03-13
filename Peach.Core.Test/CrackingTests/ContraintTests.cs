@@ -178,6 +178,45 @@ namespace Peach.Core.Test.CrackingTests
 			Assert.NotNull(blob);
 			Assert.AreEqual(new byte[] { 4, 4, 4, 4 }, blob.Value.ToArray());
 		}
+
+		[Test]
+		public void ConstraintChoice()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<Choice>
+			<Choice name='choice' constraint='element.SelectedElement.name == ""str10""'>
+				<String name='str10' length='10'/>
+				<String name='strX' />
+			</Choice>
+			<String name='unsized' />
+		</Choice>
+	</DataModel>
+</Peach>
+";
+
+			var cracker = new DataCracker();
+			var parser = new PitParser();
+
+			var dom1 = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			var data1 = Bits.Fmt("{0}", "HelloWorld");
+			cracker.CrackData(dom1.dataModels[0], data1);
+
+			Assert.AreEqual(1, dom1.dataModels[0].Count);
+			var choice1 = dom1.dataModels[0][0] as Dom.Choice;
+			Assert.NotNull(choice1);
+			Assert.AreEqual("choice", choice1.SelectedElement.name);
+
+			var dom2 = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			var data2 = Bits.Fmt("{0}", "Hello");
+			cracker.CrackData(dom2.dataModels[0], data2);
+
+			Assert.AreEqual(1, dom2.dataModels[0].Count);
+			var choice2 = dom2.dataModels[0][0] as Dom.Choice;
+			Assert.NotNull(choice2);
+			Assert.AreEqual("unsized", choice2.SelectedElement.name);
+		}
 	}
 }
 

@@ -517,7 +517,12 @@ namespace Peach.Core.Cracker
 			// InternalValue will have relations/fixups applied
 
 			var iv = element.DefaultValue;
-			if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
+			if (iv == null)
+			{
+				scope["value"] = null;
+				logger.Debug("Constraint, value=None.");
+			}
+			else if (iv.GetVariantType() == Variant.VariantType.ByteString || iv.GetVariantType() == Variant.VariantType.BitStream)
 			{
 				scope["value"] = (BitwiseStream)iv;
 				logger.Debug("Constraint, value=byte array.");
