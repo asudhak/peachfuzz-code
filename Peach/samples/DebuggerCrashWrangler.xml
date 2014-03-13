@@ -68,7 +68,7 @@
 		-->
 		<Monitor class="CrashWrangler">
 			<Param name="Command" value="/Applications/Safari.app/Contents/MacOS/Safari" />
-			<Param name="Arguments" value="fuzzed.bin" />
+			<Param name="Arguments" value="fuzzed.png" />
 			
 			<Param name="UseDebugMalloc" value="false" />
 			<Param name="ExploitableReads" value="true" />
@@ -90,7 +90,7 @@
 		
 		<!-- This publisher will write our file. -->
 		<Publisher class="File">
-			<Param name="FileName" value="fuzzed.bin"/>
+			<Param name="FileName" value="fuzzed.png"/>
 		</Publisher>
 		
 		<!-- To enable logging we must include this -->
