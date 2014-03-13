@@ -928,7 +928,7 @@
 			this.textBoxLinuxExecutable.Name = "textBoxLinuxExecutable";
 			this.textBoxLinuxExecutable.Size = new System.Drawing.Size(356, 20);
 			this.textBoxLinuxExecutable.TabIndex = 1;
-			this.textBoxLinuxExecutable.Text = "/usr/bin/eog";
+			this.textBoxLinuxExecutable.Text = "/usr/bin/feh";
 			// 
 			// label27
 			// 
