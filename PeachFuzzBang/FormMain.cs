@@ -347,6 +347,7 @@ namespace PeachFuzzBang
 						break;
 				}
 
+				monitor.name = "monitor";
 				agent.monitors.Add(monitor);
 				dom.agents.Add(agent);
 
