@@ -80,7 +80,7 @@ namespace Peach.Core.Analyzers
 			}
 			catch (Exception ex)
 			{
-				throw new PeachException("Errorm XmlAnalyzer failed to analyze element '" + parent.name + "'.  " + ex.Message, ex);
+				throw new PeachException("Error, XmlAnalyzer failed to analyze element '" + parent.name + "'.  " + ex.Message, ex);
 			}
 
 			Dom.XmlElement xmlElement = null;
