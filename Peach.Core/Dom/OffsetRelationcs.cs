@@ -190,7 +190,7 @@ namespace Peach.Core.Dom
 				// we will catch and return null;
 				long offset = calculateOffset() / 8;
 
-				if (_expressionGet != null)
+				if (_expressionSet != null)
 				{
 					Dictionary<string, object> state = new Dictionary<string, object>();
 					state["offset"] = offset;
@@ -225,7 +225,7 @@ namespace Peach.Core.Dom
 				state["value"] = offset;
 				state["self"] = From;
 
-				object newValue = Scripting.EvalExpression(_expressionGet, state);
+				object newValue = Scripting.EvalExpression(_expressionSet, state);
 				offset = Convert.ToInt32(newValue);
 			}
 
