@@ -44,7 +44,7 @@ namespace PeachXmlGenerator
 		{
 			Console.WriteLine("");
 			Console.WriteLine("[ Peach v3.0");
-			Console.WriteLine("[ Peach DTD XML Fuzzer v{0}", Assembly.GetExecutingAssembly().GetName().Version);
+			Console.WriteLine("[ Peach DTD XML Generator v{0}", Assembly.GetExecutingAssembly().GetName().Version);
 			Console.WriteLine("[ Copyright (c) Michael Eddington\n");
 		}
 
@@ -145,7 +145,7 @@ namespace PeachXmlGenerator
 			DisplayTitle();
 
 			string syntax = @"
-This is the experimental XML generation fuzzer.  It will consume a DTD
+This is the experimental XML generation tool.  It will consume a DTD
 XML definition and use it to produce structurally correct XML documents.
 
 Please submit any bugs to Michael Eddington <mike@dejavusecurity.com>.

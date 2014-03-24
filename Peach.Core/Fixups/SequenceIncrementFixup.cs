@@ -38,7 +38,8 @@ using Action = Peach.Core.Dom.Action;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard sequential increment fixup.")]
-	[Fixup("SequenceIncrementFixup", true)]
+	[Fixup("SequenceIncrement", true)]
+	[Fixup("SequenceIncrementFixup")]
 	[Fixup("sequence.SequenceIncrementFixup")]
 	[Parameter("Offset", typeof(uint?), "Sets the per-iteration initial value to Offset * (Iteration - 1)", "")]
 	[Parameter("Once", typeof(bool), "Only increment once per iteration", "false")]

@@ -50,6 +50,11 @@ namespace Peach.Core.Publishers
                 _serial.Handshake = Handshake;
                 _serial.DtrEnable = DtrEnable;
                 _serial.RtsEnable = RtsEnable;
+
+				// Set timeout values
+				_serial.ReadTimeout = (Timeout >= 0 ? Timeout : SerialPort.InfiniteTimeout);
+				_serial.WriteTimeout = (Timeout >= 0 ? Timeout : SerialPort.InfiniteTimeout);
+
                 _serial.Open();
                 _clientName = _serial.PortName;
                 _client = _serial.BaseStream;
@@ -58,7 +63,7 @@ namespace Peach.Core.Publishers
             {
                 string msg = "Unable to open Serial Port {0}. {1}.".Fmt(PortName, ex.Message);
                 Logger.Error(msg);
-                throw new PeachException(msg, ex);
+                throw new SoftException(msg, ex);
             }
            
             StartClient();

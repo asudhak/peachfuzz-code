@@ -32,7 +32,8 @@ namespace Peach.Core.Fixups.Libraries
 	}
 
 
-	[Fixup("CiscoFixup", true)]
+	[Fixup("CiscoCdpChecksum", true)]
+	[Fixup("CiscoFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]
 	public class CiscoFixup : Fixup

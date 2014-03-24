@@ -37,9 +37,10 @@ using Peach.Core.IO;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard CRC32 as defined by ISO 3309 applied to two elements.")]
-	[Fixup("CrcDualFixup", true)]
-	[Fixup("checksums.CrcDualFixup")]
+	[Fixup("Crc32Dual", true)]
+	[Fixup("CrcDualFixup")]
 	[Fixup("Crc32DualFixup")]
+	[Fixup("checksums.CrcDualFixup")]
 	[Fixup("checksums.Crc32DualFixup")]
 	[Parameter("ref1", typeof(DataElement), "Reference to first data element")]
 	[Parameter("ref2", typeof(DataElement), "Reference to second data element")]

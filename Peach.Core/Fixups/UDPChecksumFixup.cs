@@ -35,7 +35,8 @@ using System.Net.Sockets;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard UDP checksum.")]
-	[Fixup("UDPChecksumFixup", true)]
+	[Fixup("UdpChecksum", true)]
+	[Fixup("UDPChecksumFixup")]
 	[Fixup("checksums.UDPChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Parameter("src", typeof(IPAddress), "Source IP address")]

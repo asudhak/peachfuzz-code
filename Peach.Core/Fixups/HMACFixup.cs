@@ -38,8 +38,9 @@ using Peach.Core.IO;
 namespace Peach.Core.Fixups
 {
     [Description("Standard Hmac checksum.")]
-    [Fixup("HMAC", true)]
-    [Parameter("ref", typeof(DataElement), "Reference to data element")]
+	[Fixup("Hmac", true)]
+	[Fixup("HMAC")]
+	[Parameter("ref", typeof(DataElement), "Reference to data element")]
     [Parameter("Key", typeof(HexString), "Key used in the hash algorithm")]
     [Parameter("Hash", typeof(Algorithms), "Hash algorithm to use", "HMACSHA1")]
     [Parameter("Length", typeof(int), "Length in bytes to return (Value of 0 means don't truncate)", "0")]

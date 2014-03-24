@@ -37,7 +37,8 @@ using Peach.Core.IO;
 namespace Peach.Core.Fixups
 {
 	[Description("XOR bytes of data.")]
-	[Fixup("LRCFixup", true)]
+	[Fixup("Lrc", true)]
+	[Fixup("LRCFixup")]
 	[Fixup("checksums.LRCFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]

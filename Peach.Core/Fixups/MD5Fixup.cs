@@ -37,7 +37,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard MD5 checksum.")]
-	[Fixup("MD5Fixup", true)]
+	[Fixup("Md5", true)]
+	[Fixup("MD5Fixup")]
 	[Fixup("checksums.MD5Fixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]

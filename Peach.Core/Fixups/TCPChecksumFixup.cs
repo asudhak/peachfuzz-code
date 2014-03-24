@@ -36,7 +36,8 @@ using System.Net.Sockets;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard TCP checksum.")]
-	[Fixup("TCPChecksumFixup", true)]
+	[Fixup("TcpChecksum", true)]
+	[Fixup("TCPChecksumFixup")]
 	[Fixup("checksums.TCPChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Parameter("src", typeof(IPAddress), "Source IP address")]

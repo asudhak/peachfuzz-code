@@ -38,7 +38,8 @@ using System.Net.Sockets;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard ICMPv6 checksum.")]
-	[Fixup("IcmpV6ChecksumFixup", true)]
+	[Fixup("IcmpV6Checksum", true)]
+	[Fixup("IcmpV6ChecksumFixup")]
 	[Fixup("checksums.IcmpV6ChecksumFixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Parameter("src", typeof(IPAddress), "Reference to data element")]

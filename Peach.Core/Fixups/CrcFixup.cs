@@ -38,7 +38,8 @@ using System.Runtime.Serialization;
 namespace Peach.Core.Fixups
 {
 	[Description("CRC Fixup library including CRC32 as defined by ISO 3309.")]
-	[Fixup("CrcFixup", true)]
+	[Fixup("Crc", true)]
+	[Fixup("CrcFixup")]
 	[Fixup("checksums.CrcFixup")]
 	[Fixup("Crc32Fixup")]
 	[Fixup("checksums.Crc32Fixup")]

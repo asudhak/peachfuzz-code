@@ -37,7 +37,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard SHA256 checksum.")]
-	[Fixup("SHA256Fixup", true)]
+	[Fixup("Sha256", true)]
+	[Fixup("SHA256Fixup")]
 	[Fixup("checksums.SHA256Fixup")]
 	[Parameter("ref", typeof(DataElement), "Reference to data element")]
 	[Serializable]

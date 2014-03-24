@@ -35,7 +35,8 @@ using Peach.Core.Dom;
 namespace Peach.Core.Fixups
 {
 	[Description("Standard sequential random fixup.")]
-	[Fixup("SequenceRandomFixup", true)]
+	[Fixup("SequenceRandom", true)]
+	[Fixup("SequenceRandomFixup")]
 	[Fixup("sequence.SequenceRandomFixup")]
 	[Serializable]
 	public class SequenceRandomFixup : Fixup
