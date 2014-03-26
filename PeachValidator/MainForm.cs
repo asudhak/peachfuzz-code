@@ -20,6 +20,7 @@ namespace PeachValidator
 {
 	public partial class MainForm : Form
 	{
+		public Dictionary<string, string> DefinedValues = new Dictionary<string, string>();
 		string windowTitle = "Peach Validator v3.0";
 		string windowTitlePit = "Peach Validator v3.0 - {0}";
 		string windowTitlePitSample = "Peach Validator v3.0 - {0} - {1}";
@@ -34,6 +35,18 @@ namespace PeachValidator
 		public MainForm()
 		{
 			InitializeComponent();
+
+			AddNewDefine("Peach.Cwd=" + Environment.CurrentDirectory);
+			AddNewDefine("Peach.Pwd=" + Path.GetDirectoryName(Assembly.GetCallingAssembly().Location));
+		}
+
+		public void AddNewDefine(string value)
+		{
+			if (value.IndexOf("=") < 0)
+				throw new PeachException("Error, defined values supplied via -D/--define must have an equals sign providing a key-pair set.");
+
+			var kv = value.Split('=');
+			DefinedValues[kv[0]] = kv[1];
 		}
 
 		protected void setTitle()
@@ -211,7 +224,7 @@ namespace PeachValidator
 		private void toolStripButtonOpenPit_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog ofd = new OpenFileDialog();
-			ofd.Title = "Selet PIT file";
+			ofd.Title = "Select PIT file";
 
 			if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
 				return;
@@ -222,14 +235,22 @@ namespace PeachValidator
 			Regex re = new Regex("##\\w+##");
 			if (File.Exists(pitFileName) && re.IsMatch(File.ReadAllText(pitFileName)))
 			{
-				ofd.Title = "Selet PIT defines file";
+				ofd.Title = "Select PIT defines file";
 
 				if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
 					return;
 
-				parserArgs[PitParser.DEFINED_VALUES] = PitParser.parseDefines(ofd.FileName);
+				var defs = PitParser.parseDefines(ofd.FileName);
+
+				foreach (var kv in defs)
+				{
+					// Allow command line to override values in XML file.
+					if (!DefinedValues.ContainsKey(kv.Key))
+						DefinedValues.Add(kv.Key, kv.Value);
+				}
 			}
 
+			parserArgs[PitParser.DEFINED_VALUES] = DefinedValues;
 			toolStripButtonRefreshPit_Click(null, null);
 		}
 
