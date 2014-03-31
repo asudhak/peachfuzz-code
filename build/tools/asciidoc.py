@@ -1,7 +1,7 @@
 from waflib.TaskGen import feature, before_method, after_method
 from waflib.Task import Task
 import re
-
+"""
 def configure(conf):
 	#conf.find_program('a2x', var='A2X')
 	#conf.find_program('dia', var='DIA')
@@ -81,3 +81,4 @@ class asciidoc(Task):
 	vars    = ['ADOCOPTS']
 	scan    = ascii_doc_scan
 	inst_to = '${DOCDIR}'
+"""

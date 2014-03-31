@@ -8,7 +8,7 @@ from waflib.Configure import conf
 from waflib import Utils, Logs, Configure, Context, Options, Errors
 from tools import pkg, hooks, nuget, test
 
-targets = [ 'win', 'linux', 'osx', 'doc' ]
+targets = [ 'win', 'linux', 'osx' ] #, 'doc' ]
 
 """
 Variables:
