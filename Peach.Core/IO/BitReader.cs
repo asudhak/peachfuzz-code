@@ -119,7 +119,7 @@ namespace Peach.Core.IO
 		{
 			var sb = new StringBuilder();
 			var dec = encoding.GetDecoder();
-			var chars = new char[1];
+			var chars = new char[2];
 			var buf = new byte[1];
 			var idx = 0;
 
@@ -139,13 +139,17 @@ namespace Peach.Core.IO
 					return sb.ToString();
 				}
 
-				if (dec.GetChars(buf, 0, buf.Length, chars, 0) == 0)
+				len = dec.GetChars(buf, 0, buf.Length, chars, 0);
+
+				if (len == 0)
 				{
 					idx++;
 				}
 				else
 				{
-					sb.Append(chars);
+					for (int i = 0; i < len; ++i)
+						sb.Append(chars[i]);
+
 					idx = 0;
 				}
 			}

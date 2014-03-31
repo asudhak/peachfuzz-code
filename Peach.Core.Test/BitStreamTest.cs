@@ -820,5 +820,33 @@ namespace Peach.Core.Test
 			}
 		}
 
+		[Test]
+		public void ReadUnicodeString()
+		{
+			var str = new Dom.String();
+			var m = new Peach.Core.Mutators.UnicodeStringsMutator(str);
+
+			for (uint i = 0; i < 1; ++i)
+			{
+				m.mutation = i;
+
+				m.sequentialMutation(str);
+
+				var src = (string)str.MutatedValue;
+				var bytes = Encoding.UTF8.GetRawBytes(src);
+
+				var bs = new BitStream(bytes);
+				var rdr = new BitReader(bs);
+
+				try
+				{
+					var tgt = rdr.ReadString(Encoding.UTF8);
+					Assert.AreEqual(src, tgt);
+				}
+				catch (DecoderFallbackException)
+				{
+				}
+			}
+		}
 	}
 }
