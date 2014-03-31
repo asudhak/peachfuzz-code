@@ -52,7 +52,10 @@ def exec_command(self, cmd, **kw):
 	msg.debug('runner: %r' % cmd)
 	msg.debug('runner_env: kw=%s' % kw)
 
-	kw['stderr'] = kw['stdout'] = subprocess.PIPE
+	if not self.logger and Logs.verbose > 0:
+		kw['stderr'] = kw['stdout'] = None
+	else:
+		kw['stderr'] = kw['stdout'] = subprocess.PIPE
 
 	try:
 		p = subprocess.Popen(cmd, **kw)
@@ -61,18 +64,18 @@ def exec_command(self, cmd, **kw):
 	except Exception as e:
 		raise Errors.WafError('Execution failure: %s' % str(e), ex=e)
 
-	if not isinstance(out, str):
+	if out and not isinstance(out, str):
 		out = out.decode(sys.stdout.encoding or 'iso8859-1')
-	if self.logger:
+	if self.logger and out:
 		self.logger.debug('out: %s' % out)
-	elif ret or Logs.verbose > 0:
+	elif ret and out:
 		sys.stdout.write(out)
 
-	if not isinstance(err, str):
+	if err and not isinstance(err, str):
 		err = err.decode(sys.stdout.encoding or 'iso8859-1')
-	if self.logger:
+	if self.logger and err:
 		self.logger.debug('err: %s' % err)
-	else:
+	elif err:
 		sys.stderr.write(err)
 
 	return ret
