@@ -371,6 +371,8 @@ namespace Peach.Core.Dom
 			var tmp = _childrenList[first];
 			_childrenList[first] = _childrenList[second];
 			_childrenList[second] = tmp;
+
+			Invalidate();
 		}
 
 
