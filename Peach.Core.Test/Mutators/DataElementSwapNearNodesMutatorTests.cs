@@ -270,6 +270,49 @@ namespace Peach.Core.Test.Mutators
 			Assert.AreEqual("DataElementSwapNearNodesMutator | TheModel.str", strategies[1]);
 		}
 
+		[Test]
+		public void NoSwapNoNextSibling()
+		{
+			// If an element has no next sibling, don't try and swap it
+			string xml = @"
+<Peach>
+	<DataModel name=""TheModel"">
+		<Block>
+			<String value=""Hello""/>
+			<String value=""World""/>
+		</Block>
+	</DataModel>
+
+	<StateModel name=""TheState"" initialState=""Initial"">
+		<State name=""Initial"">
+			<Action type=""output"">
+				<DataModel ref=""TheModel""/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name=""Default"">
+		<StateModel ref=""TheState""/>
+		<Publisher class=""Null""/>
+		<Strategy class=""Sequential""/>
+	</Test>
+</Peach>
+";
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+			dom.tests[0].includedMutators = new List<string>();
+			dom.tests[0].includedMutators.Add("DataElementSwapNearNodesMutator");
+
+			var config = new RunConfiguration();
+
+			var e = new Engine(null);
+			e.startFuzzing(dom, config);
+
+			// 2 Data models, 1 control and 1 with Hello & World swapped
+			Assert.AreEqual(2, dataModels.Count);
+			Assert.AreEqual(Encoding.ASCII.GetBytes("HelloWorld"), dataModels[0].Value.ToArray());
+			Assert.AreEqual(Encoding.ASCII.GetBytes("WorldHello"), dataModels[1].Value.ToArray());
+		}
     }
 }
 
