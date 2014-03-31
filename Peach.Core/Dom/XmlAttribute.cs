@@ -33,6 +33,7 @@ using System.Xml;
 
 using Peach.Core.Analyzers;
 using Peach;
+using Peach.Core.IO;
 
 namespace Peach.Core.Dom
 {
@@ -108,28 +109,6 @@ namespace Peach.Core.Dom
 				_ns = value;
 				Invalidate();
 			}
-		}
-
-		/// <summary>
-		/// Generate a System.Xml.XmlAttribute instance and populate with
-		/// correct information.
-		/// </summary>
-		/// <param name="doc">XmlDocument this attribute will be part of.</param>
-		/// <param name="parent">The parent XmlNode</param>
-		/// <returns>Returns a valid instance of an XmlAttribute.</returns>
-		public virtual System.Xml.XmlAttribute GenerateXmlAttribute(PeachXmlDoc doc, XmlNode parent)
-		{
-			System.Diagnostics.Debug.Assert(Count > 0);
-			var elem = this[0];
-			var xmlAttrib = doc.doc.CreateAttribute(attributeName, ns);
-			xmlAttrib.Value = "|||" + elem.fullName + "|||";
-
-			if (elem is Number)
-				doc.values.Add(xmlAttrib.Value, new Variant((string)elem.InternalValue));
-			else
-				doc.values.Add(xmlAttrib.Value, new Variant(elem.Value));
-
-			return xmlAttrib;
 		}
 
 		protected override Variant GenerateInternalValue()

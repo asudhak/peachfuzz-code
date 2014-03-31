@@ -142,6 +142,30 @@ namespace Peach.Core.Test.PitParserTests
 		}
 
 		[Test]
+		public void NumberXmlElement()
+		{
+			string xml = @"
+<Peach>
+	<DataModel name='DM1'>
+		<Block name='Payload'>
+			<XmlElement elementName='request'>
+				<Number size='32' value='100'/>
+			</XmlElement>
+		</Block>
+	</DataModel>
+</Peach>";
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(Encoding.ASCII.GetBytes(xml)));
+
+			Assert.AreEqual(1, dom.dataModels.Count);
+
+			var act1 = dom.dataModels[0].Value.ToArray();
+			var exp1 = Encoding.ASCII.GetBytes("<request>100</request>");
+			Assert.AreEqual(exp1, act1);
+		}
+
+		[Test]
 		public void SimpleXPath()
 		{
 			string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" +

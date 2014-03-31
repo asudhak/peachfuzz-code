@@ -27,25 +27,17 @@
 // $Id$
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
+using NLog;
 
 namespace Peach.Core.Dom
 {
-	public class PeachXmlDoc
-	{
-		public PeachXmlDoc()
-		{
-		}
-
-		public XmlDocument doc = new XmlDocument();
-		public Dictionary<string, Variant> values = new Dictionary<string, Variant>();
-	}
-
 	[DataElement("XmlElement")]
 	[PitParsable("XmlElement")]
 	[Parameter("name", typeof(string), "Name of element", "")]
@@ -61,8 +53,14 @@ namespace Peach.Core.Dom
 	[Serializable]
 	public class XmlElement : DataElementContainer
 	{
+		protected static NLog.Logger logger = LogManager.GetCurrentClassLogger();
+
 		string _elementName = null;
 		string _ns = null;
+
+		public string version { get; set; }
+		public string encoding { get; set; }
+		public string standalone { get; set; }
 
 		public XmlElement()
 		{
@@ -120,44 +118,60 @@ namespace Peach.Core.Dom
 			}
 		}
 
-		public virtual XmlNode GenerateXmlNode(PeachXmlDoc doc, XmlNode parent)
+		protected static string ElemToStr(DataElement elem)
 		{
-			XmlNode xmlNode = doc.doc.CreateElement(elementName, ns);
+			var iv = elem.InternalValue;
+			if (iv.GetVariantType() != Variant.VariantType.BitStream)
+				return (string)iv;
 
-			foreach (DataElement child in this)
+			var bs = elem.Value;
+			var ret = new BitReader(bs).ReadString(Encoding.ISOLatin1);
+			bs.Seek(0, System.IO.SeekOrigin.Begin);
+			return ret;
+		}
+
+		protected static string ContToStr(DataElementContainer cont)
+		{
+			var sb = new StringBuilder();
+			foreach (var item in cont)
+				sb.Append(ElemToStr(item));
+			return sb.ToString();
+		}
+
+		protected void GenXmlNode(XmlDocument doc, XmlNode parent)
+		{
+			var node = doc.CreateElement(elementName, ns);
+			parent.AppendChild(node);
+
+			foreach (var child in this)
 			{
-				if (child is XmlAttribute)
+				var asAttr = child as XmlAttribute;
+				if (asAttr != null && asAttr.attributeName != null)
 				{
-					XmlAttribute attrib = child as XmlAttribute;
-					if (child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
-					{
-						// Happend when data element is duplicated.  Duplicate attributes are invalid so ignore.
+					var asStr = ContToStr(asAttr);
+
+					// If the attribute is xmlns and the value is empty
+					// we can't add it to the document w/o getting an
+					// ArgumentException when generating the final xml
+					if (asAttr.attributeName.Split(new[] { ':' })[0] == "xmlns" && string.IsNullOrEmpty(asStr))
 						continue;
-					}
 
-					if (attrib.Count > 0)
-					{
-						xmlNode.Attributes.Append(attrib.GenerateXmlAttribute(doc, xmlNode));
-					}
+					var attr = doc.CreateAttribute(asAttr.attributeName, asAttr.ns);
+					attr.Value = asStr;
+					node.Attributes.Append(attr);
+					continue;
 				}
-				else if (child is Number)
+
+				var asElem = child as XmlElement;
+				if (asElem != null && !asElem.mutationFlags.HasFlag(MutateOverride.TypeTransform))
 				{
-					xmlNode.InnerText = (string)child.InternalValue;
+					asElem.GenXmlNode(doc, node);
+					continue;
 				}
-				else if (child is XmlElement && !child.mutationFlags.HasFlag(MutateOverride.TypeTransform))
-				{
-					xmlNode.AppendChild(((XmlElement)child).GenerateXmlNode(doc, xmlNode));
-				}
-				else
-				{
-					var key = "|||" + child.fullName + "|||";
-					var text = doc.doc.CreateTextNode(key);
-					xmlNode.AppendChild(text);
-					doc.values.Add(key, new Variant(child.Value));
-				}
+
+				var text = doc.CreateTextNode(ElemToStr(child));
+				node.AppendChild(text);
 			}
-
-			return xmlNode;
 		}
 
 		protected override Variant GenerateInternalValue()
@@ -165,38 +179,17 @@ namespace Peach.Core.Dom
 			if (mutationFlags.HasFlag(MutateOverride.TypeTransform))
 				return MutatedValue;
 
-			PeachXmlDoc doc = new PeachXmlDoc();
-			doc.doc.AppendChild(GenerateXmlNode(doc, null));
-			string template = doc.doc.OuterXml;
-			string[] parts = template.Split(new string[]{"|||"}, StringSplitOptions.RemoveEmptyEntries);
+			var doc = new XmlDocument();
 
-			BitStream bs = new BitStream();
-
-			foreach (string item in parts)
+			if (!string.IsNullOrEmpty(version) || !string.IsNullOrEmpty(encoding) || !string.IsNullOrEmpty(standalone))
 			{
-				BitwiseStream toWrite = null;
-				Variant var = null;
-				string key = "|||" + item + "|||";
-				if (doc.values.TryGetValue(key, out var))
-				{
-					var type = var.GetVariantType();
-
-					if (type == Variant.VariantType.BitStream)
-						toWrite = (BitwiseStream)var;
-					else if (type == Variant.VariantType.ByteString)
-						toWrite = new BitStream((byte[])var);
-					else
-						toWrite = new BitStream(Encoding.ASCII.GetRawBytes((string)var));
-				}
-				else
-				{
-					toWrite = new BitStream(Encoding.ASCII.GetRawBytes(item));
-				}
-				toWrite.SeekBits(0, System.IO.SeekOrigin.Begin);
-				toWrite.CopyTo(bs);
+				var decl = doc.CreateXmlDeclaration(version, encoding, standalone);
+				doc.AppendChild(decl);
 			}
 
-			return new Variant(bs);
+			GenXmlNode(doc, doc);
+
+			return new Variant(doc.OuterXml);
 		}
 
 		protected override BitwiseStream InternalValueToBitStream()
@@ -204,7 +197,9 @@ namespace Peach.Core.Dom
 			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
 				return (BitwiseStream)MutatedValue;
 
-			return (BitwiseStream)InternalValue;
+			var enc = Encoding.GetEncoding(encoding ?? "utf-8");
+			var ret = new BitStream(enc.GetRawBytes((string)InternalValue));
+			return ret;
 		}
 	}
 }
