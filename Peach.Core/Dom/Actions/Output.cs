@@ -29,8 +29,7 @@ namespace Peach.Core.Dom.Actions
 			publisher.start();
 			publisher.open();
 
-			var value = data.dataModel.Value;
-			publisher.output(value);
+			publisher.output(data.dataModel);
 		}
 	}
 }

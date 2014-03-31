@@ -324,23 +324,8 @@ namespace Peach.Core
 		/// <param name="data">Data to send/write</param>
 		public void output(BitwiseStream data)
 		{
-			long lengthBits = data.LengthBits;
-
-			int extra = 8 - (int)(lengthBits % 8);
-			if (extra != 8)
-			{
-				BitStreamList lst = new BitStreamList();
-				lst.Add(data);
-
-				BitStream pad = new BitStream();
-				pad.WriteBits(0, extra);
-				lst.Add(pad);
-				lengthBits += extra;
-
-				data = lst;
-			}
-
-			Logger.Debug("output({0} bytes)", lengthBits / 8);
+			data = PadBits(data);
+			Logger.Debug("output({0} bytes)", data.Length);
 			OnOutput(data);
 		}
 
@@ -360,6 +345,42 @@ namespace Peach.Core
 		/// <param name="count">The requested byte count</param>
 		public virtual void WantBytes(long count)
 		{
+		}
+
+		/// <summary>
+		/// Send data model
+		/// </summary>
+		/// <param name="dataModel">DataModel to send/write</param>
+		public virtual void output(DataModel dataModel)
+		{
+			output(dataModel.Value);
+		}
+
+		/// <summary>
+		/// Ensures that the data stream length is in full bytes
+		/// by padding with up to 7 bits of '0'
+		/// </summary>
+		/// <param name="data">Stream of bits</param>
+		/// <returns>Stream of bits padded to a byte boundary</returns>
+		protected static BitwiseStream PadBits(BitwiseStream data)
+		{
+			long lengthBits = data.LengthBits;
+
+			int extra = 8 - (int)(lengthBits % 8);
+			if (extra != 8)
+			{
+				BitStreamList lst = new BitStreamList();
+				lst.Add(data);
+
+				BitStream pad = new BitStream();
+				pad.WriteBits(0, extra);
+				lst.Add(pad);
+				lengthBits += extra;
+
+				data = lst;
+			}
+
+			return data;
 		}
 
 		#endregion
