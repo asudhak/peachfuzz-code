@@ -8,6 +8,51 @@ namespace Peach.Core
 	[Serializable]
 	public abstract class Encoding
 	{
+		#region Raw Encoder Helper
+
+		[Serializable]
+		class RawEncoder : System.Text.Encoding
+		{
+			Encoding parent;
+
+			public RawEncoder(Encoding parent)
+			{
+				this.parent = parent;
+			}
+
+			public override int GetMaxByteCount(int charCount)
+			{
+				return parent.encoding.GetMaxByteCount(charCount);
+			}
+
+			public override int GetByteCount(char[] chars, int index, int count)
+			{
+				return parent.GetRawByteCount(chars, index, count);
+			}
+
+			public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+			{
+				return parent.GetRawBytes(chars, charIndex, charCount, bytes, byteIndex);
+			}
+
+			public override int GetCharCount(byte[] bytes, int index, int count)
+			{
+				throw new NotImplementedException();
+			}
+
+			public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+			{
+				throw new NotImplementedException();
+			}
+
+			public override int GetMaxCharCount(int byteCount)
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		#endregion
+
 		#region Decoder Helper
 
 		protected class BlockDecoder : Decoder
@@ -82,6 +127,8 @@ namespace Peach.Core
 			else
 				this.encoding = encoding;
 
+			this.rawEncoding = new RawEncoder(this);
+
 			this.encoding.DecoderFallback = new DecoderExceptionFallback();
 			this.encoding.EncoderFallback = new EncoderExceptionFallback();
 
@@ -134,6 +181,7 @@ namespace Peach.Core
 		}
 
 		protected System.Text.Encoding encoding;
+		protected System.Text.Encoding rawEncoding;
 		protected int minBytesPerChar;
 
 		#endregion
@@ -182,13 +230,31 @@ namespace Peach.Core
 			return encoding.GetCharCount(bytes, index, count);
 		}
 
-		public abstract byte[] GetRawBytes(char[] chars, int index, int count);
+		public virtual byte[] GetRawBytes(char[] chars, int index, int count)
+		{
+			CheckParams(chars, index, count);
+			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+			int len = GetRawBytes(chars, index, count, ret, 0);
+			if (ret.Length != len)
+				throw new InvalidOperationException("Expected {0} encoding to be {1} bytes but was only {2} bytes.".Fmt(HeaderName, ret.Length, len));
+			return ret;
+		}
+
+		public abstract int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex);
 
 		public abstract int GetRawByteCount(char[] chars, int index, int count);
 
 		#endregion
 
 		#region Public Helpers
+
+		public System.Text.Encoding RawEncoding
+		{
+			get
+			{
+				return rawEncoding;
+			}
+		}
 
 		public bool IsSingleByte
 		{
@@ -517,20 +583,22 @@ namespace Peach.Core
 			return count * BytesPerChar;
 		}
 
-		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		public override int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
 		{
-			CheckParams(chars, index, count);
+			CheckParams(chars, charIndex, charCount);
 
-			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+			int len = GetRawByteCount(chars, charIndex, charCount);
+			if (len > (bytes.Length - byteIndex))
+				throw new ArgumentException("Buffer too small to hold encoded characters.");
 
-			for (int i = index, j = 0; i < index + count; ++i)
+			for (int i = charIndex, j = byteIndex; i < charIndex + charCount; ++i)
 			{
 				char ch = chars[i];
 				CheckCodePoint(ch, i, MaxCodePoint);
-				ret[j++] = (byte)ch;
+				bytes[j++] = (byte)ch;
 			}
 
-			return ret;
+			return len;
 		}
 	}
 
@@ -551,9 +619,9 @@ namespace Peach.Core
 			return GetByteCount(chars, index, count);
 		}
 
-		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		public override int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
 		{
-			return GetBytes(chars, index, count);
+			return encoding.GetBytes(chars, charIndex, charCount, bytes, byteIndex);
 		}
 	}
 
@@ -596,58 +664,60 @@ namespace Peach.Core
 			return i;
 		}
 
-		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		public override int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
 		{
-			CheckParams(chars, index, count);
+			CheckParams(chars, charIndex, charCount);
 
-			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+			int len = GetRawByteCount(chars, charIndex, charCount);
+			if (len > (bytes.Length - byteIndex))
+				throw new ArgumentException("Buffer too small to hold encoded characters.");
 
-			for (int i = 0; count > 0; )
+			for (int i = byteIndex; charCount > 0; )
 			{
-				int ch = GetRawChar(chars, ref index, ref count);
+				int ch = GetRawChar(chars, ref charIndex, ref charCount);
 
 				if (ch <= 0x7f)
 				{
-					ret[i++] = (byte)ch;
+					bytes[i++] = (byte)ch;
 				}
 				else if (ch <= 0x7ff)
 				{
-					ret[i++] = (byte)(0xc0 | (ch >> 6));
-					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+					bytes[i++] = (byte)(0xc0 | (ch >> 6));
+					bytes[i++] = (byte)(0x80 | (ch & 0x3f));
 				}
 				else if (ch <= 0xffff)
 				{
-					ret[i++] = (byte)(0xe0 | (ch >> 12));
-					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
-					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+					bytes[i++] = (byte)(0xe0 | (ch >> 12));
+					bytes[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					bytes[i++] = (byte)(0x80 | (ch & 0x3f));
 				}
 				else if (ch <= 0x1fffff)
 				{
-					ret[i++] = (byte)(0xf0 | (ch >> 18));
-					ret[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
-					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
-					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+					bytes[i++] = (byte)(0xf0 | (ch >> 18));
+					bytes[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
+					bytes[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					bytes[i++] = (byte)(0x80 | (ch & 0x3f));
 				}
 				else if (ch <= 0x3ffffff)
 				{
-					ret[i++] = (byte)(0xf8 | (ch >> 24));
-					ret[i++] = (byte)(0x80 | ((ch >> 18) & 0x3f));
-					ret[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
-					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
-					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+					bytes[i++] = (byte)(0xf8 | (ch >> 24));
+					bytes[i++] = (byte)(0x80 | ((ch >> 18) & 0x3f));
+					bytes[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
+					bytes[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					bytes[i++] = (byte)(0x80 | (ch & 0x3f));
 				}
 				else if (ch <= 0x7fffffff)
 				{
-					ret[i++] = (byte)(0xfc | (ch >> 30));
-					ret[i++] = (byte)(0x80 | ((ch >> 24) & 0x3f));
-					ret[i++] = (byte)(0x80 | ((ch >> 18) & 0x3f));
-					ret[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
-					ret[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
-					ret[i++] = (byte)(0x80 | (ch & 0x3f));
+					bytes[i++] = (byte)(0xfc | (ch >> 30));
+					bytes[i++] = (byte)(0x80 | ((ch >> 24) & 0x3f));
+					bytes[i++] = (byte)(0x80 | ((ch >> 18) & 0x3f));
+					bytes[i++] = (byte)(0x80 | ((ch >> 12) & 0x3f));
+					bytes[i++] = (byte)(0x80 | ((ch >> 6) & 0x3f));
+					bytes[i++] = (byte)(0x80 | (ch & 0x3f));
 				}
 			}
 
-			return ret;
+			return len;
 		}
 	}
 
@@ -675,30 +745,32 @@ namespace Peach.Core
 			return count * BytesPerChar;
 		}
 
-		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		public override int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
 		{
-			CheckParams(chars, index, count);
+			CheckParams(chars, charIndex, charCount);
 
-			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+			int len = GetRawByteCount(chars, charIndex, charCount);
+			if (len > (bytes.Length - byteIndex))
+				throw new ArgumentException("Buffer too small to hold encoded characters.");
 
-			for (int i = index, j = 0; i < index + count; ++i)
+			for (int i = charIndex, j = byteIndex; i < charIndex + charCount; ++i)
 			{
 				char ch = chars[i];
 				CheckCodePoint(ch, i, MaxCodePoint);
 
 				if (bigEndian)
 				{
-					ret[j++] = (byte)(ch >> 8);
-					ret[j++] = (byte)ch;
+					bytes[j++] = (byte)(ch >> 8);
+					bytes[j++] = (byte)ch;
 				}
 				else
 				{
-					ret[j++] = (byte)ch;
-					ret[j++] = (byte)(ch >> 8);
+					bytes[j++] = (byte)ch;
+					bytes[j++] = (byte)(ch >> 8);
 				}
 			}
 
-			return ret;
+			return len;
 		}
 	}
 
@@ -733,33 +805,35 @@ namespace Peach.Core
 			return i;
 		}
 
-		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		public override int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
 		{
-			CheckParams(chars, index, count);
+			CheckParams(chars, charIndex, charCount);
 
-			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+			int len = GetRawByteCount(chars, charIndex, charCount);
+			if (len > (bytes.Length - byteIndex))
+				throw new ArgumentException("Buffer too small to hold encoded characters.");
 
-			for (int i = 0; count > 0; )
+			for (int i = byteIndex; charCount > 0; )
 			{
-				int ch = GetRawChar(chars, ref index, ref count);
+				int ch = GetRawChar(chars, ref charIndex, ref charCount);
 
 				if (bigEndian)
 				{
-					ret[i++] = (byte)(ch >> 24);
-					ret[i++] = (byte)(ch >> 16);
-					ret[i++] = (byte)(ch >> 8);
-					ret[i++] = (byte)ch;
+					bytes[i++] = (byte)(ch >> 24);
+					bytes[i++] = (byte)(ch >> 16);
+					bytes[i++] = (byte)(ch >> 8);
+					bytes[i++] = (byte)ch;
 				}
 				else
 				{
-					ret[i++] = (byte)ch;
-					ret[i++] = (byte)(ch >> 8);
-					ret[i++] = (byte)(ch >> 16);
-					ret[i++] = (byte)(ch >> 24);
+					bytes[i++] = (byte)ch;
+					bytes[i++] = (byte)(ch >> 8);
+					bytes[i++] = (byte)(ch >> 16);
+					bytes[i++] = (byte)(ch >> 24);
 				}
 			}
 
-			return ret;
+			return len;
 		}
 	}
 
@@ -784,20 +858,22 @@ namespace Peach.Core
 			return count * BytesPerChar;
 		}
 
-		public override byte[] GetRawBytes(char[] chars, int index, int count)
+		public override int GetRawBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
 		{
-			CheckParams(chars, index, count);
+			CheckParams(chars, charIndex, charCount);
 
-			byte[] ret = new byte[GetRawByteCount(chars, index, count)];
+			int len = GetRawByteCount(chars, charIndex, charCount);
+			if (len > (bytes.Length - byteIndex))
+				throw new ArgumentException("Buffer too small to hold encoded characters.");
 
-			for (int i = index, j = 0; i < index + count; ++i)
+			for (int i = charIndex, j = byteIndex; i < charIndex + charCount; ++i)
 			{
 				char ch = chars[i];
 				CheckCodePoint(ch, i, MaxCodePoint);
-				ret[j++] = (byte)ch;
+				bytes[j++] = (byte)ch;
 			}
 
-			return ret;
+			return len;
 		}
 	}
 
