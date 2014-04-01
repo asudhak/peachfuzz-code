@@ -189,7 +189,14 @@ namespace Peach.Core.Dom
 
 			GenXmlNode(doc, doc);
 
-			return new Variant(doc.OuterXml);
+			try
+			{
+				return new Variant(doc.OuterXml);
+			}
+			catch (Exception ex)
+			{
+				throw new SoftException(ex);
+			}
 		}
 
 		protected override BitwiseStream InternalValueToBitStream()

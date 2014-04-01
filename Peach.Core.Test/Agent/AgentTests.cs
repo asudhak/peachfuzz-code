@@ -332,16 +332,16 @@ namespace Peach.Core.Test.Agent
 "SessionStarting", "IterationStarting 1 false", "IterationFinished", "DetectedFault", "MustStop", 
 // Iteration 1 - Agent is killed (IterationFinished is a hack to kill CrashableServer)
 "IterationStarting 1 false", "IterationFinished", 
-// Agent is restarted & fault is detected
-"SessionStarting", "IterationStarting 2 false", "IterationFinished", "DetectedFault", "GetMonitorData", "MustStop", 
+// Agent is restarted & fault is not detected
+"SessionStarting", "IterationStarting 2 false", "IterationFinished", "DetectedFault", "MustStop", 
 // Agent is killed
 "IterationStarting 3 false", "IterationFinished", 
-// Agent is restarted & fault is detected
-"SessionStarting", "IterationStarting 4 false", "IterationFinished", "DetectedFault", "GetMonitorData", "MustStop", 
+// Agent is restarted & fault is not detected
+"SessionStarting", "IterationStarting 4 false", "IterationFinished", "DetectedFault", "MustStop", 
 // Agent is killed
 "IterationStarting 5 false", "IterationFinished", 
-// Agent is restarted & fault is not detected
-"SessionStarting", "IterationStarting 6 false", "IterationFinished", "DetectedFault", "MustStop",
+// Agent is restarted & fault is detected
+"SessionStarting", "IterationStarting 6 false", "IterationFinished", "DetectedFault", "GetMonitorData", "MustStop",
 // Fussing stops
 "SessionFinished", "StopMonitor"
 				};

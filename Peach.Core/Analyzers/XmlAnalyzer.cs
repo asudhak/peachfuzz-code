@@ -84,38 +84,31 @@ namespace Peach.Core.Analyzers
 				throw new PeachException("Error, XmlAnalyzer failed to analyze element '" + parent.name + "'.  " + ex.Message, ex);
 			}
 
-			Block blk = new Block(strElement.name);
+			var elem = new Dom.XmlElement(strElement.name);
 
 			foreach (XmlNode node in doc.ChildNodes)
 			{
-				handleXmlNode(blk, node, strElement.stringType);
+				handleXmlNode(elem, node, strElement.stringType);
 			}
 
 			var decl = doc.FirstChild as XmlDeclaration;
 			if (decl != null)
 			{
-				var elem = (Dom.XmlElement)blk[0];
 				elem.version = decl.Version;
 				elem.encoding = decl.Encoding;
 				elem.standalone = decl.Standalone;
 			}
 
-			parent.parent[parent.name] = blk;
+			parent.parent[parent.name] = elem;
 		}
 
-		protected void handleXmlNode(DataElementContainer parent, XmlNode node, StringType type)
+		protected void handleXmlNode(Dom.XmlElement elem, XmlNode node, StringType type)
 		{
 			if (node is XmlComment || node is XmlDeclaration)
 				return;
 
-			var elemName = parent.UniqueName(node.Name.Replace(':', '_'));
-			var elem = new Dom.XmlElement(elemName)
-			{
-				ns = node.NamespaceURI,
-				elementName = node.Name,
-			};
-
-			parent.Add(elem);
+			elem.elementName = node.Name;
+			elem.ns = node.NamespaceURI;
 
 			foreach (System.Xml.XmlAttribute attr in node.Attributes)
 			{
@@ -150,7 +143,12 @@ namespace Peach.Core.Analyzers
 				}
 				else if (!child.Name.StartsWith("#"))
 				{
-					handleXmlNode(elem, child, type);
+					var childName = elem.UniqueName(child.Name.Replace(':', '_'));
+					var childElem = new Dom.XmlElement(childName);
+
+					elem.Add(childElem);
+
+					handleXmlNode(childElem, child, type);
 				}
 			}
 		}

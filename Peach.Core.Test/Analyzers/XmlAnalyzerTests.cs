@@ -241,7 +241,7 @@ namespace Peach.Core.Test.Analyzers
 		}
 
 		[Test]
-		public void Fuzz2()
+		public void Fuzz1()
 		{
 			// Trying to emit xmlns="" is invalid, have to remove xmlns attr
 			// Swap attribute with element neighbor == no change
@@ -286,8 +286,56 @@ namespace Peach.Core.Test.Analyzers
 			e.IterationStarting += (ctx, curr, total) => ++count;
 			e.startFuzzing(dom, config);
 
+			Assert.Greater(count, 100);
+		}
+
+		[Test]
+		public void Fuzz2()
+		{
+			// Trying to emit xmlns="" is invalid, have to remove xmlns attr
+			// Swap attribute with element neighbor == no change
+
+			string tmp = Path.GetTempFileName();
+
+			string xml = @"
+<Peach>
+	<DataModel name='DM'>
+		<String type='utf8'>
+			<Analyzer class='Xml'/>
+		</String>
+	</DataModel>
+
+	<StateModel name='SM' initialState='Initial'>
+		<State name='Initial'>
+			<Action type='output'>
+				<DataModel ref='DM'/>
+				<Data fileName='{0}'/>
+			</Action>
+		</State>
+	</StateModel>
+
+	<Test name='Default'>
+		<Strategy class='Sequential'/>
+		<StateModel ref='SM'/>
+		<Publisher class='Null'/>
+	</Test>
+</Peach>
+".Fmt(tmp);
+
+			string payload = @"<Peach xmlns=""http://peachfuzzer.com/2012/Peach"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><Foo xsi:type=""Bar"">Text</Foo></Peach>";
+			File.WriteAllText(tmp, payload);
+
+			var parser = new PitParser();
+			var dom = parser.asParser(null, new MemoryStream(ASCIIEncoding.ASCII.GetBytes(xml)));
+
+			uint count = 0;
+
+			var config = new RunConfiguration();
+			var e = new Engine(null);
+			e.IterationStarting += (ctx, curr, total) => ++count;
+			e.startFuzzing(dom, config);
+
 			int same = 0;
-			var expected = Encoding.ASCII.GetBytes(payload);
 
 			for (int i = 0; i < dataModels.Count; ++i)
 			{
@@ -297,8 +345,8 @@ namespace Peach.Core.Test.Analyzers
 			}
 
 			Assert.Greater(count, 0);
-			Assert.AreEqual(4, same);
 			Assert.AreEqual(count, dataModels.Count);
+			Assert.AreEqual(3, same);
 		}
 	}
 }

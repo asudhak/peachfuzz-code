@@ -118,9 +118,8 @@ namespace Peach.Core.Test.Mutators
                     min = dataModels[i].Count;
             }
 
-            // Either duplicates or it doesn't.  This is what Peach 2.3 does, but is it right?
             Assert.AreEqual(1, min);
-            Assert.AreEqual(2, max);
+            Assert.AreEqual(51, max);
         }
 
 		[Test]
