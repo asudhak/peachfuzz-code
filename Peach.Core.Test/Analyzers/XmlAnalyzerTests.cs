@@ -251,7 +251,7 @@ namespace Peach.Core.Test.Analyzers
 			string xml = @"
 <Peach>
 	<DataModel name='DM'>
-		<String>
+		<String type='utf8'>
 			<Analyzer class='Xml'/>
 		</String>
 	</DataModel>
@@ -286,7 +286,7 @@ namespace Peach.Core.Test.Analyzers
 			e.IterationStarting += (ctx, curr, total) => ++count;
 			e.startFuzzing(dom, config);
 
-			Assert.Greater(count, 100);
+			Assert.Greater(count, 12000);
 		}
 
 		[Test]
@@ -300,7 +300,7 @@ namespace Peach.Core.Test.Analyzers
 			string xml = @"
 <Peach>
 	<DataModel name='DM'>
-		<String type='utf8'>
+		<String>
 			<Analyzer class='Xml'/>
 		</String>
 	</DataModel>

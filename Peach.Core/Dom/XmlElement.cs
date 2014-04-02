@@ -35,6 +35,9 @@ using System.Xml;
 using Peach.Core.Analyzers;
 using Peach.Core.IO;
 using NLog;
+using System.Security;
+using System.Xml.Schema;
+using System.IO;
 
 namespace Peach.Core.Dom
 {
@@ -179,34 +182,47 @@ namespace Peach.Core.Dom
 			if (mutationFlags.HasFlag(MutateOverride.TypeTransform))
 				return MutatedValue;
 
+			var enc = "utf-8";
 			var doc = new XmlDocument();
 
 			if (!string.IsNullOrEmpty(version) || !string.IsNullOrEmpty(encoding) || !string.IsNullOrEmpty(standalone))
 			{
 				var decl = doc.CreateXmlDeclaration(version, encoding, standalone);
 				doc.AppendChild(decl);
+				enc = encoding ?? enc;
 			}
 
 			GenXmlNode(doc, doc);
 
-			try
-			{
-				return new Variant(doc.OuterXml);
-			}
-			catch (Exception ex)
-			{
-				throw new SoftException(ex);
-			}
+			var bs = new BitStream();
+			var writer = new PeachXmlWriter(bs, enc);
+
+			doc.WriteTo(writer);
+			writer.Flush();
+			bs.Seek(0, SeekOrigin.Begin);
+
+			return new Variant(bs);
 		}
 
 		protected override BitwiseStream InternalValueToBitStream()
 		{
-			if (mutationFlags.HasFlag(MutateOverride.TypeTransform) && MutatedValue != null)
-				return (BitwiseStream)MutatedValue;
+			return (BitwiseStream)InternalValue;
+		}
 
-			var enc = Encoding.GetEncoding(encoding ?? "utf-8");
-			var ret = new BitStream(enc.GetRawBytes((string)InternalValue));
-			return ret;
+		class PeachXmlWriter : XmlTextWriter
+		{
+			public PeachXmlWriter(BitStream stream, string encoding)
+				: base(stream, Encoding.GetEncoding(encoding).RawEncoding)
+			{
+			}
+
+			public override void WriteString(string text)
+			{
+				var encoded = SecurityElement.Escape(text);
+				char[] raw = encoded.ToCharArray();
+
+				WriteRaw(raw, 0, raw.Length);
+			}
 		}
 	}
 }
