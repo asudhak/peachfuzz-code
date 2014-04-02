@@ -67,6 +67,11 @@ namespace Peach.Core.Mutators
         //
         public new static bool supportedDataElement(DataElement obj)
         {
+            Hint hint;
+            if (obj.Hints.TryGetValue("Peach.TypeTransform", out hint))
+                if (hint.Value.ToLower() == "false")
+                    return false;
+
             if ((obj is Dom.String) && obj.isMutable)
                 return true;
 

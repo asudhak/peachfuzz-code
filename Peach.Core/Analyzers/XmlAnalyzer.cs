@@ -112,17 +112,12 @@ namespace Peach.Core.Analyzers
 
 			foreach (System.Xml.XmlAttribute attr in node.Attributes)
 			{
+				var strElem = makeString("value", attr.Value, type);
 				var attrName = elem.UniqueName(attr.Name.Replace(':', '_'));
 				var attrElem = new Dom.XmlAttribute(attrName)
 				{
 					attributeName = attr.Name,
 					ns = attr.NamespaceURI,
-				};
-
-				var strElem = new Dom.String("value")
-				{
-					stringType = type,
-					DefaultValue = new Variant(attr.Value),
 				};
 
 				attrElem.Add(strElem);
@@ -133,12 +128,7 @@ namespace Peach.Core.Analyzers
 			{
 				if (child.Name == "#text")
 				{
-					var str = new Dom.String(child.Name)
-					{
-						stringType = type,
-						DefaultValue = new Variant(child.Value),
-					};
-
+					var str = makeString(child.Name, child.Value, type);
 					elem.Add(str);
 				}
 				else if (!child.Name.StartsWith("#"))
@@ -151,6 +141,20 @@ namespace Peach.Core.Analyzers
 					handleXmlNode(childElem, child, type);
 				}
 			}
+		}
+
+		private static Dom.String makeString(string name, string value, StringType type)
+		{
+			var str = new Dom.String(name)
+			{
+				stringType = type,
+				DefaultValue = new Variant(value),
+			};
+
+			var hint = new Dom.Hint("Peach.TypeTransform", "false");
+			str.Hints.Add(hint.Name, hint);
+
+			return str;
 		}
 	}
 }

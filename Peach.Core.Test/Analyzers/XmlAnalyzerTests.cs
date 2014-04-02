@@ -286,7 +286,20 @@ namespace Peach.Core.Test.Analyzers
 			e.IterationStarting += (ctx, curr, total) => ++count;
 			e.startFuzzing(dom, config);
 
-			Assert.Greater(count, 12000);
+			Assert.Greater(count, 0);
+			Assert.AreEqual(count, dataModels.Count);
+
+			var hasString = strategies.Where(a => a.StartsWith("StringMutator")).Any();
+			var hasUnicode = strategies.Where(a => a.StartsWith("UnicodeStringsMutator")).Any();
+			var hasThreeChar = strategies.Where(a => a.StartsWith("UnicodeUtf8ThreeCharMutator")).Any();
+			var hasBom = strategies.Where(a => a.StartsWith("UnicodeBomMutator")).Any();
+			var hasUtf8 = strategies.Where(a => a.StartsWith("UnicodeBadUtf8Mutator")).Any();
+
+			Assert.True(hasString);
+			Assert.True(hasUnicode);
+			Assert.False(hasThreeChar);
+			Assert.False(hasBom);
+			Assert.False(hasUtf8);
 		}
 
 		[Test]
