@@ -218,10 +218,14 @@ namespace Peach.Core.Dom
 
 			public override void WriteString(string text)
 			{
+#if MONO
+				base.WriteString(text);
+#else
 				var encoded = SecurityElement.Escape(text);
 				char[] raw = encoded.ToCharArray();
 
 				WriteRaw(raw, 0, raw.Length);
+#endif
 			}
 		}
 	}

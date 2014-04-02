@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Peach.Core
@@ -48,6 +49,16 @@ namespace Peach.Core
 			public override int GetMaxCharCount(int byteCount)
 			{
 				throw new NotImplementedException();
+			}
+
+			public override bool Equals(object value)
+			{
+				return object.Equals(this, (object)value);
+			}
+
+			public override int GetHashCode()
+			{
+				return RuntimeHelpers.GetHashCode(this);
 			}
 		}
 
