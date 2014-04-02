@@ -19,6 +19,8 @@ namespace Peach.Core.Publishers
 	{
 		public int Timeout { get; set; }
 
+		protected int _sendLen = 0;
+		protected byte[] _sendBuf = new byte[1024];
 		protected byte[] _recvBuf = new byte[1024];
 		protected object _bufferLock = new object();
 		protected object _clientLock = new object();
@@ -137,6 +139,19 @@ namespace Peach.Core.Publishers
 			return _client.EndRead(asyncResult);
 		}
 
+		protected virtual IAsyncResult ClientBeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+		{
+			_sendLen = count;
+			return _client.BeginWrite(buffer, offset, count, callback, state);
+		}
+
+		protected virtual int ClientEndWrite(IAsyncResult asyncResult)
+		{
+			_client.EndWrite(asyncResult);
+			return _sendLen;
+
+		}
+
 		protected virtual void ClientWrite(BitwiseStream data)
 		{
 			data.CopyTo(_client);
@@ -233,25 +248,54 @@ namespace Peach.Core.Publishers
 
 		protected override void OnOutput(BitwiseStream data)
 		{
-			lock (_clientLock)
+			IAsyncResult ar = null;
+			int offset = 0;
+			int length = 0;
+
+			try
 			{
-				try
+				while (true)
 				{
-					//Check to make sure buffer has been initilized before continuing. 
-					if (_client == null)
-						throw new PeachException("Error on data output, the client is not initalized.");
+					lock (_clientLock)
+					{
+						//Check to make sure buffer has been initilized before continuing. 
+						if (_client == null)
+						{
+							// First time through, propigate error
+							if (ar == null)
+								throw new PeachException("Error on data output, the client is not initalized.");
 
-                    if (Logger.IsDebugEnabled)
-                        Logger.Debug("\n\n" + Utilities.HexDump(data));
+							// Client has been closed!
+							return;
+						}
 
-					ClientWrite(data);
-				}
-				catch (Exception ex)
-				{
-					Logger.Error("output: Error during send.  " + ex.Message);
-					throw new SoftException(ex);
+						if (Logger.IsDebugEnabled && ar == null)
+							Logger.Debug("\n\n" + Utilities.HexDump(data));
+
+						if (ar != null)
+							offset += ClientEndWrite(ar);
+
+						if (offset == length)
+						{
+							offset = 0;
+							length = data.Read(_sendBuf, 0, _sendBuf.Length);
+
+							if (length == 0)
+								return;
+						}
+
+						ar = ClientBeginWrite(_sendBuf, offset, length - offset, null, null);
+					}
+
+					ar.AsyncWaitHandle.WaitOne();
 				}
 			}
+			catch (Exception ex)
+			{
+				Logger.Error("output: Error during send.  " + ex.Message);
+				throw new SoftException(ex);
+			}
+
 		}
 
 		public override void WantBytes(long count)

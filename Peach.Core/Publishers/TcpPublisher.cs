@@ -96,13 +96,14 @@ namespace Peach.Core.Publishers
 			_tcp.Client.Shutdown(SocketShutdown.Send);
 		}
 
-		protected override void ClientWrite(BitwiseStream data)
+		protected override IAsyncResult ClientBeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 		{
-			var buffer = new byte[BitwiseStream.BlockCopySize];
-			int len = 0;
+			return _tcp.Client.BeginSend(buffer, offset, count, SocketFlags.None, callback, state);
+		}
 
-			while ((len = data.Read(buffer, 0, buffer.Length)) != 0)
-				_tcp.Client.Send(buffer, 0, len, SocketFlags.None);
+		protected override int ClientEndWrite(IAsyncResult asyncResult)
+		{
+			return _tcp.Client.EndSend(asyncResult);
 		}
 	}
 }
