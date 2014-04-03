@@ -65,6 +65,7 @@ namespace Peach.Core.Agent.Monitors
 	[Parameter("IgnoreFirstChanceGuardPage", typeof(string), "Ignore first chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
 	[Parameter("IgnoreSecondChanceGuardPage", typeof(string), "Ignore second chance guard page faults.  These are sometimes false posistives or anti-debugging faults.", "false")]
 	[Parameter("NoCpuKill", typeof(string), "Don't use process CPU usage to terminate early.", "false")]
+	[Parameter("CpuPollInterval", typeof(uint), "How often to poll for idle CPU in milliseconds.", "200")]
 	[Parameter("FaultOnEarlyExit", typeof(bool), "Trigger fault if process exists (defaults to false)", "false")]
 	[Parameter("WaitForExitOnCall", typeof(string), "Wait for process to exit on state model call and fault if timeout is reached", "")]
 	[Parameter("WaitForExitTimeout", typeof(int), "Wait for exit timeout value in milliseconds (-1 is infinite)", "10000")]
@@ -84,6 +85,7 @@ namespace Peach.Core.Agent.Monitors
 		string _startOnCall = null;
 
 		int _waitForExitTimeout = 10000;
+		int _cpuPollInterval = 200;
 
 		bool _ignoreFirstChanceGuardPage = false;
 		bool _ignoreSecondChanceGuardPage = false;
@@ -175,6 +177,8 @@ namespace Peach.Core.Agent.Monitors
 				_noCpuKill = true;
 			if (args.ContainsKey("FaultOnEarlyExit") && ((string)args["FaultOnEarlyExit"]).ToLower() == "true")
 				_faultOnEarlyExit = true;
+			if (args.ContainsKey("CpuPollInterval"))
+				_cpuPollInterval = Convert.ToInt32((string)args["CpuPollInterval"]);
 
 			// Register IPC Channel for connecting to debug process
 			//_ipcChannel = new IpcChannel("Peach.Core_" + (new Random().Next().ToString()));
@@ -840,11 +844,10 @@ namespace Peach.Core.Agent.Monitors
 
 					if (useCpuKill && !_noCpuKill)
 					{
-						const int pollInterval = 200;
 						ulong lastTime = 0;
 						int i = 0;
 
-						for (i = 0; i < _waitForExitTimeout; i += pollInterval)
+						for (i = 0; i < _waitForExitTimeout; i += _cpuPollInterval)
 						{
 							// Note: Performance counters were used and removed due to speed issues.
 							//       monitoring the tick count is more reliable and less likely to cause
@@ -860,7 +863,7 @@ namespace Peach.Core.Agent.Monitors
 							}
 
 							lastTime = pi.TotalProcessorTicks;
-							Thread.Sleep(pollInterval);
+							Thread.Sleep(_cpuPollInterval);
 						}
 
 						if (i >= _waitForExitTimeout)
