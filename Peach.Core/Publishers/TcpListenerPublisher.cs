@@ -15,7 +15,8 @@ namespace Peach.Core.Publishers
 	[Publisher("tcp.TcpListener")]
 	[Parameter("Interface", typeof(IPAddress), "IP of interface to bind to")]
 	[Parameter("Port", typeof(ushort), "Local port to listen on")]
-	[Parameter("Timeout", typeof(int), "How many milliseconds to wait for data (default 3000)", "3000")]
+	[Parameter("Timeout", typeof(int), "How many milliseconds to wait when receiving data (default 3000)", "3000")]
+	[Parameter("SendTimeout", typeof(int), "How many milliseconds to wait when sending data (default infinite)", "0")]
 	[Parameter("AcceptTimeout", typeof(int), "How many milliseconds to wait for a connection (default 3000)", "3000")]
 	public class TcpListenerPublisher : TcpPublisher
 	{

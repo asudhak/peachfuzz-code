@@ -17,6 +17,7 @@ namespace Peach.Core.Publishers
 	/// </summary>
 	public abstract class BufferedStreamPublisher : Publisher
 	{
+		public int SendTimeout { get; set; }
 		public int Timeout { get; set; }
 
 		protected int _sendLen = 0;
@@ -287,7 +288,10 @@ namespace Peach.Core.Publishers
 						ar = ClientBeginWrite(_sendBuf, offset, length - offset, null, null);
 					}
 
-					ar.AsyncWaitHandle.WaitOne();
+					if (SendTimeout == 0)
+						ar.AsyncWaitHandle.WaitOne();
+					else if (!ar.AsyncWaitHandle.WaitOne(SendTimeout))
+						throw new TimeoutException();
 				}
 			}
 			catch (Exception ex)
