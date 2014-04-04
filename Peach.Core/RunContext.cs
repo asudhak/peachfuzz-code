@@ -112,6 +112,8 @@ namespace Peach.Core
 		[NonSerialized]
 		public Dictionary<string, object> iterationStateStore = new Dictionary<string, object>();
 
+		public uint currentIteration = 0;
+
 		#region Control Iterations
 
 		/// <summary>
