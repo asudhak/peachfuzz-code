@@ -9,7 +9,7 @@ app = bld(
 	source = bld.path.ant_glob('**/*.cs'),
 	name = 'Peach.exe',
 	ver_product = 'Peach Fuzzing Platfom',
-	install_644 = bld.path.ant_glob('template.xml samples/*')
+	install_644 = bld.path.ant_glob('peach.xsd template.xml samples/*')
 )
 
 if bld.env.MCS and bld.env.DEST_OS != 'win32':

@@ -288,7 +288,7 @@ namespace Peach.Core.Analyzers
 
 			// Load the schema
 			var set = new XmlSchemaSet();
-			var xsd = Assembly.GetExecutingAssembly().GetManifestResourceStream("Peach.Core.peach.xsd");
+			var xsd = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "peach.xsd");
 			using (var tr = XmlReader.Create(xsd))
 			{
 				set.Add(PEACH_NAMESPACE_URI, tr);
