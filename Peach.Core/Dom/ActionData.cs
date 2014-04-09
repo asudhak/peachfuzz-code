@@ -62,7 +62,7 @@ namespace Peach.Core.Dom
 		/// A cached copy of the clean data model.  Has fields/data applied
 		/// when applicable.
 		/// </summary>
-		private DataModel originalDataModel { get; set; }
+		public DataModel originalDataModel { get; private set; }
 
 		/// <summary>
 		/// The name of this record.
