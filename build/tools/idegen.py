@@ -269,6 +269,55 @@ class vsnode_target(msvs.vsnode_target):
 		opt += " --variant=%s" % props.variant
 		return (waf, opt)
 
+class vsnode_web_target(msvs.vsnode_project):
+	VS_GUID_WEBPROJ = "E24C65DC-7377-472B-9ABA-BC803B73C61A"
+	def ptype(self):
+		return self.VS_GUID_WEBPROJ
+
+	def __init__(self, ctx, tg):
+		self.base = getattr(ctx, 'projects_dir', None) or tg.path
+		node = tg.path.make_node(tg.name + '.webproj')
+		msvs.vsnode_project.__init__(self, ctx, node)
+		self.name = tg.name
+		self.tg = tg # task generators
+		self.target_framework = tg.env['TARGET_FRAMEWORK']
+		self.proj_configs = OrderedDict() # Variant -> build_property
+		self.project_sections = OrderedDict()
+
+		# Keep ports random but deterministic, use uuid as seed
+		random.seed(str(self.uuid))
+		port = str(random.randint(40000, 49999))
+		self.title = 'http://localhost:%s' % port
+
+	def write(self):
+		# Web projects have no project file, just populate the project section
+		web_root = self.tg.ide_website
+		sln_root = self.ctx.path
+		rel_path = os.path.relpath(web_root.abspath(), sln_root.abspath()) + os.path.sep
+
+		p = OrderedDict()
+		self.project_sections[('WebsiteProperties', 'preProject')] = p
+
+		p['UseIISExpress'] = "true"
+		p['TargetFrameworkMoniker'] = ".NETFramework,Version%%3D%s" % self.target_framework
+		for cfg in ['Debug', 'Release']:
+			p['%s.AspNetCompiler.VirtualPath' % cfg] = "/%s" % web_root.name
+			p['%s.AspNetCompiler.PhysicalPath' % cfg] = rel_path
+			p['%s.AspNetCompiler.TargetPath' % cfg] = rel_path
+			p['%s.AspNetCompiler.Updateable' % cfg] = "true"
+			p['%s.AspNetCompiler.ForceOverwrite' % cfg] = "true"
+			p['%s.AspNetCompiler.FixedNames' % cfg] = "false"
+			p['%s.AspNetCompiler.Debug' % cfg] = "True"
+
+		p['SlnRelativePath'] = rel_path
+		p['DefaultWebSiteLanguage'] = "Visual C#"
+
+	def collect_source(self):
+		pass
+
+	def collect_properties(self):
+		pass
+
 class vsnode_cs_target(msvs.vsnode_project):
 	VS_GUID_CSPROJ = "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"
 	def ptype(self):
@@ -291,7 +340,9 @@ class vsnode_cs_target(msvs.vsnode_project):
 		self.source_files = OrderedDict() # Abspath -> Record
 		self.project_refs = [] # uuid
 		self.proj_configs = OrderedDict() # Variant -> build_property
-		self.project_dependencies = [] # List of UUID
+		self.project_dependencies = OrderedDict() # List of UUID
+		self.project_sections = OrderedDict() # sln sections, like 'ProjectDependencies'
+		self.project_sections[('ProjectDependencies', 'postProject')] = self.project_dependencies
 
 	def combine_flags(self, flag):
 		tg = self.tg
@@ -591,7 +642,8 @@ class vsnode_cs_target(msvs.vsnode_project):
 			src = y.link_task.outputs[0]
 			dst = out_node.make_node(src.name)
 			ide_use.append((src, dst))
-			self.project_dependencies.append(y.uuid)
+			guid = '{%s}' % y.uuid
+			self.project_dependencies[guid] = guid
 
 		(inst_cmd, inst_args) = self.ctx.get_ide_use(ide_use)
 		if inst_args:
@@ -632,6 +684,7 @@ class idegen(msvs.msvs_generator):
 
 		self.vsnode_cs_target = vsnode_cs_target
 		self.vsnode_target = vsnode_target
+		self.vsnode_web_target = vsnode_web_target
 
 	def get_config(self, bld, env):
 		return '%s_%s' % (env.TARGET, env.VARIANT)
@@ -763,14 +816,17 @@ class idegen(msvs.msvs_generator):
 
 			for k, v in sln_cfg.iteritems():
 				other = p.proj_configs.get(k, None)
+
 				prop = msvs.build_property()
 				prop.configuration = v.configuration
 				prop.platform_sln = v.platform_sln
 
 				if other:
+					prop.configuration_bld = other.configuration_bld
 					prop.platform = other.platform
 					prop.is_active = True
 				else:
+					prop.configuration_bld = p.build_properties[0].configuration_bld
 					prop.platform = p.build_properties[0].platform
 					prop.is_active = False
 
@@ -836,6 +892,7 @@ class idegen(msvs.msvs_generator):
 					prop.platform = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
 					prop.platform_sln = prop.platform
 					prop.properties = p.properties
+					prop.configuration_bld = config
 					prop.sources = []
 					prop.post_build = getattr(p, 'post_build', None)
 
@@ -848,11 +905,18 @@ class idegen(msvs.msvs_generator):
 					# and Reference elements.
 					if main != p:
 						self.check_conditionals(main, p, 'references', prop)
+				elif isinstance(p, vsnode_web_target):
+					prop = msvs.build_property()
+					prop.platform_tgt = env.CSPLATFORM
+					prop.platform = 'Any CPU'
+					prop.platform_sln = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
+					prop.configuration_bld = 'Debug'
 				else:
 					prop = p.build_properties[0]
 					prop.platform_tgt = env.CSPLATFORM
 					prop.platform = self.get_platform(env)
 					prop.platform_sln = prop.platform_tgt.replace('AnyCPU', 'Any CPU')
+					prop.configuration_bld = config
 
 				prop.configuration = config
 				prop.variant = variant
@@ -891,6 +955,8 @@ class idegen(msvs.msvs_generator):
 					p = self.vsnode_target(self, tg)
 				elif hasattr(tg, 'cs_task'):
 					p = self.vsnode_cs_target(self, tg)
+				elif hasattr(tg, 'ide_website'):
+					p = self.vsnode_web_target(self, tg)
 				else:
 					continue
 
