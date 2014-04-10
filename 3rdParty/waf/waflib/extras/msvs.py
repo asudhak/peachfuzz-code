@@ -238,12 +238,16 @@ SOLUTION_TEMPLATE = '''Microsoft Visual Studio Solution File, Format Version ${p
 # Visual Studio ${project.vsver}
 ${for p in project.all_projects}
 Project("{${p.ptype()}}") = "${p.name}", "${p.title}", "{${p.uuid}}"
-${if getattr(p, 'project_dependencies', [])}
-	ProjectSection(ProjectDependencies) = postProject
-		${for d in p.project_dependencies}
-		{${d}} = {${d}}
+${if getattr(p, 'project_sections', None)}
+${for sec,opts in p.project_sections.iteritems()}
+	${if opts}
+	ProjectSection(${sec[0]}) = ${sec[1]}
+		${for k,v in opts.iteritems()}
+		${k} = ${v}
 		${endfor}
 	EndProjectSection
+	${endif}
+${endfor}
 ${endif}
 EndProject${endfor}
 Global
@@ -258,12 +262,12 @@ Global
 		${for p in project.all_projects}
 			${if hasattr(p, 'source')}
 			${for b in p.build_properties}
-		{${p.uuid}}.${b.configuration}|${b.platform_sln}.ActiveCfg = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.ActiveCfg = ${b.configuration_bld}|${b.platform}
 			${if getattr(b, 'is_active', getattr(p, 'is_active', None))}
-		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Build.0 = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Build.0 = ${b.configuration_bld}|${b.platform}
 			${endif}
 			${if getattr(b, 'is_deploy', getattr(p, 'is_deploy', None))}
-		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Deploy.0 = ${b.configuration}|${b.platform}
+		{${p.uuid}}.${b.configuration}|${b.platform_sln}.Deploy.0 = ${b.configuration_bld}|${b.platform}
 			${endif}
 			${endfor}
 			${endif}
